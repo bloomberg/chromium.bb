@@ -22,7 +22,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
   "entries": [
     {
       "id": 1,
-      "description": "ATI Radeon X1900 is not compatible with WebGL on the Mac.",
+      "description": "ATI Radeon X1900 is not compatible with WebGL on the Mac",
       "webkit_bugs": [47028],
       "os": {
         "type": "macosx"
@@ -37,7 +37,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 3,
-      "description": "GL driver is software rendered. GPU acceleration is disabled.",
+      "description": "GL driver is software rendered. GPU acceleration is disabled",
       "cr_bugs": [59302, 315217],
       "os": {
         "type": "linux"
@@ -52,7 +52,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 4,
-      "description": "The Intel Mobile 945 Express family of chipsets is not compatible with WebGL.",
+      "description": "The Intel Mobile 945 Express family of chipsets is not compatible with WebGL",
       "cr_bugs": [232035],
       "os": {
         "type": "any"
@@ -68,7 +68,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 5,
-      "description": "ATI/AMD cards with older or third-party drivers in Linux are crash-prone.",
+      "description": "ATI/AMD cards with older or third-party drivers in Linux are crash-prone",
       "cr_bugs": [71381, 76428, 73910, 101225, 136240],
       "os": {
         "type": "linux"
@@ -93,7 +93,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 8,
-      "description": "NVIDIA GeForce FX Go5200 is assumed to be buggy.",
+      "description": "NVIDIA GeForce FX Go5200 is assumed to be buggy",
       "cr_bugs": [72938],
       "os": {
         "type": "any"
@@ -106,7 +106,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 10,
-      "description": "NVIDIA GeForce 7300 GT on Mac does not support WebGL.",
+      "description": "NVIDIA GeForce 7300 GT on Mac does not support WebGL",
       "cr_bugs": [73794],
       "os": {
         "type": "macosx"
@@ -121,7 +121,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 12,
-      "description": "Drivers older than 2009-01 on Windows are possibly unreliable.",
+      "description": "Drivers older than 2009-01 on Windows are possibly unreliable",
       "cr_bugs": [72979, 89802, 315205],
       "os": {
         "type": "win"
@@ -152,7 +152,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 16,
-      "description": "Multisampling is buggy in ATI cards on older MacOSX.",
+      "description": "Multisampling is buggy in ATI cards on older MacOSX",
       "cr_bugs": [67752, 83153],
       "os": {
         "type": "macosx",
@@ -168,7 +168,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 17,
-      "description": "Intel mesa drivers are crash-prone.",
+      "description": "Intel mesa drivers are crash-prone",
       "cr_bugs": [76703, 164555, 225200],
       "os": {
         "type": "linux"
@@ -210,7 +210,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 18,
-      "description": "NVIDIA Quadro FX 1500 is buggy.",
+      "description": "NVIDIA Quadro FX 1500 is buggy",
       "cr_bugs": [84701],
       "os": {
         "type": "linux"
@@ -223,7 +223,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 19,
-      "description": "GPU acceleration is no longer supported in Leopard.",
+      "description": "GPU acceleration is no longer supported in Leopard",
       "cr_bugs": [87157, 130495],
       "os": {
         "type": "macosx",
@@ -238,7 +238,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 23,
-      "description": "Mesa drivers in linux older than 7.11 are assumed to be buggy.",
+      "description": "Mesa drivers in linux older than 7.11 are assumed to be buggy",
       "os": {
         "type": "linux"
       },
@@ -264,7 +264,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 24,
-      "description": "Accelerated 2d canvas is unstable in Linux at the moment.",
+      "description": "Accelerated 2d canvas is unstable in Linux at the moment",
       "os": {
         "type": "linux"
       },
@@ -274,7 +274,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 27,
-      "description": "ATI/AMD cards with older drivers in Linux are crash-prone.",
+      "description": "ATI/AMD cards with older drivers in Linux are crash-prone",
       "cr_bugs": [95934, 94973, 136240],
       "os": {
         "type": "linux"
@@ -302,7 +302,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 28,
-      "description": "ATI/AMD cards with third-party drivers in Linux are crash-prone.",
+      "description": "ATI/AMD cards with third-party drivers in Linux are crash-prone",
       "cr_bugs": [95934, 94973],
       "os": {
         "type": "linux"
@@ -321,7 +321,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 29,
-      "description": "ATI/AMD cards with third-party drivers in Linux are crash-prone.",
+      "description": "ATI/AMD cards with third-party drivers in Linux are crash-prone",
       "cr_bugs": [95934, 94973],
       "os": {
         "type": "linux"
@@ -340,7 +340,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 30,
-      "description": "NVIDIA cards with nouveau drivers in Linux are crash-prone.",
+      "description": "NVIDIA cards with nouveau drivers in Linux are crash-prone",
       "cr_bugs": [94103],
       "os": {
         "type": "linux"
@@ -356,7 +356,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 32,
-      "description": "Accelerated 2d canvas is disabled on Windows systems with low perf stats.",
+      "description": "Accelerated 2d canvas is disabled on Windows systems with low perf stats",
       "cr_bugs": [116350, 151500],
       "os": {
         "type": "win"
@@ -385,7 +385,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 33,
-      "description": "Multisampling is buggy in Intel IvyBridge.",
+      "description": "Multisampling is buggy in Intel IvyBridge",
       "cr_bugs": [116370],
       "os": {
         "type": "linux"
@@ -398,7 +398,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 34,
-      "description": "S3 Trio (used in Virtual PC) is not compatible.",
+      "description": "S3 Trio (used in Virtual PC) is not compatible",
       "cr_bugs": [119948],
       "os": {
         "type": "win"
@@ -411,7 +411,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 35,
-      "description": "Stage3D is not supported on Linux.",
+      "description": "Stage3D is not supported on Linux",
       "cr_bugs": [129848],
       "os": {
         "type": "linux"
@@ -422,7 +422,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 37,
-      "description": "Drivers are unreliable for Optimus on Linux.",
+      "description": "Drivers are unreliable for Optimus on Linux",
       "cr_bugs": [131308],
       "os": {
         "type": "linux"
@@ -434,7 +434,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 38,
-      "description": "Accelerated 2D canvas is unstable for NVidia GeForce 9400M on Lion.",
+      "description": "Accelerated 2D canvas is unstable for NVidia GeForce 9400M on Lion",
       "cr_bugs": [130495],
       "os": {
         "type": "macosx",
@@ -451,7 +451,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 42,
-      "description": "AMD Radeon HD 6490M and 6970M on Snow Leopard are buggy.",
+      "description": "AMD Radeon HD 6490M and 6970M on Snow Leopard are buggy",
       "cr_bugs": [137307, 285350],
       "os": {
         "type": "macosx",
@@ -468,7 +468,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 44,
-      "description": "Intel HD 4000 causes kernel panic on Lion.",
+      "description": "Intel HD 4000 causes kernel panic on Lion",
       "cr_bugs": [134015],
       "os": {
         "type": "macosx",
@@ -487,7 +487,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 45,
-      "description": "Parallels drivers older than 7 are buggy.",
+      "description": "Parallels drivers older than 7 are buggy",
       "cr_bugs": [138105],
       "os": {
         "type": "win"
@@ -503,7 +503,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 46,
-      "description": "ATI FireMV 2400 cards on Windows are buggy.",
+      "description": "ATI FireMV 2400 cards on Windows are buggy",
       "cr_bugs": [124152],
       "os": {
         "type": "win"
@@ -516,7 +516,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 47,
-      "description": "NVIDIA linux drivers older than 295.* are assumed to be buggy.",
+      "description": "NVIDIA linux drivers older than 295.* are assumed to be buggy",
       "cr_bugs": [78497],
       "os": {
         "type": "linux"
@@ -536,7 +536,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 48,
-      "description": "Accelerated video decode is unavailable on Mac and Linux.",
+      "description": "Accelerated video decode is unavailable on Mac and Linux",
       "cr_bugs": [137247, 133828],
       "exceptions": [
         {
@@ -561,7 +561,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 49,
-      "description": "NVidia GeForce GT 650M can cause the system to hang with flash 3D.",
+      "description": "NVidia GeForce GT 650M can cause the system to hang with flash 3D",
       "cr_bugs": [140175],
       "os": {
         "type": "macosx",
@@ -581,7 +581,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 50,
-      "description": "Disable VMware software renderer.",
+      "description": "Disable VMware software renderer",
       "cr_bugs": [145531],
       "os": {
         "type": "linux"
@@ -596,7 +596,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 53,
-      "description": "The Intel GMA500 is too slow for Stage3D.",
+      "description": "The Intel GMA500 is too slow for Stage3D",
       "cr_bugs": [152096],
       "vendor_id": "0x8086",
       "device_id": ["0x8108", "0x8109"],
@@ -606,7 +606,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 55,
-      "description": "Drivers older than 2007-01 on Windows are assumed to be buggy.",
+      "description": "Drivers older than 2007-01 on Windows are assumed to be buggy",
       "cr_bugs": [72979, 89802],
       "os": {
         "type": "win"
@@ -637,7 +637,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 56,
-      "description": "NVIDIA linux drivers are unstable when using multiple Open GL contexts and with low memory.",
+      "description": "NVIDIA linux drivers are unstable when using multiple Open GL contexts and with low memory",
       "cr_bugs": [145600],
       "os": {
         "type": "linux"
@@ -660,7 +660,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       // to only match on chromeos. The drawback is that panel_fitting will not
       // appear to be blacklisted if accidentally queried on non-chromeos.
       "id": 57,
-      "description": "Chrome OS panel fitting is only supported for Intel IVB and SNB Graphics Controllers.",
+      "description": "Chrome OS panel fitting is only supported for Intel IVB and SNB Graphics Controllers",
       "os": {
         "type": "chromeos"
       },
@@ -676,7 +676,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 59,
-      "description": "NVidia driver 8.15.11.8593 is crashy on Windows.",
+      "description": "NVidia driver 8.15.11.8593 is crashy on Windows",
       "cr_bugs": [155749],
       "os": {
         "type": "win"
@@ -692,7 +692,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 60,
-      "description": "Multisampling is buggy on Mac with NVIDIA gpu prior to 10.8.3.",
+      "description": "Multisampling is buggy on Mac with NVIDIA gpu prior to 10.8.3",
       "cr_bugs": [137303],
       "os": {
         "type": "macosx",
@@ -708,7 +708,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 61,
-      "description": "Multisampling is buggy on Mac with Intel gpu prior to 10.8.3.",
+      "description": "Multisampling is buggy on Mac with Intel gpu prior to 10.8.3",
       "cr_bugs": [137303],
       "os": {
         "type": "macosx",
@@ -724,7 +724,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 62,
-      "description": "Accelerated 2D canvas buggy on old Qualcomm Adreno.",
+      "description": "Accelerated 2D canvas buggy on old Qualcomm Adreno",
       "cr_bugs": [161575],
       "os": {
         "type": "android"
@@ -743,7 +743,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 63,
-      "description": "Multisampling is buggy on Mac with AMD gpu prior to 10.8.3.",
+      "description": "Multisampling is buggy on Mac with AMD gpu prior to 10.8.3",
       "cr_bugs": [162466],
       "os": {
         "type": "macosx",
@@ -759,7 +759,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 64,
-      "description": "Hardware video decode is only supported in win7+.",
+      "description": "Hardware video decode is only supported in win7+",
       "cr_bugs": [159458],
       "os": {
         "type": "win",
@@ -774,7 +774,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 68,
-      "description": "VMware Fusion 4 has corrupt rendering with Win Vista+.",
+      "description": "VMware Fusion 4 has corrupt rendering with Win Vista+",
       "cr_bugs": [169470],
       "os": {
         "type": "win",
@@ -794,7 +794,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 69,
-      "description": "NVIDIA driver 8.17.11.9621 is buggy with Stage3D baseline mode.",
+      "description": "NVIDIA driver 8.17.11.9621 is buggy with Stage3D baseline mode",
       "cr_bugs": [172771],
       "os": {
         "type": "win"
@@ -810,7 +810,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 70,
-      "description": "NVIDIA driver 8.17.11.8267 is buggy with Stage3D baseline mode.",
+      "description": "NVIDIA driver 8.17.11.8267 is buggy with Stage3D baseline mode",
       "cr_bugs": [172771],
       "os": {
         "type": "win"
@@ -826,7 +826,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 71,
-      "description": "All Intel drivers before 8.15.10.2021 are buggy with Stage3D baseline mode.",
+      "description": "All Intel drivers before 8.15.10.2021 are buggy with Stage3D baseline mode",
       "cr_bugs": [172771],
       "os": {
         "type": "win"
@@ -842,7 +842,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 72,
-      "description": "NVIDIA GeForce 6200 LE is buggy with WebGL.",
+      "description": "NVIDIA GeForce 6200 LE is buggy with WebGL",
       "cr_bugs": [232529],
       "os": {
         "type": "win"
@@ -924,7 +924,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 79,
-      "description": "Disable GPU on all Windows versions prior to and including Vista.",
+      "description": "Disable GPU on all Windows versions prior to and including Vista",
       "cr_bugs": [315199],
       "os": {
         "type": "win",
@@ -958,7 +958,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 81,
-      "description": "Apple software renderer used under VMWare hangs on Mac OS 10.6 and 10.7.",
+      "description": "Apple software renderer used under VMWare hangs on Mac OS 10.6 and 10.7",
       "cr_bugs": [230931],
       "os": {
         "type": "macosx",
