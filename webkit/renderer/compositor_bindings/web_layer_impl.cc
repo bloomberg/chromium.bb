@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "webkit/renderer/compositor_bindings/web_animation_impl.h"
+#include "webkit/renderer/compositor_bindings/web_blend_mode.h"
 #include "webkit/renderer/compositor_bindings/web_filter_operations_impl.h"
 #include "webkit/renderer/compositor_bindings/web_to_cc_animation_delegate_adapter.h"
 
@@ -115,6 +116,22 @@ void WebLayerImpl::setReplicaLayer(WebLayer* replica_layer) {
 void WebLayerImpl::setOpacity(float opacity) { layer_->SetOpacity(opacity); }
 
 float WebLayerImpl::opacity() const { return layer_->opacity(); }
+
+void WebLayerImpl::setBlendMode(blink::WebBlendMode blend_mode) {
+  layer_->SetBlendMode(BlendModeToSkia(blend_mode));
+}
+
+blink::WebBlendMode WebLayerImpl::blendMode() const {
+  return BlendModeFromSkia(layer_->blend_mode());
+}
+
+void WebLayerImpl::setIsRootForIsolatedGroup(bool isolate) {
+  layer_->SetIsRootForIsolatedGroup(isolate);
+}
+
+bool WebLayerImpl::isRootForIsolatedGroup() {
+  return layer_->is_root_for_isolated_group();
+}
 
 void WebLayerImpl::setOpaque(bool opaque) { layer_->SetContentsOpaque(opaque); }
 
