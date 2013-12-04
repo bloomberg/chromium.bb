@@ -478,19 +478,18 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
     // Steps 1 - 4 - Initial checks, let most significant units be minutes.
     enum Mode { Minutes, Hours };
     Mode mode = Minutes;
-    if (*position >= line.length() || !isASCIIDigit(line[*position]))
-        return malformedTime;
 
-    int value1;
     // Steps 5 - 7 - Collect a sequence of characters that are 0-9.
     // If not 2 characters or value is greater than 59, interpret as hours.
-    if (collectDigitsToInt(line, position, value1) != 2 || value1 > 59)
+    int value1;
+    unsigned value1Digits = collectDigitsToInt(line, position, value1);
+    if (!value1Digits)
+        return malformedTime;
+    if (value1Digits != 2 || value1 > 59)
         mode = Hours;
 
     // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
     if (*position >= line.length() || line[(*position)++] != ':')
-        return malformedTime;
-    if (*position >= line.length() || !isASCIIDigit(line[(*position)]))
         return malformedTime;
     int value2;
     if (collectDigitsToInt(line, position, value2) != 2)
@@ -500,8 +499,6 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
     int value3;
     if (mode == Hours || (*position < line.length() && line[*position] == ':')) {
         if (*position >= line.length() || line[(*position)++] != ':')
-            return malformedTime;
-        if (*position >= line.length() || !isASCIIDigit(line[*position]))
             return malformedTime;
         if (collectDigitsToInt(line, position, value3) != 2)
             return malformedTime;
@@ -513,8 +510,6 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
 
     // Steps 13 - 17 - Collect next sequence of 0-9 after '.' (must be 3 chars).
     if (*position >= line.length() || line[(*position)++] != '.')
-        return malformedTime;
-    if (*position >= line.length() || !isASCIIDigit(line[*position]))
         return malformedTime;
     int value4;
     if (collectDigitsToInt(line, position, value4) != 3)
