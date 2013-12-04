@@ -17,7 +17,6 @@ endif
 
 libexec_PROGRAMS =				\
 	$(desktop_shell)			\
-	$(tablet_shell)				\
 	$(screenshooter)			\
 	$(screensaver)				\
 	$(keyboard)				\
@@ -84,10 +83,6 @@ clients_programs =				\
 	$(cairo_glesv2_programs)
 
 desktop_shell = weston-desktop-shell
-
-if ENABLE_TABLET_SHELL
-tablet_shell = weston-tablet-shell
-endif
 
 screenshooter = weston-screenshooter
 
@@ -210,12 +205,6 @@ weston_desktop_shell_SOURCES =			\
 	desktop-shell-protocol.c
 weston_desktop_shell_LDADD = libtoytoolkit.la
 
-weston_tablet_shell_SOURCES =			\
-	tablet-shell.c				\
-	tablet-shell-client-protocol.h		\
-	tablet-shell-protocol.c
-weston_tablet_shell_LDADD = libtoytoolkit.la
-
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\
 	screenshooter-protocol.c		\
@@ -227,8 +216,6 @@ BUILT_SOURCES =					\
 	input-method-client-protocol.h		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
-	tablet-shell-client-protocol.h		\
-	tablet-shell-protocol.c			\
 	workspaces-client-protocol.h		\
 	workspaces-protocol.c
 

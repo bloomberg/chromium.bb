@@ -362,13 +362,6 @@ AM_CONDITIONAL(BUILD_SUBSURFACES_CLIENT,
 
 AM_CONDITIONAL(ENABLE_DESKTOP_SHELL, true)
 
-AC_ARG_ENABLE(tablet-shell,
-              AS_HELP_STRING([--disable-tablet-shell],
-                             [do not build tablet-shell server plugin and client]),,
-	      enable_tablet_shell=yes)
-AM_CONDITIONAL(ENABLE_TABLET_SHELL,
-	       test "x$enable_tablet_shell" = "xyes")
-
 # CMS modules
 AC_ARG_ENABLE(colord,
               AS_HELP_STRING([--disable-colord],
@@ -520,7 +513,6 @@ AC_MSG_RESULT([
 	dbus				${enable_dbus}
 
 	Build wcap utility		${enable_wcap_tools}
-	Build Tablet Shell		${enable_tablet_shell}
 
 	weston-launch utility		${enable_weston_launch}
 	systemd-login support		${have_systemd_login}

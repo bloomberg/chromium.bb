@@ -1,7 +1,6 @@
 protocol_sources =				\
 	desktop-shell.xml			\
 	screenshooter.xml			\
-	tablet-shell.xml			\
 	xserver.xml				\
 	text.xml				\
 	input-method.xml			\

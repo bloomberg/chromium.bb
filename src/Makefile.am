@@ -115,7 +115,6 @@ westoninclude_HEADERS =				\
 moduledir = $(libdir)/weston
 module_LTLIBRARIES =				\
 	$(desktop_shell)			\
-	$(tablet_shell)				\
 	$(cms_static)				\
 	$(cms_colord)				\
 	$(gl_renderer)				\
@@ -299,17 +298,6 @@ desktop_shell_la_SOURCES =			\
 	xdg-shell-server-protocol.h
 endif
 
-if ENABLE_TABLET_SHELL
-tablet_shell = tablet-shell.la
-tablet_shell_la_LDFLAGS = -module -avoid-version
-tablet_shell_la_LIBADD = $(COMPOSITOR_LIBS)
-tablet_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
-tablet_shell_la_SOURCES =			\
-	tablet-shell.c				\
-	tablet-shell-protocol.c			\
-	tablet-shell-server-protocol.h
-endif
-
 if HAVE_LCMS
 cms_static = cms-static.la
 cms_static_la_LDFLAGS = -module -avoid-version
@@ -347,8 +335,6 @@ BUILT_SOURCES =					\
 	screenshooter-protocol.c		\
 	text-cursor-position-server-protocol.h	\
 	text-cursor-position-protocol.c		\
-	tablet-shell-protocol.c			\
-	tablet-shell-server-protocol.h		\
 	desktop-shell-protocol.c		\
 	desktop-shell-server-protocol.h		\
 	text-protocol.c				\
