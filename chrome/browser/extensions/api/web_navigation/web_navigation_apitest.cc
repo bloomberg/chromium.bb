@@ -135,6 +135,10 @@ class TestNavigationListener
     virtual void WillStartRequest(bool* defer) OVERRIDE {
       *defer = true;
     }
+
+    virtual const char* GetNameForLogging() const OVERRIDE {
+      return "TestNavigationListener::Throttle";
+    }
   };
   typedef base::WeakPtr<Throttle> WeakThrottle;
   typedef std::list<WeakThrottle> WeakThrottleList;

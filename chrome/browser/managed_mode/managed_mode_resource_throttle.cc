@@ -57,6 +57,10 @@ void ManagedModeResourceThrottle::WillRedirectRequest(const GURL& new_url,
   ShowInterstitialIfNeeded(true, new_url, defer);
 }
 
+const char* ManagedModeResourceThrottle::GetNameForLogging() const {
+  return "ManagedModeResourceThrottle";
+}
+
 void ManagedModeResourceThrottle::OnInterstitialResult(bool continue_request) {
   if (continue_request)
     controller()->Resume();

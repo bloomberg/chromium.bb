@@ -26,6 +26,11 @@ class ResourceThrottle {
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) {}
   virtual void WillProcessResponse(bool* defer) {}
 
+  // Returns the name of the throttle, as a UTF-8 C-string, for logging
+  // purposes.  NULL is not allowed.  Caller does *not* take ownership of the
+  // returned string.
+  virtual const char* GetNameForLogging() const = 0;
+
   void set_controller_for_testing(ResourceController* c) {
     controller_ = c;
   }

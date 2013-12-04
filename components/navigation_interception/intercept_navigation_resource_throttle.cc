@@ -80,6 +80,10 @@ void InterceptNavigationResourceThrottle::WillRedirectRequest(
       CheckIfShouldIgnoreNavigation(new_url, GetMethodAfterRedirect(), true);
 }
 
+const char* InterceptNavigationResourceThrottle::GetNameForLogging() const {
+  return "InterceptNavigationResourceThrottle";
+}
+
 std::string InterceptNavigationResourceThrottle::GetMethodAfterRedirect() {
   net::HttpResponseHeaders* headers = request_->response_headers();
   if (!headers)

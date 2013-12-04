@@ -150,52 +150,9 @@ bool Base64StringToHashes(const std::string& hashes_str,
 
 // Returns a Value representing the state of a pre-existing URLRequest when
 // net-internals was opened.
-Value* RequestStateToValue(const net::URLRequest* request,
-                           net::NetLog::LogLevel log_level) {
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetString("url", request->original_url().possibly_invalid_spec());
-
-  const std::vector<GURL>& url_chain = request->url_chain();
-  if (url_chain.size() > 1) {
-    ListValue* list = new ListValue();
-    for (std::vector<GURL>::const_iterator url = url_chain.begin();
-         url != url_chain.end(); ++url) {
-      list->AppendString(url->spec());
-    }
-    dict->Set("url_chain", list);
-  }
-
-  dict->SetInteger("load_flags", request->load_flags());
-
-  net::LoadStateWithParam load_state = request->GetLoadState();
-  dict->SetInteger("load_state", load_state.state);
-  if (!load_state.param.empty())
-    dict->SetString("load_state_param", load_state.param);
-
-  dict->SetString("method", request->method());
-  dict->SetBoolean("has_upload", request->has_upload());
-  dict->SetBoolean("is_pending", request->is_pending());
-
-  // Add the status of the request.  The status should always be IO_PENDING, and
-  // the error should always be OK, unless something is holding onto a request
-  // that has finished or a request was leaked.  Neither of these should happen.
-  switch (request->status().status()) {
-    case net::URLRequestStatus::SUCCESS:
-      dict->SetString("status", "SUCCESS");
-      break;
-    case net::URLRequestStatus::IO_PENDING:
-      dict->SetString("status", "IO_PENDING");
-      break;
-    case net::URLRequestStatus::CANCELED:
-      dict->SetString("status", "CANCELED");
-      break;
-    case net::URLRequestStatus::FAILED:
-      dict->SetString("status", "FAILED");
-      break;
-  }
-  if (request->status().error() != net::OK)
-    dict->SetInteger("net_error", request->status().error());
-  return dict;
+Value* GetRequestStateAsValue(const net::URLRequest* request,
+                              net::NetLog::LogLevel log_level) {
+  return request->GetStateAsValue();
 }
 
 // Returns true if |request1| was created before |request2|.
@@ -1816,7 +1773,7 @@ void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
        request_it != requests.end(); ++request_it) {
     const net::URLRequest* request = *request_it;
     net::NetLog::ParametersCallback callback =
-        base::Bind(&RequestStateToValue, base::Unretained(request));
+        base::Bind(&GetRequestStateAsValue, base::Unretained(request));
 
     // Create and add the entry directly, to avoid sending it to any other
     // NetLog observers.

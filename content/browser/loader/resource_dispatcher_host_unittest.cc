@@ -441,6 +441,10 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
+  virtual const char* GetNameForLogging() const OVERRIDE {
+    return "GenericResourceThrottle";
+  }
+
   void Resume() {
     ASSERT_TRUE(this == active_throttle_);
     active_throttle_ = NULL;

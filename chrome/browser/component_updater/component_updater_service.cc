@@ -168,6 +168,7 @@ class CUResourceThrottle
   // Overriden from ResourceThrottle.
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
+  virtual const char* GetNameForLogging() const OVERRIDE;
 
   // Component updater calls this function via PostTask to unblock the request.
   void Unblock();
@@ -1101,6 +1102,10 @@ void CUResourceThrottle::WillStartRequest(bool* defer) {
 
 void CUResourceThrottle::WillRedirectRequest(const GURL& new_url, bool* defer) {
   WillStartRequest(defer);
+}
+
+const char* CUResourceThrottle::GetNameForLogging() const {
+  return "ComponentUpdateResourceThrottle";
 }
 
 void CUResourceThrottle::Unblock() {

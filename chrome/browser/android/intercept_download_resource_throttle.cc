@@ -33,6 +33,10 @@ void InterceptDownloadResourceThrottle::WillProcessResponse(bool* defer) {
   ProcessDownloadRequest();
 }
 
+const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
+  return "InterceptDownloadResourceThrottle";
+}
+
 void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   if (request_->method() != net::HttpRequestHeaders::kGetMethod ||
       request_->response_info().did_use_http_auth)
@@ -50,4 +54,4 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   controller()->Cancel();
 }
 
-}  // namespace
+}  // namespace chrome

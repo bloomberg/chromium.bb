@@ -71,6 +71,10 @@ void SafeBrowsingResourceThrottle::WillRedirectRequest(const GURL& new_url,
   *defer = true;
 }
 
+const char* SafeBrowsingResourceThrottle::GetNameForLogging() const {
+  return "SafeBrowsingResourceThrottle";
+}
+
 // SafeBrowsingService::Client implementation, called on the IO thread once
 // the URL has been classified.
 void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(

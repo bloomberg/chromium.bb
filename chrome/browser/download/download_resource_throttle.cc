@@ -42,6 +42,10 @@ void DownloadResourceThrottle::WillProcessResponse(bool* defer) {
   WillDownload(defer);
 }
 
+const char* DownloadResourceThrottle::GetNameForLogging() const {
+  return "DownloadResourceThrottle";
+}
+
 void DownloadResourceThrottle::WillDownload(bool* defer) {
   DCHECK(!request_deferred_);
 

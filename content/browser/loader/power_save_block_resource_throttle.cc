@@ -34,6 +34,10 @@ void PowerSaveBlockResourceThrottle::WillProcessResponse(bool* defer) {
   timer_.Stop();
 }
 
+const char* PowerSaveBlockResourceThrottle::GetNameForLogging() const {
+  return "PowerSaveBlockResourceThrottle";
+}
+
 void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
   power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,

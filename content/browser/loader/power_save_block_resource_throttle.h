@@ -24,6 +24,7 @@ class PowerSaveBlockResourceThrottle : public ResourceThrottle {
   // ResourceThrottle overrides:
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillProcessResponse(bool* defer) OVERRIDE;
+  virtual const char* GetNameForLogging() const OVERRIDE;
 
  private:
   void ActivatePowerSaveBlocker();

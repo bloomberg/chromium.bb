@@ -65,6 +65,7 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
   // From content::ResourceThrottle
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
+  virtual const char* GetNameForLogging() const OVERRIDE;
 
   bool MaybeDeferRequest(bool* defer);
   void OnIoThreadClientReady(int new_child_id, int new_route_id);
@@ -108,6 +109,10 @@ void IoThreadClientThrottle::WillStartRequest(bool* defer) {
 void IoThreadClientThrottle::WillRedirectRequest(const GURL& new_url,
                                                  bool* defer) {
   WillStartRequest(defer);
+}
+
+const char* IoThreadClientThrottle::GetNameForLogging() const {
+  return "IoThreadClientThrottle";
 }
 
 bool IoThreadClientThrottle::MaybeDeferRequest(bool* defer) {

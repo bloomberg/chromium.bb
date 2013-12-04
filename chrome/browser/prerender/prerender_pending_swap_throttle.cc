@@ -47,6 +47,10 @@ void PrerenderPendingSwapThrottle::WillStartRequest(bool* defer) {
                                                this->AsWeakPtr());
 }
 
+const char* PrerenderPendingSwapThrottle::GetNameForLogging() const {
+  return "PrerenderPendingSwapThrottle";
+}
+
 void PrerenderPendingSwapThrottle::Resume() {
   DCHECK(throttled_);
 

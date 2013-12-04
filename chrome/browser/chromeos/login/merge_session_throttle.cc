@@ -99,6 +99,10 @@ void MergeSessionThrottle::WillStartRequest(bool* defer) {
   *defer = true;
 }
 
+const char* MergeSessionThrottle::GetNameForLogging() const {
+  return "MergeSessionThrottle";
+}
+
 // static.
 bool MergeSessionThrottle::AreAllSessionMergedAlready() {
   return !base::AtomicRefCountIsZero(&all_profiles_restored_);

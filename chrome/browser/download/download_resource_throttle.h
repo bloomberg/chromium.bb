@@ -32,6 +32,7 @@ class DownloadResourceThrottle
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
   virtual void WillProcessResponse(bool* defer) OVERRIDE;
+  virtual const char* GetNameForLogging() const OVERRIDE;
 
  private:
   virtual ~DownloadResourceThrottle();

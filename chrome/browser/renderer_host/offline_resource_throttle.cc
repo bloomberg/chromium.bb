@@ -103,6 +103,10 @@ void OfflineResourceThrottle::WillStartRequest(bool* defer) {
   *defer = true;
 }
 
+const char* OfflineResourceThrottle::GetNameForLogging() const {
+  return "OfflineResourceThrottle";
+}
+
 void OfflineResourceThrottle::OnBlockingPageComplete(bool proceed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

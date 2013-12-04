@@ -112,6 +112,10 @@ void PrerenderResourceThrottle::WillRedirectRequest(const GURL& new_url,
                                           this->AsWeakPtr());
 }
 
+const char* PrerenderResourceThrottle::GetNameForLogging() const {
+  return "PrerenderResourceThrottle";
+}
+
 void PrerenderResourceThrottle::Resume() {
   DCHECK(throttled_);
 

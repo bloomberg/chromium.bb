@@ -3843,8 +3843,7 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
   ~AsyncDelegateLogger() {}
 
   void Start() {
-    url_request_->SetDelegateInfo(kFirstDelegateInfo,
-                                  URLRequest::DELEGATE_INFO_DEBUG_ONLY);
+    url_request_->LogBlockedBy(kFirstDelegateInfo);
     LoadStateWithParam load_state = url_request_->GetLoadState();
     EXPECT_EQ(expected_first_load_state_, load_state.state);
     EXPECT_NE(ASCIIToUTF16(kFirstDelegateInfo), load_state.param);
@@ -3854,8 +3853,7 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
   }
 
   void LogSecondDelegate() {
-    url_request_->SetDelegateInfo(kSecondDelegateInfo,
-                                  URLRequest::DELEGATE_INFO_DISPLAY_TO_USER);
+    url_request_->LogAndReportBlockedBy(kSecondDelegateInfo);
     LoadStateWithParam load_state = url_request_->GetLoadState();
     EXPECT_EQ(expected_second_load_state_, load_state.state);
     if (expected_second_load_state_ == LOAD_STATE_WAITING_FOR_DELEGATE) {
@@ -3869,8 +3867,7 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
   }
 
   void LogComplete() {
-    url_request_->SetDelegateInfo(
-        NULL, URLRequest::DELEGATE_INFO_DISPLAY_TO_USER);
+    url_request_->LogUnblocked();
     LoadStateWithParam load_state = url_request_->GetLoadState();
     EXPECT_EQ(expected_third_load_state_, load_state.state);
     if (expected_second_load_state_ == LOAD_STATE_WAITING_FOR_DELEGATE)

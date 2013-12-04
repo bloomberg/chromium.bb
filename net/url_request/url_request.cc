@@ -219,7 +219,7 @@ URLRequest::URLRequest(const GURL& url,
       priority_(priority),
       identifier_(GenerateURLRequestIdentifier()),
       calling_delegate_(false),
-      delegate_info_usage_(DELEGATE_INFO_DEBUG_ONLY),
+      use_blocked_by_as_load_param_(false),
       before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
                                           base::Unretained(this))),
       has_notified_completion_(false),
@@ -347,13 +347,13 @@ bool URLRequest::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
 }
 
 LoadStateWithParam URLRequest::GetLoadState() const {
-  // The delegate_info_.empty() check allows |this| to report it's blocked on
-  // a delegate before it has been started.
-  if (calling_delegate_ || !delegate_info_.empty()) {
+  // The !blocked_by_.empty() check allows |this| to report it's blocked on a
+  // delegate before it has been started.
+  if (calling_delegate_ || !blocked_by_.empty()) {
     return LoadStateWithParam(
         LOAD_STATE_WAITING_FOR_DELEGATE,
-        delegate_info_usage_ == DELEGATE_INFO_DISPLAY_TO_USER ?
-            UTF8ToUTF16(delegate_info_) : base::string16());
+        use_blocked_by_as_load_param_ ? UTF8ToUTF16(blocked_by_) :
+                                        base::string16());
   }
   return LoadStateWithParam(job_.get() ? job_->GetLoadState() : LOAD_STATE_IDLE,
                             base::string16());
@@ -378,8 +378,8 @@ base::Value* URLRequest::GetStateAsValue() const {
   dict->SetInteger("load_state", load_state.state);
   if (!load_state.param.empty())
     dict->SetString("load_state_param", load_state.param);
-  if (!delegate_info_.empty())
-    dict->SetString("delegate_info", delegate_info_);
+  if (!blocked_by_.empty())
+    dict->SetString("delegate_info", blocked_by_);
 
   dict->SetString("method", method_);
   dict->SetBoolean("has_upload", has_upload());
@@ -407,25 +407,35 @@ base::Value* URLRequest::GetStateAsValue() const {
   return dict;
 }
 
-void URLRequest::SetDelegateInfo(const char* delegate_info,
-                                 DelegateInfoUsage delegate_info_usage) {
-  // Only log delegate information to NetLog during startup and certain
-  // deferring calls to delegates.  For all reads but the first, delegate info
-  // is currently ignored.
+void URLRequest::LogBlockedBy(const char* blocked_by) {
+  DCHECK(blocked_by);
+  DCHECK_GT(strlen(blocked_by), 0u);
+
+  // Only log information to NetLog during startup and certain deferring calls
+  // to delegates.  For all reads but the first, do nothing.
   if (!calling_delegate_ && !response_info_.request_time.is_null())
     return;
 
-  if (!delegate_info_.empty()) {
-    delegate_info_.clear();
-    net_log_.EndEvent(NetLog::TYPE_DELEGATE_INFO);
-  }
-  if (delegate_info) {
-    delegate_info_ = delegate_info;
-    delegate_info_usage_ = delegate_info_usage;
-    net_log_.BeginEvent(
-        NetLog::TYPE_DELEGATE_INFO,
-        NetLog::StringCallback("delegate_info", &delegate_info_));
-  }
+  LogUnblocked();
+  blocked_by_ = blocked_by;
+  use_blocked_by_as_load_param_ = false;
+
+  net_log_.BeginEvent(
+      NetLog::TYPE_DELEGATE_INFO,
+      NetLog::StringCallback("delegate_info", &blocked_by_));
+}
+
+void URLRequest::LogAndReportBlockedBy(const char* source) {
+  LogBlockedBy(source);
+  use_blocked_by_as_load_param_ = true;
+}
+
+void URLRequest::LogUnblocked() {
+  if (blocked_by_.empty())
+    return;
+
+  net_log_.EndEvent(NetLog::TYPE_DELEGATE_INFO);
+  blocked_by_.clear();
 }
 
 UploadProgress URLRequest::GetUploadProgress() const {
@@ -593,9 +603,9 @@ void URLRequest::set_delegate(Delegate* delegate) {
 
 void URLRequest::Start() {
   DCHECK_EQ(network_delegate_, context_->network_delegate());
-  // Anything that set delegate information before start should have cleaned up
-  // after itself.
-  DCHECK(delegate_info_.empty());
+  // Anything that sets |blocked_by_| before start should have cleaned up after
+  // itself.
+  DCHECK(blocked_by_.empty());
 
   g_url_requests_started = true;
   response_info_.request_time = base::Time::Now();
@@ -715,7 +725,7 @@ void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   DCHECK(error < 0);
   // If cancelled while calling a delegate, clear delegate info.
   if (calling_delegate_) {
-    SetDelegateInfo(NULL, DELEGATE_INFO_DEBUG_ONLY);
+    LogUnblocked();
     OnCallToDelegateComplete();
   }
 
@@ -1162,14 +1172,14 @@ void URLRequest::NotifyRequestCompleted() {
 
 void URLRequest::OnCallToDelegate() {
   DCHECK(!calling_delegate_);
-  DCHECK(delegate_info_.empty());
+  DCHECK(blocked_by_.empty());
   calling_delegate_ = true;
   net_log_.BeginEvent(NetLog::TYPE_URL_REQUEST_DELEGATE);
 }
 
 void URLRequest::OnCallToDelegateComplete() {
-  // Delegates should clear their info when it becomes outdated.
-  DCHECK(delegate_info_.empty());
+  // This should have been cleared before resuming the request.
+  DCHECK(blocked_by_.empty());
   if (!calling_delegate_)
     return;
   calling_delegate_ = false;

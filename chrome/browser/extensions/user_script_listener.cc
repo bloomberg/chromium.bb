@@ -46,6 +46,10 @@ class UserScriptListener::Throttle
     }
   }
 
+  virtual const char* GetNameForLogging() const OVERRIDE {
+    return "UserScriptListener::Throttle";
+  }
+
  private:
   bool should_defer_;
   bool did_defer_;

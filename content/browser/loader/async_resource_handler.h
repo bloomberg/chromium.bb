@@ -72,6 +72,7 @@ class AsyncResourceHandler : public ResourceHandler,
 
   bool EnsureResourceBufferIsInitialized();
   void ResumeIfDeferred();
+  void OnDefer();
 
   scoped_refptr<ResourceBuffer> buffer_;
   ResourceDispatcherHostImpl* rdh_;

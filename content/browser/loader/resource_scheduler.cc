@@ -159,6 +159,10 @@ class ResourceScheduler::ScheduledResourceRequest
     deferred_ = *defer = !ready_;
   }
 
+  virtual const char* GetNameForLogging() const OVERRIDE {
+    return "ResourceScheduler";
+  }
+
   void DidChangePriority(int request_id, net::RequestPriority new_priority) {
     scheduler_->ReprioritizeRequest(this, new_priority);
   }

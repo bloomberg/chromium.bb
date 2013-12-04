@@ -28,6 +28,8 @@ class ManagedModeResourceThrottle : public content::ResourceThrottle {
 
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
+  virtual const char* GetNameForLogging() const OVERRIDE;
+
  private:
   void ShowInterstitialIfNeeded(bool is_redirect,
                                 const GURL& url,

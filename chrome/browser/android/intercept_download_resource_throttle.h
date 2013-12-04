@@ -27,6 +27,7 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
   // content::ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillProcessResponse(bool* defer) OVERRIDE;
+  virtual const char* GetNameForLogging() const OVERRIDE;
 
  private:
   virtual ~InterceptDownloadResourceThrottle();
@@ -41,6 +42,6 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
   DISALLOW_COPY_AND_ASSIGN(InterceptDownloadResourceThrottle);
 };
 
-}  // namespace
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_INTERCEPT_DOWNLOAD_RESOURCE_THROTTLE_H_

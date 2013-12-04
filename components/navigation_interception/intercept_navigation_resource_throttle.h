@@ -42,6 +42,7 @@ class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
   // content::ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
+  virtual const char* GetNameForLogging() const OVERRIDE;
 
  private:
   std::string GetMethodAfterRedirect();
