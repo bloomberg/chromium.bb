@@ -184,12 +184,12 @@ FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
     more = util.createChild(links,
         'drive-welcome-button drive-welcome-start', 'a');
     more.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
-    more.href = urlConstants.GOOGLE_DRIVE_REDEEM;
+    more.href = str('GOOGLE_DRIVE_REDEEM_URL');
   } else {
     title.textContent = str('DRIVE_WELCOME_TITLE');
     more = util.createChild(links, 'plain-link', 'a');
     more.textContent = str('DRIVE_LEARN_MORE');
-    more.href = urlConstants.GOOGLE_DRIVE_FAQ_URL;
+    more.href = str('GOOGLE_DRIVE_OVERVIEW_URL');
   }
   more.tabIndex = '13';  // See: go/filesapp-tabindex.
   more.target = '_blank';
@@ -254,7 +254,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
     var link = this.document_.createElement('a');
     link.className = 'plain-link';
     link.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
-    link.href = urlConstants.GOOGLE_DRIVE_BUY_STORAGE;
+    link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
     link.target = '_blank';
     box.appendChild(link);
 
@@ -571,7 +571,7 @@ FileListBannerController.prototype.showLowDownloadsSpaceWarning_ =
     var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
     box.innerHTML = html;
     var link = box.querySelector('a');
-    link.href = urlConstants.DOWNLOADS_FAQ_URL;
+    link.href = str('DOWNLOADS_LOW_SPACE_WARNING_HELP_URL');
     link.target = '_blank';
   } else {
     box.innerHTML = '';
@@ -606,7 +606,7 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
 
   var learnMore = create(panel, 'a', 'learn-more plain-link',
                          str('DRIVE_LEARN_MORE'));
-  learnMore.href = urlConstants.GOOGLE_DRIVE_ERROR_HELP_URL;
+  learnMore.href = str('GOOGLE_DRIVE_ERROR_HELP_URL');
   learnMore.target = '_blank';
 };
 

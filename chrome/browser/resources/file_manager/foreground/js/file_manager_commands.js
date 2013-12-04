@@ -551,9 +551,9 @@ CommandHandler.COMMANDS_['rename'] = {
 CommandHandler.COMMANDS_['volume-help'] = {
   execute: function(event, fileManager) {
     if (fileManager.isOnDrive())
-      util.visitURL(urlConstants.GOOGLE_DRIVE_HELP);
+      util.visitURL(str('GOOGLE_DRIVE_HELP_URL'));
     else
-      util.visitURL(urlConstants.FILES_APP_HELP);
+      util.visitURL(str('FILES_APP_HELP_URL'));
   },
   canExecute: CommandUtil.canExecuteAlways
 };
@@ -564,7 +564,7 @@ CommandHandler.COMMANDS_['volume-help'] = {
  */
 CommandHandler.COMMANDS_['drive-buy-more-space'] = {
   execute: function(event, fileManager) {
-    util.visitURL(urlConstants.GOOGLE_DRIVE_BUY_STORAGE);
+    util.visitURL(str('GOOGLE_DRIVE_BUY_STORAGE_URL'));
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };
@@ -575,7 +575,7 @@ CommandHandler.COMMANDS_['drive-buy-more-space'] = {
  */
 CommandHandler.COMMANDS_['drive-go-to-drive'] = {
   execute: function(event, fileManager) {
-    util.visitURL(urlConstants.GOOGLE_DRIVE_ROOT);
+    util.visitURL(str('GOOGLE_DRIVE_ROOT_URL'));
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };

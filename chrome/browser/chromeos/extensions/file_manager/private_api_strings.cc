@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -12,6 +13,48 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+namespace {
+
+// Location of the page to buy more storage for Google Drive.
+const char kGoogleDriveBuyStorageUrl[] =
+    "https://www.google.com/settings/storage";
+
+// Location of the overview page about Google Drive.
+const char kGoogleDriveOverviewUrl[] =
+    "https://support.google.com/chromeos/?p=filemanager_drive";
+
+// Location of Google drive redeem page.
+const char kGoogleDriveRedeemUrl[] =
+    "http://www.google.com/intl/en/chrome/devices/goodies.html"
+    "?utm_source=filesapp&utm_medium=banner&utm_campaign=gsg";
+
+// Location of Google Drive specific help.
+const char kGoogleDriveHelpUrl[] =
+    "https://support.google.com/chromeos/?p=filemanager_drivehelp";
+
+// Location of Google Drive root.
+const char kGoogleDriveRootUrl[] = "https://drive.google.com";
+
+// Printf format
+#if defined(OFFICIAL_BUILD)
+const char kHelpURLFormat[] =
+    "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html?answer=%d";
+#else
+const char kHelpURLFormat[] =
+    "http://support.google.com/chromeos/bin/answer.py?answer=%d";
+#endif
+
+// Location of the help page for low space warning in the downloads directory.
+const int kDownloadsLowSpaceWarningHelpNumber = 1061547;
+
+// Location of Files App specific help.
+const int kFilesAppHelpNumber = 1056323;
+
+// Location of the help page about connecting to Google Drive.
+const int kGoogleDriveErrorHelpNumber = 2649458;
+
+}  // namespace
 
 namespace extensions {
 
@@ -523,6 +566,20 @@ bool FileBrowserPrivateGetStringsFunction::RunImpl() {
 
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 
+  dict->SetString("GOOGLE_DRIVE_BUY_STORAGE_URL", kGoogleDriveBuyStorageUrl);
+  dict->SetString("GOOGLE_DRIVE_OVERVIEW_URL", kGoogleDriveOverviewUrl);
+  dict->SetString("GOOGLE_DRIVE_REDEEM_URL", kGoogleDriveRedeemUrl);
+  dict->SetString("GOOGLE_DRIVE_HELP_URL", kGoogleDriveHelpUrl);
+  dict->SetString("GOOGLE_DRIVE_ROOT_URL", kGoogleDriveRootUrl);
+  dict->SetString(
+      "DOWNLOADS_LOW_SPACE_WARNING_HELP_URL",
+      base::StringPrintf(kHelpURLFormat, kDownloadsLowSpaceWarningHelpNumber));
+  dict->SetString(
+      "FILES_APP_HELP_URL",
+      base::StringPrintf(kHelpURLFormat, kFilesAppHelpNumber));
+  dict->SetString(
+      "GOOGLE_DRIVE_ERROR_HELP_URL",
+      base::StringPrintf(kHelpURLFormat, kGoogleDriveErrorHelpNumber));
   return true;
 }
 

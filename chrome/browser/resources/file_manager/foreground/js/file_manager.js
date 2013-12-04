@@ -1200,7 +1200,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           strf('DRIVE_SERVER_OUT_OF_SPACE_MESSAGE',
               decodeURIComponent(
                   event.error.data.sourceFileUrl.split('/').pop()),
-              urlConstants.GOOGLE_DRIVE_BUY_STORAGE));
+              str('GOOGLE_DRIVE_BUY_STORAGE_URL')));
     }
 
     // TODO(benchan): Currently, there is no FileWatcher emulation for
