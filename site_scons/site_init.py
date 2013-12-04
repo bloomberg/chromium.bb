@@ -17,6 +17,21 @@ import SCons
 import usage_log
 import time
 
+def CheckSConsLocation():
+  """Check that the version of scons we are running lives in the native_client
+  tree.
+
+  Without this, if system scons is used then it produces rather cryptic error
+  messages.
+  """
+  scons_location = os.path.dirname(os.path.abspath(SCons.__file__))
+  nacl_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  if not scons_location.startswith(nacl_dir):
+    raise SCons.Errors.UserError('native_client must be built with its local '
+                                 'version of SCons.\n  You are running SCons '
+                                 'from %s' % scons_location)
+
+
 def _HostPlatform():
   """Returns the current host platform.
 
@@ -104,7 +119,7 @@ def BuildEnvironmentSConscripts(env):
       if SCons.Script.ARGUMENTS.get('verbose'):
         print "[%5d] Loaded" %  (1000 * (time.clock() - start)), c_script
     else:
-      raise SCons.Error.UserError(
+      raise SCons.Errors.UserError(
           'Bad location for a SConscript. "%s" is not under '
           '\$TARGET_ROOT or \$MAIN_DIR' % c_script)
 
@@ -145,7 +160,7 @@ def FilterEnvironments(environments):
   matched_envs = []
   for mode in build_modes.split(','):
     if mode not in environment_map:
-      raise Exception('Build mode "%s" is not defined' % mode)
+      raise SCons.Errors.UserError('Build mode "%s" is not defined' % mode)
     matched_envs.append(environment_map[mode])
   return matched_envs
 
@@ -253,6 +268,8 @@ def SiteInitMain():
   # this site_init.py has been dropped into a project directory.
   if hasattr(__builtin__, 'BuildEnvironments'):
     return
+
+  CheckSConsLocation()
 
   usage_log.log.AddEntry('Software Construction Toolkit site init')
 

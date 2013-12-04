@@ -6,7 +6,7 @@
 import os.path
 import sys
 
-# This is a replacement for the "scons" script is SCons.  The script that comes
+# This is a replacement for the "scons" script in SCons.  The script that comes
 # with the distribution searches for SCons in standard directories, but we want
 # the one in the third-party directory.  Searching can screw us up if there's a
 # version of SCons installed elsewhere.

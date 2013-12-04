@@ -378,8 +378,8 @@ def SetUpArgumentBits(env):
   # PNaCl sanity checks
   if ((env.Bit('pnacl_generate_pexe') or env.Bit('use_sandboxed_translator'))
       and not env.Bit('bitcode')):
-    raise ValueError("pnacl_generate_pexe and use_sandboxed_translator"
-                        "don't make sense without bitcode")
+    raise UserError("pnacl_generate_pexe and use_sandboxed_translator"
+                    " don't make sense without bitcode")
 
   # Sandboxed translator only accepts stable bitcode. Hence we must disallow
   # nonstable bitcodes.
@@ -397,10 +397,8 @@ def CheckArguments():
 def SetArgument(key, value):
   print '    %s=%s' % (key, str(value))
   if key in ARGUMENTS:
-    print 'ERROR: %s redefined' % (key, )
-    sys.exit(-1)
-  else:
-    ARGUMENTS[key] = value
+    raise UserError('ERROR: %s redefined' % (key, ))
+  ARGUMENTS[key] = value
 
 # Expands "macro" command line arguments.
 def ExpandArguments():
@@ -441,9 +439,8 @@ def ExpandArguments():
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
   elif ARGUMENTS.get('buildbot'):
-    print 'ERROR: unexpected argument buildbot="%s"' % (
-        ARGUMENTS.get('buildbot'), )
-    sys.exit(-1)
+    raise UserError('ERROR: unexpected argument buildbot="%s"' % (
+        ARGUMENTS.get('buildbot'), ))
 
 ExpandArguments()
 
@@ -945,7 +942,7 @@ pre_base_env.AddMethod(GetPlatform)
 def DecodePlatform(platform):
   if platform in AVAILABLE_PLATFORMS:
     return AVAILABLE_PLATFORMS[platform]
-  raise Exception('Unrecognized platform: %s' % platform)
+  raise UserError('Unrecognized platform: %s' % platform)
 
 
 DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
@@ -2207,8 +2204,7 @@ def SetupClang(env):
   env['CLANG_OPTS'] = []
   if env.Bit('asan'):
     if not (env.Bit('host_linux') or env.Bit('host_mac')):
-      print "ERROR: ASan is only available for Linux and Mac"
-      sys.exit(-1)
+      raise UserError("ERROR: ASan is only available for Linux and Mac")
     env['CLANG_OPTS'].append('-fsanitize=address')
     if env.Bit('host_mac'):
       # The built executables will try to find this library at runtime
@@ -2586,10 +2582,10 @@ def SetupLinuxEnvMips(env):
     tc_dir = os.path.join(os.getcwd(), 'toolchain', 'linux_mips-trusted',
                           'bin')
     if not which(os.path.join(tc_dir, 'mipsel-linux-gnu-gcc')):
-      print ("\nERRROR: MIPS trusted TC is not installed - try running:\n"
-             "tools/trusted_cross_toolchains/trusted-toolchain-creator"
-             ".mipsel.squeeze.sh nacl_sdk")
-      sys.exit(-1)
+      raise UserError("\nERRROR: "
+          "MIPS trusted TC is not installed - try running:\n"
+          "tools/trusted_cross_toolchains/trusted-toolchain-creator"
+          ".mipsel.debian.sh nacl_sdk")
     env.Replace(CC=os.path.join(tc_dir, 'mipsel-linux-gnu-gcc'),
                 CXX=os.path.join(tc_dir, 'mipsel-linux-gnu-g++'),
                 LD=os.path.join(tc_dir, 'mipsel-linux-gnu-ld'),

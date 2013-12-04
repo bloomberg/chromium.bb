@@ -16,7 +16,6 @@
 
 set -o nounset
 set -o errexit
-set -o xtrace
 
 readonly SCRIPT_DIR=$(dirname $0)
 

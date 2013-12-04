@@ -2,7 +2,9 @@
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import os
+import SCons.Errors
 
 Import('env')
 
@@ -81,7 +83,7 @@ elif env.Bit('target_arm'):
 elif env.Bit('target_mips32'):
   asm_helper = 'set_rounding_mips.S'
 else:
-  raise Exception('Unknown target')
+  raise SCons.Errors.UserError('Unknown target')
 
 asm_obj = asm_env.ComponentObject(asm_helper)
 nexe = biased_env.ComponentProgram('float_rounding_mode',
@@ -109,7 +111,7 @@ elif env.Bit('target_arm'):
 elif env.Bit('target_mips32'):
   asm_helper = 'test_snan_no_signal_mips.S'
 else:
-  raise Exception('Unknown target')
+  raise SCons.Errors.UserError('Unknown target')
 
 asm_obj = asm_env.ComponentObject(asm_helper)
 nexe = env.ComponentProgram('snan_no_signal',

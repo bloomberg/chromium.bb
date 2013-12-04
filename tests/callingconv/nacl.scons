@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import SCons.Errors
+
 Import('env')
 
 # This test does not make any sense for pure pnacl.
@@ -144,7 +146,7 @@ if env.Bit('bitcode'):
   elif env.Bit('target_x86_64'):
     pnacl_env.Append(CCFLAGS=['--target=x86_64-unknown-nacl'])
   else:
-    raise Exception('Unknown architecture')
+    raise SCons.Errors.UserError('Unknown architecture')
 
   envlist.append(pnacl_env)
 
