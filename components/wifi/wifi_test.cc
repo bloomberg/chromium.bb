@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
-#include <iostream>
 #include <string>
 
 #include "base/at_exit.h"
@@ -65,15 +64,14 @@ class WiFiTest {
 
 WiFiTest::Result WiFiTest::Main(int argc, const char* argv[]) {
   if (!ParseCommandLine(argc, argv)) {
-    fprintf(stderr,
-            "usage: %s [--list]"
-            " [--get_properties]"
-            " [--connect]"
-            " [--disconnect]"
-            " [--network_guid=<network_guid>]"
-            " [--frequency=0|2400|5000]"
-            " [<network_guid>]\n",
-            argv[0]);
+    VLOG(0) <<  "Usage: " << argv[0] <<
+                " [--list]"
+                " [--get_properties]"
+                " [--connect]"
+                " [--disconnect]"
+                " [--network_guid=<network_guid>]"
+                " [--frequency=0|2400|5000]"
+                " [<network_guid>]\n";
     return RESULT_WRONG_USAGE;
   }
 
@@ -88,6 +86,8 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   std::string network_guid =
       parsed_command_line.GetSwitchValueASCII("network_guid");
+  std::string frequency =
+      parsed_command_line.GetSwitchValueASCII("frequency");
 
   if (parsed_command_line.GetArgs().size() == 1) {
 #if defined(OS_WIN)
@@ -113,7 +113,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
   if (parsed_command_line.HasSwitch("list")) {
     ListValue network_list;
     wifi_service->GetVisibleNetworks(std::string(), &network_list);
-    std::cout << network_list;
+    VLOG(0) << network_list;
     return true;
   }
 
@@ -122,16 +122,35 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
       DictionaryValue properties;
       std::string error;
       wifi_service->GetProperties(network_guid, &properties, &error);
-      std::cout << error << ":\n" << properties;
+      VLOG(0) << error << ":\n" << properties;
       return true;
+    }
+  }
+
+  // Optional properties (frequency, password) to use for connect.
+  scoped_ptr<DictionaryValue> connect_properties(new DictionaryValue());
+
+  if (parsed_command_line.HasSwitch("frequency")) {
+    int value = 0;
+    if (!network_guid.empty() &&
+        !frequency.empty() &&
+        base::StringToInt(frequency, &value)) {
+      connect_properties->SetInteger("WiFi.Frequency", value);
+      // fall through to connect.
     }
   }
 
   if (parsed_command_line.HasSwitch("connect")) {
     if (network_guid.length() > 0) {
       std::string error;
+      if (!connect_properties->empty()) {
+        VLOG(0) << "Using connect properties: " << *connect_properties;
+        wifi_service->SetProperties(network_guid,
+                                    connect_properties.Pass(),
+                                    &error);
+      }
       wifi_service->StartConnect(network_guid, &error);
-      std::cout << error;
+      VLOG(0) << error;
       return true;
     }
   }
@@ -140,7 +159,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
     if (network_guid.length() > 0) {
       std::string error;
       wifi_service->StartDisconnect(network_guid, &error);
-      std::cout << error;
+      VLOG(0) << error;
       return true;
     }
   }
@@ -151,6 +170,11 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 }  // namespace wifi
 
 int main(int argc, const char* argv[]) {
+  CommandLine::Init(argc, argv);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
+
   wifi::WiFiTest wifi_test;
   return wifi_test.Main(argc, argv);
 }
