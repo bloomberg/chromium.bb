@@ -19,6 +19,7 @@
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -78,6 +79,7 @@ WebContentsViewPort* CreateWebContentsView(
 
 class CONTENT_EXPORT WebContentsImpl
     : public NON_EXPORTED_BASE(WebContents),
+      public NON_EXPORTED_BASE(RenderFrameHostDelegate),
       public RenderViewHostDelegate,
       public RenderWidgetHostDelegate,
       public RenderFrameHostManager::Delegate,
@@ -273,8 +275,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Implementation of IPC::Sender.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
-  // RenderViewHostDelegate ----------------------------------------------------
+  // RenderFrameHostDelegate ---------------------------------------------------
 
+  // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate() OVERRIDE;

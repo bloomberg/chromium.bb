@@ -568,7 +568,7 @@ TEST_F(RenderFrameHostManagerTest, Init) {
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
   RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
-                                 web_contents.get());
+                                 web_contents.get(), web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
@@ -594,7 +594,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
 
   // Create.
   RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
-                                 web_contents.get());
+                                 web_contents.get(), web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
@@ -686,7 +686,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // Create.
   RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
-                                 web_contents.get());
+                                 web_contents.get(), web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
@@ -829,7 +829,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
   RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
-                                 web_contents.get());
+                                 web_contents.get(), web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   EXPECT_FALSE(manager.current_host()->IsRenderViewLive());
@@ -876,7 +876,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   scoped_ptr<TestWebContents> web_contents1(
       TestWebContents::Create(browser_context(), blank_instance));
   RenderFrameHostManager manager1(web_contents1.get(), web_contents1.get(),
-                                  web_contents1.get());
+                                  web_contents1.get(), web_contents1.get());
   manager1.Init(
       browser_context(), blank_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Test the case that new RVH is considered live.
@@ -906,7 +906,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   scoped_ptr<TestWebContents> web_contents2(
       TestWebContents::Create(browser_context(), webui_instance));
   RenderFrameHostManager manager2(web_contents2.get(), web_contents2.get(),
-                                  web_contents2.get());
+                                  web_contents2.get(), web_contents2.get());
   manager2.Init(
       browser_context(), webui_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Make sure the new RVH is considered live.  This is usually done in
@@ -1192,7 +1192,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
 
   // Create.
   RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
-                                 web_contents.get());
+                                 web_contents.get(), web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
@@ -1257,7 +1257,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
 
   // Create.
   RenderFrameHostManager manager(web_contents.get(), web_contents.get(),
-                                 web_contents.get());
+                                 web_contents.get(), web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 

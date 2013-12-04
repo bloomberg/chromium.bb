@@ -53,7 +53,7 @@ class FrameTreeTest : public RenderViewHostTestHarness {
 //  - Swapping back to NULL doesn't crash (easier tear-down for interstitials).
 //  - Main frame does not own RenderFrameHost.
 TEST_F(FrameTreeTest, RootNode) {
-  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL);
+  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL, NULL);
 
   // Initial state has empty node.
   FrameTreeNode* root = frame_tree.root();
@@ -80,7 +80,7 @@ TEST_F(FrameTreeTest, RootNode) {
 //  - On creation, frame id is unassigned.
 //  - After a swap, frame id is unassigned.
 TEST_F(FrameTreeTest, FirstNavigationAfterSwap) {
-  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL);
+  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL, NULL);
 
   EXPECT_TRUE(frame_tree.IsFirstNavigationAfterSwap());
   EXPECT_EQ(FrameTreeNode::kInvalidFrameId,
@@ -99,7 +99,7 @@ TEST_F(FrameTreeTest, FirstNavigationAfterSwap) {
 //  - Add a series of nodes and verify tree structure.
 //  - Remove a series of nodes and verify tree structure.
 TEST_F(FrameTreeTest, Shape) {
-  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL);
+  FrameTree frame_tree(new Navigator(NULL, NULL), NULL, NULL, NULL, NULL);
 
   std::string no_children_node("no children node");
   std::string deep_subtree("node with deep subtree");
@@ -108,6 +108,7 @@ TEST_F(FrameTreeTest, Shape) {
   // main frame swap here.
   scoped_ptr<RenderFrameHostImpl> render_frame_host =
       RenderFrameHostFactory::Create(static_cast<RenderViewHostImpl*>(rvh()),
+                                     NULL,
                                      &frame_tree,
                                      process()->GetNextRoutingID(),
                                      false);

@@ -16,6 +16,7 @@ class GURL;
 namespace content {
 
 class FrameTree;
+class RenderFrameHostDelegate;
 class RenderProcessHost;
 class RenderViewHostImpl;
 
@@ -39,9 +40,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                           int64 frame_id,
                           const std::string& frame_name);
 
-  RenderViewHostImpl* render_view_host() {
-    return render_view_host_;
-  }
+  RenderViewHostImpl* render_view_host() { return render_view_host_; }
+  RenderFrameHostDelegate* delegate() { return delegate_; }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -50,6 +50,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // should be the abstraction needed here, but we need RenderViewHost to pass
   // into WebContentsObserver::FrameDetached for now.
   RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
+                      RenderFrameHostDelegate* delegate,
                       FrameTree* frame_tree,
                       int routing_id,
                       bool is_swapped_out);
@@ -66,6 +67,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // TODO(nasko): This should be removed and replaced by RenderProcessHost.
   RenderViewHostImpl* render_view_host_;  // Not owned.
+
+  RenderFrameHostDelegate* delegate_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs too.
   // Allows this RenderFrameHost to add and remove nodes in response to

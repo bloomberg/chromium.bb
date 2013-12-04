@@ -23,6 +23,7 @@ class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
+class RenderFrameHostDelegate;
 class RenderFrameHostManagerTest;
 class RenderViewHost;
 class RenderViewHostImpl;
@@ -113,6 +114,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   //
   // You must call Init() before using this class.
   RenderFrameHostManager(
+      RenderFrameHostDelegate* render_frame_delegate,
       RenderViewHostDelegate* render_view_delegate,
       RenderWidgetHostDelegate* render_widget_delegate,
       Delegate* delegate);
@@ -356,6 +358,7 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Implemented by the owner of this class, these delegates are installed into
   // all the RenderViewHosts that we create.
+  RenderFrameHostDelegate* render_frame_delegate_;
   RenderViewHostDelegate* render_view_delegate_;
   RenderWidgetHostDelegate* render_widget_delegate_;
 

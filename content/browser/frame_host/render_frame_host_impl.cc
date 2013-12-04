@@ -7,6 +7,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,10 +34,12 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(
 
 RenderFrameHostImpl::RenderFrameHostImpl(
     RenderViewHostImpl* render_view_host,
+    RenderFrameHostDelegate* delegate,
     FrameTree* frame_tree,
     int routing_id,
     bool is_swapped_out)
     : render_view_host_(render_view_host),
+      delegate_(delegate),
       frame_tree_(frame_tree),
       routing_id_(routing_id),
       is_swapped_out_(is_swapped_out) {

@@ -161,7 +161,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       // While we get the code to a point to do this, pass NULL for it.
       // TODO(creis): We will also need to pass delegates for the RVHM as we
       // start to use it.
-      frame_tree_(new Navigator(NULL, this), NULL, NULL, NULL),
+      frame_tree_(new Navigator(NULL, this), NULL, NULL, NULL, NULL),
       original_child_id_(web_contents->GetRenderProcessHost()->GetID()),
       original_rvh_id_(web_contents->GetRenderViewHost()->GetRoutingID()),
       should_revert_web_contents_title_(false),
@@ -524,6 +524,7 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
       new SessionStorageNamespaceImpl(dom_storage_context);
 
   return RenderViewHostFactory::Create(site_instance.get(),
+                                       this,
                                        this,
                                        this,
                                        MSG_ROUTING_NONE,

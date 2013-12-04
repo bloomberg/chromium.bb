@@ -233,6 +233,7 @@ class TestRenderViewHost
  public:
   TestRenderViewHost(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
+                     RenderFrameHostDelegate* frame_delegate,
                      RenderWidgetHostDelegate* widget_delegate,
                      int routing_id,
                      int main_frame_routing_id,

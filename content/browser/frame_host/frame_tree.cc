@@ -44,13 +44,16 @@ bool FrameTreeNodeForFrameId(int64 frame_id,
 }  // namespace
 
 FrameTree::FrameTree(Navigator* navigator,
+                     RenderFrameHostDelegate* render_frame_delegate,
                      RenderViewHostDelegate* render_view_delegate,
                      RenderWidgetHostDelegate* render_widget_delegate,
                      RenderFrameHostManager::Delegate* manager_delegate)
-    : render_view_delegate_(render_view_delegate),
+    : render_frame_delegate_(render_frame_delegate),
+      render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       manager_delegate_(manager_delegate),
       root_(new FrameTreeNode(navigator,
+                              render_frame_delegate,
                               render_view_delegate,
                               render_widget_delegate,
                               manager_delegate,
@@ -169,13 +172,14 @@ scoped_ptr<FrameTreeNode> FrameTree::CreateNode(
   scoped_ptr<RenderFrameHostImpl> render_frame_host(
       RenderFrameHostFactory::Create(
           root_->render_frame_host()->render_view_host(),
+          root_->render_frame_host()->delegate(),
           this,
           render_frame_host_id,
           false));
 
   return make_scoped_ptr(new FrameTreeNode(navigator,
-      render_view_delegate_, render_widget_delegate_, manager_delegate_,
-      frame_id, frame_name, render_frame_host.Pass()));
+      render_frame_delegate_, render_view_delegate_, render_widget_delegate_,
+      manager_delegate_, frame_id, frame_name, render_frame_host.Pass()));
 }
 
 }  // namespace content

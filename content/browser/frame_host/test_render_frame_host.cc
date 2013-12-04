@@ -7,10 +7,12 @@
 namespace content {
 
 TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
+                                         RenderFrameHostDelegate* delegate,
                                          FrameTree* frame_tree,
                                          int routing_id,
                                          bool is_swapped_out)
     : RenderFrameHostImpl(render_view_host,
+                          delegate,
                           frame_tree,
                           routing_id,
                           is_swapped_out) {}

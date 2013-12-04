@@ -61,6 +61,7 @@ namespace content {
 class BrowserMediaPlayerManager;
 class ChildProcessSecurityPolicyImpl;
 class PageState;
+class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
@@ -118,6 +119,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderViewHostImpl(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
+      RenderFrameHostDelegate* frame_delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,

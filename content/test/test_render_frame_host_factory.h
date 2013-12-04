@@ -12,10 +12,6 @@
 
 namespace content {
 
-class FrameTree;
-class RenderFrameHostImpl;
-class RenderViewHostImpl;
-
 // Manages creation of the RenderFrameHostImpls; when registered, all created
 // RenderFrameHostsImpls will be TestRenderFrameHosts. This
 // automatically registers itself when it goes in scope, and unregisters itself
@@ -30,6 +26,7 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
   // RenderFrameHostFactory implementation.
   virtual scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       RenderViewHostImpl* render_view_host,
+      RenderFrameHostDelegate* delegate,
       FrameTree* frame_tree,
       int routing_id,
       bool is_swapped_out) OVERRIDE;

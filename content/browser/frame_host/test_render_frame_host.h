@@ -13,6 +13,7 @@ namespace content {
 class TestRenderFrameHost : public RenderFrameHostImpl {
  public:
   TestRenderFrameHost(RenderViewHostImpl* render_view_host,
+                      RenderFrameHostDelegate* delegate,
                       FrameTree* frame_tree,
                       int routing_id,
                       bool is_swapped_out);

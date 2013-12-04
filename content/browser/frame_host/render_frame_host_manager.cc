@@ -57,11 +57,13 @@ RenderFrameHostManager::PendingNavigationParams::PendingNavigationParams(
 RenderFrameHostManager::PendingNavigationParams::~PendingNavigationParams() {}
 
 RenderFrameHostManager::RenderFrameHostManager(
+    RenderFrameHostDelegate* render_frame_delegate,
     RenderViewHostDelegate* render_view_delegate,
     RenderWidgetHostDelegate* render_widget_delegate,
     Delegate* delegate)
     : delegate_(delegate),
       cross_navigation_pending_(false),
+      render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       render_view_host_(NULL),
@@ -98,8 +100,8 @@ void RenderFrameHostManager::Init(BrowserContext* browser_context,
     site_instance = SiteInstance::Create(browser_context);
   render_view_host_ = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(
-          site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, main_frame_routing_id, false,
+          site_instance, render_view_delegate_, render_frame_delegate_,
+          render_widget_delegate_, routing_id, main_frame_routing_id, false,
           delegate_->IsHidden()));
   render_view_host_->AttachToFrameTree();
 
@@ -745,6 +747,7 @@ int RenderFrameHostManager::CreateRenderView(
     new_render_view_host = static_cast<RenderViewHostImpl*>(
         RenderViewHostFactory::Create(instance,
                                       render_view_delegate_,
+                                      render_frame_delegate_,
                                       render_widget_delegate_,
                                       MSG_ROUTING_NONE,
                                       MSG_ROUTING_NONE,

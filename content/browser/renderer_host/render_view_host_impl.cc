@@ -159,6 +159,7 @@ RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
 RenderViewHostImpl::RenderViewHostImpl(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
+    RenderFrameHostDelegate* frame_delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
@@ -193,7 +194,8 @@ RenderViewHostImpl::RenderViewHostImpl(
     main_frame_routing_id = GetProcess()->GetNextRoutingID();
 
   main_render_frame_host_ = RenderFrameHostFactory::Create(
-      this, delegate_->GetFrameTree(), main_frame_routing_id, is_swapped_out_);
+      this, frame_delegate, delegate_->GetFrameTree(), main_frame_routing_id,
+      is_swapped_out_);
 
   GetProcess()->EnableSendQueue();
 

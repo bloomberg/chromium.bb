@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigator_delegate.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/public/browser/interstitial_page.h"
@@ -38,6 +39,7 @@ class CONTENT_EXPORT InterstitialPageImpl
     : public NON_EXPORTED_BASE(InterstitialPage),
       public NotificationObserver,
       public WebContentsObserver,
+      public NON_EXPORTED_BASE(RenderFrameHostDelegate),
       public RenderViewHostDelegate,
       public RenderWidgetHostDelegate,
       public NON_EXPORTED_BASE(NavigatorDelegate) {
@@ -100,6 +102,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
   virtual void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) OVERRIDE;
+
+  // RenderFrameHostDelegate implementation:
 
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;

@@ -345,7 +345,7 @@ WebContentsImpl::WebContentsImpl(
 #if defined(OS_WIN) && defined(USE_AURA)
       accessible_parent_(NULL),
 #endif
-      frame_tree_(new Navigator(&controller_, this), this, this, this),
+      frame_tree_(new Navigator(&controller_, this), this, this, this, this),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),

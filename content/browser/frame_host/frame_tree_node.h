@@ -29,6 +29,7 @@ class CONTENT_EXPORT FrameTreeNode {
   static const int64 kInvalidFrameId;
 
   FrameTreeNode(Navigator* navigator,
+                RenderFrameHostDelegate* render_frame_delegate,
                 RenderViewHostDelegate* render_view_delegate,
                 RenderWidgetHostDelegate* render_widget_delegate,
                 RenderFrameHostManager::Delegate* manager_delegate,

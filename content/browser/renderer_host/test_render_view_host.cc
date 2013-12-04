@@ -238,12 +238,14 @@ gfx::NativeViewId TestRenderWidgetHostView::GetParentForWindowlessPlugin()
 TestRenderViewHost::TestRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
+    RenderFrameHostDelegate* frame_delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
     bool swapped_out)
     : RenderViewHostImpl(instance,
                          delegate,
+                         frame_delegate,
                          widget_delegate,
                          routing_id,
                          main_frame_routing_id,
