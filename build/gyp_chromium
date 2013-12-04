@@ -79,12 +79,14 @@ def GetVarsStringForGN(supplemental_files):
   items = shlex.split(env_string)
   for item in items:
     tokens = item.split('=', 1)
+    # Some GYP variables have hyphens, which we don't support.
+    key = tokens[0].replace("-", "_")
     if len(tokens) == 2:
       # Escape $ characters which have special meaning to GN.
-      vars_dict[tokens[0]] = '"' + tokens[1].replace("$", "\\$") + '"'
+      vars_dict[key] = '"' + tokens[1].replace("$", "\\$") + '"'
     else:
       # No value supplied, treat it as a boolean and set it.
-      vars_dict[tokens[0]] = 'true'
+      vars_dict[key] = 'true'
 
   vars_string = ''
   for v in vars_dict:
