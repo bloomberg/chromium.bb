@@ -142,8 +142,8 @@ const char kAdViewTagName[] = "ADVIEW";
 
 ChromeContentRendererClient* g_current_client;
 
-static void AppendParams(const std::vector<string16>& additional_names,
-                         const std::vector<string16>& additional_values,
+static void AppendParams(const std::vector<base::string16>& additional_names,
+                         const std::vector<base::string16>& additional_values,
                          WebVector<WebString>* existing_names,
                          WebVector<WebString>* existing_values) {
   DCHECK(additional_names.size() == additional_values.size());
@@ -493,7 +493,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   const ChromeViewHostMsg_GetPluginInfo_Status& status = output.status;
   const WebPluginInfo& plugin = output.plugin;
   const std::string& actual_mime_type = output.actual_mime_type;
-  const string16& group_name = output.group_name;
+  const base::string16& group_name = output.group_name;
   const std::string& identifier = output.group_identifier;
   ChromeViewHostMsg_GetPluginInfo_Status::Value status_value = status.value;
   GURL url(original_params.url);
@@ -805,7 +805,7 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
     const content::WebPluginInfo& plugin) {
   // Look for the manifest URL among the MIME type's additonal parameters.
   const char* kNaClPluginManifestAttribute = "nacl";
-  string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
+  base::string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
   for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
     if (plugin.mime_types[i].mime_type == actual_mime_type) {
       const content::WebPluginMimeType& content_type = plugin.mime_types[i];
@@ -887,8 +887,8 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     if ((!is_whitelisted_app && !is_extension_from_webstore) ||
         app_can_use_dev_interfaces) {
       // Add the special '@dev' attribute.
-      std::vector<string16> param_names;
-      std::vector<string16> param_values;
+      std::vector<base::string16> param_names;
+      std::vector<base::string16> param_values;
       param_names.push_back(dev_attribute);
       param_values.push_back(WebString());
       AppendParams(
@@ -931,7 +931,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     const blink::WebURLError& error,
     const std::string& accept_languages,
     std::string* error_html,
-    string16* error_description) {
+    base::string16* error_description) {
   const GURL failed_url = error.unreachableURL;
   const Extension* extension = NULL;
 

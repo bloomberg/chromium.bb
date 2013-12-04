@@ -161,7 +161,7 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   }
 }
 
-void PhishingClassifierDelegate::PageCaptured(string16* page_text,
+void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
                                               bool preliminary_capture) {
   if (preliminary_capture) {
     return;

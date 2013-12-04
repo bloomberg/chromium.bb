@@ -74,7 +74,8 @@ void HunspellEngine::InitializeHunspell() {
   }
 }
 
-bool HunspellEngine::CheckSpelling(const string16& word_to_check, int tag) {
+bool HunspellEngine::CheckSpelling(const base::string16& word_to_check,
+                                   int tag) {
   // Assume all words that cannot be checked are valid. Since Chrome can't
   // offer suggestions on them, either, there's no point in flagging them to
   // the user.
@@ -95,8 +96,8 @@ bool HunspellEngine::CheckSpelling(const string16& word_to_check, int tag) {
 }
 
 void HunspellEngine::FillSuggestionList(
-    const string16& wrong_word,
-    std::vector<string16>* optional_suggestions) {
+    const base::string16& wrong_word,
+    std::vector<base::string16>* optional_suggestions) {
   std::string wrong_word_utf8(UTF16ToUTF8(wrong_word));
   if (wrong_word_utf8.length() > kMaxSuggestLen)
     return;

@@ -28,7 +28,7 @@ bool CocoaSpellingEngine::IsEnabled() {
 // Synchronously query against NSSpellCheck.
 // TODO(groby): We might want async support here, too. Ideally,
 // all engines share a similar path for async requests.
-bool CocoaSpellingEngine::CheckSpelling(const string16& word_to_check,
+bool CocoaSpellingEngine::CheckSpelling(const base::string16& word_to_check,
                                         int tag) {
   bool word_correct = false;
   RenderThread::Get()->Send(new SpellCheckHostMsg_CheckSpelling(
@@ -40,8 +40,8 @@ bool CocoaSpellingEngine::CheckSpelling(const string16& word_to_check,
 // TODO(groby): We might want async support here, too. Ideally,
 // all engines share a similar path for async requests.
 void CocoaSpellingEngine::FillSuggestionList(
-    const string16& wrong_word,
-    std::vector<string16>* optional_suggestions) {
+    const base::string16& wrong_word,
+    std::vector<base::string16>* optional_suggestions) {
     RenderThread::Get()->Send(new SpellCheckHostMsg_FillSuggestionList(
         wrong_word, optional_suggestions));
 }

@@ -78,7 +78,7 @@ bool PhishingClassifier::is_ready() const {
 }
 
 void PhishingClassifier::BeginClassification(
-    const string16* page_text,
+    const base::string16* page_text,
     const DoneCallback& done_callback) {
   DCHECK(is_ready());
 

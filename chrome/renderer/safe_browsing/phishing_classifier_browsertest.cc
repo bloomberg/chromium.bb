@@ -103,7 +103,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
   // Helper method to start phishing classification and wait for it to
   // complete.  Returns the true if the page is classified as phishy and
   // false otherwise.
-  bool RunPhishingClassifier(const string16* page_text,
+  bool RunPhishingClassifier(const base::string16* page_text,
                              float* phishy_score,
                              FeatureMap* features) {
     ClientPhishingRequest verdict;
@@ -115,7 +115,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
     return verdict.is_phishing();
   }
 
-  void DoRunPhishingClassifier(const string16* page_text,
+  void DoRunPhishingClassifier(const base::string16* page_text,
                                float* phishy_score,
                                FeatureMap* features,
                                ClientPhishingRequest* verdict) {
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   EXPECT_CALL(*clock_, Now())
       .WillRepeatedly(::testing::Return(base::TimeTicks::Now()));
 
-  string16 page_text = ASCIIToUTF16("login");
+  base::string16 page_text = ASCIIToUTF16("login");
   float phishy_score;
   FeatureMap features;
 

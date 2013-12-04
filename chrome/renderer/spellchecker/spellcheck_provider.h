@@ -39,7 +39,7 @@ class SpellCheckProvider
   // Requests async spell and grammar checker to the platform text
   // checker, which is available on the browser process.
   void RequestTextChecking(
-      const string16& text,
+      const base::string16& text,
       blink::WebTextCheckingCompletion* completion,
       const std::vector<SpellCheckMarker>& markers);
 
@@ -64,7 +64,7 @@ class SpellCheckProvider
   // Tries to satisfy a spell check request from the cache in |last_request_|.
   // Returns true (and cancels/finishes the completion) if it can, false
   // if the provider should forward the query on.
-  bool SatisfyRequestFromCache(const string16& text,
+  bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
   // blink::WebSpellCheckClient implementation.
@@ -95,13 +95,13 @@ class SpellCheckProvider
   void OnRespondSpellingService(
       int identifier,
       bool succeeded,
-      const string16& text,
+      const base::string16& text,
       const std::vector<SpellCheckResult>& results);
 #endif
 
   // Returns whether |text| has word characters, i.e. whether a spellchecker
   // needs to check this text.
-  bool HasWordCharacters(const string16& text, int index) const;
+  bool HasWordCharacters(const base::string16& text, int index) const;
 
 #if defined(OS_MACOSX)
   void OnAdvanceToNextMisspelling();
@@ -116,7 +116,7 @@ class SpellCheckProvider
 
   // The last text sent to the browser process to spellcheck it and its
   // spellchecking results.
-  string16 last_request_;
+  base::string16 last_request_;
   blink::WebVector<blink::WebTextCheckingResult> last_results_;
 
   // True if the browser is showing the spelling panel for us.

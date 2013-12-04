@@ -214,7 +214,7 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   EXPECT_TRUE(first_password_element.value().isNull());
   EXPECT_TRUE(second_password_element.value().isNull());
 
-  string16 password = ASCIIToUTF16("random_password");
+  base::string16 password = ASCIIToUTF16("random_password");
   AutofillMsg_GeneratedPasswordAccepted msg(0, password);
   generation_manager_->OnMessageReceived(msg);
 

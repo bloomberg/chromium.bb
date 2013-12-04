@@ -90,7 +90,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const blink::WebURLError& error,
       const std::string& accept_languages,
       std::string* error_html,
-      string16* error_description) OVERRIDE;
+      base::string16* error_description) OVERRIDE;
   virtual void DeferMediaLoad(content::RenderView* render_view,
                               const base::Closure& closure) OVERRIDE;
   virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;

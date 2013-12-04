@@ -32,7 +32,7 @@ class SearchBoxExtension {
 
   // Helpers to dispatch Javascript events.
   static void DispatchChromeIdentityCheckResult(blink::WebFrame* frame,
-                                                const string16& identity,
+                                                const base::string16& identity,
                                                 bool identity_match);
   static void DispatchFocusChange(blink::WebFrame* frame);
   static void DispatchInputCancel(blink::WebFrame* frame);

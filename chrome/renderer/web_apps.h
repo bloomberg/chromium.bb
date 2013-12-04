@@ -24,7 +24,7 @@ namespace web_apps {
 // the attribute are added to sizes, or is_any is set to true.
 //
 // You shouldn't have a need to invoke this directly, it's public for testing.
-bool ParseIconSizes(const string16& text, std::vector<gfx::Size>* sizes,
+bool ParseIconSizes(const base::string16& text, std::vector<gfx::Size>* sizes,
                     bool* is_any);
 
 // Parses |web_app| information out of the document in frame. Returns true on
@@ -38,7 +38,7 @@ bool ParseIconSizes(const string16& text, std::vector<gfx::Size>* sizes,
 // processing.
 bool ParseWebAppFromWebDocument(blink::WebFrame* frame,
                                 WebApplicationInfo* web_app,
-                                string16* error);
+                                base::string16* error);
 
 }  // namespace web_apps
 

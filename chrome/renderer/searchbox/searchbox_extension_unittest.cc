@@ -10,7 +10,8 @@
 namespace internal {
 
 // Defined in searchbox_extension.cc
-GURL ResolveURL(const GURL& current_url, const string16& possibly_relative_url);
+GURL ResolveURL(const GURL& current_url,
+                const base::string16& possibly_relative_url);
 
 TEST(SearchboxExtensionTest, ResolveURL) {
   EXPECT_EQ(GURL("http://www.google.com/"),

@@ -324,7 +324,7 @@ void ExtensionHelper::OnExecuteCode(
 void ExtensionHelper::OnGetApplicationInfo(int page_id) {
   WebApplicationInfo app_info;
   if (page_id == render_view()->GetPageId()) {
-    string16 error;
+    base::string16 error;
     web_apps::ParseWebAppFromWebDocument(
         render_view()->GetWebView()->mainFrame(), &app_info, &error);
   }

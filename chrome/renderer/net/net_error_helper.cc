@@ -228,7 +228,7 @@ void NetErrorHelper::UpdateErrorPage() {
 
   std::string js = "if (window.updateForDnsProbe) "
                    "updateForDnsProbe(" + json + ");";
-  string16 js16;
+  base::string16 js16;
   if (!UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
     NOTREACHED();
     return;
@@ -238,7 +238,7 @@ void NetErrorHelper::UpdateErrorPage() {
            << chrome_common_net::DnsProbeStatusToString(last_probe_status_);
   DVLOG(2) << "New strings: " << js;
 
-  string16 frame_xpath;
+  base::string16 frame_xpath;
   render_view()->EvaluateScript(frame_xpath, js16, 0, false);
 
   UMA_HISTOGRAM_ENUMERATION("DnsProbe.ErrorPageUpdateStatus",

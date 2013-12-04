@@ -56,7 +56,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
 
-using base::string16;
 using extensions::APIPermission;
 using blink::WebAXObject;
 using blink::WebCString;
@@ -224,16 +223,17 @@ const char kStackFrameDelimiter[] = "\n    at ";
 //    the given line number and source.
 // |message| will be populated with the error message only (i.e., will not
 // include any stack trace).
-extensions::StackTrace GetStackTraceFromMessage(string16* message,
-                                                const string16& source,
-                                                const string16& stack_trace,
-                                                int32 line_number) {
+extensions::StackTrace GetStackTraceFromMessage(
+    base::string16* message,
+    const base::string16& source,
+    const base::string16& stack_trace,
+    int32 line_number) {
   extensions::StackTrace result;
   std::vector<base::string16> pieces;
   size_t index = 0;
 
   if (message->find(base::UTF8ToUTF16(kStackFrameDelimiter)) !=
-          string16::npos) {
+          base::string16::npos) {
     base::SplitStringUsingSubstr(*message,
                                  base::UTF8ToUTF16(kStackFrameDelimiter),
                                  &pieces);
@@ -331,8 +331,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ChromeRenderViewObserver::OnWebUIJavaScript(
-    const string16& frame_xpath,
-    const string16& jscript,
+    const base::string16& frame_xpath,
+    const base::string16& jscript,
     int id,
     bool notify_result) {
   webui_javascript_.reset(new WebUIJavaScript());
@@ -829,7 +829,7 @@ void ChromeRenderViewObserver::DetailedConsoleMessageAdded(
     const base::string16& stack_trace_string,
     int32 line_number,
     int32 severity_level) {
-  string16 trimmed_message = message;
+  base::string16 trimmed_message = message;
   extensions::StackTrace stack_trace = GetStackTraceFromMessage(
       &trimmed_message,
       source,
@@ -883,7 +883,7 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
 
   // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
   // translate helper for language detection and possible translation.
-  string16 contents;
+  base::string16 contents;
   base::TimeTicks capture_begin_time = base::TimeTicks::Now();
   CaptureText(main_frame, &contents);
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
@@ -934,7 +934,7 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
 }
 
 void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
-                                           string16* contents) {
+                                           base::string16* contents) {
   contents->clear();
   if (!frame)
     return;

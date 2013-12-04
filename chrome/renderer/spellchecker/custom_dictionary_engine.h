@@ -25,7 +25,7 @@ class CustomDictionaryEngine {
   // Spellcheck |text|. Assumes that another spelling engine has set
   // |misspelling_start| and |misspelling_len| to indicate a misspelling.
   // Returns true if there are no misspellings, otherwise returns false.
-  bool SpellCheckWord(const string16& text,
+  bool SpellCheckWord(const base::string16& text,
                       int misspelling_start,
                       int misspelling_len);
 
@@ -36,7 +36,7 @@ class CustomDictionaryEngine {
 
  private:
   // Correctly spelled words.
-  std::set<string16> dictionary_;
+  std::set<base::string16> dictionary_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomDictionaryEngine);
 };

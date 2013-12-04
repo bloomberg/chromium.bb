@@ -315,13 +315,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_EQ(end, username_element_.selectionEnd());
   }
 
-  string16 username1_;
-  string16 username2_;
-  string16 username3_;
-  string16 password1_;
-  string16 password2_;
-  string16 password3_;
-  string16 alternate_username3_;
+  base::string16 username1_;
+  base::string16 username2_;
+  base::string16 username3_;
+  base::string16 password1_;
+  base::string16 password2_;
+  base::string16 password3_;
+  base::string16 alternate_username3_;
   PasswordFormFillData fill_data_;
 
   WebInputElement username_element_;

@@ -37,11 +37,11 @@ class SpellcheckCharAttribute {
   // can split a concaticated word (e.g. "seven-year-old") into words (e.g.
   // "seven", "year", and "old") and check their spellings. The result stirng is
   // encoded in UTF-16 since ICU needs UTF-16 strings.
-  string16 GetRuleSet(bool allow_contraction) const;
+  base::string16 GetRuleSet(bool allow_contraction) const;
 
   // Outputs a character only if it is a word character. (Please read the
   // comments in CreateRuleSets() why we need this function.)
-  bool OutputChar(UChar c, string16* output) const;
+  bool OutputChar(UChar c, base::string16* output) const;
 
  private:
   // Creates the rule-sets that return words possibly used by the given
@@ -53,16 +53,16 @@ class SpellcheckCharAttribute {
 
   // Outputs a character only if it is one used by the given language. These
   // functions are called from OutputChar().
-  bool OutputArabic(UChar c, string16* output) const;
-  bool OutputHangul(UChar c, string16* output) const;
-  bool OutputHebrew(UChar c, string16* output) const;
-  bool OutputDefault(UChar c, string16* output) const;
+  bool OutputArabic(UChar c, base::string16* output) const;
+  bool OutputHangul(UChar c, base::string16* output) const;
+  bool OutputHebrew(UChar c, base::string16* output) const;
+  bool OutputDefault(UChar c, base::string16* output) const;
 
   // The custom rule-set strings used by ICU break iterator. Since it is not so
   // easy to create custom rule-sets from an ISO language code, this class
   // saves these rule-set strings created when we set the language.
-  string16 ruleset_allow_contraction_;
-  string16 ruleset_disallow_contraction_;
+  base::string16 ruleset_allow_contraction_;
+  base::string16 ruleset_disallow_contraction_;
 
   // The script code used by this language.
   UScriptCode script_code_;
@@ -93,11 +93,11 @@ class SpellcheckCharAttribute {
 //   // Set up a SpellcheckWordIterator object which extracts English words,
 //   // and retrieve them.
 //   SpellcheckWordIterator iterator;
-//   string16 text(UTF8ToUTF16("this is a test."));
+//   base::string16 text(UTF8ToUTF16("this is a test."));
 //   iterator.Initialize(&attribute, true);
 //   iterator.SetText(text.c_str(), text_.length());
 //
-//   string16 word;
+//   base::string16 word;
 //   int offset;
 //   int length;
 //   while (iterator.GetNextWord(&word, &offset, &length)) {
@@ -134,7 +134,7 @@ class SpellcheckWordIterator {
   //   while(iterator.GetNextWord(&word, &offset, &length))
   //     text.replace(offset, length, word);
   //
-  bool GetNextWord(string16* word_string,
+  bool GetNextWord(base::string16* word_string,
                    int* word_start,
                    int* word_length);
 
@@ -151,7 +151,7 @@ class SpellcheckWordIterator {
   // characters.
   bool Normalize(int input_start,
                  int input_length,
-                 string16* output_string) const;
+                 base::string16* output_string) const;
 
   // The pointer to the input string from which we are extracting words.
   const char16* text_;

@@ -22,9 +22,9 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
       const blink::WebPluginParams& params,
       const content::WebPluginInfo& info,
       const std::string& identifier,
-      const string16& name,
+      const base::string16& name,
       int resource_id,
-      const string16& message);
+      const base::string16& message);
 
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateMissingPlugin(
@@ -50,7 +50,7 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
                           blink::WebFrame* frame,
                           const blink::WebPluginParams& params,
                           const std::string& html_data,
-                          const string16& title);
+                          const base::string16& title);
   virtual ~ChromePluginPlaceholder();
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) method
@@ -78,7 +78,7 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   void OnSetIsPrerendering(bool is_prerendering);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   void OnDidNotFindMissingPlugin();
-  void OnFoundMissingPlugin(const string16& plugin_name);
+  void OnFoundMissingPlugin(const base::string16& plugin_name);
   void OnStartedDownloadingPlugin();
   void OnFinishedDownloadingPlugin();
   void OnErrorDownloadingPlugin(const std::string& error);
@@ -89,7 +89,7 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   // an IPC message file which can't be easily included in other header files.
   scoped_ptr<ChromeViewHostMsg_GetPluginInfo_Status> status_;
 
-  string16 title_;
+  base::string16 title_;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // |routing_id()| is the routing ID of our associated RenderView, but we have
@@ -99,7 +99,7 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
 
   bool has_host_;
   int context_menu_request_id_;  // Nonzero when request pending.
-  string16 plugin_name_;
+  base::string16 plugin_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePluginPlaceholder);
 };

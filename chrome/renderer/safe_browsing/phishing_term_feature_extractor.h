@@ -70,7 +70,7 @@ class PhishingTermFeatureExtractor {
   // |page_text| and |features| are owned by the caller, and must not be
   // destroyed until either |done_callback| is run or
   // CancelPendingExtraction() is called.
-  void ExtractFeatures(const string16* page_text,
+  void ExtractFeatures(const base::string16* page_text,
                        FeatureMap* features,
                        const DoneCallback& done_callback);
 
@@ -146,7 +146,7 @@ class PhishingTermFeatureExtractor {
   FeatureExtractorClock* clock_;
 
   // The output parameters from the most recent call to ExtractFeatures().
-  const string16* page_text_;  // The caller keeps ownership of this.
+  const base::string16* page_text_;  // The caller keeps ownership of this.
   FeatureMap* features_;  // The caller keeps ownership of this.
   DoneCallback done_callback_;
 

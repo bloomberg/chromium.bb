@@ -41,7 +41,7 @@ void CustomDictionaryEngine::OnCustomDictionaryChanged(
 }
 
 bool CustomDictionaryEngine::SpellCheckWord(
-    const string16& text,
+    const base::string16& text,
     int misspelling_start,
     int misspelling_len) {
   // The text to be checked is empty on OSX(async) right now.

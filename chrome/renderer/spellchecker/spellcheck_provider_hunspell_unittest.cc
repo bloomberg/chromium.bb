@@ -132,14 +132,14 @@ TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
 TEST_F(SpellCheckProviderTest, CompleteNecessaryRequests) {
   FakeTextCheckingCompletion completion;
 
-  string16 text = ASCIIToUTF16("Icland is an icland ");
+  base::string16 text = ASCIIToUTF16("Icland is an icland ");
   provider_.RequestTextChecking(
       blink::WebString(text), &completion, std::vector<SpellCheckMarker>());
   EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
                                                 << text << "\"";
 
   const int kSubstringLength = 18;
-  string16 substring = text.substr(0, kSubstringLength);
+  base::string16 substring = text.substr(0, kSubstringLength);
   provider_.RequestTextChecking(blink::WebString(substring),
                                 &completion,
                                 std::vector<SpellCheckMarker>());

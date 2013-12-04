@@ -52,7 +52,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
     blink::WebFrame* frame,
     const blink::WebPluginParams& params,
     const std::string& html_data,
-    const string16& title)
+    const base::string16& title)
     : plugins::PluginPlaceholder(render_view,
                                  render_frame,
                                  frame,
@@ -150,9 +150,9 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     const WebPluginParams& params,
     const content::WebPluginInfo& plugin,
     const std::string& identifier,
-    const string16& name,
+    const base::string16& name,
     int template_id,
-    const string16& message) {
+    const base::string16& message) {
   base::DictionaryValue values;
   values.SetString("message", message);
   values.SetString("name", name);
@@ -240,7 +240,7 @@ void ChromePluginPlaceholder::OnDidNotFindMissingPlugin() {
 }
 
 void ChromePluginPlaceholder::OnFoundMissingPlugin(
-    const string16& plugin_name) {
+    const base::string16& plugin_name) {
   if (status_->value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
     SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));
   has_host_ = true;

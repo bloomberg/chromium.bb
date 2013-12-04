@@ -39,7 +39,7 @@ class SpellcheckLanguage {
                       int tag,
                       int* misspelling_start,
                       int* misspelling_len,
-                      std::vector<string16>* optional_suggestions);
+                      std::vector<base::string16>* optional_suggestions);
 
   // Initialize |spellcheck_| if that hasn't happened yet.
   bool InitializeIfNeeded();
@@ -52,7 +52,7 @@ class SpellcheckLanguage {
 
   // Returns whether or not the given word is a contraction of valid words
   // (e.g. "word:word").
-  bool IsValidContraction(const string16& word, int tag);
+  bool IsValidContraction(const base::string16& word, int tag);
 
   // Represents character attributes used for filtering out characters which
   // are not supported by this SpellCheck object.

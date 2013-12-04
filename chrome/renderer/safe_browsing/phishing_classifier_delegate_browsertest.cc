@@ -55,7 +55,8 @@ class MockPhishingClassifier : public PhishingClassifier {
 
   virtual ~MockPhishingClassifier() {}
 
-  MOCK_METHOD2(BeginClassification, void(const string16*, const DoneCallback&));
+  MOCK_METHOD2(BeginClassification,
+               void(const base::string16*, const DoneCallback&));
   MOCK_METHOD0(CancelPendingClassification, void());
 
  private:
@@ -174,7 +175,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
                    base::Unretained(delegate_), url));
   }
 
-  void PageCaptured(string16* page_text, bool preliminary_capture) {
+  void PageCaptured(base::string16* page_text, bool preliminary_capture) {
     PostTaskToInProcessRendererAndWait(
         base::Bind(&PhishingClassifierDelegate::PageCaptured,
                    base::Unretained(delegate_), page_text,
@@ -271,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, Navigation) {
   GURL url = LoadHtml("host.com", html);
   Mock::VerifyAndClearExpectations(classifier_);
   OnStartPhishingDetection(url);
-  string16 page_text = ASCIIToUTF16("dummy");
+  base::string16 page_text = ASCIIToUTF16("dummy");
   {
     InSequence s;
     EXPECT_CALL(*classifier_, CancelPendingClassification());
@@ -405,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, NoScorer) {
 
   // Queue up a pending classification, cancel it, then queue up another one.
   GURL url = LoadHtml("host.com", "dummy");
-  string16 page_text = ASCIIToUTF16("dummy");
+  base::string16 page_text = ASCIIToUTF16("dummy");
   OnStartPhishingDetection(url);
   PageCaptured(&page_text, false);
 
@@ -439,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, NoScorer_Ref) {
 
   // Queue up a pending classification, cancel it, then queue up another one.
   GURL url = LoadHtml("host.com", "dummy");
-  string16 page_text = ASCIIToUTF16("dummy");
+  base::string16 page_text = ASCIIToUTF16("dummy");
   OnStartPhishingDetection(url);
   PageCaptured(&page_text, false);
 
@@ -470,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
   EXPECT_CALL(*classifier_, CancelPendingClassification());
   GURL url = LoadHtml("host.com", "<html><body>phish</body></html>");
   Mock::VerifyAndClearExpectations(classifier_);
-  string16 page_text = ASCIIToUTF16("phish");
+  base::string16 page_text = ASCIIToUTF16("phish");
   EXPECT_CALL(*classifier_, CancelPendingClassification());
   PageCaptured(&page_text, false);
   Mock::VerifyAndClearExpectations(classifier_);
@@ -542,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
   GURL url = LoadHtml("host.com", "<html><body>phish</body></html>");
   Mock::VerifyAndClearExpectations(classifier_);
   OnStartPhishingDetection(url);
-  string16 page_text = ASCIIToUTF16("phish");
+  base::string16 page_text = ASCIIToUTF16("phish");
   PageCaptured(&page_text, true);
 
   // Once the non-preliminary capture happens, classification should begin.
@@ -570,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, DuplicatePageCapture) {
   GURL url = LoadHtml("host.com", "<html><body>phish</body></html>");
   Mock::VerifyAndClearExpectations(classifier_);
   OnStartPhishingDetection(url);
-  string16 page_text = ASCIIToUTF16("phish");
+  base::string16 page_text = ASCIIToUTF16("phish");
   {
     InSequence s;
     EXPECT_CALL(*classifier_, CancelPendingClassification());
@@ -599,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, PhishingDetectionDone) {
   EXPECT_CALL(*classifier_, CancelPendingClassification());
   GURL url = LoadHtml("host.com", "<html><body>phish</body></html>");
   Mock::VerifyAndClearExpectations(classifier_);
-  string16 page_text = ASCIIToUTF16("phish");
+  base::string16 page_text = ASCIIToUTF16("phish");
   OnStartPhishingDetection(url);
   {
     InSequence s;

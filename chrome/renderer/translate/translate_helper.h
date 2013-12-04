@@ -27,7 +27,7 @@ class TranslateHelper : public content::RenderViewObserver {
   virtual ~TranslateHelper();
 
   // Informs us that the page's text has been extracted.
-  void PageCaptured(int page_id, const string16& contents);
+  void PageCaptured(int page_id, const base::string16& contents);
 
  protected:
   // The following methods are protected so they can be overridden in

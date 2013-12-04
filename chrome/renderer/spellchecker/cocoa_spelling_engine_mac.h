@@ -13,10 +13,11 @@ class CocoaSpellingEngine : public SpellingEngine {
   virtual void Init(base::PlatformFile bdict_file) OVERRIDE;
   virtual bool InitializeIfNeeded() OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
-  virtual bool CheckSpelling(const string16& word_to_check, int tag) OVERRIDE;
+  virtual bool CheckSpelling(const base::string16& word_to_check,
+                             int tag) OVERRIDE;
   virtual void FillSuggestionList(
-      const string16& wrong_word,
-      std::vector<string16>* optional_suggestions) OVERRIDE;
+      const base::string16& wrong_word,
+      std::vector<base::string16>* optional_suggestions) OVERRIDE;
 };
 
 #endif  // CHROME_RENDERER_SPELLCHECKER_NSSPELLCHECKER_ENGINE_H_

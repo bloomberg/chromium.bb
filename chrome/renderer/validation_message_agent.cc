@@ -22,8 +22,8 @@ void ValidationMessageAgent::showValidationMessage(
     const blink::WebString& main_text,
     const blink::WebString& sub_text,
     blink::WebTextDirection hint) {
-  string16 wrapped_main_text = main_text;
-  string16 wrapped_sub_text = sub_text;
+  base::string16 wrapped_main_text = main_text;
+  base::string16 wrapped_sub_text = sub_text;
   if (hint == blink::WebTextDirectionLeftToRight) {
     wrapped_main_text
         = base::i18n::GetDisplayStringInLTRDirectionality(wrapped_main_text);

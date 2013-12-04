@@ -29,9 +29,11 @@ class HunspellEngine : public SpellingEngine {
 
   virtual bool InitializeIfNeeded() OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
-  virtual bool CheckSpelling(const string16& word_to_check, int tag) OVERRIDE;
-  virtual void FillSuggestionList(const string16& wrong_word,
-                          std::vector<string16>* optional_suggestions) OVERRIDE;
+  virtual bool CheckSpelling(const base::string16& word_to_check,
+                             int tag) OVERRIDE;
+  virtual void FillSuggestionList(
+      const base::string16& wrong_word,
+      std::vector<base::string16>* optional_suggestions) OVERRIDE;
 
  private:
   // Initializes the Hunspell dictionary, or does nothing if |hunspell_| is

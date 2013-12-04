@@ -51,7 +51,7 @@ SpellCheckProvider::~SpellCheckProvider() {
 }
 
 void SpellCheckProvider::RequestTextChecking(
-    const string16& text,
+    const base::string16& text,
     WebTextCheckingCompletion* completion,
     const std::vector<SpellCheckMarker>& markers) {
   // Ignore invalid requests.
@@ -83,7 +83,7 @@ void SpellCheckProvider::RequestTextChecking(
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
       text_check_completions_.Add(completion),
-      string16(text),
+      base::string16(text),
       markers));
 #endif  // !OS_MACOSX
 }
@@ -129,8 +129,8 @@ void SpellCheckProvider::spellCheck(
     int& offset,
     int& length,
     WebVector<WebString>* optional_suggestions) {
-  string16 word(text);
-  std::vector<string16> suggestions;
+  base::string16 word(text);
+  std::vector<base::string16> suggestions;
   spellcheck_->SpellCheckWord(
       word.c_str(), word.size(), routing_id(),
       &offset, &length, optional_suggestions ? & suggestions : NULL);
@@ -182,7 +182,7 @@ WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.autocorrect", word.length());
     return spellcheck_->GetAutoCorrectionWord(word, routing_id());
   }
-  return string16();
+  return base::string16();
 }
 
 void SpellCheckProvider::showSpellingUI(bool show) {
@@ -208,7 +208,7 @@ void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
     bool succeeded,
-    const string16& line,
+    const base::string16& line,
     const std::vector<SpellCheckResult>& results) {
   WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
@@ -239,7 +239,7 @@ void SpellCheckProvider::OnRespondSpellingService(
 #endif
 
 bool SpellCheckProvider::HasWordCharacters(
-    const string16& text,
+    const base::string16& text,
     int index) const {
   const char16* data = text.data();
   int length = text.length();
@@ -274,7 +274,7 @@ void SpellCheckProvider::OnRespondTextCheck(
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
   spellcheck_->CreateTextCheckingResults(SpellCheck::DO_NOT_MODIFY,
                                          0,
-                                         string16(),
+                                         base::string16(),
                                          results,
                                          &textcheck_results);
   completion->didFinishCheckingText(textcheck_results);
@@ -306,7 +306,7 @@ void SpellCheckProvider::EnableSpellcheck(bool enable) {
 }
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
-    const string16& text,
+    const base::string16& text,
     WebTextCheckingCompletion* completion) {
   size_t last_length = last_request_.length();
 
@@ -315,7 +315,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
   // the spellcheck request here, because WebKit might have discarded the
   // previous spellcheck results and erased the spelling markers in response to
   // the user editing the text.
-  string16 request(text);
+  base::string16 request(text);
   size_t text_length = request.length();
   if (text_length >= last_length &&
       !request.compare(0, last_length, last_request_)) {

@@ -56,14 +56,14 @@ const char kLTRHtmlTextDirection[] = "ltr";
 const char kRTLHtmlTextDirection[] = "rtl";
 
 // Converts a V8 value to a string16.
-string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
+base::string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
   v8::String::Value s(v);
-  return string16(reinterpret_cast<const char16*>(*s), s.length());
+  return base::string16(reinterpret_cast<const char16*>(*s), s.length());
 }
 
 // Converts string16 to V8 String.
 v8::Handle<v8::String> UTF16ToV8String(v8::Isolate* isolate,
-                                       const string16& s) {
+                                       const base::string16& s) {
   return v8::String::NewFromTwoByte(isolate,
                                     reinterpret_cast<const uint16_t*>(s.data()),
                                     v8::String::kNormalString,
@@ -118,7 +118,7 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
   else
     direction = kLTRHtmlTextDirection;
 
-  string16 title = mv_item.title;
+  base::string16 title = mv_item.title;
   if (title.empty())
     title = UTF8ToUTF16(mv_item.url.spec());
 
@@ -185,7 +185,7 @@ v8::Handle<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
 
 // Resolves a possibly relative URL using the current URL.
 GURL ResolveURL(const GURL& current_url,
-                const string16& possibly_relative_url) {
+                const base::string16& possibly_relative_url) {
   if (current_url.is_valid() && !possibly_relative_url.empty())
     return current_url.Resolve(possibly_relative_url);
   return GURL(possibly_relative_url);
@@ -457,7 +457,9 @@ bool SearchBoxExtension::PageSupportsInstant(blink::WebFrame* frame) {
 
 // static
 void SearchBoxExtension::DispatchChromeIdentityCheckResult(
-    blink::WebFrame* frame, const string16& identity, bool identity_match) {
+    blink::WebFrame* frame,
+    const base::string16& identity,
+    bool identity_match) {
   std::string escaped_identity;
   base::JsonDoubleQuote(identity, true, &escaped_identity);
   blink::WebString script(UTF8ToUTF16(base::StringPrintf(
@@ -687,7 +689,7 @@ void SearchBoxExtensionWrapper::GetQuery(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return;
-  const string16& query = SearchBox::Get(render_view)->query();
+  const base::string16& query = SearchBox::Get(render_view)->query();
   DVLOG(1) << render_view << " GetQuery: '" << query << "'";
   v8::Isolate* isolate = args.GetIsolate();
   args.GetReturnValue().Set(UTF16ToV8String(isolate, query));
@@ -950,7 +952,7 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
     }
   } else {
     // Resolve the URL
-    const string16& possibly_relative_url = V8ValueToUTF16(args[0]);
+    const base::string16& possibly_relative_url = V8ValueToUTF16(args[0]);
     GURL current_url = GetCurrentURL(render_view);
     destination_url = internal::ResolveURL(current_url, possibly_relative_url);
   }
@@ -973,7 +975,7 @@ void SearchBoxExtensionWrapper::Paste(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return;
 
-  string16 text;
+  base::string16 text;
   if (!args[0]->IsUndefined())
     text = V8ValueToUTF16(args[0]);
 

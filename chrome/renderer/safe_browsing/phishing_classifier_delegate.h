@@ -51,7 +51,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
   // conditions are met (see MaybeStartClassification for details).
   // We ignore preliminary captures, since these happen before the page has
   // finished loading.
-  void PageCaptured(string16* page_text, bool preliminary_capture);
+  void PageCaptured(base::string16* page_text, bool preliminary_capture);
 
   // RenderViewObserver implementation, public for testing.
 
@@ -127,7 +127,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
   // there is no Scorer yet when OnNavigate is called, or the browser has not
   // instructed us to classify the page, the page text will be cached until
   // these conditions are met.
-  string16 classifier_page_text_;
+  base::string16 classifier_page_text_;
 
   // Tracks whether we have stored anything in classifier_page_text_ for the
   // most recent load.  We use this to distinguish empty text from cases where

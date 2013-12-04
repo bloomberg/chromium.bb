@@ -61,7 +61,7 @@ bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
 
 void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
                            int identifier,
-                           const string16& text,
+                           const base::string16& text,
                            const std::vector<SpellCheckMarker>& markers) {
 #if defined (OS_MACOSX)
   NOTREACHED();

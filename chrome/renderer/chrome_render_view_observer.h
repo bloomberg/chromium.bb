@@ -59,8 +59,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Holds the information received in OnWebUIJavaScript for later use
   // to call EvaluateScript() to preload javascript for WebUI tests.
   struct WebUIJavaScript {
-    string16 frame_xpath;
-    string16 jscript;
+    base::string16 frame_xpath;
+    base::string16 jscript;
     int id;
     bool notify_result;
   };
@@ -123,8 +123,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
       const blink::WebURL& url);
   virtual void Navigate(const GURL& url) OVERRIDE;
 
-  void OnWebUIJavaScript(const string16& frame_xpath,
-                         const string16& jscript,
+  void OnWebUIJavaScript(const base::string16& frame_xpath,
+                         const base::string16& jscript,
                          int id,
                          bool notify_result);
   void OnHandleMessageFromExternalHost(const std::string& message,
@@ -158,7 +158,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // Retrieves the text from the given frame contents, the page text up to the
   // maximum amount kMaxIndexChars will be placed into the given buffer.
-  void CaptureText(blink::WebFrame* frame, string16* contents);
+  void CaptureText(blink::WebFrame* frame, base::string16* contents);
 
   ExternalHostBindings* GetExternalHostBindings();
 

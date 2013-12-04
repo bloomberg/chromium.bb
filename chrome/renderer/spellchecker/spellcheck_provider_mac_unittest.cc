@@ -23,7 +23,7 @@ struct MessageParameters {
 
   int router_id;
   int request_id;
-  string16 text;
+  base::string16 text;
   std::vector<SpellCheckMarker> markers;
 };
 

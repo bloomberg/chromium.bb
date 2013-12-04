@@ -162,7 +162,7 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
       render_view()->GetRoutingID(), render_view()->GetPageId(), event));
 }
 
-void SearchBox::CheckIsUserSignedInToChromeAs(const string16& identity) {
+void SearchBox::CheckIsUserSignedInToChromeAs(const base::string16& identity) {
   render_view()->Send(new ChromeViewHostMsg_ChromeIdentityCheck(
       render_view()->GetRoutingID(), render_view()->GetPageId(), identity));
 }
@@ -240,7 +240,7 @@ void SearchBox::NavigateToURL(const GURL& url,
       disposition, is_most_visited_item_url));
 }
 
-void SearchBox::Paste(const string16& text) {
+void SearchBox::Paste(const base::string16& text) {
   render_view()->Send(new ChromeViewHostMsg_PasteAndOpenDropdown(
       render_view()->GetRoutingID(), render_view()->GetPageId(), text));
 }
@@ -304,7 +304,7 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void SearchBox::OnChromeIdentityCheckResult(const string16& identity,
+void SearchBox::OnChromeIdentityCheckResult(const base::string16& identity,
                                             bool identity_match) {
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchChromeIdentityCheckResult(
@@ -413,7 +413,7 @@ void SearchBox::OnSetSuggestionToPrefetch(const InstantSuggestion& suggestion) {
   }
 }
 
-void SearchBox::OnSubmit(const string16& query) {
+void SearchBox::OnSubmit(const base::string16& query) {
   query_ = query;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     DVLOG(1) << render_view() << " OnSubmit";

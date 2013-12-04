@@ -67,7 +67,7 @@ struct PhishingTermFeatureExtractor::ExtractionState {
   // The number of iterations we've done for the current extraction.
   int num_iterations;
 
-  ExtractionState(const string16& text, base::TimeTicks start_time_ticks)
+  ExtractionState(const base::string16& text, base::TimeTicks start_time_ticks)
       : position(-1),
         position_initialized(false),
         start_time(start_time_ticks),
@@ -113,7 +113,7 @@ PhishingTermFeatureExtractor::~PhishingTermFeatureExtractor() {
 }
 
 void PhishingTermFeatureExtractor::ExtractFeatures(
-    const string16* page_text,
+    const base::string16* page_text,
     FeatureMap* features,
     const DoneCallback& done_callback) {
   // The RenderView should have called CancelPendingExtraction() before
