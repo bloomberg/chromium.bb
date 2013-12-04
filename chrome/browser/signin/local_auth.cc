@@ -10,7 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/webdata/encryptor/encryptor.h"
@@ -103,11 +105,8 @@ void RegisterLocalAuthPrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-void SetLocalAuthCredentials(Profile* profile,
-                             const std::string& username,
+void SetLocalAuthCredentials(size_t info_index,
                              const std::string& password) {
-  DCHECK(profile);
-  DCHECK(username.length());
   DCHECK(password.length());
 
   // Salt should be random data, as long as the hash length, and different with
@@ -125,29 +124,40 @@ void SetLocalAuthCredentials(Profile* profile,
   std::string record;
   record.append(salt_str);
   record.append(password_hash);
-  record.append(username);
 
   // Encode it and store it.
   std::string encoded = EncodePasswordHashRecord(record, kHash1Encoding);
-  profile->GetPrefs()->SetString(prefs::kGoogleServicesPasswordHash,
-                                 encoded);
+  ProfileInfoCache& info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  info.SetLocalAuthCredentialsOfProfileAtIndex(info_index, encoded);
 }
 
-bool ValidateLocalAuthCredentials(Profile* profile,
-                                  const std::string& username,
-                                  const std::string& password) {
+void SetLocalAuthCredentials(const Profile* profile,
+                             const std::string& password) {
   DCHECK(profile);
-  DCHECK(username.length());
-  DCHECK(password.length());
 
-  const size_t name_length = username.length();
+  ProfileInfoCache& info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t info_index = info.GetIndexOfProfileWithPath(profile->GetPath());
+  if (info_index == std::string::npos) {
+    NOTREACHED();
+    return;
+  }
+  SetLocalAuthCredentials(info_index, password);
+}
+
+bool ValidateLocalAuthCredentials(size_t info_index,
+                                  const std::string& password) {
   std::string record;
   char encoding;
 
-  if (!profile->GetPrefs()->HasPrefPath(prefs::kGoogleServicesPasswordHash))
-    return false;
-  std::string encodedhash = profile->GetPrefs()->GetString(
-      prefs::kGoogleServicesPasswordHash);
+  ProfileInfoCache& info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+
+  std::string encodedhash =
+      info.GetLocalAuthCredentialsOfProfileAtIndex(info_index);
+  if (encodedhash.length() == 0 && password.length() == 0)
+    return true;
   if (!DecodePasswordHashRecord(encodedhash, &record, &encoding))
     return false;
 
@@ -157,10 +167,8 @@ bool ValidateLocalAuthCredentials(Profile* profile,
   size_t password_length;
 
   if (encoding == '1') {
-    // Validate correct length and username; extract salt and password hash.
-    if (record.length() != 2 * kHash1Bytes + name_length)
-      return false;
-    if (record.compare(2 * kHash1Bytes, name_length, username) != 0)
+    // Validate correct length; extract salt and password hash.
+    if (record.length() != 2 * kHash1Bytes)
       return false;
     std::string salt_str(record.data(), kHash1Bytes);
     password_saved = record.data() + kHash1Bytes;
@@ -174,6 +182,20 @@ bool ValidateLocalAuthCredentials(Profile* profile,
 
   return crypto::SecureMemEqual(password_saved, password_check,
                                 password_length);
+}
+
+bool ValidateLocalAuthCredentials(const Profile* profile,
+                                  const std::string& password) {
+  DCHECK(profile);
+
+  ProfileInfoCache& info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t info_index = info.GetIndexOfProfileWithPath(profile->GetPath());
+  if (info_index == std::string::npos) {
+    NOTREACHED();  // This should never happen but fail safely if it does.
+    return false;
+  }
+  return ValidateLocalAuthCredentials(info_index, password);
 }
 
 }  // namespace chrome

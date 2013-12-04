@@ -44,6 +44,7 @@ const char kGAIAGivenNameKey[] = "gaia_given_name";
 const char kUseGAIANameKey[] = "use_gaia_name";
 const char kUserNameKey[] = "user_name";
 const char kAvatarIconKey[] = "avatar_icon";
+const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
 const char kHasMigratedToGAIAInfoKey[] = "has_migrated_to_gaia_info";
@@ -328,6 +329,13 @@ const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
+std::string ProfileInfoCache::GetLocalAuthCredentialsOfProfileAtIndex(
+    size_t index) const {
+  std::string credentials;
+  GetInfoForProfileAtIndex(index)->GetString(kAuthCredentialsKey, &credentials);
+  return credentials;
+}
+
 bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
     size_t index) const {
   bool background_app_status;
@@ -527,6 +535,15 @@ void ProfileInfoCache::SetManagedUserIdOfProfileAtIndex(size_t index,
                                                         const std::string& id) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kManagedUserId, id);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetLocalAuthCredentialsOfProfileAtIndex(
+    size_t index,
+    const std::string& credentials) {
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetString(kAuthCredentialsKey, credentials);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

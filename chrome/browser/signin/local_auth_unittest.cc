@@ -6,40 +6,37 @@
 
 #include "base/base64.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/webdata/encryptor/encryptor.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace chrome;
 
-class LocalAuthTest : public testing::Test {
- public:
-  LocalAuthTest() {
-    TestingProfile::Builder profile_builder;
-    profile_ = profile_builder.Build();
-  }
-
-  scoped_ptr<TestingProfile> profile_;
-};
-
-TEST_F(LocalAuthTest, SetAndCheckCredentials) {
-  Profile* prof = profile_.get();
-  PrefService* prefs = prof->GetPrefs();
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kGoogleServicesPasswordHash));
+TEST(LocalAuthTest, SetAndCheckCredentials) {
+  TestingProfileManager testing_profile_manager(
+      TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(testing_profile_manager.SetUp());
+  Profile* prof = testing_profile_manager.CreateTestingProfile("p1");
+  ProfileInfoCache& cache =
+      testing_profile_manager.profile_manager()->GetProfileInfoCache();
+  EXPECT_EQ(1U, cache.GetNumberOfProfiles());
+  EXPECT_EQ("", cache.GetLocalAuthCredentialsOfProfileAtIndex(0));
 
 #if defined(OS_MACOSX)
     Encryptor::UseMockKeychain(true);
 #endif
 
-  std::string username("user@gmail.com");
   std::string password("Some Password");
-  EXPECT_FALSE(ValidateLocalAuthCredentials(prof, username, password));
+  EXPECT_FALSE(ValidateLocalAuthCredentials(prof, password));
 
-  SetLocalAuthCredentials(prof, username, password);
-  std::string passhash = prefs->GetString(prefs::kGoogleServicesPasswordHash);
+  SetLocalAuthCredentials(prof, password);
+  std::string passhash = cache.GetLocalAuthCredentialsOfProfileAtIndex(0);
 
   // We perform basic validation on the written record to ensure bugs don't slip
   // in that cannot be seen from the API:
@@ -52,13 +49,11 @@ TEST_F(LocalAuthTest, SetAndCheckCredentials) {
   std::string decodedhash;
   base::Base64Decode(passhash.substr(1), &decodedhash);
   EXPECT_FALSE(decodedhash.empty());
-  EXPECT_EQ(decodedhash.find(username), std::string::npos);
   EXPECT_EQ(decodedhash.find(password), std::string::npos);
 
-  EXPECT_TRUE(ValidateLocalAuthCredentials(prof, username, password));
-  EXPECT_FALSE(ValidateLocalAuthCredentials(prof, username + "1", password));
-  EXPECT_FALSE(ValidateLocalAuthCredentials(prof, username, password + "1"));
+  EXPECT_TRUE(ValidateLocalAuthCredentials(prof, password));
+  EXPECT_FALSE(ValidateLocalAuthCredentials(prof, password + "1"));
 
-  SetLocalAuthCredentials(prof, username, password);  // makes different salt
-  EXPECT_NE(prefs->GetString(prefs::kGoogleServicesPasswordHash), passhash);
+  SetLocalAuthCredentials(prof, password);  // makes different salt
+  EXPECT_NE(passhash, cache.GetLocalAuthCredentialsOfProfileAtIndex(0));
 }

@@ -60,6 +60,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual string16 GetUserNameOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
       size_t index) const OVERRIDE;
+  virtual std::string GetLocalAuthCredentialsOfProfileAtIndex(
+      size_t index) const OVERRIDE;
   // Note that a return value of false could mean an error in collection or
   // that there are currently no background apps running. However, the action
   // which results is the same in both cases (thus far).
@@ -89,6 +91,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetUserNameOfProfileAtIndex(size_t index, const string16& user_name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetManagedUserIdOfProfileAtIndex(size_t index, const std::string& id);
+  void SetLocalAuthCredentialsOfProfileAtIndex(size_t index,
+                                               const std::string& auth);
   void SetBackgroundStatusOfProfileAtIndex(size_t index,
                                            bool running_background_apps);
   void SetGAIANameOfProfileAtIndex(size_t index, const string16& name);

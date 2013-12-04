@@ -583,8 +583,7 @@ void SigninManager::OnSignedIn(const std::string& username) {
   // Don't store password hash except for users of new profile features.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNewProfileManagement)) {
-    std::string auth_username = GetAuthenticatedUsername();
-    chrome::SetLocalAuthCredentials(profile_, auth_username, password_);
+    chrome::SetLocalAuthCredentials(profile_, password_);
   }
 #endif
 

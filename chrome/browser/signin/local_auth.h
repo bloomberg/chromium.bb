@@ -21,12 +21,16 @@ namespace chrome {
 
 void RegisterLocalAuthPrefs(user_prefs::PrefRegistrySyncable* registry);
 
-void SetLocalAuthCredentials(Profile* profile,
-                             const std::string& username,
+void SetLocalAuthCredentials(size_t profile_info_index,
                              const std::string& password);
 
-bool ValidateLocalAuthCredentials(Profile* profile,
-                                  const std::string& username,
+void SetLocalAuthCredentials(const Profile* profile,
+                             const std::string& password);
+
+bool ValidateLocalAuthCredentials(size_t profile_info_index,
+                                  const std::string& password);
+
+bool ValidateLocalAuthCredentials(const Profile* profile,
                                   const std::string& password);
 
 }  // namespace chrome
