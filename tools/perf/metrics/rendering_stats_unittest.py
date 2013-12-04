@@ -60,7 +60,8 @@ def AddMainThreadRenderingStats(mock_timer, thread, first_frame,
   # Add a slice with the event data to the given thread.
   thread.PushCompleteSlice(
       'benchmark', 'BenchmarkInstrumentation::MainThreadRenderingStats',
-      timestamp, 0.0, {'data': data})
+      timestamp, duration=0.0, thread_timestamp=None, thread_duration=None,
+      args={'data': data})
 
   if not ref_stats:
     return
@@ -97,7 +98,8 @@ def AddImplThreadRenderingStats(mock_timer, thread, first_frame,
   # Add a slice with the event data to the given thread.
   thread.PushCompleteSlice(
       'benchmark', 'BenchmarkInstrumentation::ImplThreadRenderingStats',
-      timestamp, 0.0, {'data': data})
+      timestamp, duration=0.0, thread_timestamp=None, thread_duration=None,
+      args={'data': data})
 
   if not ref_stats:
     return
