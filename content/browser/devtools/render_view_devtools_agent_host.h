@@ -16,6 +16,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace cc {
+class CompositorFrameMetadata;
+}
+
 namespace content {
 
 class DevToolsTracingHandler;
@@ -37,6 +41,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   RenderViewDevToolsAgentHost(RenderViewHost*);
 
   RenderViewHost* render_view_host() { return render_view_host_; }
+
+  void SynchronousSwapCompositorFrame(
+      const cc::CompositorFrameMetadata& frame_metadata);
 
  private:
   friend class DevToolsAgentHost;

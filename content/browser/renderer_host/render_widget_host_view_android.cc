@@ -29,6 +29,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_glow.h"
+#include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -41,11 +42,14 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -574,7 +578,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  if (!IsSurfaceAvailableForCopy()) {
+  if (!using_synchronous_compositor_ && !IsSurfaceAvailableForCopy()) {
     callback.Run(false, SkBitmap());
     return;
   }
@@ -589,6 +593,11 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   const gfx::Size& dst_size_in_pixel = ConvertViewSizeToPixel(this, dst_size);
   gfx::Rect src_subrect_in_pixel =
       ConvertRectToPixel(device_scale_factor, src_subrect);
+
+  if (using_synchronous_compositor_) {
+    SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback);
+    return;
+  }
 
   scoped_ptr<cc::CopyOutputRequest> request;
   if (src_subrect_in_pixel.size() == dst_size_in_pixel) {
@@ -795,6 +804,44 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
   // compositor flow.
   UpdateContentViewCoreFrameMetadata(frame_metadata);
   ComputeContentsSize(frame_metadata);
+
+  // DevTools ScreenCast support for Android WebView.
+  if (DevToolsAgentHost::HasFor(RenderViewHost::From(GetRenderWidgetHost()))) {
+    scoped_refptr<DevToolsAgentHost> dtah =
+        DevToolsAgentHost::GetOrCreateFor(
+            RenderViewHost::From(GetRenderWidgetHost()));
+    // Unblock the compositor.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame,
+                   static_cast<RenderViewDevToolsAgentHost*>(dtah.get()),
+                   frame_metadata));
+  }
+}
+
+void RenderWidgetHostViewAndroid::SynchronousCopyContents(
+    const gfx::Rect& src_subrect_in_pixel,
+    const gfx::Size& dst_size_in_pixel,
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  SynchronousCompositor* compositor =
+      SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
+                                        host_->GetRoutingID());
+  if (!compositor) {
+    callback.Run(false, SkBitmap());
+    return;
+  }
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   dst_size_in_pixel.width(),
+                   dst_size_in_pixel.height());
+  bitmap.allocPixels();
+  SkCanvas canvas(bitmap);
+  canvas.scale(
+      (float)dst_size_in_pixel.width() / (float)src_subrect_in_pixel.width(),
+      (float)dst_size_in_pixel.height() / (float)src_subrect_in_pixel.height());
+  compositor->DemandDrawSw(&canvas);
+  callback.Run(true, bitmap);
 }
 
 void RenderWidgetHostViewAndroid::UpdateContentViewCoreFrameMetadata(

@@ -353,7 +353,17 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
 
 void RenderViewDevToolsAgentHost::OnSwapCompositorFrame(
     const IPC::Message& message) {
-  overrides_handler_->OnSwapCompositorFrame(message);
+  ViewHostMsg_SwapCompositorFrame::Param param;
+  if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
+    return;
+  overrides_handler_->OnSwapCompositorFrame(param.b.metadata);
+}
+
+void RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame(
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  if (!render_view_host_)
+    return;
+  overrides_handler_->OnSwapCompositorFrame(frame_metadata);
 }
 
 void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(

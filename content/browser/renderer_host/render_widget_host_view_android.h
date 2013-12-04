@@ -271,6 +271,12 @@ class RenderWidgetHostViewAndroid
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
 
+  // DevTools ScreenCast support for Android WebView.
+  void SynchronousCopyContents(
+      const gfx::Rect& src_subrect_in_pixel,
+      const gfx::Size& dst_size_in_pixel,
+      const base::Callback<void(bool, const SkBitmap&)>& callback);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 

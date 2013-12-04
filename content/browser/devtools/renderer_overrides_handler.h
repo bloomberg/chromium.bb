@@ -35,7 +35,7 @@ class CONTENT_EXPORT RendererOverridesHandler
   virtual ~RendererOverridesHandler();
 
   void OnClientDetached();
-  void OnSwapCompositorFrame(const IPC::Message& message);
+  void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
   void OnVisibilityChanged(bool visible);
 
  private:

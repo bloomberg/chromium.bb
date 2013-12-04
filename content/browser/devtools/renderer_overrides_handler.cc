@@ -163,11 +163,8 @@ void RendererOverridesHandler::OnClientDetached() {
 }
 
 void RendererOverridesHandler::OnSwapCompositorFrame(
-    const IPC::Message& message) {
-  ViewHostMsg_SwapCompositorFrame::Param param;
-  if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
-    return;
-  last_compositor_frame_metadata_ = param.b.metadata;
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  last_compositor_frame_metadata_ = frame_metadata;
 
   if (screencast_command_)
     InnerSwapCompositorFrame();
@@ -475,10 +472,7 @@ RendererOverridesHandler::PageCanScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* result = new base::DictionaryValue();
 #if defined(OS_ANDROID)
-  // Android WebView does not support Screencast.
-  std::string product = GetContentClient()->GetProduct();
-  bool isChrome = product.find("Chrome/") == 0;
-  result->SetBoolean(devtools::kResult, isChrome);
+  result->SetBoolean(devtools::kResult, true);
 #else
   result->SetBoolean(devtools::kResult, false);
 #endif  // defined(OS_ANDROID)
