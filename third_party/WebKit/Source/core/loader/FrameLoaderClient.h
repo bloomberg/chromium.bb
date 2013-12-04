@@ -106,12 +106,12 @@ class FetchRequest;
 
         virtual void dispatchDidHandleOnloadEvents() = 0;
         virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
-        virtual void dispatchDidNavigateWithinPage(NavigationHistoryPolicy) { }
+        virtual void dispatchDidNavigateWithinPage(NavigationHistoryPolicy, HistoryItem*) { }
         virtual void dispatchWillClose() = 0;
         virtual void dispatchDidStartProvisionalLoad() = 0;
         virtual void dispatchDidReceiveTitle(const String&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
-        virtual void dispatchDidCommitLoad(NavigationHistoryPolicy) = 0;
+        virtual void dispatchDidCommitLoad(Frame*, HistoryItem*, NavigationHistoryPolicy) = 0;
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
         virtual void dispatchDidFailLoad(const ResourceError&) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;
@@ -165,7 +165,7 @@ class FetchRequest;
 
         virtual String doNotTrackValue() = 0;
 
-        virtual void transitionToCommittedForNewPage(Frame*) = 0;
+        virtual void transitionToCommittedForNewPage() = 0;
 
         virtual PassRefPtr<Frame> createFrame(const KURL&, const String& name, const String& referrer, HTMLFrameOwnerElement*) = 0;
         virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually) = 0;

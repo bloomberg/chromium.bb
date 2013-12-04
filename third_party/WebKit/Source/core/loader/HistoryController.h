@@ -140,8 +140,8 @@ public:
     // navigation, call FrameLoaderClient::navigateBackForward().
     void goToItem(HistoryItem*);
 
-    void updateBackForwardListForFragmentScroll(Frame*);
-    void updateForCommit(Frame*);
+    void updateBackForwardListForFragmentScroll(Frame*, HistoryItem*);
+    void updateForCommit(Frame*, HistoryItem*);
 
     PassRefPtr<HistoryItem> currentItemForExport(Frame*);
     PassRefPtr<HistoryItem> previousItemForExport(Frame*);
@@ -156,15 +156,8 @@ private:
     void goToEntry(PassOwnPtr<HistoryEntry>);
     void recursiveGoToEntry(Frame*);
 
-    void initializeItem(HistoryItem*, Frame*);
-    PassRefPtr<HistoryItem> createItem(Frame*);
-    void createItemTree(Frame* targetFrame, bool clipAtTarget);
-
-    void updateForStandardLoad(Frame*);
-    void updateForInitialLoadInChildFrame(Frame*);
-
-    void createNewBackForwardItem(Frame*, bool doClip);
-    void updateWithoutCreatingNewBackForwardItem(Frame*);
+    void updateForInitialLoadInChildFrame(Frame*, HistoryItem*);
+    void createNewBackForwardItem(Frame*, HistoryItem*, bool doClip);
 
     Page* m_page;
 

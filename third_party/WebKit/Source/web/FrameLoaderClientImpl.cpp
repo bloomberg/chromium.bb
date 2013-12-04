@@ -350,12 +350,12 @@ void FrameLoaderClientImpl::dispatchDidReceiveServerRedirectForProvisionalLoad()
         m_webFrame->client()->didReceiveServerRedirectForProvisionalLoad(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(NavigationHistoryPolicy navigationHistoryPolicy)
+void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(NavigationHistoryPolicy navigationHistoryPolicy, HistoryItem* item)
 {
     bool shouldCreateHistoryEntry = navigationHistoryPolicy == NavigationCreatedHistoryEntry;
     if (shouldCreateHistoryEntry)
-        m_webFrame->frame()->page()->history().updateBackForwardListForFragmentScroll(m_webFrame->frame());
-    m_webFrame->viewImpl()->didCommitLoad(navigationHistoryPolicy == NavigationCreatedHistoryEntry, true);
+        m_webFrame->frame()->page()->history().updateBackForwardListForFragmentScroll(m_webFrame->frame(), item);
+    m_webFrame->viewImpl()->didCommitLoad(shouldCreateHistoryEntry, true);
     if (m_webFrame->client())
         m_webFrame->client()->didNavigateWithinPage(m_webFrame, shouldCreateHistoryEntry);
 }
@@ -384,8 +384,9 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(WebCore::IconType type)
         m_webFrame->client()->didChangeIcon(m_webFrame, static_cast<WebIconURL::Type>(type));
 }
 
-void FrameLoaderClientImpl::dispatchDidCommitLoad(NavigationHistoryPolicy navigationHistoryPolicy)
+void FrameLoaderClientImpl::dispatchDidCommitLoad(Frame* frame, HistoryItem* item, NavigationHistoryPolicy navigationHistoryPolicy)
 {
+    m_webFrame->frame()->page()->history().updateForCommit(frame, item);
     m_webFrame->viewImpl()->didCommitLoad(navigationHistoryPolicy == NavigationCreatedHistoryEntry, false);
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, navigationHistoryPolicy == NavigationCreatedHistoryEntry);
@@ -583,9 +584,8 @@ String FrameLoaderClientImpl::doNotTrackValue()
 
 // Called when the FrameLoader goes into a state in which a new page load
 // will occur.
-void FrameLoaderClientImpl::transitionToCommittedForNewPage(Frame* frame)
+void FrameLoaderClientImpl::transitionToCommittedForNewPage()
 {
-    m_webFrame->frame()->page()->history().updateForCommit(frame);
     m_webFrame->createFrameView();
 }
 

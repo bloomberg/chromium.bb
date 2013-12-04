@@ -81,12 +81,12 @@ public:
     virtual void dispatchDidLoadResourceFromMemoryCache(const WebCore::ResourceRequest&, const WebCore::ResourceResponse&);
     virtual void dispatchDidHandleOnloadEvents();
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad();
-    virtual void dispatchDidNavigateWithinPage(WebCore::NavigationHistoryPolicy);
+    virtual void dispatchDidNavigateWithinPage(WebCore::NavigationHistoryPolicy, WebCore::HistoryItem*);
     virtual void dispatchWillClose();
     virtual void dispatchDidStartProvisionalLoad();
     virtual void dispatchDidReceiveTitle(const String&);
     virtual void dispatchDidChangeIcons(WebCore::IconType);
-    virtual void dispatchDidCommitLoad(WebCore::NavigationHistoryPolicy);
+    virtual void dispatchDidCommitLoad(WebCore::Frame*, WebCore::HistoryItem*, WebCore::NavigationHistoryPolicy);
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&);
     virtual void dispatchDidFailLoad(const WebCore::ResourceError&);
     virtual void dispatchDidFinishDocumentLoad();
@@ -112,7 +112,7 @@ public:
         const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
     virtual WTF::String userAgent(const WebCore::KURL&);
     virtual WTF::String doNotTrackValue();
-    virtual void transitionToCommittedForNewPage(WebCore::Frame*);
+    virtual void transitionToCommittedForNewPage();
     virtual PassRefPtr<WebCore::Frame> createFrame(const WebCore::KURL&, const WTF::String& name, const WTF::String& referrer, WebCore::HTMLFrameOwnerElement*);
     virtual PassRefPtr<WebCore::Widget> createPlugin(
         const WebCore::IntSize&, WebCore::HTMLPlugInElement*, const WebCore::KURL&,
