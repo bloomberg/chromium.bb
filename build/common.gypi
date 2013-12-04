@@ -1842,14 +1842,6 @@
       }],
 
       # Set default compiler flags depending on ARM version.
-      ['arm_version==5 and android_webview_build==0', {
-        # Flags suitable for Android emulator
-        'arm_arch%': 'armv5te',
-        'arm_tune%': 'xscale',
-        'arm_fpu%': '',
-        'arm_float_abi%': 'soft',
-        'arm_thumb%': 0,
-      }],
       ['arm_version==6 and android_webview_build==0', {
         'arm_arch%': 'armv6',
         'arm_tune%': '',
