@@ -287,11 +287,13 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
     gfx::Rect mirror_bounds =
         bubble_border_->GetBounds(anchor_rect, client_size);
     // Restore the original arrow if mirroring doesn't show more of the bubble.
+    // Otherwise it should invoke parent's Layout() to layout the content based
+    // on the new bubble border.
     if (GetOffScreenLength(monitor_rect, mirror_bounds, vertical) >=
         GetOffScreenLength(monitor_rect, window_bounds, vertical))
       bubble_border_->set_arrow(arrow);
-    else
-      SchedulePaint();
+    else if (parent())
+      parent()->Layout();
   }
 }
 
