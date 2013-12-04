@@ -390,7 +390,7 @@ public:
     bool isSrcdocDocument() const { return m_isSrcdocDocument; }
     bool isMobileDocument() const { return m_isMobileDocument; }
 
-    StyleResolver* styleResolverIfExists() const;
+    StyleResolver* styleResolver() const;
     StyleResolver& ensureStyleResolver() const;
 
     bool isViewSource() const { return m_isViewSource; }

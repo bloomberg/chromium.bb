@@ -1942,9 +1942,9 @@ void Document::setIsViewSource(bool isViewSource)
     didUpdateSecurityOrigin();
 }
 
-StyleResolver* Document::styleResolverIfExists() const
+StyleResolver* Document::styleResolver() const
 {
-    return m_styleEngine->resolverIfExists();
+    return m_styleEngine->resolver();
 }
 
 StyleResolver& Document::ensureStyleResolver() const

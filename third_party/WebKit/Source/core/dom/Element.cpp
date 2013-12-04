@@ -126,8 +126,8 @@ public:
 
         // This tells us that our pushed style selector is in a bad state,
         // so we should just bail out in that scenario.
-        ASSERT(m_pushedStyleResolver == m_parent.document().styleResolverIfExists());
-        if (m_pushedStyleResolver != m_parent.document().styleResolverIfExists())
+        ASSERT(m_pushedStyleResolver == m_parent.document().styleResolver());
+        if (m_pushedStyleResolver != m_parent.document().styleResolver())
             return;
 
         m_pushedStyleResolver->popParentElement(m_parent);
@@ -972,7 +972,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 
     document().incDOMTreeVersion();
 
-    StyleResolver* styleResolver = document().styleResolverIfExists();
+    StyleResolver* styleResolver = document().styleResolver();
     bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
     bool shouldInvalidateStyle = false;
 
@@ -1094,7 +1094,7 @@ static bool checkSelectorForClassChange(const SpaceSplitString& oldClasses, cons
 
 void Element::classAttributeChanged(const AtomicString& newClassString)
 {
-    StyleResolver* styleResolver = document().styleResolverIfExists();
+    StyleResolver* styleResolver = document().styleResolver();
     bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
     bool shouldInvalidateStyle = false;
 

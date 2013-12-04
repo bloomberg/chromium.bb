@@ -144,7 +144,7 @@ public:
     void appendActiveAuthorStyleSheets();
     void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
 
-    StyleResolver* resolverIfExists() const
+    StyleResolver* resolver() const
     {
         return m_resolver.get();
     }

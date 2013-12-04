@@ -98,7 +98,7 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
     StyleSheetChange change;
     analyzeStyleSheetChange(updateMode, collection, change);
 
-    if (StyleResolver* styleResolver = engine->resolverIfExists()) {
+    if (StyleResolver* styleResolver = engine->resolver()) {
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
         styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
