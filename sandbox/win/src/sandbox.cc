@@ -11,7 +11,7 @@
 
 namespace sandbox {
 // The section for IPC and policy.
-SANDBOX_INTERCEPT HANDLE  g_shared_section = NULL;
+SANDBOX_INTERCEPT HANDLE  g_shared_section;
 
 static bool               s_is_broker =  false;
 

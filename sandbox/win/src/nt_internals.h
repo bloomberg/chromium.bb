@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -600,6 +600,11 @@ typedef size_t  (__cdecl *strlenFunction)(
 
 typedef size_t (__cdecl *wcslenFunction)(
   IN const wchar_t* _Str);
+
+typedef void* (__cdecl *memcpyFunction)(
+  IN void* dest,
+  IN const void* src,
+  IN size_t count);
 
 typedef NTSTATUS (WINAPI *RtlAnsiStringToUnicodeStringFunction)(
   IN OUT PUNICODE_STRING  DestinationString,

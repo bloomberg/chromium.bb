@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_SANDBOX_UTILS_H__
-#define SANDBOX_SRC_SANDBOX_UTILS_H__
+#ifndef SANDBOX_SRC_SANDBOX_UTILS_H_
+#define SANDBOX_SRC_SANDBOX_UTILS_H_
 
 #include <windows.h>
 #include <string>
@@ -22,6 +22,6 @@ void InitObjectAttribs(const std::wstring& name,
                        OBJECT_ATTRIBUTES* obj_attr,
                        UNICODE_STRING* uni_name);
 
-};  // namespace sandbox
+}  // namespace sandbox
 
-#endif  // SANDBOX_SRC_SANDBOX_UTILS_H__
+#endif  // SANDBOX_SRC_SANDBOX_UTILS_H_

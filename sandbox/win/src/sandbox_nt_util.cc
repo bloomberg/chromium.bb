@@ -11,7 +11,7 @@
 namespace sandbox {
 
 // This is the list of all imported symbols from ntdll.dll.
-SANDBOX_INTERCEPT NtExports g_nt = { NULL };
+SANDBOX_INTERCEPT NtExports g_nt;
 
 }  // namespace sandbox
 
@@ -208,15 +208,7 @@ bool ValidParameter(void* buffer, size_t size, RequiredAccess intent) {
 NTSTATUS CopyData(void* destination, const void* source, size_t bytes) {
   NTSTATUS ret = STATUS_SUCCESS;
   __try {
-    if (SandboxFactory::GetTargetServices()->GetState()->InitCalled()) {
-      memcpy(destination, source, bytes);
-    } else {
-      const char* from = reinterpret_cast<const char*>(source);
-      char* to = reinterpret_cast<char*>(destination);
-      for (size_t i = 0; i < bytes; i++) {
-        to[i] = from[i];
-      }
-    }
+    g_nt.memcpy(destination, source, bytes);
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     ret = GetExceptionCode();
   }

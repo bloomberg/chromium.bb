@@ -6,10 +6,10 @@
 
 #include <map>
 
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
 
 namespace {
 
@@ -104,7 +104,7 @@ DWORD IsReparsePoint(const std::wstring& full_path, bool* result) {
           error != ERROR_PATH_NOT_FOUND &&
           error != ERROR_INVALID_NAME) {
         // Unexpected error.
-        NOTREACHED();
+        NOTREACHED_NT();
         return error;
       }
     } else if (FILE_ATTRIBUTE_REPARSE_POINT & attributes) {
@@ -124,7 +124,7 @@ DWORD IsReparsePoint(const std::wstring& full_path, bool* result) {
 // we'll get from |handle| will be \device\harddiskvolume1\some\foo\bar.
 bool SameObject(HANDLE handle, const wchar_t* full_path) {
   std::wstring path(full_path);
-  DCHECK(!path.empty());
+  DCHECK_NT(!path.empty());
 
   // Check if it's a pipe.
   if (IsPipe(path))
@@ -319,5 +319,5 @@ void ResolveNTFunctionPtr(const char* name, void* ptr) {
     *function_ptr = ::GetProcAddress(ntdll, name);
   }
 
-  CHECK(*function_ptr);
+  CHECK_NT(*function_ptr);
 }

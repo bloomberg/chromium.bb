@@ -93,6 +93,7 @@
             'src/restricted_token.cc',
             'src/restricted_token.h',
             'src/sandbox_factory.h',
+            'src/sandbox_globals.cc',
             'src/sandbox_nt_types.h',
             'src/sandbox_nt_util.cc',
             'src/sandbox_nt_util.h',

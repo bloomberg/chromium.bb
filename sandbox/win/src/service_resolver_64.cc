@@ -4,8 +4,8 @@
 
 #include "sandbox/win/src/service_resolver.h"
 
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
@@ -144,14 +144,14 @@ bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
 
 NTSTATUS ServiceResolverThunk::PerformPatch(void* local_thunk,
                                             void* remote_thunk) {
-  ServiceFullThunk* full_local_thunk = reinterpret_cast<ServiceFullThunk*>(
-                                           local_thunk);
-  ServiceFullThunk* full_remote_thunk = reinterpret_cast<ServiceFullThunk*>(
-                                            remote_thunk);
+  ServiceFullThunk* full_local_thunk =
+      reinterpret_cast<ServiceFullThunk*>(local_thunk);
+  ServiceFullThunk* full_remote_thunk =
+      reinterpret_cast<ServiceFullThunk*>(remote_thunk);
 
   // Patch the original code.
   ServiceEntry local_service;
-  DCHECK_GE(GetInternalThunkSize(), sizeof(local_service));
+  DCHECK_NT(GetInternalThunkSize() >= sizeof(local_service));
   if (!SetInternalThunk(&local_service, sizeof(local_service), NULL,
                         interceptor_))
     return STATUS_UNSUCCESSFUL;
@@ -181,12 +181,12 @@ NTSTATUS ServiceResolverThunk::PerformPatch(void* local_thunk,
 }
 
 bool Wow64ResolverThunk::IsFunctionAService(void* local_thunk) const {
-  NOTREACHED();
+  NOTREACHED_NT();
   return false;
 }
 
 bool Win2kResolverThunk::IsFunctionAService(void* local_thunk) const {
-  NOTREACHED();
+  NOTREACHED_NT();
   return false;
 }
 

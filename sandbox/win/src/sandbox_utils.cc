@@ -28,11 +28,11 @@ void InitObjectAttribs(const std::wstring& name,
   if (!RtlInitUnicodeString) {
     HMODULE ntdll = ::GetModuleHandle(kNtdllName);
     RtlInitUnicodeString = reinterpret_cast<RtlInitUnicodeStringFunction>(
-      GetProcAddress(ntdll, "RtlInitUnicodeString"));
+        GetProcAddress(ntdll, "RtlInitUnicodeString"));
     DCHECK(RtlInitUnicodeString);
   }
   RtlInitUnicodeString(uni_name, name.c_str());
   InitializeObjectAttributes(obj_attr, uni_name, attributes, root, NULL);
 }
 
-};  // namespace sandbox
+}  // namespace sandbox

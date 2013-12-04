@@ -43,6 +43,9 @@ class ServiceResolverThunk : public ResolverThunk {
   // Implementation of Resolver::GetThunkSize.
   virtual size_t GetThunkSize() const;
 
+  // Call this to set up ntdll_base_ which will allow for local patches.
+  virtual void AllowLocalPatches();
+
  protected:
   // The unit test will use this member to allow local patch on a buffer.
   HMODULE ntdll_base_;
