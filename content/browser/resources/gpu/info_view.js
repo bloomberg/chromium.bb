@@ -92,6 +92,7 @@ cr.define('gpu', function() {
         'flash_stage3d_baseline': 'Flash Stage3D Baseline profile',
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
+        'video_encode': 'Video Encode',
         'video': 'Video',
         // GPU Switching
         'gpu_switching': 'GPU Switching',

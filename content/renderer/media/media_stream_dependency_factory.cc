@@ -48,6 +48,10 @@
 #include "content/renderer/media/rtc_video_decoder_factory_tv.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "media/base/android/media_codec_bridge.h"
+#endif
+
 namespace content {
 
 // Constant constraint keys which enables default audio constraints on
@@ -593,6 +597,13 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     if (gpu_factories)
       encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
   }
+
+#if defined(OS_ANDROID)
+  if (!media::MediaCodecBridge::IsAvailable() ||
+      !media::MediaCodecBridge::SupportsSetParameters()) {
+    encoder_factory.reset();
+  }
+#endif
 
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());

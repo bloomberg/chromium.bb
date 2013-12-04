@@ -13,12 +13,14 @@ import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,10 @@ class MediaCodecBridge {
     private static final int MEDIA_CODEC_NO_KEY = 7;
     private static final int MEDIA_CODEC_STOPPED = 8;
     private static final int MEDIA_CODEC_ERROR = 9;
+
+    // Codec direction.  Keep this in sync with media_codec_bridge.h.
+    private static final int MEDIA_CODEC_DECODER = 0;
+    private static final int MEDIA_CODEC_ENCODER = 1;
 
     // After a flush(), dequeueOutputBuffer() can often produce empty presentation timestamps
     // for several frames. As a result, the player may find that the time does not increase
@@ -84,10 +90,13 @@ class MediaCodecBridge {
     private static class CodecInfo {
         private final String mCodecType;  // e.g. "video/x-vnd.on2.vp8".
         private final String mCodecName;  // e.g. "OMX.google.vp8.decoder".
+        private final int mDirection;
 
-        private CodecInfo(String codecType, String codecName) {
+        private CodecInfo(String codecType, String codecName,
+                          int direction) {
             mCodecType = codecType;
             mCodecName = codecName;
+            mDirection = direction;
         }
 
         @CalledByNative("CodecInfo")
@@ -95,6 +104,9 @@ class MediaCodecBridge {
 
         @CalledByNative("CodecInfo")
         private String codecName() { return mCodecName; }
+
+        @CalledByNative("CodecInfo")
+        private int direction() { return mDirection; }
     }
 
     private static class DequeueOutputResult {
@@ -139,25 +151,29 @@ class MediaCodecBridge {
      */
     @CalledByNative
     private static CodecInfo[] getCodecsInfo() {
-        Map<String, CodecInfo> CodecInfoMap = new HashMap<String, CodecInfo>();
+        // Return the first (highest-priority) codec for each MIME type.
+        Map<String, CodecInfo> encoderInfoMap = new HashMap<String, CodecInfo>();
+        Map<String, CodecInfo> decoderInfoMap = new HashMap<String, CodecInfo>();
         int count = MediaCodecList.getCodecCount();
         for (int i = 0; i < count; ++i) {
             MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-            if (info.isEncoder()) {
-                continue;
-            }
-
+            int direction =
+                info.isEncoder() ? MEDIA_CODEC_ENCODER : MEDIA_CODEC_DECODER;
             String codecString = info.getName();
             String[] supportedTypes = info.getSupportedTypes();
             for (int j = 0; j < supportedTypes.length; ++j) {
-                if (!CodecInfoMap.containsKey(supportedTypes[j])) {
-                    CodecInfoMap.put(supportedTypes[j], new CodecInfo(
-                        supportedTypes[j], codecString));
+                Map<String, CodecInfo> map = info.isEncoder() ? encoderInfoMap : decoderInfoMap;
+                if (!map.containsKey(supportedTypes[j])) {
+                    map.put(supportedTypes[j], new CodecInfo(
+                        supportedTypes[j], codecString, direction));
                 }
             }
         }
-        return CodecInfoMap.values().toArray(
-            new CodecInfo[CodecInfoMap.size()]);
+        ArrayList<CodecInfo> codecInfos = new ArrayList<CodecInfo>(
+            decoderInfoMap.size() + encoderInfoMap.size());
+        codecInfos.addAll(encoderInfoMap.values());
+        codecInfos.addAll(decoderInfoMap.values());
+        return codecInfos.toArray(new CodecInfo[codecInfos.size()]);
     }
 
     private static String getSecureDecoderNameForMime(String mime) {
@@ -187,7 +203,7 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private static MediaCodecBridge create(String mime, boolean isSecure) {
+    private static MediaCodecBridge create(String mime, boolean isSecure, int direction) {
         // Creation of ".secure" codecs sometimes crash instead of throwing exceptions
         // on pre-JBMR2 devices.
         if (isSecure && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
@@ -196,14 +212,18 @@ class MediaCodecBridge {
         MediaCodec mediaCodec = null;
         try {
             // |isSecure| only applies to video decoders.
-            if (mime.startsWith("video") && isSecure) {
+            if (mime.startsWith("video") && isSecure && direction == MEDIA_CODEC_DECODER) {
                 mediaCodec = MediaCodec.createByCodecName(getSecureDecoderNameForMime(mime));
             } else {
-                mediaCodec = MediaCodec.createDecoderByType(mime);
+                if (direction == MEDIA_CODEC_ENCODER) {
+                    mediaCodec = MediaCodec.createEncoderByType(mime);
+                } else {
+                    mediaCodec = MediaCodec.createDecoderByType(mime);
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to create MediaCodec: " +  mime + ", isSecure: "
-                    + isSecure + ", " + e.toString());
+                    + isSecure + ", direction: " + direction, e);
         }
 
         if (mediaCodec == null) {
@@ -215,7 +235,9 @@ class MediaCodecBridge {
 
     @CalledByNative
     private void release() {
+        mMediaCodec.stop();
         mMediaCodec.release();
+        mMediaCodec = null;
         if (mAudioTrack != null) {
             mAudioTrack.release();
         }
@@ -227,7 +249,7 @@ class MediaCodecBridge {
             mMediaCodec.start();
             mInputBuffers = mMediaCodec.getInputBuffers();
         } catch (IllegalStateException e) {
-            Log.e(TAG, "Cannot start the media codec " + e.toString());
+            Log.e(TAG, "Cannot start the media codec", e);
             return false;
         }
         return true;
@@ -246,10 +268,11 @@ class MediaCodecBridge {
                 Log.e(TAG, "dequeueInputBuffer: MediaCodec.INFO_TRY_AGAIN_LATER");
                 status = MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER;
             } else {
+                Log.e(TAG, "Unexpected index_or_status: " + index_or_status);
                 assert(false);
             }
         } catch(Exception e) {
-            Log.e(TAG, "Failed to dequeue input buffer: " + e.toString());
+            Log.e(TAG, "Failed to dequeue input buffer", e);
         }
         return new DequeueInputResult(status, index);
     }
@@ -263,7 +286,7 @@ class MediaCodecBridge {
             }
             mMediaCodec.flush();
         } catch(IllegalStateException e) {
-            Log.e(TAG, "Failed to flush MediaCodec " + e.toString());
+            Log.e(TAG, "Failed to flush MediaCodec", e);
             return MEDIA_CODEC_ERROR;
         }
         return MEDIA_CODEC_OK;
@@ -298,16 +321,56 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
+    private int getInputBuffersCount() {
+      return mInputBuffers.length;
+    }
+
+    @CalledByNative
+    private int getOutputBuffersCount() {
+      return mOutputBuffers != null ? mOutputBuffers.length : -1;
+    }
+
+    @CalledByNative
+    private int getOutputBuffersCapacity() {
+      return mOutputBuffers != null ? mOutputBuffers[0].capacity() : -1;
+    }
+
+    @CalledByNative
+    private boolean getOutputBuffers() {
+        try {
+            mOutputBuffers = mMediaCodec.getOutputBuffers();
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Cannot get output buffers", e);
+            return false;
+        }
+        return true;
+    }
+
+    @CalledByNative
     private int queueInputBuffer(
             int index, int offset, int size, long presentationTimeUs, int flags) {
         resetLastPresentationTimeIfNeeded(presentationTimeUs);
         try {
             mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
         } catch(Exception e) {
-            Log.e(TAG, "Failed to queue input buffer: " + e.toString());
+            Log.e(TAG, "Failed to queue input buffer", e);
             return MEDIA_CODEC_ERROR;
         }
         return MEDIA_CODEC_OK;
+    }
+
+    @CalledByNative
+    private void setVideoBitrate(int bps) {
+        Bundle b = new Bundle();
+        b.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, bps);
+        mMediaCodec.setParameters(b);
+    }
+
+    @CalledByNative
+    private void requestKeyFrameSoon() {
+        Bundle b = new Bundle();
+        b.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0);
+        mMediaCodec.setParameters(b);
     }
 
     @CalledByNative
@@ -321,7 +384,7 @@ class MediaCodecBridge {
                     keyId, iv, MediaCodec.CRYPTO_MODE_AES_CTR);
             mMediaCodec.queueSecureInputBuffer(index, offset, cryptoInfo, presentationTimeUs, 0);
         } catch (MediaCodec.CryptoException e) {
-            Log.e(TAG, "Failed to queue secure input buffer: " + e.toString());
+            Log.e(TAG, "Failed to queue secure input buffer", e);
             if (e.getErrorCode() == MediaCodec.CryptoException.ERROR_NO_KEY) {
                 Log.e(TAG, "MediaCodec.CryptoException.ERROR_NO_KEY");
                 return MEDIA_CODEC_NO_KEY;
@@ -329,7 +392,7 @@ class MediaCodecBridge {
             Log.e(TAG, "MediaCodec.CryptoException with error code " + e.getErrorCode());
             return MEDIA_CODEC_ERROR;
         } catch(IllegalStateException e) {
-            Log.e(TAG, "Failed to queue secure input buffer: " + e.toString());
+            Log.e(TAG, "Failed to queue secure input buffer", e);
             return MEDIA_CODEC_ERROR;
         }
         return MEDIA_CODEC_OK;
@@ -338,17 +401,6 @@ class MediaCodecBridge {
     @CalledByNative
     private void releaseOutputBuffer(int index, boolean render) {
         mMediaCodec.releaseOutputBuffer(index, render);
-    }
-
-    @CalledByNative
-    private boolean getOutputBuffers() {
-        try {
-            mOutputBuffers = mMediaCodec.getOutputBuffers();
-        } catch (IllegalStateException e) {
-            Log.e(TAG, "Cannot get output buffers " + e.toString());
-            return false;
-        }
-        return true;
     }
 
     @CalledByNative
@@ -376,10 +428,11 @@ class MediaCodecBridge {
             } else if (index_or_status == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 status = MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER;
             } else {
+                Log.e(TAG, "Unexpected index_or_status: " + index_or_status);
                 assert(false);
             }
         } catch (IllegalStateException e) {
-            Log.e(TAG, "Failed to dequeue output buffer: " + e.toString());
+            Log.e(TAG, "Failed to dequeue output buffer", e);
         }
 
         return new DequeueOutputResult(
@@ -393,7 +446,7 @@ class MediaCodecBridge {
             mMediaCodec.configure(format, surface, crypto, flags);
             return true;
         } catch (IllegalStateException e) {
-            Log.e(TAG, "Cannot configure the video codec " + e.toString());
+            Log.e(TAG, "Cannot configure the video codec", e);
         }
         return false;
     }
@@ -404,8 +457,19 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private static MediaFormat createVideoFormat(String mime, int width, int height) {
+    private static MediaFormat createVideoDecoderFormat(String mime, int width, int height) {
         return MediaFormat.createVideoFormat(mime, width, height);
+    }
+
+    @CalledByNative
+    private static MediaFormat createVideoEncoderFormat(String mime, int width, int height,
+            int bitRate, int frameRate, int iFrameInterval, int colorFormat) {
+        MediaFormat format = MediaFormat.createVideoFormat(mime, width, height);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate);
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iFrameInterval);
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
+        return format;
     }
 
     @CalledByNative
@@ -445,7 +509,7 @@ class MediaCodecBridge {
             }
             return true;
         } catch (IllegalStateException e) {
-            Log.e(TAG, "Cannot configure the audio codec " + e.toString());
+            Log.e(TAG, "Cannot configure the audio codec", e);
         }
         return false;
     }

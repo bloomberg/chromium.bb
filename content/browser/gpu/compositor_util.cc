@@ -133,6 +133,17 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index) {
           " or command line.",
           true
       },
+#if defined(ENABLE_WEBRTC)
+      {
+          "video_encode",
+          manager->IsFeatureBlacklisted(
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
+          command_line.HasSwitch(switches::kDisableWebRtcHWEncoding),
+          "Accelerated video encode has been disabled, either via about:flags"
+          " or command line.",
+          true
+      },
+#endif
       {
           "video",
           manager->IsFeatureBlacklisted(

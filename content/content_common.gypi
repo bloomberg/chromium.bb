@@ -511,6 +511,16 @@
         'common/gpu/media/android_video_decode_accelerator.h',
       ],
     }],
+    ['OS=="android" and android_webview_build==0', {
+      'dependencies': [
+        '../media/media.gyp:media',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
+      ],
+      'sources': [
+        'common/gpu/media/android_video_encode_accelerator.cc',
+        'common/gpu/media/android_video_encode_accelerator.h',
+      ],
+    }],
     ['target_arch=="arm" and chromeos == 1 and use_x11 == 1', {
       'dependencies': [
         '../media/media.gyp:media',

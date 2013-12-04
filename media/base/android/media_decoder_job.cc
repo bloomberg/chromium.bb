@@ -320,9 +320,14 @@ void MediaDecoderJob::DecodeInternal(
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
       kMediaCodecTimeoutInMilliseconds);
 
-  MediaCodecStatus status = media_codec_bridge_->DequeueOutputBuffer(
-      timeout, &buffer_index, &offset, &size, &presentation_timestamp,
-      &output_eos_encountered);
+  MediaCodecStatus status =
+      media_codec_bridge_->DequeueOutputBuffer(timeout,
+                                               &buffer_index,
+                                               &offset,
+                                               &size,
+                                               &presentation_timestamp,
+                                               &output_eos_encountered,
+                                               NULL);
 
   if (status != MEDIA_CODEC_OK) {
     if (status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED &&

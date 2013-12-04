@@ -84,8 +84,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(
   }
 
   // Only consider using MediaCodec if it's likely backed by hardware.
-  if (media::VideoCodecBridge::IsKnownUnaccelerated(codec_))
+  if (media::VideoCodecBridge::IsKnownUnaccelerated(
+          codec_, media::MEDIA_CODEC_DECODER)) {
     return false;
+  }
 
   if (!make_context_current_.Run()) {
     LOG(ERROR) << "Failed to make this decoder's GL context current.";
@@ -210,7 +212,7 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
     size_t size = 0;
 
     media::MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
-        NoWaitTimeOut(), &buf_index, &offset, &size, &timestamp, &eos);
+        NoWaitTimeOut(), &buf_index, &offset, &size, &timestamp, &eos, NULL);
     switch (status) {
       case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
       case media::MEDIA_CODEC_ERROR:
@@ -399,23 +401,21 @@ void AndroidVideoDecodeAccelerator::Flush() {
 
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   DCHECK(surface_texture_.get());
-  media_codec_.reset(media::VideoCodecBridge::Create(codec_, false));
 
+  gfx::ScopedJavaSurface surface(surface_texture_.get());
+
+  // Pass a dummy 320x240 canvas size and let the codec signal the real size
+  // when it's known from the bitstream.
+  media_codec_.reset(media::VideoCodecBridge::CreateDecoder(
+      codec_, false, gfx::Size(320, 240), surface.j_surface().obj(), NULL));
   if (!media_codec_)
     return false;
 
-  gfx::ScopedJavaSurface surface(surface_texture_.get());
-  // Pass a dummy 320x240 canvas size and let the codec signal the real size
-  // when it's known from the bitstream.
-  if (!media_codec_->Start(
-           codec_, gfx::Size(320, 240), surface.j_surface().obj(), NULL)) {
-    return false;
-  }
   io_timer_.Start(FROM_HERE,
                   DecodePollDelay(),
                   this,
                   &AndroidVideoDecodeAccelerator::DoIOTask);
-  return media_codec_->GetOutputBuffers();
+  return true;
 }
 
 void AndroidVideoDecodeAccelerator::Reset() {

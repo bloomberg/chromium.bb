@@ -36,6 +36,8 @@ GpuBlacklist* GpuBlacklist::Create() {
                             GPU_FEATURE_TYPE_TEXTURE_SHARING);
   list->AddSupportedFeature("accelerated_video_decode",
                             GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE);
+  list->AddSupportedFeature("accelerated_video_encode",
+                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE);
   list->AddSupportedFeature("3d_css",
                             GPU_FEATURE_TYPE_3D_CSS);
   list->AddSupportedFeature("accelerated_video",

@@ -30,9 +30,9 @@ VideoDecoderJob* VideoDecoderJob::Create(const VideoCodec video_codec,
                                          jobject surface,
                                          jobject media_crypto,
                                          const base::Closure& request_data_cb) {
-  scoped_ptr<VideoCodecBridge> codec(
-      VideoCodecBridge::Create(video_codec, is_secure));
-  if (codec && codec->Start(video_codec, size, surface, media_crypto))
+  scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::CreateDecoder(
+      video_codec, is_secure, size, surface, media_crypto));
+  if (codec)
     return new VideoDecoderJob(codec.Pass(), request_data_cb);
 
   LOG(ERROR) << "Failed to create VideoDecoderJob.";

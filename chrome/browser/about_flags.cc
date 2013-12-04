@@ -522,7 +522,7 @@ const Experiment kExperiments[] = {
     "disable-webrtc-hw-encoding",
     IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_NAME,
     IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_DESCRIPTION,
-    kOsCrOS,
+    kOsAndroid | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableWebRtcHWEncoding)
   },
 #endif

@@ -646,6 +646,11 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+#if defined(ENABLE_WEBRTC)
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE) &&
+      !command_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
+    command_line->AppendSwitch(switches::kDisableWebRtcHWEncoding);
+#endif
 
   if (use_software_compositor_ &&
       !command_line->HasSwitch(switches::kEnableSoftwareCompositing))
@@ -713,6 +718,12 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
   }
+#if defined(ENABLE_WEBRTC)
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE) &&
+      !command_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
+    command_line->AppendSwitch(switches::kDisableWebRtcHWEncoding);
+  }
+#endif
 
 #if defined(OS_WIN)
   // DisplayLink 7.1 and earlier can cause the GPU process to crash on startup.
