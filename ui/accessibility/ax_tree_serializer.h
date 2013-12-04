@@ -84,24 +84,24 @@ class AXTreeSerializer {
   //
   // Example 1:
   //
-  //    Client Tree    Source tree
-  //        1              1
-  //       / \            / \
-  //      2   3          2   4
+  //    Client Tree    Source tree |
+  //        1              1       |
+  //       / \            / \      |
+  //      2   3          2   4     |
   //
   // LCA(source node 2, client node 2) is node 2.
   // LCA(source node 3, client node 4) is node 1.
   //
   // Example 2:
   //
-  //    Client Tree    Source tree
-  //        1              1
-  //       / \            / \
-  //      2   3          2   3
-  //     / \            /   /
-  //    4   7          8   4
-  //   / \                / \
-  //  5   6              5   6
+  //    Client Tree    Source tree |
+  //        1              1       |
+  //       / \            / \      |
+  //      2   3          2   3     |
+  //     / \            /   /      |
+  //    4   7          8   4       |
+  //   / \                / \      |
+  //  5   6              5   6     |
   //
   // LCA(source node 8, client node 7) is node 2.
   // LCA(source node 5, client node 5) is node 1.
