@@ -32,6 +32,22 @@ function eventLoopCheck(check, callback) {
   }
 }
 
+// This help function will call the callback when the window passed to it will
+// be loaded. The callback will have the AppWindow passed as a parameter.
+function waitForLoad(win, callback) {
+  var window = win.contentWindow;
+
+  if (window.document.readyState == 'complete') {
+    callback(win);
+    return;
+  }
+
+  window.addEventListener('load', callbackPass(function() {
+    window.removeEventListener('load', arguments.callee);
+    callback(win);
+  }));
+}
+
 function testCreate() {
   chrome.test.runTests([
     function basic() {
@@ -328,7 +344,7 @@ function testRestoreAfterGeometryCacheChange() {
     function restorePositionAndSize() {
       chrome.app.window.create('test.html', {
         bounds: { left: 200, top: 200, width: 200, height: 200 }, id: 'test-ps',
-      }, callbackPass(function(win) {
+      }, callbackPass(function(win) { waitForLoad(win, function(win) {
         var w = win.contentWindow;
         // The fuzzy factor here is related to the fact that depending on the
         // platform, the bounds initialization will set the inner bounds or the
@@ -346,18 +362,18 @@ function testRestoreAfterGeometryCacheChange() {
           win.onClosed.addListener(callbackPass(function() {
             chrome.app.window.create('test.html', {
               id: 'test-ps'
-            }, callbackPass(function(win) {
+            }, callbackPass(function(win) { waitForLoad(win, function(win) {
               var w = win.contentWindow;
               chrome.test.assertEq(100, w.screenX);
               chrome.test.assertEq(100, w.screenY);
               chrome.test.assertEq(300, w.outerWidth);
               chrome.test.assertEq(300, w.outerHeight);
-            }));
+            })}));
           }));
 
           win.close();
         });
-      }));
+      })}));
     },
   ]);
 }
