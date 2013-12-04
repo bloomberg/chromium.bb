@@ -438,6 +438,15 @@ cr.define('options', function() {
           chrome.send('highContrastChange',
                       [$('accessibility-high-contrast-check').checked]);
         };
+
+        var updateDelayDropdown = function() {
+          $('accessibility-autoclick-dropdown').disabled =
+              !$('accessibility-autoclick-check').checked;
+        };
+        Preferences.getInstance().addEventListener(
+            $('accessibility-autoclick-check').getAttribute('pref'),
+            updateDelayDropdown);
+
         $('accessibility-sticky-keys').hidden =
             !loadTimeData.getBoolean('enableStickyKeys');
       }
