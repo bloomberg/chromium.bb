@@ -109,9 +109,7 @@
             }],
 
             ['OS=="android"', {
-              'android_goma_dir%': '<!(dirname "${ANDROID_GOMA_WRAPPER}")',
-            }, {
-              'android_goma_dir%': ''
+              'android_goma_dir%': '<!(echo "${GOMA_DIR}")',
             }],
           ],
         },
