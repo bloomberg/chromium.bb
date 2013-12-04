@@ -351,16 +351,18 @@ FileOperationManager.EventRouter.prototype.sendEntryChangedEvent = function(
  *
  * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
  *     or "ERROR". TODO(hidehiko): Use enum.
- * @param {Array.<string>} urls An array of URLs which are affected by delete
- *     operation.
  * @param {string} taskId ID of task related with the event.
+ * @param {Array.<Entry>} entries An array of entries which are affected by
+ *     delete operation.
  */
 FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
-    reason, urls, taskId) {
+    reason, taskId, entries) {
   var event = new Event('delete');
   event.reason = reason;
-  event.urls = urls;
   event.taskId = taskId;
+  event.entries = entries;
+  // TODO(hirono): Remove the urls property from the event.
+  event.urls = util.entriesToURLs(entries);
   this.dispatchEvent(event);
 };
 
@@ -1099,11 +1101,7 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
     task.requestCancel();
     // If the task is not on progress, remove it immediately.
     if (i != 0) {
-      // TODO(mtomasz): Pass Entries instead of URLs.
-      this.eventRouter_.sendDeleteEvent(
-          'CANCELED',
-          util.entriesToURLs(this.entries),
-          task.taskId);
+      this.eventRouter_.sendDeleteEvent('CANCELED', task.taskId, task.entries);
       this.deleteTasks_.splice(i, 1);
     }
   }
@@ -1298,9 +1296,7 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
     taskId: this.generateTaskId_()
   };
   this.deleteTasks_.push(task);
-  // TODO(mtomasz): Use Entries instead of URLs.
-  var urls = getTaskUrls(entries);
-  this.eventRouter_.sendDeleteEvent('BEGIN', urls, task.taskId);
+  this.eventRouter_.sendDeleteEvent('BEGIN', task.taskId, task.entries);
   this.maybeScheduleCloseBackgroundPage_();
   if (this.deleteTasks_.length == 1)
     this.serviceAllDeleteTasks_();
@@ -1316,11 +1312,8 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
  */
 FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
   var onTaskSuccess = function() {
-    // TODO(mtomasz): Use Entries instead of URLs.
-    var urls = util.entriesToURLs(this.deleteTasks_[0]);
-    var taskId = this.deleteTasks_[0].taskId;
-    this.deleteTasks_.shift();
-    this.eventRouter_.sendDeleteEvent('SUCCESS', urls, taskId);
+    var task = this.deleteTasks_.shift();
+    this.eventRouter_.sendDeleteEvent('SUCCESS', task.taskId, task.entries);
 
     if (!this.deleteTasks_.length) {
       // All tasks have been serviced, clean up and exit.
@@ -1330,19 +1323,15 @@ FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
 
     var nextTask = this.deleteTasks_[0];
     this.eventRouter_.sendDeleteEvent('PROGRESS',
-                                      urls,
-                                      nextTask.taskId);
+                                      nextTask.taskId,
+                                      nextTask.entries);
     this.serviceDeleteTask_(nextTask, onTaskSuccess, onTaskFailure);
   }.bind(this);
 
   var onTaskFailure = function(error) {
-    // TODO(mtomasz): Use Entries instead of URLs.
-    var urls = util.entriesToURLs(this.deleteTasks_[0]);
-    var taskId = this.deleteTasks_[0].taskId;
+    var task = this.deleteTasks_[0];
     this.deleteTasks_ = [];
-    this.eventRouter_.sendDeleteEvent('ERROR',
-                                      urls,
-                                      taskId);
+    this.eventRouter_.sendDeleteEvent('ERROR', task.taskId, task.entries);
     this.maybeScheduleCloseBackgroundPage_();
   }.bind(this);
 

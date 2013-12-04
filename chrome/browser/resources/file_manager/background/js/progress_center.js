@@ -569,12 +569,11 @@ ProgressCenterHandler.getMessage_ = function(event) {
 ProgressCenterHandler.getDeleteMessage_ = function(event) {
   if (event.reason === 'ERROR') {
     return str('DELETE_ERROR');
-  } else if (event.urls.length == 1) {
-    var fullPath = util.extractFilePath(event.urls[0]);
-    var fileName = PathUtil.split(fullPath).pop();
+  } else if (event.entries.length == 1) {
+    var fileName = event.entries[0].name;
     return strf('DELETE_FILE_NAME', fileName);
-  } else if (event.urls.length > 1) {
-    return strf('DELETE_ITEMS_REMAINING', event.urls.length);
+  } else if (event.entries.length > 1) {
+    return strf('DELETE_ITEMS_REMAINING', event.entries.length);
   } else {
     return '';
   }
