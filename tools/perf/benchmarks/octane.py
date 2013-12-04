@@ -33,7 +33,7 @@ class _OctaneMeasurement(page_measurement.PageMeasurement):
 
   def MeasurePage(self, _, tab, results):
     tab.WaitForJavaScriptExpression(
-        'completed && !document.getElementById("progress-bar-container")', 600)
+        'completed && !document.getElementById("progress-bar-container")', 1200)
 
     results_log = tab.EvaluateJavaScript('__results')
     all_scores = []
