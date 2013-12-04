@@ -841,8 +841,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
 }
 
 // Tests that console messages are not duplicated on navigation back.
-// Disabled: http://crbug.com/260341
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleOnNavigateBack) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
