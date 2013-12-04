@@ -32,6 +32,7 @@ sys.path.insert(1, os.path.join(chrome_src, 'native_client', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'native_client_sdk', 'src',
     'build_tools'))
 sys.path.insert(1, os.path.join(chrome_src, 'remoting', 'tools', 'build'))
+sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'liblouis'))
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'build', 'scripts'))
 

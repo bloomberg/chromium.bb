@@ -23,6 +23,9 @@
           '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/chromevox_test_data/',
+        ],
       },
     }],
     ['OS=="linux" or OS=="mac"', {
