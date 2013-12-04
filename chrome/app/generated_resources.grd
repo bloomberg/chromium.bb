@@ -9225,16 +9225,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT" desc="The text of the identity section when the page is secure and no Certificate Transparency information is present.">
-        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph> but is not known to be publicly auditable.
+        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph> but does not have public audit records.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_VERIFIED" desc="The text of the identity section when the page is secure and a Signed Certificate Timestamp from a known Certificate Transparency log is present and valid.">
         The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph> and is publicly auditable.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_UNVERIFIED" desc="The text of the identity section when the page is secure and contains a Signed Certificate Timestamp from an unknown Certificate Transparency log.">
-        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>, but its claim of public auditability cannot be verified.
+        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>, it claims to have public audit records, but the records cannot be verified.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_INVALID" desc="The text of the identity section when the page is secure, but it contains a Signed Certificate Timestamp from a known Certificate Transparency log that failed to verify.">
-        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>, but failed public auditability verification.
+        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>, but its public audit records failed verification.
       </message>
 
       <message name="IDS_PAGEINFO_ADDRESS" desc="Locality as reported in the EV identity text.">
@@ -9246,16 +9246,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_NO_CT" desc="The text of the identity section when the page is secured with an EV cert and no Certificate Transparency information is present.">
-        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph> but is not known to be publicly auditable.
+        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph> but does not have public audit records.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_VERIFIED" desc="The text of the identity section when the page is secured with an EV cert and a Signed Certificate Timestamp from a known Certificate Transparency log is present and valid.">
         The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph> and is publicly auditable.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_UNVERIFIED" desc="The text of the identity section when the page is secured with an EV cert and contains a Signed Certificate Timestamp from an unknown Certificate Transparency log.">
-        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>, but its claim of public auditability cannot be verified.
+        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>, it claims to have public audit records, but the records cannot be verified.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_INVALID" desc="The text of the identity section when the page is secured with an EV cert, but it contains a Signed Certificate Timestamp from a known Certificate Transparency log that failed to verify.">
-        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>, but failed public auditability verification.
+        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>, but its public audit records failed verification.
       </message>
 
       <message name="IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY" desc="The default name used when we did not find a principal name.">
