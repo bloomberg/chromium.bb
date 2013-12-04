@@ -84,7 +84,8 @@ def GetVarsStringForGN(supplemental_files):
         raise
       variables = file_data.get('variables')
       for v in variables:
-        vars_dict[v] = '"' + str(variables[v]) + '"'
+        vars_dict[FormatKeyForGN(v)] = '"' + \
+            str(variables[v]).replace("$", "\\$") + '"'
 
   env_string = os.environ.get('GYP_DEFINES', '')
   items = shlex.split(env_string)
