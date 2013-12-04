@@ -17,7 +17,7 @@
 #elif defined(USE_AURA) && defined(USE_X11)
 #include "ui/base/ime/input_method_linux_x11.h"
 #else
-#include "ui/base/ime/fake_input_method.h"
+#include "ui/base/ime/input_method_minimal.h"
 #endif
 
 namespace ui {
@@ -53,7 +53,7 @@ scoped_ptr<InputMethod> CreateInputMethod(
 #elif defined(USE_AURA) && defined(USE_X11)
   return scoped_ptr<InputMethod>(new InputMethodLinuxX11(delegate));
 #else
-  return scoped_ptr<InputMethod>(new FakeInputMethod(delegate));
+  return scoped_ptr<InputMethod>(new InputMethodMinimal(delegate));
 #endif
 }
 

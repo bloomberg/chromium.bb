@@ -5,7 +5,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/dummy_input_method_delegate.h"
-#include "ui/base/ime/fake_input_method.h"
+#include "ui/base/ime/input_method_minimal.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/test/views_test_base.h"
@@ -19,7 +19,7 @@ typedef ViewsTestBase InputMethodBridgeTest;
 
 TEST_F(InputMethodBridgeTest, DestructTest) {
   ui::internal::DummyInputMethodDelegate input_method_delegate;
-  ui::FakeInputMethod input_method(&input_method_delegate);
+  ui::InputMethodMinimal input_method(&input_method_delegate);
 
   GetContext()->SetProperty(aura::client::kRootWindowInputMethodKey,
                             static_cast<ui::InputMethod*>(&input_method));
