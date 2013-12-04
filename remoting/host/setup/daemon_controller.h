@@ -102,13 +102,13 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
       GetUsageStatsConsentCallback;
 
   // Interface representing the platform-spacific back-end. Most of its methods
-  // are blocking and should called on a background thread. There are two
+  // are blocking and should be called on a background thread. There are two
   // exceptions:
   //   - GetState() is synchronous and called on the UI thread. It should avoid
   //         accessing any data members of the implementation.
   //   - SetConfigAndStart(), UpdateConfig() and Stop() indicate completion via
-  //         a callback. There methods are still can be long running and should
-  //         be caled on a background thread.
+  //         a callback. There methods can be long running and should be caled
+  //         on a background thread.
   class Delegate {
    public:
     virtual ~Delegate() {}
