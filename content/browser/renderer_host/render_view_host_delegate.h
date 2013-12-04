@@ -402,15 +402,17 @@ class CONTENT_EXPORT RenderViewHostDelegate {
       SessionStorageNamespace* session_storage_namespace) {}
 
   // The page is trying to open a new widget (e.g. a select popup). The
-  // widget should be created associated with the given route, but it should
-  // not be shown yet. That should happen in response to ShowCreatedWidget.
+  // widget should be created associated with the given |route_id| in the
+  // process |render_process_id|, but it should not be shown yet. That should
+  // happen in response to ShowCreatedWidget.
   // |popup_type| indicates if the widget is a popup and what kind of popup it
   // is (select, autofill...).
-  virtual void CreateNewWidget(int route_id,
+  virtual void CreateNewWidget(int render_process_id,
+                               int route_id,
                                blink::WebPopupType popup_type) {}
 
   // Creates a full screen RenderWidget. Similar to above.
-  virtual void CreateNewFullscreenWidget(int route_id) {}
+  virtual void CreateNewFullscreenWidget(int render_process_id, int route_id) {}
 
   // Show a previously created page with the specified disposition and bounds.
   // The window is identified by the route_id passed to CreateNewWindow.

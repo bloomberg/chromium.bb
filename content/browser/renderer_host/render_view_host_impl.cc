@@ -1332,11 +1332,11 @@ void RenderViewHostImpl::CreateNewWindow(
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,
                                      blink::WebPopupType popup_type) {
-  delegate_->CreateNewWidget(route_id, popup_type);
+  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, popup_type);
 }
 
 void RenderViewHostImpl::CreateNewFullscreenWidget(int route_id) {
-  delegate_->CreateNewFullscreenWidget(route_id);
+  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id);
 }
 
 void RenderViewHostImpl::OnShowView(int route_id,

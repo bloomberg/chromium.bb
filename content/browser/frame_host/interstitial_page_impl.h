@@ -128,9 +128,11 @@ class CONTENT_EXPORT InterstitialPageImpl
       int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) OVERRIDE;
-  virtual void CreateNewWidget(int route_id,
+  virtual void CreateNewWidget(int render_process_id,
+                               int route_id,
                                blink::WebPopupType popup_type) OVERRIDE;
-  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
+  virtual void CreateNewFullscreenWidget(int render_process_id,
+                                         int route_id) OVERRIDE;
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,

@@ -706,12 +706,14 @@ void InterstitialPageImpl::CreateNewWindow(
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";
 }
 
-void InterstitialPageImpl::CreateNewWidget(int route_id,
+void InterstitialPageImpl::CreateNewWidget(int render_process_id,
+                                           int route_id,
                                            blink::WebPopupType popup_type) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
 }
 
-void InterstitialPageImpl::CreateNewFullscreenWidget(int route_id) {
+void InterstitialPageImpl::CreateNewFullscreenWidget(int render_process_id,
+                                                     int route_id) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
 }

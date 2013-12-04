@@ -226,11 +226,13 @@ void TestWebContents::CreateNewWindow(
     SessionStorageNamespace* session_storage_namespace) {
 }
 
-void TestWebContents::CreateNewWidget(int route_id,
+void TestWebContents::CreateNewWidget(int render_process_id,
+                                      int route_id,
                                       blink::WebPopupType popup_type) {
 }
 
-void TestWebContents::CreateNewFullscreenWidget(int route_id) {
+void TestWebContents::CreateNewFullscreenWidget(int render_process_id,
+                                                int route_id) {
 }
 
 void TestWebContents::ShowCreatedWindow(int route_id,

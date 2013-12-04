@@ -1393,19 +1393,36 @@ void WebContentsImpl::CreateNewWindow(
   }
 }
 
-void WebContentsImpl::CreateNewWidget(int route_id,
+void WebContentsImpl::CreateNewWidget(int render_process_id,
+                                      int route_id,
                                       blink::WebPopupType popup_type) {
-  CreateNewWidget(route_id, false, popup_type);
+  CreateNewWidget(render_process_id, route_id, false, popup_type);
 }
 
-void WebContentsImpl::CreateNewFullscreenWidget(int route_id) {
-  CreateNewWidget(route_id, true, blink::WebPopupTypeNone);
+void WebContentsImpl::CreateNewFullscreenWidget(int render_process_id,
+                                                int route_id) {
+  CreateNewWidget(render_process_id, route_id, true, blink::WebPopupTypeNone);
 }
 
-void WebContentsImpl::CreateNewWidget(int route_id,
+void WebContentsImpl::CreateNewWidget(int render_process_id,
+                                      int route_id,
                                       bool is_fullscreen,
                                       blink::WebPopupType popup_type) {
   RenderProcessHost* process = GetRenderProcessHost();
+  // A message to create a new widget can only come from the active process for
+  // this WebContentsImpl instance. If any other process sends the request,
+  // it is invalid and the process must be terminated.
+  if (process->GetID() != render_process_id) {
+    base::ProcessHandle process_handle =
+        RenderProcessHost::FromID(render_process_id)->GetHandle();
+    if (process_handle != base::kNullProcessHandle) {
+      RecordAction(
+          UserMetricsAction("Terminate_ProcessMismatch_CreateNewWidget"));
+      base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
+    }
+    return;
+  }
+
   RenderWidgetHostImpl* widget_host =
       new RenderWidgetHostImpl(this, process, route_id, IsHidden());
   created_widgets_.insert(widget_host);
