@@ -148,7 +148,8 @@ class BASE_EXPORT Timer {
   base::Closure user_task_;
 
   // The estimated time that the MessageLoop will run the scheduled_task_ that
-  // will call RunScheduledTask().
+  // will call RunScheduledTask(). This time can be a "zero" TimeTicks if the
+  // task must be run immediately.
   TimeTicks scheduled_run_time_;
 
   // The desired run time of user_task_. The user may update this at any time,
@@ -156,7 +157,8 @@ class BASE_EXPORT Timer {
   // greater than scheduled_run_time_, a continuation task will be posted to
   // wait for the remaining time. This allows us to reuse the pending task so as
   // not to flood the MessageLoop with orphaned tasks when the user code
-  // excessively Stops and Starts the timer.
+  // excessively Stops and Starts the timer. This time can be a "zero" TimeTicks
+  // if the task must be run immediately.
   TimeTicks desired_run_time_;
 
   // Thread ID of current MessageLoop for verifying single-threaded usage.

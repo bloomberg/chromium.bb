@@ -108,11 +108,14 @@ void Timer::Reset() {
   }
 
   // Set the new desired_run_time_.
-  desired_run_time_ = TimeTicks::Now() + delay_;
+  if (delay_ > TimeDelta::FromMicroseconds(0))
+    desired_run_time_ = TimeTicks::Now() + delay_;
+  else
+    desired_run_time_ = TimeTicks();
 
   // We can use the existing scheduled task if it arrives before the new
   // desired_run_time_.
-  if (desired_run_time_ > scheduled_run_time_) {
+  if (desired_run_time_ >= scheduled_run_time_) {
     is_running_ = true;
     return;
   }
@@ -134,10 +137,16 @@ void Timer::PostNewScheduledTask(TimeDelta delay) {
   DCHECK(scheduled_task_ == NULL);
   is_running_ = true;
   scheduled_task_ = new BaseTimerTaskInternal(this);
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(posted_from_,
-      base::Bind(&BaseTimerTaskInternal::Run, base::Owned(scheduled_task_)),
-      delay);
-  scheduled_run_time_ = desired_run_time_ = TimeTicks::Now() + delay;
+  if (delay > TimeDelta::FromMicroseconds(0)) {
+    ThreadTaskRunnerHandle::Get()->PostDelayedTask(posted_from_,
+        base::Bind(&BaseTimerTaskInternal::Run, base::Owned(scheduled_task_)),
+        delay);
+    scheduled_run_time_ = desired_run_time_ = TimeTicks::Now() + delay;
+  } else {
+    ThreadTaskRunnerHandle::Get()->PostTask(posted_from_,
+        base::Bind(&BaseTimerTaskInternal::Run, base::Owned(scheduled_task_)));
+    scheduled_run_time_ = desired_run_time_ = TimeTicks();
+  }
   // Remember the thread ID that posts the first task -- this will be verified
   // later when the task is abandoned to detect misuse from multiple threads.
   if (!thread_id_)
