@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="../../resources/js-test.js"></script>
+    </head>
+    <body>
+        <p>
+            Tests that width MQ feature is correct on zoom.
+        </p>
+        <script>
+            // eventSender.zoomPageOut/In zooms with a fixed factor of 1.2 instead
+            // of the zoom levels of the actual browser.
+
+            function printMatch(match) {
+                return (match > 0) ? "matches " + match + "px." : "doesn't match tested values.";
+            }
+
+            function test() {
+                shouldBeTrue("window.matchMedia('(width: " + window.innerWidth + "px)').matches");
+                if (window.matchMedia("(width: " + window.innerWidth + "px)").matches)
+                    return;
+
+                var matches = 0
+                for (var j = 0; j < window.innerWidth + 100; j++) {
+                    if (window.matchMedia("(width: " + j + "px)").matches) {
+                        matches = j;
+                        break;
+                    }
+                }
+
+                debug("window.innerWidth is " + window.innerWidth + "px, but width MQ feature " + printMatch(j));
+            }
+
+            if (window.eventSender) {
+                for (var i = 0; i < 5; i++) {
+                    eventSender.zoomPageOut();
+                    test();
+                }
+
+                for (var i = 0; i < 10; i++) {
+                    eventSender.zoomPageIn();
+                    test();
+                }
+            }
+        </script>
+    </body>
+</html>

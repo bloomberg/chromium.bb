@@ -1121,7 +1121,7 @@ int DOMWindow::innerHeight() const
     if (Frame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
-    return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(ScrollableArea::IncludeScrollbars).height()));
+    return adjustForAbsoluteZoom(view->visibleContentRect(ScrollableArea::IncludeScrollbars).height(), m_frame->pageZoomFactor());
 }
 
 int DOMWindow::innerWidth() const
@@ -1137,7 +1137,7 @@ int DOMWindow::innerWidth() const
     if (Frame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
-    return view->mapFromLayoutToCSSUnits(static_cast<int>(view->visibleContentRect(ScrollableArea::IncludeScrollbars).width()));
+    return adjustForAbsoluteZoom(view->visibleContentRect(ScrollableArea::IncludeScrollbars).width(), m_frame->pageZoomFactor());
 }
 
 int DOMWindow::screenX() const
@@ -1179,7 +1179,7 @@ int DOMWindow::scrollX() const
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    return view->mapFromLayoutToCSSUnits(view->scrollX());
+    return adjustForAbsoluteZoom(view->scrollX(), m_frame->pageZoomFactor());
 }
 
 int DOMWindow::scrollY() const
@@ -1193,7 +1193,7 @@ int DOMWindow::scrollY() const
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    return view->mapFromLayoutToCSSUnits(view->scrollY());
+    return adjustForAbsoluteZoom(view->scrollY(), m_frame->pageZoomFactor());
 }
 
 bool DOMWindow::closed() const
@@ -1394,7 +1394,8 @@ void DOMWindow::scrollBy(int x, int y) const
     if (!view)
         return;
 
-    IntSize scaledOffset(view->mapFromCSSToLayoutUnits(x), view->mapFromCSSToLayoutUnits(y));
+
+    IntSize scaledOffset(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
     view->scrollBy(scaledOffset);
 }
 
@@ -1409,7 +1410,7 @@ void DOMWindow::scrollTo(int x, int y) const
     if (!view)
         return;
 
-    IntPoint layoutPos(view->mapFromCSSToLayoutUnits(x), view->mapFromCSSToLayoutUnits(y));
+    IntPoint layoutPos(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
     view->setScrollPosition(layoutPos);
 }
 

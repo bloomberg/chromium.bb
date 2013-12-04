@@ -76,9 +76,6 @@ public:
 
     RenderView* renderView() const;
 
-    int mapFromLayoutToCSSUnits(LayoutUnit) const;
-    LayoutUnit mapFromCSSToLayoutUnits(int) const;
-
     LayoutUnit marginWidth() const { return m_margins.width(); } // -1 means default
     LayoutUnit marginHeight() const { return m_margins.height(); } // -1 means default
     void setMarginWidth(LayoutUnit);

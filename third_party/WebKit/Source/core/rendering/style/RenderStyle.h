@@ -1776,9 +1776,8 @@ private:
     void appendContent(PassOwnPtr<ContentData>);
 };
 
-inline int adjustForAbsoluteZoom(int value, const RenderStyle* style)
+inline int adjustForAbsoluteZoom(int value, float zoomFactor)
 {
-    double zoomFactor = style->effectiveZoom();
     if (zoomFactor == 1)
         return value;
     // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
@@ -1790,6 +1789,11 @@ inline int adjustForAbsoluteZoom(int value, const RenderStyle* style)
     }
 
     return roundForImpreciseConversion<int>(value / zoomFactor);
+}
+
+inline int adjustForAbsoluteZoom(int value, const RenderStyle* style)
+{
+    return adjustForAbsoluteZoom(value, style->effectiveZoom());
 }
 
 inline float adjustFloatForAbsoluteZoom(float value, const RenderStyle& style)
