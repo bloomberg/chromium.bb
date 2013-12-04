@@ -12,6 +12,17 @@ var FEEDBACK_LANDING_PAGE =
  */
 var MAX_ATTACH_FILE_SIZE = 3 * 1024 * 1024;
 
+/**
+ * @type {number}
+ * @const
+ */
+var FEEDBACK_MIN_WIDTH = 500;
+/**
+ * @type {number}
+ * @const
+ */
+var FEEDBACK_MIN_HEIGHT = 625;
+
 /** @type {number}
  * @const
  */
@@ -218,11 +229,17 @@ function performanceFeedbackChanged() {
 function resizeAppWindow() {
   // We pick the width from the titlebar, which has no margins.
   var width = $('title-bar').scrollWidth;
+  if (width < FEEDBACK_MIN_WIDTH)
+    width = FEEDBACK_MIN_WIDTH;
+
   // We get the height by adding the titlebar height and the content height +
   // margins. We can't get the margins for the content-pane here by using
   // style.margin - the variable seems to not exist.
   var height = $('title-bar').scrollHeight +
       $('content-pane').scrollHeight + CONTENT_MARGIN_HEIGHT;
+  if (height < FEEDBACK_MIN_HEIGHT)
+    height = FEEDBACK_MIN_HEIGHT;
+
   chrome.app.window.current().resizeTo(width, height);
 }
 
@@ -257,7 +274,9 @@ function initialize() {
 
         // We've taken our screenshot, show the feedback page without any
         // further delay.
-        resizeAppWindow();
+        window.webkitRequestAnimationFrame(function() {
+          resizeAppWindow();
+        });
         chrome.app.window.current().show();
 
         var screenshotDataUrl = screenshotCanvas.toDataURL('image/png');
