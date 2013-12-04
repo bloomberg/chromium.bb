@@ -159,7 +159,13 @@ extern const char kImportDefault[] =
     "}\n";
 typedef FirstRunMasterPrefsBrowserTestT<kImportDefault>
     FirstRunMasterPrefsImportDefault;
-IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, ImportDefault) {
+// http://crbug.com/314221
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+#define MAYBE_ImportDefault DISABLED_ImportDefault
+#else
+#define MAYBE_ImportDefault ImportDefault
+#endif
+IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, MAYBE_ImportDefault) {
   int auto_import_state = first_run::auto_import_state();
   EXPECT_EQ(MaskExpectedImportState(first_run::AUTO_IMPORT_CALLED |
                                     first_run::AUTO_IMPORT_PROFILE_IMPORTED),
@@ -176,8 +182,14 @@ extern const char kImportBookmarksFile[] =
     "}\n";
 typedef FirstRunMasterPrefsBrowserTestT<kImportBookmarksFile>
     FirstRunMasterPrefsImportBookmarksFile;
+// http://crbug.com/314221
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+#define MAYBE_ImportBookmarksFile DISABLED_ImportBookmarksFile
+#else
+#define MAYBE_ImportBookmarksFile ImportBookmarksFile
+#endif
 IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportBookmarksFile,
-                       ImportBookmarksFile) {
+                       MAYBE_ImportBookmarksFile) {
   int auto_import_state = first_run::auto_import_state();
   EXPECT_EQ(
       MaskExpectedImportState(first_run::AUTO_IMPORT_CALLED |
@@ -200,8 +212,15 @@ extern const char kImportNothing[] =
     "}\n";
 typedef FirstRunMasterPrefsBrowserTestT<kImportNothing>
     FirstRunMasterPrefsImportNothing;
+// http://crbug.com/314221
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+#define MAYBE_ImportNothingAndShowNewTabPage \
+    DISABLED_ImportNothingAndShowNewTabPage
+#else
+#define MAYBE_ImportNothingAndShowNewTabPage ImportNothingAndShowNewTabPage
+#endif
 IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportNothing,
-                       ImportNothingAndShowNewTabPage) {
+                       MAYBE_ImportNothingAndShowNewTabPage) {
   EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, first_run::auto_import_state());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), CURRENT_TAB,
