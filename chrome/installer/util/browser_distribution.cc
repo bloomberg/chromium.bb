@@ -191,8 +191,13 @@ string16 BrowserDistribution::GetIconFilename() {
 
 string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
     Subfolder subfolder_type) {
-  DCHECK_EQ(subfolder_type, SUBFOLDER_CHROME);
-  return GetShortcutName(SHORTCUT_CHROME);
+  switch (subfolder_type) {
+    case SUBFOLDER_APPS:
+      return installer::GetLocalizedString(IDS_APP_SHORTCUTS_SUBDIR_NAME_BASE);
+    default:
+      DCHECK_EQ(subfolder_type, SUBFOLDER_CHROME);
+      return GetShortcutName(SHORTCUT_CHROME);
+  }
 }
 
 string16 BrowserDistribution::GetBaseAppId() {

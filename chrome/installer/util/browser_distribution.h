@@ -37,7 +37,7 @@ class BrowserDistribution {
 
   enum Subfolder {
     SUBFOLDER_CHROME,
-    // TODO(calamity): add SUBFOLDER_APPS when refactoring chrome app dir code.
+    SUBFOLDER_APPS,
   };
 
   enum DefaultBrowserControlPolicy {

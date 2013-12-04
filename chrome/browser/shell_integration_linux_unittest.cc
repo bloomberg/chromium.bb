@@ -170,7 +170,9 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_FALSE(result.in_applications_menu);
+    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_NONE,
+              result.applications_menu_location);
+
     EXPECT_FALSE(result.in_quick_launch_bar);
     EXPECT_FALSE(result.hidden);
   }
@@ -190,7 +192,9 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
-    EXPECT_FALSE(result.in_applications_menu);
+    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_NONE,
+              result.applications_menu_location);
+
     EXPECT_FALSE(result.in_quick_launch_bar);
     EXPECT_FALSE(result.hidden);
   }
@@ -211,7 +215,9 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_TRUE(result.in_applications_menu);
+    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+              result.applications_menu_location);
+
     EXPECT_FALSE(result.in_quick_launch_bar);
     EXPECT_FALSE(result.hidden);
   }
@@ -233,7 +239,8 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
             &env, kProfilePath, kExtensionId);
     // Doesn't count as being in applications menu.
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_FALSE(result.in_applications_menu);
+    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_NONE,
+              result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
     EXPECT_TRUE(result.hidden);
   }
@@ -262,7 +269,8 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
-    EXPECT_TRUE(result.in_applications_menu);
+    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+              result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
     EXPECT_FALSE(result.hidden);
   }

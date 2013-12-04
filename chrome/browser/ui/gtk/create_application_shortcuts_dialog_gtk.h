@@ -70,7 +70,8 @@ class CreateApplicationShortcutsDialogGtk
 
   // ShortcutInfo for the new shortcut.
   ShellIntegration::ShortcutInfo shortcut_info_;
-  string16 shortcut_menu_subdir_;
+  // If false the shortcut will be created in the top-level menu.
+  bool create_in_chrome_apps_subdir_;
 
   // Image associated with the site or app, scaled to the appropriate size to
   // display in the dialog box.

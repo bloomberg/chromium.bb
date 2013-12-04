@@ -104,12 +104,11 @@ void GetIconsInfo(const WebApplicationInfo& app_info,
 std::string GetWMClassFromAppName(std::string app_name);
 #endif
 
-// Gets the name of the Chrome Apps menu folder in which to place app shortcuts.
-string16 GetAppShortcutsSubdirName();
-
 namespace internals {
 
 #if defined(OS_WIN)
+// Returns the Windows user-level shortcut paths that are specified in
+// |creation_locations|.
 std::vector<base::FilePath> GetShortcutPaths(
     const ShellIntegration::ShortcutLocations& creation_locations);
 #endif

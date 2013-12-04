@@ -41,10 +41,9 @@ namespace {
 void CreateShortcutsInApplicationsMenu(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   ShellIntegration::ShortcutLocations creation_locations;
-  creation_locations.in_applications_menu = true;
   // Create the shortcut in the Chrome Apps subdir.
-  creation_locations.applications_menu_subdir =
-      web_app::GetAppShortcutsSubdirName();
+  creation_locations.applications_menu_location =
+      ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   web_app::CreateShortcuts(shortcut_info, creation_locations,
                            web_app::SHORTCUT_CREATION_AUTOMATED);
 }

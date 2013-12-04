@@ -53,6 +53,18 @@ string16 GoogleChromeSxSDistribution::GetShortcutName(
   }
 }
 
+string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
+    Subfolder subfolder_type) {
+  switch (subfolder_type) {
+    case SUBFOLDER_APPS:
+      return installer::GetLocalizedString(
+          IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY_BASE);
+    default:
+      DCHECK_EQ(subfolder_type, SUBFOLDER_CHROME);
+      return GetShortcutName(SHORTCUT_CHROME);
+  }
+}
+
 string16 GoogleChromeSxSDistribution::GetBaseAppId() {
   return kBrowserAppId;
 }

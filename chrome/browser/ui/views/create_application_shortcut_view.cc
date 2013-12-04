@@ -371,9 +371,12 @@ bool CreateApplicationShortcutView::Accept() {
 
   ShellIntegration::ShortcutLocations creation_locations;
   creation_locations.on_desktop = desktop_check_box_->checked();
-  creation_locations.in_applications_menu = menu_check_box_ == NULL ? false :
-      menu_check_box_->checked();
-  creation_locations.applications_menu_subdir = shortcut_menu_subdir_;
+  if (menu_check_box_ != NULL && menu_check_box_->checked()) {
+    creation_locations.applications_menu_location =
+        create_in_chrome_apps_subdir_ ?
+            ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS :
+            ShellIntegration::APP_MENU_LOCATION_ROOT;
+  }
 
 #if defined(OS_WIN)
   creation_locations.in_quick_launch_bar = quick_launch_check_box_ == NULL ?
@@ -430,8 +433,8 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
     FetchIcon();
   }
 
-  // NOTE: Leave shortcut_menu_subdir_ blank to create URL app shortcuts in the
-  // top-level menu.
+  // Create URL app shortcuts in the top-level menu.
+  create_in_chrome_apps_subdir_ = false;
 
   InitControls();
 }
@@ -522,7 +525,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
   shortcut_info_.description = UTF8ToUTF16(app->description());
 
   // Place Chrome app shortcuts in the "Chrome Apps" submenu.
-  shortcut_menu_subdir_ = web_app::GetAppShortcutsSubdirName();
+  create_in_chrome_apps_subdir_ = true;
 
   InitControls();
 

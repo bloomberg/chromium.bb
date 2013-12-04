@@ -262,7 +262,7 @@ void UpdateAppShortcutsSubdirLocalizedName(
     return;
 
   base::FilePath directory_name = apps_directory.BaseName().RemoveExtension();
-  string16 localized_name = web_app::GetAppShortcutsSubdirName();
+  base::string16 localized_name = ShellIntegration::GetAppShortcutsSubdirName();
   NSDictionary* strings_dict = @{
       base::mac::FilePathToNSString(directory_name) :
           base::SysUTF16ToNSString(localized_name)

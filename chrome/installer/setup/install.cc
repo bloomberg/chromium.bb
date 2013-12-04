@@ -77,8 +77,17 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
     case ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH:
       message.append("Quick Launch ");
       break;
-    case ShellUtil::SHORTCUT_LOCATION_START_MENU:
-      message.append("Start menu ");
+    case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR:
+      message.append("Start menu/" +
+                     UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
+                                     BrowserDistribution::SUBFOLDER_CHROME)) +
+                      " ");
+      break;
+    case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
+      message.append("Start menu/" +
+                     UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
+                                     BrowserDistribution::SUBFOLDER_APPS)) +
+                     " ");
       break;
     default:
       NOTREACHED();
@@ -254,8 +263,8 @@ void CleanupLegacyShortcuts(const InstallerState& installer_state,
   ShellUtil::ShellChange shortcut_level = installer_state.system_install() ?
       ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER;
   base::FilePath uninstall_shortcut_path;
-  ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU, dist,
-                             shortcut_level, &uninstall_shortcut_path);
+  ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
+                             dist, shortcut_level, &uninstall_shortcut_path);
   uninstall_shortcut_path = uninstall_shortcut_path.Append(
       dist->GetUninstallLinkName() + installer::kLnkExt);
   base::DeleteFile(uninstall_shortcut_path, false);
@@ -457,9 +466,9 @@ void CreateOrUpdateShortcuts(
            ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL)) {
     start_menu_properties.set_pin_to_taskbar(true);
   }
-  ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_START_MENU,
-                                 dist, start_menu_properties,
-                                 shortcut_operation);
+  ExecuteAndLogShortcutOperation(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, dist,
+      start_menu_properties, shortcut_operation);
 }
 
 void RegisterChromeOnMachine(const InstallerState& installer_state,

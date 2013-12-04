@@ -124,6 +124,8 @@ int DoUninstallTasks(bool chrome_still_running) {
 
   if (result != chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) {
     // The following actions are just best effort.
+    // TODO(gab): Look into removing this code which is now redundant with the
+    // work done by setup.exe on uninstall.
     VLOG(1) << "Executing uninstall actions";
     if (!first_run::RemoveSentinel())
       VLOG(1) << "Failed to delete sentinel file.";
@@ -132,7 +134,8 @@ int DoUninstallTasks(bool chrome_still_running) {
       ShellUtil::ShortcutLocation user_shortcut_locations[] = {
         ShellUtil::SHORTCUT_LOCATION_DESKTOP,
         ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
-        ShellUtil::SHORTCUT_LOCATION_START_MENU,
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
       };
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {

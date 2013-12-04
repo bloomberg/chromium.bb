@@ -19,7 +19,8 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/icon_util.h"
@@ -280,14 +281,13 @@ void GetShortcutLocationsAndDeleteShortcuts(
 
   // Get all possible locations for shortcuts.
   ShellIntegration::ShortcutLocations all_shortcut_locations;
-  all_shortcut_locations.in_applications_menu = true;
   all_shortcut_locations.in_quick_launch_bar = true;
   all_shortcut_locations.on_desktop = true;
   // Delete shortcuts from the Chrome Apps subdirectory.
   // This matches the subdir name set by CreateApplicationShortcutView::Accept
   // for Chrome apps (not URL apps, but this function does not apply for them).
-  all_shortcut_locations.applications_menu_subdir =
-      web_app::GetAppShortcutsSubdirName();
+  all_shortcut_locations.applications_menu_location =
+      ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   std::vector<base::FilePath> all_paths = web_app::internals::GetShortcutPaths(
       all_shortcut_locations);
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
@@ -458,8 +458,11 @@ void DeletePlatformShortcuts(
 
   // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
   base::FilePath chrome_apps_dir;
-  if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
-    chrome_apps_dir = chrome_apps_dir.Append(GetAppShortcutsSubdirName());
+  if (ShellUtil::GetShortcutPath(
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
+          BrowserDistribution::GetDistribution(),
+          ShellUtil::CURRENT_USER,
+          &chrome_apps_dir)) {
     if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
@@ -471,8 +474,11 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
 
   // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
   base::FilePath chrome_apps_dir;
-  if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
-    chrome_apps_dir = chrome_apps_dir.Append(GetAppShortcutsSubdirName());
+  if (ShellUtil::GetShortcutPath(
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
+          BrowserDistribution::GetDistribution(),
+          ShellUtil::CURRENT_USER,
+          &chrome_apps_dir)) {
     if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
@@ -485,43 +491,44 @@ std::vector<base::FilePath> GetShortcutPaths(
   // Locations to add to shortcut_paths.
   struct {
     bool use_this_location;
-    int location_id;
-    const wchar_t* subdir;
+    ShellUtil::ShortcutLocation location_id;
   } locations[] = {
     {
       creation_locations.on_desktop,
-      base::DIR_USER_DESKTOP,
-      NULL
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP
     }, {
-      creation_locations.in_applications_menu,
-      base::DIR_START_MENU,
-      creation_locations.applications_menu_subdir.empty() ? NULL :
-          creation_locations.applications_menu_subdir.c_str()
+      creation_locations.applications_menu_location ==
+          ShellIntegration::APP_MENU_LOCATION_ROOT,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT
     }, {
-      creation_locations.in_quick_launch_bar,
-      // For Win7, in_quick_launch_bar means pinning to taskbar. Use
-      // base::PATH_START as a flag for this case.
-      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
-          base::PATH_START : base::DIR_APP_DATA,
-      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
-          NULL : L"Microsoft\\Internet Explorer\\Quick Launch"
+      creation_locations.applications_menu_location ==
+          ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROME,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR
+    }, {
+      creation_locations.applications_menu_location ==
+          ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR
+    }, {
+      // For Win7+, |in_quick_launch_bar| indicates that we are pinning to
+      // taskbar. This needs to be handled by callers.
+      creation_locations.in_quick_launch_bar &&
+          base::win::GetVersion() < base::win::VERSION_WIN7,
+      ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH
     }
   };
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   // Populate shortcut_paths.
   for (int i = 0; i < arraysize(locations); ++i) {
     if (locations[i].use_this_location) {
       base::FilePath path;
-
-      // Skip the Win7 case.
-      if (locations[i].location_id == base::PATH_START)
-        continue;
-
-      if (!PathService::Get(locations[i].location_id, &path)) {
+      if (!ShellUtil::GetShortcutPath(locations[i].location_id,
+                                      dist,
+                                      ShellUtil::CURRENT_USER,
+                                      &path)) {
+        NOTREACHED();
         continue;
       }
-
-      if (locations[i].subdir != NULL)
-        path = path.Append(locations[i].subdir);
       shortcut_paths.push_back(path);
     }
   }

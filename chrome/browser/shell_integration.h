@@ -106,13 +106,28 @@ class ShellIntegration {
     std::string profile_name;
   };
 
+  // This specifies a folder in the system applications menu (e.g the Start Menu
+  // on Windows).
+  //
+  // These represent the applications menu root, the "Google Chrome" folder and
+  // the "Chrome Apps" folder respectively.
+  //
+  // NB: On Linux, these locations may not be used by the window manager (e.g
+  // Unity and Gnome Shell).
+  enum ApplicationsMenuLocation {
+    APP_MENU_LOCATION_NONE,
+    APP_MENU_LOCATION_ROOT,
+    APP_MENU_LOCATION_SUBDIR_CHROME,
+    APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+  };
+
   // Info about which locations to create app shortcuts in.
   struct ShortcutLocations {
     ShortcutLocations();
 
     bool on_desktop;
-    bool in_applications_menu;
-    string16 applications_menu_subdir;
+
+    ApplicationsMenuLocation applications_menu_location;
 
     // For Windows, this refers to quick launch bar prior to Win7. In Win7,
     // this means "pin to taskbar". For Mac/Linux, this could be used for
@@ -120,11 +135,13 @@ class ShellIntegration {
     // implemented yet.
     bool in_quick_launch_bar;
 
+#if defined(OS_POSIX)
     // For Linux, this refers to a shortcut which the system knows about (for
     // the purpose of identifying windows and giving them the correct
     // title/icon), but which does not show up in menus or search results.
-    // Ignored if in_applications_menu == true.
+    // Ignored if applications_menu_location is not APP_MENU_LOCATION_NONE.
     bool hidden;
+#endif
   };
 
   // Data that needs to be passed between the app launcher stub and Chrome.
@@ -184,6 +201,15 @@ class ShellIntegration {
   // Returns the path to the Start Menu shortcut for the given Chrome.
   static base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe);
 #endif  // defined(OS_WIN)
+
+#if !defined(OS_WIN)
+  // TODO(calamity): replace with
+  // BrowserDistribution::GetStartMenuShortcutSubfolder() once
+  // BrowserDistribution is cross-platform.
+  // Gets the name of the Chrome Apps menu folder in which to place app
+  // shortcuts. This is needed for Mac and Linux.
+  static base::string16 GetAppShortcutsSubdirName();
+#endif
 
   // The current default web client application UI state. This is used when
   // querying if Chrome is the default browser or the default handler

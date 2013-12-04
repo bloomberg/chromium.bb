@@ -212,9 +212,12 @@ void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
     ShellIntegration::ShortcutLocations creation_locations;
     creation_locations.on_desktop =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
-    creation_locations.in_applications_menu =
-        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_));
-    creation_locations.applications_menu_subdir = shortcut_menu_subdir_;
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_))) {
+      creation_locations.applications_menu_location =
+          create_in_chrome_apps_subdir_ ?
+              ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS :
+              ShellIntegration::APP_MENU_LOCATION_ROOT;
+    }
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
                    this, shortcut_info_, creation_locations));
@@ -300,8 +303,8 @@ CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
   web_app::GetShortcutInfoForTab(web_contents, &shortcut_info_);
   CreateIconPixBuf(shortcut_info_.favicon);
 
-  // NOTE: Leave shortcut_menu_subdir_ blank to create URL app shortcuts in the
-  // top-level menu.
+  // Create URL app shortcuts in the top-level menu.
+  create_in_chrome_apps_subdir_ = false;
 
   CreateDialogBox(parent);
 }
@@ -324,7 +327,7 @@ CreateChromeApplicationShortcutsDialogGtk::
       close_callback_(close_callback) {
 
   // Place Chrome app shortcuts in the "Chrome Apps" submenu.
-  shortcut_menu_subdir_ = web_app::GetAppShortcutsSubdirName();
+  create_in_chrome_apps_subdir_ = true;
 
   // Get shortcut information and icon now; they are needed for our UI.
   web_app::UpdateShortcutInfoAndIconForApp(

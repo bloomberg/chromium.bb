@@ -22,6 +22,12 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+#if !defined(OS_WIN)
+#include "chrome/common/chrome_version_info.h"
+#include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif
+
 using content::BrowserThread;
 
 ShellIntegration::DefaultWebClientSetPermission
@@ -39,9 +45,12 @@ ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
 
 ShellIntegration::ShortcutLocations::ShortcutLocations()
     : on_desktop(false),
-      in_applications_menu(false),
-      in_quick_launch_bar(false),
-      hidden(false) {
+      applications_menu_location(APP_MENU_LOCATION_NONE),
+      in_quick_launch_bar(false)
+#if defined(OS_POSIX)
+      , hidden(false)
+#endif
+      {
 }
 
 static const struct ShellIntegration::AppModeInfo* gAppModeInfo = NULL;
@@ -109,6 +118,13 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
 }
 
 #if !defined(OS_WIN)
+
+base::string16 ShellIntegration::GetAppShortcutsSubdirName() {
+  if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_CANARY)
+    return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY);
+  return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
+}
+
 // static
 bool ShellIntegration::SetAsDefaultBrowserInteractive() {
   return false;

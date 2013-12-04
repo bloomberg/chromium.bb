@@ -413,7 +413,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         // migrated to single-install. This is treated as an update failure
         // unless the binaries are not in-use, in which case they will be
         // uninstalled and success will be reported (see handling in wWinMain).
-        LOG(INFO) << "No products to be updated.";
+        VLOG(1) << "No products to be updated.";
         *status = installer::UNUSED_BINARIES;
         installer_state->WriteInstallerResult(*status, 0, NULL);
         return false;
@@ -1014,7 +1014,7 @@ installer::InstallStatus RegisterDevChrome(
     shortcut_properties.set_dual_mode(true);
     shortcut_properties.set_pin_to_taskbar(true);
     ShellUtil::CreateOrUpdateShortcut(
-        ShellUtil::SHORTCUT_LOCATION_START_MENU, chrome_dist,
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, chrome_dist,
         shortcut_properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);
 
     // Register Chrome at user-level and make it default.

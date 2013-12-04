@@ -46,7 +46,7 @@ std::string GetIconName();
 // extension with |extension_id| in |profile_path|.
 // This searches the file system for .desktop files in appropriate locations. A
 // shortcut with NoDisplay=true causes hidden to become true, instead of
-// in_applications_menu.
+// creating at APP_MENU_LOCATIONS_SUBDIR_CHROMEAPPS.
 ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
     base::Environment* env,
     const base::FilePath& profile_path,
