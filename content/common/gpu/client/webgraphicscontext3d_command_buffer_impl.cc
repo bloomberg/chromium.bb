@@ -239,17 +239,6 @@ WebGraphicsContext3DCommandBufferImpl::
     real_gl_->SetErrorMessageCallback(NULL);
   }
 
-  if (host_.get()) {
-    base::AutoLock lock(g_all_shared_contexts_lock.Get());
-    ContextMap& all_contexts = g_all_shared_contexts.Get();
-    ContextMap::iterator it = std::find(
-        all_contexts.begin(),
-        all_contexts.end(),
-        std::pair<GpuChannelHost* const,
-                  WebGraphicsContext3DCommandBufferImpl*>(host_.get(), this));
-    if (it != all_contexts.end())
-      all_contexts.erase(it);
-  }
   Destroy();
 }
 
@@ -455,6 +444,18 @@ uint32_t WebGraphicsContext3DCommandBufferImpl::lastFlushID() {
 DELEGATE_TO_GL_R(insertSyncPoint, InsertSyncPointCHROMIUM, unsigned int)
 
 void WebGraphicsContext3DCommandBufferImpl::Destroy() {
+  if (host_.get()) {
+    base::AutoLock lock(g_all_shared_contexts_lock.Get());
+    ContextMap& all_contexts = g_all_shared_contexts.Get();
+    ContextMap::iterator it = std::find(
+        all_contexts.begin(),
+        all_contexts.end(),
+        std::pair<GpuChannelHost* const,
+                  WebGraphicsContext3DCommandBufferImpl*>(host_.get(), this));
+    if (it != all_contexts.end())
+      all_contexts.erase(it);
+  }
+
   if (gl_) {
     // First flush the context to ensure that any pending frees of resources
     // are completed. Otherwise, if this context is part of a share group,
