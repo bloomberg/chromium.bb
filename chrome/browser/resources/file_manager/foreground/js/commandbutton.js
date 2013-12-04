@@ -35,7 +35,6 @@ CommandButton.prototype.decorate = function() {
     this.setCommand(commandId);
 
   this.addEventListener('click', this.handleClick_.bind(this));
-  this.addEventListener('keypress', this.handleKeyPress_.bind(this));
 };
 
 /**
@@ -102,22 +101,6 @@ CommandButton.prototype.setLabel = function(label) {
 CommandButton.prototype.handleClick_ = function(e) {
   if (!this.disabled && this.command_)
     this.command_.execute(this);
-};
-
-/**
- * Handles keypress event and dispatches associated command.
- * @param {Event} e The mouseup event object.
- * @private
- */
-CommandButton.prototype.handleKeyPress_ = function(e) {
-  if (!this.command_) return;
-
-  switch (util.getKeyModifiers(e) + e.keyCode) {
-    case '13':  // Enter
-    case '32':  // Space
-      this.command_.execute(this);
-      break;
-  }
 };
 
 /**
