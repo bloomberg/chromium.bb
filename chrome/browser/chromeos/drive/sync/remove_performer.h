@@ -27,6 +27,7 @@ class ResourceEntry;
 
 namespace internal {
 
+class EntryRevertPerformer;
 class ResourceMetadata;
 
 // This class encapsulates the drive Remove function.  It is responsible for
@@ -83,6 +84,7 @@ class RemovePerformer {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
+  scoped_ptr<EntryRevertPerformer> entry_revert_performer_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

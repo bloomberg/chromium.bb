@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -51,6 +52,9 @@ RemovePerformer::RemovePerformer(
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
+      entry_revert_performer_(new EntryRevertPerformer(blocking_task_runner,
+                                                       scheduler,
+                                                       metadata)),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -124,6 +128,12 @@ void RemovePerformer::DeleteResourceAfterUpdateRemoteState(
     google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (status == google_apis::HTTP_FORBIDDEN) {
+    // Editing this entry is not allowed, revert local changes.
+    entry_revert_performer_->RevertEntry(local_id, callback);
+    return;
+  }
 
   FileError error = GDataToFileError(status);
   if (error == FILE_ERROR_NOT_FOUND) {  // Remove local entry when not found.

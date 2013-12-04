@@ -289,6 +289,8 @@
         'browser/chromeos/drive/resource_metadata_storage.h',
         'browser/chromeos/drive/search_metadata.cc',
         'browser/chromeos/drive/search_metadata.h',
+        'browser/chromeos/drive/sync/entry_revert_performer.cc',
+        'browser/chromeos/drive/sync/entry_revert_performer.h',
         'browser/chromeos/drive/sync/entry_update_performer.cc',
         'browser/chromeos/drive/sync/entry_update_performer.h',
         'browser/chromeos/drive/sync/remove_performer.cc',
