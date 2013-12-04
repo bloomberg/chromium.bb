@@ -10,10 +10,8 @@
 #include <float.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
-
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-#include <iostream>
 
 /* We sometimes reuse the same source file, so __FILE__ doesn't make sense
  * for debugging. Set up another identifier for which "file" you are in.
@@ -33,19 +31,16 @@
 /* NOTE: this also depends on having a __CUR_FUNC__ variable. */
 #define ASSERT(cond, message)                                           \
   if (!(cond)) {                                                        \
-    std::cerr << #cond ": ";                                            \
-    std::cerr << message;                                               \
-    std::cerr << " file: " << __MODULE__ << ", func: " << __func__      \
-              << ", line: " << __LINE__ << "\n\n";                      \
+    fprintf(stderr, #cond ": " message " file: %s, func: %s, "          \
+            "line: %i\n\n",  __MODULE__, __func__, __LINE__);           \
     abort();                                                            \
   }
 
 #define ASSERT_EQ(lhs, rhs, message)                                    \
   if ((lhs) != (rhs)) {                                                 \
-    std::cerr <<  #lhs "(" << lhs << ") != " #rhs "(" << rhs << "): ";  \
-    std::cerr << message;                                               \
-    std::cerr << " file: " << __MODULE__ << ", func: " << __func__      \
-              << ", line: " << __LINE__ << "\n\n";                      \
+  fprintf(stderr, #lhs " != " #rhs ": "                                 \
+          message " file: %s, func: %s, "                               \
+          "line: %i\n\n",  __MODULE__, __func__, __LINE__);             \
     abort();                                                            \
   }
 

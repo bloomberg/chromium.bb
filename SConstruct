@@ -2690,7 +2690,8 @@ pre_base_env.Append(
 # using a special tool chain which produces platform
 # independent binaries
 # NOTE: this loads stuff from: site_scons/site_tools/naclsdk.py
-nacl_env = MakeArchSpecificEnv().Clone(
+nacl_env = MakeArchSpecificEnv()
+nacl_env = nacl_env.Clone(
     tools = ['naclsdk'],
     NACL_BUILD_FAMILY = 'UNTRUSTED',
     BUILD_TYPE = 'nacl',
@@ -2740,7 +2741,10 @@ nacl_env = MakeArchSpecificEnv().Clone(
     # These are settings for in-tree, non-browser tests to use.
     # They use libraries that circumvent the IRT-based implementations
     # in the public libraries.
-    NONIRT_LIBS = ['nacl_sys_private'],
+    # Note that pthread_private is part of NONIRT_LIBS for PNaCl because
+    # libc++ depends on it.
+    NONIRT_LIBS = (['nacl_sys_private'] +
+                   (['pthread_private'] if nacl_env.Bit('bitcode') else [])),
     PTHREAD_LIBS = ['pthread_private'],
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     EXCEPTION_LIBS = ['nacl_exception_private'],
@@ -2843,7 +2847,7 @@ def TestsUsePublicListMappingsLib(env):
 
 def TestsUsePublicLibs(env):
   """Change the environment so it uses public libraries for in-tree tests."""
-  env.Replace(NONIRT_LIBS=[],
+  env.Replace(NONIRT_LIBS=['pthread'] if env.Bit('bitcode') else [],
               PTHREAD_LIBS=['pthread'],
               DYNCODE_LIBS=['nacl_dyncode', 'nacl'],
               EXCEPTION_LIBS=['nacl_exception', 'nacl'])

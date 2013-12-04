@@ -178,13 +178,13 @@ class NONTRIV_CLASS_I32_I32 {
   NONTRIV_CLASS_I32_I32(int32_t x_ = 0, int32_t y_ = 0) : x(x_), y(y_) { }
   NONTRIV_CLASS_I32_I32(const NONTRIV_CLASS_I32_I32 &other) :
       x(other.x), y(other.y) {
-    std::cerr << "I32_I32 Copy constructor, x: " << x << " y: " << y << "!\n";
+    fprintf(stderr, "I32_I32 Copy constructor, x: %i y: %i!\n", x, y);
   }
   virtual ~NONTRIV_CLASS_I32_I32() {
-    std::cerr << "I32_I32 destructor!\n";
+    fprintf(stderr, "I32_I32 destructor!\n");
   }
   virtual void foo(void) {
-    std::cerr << "foo!\n";
+    fprintf(stderr, "foo!\n");
   }
   int32_t x;
   int32_t y;
@@ -196,10 +196,10 @@ class NONTRIV_CLASS_DOUBLE_DOUBLE {
       x(x_), y(y_) { }
   NONTRIV_CLASS_DOUBLE_DOUBLE(const NONTRIV_CLASS_DOUBLE_DOUBLE &other) :
       x(other.x), y(other.y) {
-    std::cerr << "DOUBLE_DOUBLE Copy constructor!\n";
+    fprintf(stderr, "DOUBLE_DOUBLE Copy constructor!\n");
   }
   virtual ~NONTRIV_CLASS_DOUBLE_DOUBLE() {
-    std::cerr << "DOUBLE_DOUBLE destructor!\n";
+    fprintf(stderr, "DOUBLE_DOUBLE destructor!\n");
   }
   virtual double foo(void) {
     return KDOUBLE1;
@@ -523,22 +523,22 @@ static const ENUM1 kENUM1 = E4;
 
 static const ENUM1_PACKED8 kENUM1_PACKED8 = E4_PACKED8;
 #define CHECK_ENUM1_PACKED8(s)                                  \
-  std::cerr << "Size of packed enum: " << sizeof(s) << "\n";    \
+  fprintf(stderr, "Size of packed enum: %u\n", sizeof(s));      \
   ASSERT_EQ(s, kENUM1_PACKED8 , "(CHECK_ENUM1_PACKED8)")
 
 static const ENUM1_PACKED16 kENUM1_PACKED16 = E4_PACKED16;
 #define CHECK_ENUM1_PACKED16(s)                                 \
-  std::cerr << "Size of packed enum: " << sizeof(s) << "\n";    \
+  fprintf(stderr, "Size of packed enum: %u\n", sizeof(s));      \
   ASSERT_EQ(s, kENUM1_PACKED16, "(CHECK_ENUM1_PACKED16)")
 
 static const ENUM1_PACKED24 kENUM1_PACKED24 = E4_PACKED24;
 #define CHECK_ENUM1_PACKED24(s)                                 \
-  std::cerr << "Size of packed enum: " << sizeof(s) << "\n";    \
+  fprintf(stderr, "Size of packed enum: %u\n", sizeof(s));      \
   ASSERT_EQ(s, kENUM1_PACKED24, "(CHECK_ENUM1_PACKED24)")
 
 static const ENUM1_PACKED32 kENUM1_PACKED32 = E4_PACKED32;
 #define CHECK_ENUM1_PACKED32(s)                                 \
-  std::cerr << "Size of packed enum: " << sizeof(s) << "\n";    \
+  fprintf(stderr, "Size of packed enum: %u\n", sizeof(s));      \
   ASSERT_EQ(s, kENUM1_PACKED32, "(CHECK_ENUM1_PACKED32)")
 
 /*--- Trivial C++ classes vs Non-Trivial C++ classes ---*/

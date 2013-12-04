@@ -205,15 +205,17 @@ def SetTarget(*args):
 def SetStdLib(*args):
   """Set the C++ Standard Library."""
   lib = args[0]
-  assert(lib == 'libc++' or lib == 'libstdc++')
+  assert lib == 'libc++' or lib == 'libstdc++', (
+      'Invalid C++ standard library: -stdlib=%s' % lib)
   env.set('STDLIB', lib)
   env.set('STDLIB_TRUNC', lib[3:])
   if lib == 'libc++':
     env.set('STDLIB_IDIR', 'v1')
-    # libc++ depends on pthread for C++11 features as well as some
-    # exception handling (which may get removed later by the PNaCl ABI
-    # simplification) and initialize-once.
-    env.set('PTHREAD', '1')
+    if env.getbool('IS_CXX'):
+      # libc++ depends on pthread for C++11 features as well as some
+      # exception handling (which may get removed later by the PNaCl ABI
+      # simplification) and initialize-once.
+      env.set('PTHREAD', '1')
   elif lib == 'libstdc++':
     env.set('STDLIB_IDIR', '4.6.2')
 
@@ -466,7 +468,7 @@ def main(argv):
 
   if not env.get('STDLIB'):
     # Default C++ Standard Library.
-    SetStdLib('libstdc++')
+    SetStdLib('libc++')
 
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')

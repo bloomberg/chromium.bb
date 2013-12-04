@@ -162,41 +162,41 @@ $(IT).emcc.html: $(SRC) $(CPPSRC)
 ######################################################################
 ## NON-SANDBOXING LLVM TOOLCHAINS
 ######################################################################
-LOCAL_LLVM=clang
+LOCAL_LLVM=clang++
 
 # straight x86-32 llvm
 $(IT).llvm.x8632: $(SRC) $(CPPSRC)
-	$(LOCAL_LLVM) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
+	$(LOCAL_LLVM) -O0 -m32 $(CFLAGS) $^ -static -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized x86-32 llvm
 $(IT).llvm.opt.x8632: $(SRC) $(CPPSRC)
-	$(LOCAL_LLVM) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -o $@
+	$(LOCAL_LLVM) -O3 -m32 $(CFLAGS) $^ -static -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 
 # straight x86-64 llvm
 $(IT).llvm.x8664: $(SRC) $(CPPSRC)
 	$(LOCAL_LLVM) -O0 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
-	 	$^ -static -lstdc++ -lm  -o $@
+	 	$^ -static -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized x86-64 llvm
 $(IT).llvm.opt.x8664: $(SRC) $(CPPSRC)
 	$(LOCAL_LLVM) -O3 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
-	 	$^ -static -lstdc++ -lm  -o $@
+	 	$^ -static -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # straight ARM llvm
 $(IT).llvm.hw.arm: $(SRC) $(CPPSRC)
 	$(LOCAL_LLVM) -O0 $(CFLAGS) \
-	 	$^ -static -lstdc++ -lm  -o $@
+	 	$^ -static -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized ARM llvm
 $(IT).llvm.opt.hw.arm: $(SRC) $(CPPSRC)
 	$(LOCAL_LLVM) -O3 $(CFLAGS) \
-	 	$^ -static -lstdc++ -lm  -o $@
+	 	$^ -static -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################

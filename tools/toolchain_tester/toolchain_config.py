@@ -245,7 +245,7 @@ else:
   PNACL_TOOLCHAIN_LABEL = os.environ['PNACL_TOOLCHAIN_LABEL']
 
 PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_LABEL)
-PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang'
+PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang++'
 PNACL_FINALIZE = PNACL_ROOT + '/bin/pnacl-finalize'
 
 
@@ -256,7 +256,7 @@ PNACL_LD = PNACL_ROOT + '/bin/pnacl-translate'
 
 COMMANDS_llvm_pnacl_arm = [
     ('compile-pexe',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe -lm -lstdc++',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe',
      ),
     ('finalize-pexe',
      '%(FINALIZE)s %(FINALIZE_FLAGS)s %(tmp)s.nonfinal.pexe'
@@ -356,7 +356,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0_O0'] = ToolchainConfig(
 # NOTE: this is used for both x86 flavors
 COMMANDS_llvm_pnacl_x86 = [
     ('compile-pexe',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe -lm -lstdc++',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe',
      ),
     ('finalize-pexe',
      '%(FINALIZE)s %(FINALIZE_FLAGS)s %(tmp)s.nonfinal.pexe'

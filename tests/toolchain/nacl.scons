@@ -243,7 +243,11 @@ if supports_cxx11:
 
 if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 1:
   sjlj_eh_env = base_eh_env.Clone()
-  sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj'])
+  # TODO(jfb) sjlj EH currently doesn't support libc++ and requires
+  #           using libstdc++.
+  # See: https://code.google.com/p/nativeclient/issues/detail?id=3623
+  sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj', '-stdlib=libstdc++'])
+  sjlj_eh_env.Append(CCFLAGS=['-stdlib=libstdc++'])
   EH_ENVIRONMENTS_TO_TRY.append(('sjlj', sjlj_eh_env))
 
 if env.Bit('bitcode'):
