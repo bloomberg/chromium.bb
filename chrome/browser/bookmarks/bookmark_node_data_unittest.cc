@@ -14,7 +14,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "url/gurl.h"
 
 class BookmarkNodeDataTest : public testing::Test {
@@ -28,8 +27,7 @@ class BookmarkNodeDataTest : public testing::Test {
 namespace {
 
 ui::OSExchangeData::Provider* CloneProvider(const ui::OSExchangeData& data) {
-  return new ui::OSExchangeDataProviderWin(
-      ui::OSExchangeDataProviderWin::GetIDataObject(data));
+  return data.provider().Clone();
 }
 
 }  // namespace
@@ -60,13 +58,13 @@ TEST_F(BookmarkNodeDataTest, JustURL) {
   BookmarkNodeData drag_data;
   EXPECT_TRUE(drag_data.Read(ui::OSExchangeData(CloneProvider(data))));
   EXPECT_TRUE(drag_data.is_valid());
-  ASSERT_EQ(1, drag_data.elements.size());
+  ASSERT_EQ(1u, drag_data.elements.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
   EXPECT_EQ(title, drag_data.elements[0].title);
   EXPECT_TRUE(drag_data.elements[0].date_added.is_null());
   EXPECT_TRUE(drag_data.elements[0].date_folder_modified.is_null());
-  EXPECT_EQ(0, drag_data.elements[0].children.size());
+  EXPECT_EQ(0u, drag_data.elements[0].children.size());
 }
 
 TEST_F(BookmarkNodeDataTest, URL) {
@@ -82,7 +80,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   const BookmarkNode* node = model->AddURL(root, 0, title, url);
   BookmarkNodeData drag_data(node);
   EXPECT_TRUE(drag_data.is_valid());
-  ASSERT_EQ(1, drag_data.elements.size());
+  ASSERT_EQ(1u, drag_data.elements.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
   EXPECT_EQ(title, drag_data.elements[0].title);
@@ -97,7 +95,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
-  ASSERT_EQ(1, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.elements.size());
   EXPECT_TRUE(read_data.elements[0].is_url);
   EXPECT_EQ(url, read_data.elements[0].url);
   EXPECT_EQ(title, read_data.elements[0].title);
@@ -128,12 +126,12 @@ TEST_F(BookmarkNodeDataTest, Folder) {
 
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* g1 = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
-  const BookmarkNode* g11 = model->AddFolder(g1, 0, ASCIIToUTF16("g11"));
+  model->AddFolder(g1, 0, ASCIIToUTF16("g11"));
   const BookmarkNode* g12 = model->AddFolder(g1, 0, ASCIIToUTF16("g12"));
 
   BookmarkNodeData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
-  ASSERT_EQ(1, drag_data.elements.size());
+  ASSERT_EQ(1u, drag_data.elements.size());
   EXPECT_EQ(g12->GetTitle(), drag_data.elements[0].title);
   EXPECT_FALSE(drag_data.elements[0].is_url);
   EXPECT_EQ(g12->date_added(), drag_data.elements[0].date_added);
@@ -148,7 +146,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
-  ASSERT_EQ(1, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.elements.size());
   EXPECT_EQ(g12->GetTitle(), read_data.elements[0].title);
   EXPECT_FALSE(read_data.elements[0].is_url);
   EXPECT_TRUE(read_data.elements[0].date_added.is_null());
@@ -189,8 +187,8 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   ui::OSExchangeData data2(CloneProvider(data));
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
-  ASSERT_EQ(1, read_data.elements.size());
-  ASSERT_EQ(1, read_data.elements[0].children.size());
+  ASSERT_EQ(1u, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.elements[0].children.size());
   const BookmarkNodeData::Element& read_child =
       read_data.elements[0].children[0];
 
@@ -236,24 +234,24 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
-  ASSERT_EQ(2, read_data.elements.size());
-  ASSERT_EQ(1, read_data.elements[0].children.size());
+  ASSERT_EQ(2u, read_data.elements.size());
+  ASSERT_EQ(1u, read_data.elements[0].children.size());
   EXPECT_TRUE(read_data.elements[0].date_added.is_null());
   EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
 
   const BookmarkNodeData::Element& read_folder = read_data.elements[0];
   EXPECT_FALSE(read_folder.is_url);
-  EXPECT_EQ(L"g1", read_folder.title);
-  EXPECT_EQ(1, read_folder.children.size());
+  EXPECT_EQ(ASCIIToUTF16("g1"), read_folder.title);
+  EXPECT_EQ(1u, read_folder.children.size());
 
   const BookmarkNodeData::Element& read_url = read_data.elements[1];
   EXPECT_TRUE(read_url.is_url);
   EXPECT_EQ(title, read_url.title);
-  EXPECT_EQ(0, read_url.children.size());
+  EXPECT_EQ(0u, read_url.children.size());
 
   // And make sure we get the node back.
   std::vector<const BookmarkNode*> read_nodes = read_data.GetNodes(&profile);
-  ASSERT_EQ(2, read_nodes.size());
+  ASSERT_EQ(2u, read_nodes.size());
   EXPECT_TRUE(read_nodes[0] == folder);
   EXPECT_TRUE(read_nodes[1] == url_node);
 

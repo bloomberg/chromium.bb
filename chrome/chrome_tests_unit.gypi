@@ -2196,7 +2196,6 @@
           'sources/': [
             ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
-            ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
           ],
         }],
         ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {
@@ -2560,7 +2559,6 @@
         }, { # else: OS != "win"
           'sources!': [
             'app/chrome_dll.rc',
-            'browser/bookmarks/bookmark_node_data_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
             'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
@@ -2742,6 +2740,7 @@
           ],
         }, { # else: toolkit_views == 0
           'sources/': [
+            ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../ui/views/'],
           ],
