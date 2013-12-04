@@ -910,17 +910,9 @@ int64 Directory::unsynced_entity_count() const {
   return kernel_->unsynced_metahandles.size();
 }
 
-FullModelTypeSet Directory::GetServerTypesWithUnappliedUpdates(
-    BaseTransaction* trans) const {
-  FullModelTypeSet server_types;
+bool Directory::TypeHasUnappliedUpdates(ModelType type) {
   ScopedKernelLock lock(this);
-  for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
-    const ModelType type = ModelTypeFromInt(i);
-    if (!kernel_->unapplied_update_metahandles[type].empty()) {
-      server_types.Put(type);
-    }
-  }
-  return server_types;
+  return !kernel_->unapplied_update_metahandles[type].empty();
 }
 
 void Directory::GetUnappliedUpdateMetaHandles(

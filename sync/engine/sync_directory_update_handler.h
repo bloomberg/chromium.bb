@@ -8,9 +8,11 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/process_updates_util.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 
 namespace sync_pb {
 class DataTypeProgressMarker;
@@ -27,6 +29,8 @@ namespace syncable {
 class Directory;
 }
 
+class ModelSafeWorker;
+
 // This class represents the syncable::Directory's processes for requesting and
 // processing updates from the sync server.
 //
@@ -35,7 +39,9 @@ class Directory;
 // It can also process a set of received SyncEntities and store their data.
 class SYNC_EXPORT_PRIVATE SyncDirectoryUpdateHandler {
  public:
-  SyncDirectoryUpdateHandler(syncable::Directory* dir, ModelType type);
+  SyncDirectoryUpdateHandler(syncable::Directory* dir,
+                             ModelType type,
+                             scoped_refptr<ModelSafeWorker> worker);
   ~SyncDirectoryUpdateHandler();
 
   // Fills the given parameter with the stored progress marker for this type.
@@ -53,8 +59,13 @@ class SYNC_EXPORT_PRIVATE SyncDirectoryUpdateHandler {
       const SyncEntityList& applicable_updates,
       sessions::StatusController* status);
 
+  // If there are updates to apply, apply them on the proper thread.
+  // Delegates to ApplyUpdatesImpl().
+  void ApplyUpdates(sessions::StatusController* status);
+
  private:
-  friend class SyncDirectoryUpdateHandlerTest;
+  friend class SyncDirectoryUpdateHandlerApplyUpdateTest;
+  friend class SyncDirectoryUpdateHandlerProcessUpdateTest;
 
   // Processes the given SyncEntities and stores their data in the directory.
   // Their types must match this update handler's type.
@@ -68,8 +79,12 @@ class SYNC_EXPORT_PRIVATE SyncDirectoryUpdateHandler {
   void UpdateProgressMarker(
       const sync_pb::DataTypeProgressMarker& progress_marker);
 
+  // Skips all checks and goes straight to applying the updates.
+  SyncerError ApplyUpdatesImpl(sessions::StatusController* status);
+
   syncable::Directory* dir_;
   ModelType type_;
+  scoped_refptr<ModelSafeWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncDirectoryUpdateHandler);
 };

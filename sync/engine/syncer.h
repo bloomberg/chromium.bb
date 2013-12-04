@@ -23,16 +23,15 @@ namespace syncer {
 
 class CancelationSignal;
 
-// A Syncer provides a control interface for driving the individual steps
-// of the sync cycle.  Each cycle (hopefully) moves the client into closer
-// synchronization with the server.  The individual steps are modeled
-// as SyncerCommands, and the ordering of the steps is expressed using
-// the SyncerStep enum.
+// A Syncer provides a control interface for driving the sync cycle.  These
+// cycles consist of downloading updates, parsing the response (aka. process
+// updates), applying updates while resolving conflicts, and committing local
+// changes.  Some of these steps may be skipped if they're deemed to be
+// unnecessary.
 //
-// A Syncer instance expects to run on a dedicated thread.  Calls
-// to SyncShare() may take an unbounded amount of time, as SyncerCommands
-// may block on network i/o, on lock contention, or on tasks posted to
-// other threads.
+// A Syncer instance expects to run on a dedicated thread.  Calls to SyncShare()
+// may take an unbounded amount of time because it may block on network I/O, on
+// lock contention, or on tasks posted to other threads.
 class SYNC_EXPORT_PRIVATE Syncer {
  public:
   typedef std::vector<int64> UnsyncedMetaHandles;

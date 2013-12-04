@@ -52,14 +52,5 @@ TEST_F(StatusControllerTest, TotalNumConflictingItems) {
   EXPECT_EQ(6, status.TotalNumConflictingItems());
 }
 
-// Basic test that non group-restricted state accessors don't cause violations.
-TEST_F(StatusControllerTest, Unrestricted) {
-  StatusController status;
-  status.model_neutral_state();
-  status.download_updates_succeeded();
-  status.ServerSaysNothingMoreToDownload();
-  status.group_restriction();
-}
-
 }  // namespace sessions
 }  // namespace syncer

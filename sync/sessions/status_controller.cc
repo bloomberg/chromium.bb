@@ -13,9 +13,7 @@
 namespace syncer {
 namespace sessions {
 
-StatusController::StatusController()
-    : group_restriction_in_effect_(false),
-      group_restriction_(GROUP_PASSIVE) {
+StatusController::StatusController() {
 }
 
 StatusController::~StatusController() {}
@@ -129,20 +127,14 @@ int StatusController::num_encryption_conflicts() const {
 }
 
 int StatusController::num_hierarchy_conflicts() const {
-  DCHECK(!group_restriction_in_effect_)
-      << "num_hierarchy_conflicts applies to all ModelSafeGroups";
   return model_neutral_.num_hierarchy_conflicts;
 }
 
 int StatusController::num_server_conflicts() const {
-  DCHECK(!group_restriction_in_effect_)
-      << "num_server_conflicts applies to all ModelSafeGroups";
   return model_neutral_.num_server_conflicts;
 }
 
 int StatusController::TotalNumConflictingItems() const {
-  DCHECK(!group_restriction_in_effect_)
-      << "TotalNumConflictingItems applies to all ModelSafeGroups";
   int sum = 0;
   sum += num_encryption_conflicts();
   sum += num_hierarchy_conflicts();

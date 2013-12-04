@@ -189,7 +189,7 @@ class SyncerTest : public testing::Test,
 
     EXPECT_TRUE(
         syncer_->NormalSyncShare(
-            GetRoutingInfoTypes(context_->routing_info()),
+            context_->enabled_types(),
             nudge_tracker_,
             session_.get()));
   }
@@ -197,7 +197,7 @@ class SyncerTest : public testing::Test,
   void SyncShareConfigure() {
     session_.reset(SyncSession::Build(context_.get(), this));
     EXPECT_TRUE(syncer_->ConfigureSyncShare(
-            GetRoutingInfoTypes(context_->routing_info()),
+            context_->enabled_types(),
             sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
             session_.get()));
   }
@@ -544,8 +544,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
 
   // Now sync without enabling bookmarks.
   syncer_->NormalSyncShare(
-      Difference(GetRoutingInfoTypes(context_->routing_info()),
-                 ModelTypeSet(BOOKMARKS)),
+      Difference(context_->enabled_types(), ModelTypeSet(BOOKMARKS)),
       nudge_tracker_,
       session_.get());
 
@@ -559,7 +558,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
 
   // Sync again with bookmarks enabled.
   syncer_->NormalSyncShare(
-      GetRoutingInfoTypes(context_->routing_info()),
+      context_->enabled_types(),
       nudge_tracker_,
       session_.get());
   SyncShareNudge();

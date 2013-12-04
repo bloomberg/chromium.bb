@@ -13,6 +13,7 @@
 #include "sync/sessions/nudge_tracker.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/directory.h"
+#include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "sync/test/sessions/mock_debug_info_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,9 +32,9 @@ class DownloadUpdatesTest : public ::testing::Test {
   virtual void SetUp() {
     dir_maker_.SetUp();
 
-    AddUpdateHandler(AUTOFILL);
-    AddUpdateHandler(BOOKMARKS);
-    AddUpdateHandler(PREFERENCES);
+    AddUpdateHandler(AUTOFILL, GROUP_DB);
+    AddUpdateHandler(BOOKMARKS, GROUP_UI);
+    AddUpdateHandler(PREFERENCES, GROUP_UI);
   }
 
   virtual void TearDown() {
@@ -58,11 +59,12 @@ class DownloadUpdatesTest : public ::testing::Test {
   }
 
  private:
-  void AddUpdateHandler(ModelType type) {
+  void AddUpdateHandler(ModelType type, ModelSafeGroup group) {
     DCHECK(directory());
-    update_handler_map_.insert(
-        std::make_pair(type,
-                       new SyncDirectoryUpdateHandler(directory(), type)));
+    scoped_refptr<ModelSafeWorker> worker = new FakeModelWorker(group);
+    SyncDirectoryUpdateHandler* handler =
+        new SyncDirectoryUpdateHandler(directory(), type, worker);
+    update_handler_map_.insert(std::make_pair(type, handler));
   }
 
   base::MessageLoop loop_;  // Needed for directory init.

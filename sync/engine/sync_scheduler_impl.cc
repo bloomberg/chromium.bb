@@ -242,10 +242,8 @@ void SyncSchedulerImpl::Start(Mode mode) {
 }
 
 ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
-  ModelTypeSet enabled_types =
-      GetRoutingInfoTypes(session_context_->routing_info());
-  ModelTypeSet throttled_types =
-      nudge_tracker_.GetThrottledTypes();
+  ModelTypeSet enabled_types = session_context_->enabled_types();
+  ModelTypeSet throttled_types = nudge_tracker_.GetThrottledTypes();
   return Difference(enabled_types, throttled_types);
 }
 
@@ -336,8 +334,7 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
     return false;
   }
 
-  const ModelTypeSet enabled_types =
-      GetRoutingInfoTypes(session_context_->routing_info());
+  const ModelTypeSet enabled_types = session_context_->enabled_types();
   if (nudge_tracker_.GetThrottledTypes().HasAll(enabled_types)) {
     SDVLOG(1) << "Not running a nudge because we're fully type throttled.";
     return false;
@@ -459,8 +456,8 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   DCHECK(CanRunNudgeJobNow(priority));
 
-  DVLOG(2) << "Will run normal mode sync cycle with routing info "
-           << ModelSafeRoutingInfoToString(session_context_->routing_info());
+  DVLOG(2) << "Will run normal mode sync cycle with types "
+           << ModelTypeSetToString(session_context_->enabled_types());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   bool premature_exit = !syncer_->NormalSyncShare(
       GetEnabledAndUnthrottledTypes(),
@@ -503,11 +500,11 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
     return;
   }
 
-  SDVLOG(2) << "Will run configure SyncShare with routes "
-           << ModelSafeRoutingInfoToString(session_context_->routing_info());
+  SDVLOG(2) << "Will run configure SyncShare with types "
+            << ModelTypeSetToString(session_context_->enabled_types());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   bool premature_exit = !syncer_->ConfigureSyncShare(
-      GetRoutingInfoTypes(session_context_->routing_info()),
+      session_context_->enabled_types(),
       pending_configure_params_->source,
       session.get());
   AdjustPolling(FORCE_RESET);
@@ -567,8 +564,8 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
     return;
   }
 
-  SDVLOG(2) << "Polling with routes "
-           << ModelSafeRoutingInfoToString(session_context_->routing_info());
+  SDVLOG(2) << "Polling with types "
+            << ModelTypeSetToString(session_context_->enabled_types());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   syncer_->PollSyncShare(
       GetEnabledAndUnthrottledTypes(),

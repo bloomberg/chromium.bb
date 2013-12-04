@@ -9,15 +9,7 @@
 
 namespace syncer {
 
-// This enum describes all the ways a SyncerCommand can fail.
-//
-// SyncerCommands do many different things, but they share a common function
-// signature.  This enum, the return value for all SyncerCommands, must be able
-// to describe any possible failure for all SyncerComand.
-//
-// For convenience, functions which are invoked only by SyncerCommands may also
-// return a SyncerError.  It saves us having to write a conversion function, and
-// it makes refactoring easier.
+// This enum describes all the possible results of a sync cycle.
 enum SYNC_EXPORT_PRIVATE SyncerError {
   UNSET = 0,       // Default value.
   CANNOT_DO_WORK,  // A model worker could not process a work item.

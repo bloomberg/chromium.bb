@@ -5,25 +5,14 @@
 // StatusController handles all counter and status related number crunching and
 // state tracking on behalf of a SyncSession.
 //
-// The most important feature of StatusController is the
-// ScopedModelSafeGroupRestriction.  Some of its functions expose per-thread
-// state, and can be called only when the restriction is in effect.  For
-// example, if GROUP_UI is set then the value returned from
-// commit_id_projection() will be useful for iterating over the commit IDs of
-// items that live on the UI thread.
+// This object may be accessed from many different threads.  It will be accessed
+// most often from the syncer thread.  However, when update application is in
+// progress it may also be accessed from the worker threads.  This is safe
+// because only one of them will run at a time, and the syncer thread will be
+// blocked until update application completes.
 //
-// Other parts of its state are global, and do not require the restriction.
-//
-// NOTE: There is no concurrent access protection provided by this class. It
-// assumes one single thread is accessing this class for each unique
-// ModelSafeGroup, and also only one single thread (in practice, the
-// SyncerThread) responsible for all "shared" access when no restriction is in
-// place. Thus, every bit of data is to be accessed mutually exclusively with
-// respect to threads.
-//
-// StatusController can also track if changes occur to certain parts of state
-// so that various parts of the sync engine can avoid broadcasting
-// notifications if no changes occurred.
+// This object contains only global state.  None of its members are per model
+// type counters.
 
 #ifndef SYNC_SESSIONS_STATUS_CONTROLLER_H_
 #define SYNC_SESSIONS_STATUS_CONTROLLER_H_
@@ -96,10 +85,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
   // download: in that case, this also returns false.
   bool ServerSaysNothingMoreToDownload() const;
 
-  ModelSafeGroup group_restriction() const {
-    return group_restriction_;
-  }
-
   base::Time sync_start_time() const {
     // The time at which we sent the first GetUpdates command for this sync.
     return sync_start_time_;
@@ -142,38 +127,11 @@ class SYNC_EXPORT_PRIVATE StatusController {
   void UpdateStartTime();
 
  private:
-  friend class ScopedModelSafeGroupRestriction;
-
   ModelNeutralState model_neutral_;
-
-  // Used to fail read/write operations on state that don't obey the current
-  // active ModelSafeWorker contract.
-  bool group_restriction_in_effect_;
-  ModelSafeGroup group_restriction_;
 
   base::Time sync_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusController);
-};
-
-// A utility to restrict access to only those parts of the given
-// StatusController that pertain to the specified ModelSafeGroup.
-class ScopedModelSafeGroupRestriction {
- public:
-  ScopedModelSafeGroupRestriction(StatusController* to_restrict,
-                                  ModelSafeGroup restriction)
-      : status_(to_restrict) {
-    DCHECK(!status_->group_restriction_in_effect_);
-    status_->group_restriction_ = restriction;
-    status_->group_restriction_in_effect_ = true;
-  }
-  ~ScopedModelSafeGroupRestriction() {
-    DCHECK(status_->group_restriction_in_effect_);
-    status_->group_restriction_in_effect_ = false;
-  }
- private:
-  StatusController* status_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedModelSafeGroupRestriction);
 };
 
 }  // namespace sessions

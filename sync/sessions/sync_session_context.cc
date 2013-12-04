@@ -35,8 +35,10 @@ SyncSessionContext::SyncSessionContext(
       server_enabled_pre_commit_update_avoidance_(false),
       client_enabled_pre_commit_update_avoidance_(
           client_enabled_pre_commit_update_avoidance) {
-  for (size_t i = 0u; i < workers.size(); ++i)
-    workers_.push_back(workers[i]);
+  for (size_t i = 0u; i < workers.size(); ++i) {
+    workers_.insert(
+        std::make_pair(workers[i]->GetModelSafeGroup(), workers[i]));
+  }
 
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
@@ -48,24 +50,28 @@ SyncSessionContext::~SyncSessionContext() {
 
 void SyncSessionContext::set_routing_info(
     const ModelSafeRoutingInfo& routing_info) {
-  routing_info_ = routing_info;
+  enabled_types_ = GetRoutingInfoTypes(routing_info);
 
   // TODO(rlarocque): This is not a good long-term solution.  We must find a
   // better way to initialize the set of CommitContributors and UpdateHandlers.
-  ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
-
-  STLDeleteValues<CommitContributorMap>(&commit_contributor_map_);
-  for (ModelTypeSet::Iterator it = enabled_types.First(); it.Good(); it.Inc()) {
-    SyncDirectoryCommitContributor* contributor =
-        new SyncDirectoryCommitContributor(directory(), it.Get());
-    commit_contributor_map_.insert(std::make_pair(it.Get(), contributor));
-  }
-
   STLDeleteValues<UpdateHandlerMap>(&update_handler_map_);
-  for (ModelTypeSet::Iterator it = enabled_types.First(); it.Good(); it.Inc()) {
+  STLDeleteValues<CommitContributorMap>(&commit_contributor_map_);
+  for (ModelSafeRoutingInfo::const_iterator routing_iter = routing_info.begin();
+       routing_iter != routing_info.end(); ++routing_iter) {
+    ModelType type = routing_iter->first;
+    ModelSafeGroup group = routing_iter->second;
+    std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker> >::iterator
+        worker_it = workers_.find(group);
+    DCHECK(worker_it != workers_.end());
+    scoped_refptr<ModelSafeWorker> worker = worker_it->second;
+
     SyncDirectoryUpdateHandler* handler =
-        new SyncDirectoryUpdateHandler(directory(), it.Get());
-    update_handler_map_.insert(std::make_pair(it.Get(), handler));
+        new SyncDirectoryUpdateHandler(directory(), type, worker);
+    update_handler_map_.insert(std::make_pair(type, handler));
+
+    SyncDirectoryCommitContributor* contributor =
+        new SyncDirectoryCommitContributor(directory(), type);
+    commit_contributor_map_.insert(std::make_pair(type, contributor));
   }
 }
 

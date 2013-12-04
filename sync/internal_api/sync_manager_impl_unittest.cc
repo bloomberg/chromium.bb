@@ -66,6 +66,7 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/callback_counter.h"
+#include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/fake_sync_scheduler.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/test/fake_encryptor.h"
@@ -815,6 +816,12 @@ class SyncManagerTest : public testing::Test,
     std::vector<ModelSafeWorker*> workers;
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
+
+    // This works only because all routing info types are GROUP_PASSIVE.
+    // If we had types in other groups, we would need additional workers
+    // to support them.
+    scoped_refptr<ModelSafeWorker> worker = new FakeModelWorker(GROUP_PASSIVE);
+    workers.push_back(worker.get());
 
     // Takes ownership of |fake_invalidator_|.
     sync_manager_.Init(

@@ -315,11 +315,8 @@ class SYNC_EXPORT Directory {
   void GetUnsyncedMetaHandles(BaseTransaction* trans,
                               Metahandles* result);
 
-  // Returns all server types with unapplied updates.  A subset of
-  // those types can then be passed into
-  // GetUnappliedUpdateMetaHandles() below.
-  FullModelTypeSet GetServerTypesWithUnappliedUpdates(
-      BaseTransaction* trans) const;
+  // Returns whether or not this |type| has unapplied updates.
+  bool TypeHasUnappliedUpdates(ModelType type);
 
   // Get all the metahandles for unapplied updates for a given set of
   // server types.

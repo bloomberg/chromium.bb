@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "sync/engine/apply_control_data_updates.h"
-#include "sync/engine/apply_updates_and_resolve_conflicts_command.h"
 #include "sync/engine/commit.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/download.h"
@@ -115,8 +114,11 @@ void Syncer::ApplyUpdates(SyncSession* session) {
 
   ApplyControlDataUpdates(session->context()->directory());
 
-  ApplyUpdatesAndResolveConflictsCommand apply_updates;
-  apply_updates.Execute(session);
+  UpdateHandlerMap* handler_map = session->context()->update_handler_map();
+  for (UpdateHandlerMap::iterator it = handler_map->begin();
+       it != handler_map->end(); ++it) {
+    it->second->ApplyUpdates(session->mutable_status_controller());
+  }
 
   session->context()->set_hierarchy_conflict_detected(
       session->status_controller().num_hierarchy_conflicts() > 0);

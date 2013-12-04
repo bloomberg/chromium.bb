@@ -4,12 +4,8 @@
 
 // A class representing an attempt to synchronize the local syncable data
 // store with a sync server. A SyncSession instance is passed as a stateful
-// bundle to and from various SyncerCommands with the goal of converging the
-// client view of data with that of the server. The commands twiddle with
-// session status in response to events and hiccups along the way, set and
-// query session progress with regards to conflict resolution and applying
-// server updates, and access the SyncSessionContext for the current session
-// via SyncSession instances.
+// bundle throughout the sync cycle.  The SyncSession is not reused across
+// sync cycles; each cycle starts with a new one.
 
 #ifndef SYNC_SESSIONS_SYNC_SESSION_H_
 #define SYNC_SESSIONS_SYNC_SESSION_H_

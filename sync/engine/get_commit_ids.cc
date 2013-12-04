@@ -73,9 +73,8 @@ void GetCommitIdsForType(
 
   // We filter out all unready entries from the set of unsynced handles. This
   // new set of ready and unsynced items is then what we use to determine what
-  // is a candidate for commit.  The caller of this SyncerCommand is responsible
-  // for ensuring that no throttled types are included among the
-  // requested_types.
+  // is a candidate for commit.  The caller is responsible for ensuring that no
+  // throttled types are included among the requested_types.
   FilterUnreadyEntries(trans,
                        ModelTypeSet(type),
                        encrypted_types,

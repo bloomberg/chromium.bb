@@ -35,9 +35,7 @@ class Cryptographer;
 
 class UpdateApplicator {
  public:
-  UpdateApplicator(Cryptographer* cryptographer,
-                   const ModelSafeRoutingInfo& routes,
-                   ModelSafeGroup group_filter);
+  UpdateApplicator(Cryptographer* cryptographer);
   ~UpdateApplicator();
 
   // Attempt to apply the specified updates.
@@ -66,10 +64,6 @@ class UpdateApplicator {
 
   // Used to decrypt sensitive sync nodes.
   Cryptographer* cryptographer_;
-
-  ModelSafeGroup group_filter_;
-
-  const ModelSafeRoutingInfo routing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
 
