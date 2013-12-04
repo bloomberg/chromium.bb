@@ -318,8 +318,11 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
     delegate.SetExpectedSizes(std::vector<uint32_t>(1, size));
     MessageInTransit* message = MakeTestMessage(size);
+
+    ssize_t write_size = HANDLE_EINTR(
+        write(fd(1), message, message->size_with_header_and_padding()));
     EXPECT_EQ(static_cast<ssize_t>(message->size_with_header_and_padding()),
-              write(fd(1), message, message->size_with_header_and_padding()));
+              write_size);
     message->Destroy();
     delegate.Wait();
   }
@@ -332,8 +335,10 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
   delegate.SetExpectedSizes(expected_sizes);
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
     MessageInTransit* message = MakeTestMessage(size);
+    ssize_t write_size = HANDLE_EINTR(
+        write(fd(1), message, message->size_with_header_and_padding()));
     EXPECT_EQ(static_cast<ssize_t>(message->size_with_header_and_padding()),
-              write(fd(1), message, message->size_with_header_and_padding()));
+              write_size);
     message->Destroy();
   }
   delegate.Wait();
