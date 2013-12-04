@@ -59,8 +59,6 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
     float contents_width_scale,
     float contents_height_scale,
     gfx::Rect* resulting_opaque_rect) {
-  devtools_instrumentation::ScopedLayerTask paint_layer(
-      devtools_instrumentation::kPaintLayer, layer_id_);
   if (canvas_size_ != content_rect.size()) {
     devtools_instrumentation::ScopedLayerTask paint_setup(
         devtools_instrumentation::kPaintSetup, layer_id_);

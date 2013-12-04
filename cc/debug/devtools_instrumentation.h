@@ -22,10 +22,8 @@ const char kBeginFrame[] = "BeginFrame";
 const char kActivateLayerTree[] = "ActivateLayerTree";
 }  // namespace internal
 
-const char kPaintLayer[] = "PaintLayer";
 const char kRasterTask[] = "RasterTask";
 const char kPaintSetup[] = "PaintSetup";
-const char kUpdateLayer[] = "UpdateLayer";
 
 class ScopedLayerTask {
  public:
