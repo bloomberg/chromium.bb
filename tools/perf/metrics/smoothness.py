@@ -43,9 +43,7 @@ class SmoothnessMetric(Metric):
     self._compound_action = compound_action
 
   def Start(self, page, tab):
-    # TODO(ermst): Remove "webkit" category after Blink r157377 is picked up by
-    # the reference builds.
-    tab.browser.StartTracing('webkit,webkit.console,benchmark', 60)
+    tab.browser.StartTracing('webkit.console,benchmark', 60)
     tab.ExecuteJavaScript('console.time("' + TIMELINE_MARKER + '")')
 
   def Stop(self, page, tab):

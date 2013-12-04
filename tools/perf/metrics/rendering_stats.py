@@ -37,12 +37,7 @@ class RenderingStats(object):
                                            marker.start+marker.duration)
 
   def initMainThreadStatsFromTimeline(self, start, end):
-    # TODO(ernstm): Remove when CL with new event names was rolled into
-    # reference build.
     event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
-    for event in self.renderer_process.IterAllSlicesOfName(
-        'MainThreadRenderingStats::IssueTraceEvent'):
-      event_name = 'MainThreadRenderingStats::IssueTraceEvent'
     events = []
     for event in self.renderer_process.IterAllSlicesOfName(event_name):
       if event.start >= start and event.end <= end:
@@ -53,12 +48,7 @@ class RenderingStats(object):
 
     first_frame = True
     for event in events:
-      # TODO(ernstm): remove screen_frame_count when RenderingStats
-      # cleanup CL was picked up by the reference build.
-      if 'frame_count' in event.args['data']:
-        frame_count = event.args['data']['frame_count']
-      else:
-        frame_count = event.args['data']['screen_frame_count']
+      frame_count = event.args['data']['frame_count']
       if frame_count > 1:
         raise ValueError, 'trace contains multi-frame render stats'
       if frame_count == 1:
@@ -78,12 +68,7 @@ class RenderingStats(object):
           event.args['data']['recorded_pixel_count'])
 
   def initImplThreadStatsFromTimeline(self, start, end):
-    # TODO(ernstm): Remove when CL with new event names was rolled into
-    # reference build.
     event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
-    for event in self.renderer_process.IterAllSlicesOfName(
-        'ImplThreadRenderingStats::IssueTraceEvent'):
-      event_name = 'ImplThreadRenderingStats::IssueTraceEvent'
     events = []
     for event in self.renderer_process.IterAllSlicesOfName(event_name):
       if event.start >= start and event.end <= end:
@@ -94,12 +79,7 @@ class RenderingStats(object):
 
     first_frame = True
     for event in events:
-      # TODO(ernstm): remove screen_frame_count when RenderingStats
-      # cleanup CL was picked up by the reference build.
-      if 'frame_count' in event.args['data']:
-        frame_count = event.args['data']['frame_count']
-      else:
-        frame_count = event.args['data']['screen_frame_count']
+      frame_count = event.args['data']['frame_count']
       if frame_count > 1:
         raise ValueError, 'trace contains multi-frame render stats'
       if frame_count == 1:
