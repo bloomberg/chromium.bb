@@ -511,13 +511,6 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		goto out_compositor;
 	}
 
-	if (udev_input_init(&compositor->input,
-			    &compositor->base,
-			    compositor->udev, "seat0") != 0) {
-		weston_log("Failed to initialize udev input.\n");
-		goto out_udev;
-	}
-
 	compositor->session_listener.notify = session_notify;
 	wl_signal_add(&compositor->base.session_signal,
 		      &compositor ->session_listener);
@@ -525,7 +518,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		weston_launcher_connect(&compositor->base, param->tty, "seat0");
 	if (!compositor->base.launcher) {
 		weston_log("Failed to initialize tty.\n");
-		goto out_udev_input;
+		goto out_udev;
 	}
 
 	compositor->base.destroy = rpi_compositor_destroy;
@@ -536,6 +529,13 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 
 	weston_log("Dispmanx planes are %s buffered.\n",
 		   compositor->single_buffer ? "single" : "double");
+
+	if (udev_input_init(&compositor->input,
+			    &compositor->base,
+			    compositor->udev, "seat0") != 0) {
+		weston_log("Failed to initialize udev input.\n");
+		goto out_launcher;
+	}
 
 	for (key = KEY_F1; key < KEY_F9; key++)
 		weston_compositor_add_key_binding(&compositor->base, key,
@@ -552,7 +552,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	bcm_host_init();
 
 	if (rpi_renderer_create(&compositor->base, &param->renderer) < 0)
-		goto out_launcher;
+		goto out_udev_input;
 
 	if (rpi_output_create(compositor, param->output_transform) < 0)
 		goto out_renderer;
@@ -562,11 +562,11 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 out_renderer:
 	compositor->base.renderer->destroy(&compositor->base);
 
-out_launcher:
-	weston_launcher_destroy(compositor->base.launcher);
-
 out_udev_input:
 	udev_input_destroy(&compositor->input);
+
+out_launcher:
+	weston_launcher_destroy(compositor->base.launcher);
 
 out_udev:
 	udev_unref(compositor->udev);
