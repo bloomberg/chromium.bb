@@ -47,10 +47,6 @@ def monkey_patch_httplib():
 monkey_patch_httplib()
 
 
-# Big switch that controls what API to use to make HTTP requests.
-# It's temporary here to simplify benchmarking of old vs new implementation.
-USE_REQUESTS_LIB = True
-
 # The name of the key to store the count of url attempts.
 COUNT_KEY = 'UrlOpenAttempt'
 
@@ -194,11 +190,12 @@ def get_http_service(urlhost):
     if not service:
       if GS_STORAGE_HOST_URL_RE.match(urlhost):
         # For Google Storage URL create a dumber HttpService that doesn't modify
-        # requests with COUNT_KEY (since it breaks a signature) and doesn't try
-        # to 'login' into Google Storage (since it's impossible).
+        # requests with COUNT_KEY (since it breaks a signature), doesn't try
+        # to 'login' into Google Storage (since it's impossible) and doesn't use
+        # cookies.
         service = HttpService(
             urlhost,
-            engine=create_request_engine(None),
+            engine=RequestsLibEngine(None, get_cacerts_bundle()),
             authenticator=None,
             use_count_key=False)
       else:
@@ -207,23 +204,11 @@ def get_http_service(urlhost):
         cookie_jar = get_cookie_jar()
         service = HttpService(
             urlhost,
-            engine=create_request_engine(cookie_jar),
+            engine=RequestsLibEngine(cookie_jar, get_cacerts_bundle()),
             authenticator=AppEngineAuthenticator(urlhost, cookie_jar),
             use_count_key=True)
       _http_services[urlhost] = service
     return service
-
-
-def create_request_engine(cookie_jar):
-  """Returns a new instance of RequestEngine subclass.
-
-  |cookie_jar| is an instance of ThreadSafeCookieJar class that holds all
-  cookies. It is optional and may be None (in that case cookies are not saved
-  on disk).
-  """
-  if USE_REQUESTS_LIB:
-    return RequestsLibEngine(cookie_jar, get_cacerts_bundle())
-  return Urllib2Engine(cookie_jar)
 
 
 def get_cookie_jar():
@@ -507,27 +492,6 @@ class HttpResponse(object):
         url, {'content-length': len(content)})
 
 
-class RequestEngine(object):
-  """Base class for objects that know how to execute HttpRequests."""
-
-  def perform_request(self, request):
-    """Sends a HttpRequest to the server and reads back the response.
-
-    Returns HttpResponse.
-
-    Raises:
-      ConnectionError - failed to establish connection to the server.
-      TimeoutError - timeout while connecting or reading response.
-      HttpError - server responded with >= 400 error code.
-    """
-    raise NotImplementedError()
-
-  def reload_cookies(self):
-    """Reloads cookies from original cookie jar."""
-    # This method is optional.
-    pass
-
-
 class Authenticator(object):
   """Base class for objects that know how to authenticate into http services."""
 
@@ -536,37 +500,7 @@ class Authenticator(object):
     raise NotImplementedError()
 
 
-class Urllib2Engine(RequestEngine):
-  """Class that knows how to execute HttpRequests via urllib2."""
-
-  def __init__(self, cookie_jar):
-    super(Urllib2Engine, self).__init__()
-    self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie_jar))
-
-  def perform_request(self, request):
-    try:
-      req = self.make_urllib2_request(request)
-      if request.timeout:
-        resp = self.opener.open(req, timeout=request.timeout)
-      else:
-        resp = self.opener.open(req)
-      return HttpResponse(resp, req.get_full_url(), resp.headers)
-    except urllib2.HTTPError as e:
-      raise HttpError(e.code, e)
-    except (urllib2.URLError, httplib.HTTPException,
-            socket.timeout, ssl.SSLError) as e:
-      raise ConnectionError(e)
-
-  @staticmethod
-  def make_urllib2_request(request):
-    """Converts HttpRequest to urllib2.Request."""
-    result = urllib2.Request(request.get_full_url(), data=request.body)
-    for header, value in request.headers.iteritems():
-      result.add_header(header, value)
-    return result
-
-
-class RequestsLibEngine(RequestEngine):
+class RequestsLibEngine(object):
   """Class that knows how to execute HttpRequests via requests library."""
 
   # Preferred number of connections in a connection pool.
@@ -594,6 +528,15 @@ class RequestsLibEngine(RequestEngine):
           pool_block=self.CONNECTION_POOL_BLOCK))
 
   def perform_request(self, request):
+    """Sends a HttpRequest to the server and reads back the response.
+
+    Returns HttpResponse.
+
+    Raises:
+      ConnectionError - failed to establish connection to the server.
+      TimeoutError - timeout while connecting or reading response.
+      HttpError - server responded with >= 400 error code.
+    """
     try:
       response = self.session.request(
           method=request.method,
@@ -617,6 +560,7 @@ class RequestsLibEngine(RequestEngine):
       raise ConnectionError(e)
 
   def reload_cookies(self):
+    """Reloads cookies from original cookie jar."""
     if self.cookie_jar:
       self.session.cookies = self.cookie_jar
 

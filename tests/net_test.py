@@ -107,9 +107,12 @@ class HttpServiceTest(RetryLoopMockedTest):
       def authenticate(self):
         return authenticate() if authenticate else None
 
-    class MockedRequestEngine(net.RequestEngine):
-      def perform_request(self, request):
+    class MockedRequestEngine(object):
+      def perform_request(self, request):  # pylint: disable=R0201
         return perform_request(request) if perform_request else None
+
+      def reload_cookies(self):
+        pass
 
     return net.HttpService(
         url,
