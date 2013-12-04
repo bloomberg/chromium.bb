@@ -89,7 +89,7 @@ void CookiesEventRouter::CookieChanged(
 
   scoped_ptr<Cookie> cookie(
       cookies_helpers::CreateCookie(*details->cookie,
-          cookies_helpers::GetStoreIdFromProfile(profile_)));
+          cookies_helpers::GetStoreIdFromProfile(profile)));
   dict->Set(keys::kCookieKey, cookie->ToValue().release());
 
   // Map the internal cause to an external string.
