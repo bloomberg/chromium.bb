@@ -513,7 +513,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 
 	if (udev_input_init(&compositor->input,
 			    &compositor->base,
-			    compositor->udev, "ID_SEAT") != 0) {
+			    compositor->udev, "seat0") != 0) {
 		weston_log("Failed to initialize udev input.\n");
 		goto out_udev;
 	}
