@@ -1491,6 +1491,8 @@ bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderS
 
 PassRefPtr<RenderStyle> Element::styleForRenderer()
 {
+    ASSERT(document().inStyleRecalc());
+
     if (hasCustomStyleCallbacks()) {
         if (RefPtr<RenderStyle> style = customStyleForRenderer())
             return style.release();
@@ -1501,6 +1503,7 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
 
 PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
 {
+    ASSERT(document().inStyleRecalc());
     return document().ensureStyleResolver().styleForElement(this);
 }
 

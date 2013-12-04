@@ -494,8 +494,8 @@ public:
 
     bool isSpellCheckingEnabled() const;
 
+    // FIXME: public for NodeRenderingContext, we shouldn't expose this though.
     PassRefPtr<RenderStyle> styleForRenderer();
-    PassRefPtr<RenderStyle> originalStyleForRenderer();
 
     RenderRegion* renderRegion() const;
     virtual bool shouldMoveToFlowThread(RenderStyle*) const;
@@ -560,6 +560,8 @@ protected:
     // parseAttribute (called via setAttribute()) and
     // svgAttributeChanged (called when element.className.baseValue is set)
     void classAttributeChanged(const AtomicString& newClassString);
+
+    PassRefPtr<RenderStyle> originalStyleForRenderer();
 
 private:
     void styleAttributeChanged(const AtomicString& newStyleString, AttributeModificationReason);
