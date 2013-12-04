@@ -47,12 +47,13 @@
       container.style.opacity = 1;
       
       // dump the tree in the middle of the transition
-      if (window.testRunner)
-        window.setTimeout(function() {
-          var firstElement = document.getElementById('first');
-          internals.pauseAnimations(2.5);
+      if (window.internals) {
+          window.internals.forceCompositingUpdate(document);
+          window.internals.pauseAnimations(2.5);
+      }
+      if (window.testRunner) {
           testRunner.notifyDone();
-        }, 0);
+      }
     }
     // FIXME: this should use runTransitionTest().
     window.addEventListener('load', runTest, false);

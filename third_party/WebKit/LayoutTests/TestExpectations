@@ -280,7 +280,6 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.h
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/transitions/opacity-transition-zindex.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
@@ -641,6 +640,13 @@ crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash P
 crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
+
+crbug.com/324685 transitions/opacity-transform-transitions-inside-iframe.html [ NeedsRebaseline ]
+crbug.com/324685 transitions/opacity-transition-zindex.html [ NeedsRebaseline ]
+crbug.com/324685 virtual/legacy-animations-engine/transitions/opacity-transform-transitions-inside-iframe.html [ NeedsRebaseline ]
+crbug.com/324685 virtual/legacy-animations-engine/transitions/opacity-transition-zindex.html [ NeedsRebaseline ]
+crbug.com/324685 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ NeedsRebaseline ]
+crbug.com/324685 virtual/threaded/transitions/opacity-transition-zindex.html [ NeedsRebaseline ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-bool shouldCompositeForActiveAnimations(const RenderObject& renderer, bool renderViewInCompositingMode)
+bool shouldCompositeForActiveAnimations(const RenderObject& renderer)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
 
@@ -45,8 +45,7 @@ bool shouldCompositeForActiveAnimations(const RenderObject& renderer, bool rende
 
     const Element* element = toElement(renderer.node());
     if (const ActiveAnimations* activeAnimations = element->activeAnimations()) {
-        // FIXME: remove compositing mode check once compositing is forced on all platforms
-        if ((renderViewInCompositingMode && activeAnimations->hasActiveAnimations(CSSPropertyOpacity))
+        if (activeAnimations->hasActiveAnimations(CSSPropertyOpacity)
             || activeAnimations->hasActiveAnimations(CSSPropertyWebkitTransform)
             || activeAnimations->hasActiveAnimations(CSSPropertyWebkitFilter))
             return true;

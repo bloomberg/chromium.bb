@@ -1699,13 +1699,10 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
     if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
         return false;
 
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        // FIXME: Remove this condition once force-compositing-mode is enabled on all platforms.
-        bool shouldAccelerateOpacity = inCompositingMode();
-        return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer, shouldAccelerateOpacity);
-    }
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+        return renderer->animation().isRunningAcceleratableAnimationOnRenderer(renderer);
 
-    return shouldCompositeForActiveAnimations(*renderer, inCompositingMode());
+    return shouldCompositeForActiveAnimations(*renderer);
 }
 
 bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* renderer) const

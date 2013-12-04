@@ -265,7 +265,7 @@ bool AnimationControllerPrivate::isRunningAnimationOnRenderer(RenderObject* rend
     return animation->isAnimatingProperty(property, false, isRunningNow);
 }
 
-bool AnimationControllerPrivate::isRunningAcceleratableAnimationOnRenderer(RenderObject *renderer, bool isOpacityAcceleratable) const
+bool AnimationControllerPrivate::isRunningAcceleratableAnimationOnRenderer(RenderObject *renderer) const
 {
     RefPtr<CompositeAnimation> animation = m_compositeAnimations.get(renderer);
     if (!animation)
@@ -273,7 +273,7 @@ bool AnimationControllerPrivate::isRunningAcceleratableAnimationOnRenderer(Rende
 
     bool acceleratedOnly = false;
     bool isRunningNow = true;
-    return (isOpacityAcceleratable && animation->isAnimatingProperty(CSSPropertyOpacity, acceleratedOnly, isRunningNow))
+    return animation->isAnimatingProperty(CSSPropertyOpacity, acceleratedOnly, isRunningNow)
         || animation->isAnimatingProperty(CSSPropertyWebkitTransform, acceleratedOnly, isRunningNow)
         || animation->isAnimatingProperty(CSSPropertyWebkitFilter, acceleratedOnly, isRunningNow);
 }
@@ -504,9 +504,9 @@ bool AnimationController::isRunningAnimationOnRenderer(RenderObject* renderer, C
     return m_data->isRunningAnimationOnRenderer(renderer, property, isRunningNow);
 }
 
-bool AnimationController::isRunningAcceleratableAnimationOnRenderer(RenderObject* renderer, bool isOpacityAcceleratable) const
+bool AnimationController::isRunningAcceleratableAnimationOnRenderer(RenderObject* renderer) const
 {
-    return m_data->isRunningAcceleratableAnimationOnRenderer(renderer, isOpacityAcceleratable);
+    return m_data->isRunningAcceleratableAnimationOnRenderer(renderer);
 }
 
 bool AnimationController::isRunningAcceleratedAnimationOnRenderer(RenderObject* renderer, CSSPropertyID property, bool isRunningNow) const

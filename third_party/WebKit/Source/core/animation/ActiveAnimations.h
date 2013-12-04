@@ -44,7 +44,7 @@ class RenderObject;
 class Element;
 
 // FIXME: Move these to CompositorAnimations
-bool shouldCompositeForActiveAnimations(const RenderObject&, bool renderViewInCompositingMode);
+bool shouldCompositeForActiveAnimations(const RenderObject&);
 bool hasActiveAnimations(const RenderObject&, CSSPropertyID);
 bool hasActiveAnimationsOnCompositor(const RenderObject&, CSSPropertyID);
 
