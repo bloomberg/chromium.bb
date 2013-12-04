@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "content/renderer/webcrypto/webcrypto_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/secure_util.h"
@@ -170,7 +171,7 @@ bool AesCbcEncryptDecrypt(
     return false;
   }
 
-  WebCryptoImpl::ShrinkBuffer(buffer, final_output_chunk_len + output_len);
+  webcrypto::ShrinkBuffer(buffer, final_output_chunk_len + output_len);
   return true;
 }
 
@@ -584,7 +585,7 @@ bool WebCryptoImpl::DecryptInternal(
       return false;
     }
     DCHECK_LE(output_length_bytes, max_output_length_bytes);
-    WebCryptoImpl::ShrinkBuffer(buffer, output_length_bytes);
+    webcrypto::ShrinkBuffer(buffer, output_length_bytes);
     return true;
   }
 

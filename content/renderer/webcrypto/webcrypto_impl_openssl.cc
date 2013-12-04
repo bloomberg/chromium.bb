@@ -13,6 +13,7 @@
 #include <openssl/rand.h>
 
 #include "base/logging.h"
+#include "content/renderer/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/secure_util.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
@@ -151,7 +152,7 @@ bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
       static_cast<unsigned>(final_output_chunk_len);
   DCHECK_LE(final_output_len, output_max_len);
 
-  WebCryptoImpl::ShrinkBuffer(buffer, final_output_len);
+  webcrypto::ShrinkBuffer(buffer, final_output_len);
 
   return true;
 }
@@ -330,7 +331,8 @@ bool WebCryptoImpl::ImportKeyInternal(
     return false;
   }
 
-  // TODO(padolph): Need to split handling for symmetric
+  // TODO(padolph): Need to split handling for symmetric (raw format) and
+  // asymmetric (spki or pkcs8 format) keys.
   // Currently only supporting symmetric.
 
   // Symmetric keys are always type secret

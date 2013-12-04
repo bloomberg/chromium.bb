@@ -66,7 +66,6 @@ class CONTENT_EXPORT WebCryptoImpl
       unsigned data_size,
       blink::WebCryptoResult result);
 
-  static void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size);
 
  protected:
   friend class WebCryptoImplTest;
@@ -127,6 +126,14 @@ class CONTENT_EXPORT WebCryptoImpl
       const unsigned char* data,
       unsigned data_size,
       bool* signature_match);
+
+  bool ImportKeyJwk(
+      const unsigned char* key_data,
+      unsigned key_data_size,
+      const blink::WebCryptoAlgorithm& algorithm_or_null,
+      bool extractable,
+      blink::WebCryptoKeyUsageMask usage_mask,
+      blink::WebCryptoKey* key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCryptoImpl);
