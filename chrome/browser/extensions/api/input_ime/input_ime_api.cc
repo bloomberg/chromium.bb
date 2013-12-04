@@ -30,6 +30,7 @@ namespace SetCandidateWindowProperties =
 namespace CommitText = extensions::api::input_ime::CommitText;
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
+using chromeos::InputMethodEngineInterface;
 
 namespace {
 
@@ -38,30 +39,30 @@ const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
 const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
 
 void SetMenuItemToMenu(const input_ime::MenuItem& input,
-                       chromeos::InputMethodEngine::MenuItem* out) {
+                       InputMethodEngineInterface::MenuItem* out) {
   out->modified = 0;
   out->id = input.id;
   if (input.label) {
-    out->modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_LABEL;
+    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_LABEL;
     out->label = *input.label;
   }
 
   if (input.style != input_ime::MenuItem::STYLE_NONE) {
-    out->modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_STYLE;
-    out->style = static_cast<chromeos::InputMethodEngine::MenuItemStyle>(
+    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_STYLE;
+    out->style = static_cast<InputMethodEngineInterface::MenuItemStyle>(
         input.style);
   }
 
   if (input.visible)
-    out->modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_VISIBLE;
+    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_VISIBLE;
   out->visible = input.visible ? *input.visible : true;
 
   if (input.checked)
-    out->modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_CHECKED;
+    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_CHECKED;
   out->checked = input.checked ? *input.checked : false;
 
   if (input.enabled)
-    out->modified |= chromeos::InputMethodEngine::MENU_ITEM_MODIFIED_ENABLED;
+    out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_ENABLED;
   out->enabled = input.enabled ? *input.enabled : true;
 }
 
@@ -79,7 +80,7 @@ static void DispatchEventToExtension(Profile* profile,
 }  // namespace
 
 namespace chromeos {
-class ImeObserver : public chromeos::InputMethodEngine::Observer {
+class ImeObserver : public InputMethodEngineInterface::Observer {
  public:
   ImeObserver(Profile* profile, const std::string& extension_id,
               const std::string& engine_id) :
@@ -112,7 +113,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   }
 
   virtual void OnFocus(
-      const InputMethodEngine::InputContext& context) OVERRIDE {
+      const InputMethodEngineInterface::InputContext& context) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -137,7 +138,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   }
 
   virtual void OnInputContextUpdate(
-      const InputMethodEngine::InputContext& context) OVERRIDE {
+      const InputMethodEngineInterface::InputContext& context) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
@@ -156,7 +157,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
 
   virtual void OnKeyEvent(
       const std::string& engine_id,
-      const InputMethodEngine::KeyboardEvent& event,
+      const InputMethodEngineInterface::KeyboardEvent& event,
       chromeos::input_method::KeyEventHandle* key_data) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
@@ -185,22 +186,22 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   virtual void OnCandidateClicked(
       const std::string& engine_id,
       int candidate_id,
-      chromeos::InputMethodEngine::MouseButtonEvent button) OVERRIDE {
+      InputMethodEngineInterface::MouseButtonEvent button) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
     input_ime::OnCandidateClicked::Button button_enum =
         input_ime::OnCandidateClicked::BUTTON_NONE;
     switch (button) {
-      case chromeos::InputMethodEngine::MOUSE_BUTTON_MIDDLE:
+      case InputMethodEngineInterface::MOUSE_BUTTON_MIDDLE:
         button_enum = input_ime::OnCandidateClicked::BUTTON_MIDDLE;
         break;
 
-      case chromeos::InputMethodEngine::MOUSE_BUTTON_RIGHT:
+      case InputMethodEngineInterface::MOUSE_BUTTON_RIGHT:
         button_enum = input_ime::OnCandidateClicked::BUTTON_RIGHT;
         break;
 
-      case chromeos::InputMethodEngine::MOUSE_BUTTON_LEFT:
+      case InputMethodEngineInterface::MOUSE_BUTTON_LEFT:
       // Default to left.
       default:
         button_enum = input_ime::OnCandidateClicked::BUTTON_LEFT;
@@ -288,10 +289,10 @@ bool InputImeEventRouter::RegisterIme(
     const extensions::InputComponentInfo& component) {
   VLOG(1) << "RegisterIme: " << extension_id << " id: " << component.id;
 
-  std::map<std::string, chromeos::InputMethodEngine*>& engine_map =
+  std::map<std::string, InputMethodEngineInterface*>& engine_map =
       engines_[extension_id];
 
-  std::map<std::string, chromeos::InputMethodEngine*>::iterator engine_ix =
+  std::map<std::string, InputMethodEngineInterface*>::iterator engine_ix =
       engine_map.find(component.id);
   if (engine_ix != engine_map.end())
     return false;
@@ -324,7 +325,7 @@ void InputImeEventRouter::UnregisterAllImes(
     Profile* profile, const std::string& extension_id) {
   std::map<std::string,
            std::map<std::string,
-                    chromeos::InputMethodEngine*> >::iterator engine_map =
+                    InputMethodEngineInterface*> >::iterator engine_map =
       engines_.find(extension_id);
   if (engine_map != engines_.end()) {
     STLDeleteContainerPairSecondPointers(engine_map->second.begin(),
@@ -344,13 +345,13 @@ void InputImeEventRouter::UnregisterAllImes(
 }
 #endif
 
-chromeos::InputMethodEngine* InputImeEventRouter::GetEngine(
+InputMethodEngineInterface* InputImeEventRouter::GetEngine(
     const std::string& extension_id, const std::string& engine_id) {
   std::map<std::string,
-           std::map<std::string, chromeos::InputMethodEngine*> >::const_iterator
+           std::map<std::string, InputMethodEngineInterface*> >::const_iterator
                engine_list = engines_.find(extension_id);
   if (engine_list != engines_.end()) {
-    std::map<std::string, chromeos::InputMethodEngine*>::const_iterator
+    std::map<std::string, InputMethodEngineInterface*>::const_iterator
         engine_ix = engine_list->second.find(engine_id);
     if (engine_ix != engine_list->second.end())
       return engine_ix->second;
@@ -358,13 +359,13 @@ chromeos::InputMethodEngine* InputImeEventRouter::GetEngine(
   return NULL;
 }
 
-chromeos::InputMethodEngine* InputImeEventRouter::GetActiveEngine(
+InputMethodEngineInterface* InputImeEventRouter::GetActiveEngine(
     const std::string& extension_id) {
   std::map<std::string,
-           std::map<std::string, chromeos::InputMethodEngine*> >::const_iterator
+           std::map<std::string, InputMethodEngineInterface*> >::const_iterator
                engine_list = engines_.find(extension_id);
   if (engine_list != engines_.end()) {
-    std::map<std::string, chromeos::InputMethodEngine*>::const_iterator
+    std::map<std::string, InputMethodEngineInterface*>::const_iterator
         engine_ix;
     for (engine_ix = engine_list->second.begin();
          engine_ix != engine_list->second.end();
@@ -390,7 +391,7 @@ void InputImeEventRouter::OnKeyEventHandled(
   chromeos::input_method::KeyEventHandle* key_data = request->second.second;
   request_map_.erase(request);
 
-  chromeos::InputMethodEngine* engine = GetEngine(extension_id, engine_id);
+  InputMethodEngineInterface* engine = GetEngine(extension_id, engine_id);
   if (!engine) {
     LOG(ERROR) << "Engine does not exist: " << engine_id;
     return;
@@ -417,7 +418,7 @@ InputImeEventRouter::InputImeEventRouter()
 InputImeEventRouter::~InputImeEventRouter() {}
 
 bool InputImeSetCompositionFunction::RunImpl() {
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
     SetResult(new base::FundamentalValue(false));
@@ -427,7 +428,7 @@ bool InputImeSetCompositionFunction::RunImpl() {
   scoped_ptr<SetComposition::Params> parent_params(
       SetComposition::Params::Create(*args_));
   const SetComposition::Params::Parameters& params = parent_params->parameters;
-  std::vector<chromeos::InputMethodEngine::SegmentInfo> segments;
+  std::vector<InputMethodEngineInterface::SegmentInfo> segments;
   if (params.segments) {
     const std::vector<linked_ptr<
         SetComposition::Params::Parameters::SegmentsType> >&
@@ -436,16 +437,16 @@ bool InputImeSetCompositionFunction::RunImpl() {
       EXTENSION_FUNCTION_VALIDATE(
           segments_args[i]->style !=
           SetComposition::Params::Parameters::SegmentsType::STYLE_NONE);
-      segments.push_back(chromeos::InputMethodEngine::SegmentInfo());
+      segments.push_back(InputMethodEngineInterface::SegmentInfo());
       segments.back().start = segments_args[i]->start;
       segments.back().end = segments_args[i]->end;
       if (segments_args[i]->style ==
           SetComposition::Params::Parameters::SegmentsType::STYLE_UNDERLINE) {
         segments.back().style =
-            chromeos::InputMethodEngine::SEGMENT_STYLE_UNDERLINE;
+            InputMethodEngineInterface::SEGMENT_STYLE_UNDERLINE;
       } else {
         segments.back().style =
-            chromeos::InputMethodEngine::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+            InputMethodEngineInterface::SEGMENT_STYLE_DOUBLE_UNDERLINE;
       }
     }
   }
@@ -463,7 +464,7 @@ bool InputImeSetCompositionFunction::RunImpl() {
 }
 
 bool InputImeClearCompositionFunction::RunImpl() {
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
     SetResult(new base::FundamentalValue(false));
@@ -482,7 +483,7 @@ bool InputImeClearCompositionFunction::RunImpl() {
 
 bool InputImeCommitTextFunction::RunImpl() {
   // TODO(zork): Support committing when not active.
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
     SetResult(new base::FundamentalValue(false));
@@ -505,7 +506,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
   const SetCandidateWindowProperties::Params::Parameters&
       params = parent_params->parameters;
 
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                     params.engine_id);
 
@@ -523,7 +524,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
     return true;
   }
 
-  chromeos::InputMethodEngine::CandidateWindowProperty properties_out =
+  InputMethodEngineInterface::CandidateWindowProperty properties_out =
     engine->GetCandidateWindowProperty();
   bool modified = false;
 
@@ -573,7 +574,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
 
 #if defined(OS_CHROMEOS)
 bool InputImeSetCandidatesFunction::RunImpl() {
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
     SetResult(new base::FundamentalValue(false));
@@ -585,12 +586,12 @@ bool InputImeSetCandidatesFunction::RunImpl() {
   const SetCandidates::Params::Parameters& params =
       parent_params->parameters;
 
-  std::vector<chromeos::InputMethodEngine::Candidate> candidates_out;
+  std::vector<InputMethodEngineInterface::Candidate> candidates_out;
   const std::vector<linked_ptr<
       SetCandidates::Params::Parameters::CandidatesType> >& candidates_in =
           params.candidates;
   for (size_t i = 0; i < candidates_in.size(); ++i) {
-    candidates_out.push_back(chromeos::InputMethodEngine::Candidate());
+    candidates_out.push_back(InputMethodEngineInterface::Candidate());
     candidates_out.back().value = candidates_in[i]->candidate;
     candidates_out.back().id = candidates_in[i]->id;
     if (candidates_in[i]->label)
@@ -609,7 +610,7 @@ bool InputImeSetCandidatesFunction::RunImpl() {
 }
 
 bool InputImeSetCursorPositionFunction::RunImpl() {
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (!engine) {
     SetResult(new base::FundamentalValue(false));
@@ -633,7 +634,7 @@ bool InputImeSetMenuItemsFunction::RunImpl() {
   const SetMenuItems::Params::Parameters& params =
       parent_params->parameters;
 
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                     params.engine_id);
   if (!engine) {
@@ -642,10 +643,10 @@ bool InputImeSetMenuItemsFunction::RunImpl() {
   }
 
   const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
-  std::vector<chromeos::InputMethodEngine::MenuItem> items_out;
+  std::vector<InputMethodEngineInterface::MenuItem> items_out;
 
   for (size_t i = 0; i < items.size(); ++i) {
-    items_out.push_back(chromeos::InputMethodEngine::MenuItem());
+    items_out.push_back(InputMethodEngineInterface::MenuItem());
     SetMenuItemToMenu(*items[i], &items_out.back());
   }
 
@@ -660,7 +661,7 @@ bool InputImeUpdateMenuItemsFunction::RunImpl() {
   const UpdateMenuItems::Params::Parameters& params =
       parent_params->parameters;
 
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                     params.engine_id);
   if (!engine) {
@@ -669,10 +670,10 @@ bool InputImeUpdateMenuItemsFunction::RunImpl() {
   }
 
   const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
-  std::vector<chromeos::InputMethodEngine::MenuItem> items_out;
+  std::vector<InputMethodEngineInterface::MenuItem> items_out;
 
   for (size_t i = 0; i < items.size(); ++i) {
-    items_out.push_back(chromeos::InputMethodEngine::MenuItem());
+    items_out.push_back(InputMethodEngineInterface::MenuItem());
     SetMenuItemToMenu(*items[i], &items_out.back());
   }
 
@@ -687,7 +688,7 @@ bool InputImeDeleteSurroundingTextFunction::RunImpl() {
   const DeleteSurroundingText::Params::Parameters& params =
       parent_params->parameters;
 
-  chromeos::InputMethodEngine* engine =
+  InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                     params.engine_id);
   if (!engine) {

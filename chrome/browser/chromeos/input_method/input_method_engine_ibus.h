@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "url/gurl.h"
 
@@ -26,7 +26,7 @@ struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
 
-class InputMethodEngineIBus : public InputMethodEngine,
+class InputMethodEngineIBus : public InputMethodEngineInterface,
                               public IBusEngineHandlerInterface {
  public:
   InputMethodEngineIBus();
@@ -34,7 +34,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual ~InputMethodEngineIBus();
 
   void Initialize(
-      InputMethodEngine::Observer* observer,
+      InputMethodEngineInterface::Observer* observer,
       const char* engine_name,
       const char* extension_id,
       const char* engine_id,
@@ -43,7 +43,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
       const GURL& options_page,
       const GURL& input_view);
 
-  // InputMethodEngine overrides.
+  // InputMethodEngineInterface overrides.
   virtual void StartIme() OVERRIDE;
   virtual bool SetComposition(int context_id,
                               const char* text,
@@ -120,7 +120,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
   bool aux_text_visible_;
 
   // Pointer to the object recieving events for this IME.
-  InputMethodEngine::Observer* observer_;
+  InputMethodEngineInterface::Observer* observer_;
 
   // The current preedit text, and it's cursor position.
   scoped_ptr<IBusText> preedit_text_;

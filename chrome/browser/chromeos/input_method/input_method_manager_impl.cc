@@ -418,7 +418,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     const std::vector<std::string>& languages,
     const GURL& options_url,
     const GURL& inputview_url,
-    InputMethodEngine* engine) {
+    InputMethodEngineInterface* engine) {
   if (state_ == STATE_TERMINATING)
     return;
 

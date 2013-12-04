@@ -54,7 +54,7 @@ bool StartImeFunction::RunImpl() {
   NOTREACHED();
   return false;
 #else
-  chromeos::InputMethodEngine* engine =
+  chromeos::InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (engine)
     engine->StartIme();

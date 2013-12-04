@@ -53,7 +53,7 @@ void CandidateWindow::CopyFrom(const CandidateWindow& cw) {
 
 
 // When the default values are changed, please modify
-// InputMethodEngine::CandidateWindowProperty too.
+// InputMethodEngineInterface::CandidateWindowProperty too.
 CandidateWindow::CandidateWindowProperty::CandidateWindowProperty()
     : page_size(kDefaultPageSize),
       cursor_position(0),

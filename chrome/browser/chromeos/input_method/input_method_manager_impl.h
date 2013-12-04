@@ -72,7 +72,7 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::vector<std::string>& languages,
       const GURL& options_page,
       const GURL& input_view,
-      InputMethodEngine* instance) OVERRIDE;
+      InputMethodEngineInterface* instance) OVERRIDE;
   virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;
   virtual void GetInputMethodExtensions(
       InputMethodDescriptors* result) OVERRIDE;

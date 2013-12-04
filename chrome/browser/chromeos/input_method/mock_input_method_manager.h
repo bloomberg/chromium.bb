@@ -49,7 +49,7 @@ class MockInputMethodManager : public InputMethodManager {
       const std::vector<std::string>& languages,
       const GURL& options_url,
       const GURL& inputview_url,
-      InputMethodEngine* instance) OVERRIDE;
+      InputMethodEngineInterface* instance) OVERRIDE;
   virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;
   virtual void GetInputMethodExtensions(
       InputMethodDescriptors* result) OVERRIDE;

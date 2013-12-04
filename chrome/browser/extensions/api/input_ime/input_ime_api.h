@@ -11,7 +11,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -22,7 +22,7 @@
 class Profile;
 
 namespace chromeos {
-class InputMethodEngine;
+class InputMethodEngineInterface;
 class ImeObserver;
 }
 
@@ -37,9 +37,11 @@ class InputImeEventRouter {
                    const std::string& extension_id,
                    const extensions::InputComponentInfo& component);
   void UnregisterAllImes(Profile* profile, const std::string& extension_id);
-  chromeos::InputMethodEngine* GetEngine(const std::string& extension_id,
-                                         const std::string& engine_id);
-  chromeos::InputMethodEngine* GetActiveEngine(const std::string& extension_id);
+  chromeos::InputMethodEngineInterface* GetEngine(
+      const std::string& extension_id,
+      const std::string& engine_id);
+  chromeos::InputMethodEngineInterface* GetActiveEngine(
+      const std::string& extension_id);
 
 
   // Called when a key event was handled.
@@ -58,7 +60,8 @@ class InputImeEventRouter {
   InputImeEventRouter();
   ~InputImeEventRouter();
 
-  std::map<std::string, std::map<std::string, chromeos::InputMethodEngine*> >
+  std::map<std::string, std::map<std::string,
+                                 chromeos::InputMethodEngineInterface*> >
       engines_;
   std::map<std::string, std::map<std::string, chromeos::ImeObserver*> >
       observers_;

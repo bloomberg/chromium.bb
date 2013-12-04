@@ -20,7 +20,7 @@ class Accelerator;
 
 namespace chromeos {
 class ComponentExtensionIMEManager;
-class InputMethodEngine;
+class InputMethodEngineInterface;
 namespace input_method {
 
 class InputMethodUtil;
@@ -143,7 +143,7 @@ class CHROMEOS_EXPORT InputMethodManager {
       const std::vector<std::string>& languages,
       const GURL& options_url,
       const GURL& inputview_url,
-      InputMethodEngine* instance) = 0;
+      InputMethodEngineInterface* instance) = 0;
 
   // Removes an input method extension.
   virtual void RemoveInputMethodExtension(const std::string& id) = 0;

@@ -89,7 +89,7 @@ void MockInputMethodManager::AddInputMethodExtension(
     const std::vector<std::string>& languages,
     const GURL& options_url,
     const GURL& inputview_url,
-    InputMethodEngine* instance) {
+    InputMethodEngineInterface* instance) {
 }
 
 void MockInputMethodManager::RemoveInputMethodExtension(const std::string& id) {

@@ -82,7 +82,7 @@ InputMethodEngineIBus::~InputMethodEngineIBus() {
 }
 
 void InputMethodEngineIBus::Initialize(
-    InputMethodEngine::Observer* observer,
+    InputMethodEngineInterface::Observer* observer,
     const char* engine_name,
     const char* extension_id,
     const char* engine_id,
@@ -211,7 +211,7 @@ InputMethodEngineIBus::GetCandidateWindowProperty() const {
 
 void InputMethodEngineIBus::SetCandidateWindowProperty(
     const CandidateWindowProperty& property) {
-  // Type conversion from InputMethodEngine::CandidateWindowProperty to
+  // Type conversion from InputMethodEngineInterface::CandidateWindowProperty to
   // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
   input_method::CandidateWindow::CandidateWindowProperty dest_property;
   dest_property.page_size = property.page_size;
@@ -401,7 +401,7 @@ void InputMethodEngineIBus::FocusIn(
   context_id_ = next_context_id_;
   ++next_context_id_;
 
-  InputMethodEngine ::InputContext context;
+  InputMethodEngineInterface::InputContext context;
   context.id = context_id_;
   switch (input_context.type) {
     case ui::TEXT_INPUT_TYPE_SEARCH:

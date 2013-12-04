@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_INTERFACE_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_INTERFACE_H_
 
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@ struct KeyEventHandle;
 
 // InputMethodEngine is used to translate from the Chrome IME API to the native
 // API.
-class InputMethodEngine {
+class InputMethodEngineInterface {
  public:
   struct KeyboardEvent {
     KeyboardEvent();
@@ -160,7 +160,7 @@ class InputMethodEngine {
     virtual void OnReset(const std::string& engine_id) = 0;
   };
 
-  virtual ~InputMethodEngine() {}
+  virtual ~InputMethodEngineInterface() {}
 
   // Called when the input metho initialization is done.
   // This function is called from private API.
@@ -242,4 +242,4 @@ class InputMethodEngine {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_INTERFACE_H_
