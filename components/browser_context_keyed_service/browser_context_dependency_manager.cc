@@ -39,21 +39,35 @@ void BrowserContextDependencyManager::AddEdge(
   dependency_graph_.AddEdge(depended, dependee);
 }
 
+void BrowserContextDependencyManager::RegisterProfilePrefsForServices(
+    const content::BrowserContext* context,
+    user_prefs::PrefRegistrySyncable* pref_registry) {
+  std::vector<DependencyNode*> construction_order;
+  if (!dependency_graph_.GetConstructionOrder(&construction_order)) {
+    NOTREACHED();
+  }
+
+  for (std::vector<DependencyNode*>::const_iterator it =
+           construction_order.begin(); it != construction_order.end(); ++it) {
+    BrowserContextKeyedBaseFactory* factory =
+        static_cast<BrowserContextKeyedBaseFactory*>(*it);
+    factory->RegisterProfilePrefsIfNecessaryForContext(context, pref_registry);
+  }
+}
+
 void BrowserContextDependencyManager::CreateBrowserContextServices(
     content::BrowserContext* context) {
-  DoCreateBrowserContextServices(context, false, false);
+  DoCreateBrowserContextServices(context, false);
 }
 
 void BrowserContextDependencyManager::CreateBrowserContextServicesForTest(
-    content::BrowserContext* context,
-    bool force_register_prefs) {
-  DoCreateBrowserContextServices(context, true, force_register_prefs);
+    content::BrowserContext* context) {
+  DoCreateBrowserContextServices(context, true);
 }
 
 void BrowserContextDependencyManager::DoCreateBrowserContextServices(
     content::BrowserContext* context,
-    bool is_testing_context,
-    bool force_register_prefs) {
+    bool is_testing_context) {
   TRACE_EVENT0("browser",
     "BrowserContextDependencyManager::DoCreateBrowserContextServices")
 #ifndef NDEBUG
@@ -76,16 +90,6 @@ void BrowserContextDependencyManager::DoCreateBrowserContextServices(
   for (size_t i = 0; i < construction_order.size(); i++) {
     BrowserContextKeyedBaseFactory* factory =
         static_cast<BrowserContextKeyedBaseFactory*>(construction_order[i]);
-
-    if (!context->IsOffTheRecord() || force_register_prefs) {
-      // We only register preferences on normal contexts because the incognito
-      // context shares the pref service with the normal one. Always register
-      // for standalone testing contexts (testing contexts that don't have an
-      // "original" profile set) as otherwise the preferences won't be
-      // registered.
-      factory->RegisterUserPrefsOnBrowserContext(context);
-    }
-
     if (is_testing_context && factory->ServiceIsNULLWhileTesting()) {
       factory->SetEmptyTestingFactory(context);
     } else if (factory->ServiceIsCreatedWithBrowserContext()) {

@@ -439,6 +439,9 @@ ProfileImpl::ProfileImpl(
 #endif
   chrome::RegisterUserProfilePrefs(pref_registry_.get());
 
+  BrowserContextDependencyManager::GetInstance()->
+      RegisterProfilePrefsForServices(this, pref_registry_.get());
+
   ManagedUserSettingsService* managed_user_settings = NULL;
 #if defined(ENABLE_MANAGED_USERS)
   managed_user_settings =

@@ -30,21 +30,21 @@ class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   // for a given BrowserContext. This is used primarily for testing, where
   // we want to feed a specific mock into the BCKSF system.
   typedef BrowserContextKeyedService*
-      (*FactoryFunction)(content::BrowserContext* context);
+      (*TestingFactoryFunction)(content::BrowserContext* context);
 
   // Associates |factory| with |context| so that |factory| is used to create
   // the BrowserContextKeyedService when requested.  |factory| can be NULL
   // to signal that BrowserContextKeyedService should be NULL. Multiple calls to
   // SetTestingFactory() are allowed; previous services will be shut down.
   void SetTestingFactory(content::BrowserContext* context,
-                         FactoryFunction factory);
+                         TestingFactoryFunction factory);
 
   // Associates |factory| with |context| and immediately returns the created
   // BrowserContextKeyedService. Since the factory will be used immediately,
   // it may not be NULL.
   BrowserContextKeyedService* SetTestingFactoryAndUse(
       content::BrowserContext* context,
-      FactoryFunction factory);
+      TestingFactoryFunction factory);
 
  protected:
   // BrowserContextKeyedServiceFactories must communicate with a
@@ -110,14 +110,15 @@ class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
 
   typedef std::map<content::BrowserContext*, BrowserContextKeyedService*>
       BrowserContextKeyedServices;
-  typedef std::map<content::BrowserContext*, FactoryFunction>
-      BrowserContextOverriddenFunctions;
+  typedef std::map<content::BrowserContext*, TestingFactoryFunction>
+      BrowserContextOverriddenTestingFunctions;
 
   // The mapping between a BrowserContext and its service.
-  std::map<content::BrowserContext*, BrowserContextKeyedService*> mapping_;
+  BrowserContextKeyedServices mapping_;
 
-  // The mapping between a BrowserContext and its overridden FactoryFunction.
-  std::map<content::BrowserContext*, FactoryFunction> factories_;
+  // The mapping between a BrowserContext and its overridden
+  // TestingFactoryFunction.
+  BrowserContextOverriddenTestingFunctions testing_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextKeyedServiceFactory);
 };

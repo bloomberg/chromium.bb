@@ -63,8 +63,9 @@ class TestingProfile : public Profile {
   TestingProfile();
 
   typedef std::vector<std::pair<
-      BrowserContextKeyedServiceFactory*,
-      BrowserContextKeyedServiceFactory::FactoryFunction> > TestingFactories;
+              BrowserContextKeyedServiceFactory*,
+              BrowserContextKeyedServiceFactory::TestingFactoryFunction> >
+      TestingFactories;
 
   // Helper class for building an instance of TestingProfile (allows injecting
   // mocks for various services prior to profile initialization).
@@ -86,7 +87,7 @@ class TestingProfile : public Profile {
     // are applied before the ProfileKeyedServices are created.
     void AddTestingFactory(
         BrowserContextKeyedServiceFactory* service_factory,
-        BrowserContextKeyedServiceFactory::FactoryFunction callback);
+        BrowserContextKeyedServiceFactory::TestingFactoryFunction callback);
 
     // Sets the ExtensionSpecialStoragePolicy to be returned by
     // GetExtensionSpecialStoragePolicy().

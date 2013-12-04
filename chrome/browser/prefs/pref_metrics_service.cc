@@ -37,14 +37,12 @@ namespace {
 
 const int kSessionStartupPrefValueMax = SessionStartupPref::kPrefValueMax;
 
-#if defined(OS_ANDROID)
 // An unregistered preference to fill in indices in kTrackedPrefs below for
 // preferences that aren't defined on every platform. This is fine as the code
 // below (e.g. CheckTrackedPreferences()) skips unregistered preferences and
 // should thus never report any data about that index on the platforms where
 // that preference is unimplemented.
 const char kUnregisteredPreference[] = "_";
-#endif
 
 // These preferences must be kept in sync with the TrackedPreference enum in
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it
@@ -290,9 +288,11 @@ void PrefMetricsService::CheckTrackedPreferences() {
   pref_hash_dicts->GetDictionaryWithoutPathExpansion(profile_name_,
                                                      &hashed_prefs);
   for (int i = 0; i < tracked_pref_path_count_; ++i) {
-    // Skip prefs that haven't been registered.
-    if (!prefs_->FindPreference(tracked_pref_paths_[i]))
+    if (!prefs_->FindPreference(tracked_pref_paths_[i])) {
+      // All tracked preferences need to have been registered already.
+      DCHECK_EQ(kUnregisteredPreference, tracked_pref_paths_[i]);
       continue;
+    }
 
     const base::Value* value = prefs_->GetUserPrefValue(tracked_pref_paths_[i]);
     std::string last_hash;
@@ -411,9 +411,11 @@ std::string PrefMetricsService::GetHashedPrefValue(
 void PrefMetricsService::InitializePrefObservers() {
   pref_registrar_.Init(prefs_);
   for (int i = 0; i < tracked_pref_path_count_; ++i) {
-    // Skip prefs that haven't been registered.
-    if (!prefs_->FindPreference(tracked_pref_paths_[i]))
+    if (!prefs_->FindPreference(tracked_pref_paths_[i])) {
+      // All tracked preferences need to have been registered already.
+      DCHECK_EQ(kUnregisteredPreference, tracked_pref_paths_[i]);
       continue;
+    }
 
     pref_registrar_.Add(
         tracked_pref_paths_[i],

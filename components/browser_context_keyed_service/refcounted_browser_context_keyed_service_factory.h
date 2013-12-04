@@ -35,21 +35,21 @@ RefcountedBrowserContextKeyedServiceFactory
   // a given BrowserContext. This is used primarily for testing, where we want
   // to feed a specific mock into the BCKSF system.
   typedef scoped_refptr<RefcountedBrowserContextKeyedService>
-      (*FactoryFunction)(content::BrowserContext* context);
+      (*TestingFactoryFunction)(content::BrowserContext* context);
 
   // Associates |factory| with |context| so that |factory| is used to create
   // the BrowserContextKeyedService when requested.  |factory| can be NULL
   // to signal that BrowserContextKeyedService should be NULL. Multiple calls to
   // SetTestingFactory() are allowed; previous services will be shut down.
   void SetTestingFactory(content::BrowserContext* context,
-                         FactoryFunction factory);
+                         TestingFactoryFunction factory);
 
   // Associates |factory| with |context| and immediately returns the created
   // BrowserContextKeyedService. Since the factory will be used immediately,
   // it may not be NULL.
   scoped_refptr<RefcountedBrowserContextKeyedService> SetTestingFactoryAndUse(
       content::BrowserContext* context,
-      FactoryFunction factory);
+      TestingFactoryFunction factory);
 
  protected:
   RefcountedBrowserContextKeyedServiceFactory(
@@ -85,14 +85,15 @@ RefcountedBrowserContextKeyedServiceFactory
   typedef std::map<content::BrowserContext*,
                    scoped_refptr<RefcountedBrowserContextKeyedService> >
       RefCountedStorage;
-  typedef std::map<content::BrowserContext*,
-                   FactoryFunction> BrowserContextOverriddenFunctions;
+  typedef std::map<content::BrowserContext*, TestingFactoryFunction>
+      BrowserContextOverriddenTestingFunctions;
 
   // The mapping between a BrowserContext and its refcounted service.
   RefCountedStorage mapping_;
 
-  // The mapping between a BrowserContext and its overridden FactoryFunction.
-  BrowserContextOverriddenFunctions factories_;
+  // The mapping between a BrowserContext and its overridden
+  // TestingFactoryFunction.
+  BrowserContextOverriddenTestingFunctions testing_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RefcountedBrowserContextKeyedServiceFactory);
 };

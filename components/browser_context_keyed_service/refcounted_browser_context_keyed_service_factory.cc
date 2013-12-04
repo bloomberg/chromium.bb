@@ -12,7 +12,7 @@
 
 void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* context,
-    FactoryFunction factory) {
+    TestingFactoryFunction testing_factory) {
   // Destroying the context may cause us to lose data about whether |context|
   // has our preferences registered on it (since the context object itself
   // isn't dead). See if we need to readd it once we've gone through normal
@@ -28,15 +28,15 @@ void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
   if (add_context)
     MarkPreferencesSetOn(context);
 
-  factories_[context] = factory;
+  testing_factories_[context] = testing_factory;
 }
 
 scoped_refptr<RefcountedBrowserContextKeyedService>
 RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     content::BrowserContext* context,
-    FactoryFunction factory) {
-  DCHECK(factory);
-  SetTestingFactory(context, factory);
+    TestingFactoryFunction testing_factory) {
+  DCHECK(testing_factory);
+  SetTestingFactory(context, testing_factory);
   return GetServiceForBrowserContext(context, true);
 }
 
@@ -74,12 +74,12 @@ RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
   // Check to see if we have a per-BrowserContext testing factory that we should
   // use instead of default behavior.
   scoped_refptr<RefcountedBrowserContextKeyedService> service;
-  BrowserContextOverriddenFunctions::const_iterator jt =
-      factories_.find(context);
-  if (jt != factories_.end()) {
+  BrowserContextOverriddenTestingFunctions::const_iterator jt =
+      testing_factories_.find(context);
+  if (jt != testing_factories_.end()) {
     if (jt->second) {
       if (!context->IsOffTheRecord())
-        RegisterUserPrefsOnBrowserContext(context);
+        RegisterUserPrefsOnBrowserContextForTest(context);
       service = jt->second(context);
     }
   } else {
@@ -114,7 +114,7 @@ void RefcountedBrowserContextKeyedServiceFactory::BrowserContextDestroyed(
   // maintain a big map of dead pointers, but also since we may have a second
   // object that lives at the same address (see other comments about unit tests
   // in this file).
-  factories_.erase(context);
+  testing_factories_.erase(context);
 
   BrowserContextKeyedBaseFactory::BrowserContextDestroyed(context);
 }

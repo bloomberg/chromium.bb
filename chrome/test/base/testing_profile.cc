@@ -338,11 +338,19 @@ void TestingProfile::Init() {
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
 
-  // If there is no separate original profile specified for this profile, then
-  // force preferences to be registered - this allows tests to create a
+  // If no original profile was specified for this profile: register preferences
+  // even if this is an incognito profile - this allows tests to create a
   // standalone incognito profile while still having prefs registered.
+  if (!IsOffTheRecord() || !original_profile_) {
+    user_prefs::PrefRegistrySyncable* pref_registry =
+        static_cast<user_prefs::PrefRegistrySyncable*>(
+            prefs_->DeprecatedGetPrefRegistry());
+    browser_context_dependency_manager_->
+        RegisterProfilePrefsForServices(this, pref_registry);
+  }
+
   browser_context_dependency_manager_->CreateBrowserContextServicesForTest(
-      this, !original_profile_);
+      this);
 
 #if defined(ENABLE_NOTIFICATIONS)
   // Install profile keyed service factory hooks for dummy/test services
@@ -909,7 +917,7 @@ void TestingProfile::Builder::SetPolicyService(
 
 void TestingProfile::Builder::AddTestingFactory(
     BrowserContextKeyedServiceFactory* service_factory,
-    BrowserContextKeyedServiceFactory::FactoryFunction callback) {
+    BrowserContextKeyedServiceFactory::TestingFactoryFunction callback) {
   testing_factories_.push_back(std::make_pair(service_factory, callback));
 }
 

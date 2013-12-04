@@ -29,6 +29,17 @@ void BrowserContextKeyedBaseFactory::DependsOn(
   dependency_manager_->AddEdge(rhs, this);
 }
 
+void BrowserContextKeyedBaseFactory::RegisterProfilePrefsIfNecessaryForContext(
+    const content::BrowserContext* context,
+    user_prefs::PrefRegistrySyncable* registry) {
+  std::set<const content::BrowserContext*>::iterator it =
+      registered_preferences_.find(context);
+  if (it == registered_preferences_.end()) {
+    RegisterProfilePrefs(registry);
+    registered_preferences_.insert(context);
+  }
+}
+
 content::BrowserContext* BrowserContextKeyedBaseFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   DCHECK(CalledOnValidThread());
@@ -44,14 +55,14 @@ content::BrowserContext* BrowserContextKeyedBaseFactory::GetBrowserContextToUse(
   return context;
 }
 
-void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContext(
+void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContextForTest(
     content::BrowserContext* context) {
   // Safe timing for pref registration is hard. Previously, we made
   // BrowserContext responsible for all pref registration on every service
   // that used BrowserContext. Now we don't and there are timing issues.
   //
   // With normal contexts, prefs can simply be registered at
-  // BrowserContextDependencyManager::CreateBrowserContextServices time.
+  // BrowserContextDependencyManager::RegisterProfilePrefsForServices time.
   // With incognito contexts, we just never register since incognito contexts
   // share the same pref services with their parent contexts.
   //
@@ -61,24 +72,21 @@ void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContext(
   // invoking RegisterProfilePrefs() on the appropriate
   // BrowserContextKeyedServiceFactory associated with the prefs they need,
   // or they can use SetTestingFactory() and create a service (since service
-  // creation with a factory method causes registration to happen at service
-  // creation time).
+  // creation with a factory method causes registration to happen at
+  // TestingProfile creation time).
   //
   // Now that services are responsible for declaring their preferences, we have
   // to enforce a uniquenes check here because some tests create one context and
   // multiple services of the same type attached to that context (serially, not
   // parallel) and we don't want to register multiple times on the same context.
-
-  std::set<content::BrowserContext*>::iterator it =
-      registered_preferences_.find(context);
-  if (it == registered_preferences_.end()) {
-    PrefService* prefs = user_prefs::UserPrefs::Get(context);
-    user_prefs::PrefRegistrySyncable* registry =
-        static_cast<user_prefs::PrefRegistrySyncable*>(
-            prefs->DeprecatedGetPrefRegistry());
-    RegisterProfilePrefs(registry);
-    registered_preferences_.insert(context);
-  }
+  // This is the purpose of RegisterProfilePrefsIfNecessary() which could be
+  // replaced directly by RegisterProfilePrefs() if this method is ever phased
+  // out.
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
+  user_prefs::PrefRegistrySyncable* registry =
+      static_cast<user_prefs::PrefRegistrySyncable*>(
+          prefs->DeprecatedGetPrefRegistry());
+  RegisterProfilePrefsIfNecessaryForContext(context, registry);
 }
 
 bool

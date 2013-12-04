@@ -38,8 +38,12 @@ BrowserContextKeyedBaseFactory
   // Registers preferences used in this service on the pref service of
   // |context|. This is the public interface and is safe to be called multiple
   // times because testing code can have multiple services of the same type
-  // attached to a single |context|.
-  void RegisterUserPrefsOnBrowserContext(content::BrowserContext* context);
+  // attached to a single |context|. Only test code is allowed to call this
+  // method.
+  // TODO(gab): This method can be removed entirely when
+  // PrefService::DeprecatedGetPrefRegistry() is phased out.
+  void RegisterUserPrefsOnBrowserContextForTest(
+      content::BrowserContext* context);
 
 #ifndef NDEBUG
   // Returns our name. We don't keep track of this in release mode.
@@ -55,17 +59,19 @@ BrowserContextKeyedBaseFactory
   // created by factories.
   void DependsOn(BrowserContextKeyedBaseFactory* rhs);
 
+  // Calls RegisterProfilePrefs() after doing house keeping required to work
+  // alongside RegisterUserPrefsOnBrowserContextForTest().
+  // TODO(gab): This method can be replaced by RegisterProfilePrefs() directly
+  // once RegisterUserPrefsOnBrowserContextForTest() is phased out.
+  void RegisterProfilePrefsIfNecessaryForContext(
+      const content::BrowserContext* context,
+      user_prefs::PrefRegistrySyncable* registry);
+
   // Interface for people building a concrete FooServiceFactory: --------------
 
   // Finds which browser context (if any) to use.
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const;
-
-  // Register any user preferences on this service. This is called during
-  // CreateBrowserContextService() since preferences are registered on a per
-  // BrowserContext basis.
-  virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) {}
 
   // By default, we create instances of a service lazily and wait until
   // GetForBrowserContext() is called on our subclass. Some services need to be
@@ -109,6 +115,12 @@ BrowserContextKeyedBaseFactory
   friend class BrowserContextDependencyManager;
   friend class BrowserContextDependencyManagerUnittests;
 
+  // Registers any user preferences on this service. This is called by
+  // RegisterProfilePrefsIfNecessary() and should be overriden by any service
+  // that wants to register profile-specific preferences.
+  virtual void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) {}
+
   // These two methods are for tight integration with the
   // BrowserContextDependencyManager.
 
@@ -127,7 +139,7 @@ BrowserContextKeyedBaseFactory
   BrowserContextDependencyManager* dependency_manager_;
 
   // BrowserContexts that have this service's preferences registered on them.
-  std::set<content::BrowserContext*> registered_preferences_;
+  std::set<const content::BrowserContext*> registered_preferences_;
 
 #if !defined(NDEBUG)
   // A static string passed in to our constructor. Should be unique across all
