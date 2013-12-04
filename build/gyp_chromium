@@ -13,6 +13,7 @@ import os
 import pipes
 import shlex
 import subprocess
+import string
 import sys
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -62,6 +63,15 @@ def GetSupplementalFiles():
   return glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
 
 
+def FormatKeyForGN(key):
+  """Returns the given GYP key reformatted for GN.
+
+  GYP dictionary keys can be almost anything, but in GN they are identifiers
+  and must follow the same rules. This reformats such keys to be valid GN
+  identifiers."""
+  return ''.join([c if c in string.ascii_letters else '_' for c in key])
+
+
 def GetVarsStringForGN(supplemental_files):
   vars_dict = {}
 
@@ -81,7 +91,7 @@ def GetVarsStringForGN(supplemental_files):
   for item in items:
     tokens = item.split('=', 1)
     # Some GYP variables have hyphens, which we don't support.
-    key = tokens[0].replace("-", "_")
+    key = FormatKeyForGN(tokens[0])
     if len(tokens) == 2:
       # Escape $ characters which have special meaning to GN.
       vars_dict[key] = '"' + tokens[1].replace("$", "\\$") + '"'
@@ -206,10 +216,8 @@ if __name__ == '__main__':
 
   supplemental_includes = GetSupplementalFiles()
 
-  # Temporarily disabled until it is debugged.
-  # TODO(brettw) re-enable this code.
-  #if not RunGN(supplemental_includes):
-  #  sys.exit(1)
+  if not RunGN(supplemental_includes):
+    sys.exit(1)
 
   args.extend(
       ['-I' + i for i in additional_include_files(supplemental_includes, args)])
