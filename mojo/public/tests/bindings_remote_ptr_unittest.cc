@@ -111,5 +111,37 @@ TEST_F(BindingsRemotePtrTest, EndToEnd) {
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 
+TEST_F(BindingsRemotePtrTest, Movable) {
+  RemotePtr<math::Calculator> a;
+  RemotePtr<math::Calculator> b(pipe0_.Pass());
+
+  EXPECT_FALSE(a.is_valid());
+  EXPECT_TRUE(b.is_valid());
+
+  a = b.Pass();
+
+  EXPECT_TRUE(a.is_valid());
+  EXPECT_FALSE(b.is_valid());
+}
+
+TEST_F(BindingsRemotePtrTest, Resettable) {
+  RemotePtr<math::Calculator> a;
+
+  EXPECT_FALSE(a.is_valid());
+
+  MessagePipeHandle handle = pipe0_.get();
+
+  a.reset(pipe0_.Pass());
+
+  EXPECT_TRUE(a.is_valid());
+
+  a.reset();
+
+  EXPECT_FALSE(a.is_valid());
+
+  // Test that handle was closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, CloseRaw(handle));
+}
+
 }  // namespace test
 }  // namespace mojo

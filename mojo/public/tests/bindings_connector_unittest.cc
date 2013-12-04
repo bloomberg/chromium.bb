@@ -71,8 +71,8 @@ class BindingsConnectorTest : public testing::Test {
 };
 
 TEST_F(BindingsConnectorTest, Basic) {
-  Connector connector0(handle0_.Pass());
-  Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector1(handle1_.Pass());
 
   const char kText[] = "hello world";
 
@@ -97,8 +97,8 @@ TEST_F(BindingsConnectorTest, Basic) {
 }
 
 TEST_F(BindingsConnectorTest, Basic_EarlyIncomingReceiver) {
-  Connector connector0(handle0_.Pass());
-  Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector1(handle1_.Pass());
 
   MessageAccumulator accumulator;
   connector1.SetIncomingReceiver(&accumulator);
@@ -123,8 +123,8 @@ TEST_F(BindingsConnectorTest, Basic_EarlyIncomingReceiver) {
 }
 
 TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
-  Connector connector0(handle0_.Pass());
-  Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector1(handle1_.Pass());
 
   const char* kText[] = { "hello", "world" };
 
@@ -155,7 +155,7 @@ TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
 TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
   // Leak this, so the closed handle isn't closed again.
   MojoHandle mojo_handle = handle0_.get().value();
-  Connector* connector0 = new Connector(handle0_.Pass());
+  internal::Connector* connector0 = new internal::Connector(handle0_.Pass());
 
   const char kText[] = "hello world";
 
@@ -173,8 +173,8 @@ TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
 
 // Enable this test once MojoWriteMessage supports passing handles.
 TEST_F(BindingsConnectorTest, MessageWithHandles) {
-  Connector connector0(handle0_.Pass());
-  Connector connector1(handle1_.Pass());
+  internal::Connector connector0(handle0_.Pass());
+  internal::Connector connector1(handle1_.Pass());
 
   const char kText[] = "hello world";
 
@@ -212,8 +212,8 @@ TEST_F(BindingsConnectorTest, MessageWithHandles) {
   smph.reset(MessagePipeHandle(message_received.handles[0].value()));
   message_received.handles[0] = Handle();  // |smph| now owns this handle.
 
-  Connector connector_received(smph.Pass());
-  Connector connector_original(handles[1].Pass());
+  internal::Connector connector_received(smph.Pass());
+  internal::Connector connector_original(handles[1].Pass());
 
   AllocMessage(kText, &message);
 

@@ -10,6 +10,7 @@
 #include <algorithm>
 
 namespace mojo {
+namespace internal {
 
 // ----------------------------------------------------------------------------
 
@@ -173,4 +174,5 @@ void Connector::Callback::OnHandleReady(MojoResult result) {
   owner->OnHandleReady(this, result);
 }
 
+}  // namespace internal
 }  // namespace mojo

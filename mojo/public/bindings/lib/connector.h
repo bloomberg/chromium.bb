@@ -11,6 +11,7 @@
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
+namespace internal {
 
 // The Connector class is responsible for performing read/write operations on a
 // MessagePipe. It writes messages it receives through the MessageReceiver
@@ -73,6 +74,7 @@ class Connector : public MessageReceiver {
   MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
 };
 
+}  // namespace internal
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_BINDINGS_LIB_CONNECTOR_H_

@@ -5,7 +5,10 @@
 #ifndef MOJO_PUBLIC_BINDINGS_LIB_REMOTE_PTR_H_
 #define MOJO_PUBLIC_BINDINGS_LIB_REMOTE_PTR_H_
 
+#include <assert.h>
+
 #include "mojo/public/bindings/lib/connector.h"
+#include "mojo/public/system/macros.h"
 
 namespace mojo {
 
@@ -47,29 +50,70 @@ namespace mojo {
 //
 template <typename S>
 class RemotePtr {
+  MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(RemotePtr, RValue);
+
  public:
+  RemotePtr() : state_(NULL) {}
   explicit RemotePtr(ScopedMessagePipeHandle message_pipe)
-      : connector_(message_pipe.Pass()),
-        proxy_(&connector_) {
+      : state_(new State(message_pipe.Pass())) {
+  }
+
+  // Move-only constructor and operator=.
+  RemotePtr(RValue other) : state_(other.object->release()) {}
+  RemotePtr& operator=(RValue other) {
+    state_ = other.object->release();
+    return *this;
+  }
+
+  ~RemotePtr() {
+    delete state_;
+  }
+
+  bool is_valid() const {
+    return !!state_;
   }
 
   S* get() {
-    return &proxy_;
+    assert(state_);
+    return &state_->proxy;
   }
 
   S* operator->() {
     return get();
   }
 
+  void reset() {
+    delete state_;
+    state_ = NULL;
+  }
+
+  void reset(ScopedMessagePipeHandle message_pipe) {
+    delete state_;
+    state_ = new State(message_pipe.Pass());
+  }
+
   void SetPeer(typename S::_Peer::_Stub* peer) {
-    connector_.SetIncomingReceiver(peer);
+    assert(state_);
+    state_->connector.SetIncomingReceiver(peer);
   }
 
  private:
-  Connector connector_;
-  typename S::_Proxy proxy_;
+  struct State {
+    State(ScopedMessagePipeHandle message_pipe)
+        : connector(message_pipe.Pass()),
+          proxy(&connector) {
+    }
+    internal::Connector connector;
+    typename S::_Proxy proxy;
+  };
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemotePtr);
+  State* release() {
+    State* state = state_;
+    state_ = NULL;
+    return state;
+  }
+
+  State* state_;
 };
 
 }  // namespace mojo
