@@ -86,7 +86,7 @@ bool CallGetSaveFileName(OPENFILENAME* ofn) {
 // Distinguish directories from regular files.
 bool IsDirectory(const base::FilePath& path) {
   base::PlatformFileInfo file_info;
-  return file_util::GetFileInfo(path, &file_info) ?
+  return base::GetFileInfo(path, &file_info) ?
       file_info.is_directory : path.EndsWithSeparator();
 }
 

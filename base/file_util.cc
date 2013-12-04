@@ -167,7 +167,7 @@ bool CreateDirectory(const FilePath& full_path) {
 
 bool GetFileSize(const FilePath& file_path, int64* file_size) {
   PlatformFileInfo info;
-  if (!file_util::GetFileInfo(file_path, &info))
+  if (!GetFileInfo(file_path, &info))
     return false;
   *file_size = info.size;
   return true;

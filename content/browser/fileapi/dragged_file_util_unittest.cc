@@ -326,8 +326,7 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
 
     // Make sure regular GetFileInfo succeeds.
     base::PlatformFileInfo info;
-    ASSERT_TRUE(file_util::GetFileInfo(
-        root_path().Append(test_case.path), &info));
+    ASSERT_TRUE(base::GetFileInfo(root_path().Append(test_case.path), &info));
     if (!test_case.is_directory)
       ASSERT_EQ(test_case.data_file_size, info.size);
     ASSERT_EQ(test_case.is_directory, info.is_directory);

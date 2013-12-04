@@ -3014,7 +3014,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateDoomRace) {
     base::FilePath entry_file_path = cache_path_.AppendASCII(
         disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, i));
     base::PlatformFileInfo info;
-    EXPECT_FALSE(file_util::GetFileInfo(entry_file_path, &info));
+    EXPECT_FALSE(base::GetFileInfo(entry_file_path, &info));
   }
 }
 

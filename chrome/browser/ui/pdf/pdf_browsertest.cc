@@ -130,7 +130,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
         GetPDFTestDir(),
         base::FilePath().AppendASCII(expected_filename_));
     base::PlatformFileInfo info;
-    ASSERT_TRUE(file_util::GetFileInfo(reference, &info));
+    ASSERT_TRUE(base::GetFileInfo(reference, &info));
     int size = static_cast<size_t>(info.size);
     scoped_ptr<char[]> data(new char[size]);
     ASSERT_EQ(size, file_util::ReadFile(reference, data.get(), size));

@@ -94,7 +94,7 @@ bool ResourceCache::Load(const std::string& key,
   base::FilePath subkey_path;
   // Only read from |subkey_path| if it is not a symlink.
   if (!VerifyKeyPathAndGetSubkeyPath(key, false, subkey, &subkey_path) ||
-      file_util::IsLink(subkey_path)) {
+      base::IsLink(subkey_path)) {
     return false;
   }
   data->clear();
@@ -118,7 +118,7 @@ void ResourceCache::LoadAllSubkeys(
     std::string data;
     // Only read from |subkey_path| if it is not a symlink and its name is
     // a base64-encoded string.
-    if (!file_util::IsLink(path) &&
+    if (!base::IsLink(path) &&
         Base64Decode(encoded_subkey, &subkey) &&
         base::ReadFileToString(path, &data)) {
       (*contents)[subkey].swap(data);

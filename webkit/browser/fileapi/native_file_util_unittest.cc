@@ -37,7 +37,7 @@ class NativeFileUtilTest : public testing::Test {
 
   int64 GetSize(const base::FilePath& path) {
     base::PlatformFileInfo info;
-    file_util::GetFileInfo(path, &info);
+    base::GetFileInfo(path, &info);
     return info.size;
   }
 
@@ -126,7 +126,7 @@ TEST_F(NativeFileUtilTest, TouchFileAndGetFileInfo) {
   ASSERT_TRUE(created);
 
   base::PlatformFileInfo info;
-  ASSERT_TRUE(file_util::GetFileInfo(file_name, &info));
+  ASSERT_TRUE(base::GetFileInfo(file_name, &info));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::GetFileInfo(file_name, &native_info));
   ASSERT_EQ(info.size, native_info.size);
@@ -145,7 +145,7 @@ TEST_F(NativeFileUtilTest, TouchFileAndGetFileInfo) {
             NativeFileUtil::Touch(file_name,
                                   new_accessed, new_modified));
 
-  ASSERT_TRUE(file_util::GetFileInfo(file_name, &info));
+  ASSERT_TRUE(base::GetFileInfo(file_name, &info));
   EXPECT_EQ(new_accessed, info.last_accessed);
   EXPECT_EQ(new_modified, info.last_modified);
 }

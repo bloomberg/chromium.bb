@@ -494,7 +494,7 @@ base::PlatformFileError NativeMediaFileUtil::GetFileInfoSync(
   base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
-  if (file_util::IsLink(file_path))
+  if (base::IsLink(file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   error = fileapi::NativeFileUtil::GetFileInfo(file_path, file_info);
   if (error != base::PLATFORM_FILE_OK)
@@ -549,7 +549,7 @@ base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
        !enum_path.empty();
        enum_path = file_enum.Next()) {
     // Skip symlinks.
-    if (file_util::IsLink(enum_path))
+    if (base::IsLink(enum_path))
       continue;
 
     base::FileEnumerator::FileInfo info = file_enum.GetInfo();
@@ -651,7 +651,7 @@ NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
   if (!base::PathExists(file_path))
     return failure_error;
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(file_path, &file_info))
+  if (!base::GetFileInfo(file_path, &file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   if (!file_info.is_directory &&

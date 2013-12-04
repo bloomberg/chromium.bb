@@ -249,7 +249,7 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
                locations.begin();
            it != locations.end(); it++) {
         base::PlatformFileInfo info;
-        if (!file_util::GetFileInfo(it->second, &info))
+        if (!base::GetFileInfo(it->second, &info))
           return base::PLATFORM_FILE_ERROR_IO;
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
                                             info.size, info.last_modified));
@@ -264,7 +264,7 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
                originals.begin();
            it != originals.end(); it++) {
         base::PlatformFileInfo info;
-        if (!file_util::GetFileInfo(it->second, &info))
+        if (!base::GetFileInfo(it->second, &info))
           return base::PLATFORM_FILE_ERROR_IO;
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
                                             info.size, info.last_modified));

@@ -146,7 +146,7 @@ class BlobURLRequestJobTest : public testing::Test {
               file_util::WriteFile(temp_file1_, kTestFileData1,
                                    arraysize(kTestFileData1) - 1));
     base::PlatformFileInfo file_info1;
-    file_util::GetFileInfo(temp_file1_, &file_info1);
+    base::GetFileInfo(temp_file1_, &file_info1);
     temp_file_modification_time1_ = file_info1.last_modified;
 
     temp_file2_ = temp_dir_.path().AppendASCII("BlobFile2.dat");
@@ -154,7 +154,7 @@ class BlobURLRequestJobTest : public testing::Test {
               file_util::WriteFile(temp_file2_, kTestFileData2,
                                    arraysize(kTestFileData2) - 1));
     base::PlatformFileInfo file_info2;
-    file_util::GetFileInfo(temp_file2_, &file_info2);
+    base::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
 
     url_request_job_factory_.SetProtocolHandler("blob",

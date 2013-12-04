@@ -545,7 +545,7 @@ void PluginList::GetPluginsInDir(
 
     // Get mtime.
     base::PlatformFileInfo info;
-    if (!file_util::GetFileInfo(path, &info))
+    if (!base::GetFileInfo(path, &info))
       continue;
 
     files.push_back(std::make_pair(path, info.last_modified));

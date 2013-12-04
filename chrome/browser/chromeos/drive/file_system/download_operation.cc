@@ -67,7 +67,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
         !util::CreateGDocFile(gdoc_file_path,
                               GURL(entry->file_specific_info().alternate_url()),
                               entry->resource_id()) ||
-        !file_util::GetFileInfo(gdoc_file_path, &file_info))
+        !base::GetFileInfo(gdoc_file_path, &file_info))
       return FILE_ERROR_FAILED;
 
     *cache_file_path = gdoc_file_path;
@@ -98,7 +98,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // the drive::FS side is also converted to run fully on blocking pool.
   if (cache_entry.is_dirty()) {
     base::PlatformFileInfo file_info;
-    if (file_util::GetFileInfo(*cache_file_path, &file_info))
+    if (base::GetFileInfo(*cache_file_path, &file_info))
       SetPlatformFileInfoToResourceEntry(file_info, entry);
   }
 

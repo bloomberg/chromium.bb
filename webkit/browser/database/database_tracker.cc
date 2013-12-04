@@ -692,7 +692,7 @@ int DatabaseTracker::DeleteDataModifiedSince(
          db != details.end(); ++db) {
       base::FilePath db_file = GetFullDBFilePath(*ori, db->database_name);
       base::PlatformFileInfo file_info;
-      file_util::GetFileInfo(db_file, &file_info);
+      base::GetFileInfo(db_file, &file_info);
       if (file_info.last_modified < cutoff)
         continue;
 

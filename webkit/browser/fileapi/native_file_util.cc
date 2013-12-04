@@ -155,7 +155,7 @@ PlatformFileError NativeFileUtil::GetFileInfo(
     base::PlatformFileInfo* file_info) {
   if (!base::PathExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  if (!file_util::GetFileInfo(path, file_info))
+  if (!base::GetFileInfo(path, file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
   return base::PLATFORM_FILE_OK;
 }

@@ -647,7 +647,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   base::PlatformFileInfo src_platform_file_info;
-  if (!file_util::GetFileInfo(src_file_path, &src_platform_file_info))
+  if (!base::GetFileInfo(src_file_path, &src_platform_file_info))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   FileId dest_file_id;
@@ -1028,7 +1028,7 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
   base::PlatformFileError error = NativeFileUtil::GetFileInfo(
       local_path, file_info);
   // We should not follow symbolic links in sandboxed file system.
-  if (file_util::IsLink(local_path)) {
+  if (base::IsLink(local_path)) {
     LOG(WARNING) << "Found a symbolic file.";
     error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }

@@ -210,7 +210,7 @@ int32_t PepperFlashFileMessageFilter::OnQueryFile(
   }
 
   base::PlatformFileInfo info;
-  bool result = file_util::GetFileInfo(full_path, &info);
+  bool result = base::GetFileInfo(full_path, &info);
   context->reply_msg = PpapiPluginMsg_FlashFile_QueryFileReply(info);
   return ppapi::PlatformFileErrorToPepperError(result ?
       base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_ACCESS_DENIED);

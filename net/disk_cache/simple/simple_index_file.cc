@@ -96,7 +96,7 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
   }
 
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(file_path, &file_info)) {
+  if (!base::GetFileInfo(file_path, &file_info)) {
     LOG(ERROR) << "Could not get file info for " << file_path.value();
     return;
   }

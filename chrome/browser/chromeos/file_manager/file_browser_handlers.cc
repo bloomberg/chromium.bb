@@ -250,8 +250,8 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     // found on the url.path().
     if (!is_drive_file) {
       if (!base::PathExists(local_path) ||
-          file_util::IsLink(local_path) ||
-          !file_util::GetFileInfo(local_path, &file_info)) {
+          base::IsLink(local_path) ||
+          !base::GetFileInfo(local_path, &file_info)) {
         continue;
       }
     }

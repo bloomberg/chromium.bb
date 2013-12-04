@@ -77,7 +77,7 @@ FileError GetLocallyStoredResourceEntry(
     return error;
 
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(local_cache_path, &file_info))
+  if (!base::GetFileInfo(local_cache_path, &file_info))
     return FILE_ERROR_NOT_FOUND;
 
   SetPlatformFileInfoToResourceEntry(file_info, entry);

@@ -111,7 +111,7 @@ class GetFileInfoHelper {
       error_ = PLATFORM_FILE_ERROR_NOT_FOUND;
       return;
     }
-    if (!file_util::GetFileInfo(file_path, &file_info_))
+    if (!GetFileInfo(file_path, &file_info_))
       error_ = PLATFORM_FILE_ERROR_FAILED;
   }
 

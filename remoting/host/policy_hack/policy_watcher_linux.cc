@@ -103,7 +103,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     base::PlatformFileInfo file_info;
 
     // If the path does not exist or points to a directory, it's safe to load.
-    if (!file_util::GetFileInfo(config_dir_, &file_info) ||
+    if (!base::GetFileInfo(config_dir_, &file_info) ||
         !file_info.is_directory) {
       return last_modification;
     }
@@ -115,7 +115,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     for (base::FilePath config_file = file_enumerator.Next();
          !config_file.empty();
          config_file = file_enumerator.Next()) {
-      if (file_util::GetFileInfo(config_file, &file_info) &&
+      if (base::GetFileInfo(config_file, &file_info) &&
           !file_info.is_directory) {
         last_modification = std::max(last_modification,
                                      file_info.last_modified);

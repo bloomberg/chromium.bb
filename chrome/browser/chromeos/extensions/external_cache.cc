@@ -309,7 +309,7 @@ void ExternalCache::BackendCheckCacheContentsInternal(
     base::FileEnumerator::FileInfo info = enumerator.GetInfo();
     std::string basename = path.BaseName().value();
 
-    if (info.IsDirectory() || file_util::IsLink(info.GetName())) {
+    if (info.IsDirectory() || base::IsLink(info.GetName())) {
       LOG(ERROR) << "Erasing bad file in ExternalCache directory: " << basename;
       base::DeleteFile(path, true /* recursive */);
       continue;

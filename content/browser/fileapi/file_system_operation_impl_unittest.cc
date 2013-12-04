@@ -159,7 +159,7 @@ class FileSystemOperationImplTest
 
   int64 GetFileSize(const std::string& path) {
     base::PlatformFileInfo info;
-    EXPECT_TRUE(file_util::GetFileInfo(PlatformPath(path), &info));
+    EXPECT_TRUE(base::GetFileInfo(PlatformPath(path), &info));
     return info.size;
   }
 
@@ -1065,7 +1065,7 @@ TEST_F(FileSystemOperationImplTest, TestTouchFile) {
   base::FilePath platform_path = PlatformPath("file");
 
   base::PlatformFileInfo info;
-  EXPECT_TRUE(file_util::GetFileInfo(platform_path, &info));
+  EXPECT_TRUE(base::GetFileInfo(platform_path, &info));
   EXPECT_FALSE(info.is_directory);
   EXPECT_EQ(0, info.size);
   const base::Time last_modified = info.last_modified;
@@ -1083,7 +1083,7 @@ TEST_F(FileSystemOperationImplTest, TestTouchFile) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 
-  EXPECT_TRUE(file_util::GetFileInfo(platform_path, &info));
+  EXPECT_TRUE(base::GetFileInfo(platform_path, &info));
   // We compare as time_t here to lower our resolution, to avoid false
   // negatives caused by conversion to the local filesystem's native
   // representation and back.

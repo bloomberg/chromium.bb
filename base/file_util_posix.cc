@@ -639,6 +639,56 @@ bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {
   return true;
 }
 
+// TODO(rkc): Refactor GetFileInfo and FileEnumerator to handle symlinks
+// correctly. http://code.google.com/p/chromium-os/issues/detail?id=15948
+bool IsLink(const FilePath& file_path) {
+  stat_wrapper_t st;
+  // If we can't lstat the file, it's safe to assume that the file won't at
+  // least be a 'followable' link.
+  if (CallLstat(file_path.value().c_str(), &st) != 0)
+    return false;
+
+  if (S_ISLNK(st.st_mode))
+    return true;
+  else
+    return false;
+}
+
+bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* results) {
+  stat_wrapper_t file_info;
+#if defined(OS_ANDROID)
+  if (file_path.IsContentUri()) {
+    int fd = OpenContentUriForRead(file_path);
+    if (fd < 0)
+      return false;
+    file_util::ScopedFD scoped_fd(&fd);
+    if (CallFstat(fd, &file_info) != 0)
+      return false;
+  } else {
+#endif  // defined(OS_ANDROID)
+    if (CallStat(file_path.value().c_str(), &file_info) != 0)
+      return false;
+#if defined(OS_ANDROID)
+  }
+#endif  // defined(OS_ANDROID)
+  results->is_directory = S_ISDIR(file_info.st_mode);
+  results->size = file_info.st_size;
+#if defined(OS_MACOSX)
+  results->last_modified = Time::FromTimeSpec(file_info.st_mtimespec);
+  results->last_accessed = Time::FromTimeSpec(file_info.st_atimespec);
+  results->creation_time = Time::FromTimeSpec(file_info.st_ctimespec);
+#elif defined(OS_ANDROID)
+  results->last_modified = Time::FromTimeT(file_info.st_mtime);
+  results->last_accessed = Time::FromTimeT(file_info.st_atime);
+  results->creation_time = Time::FromTimeT(file_info.st_ctime);
+#else
+  results->last_modified = Time::FromTimeSpec(file_info.st_mtim);
+  results->last_accessed = Time::FromTimeSpec(file_info.st_atim);
+  results->creation_time = Time::FromTimeSpec(file_info.st_ctim);
+#endif
+  return true;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -671,56 +721,6 @@ base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
       break;
   }
   return base::FilePath();
-}
-
-// TODO(rkc): Refactor GetFileInfo and FileEnumerator to handle symlinks
-// correctly. http://code.google.com/p/chromium-os/issues/detail?id=15948
-bool IsLink(const FilePath& file_path) {
-  stat_wrapper_t st;
-  // If we can't lstat the file, it's safe to assume that the file won't at
-  // least be a 'followable' link.
-  if (CallLstat(file_path.value().c_str(), &st) != 0)
-    return false;
-
-  if (S_ISLNK(st.st_mode))
-    return true;
-  else
-    return false;
-}
-
-bool GetFileInfo(const FilePath& file_path, base::PlatformFileInfo* results) {
-  stat_wrapper_t file_info;
-#if defined(OS_ANDROID)
-  if (file_path.IsContentUri()) {
-    int fd = OpenContentUriForRead(file_path);
-    if (fd < 0)
-      return false;
-    ScopedFD scoped_fd(&fd);
-    if (base::CallFstat(fd, &file_info) != 0)
-      return false;
-  } else {
-#endif  // defined(OS_ANDROID)
-    if (CallStat(file_path.value().c_str(), &file_info) != 0)
-      return false;
-#if defined(OS_ANDROID)
-  }
-#endif  // defined(OS_ANDROID)
-  results->is_directory = S_ISDIR(file_info.st_mode);
-  results->size = file_info.st_size;
-#if defined(OS_MACOSX)
-  results->last_modified = base::Time::FromTimeSpec(file_info.st_mtimespec);
-  results->last_accessed = base::Time::FromTimeSpec(file_info.st_atimespec);
-  results->creation_time = base::Time::FromTimeSpec(file_info.st_ctimespec);
-#elif defined(OS_ANDROID)
-  results->last_modified = base::Time::FromTimeT(file_info.st_mtime);
-  results->last_accessed = base::Time::FromTimeT(file_info.st_atime);
-  results->creation_time = base::Time::FromTimeT(file_info.st_ctime);
-#else
-  results->last_modified = base::Time::FromTimeSpec(file_info.st_mtim);
-  results->last_accessed = base::Time::FromTimeSpec(file_info.st_atim);
-  results->creation_time = base::Time::FromTimeSpec(file_info.st_ctim);
-#endif
-  return true;
 }
 
 bool GetInode(const FilePath& path, ino_t* inode) {

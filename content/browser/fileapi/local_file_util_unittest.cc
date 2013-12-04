@@ -85,7 +85,7 @@ class LocalFileUtilTest : public testing::Test {
 
   int64 GetSize(const char *file_name) {
     base::PlatformFileInfo info;
-    file_util::GetFileInfo(LocalPath(file_name), &info);
+    base::GetFileInfo(LocalPath(file_name), &info);
     return info.size;
   }
 
@@ -192,7 +192,7 @@ TEST_F(LocalFileUtilTest, TouchFile) {
   scoped_ptr<FileSystemOperationContext> context(NewContext());
 
   base::PlatformFileInfo info;
-  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(file_name), &info));
+  ASSERT_TRUE(base::GetFileInfo(LocalPath(file_name), &info));
   const base::Time new_accessed =
       info.last_accessed + base::TimeDelta::FromHours(10);
   const base::Time new_modified =
@@ -202,7 +202,7 @@ TEST_F(LocalFileUtilTest, TouchFile) {
             file_util()->Touch(context.get(), CreateURL(file_name),
                               new_accessed, new_modified));
 
-  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(file_name), &info));
+  ASSERT_TRUE(base::GetFileInfo(LocalPath(file_name), &info));
   EXPECT_EQ(new_accessed, info.last_accessed);
   EXPECT_EQ(new_modified, info.last_modified);
 
@@ -220,7 +220,7 @@ TEST_F(LocalFileUtilTest, TouchDirectory) {
                                         false /* recursive */));
 
   base::PlatformFileInfo info;
-  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(dir_name), &info));
+  ASSERT_TRUE(base::GetFileInfo(LocalPath(dir_name), &info));
   const base::Time new_accessed =
       info.last_accessed + base::TimeDelta::FromHours(10);
   const base::Time new_modified =
@@ -230,7 +230,7 @@ TEST_F(LocalFileUtilTest, TouchDirectory) {
             file_util()->Touch(context.get(), CreateURL(dir_name),
                               new_accessed, new_modified));
 
-  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(dir_name), &info));
+  ASSERT_TRUE(base::GetFileInfo(LocalPath(dir_name), &info));
   EXPECT_EQ(new_accessed, info.last_accessed);
   EXPECT_EQ(new_modified, info.last_modified);
 }

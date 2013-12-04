@@ -126,7 +126,7 @@ bool GetMTime(const base::FilePath& path, base::Time* out_mtime) {
   }
 #endif
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(path, &file_info))
+  if (!base::GetFileInfo(path, &file_info))
     return false;
   *out_mtime = file_info.last_modified;
   return true;

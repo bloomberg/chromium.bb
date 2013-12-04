@@ -378,7 +378,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // This will be used later to make sure it gets back to this size.
   const base::FilePath login_db_file = temp_dir_.path().Append("login_test");
   base::PlatformFileInfo db_file_start_info;
-  ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_start_info));
+  ASSERT_TRUE(base::GetFileInfo(login_db_file, &db_file_start_info));
 
   LoginDatabase* login_db = login_db_.get();
 
@@ -394,7 +394,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Get the new size of the login DB file. We expect it to be larger.
   base::PlatformFileInfo db_file_full_info;
-  ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_full_info));
+  ASSERT_TRUE(base::GetFileInfo(login_db_file, &db_file_full_info));
   EXPECT_GT(db_file_full_info.size, db_file_start_info.size);
 
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
@@ -468,7 +468,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
     // size is equal to the size before we populated it, even though it was
     // larger after populating it.
     base::PlatformFileInfo db_file_end_info;
-    ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_end_info));
+    ASSERT_TRUE(base::GetFileInfo(login_db_file, &db_file_end_info));
     EXPECT_EQ(db_file_start_info.size, db_file_end_info.size);
   }
 

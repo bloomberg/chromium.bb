@@ -57,7 +57,7 @@ void FindMostRecentDatabase(
       continue;
 
     base::PlatformFileInfo file_info;
-    if (!file_util::GetFileInfo(db_path, &file_info))
+    if (!base::GetFileInfo(db_path, &file_info))
       continue;
 
     // In case of two databases with the same modified time, tie breaker goes

@@ -62,7 +62,7 @@ int InitInternal(const base::FilePath& path,
   // time_t to compare. This check is used for sliced files.
   if (!expected_modification_time.is_null()) {
     base::PlatformFileInfo info;
-    if (!file_util::GetFileInfo(path, &info)) {
+    if (!base::GetFileInfo(path, &info)) {
       DLOG(WARNING) << "Failed to get file info of \"" << path.value() << "\"";
       return ERR_FILE_NOT_FOUND;
     }

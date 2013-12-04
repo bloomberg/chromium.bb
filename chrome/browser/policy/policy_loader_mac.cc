@@ -120,7 +120,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
 
 base::Time PolicyLoaderMac::LastModificationTime() {
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(managed_policy_path_, &file_info) ||
+  if (!base::GetFileInfo(managed_policy_path_, &file_info) ||
       file_info.is_directory) {
     return base::Time();
   }

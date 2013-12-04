@@ -198,7 +198,7 @@ URLRequestFileJob::~URLRequestFileJob() {
 void URLRequestFileJob::FetchMetaInfo(const base::FilePath& file_path,
                                       FileMetaInfo* meta_info) {
   base::PlatformFileInfo platform_info;
-  meta_info->file_exists = file_util::GetFileInfo(file_path, &platform_info);
+  meta_info->file_exists = base::GetFileInfo(file_path, &platform_info);
   if (meta_info->file_exists) {
     meta_info->file_size = platform_info.size;
     meta_info->is_directory = platform_info.is_directory;

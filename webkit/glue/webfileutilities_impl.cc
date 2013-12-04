@@ -32,8 +32,7 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
     return false;
   }
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(base::FilePath::FromUTF16Unsafe(path),
-                              &file_info))
+  if (!base::GetFileInfo(base::FilePath::FromUTF16Unsafe(path), &file_info))
     return false;
 
   webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);

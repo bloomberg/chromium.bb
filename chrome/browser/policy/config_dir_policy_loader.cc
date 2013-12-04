@@ -98,7 +98,7 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
     base::FilePath path(config_dir_.Append(kConfigDirSuffixes[i]));
 
     // Skip if the file doesn't exist, or it isn't a directory.
-    if (!file_util::GetFileInfo(path, &info) || !info.is_directory)
+    if (!base::GetFileInfo(path, &info) || !info.is_directory)
       continue;
 
     // Enumerate the files and find the most recent modification timestamp.
@@ -107,7 +107,7 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
     for (base::FilePath config_file = file_enumerator.Next();
          !config_file.empty();
          config_file = file_enumerator.Next()) {
-      if (file_util::GetFileInfo(config_file, &info) && !info.is_directory)
+      if (base::GetFileInfo(config_file, &info) && !info.is_directory)
         last_modification = std::max(last_modification, info.last_modified);
     }
   }

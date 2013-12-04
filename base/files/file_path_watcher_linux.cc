@@ -446,7 +446,7 @@ bool FilePathWatcherImpl::UpdateWatches() {
     if (path_valid) {
       watch_entry->watch_ = g_inotify_reader.Get().AddWatch(path, this);
       if ((watch_entry->watch_ == InotifyReader::kInvalidWatch) &&
-          file_util::IsLink(path)) {
+          base::IsLink(path)) {
         FilePath link;
         if (ReadSymbolicLink(path, &link)) {
           if (!link.IsAbsolute())

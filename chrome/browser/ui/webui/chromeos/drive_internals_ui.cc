@@ -80,7 +80,7 @@ void GetGCacheContents(const base::FilePath& root_path,
     base::FileEnumerator::FileInfo info = enumerator.GetInfo();
     int64 size = info.GetSize();
     const bool is_directory = info.IsDirectory();
-    const bool is_symbolic_link = file_util::IsLink(info.GetName());
+    const bool is_symbolic_link = base::IsLink(info.GetName());
     const base::Time last_modified = info.GetLastModifiedTime();
 
     base::DictionaryValue* entry = new base::DictionaryValue;

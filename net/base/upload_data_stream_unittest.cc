@@ -555,7 +555,7 @@ TEST_F(UploadDataStreamTest, FileChanged) {
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
   base::PlatformFileInfo file_info;
-  ASSERT_TRUE(file_util::GetFileInfo(temp_file_path, &file_info));
+  ASSERT_TRUE(base::GetFileInfo(temp_file_path, &file_info));
 
   // Test file not changed.
   FileChangedHelper(temp_file_path, file_info.last_modified, false);

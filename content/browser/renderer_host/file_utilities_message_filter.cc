@@ -48,7 +48,7 @@ void FileUtilitiesMessageFilter::OnGetFileInfo(
     return;
   }
 
-  if (!file_util::GetFileInfo(path, result))
+  if (!base::GetFileInfo(path, result))
     *status = base::PLATFORM_FILE_ERROR_FAILED;
 }
 

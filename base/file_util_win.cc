@@ -92,7 +92,7 @@ bool DeleteFile(const FilePath& path, bool recursive) {
     // If not recursing, then first check to see if |path| is a directory.
     // If it is, then remove it with RemoveDirectory.
     PlatformFileInfo file_info;
-    if (file_util::GetFileInfo(path, &file_info) && file_info.is_directory)
+    if (GetFileInfo(path, &file_info) && file_info.is_directory)
       return RemoveDirectory(path.value().c_str()) != 0;
 
     // Otherwise, it's a file, wildcard or non-existant. Try DeleteFile first
@@ -393,24 +393,113 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
 bool NormalizeFilePath(const FilePath& path, FilePath* real_path) {
   ThreadRestrictions::AssertIOAllowed();
   FilePath mapped_file;
-  if (!file_util::NormalizeToNativeFilePath(path, &mapped_file))
+  if (!NormalizeToNativeFilePath(path, &mapped_file))
     return false;
   // NormalizeToNativeFilePath() will return a path that starts with
   // "\Device\Harddisk...".  Helper DevicePathToDriveLetterPath()
   // will find a drive letter which maps to the path's device, so
   // that we return a path starting with a drive letter.
-  return file_util::DevicePathToDriveLetterPath(mapped_file, real_path);
+  return DevicePathToDriveLetterPath(mapped_file, real_path);
 }
 
-}  // namespace base
+bool DevicePathToDriveLetterPath(const FilePath& nt_device_path,
+                                 FilePath* out_drive_letter_path) {
+  ThreadRestrictions::AssertIOAllowed();
 
-// -----------------------------------------------------------------------------
+  // Get the mapping of drive letters to device paths.
+  const int kDriveMappingSize = 1024;
+  wchar_t drive_mapping[kDriveMappingSize] = {'\0'};
+  if (!::GetLogicalDriveStrings(kDriveMappingSize - 1, drive_mapping)) {
+    DLOG(ERROR) << "Failed to get drive mapping.";
+    return false;
+  }
 
-namespace file_util {
+  // The drive mapping is a sequence of null terminated strings.
+  // The last string is empty.
+  wchar_t* drive_map_ptr = drive_mapping;
+  wchar_t device_path_as_string[MAX_PATH];
+  wchar_t drive[] = L" :";
 
-using base::DirectoryExists;
-using base::FilePath;
-using base::kFileShareAll;
+  // For each string in the drive mapping, get the junction that links
+  // to it.  If that junction is a prefix of |device_path|, then we
+  // know that |drive| is the real path prefix.
+  while (*drive_map_ptr) {
+    drive[0] = drive_map_ptr[0];  // Copy the drive letter.
+
+    if (QueryDosDevice(drive, device_path_as_string, MAX_PATH)) {
+      FilePath device_path(device_path_as_string);
+      if (device_path == nt_device_path ||
+          device_path.IsParent(nt_device_path)) {
+        *out_drive_letter_path = FilePath(drive +
+            nt_device_path.value().substr(wcslen(device_path_as_string)));
+        return true;
+      }
+    }
+    // Move to the next drive letter string, which starts one
+    // increment after the '\0' that terminates the current string.
+    while (*drive_map_ptr++);
+  }
+
+  // No drive matched.  The path does not start with a device junction
+  // that is mounted as a drive letter.  This means there is no drive
+  // letter path to the volume that holds |device_path|, so fail.
+  return false;
+}
+
+bool NormalizeToNativeFilePath(const FilePath& path, FilePath* nt_path) {
+  ThreadRestrictions::AssertIOAllowed();
+  // In Vista, GetFinalPathNameByHandle() would give us the real path
+  // from a file handle.  If we ever deprecate XP, consider changing the
+  // code below to a call to GetFinalPathNameByHandle().  The method this
+  // function uses is explained in the following msdn article:
+  // http://msdn.microsoft.com/en-us/library/aa366789(VS.85).aspx
+  base::win::ScopedHandle file_handle(
+      ::CreateFile(path.value().c_str(),
+                   GENERIC_READ,
+                   kFileShareAll,
+                   NULL,
+                   OPEN_EXISTING,
+                   FILE_ATTRIBUTE_NORMAL,
+                   NULL));
+  if (!file_handle)
+    return false;
+
+  // Create a file mapping object.  Can't easily use MemoryMappedFile, because
+  // we only map the first byte, and need direct access to the handle. You can
+  // not map an empty file, this call fails in that case.
+  base::win::ScopedHandle file_map_handle(
+      ::CreateFileMapping(file_handle.Get(),
+                          NULL,
+                          PAGE_READONLY,
+                          0,
+                          1,  // Just one byte.  No need to look at the data.
+                          NULL));
+  if (!file_map_handle)
+    return false;
+
+  // Use a view of the file to get the path to the file.
+  void* file_view = MapViewOfFile(file_map_handle.Get(),
+                                  FILE_MAP_READ, 0, 0, 1);
+  if (!file_view)
+    return false;
+
+  // The expansion of |path| into a full path may make it longer.
+  // GetMappedFileName() will fail if the result is longer than MAX_PATH.
+  // Pad a bit to be safe.  If kMaxPathLength is ever changed to be less
+  // than MAX_PATH, it would be nessisary to test that GetMappedFileName()
+  // not return kMaxPathLength.  This would mean that only part of the
+  // path fit in |mapped_file_path|.
+  const int kMaxPathLength = MAX_PATH + 10;
+  wchar_t mapped_file_path[kMaxPathLength];
+  bool success = false;
+  HANDLE cp = GetCurrentProcess();
+  if (::GetMappedFileNameW(cp, file_view, mapped_file_path, kMaxPathLength)) {
+    *nt_path = FilePath(mapped_file_path);
+    success = true;
+  }
+  ::UnmapViewOfFile(file_view);
+  return success;
+}
 
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle
 // them if we do decide to.
@@ -418,8 +507,8 @@ bool IsLink(const FilePath& file_path) {
   return false;
 }
 
-bool GetFileInfo(const FilePath& file_path, base::PlatformFileInfo* results) {
-  base::ThreadRestrictions::AssertIOAllowed();
+bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* results) {
+  ThreadRestrictions::AssertIOAllowed();
 
   WIN32_FILE_ATTRIBUTE_DATA attr;
   if (!GetFileAttributesEx(file_path.value().c_str(),
@@ -434,12 +523,22 @@ bool GetFileInfo(const FilePath& file_path, base::PlatformFileInfo* results) {
 
   results->is_directory =
       (attr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-  results->last_modified = base::Time::FromFileTime(attr.ftLastWriteTime);
-  results->last_accessed = base::Time::FromFileTime(attr.ftLastAccessTime);
-  results->creation_time = base::Time::FromFileTime(attr.ftCreationTime);
+  results->last_modified = Time::FromFileTime(attr.ftLastWriteTime);
+  results->last_accessed = Time::FromFileTime(attr.ftLastAccessTime);
+  results->creation_time = Time::FromFileTime(attr.ftCreationTime);
 
   return true;
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::DirectoryExists;
+using base::FilePath;
+using base::kFileShareAll;
 
 FILE* OpenFile(const FilePath& filename, const char* mode) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -557,105 +656,6 @@ bool SetCurrentDirectory(const FilePath& directory) {
   base::ThreadRestrictions::AssertIOAllowed();
   BOOL ret = ::SetCurrentDirectory(directory.value().c_str());
   return ret != 0;
-}
-
-bool DevicePathToDriveLetterPath(const FilePath& nt_device_path,
-                                 FilePath* out_drive_letter_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // Get the mapping of drive letters to device paths.
-  const int kDriveMappingSize = 1024;
-  wchar_t drive_mapping[kDriveMappingSize] = {'\0'};
-  if (!::GetLogicalDriveStrings(kDriveMappingSize - 1, drive_mapping)) {
-    DLOG(ERROR) << "Failed to get drive mapping.";
-    return false;
-  }
-
-  // The drive mapping is a sequence of null terminated strings.
-  // The last string is empty.
-  wchar_t* drive_map_ptr = drive_mapping;
-  wchar_t device_path_as_string[MAX_PATH];
-  wchar_t drive[] = L" :";
-
-  // For each string in the drive mapping, get the junction that links
-  // to it.  If that junction is a prefix of |device_path|, then we
-  // know that |drive| is the real path prefix.
-  while (*drive_map_ptr) {
-    drive[0] = drive_map_ptr[0];  // Copy the drive letter.
-
-    if (QueryDosDevice(drive, device_path_as_string, MAX_PATH)) {
-      FilePath device_path(device_path_as_string);
-      if (device_path == nt_device_path ||
-          device_path.IsParent(nt_device_path)) {
-        *out_drive_letter_path = FilePath(drive +
-            nt_device_path.value().substr(wcslen(device_path_as_string)));
-        return true;
-      }
-    }
-    // Move to the next drive letter string, which starts one
-    // increment after the '\0' that terminates the current string.
-    while (*drive_map_ptr++);
-  }
-
-  // No drive matched.  The path does not start with a device junction
-  // that is mounted as a drive letter.  This means there is no drive
-  // letter path to the volume that holds |device_path|, so fail.
-  return false;
-}
-
-bool NormalizeToNativeFilePath(const FilePath& path, FilePath* nt_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  // In Vista, GetFinalPathNameByHandle() would give us the real path
-  // from a file handle.  If we ever deprecate XP, consider changing the
-  // code below to a call to GetFinalPathNameByHandle().  The method this
-  // function uses is explained in the following msdn article:
-  // http://msdn.microsoft.com/en-us/library/aa366789(VS.85).aspx
-  base::win::ScopedHandle file_handle(
-      ::CreateFile(path.value().c_str(),
-                   GENERIC_READ,
-                   kFileShareAll,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_ATTRIBUTE_NORMAL,
-                   NULL));
-  if (!file_handle)
-    return false;
-
-  // Create a file mapping object.  Can't easily use MemoryMappedFile, because
-  // we only map the first byte, and need direct access to the handle. You can
-  // not map an empty file, this call fails in that case.
-  base::win::ScopedHandle file_map_handle(
-      ::CreateFileMapping(file_handle.Get(),
-                          NULL,
-                          PAGE_READONLY,
-                          0,
-                          1,  // Just one byte.  No need to look at the data.
-                          NULL));
-  if (!file_map_handle)
-    return false;
-
-  // Use a view of the file to get the path to the file.
-  void* file_view = MapViewOfFile(file_map_handle.Get(),
-                                  FILE_MAP_READ, 0, 0, 1);
-  if (!file_view)
-    return false;
-
-  // The expansion of |path| into a full path may make it longer.
-  // GetMappedFileName() will fail if the result is longer than MAX_PATH.
-  // Pad a bit to be safe.  If kMaxPathLength is ever changed to be less
-  // than MAX_PATH, it would be nessisary to test that GetMappedFileName()
-  // not return kMaxPathLength.  This would mean that only part of the
-  // path fit in |mapped_file_path|.
-  const int kMaxPathLength = MAX_PATH + 10;
-  wchar_t mapped_file_path[kMaxPathLength];
-  bool success = false;
-  HANDLE cp = GetCurrentProcess();
-  if (::GetMappedFileNameW(cp, file_view, mapped_file_path, kMaxPathLength)) {
-    *nt_path = FilePath(mapped_file_path);
-    success = true;
-  }
-  ::UnmapViewOfFile(file_view);
-  return success;
 }
 
 int GetMaximumPathComponentLength(const FilePath& path) {

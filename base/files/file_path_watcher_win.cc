@@ -76,11 +76,11 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
 
   // Keep track of the last modified time of the file.  We use nulltime
   // to represent the file not existing.
-  base::Time last_modified_;
+  Time last_modified_;
 
   // The time at which we processed the first notification with the
   // |last_modified_| time stamp.
-  base::Time first_notification_;
+  Time first_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherImpl);
 };
@@ -90,7 +90,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
                                 const FilePathWatcher::Callback& callback) {
   DCHECK(target_.value().empty());  // Can only watch one path.
 
-  set_message_loop(base::MessageLoopProxy::current());
+  set_message_loop(MessageLoopProxy::current());
   callback_ = callback;
   target_ = path;
   recursive_watch_ = recursive;
@@ -114,8 +114,8 @@ void FilePathWatcherImpl::Cancel() {
   // Switch to the file thread if necessary so we can stop |watcher_|.
   if (!message_loop()->BelongsToCurrentThread()) {
     message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&FilePathWatcher::CancelWatch,
-                                        make_scoped_refptr(this)));
+                             Bind(&FilePathWatcher::CancelWatch,
+                                  make_scoped_refptr(this)));
   } else {
     CancelOnMessageLoopThread();
   }
@@ -148,12 +148,12 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
   }
 
   // Check whether the event applies to |target_| and notify the callback.
-  base::PlatformFileInfo file_info;
-  bool file_exists = file_util::GetFileInfo(target_, &file_info);
+  PlatformFileInfo file_info;
+  bool file_exists = GetFileInfo(target_, &file_info);
   if (file_exists && (last_modified_.is_null() ||
       last_modified_ != file_info.last_modified)) {
     last_modified_ = file_info.last_modified;
-    first_notification_ = base::Time::Now();
+    first_notification_ = Time::Now();
     callback_.Run(target_, false);
   } else if (file_exists && !first_notification_.is_null()) {
     // The target's last modification time is equal to what's on record. This
@@ -170,14 +170,13 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
     // clock has advanced one second from the initial notification. After that
     // interval, client code is guaranteed to having seen the current revision
     // of the file.
-    if (base::Time::Now() - first_notification_ >
-        base::TimeDelta::FromSeconds(1)) {
+    if (Time::Now() - first_notification_ > TimeDelta::FromSeconds(1)) {
       // Stop further notifications for this |last_modification_| time stamp.
-      first_notification_ = base::Time();
+      first_notification_ = Time();
     }
     callback_.Run(target_, false);
   } else if (!file_exists && !last_modified_.is_null()) {
-    last_modified_ = base::Time();
+    last_modified_ = Time();
     callback_.Run(target_, false);
   }
 
@@ -230,10 +229,10 @@ bool FilePathWatcherImpl::UpdateWatch() {
   if (handle_ != INVALID_HANDLE_VALUE)
     DestroyWatch();
 
-  base::PlatformFileInfo file_info;
-  if (file_util::GetFileInfo(target_, &file_info)) {
+  PlatformFileInfo file_info;
+  if (GetFileInfo(target_, &file_info)) {
     last_modified_ = file_info.last_modified;
-    first_notification_ = base::Time::Now();
+    first_notification_ = Time::Now();
   }
 
   // Start at the target and walk up the directory chain until we succesfully

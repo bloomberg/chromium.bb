@@ -289,7 +289,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
   // whether the DB file has been modified by checking its size.
   base::FilePath path = temp_dir_.path().Append(kCookieFilename);
   base::PlatformFileInfo info;
-  ASSERT_TRUE(file_util::GetFileInfo(path, &info));
+  ASSERT_TRUE(base::GetFileInfo(path, &info));
   int64 base_size = info.size;
 
   // Write some large cookies, so the DB will have to expand by several KB.
@@ -304,7 +304,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
   Flush();
 
   // We forced a write, so now the file will be bigger.
-  ASSERT_TRUE(file_util::GetFileInfo(path, &info));
+  ASSERT_TRUE(base::GetFileInfo(path, &info));
   ASSERT_GT(info.size, base_size);
 }
 

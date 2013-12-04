@@ -434,14 +434,13 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
 
   // Run DevicePathToDriveLetterPath() on the NT style path we got from
   // QueryDosDevice().  Expect the drive letter we started with.
-  ASSERT_TRUE(file_util::DevicePathToDriveLetterPath(actual_device_path,
-                                                     &win32_path));
+  ASSERT_TRUE(DevicePathToDriveLetterPath(actual_device_path, &win32_path));
   ASSERT_EQ(real_drive_letter, win32_path.value());
 
   // Add some directories to the path.  Expect those extra path componenets
   // to be preserved.
   FilePath kRelativePath(FPL("dir1\\dir2\\file.txt"));
-  ASSERT_TRUE(file_util::DevicePathToDriveLetterPath(
+  ASSERT_TRUE(DevicePathToDriveLetterPath(
       actual_device_path.Append(kRelativePath),
       &win32_path));
   EXPECT_EQ(FilePath(real_drive_letter + L"\\").Append(kRelativePath).value(),
@@ -459,11 +458,10 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   ASSERT_LT(0, new_length);
   FilePath prefix_of_real_device_path(
       actual_device_path.value().substr(0, new_length));
-  ASSERT_FALSE(file_util::DevicePathToDriveLetterPath(
-      prefix_of_real_device_path,
-      &win32_path));
+  ASSERT_FALSE(DevicePathToDriveLetterPath(prefix_of_real_device_path,
+                                           &win32_path));
 
-  ASSERT_FALSE(file_util::DevicePathToDriveLetterPath(
+  ASSERT_FALSE(DevicePathToDriveLetterPath(
       prefix_of_real_device_path.Append(kRelativePath),
       &win32_path));
 
@@ -478,11 +476,11 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   FilePath real_device_path_plus_numbers(
       actual_device_path.value() + kExtraChars);
 
-  ASSERT_FALSE(file_util::DevicePathToDriveLetterPath(
+  ASSERT_FALSE(DevicePathToDriveLetterPath(
       real_device_path_plus_numbers,
       &win32_path));
 
-  ASSERT_FALSE(file_util::DevicePathToDriveLetterPath(
+  ASSERT_FALSE(DevicePathToDriveLetterPath(
       real_device_path_plus_numbers.Append(kRelativePath),
       &win32_path));
 }
@@ -696,14 +694,14 @@ TEST_F(FileUtilTest, DeleteSymlinkToNonExistentFile) {
       << "Failed to create symlink.";
 
   // Make sure the symbolic link is exist.
-  EXPECT_TRUE(file_util::IsLink(file_link));
+  EXPECT_TRUE(IsLink(file_link));
   EXPECT_FALSE(PathExists(file_link));
 
   // Delete the symbolic link.
   EXPECT_TRUE(DeleteFile(file_link, false));
 
   // Make sure the symbolic link is deleted.
-  EXPECT_FALSE(file_util::IsLink(file_link));
+  EXPECT_FALSE(IsLink(file_link));
 }
 
 TEST_F(FileUtilTest, ChangeFilePermissionsAndRead) {
@@ -1915,7 +1913,7 @@ TEST_F(FileUtilTest, TouchFile) {
 
   ASSERT_TRUE(file_util::TouchFile(foobar, access_time, modification_time));
   PlatformFileInfo file_info;
-  ASSERT_TRUE(file_util::GetFileInfo(foobar, &file_info));
+  ASSERT_TRUE(GetFileInfo(foobar, &file_info));
   EXPECT_EQ(file_info.last_accessed.ToInternalValue(),
             access_time.ToInternalValue());
   EXPECT_EQ(file_info.last_modified.ToInternalValue(),

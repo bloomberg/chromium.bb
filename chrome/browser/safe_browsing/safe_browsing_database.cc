@@ -612,7 +612,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 
     // If there is no database, the filter cannot be used.
     base::PlatformFileInfo db_info;
-    if (file_util::GetFileInfo(side_effect_free_whitelist_filename_, &db_info)
+    if (base::GetFileInfo(side_effect_free_whitelist_filename_, &db_info)
         && db_info.size != 0) {
       const base::TimeTicks before = base::TimeTicks::Now();
       side_effect_free_whitelist_prefix_set_.reset(
@@ -1609,7 +1609,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet() {
 
   // If there is no database, the filter cannot be used.
   base::PlatformFileInfo db_info;
-  if (!file_util::GetFileInfo(browse_filename_, &db_info) || db_info.size == 0)
+  if (!base::GetFileInfo(browse_filename_, &db_info) || db_info.size == 0)
     return;
 
   // Cleanup any stale bloom filter (no longer used).

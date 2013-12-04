@@ -1008,7 +1008,7 @@ TEST_F(URLRequestTest, FileDirOutputSanity) {
   // Generate entry for the sentinel file.
   base::FilePath sentinel_path = path.AppendASCII(sentinel_name);
   base::PlatformFileInfo info;
-  EXPECT_TRUE(file_util::GetFileInfo(sentinel_path, &info));
+  EXPECT_TRUE(base::GetFileInfo(sentinel_path, &info));
   EXPECT_GT(info.size, 0);
   std::string sentinel_output = GetDirectoryListingEntry(
       base::string16(sentinel_name, sentinel_name + strlen(sentinel_name)),

@@ -56,14 +56,14 @@ class ChromeOSVersionInfo {
     is_running_on_chromeos_ = false;
 
     std::string lsb_release, lsb_release_time_str;
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    scoped_ptr<Environment> env(Environment::Create());
     bool parsed_from_env =
         env->GetVar(kLsbReleaseKey, &lsb_release) &&
         env->GetVar(kLsbReleaseTimeKey, &lsb_release_time_str);
     if (parsed_from_env) {
       double us = 0;
       if (StringToDouble(lsb_release_time_str, &us))
-        lsb_release_time_ = base::Time::FromDoubleT(us);
+        lsb_release_time_ = Time::FromDoubleT(us);
     } else {
       // If the LSB_RELEASE and LSB_RELEASE_TIME environment variables are not
       // set, fall back to a blocking read of the lsb_release file. This should
@@ -71,8 +71,8 @@ class ChromeOSVersionInfo {
       ThreadRestrictions::ScopedAllowIO allow_io;
       FilePath path(kLinuxStandardBaseReleaseFile);
       ReadFileToString(path, &lsb_release);
-      base::PlatformFileInfo fileinfo;
-      if (file_util::GetFileInfo(path, &fileinfo))
+      PlatformFileInfo fileinfo;
+      if (GetFileInfo(path, &fileinfo))
         lsb_release_time_ = fileinfo.creation_time;
     }
     ParseLsbRelease(lsb_release);
@@ -97,7 +97,7 @@ class ChromeOSVersionInfo {
     *bugfix_version = bugfix_version_;
   }
 
-  const base::Time& lsb_release_time() const { return lsb_release_time_; }
+  const Time& lsb_release_time() const { return lsb_release_time_; }
   const SysInfo::LsbReleaseMap& lsb_release_map() const {
     return lsb_release_map_;
   }
@@ -109,7 +109,7 @@ class ChromeOSVersionInfo {
     // of entries so the overhead for this will be small, and it can be
     // useful for debugging.
     std::vector<std::pair<std::string, std::string> > pairs;
-    base::SplitStringIntoKeyValuePairs(lsb_release, '=', '\n', &pairs);
+    SplitStringIntoKeyValuePairs(lsb_release, '=', '\n', &pairs);
     for (size_t i = 0; i < pairs.size(); ++i) {
       std::string key, value;
       TrimWhitespaceASCII(pairs[i].first, TRIM_ALL, &key);
@@ -151,7 +151,7 @@ class ChromeOSVersionInfo {
     }
   }
 
-  base::Time lsb_release_time_;
+  Time lsb_release_time_;
   SysInfo::LsbReleaseMap lsb_release_map_;
   int32 major_version_;
   int32 minor_version_;
@@ -196,7 +196,7 @@ std::string SysInfo::GetLsbReleaseBoard() {
 }
 
 // static
-base::Time SysInfo::GetLsbReleaseTime() {
+Time SysInfo::GetLsbReleaseTime() {
   return GetChromeOSVersionInfo().lsb_release_time();
 }
 
@@ -208,10 +208,10 @@ bool SysInfo::IsRunningOnChromeOS() {
 // static
 void SysInfo::SetChromeOSVersionInfoForTest(const std::string& lsb_release,
                                             const Time& lsb_release_time) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  scoped_ptr<Environment> env(Environment::Create());
   env->SetVar(kLsbReleaseKey, lsb_release);
   env->SetVar(kLsbReleaseTimeKey,
-              base::DoubleToString(lsb_release_time.ToDoubleT()));
+              DoubleToString(lsb_release_time.ToDoubleT()));
   g_chrome_os_version_info.Get().Parse();
 }
 

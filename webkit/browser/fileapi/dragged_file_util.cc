@@ -81,7 +81,7 @@ PlatformFileError DraggedFileUtil::GetFileInfo(
   }
   base::PlatformFileError error =
       NativeFileUtil::GetFileInfo(url.path(), file_info);
-  if (file_util::IsLink(url.path()) && !base::FilePath().IsParent(url.path())) {
+  if (base::IsLink(url.path()) && !base::FilePath().IsParent(url.path())) {
     // Don't follow symlinks unless it's the one that are selected by the user.
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }

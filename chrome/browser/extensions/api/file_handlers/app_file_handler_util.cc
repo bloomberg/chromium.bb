@@ -61,7 +61,7 @@ bool FileHandlerCanHandleFileWithMimeType(
 
 bool DoCheckWritableFile(const base::FilePath& path, bool is_directory) {
   // Don't allow links.
-  if (base::PathExists(path) && file_util::IsLink(path))
+  if (base::PathExists(path) && base::IsLink(path))
     return false;
 
   if (is_directory)

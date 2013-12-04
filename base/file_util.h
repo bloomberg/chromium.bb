@@ -272,34 +272,33 @@ BASE_EXPORT bool GetFileSize(const FilePath& file_path, int64* file_size);
 // or if |real_path| would be longer than MAX_PATH characters.
 BASE_EXPORT bool NormalizeFilePath(const FilePath& path, FilePath* real_path);
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 #if defined(OS_WIN)
 
 // Given a path in NT native form ("\Device\HarddiskVolumeXX\..."),
 // return in |drive_letter_path| the equivalent path that starts with
 // a drive letter ("C:\...").  Return false if no such path exists.
-BASE_EXPORT bool DevicePathToDriveLetterPath(const base::FilePath& device_path,
-                                             base::FilePath* drive_letter_path);
+BASE_EXPORT bool DevicePathToDriveLetterPath(const FilePath& device_path,
+                                             FilePath* drive_letter_path);
 
 // Given an existing file in |path|, set |real_path| to the path
 // in native NT format, of the form "\Device\HarddiskVolumeXX\..".
 // Returns false if the path can not be found. Empty files cannot
 // be resolved with this function.
-BASE_EXPORT bool NormalizeToNativeFilePath(const base::FilePath& path,
-                                           base::FilePath* nt_path);
+BASE_EXPORT bool NormalizeToNativeFilePath(const FilePath& path,
+                                           FilePath* nt_path);
 #endif
 
 // This function will return if the given file is a symlink or not.
-BASE_EXPORT bool IsLink(const base::FilePath& file_path);
+BASE_EXPORT bool IsLink(const FilePath& file_path);
 
 // Returns information about the given file path.
-BASE_EXPORT bool GetFileInfo(const base::FilePath& file_path,
-                             base::PlatformFileInfo* info);
+BASE_EXPORT bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* info);
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 // Sets the time of the last access and the time of the last modification.
 BASE_EXPORT bool TouchFile(const base::FilePath& path,

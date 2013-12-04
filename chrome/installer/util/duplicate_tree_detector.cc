@@ -17,8 +17,8 @@ bool IsIdenticalFileHierarchy(const base::FilePath& src_path,
   base::PlatformFileInfo dest_info;
 
   bool is_identical = false;
-  if (file_util::GetFileInfo(src_path, &src_info) &&
-      file_util::GetFileInfo(dest_path, &dest_info)) {
+  if (base::GetFileInfo(src_path, &src_info) &&
+      base::GetFileInfo(dest_path, &dest_info)) {
     // Both paths exist, check the types:
     if (!src_info.is_directory && !dest_info.is_directory) {
       // Two files are "identical" if the file sizes are equivalent.

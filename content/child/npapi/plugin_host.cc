@@ -470,7 +470,7 @@ static NPError PostURLNotify(NPP id,
     }
 
     base::PlatformFileInfo post_file_info;
-    if (!file_util::GetFileInfo(file_path, &post_file_info) ||
+    if (!base::GetFileInfo(file_path, &post_file_info) ||
         post_file_info.is_directory)
       return NPERR_FILE_NOT_FOUND;
 
