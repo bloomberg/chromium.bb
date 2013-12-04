@@ -180,6 +180,11 @@ private:
   // and dispatch it to that host instead.
   void DispatchMouseEvent(ui::MouseEvent* event);
 
+  // Dispatches a touch event, taking capture into account. If a different host
+  // has capture, then touch-press events are translated to its coordinate space
+  // and dispatched to that host instead.
+  void DispatchTouchEvent(ui::TouchEvent* event);
+
   // Resets the window region for the current widget bounds if necessary.
   void ResetWindowRegion();
 

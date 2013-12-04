@@ -1112,6 +1112,17 @@ void DesktopRootWindowHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   }
 }
 
+void DesktopRootWindowHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
+  if (g_current_capture && g_current_capture != this &&
+      event->type() == ui::ET_TOUCH_PRESSED) {
+    event->ConvertLocationToTarget(root_window_->window(),
+                                   g_current_capture->root_window_->window());
+    g_current_capture->delegate_->OnHostTouchEvent(event);
+  } else {
+    delegate_->OnHostTouchEvent(event);
+  }
+}
+
 void DesktopRootWindowHostX11::ResetWindowRegion() {
   if (!IsMaximized()) {
     gfx::Path window_mask;
@@ -1277,17 +1288,17 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       int num_coalesced = 0;
 
       switch (type) {
-        // case ui::ET_TOUCH_MOVED:
-        //   num_coalesced = CoalescePendingMotionEvents(xev, &last_event);
-        //   if (num_coalesced > 0)
-        //     xev = &last_event;
-        //   // fallthrough
-        // case ui::ET_TOUCH_PRESSED:
-        // case ui::ET_TOUCH_RELEASED: {
-        //   ui::TouchEvent touchev(xev);
-        //   delegate_->OnHostTouchEvent(&touchev);
-        //   break;
-        // }
+        case ui::ET_TOUCH_MOVED:
+          num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
+          if (num_coalesced > 0)
+            xev = &last_event;
+          // fallthrough
+        case ui::ET_TOUCH_PRESSED:
+        case ui::ET_TOUCH_RELEASED: {
+          ui::TouchEvent touchev(xev);
+          DispatchTouchEvent(&touchev);
+          break;
+        }
         case ui::ET_MOUSE_MOVED:
         case ui::ET_MOUSE_DRAGGED:
         case ui::ET_MOUSE_PRESSED:

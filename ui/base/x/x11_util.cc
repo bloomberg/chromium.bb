@@ -444,7 +444,7 @@ int CoalescePendingMotionEvents(const XEvent* xev,
   XDisplay* display = xev->xany.display;
   int event_type = xev->xgeneric.evtype;
 
-  DCHECK_EQ(event_type, XI_Motion);
+  DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
 
   while (XPending(display)) {
     XEvent next_event;
@@ -474,6 +474,7 @@ int CoalescePendingMotionEvents(const XEvent* xev,
       // and that no buttons or modifiers have changed.
       if (xievent->event == next_xievent->event &&
           xievent->child == next_xievent->child &&
+          xievent->detail == next_xievent->detail &&
           xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
           (memcmp(xievent->buttons.mask,
                   next_xievent->buttons.mask,
@@ -498,7 +499,7 @@ int CoalescePendingMotionEvents(const XEvent* xev,
     break;
   }
 
-  if (num_coalesced > 0) {
+  if (event_type == XI_Motion && num_coalesced > 0) {
     base::TimeDelta delta = ui::EventTimeFromNative(last_event) -
         ui::EventTimeFromNative(const_cast<XEvent*>(xev));
     UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesced);
