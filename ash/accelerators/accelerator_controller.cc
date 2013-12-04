@@ -624,9 +624,7 @@ bool HandleLock(ui::KeyboardCode key_code) {
   return true;
 }
 
-bool HandleSwitchToNextUser() {
-  content::RecordAction(UserMetricsAction("Accel_Switch_To_Next_User"));
-
+bool HandleCycleUser(SessionStateDelegate::CycleUser cycle_user) {
   if (!Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
     return false;
   ash::SessionStateDelegate* delegate =
@@ -635,7 +633,15 @@ bool HandleSwitchToNextUser() {
     return false;
   MultiProfileUMA::RecordSwitchActiveUser(
       MultiProfileUMA::SWITCH_ACTIVE_USER_BY_ACCELERATOR);
-  delegate->SwitchActiveUserToNext();
+  switch (cycle_user) {
+    case SessionStateDelegate::CYCLE_TO_NEXT_USER:
+      content::RecordAction(UserMetricsAction("Accel_Switch_To_Next_User"));
+      break;
+    case SessionStateDelegate::CYCLE_TO_PREVIOUS_USER:
+      content::RecordAction(UserMetricsAction("Accel_Switch_To_Previous_User"));
+      break;
+  }
+  delegate->CycleActiveUser(cycle_user);
   return true;
 }
 
@@ -941,7 +947,9 @@ bool AcceleratorController::PerformAction(int action,
     case SWAP_PRIMARY_DISPLAY:
       return HandleSwapPrimaryDisplay();
     case SWITCH_TO_NEXT_USER:
-      return HandleSwitchToNextUser();
+      return HandleCycleUser(SessionStateDelegate::CYCLE_TO_NEXT_USER);
+    case SWITCH_TO_PREVIOUS_USER:
+      return HandleCycleUser(SessionStateDelegate::CYCLE_TO_PREVIOUS_USER);
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
     case TOGGLE_WIFI:

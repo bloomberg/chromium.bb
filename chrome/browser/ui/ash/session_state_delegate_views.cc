@@ -87,7 +87,7 @@ void SessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
   NOTIMPLEMENTED();
 }
 
-void SessionStateDelegate::SwitchActiveUserToNext() {
+void SessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {
   NOTIMPLEMENTED();
 }
 

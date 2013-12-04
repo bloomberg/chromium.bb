@@ -33,6 +33,12 @@ typedef std::vector<std::string> UserIdList;
 // Delegate for checking and modifying the session state.
 class ASH_EXPORT SessionStateDelegate {
  public:
+  // Defines the cycle direction for |CycleActiveUser|.
+  enum CycleUser {
+    CYCLE_TO_NEXT_USER = 0,  // Cycle to the next user.
+    CYCLE_TO_PREVIOUS_USER,  // Cycle to the previous user.
+  };
+
   virtual ~SessionStateDelegate() {};
 
   // Returns the maximum possible number of logged in users.
@@ -96,9 +102,9 @@ class ASH_EXPORT SessionStateDelegate {
   // (if that user has already signed in).
   virtual void SwitchActiveUser(const std::string& user_id) = 0;
 
-  // Switches the active user to the next user, with the same ordering as
-  // GetLoggedInUsers.
-  virtual void SwitchActiveUserToNext() = 0;
+  // Switches the active user to the next or previous user, with the same
+  // ordering as GetLoggedInUsers.
+  virtual void CycleActiveUser(CycleUser cycle_user) = 0;
 
   // Adds or removes sessions state observer.
   virtual void AddSessionStateObserver(SessionStateObserver* observer) = 0;

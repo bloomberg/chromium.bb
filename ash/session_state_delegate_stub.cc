@@ -82,7 +82,7 @@ void SessionStateDelegateStub::GetLoggedInUsers(UserIdList* users) {
 void SessionStateDelegateStub::SwitchActiveUser(const std::string& user_id) {
 }
 
-void SessionStateDelegateStub::SwitchActiveUserToNext() {
+void SessionStateDelegateStub::CycleActiveUser(CycleUser cycle_user) {
 }
 
 void SessionStateDelegateStub::AddSessionStateObserver(

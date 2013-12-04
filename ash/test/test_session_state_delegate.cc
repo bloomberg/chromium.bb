@@ -147,7 +147,7 @@ void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
   activated_user_ = user_id;
 }
 
-void TestSessionStateDelegate::SwitchActiveUserToNext() {
+void TestSessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {
   activated_user_ = "someone@tray";
 }
 

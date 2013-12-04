@@ -135,6 +135,7 @@ enum AcceleratorAction {
   OPEN_CROSH,
   OPEN_FILE_MANAGER,
   SWITCH_TO_NEXT_USER,
+  SWITCH_TO_PREVIOUS_USER,
 #endif
 };
 
