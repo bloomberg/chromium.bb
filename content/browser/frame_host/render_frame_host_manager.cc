@@ -803,6 +803,13 @@ void RenderFrameHostManager::CommitPending() {
   // this triggers won't be able to figure out what's going on.
   bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
 
+  // We expect SwapOutOldPage to have canceled any modal dialogs and told the
+  // renderer to suppress any further dialogs until it is swapped out.  However,
+  // crash reports indicate that it's still possible for modal dialogs to exist
+  // at this point, which poses a risk if we delete their RenderViewHost below.
+  // Cancel them again to be safe.  http://crbug.com/324320.
+  delegate_->CancelModalDialogsForRenderManager();
+
   // Next commit the Web UI, if any. Either replace |web_ui_| with
   // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
   // leave |web_ui_| as is if reusing it.
