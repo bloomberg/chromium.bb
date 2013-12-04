@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <deque>
 
@@ -786,8 +787,11 @@ static base::PlatformFileError GetDirectoryEntries(
   struct dirent dent_buf;
   struct dirent* dent;
   int readdir_result;
-  while ((readdir_result = readdir_r(dir, &dent_buf, &dent)) == 0 && dent)
+  while ((readdir_result = readdir_r(dir, &dent_buf, &dent)) == 0 && dent) {
+    if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
+      continue;
     result->push_back(CreateFilePath(dent->d_name));
+  }
   int saved_errno = errno;
   closedir(dir);
   if (readdir_result != 0)
