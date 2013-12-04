@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
+// TODO(rvargas): remove this (needed for kInvalidPlatformFileValue).
+#include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -23,9 +25,9 @@
 namespace base {
 
 // Make sure our Whence mappings match the system headers.
-COMPILE_ASSERT(PLATFORM_FILE_FROM_BEGIN   == SEEK_SET &&
-               PLATFORM_FILE_FROM_CURRENT == SEEK_CUR &&
-               PLATFORM_FILE_FROM_END     == SEEK_END, whence_matches_system);
+COMPILE_ASSERT(File::FROM_BEGIN   == SEEK_SET &&
+               File::FROM_CURRENT == SEEK_CUR &&
+               File::FROM_END     == SEEK_END, whence_matches_system);
 
 namespace {
 
@@ -75,15 +77,15 @@ static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
 #endif
 }
 
-static PlatformFileError CallFctnlFlock(PlatformFile file, bool do_lock) {
+static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
   struct flock lock;
   lock.l_type = F_WRLCK;
   lock.l_whence = SEEK_SET;
   lock.l_start = 0;
   lock.l_len = 0;  // Lock entire file.
   if (HANDLE_EINTR(fcntl(file, do_lock ? F_SETLK : F_UNLCK, &lock)) == -1)
-    return ErrnoToPlatformFileError(errno);
-  return PLATFORM_FILE_OK;
+    return File::OSErrorToFileError(errno);
+  return File::FILE_OK;
 }
 #else  // defined(OS_NACL)
 
@@ -109,9 +111,9 @@ static int CallFutimes(PlatformFile file, const struct timeval times[2]) {
   return 0;
 }
 
-static PlatformFileError CallFctnlFlock(PlatformFile file, bool do_lock) {
+static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
   NOTIMPLEMENTED();  // NaCl doesn't implement flock struct.
-  return PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  return File::FILE_ERROR_INVALID_OPERATION;
 }
 #endif  // defined(OS_NACL)
 
@@ -119,57 +121,53 @@ static PlatformFileError CallFctnlFlock(PlatformFile file, bool do_lock) {
 
 // NaCl doesn't implement system calls to open files directly.
 #if !defined(OS_NACL)
-// TODO(erikkay): does it make sense to support PLATFORM_FILE_EXCLUSIVE_* here?
-PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
-                                      int flags,
-                                      bool* created,
-                                      PlatformFileError* error) {
+// TODO(erikkay): does it make sense to support FLAG_EXCLUSIVE_* here?
+void File::CreateBaseFileUnsafe(const FilePath& name, uint32 flags) {
   base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsValid());
+  DCHECK(!(flags & FLAG_ASYNC));
 
   int open_flags = 0;
-  if (flags & PLATFORM_FILE_CREATE)
+  if (flags & FLAG_CREATE)
     open_flags = O_CREAT | O_EXCL;
 
-  if (created)
-    *created = false;
+  created_ = false;
 
-  if (flags & PLATFORM_FILE_CREATE_ALWAYS) {
+  if (flags & FLAG_CREATE_ALWAYS) {
     DCHECK(!open_flags);
     open_flags = O_CREAT | O_TRUNC;
   }
 
-  if (flags & PLATFORM_FILE_OPEN_TRUNCATED) {
+  if (flags & FLAG_OPEN_TRUNCATED) {
     DCHECK(!open_flags);
-    DCHECK(flags & PLATFORM_FILE_WRITE);
+    DCHECK(flags & FLAG_WRITE);
     open_flags = O_TRUNC;
   }
 
-  if (!open_flags && !(flags & PLATFORM_FILE_OPEN) &&
-      !(flags & PLATFORM_FILE_OPEN_ALWAYS)) {
+  if (!open_flags && !(flags & FLAG_OPEN) && !(flags & FLAG_OPEN_ALWAYS)) {
     NOTREACHED();
     errno = EOPNOTSUPP;
-    if (error)
-      *error = PLATFORM_FILE_ERROR_FAILED;
-    return kInvalidPlatformFileValue;
+    error_ = FILE_ERROR_FAILED;
+    return;
   }
 
-  if (flags & PLATFORM_FILE_WRITE && flags & PLATFORM_FILE_READ) {
+  if (flags & FLAG_WRITE && flags & FLAG_READ) {
     open_flags |= O_RDWR;
-  } else if (flags & PLATFORM_FILE_WRITE) {
+  } else if (flags & FLAG_WRITE) {
     open_flags |= O_WRONLY;
-  } else if (!(flags & PLATFORM_FILE_READ) &&
-             !(flags & PLATFORM_FILE_WRITE_ATTRIBUTES) &&
-             !(flags & PLATFORM_FILE_APPEND) &&
-             !(flags & PLATFORM_FILE_OPEN_ALWAYS)) {
+  } else if (!(flags & FLAG_READ) &&
+             !(flags & FLAG_WRITE_ATTRIBUTES) &&
+             !(flags & FLAG_APPEND) &&
+             !(flags & FLAG_OPEN_ALWAYS)) {
     NOTREACHED();
   }
 
-  if (flags & PLATFORM_FILE_TERMINAL_DEVICE)
+  if (flags & FLAG_TERMINAL_DEVICE)
     open_flags |= O_NOCTTY | O_NDELAY;
 
-  if (flags & PLATFORM_FILE_APPEND && flags & PLATFORM_FILE_READ)
+  if (flags & FLAG_APPEND && flags & FLAG_READ)
     open_flags |= O_APPEND | O_RDWR;
-  else if (flags & PLATFORM_FILE_APPEND)
+  else if (flags & FLAG_APPEND)
     open_flags |= O_APPEND | O_WRONLY;
 
   COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_equal_zero);
@@ -179,70 +177,73 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
   mode |= S_IRGRP | S_IROTH;
 #endif
 
-  int descriptor =
-      HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
+  int descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
 
-  if (flags & PLATFORM_FILE_OPEN_ALWAYS) {
+  if (flags & FLAG_OPEN_ALWAYS) {
     if (descriptor < 0) {
       open_flags |= O_CREAT;
-      if (flags & PLATFORM_FILE_EXCLUSIVE_READ ||
-          flags & PLATFORM_FILE_EXCLUSIVE_WRITE) {
+      if (flags & FLAG_EXCLUSIVE_READ || flags & FLAG_EXCLUSIVE_WRITE)
         open_flags |= O_EXCL;   // together with O_CREAT implies O_NOFOLLOW
-      }
-      descriptor = HANDLE_EINTR(
-          open(name.value().c_str(), open_flags, mode));
-      if (created && descriptor >= 0)
-        *created = true;
+
+      descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
+      if (descriptor >= 0)
+        created_ = true;
     }
   }
 
-  if (created && (descriptor >= 0) &&
-      (flags & (PLATFORM_FILE_CREATE_ALWAYS | PLATFORM_FILE_CREATE)))
-    *created = true;
+  if (descriptor >= 0 && (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE)))
+    created_ = true;
 
-  if ((descriptor >= 0) && (flags & PLATFORM_FILE_DELETE_ON_CLOSE)) {
+  if ((descriptor >= 0) && (flags & FLAG_DELETE_ON_CLOSE))
     unlink(name.value().c_str());
-  }
 
-  if (error) {
-    if (descriptor >= 0)
-      *error = PLATFORM_FILE_OK;
-    else
-      *error = ErrnoToPlatformFileError(errno);
-  }
+  if (descriptor >= 0)
+    error_ = FILE_OK;
+  else
+    error_ = File::OSErrorToFileError(errno);
 
-  return descriptor;
-}
-
-FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
-  return fdopen(file, mode);
+  file_ = descriptor;
 }
 #endif  // !defined(OS_NACL)
 
-bool ClosePlatformFile(PlatformFile file) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return !IGNORE_EINTR(close(file));
+bool File::IsValid() const {
+  return file_ >= 0;
 }
 
-int64 SeekPlatformFile(PlatformFile file,
-                       PlatformFileWhence whence,
-                       int64 offset) {
+PlatformFile File::TakePlatformFile() {
+  PlatformFile file = file_;
+  file_ = kInvalidPlatformFileValue;
+  return file;
+}
+
+void File::Close() {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0 || offset < 0)
+  if (!IsValid())
+    return;
+
+  if (!IGNORE_EINTR(close(file_)))
+    file_ = kInvalidPlatformFileValue;
+}
+
+int64 File::Seek(Whence whence, int64 offset) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(IsValid());
+  if (file_ < 0 || offset < 0)
     return -1;
 
-  return lseek(file, static_cast<off_t>(offset), static_cast<int>(whence));
+  return lseek(file_, static_cast<off_t>(offset), static_cast<int>(whence));
 }
 
-int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
+int File::Read(int64 offset, char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0 || size < 0)
+  DCHECK(IsValid());
+  if (size < 0)
     return -1;
 
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pread(file, data + bytes_read,
+    rv = HANDLE_EINTR(pread(file_, data + bytes_read,
                             size - bytes_read, offset + bytes_read));
     if (rv <= 0)
       break;
@@ -253,15 +254,16 @@ int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   return bytes_read ? bytes_read : rv;
 }
 
-int ReadPlatformFileAtCurrentPos(PlatformFile file, char* data, int size) {
+int File::ReadAtCurrentPos(char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0 || size < 0)
+  DCHECK(IsValid());
+  if (size < 0)
     return -1;
 
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(read(file, data, size));
+    rv = HANDLE_EINTR(read(file_, data, size));
     if (rv <= 0)
       break;
 
@@ -271,38 +273,36 @@ int ReadPlatformFileAtCurrentPos(PlatformFile file, char* data, int size) {
   return bytes_read ? bytes_read : rv;
 }
 
-int ReadPlatformFileNoBestEffort(PlatformFile file, int64 offset,
-                                 char* data, int size) {
+int File::ReadNoBestEffort(int64 offset, char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0)
-    return -1;
+  DCHECK(IsValid());
 
-  return HANDLE_EINTR(pread(file, data, size, offset));
+  return HANDLE_EINTR(pread(file_, data, size, offset));
 }
 
-int ReadPlatformFileCurPosNoBestEffort(PlatformFile file,
-                                       char* data, int size) {
+int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0 || size < 0)
+  DCHECK(IsValid());
+  if (size < 0)
     return -1;
 
-  return HANDLE_EINTR(read(file, data, size));
+  return HANDLE_EINTR(read(file_, data, size));
 }
 
-int WritePlatformFile(PlatformFile file, int64 offset,
-                      const char* data, int size) {
+int File::Write(int64 offset, const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (IsOpenAppend(file))
-    return WritePlatformFileAtCurrentPos(file, data, size);
+  if (IsOpenAppend(file_))
+    return WriteAtCurrentPos(data, size);
 
-  if (file < 0 || size < 0)
+  DCHECK(IsValid());
+  if (size < 0)
     return -1;
 
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pwrite(file, data + bytes_written,
+    rv = HANDLE_EINTR(pwrite(file_, data + bytes_written,
                              size - bytes_written, offset + bytes_written));
     if (rv <= 0)
       break;
@@ -313,16 +313,16 @@ int WritePlatformFile(PlatformFile file, int64 offset,
   return bytes_written ? bytes_written : rv;
 }
 
-int WritePlatformFileAtCurrentPos(PlatformFile file,
-                                  const char* data, int size) {
+int File::WriteAtCurrentPos(const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0 || size < 0)
+  DCHECK(IsValid());
+  if (size < 0)
     return -1;
 
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(write(file, data, size));
+    rv = HANDLE_EINTR(write(file_, data, size));
     if (rv <= 0)
       break;
 
@@ -332,44 +332,43 @@ int WritePlatformFileAtCurrentPos(PlatformFile file,
   return bytes_written ? bytes_written : rv;
 }
 
-int WritePlatformFileCurPosNoBestEffort(PlatformFile file,
-                                        const char* data, int size) {
+int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0 || size < 0)
+  DCHECK(IsValid());
+  if (size < 0)
     return -1;
 
-  return HANDLE_EINTR(write(file, data, size));
+  return HANDLE_EINTR(write(file_, data, size));
 }
 
-bool TruncatePlatformFile(PlatformFile file, int64 length) {
+bool File::Truncate(int64 length) {
   base::ThreadRestrictions::AssertIOAllowed();
-  return ((file >= 0) && !CallFtruncate(file, length));
+  DCHECK(IsValid());
+  return !CallFtruncate(file_, length);
 }
 
-bool FlushPlatformFile(PlatformFile file) {
+bool File::Flush() {
   base::ThreadRestrictions::AssertIOAllowed();
-  return !CallFsync(file);
+  DCHECK(IsValid());
+  return !CallFsync(file_);
 }
 
-bool TouchPlatformFile(PlatformFile file, const base::Time& last_access_time,
-                       const base::Time& last_modified_time) {
+bool File::SetTimes(Time last_access_time, Time last_modified_time) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0)
-    return false;
+  DCHECK(IsValid());
 
   timeval times[2];
   times[0] = last_access_time.ToTimeVal();
   times[1] = last_modified_time.ToTimeVal();
 
-  return !CallFutimes(file, times);
+  return !CallFutimes(file_, times);
 }
 
-bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
-  if (!info)
-    return false;
+bool File::GetInfo(Info* info) {
+  DCHECK(IsValid());
 
   stat_wrapper_t file_info;
-  if (CallFstat(file, &file_info))
+  if (CallFstat(file_, &file_info))
     return false;
 
   info->is_directory = S_ISDIR(file_info.st_mode);
@@ -422,44 +421,50 @@ bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
   return true;
 }
 
-PlatformFileError LockPlatformFile(PlatformFile file) {
-  return CallFctnlFlock(file, true);
+File::Error File::Lock() {
+  return CallFctnlFlock(file_, true);
 }
 
-PlatformFileError UnlockPlatformFile(PlatformFile file) {
-  return CallFctnlFlock(file, false);
+File::Error File::Unlock() {
+  return CallFctnlFlock(file_, false);
 }
 
-PlatformFileError ErrnoToPlatformFileError(int saved_errno) {
+// Static.
+File::Error File::OSErrorToFileError(int saved_errno) {
   switch (saved_errno) {
     case EACCES:
     case EISDIR:
     case EROFS:
     case EPERM:
-      return PLATFORM_FILE_ERROR_ACCESS_DENIED;
+      return FILE_ERROR_ACCESS_DENIED;
 #if !defined(OS_NACL)  // ETXTBSY not defined by NaCl.
     case ETXTBSY:
-      return PLATFORM_FILE_ERROR_IN_USE;
+      return FILE_ERROR_IN_USE;
 #endif
     case EEXIST:
-      return PLATFORM_FILE_ERROR_EXISTS;
+      return FILE_ERROR_EXISTS;
     case ENOENT:
-      return PLATFORM_FILE_ERROR_NOT_FOUND;
+      return FILE_ERROR_NOT_FOUND;
     case EMFILE:
-      return PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
+      return FILE_ERROR_TOO_MANY_OPENED;
     case ENOMEM:
-      return PLATFORM_FILE_ERROR_NO_MEMORY;
+      return FILE_ERROR_NO_MEMORY;
     case ENOSPC:
-      return PLATFORM_FILE_ERROR_NO_SPACE;
+      return FILE_ERROR_NO_SPACE;
     case ENOTDIR:
-      return PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+      return FILE_ERROR_NOT_A_DIRECTORY;
     default:
 #if !defined(OS_NACL)  // NaCl build has no metrics code.
       UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Posix",
                                   saved_errno);
 #endif
-      return PLATFORM_FILE_ERROR_FAILED;
+      return FILE_ERROR_FAILED;
   }
+}
+
+void File::SetPlatformFile(PlatformFile file) {
+  DCHECK_EQ(file_, kInvalidPlatformFileValue);
+  file_ = file;
 }
 
 }  // namespace base

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 
 #include <io.h>
 
@@ -12,129 +12,121 @@
 #include "base/threading/thread_restrictions.h"
 
 namespace base {
-PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
-                                      int flags,
-                                      bool* created,
-                                      PlatformFileError* error) {
+
+void File::CreateBaseFileUnsafe(const FilePath& name, uint32 flags) {
   base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsValid());
 
   DWORD disposition = 0;
-  if (created)
-    *created = false;
 
-  if (flags & PLATFORM_FILE_OPEN)
+  if (flags & FLAG_OPEN)
     disposition = OPEN_EXISTING;
 
-  if (flags & PLATFORM_FILE_CREATE) {
+  if (flags & FLAG_CREATE) {
     DCHECK(!disposition);
     disposition = CREATE_NEW;
   }
 
-  if (flags & PLATFORM_FILE_OPEN_ALWAYS) {
+  if (flags & FLAG_OPEN_ALWAYS) {
     DCHECK(!disposition);
     disposition = OPEN_ALWAYS;
   }
 
-  if (flags & PLATFORM_FILE_CREATE_ALWAYS) {
+  if (flags & FLAG_CREATE_ALWAYS) {
     DCHECK(!disposition);
     disposition = CREATE_ALWAYS;
   }
 
-  if (flags & PLATFORM_FILE_OPEN_TRUNCATED) {
+  if (flags & FLAG_OPEN_TRUNCATED) {
     DCHECK(!disposition);
-    DCHECK(flags & PLATFORM_FILE_WRITE);
+    DCHECK(flags & FLAG_WRITE);
     disposition = TRUNCATE_EXISTING;
   }
 
   if (!disposition) {
     NOTREACHED();
-    return NULL;
+    return;
   }
 
   DWORD access = 0;
-  if (flags & PLATFORM_FILE_WRITE)
+  if (flags & FLAG_WRITE)
     access = GENERIC_WRITE;
-  if (flags & PLATFORM_FILE_APPEND) {
+  if (flags & FLAG_APPEND) {
     DCHECK(!access);
     access = FILE_APPEND_DATA;
   }
-  if (flags & PLATFORM_FILE_READ)
+  if (flags & FLAG_READ)
     access |= GENERIC_READ;
-  if (flags & PLATFORM_FILE_WRITE_ATTRIBUTES)
+  if (flags & FLAG_WRITE_ATTRIBUTES)
     access |= FILE_WRITE_ATTRIBUTES;
-  if (flags & PLATFORM_FILE_EXECUTE)
+  if (flags & FLAG_EXECUTE)
     access |= GENERIC_EXECUTE;
 
-  DWORD sharing = (flags & PLATFORM_FILE_EXCLUSIVE_READ) ? 0 : FILE_SHARE_READ;
-  if (!(flags & PLATFORM_FILE_EXCLUSIVE_WRITE))
+  DWORD sharing = (flags & FLAG_EXCLUSIVE_READ) ? 0 : FILE_SHARE_READ;
+  if (!(flags & FLAG_EXCLUSIVE_WRITE))
     sharing |= FILE_SHARE_WRITE;
-  if (flags & PLATFORM_FILE_SHARE_DELETE)
+  if (flags & FLAG_SHARE_DELETE)
     sharing |= FILE_SHARE_DELETE;
 
   DWORD create_flags = 0;
-  if (flags & PLATFORM_FILE_ASYNC)
+  if (flags & FLAG_ASYNC)
     create_flags |= FILE_FLAG_OVERLAPPED;
-  if (flags & PLATFORM_FILE_TEMPORARY)
+  if (flags & FLAG_TEMPORARY)
     create_flags |= FILE_ATTRIBUTE_TEMPORARY;
-  if (flags & PLATFORM_FILE_HIDDEN)
+  if (flags & FLAG_HIDDEN)
     create_flags |= FILE_ATTRIBUTE_HIDDEN;
-  if (flags & PLATFORM_FILE_DELETE_ON_CLOSE)
+  if (flags & FLAG_DELETE_ON_CLOSE)
     create_flags |= FILE_FLAG_DELETE_ON_CLOSE;
-  if (flags & PLATFORM_FILE_BACKUP_SEMANTICS)
+  if (flags & FLAG_BACKUP_SEMANTICS)
     create_flags |= FILE_FLAG_BACKUP_SEMANTICS;
 
-  HANDLE file = CreateFile(name.value().c_str(), access, sharing, NULL,
-                           disposition, create_flags, NULL);
+  file_.Set(CreateFile(name.value().c_str(), access, sharing, NULL,
+                       disposition, create_flags, NULL));
 
-  if (created && (INVALID_HANDLE_VALUE != file)) {
-    if (flags & (PLATFORM_FILE_OPEN_ALWAYS))
-      *created = (ERROR_ALREADY_EXISTS != GetLastError());
-    else if (flags & (PLATFORM_FILE_CREATE_ALWAYS | PLATFORM_FILE_CREATE))
-      *created = true;
+  if (file_.IsValid()) {
+    error_ = FILE_OK;
+    async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
+
+    if (flags & (FLAG_OPEN_ALWAYS))
+      created_ = (ERROR_ALREADY_EXISTS != GetLastError());
+    else if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
+      created_ = true;
+  } else {
+    error_ = OSErrorToFileError(GetLastError());
   }
-
-  if (error) {
-    if (file != kInvalidPlatformFileValue)
-      *error = PLATFORM_FILE_OK;
-    else
-      *error = LastErrorToPlatformFileError(GetLastError());
-  }
-
-  return file;
 }
 
-FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
-  if (file == kInvalidPlatformFileValue)
-    return NULL;
-  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(file), 0);
-  if (fd < 0)
-    return NULL;
-  return _fdopen(fd, mode);
+bool File::IsValid() const {
+  return file_.IsValid();
+}
+PlatformFile File::TakePlatformFile() {
+  return file_.Take();
 }
 
-bool ClosePlatformFile(PlatformFile file) {
+void File::Close() {
   base::ThreadRestrictions::AssertIOAllowed();
-  return (CloseHandle(file) != 0);
+  file_.Close();
 }
 
-int64 SeekPlatformFile(PlatformFile file,
-                       PlatformFileWhence whence,
-                       int64 offset) {
+int64 File::Seek(Whence whence, int64 offset) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file == kInvalidPlatformFileValue || offset < 0)
+  DCHECK(IsValid());
+  if (offset < 0)
     return -1;
 
   LARGE_INTEGER distance, res;
   distance.QuadPart = offset;
   DWORD move_method = static_cast<DWORD>(whence);
-  if (!SetFilePointerEx(file, distance, &res, move_method))
+  if (!SetFilePointerEx(file_, distance, &res, move_method))
     return -1;
   return res.QuadPart;
 }
 
-int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
+int File::Read(int64 offset, char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file == kInvalidPlatformFileValue || size < 0)
+  DCHECK(IsValid());
+  DCHECK(!async_);
+  if (size < 0)
     return -1;
 
   LARGE_INTEGER offset_li;
@@ -145,7 +137,7 @@ int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   overlapped.OffsetHigh = offset_li.HighPart;
 
   DWORD bytes_read;
-  if (::ReadFile(file, data, size, &bytes_read, &overlapped) != 0)
+  if (::ReadFile(file_, data, size, &bytes_read, &overlapped) != 0)
     return bytes_read;
   if (ERROR_HANDLE_EOF == GetLastError())
     return 0;
@@ -153,13 +145,15 @@ int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   return -1;
 }
 
-int ReadPlatformFileAtCurrentPos(PlatformFile file, char* data, int size) {
+int File::ReadAtCurrentPos(char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file == kInvalidPlatformFileValue || size < 0)
+  DCHECK(IsValid());
+  DCHECK(!async_);
+  if (size < 0)
     return -1;
 
   DWORD bytes_read;
-  if (::ReadFile(file, data, size, &bytes_read, NULL) != 0)
+  if (::ReadFile(file_, data, size, &bytes_read, NULL) != 0)
     return bytes_read;
   if (ERROR_HANDLE_EOF == GetLastError())
     return 0;
@@ -167,21 +161,18 @@ int ReadPlatformFileAtCurrentPos(PlatformFile file, char* data, int size) {
   return -1;
 }
 
-int ReadPlatformFileNoBestEffort(PlatformFile file, int64 offset, char* data,
-                                 int size) {
-  return ReadPlatformFile(file, offset, data, size);
+int File::ReadNoBestEffort(int64 offset, char* data, int size) {
+  return Read(offset, data, size);
 }
 
-int ReadPlatformFileCurPosNoBestEffort(PlatformFile file,
-                                       char* data, int size) {
-  return ReadPlatformFileAtCurrentPos(file, data, size);
+int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
+  return ReadAtCurrentPos(data, size);
 }
 
-int WritePlatformFile(PlatformFile file, int64 offset,
-                      const char* data, int size) {
+int File::Write(int64 offset, const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file == kInvalidPlatformFileValue)
-    return -1;
+  DCHECK(IsValid());
+  DCHECK(!async_);
 
   LARGE_INTEGER offset_li;
   offset_li.QuadPart = offset;
@@ -191,72 +182,68 @@ int WritePlatformFile(PlatformFile file, int64 offset,
   overlapped.OffsetHigh = offset_li.HighPart;
 
   DWORD bytes_written;
-  if (::WriteFile(file, data, size, &bytes_written, &overlapped) != 0)
+  if (::WriteFile(file_, data, size, &bytes_written, &overlapped) != 0)
     return bytes_written;
 
   return -1;
 }
 
-int WritePlatformFileAtCurrentPos(PlatformFile file, const char* data,
-                                  int size) {
-  return WritePlatformFile(file, 0, data, size);
+int File::WriteAtCurrentPos(const char* data, int size) {
+  NOTREACHED();
+  return -1;
 }
 
-int WritePlatformFileCurPosNoBestEffort(PlatformFile file,
-                                        const char* data, int size) {
-  return WritePlatformFile(file, 0, data, size);
+int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
+  return WriteAtCurrentPos(data, size);
 }
 
-bool TruncatePlatformFile(PlatformFile file, int64 length) {
+bool File::Truncate(int64 length) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file == kInvalidPlatformFileValue)
-    return false;
+  DCHECK(IsValid());
 
   // Get the current file pointer.
   LARGE_INTEGER file_pointer;
   LARGE_INTEGER zero;
   zero.QuadPart = 0;
-  if (::SetFilePointerEx(file, zero, &file_pointer, FILE_CURRENT) == 0)
+  if (::SetFilePointerEx(file_, zero, &file_pointer, FILE_CURRENT) == 0)
     return false;
 
   LARGE_INTEGER length_li;
   length_li.QuadPart = length;
   // If length > file size, SetFilePointerEx() should extend the file
   // with zeroes on all Windows standard file systems (NTFS, FATxx).
-  if (!::SetFilePointerEx(file, length_li, NULL, FILE_BEGIN))
+  if (!::SetFilePointerEx(file_, length_li, NULL, FILE_BEGIN))
     return false;
 
   // Set the new file length and move the file pointer to its old position.
   // This is consistent with ftruncate()'s behavior, even when the file
   // pointer points to a location beyond the end of the file.
-  return ((::SetEndOfFile(file) != 0) &&
-          (::SetFilePointerEx(file, file_pointer, NULL, FILE_BEGIN) != 0));
+  return ((::SetEndOfFile(file_) != 0) &&
+          (::SetFilePointerEx(file_, file_pointer, NULL, FILE_BEGIN) != 0));
 }
 
-bool FlushPlatformFile(PlatformFile file) {
+bool File::Flush() {
   base::ThreadRestrictions::AssertIOAllowed();
-  return ((file != kInvalidPlatformFileValue) && ::FlushFileBuffers(file));
+  DCHECK(IsValid());
+  return ::FlushFileBuffers(file_) != FALSE;
 }
 
-bool TouchPlatformFile(PlatformFile file, const base::Time& last_access_time,
-                       const base::Time& last_modified_time) {
+bool File::SetTimes(Time last_access_time, Time last_modified_time) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file == kInvalidPlatformFileValue)
-    return false;
+  DCHECK(IsValid());
 
   FILETIME last_access_filetime = last_access_time.ToFileTime();
   FILETIME last_modified_filetime = last_modified_time.ToFileTime();
-  return (::SetFileTime(file, NULL, &last_access_filetime,
+  return (::SetFileTime(file_, NULL, &last_access_filetime,
                         &last_modified_filetime) != 0);
 }
 
-bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
+bool File::GetInfo(Info* info) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (!info)
-    return false;
+  DCHECK(IsValid());
 
   BY_HANDLE_FILE_INFORMATION file_info;
-  if (GetFileInformationByHandle(file, &file_info) == 0)
+  if (GetFileInformationByHandle(file_, &file_info) == 0)
     return false;
 
   LARGE_INTEGER size;
@@ -265,61 +252,68 @@ bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
   info->size = size.QuadPart;
   info->is_directory =
       (file_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-  info->is_symbolic_link = false; // Windows doesn't have symbolic links.
+  info->is_symbolic_link = false;  // Windows doesn't have symbolic links.
   info->last_modified = base::Time::FromFileTime(file_info.ftLastWriteTime);
   info->last_accessed = base::Time::FromFileTime(file_info.ftLastAccessTime);
   info->creation_time = base::Time::FromFileTime(file_info.ftCreationTime);
   return true;
 }
 
-PlatformFileError LockPlatformFile(PlatformFile file) {
-  BOOL result = LockFile(file, 0, 0, MAXDWORD, MAXDWORD);
+File::Error base::File::Lock() {
+  DCHECK(IsValid());
+  BOOL result = LockFile(file_, 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
-    return LastErrorToPlatformFileError(GetLastError());
-  return PLATFORM_FILE_OK;
+    return OSErrorToFileError(GetLastError());
+  return FILE_OK;
 }
 
-PlatformFileError UnlockPlatformFile(PlatformFile file) {
-  BOOL result = UnlockFile(file, 0, 0, MAXDWORD, MAXDWORD);
+File::Error File::Unlock() {
+  DCHECK(IsValid());
+  BOOL result = UnlockFile(file_, 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
-    return LastErrorToPlatformFileError(GetLastError());
-  return PLATFORM_FILE_OK;
+    return OSErrorToFileError(GetLastError());
+  return FILE_OK;
 }
 
-PlatformFileError LastErrorToPlatformFileError(DWORD last_error) {
+// Static.
+File::Error File::OSErrorToFileError(DWORD last_error) {
   switch (last_error) {
     case ERROR_SHARING_VIOLATION:
-      return PLATFORM_FILE_ERROR_IN_USE;
+      return FILE_ERROR_IN_USE;
     case ERROR_FILE_EXISTS:
-      return PLATFORM_FILE_ERROR_EXISTS;
+      return FILE_ERROR_EXISTS;
     case ERROR_FILE_NOT_FOUND:
     case ERROR_PATH_NOT_FOUND:
-      return PLATFORM_FILE_ERROR_NOT_FOUND;
+      return FILE_ERROR_NOT_FOUND;
     case ERROR_ACCESS_DENIED:
-      return PLATFORM_FILE_ERROR_ACCESS_DENIED;
+      return FILE_ERROR_ACCESS_DENIED;
     case ERROR_TOO_MANY_OPEN_FILES:
-      return PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
+      return FILE_ERROR_TOO_MANY_OPENED;
     case ERROR_OUTOFMEMORY:
     case ERROR_NOT_ENOUGH_MEMORY:
-      return PLATFORM_FILE_ERROR_NO_MEMORY;
+      return FILE_ERROR_NO_MEMORY;
     case ERROR_HANDLE_DISK_FULL:
     case ERROR_DISK_FULL:
     case ERROR_DISK_RESOURCES_EXHAUSTED:
-      return PLATFORM_FILE_ERROR_NO_SPACE;
+      return FILE_ERROR_NO_SPACE;
     case ERROR_USER_MAPPED_FILE:
-      return PLATFORM_FILE_ERROR_INVALID_OPERATION;
+      return FILE_ERROR_INVALID_OPERATION;
     case ERROR_NOT_READY:
     case ERROR_SECTOR_NOT_FOUND:
     case ERROR_DEV_NOT_EXIST:
     case ERROR_IO_DEVICE:
     case ERROR_FILE_CORRUPT:
     case ERROR_DISK_CORRUPT:
-      return PLATFORM_FILE_ERROR_IO;
+      return FILE_ERROR_IO;
     default:
       UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Windows",
                                   last_error);
-      return PLATFORM_FILE_ERROR_FAILED;
+      return FILE_ERROR_FAILED;
   }
+}
+
+void File::SetPlatformFile(PlatformFile file) {
+  file_.Set(file);
 }
 
 }  // namespace base

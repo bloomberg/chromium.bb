@@ -19,6 +19,11 @@
 
 namespace base {
 
+// ***************************************************************************
+// ***** Don't use anything from this file anymore. It is being removed!
+// ***** Use base/files/base_file.h instead
+// ***************************************************************************
+
 // PLATFORM_FILE_(OPEN|CREATE).* are mutually exclusive. You should specify
 // exactly one of the five (possibly combining with other flags) when opening
 // or creating a file.

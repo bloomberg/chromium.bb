@@ -2,30 +2,63 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file.h"
+
+// TODO(rvargas): remove this (needed for kInvalidPlatformFileValue).
 #include "base/platform_file.h"
 
 namespace base {
 
-PlatformFileInfo::PlatformFileInfo()
+File::Info::Info()
     : size(0),
       is_directory(false),
       is_symbolic_link(false) {
 }
 
-PlatformFileInfo::~PlatformFileInfo() {}
+File::Info::~Info() {
+}
+
+File::File()
+    : file_(kInvalidPlatformFileValue),
+      error_(FILE_OK),
+      created_(false),
+      async_(false) {
+}
 
 #if !defined(OS_NACL)
-PlatformFile CreatePlatformFile(const FilePath& name,
-                                int flags,
-                                bool* created,
-                                PlatformFileError* error) {
+File::File(const FilePath& name, uint32 flags)
+    : file_(kInvalidPlatformFileValue),
+      error_(FILE_OK),
+      created_(false),
+      async_(false) {
   if (name.ReferencesParent()) {
-    if (error)
-      *error = PLATFORM_FILE_ERROR_ACCESS_DENIED;
-    return kInvalidPlatformFileValue;
+    error_ = FILE_ERROR_ACCESS_DENIED;
+    return;
   }
-  return CreatePlatformFileUnsafe(name, flags, created, error);
+  CreateBaseFileUnsafe(name, flags);
 }
 #endif
+
+File::File(RValue other)
+    : file_(other.object->TakePlatformFile()),
+      error_(other.object->error()),
+      created_(other.object->created()),
+      async_(other.object->async_) {
+}
+
+File::~File() {
+  Close();
+}
+
+File& File::operator=(RValue other) {
+  if (this != other.object) {
+    Close();
+    SetPlatformFile(other.object->TakePlatformFile());
+    error_ = other.object->error();
+    created_ = other.object->created();
+    async_ = other.object->async_;
+  }
+  return *this;
+}
 
 }  // namespace base

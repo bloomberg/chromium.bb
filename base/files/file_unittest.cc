@@ -3,193 +3,148 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::File;
 using base::FilePath;
 
-namespace {
-
-// Reads from a file the given number of bytes, or until EOF is reached.
-// Returns the number of bytes read.
-int ReadFully(base::PlatformFile file, int64 offset, char* data, int size) {
-  return base::ReadPlatformFile(file, offset, data, size);
-}
-
-// Writes the given number of bytes to a file.
-// Returns the number of bytes written.
-int WriteFully(base::PlatformFile file, int64 offset,
-               const char* data, int size) {
-  return base::WritePlatformFile(file, offset, data, size);
-}
-
-} // namespace
-
-TEST(PlatformFile, CreatePlatformFile) {
+TEST(File, Create) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("create_file_1");
 
-  // Open a file that doesn't exist.
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL,
-      &error_code);
-  EXPECT_EQ(base::kInvalidPlatformFileValue, file);
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, error_code);
+  {
+    // Open a file that doesn't exist.
+    File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    EXPECT_FALSE(file.IsValid());
+    EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, file.error());
+  }
 
-  // Open or create a file.
-  bool created = false;
-  error_code = base::PLATFORM_FILE_OK;
-  file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_READ,
-      &created,
-      &error_code);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
-  EXPECT_TRUE(created);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
-  base::ClosePlatformFile(file);
+  {
+    // Open or create a file.
+    File file(file_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ);
+    EXPECT_TRUE(file.IsValid());
+    EXPECT_TRUE(file.created());
+    EXPECT_EQ(base::File::FILE_OK, file.error());
+  }
 
-  // Open an existing file.
-  created = false;
-  file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      &created,
-      &error_code);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
-  EXPECT_FALSE(created);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
-  base::ClosePlatformFile(file);
+  {
+    // Open an existing file.
+    File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    EXPECT_TRUE(file.IsValid());
+    EXPECT_FALSE(file.created());
+    EXPECT_EQ(base::File::FILE_OK, file.error());
 
-  // Create a file that exists.
-  file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ,
-      &created,
-      &error_code);
-  EXPECT_EQ(base::kInvalidPlatformFileValue, file);
-  EXPECT_FALSE(created);
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, error_code);
+    // This time verify closing the file.
+    file.Close();
+    EXPECT_FALSE(file.IsValid());
+  }
 
-  // Create or overwrite a file.
-  error_code = base::PLATFORM_FILE_OK;
-  file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ,
-      &created,
-      &error_code);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
-  EXPECT_TRUE(created);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
-  base::ClosePlatformFile(file);
+  {
+    // Create a file that exists.
+    File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_READ);
+    EXPECT_FALSE(file.IsValid());
+    EXPECT_FALSE(file.created());
+    EXPECT_EQ(base::File::FILE_ERROR_EXISTS, file.error());
+  }
 
-  // Create a delete-on-close file.
-  created = false;
-  file_path = temp_dir.path().AppendASCII("create_file_2");
-  file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_DELETE_ON_CLOSE |
-          base::PLATFORM_FILE_READ,
-      &created,
-      &error_code);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
-  EXPECT_TRUE(created);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
+  {
+    // Create or overwrite a file.
+    File file(file_path,
+              base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ);
+    EXPECT_TRUE(file.IsValid());
+    EXPECT_TRUE(file.created());
+    EXPECT_EQ(base::File::FILE_OK, file.error());
+  }
 
-  EXPECT_TRUE(base::ClosePlatformFile(file));
+  {
+    // Create a delete-on-close file.
+    file_path = temp_dir.path().AppendASCII("create_file_2");
+    File file(file_path,
+              base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ |
+                  base::File::FLAG_DELETE_ON_CLOSE);
+    EXPECT_TRUE(file.IsValid());
+    EXPECT_TRUE(file.created());
+    EXPECT_EQ(base::File::FILE_OK, file.error());
+  }
+
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
-TEST(PlatformFile, DeleteOpenFile) {
+TEST(File, DeleteOpenFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("create_file_1");
 
   // Create a file.
-  bool created = false;
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_SHARE_DELETE,
-      &created,
-      &error_code);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
-  EXPECT_TRUE(created);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
+  File file(file_path,
+            base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ |
+                base::File::FLAG_SHARE_DELETE);
+  EXPECT_TRUE(file.IsValid());
+  EXPECT_TRUE(file.created());
+  EXPECT_EQ(base::File::FILE_OK, file.error());
 
   // Open an existing file and mark it as delete on close.
-  created = false;
-  base::PlatformFile same_file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_DELETE_ON_CLOSE |
-          base::PLATFORM_FILE_READ,
-      &created,
-      &error_code);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
-  EXPECT_FALSE(created);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
+  File same_file(file_path,
+                 base::File::FLAG_OPEN | base::File::FLAG_DELETE_ON_CLOSE |
+                     base::File::FLAG_READ);
+  EXPECT_TRUE(file.IsValid());
+  EXPECT_FALSE(same_file.created());
+  EXPECT_EQ(base::File::FILE_OK, same_file.error());
 
   // Close both handles and check that the file is gone.
-  base::ClosePlatformFile(file);
-  base::ClosePlatformFile(same_file);
+  file.Close();
+  same_file.Close();
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
-TEST(PlatformFile, ReadWritePlatformFile) {
+TEST(File, ReadWrite) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("read_write_file");
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_WRITE,
-      NULL,
-      NULL);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  File file(file_path,
+            base::File::FLAG_CREATE | base::File::FLAG_READ |
+                base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
 
   char data_to_write[] = "test";
   const int kTestDataSize = 4;
 
   // Write 0 bytes to the file.
-  int bytes_written = WriteFully(file, 0, data_to_write, 0);
+  int bytes_written = file.Write(0, data_to_write, 0);
   EXPECT_EQ(0, bytes_written);
 
   // Write "test" to the file.
-  bytes_written = WriteFully(file, 0, data_to_write, kTestDataSize);
+  bytes_written = file.Write(0, data_to_write, kTestDataSize);
   EXPECT_EQ(kTestDataSize, bytes_written);
 
   // Read from EOF.
   char data_read_1[32];
-  int bytes_read = ReadFully(file, kTestDataSize, data_read_1, kTestDataSize);
+  int bytes_read = file.Read(kTestDataSize, data_read_1, kTestDataSize);
   EXPECT_EQ(0, bytes_read);
 
   // Read from somewhere in the middle of the file.
   const int kPartialReadOffset = 1;
-  bytes_read = ReadFully(file, kPartialReadOffset, data_read_1, kTestDataSize);
+  bytes_read = file.Read(kPartialReadOffset, data_read_1, kTestDataSize);
   EXPECT_EQ(kTestDataSize - kPartialReadOffset, bytes_read);
   for (int i = 0; i < bytes_read; i++)
     EXPECT_EQ(data_to_write[i + kPartialReadOffset], data_read_1[i]);
 
   // Read 0 bytes.
-  bytes_read = ReadFully(file, 0, data_read_1, 0);
+  bytes_read = file.Read(0, data_read_1, 0);
   EXPECT_EQ(0, bytes_read);
 
   // Read the entire file.
-  bytes_read = ReadFully(file, 0, data_read_1, kTestDataSize);
+  bytes_read = file.Read(0, data_read_1, kTestDataSize);
   EXPECT_EQ(kTestDataSize, bytes_read);
   for (int i = 0; i < bytes_read; i++)
     EXPECT_EQ(data_to_write[i], data_read_1[i]);
 
   // Read again, but using the trivial native wrapper.
-  bytes_read = base::ReadPlatformFileNoBestEffort(file, 0, data_read_1,
-                                                  kTestDataSize);
+  bytes_read = file.ReadNoBestEffort(0, data_read_1, kTestDataSize);
   EXPECT_LE(bytes_read, kTestDataSize);
   for (int i = 0; i < bytes_read; i++)
     EXPECT_EQ(data_to_write[i], data_read_1[i]);
@@ -197,7 +152,7 @@ TEST(PlatformFile, ReadWritePlatformFile) {
   // Write past the end of the file.
   const int kOffsetBeyondEndOfFile = 10;
   const int kPartialWriteLength = 2;
-  bytes_written = WriteFully(file, kOffsetBeyondEndOfFile,
+  bytes_written = file.Write(kOffsetBeyondEndOfFile,
                              data_to_write, kPartialWriteLength);
   EXPECT_EQ(kPartialWriteLength, bytes_written);
 
@@ -208,7 +163,7 @@ TEST(PlatformFile, ReadWritePlatformFile) {
 
   // Make sure the file was zero-padded.
   char data_read_2[32];
-  bytes_read = ReadFully(file, 0, data_read_2, static_cast<int>(file_size));
+  bytes_read = file.Read(0, data_read_2, static_cast<int>(file_size));
   EXPECT_EQ(file_size, bytes_read);
   for (int i = 0; i < kTestDataSize; i++)
     EXPECT_EQ(data_to_write[i], data_read_2[i]);
@@ -216,92 +171,81 @@ TEST(PlatformFile, ReadWritePlatformFile) {
     EXPECT_EQ(0, data_read_2[i]);
   for (int i = kOffsetBeyondEndOfFile; i < file_size; i++)
     EXPECT_EQ(data_to_write[i - kOffsetBeyondEndOfFile], data_read_2[i]);
-
-  // Close the file handle to allow the temp directory to be deleted.
-  base::ClosePlatformFile(file);
 }
 
-TEST(PlatformFile, AppendPlatformFile) {
+TEST(File, Append) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("append_file");
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_APPEND,
-      NULL,
-      NULL);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_APPEND);
+  ASSERT_TRUE(file.IsValid());
 
   char data_to_write[] = "test";
   const int kTestDataSize = 4;
 
   // Write 0 bytes to the file.
-  int bytes_written = WriteFully(file, 0, data_to_write, 0);
+  int bytes_written = file.Write(0, data_to_write, 0);
   EXPECT_EQ(0, bytes_written);
 
   // Write "test" to the file.
-  bytes_written = WriteFully(file, 0, data_to_write, kTestDataSize);
+  bytes_written = file.Write(0, data_to_write, kTestDataSize);
   EXPECT_EQ(kTestDataSize, bytes_written);
 
-  base::ClosePlatformFile(file);
-  file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_APPEND,
-      NULL,
-      NULL);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  file.Close();
+  File file2(file_path,
+             base::File::FLAG_OPEN | base::File::FLAG_READ |
+                 base::File::FLAG_APPEND);
+  ASSERT_TRUE(file2.IsValid());
+
+  // Test passing the file around.
+  file = file2.Pass();
+  EXPECT_FALSE(file2.IsValid());
+  ASSERT_TRUE(file.IsValid());
 
   char append_data_to_write[] = "78";
   const int kAppendDataSize = 2;
 
   // Append "78" to the file.
-  bytes_written = WriteFully(file, 0, append_data_to_write, kAppendDataSize);
+  bytes_written = file.Write(0, append_data_to_write, kAppendDataSize);
   EXPECT_EQ(kAppendDataSize, bytes_written);
 
   // Read the entire file.
   char data_read_1[32];
-  int bytes_read = ReadFully(file, 0, data_read_1,
+  int bytes_read = file.Read(0, data_read_1,
                              kTestDataSize + kAppendDataSize);
   EXPECT_EQ(kTestDataSize + kAppendDataSize, bytes_read);
   for (int i = 0; i < kTestDataSize; i++)
     EXPECT_EQ(data_to_write[i], data_read_1[i]);
   for (int i = 0; i < kAppendDataSize; i++)
     EXPECT_EQ(append_data_to_write[i], data_read_1[kTestDataSize + i]);
-
-  // Close the file handle to allow the temp directory to be deleted.
-  base::ClosePlatformFile(file);
 }
 
 
-TEST(PlatformFile, TruncatePlatformFile) {
+TEST(File, Truncate) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("truncate_file");
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_WRITE,
-      NULL,
-      NULL);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  File file(file_path,
+            base::File::FLAG_CREATE | base::File::FLAG_READ |
+                base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
 
   // Write "test" to the file.
   char data_to_write[] = "test";
   int kTestDataSize = 4;
-  int bytes_written = WriteFully(file, 0, data_to_write, kTestDataSize);
+  int bytes_written = file.Write(0, data_to_write, kTestDataSize);
   EXPECT_EQ(kTestDataSize, bytes_written);
 
   // Extend the file.
   const int kExtendedFileLength = 10;
   int64 file_size = 0;
-  EXPECT_TRUE(base::TruncatePlatformFile(file, kExtendedFileLength));
+  EXPECT_TRUE(file.Truncate(kExtendedFileLength));
   EXPECT_TRUE(file_util::GetFileSize(file_path, &file_size));
   EXPECT_EQ(kExtendedFileLength, file_size);
 
   // Make sure the file was zero-padded.
   char data_read[32];
-  int bytes_read = ReadFully(file, 0, data_read, static_cast<int>(file_size));
+  int bytes_read = file.Read(0, data_read, static_cast<int>(file_size));
   EXPECT_EQ(file_size, bytes_read);
   for (int i = 0; i < kTestDataSize; i++)
     EXPECT_EQ(data_to_write[i], data_read[i]);
@@ -310,39 +254,33 @@ TEST(PlatformFile, TruncatePlatformFile) {
 
   // Truncate the file.
   const int kTruncatedFileLength = 2;
-  EXPECT_TRUE(base::TruncatePlatformFile(file, kTruncatedFileLength));
+  EXPECT_TRUE(file.Truncate(kTruncatedFileLength));
   EXPECT_TRUE(file_util::GetFileSize(file_path, &file_size));
   EXPECT_EQ(kTruncatedFileLength, file_size);
 
   // Make sure the file was truncated.
-  bytes_read = ReadFully(file, 0, data_read, kTestDataSize);
+  bytes_read = file.Read(0, data_read, kTestDataSize);
   EXPECT_EQ(file_size, bytes_read);
   for (int i = 0; i < file_size; i++)
     EXPECT_EQ(data_to_write[i], data_read[i]);
-
-  // Close the file handle to allow the temp directory to be deleted.
-  base::ClosePlatformFile(file);
 }
 
 // Flakily fails: http://crbug.com/86494
 #if defined(OS_ANDROID)
-TEST(PlatformFile, TouchGetInfoPlatformFile) {
+TEST(File, TouchGetInfo) {
 #else
-TEST(PlatformFile, DISABLED_TouchGetInfoPlatformFile) {
+TEST(File, DISABLED_TouchGetInfo) {
 #endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::PlatformFile file = base::CreatePlatformFile(
-      temp_dir.path().AppendASCII("touch_get_info_file"),
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE |
-          base::PLATFORM_FILE_WRITE_ATTRIBUTES,
-      NULL,
-      NULL);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  File file(temp_dir.path().AppendASCII("touch_get_info_file"),
+            base::File::FLAG_CREATE | base::File::FLAG_WRITE |
+                base::File::FLAG_WRITE_ATTRIBUTES);
+  ASSERT_TRUE(file.IsValid());
 
   // Get info for a newly created file.
-  base::PlatformFileInfo info;
-  EXPECT_TRUE(base::GetPlatformFileInfo(file, &info));
+  base::File::Info info;
+  EXPECT_TRUE(file.GetInfo(&info));
 
   // Add 2 seconds to account for possible rounding errors on
   // filesystems that use a 1s or 2s timestamp granularity.
@@ -358,7 +296,7 @@ TEST(PlatformFile, DISABLED_TouchGetInfoPlatformFile) {
   // Write "test" to the file.
   char data[] = "test";
   const int kTestDataSize = 4;
-  int bytes_written = WriteFully(file, 0, data, kTestDataSize);
+  int bytes_written = file.Write(0, data, kTestDataSize);
   EXPECT_EQ(kTestDataSize, bytes_written);
 
   // Change the last_accessed and last_modified dates.
@@ -370,11 +308,10 @@ TEST(PlatformFile, DISABLED_TouchGetInfoPlatformFile) {
   base::Time new_last_modified =
       info.last_modified + base::TimeDelta::FromMinutes(567);
 
-  EXPECT_TRUE(base::TouchPlatformFile(file, new_last_accessed,
-                                      new_last_modified));
+  EXPECT_TRUE(file.SetTimes(new_last_accessed, new_last_modified));
 
   // Make sure the file info was updated accordingly.
-  EXPECT_TRUE(base::GetPlatformFileInfo(file, &info));
+  EXPECT_TRUE(file.GetInfo(&info));
   EXPECT_EQ(info.size, kTestDataSize);
   EXPECT_FALSE(info.is_directory);
   EXPECT_FALSE(info.is_symbolic_link);
@@ -394,41 +331,30 @@ TEST(PlatformFile, DISABLED_TouchGetInfoPlatformFile) {
 
   EXPECT_EQ(info.creation_time.ToInternalValue(),
             creation_time.ToInternalValue());
-
-  // Close the file handle to allow the temp directory to be deleted.
-  base::ClosePlatformFile(file);
 }
 
-TEST(PlatformFile, ReadFileAtCurrentPosition) {
+TEST(File, ReadFileAtCurrentPosition) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path =
       temp_dir.path().AppendASCII("read_file_at_current_position");
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_WRITE,
-      NULL, NULL);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  File file(file_path,
+            base::File::FLAG_CREATE | base::File::FLAG_READ |
+                base::File::FLAG_WRITE);
+  EXPECT_TRUE(file.IsValid());
 
   const char kData[] = "test";
   const int kDataSize = arraysize(kData) - 1;
-  EXPECT_EQ(kDataSize, WriteFully(file, 0, kData, kDataSize));
+  EXPECT_EQ(kDataSize, file.Write(0, kData, kDataSize));
 
-  EXPECT_EQ(0, SeekPlatformFile(
-      file, base::PLATFORM_FILE_FROM_BEGIN, 0));
+  EXPECT_EQ(0, file.Seek(base::File::FROM_BEGIN, 0));
 
   char buffer[kDataSize];
   int first_chunk_size = kDataSize / 2;
-  EXPECT_EQ(first_chunk_size,
-            base::ReadPlatformFileAtCurrentPos(
-                file, buffer, first_chunk_size));
+  EXPECT_EQ(first_chunk_size, file.ReadAtCurrentPos(buffer, first_chunk_size));
   EXPECT_EQ(kDataSize - first_chunk_size,
-            base::ReadPlatformFileAtCurrentPos(
-                file, buffer + first_chunk_size,
-                kDataSize - first_chunk_size));
+            file.ReadAtCurrentPos(buffer + first_chunk_size,
+                                  kDataSize - first_chunk_size));
   EXPECT_EQ(std::string(buffer, buffer + kDataSize),
             std::string(kData));
-
-  base::ClosePlatformFile(file);
 }
