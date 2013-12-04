@@ -41,8 +41,7 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   virtual base::string16 GetTitle() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root_window) OVERRIDE;
-  virtual ash::LauncherMenuModel* CreateApplicationMenu(
-      int event_flags) OVERRIDE;
+  virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;
   virtual bool ShouldShowTooltip() OVERRIDE;
 

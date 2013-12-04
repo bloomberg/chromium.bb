@@ -86,8 +86,6 @@ class FirstRunHelper;
 class HighContrastController;
 class Launcher;
 class LauncherDelegate;
-class LauncherItemDelegate;
-class LauncherItemDelegateManager;
 class LockStateController;
 class MagnificationController;
 class MediaDelegate;
@@ -99,6 +97,7 @@ class PowerButtonController;
 class RootWindowHostFactory;
 class ScreenAsh;
 class SessionStateDelegate;
+class ShelfItemDelegateManager;
 class ShelfModel;
 class ShellDelegate;
 class ShellObserver;
@@ -408,8 +407,8 @@ class ASH_EXPORT Shell
     return activation_client_;
   }
 
-  LauncherItemDelegateManager* launcher_item_delegate_manager() {
-    return launcher_item_delegate_manager_.get();
+  ShelfItemDelegateManager* shelf_item_delegate_manager() {
+    return shelf_item_delegate_manager_.get();
   }
 
   ScreenAsh* screen() { return screen_; }
@@ -601,7 +600,7 @@ class ASH_EXPORT Shell
   scoped_ptr<NewWindowDelegate> new_window_delegate_;
   scoped_ptr<MediaDelegate> media_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
-  scoped_ptr<LauncherItemDelegateManager> launcher_item_delegate_manager_;
+  scoped_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
 
   scoped_ptr<ShelfModel> shelf_model_;
   scoped_ptr<WindowPositioner> window_positioner_;

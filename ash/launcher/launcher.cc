@@ -9,10 +9,10 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/launcher/launcher_item_delegate.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_item_delegate.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_navigator.h"
@@ -108,10 +108,10 @@ void Launcher::ActivateLauncherItem(int index) {
                      ui::EF_NONE,
                      false);
 
-  const ash::LauncherItem& item = shelf_view_->model()->items()[index];
-  ash::LauncherItemDelegate* item_delegate =
-      Shell::GetInstance()->launcher_item_delegate_manager()->
-          GetLauncherItemDelegate(item.id);
+  const LauncherItem& item = shelf_view_->model()->items()[index];
+  ShelfItemDelegate* item_delegate =
+      Shell::GetInstance()->shelf_item_delegate_manager()->GetShelfItemDelegate(
+          item.id);
   item_delegate->ItemSelected(event);
 }
 

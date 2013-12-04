@@ -2,42 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_LAUNCHER_ITEM_DELEGATE_H_
-#define ASH_LAUNCHER_LAUNCHER_ITEM_DELEGATE_H_
+#ifndef ASH_SHELF_SHELF_ITEM_DELEGATE_H_
+#define ASH_SHELF_SHELF_ITEM_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/launcher/launcher_types.h"
 #include "base/strings/string16.h"
-#include "ui/base/models/simple_menu_model.h"
 
 namespace aura {
-class RootWindow;
+class Window;
 }
 
 namespace ui {
 class Event;
+class MenuModel;
 }
 
 namespace ash {
 
-// A special menu model which keeps track of an "active" menu item.
-class ASH_EXPORT LauncherMenuModel : public ui::SimpleMenuModel {
- public:
-  explicit LauncherMenuModel(ui::SimpleMenuModel::Delegate* delegate)
-      : ui::SimpleMenuModel(delegate) {}
-
-  // Returns |true| when the given |command_id| is active and needs to be drawn
-  // in a special state.
-  virtual bool IsCommandActive(int command_id) const = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LauncherMenuModel);
-};
+class ShelfMenuModel;
 
 // Delegate for the LauncherItem.
-class ASH_EXPORT LauncherItemDelegate {
+class ASH_EXPORT ShelfItemDelegate {
  public:
-  virtual ~LauncherItemDelegate() {}
+  virtual ~ShelfItemDelegate() {}
 
   // Invoked when the user clicks on a window entry in the launcher.
   // |event| is the click event. The |event| is dispatched by a view
@@ -65,7 +52,7 @@ class ASH_EXPORT LauncherItemDelegate {
   //  - A list containing the title and the active list of items.
   // The caller takes ownership of the returned model.
   // |event_flags| specifies the flags of the event which triggered this menu.
-  virtual ash::LauncherMenuModel* CreateApplicationMenu(int event_flags) = 0;
+  virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) = 0;
 
   // Whether the launcher item is draggable.
   virtual bool IsDraggable() = 0;
@@ -76,4 +63,4 @@ class ASH_EXPORT LauncherItemDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_ITEM_DELEGATE_H_
+#endif  // ASH_SHELF_SHELF_ITEM_DELEGATE_H_

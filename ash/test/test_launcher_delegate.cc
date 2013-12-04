@@ -4,11 +4,11 @@
 
 #include "ash/test/test_launcher_delegate.h"
 
-#include "ash/launcher/launcher_item_delegate_manager.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
-#include "ash/test/test_launcher_item_delegate.h"
+#include "ash/test/test_shelf_item_delegate.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -33,30 +33,28 @@ void TestLauncherDelegate::AddLauncherItem(aura::Window* window) {
   AddLauncherItem(window, STATUS_CLOSED);
 }
 
-void TestLauncherDelegate::AddLauncherItem(
-    aura::Window* window,
-    LauncherItemStatus status) {
-  ash::LauncherItem item;
+void TestLauncherDelegate::AddLauncherItem(aura::Window* window,
+                                           LauncherItemStatus status) {
+  LauncherItem item;
   if (window->type() == aura::client::WINDOW_TYPE_PANEL)
-    item.type = ash::TYPE_APP_PANEL;
+    item.type = TYPE_APP_PANEL;
   else
-    item.type = ash::TYPE_PLATFORM_APP;
+    item.type = TYPE_PLATFORM_APP;
   LauncherID id = model_->next_id();
   item.status = status;
   model_->Add(item);
   window->AddObserver(this);
 
-  ash::LauncherItemDelegateManager* manager =
-      ash::Shell::GetInstance()->launcher_item_delegate_manager();
-  // |manager| owns TestLauncherItemDelegate.
-  scoped_ptr<LauncherItemDelegate> delegate(
-      new TestLauncherItemDelegate(window));
-  manager->SetLauncherItemDelegate(id, delegate.Pass());
+  ShelfItemDelegateManager* manager =
+      Shell::GetInstance()->shelf_item_delegate_manager();
+  // |manager| owns TestShelfItemDelegate.
+  scoped_ptr<ShelfItemDelegate> delegate(new TestShelfItemDelegate(window));
+  manager->SetShelfItemDelegate(id, delegate.Pass());
   SetLauncherIDForWindow(id, window);
 }
 
 void TestLauncherDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
-  ash::LauncherID id = GetLauncherIDForWindow(window);
+  LauncherID id = GetLauncherIDForWindow(window);
   if (id == 0)
     return;
   int index = model_->ItemIndexByID(id);

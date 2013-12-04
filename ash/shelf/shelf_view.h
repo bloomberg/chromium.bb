@@ -34,8 +34,8 @@ class ShelfViewTestAPI;
 
 class LauncherDelegate;
 struct LauncherItem;
-class LauncherItemDelegateManager;
 class ShelfIconObserver;
+class ShelfItemDelegateManager;
 class ShelfModel;
 
 namespace internal {
@@ -431,8 +431,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // The rip off view when a snap back operation is underway.
   views::View* snap_back_from_rip_off_view_;
 
-  // Holds LauncherItemDelegateManager.
-  LauncherItemDelegateManager* item_manager_;
+  // Holds ShelfItemDelegateManager.
+  ShelfItemDelegateManager* item_manager_;
 
   // Holds ShelfLayoutManager.
   ShelfLayoutManager* layout_manager_;

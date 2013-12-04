@@ -153,9 +153,8 @@ class LauncherPlatformAppBrowserTest
   // Returns the number of menu items, ignoring separators.
   int GetNumApplicationMenuItems(const ash::LauncherItem& item) {
     const int event_flags = 0;
-    scoped_ptr<ash::LauncherMenuModel> menu(
-        new LauncherApplicationMenuItemModel(
-            controller_->GetApplicationList(item, event_flags)));
+    scoped_ptr<ash::ShelfMenuModel> menu(new LauncherApplicationMenuItemModel(
+        controller_->GetApplicationList(item, event_flags)));
     int num_items = 0;
     for (int i = 0; i < menu->GetItemCount(); ++i) {
       if (menu->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR)

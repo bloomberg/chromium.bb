@@ -10,8 +10,6 @@
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/launcher/launcher_item_delegate.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/alternate_app_list_button.h"
@@ -21,7 +19,10 @@
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_icon_observer.h"
+#include "ash/shelf/shelf_item_delegate.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_menu_model.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -118,12 +119,11 @@ namespace {
 
 // The MenuModelAdapter gets slightly changed to adapt the menu appearance to
 // our requirements.
-class LauncherMenuModelAdapter
-    : public views::MenuModelAdapter {
+class ShelfMenuModelAdapter : public views::MenuModelAdapter {
  public:
-  explicit LauncherMenuModelAdapter(ash::LauncherMenuModel* menu_model);
+  explicit ShelfMenuModelAdapter(ShelfMenuModel* menu_model);
 
-  // Overriding MenuModelAdapter's MenuDelegate implementation.
+  // views::MenuModelAdapter:
   virtual const gfx::Font* GetLabelFont(int command_id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void GetHorizontalIconMargins(int id,
@@ -140,18 +140,17 @@ class LauncherMenuModelAdapter
   virtual bool ShouldReserveSpaceForSubmenuIndicator() const OVERRIDE;
 
  private:
-  ash::LauncherMenuModel* launcher_menu_model_;
+  ShelfMenuModel* menu_model_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherMenuModelAdapter);
+  DISALLOW_COPY_AND_ASSIGN(ShelfMenuModelAdapter);
 };
 
-LauncherMenuModelAdapter::LauncherMenuModelAdapter(
-    ash::LauncherMenuModel* menu_model)
+ShelfMenuModelAdapter::ShelfMenuModelAdapter(ShelfMenuModel* menu_model)
     : MenuModelAdapter(menu_model),
-      launcher_menu_model_(menu_model) {}
+      menu_model_(menu_model) {
+}
 
-const gfx::Font* LauncherMenuModelAdapter::GetLabelFont(
-    int command_id) const {
+const gfx::Font* ShelfMenuModelAdapter::GetLabelFont(int command_id) const {
   if (command_id != kCommandIdOfMenuName)
     return MenuModelAdapter::GetLabelFont(command_id);
 
@@ -159,14 +158,13 @@ const gfx::Font* LauncherMenuModelAdapter::GetLabelFont(
   return &rb.GetFont(ui::ResourceBundle::BoldFont);
 }
 
-bool LauncherMenuModelAdapter::IsCommandEnabled(int id) const {
+bool ShelfMenuModelAdapter::IsCommandEnabled(int id) const {
   return id != kCommandIdOfMenuName;
 }
 
-bool LauncherMenuModelAdapter::GetForegroundColor(
-    int command_id,
-    bool is_hovered,
-    SkColor* override_color) const {
+bool ShelfMenuModelAdapter::GetForegroundColor(int command_id,
+                                               bool is_hovered,
+                                               SkColor* override_color) const {
   if (command_id != kCommandIdOfMenuName)
     return false;
 
@@ -174,11 +172,10 @@ bool LauncherMenuModelAdapter::GetForegroundColor(
   return true;
 }
 
-bool LauncherMenuModelAdapter::GetBackgroundColor(
-    int command_id,
-    bool is_hovered,
-    SkColor* override_color) const {
-  if (!launcher_menu_model_->IsCommandActive(command_id))
+bool ShelfMenuModelAdapter::GetBackgroundColor(int command_id,
+                                               bool is_hovered,
+                                               SkColor* override_color) const {
+  if (!menu_model_->IsCommandActive(command_id))
     return false;
 
   *override_color = is_hovered ? kFocusedActiveListItemBackgroundColor :
@@ -186,21 +183,20 @@ bool LauncherMenuModelAdapter::GetBackgroundColor(
   return true;
 }
 
-void LauncherMenuModelAdapter::GetHorizontalIconMargins(
-    int command_id,
-    int icon_size,
-    int* left_margin,
-    int* right_margin) const {
+void ShelfMenuModelAdapter::GetHorizontalIconMargins(int command_id,
+                                                     int icon_size,
+                                                     int* left_margin,
+                                                     int* right_margin) const {
   *left_margin = kHorizontalIconSpacing;
   *right_margin = (command_id != kCommandIdOfMenuName) ?
       kHorizontalIconSpacing : -(icon_size + kHorizontalNoIconInsetSpacing);
 }
 
-int LauncherMenuModelAdapter::GetMaxWidthForMenu(views::MenuItemView* menu) {
+int ShelfMenuModelAdapter::GetMaxWidthForMenu(views::MenuItemView* menu) {
   return kMaximumAppMenuItemLength;
 }
 
-bool LauncherMenuModelAdapter::ShouldReserveSpaceForSubmenuIndicator() const {
+bool ShelfMenuModelAdapter::ShouldReserveSpaceForSubmenuIndicator() const {
   return false;
 }
 
@@ -377,7 +373,7 @@ ShelfView::ShelfView(ShelfModel* model,
       drag_and_drop_launcher_id_(0),
       dragged_off_shelf_(false),
       snap_back_from_rip_off_view_(NULL),
-      item_manager_(Shell::GetInstance()->launcher_item_delegate_manager()),
+      item_manager_(Shell::GetInstance()->shelf_item_delegate_manager()),
       layout_manager_(shelf_layout_manager),
       overflow_mode_(false) {
   DCHECK(model_);
@@ -965,7 +961,7 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   }
 
   // If the item is no longer draggable, bail out.
-  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
       model_->items()[start_drag_index_].id);
   if (!item_delegate->IsDraggable()) {
     CancelDrag(-1);
@@ -983,7 +979,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
 
-  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
       model_->items()[current_index].id);
   if (!item_delegate->IsDraggable()) {
     CancelDrag(-1);
@@ -1600,7 +1596,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   if (index == -1)
     return;
 
-  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
       model_->items()[index].id);
   if (view_model_->view_size() <= 1 || !item_delegate->IsDraggable())
     return;  // View is being deleted or not draggable, ignore request.
@@ -1676,7 +1672,7 @@ base::string16 ShelfView::GetAccessibleName(const views::View* view) {
   if (view_index == -1)
     return base::string16();
 
-  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
       model_->items()[view_index].id);
   return item_delegate->GetTitle();
 }
@@ -1734,9 +1730,8 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
         break;
     }
 
-    LauncherItemDelegate* item_delegate =
-        item_manager_->GetLauncherItemDelegate(
-            model_->items()[view_index].id);
+    ShelfItemDelegate* item_delegate =
+        item_manager_->GetShelfItemDelegate(model_->items()[view_index].id);
     if (!item_delegate->ItemSelected(event))
       ShowListMenuForView(model_->items()[view_index], sender, event);
   }
@@ -1745,9 +1740,9 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 bool ShelfView::ShowListMenuForView(const LauncherItem& item,
                                     views::View* source,
                                     const ui::Event& event) {
-  scoped_ptr<ash::LauncherMenuModel> menu_model;
-  LauncherItemDelegate* item_delegate =
-      item_manager_->GetLauncherItemDelegate(item.id);
+  scoped_ptr<ShelfMenuModel> menu_model;
+  ShelfItemDelegate* item_delegate =
+      item_manager_->GetShelfItemDelegate(item.id);
   menu_model.reset(item_delegate->CreateApplicationMenu(event.flags()));
 
   // Make sure we have a menu and it has at least two items in addition to the
@@ -1756,7 +1751,7 @@ bool ShelfView::ShowListMenuForView(const LauncherItem& item,
     return false;
 
   ShowMenu(scoped_ptr<views::MenuModelAdapter>(
-               new LauncherMenuModelAdapter(menu_model.get())),
+               new ShelfMenuModelAdapter(menu_model.get())),
            source,
            gfx::Point(),
            false,
@@ -1769,9 +1764,8 @@ void ShelfView::ShowContextMenuForView(views::View* source,
                                        ui::MenuSourceType source_type) {
   int view_index = view_model_->GetIndexOfView(source);
   // TODO(simon.hong81): Create LauncherContextMenu for applist in its
-  // LauncherItemDelegate.
-  if (view_index != -1 &&
-      model_->items()[view_index].type == TYPE_APP_LIST) {
+  // ShelfItemDelegate.
+  if (view_index != -1 && model_->items()[view_index].type == TYPE_APP_LIST) {
     view_index = -1;
   }
 
@@ -1780,7 +1774,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
   }
   scoped_ptr<ui::MenuModel> menu_model;
-  LauncherItemDelegate* item_delegate = item_manager_->GetLauncherItemDelegate(
+  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
       model_->items()[view_index].id);
   menu_model.reset(item_delegate->CreateContextMenu(
       source->GetWidget()->GetNativeView()->GetRootWindow()));
@@ -1941,8 +1935,8 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   const LauncherItem* item = LauncherItemForView(view);
   if (!item)
     return true;
-  LauncherItemDelegate* item_delegate =
-      item_manager_->GetLauncherItemDelegate(item->id);
+  ShelfItemDelegate* item_delegate =
+      item_manager_->GetShelfItemDelegate(item->id);
   return item_delegate->ShouldShowTooltip();
 }
 

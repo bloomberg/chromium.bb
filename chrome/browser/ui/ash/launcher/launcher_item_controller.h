@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
 
-#include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
@@ -28,8 +28,8 @@ class WebContents;
 }
 
 // LauncherItemController is used by ChromeLauncherController to track one
-// or more windows associated with a launcher item.
-class LauncherItemController : public ash::LauncherItemDelegate {
+// or more windows associated with a shelf item.
+class LauncherItemController : public ash::ShelfItemDelegate {
  public:
   enum Type {
     TYPE_APP,

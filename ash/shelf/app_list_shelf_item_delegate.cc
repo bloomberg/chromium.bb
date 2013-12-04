@@ -19,7 +19,7 @@ AppListShelfItemDelegate::AppListShelfItemDelegate() {
 }
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {
-  // LauncherItemDelegateManager owns and destroys this class.
+  // ShelfItemDelegateManager owns and destroys this class.
 }
 
 bool AppListShelfItemDelegate::ItemSelected(const ui::Event& event) {
@@ -41,7 +41,7 @@ ui::MenuModel* AppListShelfItemDelegate::CreateContextMenu(
   return NULL;
 }
 
-LauncherMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
+ShelfMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
     int event_flags) {
   // AppList does not show an application menu.
   return NULL;

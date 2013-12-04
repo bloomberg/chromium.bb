@@ -220,8 +220,8 @@ ui::MenuModel* AppShortcutLauncherItemController::CreateContextMenu(
   return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 
-ash::LauncherMenuModel*
-AppShortcutLauncherItemController::CreateApplicationMenu(int event_flags) {
+ash::ShelfMenuModel* AppShortcutLauncherItemController::CreateApplicationMenu(
+    int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 

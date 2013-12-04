@@ -8,7 +8,7 @@
 
 LauncherApplicationMenuItemModel::LauncherApplicationMenuItemModel(
     ChromeLauncherAppMenuItems item_list)
-    : ash::LauncherMenuModel(this),
+    : ash::ShelfMenuModel(this),
       launcher_items_(item_list.Pass()) {
   Build();
 }

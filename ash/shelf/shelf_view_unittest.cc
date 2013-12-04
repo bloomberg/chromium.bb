@@ -9,13 +9,13 @@
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_icon_observer.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
@@ -28,7 +28,7 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
-#include "ash/test/test_launcher_item_delegate.h"
+#include "ash/test/test_shelf_item_delegate.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -199,7 +199,7 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView tests.
 
-// LauncherItemDelegate for ShelfViewTest.OverflowBubbleSize only.
+// ShelfItemDelegate for ShelfViewTest.OverflowBubbleSize only.
 // This class should only be used for re-insert test because it cannot handle
 // unpin request.
 class TestLauncherDelegateForShelfView : public TestLauncherDelegate {
@@ -238,8 +238,7 @@ class ShelfViewTest : public AshTestBase {
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
 
-    item_manager_ =
-        ash::Shell::GetInstance()->launcher_item_delegate_manager();
+    item_manager_ = ash::Shell::GetInstance()->shelf_item_delegate_manager();
     DCHECK(item_manager_);
 
     // Add browser shortcut launcher item at index 0 for test.
@@ -252,10 +251,9 @@ class ShelfViewTest : public AshTestBase {
   }
 
  protected:
-  void CreateAndSetLauncherItemDelegateForID(LauncherID id) {
-    scoped_ptr<LauncherItemDelegate> delegate(
-        new ash::test::TestLauncherItemDelegate(NULL));
-    item_manager_->SetLauncherItemDelegate(id, delegate.Pass());
+  void CreateAndSetShelfItemDelegateForID(LauncherID id) {
+    scoped_ptr<ShelfItemDelegate> delegate(new TestShelfItemDelegate(NULL));
+    item_manager_->SetShelfItemDelegate(id, delegate.Pass());
   }
 
   LauncherID AddBrowserShortcut() {
@@ -264,7 +262,7 @@ class ShelfViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->AddAt(browser_index_, browser_shortcut);
-    CreateAndSetLauncherItemDelegateForID(id);
+    CreateAndSetShelfItemDelegateForID(id);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -276,7 +274,7 @@ class ShelfViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->Add(item);
-    CreateAndSetLauncherItemDelegateForID(id);
+    CreateAndSetShelfItemDelegateForID(id);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -294,7 +292,7 @@ class ShelfViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->Add(item);
-    CreateAndSetLauncherItemDelegateForID(id);
+    CreateAndSetShelfItemDelegateForID(id);
     return id;
   }
 
@@ -305,7 +303,7 @@ class ShelfViewTest : public AshTestBase {
 
     LauncherID id = model_->next_id();
     model_->Add(item);
-    CreateAndSetLauncherItemDelegateForID(id);
+    CreateAndSetShelfItemDelegateForID(id);
     return id;
   }
 
@@ -426,7 +424,7 @@ class ShelfViewTest : public AshTestBase {
   ShelfModel* model_;
   internal::ShelfView* shelf_view_;
   int browser_index_;
-  LauncherItemDelegateManager* item_manager_;
+  ShelfItemDelegateManager* item_manager_;
 
   scoped_ptr<ShelfViewTestAPI> test_api_;
 

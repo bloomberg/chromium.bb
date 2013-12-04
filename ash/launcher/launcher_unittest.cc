@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -12,7 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/test/test_launcher_item_delegate.h"
+#include "ash/test/test_shelf_item_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
@@ -51,7 +51,7 @@ class LauncherTest : public ash::test::AshTestBase {
     shelf_view_ = test.shelf_view();
     shelf_model_ = shelf_view_->model();
     item_delegate_manager_ =
-        Shell::GetInstance()->launcher_item_delegate_manager();
+        Shell::GetInstance()->shelf_item_delegate_manager();
 
     test_.reset(new ash::test::ShelfViewTestAPI(shelf_view_));
   }
@@ -72,7 +72,7 @@ class LauncherTest : public ash::test::AshTestBase {
     return shelf_model_;
   }
 
-  LauncherItemDelegateManager* item_manager() {
+  ShelfItemDelegateManager* item_manager() {
     return item_delegate_manager_;
   }
 
@@ -84,8 +84,8 @@ class LauncherTest : public ash::test::AshTestBase {
   Launcher* launcher_;
   ShelfView* shelf_view_;
   ShelfModel* shelf_model_;
-  LauncherItemDelegateManager* item_delegate_manager_;
-  scoped_ptr<ash::test::ShelfViewTestAPI> test_;
+  ShelfItemDelegateManager* item_delegate_manager_;
+  scoped_ptr<test::ShelfViewTestAPI> test_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherTest);
 };
@@ -121,10 +121,10 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
 
-  scoped_ptr<LauncherItemDelegate> delegate(
-      new ash::test::TestLauncherItemDelegate(NULL));
-  item_manager()->SetLauncherItemDelegate(shelf_model()->items()[index].id,
-                                          delegate.Pass());
+  scoped_ptr<ShelfItemDelegate> delegate(
+      new test::TestShelfItemDelegate(NULL));
+  item_manager()->SetShelfItemDelegate(shelf_model()->items()[index].id,
+                                       delegate.Pass());
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
   ShelfButton* button = test_api()->GetButton(index);

@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
-#define ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
+#ifndef ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_
+#define ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_
 
+#include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
 namespace ash {
-namespace internal {
+namespace shell {
 
-// ShelfItemDelegate for TYPE_APP_LIST.
-class AppListShelfItemDelegate : public ShelfItemDelegate {
+class WindowWatcher;
+
+// ShelfItemDelegate implementation used by WindowWatcher.
+class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
  public:
-  AppListShelfItemDelegate();
-
-  virtual ~AppListShelfItemDelegate();
+  WindowWatcherShelfItemDelegate(LauncherID id, WindowWatcher* watcher);
+  virtual ~WindowWatcherShelfItemDelegate();
 
   // ShelfItemDelegate:
   virtual bool ItemSelected(const ui::Event& event) OVERRIDE;
@@ -28,10 +30,13 @@ class AppListShelfItemDelegate : public ShelfItemDelegate {
   virtual bool ShouldShowTooltip() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppListShelfItemDelegate);
+  LauncherID id_;
+  WindowWatcher* watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowWatcherShelfItemDelegate);
 };
 
-}  // namespace internal
+}  // namespace shell
 }  // namespace ash
 
-#endif  // ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
+#endif  // ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_

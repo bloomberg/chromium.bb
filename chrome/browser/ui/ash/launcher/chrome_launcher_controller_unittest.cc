@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "ash/shell.h"
-#include "ash/test/launcher_item_delegate_manager_test_api.h"
+#include "ash/test/shelf_item_delegate_manager_test_api.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -241,10 +241,12 @@ class TestV2AppLauncherItemController : public LauncherItemController {
     items.push_back(new ChromeLauncherAppMenuItem(string16(), NULL, false));
     return items.Pass();
   }
-  virtual ui::MenuModel* CreateContextMenu(
-      aura::Window* root_window) OVERRIDE { return NULL; }
-  virtual ash::LauncherMenuModel* CreateApplicationMenu(
-      int event_flags) OVERRIDE { return NULL; }
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) OVERRIDE {
+    return NULL;
+  }
+  virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE {
+    return NULL;
+  }
   virtual bool IsDraggable() OVERRIDE { return false; }
   virtual bool ShouldShowTooltip() OVERRIDE { return false; }
 
@@ -274,10 +276,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
     if (ash::Shell::HasInstance()) {
       item_delegate_manager_ =
-          ash::Shell::GetInstance()->launcher_item_delegate_manager();
+          ash::Shell::GetInstance()->shelf_item_delegate_manager();
     } else {
       item_delegate_manager_ =
-          new ash::LauncherItemDelegateManager(model_.get());
+          new ash::ShelfItemDelegateManager(model_.get());
     }
 
     DictionaryValue manifest;
@@ -426,7 +428,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     launcher_controller_.reset(
         new ChromeLauncherController(profile(), model_.get()));
     if (!ash::Shell::HasInstance())
-      SetLauncherItemDelegateManager(item_delegate_manager_);
+      SetShelfItemDelegateManager(item_delegate_manager_);
     launcher_controller_->Init();
   }
 
@@ -444,9 +446,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     launcher_controller_->SetAppTabHelperForTest(helper);
   }
 
-  void SetLauncherItemDelegateManager(
-      ash::LauncherItemDelegateManager* manager) {
-    launcher_controller_->SetLauncherItemDelegateManagerForTest(manager);
+  void SetShelfItemDelegateManager(ash::ShelfItemDelegateManager* manager) {
+    launcher_controller_->SetShelfItemDelegateManagerForTest(manager);
   }
 
   void InsertPrefValue(base::ListValue* pref_value,
@@ -595,7 +596,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   ExtensionService* extension_service_;
 
-  ash::LauncherItemDelegateManager* item_delegate_manager_;
+  ash::ShelfItemDelegateManager* item_delegate_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);
 };
@@ -2075,9 +2076,8 @@ bool CheckMenuCreation(ChromeLauncherController* controller,
       EXPECT_FALSE(items[i]->HasLeadingSeparator());
   }
 
-  scoped_ptr<ash::LauncherMenuModel> menu(
-      new LauncherApplicationMenuItemModel(
-          controller->GetApplicationList(item, 0)));
+  scoped_ptr<ash::ShelfMenuModel> menu(new LauncherApplicationMenuItemModel(
+      controller->GetApplicationList(item, 0)));
   // The first element in the menu is a spacing separator. On some systems
   // (e.g. Windows) such things do not exist. As such we check the existence
   // and adjust dynamically.
@@ -2422,9 +2422,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
   // Execute the second item in the list (which shouldn't do anything since that
   // item is per definition already the active tab).
   {
-    scoped_ptr<ash::LauncherMenuModel> menu(
-        new LauncherApplicationMenuItemModel(
-            launcher_controller_->GetApplicationList(item_gmail, 0)));
+    scoped_ptr<ash::ShelfMenuModel> menu(new LauncherApplicationMenuItemModel(
+        launcher_controller_->GetApplicationList(item_gmail, 0)));
     // The first element in the menu is a spacing separator. On some systems
     // (e.g. Windows) such things do not exist. As such we check the existence
     // and adjust dynamically.
@@ -2436,9 +2435,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
 
   // Execute the first item.
   {
-    scoped_ptr<ash::LauncherMenuModel> menu(
-        new LauncherApplicationMenuItemModel(
-            launcher_controller_->GetApplicationList(item_gmail, 0)));
+    scoped_ptr<ash::ShelfMenuModel> menu(new LauncherApplicationMenuItemModel(
+        launcher_controller_->GetApplicationList(item_gmail, 0)));
     int first_item =
         (menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR) ? 1 : 0;
     menu->ActivatedAt(first_item + 2);
@@ -2640,9 +2638,9 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   if (!ash::Shell::HasInstance()) {
     delete item_delegate_manager_;
   } else {
-    // Clear already registered LauncherItemDelegate.
-    ash::test::LauncherItemDelegateManagerTestAPI test(item_delegate_manager_);
-    test.RemoveAllLauncherItemDelegateForTest();
+    // Clear already registered ShelfItemDelegate.
+    ash::test::ShelfItemDelegateManagerTestAPI test(item_delegate_manager_);
+    test.RemoveAllShelfItemDelegateForTest();
   }
   model_.reset(new ash::ShelfModel);
 
@@ -2654,9 +2652,8 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
   SetAppTabHelper(app_tab_helper);
   if (!ash::Shell::HasInstance()) {
-    item_delegate_manager_ =
-        new ash::LauncherItemDelegateManager(model_.get());
-    SetLauncherItemDelegateManager(item_delegate_manager_);
+    item_delegate_manager_ = new ash::ShelfItemDelegateManager(model_.get());
+    SetShelfItemDelegateManager(item_delegate_manager_);
   }
   launcher_controller_->Init();
 
@@ -2696,9 +2693,9 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   if (!ash::Shell::HasInstance()) {
     delete item_delegate_manager_;
   } else {
-    // Clear already registered LauncherItemDelegate.
-    ash::test::LauncherItemDelegateManagerTestAPI test(item_delegate_manager_);
-    test.RemoveAllLauncherItemDelegateForTest();
+    // Clear already registered ShelfItemDelegate.
+    ash::test::ShelfItemDelegateManagerTestAPI test(item_delegate_manager_);
+    test.RemoveAllShelfItemDelegateForTest();
   }
   model_.reset(new ash::ShelfModel);
 
@@ -2711,9 +2708,8 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   app_icon_loader = new TestAppIconLoaderImpl;
   SetAppIconLoader(app_icon_loader);
   if (!ash::Shell::HasInstance()) {
-    item_delegate_manager_ =
-        new ash::LauncherItemDelegateManager(model_.get());
-    SetLauncherItemDelegateManager(item_delegate_manager_);
+    item_delegate_manager_ = new ash::ShelfItemDelegateManager(model_.get());
+    SetShelfItemDelegateManager(item_delegate_manager_);
   }
   launcher_controller_->Init();
 

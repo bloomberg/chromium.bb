@@ -6,12 +6,12 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell/window_watcher_launcher_item_delegate.h"
+#include "ash/shell/window_watcher_shelf_item_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -117,11 +117,11 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 
   model->Add(item);
 
-  ash::LauncherItemDelegateManager* manager =
-      ash::Shell::GetInstance()->launcher_item_delegate_manager();
-  scoped_ptr<LauncherItemDelegate> delegate(
-      new WindowWatcherLauncherItemDelegate(id, this));
-  manager->SetLauncherItemDelegate(id, delegate.Pass());
+  ShelfItemDelegateManager* manager =
+      Shell::GetInstance()->shelf_item_delegate_manager();
+  scoped_ptr<ShelfItemDelegate> delegate(
+      new WindowWatcherShelfItemDelegate(id, this));
+  manager->SetShelfItemDelegate(id, delegate.Pass());
   SetLauncherIDForWindow(id, new_window);
 }
 

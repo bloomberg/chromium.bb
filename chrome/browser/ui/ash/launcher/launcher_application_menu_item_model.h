@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APPLICATION_MENU_ITEM_MODEL_H_
 
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/launcher/launcher_item_delegate.h"
+#include "ash/shelf/shelf_menu_model.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
@@ -17,14 +17,14 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 
 // A menu model that builds the contents of a menu for a launcher item
 // containing a list of running applications.
-class LauncherApplicationMenuItemModel : public ash::LauncherMenuModel,
+class LauncherApplicationMenuItemModel : public ash::ShelfMenuModel,
                                          public ui::SimpleMenuModel::Delegate {
  public:
   explicit LauncherApplicationMenuItemModel(
       ChromeLauncherAppMenuItems item_list);
   virtual ~LauncherApplicationMenuItemModel();
 
-  // Overridden from ash::LauncherMenuModel:
+  // Overridden from ash::ShelfMenuModel:
   virtual bool IsCommandActive(int command_id) const OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:

@@ -2,22 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
-#define ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
+#ifndef ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_
+#define ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_
 
 #include "ash/shelf/shelf_item_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
-namespace internal {
+namespace test {
 
-// ShelfItemDelegate for TYPE_APP_LIST.
-class AppListShelfItemDelegate : public ShelfItemDelegate {
+// Test implementation of ShelfItemDelegate.
+class TestShelfItemDelegate : public ShelfItemDelegate {
  public:
-  AppListShelfItemDelegate();
-
-  virtual ~AppListShelfItemDelegate();
+  explicit TestShelfItemDelegate(aura::Window* window);
+  virtual ~TestShelfItemDelegate();
 
   // ShelfItemDelegate:
   virtual bool ItemSelected(const ui::Event& event) OVERRIDE;
@@ -28,10 +31,12 @@ class AppListShelfItemDelegate : public ShelfItemDelegate {
   virtual bool ShouldShowTooltip() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppListShelfItemDelegate);
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestShelfItemDelegate);
 };
 
-}  // namespace internal
+}  // namespace test
 }  // namespace ash
 
-#endif  // ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
+#endif  // ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_

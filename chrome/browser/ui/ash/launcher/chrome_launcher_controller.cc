@@ -9,9 +9,9 @@
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
@@ -381,7 +381,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   if (ash::Shell::HasInstance()) {
     ash::Shell::GetInstance()->display_controller()->AddObserver(this);
     item_delegate_manager_ =
-        ash::Shell::GetInstance()->launcher_item_delegate_manager();
+        ash::Shell::GetInstance()->shelf_item_delegate_manager();
   }
 
   notification_registrar_.Add(this,
@@ -499,7 +499,7 @@ void ChromeLauncherController::SetItemController(
   controller->set_launcher_id(id);
   iter->second = controller;
   // Existing controller is destroyed and replaced by registering again.
-  SetLauncherItemDelegate(id, controller);
+  SetShelfItemDelegate(id, controller);
 }
 
 void ChromeLauncherController::CloseLauncherItem(ash::LauncherID id) {
@@ -513,7 +513,7 @@ void ChromeLauncherController::CloseLauncherItem(ash::LauncherID id) {
     iter->second = new AppShortcutLauncherItemController(app_id, this);
     iter->second->set_launcher_id(id);
     // Existing controller is destroyed and replaced by registering again.
-    SetLauncherItemDelegate(id, iter->second);
+    SetShelfItemDelegate(id, iter->second);
   } else {
     LauncherItemClosed(id);
   }
@@ -1383,8 +1383,8 @@ const std::string& ChromeLauncherController::GetAppIdFromLauncherIdForTest(
   return id_to_item_controller_map_[id]->app_id();
 }
 
-void ChromeLauncherController::SetLauncherItemDelegateManagerForTest(
-    ash::LauncherItemDelegateManager* manager) {
+void ChromeLauncherController::SetShelfItemDelegateManagerForTest(
+    ash::ShelfItemDelegateManager* manager) {
   item_delegate_manager_ = manager;
 }
 
@@ -1741,7 +1741,7 @@ ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
 
   app_icon_loader_->FetchImage(app_id);
 
-  SetLauncherItemDelegate(id, controller);
+  SetShelfItemDelegate(id, controller);
 
   return id;
 }
@@ -1788,8 +1788,8 @@ ash::LauncherID ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   id_to_item_controller_map_[id] =
       new BrowserShortcutLauncherItemController(this);
   id_to_item_controller_map_[id]->set_launcher_id(id);
-  // LauncherItemDelegateManager owns BrowserShortcutLauncherItemController.
-  SetLauncherItemDelegate(id, id_to_item_controller_map_[id]);
+  // ShelfItemDelegateManager owns BrowserShortcutLauncherItemController.
+  SetShelfItemDelegate(id, id_to_item_controller_map_[id]);
   return id;
 }
 
@@ -1964,14 +1964,14 @@ void ChromeLauncherController::CloseWindowedAppsFromRemovedExtension(
   }
 }
 
-void ChromeLauncherController::SetLauncherItemDelegate(
+void ChromeLauncherController::SetShelfItemDelegate(
     ash::LauncherID id,
-    ash::LauncherItemDelegate* item_delegate) {
+    ash::ShelfItemDelegate* item_delegate) {
   DCHECK_GT(id, 0);
   DCHECK(item_delegate);
   DCHECK(item_delegate_manager_);
-  item_delegate_manager_->SetLauncherItemDelegate(id,
-      scoped_ptr<ash::LauncherItemDelegate>(item_delegate).Pass());
+  item_delegate_manager_->SetShelfItemDelegate(
+      id, scoped_ptr<ash::ShelfItemDelegate>(item_delegate).Pass());
 }
 
 void ChromeLauncherController::AttachProfile(Profile* profile) {

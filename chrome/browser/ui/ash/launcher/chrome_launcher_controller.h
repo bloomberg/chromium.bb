@@ -13,8 +13,8 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "ash/shelf/shelf_types.h"
@@ -47,7 +47,7 @@ class ShellWindowLauncherController;
 class TabContents;
 
 namespace ash {
-class LauncherItemDelegateManager;
+class ShelfItemDelegateManager;
 class ShelfModel;
 }
 
@@ -404,10 +404,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   void SetAppIconLoaderForTest(extensions::AppIconLoader* loader);
   const std::string& GetAppIdFromLauncherIdForTest(ash::LauncherID id);
 
-  // Sets the ash::LauncherItemDelegateManager only for unittests and doesn't
+  // Sets the ash::ShelfItemDelegateManager only for unittests and doesn't
   // take an ownership of it.
-  void SetLauncherItemDelegateManagerForTest(
-      ash::LauncherItemDelegateManager* manager);
+  void SetShelfItemDelegateManagerForTest(
+      ash::ShelfItemDelegateManager* manager);
 
  private:
   friend class ChromeLauncherControllerTest;
@@ -520,10 +520,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // deleted.
   void CloseWindowedAppsFromRemovedExtension(const std::string& app_id);
 
-  // Set LauncherItemDelegate |item_delegate| for |id| and take an ownership.
+  // Set ShelfItemDelegate |item_delegate| for |id| and take an ownership.
   // TODO(simon.hong81): Make this take a scoped_ptr of |item_delegate|.
-  void SetLauncherItemDelegate(ash::LauncherID id,
-                               ash::LauncherItemDelegate* item_delegate);
+  void SetShelfItemDelegate(ash::LauncherID id,
+                            ash::ShelfItemDelegate* item_delegate);
 
   // Attach to a specific profile.
   void AttachProfile(Profile* proifile);
@@ -540,7 +540,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   ash::ShelfModel* model_;
 
-  ash::LauncherItemDelegateManager* item_delegate_manager_;
+  ash::ShelfItemDelegateManager* item_delegate_manager_;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the
   // profile new windows are created with.

@@ -229,8 +229,8 @@ ui::MenuModel* ShellWindowLauncherItemController::CreateContextMenu(
   return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 
-ash::LauncherMenuModel*
-ShellWindowLauncherItemController::CreateApplicationMenu(int event_flags) {
+ash::ShelfMenuModel* ShellWindowLauncherItemController::CreateApplicationMenu(
+    int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 
