@@ -42,6 +42,7 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
+#include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
@@ -121,6 +122,13 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl;
 }
 
+static void addFontFaceRule(Document* document, CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule)
+{
+    RefPtr<CSSFontFace> cssFontFace = CSSFontFace::createFromStyleRule(document, fontFaceRule);
+    if (cssFontFace)
+        cssFontSelector->addFontFaceRule(fontFaceRule, cssFontFace);
+}
+
 StyleResolver::StyleResolver(Document& document)
     : m_document(document)
     , m_fontSelector(CSSFontSelector::create(&document))
@@ -163,7 +171,7 @@ StyleResolver::StyleResolver(Document& document)
         const HashSet<SVGFontFaceElement*>& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
         HashSet<SVGFontFaceElement*>::const_iterator end = svgFontFaceElements.end();
         for (HashSet<SVGFontFaceElement*>::const_iterator it = svgFontFaceElements.begin(); it != end; ++it)
-            fontSelector()->addFontFaceRule((*it)->fontFaceRule());
+            addFontFaceRule(&document, fontSelector(), (*it)->fontFaceRule());
     }
 #endif
 }
@@ -268,7 +276,7 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& s
     if (!scope || scope->isDocumentNode()) {
         const Vector<StyleRuleFontFace*> fontFaceRules = authorRules.fontFaceRules();
         for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-            fontSelector()->addFontFaceRule(fontFaceRules[i]);
+            addFontFaceRule(&m_document, fontSelector(), fontFaceRules[i]);
         if (fontFaceRules.size())
             invalidateMatchedPropertiesCache();
     } else {

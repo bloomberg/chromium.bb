@@ -35,7 +35,6 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StyleRule.h"
-#include "core/dom/Document.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/fonts/FontDescription.h"
@@ -48,37 +47,29 @@ CSSSegmentedFontFaceCache::CSSSegmentedFontFaceCache()
 {
 }
 
-void CSSSegmentedFontFaceCache::addFontFaceRule(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule)
+void CSSSegmentedFontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, PassRefPtr<CSSFontFace> prpCssFontFace)
 {
-    RefPtr<FontFace> fontFace = FontFace::create(fontFaceRule);
-    if (!fontFace || fontFace->family().isEmpty())
-        return;
-
-    unsigned traitsMask = fontFace->traitsMask();
-    if (!traitsMask)
-        return;
-
-    RefPtr<CSSFontFace> cssFontFace = fontFace->createCSSFontFace(cssFontSelector->document());
-    if (!cssFontFace || !cssFontFace->isValid())
-        return;
+    RefPtr<CSSFontFace> cssFontFace = prpCssFontFace;
 
     if (!m_styleRuleToFontFace.add(fontFaceRule, cssFontFace).isNewEntry)
         return;
+
+    FontFace* fontFace = cssFontFace->fontFace();
 
     OwnPtr<TraitsMap>& familyFontFaces = m_fontFaces.add(fontFace->family(), nullptr).iterator->value;
     if (!familyFontFaces)
         familyFontFaces = adoptPtr(new TraitsMap);
 
-    RefPtr<CSSSegmentedFontFace>& segmentedFontFace = familyFontFaces->add(traitsMask, 0).iterator->value;
+    RefPtr<CSSSegmentedFontFace>& segmentedFontFace = familyFontFaces->add(fontFace->traitsMask(), 0).iterator->value;
     if (!segmentedFontFace)
-        segmentedFontFace = CSSSegmentedFontFace::create(cssFontSelector, static_cast<FontTraitsMask>(traitsMask));
+        segmentedFontFace = CSSSegmentedFontFace::create(cssFontSelector, static_cast<FontTraitsMask>(fontFace->traitsMask()));
 
     segmentedFontFace->appendFontFace(cssFontFace);
 
     ++m_version;
 }
 
-void CSSSegmentedFontFaceCache::removeFontFaceRule(const StyleRuleFontFace* fontFaceRule)
+void CSSSegmentedFontFaceCache::remove(const StyleRuleFontFace* fontFaceRule)
 {
     StyleRuleToFontFace::iterator styleRuleToFontFaceIter = m_styleRuleToFontFace.find(fontFaceRule);
     if (styleRuleToFontFaceIter == m_styleRuleToFontFace.end())
@@ -186,7 +177,7 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
     return false;
 }
 
-CSSSegmentedFontFace* CSSSegmentedFontFaceCache::getFontFace(const FontDescription& fontDescription, const AtomicString& family)
+CSSSegmentedFontFace* CSSSegmentedFontFaceCache::get(const FontDescription& fontDescription, const AtomicString& family)
 {
     TraitsMap* familyFontFaces = m_fontFaces.get(family);
     if (!familyFontFaces || familyFontFaces->isEmpty())

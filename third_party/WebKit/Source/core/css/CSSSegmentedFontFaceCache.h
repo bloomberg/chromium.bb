@@ -45,9 +45,11 @@ public:
 
     // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
     // a result of egregious spaghettification in CSSFontFace/FontFaceSet.
-    void addFontFaceRule(CSSFontSelector*, const StyleRuleFontFace*);
-    void removeFontFaceRule(const StyleRuleFontFace*);
-    CSSSegmentedFontFace* getFontFace(const FontDescription&, const AtomicString& family);
+    void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtr<CSSFontFace>);
+    void remove(const StyleRuleFontFace*);
+    // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,
+    // but this function uses FontDescription/family pair.
+    CSSSegmentedFontFace* get(const FontDescription&, const AtomicString& family);
 
     unsigned version() const { return m_version; }
 

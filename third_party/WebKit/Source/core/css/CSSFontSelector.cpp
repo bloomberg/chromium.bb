@@ -153,14 +153,14 @@ void CSSFontSelector::fontCacheInvalidated()
     dispatchInvalidationCallbacks();
 }
 
-void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
+void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule, PassRefPtr<CSSFontFace> cssFontFace)
 {
-    m_cssSegmentedFontFaceCache.addFontFaceRule(this, fontFaceRule);
+    m_cssSegmentedFontFaceCache.add(this, fontFaceRule, cssFontFace);
 }
 
 void CSSFontSelector::removeFontFaceRule(const StyleRuleFontFace* fontFaceRule)
 {
-    m_cssSegmentedFontFaceCache.removeFontFaceRule(fontFaceRule);
+    m_cssSegmentedFontFaceCache.remove(fontFaceRule);
 }
 
 static AtomicString familyNameFromSettings(const GenericFontFamilySettings& settings, const FontDescription& fontDescription, const AtomicString& genericFamilyName)
@@ -193,7 +193,7 @@ static AtomicString familyNameFromSettings(const GenericFontFamilySettings& sett
 
 PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDescription, const AtomicString& familyName)
 {
-    if (CSSSegmentedFontFace* face = m_cssSegmentedFontFaceCache.getFontFace(fontDescription, familyName))
+    if (CSSSegmentedFontFace* face = m_cssSegmentedFontFaceCache.get(fontDescription, familyName))
         return face->getFontData(fontDescription);
 
     // Try to return the correct font based off our settings, in case we were handed the generic font family name.
@@ -206,7 +206,7 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDes
 
 CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDescription, const AtomicString& familyName)
 {
-    return m_cssSegmentedFontFaceCache.getFontFace(fontDescription, familyName);
+    return m_cssSegmentedFontFaceCache.get(fontDescription, familyName);
 }
 
 void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, const AtomicString& family)

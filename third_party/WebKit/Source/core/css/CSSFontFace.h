@@ -36,13 +36,16 @@
 namespace WebCore {
 
 class CSSSegmentedFontFace;
+class Document;
 class FontDescription;
 class SimpleFontData;
+class StyleRuleFontFace;
 
 // FIXME: Can this be a subclass of FontFace?
 class CSSFontFace : public RefCounted<CSSFontFace> {
 public:
     static PassRefPtr<CSSFontFace> create(PassRefPtr<FontFace> fontFace) { return adoptRef(new CSSFontFace(fontFace)); }
+    static PassRefPtr<CSSFontFace> createFromStyleRule(Document*, const StyleRuleFontFace*);
 
     class UnicodeRangeSet;
 

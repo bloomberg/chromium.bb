@@ -35,6 +35,25 @@
 
 namespace WebCore {
 
+PassRefPtr<CSSFontFace> CSSFontFace::createFromStyleRule(Document* document, const StyleRuleFontFace* fontFaceRule)
+{
+    RefPtr<FontFace> fontFace = FontFace::create(fontFaceRule);
+    if (!fontFace || fontFace->family().isEmpty())
+        return 0;
+
+    unsigned traitsMask = fontFace->traitsMask();
+    if (!traitsMask)
+        return 0;
+
+    // FIXME: Plumbing back into createCSSFontFace seems odd.
+    // Maybe move FontFace::createCSSFontFace logic here?
+    RefPtr<CSSFontFace> cssFontFace = fontFace->createCSSFontFace(document);
+    if (!cssFontFace || !cssFontFace->isValid())
+        return 0;
+
+    return cssFontFace;
+}
+
 bool CSSFontFace::isLoaded() const
 {
     size_t size = m_sources.size();
