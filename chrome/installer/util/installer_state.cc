@@ -72,10 +72,10 @@ bool InstallerState::IsMultiInstallUpdate(const MasterPreferences& prefs,
 
 InstallerState::InstallerState()
     : operation_(UNINITIALIZED),
+      state_type_(BrowserDistribution::CHROME_BROWSER),
       multi_package_distribution_(NULL),
       level_(UNKNOWN_LEVEL),
       package_type_(UNKNOWN_PACKAGE_TYPE),
-      state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
       verbose_logging_(false),
@@ -84,10 +84,10 @@ InstallerState::InstallerState()
 
 InstallerState::InstallerState(Level level)
     : operation_(UNINITIALIZED),
+      state_type_(BrowserDistribution::CHROME_BROWSER),
       multi_package_distribution_(NULL),
       level_(UNKNOWN_LEVEL),
       package_type_(UNKNOWN_PACKAGE_TYPE),
-      state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
       verbose_logging_(false),
@@ -99,6 +99,8 @@ InstallerState::InstallerState(Level level)
 void InstallerState::Initialize(const CommandLine& command_line,
                                 const MasterPreferences& prefs,
                                 const InstallationState& machine_state) {
+  Clear();
+
   bool pref_bool;
   if (!prefs.GetBool(master_preferences::kSystemLevel, &pref_bool))
     pref_bool = false;
@@ -598,7 +600,8 @@ bool InstallerState::AreBinariesInUse(
     const InstallationState& machine_state) const {
   return AnyExistsAndIsInUse(
       machine_state,
-      CHROME_FRAME_DLL | CHROME_FRAME_HELPER_EXE | CHROME_DLL);
+      (CHROME_FRAME_HELPER_EXE | CHROME_FRAME_HELPER_DLL |
+       CHROME_FRAME_DLL | CHROME_DLL));
 }
 
 base::FilePath InstallerState::GetInstallerDirectory(
@@ -616,19 +619,37 @@ bool InstallerState::IsFileInUse(const base::FilePath& file) {
                                              OPEN_EXISTING, 0, 0)).IsValid();
 }
 
+void InstallerState::Clear() {
+  operation_ = UNINITIALIZED;
+  target_path_.clear();
+  state_key_.clear();
+  state_type_ = BrowserDistribution::CHROME_BROWSER;
+  products_.clear();
+  multi_package_distribution_ = NULL;
+  critical_update_version_ = base::Version();
+  level_ = UNKNOWN_LEVEL;
+  package_type_ = UNKNOWN_PACKAGE_TYPE;
+  root_key_ = NULL;
+  msi_ = false;
+  verbose_logging_ = false;
+  ensure_google_update_present_ = false;
+}
+
 bool InstallerState::AnyExistsAndIsInUse(
     const InstallationState& machine_state,
     uint32 file_bits) const {
   static const wchar_t* const kBinaryFileNames[] = {
-    kChromeFrameDll,
-    kChromeFrameHelperExe,
     kChromeDll,
+    kChromeFrameDll,
+    kChromeFrameHelperDll,
+    kChromeFrameHelperExe,
   };
   DCHECK_NE(file_bits, 0U);
   DCHECK_LT(file_bits, 1U << NUM_BINARIES);
-  COMPILE_ASSERT(CHROME_FRAME_DLL == 1,no_youre_out_of_order);
-  COMPILE_ASSERT(CHROME_FRAME_HELPER_EXE == 2, no_youre_out_of_order);
-  COMPILE_ASSERT(CHROME_DLL == 4, no_youre_out_of_order);
+  COMPILE_ASSERT(CHROME_DLL == 1, no_youre_out_of_order);
+  COMPILE_ASSERT(CHROME_FRAME_DLL == 2, no_youre_out_of_order);
+  COMPILE_ASSERT(CHROME_FRAME_HELPER_DLL == 4, no_youre_out_of_order);
+  COMPILE_ASSERT(CHROME_FRAME_HELPER_EXE == 8, no_youre_out_of_order);
 
   // Check only for the current version (i.e., the version we are upgrading
   // _from_). Later versions from pending in-use updates need not be checked

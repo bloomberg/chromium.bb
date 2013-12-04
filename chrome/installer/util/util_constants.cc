@@ -233,6 +233,7 @@ const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeChildDll[] = L"chrome_child.dll";
 const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
+const wchar_t kChromeFrameHelperDll[] = L"chrome_frame_helper.dll";
 const wchar_t kChromeFrameHelperExe[] = L"chrome_frame_helper.exe";
 const wchar_t kChromeFrameHelperWndClass[] = L"ChromeFrameHelperWindowClass";
 const wchar_t kChromeFrameReadyModeField[] = L"ChromeFrameReadyMode";

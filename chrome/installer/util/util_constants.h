@@ -127,12 +127,14 @@ enum InstallerStage {
   CONFIGURE_AUTO_LAUNCH,       // 16: Configuring Chrome to auto-launch.
   CREATING_VISUAL_MANIFEST,    // 17: Creating VisualElementsManifest.xml
   DEFERRING_TO_HIGHER_VERSION,  // 18: Deferring to an installed higher version.
-  NUM_STAGES                   // 19: The number of stages.
+  UNINSTALLING_BINARIES,       // 19: Uninstalling unused binaries.
+  UNINSTALLING_CHROME_FRAME,   // 20: Uninstalling multi-install Chrome Frame.
+  NUM_STAGES                   // 21: The number of stages.
 };
 
 // When we start reporting the numerical values from the enum, the order
 // above MUST be preserved.
-COMPILE_ASSERT(DEFERRING_TO_HIGHER_VERSION == 18,
+COMPILE_ASSERT(UNINSTALLING_CHROME_FRAME == 20,
                never_ever_ever_change_InstallerStage_values_bang);
 
 namespace switches {
@@ -201,6 +203,7 @@ extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeChildDll[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeFrameDll[];
+extern const wchar_t kChromeFrameHelperDll[];
 extern const wchar_t kChromeFrameHelperExe[];
 extern const wchar_t kChromeFrameHelperWndClass[];
 extern const wchar_t kChromeFrameReadyModeField[];

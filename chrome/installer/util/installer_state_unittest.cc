@@ -602,6 +602,65 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
     ADD_FAILURE() << "Expected to find version dir for " << *iter;
 }
 
+TEST_F(InstallerStateTest, InitializeTwice) {
+  InstallationState machine_state;
+  machine_state.Initialize();
+
+  InstallerState installer_state;
+
+  // Initialize the instance to install multi Chrome.
+  {
+    CommandLine cmd_line(
+        CommandLine::FromString(L"setup.exe --multi-install --chrome"));
+    MasterPreferences prefs(cmd_line);
+    installer_state.Initialize(cmd_line, prefs, machine_state);
+  }
+  // Confirm the expected state.
+  EXPECT_EQ(InstallerState::USER_LEVEL, installer_state.level());
+  EXPECT_EQ(InstallerState::MULTI_PACKAGE, installer_state.package_type());
+  EXPECT_EQ(InstallerState::MULTI_INSTALL, installer_state.operation());
+  EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
+                     BrowserDistribution::GetSpecificDistribution(
+                         BrowserDistribution::CHROME_BINARIES)->
+                         GetInstallSubDir().c_str()));
+  EXPECT_FALSE(installer_state.verbose_logging());
+  EXPECT_EQ(installer_state.state_key(),
+            BrowserDistribution::GetSpecificDistribution(
+                BrowserDistribution::CHROME_BROWSER)->GetStateKey());
+  EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
+  EXPECT_TRUE(installer_state.multi_package_binaries_distribution());
+  EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
+  EXPECT_FALSE(installer_state.FindProduct(BrowserDistribution::CHROME_FRAME));
+
+  // Now initialize it to install system-level single Chrome Frame.
+  {
+    CommandLine cmd_line(
+        CommandLine::FromString(L"setup.exe --system-level --chrome-frame "
+                                L"--verbose-logging"));
+    MasterPreferences prefs(cmd_line);
+    installer_state.Initialize(cmd_line, prefs, machine_state);
+  }
+
+  // Confirm that the old state is gone.
+  EXPECT_EQ(InstallerState::SYSTEM_LEVEL, installer_state.level());
+  EXPECT_EQ(InstallerState::SINGLE_PACKAGE, installer_state.package_type());
+  EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
+            installer_state.operation());
+  EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
+                     BrowserDistribution::GetSpecificDistribution(
+                         BrowserDistribution::CHROME_FRAME)->
+                         GetInstallSubDir().c_str()));
+  EXPECT_TRUE(installer_state.verbose_logging());
+  // state_key and type are wrong in unittests since it is set based on the
+  // current process's BrowserDistribution.
+  // EXPECT_EQ(installer_state.state_key(),
+  //           BrowserDistribution::GetSpecificDistribution(
+  //               BrowserDistribution::CHROME_FRAME)->GetStateKey());
+  // EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_FRAME);
+  EXPECT_FALSE(
+      installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
+  EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_FRAME));
+}
 
 // A fixture for testing InstallerState::DetermineCriticalVersion.  Individual
 // tests must invoke Initialize() with a critical version.

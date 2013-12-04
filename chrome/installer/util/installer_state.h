@@ -216,15 +216,19 @@ class InstallerState {
  protected:
   // Bits for the |file_bits| argument of AnyExistsAndIsInUse.
   enum {
-    CHROME_FRAME_DLL        = 1 << 0,
-    CHROME_FRAME_HELPER_EXE = 1 << 1,
-    CHROME_DLL              = 1 << 2,
-    NUM_BINARIES            = 3
+    CHROME_DLL              = 1 << 0,
+    CHROME_FRAME_DLL        = 1 << 1,
+    CHROME_FRAME_HELPER_DLL = 1 << 2,
+    CHROME_FRAME_HELPER_EXE = 1 << 3,
+    NUM_BINARIES            = 4
   };
 
   // Returns true if |file| exists and cannot be opened for exclusive write
   // access.
   static bool IsFileInUse(const base::FilePath& file);
+
+  // Clears the instance to an uninitialized state.
+  void Clear();
 
   // Returns true if any file corresponding to a bit in |file_bits| (from the
   // enum above) for the currently installed version exists and is in use.

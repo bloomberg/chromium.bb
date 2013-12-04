@@ -57,6 +57,8 @@ const wchar_t kStageUnpacking[] = L"unpacking";
 const wchar_t kStageUpdatingChannels[] = L"updating_channels";
 const wchar_t kStageCreatingVisualManifest[] = L"creating_visual_manifest";
 const wchar_t kStageDeferringToHigherVersion[] = L"deferring_to_higher_version";
+const wchar_t kStageUninstallingBinaries[] = L"uninstalling_binaries";
+const wchar_t kStageUninstallingChromeFrame[] = L"uninstalling_chrome_frame";
 
 const wchar_t* const kStages[] = {
   NULL,
@@ -78,6 +80,8 @@ const wchar_t* const kStages[] = {
   kStageConfiguringAutoLaunch,
   kStageCreatingVisualManifest,
   kStageDeferringToHigherVersion,
+  kStageUninstallingBinaries,
+  kStageUninstallingChromeFrame,
 };
 
 COMPILE_ASSERT(installer::NUM_STAGES == arraysize(kStages),

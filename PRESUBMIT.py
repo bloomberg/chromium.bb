@@ -867,6 +867,7 @@ def _CheckSpamLogging(input_api, output_api):
                 input_api.DEFAULT_BLACK_LIST +
                 (r"^base[\\\/]logging\.h$",
                  r"^chrome[\\\/]browser[\\\/]chrome_browser_main\.cc$",
+                 r"^chrome[\\\/]installer[\\\/]setup[\\\/].*",
                  r"^chrome[\\\/]renderer[\\\/]extensions[\\\/]"
                      r"logging_native_handler\.cc$",
                  r"^remoting[\\\/]base[\\\/]logging\.h$",
