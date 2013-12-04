@@ -365,6 +365,11 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (EqualsASCII(origin.protocol(), chrome::kChromeInternalScheme))
     return true;
 
+  // TODO(creis, fsamuel): Remove this once the concept of swapped out
+  // RenderViews goes away.
+  if (document_url == GURL(content::kSwappedOutURL))
+    return true;
+
   // If the scheme is file:, an empty file name indicates a directory listing,
   // which requires JavaScript to function properly.
   if (EqualsASCII(origin.protocol(), chrome::kFileScheme)) {

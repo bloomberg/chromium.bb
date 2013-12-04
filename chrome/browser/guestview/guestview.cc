@@ -9,6 +9,7 @@
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/content_settings.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -116,6 +117,24 @@ bool GuestView::GetGuestPartitionConfigForSite(const GURL& site,
   *partition_name = net::UnescapeURLComponent(site.query(),
                                               net::UnescapeRule::NORMAL);
   return true;
+}
+
+// static
+void GuestView::GetDefaultContentSettingRules(
+    RendererContentSettingRules* rules, bool incognito) {
+  rules->image_rules.push_back(ContentSettingPatternSource(
+    ContentSettingsPattern::Wildcard(),
+    ContentSettingsPattern::Wildcard(),
+    CONTENT_SETTING_ALLOW,
+    std::string(),
+    incognito));
+
+  rules->script_rules.push_back(ContentSettingPatternSource(
+    ContentSettingsPattern::Wildcard(),
+    ContentSettingsPattern::Wildcard(),
+    CONTENT_SETTING_ALLOW,
+    std::string(),
+    incognito));
 }
 
 void GuestView::Attach(content::WebContents* embedder_web_contents,

@@ -1156,14 +1156,20 @@ function testNavigationToExternalProtocol() {
 }
 
 function testResizeWebviewResizesContent() {
-  var triggerNavUrl = 'data:text/html,trigger navigation';
   var webview = new WebView();
-  webview.src = triggerNavUrl;
+  webview.src = 'about:blank';
   webview.addEventListener('loadstop', function(e) {
     webview.executeScript(
       {file: 'inject_resize_test.js'},
       function(results) {
-        console.log('Script has been injected into webview.');
+        window.console.log('The resize test has been injected into webview.');
+      }
+    );
+    webview.executeScript(
+      {file: 'inject_comm_channel.js'},
+      function(results) {
+        window.console.log('The guest script for a two-way comm channel has ' +
+            'been injected into webview.');
         // Establish a communication channel with the guest.
         var msg = ['connect'];
         webview.contentWindow.postMessage(JSON.stringify(msg), '*');
@@ -1191,6 +1197,35 @@ function testResizeWebviewResizesContent() {
   });
   document.body.appendChild(webview);
 }
+
+function testPostMessageCommChannel() {
+  var webview = new WebView();
+  webview.src = 'about:blank';
+  webview.addEventListener('loadstop', function(e) {
+    webview.executeScript(
+      {file: 'inject_comm_channel.js'},
+      function(results) {
+        window.console.log('The guest script for a two-way comm channel has ' +
+            'been injected into webview.');
+        // Establish a communication channel with the guest.
+        var msg = ['connect'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      }
+    );
+  });
+  window.addEventListener('message', function(e) {
+    var data = JSON.parse(e.data);
+    if (data[0] == 'connected') {
+      console.log('A communication channel has been established with webview.');
+      embedder.test.succeed();
+      return;
+    }
+    console.log('Unexpected message: \'' + data[0]  + '\'');
+    embedder.test.fail();
+  });
+  document.body.appendChild(webview);
+}
+
 
 embedder.test.testList = {
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
@@ -1241,7 +1276,8 @@ embedder.test.testList = {
   'testReload': testReload,
   'testRemoveWebviewOnExit': testRemoveWebviewOnExit,
   'testRemoveWebviewAfterNavigation': testRemoveWebviewAfterNavigation,
-  'testResizeWebviewResizesContent': testResizeWebviewResizesContent
+  'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
+  'testPostMessageCommChannel': testPostMessageCommChannel
 };
 
 onload = function() {

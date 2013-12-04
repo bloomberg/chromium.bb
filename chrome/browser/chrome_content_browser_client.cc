@@ -943,7 +943,12 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   SendExtensionWebRequestStatusToHost(host);
 
   RendererContentSettingRules rules;
-  GetRendererContentSettingRules(profile->GetHostContentSettingsMap(), &rules);
+  if (host->IsGuest()) {
+    GuestView::GetDefaultContentSettingRules(&rules, profile->IsOffTheRecord());
+  } else {
+    GetRendererContentSettingRules(
+        profile->GetHostContentSettingsMap(), &rules);
+  }
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
 }
 

@@ -1703,7 +1703,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
   // Load the extension.
   const extensions::Extension* content_script_whitelisted_extension =
       LoadExtension(test_data_dir_.AppendASCII(
-                        "platform_apps/web_view/legacy/content_script"));
+                        "platform_apps/web_view/extension_api/content_script"));
   ASSERT_TRUE(content_script_whitelisted_extension);
   ASSERT_EQ(extension_id, content_script_whitelisted_extension->id());
 
@@ -1794,6 +1794,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Dialog_TestPromptDialog) {
   TestHelper("testPromptDialog", "web_view/dialog", NO_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, NoContentSettingsAPI) {
+  // Load the extension.
+  const extensions::Extension* content_settings_extension =
+      LoadExtension(
+          test_data_dir_.AppendASCII(
+              "platform_apps/web_view/extension_api/content_settings"));
+  ASSERT_TRUE(content_settings_extension);
+  TestHelper("testPostMessageCommChannel", "web_view/shim", NO_TEST_SERVER);
 }
 
 #if defined(ENABLE_PLUGINS)
