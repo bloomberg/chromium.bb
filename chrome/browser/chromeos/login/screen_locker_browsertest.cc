@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screen_locker.h"
 
+#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -171,13 +173,56 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_TRUE(VerifyLockScreenDismissed());
 }
 
+// Test how locking the screen affects an active fullscreen window.
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
+  // 1) If the active browser window is in fullscreen and the fullscreen window
+  // does not have all the pixels (e.g. the shelf is auto hidden instead of
+  // hidden), locking the screen should not exit fullscreen. The shelf is
+  // auto hidden when in immersive fullscreen.
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  BrowserWindow* browser_window = browser()->window();
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(
+      browser_window->GetNativeWindow());
   {
     Waiter waiter(browser());
     browser()->fullscreen_controller()->ToggleFullscreenMode();
     waiter.Wait(false /* not locked */, true /* full screen */);
-    EXPECT_TRUE(browser()->window()->IsFullscreen());
+    EXPECT_TRUE(browser_window->IsFullscreen());
+    EXPECT_FALSE(window_state->hide_shelf_when_fullscreen());
+    EXPECT_FALSE(tester->IsLocked());
+  }
+  {
+    Waiter waiter(browser());
+    ScreenLocker::Show();
+    tester->EmulateWindowManagerReady();
+    waiter.Wait(true /* locked */, true /* full screen */);
+    EXPECT_TRUE(browser_window->IsFullscreen());
+    EXPECT_FALSE(window_state->hide_shelf_when_fullscreen());
+    EXPECT_TRUE(tester->IsLocked());
+  }
+  tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
+  tester->EnterPassword("pass");
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tester->IsLocked());
+  {
+    Waiter waiter(browser());
+    browser()->fullscreen_controller()->ToggleFullscreenMode();
+    waiter.Wait(false /* not locked */, false /* fullscreen */);
+    EXPECT_FALSE(browser_window->IsFullscreen());
+  }
+
+  // 2) If the active browser window is in fullscreen and the fullscreen window
+  // has all of the pixels, locking the screen should exit fullscreen. The
+  // fullscreen window has all of the pixels when in tab fullscreen.
+  {
+    Waiter waiter(browser());
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+        web_contents, true);
+    waiter.Wait(false /* not locked */, true /* fullscreen */);
+    EXPECT_TRUE(browser_window->IsFullscreen());
+    EXPECT_TRUE(window_state->hide_shelf_when_fullscreen());
     EXPECT_FALSE(tester->IsLocked());
   }
   {
@@ -185,18 +230,21 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     ScreenLocker::Show();
     tester->EmulateWindowManagerReady();
     waiter.Wait(true /* locked */, false /* full screen */);
-    EXPECT_FALSE(browser()->window()->IsFullscreen());
+    EXPECT_FALSE(browser_window->IsFullscreen());
     EXPECT_TRUE(tester->IsLocked());
   }
-  EXPECT_EQ(
-      1,
-      fake_session_manager_client_->notify_lock_screen_shown_call_count());
 
   tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
   tester->EnterPassword("pass");
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
-  EXPECT_TRUE(VerifyLockScreenDismissed());
+
+  EXPECT_EQ(
+      2,
+      fake_session_manager_client_->notify_lock_screen_shown_call_count());
+  EXPECT_EQ(
+      2,
+      fake_session_manager_client_->notify_lock_screen_dismissed_call_count());
 }
 
 void SimulateKeyPress(views::Widget* widget, ui::KeyboardCode key_code) {

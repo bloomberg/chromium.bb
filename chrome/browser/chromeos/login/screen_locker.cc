@@ -11,6 +11,8 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -34,10 +36,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -338,13 +336,15 @@ void ScreenLocker::Show() {
     return;
   }
 
-  // Exit fullscreen.
-  Browser* browser = chrome::FindLastActiveWithHostDesktopType(
-      chrome::HOST_DESKTOP_TYPE_ASH);
-  // browser can be NULL if we receive a lock request before the first browser
-  // window is shown.
-  if (browser && browser->window()->IsFullscreen()) {
-    chrome::ToggleFullscreenMode(browser);
+  // If the active window is fullscreen, exit fullscreen to avoid the web page
+  // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
+  // visible while in fullscreen because the shelf makes it harder for a web
+  // page or app to mimick the lock screen.
+  ash::wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
+  if (active_window_state &&
+      active_window_state->IsFullscreen() &&
+      active_window_state->hide_shelf_when_fullscreen()) {
+    active_window_state->ToggleFullscreen();
   }
 
   if (!screen_locker_) {
