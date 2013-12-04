@@ -403,6 +403,8 @@
         <include name="IDR_SOUND_LOCK_WAV" file="resources\chromeos\sounds\lock.wav" type="BINDATA" />
         <include name="IDR_SOUND_UNLOCK_WAV" file="resources\chromeos\sounds\unlock.wav" type="BINDATA" />
         <include name="IDR_SOUND_SHUTDOWN_WAV" file="resources\chromeos\sounds\shutdown.wav" type="BINDATA" />
+        <include name="IDR_SOUND_SPOKEN_FEEDBACK_ENABLED_WAV" file="resources\chromeos\sounds\spoken_feedback_enabled.wav" type="BINDATA" />
+        <include name="IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV" file="resources\chromeos\sounds\spoken_feedback_disabled.wav" type="BINDATA" />
       </if>
     </includes>
   </release>

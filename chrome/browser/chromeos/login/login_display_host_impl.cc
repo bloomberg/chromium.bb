@@ -347,24 +347,6 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
                << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
                << " wait_for_pods_: " << waiting_for_user_pods_
                << " init_webui_hidden_: " << initialize_webui_hidden_;
-
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  std::vector<base::StringPiece> sound_resources(
-      media::SoundsManager::SOUND_COUNT);
-  sound_resources[media::SoundsManager::SOUND_STARTUP] =
-      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV);
-  sound_resources[media::SoundsManager::SOUND_LOCK] =
-      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV);
-  sound_resources[media::SoundsManager::SOUND_UNLOCK] =
-      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV);
-  sound_resources[media::SoundsManager::SOUND_SHUTDOWN] =
-      bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV);
-  for (size_t i = 0; i < sound_resources.size(); ++i) {
-    DCHECK(!sound_resources[i].empty()) << "System sound " << i << " "
-                                        << "missing.";
-  }
-  if (!media::SoundsManager::Get()->Initialize(sound_resources))
-    LOG(ERROR) << "Failed to initialize SoundsManager.";
 }
 
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {

@@ -19,11 +19,15 @@ namespace media {
 // should be accessed from the Audio thread.
 class MEDIA_EXPORT SoundsManager : public base::NonThreadSafe {
  public:
+  // TODO(dalecurtis): Define elsewhere (belongs under chromeos). See
+  // crbug.com/321335.
   enum Sound {
     SOUND_STARTUP = 0,
     SOUND_LOCK,
     SOUND_UNLOCK,
     SOUND_SHUTDOWN,
+    SOUND_SPOKEN_FEEDBACK_ENABLED,
+    SOUND_SPOKEN_FEEDBACK_DISABLED,
     SOUND_COUNT
   };
 
