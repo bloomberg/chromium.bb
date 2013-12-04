@@ -82,6 +82,7 @@ namespace ash {
 namespace {
 
 using internal::DisplayInfo;
+using content::UserMetricsAction;
 
 bool DebugShortcutsEnabled() {
 #if defined(NDEBUG)
@@ -94,11 +95,9 @@ bool DebugShortcutsEnabled() {
 
 bool HandleAccessibleFocusCycle(bool reverse) {
   if (reverse) {
-    content::RecordAction(
-        content::UserMetricsAction("Accel_Accessible_Focus_Previous"));
+    content::RecordAction(UserMetricsAction("Accel_Accessible_Focus_Previous"));
   } else {
-    content::RecordAction(
-        content::UserMetricsAction("Accel_Accessible_Focus_Next"));
+    content::RecordAction(UserMetricsAction("Accel_Accessible_Focus_Next"));
   }
 
   if (!Shell::GetInstance()->accessibility_delegate()->
@@ -186,8 +185,7 @@ bool HandleDisableCapsLock(ui::KeyboardCode key_code,
     // and released, then ignore the release of the Shift key.
     return false;
   }
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Disable_Caps_Lock"));
+  content::RecordAction(UserMetricsAction("Accel_Disable_Caps_Lock"));
   if (shell->caps_lock_delegate()->IsCapsLockEnabled()) {
     shell->caps_lock_delegate()->SetCapsLockEnabled(false);
     return true;
@@ -203,15 +201,13 @@ bool HandleFocusLauncher() {
 }
 
 bool HandleLaunchAppN(int n) {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Launch_App"));
+  content::RecordAction(UserMetricsAction("Accel_Launch_App"));
   Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(n);
   return true;
 }
 
 bool HandleLaunchLastApp() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Launch_Last_App"));
+  content::RecordAction(UserMetricsAction("Accel_Launch_Last_App"));
   Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(-1);
   return true;
 }
@@ -256,8 +252,7 @@ bool HandleMediaPrevTrack() {
 }
 
 bool HandleNewIncognitoWindow() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_New_Incognito_Window"));
+  content::RecordAction(UserMetricsAction("Accel_New_Incognito_Window"));
   bool incognito_allowed =
     Shell::GetInstance()->delegate()->IsIncognitoAllowed();
   if (incognito_allowed)
@@ -300,23 +295,20 @@ bool HandleNextIme(ImeControlDelegate* ime_control_delegate,
     // TODO(mazda): Fix crbug.com/158217
     return false;
   }
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Next_Ime"));
+  content::RecordAction(UserMetricsAction("Accel_Next_Ime"));
   if (ime_control_delegate)
     return ime_control_delegate->HandleNextIme();
   return false;
 }
 
 bool HandleOpenFeedbackPage() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Open_Feedback_Page"));
+  content::RecordAction(UserMetricsAction("Accel_Open_Feedback_Page"));
   ash::Shell::GetInstance()->new_window_delegate()->OpenFeedbackPage();
   return true;
 }
 
 bool HandlePositionCenter() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Window_Position_Center"));
+  content::RecordAction(UserMetricsAction("Accel_Window_Position_Center"));
   aura::Window* window = wm::GetActiveWindow();
   // Docked windows do not support centering and ignore accelerator.
   if (window && !wm::GetWindowState(window)->IsDocked()) {
@@ -328,8 +320,7 @@ bool HandlePositionCenter() {
 
 bool HandlePreviousIme(ImeControlDelegate* ime_control_delegate,
                        const ui::Accelerator& accelerator) {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Previous_Ime"));
+  content::RecordAction(UserMetricsAction("Accel_Previous_Ime"));
   if (ime_control_delegate)
     return ime_control_delegate->HandlePreviousIme(accelerator);
   return false;
@@ -346,14 +337,12 @@ bool HandleRotatePaneFocus(Shell::Direction direction) {
   switch (direction) {
     // TODO(stevet): Not sure if this is the same as IDC_FOCUS_NEXT_PANE.
     case Shell::FORWARD: {
-      content::RecordAction(
-          content::UserMetricsAction("Accel_Focus_Next_Pane"));
+      content::RecordAction(UserMetricsAction("Accel_Focus_Next_Pane"));
       shell->focus_cycler()->RotateFocus(internal::FocusCycler::FORWARD);
       break;
     }
     case Shell::BACKWARD: {
-      content::RecordAction(
-          content::UserMetricsAction("Accel_Focus_Previous_Pane"));
+      content::RecordAction(UserMetricsAction("Accel_Focus_Previous_Pane"));
       shell->focus_cycler()->RotateFocus(internal::FocusCycler::BACKWARD);
       break;
     }
@@ -363,8 +352,7 @@ bool HandleRotatePaneFocus(Shell::Direction direction) {
 
 // Rotate the active window.
 bool HandleRotateActiveWindow() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Rotate_Window"));
+  content::RecordAction(UserMetricsAction("Accel_Rotate_Window"));
   aura::Window* active_window = wm::GetActiveWindow();
   if (active_window) {
     // The rotation animation bases its target transform on the current
@@ -397,8 +385,7 @@ gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
 
 // Rotates the screen.
 bool HandleRotateScreen() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Rotate_Window"));
+  content::RecordAction(UserMetricsAction("Accel_Rotate_Window"));
   gfx::Point point = Shell::GetScreen()->GetCursorScreenPoint();
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(point);
   const DisplayInfo& display_info =
@@ -415,8 +402,7 @@ bool HandleScaleReset() {
   if (display_id == gfx::Display::kInvalidDisplayID)
     return false;
 
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Scale_Ui_Reset"));
+  content::RecordAction(UserMetricsAction("Accel_Scale_Ui_Reset"));
 
   display_manager->SetDisplayUIScale(display_id, 1.0f);
   return true;
@@ -430,11 +416,9 @@ bool HandleScaleUI(bool up) {
     return false;
 
   if (up) {
-    content::RecordAction(
-        content::UserMetricsAction("Accel_Scale_Ui_Up"));
+    content::RecordAction(UserMetricsAction("Accel_Scale_Ui_Up"));
   } else {
-      content::RecordAction(
-          content::UserMetricsAction("Accel_Scale_Ui_Down"));
+    content::RecordAction(UserMetricsAction("Accel_Scale_Ui_Down"));
   }
 
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
@@ -445,23 +429,20 @@ bool HandleScaleUI(bool up) {
 }
 
 bool HandleSwapPrimaryDisplay() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Swap_Primary_Display"));
+  content::RecordAction(UserMetricsAction("Accel_Swap_Primary_Display"));
   Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
   return true;
 }
 
 bool HandleShowKeyboardOverlay() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Show_Keyboard_Overlay"));
+  content::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
   ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
 
   return true;
 }
 
 void HandleShowMessageCenterBubble() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Show_Message_Center_Bubble"));
+  content::RecordAction(UserMetricsAction("Accel_Show_Message_Center_Bubble"));
   internal::RootWindowController* controller =
     internal::RootWindowController::ForTargetRootWindow();
   internal::StatusAreaWidget* status_area_widget =
@@ -484,8 +465,7 @@ bool HandleShowOak() {
 }
 
 bool HandleShowSystemTrayBubble() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Show_System_Tray_Bubble"));
+  content::RecordAction(UserMetricsAction("Accel_Show_System_Tray_Bubble"));
   internal::RootWindowController* controller =
     internal::RootWindowController::ForTargetRootWindow();
   if (!controller->GetSystemTray()->HasSystemBubble()) {
@@ -496,15 +476,13 @@ bool HandleShowSystemTrayBubble() {
 }
 
 bool HandleShowTaskManager() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Show_Task_Manager"));
+  content::RecordAction(UserMetricsAction("Accel_Show_Task_Manager"));
   Shell::GetInstance()->new_window_delegate()->ShowTaskManager();
   return true;
 }
 
 void HandleSilenceSpokenFeedback() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Silence_Spoken_Feedback"));
+  content::RecordAction(UserMetricsAction("Accel_Silence_Spoken_Feedback"));
 
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();
@@ -515,16 +493,14 @@ void HandleSilenceSpokenFeedback() {
 
 bool HandleSwitchIme(ImeControlDelegate* ime_control_delegate,
                      const ui::Accelerator& accelerator) {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Switch_Ime"));
+  content::RecordAction(UserMetricsAction("Accel_Switch_Ime"));
   if (ime_control_delegate)
     return ime_control_delegate->HandleSwitchIme(accelerator);
   return false;
 }
 
 bool HandleTakePartialScreenshot(ScreenshotDelegate* screenshot_delegate) {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Take_Partial_Screenshot"));
+  content::RecordAction(UserMetricsAction("Accel_Take_Partial_Screenshot"));
   if (screenshot_delegate) {
     ash::PartialScreenshotView::StartPartialScreenshot(
         screenshot_delegate);
@@ -535,8 +511,7 @@ bool HandleTakePartialScreenshot(ScreenshotDelegate* screenshot_delegate) {
 }
 
 bool HandleTakeScreenshot(ScreenshotDelegate* screenshot_delegate) {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Take_Screenshot"));
+  content::RecordAction(UserMetricsAction("Accel_Take_Screenshot"));
   if (screenshot_delegate &&
       screenshot_delegate->CanTakeScreenshot()) {
     screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
@@ -582,16 +557,14 @@ bool HandleToggleCapsLock(ui::KeyboardCode key_code,
         previous_key_code != ui::VKEY_LWIN)
       return false;
   }
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Toggle_Caps_Lock"));
+  content::RecordAction(UserMetricsAction("Accel_Toggle_Caps_Lock"));
   shell->caps_lock_delegate()->ToggleCapsLock();
   return true;
 }
 
 bool HandleToggleFullscreen(ui::KeyboardCode key_code) {
   if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
-    content::RecordAction(
-        content::UserMetricsAction("Accel_Fullscreen_F4"));
+    content::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
   }
   accelerators::ToggleFullscreen();
   return true;
@@ -613,11 +586,9 @@ bool HandleWindowSnap(int action) {
   }
 
   if (action == WINDOW_SNAP_LEFT) {
-    content::RecordAction(
-        content::UserMetricsAction("Accel_Window_Snap_Left"));
+    content::RecordAction(UserMetricsAction("Accel_Window_Snap_Left"));
   } else {
-    content::RecordAction(
-        content::UserMetricsAction("Accel_Window_Snap_Right"));
+    content::RecordAction(UserMetricsAction("Accel_Window_Snap_Right"));
   }
 
   internal::SnapSizer::SnapWindow(window_state,
@@ -628,38 +599,33 @@ bool HandleWindowSnap(int action) {
 
 #if defined(OS_CHROMEOS)
 bool HandleAddRemoveDisplay() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Add_Remove_Display"));
+  content::RecordAction(UserMetricsAction("Accel_Add_Remove_Display"));
   Shell::GetInstance()->display_manager()->AddRemoveDisplay();
   return true;
 }
 
 bool HandleCrosh() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Open_Crosh"));
+  content::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
   Shell::GetInstance()->new_window_delegate()->OpenCrosh();
   return true;
 }
 
 bool HandleFileManager() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Open_File_Manager"));
+  content::RecordAction(UserMetricsAction("Accel_Open_File_Manager"));
 
   Shell::GetInstance()->new_window_delegate()->OpenFileManager();
   return true;
 }
 
 bool HandleLock(ui::KeyboardCode key_code) {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_LockScreen_L"));
+  content::RecordAction(UserMetricsAction("Accel_LockScreen_L"));
   Shell::GetInstance()->session_state_delegate()->LockScreen();
   return true;
 }
 
 bool HandleSwitchToNextUser() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Switch_To_Next_User"));
+  content::RecordAction(UserMetricsAction("Accel_Switch_To_Next_User"));
 
   if (!Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
     return false;
@@ -674,15 +640,13 @@ bool HandleSwitchToNextUser() {
 }
 
 bool HandleToggleMirrorMode() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Toggle_Mirror_Mode"));
+  content::RecordAction(UserMetricsAction("Accel_Toggle_Mirror_Mode"));
   Shell::GetInstance()->display_controller()->ToggleMirrorMode();
   return true;
 }
 
 bool HandleToggleSpokenFeedback() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
+  content::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
   Shell::GetInstance()->accessibility_delegate()->
       ToggleSpokenFeedback(A11Y_NOTIFICATION_SHOW);
@@ -710,8 +674,7 @@ bool HandleTouchHudModeChange() {
 }
 
 bool HandleTouchHudProjectToggle() {
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Touch_Hud_Clear"));
+  content::RecordAction(UserMetricsAction("Accel_Touch_Hud_Clear"));
   bool enabled = Shell::GetInstance()->is_touch_hud_projection_enabled();
   Shell::GetInstance()->SetTouchHudProjectionEnabled(!enabled);
   return true;

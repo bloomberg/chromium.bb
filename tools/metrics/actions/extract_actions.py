@@ -501,6 +501,8 @@ def AddLiteralActions(actions):
   EXTENSIONS = ('.cc', '.mm', '.c', '.m')
 
   # Walk the source tree to process all .cc files.
+  ash_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'ash'))
+  WalkDirectory(ash_root, actions, EXTENSIONS, GrepForActions)
   chrome_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'chrome'))
   WalkDirectory(chrome_root, actions, EXTENSIONS, GrepForActions)
   content_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'content'))
