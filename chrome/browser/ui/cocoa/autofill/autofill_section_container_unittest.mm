@@ -78,8 +78,8 @@ TEST_F(AutofillSectionContainerTest, ModelsPopulateComboboxes) {
   using namespace testing;
 
   const DetailInput kTestInputs[] = {
-    { 2, CREDIT_CARD_EXP_MONTH },
-    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR }
+    { DetailInput::SHORT, CREDIT_CARD_EXP_MONTH },
+    { DetailInput::SHORT, CREDIT_CARD_EXP_4_DIGIT_YEAR },
   };
 
   DetailInputs inputs;
@@ -117,8 +117,10 @@ TEST_F(AutofillSectionContainerTest, OutputMatchesDefinition) {
   using namespace testing;
 
   const DetailInput kTestInputs[] = {
-    { 1, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
-    { 2, CREDIT_CARD_EXP_MONTH }
+    { DetailInput::LONG,
+      EMAIL_ADDRESS,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
+    { DetailInput::SHORT, CREDIT_CARD_EXP_MONTH },
   };
   autofill::MonthComboboxModel comboModel;
   DetailInputs inputs;
@@ -180,8 +182,10 @@ TEST_F(AutofillSectionContainerTest, FieldsAreInitiallyValid) {
   using namespace testing;
 
   const DetailInput kTestInputs[] = {
-    { 1, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
-    { 2, CREDIT_CARD_EXP_MONTH }
+    { DetailInput::LONG,
+      EMAIL_ADDRESS,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
+    { DetailInput::SHORT, CREDIT_CARD_EXP_MONTH },
   };
 
   MonthComboboxModel comboModel;
@@ -208,8 +212,8 @@ TEST_F(AutofillSectionContainerTest, ControllerInformsValidity) {
   using namespace testing;
 
   const DetailInput kTestInputs[] = {
-    { 1, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
-    { 2, CREDIT_CARD_EXP_MONTH }
+    { DetailInput::LONG, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
+    { DetailInput::SHORT, CREDIT_CARD_EXP_MONTH }
   };
 
   MonthComboboxModel comboModel;

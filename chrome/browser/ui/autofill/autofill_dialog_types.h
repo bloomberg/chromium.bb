@@ -27,11 +27,14 @@ class AutofillField;
 // This struct describes a single input control for the imperative autocomplete
 // dialog.
 struct DetailInput {
-  // Multiple DetailInput structs with the same row_id go on the same row. The
-  // actual order of the rows is determined by their order of appearance in
-  // kBillingInputs. If negative, don't show the input at all (leave it hidden
-  // at all times).
-  int row_id;
+  enum Length {
+    SHORT,  // Short inputs share a line with other short inputs. [ CVC ][ Zip ]
+    LONG,   // Long inputs will be given their own full line.     [ City       ]
+    NONE,   // Input will not be shown.
+  };
+
+  // Used to determine which inputs share lines when laying out.
+  Length length;
 
   ServerFieldType type;
 

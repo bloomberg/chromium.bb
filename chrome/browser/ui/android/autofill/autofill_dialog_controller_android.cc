@@ -113,7 +113,7 @@ void FillOutputForSection(
 bool IsSectionInputUsedInFormStructure(DialogSection section,
                                        ServerFieldType input_type,
                                        const FormStructure& form_structure) {
-  const DetailInput input = { 0, input_type };
+  const DetailInput input = { DetailInput::LONG, input_type };
   for (size_t i = 0; i < form_structure.field_count(); ++i) {
     const AutofillField* field = form_structure.field(i);
     if (field && common::DetailInputMatchesField(section, input, *field))

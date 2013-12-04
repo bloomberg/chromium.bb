@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"  // For gmock.
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"  // Only needed because gmock needs complete types.
 
 namespace autofill {
@@ -36,7 +37,9 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
 
   // SECTION_CC *must* have a CREDIT_CARD_VERIFICATION_CODE field.
   const DetailInput kCreditCardInputs[] = {
-    { 2, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC }
+    { DetailInput::SHORT,
+      CREDIT_CARD_VERIFICATION_CODE,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC }
   };
   cc_default_inputs_.push_back(kCreditCardInputs[0]);
   ON_CALL(*this, RequestedFieldsForSection(SECTION_CC))

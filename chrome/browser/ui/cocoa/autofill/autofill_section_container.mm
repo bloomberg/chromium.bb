@@ -67,15 +67,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   return section == autofill::SECTION_CC_BILLING;
 }
 
-bool CompareInputRows(const autofill::DetailInput* input1,
-                      const autofill::DetailInput* input2) {
-  // Row ID -1 is sorted to the end of rows.
-  if (input2->row_id == -1)
-    return false;
-  return input2->row_id < input1->row_id;
-}
-
-}
+}  // namespace
 
 @interface AutofillSectionContainer ()
 
@@ -169,8 +161,21 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   // Keep a list of weak pointers to DetailInputs.
   const autofill::DetailInputs& inputs =
       delegate_->RequestedFieldsForSection(section_);
-  for (size_t i = 0; i < inputs.size(); ++i) {
+
+  // Reverse the order of all the inputs.
+  for (int i = inputs.size() - 1; i >= 0; --i) {
     detailInputs_.push_back(&(inputs[i]));
+  }
+
+  // Then right the reversal in each row.
+  std::vector<const autofill::DetailInput*>::iterator it;
+  for (it = detailInputs_.begin(); it < detailInputs_.end(); ++it) {
+    std::vector<const autofill::DetailInput*>::iterator start = it;
+    while (it != detailInputs_.end() &&
+           (*it)->length != autofill::DetailInput::LONG) {
+      ++it;
+    }
+    std::reverse(start, it);
   }
 
   inputs_.reset([[self makeInputControls] retain]);
@@ -548,14 +553,16 @@ bool CompareInputRows(const autofill::DetailInput* input1,
       scoped_ptr<SimpleGridLayout>(new SimpleGridLayout(view))];
   SimpleGridLayout* layout = [view layoutManager];
 
-  // Reverse order of rows, but keep order of fields stable. stable_sort
-  // guarantees that field order within a row is not affected.
-  // Necessary since OSX builds forms from the bottom left.
-  std::stable_sort(
-      detailInputs_.begin(), detailInputs_.end(), CompareInputRows);
+  int column_set_id = 0;
   for (size_t i = 0; i < detailInputs_.size(); ++i) {
     const autofill::DetailInput& input = *detailInputs_[i];
-    int kColumnSetId = input.row_id;
+
+    if (input.length == autofill::DetailInput::LONG)
+      ++column_set_id;
+
+    int kColumnSetId =
+        input.length == autofill::DetailInput::NONE ? -1 : column_set_id;
+
     ColumnSet* columnSet = layout->GetColumnSet(kColumnSetId);
     if (!columnSet) {
       // Create a new column set and row.
@@ -604,6 +611,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
       [control setHidden:YES];
     }
     layout->AddView(control);
+
+    if (input.length == autofill::DetailInput::LONG)
+      ++column_set_id;
   }
 
   [self updateFieldIcons];

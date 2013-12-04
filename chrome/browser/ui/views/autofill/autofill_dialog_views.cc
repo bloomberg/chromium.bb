@@ -1960,6 +1960,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
   views::GridLayout* layout = new views::GridLayout(view);
   view->SetLayoutManager(layout);
 
+  int column_set_id = 0;
   for (DetailInputs::const_iterator it = inputs.begin();
        it != inputs.end(); ++it) {
     const DetailInput& input = *it;
@@ -1982,19 +1983,21 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
       view_to_add.reset(field);
     }
 
-    int kColumnSetId = input.row_id;
-    if (kColumnSetId < 0) {
+    if (input.length == DetailInput::NONE) {
       other_owned_views_.push_back(view_to_add.release());
       continue;
     }
 
-    views::ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
+    if (input.length == DetailInput::LONG)
+      ++column_set_id;
+
+    views::ColumnSet* column_set = layout->GetColumnSet(column_set_id);
     if (!column_set) {
       // Create a new column set and row.
-      column_set = layout->AddColumnSet(kColumnSetId);
+      column_set = layout->AddColumnSet(column_set_id);
       if (it != inputs.begin())
         layout->AddPaddingRow(0, kManualInputRowPadding);
-      layout->StartRow(0, kColumnSetId);
+      layout->StartRow(0, column_set_id);
     } else {
       // Add a new column to existing row.
       column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
@@ -2017,6 +2020,9 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
     layout->AddView(view_to_add.release(), 1, 1,
                     views::GridLayout::FILL, views::GridLayout::FILL,
                     1, 0);
+
+    if (input.length == DetailInput::LONG)
+      ++column_set_id;
   }
 
   SetIconsForSection(section);
