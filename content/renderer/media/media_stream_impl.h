@@ -181,11 +181,6 @@ class CONTENT_EXPORT MediaStreamImpl
   // |user_media_requests_|.
   void StopUnreferencedSources(bool notify_dispatcher);
 
-  scoped_refptr<VideoFrameProvider>
-  CreateVideoFrameProvider(
-      webrtc::MediaStreamInterface* stream,
-      const base::Closure& error_cb,
-      const VideoFrameProvider::RepaintCB& repaint_cb);
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
       webrtc::MediaStreamInterface* stream);
   scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(

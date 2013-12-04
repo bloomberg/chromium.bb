@@ -12,6 +12,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/media_stream_track_extra_data.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_identity_service.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
@@ -926,8 +927,15 @@ void MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
     bool is_local_track) {
   DCHECK(!webkit_track.isNull() && !webkit_track.extraData());
   blink::WebMediaStreamTrack track = webkit_track;
-  track.setExtraData(new MediaStreamTrackExtraData(native_track,
-                                                   is_local_track));
+
+  if (track.source().type() == blink::WebMediaStreamSource::TypeVideo) {
+    track.setExtraData(new MediaStreamVideoTrack(
+        static_cast<webrtc::VideoTrackInterface*>(native_track),
+        is_local_track));
+  } else {
+    track.setExtraData(new MediaStreamTrackExtraData(native_track,
+                                                     is_local_track));
+  }
 }
 
 webrtc::MediaStreamInterface*

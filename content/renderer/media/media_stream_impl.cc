@@ -248,11 +248,12 @@ MediaStreamImpl::GetVideoFrameProvider(
   DVLOG(1) << "MediaStreamImpl::GetVideoFrameProvider stream:"
            << UTF16ToUTF8(web_stream.id());
 
-  webrtc::MediaStreamInterface* stream = GetNativeMediaStream(web_stream);
-  if (stream)
-    return CreateVideoFrameProvider(stream, error_cb, repaint_cb);
-  NOTREACHED();
-  return NULL;
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+  web_stream.videoTracks(video_tracks);
+  if (video_tracks.isEmpty())
+    return NULL;
+
+  return new RTCVideoRenderer(video_tracks[0], error_cb, repaint_cb);
 }
 
 scoped_refptr<MediaStreamAudioRenderer>
@@ -764,23 +765,6 @@ void MediaStreamImpl::StopUnreferencedSources(bool notify_dispatcher) {
       ++source_it;
     }
   }
-}
-
-scoped_refptr<VideoFrameProvider>
-MediaStreamImpl::CreateVideoFrameProvider(
-    webrtc::MediaStreamInterface* stream,
-    const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb) {
-  if (stream->GetVideoTracks().empty())
-    return NULL;
-
-  DVLOG(1) << "MediaStreamImpl::CreateRemoteVideoFrameProvider label:"
-           << stream->label();
-
-  return new RTCVideoRenderer(
-      stream->GetVideoTracks()[0],
-      error_cb,
-      repaint_cb);
 }
 
 scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
