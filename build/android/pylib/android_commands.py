@@ -9,6 +9,7 @@ Assumes adb binary is currently on system path.
 
 import collections
 import datetime
+import inspect
 import logging
 import os
 import re
@@ -22,6 +23,7 @@ import time
 import cmd_helper
 import constants
 import screenshot
+import system_properties
 
 from utils import host_path_finder
 
@@ -228,14 +230,17 @@ def GetLogTimestamp(log_line, year):
 
 
 class AndroidCommands(object):
-  """Helper class for communicating with Android device via adb.
+  """Helper class for communicating with Android device via adb."""
 
-  Args:
-    device: If given, adb commands are only send to the device of this ID.
-        Otherwise commands are sent to all attached devices.
-  """
+  def __init__(self, device=None, api_strict_mode=False):
+    """Constructor.
 
-  def __init__(self, device=None):
+    Args:
+      device: If given, adb commands are only send to the device of this ID.
+          Otherwise commands are sent to all attached devices.
+      api_strict_mode: A boolean indicating whether fatal errors should be
+          raised if this API is used improperly.
+    """
     adb_dir = os.path.dirname(constants.ADB_PATH)
     if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):
       # Required by third_party/android_testrunner to call directly 'adb'.
@@ -253,6 +258,18 @@ class AndroidCommands(object):
     self._actual_push_size = 0
     self._external_storage = ''
     self._util_wrapper = ''
+    self._api_strict_mode = api_strict_mode
+    self._system_properties = system_properties.SystemProperties(self.Adb())
+
+    if not self._api_strict_mode:
+      logging.warning(
+          'API STRICT MODE IS DISABLED.\n'
+          'It should be enabled as soon as possible as it will eventually '
+          'become the default.')
+
+  @property
+  def system_properties(self):
+    return self._system_properties
 
   def _LogShell(self, cmd):
     """Logs the adb shell command."""
@@ -264,6 +281,7 @@ class AndroidCommands(object):
 
   def Adb(self):
     """Returns our AdbInterface to avoid us wrapping all its methods."""
+    # TODO(tonyg): Disable this method when in _api_strict_mode.
     return self._adb
 
   def GetDevice(self):
@@ -352,6 +370,7 @@ class AndroidCommands(object):
       return
     if full_reboot or not self.IsRootEnabled():
       self._adb.SendCommand('reboot')
+      self._system_properties = system_properties.SystemProperties(self.Adb())
       timeout = 300
       retries = 1
       # Wait for the device to disappear.
@@ -369,6 +388,7 @@ class AndroidCommands(object):
   def Shutdown(self):
     """Shuts down the device."""
     self._adb.SendCommand('reboot -p')
+    self._system_properties = system_properties.SystemProperties(self.Adb())
 
   def Uninstall(self, package):
     """Uninstalls the specified package from the device.
@@ -536,8 +556,7 @@ class AndroidCommands(object):
     attempts = 0
     wait_period = 5
     while not boot_completed and (attempts * wait_period) < wait_time:
-      output = self._adb.SendShellCommand('getprop sys.boot_completed',
-                                          retry_count=1)
+      output = self.system_properties['sys.boot_completed']
       output = output.strip()
       if output == '1':
         boot_completed = True
@@ -571,6 +590,34 @@ class AndroidCommands(object):
       raise errors.WaitForResponseTimedOutError(
           'SD card not ready after %s seconds' % timeout_time)
 
+  def _CheckCommandIsValid(self, command):
+    """Raises a ValueError if the command is not valid."""
+
+    # A dict of commands the user should not run directly and a mapping to the
+    # API they should use instead.
+    preferred_apis = {
+        'getprop': 'system_properties[<PROPERTY>]',
+        'setprop': 'system_properties[<PROPERTY>]',
+        'su': 'RunShellCommandWithSU()',
+        }
+
+    # A dict of commands to methods that may call them.
+    whitelisted_callers = {
+        'su': 'RunShellCommandWithSU',
+        }
+
+    base_command = shlex.split(command)[0]
+    if (base_command in preferred_apis and
+        (base_command not in whitelisted_callers or
+         whitelisted_callers[base_command] not in [
+          f[3] for f in inspect.stack()])):
+      error_msg = ('%s cannot be run directly. Instead use: %s' %
+                   (base_command, preferred_apis[base_command]))
+      if self._api_strict_mode:
+        raise ValueError(error_msg)
+      else:
+        logging.warning(error_msg)
+
   # It is tempting to turn this function into a generator, however this is not
   # possible without using a private (local) adb_shell instance (to ensure no
   # other command interleaves usage of it), which would defeat the main aim of
@@ -589,6 +636,7 @@ class AndroidCommands(object):
     Returns:
       list containing the lines of output received from running the command
     """
+    self._CheckCommandIsValid(command)
     self._LogShell(command)
     if "'" in command: logging.warning(command + " contains ' quotes")
     result = self._adb.SendShellCommand(
@@ -1000,9 +1048,7 @@ class AndroidCommands(object):
     return self.GetExternalStorage() + '/' + base_name % i
 
   def RunShellCommandWithSU(self, command, timeout_time=20, log_result=False):
-    return self.RunShellCommand('su -c %s' % command,
-                                timeout_time=timeout_time,
-                                log_result=log_result)
+    return self.RunShellCommand('su -c %s' % command, timeout_time, log_result)
 
   def CanAccessProtectedFileContents(self):
     """Returns True if Get/SetProtectedFileContents would work via "su".
@@ -1103,41 +1149,39 @@ class AndroidCommands(object):
 
     # Next, check the current runtime value is what we need, and
     # if not, set it and report that a reboot is required.
-    was_set = 'all' in self.RunShellCommand('getprop ' + JAVA_ASSERT_PROPERTY)
+    was_set = 'all' in self.system_properties[JAVA_ASSERT_PROPERTY]
     if was_set == enable:
       return False
-
-    self.RunShellCommand('setprop %s "%s"' % (JAVA_ASSERT_PROPERTY,
-                                              enable and 'all' or ''))
+    self.system_properties[JAVA_ASSERT_PROPERTY] = enable and 'all' or ''
     return True
 
   def GetBuildId(self):
     """Returns the build ID of the system (e.g. JRM79C)."""
-    build_id = self.RunShellCommand('getprop ro.build.id')[0]
+    build_id = self.system_properties['ro.build.id']
     assert build_id
     return build_id
 
   def GetBuildType(self):
     """Returns the build type of the system (e.g. eng)."""
-    build_type = self.RunShellCommand('getprop ro.build.type')[0]
+    build_type = self.system_properties['ro.build.type']
     assert build_type
     return build_type
 
   def GetBuildProduct(self):
     """Returns the build product of the device (e.g. maguro)."""
-    build_product = self.RunShellCommand('getprop ro.build.product')[0]
+    build_product = self.system_properties['ro.build.product']
     assert build_product
     return build_product
 
   def GetProductName(self):
     """Returns the product name of the device (e.g. takju)."""
-    name = self.RunShellCommand('getprop ro.product.name')[0]
+    name = self.system_properties['ro.product.name']
     assert name
     return name
 
   def GetBuildFingerprint(self):
     """Returns the build fingerprint of the device."""
-    build_fingerprint = self.RunShellCommand('getprop ro.build.fingerprint')[0]
+    build_fingerprint = self.system_properties['ro.build.fingerprint']
     assert build_fingerprint
     return build_fingerprint
 
@@ -1146,19 +1190,19 @@ class AndroidCommands(object):
 
     For example, "yakju-userdebug 4.1 JRN54F 364167 dev-keys".
     """
-    description = self.RunShellCommand('getprop ro.build.description')[0]
+    description = self.system_properties['ro.build.description']
     assert description
     return description
 
   def GetProductModel(self):
     """Returns the name of the product model (e.g. "Galaxy Nexus") """
-    model = self.RunShellCommand('getprop ro.product.model')[0]
+    model = self.system_properties['ro.product.model']
     assert model
     return model
 
   def GetWifiIP(self):
     """Returns the wifi IP on the device."""
-    wifi_ip = self.RunShellCommand('getprop dhcp.wlan0.ipaddress')[0]
+    wifi_ip = self.system_properties['dhcp.wlan0.ipaddress']
     # Do not assert here. Devices (e.g. emulators) may not have a WifiIP.
     return wifi_ip
 
@@ -1176,7 +1220,7 @@ class AndroidCommands(object):
 
   def GetSetupWizardStatus(self):
     """Returns the status of the device setup wizard (e.g. DISABLED)."""
-    status = self.RunShellCommand('getprop ro.setupwizard.mode')[0]
+    status = self.system_properties['ro.setupwizard.mode']
     # On some devices, the status is empty if not otherwise set. In such cases
     # the caller should expect an empty string to be returned.
     return status

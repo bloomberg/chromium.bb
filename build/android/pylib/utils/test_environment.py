@@ -25,7 +25,7 @@ def CleanupLeftoverProcesses():
   _KillWebServers()
   did_restart_host_adb = False
   for device in android_commands.GetAttachedDevices():
-    adb = android_commands.AndroidCommands(device)
+    adb = android_commands.AndroidCommands(device, api_strict_mode=True)
     # Make sure we restart the host adb server only once.
     if not did_restart_host_adb:
       adb.RestartAdbServer()
