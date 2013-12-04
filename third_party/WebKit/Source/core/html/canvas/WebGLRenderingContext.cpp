@@ -149,11 +149,14 @@ IntSize WebGLRenderingContext::oldestContextSize()
 
 void WebGLRenderingContext::activateContext(WebGLRenderingContext* context)
 {
+    unsigned removedContexts = 0;
+    while (activeContexts().size() >= maxGLActiveContexts && removedContexts < maxGLActiveContexts) {
+        forciblyLoseOldestContext("WARNING: Too many active WebGL contexts. Oldest context will be lost.");
+        removedContexts++;
+    }
+
     if (!activeContexts().contains(context))
         activeContexts().append(context);
-
-    if (activeContexts().size() > maxGLActiveContexts)
-        forciblyLoseOldestContext("WARNING: Too many active WebGL contexts. Oldest context will be lost.");
 }
 
 void WebGLRenderingContext::deactivateContext(WebGLRenderingContext* context, bool addToEvictedList)
@@ -672,6 +675,9 @@ void WebGLRenderingContext::initializeNewContext()
 
     m_context->setContextLostCallback(adoptPtr(new WebGLRenderingContextLostCallback(this)));
     m_context->setErrorMessageCallback(adoptPtr(new WebGLRenderingContextErrorMessageCallback(this)));
+
+    // This ensures that the context has a valid "lastFlushID" and won't be mistakenly identified as the "least recently used" context.
+    m_context->flush();
 
     activateContext(this);
 }
