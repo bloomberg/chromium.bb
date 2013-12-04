@@ -172,6 +172,7 @@ StickyKeysHandler::StickyKeysHandler(ui::EventFlags target_modifier_flag,
       current_state_(DISABLED),
       event_from_myself_(false),
       preparing_to_enable_(false),
+      scroll_delta_(0),
       delegate_(delegate) {
 }
 
@@ -223,11 +224,28 @@ bool StickyKeysHandler::HandleScrollEvent(ui::ScrollEvent* event) {
   if (event_from_myself_ || current_state_ == DISABLED)
     return false;
   DCHECK(current_state_ == ENABLED || current_state_ == LOCKED);
-
   preparing_to_enable_ = false;
-  AppendModifier(event);
-  if (current_state_ == ENABLED) {
+
+  // We detect a direction change if the current |scroll_delta_| is assigned
+  // and the offset of the current scroll event has the opposing sign.
+  bool direction_changed = false;
+  if (current_state_ == ENABLED && event->type() == ui::ET_SCROLL) {
+    int offset = event->y_offset();
+    if (scroll_delta_)
+      direction_changed = offset * scroll_delta_ <= 0;
+    scroll_delta_ = offset;
+  }
+
+  if (!direction_changed)
+    AppendModifier(event);
+
+  // We want to modify all the scroll events in the scroll sequence, which ends
+  // with a fling start event. We also stop when the scroll sequence changes
+  // direction.
+  if (current_state_ == ENABLED &&
+      (event->type() == ui::ET_SCROLL_FLING_START || direction_changed)) {
     current_state_ = DISABLED;
+    scroll_delta_ = 0;
     DispatchEventAndReleaseModifier(event);
     return true;
   }
@@ -268,6 +286,7 @@ bool StickyKeysHandler::HandleDisabledState(ui::KeyEvent* event) {
     case TARGET_MODIFIER_UP:
       if (preparing_to_enable_) {
         preparing_to_enable_ = false;
+        scroll_delta_ = 0;
         current_state_ = ENABLED;
         modifier_up_event_.reset(new ui::KeyEvent(*event));
         return true;

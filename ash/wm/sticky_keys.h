@@ -222,6 +222,11 @@ class ASH_EXPORT StickyKeysHandler {
   // the ENABLED state.
   bool preparing_to_enable_;
 
+  // Tracks the scroll direction of the current scroll sequence. Sticky keys
+  // stops modifying the scroll events of the sequence when the direction
+  // changes. If no sequence is tracked, the value is 0.
+  int scroll_delta_;
+
   // The modifier up key event to be sent on non modifier key on ENABLED state.
   scoped_ptr<ui::KeyEvent> modifier_up_event_;
 
