@@ -50,7 +50,7 @@ public:
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
     bool textRendererIsNeeded(const NodeRenderingContext&);
-    virtual RenderText* createTextRenderer(RenderStyle*);
+    RenderText* createTextRenderer(RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE FINAL;

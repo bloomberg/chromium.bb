@@ -682,6 +682,7 @@ input[type="radio"], input[type="checkbox"] {
 
 input[type="button"], input[type="submit"], input[type="reset"] {
     -webkit-appearance: push-button;
+    -webkit-user-select: none;
     white-space: pre
 }
 

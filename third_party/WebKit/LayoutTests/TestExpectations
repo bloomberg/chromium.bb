@@ -921,6 +921,11 @@ crbug.com/323639 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseli
 crbug.com/323639 css3/filters/effect-reference-subregion.html [ NeedsRebaseline ]
 crbug.com/323639 css3/filters/effect-reference.html [ NeedsRebaseline ]
 
+crbug.com/265699 editing/selection/3690703-2.html [ NeedsRebaseline ]
+crbug.com/265699 editing/selection/3690703.html [ NeedsRebaseline ]
+crbug.com/265699 editing/selection/3690719.html [ NeedsRebaseline ]
+crbug.com/265699 editing/selection/selection-button-text.html [ NeedsRebaseline ]
+
 crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.html [ ImageOnlyFailure ]
 
 crbug.com/316349 [ Mac Debug ] inspector-protocol/page/enable-disable.html [ Failure Pass ]
