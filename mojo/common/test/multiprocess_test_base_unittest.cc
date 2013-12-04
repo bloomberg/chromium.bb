@@ -5,8 +5,15 @@
 #include "mojo/common/test/multiprocess_test_base.h"
 
 #include "base/logging.h"
-// TODO(vtl): Remove build_config.h include when fully implemented on Windows.
 #include "build/build_config.h"
+#include "mojo/system/platform_channel_handle.h"
+
+#if defined(OS_POSIX)
+#include <fcntl.h>
+#include <unistd.h>
+
+#include "base/posix/eintr_wrapper.h"
+#endif
 
 namespace mojo {
 namespace {
@@ -29,7 +36,6 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(RunChild) {
 #if defined(OS_POSIX)
   CHECK(MultiprocessTestBaseTest::platform_client_channel.get());
   CHECK(MultiprocessTestBaseTest::platform_client_channel->is_valid());
-  // TODO(vtl): Check the client channel.
 #endif
   return 123;
 }
@@ -39,6 +45,73 @@ TEST_F(MultiprocessTestBaseTest, TestChildMainNotFound) {
   int result = WaitForChildShutdown();
   EXPECT_FALSE(result >= 0 && result <= 127);
 }
+
+// POSIX-specific test of passed channel ---------------------------------------
+
+#if defined(OS_POSIX)
+TEST_F(MultiprocessTestBaseTest, PassedChannelPosix) {
+  EXPECT_TRUE(platform_server_channel.get());
+  EXPECT_TRUE(platform_server_channel->is_valid());
+  StartChild("PassedChannelPosix");
+
+  // Take ownership of the FD.
+  mojo::system::PlatformChannelHandle channel =
+      platform_server_channel->PassHandle();
+  platform_server_channel.reset();
+  int fd = channel.fd;
+
+  // The FD should be non-blocking. Check this.
+  CHECK((fcntl(fd, F_GETFL) & O_NONBLOCK));
+  // We're lazy. Set it to block.
+  PCHECK(fcntl(fd, F_SETFL, 0) == 0);
+
+  // Write a byte.
+  const char c = 'X';
+  ssize_t write_size = HANDLE_EINTR(write(fd, &c, 1));
+  EXPECT_EQ(1, write_size);
+
+  // It'll echo it back to us, incremented.
+  char d = 0;
+  ssize_t read_size = HANDLE_EINTR(read(fd, &d, 1));
+  EXPECT_EQ(1, read_size);
+  EXPECT_EQ(c + 1, d);
+
+  // And return it, incremented again.
+  EXPECT_EQ(c + 2, WaitForChildShutdown());
+}
+
+MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannelPosix) {
+  CHECK(MultiprocessTestBaseTest::platform_client_channel.get());
+  CHECK(MultiprocessTestBaseTest::platform_client_channel->is_valid());
+
+  // Take ownership of the FD.
+  mojo::system::PlatformChannelHandle channel =
+      MultiprocessTestBaseTest::platform_client_channel->PassHandle();
+  MultiprocessTestBaseTest::platform_client_channel.reset();
+  int fd = channel.fd;
+
+  // The FD should still be non-blocking. Check this.
+  CHECK((fcntl(fd, F_GETFL) & O_NONBLOCK));
+  // We're lazy. Set it to block.
+  PCHECK(fcntl(fd, F_SETFL, 0) == 0);
+
+  // Read a byte.
+  char c = 0;
+  ssize_t read_size = HANDLE_EINTR(read(fd, &c, 1));
+  CHECK_EQ(read_size, 1);
+
+  // Write it back, incremented.
+  c++;
+  ssize_t write_size = HANDLE_EINTR(write(fd, &c, 1));
+  CHECK_EQ(write_size, 1);
+
+  PCHECK(close(fd) == 0);
+
+  // And return it, incremented again.
+  c++;
+  return static_cast<int>(c);
+}
+#endif  // defined(OS_POSIX)
 
 }  // namespace
 }  // namespace mojo
