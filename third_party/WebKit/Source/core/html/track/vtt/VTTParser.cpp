@@ -46,26 +46,35 @@ const double secondsPerMillisecond = 0.001;
 const double malformedTime = -1;
 const unsigned fileIdentifierLength = 6;
 
-String VTTParser::collectDigits(const String& input, unsigned* position)
+static unsigned scanDigits(const String& input, unsigned* position)
 {
-    StringBuilder digits;
+    unsigned startPosition = *position;
     while (*position < input.length() && isASCIIDigit(input[*position]))
-        digits.append(input[(*position)++]);
-    return digits.toString();
+        (*position)++;
+    return *position - startPosition;
 }
 
 unsigned VTTParser::collectDigitsToInt(const String& input, unsigned* position, int& number)
 {
-    String digits = collectDigits(input, position);
+    unsigned startPosition = *position;
+    unsigned numDigits = scanDigits(input, position);
+    if (!numDigits) {
+        number = 0;
+        return 0;
+    }
     bool validNumber;
-    number = digits.toInt(&validNumber);
-    // Since we know that |digits| only contain valid (ASCII) digits
-    // (disregarding the 'empty' case), the remaining failure mode for toInt()
-    // is overflow, so if |validNumber| is not true, then set |number| to the
-    // maximum int value.
-    if (!digits.isEmpty() && !validNumber)
+    if (input.is8Bit())
+        number = charactersToInt(input.characters8() + startPosition, numDigits, &validNumber);
+    else
+        number = charactersToInt(input.characters16() + startPosition, numDigits, &validNumber);
+
+    // Since we know that scanDigits only scanned valid (ASCII) digits (and
+    // hence that's what got passed to charactersToInt()), the remaining
+    // failure mode for charactersToInt() is overflow, so if |validNumber| is
+    // not true, then set |number| to the maximum int value.
+    if (!validNumber)
         number = std::numeric_limits<int>::max();
-    return digits.length();
+    return numDigits;
 }
 
 String VTTParser::collectWord(const String& input, unsigned* position)
@@ -91,21 +100,22 @@ float VTTParser::parseFloatPercentageValue(const String& value, bool& isValidSet
     }
 
     unsigned position = 0;
-
-    StringBuilder floatNumberAsString;
-    floatNumberAsString.append(VTTParser::collectDigits(value, &position));
-
+    unsigned digitsBeforeDot = scanDigits(value, &position);
+    unsigned digitsAfterDot = 0;
     if (value[position] == '.') {
-        floatNumberAsString.append(".");
         position++;
 
-        floatNumberAsString.append(VTTParser::collectDigits(value, &position));
+        digitsAfterDot = scanDigits(value, &position);
     }
-    float number = floatNumberAsString.toString().toFloat(&isValidSetting);
 
-    if (isValidSetting && (number <= 0 || number >= 100))
+    // At least one digit required.
+    if (!digitsBeforeDot && !digitsAfterDot) {
         isValidSetting = false;
+        return 0;
+    }
 
+    float number = value.toFloat();
+    isValidSetting = number >= 0 && number <= 100;
     return number;
 }
 

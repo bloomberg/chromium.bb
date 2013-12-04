@@ -133,7 +133,6 @@ private:
     void collectMetadataHeader(const String&);
     void createNewRegion(const String& headerValue);
 
-    static String collectDigits(const String&, unsigned*);
     static void skipWhiteSpace(const String&, unsigned*);
 
     BufferedLineReader m_lineReader;
