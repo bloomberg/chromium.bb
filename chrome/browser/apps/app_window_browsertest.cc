@@ -115,13 +115,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestoreAfterClose) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestoreAfterClose")) << message_;
 }
 
-// Flaky failures on mac_rel, see http://crbug.com/324915
-#if defined(OS_MACOSX)
-#define MAYBE_TestRestoreGeometryCacheChange DISABLED_TestRestoreGeometryCacheChange
-#else
-#define MAYBE_TestRestoreGeometryCacheChange TestRestoreGeometryCacheChange
-#endif
-IN_PROC_BROWSER_TEST_F(AppWindowAPI, MAYBE_TestRestoreGeometryCacheChange) {
+// Flaky failures on mac_rel and WinXP, see http://crbug.com/324915.
+IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestoreGeometryCacheChange) {
   // This test is similar to the other AppWindowAPI tests except that at some
   // point the app will send a 'ListenGeometryChange' message at which point the
   // test will check if the geometry cache entry for the test window has
