@@ -467,6 +467,8 @@ class MsvsSettings(object):
     ldflags.extend(self._GetAdditionalLibraryDirectories(
         'VCLinkerTool', config, gyp_to_build_path))
     ld('DelayLoadDLLs', prefix='/DELAYLOAD:')
+    ld('TreatLinkerWarningAsErrors', prefix='/WX',
+       map={'true': '', 'false': ':NO'})
     out = self.GetOutputName(config, expand_special)
     if out:
       ldflags.append('/OUT:' + out)

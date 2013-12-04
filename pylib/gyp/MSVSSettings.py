@@ -813,6 +813,7 @@ _Same(_link, 'UACExecutionLevel',
                     'HighestAvailable',  # /level='highestAvailable'
                     'RequireAdministrator']))  # /level='requireAdministrator'
 _Same(_link, 'MinimumRequiredVersion', _string)
+_Same(_link, 'TreatLinkerWarningAsErrors', _boolean)  # /WX
 
 
 # Options found in MSVS that have been renamed in MSBuild.
@@ -851,7 +852,6 @@ _MSBuildOnly(_link, 'LinkStatus', _boolean)  # /LTCG:STATUS
 _MSBuildOnly(_link, 'PreventDllBinding', _boolean)  # /ALLOWBIND
 _MSBuildOnly(_link, 'SupportNobindOfDelayLoadedDLL', _boolean)  # /DELAY:NOBIND
 _MSBuildOnly(_link, 'TrackerLogDirectory', _folder_name)
-_MSBuildOnly(_link, 'TreatLinkerWarningAsErrors', _boolean)  # /WX
 _MSBuildOnly(_link, 'MSDOSStubFileName', _file_name)  # /STUB Visible='false'
 _MSBuildOnly(_link, 'SectionAlignment', _integer)  # /ALIGN
 _MSBuildOnly(_link, 'SpecifySectionAttributes', _string)  # /SECTION
