@@ -72,7 +72,7 @@ protected:
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
-    virtual bool useFallbackContent() const { return false; }
+    virtual bool useFallbackContent() const;
     // Create or update the RenderWidget and return it, triggering layout if
     // necessary.
     virtual RenderWidget* renderWidgetForJSBindings() const;
@@ -104,12 +104,13 @@ private:
     virtual bool isPluginElement() const OVERRIDE;
 
     // Element functions:
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
     virtual bool supportsFocus() const OVERRIDE { return true; };
     virtual bool rendererIsFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
+    virtual void didAddShadowRoot(ShadowRoot&) OVERRIDE;
 
     // Return any existing RenderWidget without triggering relayout, or 0 if it
     // doesn't yet exist.

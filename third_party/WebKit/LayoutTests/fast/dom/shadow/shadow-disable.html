@@ -25,6 +25,9 @@ var elementsToSuccess = [
     document.createElement('a'),
     document.createElement('section'),
     document.createElement('input'),
+    document.createElement('applet'),
+    document.createElement('embed'),
+    document.createElement('object'),
 ];
 
 // See crbug.com/234020 .
@@ -39,8 +42,6 @@ var elementsToFail = [
     document.createElement('canvas'),
     document.createElement('meter'),
     document.createElement('progress'),
-    document.createElement('object'),
-    document.createElement('embed'),
     document.createElement('keygen'),
     document.createElement('video'),
     document.createElement('audio'),

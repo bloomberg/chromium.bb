@@ -27,6 +27,7 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/PluginDocument.h"
@@ -46,7 +47,9 @@ inline HTMLEmbedElement::HTMLEmbedElement(Document& document, bool createdByPars
 
 PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool createdByParser)
 {
-    return adoptRef(new HTMLEmbedElement(document, createdByParser));
+    RefPtr<HTMLEmbedElement> element = adoptRef(new HTMLEmbedElement(document, createdByParser));
+    element->ensureUserAgentShadowRoot();
+    return element.release();
 }
 
 static inline RenderWidget* findWidgetRenderer(const Node* n)

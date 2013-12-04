@@ -41,7 +41,7 @@ public:
 
     bool containsJavaApplet() const;
 
-    virtual bool useFallbackContent() const { return m_useFallbackContent; }
+    virtual bool useFallbackContent() const OVERRIDE;
     virtual void renderFallbackContent() OVERRIDE;
 
     // Implementations of FormAssociatedElement

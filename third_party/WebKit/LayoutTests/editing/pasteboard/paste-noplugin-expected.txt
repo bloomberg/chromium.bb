@@ -9,6 +9,8 @@ Original contents:
 "
 | <embed>
 |   src="http://localhost:8000/evil.swf"
+|   <shadow:root>
+|     <content>
 | "
 "
 | <object>
@@ -18,6 +20,10 @@ Original contents:
 |     value="http://localhost:8000/evil.swf"
 |   <embed>
 |     src="http://localhost:8000/evil.swf"
+|     <shadow:root>
+|       <content>
+|   <shadow:root>
+|     <content>
 | "
 "
 

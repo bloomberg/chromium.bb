@@ -25,6 +25,7 @@
 #include "core/html/HTMLAppletElement.h"
 
 #include "HTMLNames.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -49,7 +50,9 @@ HTMLAppletElement::HTMLAppletElement(Document& document, bool createdByParser)
 
 PassRefPtr<HTMLAppletElement> HTMLAppletElement::create(Document& document, bool createdByParser)
 {
-    return adoptRef(new HTMLAppletElement(document, createdByParser));
+    RefPtr<HTMLAppletElement> element = adoptRef(new HTMLAppletElement(document, createdByParser));
+    element->ensureUserAgentShadowRoot();
+    return element.release();
 }
 
 void HTMLAppletElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -75,14 +78,14 @@ bool HTMLAppletElement::isURLAttribute(const Attribute& attribute) const
 
 bool HTMLAppletElement::rendererIsNeeded(const RenderStyle& style)
 {
-    if (!fastHasAttribute(codeAttr))
+    if (!fastHasAttribute(codeAttr) && !hasAuthorShadowRoot())
         return false;
     return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
 RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
 {
-    if (!canEmbedJava())
+    if (!canEmbedJava() || hasAuthorShadowRoot())
         return RenderObject::createObject(this, style);
 
     return new RenderApplet(this);

@@ -30,6 +30,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/FormDataList.h"
@@ -64,7 +65,9 @@ inline HTMLObjectElement::~HTMLObjectElement()
 
 PassRefPtr<HTMLObjectElement> HTMLObjectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    return adoptRef(new HTMLObjectElement(document, form, createdByParser));
+    RefPtr<HTMLObjectElement> element = adoptRef(new HTMLObjectElement(document, form, createdByParser));
+    element->ensureUserAgentShadowRoot();
+    return element.release();
 }
 
 RenderWidget* HTMLObjectElement::existingRenderWidget() const
@@ -511,6 +514,11 @@ HTMLFormElement* HTMLObjectElement::virtualForm() const
 bool HTMLObjectElement::isInteractiveContent() const
 {
     return fastHasAttribute(usemapAttr);
+}
+
+bool HTMLObjectElement::useFallbackContent() const
+{
+    return HTMLPlugInElement::useFallbackContent() || m_useFallbackContent;
 }
 
 }

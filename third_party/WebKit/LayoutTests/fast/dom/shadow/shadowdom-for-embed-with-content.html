@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<body>
+<embed src="non-existent.swf">
+<!-- EMBED elements can't have children. -->
+</embed>
+
+<script>
+document.querySelector('embed').createShadowRoot().innerHTML = 'Get Flash Player. <content select="*">Or Shockwave Player?</content>';
+</script>
+</body>

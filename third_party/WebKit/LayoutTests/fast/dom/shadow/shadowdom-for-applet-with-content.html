@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<body>
+<applet archive="non-exsitent.jar">
+<param name="param1" value="value1">
+<div>Use awesome</div> <span>HotJava!</span>
+</applet>
+<script>
+document.querySelector('applet').createShadowRoot().innerHTML = "[<content select='span'></content>]";
+</script>
+</body>

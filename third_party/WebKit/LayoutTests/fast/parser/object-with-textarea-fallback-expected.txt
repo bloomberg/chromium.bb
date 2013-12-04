@@ -18,5 +18,7 @@
 |             id="inner-editor"
 |       "
 "
+|       <shadow:root>
+|         <content>
 |     "
 "

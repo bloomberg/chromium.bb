@@ -29,11 +29,13 @@
 #include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Document.h"
 #include "core/dom/PostAttachCallbacks.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
+#include "core/html/shadow/HTMLContentElement.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -502,6 +504,22 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
     }
 
     return frame->loader().mixedContentChecker()->canRunInsecureContent(document().securityOrigin(), url);
+}
+
+void HTMLPlugInElement::didAddUserAgentShadowRoot(ShadowRoot&)
+{
+    userAgentShadowRoot()->appendChild(HTMLContentElement::create(document()));
+}
+
+void HTMLPlugInElement::didAddShadowRoot(ShadowRoot& root)
+{
+    if (root.isOldestAuthorShadowRoot())
+        lazyReattachIfAttached();
+}
+
+bool HTMLPlugInElement::useFallbackContent() const
+{
+    return hasAuthorShadowRoot();
 }
 
 }
