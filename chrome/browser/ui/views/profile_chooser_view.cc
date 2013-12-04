@@ -418,7 +418,9 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     signin::Source source = (view_to_display == GAIA_SIGNIN_VIEW) ?
         signin::SOURCE_AVATAR_BUBBLE_SIGN_IN :
         signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
-    web_view->LoadInitialURL(GURL(signin::GetPromoURL(source, false)));
+    GURL url(signin::GetPromoURL(
+        source, false /* auto_close */, true /* is_constrained */));
+    web_view->LoadInitialURL(url);
     layout->StartRow(1, 0);
     layout->AddView(web_view);
     layout->set_minimum_size(

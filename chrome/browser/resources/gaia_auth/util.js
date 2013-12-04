@@ -42,3 +42,12 @@ function appendParam(url, key, value) {
     return url + '?' + param;
   return url + '&' + param;
 }
+
+/**
+ * Creates a new URL by striping all query parameters.
+ * @param {string} url The original URL.
+ * @return {string} The new URL with all query parameters stripped.
+ */
+function stripParams(url) {
+  return url.substring(0, url.indexOf('?')) || url;
+}

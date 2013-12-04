@@ -17,13 +17,16 @@
     "success.js",
     "util.js"
   ],
-  // cookies for getting hash passed back from GAIA on login success
+  // <all_urls> for intercepting all URL requests in the main frame, and
+  //     switching to a full tab if needed.
+  // cookies for getting hash passed back from GAIA on login success.
   // tabs for calling current webui's login. This might not be needed once
-  //     we have extension API
+  //     we have extension API.
+  // webview for interacting with the GAIA sign in page loaded in a webview.
   "permissions": [
+      "<all_urls>",
       "cookies",
       "tabs",
-      "chrome://oobe/",
       "webview"
   ]
 }

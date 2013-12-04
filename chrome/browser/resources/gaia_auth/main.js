@@ -53,11 +53,12 @@ Authenticator.prototype = {
     this.inputEmail_ = params.email;
     this.service_ = params.service || this.SERVICE_ID;
     this.continueUrl_ = params.continueUrl || this.CONTINUE_URL;
-    this.continueUrlWithoutParams_ =
-        this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
-        this.continueUrl_;
-    this.inlineMode_ = params.inlineMode;
+    this.continueUrlWithoutParams_ = stripParams(this.continueUrl_);
+    this.inlineMode_ = params.inlineMode == '1';
+    this.constrained_ = params.constrained == '1';
     this.partitionId_ = params.partitionId || '';
+    this.initialFrameUrl_ = params.frameUrl || this.constructInitialFrameUrl_();
+    this.initialFrameUrlWithoutParams_ = stripParams(this.initialFrameUrl_);
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
     document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
@@ -77,7 +78,7 @@ Authenticator.prototype = {
     return msg.origin == this.parentPage_;
   },
 
-  getFrameUrl_: function() {
+  constructInitialFrameUrl_: function() {
     var url = this.gaiaUrl_ + this.gaiaPath_;
 
     url = appendParam(url, 'service', this.service_);
@@ -101,14 +102,6 @@ Authenticator.prototype = {
     window.parent.postMessage(msg, this.parentPage_);
 
     if (gaiaFrame.src.lastIndexOf(
-        this.gaiaUrl_ + this.gaiaPath_, 0) == 0) {
-      gaiaFrame.executeScript({file: 'inline_injected.js'}, function() {
-        // Send an initial message to gaia so that it has an JavaScript
-        // reference to the embedder.
-        gaiaFrame.contentWindow.postMessage('', gaiaFrame.src);
-      });
-      this.onLoginUILoaded();
-    } else if (gaiaFrame.src.lastIndexOf(
         this.continueUrlWithoutParams_, 0) == 0) {
       // Detect when login is finished by the load stop event of the continue
       // URL. Cannot reuse the login complete flow in success.html, because
@@ -116,26 +109,63 @@ Authenticator.prototype = {
       gaiaFrame.hidden = true;
       msg = {'method': 'completeLogin'};
       window.parent.postMessage(msg, this.parentPage_);
+      return;
+    }
+
+    if (gaiaFrame.src.lastIndexOf(this.gaiaUrl_, 0) == 0) {
+      gaiaFrame.executeScript({file: 'inline_injected.js'}, function() {
+        // Send an initial message to gaia so that it has an JavaScript
+        // reference to the embedder.
+        gaiaFrame.contentWindow.postMessage('', gaiaFrame.src);
+      });
+    }
+
+    if (gaiaFrame.src.lastIndexOf(this.initialFrameUrlWithoutParams_, 0) == 0) {
+      this.onLoginUILoaded();
     }
   },
 
   /**
    * Callback when the gaia webview attempts to open a new window.
-  */
+   */
   onWebviewNewWindow_: function(gaiaFrame, e) {
     window.open(e.targetUrl, '_blank');
     e.window.discard();
   },
 
+  onWebviewRequestCompleted_: function(details) {
+    if (details.url.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
+      return;
+    }
+
+    var headers = details.responseHeaders;
+    for (var i = 0; headers && i < headers.length; ++i) {
+      if (headers[i].name.toLowerCase() == 'google-accounts-embedded') {
+        return;
+      }
+    }
+    var msg = {
+      'method': 'switchToFullTab',
+      'url': details.url
+    };
+    window.parent.postMessage(msg, this.parentPage_);
+  },
+
   loadFrame_: function() {
     var gaiaFrame = $('gaia-frame');
     gaiaFrame.partition = this.partitionId_;
-    gaiaFrame.src = this.getFrameUrl_();
+    gaiaFrame.src = this.initialFrameUrl_;
     if (this.inlineMode_) {
       gaiaFrame.addEventListener(
           'loadstop', this.onWebviewLoadstop_.bind(this, gaiaFrame));
       gaiaFrame.addEventListener(
           'newwindow', this.onWebviewNewWindow_.bind(this, gaiaFrame));
+    }
+    if (this.constrained_) {
+      gaiaFrame.request.onCompleted.addListener(
+          this.onWebviewRequestCompleted_.bind(this),
+          {urls: ['<all_urls>'], types: ['main_frame']},
+          ['responseHeaders']);
     }
   },
 

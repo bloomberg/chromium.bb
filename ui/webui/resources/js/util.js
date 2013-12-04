@@ -120,6 +120,26 @@ function parseQueryParams(location) {
   return params;
 }
 
+/**
+ * Creates a new URL by appending or replacing the given query key and value.
+ * Not supporting URL with username and password.
+ * @param {object} location The original URL.
+ * @param {string} key The query parameter name.
+ * @param {string} value The query parameter value.
+ * @return {string} The constructed new URL.
+ */
+function setQueryParam(location, key, value) {
+  var query = parseQueryParams(location);
+  query[encodeURIComponent(key)] = encodeURIComponent(value);
+
+  var newQuery = '';
+  for (var q in query) {
+    newQuery += (newQuery ? '&' : '?') + q + '=' + query[q];
+  }
+
+  return location.origin + location.pathname + newQuery + location.hash;
+}
+
 function findAncestorByClass(el, className) {
   return findAncestor(el, function(el) {
     if (el.classList)

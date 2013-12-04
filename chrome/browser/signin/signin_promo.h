@@ -55,7 +55,10 @@ GURL GetLandingURL(const char* option, int value);
 // |source| identifies from where the sign in promo is being called, and is
 // used to record sync promo UMA stats in the context of the source.
 // |auto_close| whether to close the sign in promo automatically when done.
+// |is_constrained} whether to load the URL in a constrained window, false
+// by default.
 GURL GetPromoURL(Source source, bool auto_close);
+GURL GetPromoURL(Source source, bool auto_close, bool is_constrained);
 
 // Gets the next page URL from the query portion of the sign in promo URL.
 GURL GetNextPageURLForPromoURL(const GURL& url);

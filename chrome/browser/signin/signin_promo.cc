@@ -47,6 +47,7 @@ namespace {
 const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
 const char kSignInPromoQueryKeyContinue[] = "continue";
 const char kSignInPromoQueryKeySource[] = "source";
+const char kSignInPromoQueryKeyConstrained[] = "constrained";
 
 // Gaia cannot support about:blank as a continue URL, so using a hosted blank
 // page instead.
@@ -174,6 +175,10 @@ GURL GetLandingURL(const char* option, int value) {
 }
 
 GURL GetPromoURL(Source source, bool auto_close) {
+  return GetPromoURL(source, auto_close, false /* is_constrained */);
+}
+
+GURL GetPromoURL(Source source, bool auto_close, bool is_constrained) {
   DCHECK_NE(SOURCE_UNKNOWN, source);
 
   bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -182,8 +187,9 @@ GURL GetPromoURL(Source source, bool auto_close) {
     std::string url(chrome::kChromeUIChromeSigninURL);
     base::StringAppendF(&url, "?%s=%d", kSignInPromoQueryKeySource, source);
     if (auto_close)
-      base::StringAppendF(
-          &url, "&%s=1", kSignInPromoQueryKeyAutoClose);
+      base::StringAppendF(&url, "&%s=1", kSignInPromoQueryKeyAutoClose);
+    if (is_constrained)
+      base::StringAppendF(&url, "&%s=1", kSignInPromoQueryKeyConstrained);
     return GURL(url);
   }
 

@@ -111,6 +111,9 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     web_ui()->RegisterMessageCallback("completeLogin",
         base::Bind(&InlineLoginUIHandler::HandleCompleteLogin,
                    base::Unretained(this)));
+    web_ui()->RegisterMessageCallback("switchToFullTab",
+        base::Bind(&InlineLoginUIHandler::HandleSwitchToFullTab,
+                   base::Unretained(this)));
   }
 
  private:
@@ -173,8 +176,21 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       if (!email.empty())
         params.SetString("email", email);
 
-      partition_id_ =
-          "gaia-webview-" + base::IntToString(next_partition_id.GetNext());
+      std::string frame_url;
+      net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
+      if (!frame_url.empty())
+        params.SetString("frameUrl", frame_url);
+
+      std::string is_constrained;
+      net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
+      if (!is_constrained.empty())
+        params.SetString("constrained", is_constrained);
+
+      net::GetValueForKeyInQuery(current_url, "partitionId", &partition_id_);
+      if (partition_id_.empty()) {
+        partition_id_ =
+            "gaia-webview-" + base::IntToString(next_partition_id.GetNext());
+      }
       params.SetString("partitionId", partition_id_);
     }
 #endif // OS_CHROMEOS
@@ -185,6 +201,26 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
   // JS callback:
   void HandleInitialize(const base::ListValue* args) {
     LoadAuthExtension();
+  }
+
+  // JS callback:
+  void HandleSwitchToFullTab(const base::ListValue* args) {
+    string16 url_str;
+    CHECK(args->GetString(0, &url_str));
+
+    content::WebContents* web_contents = web_ui()->GetWebContents();
+    GURL main_frame_url(web_contents->GetURL());
+    main_frame_url = net::AppendOrReplaceQueryParameter(
+        main_frame_url, "frameUrl", UTF16ToASCII(url_str));
+    main_frame_url = net::AppendOrReplaceQueryParameter(
+        main_frame_url, "partitionId", partition_id_);
+    chrome::NavigateParams params(
+        profile_,
+        net::AppendOrReplaceQueryParameter(main_frame_url, "constrained", "0"),
+        content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+    chrome::Navigate(&params);
+
+    web_ui()->CallJavascriptFunction("inline.login.closeDialog");
   }
 
   void HandleCompleteLogin(const base::ListValue* args) {
