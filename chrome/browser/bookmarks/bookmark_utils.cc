@@ -84,6 +84,11 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
           net::UnescapeRule::NORMAL, NULL, NULL, NULL), words);
 }
 
+// This is used with a tree iterator to skip subtrees which are not visible.
+bool PruneInvisibleFolders(const BookmarkNode* node) {
+  return !node->IsVisible();
+}
+
 }  // namespace
 
 namespace bookmark_utils {
@@ -141,17 +146,12 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
   return BookmarkNodeData::ClipboardContainsBookmarks();
 }
 
-// This is used with a tree iterator to skip subtrees which are not visible.
-static bool PruneInvisibleFolders(const BookmarkNode* node) {
-  return !node->IsVisible();
-}
-
 std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
     BookmarkModel* model,
     size_t max_count) {
   std::vector<const BookmarkNode*> nodes;
-  ui::TreeNodeIterator<const BookmarkNode>
-      iterator(model->root_node(), PruneInvisibleFolders);
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node(),
+                                                    PruneInvisibleFolders);
 
   while (iterator.has_next()) {
     const BookmarkNode* parent = iterator.Next();
