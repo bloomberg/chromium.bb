@@ -29,7 +29,6 @@
 #include "core/dom/DOMStringList.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBFactory.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 
@@ -85,12 +84,6 @@ IDBDatabase* IDBAny::idbDatabase() const
 {
     ASSERT(m_type == IDBDatabaseType);
     return m_idbDatabase.get();
-}
-
-IDBFactory* IDBAny::idbFactory() const
-{
-    ASSERT(m_type == IDBFactoryType);
-    return m_idbFactory.get();
 }
 
 IDBIndex* IDBAny::idbIndex() const
@@ -158,13 +151,6 @@ IDBAny::IDBAny(PassRefPtr<IDBCursor> value)
 IDBAny::IDBAny(PassRefPtr<IDBDatabase> value)
     : m_type(IDBDatabaseType)
     , m_idbDatabase(value)
-    , m_integer(0)
-{
-}
-
-IDBAny::IDBAny(PassRefPtr<IDBFactory> value)
-    : m_type(IDBFactoryType)
-    , m_idbFactory(value)
     , m_integer(0)
 {
 }

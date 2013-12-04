@@ -41,7 +41,6 @@ class DOMStringList;
 class IDBCursor;
 class IDBCursorWithValue;
 class IDBDatabase;
-class IDBFactory;
 class IDBIndex;
 class IDBKeyPath;
 class IDBObjectStore;
@@ -84,7 +83,6 @@ public:
         IDBCursorType,
         IDBCursorWithValueType,
         IDBDatabaseType,
-        IDBFactoryType,
         IDBIndexType,
         IDBObjectStoreType,
         IDBTransactionType,
@@ -102,7 +100,6 @@ public:
     IDBCursor* idbCursor() const;
     IDBCursorWithValue* idbCursorWithValue() const;
     IDBDatabase* idbDatabase() const;
-    IDBFactory* idbFactory() const;
     IDBIndex* idbIndex() const;
     IDBObjectStore* idbObjectStore() const;
     IDBTransaction* idbTransaction() const;
@@ -117,7 +114,6 @@ private:
     explicit IDBAny(PassRefPtr<DOMStringList>);
     explicit IDBAny(PassRefPtr<IDBCursor>);
     explicit IDBAny(PassRefPtr<IDBDatabase>);
-    explicit IDBAny(PassRefPtr<IDBFactory>);
     explicit IDBAny(PassRefPtr<IDBIndex>);
     explicit IDBAny(PassRefPtr<IDBObjectStore>);
     explicit IDBAny(PassRefPtr<IDBTransaction>);
@@ -134,7 +130,6 @@ private:
     const RefPtr<DOMStringList> m_domStringList;
     const RefPtr<IDBCursor> m_idbCursor;
     const RefPtr<IDBDatabase> m_idbDatabase;
-    const RefPtr<IDBFactory> m_idbFactory;
     const RefPtr<IDBIndex> m_idbIndex;
     const RefPtr<IDBObjectStore> m_idbObjectStore;
     const RefPtr<IDBTransaction> m_idbTransaction;

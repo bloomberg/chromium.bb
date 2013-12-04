@@ -30,7 +30,6 @@
 #include "V8IDBCursor.h"
 #include "V8IDBCursorWithValue.h"
 #include "V8IDBDatabase.h"
-#include "V8IDBFactory.h"
 #include "V8IDBIndex.h"
 #include "V8IDBKeyRange.h"
 #include "V8IDBObjectStore.h"
@@ -123,8 +122,6 @@ v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> creationCo
         return toV8(impl->idbCursorWithValue(), creationContext, isolate);
     case IDBAny::IDBDatabaseType:
         return toV8(impl->idbDatabase(), creationContext, isolate);
-    case IDBAny::IDBFactoryType:
-        return toV8(impl->idbFactory(), creationContext, isolate);
     case IDBAny::IDBIndexType:
         return toV8(impl->idbIndex(), creationContext, isolate);
     case IDBAny::IDBObjectStoreType:
