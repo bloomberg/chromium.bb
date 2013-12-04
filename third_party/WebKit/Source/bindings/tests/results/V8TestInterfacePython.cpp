@@ -90,11 +90,14 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePythonTemplate(v
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfacePython", v8::Local<v8::FunctionTemplate>(), V8TestInterfacePython::internalFieldCount,
-        0, 0,
-        0, 0,
-        0, 0,
-        isolate, currentWorldType);
+    if (!RuntimeEnabledFeatures::featureNameEnabled())
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", v8::Local<v8::FunctionTemplate>(), V8TestInterfacePython::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
+    else
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfacePython", v8::Local<v8::FunctionTemplate>(), V8TestInterfacePython::internalFieldCount,
+            0, 0,
+            0, 0,
+            0, 0,
+            isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();

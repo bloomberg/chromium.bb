@@ -92,6 +92,7 @@ def generate_interface(interface):
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
+        'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'v8_class': v8_utilities.v8_class_name(interface),
     }
 

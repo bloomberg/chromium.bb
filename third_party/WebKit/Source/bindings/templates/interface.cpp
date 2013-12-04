@@ -202,6 +202,14 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
+    {% if runtime_enabled_function %}
+    if (!{{runtime_enabled_function}}())
+        {# FIXME: support inheritance #}
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", v8::Local<v8::FunctionTemplate>(), {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
+    else
+    {% endif %}
+    {% set runtime_enabled_indent = 4 if runtime_enabled_function else 0 %}
+    {% filter indent(runtime_enabled_indent, true) %}
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class}}::internalFieldCount,
         {# Test needed as size 0 constant arrays are not allowed in VC++ #}
         {% set attributes_name, attributes_length =
@@ -220,6 +228,8 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
         {{accessors_name}}, {{accessors_length}},
         {{methods_name}}, {{methods_length}},
         isolate, currentWorldType);
+    {% endfilter %}
+
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();

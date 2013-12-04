@@ -4515,19 +4515,21 @@ static v8::Handle<v8::FunctionTemplate> Configure${v8ClassName}Template(v8::Hand
 END
 
     # Define constants, attributes, accessors and operations.
+    my $runtimeEnabledIndent = "";
     if ($interface->extendedAttributes->{"RuntimeEnabled"}) {
         my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($interface);
+        $runtimeEnabledIndent = "    ";
         $code .= <<END;
     if (!${runtimeEnabledFunction}())
         defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
     else
 END
     }
-    $code .=  "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,\n";
-    $code .= "        " . ($hasAttributes ? "${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes),\n" : "0, 0,\n");
-    $code .= "        " . ($hasAccessors ? "${v8ClassName}Accessors, WTF_ARRAY_LENGTH(${v8ClassName}Accessors),\n" : "0, 0,\n");
-    $code .= "        " . ($hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods),\n" : "0, 0,\n");
-    $code .= "        isolate, currentWorldType);\n";
+    $code .= $runtimeEnabledIndent . "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,\n";
+    $code .= $runtimeEnabledIndent . "        " . ($hasAttributes ? "${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes),\n" : "0, 0,\n");
+    $code .= $runtimeEnabledIndent . "        " . ($hasAccessors ? "${v8ClassName}Accessors, WTF_ARRAY_LENGTH(${v8ClassName}Accessors),\n" : "0, 0,\n");
+    $code .= $runtimeEnabledIndent . "        " . ($hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods),\n" : "0, 0,\n");
+    $code .= $runtimeEnabledIndent . "        isolate, currentWorldType);\n";
 
     AddToImplIncludes("wtf/UnusedParam.h");
     $code .= "    UNUSED_PARAM(defaultSignature);\n";

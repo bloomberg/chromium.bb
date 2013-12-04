@@ -35,5 +35,6 @@
     CustomToV8,
     GenerateVisitDOMWrapper=ownerNode,
     ImplementedAs=TestInterfacePythonImplementation,
+    RuntimeEnabled=FeatureName,
 ] interface TestInterfacePython {
 };
