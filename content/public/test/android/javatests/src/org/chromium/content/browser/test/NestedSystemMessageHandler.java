@@ -109,9 +109,9 @@ class NestedSystemMessageHandler {
                 if (target == null) {
                     // No target is a magic identifier for the quit message.
                     quitLoop = true;
+                } else {
+                    target.dispatchMessage(msg);
                 }
-
-                target.dispatchMessage(msg);
                 msg.recycle();
             } else {
                 quitLoop = true;
