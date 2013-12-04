@@ -13,19 +13,20 @@ from functools import partial
 from template_expander import UseJinja
 
 _kind_to_default_value = {
-  mojom.BOOL:   "false",
-  mojom.INT8:   "0",
-  mojom.UINT8:  "0",
-  mojom.INT16:  "0",
-  mojom.UINT16: "0",
-  mojom.INT32:  "0",
-  mojom.UINT32: "0",
-  mojom.FLOAT:  "0",
-  mojom.HANDLE: "core.kInvalidHandle",
-  mojom.INT64:  "0",
-  mojom.UINT64: "0",
-  mojom.DOUBLE: "0",
-  mojom.STRING: '""',
+  mojom.BOOL:    "false",
+  mojom.INT8:    "0",
+  mojom.UINT8:   "0",
+  mojom.INT16:   "0",
+  mojom.UINT16:  "0",
+  mojom.INT32:   "0",
+  mojom.UINT32:  "0",
+  mojom.FLOAT:   "0",
+  mojom.HANDLE:  "core.kInvalidHandle",
+  mojom.MSGPIPE: "core.kInvalidHandle",
+  mojom.INT64:   "0",
+  mojom.UINT64:  "0",
+  mojom.DOUBLE:  "0",
+  mojom.STRING:  '""',
 }
 
 
@@ -51,19 +52,20 @@ def PayloadSize(packed):
 
 
 _kind_to_javascript_type = {
-  mojom.BOOL:   "codec.Uint8",
-  mojom.INT8:   "codec.Int8",
-  mojom.UINT8:  "codec.Uint8",
-  mojom.INT16:  "codec.Int16",
-  mojom.UINT16: "codec.Uint16",
-  mojom.INT32:  "codec.Int32",
-  mojom.UINT32: "codec.Uint32",
-  mojom.FLOAT:  "codec.Float",
-  mojom.HANDLE: "codec.Handle",
-  mojom.INT64:  "codec.Int64",
-  mojom.UINT64: "codec.Uint64",
-  mojom.DOUBLE: "codec.Double",
-  mojom.STRING: "codec.String",
+  mojom.BOOL:    "codec.Uint8",
+  mojom.INT8:    "codec.Int8",
+  mojom.UINT8:   "codec.Uint8",
+  mojom.INT16:   "codec.Int16",
+  mojom.UINT16:  "codec.Uint16",
+  mojom.INT32:   "codec.Int32",
+  mojom.UINT32:  "codec.Uint32",
+  mojom.FLOAT:   "codec.Float",
+  mojom.HANDLE:  "codec.Handle",
+  mojom.MSGPIPE: "codec.Handle",
+  mojom.INT64:   "codec.Int64",
+  mojom.UINT64:  "codec.Uint64",
+  mojom.DOUBLE:  "codec.Double",
+  mojom.STRING:  "codec.String",
 }
 
 
@@ -78,19 +80,20 @@ def GetJavaScriptType(kind):
 
 
 _kind_to_decode_snippet = {
-  mojom.BOOL:   "read8() & 1",
-  mojom.INT8:   "read8()",
-  mojom.UINT8:  "read8()",
-  mojom.INT16:  "read16()",
-  mojom.UINT16: "read16()",
-  mojom.INT32:  "read32()",
-  mojom.UINT32: "read32()",
-  mojom.FLOAT:  "decodeFloat()",
-  mojom.HANDLE: "decodeHandle()",
-  mojom.INT64:  "read64()",
-  mojom.UINT64: "read64()",
-  mojom.DOUBLE: "decodeDouble()",
-  mojom.STRING: "decodeStringPointer()",
+  mojom.BOOL:    "read8() & 1",
+  mojom.INT8:    "read8()",
+  mojom.UINT8:   "read8()",
+  mojom.INT16:   "read16()",
+  mojom.UINT16:  "read16()",
+  mojom.INT32:   "read32()",
+  mojom.UINT32:  "read32()",
+  mojom.FLOAT:   "decodeFloat()",
+  mojom.HANDLE:  "decodeHandle()",
+  mojom.MSGPIPE: "decodeHandle()",
+  mojom.INT64:   "read64()",
+  mojom.UINT64:  "read64()",
+  mojom.DOUBLE:  "decodeDouble()",
+  mojom.STRING:  "decodeStringPointer()",
 }
 
 
@@ -104,19 +107,20 @@ def DecodeSnippet(kind):
 
 
 _kind_to_encode_snippet = {
-  mojom.BOOL:   "write8(1 & ",
-  mojom.INT8:   "write8(",
-  mojom.UINT8:  "write8(",
-  mojom.INT16:  "write16(",
-  mojom.UINT16: "write16(",
-  mojom.INT32:  "write32(",
-  mojom.UINT32: "write32(",
-  mojom.FLOAT:  "encodeFloat(",
-  mojom.HANDLE: "encodeHandle(",
-  mojom.INT64:  "write64(",
-  mojom.UINT64: "write64(",
-  mojom.DOUBLE: "encodeDouble(",
-  mojom.STRING: "encodeStringPointer(",
+  mojom.BOOL:    "write8(1 & ",
+  mojom.INT8:    "write8(",
+  mojom.UINT8:   "write8(",
+  mojom.INT16:   "write16(",
+  mojom.UINT16:  "write16(",
+  mojom.INT32:   "write32(",
+  mojom.UINT32:  "write32(",
+  mojom.FLOAT:   "encodeFloat(",
+  mojom.HANDLE:  "encodeHandle(",
+  mojom.MSGPIPE: "encodeHandle(",
+  mojom.INT64:   "write64(",
+  mojom.UINT64:  "write64(",
+  mojom.DOUBLE:  "encodeDouble(",
+  mojom.STRING:  "encodeStringPointer(",
 }
 
 

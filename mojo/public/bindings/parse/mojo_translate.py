@@ -23,7 +23,8 @@ def MapKind(kind):
                   'float': 'f',
                   'double': 'd',
                   'string': 's',
-                  'handle': 'h' }
+                  'handle': 'h',
+                  'handle<message_pipe>': 'h:m' }
   if kind.endswith('[]'):
     return 'a:' + MapKind(kind[0:len(kind)-2])
   if kind in map_to_kind:

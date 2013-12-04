@@ -32,6 +32,7 @@
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/proxy_implementation',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_builder_definition',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_declaration',
+        '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_destructor',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_definition',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_serialization',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_serialization_definition',

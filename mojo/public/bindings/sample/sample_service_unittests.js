@@ -34,10 +34,7 @@ define([
       data[i] = data.length - i;
     }
 
-    var files = new Array(4);
-    for (var i = 0; i < files.length; ++i) {
-      files[i] = 0xFFFF - i;
-    }
+    var source = 0xFFFF;  // Invent a dummy handle.
 
     var foo = new sample.Foo();
     foo.name = "foopy";
@@ -49,7 +46,7 @@ define([
     foo.bar = bar;
     foo.extra_bars = extra_bars;
     foo.data = data;
-    foo.files = files;
+    foo.source = source;
     return foo;
   }
 
@@ -77,9 +74,7 @@ define([
     for (var i = 0; i < foo.data.length; ++i)
       expect(foo.data[i]).toBe(foo.data.length - i);
 
-    expect(foo.files.length).toBe(4);
-    for (var i = 0; i < foo.files.length; ++i)
-      expect(foo.files[i]).toBe(0xFFFF - i);
+    expect(foo.source).toBe(0xFFFF);
   }
 
   function ServiceImpl() {

@@ -46,6 +46,8 @@ class CPPGenerator(mojom_generator.Generator):
     Template(" +\n      mojo::internal::ComputeSizeOf($NAME->$FIELD())")
   struct_serialization_clone_template = Template(
       "  clone->set_$FIELD(mojo::internal::Clone($NAME->$FIELD(), buf));")
+  struct_serialization_handle_release_template = Template(
+      "  (void) $NAME->$FIELD();")
   struct_serialization_encode_template = Template(
       "  Encode(&$NAME->${FIELD}_, handles);")
   struct_serialization_encode_handle_template = Template(
@@ -54,9 +56,16 @@ class CPPGenerator(mojom_generator.Generator):
       "  if (!Decode(&$NAME->${FIELD}_, message))\n"
       "    return false;")
   struct_serialization_decode_handle_template = Template(
-      "  if (!DecodeHandle(&$NAME->${FIELD}_, message.handles))\n"
+      "  if (!DecodeHandle(&$NAME->${FIELD}_, &message->handles))\n"
       "    return false;")
-  param_set_template = Template("  params->set_$NAME($NAME);")
+  struct_destructor_body_template = Template(
+      "mojo::MakeScopedHandle(data->$FIELD());")
+  close_handles_template = Template(
+      "  mojo::internal::CloseHandles($NAME->${FIELD}_.ptr);")
+  param_set_template = Template(
+      "  params->set_$NAME($NAME);")
+  param_handle_set_template = Template(
+      "  params->set_$NAME($NAME.release());")
   param_struct_set_template = Template(
       "  params->set_$NAME(\n"
       "      mojo::internal::Clone(mojo::internal::Unwrap($NAME),\n"
@@ -66,6 +75,7 @@ class CPPGenerator(mojom_generator.Generator):
       "      mojo::internal::Unwrap($NAME));")
   field_template = Template("  $TYPE ${FIELD}_;")
   bool_field_template = Template("  uint8_t ${FIELD}_ : 1;")
+  handle_field_template = Template("  mutable $TYPE ${FIELD}_;")
   setter_template = \
       Template("  void set_$FIELD($TYPE $FIELD) { ${FIELD}_ = $FIELD; }")
   ptr_setter_template = \
@@ -74,34 +84,44 @@ class CPPGenerator(mojom_generator.Generator):
       Template("  $TYPE $FIELD() const { return ${FIELD}_; }")
   ptr_getter_template = \
       Template("  const $TYPE $FIELD() const { return ${FIELD}_.ptr; }")
+  handle_getter_template = \
+      Template("  $TYPE $FIELD() const { " \
+               "return mojo::internal::FetchAndReset(&${FIELD}_); }")
   wrapper_setter_template = \
       Template("    void set_$FIELD($TYPE $FIELD) { " \
                "data_->set_$FIELD($FIELD); }")
   wrapper_obj_setter_template = \
       Template("    void set_$FIELD($TYPE $FIELD) { " \
                "data_->set_$FIELD(mojo::internal::Unwrap($FIELD)); }")
+  wrapper_handle_setter_template = \
+      Template("    void set_$FIELD($TYPE $FIELD) { " \
+               "data_->set_$FIELD($FIELD.release()); }")
   wrapper_getter_template = \
       Template("  $TYPE $FIELD() const { return data_->$FIELD(); }")
   wrapper_obj_getter_template = \
       Template("  const $TYPE $FIELD() const { " \
                "return mojo::internal::Wrap(data_->$FIELD()); }")
+  wrapper_handle_getter_template = \
+      Template("  $TYPE $FIELD() const { " \
+               "return mojo::MakeScopedHandle(data_->$FIELD()); }")
   pad_template = Template("  uint8_t _pad${COUNT}_[$PAD];")
   templates  = {}
   HEADER_SIZE = 8
 
   kind_to_type = {
-    mojom.BOOL:   "bool",
-    mojom.INT8:   "int8_t",
-    mojom.UINT8:  "uint8_t",
-    mojom.INT16:  "int16_t",
-    mojom.UINT16: "uint16_t",
-    mojom.INT32:  "int32_t",
-    mojom.UINT32: "uint32_t",
-    mojom.FLOAT:  "float",
-    mojom.HANDLE: "mojo::Handle",
-    mojom.INT64:  "int64_t",
-    mojom.UINT64: "uint64_t",
-    mojom.DOUBLE: "double",
+    mojom.BOOL:    "bool",
+    mojom.INT8:    "int8_t",
+    mojom.UINT8:   "uint8_t",
+    mojom.INT16:   "int16_t",
+    mojom.UINT16:  "uint16_t",
+    mojom.INT32:   "int32_t",
+    mojom.UINT32:  "uint32_t",
+    mojom.FLOAT:   "float",
+    mojom.HANDLE:  "mojo::Handle",
+    mojom.MSGPIPE: "mojo::MessagePipeHandle",
+    mojom.INT64:   "int64_t",
+    mojom.UINT64:  "uint64_t",
+    mojom.DOUBLE:  "double",
   }
 
   @classmethod
@@ -142,6 +162,8 @@ class CPPGenerator(mojom_generator.Generator):
     subs = {'FIELD': field.name, 'TYPE': cls.GetType(field.kind)}
     if mojom_generator.IsObjectKind(field.kind):
       return cls.ptr_getter_template.substitute(subs)
+    elif mojom_generator.IsHandleKind(field.kind):
+      return cls.handle_getter_template.substitute(subs)
     else:
       return cls.getter_template.substitute(subs)
 
@@ -161,6 +183,10 @@ class CPPGenerator(mojom_generator.Generator):
       return "mojo::Array<%s >" % cls.GetWrapperType(kind.kind)
     if kind.spec == 's':
       return "mojo::String"
+    if kind.spec == 'h':
+      return "mojo::ScopedHandle"
+    if kind.spec == 'h:m':
+      return "mojo::ScopedMessagePipeHandle"
     return cls.kind_to_type[kind]
 
   @classmethod
@@ -171,6 +197,10 @@ class CPPGenerator(mojom_generator.Generator):
       return "const mojo::Array<%s >&" % cls.GetWrapperType(kind.kind)
     if kind.spec == 's':
       return "const mojo::String&"
+    if kind.spec == 'h':
+      return "mojo::ScopedHandle"
+    if kind.spec == 'h:m':
+      return "mojo::ScopedMessagePipeHandle"
     return cls.kind_to_type[kind]
 
   @classmethod
@@ -178,6 +208,8 @@ class CPPGenerator(mojom_generator.Generator):
     subs = {'FIELD': field.name, 'TYPE': cls.GetWrapperType(field.kind)}
     if mojom_generator.IsObjectKind(field.kind):
       return cls.wrapper_obj_getter_template.substitute(subs)
+    elif mojom_generator.IsHandleKind(field.kind):
+      return cls.wrapper_handle_getter_template.substitute(subs)
     else:
       return cls.wrapper_getter_template.substitute(subs)
 
@@ -186,6 +218,8 @@ class CPPGenerator(mojom_generator.Generator):
     subs = {'FIELD': field.name, 'TYPE': cls.GetConstWrapperType(field.kind)}
     if mojom_generator.IsObjectKind(field.kind):
       return cls.wrapper_obj_setter_template.substitute(subs)
+    elif mojom_generator.IsHandleKind(field.kind):
+      return cls.wrapper_handle_setter_template.substitute(subs)
     else:
       return cls.wrapper_setter_template.substitute(subs)
 
@@ -194,6 +228,9 @@ class CPPGenerator(mojom_generator.Generator):
     kind = field.kind
     if kind.spec == 'b':
       return cls.bool_field_template.substitute(FIELD=field.name)
+    if mojom_generator.IsHandleKind(kind):
+      return cls.handle_field_template.substitute(FIELD=field.name,
+                                                  TYPE=cls.kind_to_type[kind])
     itype = None
     if isinstance(kind, mojom.Struct):
       itype = "mojo::internal::StructPointer<%s_Data>" % kind.name
@@ -210,6 +247,8 @@ class CPPGenerator(mojom_generator.Generator):
     line = None
     if mojom_generator.IsObjectKind(kind):
       line = "mojo::internal::Wrap(params->%s())" % (name)
+    elif mojom_generator.IsHandleKind(kind):
+      line = "mojo::MakeScopedHandle(params->%s())" % (name)
     else:
       line = "params->%s()" % name
     return line
@@ -240,9 +279,24 @@ class CPPGenerator(mojom_generator.Generator):
   def GetHandleFields(cls, ps):
     fields = []
     for pf in ps.packed_fields:
-      if pf.field.kind.spec == 'h':
+      if mojom_generator.IsHandleKind(pf.field.kind):
         fields.append(pf.field)
     return fields
+
+  @classmethod
+  def IsStructWithHandles(cls, struct):
+    for field in struct.fields:
+      if mojom_generator.IsHandleKind(field.kind):
+        return True
+    return False
+
+  @classmethod
+  def GetStructsWithHandles(cls, structs):
+    result = []
+    for struct in structs:
+      if cls.IsStructWithHandles(struct):
+        result.append(struct)
+    return result
 
   def GetHeaderGuard(self, name):
     return "MOJO_GENERATED_BINDINGS_%s_%s_H_" % \
@@ -307,6 +361,7 @@ class CPPGenerator(mojom_generator.Generator):
   def GetStructSerialization(
       self, class_name, param_name, ps, template, indent = None):
     struct = ps.struct
+    closes = Lines(self.close_handles_template, indent)
     encodes = Lines(self.struct_serialization_encode_template, indent)
     encode_handles = \
         Lines(self.struct_serialization_encode_handle_template, indent)
@@ -319,6 +374,7 @@ class CPPGenerator(mojom_generator.Generator):
       substitutions = {'NAME': param_name, 'FIELD': field.name}
       encodes.Add(substitutions)
       decodes.Add(substitutions)
+      closes.Add(substitutions)
     for field in handle_fields:
       substitutions = {'NAME': param_name, 'FIELD': field.name}
       encode_handles.Add(substitutions)
@@ -327,6 +383,7 @@ class CPPGenerator(mojom_generator.Generator):
         CLASS = \
             "%s::internal::%s" % (self.module.namespace, class_name + '_Data'),
         NAME = param_name,
+        CLOSES = closes,
         ENCODES = encodes,
         DECODES = decodes,
         ENCODE_HANDLES = encode_handles,
@@ -435,10 +492,34 @@ class CPPGenerator(mojom_generator.Generator):
             NUM_FIELDS = len(s.fields)),
             self.module.structs));
 
+  def GetStructDestructorBody(self, struct):
+    body = Lines(self.struct_destructor_body_template)
+    for field in struct.fields:
+      if mojom_generator.IsHandleKind(field.kind):
+        body.Add(FIELD=field.name)
+    return body
+
+  def GetStructDestructors(self):
+    template = self.GetTemplate("struct_destructor")
+    return '\n'.join(map(
+        lambda s: template.substitute(
+            CLASS = s.name,
+            BODY = self.GetStructDestructorBody(s)),
+            self.GetStructsWithHandles(self.module.structs)));
+
+  def GetStructDestructorAddress(self, struct):
+    if self.IsStructWithHandles(struct):
+      return '&internal::' + struct.name + '_Data_Destructor';
+    return 'NULL'
+
   def GetStructBuilderDefinitions(self):
     template = self.GetTemplate("struct_builder_definition")
+    dtor = 'NULL'
     return '\n'.join(map(
-        lambda s: template.substitute(CLASS = s.name), self.module.structs));
+        lambda s: template.substitute(
+            CLASS = s.name,
+            DTOR = self.GetStructDestructorAddress(s)),
+            self.module.structs));
 
   def GetInterfaceDefinition(self, interface):
     cases = []
@@ -453,6 +534,9 @@ class CPPGenerator(mojom_generator.Generator):
           sets.append(
               self.param_struct_set_template.substitute(NAME=param.name))
           computes.Add(NAME=param.name)
+        elif mojom_generator.IsHandleKind(param.kind):
+          sets.append(
+              self.param_handle_set_template.substitute(NAME=param.name))
         else:
           sets.append(self.param_set_template.substitute(NAME=param.name))
       params_list = map(
@@ -487,7 +571,10 @@ class CPPGenerator(mojom_generator.Generator):
     ps = mojom_pack.PackedStruct(struct)
     param_name = mojom_generator.CamelToUnderscores(struct.name)
 
+    dtor = ''
+    closes = Lines(self.close_handles_template)
     clones = Lines(self.struct_serialization_clone_template)
+    handle_releases = Lines(self.struct_serialization_handle_release_template)
     sizes = "  return sizeof(*%s)" % param_name
     fields = self.GetSerializedFields(ps)
     for field in fields:
@@ -495,6 +582,13 @@ class CPPGenerator(mojom_generator.Generator):
       sizes += \
           self.struct_serialization_compute_template.substitute(substitutions)
       clones.Add(substitutions)
+      closes.Add(substitutions)
+    handle_fields = self.GetHandleFields(ps)
+    for field in handle_fields:
+      substitutions = {'NAME': param_name, 'FIELD': field.name}
+      handle_releases.Add(substitutions)
+    if len(handle_fields) > 0:
+      dtor = "  %s_Data_Destructor(%s);" % (struct.name, param_name)
     sizes += ";"
     serialization = self.GetStructSerialization(
       struct.name, param_name, ps, self.GetTemplate("struct_serialization"))
@@ -503,6 +597,9 @@ class CPPGenerator(mojom_generator.Generator):
         CLASS = "%s::internal::%s_Data" % (self.module.namespace, struct.name),
         SIZES = sizes,
         CLONES = clones,
+        HANDLE_RELEASES = handle_releases,
+        CLOSES = closes,
+        DTOR = dtor,
         SERIALIZATION = serialization)
 
   def GetStructSerializationDefinitions(self):
@@ -537,6 +634,7 @@ class CPPGenerator(mojom_generator.Generator):
         HEADER = self.GetHeaderFile(self.module.name),
         PARAM_DEFINITIONS = self.GetParamsDefinitions(),
         STRUCT_DEFINITIONS = self.GetStructDefinitions(),
+        STRUCT_DESTRUCTORS = self.GetStructDestructors(),
         STRUCT_BUILDER_DEFINITIONS = self.GetStructBuilderDefinitions(),
         INTERFACE_DEFINITIONS = self.GetInterfaceDefinitions(),
         STRUCT_SERIALIZATION_DEFINITIONS =

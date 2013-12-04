@@ -210,6 +210,8 @@ TEST_F(BindingsConnectorTest, MessageWithHandles) {
   // TODO(vtl): Do we need a better way of "downcasting" the handle types?
   ScopedMessagePipeHandle smph;
   smph.reset(MessagePipeHandle(message_received.handles[0].value()));
+  message_received.handles[0] = Handle();  // |smph| now owns this handle.
+
   Connector connector_received(smph.Pass());
   Connector connector_original(handles[1].Pass());
 

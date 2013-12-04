@@ -1,6 +1,10 @@
 template <>
 class ObjectTraits<$CLASS> {
  public:
+  static void CloseHandles($CLASS* $NAME) {
+$CLOSES
+  }
+
   static void EncodePointersAndHandles(
       $CLASS* $NAME,
       std::vector<Handle>* handles) {
@@ -10,7 +14,7 @@ $ENCODE_HANDLES
 
   static bool DecodePointersAndHandles(
       $CLASS* $NAME,
-      const Message& message) {
+      Message* message) {
 $DECODES
 $DECODE_HANDLES
     return true;

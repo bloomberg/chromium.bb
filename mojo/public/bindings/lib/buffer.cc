@@ -45,6 +45,11 @@ ScratchBuffer::ScratchBuffer()
 }
 
 ScratchBuffer::~ScratchBuffer() {
+  // Invoke destructors in reverse order to mirror allocation order.
+  std::deque<PendingDestructor>::reverse_iterator it;
+  for (it = pending_dtors_.rbegin(); it != pending_dtors_.rend(); ++it)
+    it->func(it->address);
+
   while (overflow_) {
     Segment* doomed = overflow_;
     overflow_ = overflow_->next;
@@ -52,21 +57,27 @@ ScratchBuffer::~ScratchBuffer() {
   }
 }
 
-void* ScratchBuffer::Allocate(size_t delta) {
+void* ScratchBuffer::Allocate(size_t delta, Destructor func) {
   delta = internal::Align(delta);
 
   void* result = AllocateInSegment(&fixed_, delta);
-  if (result)
-    return result;
+  if (!result) {
+    if (overflow_)
+      result = AllocateInSegment(overflow_, delta);
 
-  if (overflow_) {
-    result = AllocateInSegment(overflow_, delta);
-    if (result)
-      return result;
+    if (!result) {
+      AddOverflowSegment(delta);
+      result = AllocateInSegment(overflow_, delta);
+    }
   }
 
-  AddOverflowSegment(delta);
-  return AllocateInSegment(overflow_, delta);
+  if (func) {
+    PendingDestructor dtor;
+    dtor.func = func;
+    dtor.address = result;
+    pending_dtors_.push_back(dtor);
+  }
+  return result;
 }
 
 void* ScratchBuffer::AllocateInSegment(Segment* segment, size_t delta) {
@@ -109,7 +120,9 @@ FixedBuffer::~FixedBuffer() {
   free(ptr_);
 }
 
-void* FixedBuffer::Allocate(size_t delta) {
+void* FixedBuffer::Allocate(size_t delta, Destructor dtor) {
+  assert(!dtor);
+
   delta = internal::Align(delta);
 
   // TODO(darin): Using <assert.h> is probably not going to cut it.

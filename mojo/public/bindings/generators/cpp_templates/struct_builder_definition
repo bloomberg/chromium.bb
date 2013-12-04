@@ -1,5 +1,5 @@
 $CLASS::Builder::Builder(mojo::Buffer* buf)
-    : data_(Data::New(buf)) {
+    : data_(Data::New(buf, $DTOR)) {
 }
 
 $CLASS $CLASS::Builder::Finish() {

@@ -18,6 +18,9 @@ def GetStructFromMethod(interface, method):
 def IsObjectKind(kind):
   return isinstance(kind, (mojom.Struct, mojom.Array)) or kind.spec == 's'
 
+def IsHandleKind(kind):
+  return kind.spec.startswith('h')
+
 def CamelToUnderscores(camel):
   s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', camel)
   return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()

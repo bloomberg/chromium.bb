@@ -10,7 +10,15 @@ $CLASS* ObjectTraits<$CLASS>::Clone(
   $CLASS* clone = $CLASS::New(buf);
   memcpy(clone, $NAME, sizeof(*$NAME));
 $CLONES
+$HANDLE_RELEASES
   return clone;
+}
+
+// static
+void ObjectTraits<$CLASS>::CloseHandles(
+    $CLASS* $NAME) {
+$CLOSES
+$DTOR
 }
 
 $SERIALIZATION

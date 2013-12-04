@@ -51,6 +51,9 @@ class Lexer(object):
     'ARRAY',
     'ORDINAL',
 
+    'MSGPIPE',
+    'MSGPIPEARRAY',
+
     'MODULE',
     'STRUCT',
     'INTERFACE',
@@ -80,6 +83,14 @@ class Lexer(object):
   t_ARRAY      = r'[a-zA-Z_][a-zA-Z0-9_]*\[\]'
   t_NUMBER     = r'\d+'
   t_ORDINAL    = r'@[0-9]*'
+
+  def t_MSGPIPE(self, t):
+    r'handle<message_pipe>'
+    return t
+
+  def t_MSGPIPEARRAY(self, t):
+    r'handle<message_pipe>\[\]'
+    return t
 
   def t_MODULE(self, t):
     r'module'
@@ -199,7 +210,9 @@ class Parser(object):
 
   def p_typename(self, p):
     """typename : NAME
-                | ARRAY"""
+                | ARRAY
+                | MSGPIPE
+                | MSGPIPEARRAY"""
     p[0] = p[1]
 
   def p_ordinal(self, p):

@@ -17,19 +17,20 @@ class Kind(object):
 
 
 # Initialize the set of primitive types. These can be accessed by clients.
-BOOL   = Kind('b')
-INT8   = Kind('i8')
-INT16  = Kind('i16')
-INT32  = Kind('i32')
-INT64  = Kind('i64')
-UINT8  = Kind('u8')
-UINT16 = Kind('u16')
-UINT32 = Kind('u32')
-UINT64 = Kind('u64')
-FLOAT  = Kind('f')
-DOUBLE = Kind('d')
-STRING = Kind('s')
-HANDLE = Kind('h')
+BOOL    = Kind('b')
+INT8    = Kind('i8')
+INT16   = Kind('i16')
+INT32   = Kind('i32')
+INT64   = Kind('i64')
+UINT8   = Kind('u8')
+UINT16  = Kind('u16')
+UINT32  = Kind('u32')
+UINT64  = Kind('u64')
+FLOAT   = Kind('f')
+DOUBLE  = Kind('d')
+STRING  = Kind('s')
+HANDLE  = Kind('h')
+MSGPIPE = Kind('h:m')
 
 
 # Collection of all Primitive types
@@ -46,7 +47,8 @@ PRIMITIVES = (
   FLOAT,
   DOUBLE,
   STRING,
-  HANDLE
+  HANDLE,
+  MSGPIPE
 )
 
 

@@ -1,0 +1,4 @@
+static void ${CLASS}_Data_Destructor(void* address) {
+  ${CLASS}_Data* data = static_cast<${CLASS}_Data*>(address);
+  $BODY
+}

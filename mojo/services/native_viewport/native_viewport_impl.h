@@ -29,7 +29,8 @@ class NativeViewportImpl : public NativeViewportStub,
 
   virtual void Open() OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual void CreateGLES2Context(mojo::Handle gles2_client) OVERRIDE;
+  virtual void CreateGLES2Context(
+      ScopedMessagePipeHandle gles2_client) OVERRIDE;
 
  private:
   // Overridden from services::NativeViewportDelegate:

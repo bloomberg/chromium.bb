@@ -26,7 +26,7 @@ void NativeViewportClientImpl::Open() {
   CreateMessagePipe(&gles2, &gles2_client);
 
   gles2_client_.reset(new GLES2ClientImpl(gles2.Pass()));
-  service_->CreateGLES2Context(gles2_client.release());
+  service_->CreateGLES2Context(gles2_client.Pass());
 }
 
 void NativeViewportClientImpl::DidOpen() {

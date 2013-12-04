@@ -7,7 +7,7 @@ $ENCODE_HANDLES
 
 // static
 bool ObjectTraits<$CLASS>::DecodePointersAndHandles(
-    $CLASS* $NAME, const mojo::Message& message) {
+    $CLASS* $NAME, mojo::Message* message) {
 $DECODES
 $DECODE_HANDLES
   return true;

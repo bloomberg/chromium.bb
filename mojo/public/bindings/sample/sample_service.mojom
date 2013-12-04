@@ -21,12 +21,12 @@ struct Foo {
   Bar bar @5;
   Bar[] extra_bars @7;
   uint8[] data @6;
-  handle[] files @9;
+  handle<message_pipe> source @9;
 };
 
 [Peer=ServiceClient]
 interface Service {
-  void Frobinate(Foo foo @0, bool baz @1, handle port @2) @0;
+  void Frobinate(Foo foo @0, bool baz @1, handle<message_pipe> port @2) @0;
 };
 
 [Peer=Service]

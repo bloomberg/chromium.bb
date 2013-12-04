@@ -53,6 +53,13 @@ MOJO_COMPILE_ASSERT(sizeof(StringPointer) == 8, bad_sizeof_StringPointer);
 #pragma pack(pop)
 
 template <typename T>
+T FetchAndReset(T* value) {
+  T temp = *value;
+  *value = T();
+  return temp;
+}
+
+template <typename T>
 class WrapperHelper {
  public:
   static const T Wrap(const typename T::Data* data) {
@@ -113,6 +120,9 @@ template <> struct TypeTraits<double> {
   static const bool kIsObject = false;
 };
 template <> struct TypeTraits<Handle> {
+  static const bool kIsObject = false;
+};
+template <> struct TypeTraits<MessagePipeHandle> {
   static const bool kIsObject = false;
 };
 

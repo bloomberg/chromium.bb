@@ -90,6 +90,7 @@ define([
 
   var pipe = core.createMessagePipe();
   var anotherPipe = core.createMessagePipe();
+  var sourcePipe = core.createMessagePipe();
 
   var connection0 = new connector.Connection(
       pipe.handle0, ServiceImpl, sample.ServiceClientProxy);
@@ -100,6 +101,7 @@ define([
   var foo = new sample.Foo();
   foo.bar = new sample.Bar();
   foo.name = "Example name";
+  foo.source = sourcePipe.handle0;
   connection1.remote.frobinate(foo, true, anotherPipe.handle0);
 
   mockSupport.pumpOnce(core.RESULT_OK);
@@ -111,6 +113,11 @@ define([
   connection1.close();
 
   expect(mockSupport.numberOfWaitingCallbacks()).toBe(0);
+
+  // sourcePipe.handle0 was closed automatically when sent over IPC.
+  expect(core.close(sourcePipe.handle0)).toBe(core.RESULT_INVALID_ARGUMENT);
+  // sourcePipe.handle1 hasn't been closed yet.
+  expect(core.close(sourcePipe.handle1)).toBe(core.RESULT_OK);
 
   // anotherPipe.handle0 was closed automatically when sent over IPC.
   expect(core.close(anotherPipe.handle0)).toBe(core.RESULT_INVALID_ARGUMENT);

@@ -1,6 +1,6 @@
 // static
-$CLASS* $CLASS::New(mojo::Buffer* buf) {
-  return new (buf->Allocate(sizeof($CLASS))) $CLASS();
+$CLASS* $CLASS::New(mojo::Buffer* buf, mojo::Buffer::Destructor dtor) {
+  return new (buf->Allocate(sizeof($CLASS), dtor)) $CLASS();
 }
 
 $CLASS::$CLASS() {

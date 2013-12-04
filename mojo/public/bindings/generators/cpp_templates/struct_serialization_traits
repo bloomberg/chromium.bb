@@ -3,8 +3,9 @@ class ObjectTraits<$FULL_CLASS> {
  public:
   static size_t ComputeSizeOf(const $FULL_CLASS* $NAME);
   static $FULL_CLASS* Clone(const $FULL_CLASS* $NAME, Buffer* buf);
+  static void CloseHandles($FULL_CLASS* $NAME);
   static void EncodePointersAndHandles($FULL_CLASS* $NAME,
                                        std::vector<mojo::Handle>* handles);
   static bool DecodePointersAndHandles($FULL_CLASS* $NAME,
-                                       const mojo::Message& message);
+                                       mojo::Message* message);
 };

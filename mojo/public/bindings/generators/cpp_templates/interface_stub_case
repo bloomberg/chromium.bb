@@ -3,8 +3,9 @@
           reinterpret_cast<internal::${CLASS}_${METHOD}_Params_Data*>(
               message->data->payload);
 
-      if (!mojo::internal::DecodePointersAndHandles(params, *message))
+      if (!mojo::internal::DecodePointersAndHandles(params, message))
         return false;
       $METHOD_CALL
+      mojo::internal::CloseHandles(params);
       break;
     }

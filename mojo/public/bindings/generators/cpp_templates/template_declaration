@@ -1,10 +1,12 @@
 template <>
 class ObjectTraits<$NAMESPACE::internal::$CLASS> {
  public:
+  static void CloseHandles(
+      $NAMESPACE::internal::$CLASS* params);
   static void EncodePointersAndHandles(
       $NAMESPACE::internal::$CLASS* params,
       std::vector<mojo::Handle>* handles);
   static bool DecodePointersAndHandles(
       $NAMESPACE::internal::$CLASS* params,
-      const mojo::Message& message);
+      mojo::Message* message);
 };

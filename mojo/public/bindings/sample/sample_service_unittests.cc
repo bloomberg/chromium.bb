@@ -54,9 +54,8 @@ Foo MakeFoo() {
   for (size_t i = 0; i < data.size(); ++i)
     data[i] = static_cast<uint8_t>(data.size() - i);
 
-  mojo::Array<mojo::Handle>::Builder files(4);
-  for (size_t i = 0; i < files.size(); ++i)
-    files[i] = mojo::Handle(static_cast<MojoHandle>(0xFFFF - i));
+  mojo::ScopedMessagePipeHandle pipe0, pipe1;
+  mojo::CreateMessagePipe(&pipe0, &pipe1);
 
   Foo::Builder foo;
   foo.set_name(name);
@@ -68,7 +67,7 @@ Foo MakeFoo() {
   foo.set_bar(bar.Finish());
   foo.set_extra_bars(extra_bars.Finish());
   foo.set_data(data.Finish());
-  foo.set_files(files.Finish());
+  foo.set_source(pipe1.Pass());
 
   return foo.Finish();
 }
@@ -107,13 +106,7 @@ void CheckFoo(const Foo& foo) {
   for (size_t i = 0; i < foo.data().size(); ++i) {
     EXPECT_EQ(static_cast<uint8_t>(foo.data().size() - i), foo.data()[i]) << i;
   }
-
-  EXPECT_EQ(4u, foo.files().size());
-  for (size_t i = 0; i < foo.files().size(); ++i)
-    EXPECT_EQ(static_cast<MojoHandle>(0xFFFF - i),
-              foo.files()[i].value()) << i;
 }
-
 
 static void PrintSpacer(int depth) {
   for (int i = 0; i < depth; ++i)
@@ -188,7 +181,6 @@ static void Print(int depth, const char* name, const Foo& foo) {
     Print(depth, "bar", foo.bar());
     Print(depth, "extra_bars", foo.extra_bars());
     Print(depth, "data", foo.data());
-    Print(depth, "files", foo.files());
     --depth;
   }
 }
@@ -211,14 +203,14 @@ static void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
 
 class ServiceImpl : public ServiceStub {
  public:
-  virtual void Frobinate(const Foo& foo, bool baz, mojo::Handle port)
+  virtual void Frobinate(const Foo& foo, bool baz,
+                         mojo::ScopedMessagePipeHandle port)
       MOJO_OVERRIDE {
     // Users code goes here to handle the incoming Frobinate message.
 
     // We mainly check that we're given the expected arguments.
     CheckFoo(foo);
     EXPECT_TRUE(baz);
-    EXPECT_EQ(static_cast<MojoHandle>(10), port.value());
 
     // Also dump the Foo structure and all of its members.
     // TODO(vtl): Make it optional, so that the test spews less?
@@ -226,7 +218,7 @@ class ServiceImpl : public ServiceStub {
     int depth = 1;
     Print(depth, "foo", foo);
     Print(depth, "baz", baz);
-    Print(depth, "port", port);
+    Print(depth, "port", port.get());
   }
 };
 
@@ -267,9 +259,10 @@ TEST(BindingsSampleTest, Basic) {
   Foo foo = MakeFoo();
   CheckFoo(foo);
 
-  mojo::Handle port(static_cast<MojoHandle>(10));
+  mojo::ScopedMessagePipeHandle port0, port1;
+  mojo::CreateMessagePipe(&port0, &port1);
 
-  service->Frobinate(foo, true, port);
+  service->Frobinate(foo, true, port0.Pass());
 }
 
 }  // namespace sample

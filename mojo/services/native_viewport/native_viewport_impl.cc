@@ -35,10 +35,9 @@ void NativeViewportImpl::Close() {
   native_viewport_->Close();
 }
 
-void NativeViewportImpl::CreateGLES2Context(mojo::Handle gles2_client) {
-  ScopedMessagePipeHandle handle;
-  handle.reset(MessagePipeHandle(gles2_client.value()));
-  gles2_.reset(new GLES2Impl(handle.Pass()));
+void NativeViewportImpl::CreateGLES2Context(
+    ScopedMessagePipeHandle gles2_client) {
+  gles2_.reset(new GLES2Impl(gles2_client.Pass()));
   CreateGLES2ContextIfNeeded();
 }
 

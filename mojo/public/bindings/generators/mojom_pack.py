@@ -13,19 +13,20 @@ import mojom
 
 class PackedField(object):
   kind_to_size = {
-    mojom.BOOL:   1,
-    mojom.INT8:   1,
-    mojom.UINT8:  1,
-    mojom.INT16:  2,
-    mojom.UINT16: 2,
-    mojom.INT32:  4,
-    mojom.UINT32: 4,
-    mojom.FLOAT:  4,
-    mojom.HANDLE: 4,
-    mojom.INT64:  8,
-    mojom.UINT64: 8,
-    mojom.DOUBLE: 8,
-    mojom.STRING: 8
+    mojom.BOOL:    1,
+    mojom.INT8:    1,
+    mojom.UINT8:   1,
+    mojom.INT16:   2,
+    mojom.UINT16:  2,
+    mojom.INT32:   4,
+    mojom.UINT32:  4,
+    mojom.FLOAT:   4,
+    mojom.HANDLE:  4,
+    mojom.MSGPIPE: 4,
+    mojom.INT64:   8,
+    mojom.UINT64:  8,
+    mojom.DOUBLE:  8,
+    mojom.STRING:  8
   }
 
   @classmethod

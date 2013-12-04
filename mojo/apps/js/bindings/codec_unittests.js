@@ -76,13 +76,11 @@ define([
       foo.extra_bars[i].gamma = 3 * i;
     }
     foo.name = "I am a banana";
-    foo.files = [
-      // These are supposed to be handles, but we fake them with integers.
-      23423782, 32549823, 98320423, 38502383, 92834093,
-    ];
+    // This is supposed to be a handle, but we fake it with an integer.
+    foo.source = 23423782;
 
     var messageName = 31;
-    var payloadSize = 232;
+    var payloadSize = 192;
 
     var builder = new codec.MessageBuilder(messageName, payloadSize);
     builder.encodeStruct(sample.Foo, foo);
@@ -90,20 +88,19 @@ define([
     var message = builder.finish();
 
     var expectedMemory = new Uint8Array([
-      /*  0: */  240,    0,    0,    0,   31,    0,    0,    0,
-      /*  8: */   64,    0,    0,    0,   10,    0,    0,    0,
+      /*  0: */  200,    0,    0,    0,   31,    0,    0,    0,
+      /*  8: */   56,    0,    0,    0,   10,    0,    0,    0,
       /* 16: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
       /* 24: */    5,    0,    0,    0,    0,    0,    0,    0,
-      /* 32: */   40,    0,    0,    0,    0,    0,    0,    0,
+      /* 32: */   32,    0,    0,    0,    0,    0,    0,    0,
     ]);
     // TODO(abarth): Test more of the message's raw memory.
     var actualMemory = new Uint8Array(message.memory.buffer,
                                       0, expectedMemory.length);
-
     expect(actualMemory).toEqual(expectedMemory);
 
     var expectedHandles = [
-      23423782, 32549823, 98320423, 38502383, 92834093,
+      23423782,
     ];
 
     expect(message.handles).toEqual(expectedHandles);
@@ -127,7 +124,7 @@ define([
 
     expect(foo2.extra_bars).toEqual(foo.extra_bars);
     expect(foo2.name).toBe(foo.name);
-    expect(foo2.files).toEqual(foo.files);
+    expect(foo2.source).toEqual(foo.source);
   }
 
   function testAlign() {

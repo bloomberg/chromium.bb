@@ -8,7 +8,7 @@ module mojo {
 interface NativeViewport {
   void Open();
   void Close();
-  void CreateGLES2Context(handle gles2_client);
+  void CreateGLES2Context(handle<message_pipe> gles2_client);
 };
 
 [Peer=NativeViewport]

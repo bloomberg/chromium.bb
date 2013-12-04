@@ -7,17 +7,22 @@
 
 #include <stddef.h>
 
+#include <deque>
+
 #include "mojo/public/system/macros.h"
 
 namespace mojo {
 
-// Allocations are 8-byte aligned and zero-filled.
+// Buffer provides a way to allocate memory. Allocations are 8-byte aligned and
+// zero-initialized. Allocations remain valid for the lifetime of the Buffer.
 class Buffer {
  public:
+  typedef void (*Destructor)(void* address);
+
   Buffer();
   virtual ~Buffer();
 
-  virtual void* Allocate(size_t num_bytes) = 0;
+  virtual void* Allocate(size_t num_bytes, Destructor func = NULL) = 0;
 
   static Buffer* current();
 
@@ -34,7 +39,8 @@ class ScratchBuffer : public Buffer {
   ScratchBuffer();
   virtual ~ScratchBuffer();
 
-  virtual void* Allocate(size_t num_bytes) MOJO_OVERRIDE;
+  virtual void* Allocate(size_t num_bytes, Destructor func = NULL)
+      MOJO_OVERRIDE;
 
  private:
   enum { kMinSegmentSize = 512 };
@@ -51,6 +57,12 @@ class ScratchBuffer : public Buffer {
   char fixed_data_[kMinSegmentSize];
   Segment fixed_;
   Segment* overflow_;
+
+  struct PendingDestructor {
+    Destructor func;
+    void* address;
+  };
+  std::deque<PendingDestructor> pending_dtors_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScratchBuffer);
 };
@@ -87,7 +99,8 @@ class FixedBuffer : public Buffer {
   // Grows the buffer by |num_bytes| and returns a pointer to the start of the
   // addition. The resulting address is 8-byte aligned, and the content of the
   // memory is zero-filled.
-  virtual void* Allocate(size_t num_bytes) MOJO_OVERRIDE;
+  virtual void* Allocate(size_t num_bytes, Destructor func = NULL)
+      MOJO_OVERRIDE;
 
   size_t size() const { return size_; }
 
