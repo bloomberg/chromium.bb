@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_ASYNC_POLICY_LOADER_H_
-#define CHROME_BROWSER_POLICY_ASYNC_POLICY_LOADER_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_LOADER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_LOADER_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/schema_map.h"
+#include "components/policy/policy_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -30,7 +31,7 @@ class PolicyBundle;
 // any thread), and the initial Load() which is called on the thread that owns
 // the provider.
 // LastModificationTime() is also invoked once on that thread at startup.
-class AsyncPolicyLoader {
+class POLICY_EXPORT AsyncPolicyLoader {
  public:
   explicit AsyncPolicyLoader(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -118,4 +119,4 @@ class AsyncPolicyLoader {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_ASYNC_POLICY_LOADER_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_LOADER_H_

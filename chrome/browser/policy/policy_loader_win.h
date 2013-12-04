@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_POLICY_POLICY_LOADER_WIN_H_
 #define CHROME_BROWSER_POLICY_POLICY_LOADER_WIN_H_
 
-#include <userenv.h>
 #include <windows.h>
+#include <userenv.h>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -16,7 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "base/win/object_watcher.h"
-#include "chrome/browser/policy/async_policy_loader.h"
+#include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/policy_types.h"
 
 namespace base {

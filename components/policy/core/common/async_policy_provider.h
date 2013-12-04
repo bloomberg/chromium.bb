@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_ASYNC_POLICY_PROVIDER_H_
-#define CHROME_BROWSER_POLICY_ASYNC_POLICY_PROVIDER_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_PROVIDER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_PROVIDER_H_
 
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/policy_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -25,8 +26,8 @@ class SchemaRegistry;
 // A policy provider that loads its policies asynchronously on a background
 // thread. Platform-specific providers are created by passing an implementation
 // of AsyncPolicyLoader to a new AsyncPolicyProvider.
-class AsyncPolicyProvider : public ConfigurationPolicyProvider,
-                            public base::NonThreadSafe {
+class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
+                                          public base::NonThreadSafe {
  public:
   // The AsyncPolicyProvider does a synchronous load in its constructor, and
   // therefore it needs the |registry| at construction time. The same |registry|
@@ -72,4 +73,4 @@ class AsyncPolicyProvider : public ConfigurationPolicyProvider,
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_ASYNC_POLICY_PROVIDER_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_ASYNC_POLICY_PROVIDER_H_

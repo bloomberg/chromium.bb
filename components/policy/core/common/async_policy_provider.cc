@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/async_policy_provider.h"
+#include "components/policy/core/common/async_policy_provider.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/policy/async_policy_loader.h"
+#include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/schema_registry.h"
 

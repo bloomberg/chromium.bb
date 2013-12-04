@@ -21,6 +21,10 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
+            'policy/core/common/async_policy_loader.cc',
+            'policy/core/common/async_policy_loader.h',
+            'policy/core/common/async_policy_provider.cc',
+            'policy/core/common/async_policy_provider.h',
             'policy/core/common/configuration_policy_provider.cc',
             'policy/core/common/configuration_policy_provider.h',
             'policy/core/common/external_data_fetcher.cc',
@@ -48,6 +52,16 @@
             'policy/core/common/schema_registry.cc',
             'policy/core/common/schema_registry.h',
             'policy/policy_export.h',
+          ],
+          'conditions': [
+            ['OS=="android"', {
+              'sources!': [
+                'policy/core/common/async_policy_loader.cc',
+                'policy/core/common/async_policy_loader.h',
+                'policy/core/common/async_policy_provider.cc',
+                'policy/core/common/async_policy_provider.h',
+              ],
+            }],
           ],
         }, {  # configuration_policy==0
           # Some of the policy code is always enabled, so that other parts of

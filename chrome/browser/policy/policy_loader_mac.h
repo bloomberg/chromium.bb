@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/policy/async_policy_loader.h"
+#include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/policy_namespace.h"
 
 class MacPreferences;

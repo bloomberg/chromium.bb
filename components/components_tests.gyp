@@ -178,12 +178,20 @@
                 'components.gyp:policy_component_test_support',
               ],
               'sources': [
+                'policy/core/common/async_policy_provider_unittest.cc',
                 'policy/core/common/policy_bundle_unittest.cc',
                 'policy/core/common/policy_map_unittest.cc',
                 'policy/core/common/registry_dict_win_unittest.cc',
                 'policy/core/common/schema_map_unittest.cc',
                 'policy/core/common/schema_registry_unittest.cc',
                 'policy/core/common/schema_unittest.cc',
+              ],
+              'conditions': [
+                ['OS=="android"', {
+                  'sources!': [
+                    'policy/core/common/async_policy_provider_unittest.cc',
+                  ],
+                }],
               ],
             }],
           ],
