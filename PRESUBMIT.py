@@ -901,6 +901,62 @@ def _CheckSpamLogging(input_api, output_api):
   return []
 
 
+def _CheckForAnonymousVariables(input_api, output_api):
+  """These types are all expected to hold locks while in scope and
+     so should never be anonymous (which causes them to be immediately
+     destroyed)."""
+  they_who_must_be_named = [
+    'base::AutoLock',
+    'base::AutoReset',
+    'base::AutoUnlock',
+    'SkAutoAlphaRestore',
+    'SkAutoBitmapShaderInstall',
+    'SkAutoBlitterChoose',
+    'SkAutoBounderCommit',
+    'SkAutoCallProc',
+    'SkAutoCanvasRestore',
+    'SkAutoCommentBlock',
+    'SkAutoDescriptor',
+    'SkAutoDisableDirectionCheck',
+    'SkAutoDisableOvalCheck',
+    'SkAutoFree',
+    'SkAutoGlyphCache',
+    'SkAutoHDC',
+    'SkAutoLockColors',
+    'SkAutoLockPixels',
+    'SkAutoMalloc',
+    'SkAutoMaskFreeImage',
+    'SkAutoMutexAcquire',
+    'SkAutoPathBoundsUpdate',
+    'SkAutoPDFRelease',
+    'SkAutoRasterClipValidate',
+    'SkAutoRef',
+    'SkAutoTime',
+    'SkAutoTrace',
+    'SkAutoUnref',
+  ]
+  anonymous = r'(%s)\s*[({]' % '|'.join(they_who_must_be_named)
+  # bad: base::AutoLock(lock.get());
+  # not bad: base::AutoLock lock(lock.get());
+  bad_pattern = input_api.re.compile(anonymous)
+  # good: new base::AutoLock(lock.get())
+  good_pattern = input_api.re.compile(r'\bnew\s*' + anonymous)
+  errors = []
+
+  for f in input_api.AffectedFiles():
+    if not f.LocalPath().endswith(('.cc', '.h', '.inl', '.m', '.mm')):
+      continue
+    for linenum, line in f.ChangedContents():
+      if bad_pattern.search(line) and not good_pattern.search(line):
+        errors.append('%s:%d' % (f.LocalPath(), linenum))
+
+  if errors:
+    return [output_api.PresubmitError(
+      'These lines create anonymous variables that need to be named:',
+      items=errors)]
+  return []
+
+
 def _CheckCygwinShell(input_api, output_api):
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=(r'.+\.(gyp|gypi)$',))
@@ -950,6 +1006,7 @@ def _CommonChecks(input_api, output_api):
           output_api,
           source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
   results.extend(_CheckSpamLogging(input_api, output_api))
+  results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckCygwinShell(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
