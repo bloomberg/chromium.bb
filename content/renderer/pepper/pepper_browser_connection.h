@@ -11,11 +11,13 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+
+class GURL;
 
 namespace content {
 
@@ -24,12 +26,12 @@ namespace content {
 // and renderer communicate about ResourceHosts, they should pass the plugin
 // process ID to identify which plugin they are talking about.
 class PepperBrowserConnection
-    : public RenderViewObserver,
-      public RenderViewObserverTracker<PepperBrowserConnection> {
+    : public RenderFrameObserver,
+      public RenderFrameObserverTracker<PepperBrowserConnection> {
  public:
   typedef base::Callback<void(const std::vector<int>&)>
       PendingResourceIDCallback;
-  explicit PepperBrowserConnection(RenderView* render_view);
+  explicit PepperBrowserConnection(RenderFrame* render_frame);
   virtual ~PepperBrowserConnection();
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

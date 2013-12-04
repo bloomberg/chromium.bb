@@ -37,6 +37,8 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
   virtual PepperPluginInstance* GetPluginInstance(
       PP_Instance instance) const OVERRIDE;
+  virtual RenderFrame* GetRenderFrameForInstance(
+      PP_Instance instance) const OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual blink::WebPluginContainer* GetContainerForInstance(

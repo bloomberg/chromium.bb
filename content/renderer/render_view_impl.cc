@@ -244,7 +244,6 @@
 #if defined(ENABLE_PLUGINS)
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 #include "content/renderer/npapi/webplugin_impl.h"
-#include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
@@ -1005,10 +1004,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
     enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
 
   ProcessViewLayoutFlags(command_line);
-
-#if defined(ENABLE_PLUGINS)
-  new PepperBrowserConnection(this);
-#endif
 
   GetContentClient()->renderer()->RenderViewCreated(this);
 

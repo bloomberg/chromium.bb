@@ -57,6 +57,7 @@
 #include "webkit/child/weburlresponse_extradata_impl.h"
 
 #if defined(ENABLE_PLUGINS)
+#include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #endif
 
@@ -127,11 +128,16 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       pepper_last_mouse_event_target_(NULL)
 #endif
 {
+  RenderThread::Get()->AddRoute(routing_id_, this);
+#if defined(ENABLE_PLUGINS)
+  new PepperBrowserConnection(this);
+#endif
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
+  RenderThread::Get()->RemoveRoute(routing_id_);
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {

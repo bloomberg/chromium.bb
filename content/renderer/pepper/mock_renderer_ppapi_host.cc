@@ -35,6 +35,11 @@ PepperPluginInstance* MockRendererPpapiHost::GetPluginInstance(
   return plugin_instance_.get();
 }
 
+RenderFrame* MockRendererPpapiHost::GetRenderFrameForInstance(
+    PP_Instance instance) const {
+  return NULL;
+}
+
 RenderView* MockRendererPpapiHost::GetRenderViewForInstance(
     PP_Instance instance) const {
   if (instance == pp_instance_)

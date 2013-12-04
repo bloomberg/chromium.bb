@@ -40,6 +40,7 @@ class WebPluginContainer;
 
 namespace content {
 class PepperPluginInstance;
+class RenderFrame;
 class RenderView;
 
 // Interface that allows components in the embedder app to talk to the
@@ -69,6 +70,11 @@ class RendererPpapiHost {
   // PP_Instance is invalid (the common case this will be invalid is during
   // plugin teardown when resource hosts are being force-freed).
   virtual PepperPluginInstance* GetPluginInstance(
+      PP_Instance instance) const = 0;
+
+  // Returns the RenderFrame for the given plugin instance, or NULL if the
+  // instance is invalid.
+  virtual RenderFrame* GetRenderFrameForInstance(
       PP_Instance instance) const = 0;
 
   // Returns the RenderView for the given plugin instance, or NULL if the

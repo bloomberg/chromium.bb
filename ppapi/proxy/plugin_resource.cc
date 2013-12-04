@@ -115,7 +115,7 @@ bool PluginResource::SendResourceCall(
     const IPC::Message& nested_msg) {
   // For in-process plugins, we need to send the routing ID with the request.
   // The browser then uses that routing ID when sending the reply so it will be
-  // routed back to the correct RenderViewImpl.
+  // routed back to the correct RenderFrameImpl.
   if (dest == BROWSER && connection_.in_process) {
     return GetSender(dest)->Send(new PpapiHostMsg_InProcessResourceCall(
         connection_.browser_sender_routing_id,

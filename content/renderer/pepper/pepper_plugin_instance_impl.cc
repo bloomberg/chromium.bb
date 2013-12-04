@@ -545,7 +545,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
 
     if (!module_->IsProxied()) {
       PepperBrowserConnection* browser_connection =
-          PepperBrowserConnection::Get(render_frame_->render_view());
+          PepperBrowserConnection::Get(render_frame_);
       browser_connection->DidCreateInProcessInstance(
           pp_instance(),
           render_frame_->render_view()->GetRoutingID(),
@@ -584,7 +584,7 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
 
   if (!module_->IsProxied() && render_frame_) {
     PepperBrowserConnection* browser_connection =
-        PepperBrowserConnection::Get(render_frame_->render_view());
+        PepperBrowserConnection::Get(render_frame_);
     browser_connection->DidDeleteInProcessInstance(pp_instance());
   }
 

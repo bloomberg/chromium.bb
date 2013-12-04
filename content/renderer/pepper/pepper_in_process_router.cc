@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -65,9 +65,9 @@ IPC::Sender* PepperInProcessRouter::GetRendererToPluginSender() {
 ppapi::proxy::Connection PepperInProcessRouter::GetPluginConnection(
     PP_Instance instance) {
   int routing_id = 0;
-  RenderView* view = host_impl_->GetRenderViewForInstance(instance);
-  if (view)
-    routing_id = view->GetRoutingID();
+  RenderFrame* frame = host_impl_->GetRenderFrameForInstance(instance);
+  if (frame)
+    routing_id = (static_cast<RenderFrameImpl*>(frame))->routing_id();
   return ppapi::proxy::Connection(browser_channel_.get(),
                                   plugin_to_host_router_.get(),
                                   routing_id);

@@ -40,7 +40,7 @@ struct Connection {
   bool in_process;
   // We need to use a routing ID when a plugin is in-process, and messages are
   // sent back from the browser to the renderer. This is so that messages are
-  // routed to the proper RenderViewImpl.
+  // routed to the proper RenderFrameImpl.
   int browser_sender_routing_id;
 };
 

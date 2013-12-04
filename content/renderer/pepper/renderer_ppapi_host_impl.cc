@@ -132,6 +132,17 @@ ppapi::host::PpapiHost* RendererPpapiHostImpl::GetPpapiHost() {
   return ppapi_host_.get();
 }
 
+RenderFrame* RendererPpapiHostImpl::GetRenderFrameForInstance(
+    PP_Instance instance) const  {
+  PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
+  if (!instance_object)
+    return NULL;
+
+  // Since we're the embedder, we can make assumptions about the helper on
+  // the instance and get back to our RenderFrame.
+  return instance_object->render_frame();
+}
+
 RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
     PP_Instance instance) const {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
@@ -231,9 +242,9 @@ void RendererPpapiHostImpl::CreateBrowserResourceHosts(
     PP_Instance instance,
     const std::vector<IPC::Message>& nested_msgs,
     const base::Callback<void(const std::vector<int>&)>& callback) const {
-  RenderView* render_view = GetRenderViewForInstance(instance);
+  RenderFrame* render_frame = GetRenderFrameForInstance(instance);
   PepperBrowserConnection* browser_connection =
-      PepperBrowserConnection::Get(render_view);
+      PepperBrowserConnection::Get(render_frame);
   if (!browser_connection) {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, std::vector<int>(nested_msgs.size(), 0)));
