@@ -302,6 +302,10 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
     {% if has_custom_legacy_call %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}
+    {% if interface_name == 'HTMLAllCollection' %}
+    {# Needed for legacy support of document.all #}
+    functionTemplate->InstanceTemplate()->MarkAsUndetectable();
+    {% endif %}
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());

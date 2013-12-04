@@ -4162,12 +4162,13 @@ sub GenerateImplementationLegacyCall
     return $code;
 }
 
-sub GenerateImplementationMasqueradesAsUndefined
+sub GenerateImplementationMarkAsUndetectable
 {
     my $interface = shift;
     my $code = "";
 
-    if ($interface->extendedAttributes->{"MasqueradesAsUndefined"})
+    # Needed for legacy support of document.all
+    if ($interface->name eq "HTMLAllCollection")
     {
         $code .= "    functionTemplate->InstanceTemplate()->MarkAsUndetectable();\n";
     }
@@ -4609,7 +4610,7 @@ END
     $code .= GenerateImplementationIndexedPropertyAccessors($interface);
     $code .= GenerateImplementationNamedPropertyAccessors($interface);
     $code .= GenerateImplementationLegacyCall($interface);
-    $code .= GenerateImplementationMasqueradesAsUndefined($interface);
+    $code .= GenerateImplementationMarkAsUndetectable($interface);
 
     # Define operations.
     my $total_functions = 0;
