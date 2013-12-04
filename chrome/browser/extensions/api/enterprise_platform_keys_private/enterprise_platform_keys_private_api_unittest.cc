@@ -6,6 +6,9 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -51,7 +54,9 @@ class FakeBoolDBusMethod {
         value_(value) {}
 
   void operator() (const chromeos::BoolDBusMethodCallback& callback) {
-    callback.Run(status_, value_);
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, status_, value_));
   }
 
  private:
@@ -64,7 +69,9 @@ void RegisterKeyCallbackTrue(
     const std::string& user_id,
     const std::string& key_name,
     const cryptohome::AsyncMethodCaller::Callback& callback) {
-  callback.Run(true, cryptohome::MOUNT_ERROR_NONE);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, true, cryptohome::MOUNT_ERROR_NONE));
 }
 
 void RegisterKeyCallbackFalse(
@@ -72,7 +79,9 @@ void RegisterKeyCallbackFalse(
     const std::string& user_id,
     const std::string& key_name,
     const cryptohome::AsyncMethodCaller::Callback& callback) {
-  callback.Run(false, cryptohome::MOUNT_ERROR_NONE);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, false, cryptohome::MOUNT_ERROR_NONE));
 }
 
 void SignChallengeCallbackTrue(
@@ -84,7 +93,9 @@ void SignChallengeCallbackTrue(
     chromeos::attestation::AttestationChallengeOptions options,
     const std::string& challenge,
     const cryptohome::AsyncMethodCaller::DataCallback& callback) {
-  callback.Run(true, "response");
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, true, "response"));
 }
 
 void SignChallengeCallbackFalse(
@@ -96,7 +107,9 @@ void SignChallengeCallbackFalse(
     chromeos::attestation::AttestationChallengeOptions options,
     const std::string& challenge,
     const cryptohome::AsyncMethodCaller::DataCallback& callback) {
-  callback.Run(false, "");
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, false, ""));
 }
 
 void GetCertificateCallbackTrue(
@@ -106,7 +119,9 @@ void GetCertificateCallbackTrue(
     bool force_new_key,
     const chromeos::attestation::AttestationFlow::CertificateCallback&
         callback) {
-  callback.Run(true, "certificate");
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, true, "certificate"));
 }
 
 void GetCertificateCallbackFalse(
@@ -116,7 +131,9 @@ void GetCertificateCallbackFalse(
     bool force_new_key,
     const chromeos::attestation::AttestationFlow::CertificateCallback&
         callback) {
-  callback.Run(false, "");
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, false, ""));
 }
 
 class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
