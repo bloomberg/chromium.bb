@@ -638,7 +638,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
  private:
   // Rect indicating what was repainted/updated during update.
   // Note that plugin layers bypass this and leave it empty.
-  // Uses layer's content space.
+  // Uses layer (not content) space.
   gfx::RectF update_rect_;
 
   // Manages animations for this layer.
