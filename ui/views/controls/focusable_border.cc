@@ -22,8 +22,7 @@ const int kRightInsetSize = 4;
 namespace views {
 
 FocusableBorder::FocusableBorder()
-    : has_focus_(false),
-      insets_(kTopInsetSize, kLeftInsetSize,
+    : insets_(kTopInsetSize, kLeftInsetSize,
               kBottomInsetSize, kRightInsetSize),
       override_color_(SK_ColorWHITE),
       use_default_color_(true) {
@@ -46,8 +45,8 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   SkColor color = override_color_;
   if (use_default_color_) {
     color = view.GetNativeTheme()->GetSystemColor(
-        has_focus_ ? ui::NativeTheme::kColorId_FocusedBorderColor :
-                     ui::NativeTheme::kColorId_UnfocusedBorderColor);
+        view.HasFocus() ? ui::NativeTheme::kColorId_FocusedBorderColor :
+                          ui::NativeTheme::kColorId_UnfocusedBorderColor);
   }
 
   paint.setColor(color);

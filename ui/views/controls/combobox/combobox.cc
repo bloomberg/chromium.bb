@@ -324,7 +324,6 @@ void Combobox::OnPaint(gfx::Canvas* canvas) {
 
 void Combobox::OnFocus() {
   GetInputMethod()->OnFocus();
-  text_border_->set_has_focus(true);
   View::OnFocus();
   // Border renders differently when focused.
   SchedulePaint();
@@ -334,7 +333,6 @@ void Combobox::OnBlur() {
   GetInputMethod()->OnBlur();
   if (selector_)
     selector_->OnViewBlur();
-  text_border_->set_has_focus(false);
   // Border renders differently when focused.
   SchedulePaint();
 }

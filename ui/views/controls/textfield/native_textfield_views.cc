@@ -347,7 +347,6 @@ void NativeTextfieldViews::OnDragDone() {
 }
 
 void NativeTextfieldViews::OnPaint(gfx::Canvas* canvas) {
-  text_border_->set_has_focus(textfield_->HasFocus());
   OnPaintBackground(canvas);
   PaintTextAndCursor(canvas);
   if (textfield_->draw_border())
