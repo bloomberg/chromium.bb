@@ -145,7 +145,3 @@ COMPILE_ASSERT_MATCHING_UINT64(
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonOutOfFlowClipping,
     blink::CompositingReasonOutOfFlowClipping);
-
-COMPILE_ASSERT_MATCHING_UINT64(
-    cc::kCompositingReasonIsolateCompositedDescendants,
-    blink::CompositingReasonIsolateCompositedDescendants);
