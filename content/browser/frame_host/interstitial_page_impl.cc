@@ -697,6 +697,7 @@ gfx::Rect InterstitialPageImpl::GetRootWindowResizerRect() const {
 }
 
 void InterstitialPageImpl::CreateNewWindow(
+    int render_process_id,
     int route_id,
     int main_frame_route_id,
     const ViewHostMsg_CreateWindow_Params& params,

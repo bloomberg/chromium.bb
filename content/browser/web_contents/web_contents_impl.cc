@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -73,6 +74,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
@@ -1252,6 +1254,7 @@ void WebContentsImpl::LostMouseLock() {
 }
 
 void WebContentsImpl::CreateNewWindow(
+    int render_process_id,
     int route_id,
     int main_frame_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
@@ -1262,10 +1265,29 @@ void WebContentsImpl::CreateNewWindow(
   // SiteInstance in its own BrowsingInstance.
   bool is_guest = GetRenderProcessHost()->IsGuest();
 
+  // If the opener is to be suppressed, the new window can be in any process.
+  // Since routing ids are process specific, we must not have one passed in
+  // as argument here.
+  DCHECK(!params.opener_suppressed || route_id == MSG_ROUTING_NONE);
+
   scoped_refptr<SiteInstance> site_instance =
       params.opener_suppressed && !is_guest ?
       SiteInstance::CreateForURL(GetBrowserContext(), params.target_url) :
       GetSiteInstance();
+
+  // A message to create a new window can only come from the active process for
+  // this WebContentsImpl instance. If any other process sends the request,
+  // it is invalid and the process must be terminated.
+  if (GetRenderProcessHost()->GetID() != render_process_id) {
+    base::ProcessHandle process_handle =
+        RenderProcessHost::FromID(render_process_id)->GetHandle();
+    if (process_handle != base::kNullProcessHandle) {
+      RecordAction(
+          UserMetricsAction("Terminate_ProcessMismatch_CreateNewWindow"));
+      base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
+    }
+    return;
+  }
 
   // We must assign the SessionStorageNamespace before calling Init().
   //

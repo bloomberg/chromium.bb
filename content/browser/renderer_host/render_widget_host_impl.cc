@@ -212,9 +212,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   is_threaded_compositing_enabled_ = IsThreadedCompositingEnabled();
 
-
-  g_routing_id_widget_map.Get().insert(std::make_pair(
-      RenderWidgetHostID(process->GetID(), routing_id_), this));
+  std::pair<RoutingIDWidgetMap::iterator, bool> result =
+      g_routing_id_widget_map.Get().insert(std::make_pair(
+          RenderWidgetHostID(process->GetID(), routing_id_), this));
+  CHECK(result.second) << "Inserting a duplicate item!";
   process_->AddRoute(routing_id_, this);
 
   // If we're initially visible, tell the process host that we're alive.

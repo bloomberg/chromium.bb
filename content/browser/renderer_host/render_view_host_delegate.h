@@ -382,8 +382,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void LostMouseLock() {}
 
   // The page is trying to open a new page (e.g. a popup window). The window
-  // should be created associated with the given route, but it should not be
-  // shown yet. That should happen in response to ShowCreatedWindow.
+  // should be created associated with the given |route_id| in process
+  // |render_process_id|, but it should not be shown yet. That should happen in
+  // response to ShowCreatedWindow.
   // |params.window_container_type| describes the type of RenderViewHost
   // container that is requested -- in particular, the window.open call may
   // have specified 'background' and 'persistent' in the feature string.
@@ -394,6 +395,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Note: this is not called "CreateWindow" because that will clash with
   // the Windows function which is actually a #define.
   virtual void CreateNewWindow(
+      int render_process_id,
       int route_id,
       int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,

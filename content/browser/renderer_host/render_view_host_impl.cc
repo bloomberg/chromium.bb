@@ -1323,8 +1323,9 @@ void RenderViewHostImpl::CreateNewWindow(
   FilterURL(policy, GetProcess(), true,
             &validated_params.opener_security_origin);
 
-  delegate_->CreateNewWindow(route_id, main_frame_route_id,
-                             validated_params, session_storage_namespace);
+  delegate_->CreateNewWindow(
+      GetProcess()->GetID(), route_id, main_frame_route_id, validated_params,
+      session_storage_namespace);
 }
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,
