@@ -342,6 +342,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Now navigate to a login form that has similar HTML markup.
   NavigateToFile("/password/password_form.html");
 
+  // Simulate a user click to force an autofill of the form's DOM value, not
+  // just the suggested value.
+  std::string click = "document.getElementById('testform_no_name').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), click));
+
   // The form should be filled with the previously submitted username.
   std::string get_username =
       "window.domAutomationController.send("
@@ -367,6 +372,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   base::HistogramBase* upload_histogram =
       base::StatisticsRecorder::FindHistogram(
           "PasswordGeneration.UploadStarted");
+  ASSERT_TRUE(upload_histogram);
   scoped_ptr<base::HistogramSamples> snapshot =
       upload_histogram->SnapshotSamples();
   EXPECT_EQ(0, snapshot->GetCount(0 /* failure */));

@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace blink {
 class WebInputElement;
@@ -79,6 +81,26 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   typedef std::map<blink::WebFrame*,
                    linked_ptr<PasswordForm> > FrameToPasswordFormMap;
 
+  class AutofillWebUserGestureHandler : public blink::WebUserGestureHandler {
+   public:
+    AutofillWebUserGestureHandler(PasswordAutofillAgent* agent);
+    virtual ~AutofillWebUserGestureHandler();
+
+    void addElement(const blink::WebInputElement& element) {
+      elements_.push_back(element);
+    }
+
+    void clearElements() {
+      elements_.clear();
+    }
+
+    virtual void onGesture();
+
+   private:
+    PasswordAutofillAgent* agent_;
+    std::vector<blink::WebInputElement> elements_;
+  };
+
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStartProvisionalLoad(blink::WebFrame* frame) OVERRIDE;
@@ -144,6 +166,10 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   blink::WebFrame* CurrentOrChildFrameWithSavedForms(
       const blink::WebFrame* current_frame);
 
+  void set_user_gesture_occurred(bool occurred) {
+    user_gesture_occurred_ = occurred;
+  }
+
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
 
@@ -156,6 +182,10 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // Set if the user might be submitting a password form on the current page,
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).
   FrameToPasswordFormMap provisionally_saved_forms_;
+
+  scoped_ptr<AutofillWebUserGestureHandler> gesture_handler_;
+
+  bool user_gesture_occurred_;
 
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 
