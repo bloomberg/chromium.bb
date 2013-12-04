@@ -4,8 +4,8 @@ TEST SUCCEEDED: The value was null. [tested Node.nodeValue]
 TEST SUCCEEDED: The value was null. [tested Node.prefix]
 TEST SUCCEEDED: The value was the empty string. [tested Node.textContent]
 
-TEST SUCCEEDED: The value was the empty string. [tested Element.id]
-TEST SUCCEEDED: The value was the empty string. [tested Element.className]
+TEST SUCCEEDED: The value was the string 'null'. [tested Element.id]
+TEST SUCCEEDED: The value was the string 'null'. [tested Element.className]
 TEST SUCCEEDED: The value was the empty string. [tested Element.innerHTML]
 TEST SUCCEEDED: Exception (NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.) was thrown as expected. [tested Element.outerHTML]
 

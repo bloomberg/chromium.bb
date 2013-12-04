@@ -57,9 +57,7 @@
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // DOM4
-    // iht.com relies on id returning the empty string when no id is present.
-    // Other browsers do this as well. So we don't convert null to JS null.
-    [Reflect, TreatNullAs=NullString] attribute DOMString id;
+    [Reflect] attribute DOMString id;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, RaisesException=Setter] attribute DOMString prefix;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
@@ -95,7 +93,7 @@
     [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
 
-    [Reflect=class, TreatNullAs=NullString, PerWorldBindings] attribute DOMString className;
+    [Reflect=class, PerWorldBindings] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;
 
     [PerWorldBindings] readonly attribute DOMStringMap dataset;
