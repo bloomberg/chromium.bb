@@ -29,6 +29,8 @@ SerialPortEnumerator::StringSet SerialPortEnumerator::GenerateValidPatterns() {
     "/dev/ttyACM*",
     "/dev/ttyS*",
     "/dev/ttyUSB*",
+    "/dev/tty.SLAB_*",
+    "/dev/cu.SLAB_*",
   };
 
   StringSet valid_patterns;

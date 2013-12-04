@@ -19,6 +19,8 @@ TEST(SerialPortEnumeratorTest, ValidPortNamePatterns) {
     "/dev/tty.usbmodem999999",
     "/dev/ttyACM0",
     "/dev/xxxxxmodemxxxxxxxxxx",
+    "/dev/tty.SLAB_something",
+    "/dev/cu.SLAB_anything",
   };
 
   for (size_t i = 0; i < arraysize(kValidNames); ++i) {
