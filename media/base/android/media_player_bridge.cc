@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/string_util.h"
 #include "jni/MediaPlayerBridge_jni.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_resource_getter.h"
@@ -45,6 +46,11 @@ MediaPlayerBridge::MediaPlayerBridge(
 }
 
 MediaPlayerBridge::~MediaPlayerBridge() {
+  if (!j_media_player_bridge_.is_null()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    CHECK(env);
+    Java_MediaPlayerBridge_destroy(env, j_media_player_bridge_.obj());
+  }
   Release();
 }
 
@@ -72,7 +78,8 @@ void MediaPlayerBridge::CreateJavaMediaPlayerBridge() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  j_media_player_bridge_.Reset(Java_MediaPlayerBridge_create(env));
+  j_media_player_bridge_.Reset(Java_MediaPlayerBridge_create(
+      env, reinterpret_cast<intptr_t>(this)));
 
   SetMediaPlayerListener();
 }
@@ -144,9 +151,30 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
 
+  const std::string data_uri_prefix("data:");
+  if (StartsWithASCII(url, data_uri_prefix, true)) {
+    if (!Java_MediaPlayerBridge_setDataUriDataSource(
+        env, j_media_player_bridge_.obj(), j_context, j_url_string.obj())) {
+      OnMediaError(MEDIA_ERROR_FORMAT);
+    }
+    return;
+  }
+
   if (!Java_MediaPlayerBridge_setDataSource(
       env, j_media_player_bridge_.obj(), j_context, j_url_string.obj(),
       j_cookies.obj(), hide_url_log_)) {
+    OnMediaError(MEDIA_ERROR_FORMAT);
+    return;
+  }
+
+  manager()->RequestMediaResources(player_id());
+  if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
+    OnMediaError(MEDIA_ERROR_FORMAT);
+}
+
+void MediaPlayerBridge::OnDidSetDataUriDataSource(JNIEnv* env, jobject obj,
+    jboolean success) {
+  if (!success) {
     OnMediaError(MEDIA_ERROR_FORMAT);
     return;
   }

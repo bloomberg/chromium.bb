@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,22 +7,26 @@ package org.chromium.media;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Surface;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Map;
 
-// A wrapper around android.media.MediaPlayer that allows the native code to use it.
-// See media/base/android/media_player_bridge.cc for the corresponding native code.
+/**
+* A wrapper around android.media.MediaPlayer that allows the native code to use it.
+* See media/base/android/media_player_bridge.cc for the corresponding native code.
+*/
 @JNINamespace("media")
 public class MediaPlayerBridge {
 
@@ -30,11 +34,29 @@ public class MediaPlayerBridge {
 
     // Local player to forward this to. We don't initialize it here since the subclass might not
     // want it.
+    private LoadDataUriTask mLoadDataUriTask;
     private MediaPlayer mPlayer;
+    private long mNativeMediaPlayerBridge;
 
     @CalledByNative
-    private static MediaPlayerBridge create() {
-        return new MediaPlayerBridge();
+    private static MediaPlayerBridge create(long  nativeMediaPlayerBridge) {
+        return new MediaPlayerBridge(nativeMediaPlayerBridge);
+    }
+
+    protected MediaPlayerBridge(long nativeMediaPlayerBridge) {
+        mNativeMediaPlayerBridge = nativeMediaPlayerBridge;
+    }
+
+    protected MediaPlayerBridge() {
+    }
+
+    @CalledByNative
+    protected void destroy() {
+        if (mLoadDataUriTask != null) {
+            mLoadDataUriTask.cancel(true);
+            mLoadDataUriTask = null;
+        }
+        mNativeMediaPlayerBridge = 0;
     }
 
     protected MediaPlayer getLocalPlayer() {
@@ -115,15 +137,87 @@ public class MediaPlayerBridge {
             Context context, String url, String cookies, boolean hideUrlLog) {
         Uri uri = Uri.parse(url);
         HashMap<String, String> headersMap = new HashMap<String, String>();
-        if (hideUrlLog)
-            headersMap.put("x-hide-urls-from-log", "true");
-        if (!TextUtils.isEmpty(cookies))
-            headersMap.put("Cookie", cookies);
+        if (hideUrlLog) headersMap.put("x-hide-urls-from-log", "true");
+        if (!TextUtils.isEmpty(cookies)) headersMap.put("Cookie", cookies);
         try {
             getLocalPlayer().setDataSource(context, uri, headersMap);
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    @CalledByNative
+    protected boolean setDataUriDataSource(final Context context, final String url) {
+        if (mLoadDataUriTask != null) {
+            mLoadDataUriTask.cancel(true);
+            mLoadDataUriTask = null;
+        }
+
+        if (!url.startsWith("data:")) return false;
+        int headerStop = url.indexOf(',');
+        if (headerStop == -1) return false;
+        String header = url.substring(0, headerStop);
+        final String data = url.substring(headerStop + 1);
+
+        String headerContent = header.substring(5);
+        String headerInfo[] = headerContent.split(";");
+        if (headerInfo.length != 2) return false;
+        if (!"base64".equals(headerInfo[1])) return false;
+
+        mLoadDataUriTask = new LoadDataUriTask(context, data);
+        mLoadDataUriTask.execute();
+        return true;
+    }
+
+    private class LoadDataUriTask extends AsyncTask <Void, Void, Boolean> {
+        private final String mData;
+        private final Context mContext;
+        private File mTempFile;
+
+        public LoadDataUriTask(Context context, String data) {
+            mData = data;
+            mContext = context;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                mTempFile = File.createTempFile("decoded", "mediadata");
+                FileOutputStream fos = new FileOutputStream(mTempFile);
+                fos.write(Base64.decode(mData, Base64.DEFAULT));
+                fos.close();
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (isCancelled()) {
+                deleteFile();
+                return;
+            }
+
+            try {
+                getLocalPlayer().setDataSource(mContext, Uri.fromFile(mTempFile));
+            } catch (IOException e) {
+                result = false;
+            }
+
+            deleteFile();
+            assert (mNativeMediaPlayerBridge != 0);
+            nativeOnDidSetDataUriDataSource(mNativeMediaPlayerBridge, result);
+        }
+
+        private void deleteFile() {
+            if (mTempFile == null) return;
+            if (!mTempFile.delete()) {
+                // File will be deleted when MediaPlayer releases its handler.
+                Log.e(TAG, "Failed to delete temporary file: " + mTempFile);
+                assert (false);
+            }
         }
     }
 
@@ -218,4 +312,7 @@ public class MediaPlayerBridge {
         }
         return new AllowedOperations(canPause, canSeekForward, canSeekBackward);
     }
+
+    private native void nativeOnDidSetDataUriDataSource(long nativeMediaPlayerBridge,
+                                                        boolean success);
 }

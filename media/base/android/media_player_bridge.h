@@ -78,6 +78,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   void OnPlaybackComplete();
   void OnMediaInterrupted();
   void OnSeekComplete();
+  void OnDidSetDataUriDataSource(JNIEnv* env, jobject obj, jboolean success);
 
  protected:
   void SetJavaMediaPlayerBridge(jobject j_media_player_bridge);
