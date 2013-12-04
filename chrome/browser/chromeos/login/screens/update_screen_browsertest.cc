@@ -49,7 +49,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     fake_dbus_thread_manager->SetUpdateEngineClient(
         scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
 
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+    DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager);
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // Setup network portal detector to return online state for both
@@ -90,7 +90,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     NetworkPortalDetector::Shutdown();
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    DBusThreadManager::Shutdown();
   }
 
   void SetDefaultNetworkPath(const std::string& service_path) {

@@ -83,10 +83,18 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // making it a Singleton, to ensure clean startup and shutdown.
   static void Initialize();
 
-  // Similar to Initialize(), but can inject an alternative
-  // DBusThreadManager such as MockDBusThreadManager for testing.
-  // The injected object will be owned by the internal pointer and deleted
-  // by Shutdown().
+  // Sets an alternative DBusThreadManager such as MockDBusThreadManager
+  // to be used in |Initialize()| for testing. Tests that call
+  // DBusThreadManager::Initialize() (such as browser_tests and
+  // interactive_ui_tests) should use this instead of calling
+  // |InitiailzeForTesting|.  The injected object will be owned by the
+  // internal pointer and deleted by Shutdown().
+  static void SetInstanceForTesting(DBusThreadManager* dbus_thread_manager);
+
+  // Similar to Initialize(), but injects an alternative
+  // DBusThreadManager using SetInstanceForTest first.  The injected
+  // object will be owned by the internal pointer and deleted by
+  // Shutdown().
   static void InitializeForTesting(DBusThreadManager* dbus_thread_manager);
 
   // Initialize with stub implementations for tests based on stubs.

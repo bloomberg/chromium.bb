@@ -39,6 +39,10 @@ class HttpListenSocket : public TCPListenSocket {
   virtual void Listen();
 
  private:
+  friend class EmbeddedTestServer;
+
+  // Detaches the current from |thread_checker_|.
+  void DetachFromThread();
 
   base::ThreadChecker thread_checker_;
 };
@@ -48,18 +52,10 @@ class HttpListenSocket : public TCPListenSocket {
 // it assumes that the request syntax is correct. It *does not* support
 // a Chunked Transfer Encoding.
 //
-// The common use case is below:
-//
-// base::Thread io_thread_;
-// scoped_ptr<EmbeddedTestServer> test_server_;
+// The common use case for unit tests is below:
 //
 // void SetUp() {
-//   base::Thread::Options thread_options;
-//   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-//   ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
-//
-//   test_server_.reset(
-//       new EmbeddedTestServer(io_thread_.message_loop_proxy()));
+//   test_server_.reset(new EmbeddedTestServer());
 //   ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
 //   test_server_->RegisterRequestHandler(
 //       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
@@ -75,6 +71,24 @@ class HttpListenSocket : public TCPListenSocket {
 //   http_response->set_content("hello");
 //   http_response->set_content_type("text/plain");
 //   return http_response.Pass();
+// }
+//
+// For a test that spawns another process such as browser_tests, you
+// need to stop the server's thread so that there is no no other
+// threads running while spawning the process. To do so, please follow
+// the following example:
+//
+// void SetUp() {
+//   test_server_.reset(new EmbeddedTestServer());
+//   // EmbeddedTestServer spawns a thread to initialize socket.
+//   // Stop the thread in preparation for fork and exec.
+//   test_server_->StopThread();
+//   ...
+//   InProcessBrowserTest::SetUp();
+// }
+//
+// void SetUpOnMainThread() {
+//   test_server_->RestartThreadAndListen();
 // }
 //
 class EmbeddedTestServer : public StreamListenSocket::Delegate {
@@ -122,10 +136,19 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   // on UI thread.
   void RegisterRequestHandler(const HandleRequestCallback& callback);
 
+  // Stops IO thread that handles http requests.
+  void StopThread();
+
+  // Restarts IO thread and listen on the socket.
+  void RestartThreadAndListen();
+
  private:
+  void StartThread();
+
   // Initializes and starts the server. If initialization succeeds, Starts()
   // will return true.
   void InitializeOnIOThread();
+  void ListenOnIOThread();
 
   // Shuts down the server.
   void ShutdownOnIOThread();

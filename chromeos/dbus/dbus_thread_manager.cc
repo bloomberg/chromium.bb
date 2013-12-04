@@ -51,7 +51,7 @@
 namespace chromeos {
 
 static DBusThreadManager* g_dbus_thread_manager = NULL;
-static bool g_dbus_thread_manager_set_for_testing = false;
+static DBusThreadManager* g_dbus_thread_manager_for_testing = NULL;
 
 // The DBusThreadManager implementation used in production.
 class DBusThreadManagerImpl : public DBusThreadManager {
@@ -319,13 +319,16 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
 // static
 void DBusThreadManager::Initialize() {
-  // Ignore Initialize() if we set a test DBusThreadManager.
-  if (g_dbus_thread_manager_set_for_testing)
-    return;
   // If we initialize DBusThreadManager twice we may also be shutting it down
   // early; do not allow that.
   CHECK(g_dbus_thread_manager == NULL);
 
+  if (g_dbus_thread_manager_for_testing) {
+    g_dbus_thread_manager = g_dbus_thread_manager_for_testing;
+    InitializeClients();
+    VLOG(1) << "DBusThreadManager initialized with test implementation";
+    return;
+  }
   // Determine whether we use stub or real client implementations.
   if (base::SysInfo::IsRunningOnChromeOS()) {
     g_dbus_thread_manager = new DBusThreadManagerImpl;
@@ -333,21 +336,22 @@ void DBusThreadManager::Initialize() {
     VLOG(1) << "DBusThreadManager initialized for ChromeOS";
   } else {
     InitializeWithStub();
-    return;
   }
+}
+
+// static
+void DBusThreadManager::SetInstanceForTesting(
+    DBusThreadManager* dbus_thread_manager) {
+  CHECK(!g_dbus_thread_manager);
+  CHECK(!g_dbus_thread_manager_for_testing);
+  g_dbus_thread_manager_for_testing = dbus_thread_manager;
 }
 
 // static
 void DBusThreadManager::InitializeForTesting(
     DBusThreadManager* dbus_thread_manager) {
-  // If we initialize DBusThreadManager twice we may also be shutting it down
-  // early; do not allow that.
-  CHECK(g_dbus_thread_manager == NULL);
-  CHECK(dbus_thread_manager);
-  g_dbus_thread_manager = dbus_thread_manager;
-  g_dbus_thread_manager_set_for_testing = true;
-  InitializeClients();
-  VLOG(1) << "DBusThreadManager initialized with test implementation";
+  SetInstanceForTesting(dbus_thread_manager);
+  Initialize();
 }
 
 // static
@@ -372,9 +376,10 @@ bool DBusThreadManager::IsInitialized() {
 void DBusThreadManager::Shutdown() {
   // If we called InitializeForTesting, this may get called more than once.
   // Ensure that we only shutdown DBusThreadManager once.
-  CHECK(g_dbus_thread_manager || g_dbus_thread_manager_set_for_testing);
+  CHECK(g_dbus_thread_manager || g_dbus_thread_manager_for_testing);
   DBusThreadManager* dbus_thread_manager = g_dbus_thread_manager;
   g_dbus_thread_manager = NULL;
+  g_dbus_thread_manager_for_testing = NULL;
   delete dbus_thread_manager;
   VLOG(1) << "DBusThreadManager Shutdown completed";
 }
@@ -389,9 +394,9 @@ DBusThreadManager::~DBusThreadManager() {
     return;  // Called form Shutdown() or local test instance.
   // There should never be both a global instance and a local instance.
   CHECK(this == g_dbus_thread_manager);
-  if (g_dbus_thread_manager_set_for_testing) {
+  if (g_dbus_thread_manager_for_testing) {
     g_dbus_thread_manager = NULL;
-    g_dbus_thread_manager_set_for_testing = false;
+    g_dbus_thread_manager_for_testing = NULL;
     VLOG(1) << "DBusThreadManager destroyed";
   } else {
     LOG(FATAL) << "~DBusThreadManager() called outside of Shutdown()";

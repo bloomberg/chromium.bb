@@ -58,7 +58,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     fake_session_manager_client_ = new FakeSessionManagerClient;
     fake_dbus_thread_manager->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+    DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -80,7 +80,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    DBusThreadManager::Shutdown();
   }
 
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {

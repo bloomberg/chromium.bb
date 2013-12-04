@@ -52,7 +52,7 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
     session_manager_client_ = new FakeSessionManagerClient;
     dbus_thread_manager->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(session_manager_client_));
-    DBusThreadManager::InitializeForTesting(dbus_thread_manager);
+    DBusThreadManager::SetInstanceForTesting(dbus_thread_manager);
     session_manager_client_->StartSession(kUserId1);
   }
 

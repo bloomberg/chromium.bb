@@ -1235,7 +1235,7 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
     power_manager_client_ = new chromeos::FakePowerManagerClient;
     dbus_manager->SetPowerManagerClient(
         scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
-    chromeos::DBusThreadManager::InitializeForTesting(dbus_manager);
+    chromeos::DBusThreadManager::SetInstanceForTesting(dbus_manager);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -1257,7 +1257,6 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    chromeos::DBusThreadManager::Shutdown();
     PlatformAppBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 

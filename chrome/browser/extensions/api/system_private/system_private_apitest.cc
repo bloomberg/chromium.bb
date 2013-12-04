@@ -37,11 +37,11 @@ class GetUpdateStatusApiTest : public ExtensionApiTest {
     fake_update_engine_client_ = new chromeos::FakeUpdateEngineClient;
     fake_dbus_thread_manager->SetUpdateEngineClient(
         scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
-    chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+    chromeos::DBusThreadManager::SetInstanceForTesting(
+        fake_dbus_thread_manager);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    chromeos::DBusThreadManager::Shutdown();
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
   }
 

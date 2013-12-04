@@ -216,9 +216,7 @@ void BrowserTestBase::SetUp() {
   rule_based_resolver_->AddSimulatedFailure("wpad");
   net::ScopedDefaultHostResolverProc scoped_local_host_resolver_proc(
       rule_based_resolver_.get());
-
   SetUpInProcessBrowserTestFixture();
-
   MainFunctionParams params(*command_line);
   params.ui_task =
       new base::Closure(

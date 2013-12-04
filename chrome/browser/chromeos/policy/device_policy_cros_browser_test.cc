@@ -83,13 +83,12 @@ DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 }
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
-  chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
+  chromeos::DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager_);
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void DevicePolicyCrosBrowserTest::TearDownInProcessBrowserTestFixture() {
   InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-  chromeos::DBusThreadManager::Shutdown();
 }
 
 void DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned() {

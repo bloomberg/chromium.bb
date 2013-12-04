@@ -249,6 +249,9 @@ class KioskTest : public InProcessBrowserTest {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    // Stop IO thread here because no threads are allowed while
+    // spawning sandbox host process. See crbug.com/322732.
+    embedded_test_server()->StopThread();
 
     mock_user_manager_.reset(new MockUserManager);
     AppLaunchController::SkipSplashWaitForTesting();
@@ -259,6 +262,11 @@ class KioskTest : public InProcessBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // Restart the thread as the sandbox host process has already been spawned.
+    embedded_test_server()->RestartThreadAndListen();
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -801,6 +809,7 @@ class KioskEnterpriseTest : public KioskTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    KioskTest::SetUpOnMainThread();
     // Configure kTestEnterpriseKioskApp in device policy.
     em::DeviceLocalAccountsProto* accounts =
         device_policy_test_helper_.device_policy()->payload()
@@ -832,8 +841,6 @@ class KioskEnterpriseTest : public KioskTest {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(token_service);
     token_service->SetAndSaveRefreshToken(kTestRefreshToken);
-
-    KioskTest::SetUpOnMainThread();
   }
 
   static void StorePolicyCallback(bool result) {

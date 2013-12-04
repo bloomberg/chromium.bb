@@ -454,7 +454,7 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
     fake_session_manager_client_ = new FakeSessionManagerClient;
     fake_dbus_thread_manager->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+    DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -471,7 +471,6 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     WizardControllerTest::TearDownInProcessBrowserTestFixture();
-    DBusThreadManager::Shutdown();
   }
 
   ErrorScreen* GetErrorScreen() {
