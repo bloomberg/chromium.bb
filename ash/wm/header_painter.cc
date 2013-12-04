@@ -9,7 +9,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/solo_window_tracker.h"
-#include "ash/wm/window_state.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -165,10 +164,8 @@ HeaderPainter::HeaderPainter()
 
 HeaderPainter::~HeaderPainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.
-  if (window_) {
+  if (window_)
     window_->RemoveObserver(this);
-    wm::GetWindowState(window_)->RemoveObserver(this);
-  }
 }
 
 void HeaderPainter::Init(
@@ -203,7 +200,6 @@ void HeaderPainter::Init(
   // Observer removes itself in OnWindowDestroying() below, or in the destructor
   // if we go away before the window.
   window_->AddObserver(this);
-  wm::GetWindowState(window_)->AddObserver(this);
 
   // Solo-window header updates are handled by the WorkspaceLayoutManager when
   // this window is added to the desktop.
@@ -260,17 +256,6 @@ int HeaderPainter::GetRightInset() const {
 
 int HeaderPainter::GetThemeBackgroundXInset() const {
   return kThemeFrameImageInsetX;
-}
-
-bool HeaderPainter::ShouldUseMinimalHeaderStyle(Themed header_themed) const {
-  // Use the minimalistic header style whenever |frame_| is maximized or
-  // fullscreen EXCEPT:
-  // - If the user has installed a theme with custom images for the header.
-  // - For windows which are not tracked by the workspace code (which are used
-  //   for tab dragging).
-  return (frame_->IsMaximized() || frame_->IsFullscreen()) &&
-      header_themed == THEMED_NO &&
-      wm::GetWindowState(frame_->GetNativeWindow())->tracked_by_workspace();
 }
 
 void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
@@ -489,16 +474,6 @@ void HeaderPainter::OnThemeChanged() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WindowStateObserver overrides:
-void HeaderPainter::OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
-                                                bool old) {
-  // When 'TrackedByWorkspace' changes, we are going to paint the header
-  // differently. Schedule a paint to ensure everything is updated correctly.
-  if (window_state->tracked_by_workspace())
-    header_view_->SchedulePaint();
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
 void HeaderPainter::OnWindowDestroying(aura::Window* destroying) {
@@ -507,7 +482,6 @@ void HeaderPainter::OnWindowDestroying(aura::Window* destroying) {
   // Must be removed here and not in the destructor, as the aura::Window is
   // already destroyed when our destructor runs.
   window_->RemoveObserver(this);
-  wm::GetWindowState(window_)->RemoveObserver(this);
 
   window_ = NULL;
 }
@@ -550,11 +524,7 @@ int HeaderPainter::GetCaptionButtonContainerCenterY() const {
 }
 
 int HeaderPainter::GetHeaderCornerRadius() const {
-  // Use square corners for maximized and fullscreen windows when they are
-  // tracked by the workspace code. (Windows which are not tracked by the
-  // workspace code are used for tab dragging.)
-  bool square_corners = ((frame_->IsMaximized() || frame_->IsFullscreen())) &&
-      wm::GetWindowState(frame_->GetNativeWindow())->tracked_by_workspace();
+  bool square_corners = (frame_->IsMaximized() || frame_->IsFullscreen());
   const int kCornerRadius = 2;
   return square_corners ? 0 : kCornerRadius;
 }
@@ -571,8 +541,8 @@ int HeaderPainter::GetHeaderOpacity(
     return kFullyOpaque;
   }
 
-  // The header is fully opaque when using the minimalistic header style.
-  if (ShouldUseMinimalHeaderStyle(THEMED_NO))
+  // Maximized and fullscreen windows are fully opaque.
+  if (frame_->IsMaximized() || frame_->IsFullscreen())
     return kFullyOpaque;
 
   // Solo header is very transparent.

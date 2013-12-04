@@ -242,16 +242,12 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   int theme_frame_overlay_image_id = GetThemeFrameOverlayImageId();
 
   ui::ThemeProvider* theme_provider = GetThemeProvider();
-  ash::HeaderPainter::Themed header_themed = ash::HeaderPainter::THEMED_NO;
-  if (theme_provider->HasCustomImage(theme_frame_image_id) ||
-      (theme_frame_overlay_image_id != 0 &&
-       theme_provider->HasCustomImage(theme_frame_overlay_image_id))) {
-    header_themed = ash::HeaderPainter::THEMED_YES;
+  if (!theme_provider->HasCustomImage(theme_frame_image_id) &&
+      (theme_frame_overlay_image_id == 0 ||
+       !theme_provider->HasCustomImage(theme_frame_overlay_image_id))) {
+    if (frame()->IsMaximized() || frame()->IsFullscreen())
+      theme_frame_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
   }
-
-  if (header_painter_->ShouldUseMinimalHeaderStyle(header_themed))
-    theme_frame_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
-
   header_painter_->PaintHeader(
       canvas,
       ShouldPaintAsActive() ?

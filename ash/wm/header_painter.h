@@ -6,7 +6,6 @@
 #define ASH_WM_HEADER_PAINTER_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"  // OVERRIDE
 #include "base/gtest_prod_util.h"
@@ -36,8 +35,7 @@ class FrameCaptionButtonContainerView;
 
 // Helper class for painting the window header.
 class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
-                                 public gfx::AnimationDelegate,
-                                 public wm::WindowStateObserver {
+                                 public gfx::AnimationDelegate {
  public:
   // Opacity values for the window header in various states, from 0 to 255.
   static int kActiveWindowOpacity;
@@ -47,11 +45,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   enum HeaderMode {
     ACTIVE,
     INACTIVE
-  };
-
-  enum Themed {
-    THEMED_YES,
-    THEMED_NO
   };
 
   HeaderPainter();
@@ -91,9 +84,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
 
   // Returns the amount that the theme background should be inset.
   int GetThemeBackgroundXInset() const;
-
-  // Returns true if the header should be painted using a minimalistic style.
-  bool ShouldUseMinimalHeaderStyle(Themed header_themed) const;
 
   // Paints the header.
   // |theme_frame_overlay_id| is 0 if no overlay image should be used.
@@ -136,27 +126,12 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
 
-  // ash::WindowStateObserver override:
-  virtual void OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
-                                           bool old) OVERRIDE;
-
   // Overridden from gfx::AnimationDelegate
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, CreateAndDeleteSingleWindow);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeader);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderWithApp);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderWithPanel);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderModal);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderConstrained);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderNotDrawn);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderMultiDisplay);
   FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, GetHeaderOpacity);
   FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, TitleIconAlignment);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, ChildWindowVisibility);
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest,
-                           NoCrashShutdownWithAlwaysOnTopWindow);
 
   // Returns the header bounds in the coordinates of |header_view_|. The header
   // is assumed to be positioned at the top left corner of |header_view_| and to

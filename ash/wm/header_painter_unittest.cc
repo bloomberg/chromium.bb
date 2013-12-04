@@ -123,29 +123,6 @@ TEST_F(HeaderPainterTest, GetHeaderOpacity) {
                                  0));
 }
 
-// Test that the minimal header style is used in the proper situations.
-TEST_F(HeaderPainterTest, MinimalHeaderStyle) {
-  // Create a widget and a painter for it.
-  scoped_ptr<Widget> w(CreateTestWidget());
-  scoped_ptr<HeaderPainter> p(CreateTestPainter(w.get()));
-  w->Show();
-
-  // Regular non-maximized windows should not use the minimal header style.
-  EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_NO));
-
-  // Regular maximized windows should use the minimal header style.
-  w->Maximize();
-  EXPECT_TRUE(p->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_NO));
-
-  // Test cases where the maximized window should not use the minimal header
-  // style.
-  EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_YES));
-
-  wm::GetWindowState(w->GetNativeWindow())->SetTrackedByWorkspace(false);
-  EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_NO));
-  wm::GetWindowState(w->GetNativeWindow())->SetTrackedByWorkspace(true);
-}
-
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(HeaderPainterTest, TitleIconAlignment) {
   scoped_ptr<Widget> w(CreateTestWidget());

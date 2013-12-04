@@ -29,6 +29,7 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
       title_font_(gfx::Font(views::NativeWidgetAura::GetWindowTitleFont())),
       frame_border_hit_test_controller_(
           new FrameBorderHitTestController(frame_)) {
+  DCHECK(!frame_->widget_delegate()->CanMaximize());
   if (frame_type != FRAME_NONE)
     InitHeaderPainter();
 }
@@ -115,9 +116,7 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
     return;
   bool paint_as_active = ShouldPaintAsActive();
   int theme_frame_id = 0;
-  if (header_painter_->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_NO))
-    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
-  else if (paint_as_active)
+  if (paint_as_active)
     theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
   else
     theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;

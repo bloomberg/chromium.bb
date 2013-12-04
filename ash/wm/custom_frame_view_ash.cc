@@ -177,7 +177,7 @@ void CustomFrameViewAsh::HeaderView::Layout() {
 
 void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
   int theme_image_id = 0;
-  if (header_painter_->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_NO))
+  if (frame_->IsMaximized() || frame_->IsFullscreen())
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
   else if (paint_as_active_)
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
