@@ -103,11 +103,6 @@ ScriptValue IDBRequest::source(ExecutionContext* context) const
     return idbAnyToScriptValue(&requestState, m_source);
 }
 
-PassRefPtr<IDBTransaction> IDBRequest::transaction() const
-{
-    return m_transaction;
-}
-
 const String& IDBRequest::readyState() const
 {
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
@@ -169,7 +164,7 @@ void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
     m_transaction->registerRequest(this);
 }
 
-IDBCursor* IDBRequest::getResultCursor()
+IDBCursor* IDBRequest::getResultCursor() const
 {
     if (!m_result)
         return 0;

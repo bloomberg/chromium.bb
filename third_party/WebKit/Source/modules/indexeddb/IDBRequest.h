@@ -54,12 +54,14 @@ class SharedBuffer;
 class IDBRequestBase : public WTF::RefCountedBase {
 public:
     virtual void deref() = 0;
+
 protected:
     virtual ~IDBRequestBase() { }
 };
 
 class IDBRequest : public IDBRequestBase, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING(IDBRequestBase);
+
 public:
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     virtual ~IDBRequest();
@@ -67,7 +69,7 @@ public:
     ScriptValue result(ExceptionState&);
     PassRefPtr<DOMError> error(ExceptionState&) const;
     ScriptValue source(ExecutionContext*) const;
-    PassRefPtr<IDBTransaction> transaction() const;
+    PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
 
     bool isResultDirty() const { return m_resultDirty; }
     PassRefPtr<IDBAny> resultAsAny() const { return m_result; }
@@ -133,7 +135,7 @@ public:
     }
 
     DOMRequestState* requestState() { return &m_requestState; }
-    IDBCursor* getResultCursor();
+    IDBCursor* getResultCursor() const;
 
 protected:
     IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);

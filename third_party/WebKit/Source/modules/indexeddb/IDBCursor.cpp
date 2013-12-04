@@ -80,7 +80,6 @@ const AtomicString& IDBCursor::directionPrevUnique()
     return prevunique;
 }
 
-
 IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : m_backend(backend)
     , m_request(request)
@@ -354,7 +353,7 @@ void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primary
     m_gotValue = true;
 }
 
-PassRefPtr<IDBObjectStore> IDBCursor::effectiveObjectStore()
+PassRefPtr<IDBObjectStore> IDBCursor::effectiveObjectStore() const
 {
     if (m_source->type() == IDBAny::IDBObjectStoreType)
         return m_source->idbObjectStore();

@@ -51,6 +51,7 @@ struct IDBObjectStoreMetadata;
 
 class IDBTransaction : public ScriptWrappable, public RefCounted<IDBTransaction>, public EventTargetWithInlineData, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(IDBTransaction);
+
 public:
     static PassRefPtr<IDBTransaction> create(ExecutionContext*, int64_t, const Vector<String>& objectStoreNames, IndexedDB::TransactionMode, IDBDatabase*);
     static PassRefPtr<IDBTransaction> create(ExecutionContext*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);

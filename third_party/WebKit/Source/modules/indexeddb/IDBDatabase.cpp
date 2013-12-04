@@ -121,7 +121,7 @@ void IDBDatabase::transactionCreated(IDBTransaction* transaction)
     }
 }
 
-void IDBDatabase::transactionFinished(IDBTransaction* transaction)
+void IDBDatabase::transactionFinished(const IDBTransaction* transaction)
 {
     ASSERT(transaction);
     ASSERT(m_transactions.contains(transaction->id()));

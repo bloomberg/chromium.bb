@@ -42,7 +42,7 @@ public:
     static PassRefPtr<IDBFactoryBackendInterface> create();
     virtual ~IDBFactoryBackendInterface() { }
 
-    virtual bool allowIndexedDB(WebCore::ExecutionContext*, const String& name) = 0;
+    virtual bool allowIndexedDB(ExecutionContext*, const String& name) = 0;
 };
 
 } // namespace WebCore

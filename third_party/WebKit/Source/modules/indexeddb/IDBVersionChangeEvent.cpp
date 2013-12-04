@@ -62,7 +62,7 @@ ScriptValue IDBVersionChangeEvent::newVersion(ExecutionContext* context) const
     return idbAnyToScriptValue(&requestState, m_newVersion);
 }
 
-const AtomicString& IDBVersionChangeEvent::dataLoss()
+const AtomicString& IDBVersionChangeEvent::dataLoss() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, total, ("total", AtomicString::ConstructFromLiteral));
     if (m_dataLoss == blink::WebIDBDataLossTotal)

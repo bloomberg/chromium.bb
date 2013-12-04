@@ -52,6 +52,7 @@ class ExecutionContext;
 
 class IDBDatabase : public RefCounted<IDBDatabase>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(IDBDatabase);
+
 public:
     static PassRefPtr<IDBDatabase> create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
     ~IDBDatabase();
@@ -60,7 +61,7 @@ public:
     void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
     void indexDeleted(int64_t objectStoreId, int64_t indexId);
     void transactionCreated(IDBTransaction*);
-    void transactionFinished(IDBTransaction*);
+    void transactionFinished(const IDBTransaction*);
 
     // Implement the IDL
     const String& name() const { return m_metadata.name; }

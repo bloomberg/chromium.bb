@@ -109,7 +109,7 @@ public:
     SharedBuffer* buffer() const;
     int64_t integer() const;
     const String& string() const;
-    IDBKey* key() const;
+    const IDBKey* key() const;
     const IDBKeyPath& keyPath() const;
 
 private:

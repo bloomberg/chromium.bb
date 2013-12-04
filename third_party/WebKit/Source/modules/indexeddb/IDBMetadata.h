@@ -73,7 +73,6 @@ struct IDBObjectStoreMetadata {
 
     typedef HashMap<int64_t, IDBIndexMetadata> IndexMap;
     IndexMap indexes;
-
 };
 
 struct IDBDatabaseMetadata {

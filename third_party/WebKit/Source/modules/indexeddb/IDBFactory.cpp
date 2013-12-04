@@ -85,7 +85,6 @@ PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ExecutionContext* context, E
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), 0);
 
-
     if (!m_permissionClient->allowIndexedDB(context, "Database Listing")) {
         request->onError(DOMError::create(UnknownError, permissionDeniedErrorMessage));
         return request;

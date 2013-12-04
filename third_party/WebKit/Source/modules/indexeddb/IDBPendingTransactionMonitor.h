@@ -40,6 +40,7 @@ class IDBTransaction;
 
 class IDBPendingTransactionMonitor {
     WTF_MAKE_NONCOPYABLE(IDBPendingTransactionMonitor);
+
 public:
     static void addNewTransaction(PassRefPtr<IDBTransaction>);
     static void deactivateNewTransactions();

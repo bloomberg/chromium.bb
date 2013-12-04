@@ -95,7 +95,7 @@ protected:
     IDBCursor(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 
 private:
-    PassRefPtr<IDBObjectStore> effectiveObjectStore();
+    PassRefPtr<IDBObjectStore> effectiveObjectStore() const;
 
     void checkForReferenceCycle();
     bool isDeleted() const;

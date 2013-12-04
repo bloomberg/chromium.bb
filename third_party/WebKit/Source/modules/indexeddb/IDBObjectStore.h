@@ -97,7 +97,6 @@ public:
 
     blink::WebIDBDatabase* backendDB() const;
 
-
 private:
     IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
 

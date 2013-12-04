@@ -47,7 +47,9 @@ bool IDBKey::isValid() const
     return true;
 }
 
-static int compareSizes(size_t a, size_t b)
+// Safely compare numbers (signed/unsigned ints/floats/doubles).
+template <typename T>
+static int compareNumbers(const T& a, const T& b)
 {
     if (a < b)
         return -1;
@@ -68,17 +70,16 @@ int IDBKey::compare(const IDBKey* other) const
             if (int result = m_array[i]->compare(other->m_array[i].get()))
                 return result;
         }
-        return compareSizes(m_array.size(), other->m_array.size());
+        return compareNumbers(m_array.size(), other->m_array.size());
     case BinaryType:
         if (int result = memcmp(m_binary->data(), other->m_binary->data(), std::min(m_binary->size(), other->m_binary->size())))
             return result < 0 ? -1 : 1;
-        return compareSizes(m_binary->size(), other->m_binary->size());
+        return compareNumbers(m_binary->size(), other->m_binary->size());
     case StringType:
         return codePointCompare(m_string, other->m_string);
     case DateType:
     case NumberType:
-        return (m_number < other->m_number) ? -1 :
-                (m_number > other-> m_number) ? 1 : 0;
+        return compareNumbers(m_number, other->m_number);
     case InvalidType:
     case MinType:
         ASSERT_NOT_REACHED();

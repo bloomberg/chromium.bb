@@ -111,7 +111,7 @@ IDBTransaction* IDBAny::idbTransaction() const
     return m_idbTransaction.get();
 }
 
-IDBKey* IDBAny::key() const
+const IDBKey* IDBAny::key() const
 {
     ASSERT(m_type == KeyType || m_type == BufferKeyAndKeyPathType);
     return m_idbKey.get();
