@@ -57,6 +57,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   void OnSwapBuffersComplete();
 
  private:
+  void InitializeCapabilities();
+
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
 
@@ -77,6 +79,8 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   class SwapBuffersCompleteCallbackProxy;
   scoped_ptr<SwapBuffersCompleteCallbackProxy>
       swap_buffers_complete_callback_proxy_;
+
+  cc::ContextProvider::Capabilities capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProviderInProcess);
 };

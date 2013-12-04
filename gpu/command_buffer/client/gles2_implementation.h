@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/client/share_group.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
@@ -240,6 +241,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   ShareGroup* share_group() const {
     return share_group_.get();
+  }
+
+  const Capabilities& capabilities() const {
+    return capabilities_;
   }
 
  private:
@@ -689,6 +694,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   scoped_ptr<std::string> current_trace_name_;
 
   GpuControl* gpu_control_;
+
+  Capabilities capabilities_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 

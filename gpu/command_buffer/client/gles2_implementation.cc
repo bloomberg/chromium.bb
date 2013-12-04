@@ -112,6 +112,7 @@ GLES2Implementation::GLES2Implementation(
       current_query_(NULL),
       error_message_callback_(NULL),
       gpu_control_(gpu_control),
+      capabilities_(gpu_control->GetCapabilities()),
       weak_ptr_factory_(this) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
@@ -2131,7 +2132,7 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
             "GL_CHROMIUM_map_sub "
             "GL_CHROMIUM_shallow_flush "
             "GL_EXT_unpack_subimage";
-        if (gpu_control_->SupportsGpuMemoryBuffer()) {
+        if (capabilities_.map_image) {
           // The first space character is intentional.
           str += " GL_CHROMIUM_map_image";
         }

@@ -47,7 +47,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy
       OVERRIDE;
 
   // gpu::GpuControl implementation:
-  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
+  virtual gpu::Capabilities GetCapabilities() OVERRIDE;
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,

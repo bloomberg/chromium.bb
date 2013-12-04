@@ -555,6 +555,10 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   ::gpu::ContextSupport* GetContextSupport();
 
+  ::gpu::gles2::GLES2Implementation* GetImplementation() {
+    return gl_;
+  }
+
  private:
   WebGraphicsContext3DInProcessCommandBufferImpl(
       scoped_ptr< ::gpu::GLInProcessContext> context,

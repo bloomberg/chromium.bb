@@ -25,11 +25,13 @@ class GPU_EXPORT GpuControlService : public GpuControl {
   GpuControlService(GpuMemoryBufferManagerInterface* gpu_memory_buffer_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                     gles2::MailboxManager* mailbox_manager,
-                    gles2::QueryManager* query_manager);
+                    gles2::QueryManager* query_manager,
+                    const gpu::Capabilities& decoder_capabilities);
   virtual ~GpuControlService();
 
   // Overridden from GpuControl:
-  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
+
+  virtual gpu::Capabilities GetCapabilities() OVERRIDE;
 
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
@@ -62,6 +64,7 @@ class GPU_EXPORT GpuControlService : public GpuControl {
   gles2::QueryManager* query_manager_;
   typedef std::map<int32, linked_ptr<gfx::GpuMemoryBuffer> > GpuMemoryBufferMap;
   GpuMemoryBufferMap gpu_memory_buffers_;
+  gpu::Capabilities capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuControlService);
 };

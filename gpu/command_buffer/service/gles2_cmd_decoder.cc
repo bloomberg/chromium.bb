@@ -19,6 +19,7 @@
 #include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/debug_marker_manager.h"
@@ -543,6 +544,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   virtual GLES2Util* GetGLES2Util() OVERRIDE { return &util_; }
   virtual gfx::GLContext* GetGLContext() OVERRIDE { return context_.get(); }
   virtual ContextGroup* GetContextGroup() OVERRIDE { return group_.get(); }
+  virtual Capabilities GetCapabilities() OVERRIDE;
   virtual void RestoreState() const OVERRIDE;
 
   virtual void RestoreActiveTexture() const OVERRIDE {
@@ -2525,6 +2527,41 @@ bool GLES2DecoderImpl::Initialize(
   framebuffer_manager()->AddObserver(this);
 
   return true;
+}
+
+Capabilities GLES2DecoderImpl::GetCapabilities() {
+  DCHECK(initialized());
+
+  Capabilities caps;
+
+  caps.fast_npot_mo8_textures =
+      feature_info_->workarounds().enable_chromium_fast_npot_mo8_textures;
+  caps.egl_image_external =
+      feature_info_->feature_flags().oes_egl_image_external;
+  caps.texture_format_bgra8888 =
+      feature_info_->feature_flags().ext_texture_format_bgra8888;
+  caps.texture_format_etc1 =
+      feature_info_->feature_flags().oes_compressed_etc1_rgb8_texture;
+  caps.texture_rectangle = feature_info_->feature_flags().arb_texture_rectangle;
+  caps.texture_usage = feature_info_->feature_flags().angle_texture_usage;
+  caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
+  caps.discard_framebuffer =
+      feature_info_->feature_flags().ext_discard_framebuffer;
+
+#if defined(OS_MACOSX)
+  // This is unconditionally true on mac, no need to test for it at runtime.
+  caps.iosurface = true;
+#endif
+
+  // TODO(boliu): Expose this directly from GLSurface.
+  std::vector<std::string> extension_list;
+  base::SplitString(surface_->GetExtensions(), ' ', &extension_list);
+  std::set<std::string> extension_set(extension_list.begin(),
+                                      extension_list.end());
+  caps.post_sub_buffer =
+      extension_set.count("GL_CHROMIUM_post_sub_buffer") > 0;
+
+  return caps;
 }
 
 void GLES2DecoderImpl::UpdateCapabilities() {

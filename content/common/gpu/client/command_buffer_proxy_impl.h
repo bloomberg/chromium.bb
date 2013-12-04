@@ -96,7 +96,7 @@ class CommandBufferProxyImpl
       gpu::error::ContextLostReason reason) OVERRIDE;
 
   // gpu::GpuControl implementation:
-  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
+  virtual gpu::Capabilities GetCapabilities() OVERRIDE;
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,
@@ -206,6 +206,8 @@ class CommandBufferProxyImpl
 
   // Local cache of id to gpu memory buffer mapping.
   GpuMemoryBufferMap gpu_memory_buffers_;
+
+  gpu::Capabilities capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

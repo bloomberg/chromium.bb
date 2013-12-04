@@ -174,7 +174,8 @@ void GLManager::Initialize(const GLManager::Options& options) {
       new GpuControlService(decoder_->GetContextGroup()->image_manager(),
                             options.gpu_memory_buffer_factory,
                             decoder_->GetContextGroup()->mailbox_manager(),
-                            decoder_->GetQueryManager()));
+                            decoder_->GetQueryManager(),
+                            decoder_->GetCapabilities()));
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GLManager::PumpCommands, base::Unretained(this)));

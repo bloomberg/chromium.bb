@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "gpu/command_buffer/common/capabilities.h"
 
 class GrContext;
 namespace blink { class WebGraphicsContext3D; }
@@ -48,6 +49,10 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
     size_t max_transfer_buffer_usage_bytes;
 
     CC_EXPORT Capabilities();
+
+    // TODO(boliu): Compose a gpu::Capabilities instead and remove this
+    // constructor.
+    explicit CC_EXPORT Capabilities(const gpu::Capabilities& gpu_capabilities);
   };
   // Returns the capabilities of the currently bound 3d context.
   virtual Capabilities ContextCapabilities() = 0;

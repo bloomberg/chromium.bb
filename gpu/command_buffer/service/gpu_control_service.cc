@@ -15,18 +15,22 @@ GpuControlService::GpuControlService(
     GpuMemoryBufferManagerInterface* gpu_memory_buffer_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     gles2::MailboxManager* mailbox_manager,
-    gles2::QueryManager* query_manager)
+    gles2::QueryManager* query_manager,
+    const gpu::Capabilities& decoder_capabilities)
     : gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       mailbox_manager_(mailbox_manager),
-      query_manager_(query_manager) {
+      query_manager_(query_manager),
+      capabilities_(decoder_capabilities) {
+  capabilities_.map_image =
+      gpu_memory_buffer_manager_ && gpu_memory_buffer_factory_;
 }
 
 GpuControlService::~GpuControlService() {
 }
 
-bool GpuControlService::SupportsGpuMemoryBuffer() {
-  return gpu_memory_buffer_manager_ && gpu_memory_buffer_factory_;
+gpu::Capabilities GpuControlService::GetCapabilities() {
+  return capabilities_;
 }
 
 gfx::GpuMemoryBuffer* GpuControlService::CreateGpuMemoryBuffer(

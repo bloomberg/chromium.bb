@@ -218,8 +218,10 @@ void PpapiCommandBufferProxy::SendManagedMemoryStats(
   NOTREACHED();
 }
 
-bool PpapiCommandBufferProxy::SupportsGpuMemoryBuffer() {
-  return false;
+gpu::Capabilities PpapiCommandBufferProxy::GetCapabilities() {
+  // TODO(boliu): Need to implement this to use cc in Pepper. Tracked in
+  // crbug.com/325391.
+  return gpu::Capabilities();
 }
 
 gfx::GpuMemoryBuffer* PpapiCommandBufferProxy::CreateGpuMemoryBuffer(

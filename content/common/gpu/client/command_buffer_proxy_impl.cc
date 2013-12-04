@@ -155,7 +155,8 @@ bool CommandBufferProxyImpl::Initialize() {
     return false;
 
   bool result;
-  if (!Send(new GpuCommandBufferMsg_Initialize(route_id_, handle, &result))) {
+  if (!Send(new GpuCommandBufferMsg_Initialize(
+      route_id_, handle, &result, &capabilities_))) {
     LOG(ERROR) << "Could not send GpuCommandBufferMsg_Initialize.";
     return false;
   }
@@ -164,6 +165,8 @@ bool CommandBufferProxyImpl::Initialize() {
     LOG(ERROR) << "Failed to initialize command buffer service.";
     return false;
   }
+
+  capabilities_.map_image = true;
 
   return true;
 }
@@ -365,8 +368,8 @@ void CommandBufferProxyImpl::SetContextLostReason(
   NOTREACHED();
 }
 
-bool CommandBufferProxyImpl::SupportsGpuMemoryBuffer() {
-  return true;
+gpu::Capabilities CommandBufferProxyImpl::GetCapabilities() {
+  return capabilities_;
 }
 
 gfx::GpuMemoryBuffer* CommandBufferProxyImpl::CreateGpuMemoryBuffer(

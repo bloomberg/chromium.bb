@@ -108,7 +108,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual gpu::error::Error GetLastError() OVERRIDE;
 
   // GpuControl implementation:
-  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
+  virtual gpu::Capabilities GetCapabilities() OVERRIDE;
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,
@@ -144,11 +144,29 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 #endif
 
  private:
-  bool InitializeOnGpuThread(bool is_offscreen,
-                             gfx::AcceleratedWidget window,
-                             const gfx::Size& size,
-                             const std::vector<int32>& attribs,
-                             gfx::GpuPreference gpu_preference);
+  struct InitializeOnGpuThreadParams {
+    bool is_offscreen;
+    gfx::AcceleratedWidget window;
+    const gfx::Size& size;
+    const std::vector<int32>& attribs;
+    gfx::GpuPreference gpu_preference;
+    gpu::Capabilities* capabilities;  // Ouptut.
+
+    InitializeOnGpuThreadParams(bool is_offscreen,
+                                gfx::AcceleratedWidget window,
+                                const gfx::Size& size,
+                                const std::vector<int32>& attribs,
+                                gfx::GpuPreference gpu_preference,
+                                gpu::Capabilities* capabilities)
+        : is_offscreen(is_offscreen),
+          window(window),
+          size(size),
+          attribs(attribs),
+          gpu_preference(gpu_preference),
+          capabilities(capabilities) {}
+  };
+
+  bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   bool DestroyOnGpuThread();
   void FlushOnGpuThread(int32 put_offset);
   bool MakeCurrent();
@@ -180,7 +198,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // Members accessed on the client thread:
   State last_state_;
   int32 last_put_offset_;
-  bool supports_gpu_memory_buffer_;
+  gpu::Capabilities capabilities_;
 
   // Accessed on both threads:
   scoped_ptr<CommandBuffer> command_buffer_;

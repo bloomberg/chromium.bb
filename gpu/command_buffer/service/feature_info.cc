@@ -106,6 +106,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       oes_standard_derivatives(false),
       oes_egl_image_external(false),
       oes_depth24(false),
+      oes_compressed_etc1_rgb8_texture(false),
       packed_depth24_stencil8(false),
       npot_ok(false),
       enable_texture_float_linear(false),
@@ -119,6 +120,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_arb_occlusion_query2_for_occlusion_query_boolean(false),
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
       native_vertex_array_object(false),
+      ext_texture_format_bgra8888(false),
       enable_shader_name_hashing(false),
       enable_samplers(false),
       ext_draw_buffers(false),
@@ -128,7 +130,9 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_discard_framebuffer(false),
       angle_depth_texture(false),
       is_angle(false),
-      is_swiftshader(false) {
+      is_swiftshader(false),
+      angle_texture_usage(false),
+      ext_texture_storage(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -405,6 +409,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_texture_format_bgra8888) {
+    feature_flags_.ext_texture_format_bgra8888 = true;
     AddExtensionString("GL_EXT_texture_format_BGRA8888");
     texture_format_validators_[GL_BGRA_EXT].AddValue(GL_UNSIGNED_BYTE);
     validators_.texture_internal_format.AddValue(GL_BGRA_EXT);
@@ -557,6 +562,7 @@ void FeatureInfo::InitializeFeatures() {
 
   if (extensions.Contains("GL_OES_compressed_ETC1_RGB8_texture")) {
     AddExtensionString("GL_OES_compressed_ETC1_RGB8_texture");
+    feature_flags_.oes_compressed_etc1_rgb8_texture = true;
     validators_.compressed_texture_format.AddValue(GL_ETC1_RGB8_OES);
   }
 
@@ -600,11 +606,13 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (extensions.Contains("GL_ANGLE_texture_usage")) {
+    feature_flags_.angle_texture_usage = true;
     AddExtensionString("GL_ANGLE_texture_usage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
   }
 
   if (extensions.Contains("GL_EXT_texture_storage")) {
+    feature_flags_.ext_texture_storage = true;
     AddExtensionString("GL_EXT_texture_storage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
     if (enable_texture_format_bgra8888)

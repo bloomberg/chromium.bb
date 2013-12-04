@@ -87,7 +87,7 @@ class MockClientGpuControl : public GpuControl {
   MockClientGpuControl();
   virtual ~MockClientGpuControl();
 
-  MOCK_METHOD0(SupportsGpuMemoryBuffer, bool());
+  MOCK_METHOD0(GetCapabilities, Capabilities());
   MOCK_METHOD4(CreateGpuMemoryBuffer,
                gfx::GpuMemoryBuffer*(size_t width,
                                      size_t height,

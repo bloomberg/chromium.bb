@@ -63,7 +63,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   void OnMemoryAllocationChanged(const gpu::MemoryAllocation& allocation);
 
  private:
-  bool InitializeCapabilities();
+  void InitializeCapabilities();
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;

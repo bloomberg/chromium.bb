@@ -37,6 +37,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool oes_standard_derivatives;
     bool oes_egl_image_external;
     bool oes_depth24;
+    bool oes_compressed_etc1_rgb8_texture;
     bool packed_depth24_stencil8;
     bool npot_ok;
     bool enable_texture_float_linear;
@@ -50,6 +51,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool use_arb_occlusion_query2_for_occlusion_query_boolean;
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
     bool native_vertex_array_object;
+    bool ext_texture_format_bgra8888;
     bool enable_shader_name_hashing;
     bool enable_samplers;
     bool ext_draw_buffers;
@@ -60,6 +62,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_depth_texture;
     bool is_angle;
     bool is_swiftshader;
+    bool angle_texture_usage;
+    bool ext_texture_storage;
   };
 
   struct Workarounds {

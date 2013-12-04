@@ -110,6 +110,8 @@ bool ContextProviderInProcess::BindToCurrentThread() {
   if (!context3d_->makeContextCurrent())
     return false;
 
+  InitializeCapabilities();
+
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
   context3d_->pushGroupMarkerEXT(unique_context_name.c_str());
@@ -120,28 +122,24 @@ bool ContextProviderInProcess::BindToCurrentThread() {
   return true;
 }
 
-cc::ContextProvider::Capabilities
-ContextProviderInProcess::ContextCapabilities() {
+void ContextProviderInProcess::InitializeCapabilities() {
+  Capabilities caps(context3d_->GetImplementation()->capabilities());
+
   // We always use a WebGraphicsContext3DInProcessCommandBufferImpl which
   // provides the following capabilities:
-  Capabilities caps;
   caps.discard_backbuffer = true;
-  caps.map_image = true;
   caps.map_sub = true;
   caps.set_visibility = true;
   caps.shallow_flush = true;
-  caps.texture_format_bgra8888 = true;
-  caps.texture_rectangle = true;
 
-  blink::WebString extensions =
-      context3d_->getString(0x1F03 /* GL_EXTENSIONS */);
-  std::vector<std::string> extension_list;
-  base::SplitString(extensions.utf8(), ' ', &extension_list);
-  std::set<std::string> extension_set(extension_list.begin(),
-                                      extension_list.end());
+  capabilities_ = caps;
+}
 
-  caps.post_sub_buffer = extension_set.count("GL_CHROMIUM_post_sub_buffer") > 0;
-  return caps;
+cc::ContextProvider::Capabilities
+ContextProviderInProcess::ContextCapabilities() {
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  return capabilities_;
 }
 
 blink::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {

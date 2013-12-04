@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
@@ -25,7 +26,7 @@ class GPU_EXPORT GpuControl {
   GpuControl() {}
   virtual ~GpuControl() {}
 
-  virtual bool SupportsGpuMemoryBuffer() = 0;
+  virtual Capabilities GetCapabilities() = 0;
 
   // Create a gpu memory buffer of the given dimensions and format. Returns
   // its ID or -1 on error.

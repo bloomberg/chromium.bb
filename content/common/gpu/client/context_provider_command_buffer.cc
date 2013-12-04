@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -112,8 +111,7 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   if (!context3d_->makeContextCurrent())
     return false;
 
-  if (!InitializeCapabilities())
-    return false;
+  InitializeCapabilities();
 
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
@@ -208,11 +206,11 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
   memory_policy_changed_callback_.Run(cc::ManagedMemoryPolicy(allocation));
 }
 
-bool ContextProviderCommandBuffer::InitializeCapabilities() {
+void ContextProviderCommandBuffer::InitializeCapabilities() {
   // The command buffer provides the following capabilities always.
   // TODO(jamesr): This information is duplicated with
   // gpu::gles2::FeatureInfo::AddFeatures().
-  Capabilities caps;
+  Capabilities caps(context3d_->GetImplementation()->capabilities());
   caps.discard_backbuffer = true;
   caps.set_visibility = true;
 
@@ -225,56 +223,12 @@ bool ContextProviderCommandBuffer::InitializeCapabilities() {
   // command buffer implementations.
   caps.swapbuffers_complete_callback = true;
 
-  const GLubyte* extensions_cstr =
-      context3d_->GetImplementation()->GetString(0x1F03 /* GL_EXTENSIONS */);
-  if (!extensions_cstr)
-    return false;
-  std::string extensions = reinterpret_cast<const char*>(extensions_cstr);
-  std::vector<std::string> extension_list;
-  base::SplitString(extensions, ' ', &extension_list);
-  std::set<std::string> extension_set(extension_list.begin(),
-                                      extension_list.end());
-
-
-  // caps.map_image depends on GL_CHROMIUM_map_image, which is set client-side
-  // based on the presence of GpuControl.
-  caps.map_image = extension_set.count("GL_CHROMIUM_map_image") > 0;
-
-  // caps.fast_npot_mo8_textures depends on
-  //    workarounds_.enable_chromium_fast_npot_mo8_textures which controls
-  //    GL_CHROMIUM_fast_NPOT_MO8_textures
-  caps.fast_npot_mo8_textures =
-      extension_set.count("GL_CHROMIUM_fast_NPOT_MO8_textures") > 0;
-
-  caps.egl_image_external =
-      extension_set.count("GL_OES_EGL_image_external") > 0;
-
-  caps.texture_format_bgra8888 =
-      extension_set.count("GL_EXT_texture_format_BGRA8888") > 0;
-
-  caps.texture_format_etc1 =
-      extension_set.count("GL_OES_compressed_ETC1_RGB8_texture") > 0;
-
-  caps.texture_rectangle = extension_set.count("GL_ARB_texture_rectangle") > 0;
-
-  caps.post_sub_buffer = extension_set.count("GL_CHROMIUM_post_sub_buffer") > 0;
-
-  // TODO(jamesr): This is unconditionally true on mac, no need to test for it
-  // at runtime.
-  caps.iosurface = extension_set.count("GL_CHROMIUM_iosurface") > 0;
-
-  caps.texture_usage = extension_set.count("GL_ANGLE_texture_usage") > 0;
-  caps.texture_storage = extension_set.count("GL_EXT_texture_storage") > 0;
-
-  caps.discard_framebuffer =
-      extension_set.count("GL_EXT_discard_framebuffer") > 0;
   size_t mapped_memory_limit = context3d_->GetMappedMemoryLimit();
   caps.max_transfer_buffer_usage_bytes =
       mapped_memory_limit == WebGraphicsContext3DCommandBufferImpl::kNoLimit
       ? std::numeric_limits<size_t>::max() : mapped_memory_limit;
 
   capabilities_ = caps;
-  return true;
 }
 
 

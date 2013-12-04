@@ -9,6 +9,8 @@
   'sources': [
     'command_buffer/common/bitfield_helpers.h',
     'command_buffer/common/buffer.h',
+    'command_buffer/common/capabilities.cc',
+    'command_buffer/common/capabilities.h',
     'command_buffer/common/cmd_buffer_common.h',
     'command_buffer/common/cmd_buffer_common.cc',
     'command_buffer/common/command_buffer.h',

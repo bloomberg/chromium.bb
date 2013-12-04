@@ -367,6 +367,8 @@ class GLES2ImplementationTest : public testing::Test {
     helper_->Initialize(kCommandBufferSizeBytes);
 
     gpu_control_.reset(new StrictMock<MockClientGpuControl>());
+    EXPECT_CALL(*gpu_control_, GetCapabilities())
+        .WillOnce(testing::Return(Capabilities()));
 
     GLES2Implementation::GLStaticState state;
     GLES2Implementation::GLStaticState::IntState& int_state = state.int_state;
@@ -2479,8 +2481,7 @@ TEST_F(GLES2ImplementationTest, GetString) {
       "GL_CHROMIUM_flipy "
       "GL_CHROMIUM_map_sub "
       "GL_CHROMIUM_shallow_flush "
-      "GL_EXT_unpack_subimage "
-      "GL_CHROMIUM_map_image";
+      "GL_EXT_unpack_subimage";
   const char kBad = 0x12;
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
@@ -2503,8 +2504,6 @@ TEST_F(GLES2ImplementationTest, GetString) {
   char buf[sizeof(kString) + 1];
   memset(buf, kBad, sizeof(buf));
 
-  EXPECT_CALL(*gpu_control_.get(), SupportsGpuMemoryBuffer())
-      .WillOnce(Return(true));
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
                       SetMemory(mem1.ptr, kString)))
@@ -2541,8 +2540,6 @@ TEST_F(GLES2ImplementationTest, PixelStoreiGLPackReverseRowOrderANGLE) {
   expected.set_bucket_size2.Init(kBucketId, 0);
   expected.pixel_store.Init(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);
 
-  EXPECT_CALL(*gpu_control_.get(), SupportsGpuMemoryBuffer())
-      .WillOnce(Return(false));
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
                       SetMemory(mem1.ptr, kString)))

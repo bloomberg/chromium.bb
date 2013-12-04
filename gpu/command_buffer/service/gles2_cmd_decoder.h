@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "ui/gfx/size.h"
@@ -137,6 +138,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Gets the associated ContextGroup
   virtual ContextGroup* GetContextGroup() = 0;
+
+  virtual Capabilities GetCapabilities() = 0;
 
   // Restores all of the decoder GL state.
   virtual void RestoreState() const = 0;
