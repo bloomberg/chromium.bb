@@ -222,8 +222,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     if (m_link)
         m_link->ownerRemoved();
 
-    if (document().isActive())
-        document().removedStyleSheet(removedSheet.get());
+    document().removedStyleSheet(removedSheet.get());
 }
 
 void HTMLLinkElement::finishParsingChildren()
@@ -578,7 +577,7 @@ void LinkStyle::process()
         return;
 
     if ((m_disabledState != Disabled) && m_owner->relAttribute().isStyleSheet()
-        && document().frame() && builder.url().isValid()) {
+        && shouldLoadResource() && builder.url().isValid()) {
 
         if (m_resource) {
             removePendingSheet();
@@ -589,13 +588,14 @@ void LinkStyle::process()
         if (!m_owner->shouldLoadLink())
             return;
 
+        Frame* frame = loadingFrame();
         m_loading = true;
 
         bool mediaQueryMatches = true;
         if (!m_owner->media().isEmpty()) {
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(document());
             RefPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
-            MediaQueryEvaluator evaluator(document().frame()->view()->mediaType(), document().frame(), documentStyle.get());
+            MediaQueryEvaluator evaluator(frame->view()->mediaType(), frame, documentStyle.get());
             mediaQueryMatches = evaluator.eval(media.get());
         }
 

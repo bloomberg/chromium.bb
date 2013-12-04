@@ -50,6 +50,9 @@ public:
     explicit LinkResource(HTMLLinkElement*);
     virtual ~LinkResource();
 
+    bool shouldLoadResource() const;
+    Frame* loadingFrame() const;
+
     virtual Type type() const = 0;
     virtual void process() = 0;
     virtual void ownerRemoved() = 0;

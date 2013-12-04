@@ -228,18 +228,32 @@ void StyleEngine::addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet)
     m_dirtyTreeScopes.markDocument();
 }
 
+void StyleEngine::addPendingSheet()
+{
+    master()->styleEngine()->notifyPendingStyleSheetAdded();
+}
+
 // This method is called whenever a top-level stylesheet has finished loading.
 void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType notification)
 {
+    TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : &m_document;
+    m_dirtyTreeScopes.mark(*treeScope);
+    master()->styleEngine()->notifyPendingStyleSheetRemoved(notification);
+}
+
+void StyleEngine::notifyPendingStyleSheetAdded()
+{
+    ASSERT(isMaster());
+    m_pendingStylesheets++;
+}
+
+void StyleEngine::notifyPendingStyleSheetRemoved(RemovePendingSheetNotificationType notification)
+{
+    ASSERT(isMaster());
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
     ASSERT(m_pendingStylesheets > 0);
 
     m_pendingStylesheets--;
-
-    TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : &m_document;
-
-    m_dirtyTreeScopes.mark(*treeScope);
-
     if (m_pendingStylesheets)
         return;
 

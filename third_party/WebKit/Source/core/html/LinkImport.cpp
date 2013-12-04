@@ -69,7 +69,7 @@ void LinkImport::process()
         return;
     if (!m_owner)
         return;
-    if (!m_owner->document().frame() && !m_owner->document().import())
+    if (!shouldLoadResource())
         return;
 
     if (!m_owner->document().import()) {

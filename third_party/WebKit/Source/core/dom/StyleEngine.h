@@ -115,7 +115,7 @@ public:
     void setPreferredStylesheetSetName(const String& name) { m_preferredStylesheetSetName = name; }
     void setSelectedStylesheetSetName(const String& name) { m_selectedStylesheetSetName = name; }
 
-    void addPendingSheet() { m_pendingStylesheets++; }
+    void addPendingSheet();
     enum RemovePendingSheetNotificationType {
         RemovePendingSheetNotifyImmediately,
         RemovePendingSheetNotifyLater
@@ -190,6 +190,9 @@ private:
     void clearMediaQueryRuleSetOnTreeScopeStyleSheets(TreeScopeSet treeScopes);
 
     void createResolver();
+
+    void notifyPendingStyleSheetAdded();
+    void notifyPendingStyleSheetRemoved(RemovePendingSheetNotificationType);
 
     Document& m_document;
     bool m_isMaster;
