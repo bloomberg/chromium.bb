@@ -86,12 +86,22 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Image avatar;
+  gfx::Image taskbar_badge_avatar;
   string16 text;
   bool is_rectangle = false;
   if (browser_view_->IsGuestSession()) {
     avatar = rb.GetImageNamed(browser_view_->GetGuestIconResourceID());
   } else if (browser_view_->IsOffTheRecord()) {
     avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
+    // TODO(nkostylev): Allow this on ChromeOS once the ChromeOS test
+    // environment handles profile directories correctly.
+#if !defined(OS_CHROMEOS)
+    bool is_badge_rectangle = false;
+    // The taskbar badge should be the profile avatar, not the OTR avatar.
+    AvatarMenu::GetImageForMenuButton(browser_view_->browser()->profile(),
+                                      &taskbar_badge_avatar,
+                                      &is_badge_rectangle);
+#endif
   } else if (avatar_button_ || AvatarMenu::ShouldShowAvatarMenu()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -124,7 +134,9 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   // See crbug.com/313800.
   chrome::DrawTaskbarDecoration(
       frame_->GetNativeWindow(),
-      AvatarMenu::ShouldShowAvatarMenu() ? &avatar : NULL);
+      AvatarMenu::ShouldShowAvatarMenu()
+          ? (taskbar_badge_avatar.IsEmpty() ? &avatar : &taskbar_badge_avatar)
+          : NULL);
 }
 
 void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
