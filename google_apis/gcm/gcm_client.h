@@ -94,12 +94,6 @@ class GCM_EXPORT GCMClient {
                                     const std::string& registration_id,
                                     Result result) = 0;
 
-    // Called when the unregistration completed successfully or an error occurs.
-    // |app_id|: application ID.
-    // |result|: the type of the error if an error occured, success otherwise.
-    virtual void OnUnregisterFinished(const std::string& app_id,
-                                      Result result) = 0;
-
     // Called when the message is scheduled to send successfully or an error
     // occurs.
     // |app_id|: application ID.

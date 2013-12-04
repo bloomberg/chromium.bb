@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -27,6 +28,10 @@ using extensions::Extension;
 
 namespace gcm {
 
+const char kRegistrationKey[] = "gcm.registration";
+const char kSendersKey[] = "senders";
+const char kRegistrationIDKey[] = "reg_id";
+
 class GCMProfileService::IOWorker
     : public GCMClient::Delegate,
       public base::RefCountedThreadSafe<GCMProfileService::IOWorker>{
@@ -40,8 +45,6 @@ class GCMProfileService::IOWorker
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
                                   GCMClient::Result result) OVERRIDE;
-  virtual void OnUnregisterFinished(const std::string& app_id,
-                                    GCMClient::Result result) OVERRIDE;
   virtual void OnSendFinished(const std::string& app_id,
                               const std::string& message_id,
                               GCMClient::Result result) OVERRIDE;
@@ -63,6 +66,7 @@ class GCMProfileService::IOWorker
                 const std::string& app_id,
                 const std::vector<std::string>& sender_ids,
                 const std::string& cert);
+  void Unregister(const std::string& username, const std::string& app_id);
   void Send(const std::string& username,
             const std::string& app_id,
             const std::string& receiver_id,
@@ -117,14 +121,6 @@ void GCMProfileService::IOWorker::OnRegisterFinished(
                  app_id,
                  registration_id,
                  result));
-}
-
-void GCMProfileService::IOWorker::OnUnregisterFinished(
-    const std::string& app_id,
-    GCMClient::Result result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
-  // TODO(jianli): to be implemented.
 }
 
 void GCMProfileService::IOWorker::OnSendFinished(
@@ -227,6 +223,14 @@ void GCMProfileService::IOWorker::Register(
   GCMClient::Get()->Register(username, app_id, cert, sender_ids);
 }
 
+void GCMProfileService::IOWorker::Unregister(const std::string& username,
+                                             const std::string& app_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(checkin_info_.IsValid());
+
+  GCMClient::Get()->Unregister(username, app_id);
+}
+
 void GCMProfileService::IOWorker::Send(
     const std::string& username,
     const std::string& app_id,
@@ -236,6 +240,12 @@ void GCMProfileService::IOWorker::Send(
   DCHECK(checkin_info_.IsValid());
 
   GCMClient::Get()->Send(username, app_id, receiver_id, message);
+}
+
+GCMProfileService::RegistrationInfo::RegistrationInfo() {
+}
+
+GCMProfileService::RegistrationInfo::~RegistrationInfo() {
 }
 
 bool GCMProfileService::enable_gcm_for_testing_ = false;
@@ -301,6 +311,13 @@ void GCMProfileService::Init() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
                  content::Source<Profile>(profile_));
+  // TODO(jianli): move extension specific logic out of GCMProfileService.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome:: NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
 }
 
 void GCMProfileService::Register(const std::string& app_id,
@@ -310,10 +327,33 @@ void GCMProfileService::Register(const std::string& app_id,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty() && !sender_ids.empty() && !callback.is_null());
 
+  // If previous register operation is still in progress, bail out.
   if (register_callbacks_.find(app_id) != register_callbacks_.end()) {
     callback.Run(std::string(), GCMClient::ASYNC_OPERATION_PENDING);
     return;
   }
+
+  // Normalize the sender IDs by making them sorted.
+  std::vector<std::string> normalized_sender_ids = sender_ids;
+  std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
+
+  // If the same sender ids is provided, return the cached registration ID
+  // directly.
+  RegistrationInfoMap::const_iterator registration_info_iter =
+      registration_info_map_.find(app_id);
+  if (registration_info_iter != registration_info_map_.end() &&
+      registration_info_iter->second.sender_ids == normalized_sender_ids) {
+    callback.Run(registration_info_iter->second.registration_id,
+                 GCMClient::SUCCESS);
+    return;
+  }
+
+  // Cache the sender IDs. The registration ID will be filled when the
+  // registration completes.
+  RegistrationInfo registration_info;
+  registration_info.sender_ids = normalized_sender_ids;
+  registration_info_map_[app_id] = registration_info;
+
   register_callbacks_[app_id] = callback;
 
   content::BrowserThread::PostTask(
@@ -323,7 +363,7 @@ void GCMProfileService::Register(const std::string& app_id,
                  io_worker_,
                  username_,
                  app_id,
-                 sender_ids,
+                 normalized_sender_ids,
                  cert));
 }
 
@@ -374,6 +414,21 @@ void GCMProfileService::Observe(int type,
       username_.clear();
       RemoveUser();
       break;
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      extensions::Extension* extension =
+          content::Details<extensions::Extension>(details).ptr();
+      // No need to load the persisted registration info if the extension does
+      // not have the GCM permission.
+      if (extension->HasAPIPermission(extensions::APIPermission::kGcm))
+        ReadRegistrationInfo(extension->id());
+      break;
+    }
+    case chrome:: NOTIFICATION_EXTENSION_UNINSTALLED: {
+      extensions::Extension* extension =
+          content::Details<extensions::Extension>(details).ptr();
+      Unregister(extension->id());
+      break;
+    }
     default:
       NOTREACHED();
   }
@@ -431,6 +486,36 @@ void GCMProfileService::RemoveUser() {
       base::Bind(&GCMProfileService::IOWorker::CheckOut, io_worker_));
 }
 
+void GCMProfileService::Unregister(const std::string& app_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // This is unlikely to happen because the app will not be uninstalled before
+  // the asynchronous extension function completes.
+  DCHECK(register_callbacks_.find(app_id) == register_callbacks_.end());
+
+  // Remove the cached registration info. If not found, there is no need to
+  // ask the server to unregister it.
+  RegistrationInfoMap::iterator registration_info_iter =
+      registration_info_map_.find(app_id);
+  if (registration_info_iter == registration_info_map_.end())
+    return;
+  registration_info_map_.erase(registration_info_iter);
+
+  // Remove the persisted registration info.
+  DeleteRegistrationInfo(app_id);
+
+  // Ask the server to unregister it. There could be a small chance that the
+  // unregister request fails. If this occurs, it does not bring any harm since
+  // we simply reject the messages/events received from the server.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GCMProfileService::IOWorker::Unregister,
+                 io_worker_,
+                 username_,
+                 app_id));
+}
+
 void GCMProfileService::CheckInFinished(GCMClient::CheckInInfo checkin_info,
                                         GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -464,6 +549,20 @@ void GCMProfileService::RegisterFinished(std::string app_id,
   if (callback_iter == register_callbacks_.end()) {
     // The callback could have been removed when the app is uninstalled.
     return;
+  }
+
+  // Cache the registration ID if the registration succeeds. Otherwise,
+  // removed the cached info.
+  RegistrationInfoMap::iterator registration_info_iter =
+      registration_info_map_.find(app_id);
+  // This is unlikely to happen because the app will not be uninstalled before
+  // the asynchronous extension function completes.
+  DCHECK(registration_info_iter != registration_info_map_.end());
+  if (result == GCMClient::SUCCESS) {
+    registration_info_iter->second.registration_id = registration_id;
+    WriteRegistrationInfo(app_id);
+  } else {
+    registration_info_map_.erase(registration_info_iter);
   }
 
   RegisterCallback callback = callback_iter->second;
@@ -515,6 +614,106 @@ GCMEventRouter* GCMProfileService::GetEventRouter(const std::string& app_id) {
     return testing_delegate_->GetEventRouter();
   // TODO(fgorski): check and create the event router for JS routing.
   return js_event_router_.get();
+}
+
+void GCMProfileService::DeleteRegistrationInfo(const std::string& app_id) {
+  extensions::StateStore* storage =
+      extensions::ExtensionSystem::Get(profile_)->state_store();
+  if (!storage)
+    return;
+
+  storage->RemoveExtensionValue(app_id, kRegistrationKey);
+}
+
+void GCMProfileService::WriteRegistrationInfo(const std::string& app_id) {
+  extensions::StateStore* storage =
+      extensions::ExtensionSystem::Get(profile_)->state_store();
+  if (!storage)
+    return;
+
+  RegistrationInfoMap::const_iterator registration_info_iter =
+      registration_info_map_.find(app_id);
+  if (registration_info_iter == registration_info_map_.end())
+    return;
+  const RegistrationInfo& registration_info = registration_info_iter->second;
+
+  scoped_ptr<base::ListValue> senders_list(new base::ListValue());
+  for (std::vector<std::string>::const_iterator senders_iter =
+           registration_info.sender_ids.begin();
+       senders_iter != registration_info.sender_ids.end();
+       ++senders_iter) {
+    senders_list->AppendString(*senders_iter);
+  }
+
+  scoped_ptr<base::DictionaryValue> registration_info_dict(
+      new base::DictionaryValue());
+  registration_info_dict->Set(kSendersKey, senders_list.release());
+  registration_info_dict->SetString(kRegistrationIDKey,
+                                    registration_info.registration_id);
+
+  storage->SetExtensionValue(
+      app_id, kRegistrationKey, registration_info_dict.PassAs<base::Value>());
+}
+
+void GCMProfileService::ReadRegistrationInfo(const std::string& app_id) {
+  extensions::StateStore* storage =
+      extensions::ExtensionSystem::Get(profile_)->state_store();
+  if (!storage)
+    return;
+
+  storage->GetExtensionValue(
+      app_id,
+      kRegistrationKey,
+      base::Bind(
+          &GCMProfileService::ReadRegistrationInfoFinished,
+          weak_ptr_factory_.GetWeakPtr(),
+          app_id));
+}
+
+void GCMProfileService::ReadRegistrationInfoFinished(
+    std::string app_id,
+    scoped_ptr<base::Value> value) {
+  RegistrationInfo registration_info;
+  if (!ParsePersistedRegistrationInfo(value.Pass(), &registration_info)) {
+    // Delete the persisted data if it is corrupted.
+    DeleteRegistrationInfo(app_id);
+    return;
+  }
+
+  registration_info_map_[app_id] = registration_info;
+
+  // TODO(jianli): The waiting would be removed once we support delaying running
+  // register operation until the persistent loading completes.
+  if (testing_delegate_)
+    testing_delegate_->LoadingFromPersistentStoreFinished();
+}
+
+bool GCMProfileService::ParsePersistedRegistrationInfo(
+    scoped_ptr<base::Value> value,
+    RegistrationInfo* registration_info) {
+  base::DictionaryValue* dict = NULL;
+  if (!value.get() || !value->GetAsDictionary(&dict))
+    return false;
+
+  if (!dict->GetString(kRegistrationIDKey, &registration_info->registration_id))
+    return false;
+
+  const base::ListValue* senders_list = NULL;
+  if (!dict->GetList(kSendersKey, &senders_list) || !senders_list->GetSize())
+    return false;
+  for (size_t i = 0; i < senders_list->GetSize(); ++i) {
+    std::string sender;
+    if (!senders_list->GetString(i, &sender))
+      return false;
+    registration_info->sender_ids.push_back(sender);
+  }
+
+  return true;
+}
+
+// static
+const char* GCMProfileService::GetPersistentRegisterKeyForTesting() {
+  return kRegistrationKey;
 }
 
 }  // namespace gcm

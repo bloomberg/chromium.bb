@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/extensions/state_store.h"
+#include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
@@ -16,10 +22,21 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
+using namespace extensions;
 
 namespace gcm {
 
+const char kTestExtensionName[] = "FooBar";
 const char kTestingUsername[] = "user@example.com";
 const char kTestingAppId[] = "test1";
 const char kTestingSha1Cert[] = "testing_cert1";
@@ -72,7 +89,7 @@ class GCMProfileServiceTest : public testing::Test,
         static_cast<Profile*>(profile), gps_testing_delegate_);
   }
 
-  GCMProfileServiceTest() {
+  GCMProfileServiceTest() : extension_service_(NULL) {
   }
 
   virtual ~GCMProfileServiceTest() {
@@ -81,10 +98,23 @@ class GCMProfileServiceTest : public testing::Test,
   // Overridden from test::Test:
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
+
+    // Make BrowserThread work in unittest.
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::REAL_IO_THREAD));
 
-    GCMProfileService::enable_gcm_for_testing_ = true;
+    // This is needed to create extension service under CrOS.
+#if defined(OS_CHROMEOS)
+    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#endif
+
+    // Create extension service in order to uninstall the extension.
+    extensions::TestExtensionSystem* extension_system(
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(profile())));
+    extension_system->CreateExtensionService(
+        CommandLine::ForCurrentProcess(), base::FilePath(), false);
+    extension_service_ = extension_system->Get(profile())->extension_service();
 
     // Mock a signed-in user.
     SigninManagerBase* signin_manager =
@@ -109,6 +139,7 @@ class GCMProfileServiceTest : public testing::Test,
     gps_testing_delegate_ = this;
 
     // This will create GCMProfileService that causes check-in to be initiated.
+    GCMProfileService::enable_gcm_for_testing_ = true;
     GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), &GCMProfileServiceTest::BuildGCMProfileService);
 
@@ -118,6 +149,14 @@ class GCMProfileServiceTest : public testing::Test,
 
   virtual void TearDown() OVERRIDE {
     GCMClient::SetForTesting(NULL);
+
+#if defined(OS_CHROMEOS)
+    test_user_manager_.reset();
+#endif
+
+    extension_service_ = NULL;
+    profile_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Overridden from GCMProfileService::TestingDelegate:
@@ -131,6 +170,10 @@ class GCMProfileServiceTest : public testing::Test,
     SignalCompleted();
   }
 
+  virtual void LoadingFromPersistentStoreFinished() OVERRIDE {
+    SignalCompleted();
+  }
+
   // Waits until the asynchrnous operation finishes.
   void WaitForCompleted() {
     run_loop_.reset(new base::RunLoop);
@@ -139,7 +182,36 @@ class GCMProfileServiceTest : public testing::Test,
 
   // Signals that the asynchrnous operation finishes.
   void SignalCompleted() {
-    run_loop_->Quit();
+    if (run_loop_ && run_loop_->running())
+      run_loop_->Quit();
+  }
+
+  // Returns a barebones test extension.
+  scoped_refptr<Extension> CreateExtension() {
+#if defined(OS_WIN)
+    base::FilePath path(FILE_PATH_LITERAL("c:\\foo"));
+#elif defined(OS_POSIX)
+    base::FilePath path(FILE_PATH_LITERAL("/foo"));
+#endif
+
+    DictionaryValue manifest;
+    manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
+    manifest.SetString(manifest_keys::kName, kTestExtensionName);
+    ListValue* permission_list = new ListValue;
+    permission_list->Append(Value::CreateStringValue("gcm"));
+    manifest.Set(manifest_keys::kPermissions, permission_list);
+
+    std::string error;
+    scoped_refptr<Extension> extension =
+        Extension::Create(path.AppendASCII(kTestExtensionName),
+                          Manifest::INVALID_LOCATION,
+                          manifest,
+                          Extension::NO_FLAGS,
+                          &error);
+    EXPECT_TRUE(extension.get()) << error;
+
+    extension_service_->AddExtension(extension.get());
+    return extension;
   }
 
   Profile* profile() const { return profile_.get(); }
@@ -151,10 +223,17 @@ class GCMProfileServiceTest : public testing::Test,
  protected:
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  ExtensionService* extension_service_;  // Not owned.
   scoped_ptr<GCMClientMock> gcm_client_mock_;
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<GCMEventRouterMock> gcm_event_router_mock_;
   GCMClient::CheckInInfo checkin_info_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+#endif
 
  private:
   static GCMProfileService::TestingDelegate* gps_testing_delegate_;
@@ -236,15 +315,18 @@ TEST_F(GCMProfileServiceTest, CheckOut) {
 
 class GCMProfileServiceRegisterTest : public GCMProfileServiceTest {
  public:
-  GCMProfileServiceRegisterTest() : result_(GCMClient::SUCCESS) {
+  GCMProfileServiceRegisterTest()
+      : result_(GCMClient::SUCCESS),
+        has_persisted_registration_info_(false) {
   }
 
   virtual ~GCMProfileServiceRegisterTest() {
   }
 
-  void Register(const std::vector<std::string>& sender_ids) {
+  void Register(const std::string& app_id,
+                const std::vector<std::string>& sender_ids) {
     GetGCMProfileService()->Register(
-        kTestingAppId,
+        app_id,
         sender_ids,
         kTestingSha1Cert,
         base::Bind(&GCMProfileServiceRegisterTest::RegisterCompleted,
@@ -258,9 +340,30 @@ class GCMProfileServiceRegisterTest : public GCMProfileServiceTest {
     SignalCompleted();
   }
 
+  bool HasPersistedRegistrationInfo(const std::string& app_id) {
+    StateStore* storage = ExtensionSystem::Get(profile())->state_store();
+    if (!storage)
+      return false;
+    has_persisted_registration_info_ = false;
+    storage->GetExtensionValue(
+        app_id,
+        GCMProfileService::GetPersistentRegisterKeyForTesting(),
+        base::Bind(
+            &GCMProfileServiceRegisterTest::ReadRegistrationInfoFinished,
+            base::Unretained(this)));
+    WaitForCompleted();
+    return has_persisted_registration_info_;
+  }
+
+  void ReadRegistrationInfoFinished(scoped_ptr<base::Value> value) {
+    has_persisted_registration_info_ = value.get() != NULL;
+    SignalCompleted();
+  }
+
  protected:
   std::string registration_id_;
   GCMClient::Result result_;
+  bool has_persisted_registration_info_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceRegisterTest);
@@ -269,7 +372,7 @@ class GCMProfileServiceRegisterTest : public GCMProfileServiceTest {
 TEST_F(GCMProfileServiceRegisterTest, Register) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
-  Register(sender_ids);
+  Register(kTestingAppId, sender_ids);
   std::string expected_registration_id =
       gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
 
@@ -282,14 +385,14 @@ TEST_F(GCMProfileServiceRegisterTest, Register) {
 TEST_F(GCMProfileServiceRegisterTest, DoubleRegister) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
-  Register(sender_ids);
+  Register(kTestingAppId, sender_ids);
   std::string expected_registration_id =
       gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
 
   // Calling regsiter 2nd time without waiting 1st one to finish will fail
   // immediately.
   sender_ids.push_back("sender2");
-  Register(sender_ids);
+  Register(kTestingAppId, sender_ids);
   EXPECT_TRUE(registration_id_.empty());
   EXPECT_NE(GCMClient::SUCCESS, result_);
 
@@ -303,11 +406,129 @@ TEST_F(GCMProfileServiceRegisterTest, DoubleRegister) {
 TEST_F(GCMProfileServiceRegisterTest, RegisterError) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1@error");
-  Register(sender_ids);
+  Register(kTestingAppId, sender_ids);
 
   WaitForCompleted();
   EXPECT_TRUE(registration_id_.empty());
   EXPECT_NE(GCMClient::SUCCESS, result_);
+}
+
+TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithSameSenderIDs) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  sender_ids.push_back("sender2");
+  Register(kTestingAppId, sender_ids);
+  std::string expected_registration_id =
+      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+
+  WaitForCompleted();
+  EXPECT_EQ(expected_registration_id, registration_id_);
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+
+  // Clears the results the would be set by the Register callback in preparation
+  // to call register 2nd time.
+  registration_id_.clear();
+  result_ = GCMClient::UNKNOWN_ERROR;
+
+  // Calling register 2nd time with the same set of sender IDs but different
+  // ordering will get back the same registration ID. There is no need to wait
+  // since register simply returns the cached registration ID.
+  std::vector<std::string> another_sender_ids;
+  another_sender_ids.push_back("sender2");
+  another_sender_ids.push_back("sender1");
+  Register(kTestingAppId, another_sender_ids);
+  EXPECT_EQ(expected_registration_id, registration_id_);
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+}
+
+TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithDifferentSenderIDs) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  Register(kTestingAppId, sender_ids);
+  std::string expected_registration_id =
+      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+
+  WaitForCompleted();
+  EXPECT_EQ(expected_registration_id, registration_id_);
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+
+  // Make sender IDs different.
+  sender_ids.push_back("sender2");
+  std::string expected_registration_id2 =
+      gcm_client_mock_->GetRegistrationIdFromSenderIds(sender_ids);
+
+  // Calling register 2nd time with the different sender IDs will get back a new
+  // registration ID.
+  Register(kTestingAppId, sender_ids);
+  WaitForCompleted();
+  EXPECT_EQ(expected_registration_id2, registration_id_);
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+}
+
+TEST_F(GCMProfileServiceRegisterTest, RegisterFromStateStore) {
+  scoped_refptr<Extension> extension(CreateExtension());
+
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  Register(extension->id(), sender_ids);
+
+  WaitForCompleted();
+  EXPECT_FALSE(registration_id_.empty());
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+  std::string old_registration_id = registration_id_;
+
+  // Clears the results the would be set by the Register callback in preparation
+  // to call register 2nd time.
+  registration_id_.clear();
+  result_ = GCMClient::UNKNOWN_ERROR;
+
+  // Simulate start-up by recreating GCMProfileService.
+  GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), &GCMProfileServiceTest::BuildGCMProfileService);
+
+  // Simulate start-up by reloading extension.
+  extension_service_->UnloadExtension(extension->id(),
+                                      UnloadedExtensionInfo::REASON_TERMINATE);
+  extension_service_->AddExtension(extension.get());
+
+  // TODO(jianli): The waiting would be removed once we support delaying running
+  // register operation until the persistent loading completes.
+  WaitForCompleted();
+
+  // This should read the registration info from the extension's state store.
+  // There is no need to wait since register returns the registration ID being
+  // read.
+  Register(extension->id(), sender_ids);
+  EXPECT_EQ(old_registration_id, registration_id_);
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+}
+
+TEST_F(GCMProfileServiceRegisterTest, Unregister) {
+  scoped_refptr<Extension> extension(CreateExtension());
+
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  Register(extension->id(), sender_ids);
+
+  WaitForCompleted();
+  EXPECT_FALSE(registration_id_.empty());
+  EXPECT_EQ(GCMClient::SUCCESS, result_);
+
+  // The registration info should be cached.
+  EXPECT_FALSE(GetGCMProfileService()->registration_info_map_.empty());
+
+  // The registration info should be persisted.
+  EXPECT_TRUE(HasPersistedRegistrationInfo(extension->id()));
+
+  // Uninstall the extension.
+  extension_service_->UninstallExtension(extension->id(), false, NULL);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // The cached registration info should be removed.
+  EXPECT_TRUE(GetGCMProfileService()->registration_info_map_.empty());
+
+  // The persisted registration info should be removed.
+  EXPECT_FALSE(HasPersistedRegistrationInfo(extension->id()));
 }
 
 class GCMProfileServiceSendTest : public GCMProfileServiceTest {
