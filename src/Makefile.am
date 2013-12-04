@@ -107,7 +107,6 @@ westoninclude_HEADERS =				\
 
 moduledir = $(libdir)/weston
 module_LTLIBRARIES =				\
-	$(desktop_shell)			\
 	$(cms_static)				\
 	$(cms_colord)				\
 	$(gl_renderer)				\
@@ -277,20 +276,6 @@ rdp_backend_la_CFLAGS =			\
 rdp_backend_la_SOURCES = compositor-rdp.c
 endif
 
-if ENABLE_DESKTOP_SHELL
-desktop_shell = desktop-shell.la
-desktop_shell_la_LDFLAGS = -module -avoid-version
-desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
-	../shared/libshared.la
-desktop_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
-desktop_shell_la_SOURCES =			\
-	shell.c					\
-	desktop-shell-protocol.c		\
-	desktop-shell-server-protocol.h 	\
-	xdg-shell-protocol.c			\
-	xdg-shell-server-protocol.h
-endif
-
 if HAVE_LCMS
 cms_static = cms-static.la
 cms_static_la_LDFLAGS = -module -avoid-version
@@ -328,16 +313,12 @@ BUILT_SOURCES =					\
 	screenshooter-protocol.c		\
 	text-cursor-position-server-protocol.h	\
 	text-cursor-position-protocol.c		\
-	desktop-shell-protocol.c		\
-	desktop-shell-server-protocol.h		\
 	text-protocol.c				\
 	text-server-protocol.h			\
 	input-method-protocol.c			\
 	input-method-server-protocol.h		\
 	workspaces-server-protocol.h		\
 	workspaces-protocol.c			\
-	xdg-shell-protocol.c			\
-	xdg-shell-server-protocol.h		\
 	git-version.h
 
 CLEANFILES = $(BUILT_SOURCES)

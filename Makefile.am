@@ -10,6 +10,7 @@ SUBDIRS =					\
 	shared					\
 	src					\
 	$(xwayland_subdir)			\
+	desktop-shell				\
 	clients					\
 	data					\
 	protocol				\
