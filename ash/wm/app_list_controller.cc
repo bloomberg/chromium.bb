@@ -290,6 +290,10 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
           ash::internal::kShellWindowId_MenuContainer);
       if (menu_container->Contains(target))
         return;
+      aura::Window* keyboard_container = root_controller->GetContainer(
+          ash::internal::kShellWindowId_VirtualKeyboardContainer);
+      if (keyboard_container->Contains(target))
+        return;
     }
   }
 
