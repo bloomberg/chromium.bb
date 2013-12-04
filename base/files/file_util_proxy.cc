@@ -357,8 +357,7 @@ bool FileUtilProxy::Touch(
   return base::PostTaskAndReplyWithResult(
       task_runner,
       FROM_HERE,
-      Bind(&file_util::TouchFile, file_path,
-           last_access_time, last_modified_time),
+      Bind(&TouchFile, file_path, last_access_time, last_modified_time),
       Bind(&CallWithTranslatedParameter, callback));
 }
 

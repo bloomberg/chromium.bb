@@ -236,7 +236,8 @@ class LocalTestVolume {
   // TestEntryInfo. Returns true on success.
   bool UpdateModifiedTime(const TestEntryInfo& entry) {
     const base::FilePath path = local_path_.AppendASCII(entry.target_path);
-    if (!file_util::SetLastModifiedTime(path, entry.last_modified_time))
+    if (!base::TouchFile(path, entry.last_modified_time,
+                         entry.last_modified_time))
       return false;
 
     // Update the modified time of parent directories because it may be also

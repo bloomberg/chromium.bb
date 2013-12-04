@@ -273,14 +273,14 @@ class DatabaseTracker_TestHelper_Test {
 
     // Setup file modification times.  db1 and db2 are modified now, db3 three
     // days ago.
-    EXPECT_TRUE(file_util::SetLastModifiedTime(
-        tracker->GetFullDBFilePath(kOrigin1, kDB1), base::Time::Now()));
-    EXPECT_TRUE(file_util::SetLastModifiedTime(
-        tracker->GetFullDBFilePath(kOrigin2, kDB2), base::Time::Now()));
-    base::Time three_days_ago = base::Time::Now();
-    three_days_ago -= base::TimeDelta::FromDays(3);
-    EXPECT_TRUE(file_util::SetLastModifiedTime(
-        tracker->GetFullDBFilePath(kOrigin2, kDB3), three_days_ago));
+    base::Time now = base::Time::Now();
+    EXPECT_TRUE(base::TouchFile(tracker->GetFullDBFilePath(kOrigin1, kDB1),
+                                now, now));
+    EXPECT_TRUE(base::TouchFile(tracker->GetFullDBFilePath(kOrigin2, kDB2),
+                                now, now));
+    base::Time three_days_ago = now - base::TimeDelta::FromDays(3);
+    EXPECT_TRUE(base::TouchFile(tracker->GetFullDBFilePath(kOrigin2, kDB3),
+                                three_days_ago, three_days_ago));
 
     // Delete databases modified since yesterday. db2 is whitelisted.
     base::Time yesterday = base::Time::Now();

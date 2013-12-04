@@ -1893,7 +1893,7 @@ TEST_F(FileUtilTest, TouchFile) {
   if (PathExists(data_dir)) {
     ASSERT_TRUE(DeleteFile(data_dir, true));
   }
-  ASSERT_TRUE(base::CreateDirectory(data_dir));
+  ASSERT_TRUE(CreateDirectory(data_dir));
 
   FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
   std::string data("hello");
@@ -1911,7 +1911,7 @@ TEST_F(FileUtilTest, TouchFile) {
   ASSERT_TRUE(Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT",
               &modification_time));
 
-  ASSERT_TRUE(file_util::TouchFile(foobar, access_time, modification_time));
+  ASSERT_TRUE(TouchFile(foobar, access_time, modification_time));
   PlatformFileInfo file_info;
   ASSERT_TRUE(GetFileInfo(foobar, &file_info));
   EXPECT_EQ(file_info.last_accessed.ToInternalValue(),

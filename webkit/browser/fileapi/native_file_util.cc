@@ -173,8 +173,7 @@ PlatformFileError NativeFileUtil::Touch(
     const base::FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  if (!file_util::TouchFile(
-          path, last_access_time, last_modified_time))
+  if (!base::TouchFile(path, last_access_time, last_modified_time))
     return base::PLATFORM_FILE_ERROR_FAILED;
   return base::PLATFORM_FILE_OK;
 }
@@ -244,7 +243,7 @@ PlatformFileError NativeFileUtil::CopyOrMoveFile(
   // Preserve the last modified time. Do not return error here even if
   // the setting is failed, because the copy itself is successfully done.
   if (option == FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED)
-    file_util::SetLastModifiedTime(dest_path, last_modified);
+    base::TouchFile(dest_path, last_modified, last_modified);
 
   return base::PLATFORM_FILE_OK;
 }

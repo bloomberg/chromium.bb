@@ -294,20 +294,16 @@ BASE_EXPORT bool IsLink(const FilePath& file_path);
 // Returns information about the given file path.
 BASE_EXPORT bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* info);
 
+// Sets the time of the last access and the time of the last modification.
+BASE_EXPORT bool TouchFile(const FilePath& path,
+                           const Time& last_accessed,
+                           const Time& last_modified);
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
 
 namespace file_util {
-
-// Sets the time of the last access and the time of the last modification.
-BASE_EXPORT bool TouchFile(const base::FilePath& path,
-                           const base::Time& last_accessed,
-                           const base::Time& last_modified);
-
-// Set the time of the last modification. Useful for unit tests.
-BASE_EXPORT bool SetLastModifiedTime(const base::FilePath& path,
-                                     const base::Time& last_modified);
 
 #if defined(OS_POSIX)
 // Store inode number of |path| in |inode|. Return true on success.

@@ -1597,7 +1597,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
 
   // Finally, make the .kde4 config directory older than the .kde directory
   // and make sure we then use .kde instead of .kde4 since it's newer.
-  file_util::SetLastModifiedTime(kde4_config_, base::Time());
+  base::TouchFile(kde4_config_, base::Time(), base::Time());
 
   { SCOPED_TRACE("KDE4, very old .kde4 directory present, use .kde");
     MockEnvironment* env = new MockEnvironment;
