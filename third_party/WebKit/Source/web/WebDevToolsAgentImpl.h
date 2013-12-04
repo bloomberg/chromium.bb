@@ -117,8 +117,6 @@ public:
     virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&);
     virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&);
 
-    int hostId() { return m_hostId; }
-
     // WebPageOverlay
     virtual void paintPageOverlay(WebCanvas*);
 
