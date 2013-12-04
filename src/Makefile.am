@@ -218,6 +218,8 @@ rpi_backend_la_SOURCES =			\
 	rpi-renderer.c				\
 	rpi-renderer.h				\
 	rpi-bcm-stubs.h 			\
+	udev-seat.c				\
+	udev-seat.h				\
 	evdev.c					\
 	evdev.h					\
 	evdev-touchpad.c
