@@ -543,7 +543,8 @@ void HWNDMessageHandler::CenterWindow(const gfx::Size& size) {
 }
 
 void HWNDMessageHandler::SetRegion(HRGN region) {
-  SetWindowRgn(hwnd(), region, TRUE);
+  custom_window_region_.Set(region);
+  ResetWindowRegion(false, true);
 }
 
 void HWNDMessageHandler::StackAbove(HWND other_hwnd) {
@@ -1099,7 +1100,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // automatically makes clicks on transparent pixels fall through, that isn't
   // the case with WS_EX_COMPOSITED. So, we route WS_EX_COMPOSITED through to
   // the delegate to allow for a custom hit mask.
-  if ((window_ex_style() & WS_EX_COMPOSITED) == 0 &&
+  if ((window_ex_style() & WS_EX_COMPOSITED) == 0 && !custom_window_region_ &&
       (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow())) {
     if (force)
       SetWindowRgn(hwnd(), NULL, redraw);
@@ -1114,7 +1115,10 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   CRect window_rect;
   GetWindowRect(hwnd(), &window_rect);
   HRGN new_region;
-  if (IsMaximized()) {
+  if (custom_window_region_) {
+    new_region = ::CreateRectRgn(0, 0, 0, 0);
+    ::CombineRgn(new_region, custom_window_region_.Get(), NULL, RGN_COPY);
+  } else if (IsMaximized()) {
     HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
     MONITORINFO mi;
     mi.cbSize = sizeof mi;

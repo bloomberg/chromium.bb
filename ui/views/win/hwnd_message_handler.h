@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
@@ -515,6 +516,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // True the first time nccalc is called on a sizable widget
   bool is_first_nccalc_;
+
+  // Copy of custom window region specified via SetRegion(), if any.
+  base::win::ScopedRegion custom_window_region_;
 
   // A factory used to lookup appbar autohide edges.
   base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
