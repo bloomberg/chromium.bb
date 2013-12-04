@@ -4860,7 +4860,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		if (shsurf->state.relative &&
 		    shsurf->transient.flags == WL_SHELL_SURFACE_TRANSIENT_INACTIVE)
 			break;
-		if (!shell->locked)
+		if (shell->locked)
 			break;
 		wl_list_for_each(seat, &compositor->seat_list, link)
 			activate(shell, shsurf->surface, seat);
