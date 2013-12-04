@@ -19,5 +19,5 @@
 
 interface HTMLHtmlElement : HTMLElement {
     [Reflect] attribute DOMString version;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString manifest;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, MeasureAs=HTMLHtmlElementManifest] attribute DOMString manifest;
 };
