@@ -297,11 +297,6 @@ void InspectorController::inspect(Node* node)
     injectedScript.inspectNode(node);
 }
 
-Page* InspectorController::inspectedPage() const
-{
-    return m_page;
-}
-
 void InspectorController::setInjectedScriptForOrigin(const String& origin, const String& source)
 {
     if (InspectorAgent* inspectorAgent = m_instrumentingAgents->inspectorAgent())

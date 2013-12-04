@@ -74,8 +74,6 @@ public:
     static PassOwnPtr<InspectorController> create(Page*, InspectorClient*);
     void inspectedPageDestroyed();
 
-    Page* inspectedPage() const;
-
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);
@@ -110,8 +108,6 @@ public:
     void resume();
 
     void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);
-
-    InspectorClient* inspectorClient() const { return m_inspectorClient; }
 
     void willProcessTask();
     void didProcessTask();
