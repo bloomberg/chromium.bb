@@ -80,5 +80,13 @@ int main(int argc, char **argv) {
 # error Unknown architecture
 #endif
   }
-  return 0;
+
+  /*
+   * Avoid calling exit().  This nexe's _start() entry point is called
+   * multiple times by faultqueue_test_host.c, without resetting the
+   * data segment, which is unusual.  This causes exit() to hang when
+   * libpthread is linked in, which recent PNaCl toolchains have
+   * started to do by default.
+   */
+  _exit(0);
 }
