@@ -27,6 +27,12 @@ public interface TabObserver {
      */
     void onFaviconUpdated(TabBase tab);
 
+    /**
+     * Called when the WebContents of a {@link TabBase} have been swapped.
+     * @param tab The notifying {@link TabBase}.
+     */
+    void onWebContentsSwapped(TabBase tab);
+
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
     /**
