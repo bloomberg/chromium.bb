@@ -16,21 +16,21 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 @JNINamespace("mojo::services")
-public class MojoViewport extends SurfaceView {
+public class NativeViewportAndroid extends SurfaceView {
 
     private int mNativeMojoViewport;
     private final SurfaceHolder.Callback mSurfaceCallback;
 
     @SuppressWarnings("unused")
     @CalledByNative
-    public static void createForActivity(Activity activity, int init) {
-        activity.setContentView(new MojoViewport(activity, init));
+    public static void createForActivity(Activity activity, int nativeViewport) {
+        activity.setContentView(new NativeViewportAndroid(activity, nativeViewport));
     }
 
-    public MojoViewport(Context context, int init) {
+    public NativeViewportAndroid(Context context, int nativeViewport) {
         super(context);
 
-        mNativeMojoViewport = nativeInit(init);
+        mNativeMojoViewport = nativeViewport;
         assert mNativeMojoViewport != 0;
 
         mSurfaceCallback = new SurfaceHolder.Callback() {
@@ -72,14 +72,18 @@ public class MojoViewport extends SurfaceView {
                                 event.getEventTime());
     }
 
-    private static native int nativeInit(int init);
-    private static native void nativeDestroy(int nativeMojoViewport);
-    private static native void nativeSurfaceCreated(int nativeMojoViewport, Surface surface);
-    private static native void nativeSurfaceDestroyed(int nativeMojoViewport);
-    private static native void nativeSurfaceSetSize(int nativeMojoViewport, int width, int height);
-    private static native boolean nativeTouchEvent(int nativeMojoViewport,
-                                                   int pointerId,
-                                                   int action,
-                                                   float x, float y,
-                                                   long timeMs);
+    private static native void nativeDestroy(int nativeNativeViewportAndroid);
+    private static native void nativeSurfaceCreated(
+        int nativeNativeViewportAndroid, Surface surface);
+    private static native void nativeSurfaceDestroyed(
+        int nativeNativeViewportAndroid);
+    private static native void nativeSurfaceSetSize(
+        int nativeNativeViewportAndroid,
+        int width, int height);
+    private static native boolean nativeTouchEvent(
+        int nativeNativeViewportAndroid,
+        int pointerId,
+        int action,
+        float x, float y,
+        long timeMs);
 };

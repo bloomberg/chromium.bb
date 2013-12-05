@@ -57,8 +57,6 @@
         'mojo_native_viewport_bindings',
       ],
       'sources': [
-        'services/native_viewport/android/mojo_viewport.cc',
-        'services/native_viewport/android/mojo_viewport.h',
         'services/native_viewport/native_viewport.h',
         'services/native_viewport/native_viewport_android.cc',
         'services/native_viewport/native_viewport_impl.cc',
