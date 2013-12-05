@@ -157,6 +157,24 @@ bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
   return true;
 }
 
+bool ExportKeyInternalRaw(
+    const blink::WebCryptoKey& key,
+    blink::WebArrayBuffer* buffer) {
+
+  DCHECK(key.handle());
+  DCHECK(buffer);
+
+  if (key.type() != blink::WebCryptoKeyTypeSecret || !key.extractable())
+    return false;
+
+  const SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
+
+  *buffer = webcrypto::CreateArrayBuffer(
+      webcrypto::Uint8VectorStart(sym_key->key()), sym_key->key().size());
+
+  return true;
+}
+
 }  // namespace
 
 void WebCryptoImpl::Init() { crypto::EnsureOpenSSLInit(); }
@@ -370,10 +388,18 @@ bool WebCryptoImpl::ExportKeyInternal(
     blink::WebCryptoKeyFormat format,
     const blink::WebCryptoKey& key,
     blink::WebArrayBuffer* buffer) {
-  // TODO(padolph): Implement raw export
-  // TODO(padolph): Implement spki export
-  // TODO(padolph): Implement pkcs8 export
-  // TODO(padolph): Implement jwk export
+  switch (format) {
+    case blink::WebCryptoKeyFormatRaw:
+      return ExportKeyInternalRaw(key, buffer);
+    case blink::WebCryptoKeyFormatSpki:
+      // TODO(padolph): Implement spki export
+      return false;
+    case blink::WebCryptoKeyFormatPkcs8:
+      // TODO(padolph): Implement pkcs8 export
+      return false;
+    default:
+      return false;
+  }
   return false;
 }
 

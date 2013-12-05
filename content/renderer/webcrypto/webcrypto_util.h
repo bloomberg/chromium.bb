@@ -27,6 +27,9 @@ CONTENT_EXPORT const uint8* Uint8VectorStart(const std::vector<uint8>& data);
 //               the WebArrayBuffer could just be truncated instead.
 void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size);
 
+// Creates a WebArrayBuffer from a uint8 byte array
+blink::WebArrayBuffer CreateArrayBuffer(const uint8* data, unsigned data_size);
+
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
 // In Web Crypto, this type of encoding is only used inside JWK.

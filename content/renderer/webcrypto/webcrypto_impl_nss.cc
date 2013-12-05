@@ -325,6 +325,30 @@ bool ImportKeyInternalRaw(
   return true;
 }
 
+bool ExportKeyInternalRaw(
+    const blink::WebCryptoKey& key,
+    blink::WebArrayBuffer* buffer) {
+
+  DCHECK(key.handle());
+  DCHECK(buffer);
+
+  if (key.type() != blink::WebCryptoKeyTypeSecret || !key.extractable())
+    return false;
+
+  SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
+
+  if (PK11_ExtractKeyValue(sym_key->key()) != SECSuccess)
+    return false;
+
+  const SECItem* key_data = PK11_GetKeyData(sym_key->key());
+  if (!key_data)
+    return false;
+
+  *buffer = webcrypto::CreateArrayBuffer(key_data->data, key_data->len);
+
+  return true;
+}
+
 typedef scoped_ptr<CERTSubjectPublicKeyInfo,
                    crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
                                         SECKEY_DestroySubjectPublicKeyInfo> >
@@ -424,8 +448,7 @@ bool ExportKeyInternalSpki(
   DCHECK(spki_der->data);
   DCHECK(spki_der->len);
 
-  *buffer = blink::WebArrayBuffer::create(spki_der->len, 1);
-  memcpy(buffer->data(), spki_der->data, spki_der->len);
+  *buffer = webcrypto::CreateArrayBuffer(spki_der->data, spki_der->len);
 
   return true;
 }
@@ -827,8 +850,7 @@ bool WebCryptoImpl::ExportKeyInternal(
     blink::WebArrayBuffer* buffer) {
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
-      // TODO(padolph): Implement raw export
-      return false;
+      return ExportKeyInternalRaw(key, buffer);
     case blink::WebCryptoKeyFormatSpki:
       return ExportKeyInternalSpki(key, buffer);
     case blink::WebCryptoKeyFormatPkcs8:

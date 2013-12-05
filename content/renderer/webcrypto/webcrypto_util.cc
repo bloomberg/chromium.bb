@@ -50,6 +50,14 @@ void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size) {
   *buffer = new_buffer;
 }
 
+blink::WebArrayBuffer CreateArrayBuffer(const uint8* data, unsigned data_size) {
+  blink::WebArrayBuffer buffer = blink::WebArrayBuffer::create(data_size, 1);
+  DCHECK(!buffer.isNull());
+  if (data_size)  // data_size == 0 might mean the data pointer is invalid
+    memcpy(buffer.data(), data, data_size);
+  return buffer;
+}
+
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5. To do this, first
 // change the incoming data to 'base64' encoding by applying the appropriate

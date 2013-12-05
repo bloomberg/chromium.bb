@@ -92,6 +92,25 @@ blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
           public_exponent.size()));
 }
 
+// Determines if two ArrayBuffers have identical content.
+bool ArrayBuffersEqual(
+    const blink::WebArrayBuffer& a,
+    const blink::WebArrayBuffer& b) {
+  return a.byteLength() == b.byteLength() &&
+         memcmp(a.data(), b.data(), a.byteLength()) == 0;
+}
+
+// Given a vector of WebArrayBuffers, determines if there are any copies.
+bool CopiesExist(std::vector<blink::WebArrayBuffer> bufs) {
+  for (size_t i = 0; i < bufs.size(); ++i) {
+    for (size_t j = i + 1; j < bufs.size(); ++j) {
+      if (ArrayBuffersEqual(bufs[i], bufs[j]))
+        return true;
+    }
+  }
+  return false;
+}
+
 #endif  // #if !defined(USE_OPENSSL)
 
 }  // namespace
@@ -432,6 +451,11 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
     blink::WebCryptoKey key = ImportSecretKeyFromRawHexString(
         test.key, algorithm, blink::WebCryptoKeyUsageSign);
 
+    // Verify exported raw key is identical to the imported data
+    blink::WebArrayBuffer raw_key;
+    EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+    ExpectArrayBufferMatchesHex(test.key, raw_key);
+
     std::vector<uint8> message_raw = HexStringToBytes(test.message);
 
     blink::WebArrayBuffer output;
@@ -476,10 +500,16 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
 #if !defined(USE_OPENSSL)
 
 TEST_F(WebCryptoImplTest, AesCbcFailures) {
+  const std::string key_hex = "2b7e151628aed2a6abf7158809cf4f3c";
   blink::WebCryptoKey key = ImportSecretKeyFromRawHexString(
-      "2b7e151628aed2a6abf7158809cf4f3c",
+      key_hex,
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt);
+
+  // Verify exported raw key is identical to the imported data
+  blink::WebArrayBuffer raw_key;
+  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+  ExpectArrayBufferMatchesHex(key_hex, raw_key);
 
   blink::WebArrayBuffer output;
 
@@ -534,9 +564,10 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
                                    &key));
   }
 
-  // Fail exporting the key in SPKI format (SPKI export not allowed for secret
-  // keys)
+  // Fail exporting the key in SPKI and PKCS#8 formats (not allowed for secret
+  // keys).
   EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
+  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatPkcs8, key, &output));
 }
 
 TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
@@ -626,6 +657,11 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
         webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
         blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt);
 
+    // Verify exported raw key is identical to the imported data
+    blink::WebArrayBuffer raw_key;
+    EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+    ExpectArrayBufferMatchesHex(test.key, raw_key);
+
     std::vector<uint8> plain_text = HexStringToBytes(test.plain_text);
     std::vector<uint8> iv = HexStringToBytes(test.iv);
 
@@ -670,14 +706,23 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
   }
 }
 
-// TODO(padolph): Add test to verify generated symmetric keys appear random.
-
 TEST_F(WebCryptoImplTest, GenerateKeyAes) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  ASSERT_TRUE(
-      GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(128), &key));
-  EXPECT_TRUE(key.handle());
-  EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+  // Generate a small sample of AES keys.
+  std::vector<blink::WebArrayBuffer> keys;
+  blink::WebArrayBuffer key_bytes;
+  for (int i = 0; i < 16; ++i) {
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    ASSERT_TRUE(
+        GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(128), &key));
+    EXPECT_TRUE(key.handle());
+    EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+    ASSERT_TRUE(
+        ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &key_bytes));
+    keys.push_back(key_bytes);
+  }
+  // Ensure all entries in the key sample set are unique. This is a simplistic
+  // estimate of whether the generated keys appear random.
+  EXPECT_FALSE(CopiesExist(keys));
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyAesBadLength) {
@@ -691,13 +736,21 @@ TEST_F(WebCryptoImplTest, GenerateKeyAesBadLength) {
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoAlgorithm algorithm = webcrypto::CreateHmacKeyGenAlgorithm(
-      blink::WebCryptoAlgorithmIdSha1, 128);
-  ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
-  EXPECT_FALSE(key.isNull());
-  EXPECT_TRUE(key.handle());
-  EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+  // Generate a small sample of HMAC keys.
+  std::vector<blink::WebArrayBuffer> keys;
+  for (int i = 0; i < 16; ++i) {
+    blink::WebArrayBuffer key_bytes;
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoAlgorithm algorithm = webcrypto::CreateHmacKeyGenAlgorithm(
+        blink::WebCryptoAlgorithmIdSha1, 128);
+    ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
+    EXPECT_FALSE(key.isNull());
+    EXPECT_TRUE(key.handle());
+    EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+  }
+  // Ensure all entries in the key sample set are unique. This is a simplistic
+  // estimate of whether the generated keys appear random.
+  EXPECT_FALSE(CopiesExist(keys));
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
@@ -1118,6 +1171,10 @@ TEST_F(WebCryptoImplTest, ImportExportSpki) {
   blink::WebArrayBuffer output;
   ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
   ExpectArrayBufferMatchesHex(hex_rsa_spki_der, output);
+
+  // Failing case: Try to export a previously imported RSA public key in raw
+  // format (not allowed for a public key).
+  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &output));
 
   // Failing case: Try to export a non-extractable key
   ASSERT_TRUE(ImportKeyInternal(
