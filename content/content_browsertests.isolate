@@ -97,7 +97,6 @@
           # WorkerXHRHttpLayoutTest.Tests which are currently disabled.
           #'../third_party/cygwin/',
           #'../third_party/perl/perl/',
-          '../third_party/python_26/',
         ],
       },
     }],

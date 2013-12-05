@@ -108,7 +108,6 @@
         'isolate_dependency_untracked': [
           '../ppapi/lib/gl/include/KHR/',
           '../skia/ext/data/',
-          '../third_party/python_26/',
           '../ui/base/glib/',
         ],
       },

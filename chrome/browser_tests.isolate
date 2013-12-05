@@ -161,7 +161,6 @@
         'isolate_dependency_untracked': [
           '../third_party/npapi/npspy/extern/plugin/',
           '../third_party/psyco_win32/psyco/',
-          '../third_party/python_26/',
         ],
       },
     }],

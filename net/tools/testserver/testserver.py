@@ -35,15 +35,22 @@ import urllib
 import urlparse
 import zlib
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
+
 import echo_message
-import pyftpdlib.ftpserver
 import testserver_base
+
+# Append at the end of sys.path, it's fine to use the system library.
+sys.path.append(os.path.join(ROOT_DIR, 'third_party', 'pyftpdlib', 'src'))
+sys.path.append(os.path.join(ROOT_DIR, 'third_party', 'tlslite'))
+import pyftpdlib.ftpserver
 import tlslite
 import tlslite.api
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(
-    0, os.path.join(BASE_DIR, '..', '..', '..', 'third_party/pywebsocket/src'))
+# Insert at the beginning of the path, we want this to be used
+# unconditionally.
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pywebsocket', 'src'))
 from mod_pywebsocket.standalone import WebSocketServer
 
 SERVER_HTTP = 0

@@ -43,9 +43,6 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/icudt.dll',
         ],
-        'isolate_dependency_untracked': [
-          '../third_party/python_26/',
-        ],
       },
     }],
   ],
