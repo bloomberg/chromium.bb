@@ -13,11 +13,13 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#include "base/event_types.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/composition_text_util_pango.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/events/event.h"
 
 namespace {
 
@@ -144,12 +146,16 @@ X11InputMethodContextImplGtk2::~X11InputMethodContextImplGtk2() {
 // Overriden from ui::LinuxInputMethodContext
 
 bool X11InputMethodContextImplGtk2::DispatchKeyEvent(
-    const base::NativeEvent& native_key_event) {
+    const ui::KeyEvent& key_event) {
+  if (!key_event.HasNativeEvent())
+    return false;
+
   // The caller must call Focus() first.
   if (!gtk_context_)
     return false;
 
   // Translate a XKeyEvent to a GdkEventKey.
+  const base::NativeEvent& native_key_event = key_event.native_event();
   GdkEvent* event = GdkEventFromXKeyEvent(
       native_key_event->xkey,
       IsKeycodeModifierKey(native_key_event->xkey.keycode));

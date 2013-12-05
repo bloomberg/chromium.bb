@@ -11,7 +11,7 @@ FakeInputMethodContext::FakeInputMethodContext() {}
 // Overriden from ui::LinuxInputMethodContext
 
 bool FakeInputMethodContext::DispatchKeyEvent(
-    const base::NativeEvent& /* native_key_event */) {
+    const ui::KeyEvent& /* key_event */) {
   return false;
 }
 

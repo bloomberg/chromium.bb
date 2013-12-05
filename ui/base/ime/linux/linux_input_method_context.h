@@ -5,7 +5,6 @@
 #ifndef UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 #define UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 
-#include "base/event_types.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/text_input_type.h"
@@ -18,6 +17,7 @@ class Rect;
 namespace ui {
 
 struct CompositionText;
+class KeyEvent;
 
 // An interface of input method context for input method frameworks on
 // GNU/Linux and likes.
@@ -28,7 +28,7 @@ class UI_EXPORT LinuxInputMethodContext {
   // Dispatches the key event to an underlying IME.  Returns true if the key
   // event is handled, otherwise false.  A client must set the text input type
   // before dispatching a key event.
-  virtual bool DispatchKeyEvent(const base::NativeEvent& native_key_event) = 0;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& key_event) = 0;
 
   // Resets the context.  A client needs to call OnTextInputTypeChanged() again
   // before calling DispatchKeyEvent().

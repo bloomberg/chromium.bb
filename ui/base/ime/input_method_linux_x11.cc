@@ -75,16 +75,12 @@ bool InputMethodLinuxX11::DispatchKeyEvent(const ui::KeyEvent& event) {
   DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
 
-  if (!event.HasNativeEvent())
-    return DispatchFabricatedKeyEvent(event);
-
   // If no text input client, do nothing.
   if (!GetTextInputClient())
     return DispatchKeyEventPostIME(event);
 
   // Let an IME handle the key event first.
-  const base::NativeEvent& native_key_event = event.native_event();
-  if (input_method_context_->DispatchKeyEvent(native_key_event)) {
+  if (input_method_context_->DispatchKeyEvent(event)) {
     if (event.type() == ET_KEY_PRESSED) {
       const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
                                           VKEY_PROCESSKEY,
@@ -184,26 +180,6 @@ void InputMethodLinuxX11::OnDidChangeFocusedClient(
       focused ? focused->GetTextInputType() : TEXT_INPUT_TYPE_NONE);
 
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
-}
-
-// private
-
-bool InputMethodLinuxX11::DispatchFabricatedKeyEvent(
-    const ui::KeyEvent& event) {
-  // Let a post IME handler handle the key event.
-  if (DispatchKeyEventPostIME(event))
-    return true;
-
-  // Otherwise, insert the character.
-  if (event.type() == ET_KEY_PRESSED && GetTextInputClient()) {
-    const uint16 ch = event.GetCharacter();
-    if (ch) {
-      GetTextInputClient()->InsertChar(ch, event.flags());
-      return true;
-    }
-  }
-
-  return false;
 }
 
 }  // namespace ui

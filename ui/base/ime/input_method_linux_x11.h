@@ -51,9 +51,6 @@ class InputMethodLinuxX11 : public InputMethodBase,
   virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                         TextInputClient* focused) OVERRIDE;
 
- private:
-  bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event);
-
   scoped_ptr<LinuxInputMethodContext> input_method_context_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLinuxX11);
