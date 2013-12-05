@@ -647,9 +647,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSizeSW) {
 }
 #endif
 
+#if !defined(OS_MACOSX)  // http://crbug.com/326332
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeBeforeNavigation) {
   TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
