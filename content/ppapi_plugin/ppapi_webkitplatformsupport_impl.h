@@ -16,6 +16,9 @@ class PpapiWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
   PpapiWebKitPlatformSupportImpl();
   virtual ~PpapiWebKitPlatformSupportImpl();
 
+  // Shutdown must be called just prior to shutting down blink.
+  void Shutdown();
+
   // WebKitPlatformSupport methods:
   virtual blink::WebClipboard* clipboard();
   virtual blink::WebMimeRegistry* mimeRegistry();
