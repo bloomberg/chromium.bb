@@ -74,6 +74,8 @@
         'audio/alsa/audio_manager_alsa.h',
         'audio/android/audio_manager_android.cc',
         'audio/android/audio_manager_android.h',
+        'audio/android/audio_record_input.cc',
+        'audio/android/audio_record_input.h',
         'audio/android/opensles_input.cc',
         'audio/android/opensles_input.h',
         'audio/android/opensles_output.cc',
@@ -1472,6 +1474,7 @@
           'type': 'none',
           'sources': [
             'base/android/java/src/org/chromium/media/AudioManagerAndroid.java',
+            'base/android/java/src/org/chromium/media/AudioRecordInput.java',
             'base/android/java/src/org/chromium/media/MediaCodecBridge.java',
             'base/android/java/src/org/chromium/media/MediaDrmBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',

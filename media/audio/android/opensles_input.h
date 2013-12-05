@@ -21,8 +21,8 @@ class AudioManagerAndroid;
 
 // Implements PCM audio input support for Android using the OpenSLES API.
 // This class is created and lives on the Audio Manager thread but recorded
-// audio buffers are given to us from an internal OpenSLES audio thread.
-// All public methods should be called on the Audio Manager thread.
+// audio buffers are delivered on an internal OpenSLES audio thread. All public
+// methods should be called on the Audio Manager thread.
 class OpenSLESInputStream : public AudioInputStream {
  public:
   static const int kMaxNumOfBuffersInQueue = 2;
