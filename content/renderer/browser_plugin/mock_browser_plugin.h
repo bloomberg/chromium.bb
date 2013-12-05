@@ -12,8 +12,7 @@ namespace content {
 class MockBrowserPlugin : public BrowserPlugin {
  public:
   MockBrowserPlugin(RenderViewImpl* render_view,
-                    blink::WebFrame* frame,
-                    const blink::WebPluginParams& params);
+                    blink::WebFrame* frame);
 
   virtual ~MockBrowserPlugin();
 

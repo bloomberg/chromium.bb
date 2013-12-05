@@ -66,10 +66,8 @@ static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
 
 }  // namespace
 
-BrowserPlugin::BrowserPlugin(
-    RenderViewImpl* render_view,
-    blink::WebFrame* frame,
-    const WebPluginParams& params)
+BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
+                             blink::WebFrame* frame)
     : guest_instance_id_(browser_plugin::kInstanceIDNone),
       attached_(false),
       render_view_(render_view->AsWeakPtr()),

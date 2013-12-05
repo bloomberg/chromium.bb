@@ -19,9 +19,7 @@ class MockBrowserPluginManager : public BrowserPluginManager {
 
   // BrowserPluginManager implementation.
   virtual BrowserPlugin* CreateBrowserPlugin(
-      RenderViewImpl* render_view,
-      blink::WebFrame* frame,
-      const blink::WebPluginParams& params) OVERRIDE;
+      RenderViewImpl* render_view, blink::WebFrame* frame) OVERRIDE;
   virtual void AllocateInstanceID(
       const base::WeakPtr<BrowserPlugin>& browser_plugin) OVERRIDE;
 

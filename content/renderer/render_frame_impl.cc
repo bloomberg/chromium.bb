@@ -504,7 +504,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   if (UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
-        render_view_, frame, params);
+        render_view_, frame);
   }
 
 #if defined(ENABLE_PLUGINS)

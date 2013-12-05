@@ -203,16 +203,11 @@ class CONTENT_EXPORT BrowserPlugin :
   friend class MockBrowserPlugin;
 
   // A BrowserPlugin object is a controller that represents an instance of a
-  // browser plugin within the embedder renderer process. Each BrowserPlugin
-  // within a RenderView has a unique instance_id that is used to track per-
-  // BrowserPlugin state in the browser process. Once a BrowserPlugin does
-  // an initial navigation or is attached to a newly created guest, it acquires
-  // a guest_instance_id as well. The guest instance ID uniquely identifies a
-  // guest WebContents that's hosted by this BrowserPlugin.
-  BrowserPlugin(
-      RenderViewImpl* render_view,
-      blink::WebFrame* frame,
-      const blink::WebPluginParams& params);
+  // browser plugin within the embedder renderer process. Once a BrowserPlugin
+  // does an initial navigation or is attached to a newly created guest, it
+  // acquires a guest_instance_id as well. The guest instance ID uniquely
+  // identifies a guest WebContents that's hosted by this BrowserPlugin.
+  BrowserPlugin(RenderViewImpl* render_view, blink::WebFrame* frame);
 
   virtual ~BrowserPlugin();
 
