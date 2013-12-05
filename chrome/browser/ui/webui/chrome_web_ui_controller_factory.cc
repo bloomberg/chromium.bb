@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/history/history_types.h"
@@ -245,8 +246,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<LocalDiscoveryUI>;
   }
 #endif
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller) &&
+  if (IsEnableDomDistillerSet() &&
       url.host() == dom_distiller::kChromeUIDomDistillerHost) {
     return &NewWebUI<dom_distiller::DomDistillerUI>;
   }

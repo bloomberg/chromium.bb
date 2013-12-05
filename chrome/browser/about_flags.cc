@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
-#include "chrome/browser/extensions/external_component_loader.h"
+#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/flags_storage.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -1960,8 +1960,7 @@ void GetSanitizedEnabledFlags(
 
 bool SkipConditionalExperiment(const Experiment& experiment) {
   if (experiment.internal_name == std::string("enable-enhanced-bookmarks")) {
-    return !extensions::ExternalComponentLoader::
-        IsEnhancedBookmarksExperimentEnabled();
+    return !IsEnhancedBookmarksExperimentEnabled();
   }
   return false;
 }

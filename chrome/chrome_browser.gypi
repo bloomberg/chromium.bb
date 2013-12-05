@@ -303,6 +303,8 @@
         'browser/bookmarks/bookmark_title_match.h',
         'browser/bookmarks/bookmark_utils.cc',
         'browser/bookmarks/bookmark_utils.h',
+        'browser/bookmarks/enhanced_bookmarks_features.cc',
+        'browser/bookmarks/enhanced_bookmarks_features.h',
         'browser/browser_about_handler.cc',
         'browser/browser_about_handler.h',
         'browser/browser_process.cc',

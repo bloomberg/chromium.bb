@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -210,7 +211,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new PasswordDataTypeController(this, profile_, pss));
   }
   // Article sync is disabled by default.  Register only if explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncArticles)) {
+  if (IsEnableSyncArticlesSet()) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::ARTICLES, this, profile_, pss));
   }
