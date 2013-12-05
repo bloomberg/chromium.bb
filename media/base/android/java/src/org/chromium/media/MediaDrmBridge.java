@@ -358,7 +358,6 @@ class MediaDrmBridge {
         assert(mMediaDrm != null);
         assert(mMediaCrypto != null);
         assert(!mProvisioningPending);
-        assert(sessionExists(sessionId));
 
         try {
             final byte[] session = sessionId.getBytes("UTF-8");
@@ -470,7 +469,6 @@ class MediaDrmBridge {
             }
 
             // KeyMessage or KeyError is fired in getKeyRequest().
-            assert(sessionExists(sessionId));
             if (!getKeyRequest(sessionId, initData, mime)) {
                 Log.e(TAG, "Cannot get key request in generateKeyRequest().");
                 return;
