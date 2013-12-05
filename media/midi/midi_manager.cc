@@ -9,7 +9,7 @@
 
 namespace media {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 // TODO(crogers): implement MIDIManager for other platforms.
 MIDIManager* MIDIManager::Create() {
   return NULL;

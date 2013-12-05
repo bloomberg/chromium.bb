@@ -409,6 +409,8 @@
         'midi/midi_message_queue.h',
         'midi/midi_message_util.cc',
         'midi/midi_message_util.h',
+        'midi/midi_manager_win.cc',
+        'midi/midi_manager_win.h',
         'midi/midi_port_info.cc',
         'midi/midi_port_info.h',
         'video/capture/android/video_capture_device_android.cc',

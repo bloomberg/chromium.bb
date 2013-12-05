@@ -1653,7 +1653,7 @@ const Experiment kExperiments[] = {
     "enable-web-midi",
     IDS_FLAGS_ENABLE_WEB_MIDI_NAME,
     IDS_FLAGS_ENABLE_WEB_MIDI_DESCRIPTION,
-    kOsMac,
+    kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnableWebMIDI)
   },
   {
