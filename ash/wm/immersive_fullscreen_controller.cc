@@ -289,6 +289,10 @@ void ImmersiveFullscreenController::SetEnabled(bool enabled) {
       // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
       UpdateLocatedEventRevealedLock(NULL);
       UpdateFocusRevealedLock();
+    } else {
+      // Clearing focus is important because it closes focus-related popups like
+      // the touch selection handles.
+      widget_->GetFocusManager()->ClearFocus();
     }
   } else {
     // Stop cursor-at-top tracking.
@@ -387,7 +391,9 @@ void ImmersiveFullscreenController::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (ShouldHandleGestureEvent(GetEventLocationInScreen(*event))) {
         gesture_begun_ = true;
-        event->SetHandled();
+        // Do not consume the event. Otherwise, we end up consuming all
+        // ui::ET_GESTURE_SCROLL_BEGIN events in the top-of-window views
+        // when the top-of-window views are revealed.
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -729,8 +735,10 @@ bool ImmersiveFullscreenController::UpdateRevealedLocksForSwipe(
       located_event_revealed_lock_.reset();
       focus_revealed_lock_.reset();
 
-      if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED)
+      if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) {
+        widget_->GetFocusManager()->ClearFocus();
         return true;
+      }
 
       // Ending the reveal was unsuccessful. Reaquire the locks if appropriate.
       UpdateLocatedEventRevealedLock(NULL);

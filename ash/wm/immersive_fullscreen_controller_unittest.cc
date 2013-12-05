@@ -574,9 +574,9 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseHoveredWithoutMoving) {
   EXPECT_FALSE(controller()->IsRevealed());
 
   // 2) Test that if the mouse becomes hovered without moving because of a
-  // reveal in ImmersiveFullscreenController::controller()->SetEnabled(true)
-  // and there are no locks keeping the top-of-window views revealed, that mouse
-  // hover does not prevent the top-of-window views from closing.
+  // reveal in ImmersiveFullscreenController::SetEnabled(true) and there are no
+  // locks keeping the top-of-window views revealed, that mouse hover does not
+  // prevent the top-of-window views from closing.
   controller()->SetEnabled(false);
   SetHovered(true);
   EXPECT_FALSE(controller()->IsRevealed());
@@ -584,10 +584,9 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseHoveredWithoutMoving) {
   EXPECT_FALSE(controller()->IsRevealed());
 
   // 3) Test that if the mouse becomes hovered without moving because of a
-  // reveal in ImmersiveFullscreenController::controller()->SetEnabled(true)
-  // and there is a lock keeping the top-of-window views revealed, that the
-  // top-of-window views do not hide till the mouse moves off of the
-  // top-of-window views.
+  // reveal in ImmersiveFullscreenController::SetEnabled(true) and there is a
+  // lock keeping the top-of-window views revealed, that the top-of-window views
+  // do not hide till the mouse moves off of the top-of-window views.
   controller()->SetEnabled(false);
   SetHovered(true);
   lock.reset(controller()->GetRevealedLock(
@@ -650,7 +649,11 @@ TEST_F(ImmersiveFullscreenControllerTest, EndRevealViaGesture) {
   EXPECT_TRUE(controller()->IsRevealed());
   AttemptUnreveal(MODALITY_GESTURE);
   EXPECT_FALSE(controller()->IsRevealed());
-  top_container()->GetFocusManager()->ClearFocus();
+
+  // The top-of-window views should no longer have focus. Clearing focus is
+  // important because it closes focus-related popup windows like the touch
+  // selection handles.
+  EXPECT_FALSE(top_container()->HasFocus());
 
   // If some other code is holding onto a lock, a gesture should not be able to
   // end the reveal.
