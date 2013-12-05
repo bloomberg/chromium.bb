@@ -50,6 +50,7 @@ INTERFACE_H_INCLUDES = set([
 ])
 INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
+    'bindings/v8/ExceptionMessages.h',
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8DOMConfiguration.h',  # FIXME: necessary?
     'bindings/v8/V8DOMWrapper.h',  # FIXME: necessary?
@@ -69,7 +70,6 @@ def generate_interface(interface):
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
         includes.update(['bindings/v8/BindingSecurity.h',
-                         'bindings/v8/ExceptionMessages.h',
                          'bindings/v8/ExceptionState.h'])
 
     # [GenerateVisitDOMWrapper]

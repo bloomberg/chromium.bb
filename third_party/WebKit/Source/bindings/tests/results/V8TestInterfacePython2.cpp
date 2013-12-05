@@ -36,6 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Interface1.h"
 #include "V8Interface2.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"

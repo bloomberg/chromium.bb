@@ -1542,7 +1542,6 @@ END
     my $raisesException = $attribute->extendedAttributes->{"RaisesException"};
     my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Getter");
     if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurity"}) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::GetterContext, \"${attrName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
@@ -1939,7 +1938,6 @@ sub GenerateNormalAttributeSetter
     # fail, or if we're dealing with SVG, which does strange things with
     # tearoffs and read-only wrappers.
     if ($useExceptions or $hasStrictTypeChecking or GetSVGTypeNeedingTearOff($interfaceName) or GetSVGTypeNeedingTearOff($attrType)) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::SetterContext, \"${attrName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
@@ -2575,7 +2573,6 @@ END
         }
 
         my $parameterName = $parameter->name;
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         if (IsCallbackInterface($parameter->type)) {
             my $v8ClassName = "V8" . $parameter->type;
@@ -2721,7 +2718,6 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         $code .= "    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {\n";
 
         $code .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length())), info.GetIsolate());\n";
@@ -2764,7 +2760,6 @@ END
     }
 
     if ($raisesExceptions) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
     }
@@ -2902,7 +2897,6 @@ sub GenerateEventConstructor
     }
 
     AddToImplIncludes("bindings/v8/Dictionary.h");
-    AddToImplIncludes("bindings/v8/ExceptionMessages.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -3106,7 +3100,6 @@ END
     $code .= GenerateArgumentsCountCheck($function, $interface);
 
     if ($raisesExceptions) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
     }
@@ -3182,7 +3175,6 @@ sub GenerateConstructorHeader
 {
     my $constructorName = shift;
 
-    AddToImplIncludes("bindings/v8/ExceptionMessages.h");
     AddToImplIncludes("bindings/v8/V8ObjectConstructor.h");
     my $content = <<END;
     if (!info.IsConstructCall()) {
@@ -4194,17 +4186,17 @@ sub GenerateImplementation
     my $v8ClassName = GetV8ClassName($interface);
     my $nativeType = GetNativeTypeForConversions($interface);
 
+    AddToImplIncludes("RuntimeEnabledFeatures.h");
+    AddToImplIncludes("bindings/v8/ExceptionMessages.h");
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8DOMWrapper.h");
     AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("core/dom/Document.h");
-    AddToImplIncludes("RuntimeEnabledFeatures.h");
     AddToImplIncludes("platform/TraceEvent.h");
 
     AddIncludesForType($interfaceName);
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
     }
 
@@ -5274,7 +5266,6 @@ sub GenerateFunctionCallString
         if ($replacements{$paramName}) {
             push @arguments, $replacements{$paramName};
         } elsif (IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
-            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
             push @arguments, "$paramName->propertyReference()";
             $code .= <<END;
     if (!$paramName) {
