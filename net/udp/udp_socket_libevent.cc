@@ -7,8 +7,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
-#include <sys/socket.h>
+#include <net/if.h>
 #include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -24,15 +26,37 @@
 #include "net/socket/socket_descriptor.h"
 #include "net/udp/udp_net_log_parameters.h"
 
+
+namespace net {
+
 namespace {
 
 const int kBindRetries = 10;
 const int kPortStart = 1024;
 const int kPortEnd = 65535;
 
-}  // namespace
+#if defined(OS_MACOSX)
 
-namespace net {
+// Returns IPv4 address in network order.
+int GetIPv4AddressFromIndex(int socket, uint32 index, uint32* address){
+  if (!index) {
+    *address = htonl(INADDR_ANY);
+    return OK;
+  }
+  ifreq ifr;
+  ifr.ifr_addr.sa_family = AF_INET;
+  if (!if_indextoname(index, ifr.ifr_name))
+    return ERR_FAILED;
+  int rv = ioctl(socket, SIOCGIFADDR, &ifr);
+  if (!rv)
+    return MapSystemError(rv);
+  *address = reinterpret_cast<sockaddr_in*>(&ifr.ifr_addr)->sin_addr.s_addr;
+  return OK;
+}
+
+#endif  // OS_MACOSX
+
+}  // namespace
 
 UDPSocketLibevent::UDPSocketLibevent(
     DatagramSocket::BindType bind_type,
@@ -42,6 +66,7 @@ UDPSocketLibevent::UDPSocketLibevent(
         : socket_(kInvalidSocket),
           addr_family_(0),
           socket_options_(SOCKET_OPTION_MULTICAST_LOOP),
+          multicast_interface_(0),
           multicast_time_to_live_(1),
           bind_type_(bind_type),
           rand_int_cb_(rand_int_cb),
@@ -524,13 +549,47 @@ int UDPSocketLibevent::SetSocketOptions() {
       rv = setsockopt(socket_, IPPROTO_IP, IP_MULTICAST_TTL,
                       &ttl, sizeof(ttl));
     } else {
-      // Signed interger. -1 to use route default.
+      // Signed integer. -1 to use route default.
       int ttl = multicast_time_to_live_;
       rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
                       &ttl, sizeof(ttl));
     }
     if (rv < 0)
       return MapSystemError(errno);
+  }
+  if (multicast_interface_ != 0) {
+    switch (addr_family_) {
+      case AF_INET: {
+#if !defined(OS_MACOSX)
+        ip_mreqn mreq;
+        mreq.imr_ifindex = multicast_interface_;
+        mreq.imr_address.s_addr = htonl(INADDR_ANY);
+#else
+        ip_mreq mreq;
+        int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,
+                                            &mreq.imr_interface.s_addr);
+        if (error != OK)
+          return error;
+#endif
+        int rv = setsockopt(socket_, IPPROTO_IP, IP_MULTICAST_IF,
+                            reinterpret_cast<const char*>(&mreq), sizeof(mreq));
+        if (rv)
+          return MapSystemError(errno);
+        break;
+      }
+      case AF_INET6: {
+        uint32 interface_index = multicast_interface_;
+        int rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_MULTICAST_IF,
+                            reinterpret_cast<const char*>(&interface_index),
+                            sizeof(interface_index));
+        if (rv)
+          return MapSystemError(errno);
+        break;
+      }
+      default:
+        NOTREACHED() << "Invalid address family";
+        return ERR_ADDRESS_INVALID;
+    }
   }
   return OK;
 }
@@ -566,8 +625,18 @@ int UDPSocketLibevent::JoinGroup(const IPAddressNumber& group_address) const {
     case kIPv4AddressSize: {
       if (addr_family_ != AF_INET)
         return ERR_ADDRESS_INVALID;
+
+#if !defined(OS_MACOSX)
+      ip_mreqn mreq;
+      mreq.imr_ifindex = multicast_interface_;
+      mreq.imr_address.s_addr = htonl(INADDR_ANY);
+#else
       ip_mreq mreq;
-      mreq.imr_interface.s_addr = INADDR_ANY;
+      int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,
+                                            &mreq.imr_interface.s_addr);
+      if (error != OK)
+        return error;
+#endif
       memcpy(&mreq.imr_multiaddr, &group_address[0], kIPv4AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                           &mreq, sizeof(mreq));
@@ -579,7 +648,7 @@ int UDPSocketLibevent::JoinGroup(const IPAddressNumber& group_address) const {
       if (addr_family_ != AF_INET6)
         return ERR_ADDRESS_INVALID;
       ipv6_mreq mreq;
-      mreq.ipv6mr_interface = 0;  // 0 indicates default multicast interface.
+      mreq.ipv6mr_interface = multicast_interface_;
       memcpy(&mreq.ipv6mr_multiaddr, &group_address[0], kIPv6AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_JOIN_GROUP,
                           &mreq, sizeof(mreq));
@@ -628,6 +697,14 @@ int UDPSocketLibevent::LeaveGroup(const IPAddressNumber& group_address) const {
       NOTREACHED() << "Invalid address family";
       return ERR_ADDRESS_INVALID;
   }
+}
+
+int UDPSocketLibevent::SetMulticastInterface(uint32 interface_index) {
+  DCHECK(CalledOnValidThread());
+  if (is_connected())
+    return ERR_SOCKET_IS_CONNECTED;
+  multicast_interface_ = interface_index;
+  return OK;
 }
 
 int UDPSocketLibevent::SetMulticastTimeToLive(int time_to_live) {

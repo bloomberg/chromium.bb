@@ -140,6 +140,11 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     return net::ERR_NOT_IMPLEMENTED;
   }
 
+  virtual int SetMulticastInterface(uint32 interface_index) OVERRIDE {
+    NOTIMPLEMENTED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+
   virtual int SetMulticastTimeToLive(int time_to_live) OVERRIDE {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;

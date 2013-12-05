@@ -46,11 +46,10 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_METHOD0(AllowBroadcast, void());
 
   MOCK_CONST_METHOD1(JoinGroup, int(const IPAddressNumber& group_address));
-
   MOCK_CONST_METHOD1(LeaveGroup, int(const IPAddressNumber& address));
 
+  MOCK_METHOD1(SetMulticastInterface, int(uint32 interface_index));
   MOCK_METHOD1(SetMulticastTimeToLive, int(int ttl));
-
   MOCK_METHOD1(SetMulticastLoopbackMode, int(bool loopback));
 
   MOCK_METHOD1(SetDiffServCodePoint, int(DiffServCodePoint dscp));

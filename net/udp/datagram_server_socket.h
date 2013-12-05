@@ -80,6 +80,12 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
   // Returns a network error code.
   virtual int LeaveGroup(const IPAddressNumber& group_address) const = 0;
 
+  // Set interface to use for multicast. If |interface_index| set to 0, default
+  // interface is used.
+  // Should be called before Bind().
+  // Returns a network error code.
+  virtual int SetMulticastInterface(uint32 interface_index) = 0;
+
   // Set the time-to-live option for UDP packets sent to the multicast
   // group address. The default value of this option is 1.
   // Cannot be negative or more than 255.

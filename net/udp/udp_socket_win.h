@@ -130,6 +130,12 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // Return a network error code.
   int LeaveGroup(const IPAddressNumber& group_address) const;
 
+  // Set interface to use for multicast. If |interface_index| set to 0, default
+  // interface is used.
+  // Should be called before Bind().
+  // Returns a network error code.
+  int SetMulticastInterface(uint32 interface_index);
+
   // Set the time-to-live option for UDP packets sent to the multicast
   // group address. The default value of this option is 1.
   // Cannot be negative or more than 255.
@@ -206,6 +212,9 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // Bitwise-or'd combination of SocketOptions. Specifies the set of
   // options that should be applied to |socket_| before Bind().
   int socket_options_;
+
+  // Multicast interface.
+  uint32 multicast_interface_;
 
   // Multicast socket options cached for SetSocketOption.
   // Cannot be used after Bind().

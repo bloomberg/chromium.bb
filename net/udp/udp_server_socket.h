@@ -18,8 +18,7 @@ class BoundNetLog;
 // A client socket that uses UDP as the transport layer.
 class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
  public:
-  UDPServerSocket(net::NetLog* net_log,
-                  const net::NetLog::Source& source);
+  UDPServerSocket(net::NetLog* net_log, const net::NetLog::Source& source);
   virtual ~UDPServerSocket();
 
   // Implement DatagramServerSocket:
@@ -42,6 +41,7 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   virtual void AllowBroadcast() OVERRIDE;
   virtual int JoinGroup(const IPAddressNumber& group_address) const OVERRIDE;
   virtual int LeaveGroup(const IPAddressNumber& group_address) const OVERRIDE;
+  virtual int SetMulticastInterface(uint32 interface_index) OVERRIDE;
   virtual int SetMulticastTimeToLive(int time_to_live) OVERRIDE;
   virtual int SetMulticastLoopbackMode(bool loopback) OVERRIDE;
   virtual int SetDiffServCodePoint(DiffServCodePoint dscp) OVERRIDE;

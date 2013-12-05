@@ -574,8 +574,13 @@ TEST_F(UDPSocketTest, MulticastOptions) {
   EXPECT_EQ(OK, socket.SetMulticastTimeToLive(0));
   EXPECT_EQ(OK, socket.SetMulticastTimeToLive(3));
   EXPECT_NE(OK, socket.SetMulticastTimeToLive(-1));
+  EXPECT_EQ(OK, socket.SetMulticastInterface(0));
 
   EXPECT_EQ(OK, socket.Bind(bind_address));
+
+  EXPECT_NE(OK, socket.SetMulticastLoopbackMode(false));
+  EXPECT_NE(OK, socket.SetMulticastTimeToLive(0));
+  EXPECT_NE(OK, socket.SetMulticastInterface(0));
 
   socket.Close();
 }

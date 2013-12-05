@@ -165,6 +165,7 @@ UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type,
     : socket_(INVALID_SOCKET),
       addr_family_(0),
       socket_options_(SOCKET_OPTION_MULTICAST_LOOP),
+      multicast_interface_(0),
       multicast_time_to_live_(1),
       bind_type_(bind_type),
       rand_int_cb_(rand_int_cb),
@@ -621,6 +622,32 @@ int UDPSocketWin::SetSocketOptions() {
     if (rv < 0)
       return MapSystemError(WSAGetLastError());
   }
+  if (multicast_interface_ != 0) {
+    switch (addr_family_) {
+      case AF_INET: {
+        in_addr address;
+        address.s_addr = htonl(multicast_interface_);
+        int rv = setsockopt(socket_, IPPROTO_IP, IP_MULTICAST_IF,
+                            reinterpret_cast<const char*>(&address),
+                            sizeof(address));
+        if (rv)
+          return MapSystemError(WSAGetLastError());
+        break;
+      }
+      case AF_INET6: {
+        uint32 interface_index = multicast_interface_;
+        int rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_MULTICAST_IF,
+                            reinterpret_cast<const char*>(&interface_index),
+                            sizeof(interface_index));
+        if (rv)
+          return MapSystemError(WSAGetLastError());
+        break;
+      }
+      default:
+        NOTREACHED() << "Invalid address family";
+        return ERR_ADDRESS_INVALID;
+    }
+  }
   return OK;
 }
 
@@ -662,7 +689,7 @@ int UDPSocketWin::JoinGroup(
       if (addr_family_ != AF_INET)
         return ERR_ADDRESS_INVALID;
       ip_mreq mreq;
-      mreq.imr_interface.s_addr = INADDR_ANY;
+      mreq.imr_interface.s_addr = htonl(multicast_interface_);
       memcpy(&mreq.imr_multiaddr, &group_address[0], kIPv4AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                           reinterpret_cast<const char*>(&mreq),
@@ -675,7 +702,7 @@ int UDPSocketWin::JoinGroup(
       if (addr_family_ != AF_INET6)
         return ERR_ADDRESS_INVALID;
       ipv6_mreq mreq;
-      mreq.ipv6mr_interface = 0;  // 0 indicates default multicast interface.
+      mreq.ipv6mr_interface = multicast_interface_;
       memcpy(&mreq.ipv6mr_multiaddr, &group_address[0], kIPv6AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
                           reinterpret_cast<const char*>(&mreq),
@@ -701,11 +728,10 @@ int UDPSocketWin::LeaveGroup(
       if (addr_family_ != AF_INET)
         return ERR_ADDRESS_INVALID;
       ip_mreq mreq;
-      mreq.imr_interface.s_addr = INADDR_ANY;
+      mreq.imr_interface.s_addr = htonl(multicast_interface_);
       memcpy(&mreq.imr_multiaddr, &group_address[0], kIPv4AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IP, IP_DROP_MEMBERSHIP,
-                      reinterpret_cast<const char*>(&mreq),
-                      sizeof(mreq));
+                          reinterpret_cast<const char*>(&mreq), sizeof(mreq));
       if (rv)
         return MapSystemError(WSAGetLastError());
       return OK;
@@ -714,11 +740,10 @@ int UDPSocketWin::LeaveGroup(
       if (addr_family_ != AF_INET6)
         return ERR_ADDRESS_INVALID;
       ipv6_mreq mreq;
-      mreq.ipv6mr_interface = 0;  // 0 indicates default multicast interface.
+      mreq.ipv6mr_interface = multicast_interface_;
       memcpy(&mreq.ipv6mr_multiaddr, &group_address[0], kIPv6AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IPV6, IP_DROP_MEMBERSHIP,
-                      reinterpret_cast<const char*>(&mreq),
-                      sizeof(mreq));
+                          reinterpret_cast<const char*>(&mreq), sizeof(mreq));
       if (rv)
         return MapSystemError(WSAGetLastError());
       return OK;
@@ -727,6 +752,14 @@ int UDPSocketWin::LeaveGroup(
       NOTREACHED() << "Invalid address family";
       return ERR_ADDRESS_INVALID;
   }
+}
+
+int UDPSocketWin::SetMulticastInterface(uint32 interface_index) {
+  DCHECK(CalledOnValidThread());
+  if (is_connected())
+    return ERR_SOCKET_IS_CONNECTED;
+  multicast_interface_ = interface_index;
+  return OK;
 }
 
 int UDPSocketWin::SetMulticastTimeToLive(int time_to_live) {
