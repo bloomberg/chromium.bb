@@ -2150,6 +2150,7 @@ set_transient(struct shell_surface *shsurf,
 	shsurf->transient.flags = flags;
 
 	shsurf->next_state.relative = true;
+	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 
 	/* The layer_link is updated in set_surface_type(),
 	 * called from configure. */
@@ -2183,7 +2184,7 @@ set_fullscreen(struct shell_surface *shsurf,
 	shsurf->fullscreen.type = method;
 	shsurf->fullscreen.framerate = framerate;
 
-	shsurf->next_type = shsurf->type;
+	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 
 	shsurf->client->send_configure(shsurf->surface, 0,
 				       shsurf->output->width,
@@ -2303,7 +2304,7 @@ set_maximized(struct shell_surface *shsurf,
 	                               shsurf->output->width,
 	                               shsurf->output->height - panel_height);
 
-	shsurf->next_type = shsurf->type;
+	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 }
 
 static void
