@@ -27940,6 +27940,11 @@ other types of suffix sets.
   <int value="83" label="Continue prerender check next URL not skipped"/>
   <int value="84" label="Prerender Service returned hinting candidates"/>
   <int value="85" label="Namespace mismatch: merge result namespace not alias"/>
+  <int value="86" label="Tab Helper URL seen entry"/>
+  <int value="87" label="Tab Helper URL seen match browser navigation"/>
+  <int value="88" label="Tab Helper URL seen namespace match entry"/>
+  <int value="89"
+      label="Tab Helper URL seen namespace match browser navigation"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">

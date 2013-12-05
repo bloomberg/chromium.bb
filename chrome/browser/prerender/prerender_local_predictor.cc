@@ -27,12 +27,14 @@
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
@@ -1271,6 +1273,15 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
     const GURL& url, WebContents* web_contents) {
   RecordEvent(EVENT_TAB_HELPER_URL_SEEN);
 
+  bool browser_navigate_initiated = false;
+  const content::NavigationEntry* entry =
+      web_contents->GetController().GetPendingEntry();
+  if (entry) {
+    base::string16 result;
+    browser_navigate_initiated =
+        entry->GetExtraData(kChromeNavigateExtraDataKey, &result);
+  }
+
   // If the namespace matches and the URL matches, we might be able to swap
   // in. However, the actual code initating the swapin is in the renderer
   // and is checking for other criteria (such as POSTs). There may
@@ -1298,9 +1309,17 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
   }
   if (best_matched_prerender) {
     RecordEvent(EVENT_TAB_HELPER_URL_SEEN_MATCH);
+    if (entry)
+      RecordEvent(EVENT_TAB_HELPER_URL_SEEN_MATCH_ENTRY);
+    if (browser_navigate_initiated)
+      RecordEvent(EVENT_TAB_HELPER_URL_SEEN_MATCH_BROWSER_NAVIGATE);
     best_matched_prerender->would_have_matched = true;
     if (session_storage_namespace_matches) {
       RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH);
+      if (entry)
+        RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH_ENTRY);
+      if (browser_navigate_initiated)
+        RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH_BROWSER_NAVIGATE);
     } else {
       SessionStorageNamespace* prerender_session_storage_namespace =
           best_matched_prerender->prerender_handle->

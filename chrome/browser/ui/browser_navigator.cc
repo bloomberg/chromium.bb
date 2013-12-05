@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -34,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_url_handler.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -606,6 +608,13 @@ void Navigate(NavigateParams* params) {
         // renderer.
 
         LoadURLInContents(params->target_contents, url, params);
+        // For prerender bookkeeping purposes, record that this pending navigate
+        // originated from chrome::Navigate.
+        content::NavigationEntry* entry =
+            params->target_contents->GetController().GetPendingEntry();
+        if (entry)
+          entry->SetExtraData(prerender::kChromeNavigateExtraDataKey,
+                              base::string16());
       }
     }
   } else {
@@ -655,6 +664,13 @@ void Navigate(NavigateParams* params) {
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
       LoadURLInContents(target, params->url, params);
+      // For prerender bookkeeping purposes, record that this pending navigate
+      // originated from chrome::Navigate.
+      content::NavigationEntry* entry =
+          target->GetController().GetPendingEntry();
+      if (entry)
+        entry->SetExtraData(prerender::kChromeNavigateExtraDataKey,
+                            base::string16());
     }
 
     // If the singleton tab isn't already selected, select it.

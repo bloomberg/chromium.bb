@@ -16,6 +16,8 @@ class URLRequest;
 
 namespace prerender {
 
+extern const char kChromeNavigateExtraDataKey[];
+
 // ID indicating that no experiment is active.
 const uint8 kNoExperiment = 0;
 
