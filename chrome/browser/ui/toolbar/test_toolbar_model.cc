@@ -15,7 +15,7 @@ TestToolbarModel::TestToolbarModel()
 
 TestToolbarModel::~TestToolbarModel() {}
 
-string16 TestToolbarModel::GetText(bool allow_search_term_replacement) const {
+string16 TestToolbarModel::GetText() const {
   return text_;
 }
 

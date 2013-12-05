@@ -37,7 +37,7 @@ class ToolbarModelImpl : public ToolbarModel {
       content::WebContents* web_contents);
 
   // Overriden from ToolbarModel.
-  virtual string16 GetText(bool allow_search_term_replacement) const OVERRIDE;
+  virtual string16 GetText() const OVERRIDE;
   virtual string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
   virtual bool WouldPerformSearchTermReplacement(

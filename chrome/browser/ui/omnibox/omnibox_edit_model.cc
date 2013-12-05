@@ -223,7 +223,7 @@ void OmniboxEditModel::RestoreState(const State* state) {
   // regardless of whether there is saved state.
   controller_->GetToolbarModel()->set_search_term_replacement_enabled(
       !state || state->search_term_replacement_enabled);
-  permanent_text_ = controller_->GetToolbarModel()->GetText(true);
+  permanent_text_ = controller_->GetToolbarModel()->GetText();
   // Don't muck with the search term replacement state, as we've just set it
   // correctly.
   view_->RevertWithoutResettingSearchTermReplacement();
@@ -283,7 +283,7 @@ bool OmniboxEditModel::UpdatePermanentText() {
   // process -- before and after the auto-commit, the omnibox should show the
   // same user text and the same instant suggestion, even if the auto-commit
   // happens while the edit doesn't have focus.
-  string16 new_permanent_text = controller_->GetToolbarModel()->GetText(true);
+  string16 new_permanent_text = controller_->GetToolbarModel()->GetText();
   string16 gray_text = view_->GetGrayTextAutocompletion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&

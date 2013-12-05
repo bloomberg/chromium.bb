@@ -35,10 +35,9 @@ class ToolbarModel {
   // for display to the user:
   //   - Some characters may be unescaped.
   //   - The scheme and/or trailing slash may be dropped.
-  //   - if |allow_search_term_replacement| is true, the query will be extracted
-  //     from search URLs for the user's default search engine and will be
-  //     displayed in place of the URL.
-  virtual string16 GetText(bool allow_search_term_replacement) const = 0;
+  //   - If the current page's URL is a search URL for the user's default search
+  //     engine, the query will be extracted and returned.
+  virtual string16 GetText() const = 0;
 
   // Some search URLs bundle a special "corpus" param that we can extract and
   // display next to users' search terms in cases where we'd show the search
@@ -50,7 +49,7 @@ class ToolbarModel {
   // Returns the URL of the current navigation entry.
   virtual GURL GetURL() const = 0;
 
-  // Returns true if a call to GetText(true) would successfully replace the URL
+  // Returns true if a call to GetText() would successfully replace the URL
   // with search terms.  If |ignore_editing| is true, the result reflects the
   // underlying state of the page without regard to any user edits that may be
   // in progress in the omnibox.

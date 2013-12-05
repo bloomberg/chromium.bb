@@ -85,7 +85,7 @@ ToolbarModel* TabModel::GetToolbarModel() {
 }
 
 string16 TabModel::GetSearchTermsForCurrentTab() {
-  return toolbar_model_->GetText(true);
+  return toolbar_model_->GetText();
 }
 
 std::string TabModel::GetQueryExtractionParam() {

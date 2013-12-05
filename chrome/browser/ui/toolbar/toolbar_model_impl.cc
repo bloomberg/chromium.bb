@@ -95,12 +95,11 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
 }
 
 // ToolbarModelImpl Implementation.
-string16 ToolbarModelImpl::GetText(bool allow_search_term_replacement) const {
-  if (allow_search_term_replacement) {
-    string16 search_terms(GetSearchTerms(false));
-    if (!search_terms.empty())
-      return search_terms;
-  }
+string16 ToolbarModelImpl::GetText() const {
+  string16 search_terms(GetSearchTerms(false));
+  if (!search_terms.empty())
+    return search_terms;
+
   std::string languages;  // Empty if we don't have a |navigation_controller|.
   Profile* profile = GetProfile();
   if (profile)

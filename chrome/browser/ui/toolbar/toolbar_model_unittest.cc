@@ -33,7 +33,6 @@ namespace {
 
 struct TestItem {
   GURL url;
-  string16 expected_text;
   // The expected text to display when query extraction is inactive.
   string16 expected_replace_text_inactive;
   // The expected text to display when query extraction is active.
@@ -45,13 +44,11 @@ struct TestItem {
     GURL("view-source:http://www.google.com"),
     ASCIIToUTF16("view-source:www.google.com"),
     ASCIIToUTF16("view-source:www.google.com"),
-    ASCIIToUTF16("view-source:www.google.com"),
     false,
     true
   },
   {
     GURL("view-source:chrome://newtab/"),
-    ASCIIToUTF16("view-source:chrome://newtab"),
     ASCIIToUTF16("view-source:chrome://newtab"),
     ASCIIToUTF16("view-source:chrome://newtab"),
     false,
@@ -61,13 +58,11 @@ struct TestItem {
     GURL("chrome-extension://monkey/balls.html"),
     ASCIIToUTF16("chrome-extension://monkey/balls.html"),
     ASCIIToUTF16("chrome-extension://monkey/balls.html"),
-    ASCIIToUTF16("chrome-extension://monkey/balls.html"),
     false,
     true
   },
   {
     GURL("chrome-internal://newtab/"),
-    string16(),
     string16(),
     string16(),
     false,
@@ -77,13 +72,11 @@ struct TestItem {
     GURL(content::kAboutBlankURL),
     ASCIIToUTF16(content::kAboutBlankURL),
     ASCIIToUTF16(content::kAboutBlankURL),
-    ASCIIToUTF16(content::kAboutBlankURL),
     false,
     true
   },
   {
     GURL("http://searchurl/?q=tractor+supply"),
-    ASCIIToUTF16("searchurl/?q=tractor+supply"),
     ASCIIToUTF16("searchurl/?q=tractor+supply"),
     ASCIIToUTF16("searchurl/?q=tractor+supply"),
     false,
@@ -93,13 +86,11 @@ struct TestItem {
     GURL("http://google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
     false,
     true
   },
   {
     GURL("https://google.ca/search?q=tractor+supply"),
-    ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
     false,
@@ -109,13 +100,11 @@ struct TestItem {
     GURL("https://google.com/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
     false,
     true
   },
   {
     GURL("https://google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("https://google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("https://google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("tractor supply"),
     true,
@@ -124,14 +113,12 @@ struct TestItem {
   {
     GURL("https://google.com/search?q=tractorsupply.com&espv=1"),
     ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
-    ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
     ASCIIToUTF16("tractorsupply.com"),
     true,
     true
   },
   {
     GURL("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
-    ASCIIToUTF16("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
     ASCIIToUTF16("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
     ASCIIToUTF16("ftp://tractorsupply.ie"),
     true,
@@ -155,17 +142,10 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
  protected:
   void NavigateAndCheckText(const GURL& url,
                             const string16& expected_text,
-                            const string16& expected_replace_text,
                             bool would_perform_search_term_replacement,
                             bool should_display_url);
 
  private:
-  void NavigateAndCheckTextImpl(const GURL& url,
-                                bool allow_search_term_replacement,
-                                const string16 expected_text,
-                                bool would_perform_search_term_replacement,
-                                bool should_display);
-
   DISALLOW_COPY_AND_ASSIGN(ToolbarModelTest);
 };
 
@@ -187,21 +167,6 @@ void ToolbarModelTest::SetUp() {
 void ToolbarModelTest::NavigateAndCheckText(
     const GURL& url,
     const string16& expected_text,
-    const string16& expected_replace_text,
-    bool would_perform_search_term_replacement,
-    bool should_display_url) {
-  NavigateAndCheckTextImpl(url, false, expected_text,
-                           would_perform_search_term_replacement,
-                           should_display_url);
-  NavigateAndCheckTextImpl(url, true, expected_replace_text,
-                           would_perform_search_term_replacement,
-                           should_display_url);
-}
-
-void ToolbarModelTest::NavigateAndCheckTextImpl(
-    const GURL& url,
-    bool allow_search_term_replacement,
-    const string16 expected_text,
     bool would_perform_search_term_replacement,
     bool should_display_url) {
   // Check while loading.
@@ -210,11 +175,10 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(
   controller->LoadURL(url, content::Referrer(), content::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
-  EXPECT_EQ(should_display_url, toolbar_model->ShouldDisplayURL());
-  EXPECT_EQ(expected_text,
-            toolbar_model->GetText(allow_search_term_replacement));
+  EXPECT_EQ(expected_text, toolbar_model->GetText());
   EXPECT_EQ(would_perform_search_term_replacement,
             toolbar_model->WouldPerformSearchTermReplacement(false));
+  EXPECT_EQ(should_display_url, toolbar_model->ShouldDisplayURL());
 
   // Check after commit.
   CommitPendingLoad(controller);
@@ -224,11 +188,10 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(
     controller->GetVisibleEntry()->GetSSL().security_style =
         content::SECURITY_STYLE_AUTHENTICATED;
   }
-  EXPECT_EQ(should_display_url, toolbar_model->ShouldDisplayURL());
-  EXPECT_EQ(expected_text,
-            toolbar_model->GetText(allow_search_term_replacement));
+  EXPECT_EQ(expected_text, toolbar_model->GetText());
   EXPECT_EQ(would_perform_search_term_replacement,
             toolbar_model->WouldPerformSearchTermReplacement(false));
+  EXPECT_EQ(should_display_url, toolbar_model->ShouldDisplayURL());
 
   // Now pretend the user started modifying the omnibox.
   toolbar_model->set_input_in_progress(true);
@@ -253,7 +216,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
   AddTab(browser(), GURL(content::kAboutBlankURL));
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url, test_item.expected_text,
+    NavigateAndCheckText(test_item.url,
                          test_item.expected_replace_text_inactive, false,
                          test_item.should_display_url);
   }
@@ -263,8 +226,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
   EXPECT_TRUE(browser()->toolbar_model()->search_term_replacement_enabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url, test_item.expected_text,
-                         test_item.expected_replace_text_active,
+    NavigateAndCheckText(test_item.url, test_item.expected_replace_text_active,
                          test_item.would_perform_search_term_replacement,
                          test_item.should_display_url);
   }
@@ -273,8 +235,9 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
   browser()->toolbar_model()->set_search_term_replacement_enabled(false);
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url, test_item.expected_text,
-                         test_item.expected_replace_text_inactive, false,
+    NavigateAndCheckText(test_item.url,
+                         test_item.expected_replace_text_inactive,
+                         false,
                          test_item.should_display_url);
   }
 }
@@ -315,9 +278,7 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
   UIThreadSearchTermsData::SetGoogleBaseURL("http://www.foo.com/");
   NavigateAndCheckText(
       GURL("http://www.foo.com/search?q=tractor+supply&espv=1"),
-      ASCIIToUTF16("www.foo.com/search?q=tractor+supply&espv=1"),
-      ASCIIToUTF16("www.foo.com/search?q=tractor+supply&espv=1"), false,
-      true);
+      ASCIIToUTF16("www.foo.com/search?q=tractor+supply&espv=1"), false, true);
 
   // The same URL, when specified on the command line, should allow search term
   // extraction.
@@ -326,6 +287,5 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
                                                       "http://www.foo.com/");
   NavigateAndCheckText(
       GURL("http://www.foo.com/search?q=tractor+supply&espv=1"),
-      ASCIIToUTF16("www.foo.com/search?q=tractor+supply&espv=1"),
       ASCIIToUTF16("tractor supply"), true, true);
 }
