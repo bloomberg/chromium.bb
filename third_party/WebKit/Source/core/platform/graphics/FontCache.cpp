@@ -33,7 +33,6 @@
 #include "FontFamilyNames.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontDataCache.h"
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/FontPlatformData.h"

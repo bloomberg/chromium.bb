@@ -35,9 +35,9 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/win/FontPlatformDataWin.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackWin.h"
 
 namespace WebCore {
@@ -76,18 +76,17 @@ static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, const UChar32 character)
+PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData*, bool)
 {
     // FIXME: Consider passing fontDescription.dominantScript()
     // to GetFallbackFamily here.
-    FontDescription fontDescription = font.fontDescription();
     UScriptCode script;
     const wchar_t* family = getFallbackFamily(character,
         fontDescription.genericFamily(),
         &script);
     FontPlatformData* data = 0;
     if (family)
-        data = getFontResourcePlatformData(font.fontDescription(),  AtomicString(family, wcslen(family)));
+        data = getFontResourcePlatformData(fontDescription,  AtomicString(family, wcslen(family)));
 
     // Last resort font list : PanUnicode. CJK fonts have a pretty
     // large repertoire. Eventually, we need to scan all the fonts
@@ -146,7 +145,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     int i;
     for (i = 0; (!data || !fontContainsCharacter(data, family, character)) && i < numFonts; ++i) {
         family = panUniFonts[i];
-        data = getFontResourcePlatformData(font.fontDescription(), AtomicString(family, wcslen(family)));
+        data = getFontResourcePlatformData(fontDescription, AtomicString(family, wcslen(family)));
     }
     // When i-th font (0-base) in |panUniFonts| contains a character and
     // we get out of the loop, |i| will be |i + 1|. That is, if only the

@@ -53,7 +53,6 @@ class SkTypeface;
 
 namespace WebCore {
 
-class Font;
 class FontPlatformData;
 class FontData;
 class FontDescription;
@@ -75,7 +74,7 @@ public:
 
     // This method is implemented by the plaform and used by
     // FontFastPath to lookup the font for a given character.
-    PassRefPtr<SimpleFontData> getFontDataForCharacter(const Font&, UChar32);
+    PassRefPtr<SimpleFontData> platformFallbackForCharacter(const FontDescription&, UChar32, const SimpleFontData* fontDataToSubstitute, bool disallowSynthetics);
 
     // Also implemented by the platform.
     void platformInit();

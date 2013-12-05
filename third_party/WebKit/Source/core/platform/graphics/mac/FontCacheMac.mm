@@ -31,9 +31,9 @@
 #import "core/platform/graphics/FontCache.h"
 
 #import <AppKit/AppKit.h>
-#import "core/platform/graphics/Font.h"
 #import "core/platform/graphics/FontPlatformData.h"
 #import "core/platform/graphics/SimpleFontData.h"
+#import "platform/fonts/FontDescription.h"
 #import "platform/mac/WebFontCache.h"
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
@@ -90,7 +90,7 @@ static inline bool isAppKitFontWeightBold(NSInteger appKitFontWeight)
     return appKitFontWeight >= 7;
 }
 
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 character)
+PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData* fontDataToSubstitute, bool disallowSynthetics)
 {
     // FIXME: We should fix getFallbackFamily to take a UChar32
     // and remove this split-to-UChar16 code.
@@ -105,7 +105,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
         codeUnitsLength = 2;
     }
 
-    const FontPlatformData& platformData = font.fontDataAt(0)->fontDataForCharacter(character)->platformData();
+    const FontPlatformData& platformData = fontDataToSubstitute->platformData();
     NSFont *nsFont = platformData.font();
 
     NSString *string = [[NSString alloc] initWithCharactersNoCopy:codeUnits length:codeUnitsLength freeWhenDone:NO];
@@ -144,9 +144,9 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
         size = [nsFont pointSize];
     } else {
         // For custom fonts nsFont is nil.
-        traits = font.italic() ? NSFontItalicTrait : 0;
-        weight = toAppKitFontWeight(font.weight());
-        size = font.pixelSize();
+        traits = fontDescription.italic() ? NSFontItalicTrait : 0;
+        weight = toAppKitFontWeight(fontDescription.weight());
+        size = fontDescription.computedPixelSize();
     }
 
     NSFontTraitMask substituteFontTraits = [fontManager traitsOfFont:substituteFont];
@@ -160,14 +160,14 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
         }
     }
 
-    substituteFont = font.fontDescription().usePrinterFont() ? [substituteFont printerFont] : [substituteFont screenFont];
+    substituteFont = fontDescription.usePrinterFont() ? [substituteFont printerFont] : [substituteFont screenFont];
 
     substituteFontTraits = [fontManager traitsOfFont:substituteFont];
     substituteFontWeight = [fontManager weightOfFont:substituteFont];
 
     FontPlatformData alternateFont(substituteFont, platformData.size(), platformData.isPrinterFont(),
-        !font.isPlatformFont() && isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(substituteFontWeight),
-        !font.isPlatformFont() && (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
+        !disallowSynthetics && isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(substituteFontWeight),
+        !disallowSynthetics && (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
         platformData.m_orientation);
 
     return getFontResourceData(&alternateFont, DoNotRetain);

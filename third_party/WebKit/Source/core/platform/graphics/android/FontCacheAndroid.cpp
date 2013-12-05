@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/graphics/FontCache.h"
 
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
 
@@ -68,12 +67,12 @@ static AtomicString getFamilyNameForCharacter(UChar32 c, UScriptCode script)
     return skiaFamilyName.c_str();
 }
 
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 c)
+PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*, bool)
 {
-    AtomicString familyName = getFamilyNameForCharacter(c, font.fontDescription().script());
+    AtomicString familyName = getFamilyNameForCharacter(c, fontDescription.script());
     if (familyName.isEmpty())
         return 0;
-    return getFontResourceData(getFontResourcePlatformData(font.fontDescription(), familyName), DoNotRetain);
+    return getFontResourceData(getFontResourcePlatformData(fontDescription, familyName), DoNotRetain);
 }
 
 // static

@@ -33,7 +33,6 @@
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
 #include "platform/fonts/AlternateFontFamily.h"
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "platform/NotImplemented.h"
@@ -50,7 +49,7 @@ void FontCache::platformInit()
 }
 
 #if !OS(WIN) && !OS(ANDROID)
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 c)
+PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*, bool)
 {
     icu::Locale locale = icu::Locale::getDefault();
     FontCache::SimpleFontFamily family;
@@ -64,7 +63,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     // of the given character. See http://crbug.com/32109 for details.
     bool shouldSetFakeBold = false;
     bool shouldSetFakeItalic = false;
-    FontDescription description(font.fontDescription());
+    FontDescription description(fontDescription);
     if (family.isBold && description.weight() < FontWeightBold)
         description.setWeight(FontWeightBold);
     if (!family.isBold && description.weight() >= FontWeightBold) {

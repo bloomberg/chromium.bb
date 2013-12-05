@@ -33,10 +33,10 @@
 #include "core/platform/graphics/FontCache.h"
 
 #include <unicode/uniset.h>
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/win/FontPlatformDataWin.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackWin.h"
 #include "platform/win/HWndDC.h"
 #include "wtf/HashMap.h"
@@ -392,7 +392,7 @@ void FontCache::platformInit()
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 inputC)
+PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*, bool)
 {
     // FIXME: We should fix getFallbackFamily to take a UChar32
     // and remove this split-to-UChar16 code.
@@ -409,13 +409,13 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
 
     // FIXME: Consider passing fontDescription.dominantScript()
     // to GetFallbackFamily here.
-    FontDescription fontDescription = font.fontDescription();
+    FontDescription fontDescription = fontDescription;
     UChar32 c;
     UScriptCode script;
     const wchar_t* family = getFallbackFamily(codeUnits, codeUnitsLength, fontDescription.genericFamily(), &c, &script);
     FontPlatformData* data = 0;
     if (family)
-        data = getFontResourcePlatformData(font.fontDescription(),  AtomicString(family, wcslen(family)));
+        data = getFontResourcePlatformData(fontDescription,  AtomicString(family, wcslen(family)));
 
     // Last resort font list : PanUnicode. CJK fonts have a pretty
     // large repertoire. Eventually, we need to scan all the fonts
@@ -475,7 +475,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     int i;
     for (i = 0; (!data || !fontContainsCharacter(data, family, c)) && i < numFonts; ++i) {
         family = panUniFonts[i];
-        data = getFontResourcePlatformData(font.fontDescription(), AtomicString(family, wcslen(family)));
+        data = getFontResourcePlatformData(fontDescription, AtomicString(family, wcslen(family)));
     }
     // When i-th font (0-base) in |panUniFonts| contains a character and
     // we get out of the loop, |i| will be |i + 1|. That is, if only the
