@@ -25,10 +25,12 @@ const int kTaskbarSize = 30;
 // The distance the taskbar will appear from the edge of the screen.
 const int kMinDistanceFromEdge = 3;
 
+// Max distance the mouse can be from taskbar to count as "near" the taskbar.
+const int kSnapDistance = 50;
 // A cursor position that is within the taskbar. This must be < kTaskbarSize.
 const int kCursorOnTaskbar = kTaskbarSize / 2;
 // A cursor position that is within 50 pixels of the taskbar.
-const int kCursorNearTaskbar = kTaskbarSize + 50;
+const int kCursorNearTaskbar = kTaskbarSize + kSnapDistance;
 // A cursor position that is more than 50 pixels away from the taskbar.
 const int kCursorAwayFromTaskbar = kCursorNearTaskbar + 1;
 
@@ -203,9 +205,10 @@ TEST_F(AppListWinUnitTest, FindAnchorPointMouseOnTaskbar) {
   // Bottom taskbar. Mouse near left edge. App list must not go off screen.
   PlaceTaskbar(AppListPositioner::SCREEN_EDGE_BOTTOM);
   PlaceCursor(kWindowNearEdge, kScreenHeight - kCursorOnTaskbar);
-  EXPECT_EQ(
-      gfx::Point(kWindowWidth / 2 + kMinDistanceFromEdge, kScreenHeight - 133),
-      DoFindAnchorPoint());
+  EXPECT_EQ(gfx::Point(kWindowWidth / 2 + kMinDistanceFromEdge,
+                       kScreenHeight - kTaskbarSize - kWindowHeight / 2 -
+                           kMinDistanceFromEdge),
+            DoFindAnchorPoint());
 
   // Bottom taskbar. Mouse near right edge. App list must not go off screen.
   PlaceTaskbar(AppListPositioner::SCREEN_EDGE_BOTTOM);
