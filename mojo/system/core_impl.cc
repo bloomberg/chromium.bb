@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/limits.h"
 #include "mojo/system/memory.h"
@@ -344,6 +345,10 @@ MojoResult CoreImpl::ReadMessage(
   }
 
   return rv;
+}
+
+MojoTimeTicks CoreImpl::GetTimeTicksNow() {
+  return base::TimeTicks::Now().ToInternalValue();
 }
 
 CoreImpl::CoreImpl()

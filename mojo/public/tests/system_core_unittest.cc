@@ -99,6 +99,12 @@ TEST(SystemTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_1));
 }
 
+TEST(SystemTest, GetTimeTicksNow) {
+  const MojoTimeTicks start = MojoGetTimeTicksNow();
+  EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
+      << "TimeTicks should return non-zero value";
+}
+
 // TODO(vtl): Add multi-threaded tests.
 
 }  // namespace

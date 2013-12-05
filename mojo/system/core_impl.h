@@ -56,6 +56,8 @@ class MOJO_SYSTEM_EXPORT CoreImpl {
                          MojoHandle* handles, uint32_t* num_handles,
                          MojoReadMessageFlags flags);
 
+  MojoTimeTicks GetTimeTicksNow();
+
  private:
   friend class test::CoreTestBase;
 

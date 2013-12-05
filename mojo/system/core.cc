@@ -57,4 +57,9 @@ MojoResult MojoReadMessage(MojoHandle handle,
                                                     flags);
 }
 
+MojoTimeTicks MojoGetTimeTicksNow() {
+  DCHECK(mojo::system::CoreImpl::Get()) << "CoreImpl not initialized.";
+  return mojo::system::CoreImpl::Get()->GetTimeTicksNow();
+}
+
 }  // extern "C"

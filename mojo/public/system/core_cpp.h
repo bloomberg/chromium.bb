@@ -217,6 +217,10 @@ inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
                          flags);
 }
 
+inline MojoTimeTicks GetTimeTicksNow() {
+  return MojoGetTimeTicksNow();
+}
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_SYSTEM_CORE_CPP_H_

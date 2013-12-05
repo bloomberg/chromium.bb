@@ -38,6 +38,9 @@ typedef uint32_t MojoWriteMessageFlags;
 // Used to specify different modes to |MojoReadMessage()|.
 typedef uint32_t MojoReadMessageFlags;
 
+// Used to specify time ticks. Value is in microseconds.
+typedef int64_t MojoTimeTicks;
+
 // Constants -------------------------------------------------------------------
 
 // |MojoHandle|:
@@ -255,6 +258,11 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle handle,
                                               MojoHandle* handles,
                                               uint32_t* num_handles,
                                               MojoReadMessageFlags flags);
+
+// Platform-dependent monotonically increasing tick count representing "right
+// now." The resolution of this clock is ~1-15ms.  Resolution varies depending
+// on hardware/operating system configuration.
+MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow();
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -368,5 +368,11 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
   }
 }
 
+TEST(CoreCppTest, GetTimeTicksNow) {
+  const MojoTimeTicks start = GetTimeTicksNow();
+  EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
+      << "TimeTicks should return non-zero value";
+}
+
 }  // namespace
 }  // namespace mojo
