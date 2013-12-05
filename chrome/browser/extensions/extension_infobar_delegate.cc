@@ -21,14 +21,16 @@ ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
 }
 
 // static
-void ExtensionInfoBarDelegate::Create(InfoBarService* infobar_service,
+void ExtensionInfoBarDelegate::Create(content::WebContents* web_contents,
                                       Browser* browser,
                                       const extensions::Extension* extension,
                                       const GURL& url,
                                       int height) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new ExtensionInfoBarDelegate(browser, infobar_service, extension, url,
-                                   infobar_service->web_contents(), height)));
+                                   web_contents, height)));
 }
 
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(

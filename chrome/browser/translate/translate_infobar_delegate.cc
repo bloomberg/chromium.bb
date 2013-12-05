@@ -35,7 +35,7 @@ TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 // static
 void TranslateInfoBarDelegate::Create(
     bool replace_existing_infobar,
-    InfoBarService* infobar_service,
+    content::WebContents* web_contents,
     Type infobar_type,
     const std::string& original_language,
     const std::string& target_language,
@@ -58,13 +58,15 @@ void TranslateInfoBarDelegate::Create(
   if ((infobar_type == TranslateInfoBarDelegate::AFTER_TRANSLATE) ||
       (infobar_type == TranslateInfoBarDelegate::TRANSLATING)) {
     TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(infobar_service->web_contents());
+        TranslateTabHelper::FromWebContents(web_contents);
     if (!translate_tab_helper ||
          translate_tab_helper->language_state().InTranslateNavigation())
       return;
   }
 
   // Find any existing translate infobar delegate.
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
   TranslateInfoBarDelegate* old_delegate = NULL;
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     old_delegate = infobar_service->infobar_at(i)->AsTranslateInfoBarDelegate();

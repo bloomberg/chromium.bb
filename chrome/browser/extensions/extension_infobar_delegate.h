@@ -12,7 +12,6 @@
 
 class Browser;
 class GURL;
-class InfoBarService;
 
 namespace extensions {
 class Extension;
@@ -35,8 +34,9 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
 
   virtual ~ExtensionInfoBarDelegate();
 
-  // Creates an extension infobar delegate and adds it to |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
+  // Creates an extension infobar delegate and adds it to the infobar service
+  // for |web_contents|.
+  static void Create(content::WebContents* web_contents,
                      Browser* browser,
                      const extensions::Extension* extension,
                      const GURL& url,

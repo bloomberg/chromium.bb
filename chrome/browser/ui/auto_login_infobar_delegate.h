@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class PrefService;
+class Profile;
 
 namespace content {
 class NavigationController;
@@ -31,11 +32,14 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     std::string username;
   };
 
-  // Creates an autologin infobar delegate and adds it to |infobar_service|.
-  static void Create(InfoBarService* infobar_service, const Params& params);
+  // Creates an autologin infobar delegate and adds it to the infobar service
+  // for |web_contents|.  Returns whether the infobar was successfully created.
+  static bool Create(content::WebContents* web_contents, const Params& params);
 
  protected:
-  AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
+  AutoLoginInfoBarDelegate(InfoBarService* owner,
+                           const Params& params,
+                           Profile* profile);
   virtual ~AutoLoginInfoBarDelegate();
 
  private:

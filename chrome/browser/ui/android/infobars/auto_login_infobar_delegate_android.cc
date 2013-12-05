@@ -22,8 +22,9 @@ using base::android::ScopedJavaLocalRef;
 
 AutoLoginInfoBarDelegateAndroid::AutoLoginInfoBarDelegateAndroid(
     InfoBarService* owner,
-    const Params& params)
-    : AutoLoginInfoBarDelegate(owner, params),
+    const Params& params,
+    Profile* profile)
+    : AutoLoginInfoBarDelegate(owner, params, profile),
       params_(params) {
 }
 

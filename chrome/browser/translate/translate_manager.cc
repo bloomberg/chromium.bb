@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -439,9 +438,9 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   } else {
     // Prompts the user if he/she wants the page translated.
     TranslateInfoBarDelegate::Create(
-        false, InfoBarService::FromWebContents(web_contents),
-        TranslateInfoBarDelegate::BEFORE_TRANSLATE, language_code, target_lang,
-        TranslateErrors::NONE, profile->GetPrefs(), ShortcutConfig());
+        false, web_contents, TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+        language_code, target_lang, TranslateErrors::NONE, profile->GetPrefs(),
+        ShortcutConfig());
   }
 }
 
@@ -501,9 +500,9 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     TranslateInfoBarDelegate::Create(
-        true, InfoBarService::FromWebContents(web_contents),
-        TranslateInfoBarDelegate::TRANSLATING, source_lang, target_lang,
-        TranslateErrors::NONE, profile->GetPrefs(), ShortcutConfig());
+        true, web_contents, TranslateInfoBarDelegate::TRANSLATING, source_lang,
+        target_lang, TranslateErrors::NONE, profile->GetPrefs(),
+        ShortcutConfig());
   }
 
   DCHECK(script_.get() != NULL);
@@ -626,10 +625,10 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
     PrefService* prefs = Profile::FromBrowserContext(
         web_contents->GetBrowserContext())->GetPrefs();
     TranslateInfoBarDelegate::Create(
-        true, InfoBarService::FromWebContents(web_contents),
+        true, web_contents,
         (details->error_type == TranslateErrors::NONE) ?
-        TranslateInfoBarDelegate::AFTER_TRANSLATE :
-        TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            TranslateInfoBarDelegate::AFTER_TRANSLATE :
+            TranslateInfoBarDelegate::TRANSLATION_ERROR,
         details->source_language, details->target_language, details->error_type,
         prefs, ShortcutConfig());
   }
@@ -697,10 +696,9 @@ void TranslateManager::OnTranslateScriptFetchComplete(
         Profile* profile =
             Profile::FromBrowserContext(web_contents->GetBrowserContext());
         TranslateInfoBarDelegate::Create(
-            true, InfoBarService::FromWebContents(web_contents),
-            TranslateInfoBarDelegate::TRANSLATION_ERROR, request.source_lang,
-            request.target_lang, TranslateErrors::NETWORK, profile->GetPrefs(),
-            ShortcutConfig());
+            true, web_contents, TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            request.source_lang, request.target_lang, TranslateErrors::NETWORK,
+            profile->GetPrefs(), ShortcutConfig());
       }
 
       if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {

@@ -58,11 +58,11 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // |original_language| == kUnknownLanguageCode.
   //
   // If |replace_existing_infobar| is true, the infobar is created and added to
-  // |infobar_service|, replacing any other translate infobar already present
-  // there.  Otherwise, the infobar will only be added if there is no other
-  // translate infobar already present.
+  // the infobar service for |web_contents|, replacing any other translate
+  // infobar already present there.  Otherwise, the infobar will only be added
+  // if there is no other translate infobar already present.
   static void Create(bool replace_existing_infobar,
-                     InfoBarService* infobar_service,
+                     content::WebContents* web_contents,
                      Type infobar_type,
                      const std::string& original_language,
                      const std::string& target_language,
