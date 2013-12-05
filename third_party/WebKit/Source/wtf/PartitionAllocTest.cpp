@@ -621,8 +621,6 @@ TEST(WTF_PartitionAlloc, PartialPages)
     TestShutdown();
 }
 
-#if OS(POSIX)
-
 // Test correct handling if our mapping collides with another.
 TEST(WTF_PartitionAlloc, MappingCollision)
 {
@@ -637,30 +635,38 @@ TEST(WTF_PartitionAlloc, MappingCollision)
         firstSuperPagePages[i] = GetFullPage(kTestAllocSize);
 
     char* pageBase = reinterpret_cast<char*>(firstSuperPagePages[0]);
+    EXPECT_EQ(WTF::kPartitionPageSize, reinterpret_cast<uintptr_t>(pageBase) & WTF::kSuperPageOffsetMask);
+    pageBase -= WTF::kPartitionPageSize;
     // Map a single system page either side of the mapping for our allocations,
     // with the goal of tripping up alignment of the next mapping.
-    void* map1 = mmap(pageBase - WTF::kSystemPageSize, WTF::kSystemPageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    EXPECT_TRUE(map1 && map1 != MAP_FAILED);
-    void* map2 = mmap(pageBase + WTF::kSuperPageSize, WTF::kSystemPageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    EXPECT_TRUE(map2 && map2 != MAP_FAILED);
+    void* map1 = WTF::allocPages(pageBase - WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    EXPECT_TRUE(map1);
+    void* map2 = WTF::allocPages(pageBase + WTF::kSuperPageSize, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    EXPECT_TRUE(map2);
+    WTF::setSystemPagesInaccessible(map1, WTF::kPageAllocationGranularity);
+    WTF::setSystemPagesInaccessible(map2, WTF::kPageAllocationGranularity);
 
     for (i = 0; i < numPartitionPagesNeeded; ++i)
         secondSuperPagePages[i] = GetFullPage(kTestAllocSize);
 
-    munmap(map1, WTF::kSystemPageSize);
-    munmap(map2, WTF::kSystemPageSize);
+    WTF::freePages(map1, WTF::kPageAllocationGranularity);
+    WTF::freePages(map2, WTF::kPageAllocationGranularity);
 
     pageBase = reinterpret_cast<char*>(secondSuperPagePages[0]);
+    EXPECT_EQ(WTF::kPartitionPageSize, reinterpret_cast<uintptr_t>(pageBase) & WTF::kSuperPageOffsetMask);
+    pageBase -= WTF::kPartitionPageSize;
     // Map a single system page either side of the mapping for our allocations,
     // with the goal of tripping up alignment of the next mapping.
-    map1 = mmap(pageBase - WTF::kSystemPageSize, WTF::kSystemPageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    EXPECT_TRUE(map1 && map1 != MAP_FAILED);
-    map2 = mmap(pageBase + WTF::kSuperPageSize, WTF::kSystemPageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    EXPECT_TRUE(map2 && map2 != MAP_FAILED);
+    map1 = WTF::allocPages(pageBase - WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    EXPECT_TRUE(map1);
+    map2 = WTF::allocPages(pageBase + WTF::kSuperPageSize, WTF::kPageAllocationGranularity, WTF::kPageAllocationGranularity);
+    EXPECT_TRUE(map2);
+    WTF::setSystemPagesInaccessible(map1, WTF::kPageAllocationGranularity);
+    WTF::setSystemPagesInaccessible(map2, WTF::kPageAllocationGranularity);
 
     WTF::PartitionPage* pageInThirdSuperPage = GetFullPage(kTestAllocSize);
-    munmap(map1, WTF::kSystemPageSize);
-    munmap(map2, WTF::kSystemPageSize);
+    WTF::freePages(map1, WTF::kPageAllocationGranularity);
+    WTF::freePages(map2, WTF::kPageAllocationGranularity);
 
     EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(pageInThirdSuperPage) & WTF::kPartitionPageOffsetMask);
 
@@ -676,8 +682,6 @@ TEST(WTF_PartitionAlloc, MappingCollision)
 
     TestShutdown();
 }
-
-#endif // OS(POSIX)
 
 } // namespace
 
