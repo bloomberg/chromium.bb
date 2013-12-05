@@ -483,15 +483,11 @@
             '../chrome/chrome.gyp:performance_ui_tests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_gl_tests',
+            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
           ],
           'conditions': [
-            ['internal_gles2_conform_tests', {
-              'dependencies': [
-                '../gpu/gles2_conform_test/gles2_conform_test.gyp:gles2_conform_test',
-              ],
-            }], # internal_gles2_conform
             ['OS!="ios" and OS!="win"', {
               'dependencies': [
                 '../breakpad/breakpad.gyp:minidump_stackwalk',
@@ -521,15 +517,11 @@
             '../chrome/chrome.gyp:chrome',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_gl_tests',
+            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
           ],
           'conditions': [
-            ['internal_gles2_conform_tests', {
-              'dependencies': [
-                '../gpu/gles2_conform_test/gles2_conform_test.gyp:gles2_conform_test',
-              ],
-            }], # internal_gles2_conform
             ['OS!="ios" and OS!="win"', {
               'dependencies': [
                 '../breakpad/breakpad.gyp:minidump_stackwalk',
