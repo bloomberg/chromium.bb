@@ -836,6 +836,20 @@ void MetadataDatabase::UpdateByFileResource(
   WriteToDatabase(batch.Pass(), callback);
 }
 
+void MetadataDatabase::UpdateByFileResourceList(
+    ScopedVector<google_apis::FileResource> resources,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+
+  for (size_t i = 0; i < resources.size(); ++i) {
+    scoped_ptr<FileMetadata> file(
+        CreateFileMetadataFromFileResource(
+            GetLargestKnownChangeID(), *resources[i]));
+    UpdateByFileMetadata(FROM_HERE, file.Pass(), batch.get());
+  }
+  WriteToDatabase(batch.Pass(), callback);
+}
+
 void MetadataDatabase::UpdateByDeletedRemoteFile(
     const std::string& file_id,
     const SyncStatusCallback& callback) {

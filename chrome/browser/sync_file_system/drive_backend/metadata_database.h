@@ -247,6 +247,9 @@ class MetadataDatabase {
   // needed.
   void UpdateByFileResource(const google_apis::FileResource& resource,
                             const SyncStatusCallback& callback);
+  void UpdateByFileResourceList(
+      ScopedVector<google_apis::FileResource> resources,
+      const SyncStatusCallback& callback);
 
   void UpdateByDeletedRemoteFile(const std::string& file_id,
                                  const SyncStatusCallback& callback);
