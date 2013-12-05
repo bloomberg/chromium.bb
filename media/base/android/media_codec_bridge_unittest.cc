@@ -252,7 +252,8 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   delete[] very_large_header;
 }
 
-TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
+// TODO(qinmin): fix this test crbug.com/325999
+TEST(DISABLED_MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   scoped_ptr<VideoCodecBridge> media_codec(VideoCodecBridge::CreateDecoder(
