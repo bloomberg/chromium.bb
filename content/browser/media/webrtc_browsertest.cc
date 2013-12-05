@@ -21,14 +21,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-const char kForceIsac16K[] =
-#ifdef OS_ANDROID
-  // The default audio codec, Opus, doesn't work on Android.
-  "true";
-#else
-  "false";
-#endif
-
 namespace {
 
 static const char kGetUserMediaAndStop[] = "getUserMediaAndStop";
@@ -563,39 +555,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {
 
   EXPECT_TRUE(
       ExecuteJavascript("addTwoMediaStreamsToOneConnection();"));
-  ExpectTitle("OK");
-}
-
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       EstablishAudioVideoCallAndMeasureOutputLevel) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream))
-          << "Must run with fake devices since the test will explicitly look "
-          << "for the fake device signal.";
-
-  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-  NavigateToURL(shell(), url);
-
-  EXPECT_TRUE(ExecuteJavascript(
-      base::StringPrintf("callAndEnsureAudioIsPlaying(%s);", kForceIsac16K)));
-  ExpectTitle("OK");
-}
-
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       EstablishAudioVideoCallAndVerifyMutingWorks) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream))
-          << "Must run with fake devices since the test will explicitly look "
-          << "for the fake device signal.";
-
-  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-  NavigateToURL(shell(), url);
-
-  EXPECT_TRUE(ExecuteJavascript(
-        base::StringPrintf("callAndEnsureAudioMutingWorks(%s);",
-                           kForceIsac16K)));
   ExpectTitle("OK");
 }
 
