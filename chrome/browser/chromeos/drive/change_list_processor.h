@@ -120,10 +120,8 @@ class ChangeListProcessor {
                    std::string /* parent_resource_id*/> ParentResourceIdMap;
 
   // Applies the pre-processed metadata from entry_map_ onto the resource
-  // metadata. If this is not delta update (i.e. |is_delta_update| is false),
-  // |about_resource| must not be null.
+  // metadata. |about_resource| must not be null.
   FileError ApplyEntryMap(
-      bool is_delta_update,
       int64 changestamp,
       scoped_ptr<google_apis::AboutResource> about_resource);
 

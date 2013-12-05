@@ -142,9 +142,7 @@ FileError ChangeListProcessor::Apply(
     }
   }
 
-  FileError error = ApplyEntryMap(is_delta_update,
-                                  largest_changestamp,
-                                  about_resource.Pass());
+  FileError error = ApplyEntryMap(largest_changestamp, about_resource.Pass());
   if (error != FILE_ERROR_OK) {
     DLOG(ERROR) << "ApplyEntryMap failed: " << FileErrorToString(error);
     return error;
@@ -165,7 +163,6 @@ FileError ChangeListProcessor::Apply(
 }
 
 FileError ChangeListProcessor::ApplyEntryMap(
-    bool is_delta_update,
     int64 changestamp,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(about_resource);
