@@ -39,8 +39,10 @@ namespace WebCore {
 class Frame;
 class Document;
 class Frame;
+class HTMLImportLoader;
 class HTMLImportRoot;
 class HTMLImportsController;
+class KURL;
 
 //
 // # Basic Data Structure and Algorithms of HTML Imports implemenation.
@@ -88,22 +90,42 @@ class HTMLImportsController;
 // # Script Blocking
 //
 // The HTML parser blocks on <script> when preceding <link>s aren't finish loading imports.
-// Each HTMLImport instance tracks such a blocking state, that is HTMLImport::isBlocked().
+// Each HTMLImport instance tracks such a blocking state, that is called "script-blocked"
+// or HTMLImport::isScriptBlocked().
 //
 // ## Blocking Imports
 //
-// Each imports can become being blocked when new imports are added to the import tree.
+// Each imports can become being script-blocked when new imports are added to the import tree.
 // For example, the parser of a parent import is blocked when new child import is given.
 // See HTMLImport::appendChild() to see how it is handled. Note that this blocking-ness is
 // transitive. HTMLImport::blockAfter() flips the flags iteratively to fullfill this transitivity.
 //
 // ## Unblocking Imports
 //
-// The state can change when one of the imports finish loading. The Document notices it through
-// HTMLImportRoot::blockerGone(). The blockerGone() triggers HTMLImport::unblock(), which traverses
+// The blocking state can change when one of the imports finish loading. The Document notices it through
+// HTMLImportRoot::blockerGone(). The blockerGone() triggers HTMLImport::unblockScript(), which traverses
 // whole import tree and find unblock-able imports and unblock them.
 // Unblocked imported documents are notified through Document::didLoadAllImports() so that
 // it can resume its parser.
+//
+// # Document Blocking
+//
+// There is another type of blocking state that is called
+// "document-blocked". If the import is document-blocked, it cannot
+// create its own document object because sharable imported document
+// can appear later. The spec defines the loading order of the
+// import: The earlier one in the import-tree order should win and
+// later ones should share earlier one.
+//
+// The "document-blocked" state keeps the tree node from loading its
+// import until all preceding imports are ready t respect the
+// order. Note that the node may fetch the bytes from the URL
+// speculatively, even though it doesn't process it.
+//
+// The node is "document-unblocked" when there are unfinished,
+// preceeding import loading. Unblocking attempt for
+// "document-blocked" happens at the same timing as unblocking
+// "script-blocked".
 //
 
 // The superclass of HTMLImportsController and HTMLImportLoader
@@ -119,8 +141,11 @@ public:
     Document* master();
     HTMLImportsController* controller();
 
-    bool isLoaded() const { return !isBlocked() && !isProcessing(); }
-    bool isBlocked() const { return m_blocked; }
+    bool isLoaded() const { return !isScriptBlocked() && !isProcessing(); }
+    bool isScriptBlocked() const { return m_scriptBlocked; }
+    bool isDocumentBlocked() const { return m_documentBlocked; }
+    bool isBlocked() const { return m_scriptBlocked || m_documentBlocked; }
+
     void appendChild(HTMLImport*);
 
     virtual HTMLImportRoot* root() = 0;
@@ -128,24 +153,33 @@ public:
     virtual void wasDetachedFromDocument() = 0;
     virtual void didFinishParsing() = 0;
     virtual bool isProcessing() const = 0;
+    virtual bool isDone() const = 0;
 
 protected:
     HTMLImport()
-        : m_blocked(false)
+        : m_scriptBlocked(false)
+        , m_documentBlocked(false)
     { }
+
+    virtual void didUnblockDocument();
 
 private:
     static void block(HTMLImport*);
 
     void blockAfter(HTMLImport* child);
-    void block();
-    void unblock();
-    void didUnblock();
+    void blockScript();
+    void unblockScript();
+    void didUnblockScript();
 
+    void blockDocument();
+    void unblockDocument();
+
+    bool needsBlockingDocument() const;
     bool arePredecessorsLoaded() const;
     bool areChilrenLoaded() const;
 
-    bool m_blocked; // If any of decendants or predecessors is in processing, it is blocked.
+    bool m_scriptBlocked; // If any of decendants or predecessors is in processing, the parser blocks on <script>.
+    bool m_documentBlocked; // If its predecessor is not done yet, the document creation is blocked.
 };
 
 // An abstract class to decouple its sublcass HTMLImportsController.
@@ -153,6 +187,7 @@ class HTMLImportRoot : public HTMLImport {
 public:
     virtual void blockerGone() = 0;
     virtual HTMLImportsController* toController() = 0;
+    virtual HTMLImportLoader* findLinkFor(const KURL&, HTMLImport* excluding = 0) const = 0;
 };
 
 } // namespace WebCore

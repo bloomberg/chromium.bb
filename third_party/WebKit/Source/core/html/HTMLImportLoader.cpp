@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/html/HTMLImportLoader.h"
 
+#include "core/dom/Document.h"
 #include "core/html/HTMLImportData.h"
 #include "core/html/HTMLImportLoaderClient.h"
 
@@ -52,20 +53,25 @@ void HTMLImportLoader::wasAlreadyLoadedAs(HTMLImportLoader* found)
 {
     ASSERT(!m_data);
     ASSERT(m_client);
-    m_data = found->m_data;
-    m_data->addClient(this);
-    root()->blockerGone();
+    shareData(found);
 }
 
-void HTMLImportLoader::startLoading(ResourceFetcher* fetcher, const ResourcePtr<RawResource>& resource)
+void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
 {
     ASSERT(!hasResource());
     ASSERT(!m_data);
 
     HTMLImportResourceOwner::setResource(resource);
-    m_data = HTMLImportData::create(this, fetcher);
-    m_data->addClient(this);
-    m_data->startLoading(resource);
+
+    // If the node is "document blocked", it cannot create HTMLImportData
+    // even if there is no sharable one found, as there is possibility that
+    // preceding imports load the sharable imports.
+    // In that case preceding one should win because it comes first in the tree order.
+    // See also didUnblockDocument().
+    if (isDocumentBlocked())
+        return;
+
+    createData();
 }
 
 void HTMLImportLoader::didFinish()
@@ -116,14 +122,48 @@ void HTMLImportLoader::didFinishParsing()
     m_data->didFinishParsing();
 }
 
+// Once all preceding imports are loaded and "document blocking" ends,
+// HTMLImportLoader can decide whether it should load the import by itself
+// or it can share existing one.
+void HTMLImportLoader::didUnblockDocument()
+{
+    HTMLImport::didUnblockDocument();
+    ASSERT(!isDocumentBlocked());
+    ASSERT(!m_data || !m_data->isOwnedBy(this));
+
+    if (m_data)
+        return;
+    if (HTMLImportLoader* found = root()->findLinkFor(m_url, this))
+        shareData(found);
+    else
+        createData();
+}
+
+void HTMLImportLoader::createData()
+{
+    ASSERT(!isDocumentBlocked());
+    ASSERT(!m_data);
+    m_data = HTMLImportData::create(this, parent()->document()->fetcher());
+    m_data->addClient(this);
+    m_data->startLoading(resource());
+}
+
+void HTMLImportLoader::shareData(HTMLImportLoader* loader)
+{
+    ASSERT(!m_data);
+    m_data = loader->m_data;
+    m_data->addClient(this);
+    root()->blockerGone();
+}
+
 bool HTMLImportLoader::isProcessing() const
 {
-    return m_data->isOwnedBy(this) && m_data->isProcessing();
+    return m_data && m_data->isOwnedBy(this) && m_data->isProcessing();
 }
 
 bool HTMLImportLoader::isDone() const
 {
-    return m_data->isDone();
+    return m_data && m_data->isDone();
 }
 
 bool HTMLImportLoader::isLoaded() const

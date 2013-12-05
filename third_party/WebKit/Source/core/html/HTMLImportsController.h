@@ -62,13 +62,16 @@ public:
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isProcessing() const OVERRIDE;
+    virtual bool isDone() const OVERRIDE;
+
     // HTMLImportRoot
     virtual void blockerGone() OVERRIDE;
     virtual HTMLImportsController* toController() OVERRIDE { return this; }
+    virtual HTMLImportLoader* findLinkFor(const KURL&, HTMLImport* excluding = 0) const OVERRIDE;
 
     HTMLImportLoader* load(HTMLImport* parent, HTMLImportLoaderClient*, FetchRequest);
     void showSecurityErrorMessage(const String&);
-    HTMLImportLoader* findLinkFor(const KURL&) const;
+
     SecurityOrigin* securityOrigin() const;
     ResourceFetcher* fetcher() const;
 

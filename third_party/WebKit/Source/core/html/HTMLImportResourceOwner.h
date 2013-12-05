@@ -49,6 +49,8 @@ public:
     virtual ~HTMLImportResourceOwner();
 
 protected:
+    const ResourcePtr<RawResource>& resource() const { return m_resource; }
+
     void setResource(const ResourcePtr<RawResource>&);
     void clearResource();
     bool hasResource() const { return m_resource.get(); }

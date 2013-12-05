@@ -92,7 +92,7 @@ HTMLImportLoader* HTMLImportsController::load(HTMLImport* parent, HTMLImportLoad
     HTMLImportLoader* loader = createLoader(request.url(), parent, client);
     // We set resource after the import tree is built since
     // Resource::addClient() immediately calls back to feed the bytes when the resource is cached.
-    loader->startLoading(parent->document()->fetcher(), resource);
+    loader->startLoading(resource);
 
     return loader;
 }
@@ -102,11 +102,12 @@ void HTMLImportsController::showSecurityErrorMessage(const String& message)
     m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-HTMLImportLoader* HTMLImportsController::findLinkFor(const KURL& url) const
+HTMLImportLoader* HTMLImportsController::findLinkFor(const KURL& url, HTMLImport* excluding) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
-        if (equalIgnoringFragmentIdentifier(m_imports[i]->url(), url))
-            return m_imports[i].get();
+        HTMLImportLoader* candidate = m_imports[i].get();
+        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && !candidate->isDocumentBlocked())
+            return candidate;
     }
 
     return 0;
@@ -144,6 +145,11 @@ void HTMLImportsController::didFinishParsing()
 bool HTMLImportsController::isProcessing() const
 {
     return m_master->parsing();
+}
+
+bool HTMLImportsController::isDone() const
+{
+    return !m_master->parsing();
 }
 
 void HTMLImportsController::blockerGone()

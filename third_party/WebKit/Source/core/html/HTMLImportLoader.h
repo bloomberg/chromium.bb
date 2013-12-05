@@ -61,9 +61,8 @@ public:
     const KURL& url() const { return m_url; }
 
     void wasAlreadyLoadedAs(HTMLImportLoader* found);
-    void startLoading(ResourceFetcher*, const ResourcePtr<RawResource>&);
+    void startLoading(const ResourcePtr<RawResource>&);
     void importDestroyed();
-    bool isDone() const;
     bool isLoaded() const;
 
     // HTMLImport
@@ -72,6 +71,8 @@ public:
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isProcessing() const OVERRIDE;
+    virtual bool isDone() const OVERRIDE;
+    virtual void didUnblockDocument() OVERRIDE;
 
     void clearClient() { m_client = 0; }
 
@@ -84,6 +85,9 @@ private:
 
     // HTMLImportDataClient
     virtual void didFinish() OVERRIDE;
+
+    void createData();
+    void shareData(HTMLImportLoader*);
 
     KURL m_url;
     HTMLImportLoaderClient* m_client;
