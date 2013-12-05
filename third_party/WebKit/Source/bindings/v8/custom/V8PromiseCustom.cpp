@@ -487,20 +487,10 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info
 {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Function> onFulfilled, onRejected;
-    if (info.Length() > 0 && !info[0]->IsUndefined()) {
-        if (!info[0]->IsFunction()) {
-            v8SetReturnValue(info, throwTypeError("onFulfilled must be a function or undefined", isolate));
-            return;
-        }
+    if (info.Length() > 0 && info[0]->IsFunction())
         onFulfilled = info[0].As<v8::Function>();
-    }
-    if (info.Length() > 1 && !info[1]->IsUndefined()) {
-        if (!info[1]->IsFunction()) {
-            v8SetReturnValue(info, throwTypeError("onRejected must be a function or undefined", isolate));
-            return;
-        }
+    if (info.Length() > 1 && info[1]->IsFunction())
         onRejected = info[1].As<v8::Function>();
-    }
     v8SetReturnValue(info, V8PromiseCustom::then(info.Holder(), onFulfilled, onRejected, isolate));
 }
 

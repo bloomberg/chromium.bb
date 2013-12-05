@@ -20,7 +20,7 @@ var secondPromise = firstPromise.then(function(result) {
   shouldBeTrue('thisInFulfillCallback === global');
   global.result = result;
   shouldBeEqualToString('result', 'hello');
-  finishJSTest();
+  return 'world';
 });
 
 shouldBeFalse('thisInInit === firstPromise');
@@ -28,9 +28,23 @@ shouldBeTrue('thisInInit === global');
 shouldBeTrue('firstPromise instanceof Promise');
 shouldBeTrue('secondPromise instanceof Promise');
 
-shouldThrow('firstPromise.then(null)', '"TypeError: onFulfilled must be a function or undefined"');
-shouldThrow('firstPromise.then(undefined, null)', '"TypeError: onRejected must be a function or undefined"');
-shouldThrow('firstPromise.then(37)', '"TypeError: onFulfilled must be a function or undefined"');
+secondPromise.then(null, 37).then(function(result) {
+  global.result = result;
+  shouldBeEqualToString('result', 'world');
+  throw 'exception'
+}).then(1, 2).then(function() {
+  testFailed('resolved');
+}, function(result) {
+  testPassed('rejected');
+  global.result = result;
+  shouldBeEqualToString('result', 'exception');
+}).then(function() {
+  testPassed('resolved');
+  finishJSTest();
+}, function() {
+  testFailed('rejected');
+  finishJSTest();
+});
 
 resolve('hello');
 
