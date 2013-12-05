@@ -863,6 +863,10 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
 #endif
+#if defined(ENABLE_PLUGINS)
+      focused_pepper_plugin_(NULL),
+      pepper_last_mouse_event_target_(NULL),
+#endif
       enumeration_completion_id_(0),
       load_progress_tracker_(new LoadProgressTracker(this)),
       session_storage_namespace_id_(params->session_storage_namespace_id),
@@ -4413,9 +4417,8 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   size_t offset;
   gfx::Range range;
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin()) {
-    main_render_frame_->focused_pepper_plugin()->GetSurroundingText(
-        &text, &range);
+  if (focused_pepper_plugin_) {
+    focused_pepper_plugin_->GetSurroundingText(&text, &range);
     offset = 0;  // Pepper API does not support offset reporting.
     // TODO(kinaba): cut as needed.
   } else
@@ -5679,8 +5682,8 @@ void RenderViewImpl::OnImeSetComposition(
     int selection_start,
     int selection_end) {
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin()) {
-    main_render_frame_->OnImeSetComposition(
+  if (focused_pepper_plugin_) {
+    focused_pepper_plugin_->render_frame()->OnImeSetComposition(
         text, underlines, selection_start, selection_end);
     return;
   }
@@ -5722,8 +5725,8 @@ void RenderViewImpl::OnImeConfirmComposition(
     const gfx::Range& replacement_range,
     bool keep_selection) {
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin()) {
-    main_render_frame_->OnImeConfirmComposition(
+  if (focused_pepper_plugin_) {
+    focused_pepper_plugin_->render_frame()->OnImeConfirmComposition(
         text, replacement_range, keep_selection);
     return;
   }
@@ -5785,21 +5788,20 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin())
-    return main_render_frame_->focused_pepper_plugin()->text_input_type();
+  if (focused_pepper_plugin_)
+    return focused_pepper_plugin_->text_input_type();
 #endif
   return RenderWidget::GetTextInputType();
 }
 
 void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin()) {
+  if (focused_pepper_plugin_) {
     // TODO(kinaba) http://crbug.com/101101
     // Current Pepper IME API does not handle selection bounds. So we simply
     // use the caret position as an empty range for now. It will be updated
     // after Pepper API equips features related to surrounding text retrieval.
-    gfx::Rect caret =
-        main_render_frame_->focused_pepper_plugin()->GetCaretBounds();
+    gfx::Rect caret = focused_pepper_plugin_->GetCaretBounds();
     *start = caret;
     *end = caret;
     return;
@@ -5815,7 +5817,7 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   bounds->clear();
 
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin()) {
+  if (focused_pepper_plugin_) {
     return;
   }
 #endif
@@ -5847,7 +5849,7 @@ void RenderViewImpl::GetCompositionCharacterBounds(
 
 void RenderViewImpl::GetCompositionRange(gfx::Range* range) {
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin()) {
+  if (focused_pepper_plugin_) {
     return;
   }
 #endif
@@ -5857,8 +5859,8 @@ void RenderViewImpl::GetCompositionRange(gfx::Range* range) {
 
 bool RenderViewImpl::CanComposeInline() {
 #if defined(ENABLE_PLUGINS)
-  if (main_render_frame_->focused_pepper_plugin())
-    return main_render_frame_->IsPepperAcceptingCompositionEvents();
+  if (focused_pepper_plugin_)
+    return focused_pepper_plugin_->IsPluginAcceptingCompositionEvents();
 #endif
   return true;
 }

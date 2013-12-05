@@ -280,6 +280,19 @@ class CONTENT_EXPORT RenderViewImpl
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
+  PepperPluginInstanceImpl* focused_pepper_plugin() {
+    return focused_pepper_plugin_;
+  }
+  void set_focused_pepper_plugin(PepperPluginInstanceImpl* plugin) {
+    focused_pepper_plugin_ = plugin;
+  }
+  PepperPluginInstanceImpl* pepper_last_mouse_event_target() {
+    return pepper_last_mouse_event_target_;
+  }
+  void set_pepper_last_mouse_event_target(PepperPluginInstanceImpl* plugin) {
+    pepper_last_mouse_event_target_ = plugin;
+  }
+
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Informs the render view that the given plugin has gained or lost focus.
   void PluginFocusChanged(bool focused, int plugin_id);
@@ -1420,6 +1433,22 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_WIN)
   // The ID of the focused NPAPI plug-in.
   int focused_plugin_id_;
+#endif
+
+#if defined(ENABLE_PLUGINS)
+  // TODO(jam): these belong on RenderFrame, once the browser knows which frame
+  // is focused and sends the IPCs which use these to the correct frame. Until
+  // then, we must store these on RenderView as that's the one place that knows
+  // about all the RenderFrames for a page.
+
+  // Whether or not the focus is on a PPAPI plugin
+  PepperPluginInstanceImpl* focused_pepper_plugin_;
+
+  // The plugin instance that received the last mouse event. It is set to NULL
+  // if the last mouse event went to elements other than Pepper plugins.
+  // |pepper_last_mouse_event_target_| is not owned by this class. We depend on
+  // the RenderFrameImpl to NULL it out when it destructs.
+  PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
 
   // Misc ----------------------------------------------------------------------

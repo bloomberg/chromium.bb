@@ -125,12 +125,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : render_view_(render_view),
       routing_id_(routing_id),
       is_swapped_out_(false),
-      is_detaching_(false)
-#if defined(ENABLE_PLUGINS)
-      , focused_pepper_plugin_(NULL),
-      pepper_last_mouse_event_target_(NULL)
-#endif
-{
+      is_detaching_(false) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
@@ -164,9 +159,9 @@ void RenderFrameImpl::PepperInstanceDeleted(
     PepperPluginInstanceImpl* instance) {
   active_pepper_instances_.erase(instance);
 
-  if (pepper_last_mouse_event_target_ == instance)
-    pepper_last_mouse_event_target_ = NULL;
-  if (focused_pepper_plugin_ == instance)
+  if (render_view_->pepper_last_mouse_event_target() == instance)
+    render_view_->set_pepper_last_mouse_event_target(NULL);
+  if (render_view_->focused_pepper_plugin() == instance)
     PepperFocusChanged(instance, false);
 }
 
@@ -178,21 +173,21 @@ void RenderFrameImpl::PepperDidChangeCursor(
   // picked up until the plugin gets the next input event. That is bad if, e.g.,
   // the plugin would like to set an invisible cursor when there isn't any user
   // input for a while.
-  if (instance == pepper_last_mouse_event_target_)
+  if (instance == render_view_->pepper_last_mouse_event_target())
     GetRenderWidget()->didChangeCursor(cursor);
 }
 
 void RenderFrameImpl::PepperDidReceiveMouseEvent(
     PepperPluginInstanceImpl* instance) {
-  pepper_last_mouse_event_target_ = instance;
+  render_view_->set_pepper_last_mouse_event_target(instance);
 }
 
 void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
                                          bool focused) {
   if (focused)
-    focused_pepper_plugin_ = instance;
-  else if (focused_pepper_plugin_ == instance)
-    focused_pepper_plugin_ = NULL;
+    render_view_->set_focused_pepper_plugin(instance);
+  else if (render_view_->focused_pepper_plugin() == instance)
+    render_view_->set_focused_pepper_plugin(NULL);
 
   GetRenderWidget()->UpdateTextInputType();
   GetRenderWidget()->UpdateSelectionBounds();
@@ -200,7 +195,7 @@ void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
 
 void RenderFrameImpl::PepperTextInputTypeChanged(
     PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
+  if (instance != render_view_->focused_pepper_plugin())
     return;
 
   GetRenderWidget()->UpdateTextInputType();
@@ -212,14 +207,14 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
 
 void RenderFrameImpl::PepperCaretPositionChanged(
     PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
+  if (instance != render_view_->focused_pepper_plugin())
     return;
   GetRenderWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::PepperCancelComposition(
     PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
+  if (instance != render_view_->focused_pepper_plugin())
     return;
   Send(new ViewHostMsg_ImeCancelComposition(render_view_->GetRoutingID()));;
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
@@ -229,7 +224,7 @@ void RenderFrameImpl::PepperCancelComposition(
 
 void RenderFrameImpl::PepperSelectionChanged(
     PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
+  if (instance != render_view_->focused_pepper_plugin())
     return;
   render_view_->SyncSelectionIfRequired();
 }
@@ -246,17 +241,11 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   return widget;
 }
 
-bool RenderFrameImpl::GetPepperCaretBounds(gfx::Rect* rect) {
-  if (!focused_pepper_plugin_)
-    return false;
-  *rect = focused_pepper_plugin_->GetCaretBounds();
-  return true;
-}
-
 bool RenderFrameImpl::IsPepperAcceptingCompositionEvents() const {
-  if (!focused_pepper_plugin_)
+  if (!render_view_->focused_pepper_plugin())
     return false;
-  return focused_pepper_plugin_->IsPluginAcceptingCompositionEvents();
+  return render_view_->focused_pepper_plugin()->
+      IsPluginAcceptingCompositionEvents();
 }
 
 void RenderFrameImpl::PluginCrashed(const base::FilePath& plugin_path,
@@ -347,7 +336,7 @@ void RenderFrameImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   // is, we set |pepper_last_mouse_event_target_| to NULL here. If a plugin gets
   // the event, it will notify us via DidReceiveMouseEvent() and set itself as
   // |pepper_last_mouse_event_target_|.
-  pepper_last_mouse_event_target_ = NULL;
+  render_view_->set_pepper_last_mouse_event_target(NULL);
 }
 
 void RenderFrameImpl::SimulateImeSetComposition(
@@ -381,15 +370,19 @@ void RenderFrameImpl::OnImeSetComposition(
     // The code below mimics the behavior of WebCore::Editor::setComposition.
 
     // Empty -> nonempty: composition started.
-    if (pepper_composition_text_.empty() && !text.empty())
-      focused_pepper_plugin_->HandleCompositionStart(base::string16());
+    if (pepper_composition_text_.empty() && !text.empty()) {
+      render_view_->focused_pepper_plugin()->HandleCompositionStart(
+          base::string16());
+    }
     // Nonempty -> empty: composition canceled.
-    if (!pepper_composition_text_.empty() && text.empty())
-      focused_pepper_plugin_->HandleCompositionEnd(base::string16());
+    if (!pepper_composition_text_.empty() && text.empty()) {
+      render_view_->focused_pepper_plugin()->HandleCompositionEnd(
+          base::string16());
+    }
     pepper_composition_text_ = text;
     // Nonempty: composition is ongoing.
     if (!pepper_composition_text_.empty()) {
-      focused_pepper_plugin_->HandleCompositionUpdate(
+      render_view_->focused_pepper_plugin()->HandleCompositionUpdate(
           pepper_composition_text_, underlines, selection_start,
           selection_end);
     }
@@ -435,8 +428,8 @@ void RenderFrameImpl::OnImeConfirmComposition(
   } else {
     // Mimics the order of events sent by WebKit.
     // See WebCore::Editor::setComposition() for the corresponding code.
-    focused_pepper_plugin_->HandleCompositionEnd(last_text);
-    focused_pepper_plugin_->HandleTextInput(last_text);
+    render_view_->focused_pepper_plugin()->HandleCompositionEnd(last_text);
+    render_view_->focused_pepper_plugin()->HandleTextInput(last_text);
   }
   pepper_composition_text_.clear();
 }

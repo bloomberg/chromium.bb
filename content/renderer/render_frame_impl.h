@@ -102,9 +102,6 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
       PepperPluginInstanceImpl* plugin);
 
-  // Retrieves the current caret position if a PPAPI plugin has focus.
-  bool GetPepperCaretBounds(gfx::Rect* rect);
-
   bool IsPepperAcceptingCompositionEvents() const;
 
   // Notification that the given plugin has crashed.
@@ -147,10 +144,6 @@ class CONTENT_EXPORT RenderFrameImpl
     const base::string16& text,
     const gfx::Range& replacement_range,
     bool keep_selection);
-
-  PepperPluginInstanceImpl* focused_pepper_plugin() {
-    return focused_pepper_plugin_;
-  }
 #endif  // ENABLE_PLUGINS
 
   // IPC::Sender
@@ -329,18 +322,9 @@ class CONTENT_EXPORT RenderFrameImpl
   typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
   PepperPluginSet active_pepper_instances_;
 
-  // Whether or not the focus is on a PPAPI plugin
-  PepperPluginInstanceImpl* focused_pepper_plugin_;
-
   // Current text input composition text. Empty if no composition is in
   // progress.
   base::string16 pepper_composition_text_;
-
-  // The plugin instance that received the last mouse event. It is set to NULL
-  // if the last mouse event went to elements other than Pepper plugins.
-  // |pepper_last_mouse_event_target_| is not owned by this class. We can know
-  // about when it is destroyed via InstanceDeleted().
-  PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
 
   // All the registered observers.

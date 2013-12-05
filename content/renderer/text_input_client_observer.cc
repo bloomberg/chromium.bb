@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/text_input_client_messages.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -52,7 +53,9 @@ void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
 void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
   gfx::Rect rect;
 #if defined(ENABLE_PLUGINS)
-  if (!render_view_impl_->main_render_frame()->GetPepperCaretBounds(&rect))
+  if (render_view_impl_->focused_pepper_plugin()) {
+    rect = render_view_impl_->focused_pepper_plugin()->GetCaretBounds();
+  } else
 #endif
   {
     blink::WebFrame* frame = webview()->focusedFrame();
