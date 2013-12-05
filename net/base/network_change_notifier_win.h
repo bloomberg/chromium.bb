@@ -57,6 +57,12 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   // Must only be called on the thread |this| was created on.
   virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
 
+  // Does the actual work to determine the current connection type.
+  // It is not thread safe, see crbug.com/324913.
+  ConnectionType RecomputeCurrentConnectionType() const;
+
+  void SetCurrentConnectionType(ConnectionType connection_type);
+
   // Notifies IP address change observers of a change immediately, and notifies
   // network state change observers on a delay.  Must only be called on the
   // thread |this| was created on.
@@ -100,6 +106,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   bool last_announced_offline_;
   // Number of times polled to check if still offline.
   int offline_polls_;
+
+  mutable base::Lock last_computed_connection_type_lock_;
+  ConnectionType last_computed_connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierWin);
 };
