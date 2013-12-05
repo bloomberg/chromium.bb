@@ -131,6 +131,10 @@
       'target_name': 'seccomp_bpf_helpers',
       'type': 'static_library',
       'sources': [
+        'seccomp-bpf-helpers/sigsys_handlers.cc',
+        'seccomp-bpf-helpers/sigsys_handlers.h',
+        'seccomp-bpf-helpers/syscall_parameters_restrictions.cc',
+        'seccomp-bpf-helpers/syscall_parameters_restrictions.h',
         'seccomp-bpf-helpers/syscall_sets.cc',
         'seccomp-bpf-helpers/syscall_sets.h',
       ],

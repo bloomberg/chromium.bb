@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SECCOMP_BPF_HELPERS_H_
-#define SANDBOX_LINUX_SECCOMP_BPF_HELPERS_H_
+#ifndef SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_SETS_H_
+#define SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_SETS_H_
 
 #include "build/build_config.h"
 
@@ -95,4 +95,4 @@ bool IsArmPrivate(int sysno);
 
 }  // namespace sandbox.
 
-#endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_H_
+#endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_SETS_H_

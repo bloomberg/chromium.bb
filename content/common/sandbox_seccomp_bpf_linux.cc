@@ -20,10 +20,6 @@
 
 #include <vector>
 
-#if defined(__arm__) && !defined(MAP_STACK)
-#define MAP_STACK 0x20000  // Daisy build environment has old headers.
-#endif
-
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -43,6 +39,8 @@
 
 #if defined(SECCOMP_BPF_SANDBOX)
 #include "base/posix/eintr_wrapper.h"
+#include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
+#include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
@@ -58,14 +56,6 @@ namespace {
 
 void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
                             BrokerProcess* broker_process);
-
-inline bool RunningOnASAN() {
-#if defined(ADDRESS_SANITIZER)
-  return true;
-#else
-  return false;
-#endif
-}
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -105,121 +95,6 @@ inline bool IsUsingToolKitGtk() {
 #else
   return false;
 #endif
-}
-
-// Write |error_message| to stderr. Similar to RawLog(), but a bit more careful
-// about async-signal safety. |size| is the size to write and should typically
-// not include a terminating \0.
-void WriteToStdErr(const char* error_message, size_t size) {
-  while (size > 0) {
-    // TODO(jln): query the current policy to check if send() is available and
-    // use it to perform a non blocking write.
-    const int ret = HANDLE_EINTR(write(STDERR_FILENO, error_message, size));
-    // We can't handle any type of error here.
-    if (ret <= 0 || static_cast<size_t>(ret) > size) break;
-    size -= ret;
-    error_message += ret;
-  }
-}
-
-// Print a seccomp-bpf failure to handle |sysno| to stderr in an
-// async-signal safe way.
-void PrintSyscallError(uint32_t sysno) {
-  if (sysno >= 1024)
-    sysno = 0;
-  // TODO(markus): replace with async-signal safe snprintf when available.
-  const size_t kNumDigits = 4;
-  char sysno_base10[kNumDigits];
-  uint32_t rem = sysno;
-  uint32_t mod = 0;
-  for (int i = kNumDigits - 1; i >= 0; i--) {
-    mod = rem % 10;
-    rem /= 10;
-    sysno_base10[i] = '0' + mod;
-  }
-  static const char kSeccompErrorPrefix[] =
-      __FILE__":**CRASHING**:seccomp-bpf failure in syscall ";
-  static const char kSeccompErrorPostfix[] = "\n";
-  WriteToStdErr(kSeccompErrorPrefix, sizeof(kSeccompErrorPrefix) - 1);
-  WriteToStdErr(sysno_base10, sizeof(sysno_base10));
-  WriteToStdErr(kSeccompErrorPostfix, sizeof(kSeccompErrorPostfix) - 1);
-}
-
-intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
-  uint32_t syscall = args.nr;
-  if (syscall >= 1024)
-    syscall = 0;
-  PrintSyscallError(syscall);
-
-  // Encode 8-bits of the 1st two arguments too, so we can discern which socket
-  // type, which fcntl, ... etc., without being likely to hit a mapped
-  // address.
-  // Do not encode more bits here without thinking about increasing the
-  // likelihood of collision with mapped pages.
-  syscall |= ((args.args[0] & 0xffUL) << 12);
-  syscall |= ((args.args[1] & 0xffUL) << 20);
-  // Purposefully dereference the syscall as an address so it'll show up very
-  // clearly and easily in crash dumps.
-  volatile char* addr = reinterpret_cast<volatile char*>(syscall);
-  *addr = '\0';
-  // In case we hit a mapped address, hit the null page with just the syscall,
-  // for paranoia.
-  syscall &= 0xfffUL;
-  addr = reinterpret_cast<volatile char*>(syscall);
-  *addr = '\0';
-  for (;;)
-    _exit(1);
-}
-
-// TODO(jln): rewrite reporting functions.
-intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux) {
-  // "flags" in the first argument in the kernel's clone().
-  // Mark as volatile to be able to find the value on the stack in a minidump.
-#if !defined(NDEBUG)
-  RAW_LOG(ERROR, __FILE__":**CRASHING**:clone() failure\n");
-#endif
-  volatile uint64_t clone_flags = args.args[0];
-  volatile char* addr;
-  if (IsArchitectureX86_64()) {
-    addr = reinterpret_cast<volatile char*>(clone_flags & 0xFFFFFF);
-    *addr = '\0';
-  }
-  // Hit the NULL page if this fails to fault.
-  addr = reinterpret_cast<volatile char*>(clone_flags & 0xFFF);
-  *addr = '\0';
-  for (;;)
-    _exit(1);
-}
-
-// TODO(jln): rewrite reporting functions.
-intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args,
-                            void* /* aux */) {
-  // Mark as volatile to be able to find the value on the stack in a minidump.
-#if !defined(NDEBUG)
-  RAW_LOG(ERROR, __FILE__":**CRASHING**:prctl() failure\n");
-#endif
-  volatile uint64_t option = args.args[0];
-  volatile char* addr =
-      reinterpret_cast<volatile char*>(option & 0xFFF);
-  *addr = '\0';
-  for (;;)
-    _exit(1);
-}
-
-intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args,
-                            void* /* aux */) {
-  // Make "request" volatile so that we can see it on the stack in a minidump.
-#if !defined(NDEBUG)
-  RAW_LOG(ERROR, __FILE__":**CRASHING**:ioctl() failure\n");
-#endif
-  volatile uint64_t request = args.args[1];
-  volatile char* addr = reinterpret_cast<volatile char*>(request & 0xFFFF);
-  *addr = '\0';
-  // Hit the NULL page if this fails.
-  addr = reinterpret_cast<volatile char*>(request & 0xFFF);
-  *addr = '\0';
-  for (;;)
-    _exit(1);
 }
 
 bool IsAcceleratedVideoDecodeEnabled() {
@@ -324,116 +199,6 @@ bool IsBaselinePolicyWatched(int sysno) {
     return false;
   }
 }
-
-ErrorCode RestrictMmapFlags(Sandbox* sandbox) {
-  // The flags you see are actually the allowed ones, and the variable is a
-  // "denied" mask because of the negation operator.
-  // Significantly, we don't permit MAP_HUGETLB, or the newer flags such as
-  // MAP_POPULATE.
-  // TODO(davidung), remove MAP_DENYWRITE with updated Tegra libraries.
-  uint32_t denied_mask = ~(MAP_SHARED | MAP_PRIVATE | MAP_ANONYMOUS |
-                           MAP_STACK | MAP_NORESERVE | MAP_FIXED |
-                           MAP_DENYWRITE);
-  return sandbox->Cond(3, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                       denied_mask,
-                       sandbox->Trap(CrashSIGSYS_Handler, NULL),
-                       ErrorCode(ErrorCode::ERR_ALLOWED));
-}
-
-ErrorCode RestrictMprotectFlags(Sandbox* sandbox) {
-  // The flags you see are actually the allowed ones, and the variable is a
-  // "denied" mask because of the negation operator.
-  // Significantly, we don't permit weird undocumented flags such as
-  // PROT_GROWSDOWN.
-  uint32_t denied_mask = ~(PROT_READ | PROT_WRITE | PROT_EXEC);
-  return sandbox->Cond(2, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
-                       denied_mask,
-                       sandbox->Trap(CrashSIGSYS_Handler, NULL),
-                       ErrorCode(ErrorCode::ERR_ALLOWED));
-}
-
-ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
-  // We allow F_GETFL, F_SETFL, F_GETFD, F_SETFD, F_DUPFD, F_DUPFD_CLOEXEC,
-  // F_SETLK, F_SETLKW and F_GETLK.
-  // We also restrict the flags in F_SETFL. We don't want to permit flags with
-  // a history of trouble such as O_DIRECT. The flags you see are actually the
-  // allowed ones, and the variable is a "denied" mask because of the negation
-  // operator.
-  // Glibc overrides the kernel's O_LARGEFILE value. Account for this.
-  int kOLargeFileFlag = O_LARGEFILE;
-  if (IsArchitectureX86_64() || IsArchitectureI386())
-    kOLargeFileFlag = 0100000;
-
-  // TODO(jln): add TP_LONG/TP_SIZET types.
-  ErrorCode::ArgType mask_long_type;
-  if (sizeof(long) == 8)
-    mask_long_type = ErrorCode::TP_64BIT;
-  else if (sizeof(long) == 4)
-    mask_long_type = ErrorCode::TP_32BIT;
-  else
-    NOTREACHED();
-
-  unsigned long denied_mask = ~(O_ACCMODE | O_APPEND | O_NONBLOCK | O_SYNC |
-                                kOLargeFileFlag | O_CLOEXEC | O_NOATIME);
-  return sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_GETFL,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_SETFL,
-                       sandbox->Cond(2, mask_long_type,
-                                     ErrorCode::OP_HAS_ANY_BITS, denied_mask,
-                                     sandbox->Trap(CrashSIGSYS_Handler, NULL),
-                                     ErrorCode(ErrorCode::ERR_ALLOWED)),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_GETFD,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_SETFD,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_DUPFD,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_SETLK,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_SETLKW,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_GETLK,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT,
-                       ErrorCode::OP_EQUAL, F_DUPFD_CLOEXEC,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Trap(CrashSIGSYS_Handler, NULL))))))))));
-}
-
-#if defined(__i386__)
-ErrorCode RestrictSocketcallCommand(Sandbox* sandbox) {
-  // Allow the same individual syscalls as we do on ARM or x86_64.
-  // The main difference is that we're unable to restrict the first parameter
-  // to socketpair(2). Whilst initially sounding bad, it's noteworthy that very
-  // few protocols actually support socketpair(2). The scary call that we're
-  // worried about, socket(2), remains blocked.
-  return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_SOCKETPAIR, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_SEND, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_RECV, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_SENDTO, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_RECVFROM, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_SHUTDOWN, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_SENDMSG, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       SYS_RECVMSG, ErrorCode(ErrorCode::ERR_ALLOWED),
-         ErrorCode(EPERM)))))))));
-}
-#endif
 
 const int kFSDeniedErrno = EPERM;
 
@@ -616,53 +381,6 @@ ErrorCode ArmGpuBrokerProcessPolicy(Sandbox* sandbox,
     default:
       return ArmGpuProcessPolicy(sandbox, sysno, aux);
   }
-}
-
-// Allow clone(2) for threads.
-// Reject fork(2) attempts with EPERM.
-// Crash if anything else is attempted.
-// Don't restrict on ASAN.
-ErrorCode RestrictCloneToThreadsAndEPERMFork(Sandbox* sandbox) {
-  // Glibc's pthread.
-  if (!RunningOnASAN()) {
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-                         CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-                         CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_PARENT_SETTID | SIGCHLD,
-                         ErrorCode(EPERM),
-           // ARM
-           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD,
-                         ErrorCode(EPERM),
-           sandbox->Trap(SIGSYSCloneFailure, NULL))));
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
-
-ErrorCode RestrictPrctl(Sandbox* sandbox) {
-  // Allow PR_SET_NAME, PR_SET_DUMPABLE, PR_GET_DUMPABLE. Will need to add
-  // seccomp compositing in the future.
-  // PR_SET_PTRACER is used by breakpad but not needed anymore.
-  return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       PR_SET_NAME, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       PR_SET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       PR_GET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Trap(SIGSYSPrctlFailure, NULL))));
-}
-
-ErrorCode RestrictIoctl(Sandbox* sandbox) {
-  // Allow TCGETS and FIONREAD, trap to SIGSYSIoctlFailure otherwise.
-  return sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, TCGETS,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, FIONREAD,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-                       sandbox->Trap(SIGSYSIoctlFailure, NULL)));
 }
 
 ErrorCode RendererOrWorkerProcessPolicy(Sandbox* sandbox, int sysno, void*) {
