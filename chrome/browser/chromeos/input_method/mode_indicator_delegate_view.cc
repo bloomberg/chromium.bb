@@ -21,10 +21,6 @@ namespace {
 // 43 is the designed size including the default margin (6 * 2).
 const int kMinSize = 31;
 
-// If the cursor bounds is lower than this margin in pixel, the mode
-// indicator is shown above the cursor instead on bottom.
-const int kSizeMargin = 75;
-
 // After this duration in msec, the mode inicator will be fading out.
 const int kShowingDuration = 500;
 }  // namespace
@@ -42,20 +38,7 @@ ModeIndicatorDelegateView::ModeIndicatorDelegateView(
           ash::wm::GetActiveWindow()->GetRootWindow(),
           ash::internal::kShellWindowId_InputMethodContainer));
   set_shadow(views::BubbleBorder::NO_SHADOW);
-
-  // This is a workaround for an issue of BubbleFrameView
-  // http://crbug.com/325009
-  // Without this workaround, the bounds of the inner contents is shifted
-  // lower than the expectation on offscreen handling (e.g. showing the
-  // bubble upper then the anchor).
-  //
-  // TODO(komatsu): Delete this workaround when the above issue is fixed.
-  const gfx::Rect screen_bounds =
-      ash::Shell::GetScreen()->GetDisplayMatching(cursor_bounds).work_area();
-  if (screen_bounds.bottom() - cursor_bounds.bottom() > kSizeMargin)
-    set_arrow(views::BubbleBorder::TOP_CENTER);
-  else
-    set_arrow(views::BubbleBorder::BOTTOM_CENTER);
+  set_arrow(views::BubbleBorder::TOP_CENTER);
 }
 
 ModeIndicatorDelegateView::~ModeIndicatorDelegateView() {}
