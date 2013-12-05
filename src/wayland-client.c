@@ -1572,7 +1572,10 @@ wl_proxy_get_class(struct wl_proxy *proxy)
 WL_EXPORT void
 wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue)
 {
-	proxy->queue = queue;
+	if (queue)
+		proxy->queue = queue;
+	else
+		proxy->queue = &proxy->display->queue;
 }
 
 WL_EXPORT void
