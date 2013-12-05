@@ -87,9 +87,9 @@ body:not(.controls-visible) .dynamic {
   z-index: 100;
 }
 
-.buttons button {
+.buttons button,
+.buttons input {
   -webkit-app-region: no-drag;
-  background: rgba(0, 0, 0, 0.75) center center no-repeat;
   border: none;
   height: 32px;
   margin: 2px;
@@ -98,12 +98,22 @@ body:not(.controls-visible) .dynamic {
   width: 32px;
 }
 
-.buttons button:hover {
+.buttons button {
+  background: rgba(0, 0, 0, 0.75) center center no-repeat;
+}
+
+.buttons button:not([disabled]):hover,
+.buttons input:not([disabled]):hover {
   background-color: rgba(60, 60, 60, 0.75);
 }
 
-.buttons button:active {
+.buttons button:not([disabled]):active,
+.buttons input:not([disabled]):active {
   background-color: rgba(90, 90, 90, 0.75);
+}
+
+.buttons button:[disabled] {
+  opacity: 0.75;
 }
 
 #toolbar-puller-wrapper {
@@ -166,6 +176,12 @@ body:not(.controls-visible) .dynamic {
   -webkit-box-pack: start;
 }
 
+.buttons.next-to-middle {
+  /* Start just after the take-picture button. */
+  -webkit-margin-start: calc(50% + 73px/2);
+  -webkit-box-pack: start;
+}
+
 .buttons #album-enter {
   background-image: -webkit-image-set(
       url(../images/camera_button_album.png) 1x,
@@ -185,11 +201,6 @@ body:not(.controls-visible) .dynamic {
 
 #toolbar .buttons button:not(:hover):not(:active) {
   background-color: transparent;
-}
-
-.buttons button[disabled] {
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 .buttons #browser-print {
@@ -401,9 +412,21 @@ canvas {
   margin-bottom: 5px;
 }
 
-#buttons button {
+#buttons button,
+#buttons input {
   background-color: transparent;
   border: none;
+  display: -webkit-box;
+  margin: 0;
+  padding: 0;
+}
+
+#buttons button[disabled],
+#buttons input[disabled],
+.buttons button[disabled],
+.buttons input[disabled] {
+  opacity: 0.75;
+  pointer-events: none;
 }
 
 #buttons #take-picture {
@@ -420,6 +443,10 @@ canvas {
 
 #buttons #take-picture:active {
   background-position: 0 -74px;
+}
+
+#buttons #take-picture[disabled] {
+  background-position: 0 -111px;
 }
 
 #buttons #take-picture:focus {
@@ -439,6 +466,29 @@ canvas {
   top: -2px;
 }
 
+.buttons #toggle-timer {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+      url(../images/camera_button_timer.png) 1x,
+      url(../images/2x/camera_button_timer.png) 2x);
+  height: 32px;
+  width: 32px;
+}
+
+.buttons #toggle-multi {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+      url(../images/camera_button_multi.png) 1x,
+      url(../images/2x/camera_button_multi.png) 2x);
+  height: 32px;
+  width: 32px;
+}
+
+.buttons #toggle-timer.animate,
+.buttons #toggle-timer:not(:checked),
+.buttons #toggle-multi:not(:checked) {
+  background-position: 0 -32px;
+}
 
 body.controls-visible #toolbar,
 body.controls-visible #header {
@@ -527,6 +577,35 @@ body.show-shutter #shutter {
   -webkit-box-align: center;
   display: -webkit-box;
   overflow: hidden;
+}
+
+#toast {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: opacity 250ms;
+  z-index: 1;
+}
+
+#toast #toast-message {
+  background: #1e1e23;
+  border-radius: 16px;
+  color: white;
+  font-size: 16px;
+  line-height: 32px;
+  opacity: 0.9;
+  padding: 0 16px;
+}
+
+#toast.visible {
+  opacity: 1;
 }
 
 #album .buttons,

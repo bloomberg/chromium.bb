@@ -58,6 +58,12 @@
                 <button id="take-picture" tabindex="0"
                         i18n-label="takePictureButton"></button>
               </div>
+              <div class="buttons next-to-middle">
+                <input type="checkbox" id="toggle-timer" tabindex="0"
+                       i18n-label="toggleTimerButton" checked>
+                <input type="checkbox" id="toggle-multi" tabindex="0"
+                       i18n-label="toggleMultiButton" checked>
+              </div>
               <div class="buttons">
                 <button id="album-enter" tabindex="0"
                         i18n-label="galleryButton"></button>
@@ -70,6 +76,9 @@
             </div>
           </div>
         </div>
+      </div>
+      <div id="toast" class="visible">
+        <div id="toast-message"></div>
       </div>
       <div id="picture-preview">
       </div>
