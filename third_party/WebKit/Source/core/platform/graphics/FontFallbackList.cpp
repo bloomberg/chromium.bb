@@ -146,7 +146,7 @@ PassRefPtr<FontData> FontFallbackList::getFontData(const FontDescription& fontDe
                 result = m_fontSelector->getFontData(fontDescription, currFamily->family());
 
             if (!result)
-                result = fontCache()->getFontResourceData(fontDescription, currFamily->family());
+                result = fontCache()->getFontData(fontDescription, currFamily->family());
         }
         currFamily = currFamily->next();
     }
@@ -200,7 +200,7 @@ void FontFallbackList::setPlatformFont(const FontPlatformData& platformData)
 {
     m_familyIndex = cAllFamiliesScanned;
     ASSERT(fontCache()->generation() == m_generation);
-    RefPtr<FontData> fontData = fontCache()->getFontResourceData(&platformData);
+    RefPtr<FontData> fontData = fontCache()->fontDataFromFontPlatformData(&platformData);
     m_fontList.append(fontData);
 }
 

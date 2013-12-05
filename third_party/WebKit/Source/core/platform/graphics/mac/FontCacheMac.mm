@@ -170,7 +170,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         !disallowSynthetics && (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
         platformData.m_orientation);
 
-    return getFontResourceData(&alternateFont, DoNotRetain);
+    return fontDataFromFontPlatformData(&alternateFont, DoNotRetain);
 }
 
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& fontDescription, ShouldRetain shouldRetain)
@@ -179,7 +179,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 
     // FIXME: Would be even better to somehow get the user's default font here.  For now we'll pick
     // the default that the user would get without changing any prefs.
-    RefPtr<SimpleFontData> simpleFontData = getFontResourceData(fontDescription, timesStr, false, shouldRetain);
+    RefPtr<SimpleFontData> simpleFontData = getFontData(fontDescription, timesStr, false, shouldRetain);
     if (simpleFontData)
         return simpleFontData.release();
 
@@ -188,7 +188,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     // guaranteed to be there, according to Nathan Taylor. This is good enough
     // to avoid a crash at least.
     DEFINE_STATIC_LOCAL(AtomicString, lucidaGrandeStr, ("Lucida Grande", AtomicString::ConstructFromLiteral));
-    return getFontResourceData(fontDescription, lucidaGrandeStr, false, shouldRetain);
+    return getFontData(fontDescription, lucidaGrandeStr, false, shouldRetain);
 }
 
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)

@@ -135,7 +135,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     if (isLocal()) {
         // We're local. Just return a SimpleFontData from the normal cache.
         // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
-        RefPtr<SimpleFontData> fontData = fontCache()->getFontResourceData(fontDescription, m_string, true);
+        RefPtr<SimpleFontData> fontData = fontCache()->getFontData(fontDescription, m_string, true);
         m_histograms.recordLocalFont(fontData);
         return fontData;
     }

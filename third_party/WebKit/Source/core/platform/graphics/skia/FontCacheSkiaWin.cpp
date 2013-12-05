@@ -86,7 +86,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         &script);
     FontPlatformData* data = 0;
     if (family)
-        data = getFontResourcePlatformData(fontDescription,  AtomicString(family, wcslen(family)));
+        data = getFontPlatformData(fontDescription,  AtomicString(family, wcslen(family)));
 
     // Last resort font list : PanUnicode. CJK fonts have a pretty
     // large repertoire. Eventually, we need to scan all the fonts
@@ -145,7 +145,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     int i;
     for (i = 0; (!data || !fontContainsCharacter(data, family, character)) && i < numFonts; ++i) {
         family = panUniFonts[i];
-        data = getFontResourcePlatformData(fontDescription, AtomicString(family, wcslen(family)));
+        data = getFontPlatformData(fontDescription, AtomicString(family, wcslen(family)));
     }
     // When i-th font (0-base) in |panUniFonts| contains a character and
     // we get out of the loop, |i| will be |i + 1|. That is, if only the
@@ -153,7 +153,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     // So, we have to use '<=" rather than '<' to see if we found a font
     // covering the character.
     if (i <= numFonts)
-        return getFontResourceData(data, DoNotRetain);
+        return fontDataFromFontPlatformData(data, DoNotRetain);
 
     return 0;
 }

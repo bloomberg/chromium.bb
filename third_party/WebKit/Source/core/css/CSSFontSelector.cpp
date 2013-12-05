@@ -201,7 +201,7 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDes
     if (settingsFamilyName.isEmpty())
         return 0;
 
-    return fontCache()->getFontResourceData(fontDescription, settingsFamilyName);
+    return fontCache()->getFontData(fontDescription, settingsFamilyName);
 }
 
 CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDescription, const AtomicString& familyName)

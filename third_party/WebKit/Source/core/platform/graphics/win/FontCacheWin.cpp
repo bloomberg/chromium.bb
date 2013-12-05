@@ -320,7 +320,7 @@ static bool fontContainsCharacter(const FontPlatformData* fontData,
 // Tries the given font and save it |outFontFamilyName| if it succeeds.
 PassRefPtr<SimpleFontData> FontCache::fontDataFromDescriptionAndLogFont(const FontDescription& fontDescription, ShouldRetain shouldRetain, const LOGFONT& font, wchar_t* outFontFamilyName)
 {
-    RefPtr<SimpleFontData> fontData = getFontResourceData(fontDescription, font.lfFaceName, false, shouldRetain);
+    RefPtr<SimpleFontData> fontData = getFontData(fontDescription, font.lfFaceName, false, shouldRetain);
     if (fontData)
         memcpy(outFontFamilyName, font.lfFaceName, sizeof(font.lfFaceName));
     return fontData.release();
@@ -415,7 +415,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     const wchar_t* family = getFallbackFamily(codeUnits, codeUnitsLength, fontDescription.genericFamily(), &c, &script);
     FontPlatformData* data = 0;
     if (family)
-        data = getFontResourcePlatformData(fontDescription,  AtomicString(family, wcslen(family)));
+        data = getFontPlatformData(fontDescription,  AtomicString(family, wcslen(family)));
 
     // Last resort font list : PanUnicode. CJK fonts have a pretty
     // large repertoire. Eventually, we need to scan all the fonts
@@ -475,7 +475,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     int i;
     for (i = 0; (!data || !fontContainsCharacter(data, family, c)) && i < numFonts; ++i) {
         family = panUniFonts[i];
-        data = getFontResourcePlatformData(fontDescription, AtomicString(family, wcslen(family)));
+        data = getFontPlatformData(fontDescription, AtomicString(family, wcslen(family)));
     }
     // When i-th font (0-base) in |panUniFonts| contains a character and
     // we get out of the loop, |i| will be |i + 1|. That is, if only the
@@ -483,7 +483,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     // So, we have to use '<=" rather than '<' to see if we found a font
     // covering the character.
     if (i <= numFonts)
-        return getFontResourceData(data, DoNotRetain);
+        return fontDataFromPlatformData(data, DoNotRetain);
 
     return 0;
 
@@ -506,7 +506,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     else if (generic == FontDescription::MonospaceFamily)
         fontStr = courierStr;
 
-    RefPtr<SimpleFontData> simpleFont = getFontResourceData(description, fontStr, false, shouldRetain);
+    RefPtr<SimpleFontData> simpleFont = getFontData(description, fontStr, false, shouldRetain);
     if (simpleFont)
         return simpleFont.release();
 
@@ -515,7 +515,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     // to a static variable and use it to prevent trying system fonts again.
     static wchar_t fallbackFontName[LF_FACESIZE] = {0};
     if (fallbackFontName[0])
-        return getFontResourceData(description, fallbackFontName, false, shouldRetain);
+        return getFontData(description, fallbackFontName, false, shouldRetain);
 
     // Fall back to the DEFAULT_GUI_FONT if no known Unicode fonts are available.
     if (HFONT defaultGUIFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT))) {

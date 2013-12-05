@@ -79,7 +79,7 @@ public:
     // Also implemented by the platform.
     void platformInit();
 
-    PassRefPtr<SimpleFontData> getFontResourceData(const FontDescription&, const AtomicString&, bool checkingAlternateName = false, ShouldRetain = Retain);
+    PassRefPtr<SimpleFontData> getFontData(const FontDescription&, const AtomicString&, bool checkingAlternateName = false, ShouldRetain = Retain);
     PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&, ShouldRetain = Retain);
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
@@ -125,7 +125,7 @@ private:
     }
 
     // FIXME: This method should eventually be removed.
-    FontPlatformData* getFontResourcePlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
+    FontPlatformData* getFontPlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
 
     // These methods are implemented by each platform.
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family, float fontSize);
@@ -133,7 +133,7 @@ private:
     // Implemented on skia platforms.
     PassRefPtr<SkTypeface> createTypeface(const FontDescription&, const AtomicString& family, CString& name);
 
-    PassRefPtr<SimpleFontData> getFontResourceData(const FontPlatformData*, ShouldRetain = Retain);
+    PassRefPtr<SimpleFontData> fontDataFromFontPlatformData(const FontPlatformData*, ShouldRetain = Retain);
 
     // Don't purge if this count is > 0;
     int m_purgePreventCount;
@@ -146,7 +146,7 @@ private:
 #if OS(MACOSX) || OS(ANDROID)
     friend class ComplexTextController;
 #endif
-    friend class SimpleFontData; // For getFontResourceData(const FontPlatformData*)
+    friend class SimpleFontData; // For fontDataFromFontPlatformData
     friend class FontFallbackList;
 };
 

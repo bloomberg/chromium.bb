@@ -77,13 +77,13 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         description.setItalic(FontItalicOff);
     }
 
-    FontPlatformData* substitutePlatformData = getFontResourcePlatformData(description, atomicFamily);
+    FontPlatformData* substitutePlatformData = getFontPlatformData(description, atomicFamily);
     if (!substitutePlatformData)
         return 0;
     FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
     platformData.setFakeBold(shouldSetFakeBold);
     platformData.setFakeItalic(shouldSetFakeItalic);
-    return getFontResourceData(&platformData, DoNotRetain);
+    return fontDataFromFontPlatformData(&platformData, DoNotRetain);
 }
 
 #endif // !OS(WINDOWNS) && !OS(ANDROID)
@@ -93,16 +93,16 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     const AtomicString fallbackFontFamily = getFallbackFontFamily(description);
     const FontPlatformData* fontPlatformData = 0;
     if (!fallbackFontFamily.isEmpty())
-        fontPlatformData = getFontResourcePlatformData(description, fallbackFontFamily);
+        fontPlatformData = getFontPlatformData(description, fallbackFontFamily);
 
     if (!fontPlatformData) {
         // we should at least have Arial; this is the SkFontHost_fontconfig last resort fallback
         DEFINE_STATIC_LOCAL(const AtomicString, arialStr, ("Arial", AtomicString::ConstructFromLiteral));
-        fontPlatformData = getFontResourcePlatformData(description, arialStr);
+        fontPlatformData = getFontPlatformData(description, arialStr);
     }
 
     ASSERT(fontPlatformData);
-    return getFontResourceData(fontPlatformData, shouldRetain);
+    return fontDataFromFontPlatformData(fontPlatformData, shouldRetain);
 }
 
 PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const AtomicString& family, CString& name)

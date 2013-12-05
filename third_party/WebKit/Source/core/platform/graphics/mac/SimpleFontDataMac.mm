@@ -330,7 +330,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
         scaledFontData.m_syntheticOblique = (fontTraits & NSItalicFontMask) && !(scaledFontTraits & NSItalicFontMask);
 
         // SimpleFontData::platformDestroy() takes care of not deleting the cached font data twice.
-        return fontCache()->getFontResourceData(&scaledFontData);
+        return fontCache()->fontDataFromFontPlatformData(&scaledFontData);
     }
     END_BLOCK_OBJC_EXCEPTIONS;
 
