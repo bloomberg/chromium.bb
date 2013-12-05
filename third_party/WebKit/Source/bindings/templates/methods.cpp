@@ -3,6 +3,10 @@
 {% filter conditional(method.conditional_string) %}
 static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    {% if method.is_raises_exception or method.is_check_security_for_frame or
+          method.name in ['addEventListener', 'removeEventListener'] %}
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {% endif %}
     {% if method.name in ['addEventListener', 'removeEventListener'] %}
     {{add_remove_event_listener_method(method.name) | indent}}
     {% else %}
@@ -17,9 +21,6 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% endif %}
     {% if method.is_custom_element_callbacks %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    {% endif %}
-    {% if method.is_raises_exception or method.is_check_security_for_frame %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% if method.is_check_security_for_frame %}
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
@@ -110,7 +111,6 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 %}
 EventTarget* impl = {{v8_class}}::toNative(info.Holder());
 if (DOMWindow* window = impl->toDOMWindow()) {
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;

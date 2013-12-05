@@ -33,7 +33,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {# Special cases #}
     {% if attribute.is_check_security_for_node %}
     {# FIXME: consider using a local variable to not call getter twice #}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    {# FIXME: spacing! ' ,' => ', ' #}
+    ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}" ,info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -41,7 +42,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     }
     {% endif %}
     {% if attribute.is_getter_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}" ,info.Holder(), info.GetIsolate());
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -122,11 +123,17 @@ v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info
 v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
+    {# FIXME: fix Perl (generates this line even for non-wrapper types) #}
+    {% if attribute.is_setter_raises_exception or
+          attribute.has_strict_type_checking %}
+    ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {% endif %}
     {% if attribute.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if (!isUndefinedOrNull(jsValue) && !V8{{attribute.idl_type}}::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
-        throwTypeError(ExceptionMessages::failedToSet("{{attribute.name}}", "{{interface_name}}", "The provided value is not of type '{{attribute.idl_type}}'."), info.GetIsolate());
+        exceptionState.throwTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
+        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -150,9 +157,6 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {% if attribute.is_reflect %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    {% endif %}
-    {% if attribute.is_setter_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();
