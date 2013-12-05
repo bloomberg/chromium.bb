@@ -201,7 +201,6 @@
     'common/gpu/client/gpu_memory_buffer_impl_android.cc',
     'common/gpu/client/gpu_memory_buffer_impl_linux.cc',
     'common/gpu/client/gpu_memory_buffer_impl_mac.cc',
-    'common/gpu/client/gpu_memory_buffer_impl_ozone.cc',
     'common/gpu/client/gpu_memory_buffer_impl_shm.cc',
     'common/gpu/client/gpu_memory_buffer_impl_shm.h',
     'common/gpu/client/gpu_memory_buffer_impl_win.cc',
