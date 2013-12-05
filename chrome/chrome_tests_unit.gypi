@@ -164,8 +164,6 @@
         'browser/policy/cloud/mock_device_management_service.h',
         'browser/policy/cloud/policy_builder.cc',
         'browser/policy/cloud/policy_builder.h',
-        'browser/policy/preferences_mock_mac.cc',
-        'browser/policy/preferences_mock_mac.h',
         'browser/policy/test/local_policy_test_server.cc',
         'browser/policy/test/local_policy_test_server.h',
         'browser/policy/test/policy_test_utils.cc',

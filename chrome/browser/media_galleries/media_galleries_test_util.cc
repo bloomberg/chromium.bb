@@ -27,7 +27,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder_impl.h"
-#include "chrome/browser/policy/preferences_mock_mac.h"
+#include "components/policy/core/common/preferences_mock_mac.h"
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)

@@ -1552,8 +1552,6 @@
         'browser/policy/policy_statistics_collector.h',
         'browser/policy/policy_transformations.cc',
         'browser/policy/policy_transformations.h',
-        'browser/policy/preferences_mac.cc',
-        'browser/policy/preferences_mac.h',
         'browser/policy/preg_parser_win.cc',
         'browser/policy/preg_parser_win.h',
         'browser/policy/profile_policy_connector.cc',
