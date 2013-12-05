@@ -28,7 +28,10 @@ class FrameTime {
 #endif
 
   static bool TimestampsAreHighRes() {
-    return base::TimeTicks::IsHighResNowFastAndReliable();
+    // This should really return base::TimeTicks::IsHighResNowFastAndReliable();
+    // Returning false makes sure we are only using low-res timestamps until we
+    // use FrameTime everywhere we need to. See crbug.com/315334
+    return false;
   }
 };
 
