@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -126,23 +127,23 @@ void AppListControllerDelegate::ShowOptionsPage(
   chrome::Navigate(&params);
 }
 
-extensions::ExtensionPrefs::LaunchType
-AppListControllerDelegate::GetExtensionLaunchType(
+extensions::LaunchType AppListControllerDelegate::GetExtensionLaunchType(
     Profile* profile,
     const std::string& app_id) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  return service->extension_prefs()->
-      GetLaunchType(GetExtension(profile, app_id));
+  return extensions::GetLaunchType(service->extension_prefs(),
+                                   GetExtension(profile, app_id));
 }
 
 void AppListControllerDelegate::SetExtensionLaunchType(
     Profile* profile,
     const std::string& extension_id,
-    extensions::ExtensionPrefs::LaunchType launch_type) {
+    extensions::LaunchType launch_type) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  service->extension_prefs()->SetLaunchType(extension_id, launch_type);
+  extensions::SetLaunchType(
+      service->extension_prefs(), extension_id, launch_type);
 }
 
 bool AppListControllerDelegate::IsExtensionInstalled(

@@ -63,22 +63,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Vector containing identifiers for preferences.
   typedef std::set<std::string> PrefKeySet;
 
-  // This enum is used for the launch type the user wants to use for an
-  // application.
-  // Do not remove items or re-order this enum as it is used in preferences
-  // and histograms.
-  enum LaunchType {
-    LAUNCH_TYPE_PINNED,
-    LAUNCH_TYPE_REGULAR,
-    LAUNCH_TYPE_FULLSCREEN,
-    LAUNCH_TYPE_WINDOW,
-
-    // Launch an app in the in the way a click on the NTP would,
-    // if no user pref were set.  Update this constant to change
-    // the default for the NTP and chrome.management.launchApp().
-    LAUNCH_TYPE_DEFAULT = LAUNCH_TYPE_REGULAR
-  };
-
   // This enum is used to store the reason an extension's install has been
   // delayed.  Do not remove items or re-order this enum as it is used in
   // preferences.
@@ -398,24 +382,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   bool AllowFileAccess(const std::string& extension_id) const;
   void SetAllowFileAccess(const std::string& extension_id, bool allow);
   bool HasAllowFileAccessSetting(const std::string& extension_id) const;
-
-  // Get the launch type preference. If no preference is set, return
-  // LAUNCH_DEFAULT.
-  // Returns LAUNCH_WINDOW if there's no preference and
-  // 'streamlined hosted apps' are enabled.
-  LaunchType GetLaunchType(const Extension* extension);
-
-  void SetLaunchType(const std::string& extension_id, LaunchType launch_type);
-
-  // Find the right launch container based on the launch type.
-  // If |extension|'s prefs do not have a launch type set, then the default
-  // value from GetLaunchType() is used to decide the launch container.
-  LaunchContainer GetLaunchContainer(const Extension* extension);
-
-  // Returns true if a launch container preference has been specified for
-  // |extension|. GetLaunchContainer() will still return a default value even if
-  // this returns false.
-  bool HasPreferredLaunchContainer(const Extension* extension);
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved

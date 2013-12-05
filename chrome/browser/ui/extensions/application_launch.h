@@ -31,8 +31,7 @@ struct AppLaunchParams {
                   WindowOpenDisposition disposition);
 
   // Helper to create AppLaunchParams using ExtensionPrefs::GetLaunchContainer
-  // with ExtensionPrefs::LAUNCH_TYPE_REGULAR to check for a user-configured
-  // container.
+  // with LAUNCH_TYPE_REGULAR to check for a user-configured container.
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
                   WindowOpenDisposition disposition);

@@ -701,8 +701,8 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
     LaunchApp(app_id, source, event_flags);
 }
 
-extensions::ExtensionPrefs::LaunchType
-    ChromeLauncherController::GetLaunchType(ash::LauncherID id) {
+extensions::LaunchType ChromeLauncherController::GetLaunchType(
+    ash::LauncherID id) {
   DCHECK(HasItemController(id));
 
   const Extension* extension = GetExtensionForAppID(
@@ -710,9 +710,10 @@ extensions::ExtensionPrefs::LaunchType
 
   // An extension can be unloaded/updated/unavailable at any time.
   if (!extension)
-    return extensions::ExtensionPrefs::LAUNCH_TYPE_DEFAULT;
+    return extensions::LAUNCH_TYPE_DEFAULT;
 
-  return profile_->GetExtensionService()->extension_prefs()->GetLaunchType(
+  return extensions::GetLaunchType(
+      profile_->GetExtensionService()->extension_prefs(),
       extension);
 }
 
@@ -808,12 +809,13 @@ void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
 
 void ChromeLauncherController::SetLaunchType(
     ash::LauncherID id,
-    extensions::ExtensionPrefs::LaunchType launch_type) {
+    extensions::LaunchType launch_type) {
   if (!HasItemController(id))
     return;
 
-  profile_->GetExtensionService()->extension_prefs()->SetLaunchType(
-      id_to_item_controller_map_[id]->app_id(), launch_type);
+  extensions::SetLaunchType(profile_->GetExtensionService()->extension_prefs(),
+                            id_to_item_controller_map_[id]->app_id(),
+                            launch_type);
 }
 
 void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {

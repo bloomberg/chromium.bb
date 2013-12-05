@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
@@ -117,10 +118,10 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
   }
 
   void SetAppLaunchPref(const std::string& app_id,
-                        extensions::ExtensionPrefs::LaunchType launch_type) {
+                        extensions::LaunchType launch_type) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
-    service->extension_prefs()->SetLaunchType(app_id, launch_type);
+    extensions::SetLaunchType(service->extension_prefs(), app_id, launch_type);
   }
 
   Browser* FindOneOtherBrowserForProfile(Profile* profile,
@@ -298,8 +299,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a window.
-  SetAppLaunchPref(extension_app->id(),
-                   extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW);
+  SetAppLaunchPref(extension_app->id(), extensions::LAUNCH_TYPE_WINDOW);
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
@@ -330,8 +330,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a window.
-  SetAppLaunchPref(extension_app->id(),
-                   extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR);
+  SetAppLaunchPref(extension_app->id(), extensions::LAUNCH_TYPE_REGULAR);
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());

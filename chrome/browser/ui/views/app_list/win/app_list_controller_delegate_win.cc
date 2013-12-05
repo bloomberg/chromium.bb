@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
+#include "extensions/common/extension.h"
 #include "ui/base/resource/resource_bundle.h"
 
 AppListControllerDelegateWin::AppListControllerDelegateWin(

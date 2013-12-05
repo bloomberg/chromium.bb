@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -435,7 +436,7 @@ bool ManagementLaunchAppFunction::RunImpl() {
   // If the user has not set a preference, the default launch value will be
   // returned.
   LaunchContainer launch_container =
-      service()->extension_prefs()->GetLaunchContainer(extension);
+      GetLaunchContainer(service()->extension_prefs(), extension);
   OpenApplication(AppLaunchParams(
       GetProfile(), extension, launch_container, NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)

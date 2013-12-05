@@ -58,6 +58,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -4319,22 +4320,23 @@ void TestingAutomationProvider::SetAppLaunchType(
     return;
   }
 
-  extensions::ExtensionPrefs::LaunchType launch_type;
+  extensions::LaunchType launch_type;
   if (launch_type_str == "pinned") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_PINNED;
+    launch_type = extensions::LAUNCH_TYPE_PINNED;
   } else if (launch_type_str == "regular") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR;
+    launch_type = extensions::LAUNCH_TYPE_REGULAR;
   } else if (launch_type_str == "fullscreen") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN;
+    launch_type = extensions::LAUNCH_TYPE_FULLSCREEN;
   } else if (launch_type_str == "window") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW;
+    launch_type = extensions::LAUNCH_TYPE_WINDOW;
   } else {
     reply.SendError(base::StringPrintf(
         "Unexpected launch type '%s'.", launch_type_str.c_str()));
     return;
   }
 
-  service->extension_prefs()->SetLaunchType(extension->id(), launch_type);
+  extensions::SetLaunchType(
+      service->extension_prefs(), extension->id(), launch_type);
   reply.SendSuccess(NULL);
 }
 

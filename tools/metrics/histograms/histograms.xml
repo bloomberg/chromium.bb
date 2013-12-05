@@ -4278,7 +4278,7 @@ other types of suffix sets.
 
 <histogram name="Extensions.AppTabLaunchType" enum="ExtensionLaunchType">
   <summary>
-    The number of apps launched grouped by ExtensionPrefs::LaunchType.
+    The number of apps launched grouped by extensions::LaunchType.
   </summary>
 </histogram>
 

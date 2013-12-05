@@ -15,7 +15,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -166,11 +166,11 @@ string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW);
     }
     switch (controller_->GetLaunchType(item_.id)) {
-      case extensions::ExtensionPrefs::LAUNCH_TYPE_PINNED:
-      case extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR:
+      case extensions::LAUNCH_TYPE_PINNED:
+      case extensions::LAUNCH_TYPE_REGULAR:
         return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_TAB);
-      case extensions::ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN:
-      case extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW:
+      case extensions::LAUNCH_TYPE_FULLSCREEN:
+      case extensions::LAUNCH_TYPE_WINDOW:
         return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW);
     }
   }
@@ -182,16 +182,16 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case LAUNCH_TYPE_PINNED_TAB:
       return controller_->GetLaunchType(item_.id) ==
-          extensions::ExtensionPrefs::LAUNCH_TYPE_PINNED;
+          extensions::LAUNCH_TYPE_PINNED;
     case LAUNCH_TYPE_REGULAR_TAB:
       return controller_->GetLaunchType(item_.id) ==
-          extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR;
+          extensions::LAUNCH_TYPE_REGULAR;
     case LAUNCH_TYPE_WINDOW:
       return controller_->GetLaunchType(item_.id) ==
-          extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW;
+          extensions::LAUNCH_TYPE_WINDOW;
     case LAUNCH_TYPE_FULLSCREEN:
       return controller_->GetLaunchType(item_.id) ==
-          extensions::ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN;
+          extensions::LAUNCH_TYPE_FULLSCREEN;
     case MENU_AUTO_HIDE:
       return controller_->GetShelfAutoHideBehavior(root_window_) ==
           ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
@@ -244,20 +244,16 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller_->TogglePinned(item_.id);
       break;
     case LAUNCH_TYPE_PINNED_TAB:
-      controller_->SetLaunchType(
-          item_.id, extensions::ExtensionPrefs::LAUNCH_TYPE_PINNED);
+      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_PINNED);
       break;
     case LAUNCH_TYPE_REGULAR_TAB:
-      controller_->SetLaunchType(
-          item_.id, extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR);
+      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_REGULAR);
       break;
     case LAUNCH_TYPE_WINDOW:
-      controller_->SetLaunchType(
-          item_.id, extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW);
+      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_WINDOW);
       break;
     case LAUNCH_TYPE_FULLSCREEN:
-      controller_->SetLaunchType(
-          item_.id, extensions::ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN);
+      controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
       controller_->ToggleShelfAutoHideBehavior(root_window_);

@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
@@ -154,8 +155,7 @@ void AppLauncherHandler::CreateAppInfo(
   value->SetInteger("launch_container",
                     extensions::AppLaunchInfo::GetLaunchContainer(extension));
   ExtensionPrefs* prefs = service->extension_prefs();
-  value->SetInteger("launch_type",
-      prefs->GetLaunchType(extension));
+  value->SetInteger("launch_type", extensions::GetLaunchType(prefs, extension));
   value->SetBoolean("is_component",
                     extension->location() == extensions::Manifest::COMPONENT);
   value->SetBoolean("is_webstore",
@@ -559,9 +559,10 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
   // Don't update the page; it already knows about the launch type change.
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
-  extension_service_->extension_prefs()->SetLaunchType(
+  extensions::SetLaunchType(
+      extension_service_->extension_prefs(),
       extension_id,
-      static_cast<ExtensionPrefs::LaunchType>(
+      static_cast<extensions::LaunchType>(
           static_cast<int>(launch_type)));
 }
 

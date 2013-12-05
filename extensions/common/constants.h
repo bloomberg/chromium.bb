@@ -85,6 +85,7 @@ extern const char kRulesStoreName[];
 
 // Don't remove items or change the order of this enum.  It's used in
 // histograms and preferences.
+// TODO(derat): Move this to chrome/browser/extensions/launch_util.h?
 enum LaunchContainer {
   LAUNCH_WINDOW,
   LAUNCH_PANEL,

@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -1768,16 +1769,13 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
         NOTREACHED() << "Can't get integer from key " << kLaunchType;
         continue;
       }
-      if (launch_type == extensions::ExtensionPrefs::LAUNCH_TYPE_PINNED) {
+      if (launch_type == extensions::LAUNCH_TYPE_PINNED) {
         app_info->SetString(kLaunchType, "pinned");
-      } else if (launch_type ==
-                 extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR) {
+      } else if (launch_type == extensions::LAUNCH_TYPE_REGULAR) {
         app_info->SetString(kLaunchType, "regular");
-      } else if (launch_type ==
-                 extensions::ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN) {
+      } else if (launch_type == extensions::LAUNCH_TYPE_FULLSCREEN) {
         app_info->SetString(kLaunchType, "fullscreen");
-      } else if (launch_type ==
-                 extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW) {
+      } else if (launch_type == extensions::LAUNCH_TYPE_WINDOW) {
         app_info->SetString(kLaunchType, "window");
       } else {
         app_info->SetString(kLaunchType, "unknown");

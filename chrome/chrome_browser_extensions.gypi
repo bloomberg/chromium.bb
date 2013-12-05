@@ -817,6 +817,8 @@
         'browser/extensions/install_tracker_factory.h',
         'browser/extensions/install_verifier.cc',
         'browser/extensions/install_verifier.h',
+        'browser/extensions/launch_util.cc',
+        'browser/extensions/launch_util.h',
         'browser/extensions/location_bar_controller.h',
         'browser/extensions/menu_manager.cc',
         'browser/extensions/menu_manager.h',

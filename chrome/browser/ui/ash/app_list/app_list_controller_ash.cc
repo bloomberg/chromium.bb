@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "extensions/common/extension.h"
 
 AppListControllerDelegateAsh::AppListControllerDelegateAsh() {}
 

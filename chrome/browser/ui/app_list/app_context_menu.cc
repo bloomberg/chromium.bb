@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -240,21 +241,18 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller_->DoCreateShortcutsFlow(profile_, app_id_);
   } else if (command_id >= LAUNCH_TYPE_START &&
              command_id < LAUNCH_TYPE_LAST) {
-    extensions::ExtensionPrefs::LaunchType launch_type =
-        static_cast<extensions::ExtensionPrefs::LaunchType>(
-            command_id - LAUNCH_TYPE_START);
+    extensions::LaunchType launch_type =
+        static_cast<extensions::LaunchType>(command_id - LAUNCH_TYPE_START);
     // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
     // LAUNCH_REGULAR.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableStreamlinedHostedApps)) {
-      launch_type = controller_->GetExtensionLaunchType(profile_, app_id_) ==
-                            extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR
-                        ? extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW
-                        : extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR;
+      launch_type = (controller_->GetExtensionLaunchType(profile_, app_id_) ==
+                     extensions::LAUNCH_TYPE_REGULAR) ?
+                    extensions::LAUNCH_TYPE_WINDOW :
+                    extensions::LAUNCH_TYPE_REGULAR;
     }
-    controller_->SetExtensionLaunchType(profile_,
-                                        app_id_,
-                                        launch_type);
+    controller_->SetExtensionLaunchType(profile_, app_id_, launch_type);
   } else if (command_id == OPTIONS) {
     controller_->ShowOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {

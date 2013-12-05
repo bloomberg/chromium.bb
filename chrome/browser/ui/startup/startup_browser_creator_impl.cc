@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
@@ -203,11 +204,11 @@ LOG(ERROR) << app_id;
 LOG(ERROR) << app_id;
   // Look at preferences to find the right launch container. If no
   // preference is set, launch as a window.
-  extensions::LaunchContainer launch_container =
-      extensions_service->extension_prefs()->GetLaunchContainer(extension);
+  extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
+      extensions_service->extension_prefs(), extension);
 
-  if (!extensions_service->extension_prefs()->HasPreferredLaunchContainer(
-          extension))
+  if (!extensions::HasPreferredLaunchContainer(
+          extensions_service->extension_prefs(), extension))
     launch_container = extensions::LAUNCH_WINDOW;
 
   *out_extension = extension;

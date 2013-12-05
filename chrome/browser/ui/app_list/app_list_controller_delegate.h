@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ExtensionSet;
@@ -130,12 +130,12 @@ class AppListControllerDelegate {
   // Gets/sets the launch type for an app.
   // The launch type specifies whether a hosted app should launch as a separate
   // window, fullscreened or as a tab.
-  extensions::ExtensionPrefs::LaunchType GetExtensionLaunchType(
+  extensions::LaunchType GetExtensionLaunchType(
       Profile* profile, const std::string& app_id);
   virtual void SetExtensionLaunchType(
       Profile* profile,
       const std::string& extension_id,
-      extensions::ExtensionPrefs::LaunchType launch_type);
+      extensions::LaunchType launch_type);
 
   // Returns true if the given extension is installed.
   bool IsExtensionInstalled(Profile* profile, const std::string& app_id);

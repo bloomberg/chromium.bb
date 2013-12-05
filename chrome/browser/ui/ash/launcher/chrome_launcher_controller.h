@@ -25,7 +25,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
-#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
@@ -213,7 +213,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
                    int event_flags);
 
   // Returns the launch type of app for the specified id.
-  extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
+  extensions::LaunchType GetLaunchType(ash::LauncherID id);
 
   // Set the image for a specific launcher item (e.g. when set by the app).
   void SetLauncherItemImage(ash::LauncherID launcher_id,
@@ -223,9 +223,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // pinned item in the launcher.
   bool IsWindowedAppInLauncher(const std::string& app_id);
 
-  // Updates the launche type of the app for the specified id to |launch_type|.
+  // Updates the launch type of the app for the specified id to |launch_type|.
   void SetLaunchType(ash::LauncherID id,
-                     extensions::ExtensionPrefs::LaunchType launch_type);
+                     extensions::LaunchType launch_type);
 
   // Returns true if the user is currently logged in as a guest.
   // Makes virtual for unittest in LauncherContextMenuTest.
