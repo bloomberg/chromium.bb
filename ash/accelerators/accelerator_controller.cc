@@ -597,6 +597,12 @@ bool HandleWindowSnap(int action) {
   return true;
 }
 
+bool HandleWindowMinimize() {
+  content::RecordAction(
+      content::UserMetricsAction("Accel_Toggle_Minimized_Minus"));
+  return accelerators::ToggleMinimized();
+}
+
 #if defined(OS_CHROMEOS)
 bool HandleAddRemoveDisplay() {
   content::RecordAction(UserMetricsAction("Accel_Add_Remove_Display"));
@@ -1073,7 +1079,7 @@ bool AcceleratorController::PerformAction(int action,
     case WINDOW_SNAP_RIGHT:
       return HandleWindowSnap(action);
     case WINDOW_MINIMIZE:
-      return accelerators::ToggleMinimized();
+      return HandleWindowMinimize();
     case TOGGLE_FULLSCREEN:
       return HandleToggleFullscreen(key_code);
     case TOGGLE_MAXIMIZED:

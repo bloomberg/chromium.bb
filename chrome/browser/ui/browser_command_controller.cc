@@ -457,6 +457,8 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       chrome::ToggleAshDesktop();
       break;
     case IDC_MINIMIZE_WINDOW:
+      content::RecordAction(
+          content::UserMetricsAction("Accel_Toggle_Minimized_M"));
       ash::accelerators::ToggleMinimized();
       break;
     // If Ash needs many more commands here we should implement a general

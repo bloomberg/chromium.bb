@@ -26,8 +26,6 @@ bool ToggleMinimized() {
   wm::WindowState* window_state = wm::GetWindowState(window);
   if (!window_state->CanMinimize())
     return false;
-  content::RecordAction(
-      content::UserMetricsAction("Accel_Toggle_Minimized"));
   window_state->Minimize();
   return true;
 }
