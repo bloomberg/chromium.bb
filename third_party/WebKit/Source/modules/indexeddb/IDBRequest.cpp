@@ -398,8 +398,9 @@ ExecutionContext* IDBRequest::executionContext() const
 bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBRequest::dispatchEvent");
-    if (!executionContext())
+    if (m_contextStopped || !executionContext())
         return false;
+    ASSERT(m_requestState.isValid());
     ASSERT(m_readyState == PENDING);
     ASSERT(m_hasPendingActivity);
     ASSERT(m_enqueuedEvents.size());

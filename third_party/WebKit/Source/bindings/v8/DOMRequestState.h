@@ -41,6 +41,7 @@ public:
         , m_world(DOMWrapperWorld::current())
         , m_isolate(toIsolate(executionContext))
     {
+        ASSERT(m_executionContext);
     }
 
     void clear()
@@ -63,6 +64,7 @@ public:
 
     v8::Local<v8::Context> context()
     {
+        ASSERT(m_executionContext);
         return toV8Context(m_executionContext, m_world.get());
     }
 
@@ -70,6 +72,8 @@ public:
     {
         return m_isolate;
     }
+
+    bool isValid() const { return m_executionContext; }
 
 private:
     ExecutionContext* m_executionContext;
