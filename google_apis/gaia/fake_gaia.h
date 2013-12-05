@@ -55,21 +55,27 @@ class FakeGaia {
       const net::test_server::HttpRequest& request);
 
   // Configures an OAuth2 token that'll be returned when a client requests an
-  // access token for the given refresh token.
-  void IssueOAuthToken(const std::string& refresh_token,
+  // access token for the given auth token, which can be a refresh token or an
+  // login-scoped access token for the token minting endpoint. Note that the
+  // scope and audience requested by the client need to match the token_info.
+  void IssueOAuthToken(const std::string& auth_token,
                        const AccessTokenInfo& token_info);
 
  private:
-  typedef std::map<std::string, AccessTokenInfo> AccessTokenInfoMap;
+  typedef std::multimap<std::string, AccessTokenInfo> AccessTokenInfoMap;
 
   // Formats a JSON response with the data in |response_dict|.
   void FormatJSONResponse(const base::DictionaryValue& response_dict,
                           net::test_server::BasicHttpResponse* http_response);
 
-  // Returns the access token associated with |refresh_token| or NULL if not
-  // found.
-  const AccessTokenInfo* GetAccessTokenInfo(
-      const std::string& refresh_token) const;
+  // Returns the access token associated with |auth_token| that matches the
+  // given |client_id| and |scope_string|. If |scope_string| is empty, the first
+  // token satisfying the other criteria is returned. Returns NULL if no token
+  // matches.
+  const AccessTokenInfo* GetAccessTokenInfo(const std::string& auth_token,
+                                            const std::string& client_id,
+                                            const std::string& scope_string)
+      const;
 
   // Extracts the parameter named |key| from |query| and places it in |value|.
   // Returns false if no parameter is found.

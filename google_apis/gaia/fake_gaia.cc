@@ -10,6 +10,8 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -65,9 +67,13 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
     http_response->set_content_type("text/html");
   } else if (request_path == gaia_urls->oauth2_token_url().path()) {
     std::string refresh_token;
+    std::string client_id;
+    std::string scope;
     const AccessTokenInfo* token_info = NULL;
+    GetQueryParameter(request.content, "scope", &scope);
     if (GetQueryParameter(request.content, "refresh_token", &refresh_token) &&
-        (token_info = GetAccessTokenInfo(refresh_token))) {
+        GetQueryParameter(request.content, "client_id", &client_id) &&
+        (token_info = GetAccessTokenInfo(refresh_token, client_id, scope))) {
       base::DictionaryValue response_dict;
       response_dict.SetString("access_token", token_info->token);
       response_dict.SetInteger("expires_in", 3600);
@@ -104,6 +110,30 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
     } else {
       http_response->set_code(net::HTTP_BAD_REQUEST);
     }
+  } else if (request_path == gaia_urls->oauth2_issue_token_url().path()) {
+    std::string access_token;
+    std::map<std::string, std::string>::const_iterator auth_header_entry =
+        request.headers.find("Authorization");
+    if (auth_header_entry != request.headers.end()) {
+      if (StartsWithASCII(auth_header_entry->second, "Bearer ", true))
+        access_token = auth_header_entry->second.substr(7);
+    }
+
+    std::string scope;
+    std::string client_id;
+    const AccessTokenInfo* token_info = NULL;
+    if (GetQueryParameter(request.content, "scope", &scope) &&
+        GetQueryParameter(request.content, "client_id", &client_id) &&
+        (token_info = GetAccessTokenInfo(access_token, client_id, scope))) {
+      base::DictionaryValue response_dict;
+      response_dict.SetString("issueAdvice", "auto");
+      response_dict.SetString("expiresIn",
+                              base::IntToString(token_info->expires_in));
+      response_dict.SetString("token", token_info->token);
+      FormatJSONResponse(response_dict, http_response.get());
+    } else {
+      http_response->set_code(net::HTTP_BAD_REQUEST);
+    }
   } else {
     // Request not understood.
     return scoped_ptr<HttpResponse>();
@@ -112,9 +142,9 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
   return http_response.PassAs<HttpResponse>();
 }
 
-void FakeGaia::IssueOAuthToken(const std::string& refresh_token,
+void FakeGaia::IssueOAuthToken(const std::string& auth_token,
                                const AccessTokenInfo& token_info) {
-  access_token_info_map_[refresh_token] = token_info;
+  access_token_info_map_.insert(std::make_pair(auth_token, token_info));
 }
 
 void FakeGaia::FormatJSONResponse(const base::DictionaryValue& response_dict,
@@ -126,10 +156,27 @@ void FakeGaia::FormatJSONResponse(const base::DictionaryValue& response_dict,
 }
 
 const FakeGaia::AccessTokenInfo* FakeGaia::GetAccessTokenInfo(
-    const std::string& refresh_token) const {
-  AccessTokenInfoMap::const_iterator entry =
-      access_token_info_map_.find(refresh_token);
-  return entry == access_token_info_map_.end() ? NULL : &entry->second;
+    const std::string& auth_token,
+    const std::string& client_id,
+    const std::string& scope_string) const {
+  if (auth_token.empty() || client_id.empty())
+    return NULL;
+
+  std::vector<std::string> scope_list;
+  base::SplitString(scope_string, ' ', &scope_list);
+  ScopeSet scopes(scope_list.begin(), scope_list.end());
+
+  for (AccessTokenInfoMap::const_iterator entry(
+           access_token_info_map_.lower_bound(auth_token));
+       entry != access_token_info_map_.upper_bound(auth_token);
+       ++entry) {
+    if (entry->second.audience == client_id &&
+        (scope_string.empty() || entry->second.scopes == scopes)) {
+      return &(entry->second);
+    }
+  }
+
+  return NULL;
 }
 
 // static

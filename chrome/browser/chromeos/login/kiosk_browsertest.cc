@@ -63,7 +63,9 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "google_apis/gaia/fake_gaia.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -102,7 +104,12 @@ const char kTestOwnerEmail[] = "owner@example.com";
 const char kTestEnterpriseAccountId[] = "enterprise-kiosk-app@localhost";
 const char kTestEnterpriseServiceAccountId[] = "service_account@example.com";
 const char kTestRefreshToken[] = "fake-refresh-token";
+const char kTestUserinfoToken[] = "fake-userinfo-token";
+const char kTestLoginToken[] = "fake-login-token";
 const char kTestAccessToken[] = "fake-access-token";
+const char kTestClientId[] = "fake-client-id";
+const char kTestAppScope[] =
+    "https://www.googleapis.com/auth/userinfo.profile";
 
 // Note the path name must be the same as in shill stub.
 const char kStubEthernetServicePath[] = "eth1";
@@ -867,10 +874,33 @@ class KioskEnterpriseTest : public KioskTest {
     DeviceSettingsService::Get()->Load();
 
     // Configure OAuth authentication.
-    FakeGaia::AccessTokenInfo token_info;
-    token_info.token = kTestAccessToken;
-    token_info.email = kTestEnterpriseServiceAccountId;
-    fake_gaia_.IssueOAuthToken(kTestRefreshToken, token_info);
+    GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
+
+    // This token satisfies the userinfo.email request from
+    // DeviceOAuth2TokenService used in token validation.
+    FakeGaia::AccessTokenInfo userinfo_token_info;
+    userinfo_token_info.token = kTestUserinfoToken;
+    userinfo_token_info.scopes.insert(
+        "https://www.googleapis.com/auth/userinfo.email");
+    userinfo_token_info.audience = gaia_urls->oauth2_chrome_client_id();
+    userinfo_token_info.email = kTestEnterpriseServiceAccountId;
+    fake_gaia_.IssueOAuthToken(kTestRefreshToken, userinfo_token_info);
+
+    // The any-api access token for accessing the token minting endpoint.
+    FakeGaia::AccessTokenInfo login_token_info;
+    login_token_info.token = kTestLoginToken;
+    login_token_info.scopes.insert(GaiaConstants::kAnyApiOAuth2Scope);
+    login_token_info.audience = gaia_urls->oauth2_chrome_client_id();
+    fake_gaia_.IssueOAuthToken(kTestRefreshToken, login_token_info);
+
+    // This is the access token requested by the app via the identity API.
+    FakeGaia::AccessTokenInfo access_token_info;
+    access_token_info.token = kTestAccessToken;
+    access_token_info.scopes.insert(kTestAppScope);
+    access_token_info.audience = kTestClientId;
+    access_token_info.email = kTestEnterpriseServiceAccountId;
+    fake_gaia_.IssueOAuthToken(kTestLoginToken, access_token_info);
+
     DeviceOAuth2TokenService* token_service = NULL;
     DeviceOAuth2TokenServiceFactory::Get(
         base::Bind(&CopyTokenService, &token_service));
@@ -889,8 +919,7 @@ class KioskEnterpriseTest : public KioskTest {
   DISALLOW_COPY_AND_ASSIGN(KioskEnterpriseTest);
 };
 
-// Disabled due to failures; http://crbug.com/306611.
-IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, DISABLED_EnterpriseKioskApp) {
+IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
