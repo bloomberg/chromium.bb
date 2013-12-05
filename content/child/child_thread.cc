@@ -221,19 +221,6 @@ void ChildThread::Init() {
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceToConsole)) {
-    std::string category_string =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kTraceToConsole);
-
-    if (!category_string.size())
-      category_string = "*";
-
-    base::debug::TraceLog::GetInstance()->SetEnabled(
-        base::debug::CategoryFilter(category_string),
-        base::debug::TraceLog::ECHO_TO_CONSOLE);
-  }
-
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ChildThread::EnsureConnected,

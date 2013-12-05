@@ -610,9 +610,9 @@ class BASE_EXPORT TraceLog {
   TraceBuffer* trace_buffer() const { return logged_events_.get(); }
   TraceBuffer* CreateTraceBuffer();
 
-  void OutputEventToConsoleWhileLocked(unsigned char phase,
-                                       const TimeTicks& timestamp,
-                                       TraceEvent* trace_event);
+  std::string EventToConsoleMessage(unsigned char phase,
+                                    const TimeTicks& timestamp,
+                                    TraceEvent* trace_event);
 
   TraceEvent* AddEventToThreadSharedChunkWhileLocked(TraceEventHandle* handle,
                                                      bool check_buffer_is_full);
@@ -647,8 +647,12 @@ class BASE_EXPORT TraceLog {
     return timestamp - time_offset_;
   }
 
-  // This lock protects TraceLog member accesses from arbitrary threads.
+  // This lock protects TraceLog member accesses (except for members protected
+  // by thread_info_lock_) from arbitrary threads.
   mutable Lock lock_;
+  // This lock protects accesses to thread_names_, thread_event_start_times_
+  // and thread_colors_.
+  Lock thread_info_lock_;
   int locked_line_;
   bool enabled_;
   int num_traces_recorded_;
@@ -690,6 +694,7 @@ class BASE_EXPORT TraceLog {
 
   ThreadLocalPointer<ThreadLocalEventBuffer> thread_local_event_buffer_;
   ThreadLocalBoolean thread_blocks_message_loop_;
+  ThreadLocalBoolean thread_is_in_trace_event_;
 
   // Contains the message loops of threads that have had at least one event
   // added into the local event buffer. Not using MessageLoopProxy because we

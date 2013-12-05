@@ -2527,6 +2527,28 @@ TEST_F(TraceEventTestFixture, EchoToConsole) {
   g_log_buffer = NULL;
 }
 
+bool LogMessageHandlerWithTraceEvent(int, const char*, int, size_t,
+                                     const std::string&) {
+  TRACE_EVENT0("log", "trace_event");
+  return false;
+}
+
+TEST_F(TraceEventTestFixture, EchoToConsoleTraceEventRecursion) {
+  logging::LogMessageHandlerFunction old_log_message_handler =
+      logging::GetLogMessageHandler();
+  logging::SetLogMessageHandler(LogMessageHandlerWithTraceEvent);
+
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::ECHO_TO_CONSOLE);
+  {
+    // This should not cause deadlock or infinite recursion.
+    TRACE_EVENT0("b", "duration");
+  }
+
+  EndTraceAndFlush();
+  logging::SetLogMessageHandler(old_log_message_handler);
+}
+
 TEST_F(TraceEventTestFixture, TimeOffset) {
   BeginTrace();
   // Let TraceLog timer start from 0.
