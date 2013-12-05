@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/process/kill.h"
 #include "base/process/memory.h"
-#include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_com_initializer.h"
@@ -45,16 +44,30 @@ void PureCall() {
   __debugbreak();
 }
 
-namespace {
-
-int RunTests(int argc, char** argv) {
+int main(int argc, char **argv) {
   // For ATL in VS2010 and up, ChromeFrameUnittestsModule::InitializeCom() is
   // not called, so we init COM here.
   base::win::ScopedCOMInitializer com_initializer_;
 
   ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected();
+  base::EnableTerminationOnHeapCorruption();
+  base::PlatformThread::SetName("ChromeFrame tests");
+
+  _set_purecall_handler(PureCall);
 
   base::TestSuite test_suite(argc, argv);
+
+  SetConfigBool(kChromeFrameHeadlessMode, true);
+  SetConfigBool(kChromeFrameAccessibleMode, true);
+
+  base::ProcessHandle crash_service = NULL;
+  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kNoCrashService)) {
+    crash_service = chrome_frame_test::StartCrashService();
+
+    breakpad.reset(InitializeCrashReporting(HEADLESS));
+  }
 
   // Install the log collector before anything else that adds a Google Test
   // event listener so that it's the last one to run after each test (the
@@ -88,39 +101,10 @@ int RunTests(int argc, char** argv) {
     ret = test_suite.Run();
   }
 
-  return ret;
-}
-
-}  // namespace
-
-int main(int argc, char **argv) {
-  CommandLine::Init(argc, argv);
-
-  base::EnableTerminationOnHeapCorruption();
-
-  _set_purecall_handler(PureCall);
-
-  SetConfigBool(kChromeFrameHeadlessMode, true);
-  SetConfigBool(kChromeFrameAccessibleMode, true);
-
-  base::ProcessHandle crash_service = NULL;
-  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad;
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kNoCrashService)) {
-    crash_service = chrome_frame_test::StartCrashService();
-
-    breakpad.reset(InitializeCrashReporting(HEADLESS));
-  }
-
-  int exit_code = base::LaunchUnitTests(argc,
-                                        argv,
-                                        base::Bind(&RunTests, argc, argv));
-
   DeleteConfigValue(kChromeFrameHeadlessMode);
   DeleteConfigValue(kChromeFrameAccessibleMode);
 
   if (crash_service)
     base::KillProcess(crash_service, 0, false);
-
-  return exit_code;
+  return ret;
 }
