@@ -524,7 +524,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         userAgentShadowRoot()->insertBefore(placeholder, innerTextElement()->nextSibling());
     }
-    placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
+    placeholder->setTextContent(placeholderText);
 }
 
 bool HTMLTextAreaElement::isInteractiveContent() const

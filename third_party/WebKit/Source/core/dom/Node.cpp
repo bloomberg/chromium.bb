@@ -1594,7 +1594,7 @@ String Node::textContent(bool convertBRsToNewlines) const
     return isNullString ? String() : content.toString();
 }
 
-void Node::setTextContent(const String& text, ExceptionState& exceptionState)
+void Node::setTextContent(const String& text)
 {
     switch (nodeType()) {
         case TEXT_NODE:
@@ -1611,7 +1611,7 @@ void Node::setTextContent(const String& text, ExceptionState& exceptionState)
             ChildListMutationScope mutation(*this);
             container->removeChildren();
             if (!text.isEmpty())
-                container->appendChild(document().createTextNode(text), exceptionState);
+                container->appendChild(document().createTextNode(text), ASSERT_NO_EXCEPTION);
             return;
         }
         case DOCUMENT_NODE:

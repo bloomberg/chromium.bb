@@ -215,7 +215,7 @@ public:
     String lookupNamespacePrefix(const AtomicString& namespaceURI, const Element* originalElement) const;
 
     String textContent(bool convertBRsToNewlines = false) const;
-    void setTextContent(const String&, ExceptionState&);
+    void setTextContent(const String&);
 
     Node& lastDescendant() const;
 

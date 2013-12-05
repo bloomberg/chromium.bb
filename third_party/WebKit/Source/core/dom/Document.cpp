@@ -3960,7 +3960,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         CString originalBytes = m_titleElement->textContent().latin1();
         OwnPtr<TextCodec> codec = newTextCodec(newData.encoding);
         String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), true);
-        m_titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION);
+        m_titleElement->setTextContent(correctlyDecodedTitle);
     }
 
     m_encodingData = newData;

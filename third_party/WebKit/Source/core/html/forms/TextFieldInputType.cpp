@@ -404,7 +404,7 @@ void TextFieldInputType::updatePlaceholderText()
         previous->parentNode()->insertBefore(placeholder, previous->nextSibling());
         ASSERT_WITH_SECURITY_IMPLICATION(placeholder->parentNode() == previous->parentNode());
     }
-    placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
+    placeholder->setTextContent(placeholderText);
 }
 
 bool TextFieldInputType::appendFormData(FormDataList& list, bool multipart) const
