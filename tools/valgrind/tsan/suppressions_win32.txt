@@ -273,3 +273,10 @@
   fun:CoCreateInstance
   fun:base::win::ScopedComPtr::CreateInstance
 }
+{
+  bug_326282
+  ThreadSanitizer:Race
+  ...
+  fun:file_util::OpenFile
+  fun:base::ReadFileToString
+}
