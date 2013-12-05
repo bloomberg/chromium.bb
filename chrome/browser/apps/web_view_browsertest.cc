@@ -819,10 +819,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
   TestHelper("testContentLoadEvent", "web_view/shim", NO_TEST_SERVER);
 }
 
+#if !defined(OS_MACOSX)  // http://crbug.com/326330
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDeclarativeWebRequestAPI) {
   TestHelper("testDeclarativeWebRequestAPI",
              "web_view/shim",
              NEEDS_TEST_SERVER);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
