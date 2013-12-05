@@ -213,9 +213,9 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static void DestroyClipboardForCurrentThread();
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
-  // contents of |objects|. On Windows they are copied to the system clipboard.
-  // On linux they are copied into a structure owned by the Clipboard object and
-  // kept until the system clipboard is set again.
+  // contents of |objects|.
+  // Note: If you're thinking about calling this, you should probably be using
+  // ScopedClipboardWriter instead.
   void WriteObjects(ClipboardType type, const ObjectMap& objects);
 
   // Returns a sequence number which uniquely identifies clipboard state.

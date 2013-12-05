@@ -35,6 +35,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -76,18 +77,16 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
   }
 
   // Only cares about HTML because ChromeOS doesn't need other formats.
-  ui::Clipboard::ObjectMapParam param(
-      kImageClipboardFormatPrefix,
-      kImageClipboardFormatPrefix + ::strlen(kImageClipboardFormatPrefix));
-  param.insert(param.end(), encoded.data(), encoded.data() + encoded.size());
-  param.insert(
-      param.end(),
-      kImageClipboardFormatSuffix,
-      kImageClipboardFormatSuffix + ::strlen(kImageClipboardFormatSuffix));
-  ui::Clipboard::ObjectMap mapping;
-  mapping[ui::Clipboard::CBF_HTML].push_back(param);
-  ui::Clipboard::GetForCurrentThread()->WriteObjects(
-      ui::CLIPBOARD_TYPE_COPY_PASTE, mapping);
+  // TODO(dcheng): Why don't we take advantage of the ability to write bitmaps
+  // to the clipboard here?
+  {
+    ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
+                                  ui::CLIPBOARD_TYPE_COPY_PASTE);
+    std::string html(kImageClipboardFormatPrefix);
+    html += encoded;
+    html += kImageClipboardFormatSuffix;
+    scw.WriteHTML(UTF8ToUTF16(html), std::string());
+  }
   content::RecordAction(content::UserMetricsAction("Screenshot_CopyClipboard"));
 }
 
