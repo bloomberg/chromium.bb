@@ -673,6 +673,7 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
       item.type = ProgressItemType.DELETE;
       item.message = ProgressCenterHandler.getDeleteMessage_(event);
       item.progressMax = 100;
+      item.progressValue = 0;
       // TODO(hirono): Specify the cancel handler to the item.
       this.pendingItems_[item.id] = item;
       setTimeout(this.showPendingItem_.bind(this, item),

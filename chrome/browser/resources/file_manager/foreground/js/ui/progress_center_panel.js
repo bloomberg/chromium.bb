@@ -168,6 +168,7 @@ ProgressCenterPanel.prototype.reset = function(opt_force) {
 
   // Hide the progress center.
   this.element_.hidden = true;
+  this.closeViewItem_.querySelector('.progress-track').hidden = true;
   this.element_.classList.remove('opened');
 };
 
