@@ -7,7 +7,6 @@
 #include "ash/ash_constants.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/painter.h"
 
 namespace ash {
 namespace internal {
@@ -18,12 +17,15 @@ const char ActionableView::kViewClassName[] = "tray/ActionableView";
 ActionableView::ActionableView()
     : has_capture_(false) {
   set_focusable(true);
-
-  focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 1, 3, 2)).Pass();
 }
 
 ActionableView::~ActionableView() {
+}
+
+void ActionableView::OnPaintFocus(gfx::Canvas* canvas) {
+  gfx::Rect rect(GetFocusBounds());
+  rect.Inset(1, 1, 3, 2);
+  canvas->DrawSolidFocusRect(rect, kFocusBorderColor);
 }
 
 gfx::Rect ActionableView::GetFocusBounds() {
@@ -68,7 +70,8 @@ void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void ActionableView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
+  if (HasFocus())
+    OnPaintFocus(canvas);
 }
 
 void ActionableView::OnFocus() {
