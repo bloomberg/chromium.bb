@@ -107,6 +107,20 @@
             },
           ],
         }],
+        ['chromeos==1', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/resources/chromeos/',
+              'files': [
+                'browser/resources/chromeos/chromevox/',
+                'third_party/chromevox/',
+              ],
+            },
+          ],
+          'dependencies': [
+            '../third_party/liblouis/liblouis_untrusted.gyp:liblouis_nacl_wrapper_untrusted',
+          ],
+        }],
       ],
     },
     {
