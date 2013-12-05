@@ -431,6 +431,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
         }
     }
 
+    ASSERT(inactive.isEmpty() || cssAnimations);
     for (HashSet<AtomicString>::const_iterator iter = inactive.begin(); iter != inactive.end(); ++iter)
         update->cancelAnimation(*iter, cssAnimations->m_animations.get(*iter));
 }
@@ -691,6 +692,7 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
 
         HashSet<const Player*> cancelledPlayers;
         if (!update->cancelledTransitions().isEmpty()) {
+            ASSERT(activeAnimations);
             const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
             for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
                 ASSERT(transitionMap.contains(*iter));
