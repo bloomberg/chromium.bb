@@ -78,8 +78,10 @@ static jstring FixupUrl(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, url),
       base::android::ConvertJavaStringToUTF8(env, desired_tld));
 
-  return base::android::ConvertUTF8ToJavaString(env, fixed_url.spec())
-      .Release();
+
+  return fixed_url.is_valid() ?
+      base::android::ConvertUTF8ToJavaString(env, fixed_url.spec()).Release() :
+      NULL;
 }
 
 // Register native methods
