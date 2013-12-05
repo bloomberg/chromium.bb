@@ -130,6 +130,14 @@ cr.define('print_preview', function() {
      */
     this.isPrivetDestinationSearchInProgress_ = false;
 
+    /**
+     * Whether the destination store has already loaded or is loading all privet
+     * destinations.
+     * @type {boolean}
+     * @private
+     */
+    this.hasLoadedAllPrivetDestinations_ = false;
+
     this.addEventListeners_();
     this.reset_();
   };
@@ -434,10 +442,12 @@ cr.define('print_preview', function() {
 
     /** Initiates loading of privet print destinations. */
     startLoadPrivetDestinations: function() {
-      this.isPrivetDestinationSearchInProgress_ = true;
-      this.nativeLayer_.startGetPrivetDestinations();
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
+      if (!this.hasLoadedAllPrivetDestinations_) {
+        this.isPrivetDestinationSearchInProgress_ = true;
+        this.nativeLayer_.startGetPrivetDestinations();
+        cr.dispatchSimpleEvent(
+            this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
+      }
     },
 
     /**
@@ -699,6 +709,7 @@ cr.define('print_preview', function() {
      */
     onPrivetPrinterSearchDone_: function() {
       this.isPrivetDestinationSearchInProgress_ = false;
+      this.hasLoadedAllPrivetDestinations_ = true;
       cr.dispatchSimpleEvent(
         this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
     },
