@@ -300,6 +300,9 @@ bool ResourceMetadataStorage::UpgradeOldDB(
       return false;
   }
 
+  if (!base::PathExists(resource_map_path))
+    return false;
+
   // Open DB.
   leveldb::DB* db = NULL;
   leveldb::Options options;
