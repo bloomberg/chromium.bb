@@ -463,6 +463,24 @@ ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 
 
 {##############################################################################}
+{% block wrap %}
+{% if special_wrap_for %}
+v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    {% for special_wrap_interface in special_wrap_for %}
+    if (impl->is{{special_wrap_interface}}())
+        return wrap(to{{special_wrap_interface}}(impl), creationContext, isolate);
+    {% endfor %}
+    v8::Handle<v8::Object> wrapper = {{v8_class}}::createWrapper(impl, creationContext, isolate);
+    return wrapper;
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block create_wrapper %}
 {% if not has_custom_to_v8 %}
 v8::Handle<v8::Object> {{v8_class}}::createWrapper(PassRefPtr<{{cpp_class}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

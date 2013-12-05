@@ -36,5 +36,6 @@
     CustomVisitDOMWrapper, // Conflicts with [GenerateVisitDOMWrapper]
     CustomWrap, // Conflicts with [CustomToV8]
     DependentLifetime,  // Covered by [ActiveDOMObject]
+    SpecialWrapFor=Interface1|Interface2,  // Conflicts with [CustomToV8]
 ] interface TestInterfacePython2 {
 };

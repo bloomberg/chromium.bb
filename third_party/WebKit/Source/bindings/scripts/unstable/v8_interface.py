@@ -78,6 +78,14 @@ def generate_interface(interface):
         includes.update(['bindings/v8/V8GCController.h',
                          'core/dom/Element.h'])
 
+    # [SpecialWrapFor]
+    if 'SpecialWrapFor' in extended_attributes:
+        special_wrap_for = extended_attributes['SpecialWrapFor'].split('|')
+    else:
+        special_wrap_for = []
+    for special_wrap_interface in special_wrap_for:
+        v8_types.add_includes_for_type(special_wrap_interface)
+
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
@@ -93,6 +101,7 @@ def generate_interface(interface):
         'is_check_security': is_check_security,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
+        'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),
     }
 

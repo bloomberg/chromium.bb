@@ -34,6 +34,8 @@
 #include "V8TestInterfacePython2.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "V8Interface1.h"
+#include "V8Interface2.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -118,6 +120,17 @@ bool V8TestInterfacePython2::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
+}
+
+v8::Handle<v8::Object> wrap(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    if (impl->isInterface1())
+        return wrap(toInterface1(impl), creationContext, isolate);
+    if (impl->isInterface2())
+        return wrap(toInterface2(impl), creationContext, isolate);
+    v8::Handle<v8::Object> wrapper = V8TestInterfacePython2::createWrapper(impl, creationContext, isolate);
+    return wrapper;
 }
 
 v8::Handle<v8::Object> V8TestInterfacePython2::createWrapper(PassRefPtr<TestInterfacePython2> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

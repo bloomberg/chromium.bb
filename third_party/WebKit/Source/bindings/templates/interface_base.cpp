@@ -126,6 +126,7 @@ template <typename T> void V8_USE(T) { }
 {% block install_per_context_attributes %}{% endblock %}
 {% block install_per_context_methods %}{% endblock %}
 {% block to_active_dom_object %}{% endblock %}
+{% block wrap %}{% endblock %}
 {% block create_wrapper %}{% endblock %}
 {% block deref_object_and_to_v8_no_inline %}{% endblock %}
 } // namespace WebCore
