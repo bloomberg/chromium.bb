@@ -45,6 +45,8 @@ env_pnacl_cc_called.Append(
     CPPDEFINES=['FUNCTION_PREFIX=pnacl', 'INVOCATION_PREFIX=pnacl'])
 
 gcc_cc_env = env_pnacl_cc.PNaClGetNNaClEnv()
+# GCC's C++ EH support requires GCC's runtime, which we don't link with.
+gcc_cc_env.Append(CXXFLAGS=['-fno-exceptions'])
 
 env_gcc_cc_calling = gcc_cc_env.Clone()
 env_gcc_cc_calling.Append(

@@ -664,10 +664,17 @@ int main() {
   RUN_TEST(test_dependent_exception_and_dtor());
   RUN_TEST(test_dependent_exception_and_exception_spec());
 #endif
+
+  // The ARM EABI version of upstream libstdc++ has a bug that bites this case.
+  // See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=59392 for details.
+  // TODO(mcgrathr): If/when that gets fixed upstream, merge the fix into
+  // arm-nacl-gcc and remove this conditionalization.
+#if defined(__pnacl__) || !defined(__arm__)
   // This leaves behind an active exception because of its use of
   // longjmp() to exit from a std::set_terminate() handler, so put it
   // last, just in case that accidentally affects other tests.
   RUN_TEST(test_exception_spec_bad_throw_from_unexpected_handler());
+#endif
 
   // Indicate success.
   return 55;
