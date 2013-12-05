@@ -26,6 +26,8 @@ M D SF: Switch statement found in org.chromium.chrome.browser.database.SQLiteCur
 M D SF: Switch statement found in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent) where default case is missing  At GestureDetector.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getBooleanValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setBooleanValue(boolean) is synchronized  At JavaBridgeReturnValuesTest.java
 M M UG: org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.getStringValue() is unsynchronized, org.chromium.content.browser.JavaBridgeReturnValuesTest$TestObject.setStringValue(String) is synchronized  At JavaBridgeReturnValuesTest.java
+M M UW: Unconditional wait in org.chromium.media.AudioManagerAndroid.init()  At AudioManagerAndroid.java
+M M Wa: Wait not in loop in org.chromium.media.AudioManagerAndroid.init()  At AudioManagerAndroid.java
 M V EI2: new org.chromium.chrome.browser.FindMatchRectsDetails(int, RectF[], RectF) may expose internal representation by storing an externally mutable object into FindMatchRectsDetails.rects  At FindMatchRectsDetails.java
 M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setFavicon(byte[]) may expose internal representation by storing an externally mutable object into ChromeBrowserProvider$BookmarkNode.mFavicon  At ChromeBrowserProvider.java
 M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setThumbnail(byte[]) may expose internal representation by storing an externally mutable object into ChromeBrowserProvider$BookmarkNode.mThumbnail  At ChromeBrowserProvider.java

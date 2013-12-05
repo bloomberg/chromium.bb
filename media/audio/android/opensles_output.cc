@@ -28,6 +28,7 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       active_buffer_index_(0),
       buffer_size_bytes_(0),
       started_(false),
+      muted_(false),
       volume_(1.0) {
   DVLOG(2) << "OpenSLESOutputStream::OpenSLESOutputStream()";
   format_.formatType = SL_DATAFORMAT_PCM;
@@ -170,6 +171,12 @@ void OpenSLESOutputStream::SetVolume(double volume) {
 void OpenSLESOutputStream::GetVolume(double* volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
   *volume = static_cast<double>(volume_);
+}
+
+void OpenSLESOutputStream::SetMute(bool muted) {
+  DVLOG(2) << "OpenSLESOutputStream::SetMute(" << muted << ")";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  muted_ = muted;
 }
 
 bool OpenSLESOutputStream::CreatePlayer() {
@@ -324,7 +331,7 @@ void OpenSLESOutputStream::FillBufferQueueNoLock() {
   // Note: If the internal representation ever changes from 16-bit PCM to
   // raw float, the data must be clipped and sanitized since it may come
   // from an untrusted source such as NaCl.
-  audio_bus_->Scale(volume_);
+  audio_bus_->Scale(muted_ ? 0.0f : volume_);
   audio_bus_->ToInterleaved(frames_filled,
                             format_.bitsPerSample / 8,
                             audio_data_[active_buffer_index_]);
