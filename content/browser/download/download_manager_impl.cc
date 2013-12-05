@@ -413,7 +413,7 @@ void DownloadManagerImpl::StartDownloadWithId(
       file_factory_->CreateFile(
           info->save_info.Pass(), default_download_directory,
           info->url(), info->referrer_url,
-          delegate_->GenerateFileHash(),
+          delegate_ && delegate_->GenerateFileHash(),
           stream.Pass(), download->GetBoundNetLog(),
           download->DestinationObserverAsWeakPtr()));
 
