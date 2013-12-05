@@ -19,7 +19,8 @@ SyntheticPinchGesture::SyntheticPinchGesture(
       current_y_1_(0.0f),
       target_y_0_(0.0f),
       target_y_1_(0.0f),
-      started_(false) {
+      gesture_source_type_(SyntheticGestureParams::DEFAULT_INPUT),
+      state_(SETUP) {
   DCHECK_GE(params_.total_num_pixels_covered, 0);
 }
 
@@ -27,40 +28,70 @@ SyntheticPinchGesture::~SyntheticPinchGesture() {}
 
 SyntheticGesture::Result SyntheticPinchGesture::ForwardInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
+  if (state_ == SETUP) {
+    gesture_source_type_ = params_.gesture_source_type;
+    if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
+      gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
 
-  SyntheticGestureParams::GestureSourceType source =
-      params_.gesture_source_type;
-  if (source == SyntheticGestureParams::DEFAULT_INPUT)
-    source = target->GetDefaultSyntheticGestureSourceType();
+    if (!target->SupportsSyntheticGestureSourceType(gesture_source_type_))
+      return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
 
-  if (!target->SupportsSyntheticGestureSourceType(source))
-    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
-
-  if (source == SyntheticGestureParams::TOUCH_INPUT)
-    return ForwardTouchInputEvents(interval, target);
-  else
-    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
-}
-
-SyntheticGesture::Result SyntheticPinchGesture::ForwardTouchInputEvents(
-    const base::TimeDelta& interval, SyntheticGestureTarget* target) {
-  if (!started_) {
-    if (params_.total_num_pixels_covered == 0)
-      return SyntheticGesture::GESTURE_FINISHED;
-
-    SetupCoordinates(target);
-
-    touch_event_.PressPoint(params_.anchor.x(), current_y_0_);
-    touch_event_.PressPoint(params_.anchor.x(), current_y_1_);
-    ForwardTouchEvent(target);
-    started_ = true;
+    state_ = STARTED;
   }
 
+  DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
+  if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT)
+    ForwardTouchInputEvents(interval, target);
+  else
+    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
+
+  return (state_ == DONE) ? SyntheticGesture::GESTURE_FINISHED
+                          : SyntheticGesture::GESTURE_RUNNING;
+}
+
+void SyntheticPinchGesture::ForwardTouchInputEvents(
+    const base::TimeDelta& interval, SyntheticGestureTarget* target) {
+  switch (state_) {
+    case STARTED:
+      // Check for an early finish.
+      if (params_.total_num_pixels_covered == 0) {
+        state_ = DONE;
+        break;
+      }
+      SetupCoordinates(target);
+      PressTouchPoints(target);
+      state_ = MOVING;
+      break;
+    case MOVING:
+      UpdateTouchPoints(interval);
+      MoveTouchPoints(target);
+      if (HasReachedTarget()) {
+        ReleaseTouchPoints(target);
+        state_ = DONE;
+      }
+      break;
+    case SETUP:
+      NOTREACHED() << "State SETUP invalid for synthetic pinch.";
+    case DONE:
+      NOTREACHED() << "State DONE invalid for synthetic pinch.";
+  }
+}
+
+void SyntheticPinchGesture::UpdateTouchPoints(base::TimeDelta interval) {
   // Compute the delta for the first pointer. The other one moves exactly
   // the same but in the opposite direction.
   float delta = GetDeltaForPointer0(interval);
   current_y_0_ += delta;
   current_y_1_ -= delta;
+}
+
+void SyntheticPinchGesture::PressTouchPoints(SyntheticGestureTarget* target) {
+  touch_event_.PressPoint(params_.anchor.x(), current_y_0_);
+  touch_event_.PressPoint(params_.anchor.x(), current_y_1_);
+  ForwardTouchEvent(target);
+}
+
+void SyntheticPinchGesture::MoveTouchPoints(SyntheticGestureTarget* target) {
   // The current pointer positions are stored as float but the pointer
   // coordinates of the input event are integers. Floor both positions so that
   // in case of an odd distance one of the pointers (the one whose position goes
@@ -69,18 +100,17 @@ SyntheticGesture::Result SyntheticPinchGesture::ForwardTouchInputEvents(
   touch_event_.MovePoint(0, params_.anchor.x(), floor(current_y_0_));
   touch_event_.MovePoint(1, params_.anchor.x(), floor(current_y_1_));
   ForwardTouchEvent(target);
-
-  if (HasFinished()) {
-    touch_event_.ReleasePoint(0);
-    touch_event_.ReleasePoint(1);
-    ForwardTouchEvent(target);
-    return SyntheticGesture::GESTURE_FINISHED;
-  }
-
-  return SyntheticGesture::GESTURE_RUNNING;
 }
 
-void SyntheticPinchGesture::ForwardTouchEvent(SyntheticGestureTarget* target) {
+void SyntheticPinchGesture::ReleaseTouchPoints(SyntheticGestureTarget* target) {
+  touch_event_.ReleasePoint(0);
+  touch_event_.ReleasePoint(1);
+  ForwardTouchEvent(target);
+}
+
+
+void SyntheticPinchGesture::ForwardTouchEvent(SyntheticGestureTarget* target)
+    const {
   target->DispatchInputEventToPlatform(
       InputEvent(touch_event_, ui::LatencyInfo(), false));
 }
@@ -129,7 +159,7 @@ float SyntheticPinchGesture::ComputeAbsoluteRemainingDistance() const {
   return 2 * distance_0;
 }
 
-bool SyntheticPinchGesture::HasFinished() const {
+bool SyntheticPinchGesture::HasReachedTarget() const {
   return ComputeAbsoluteRemainingDistance() == 0;
 }
 
