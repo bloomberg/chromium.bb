@@ -59,4 +59,9 @@ if env.Bit('bitcode'):
   AddLibcTest(env, 'printf_to_puts.c', '0',
               compile_env=unopt_env, link_env=opt_env)
 
-AddLibcTest(env, 'posix_memalign.c')
+# This was only made to compile without warnings/hacks after modifying newlib
+# headers, so the PNaCl archived frontend test with older headers can't
+# compile the non-hacky version of the test. We don't test archived
+# GCC toolchains, so always let those run the test.
+if not env.Bit('bitcode') or env['TOOLCHAIN_FEATURE_VERSION'] >= 3:
+  AddLibcTest(env, 'posix_memalign.c')
