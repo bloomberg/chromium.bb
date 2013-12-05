@@ -7,7 +7,6 @@
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/test/test_content_browser_client.h"
+#include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "content/browser/frame_host/test_render_frame_host.h"
+#include "content/test/test_render_frame_host.h"
 
 namespace content {
 

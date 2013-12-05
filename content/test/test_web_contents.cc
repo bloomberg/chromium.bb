@@ -9,7 +9,6 @@
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_registrar.h"
@@ -18,6 +17,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/test/test_render_view_host.h"
 
 namespace content {
 

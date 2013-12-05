@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
+#ifndef CONTENT_TEST_TEST_BACKING_STORE_H_
+#define CONTENT_TEST_TEST_BACKING_STORE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -36,4 +36,4 @@ class TestBackingStore : public BackingStore {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
+#endif  // CONTENT_TEST_TEST_BACKING_STORE_H_

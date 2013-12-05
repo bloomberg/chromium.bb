@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/test_render_frame_host.h"
+#include "content/test/test_render_frame_host.h"
 
 namespace content {
 

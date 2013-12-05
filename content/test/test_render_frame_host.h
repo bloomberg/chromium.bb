@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FRAME_HOST_TEST_RENDER_FRAME_HOST_H_
-#define CONTENT_BROWSER_FRAME_HOST_TEST_RENDER_FRAME_HOST_H_
+#ifndef CONTENT_TEST_TEST_RENDER_FRAME_HOST_H_
+#define CONTENT_TEST_TEST_RENDER_FRAME_HOST_H_
 
 #include "base/basictypes.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -28,4 +28,4 @@ class TestRenderFrameHost : public RenderFrameHostImpl {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_FRAME_HOST_TEST_RENDER_FRAME_HOST_H_
+#endif  // CONTENT_TEST_TEST_RENDER_FRAME_HOST_H_

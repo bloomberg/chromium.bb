@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_
+#ifndef CONTENT_TEST_TEST_RENDER_VIEW_HOST_H_
+#define CONTENT_TEST_TEST_RENDER_VIEW_HOST_H_
 
 #include <string>
 #include <vector>
@@ -383,4 +383,4 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_
+#endif  // CONTENT_TEST_TEST_RENDER_VIEW_HOST_H_
