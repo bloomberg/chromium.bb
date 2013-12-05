@@ -58,13 +58,18 @@ FileTasks.WEB_STORE_HANDLER_BASE_URL =
  * Returns URL of the Chrome Web Store which show apps supporting the given
  * file-extension and mime-type.
  *
- * @param {string} extension Extension of the file.
+ * @param {string} extension Extension of the file (with the first dot).
  * @param {string} mimeType Mime type of the file.
  * @return {string} URL
  */
 FileTasks.createWebStoreLink = function(extension, mimeType) {
   if (!extension)
     return FileTasks.CHROME_WEB_STORE_URL;
+
+  if (extension[0] === '.')
+    extension = extension.substr(1);
+  else
+    console.warn('Please pass an extension with a dot to createWebStoreLink.');
 
   var url = FileTasks.WEB_STORE_HANDLER_BASE_URL;
   url += '?_fe=' + extension.toLowerCase().replace(/[^\w]/g, '');
@@ -144,7 +149,7 @@ FileTasks.knownExtensions_ = [
  * @type {Array.<string>}
  */
 FileTasks.EXECUTABLE_EXTENSIONS = Object.freeze([
-  '.exe', '.lnk', '.deb', '.dmg', 'jar', 'msi',
+  '.exe', '.lnk', '.deb', '.dmg', '.jar', '.msi',
 ]);
 
 /**
@@ -154,7 +159,7 @@ FileTasks.EXECUTABLE_EXTENSIONS = Object.freeze([
  * @private
  */
 FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
-  'crdownload', 'dsc', 'inf',
+  '.crdownload', '.dsc', '.inf',
 ]);
 
 /**
@@ -324,19 +329,17 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
     return;
 
   var filename = entries[0].name;
-  var extension = filename.lastIndexOf('.') !== -1 ?
-      filename.substr(filename.lastIndexOf('.') + 1) : '';
+  var extension = PathUtil.splitExtension(filename)[1];
   var mimeType = this.mimeTypes_[0];
 
   var showAlert = function() {
-    var messageString =
-        extension === 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
-                              'NO_ACTION_FOR_FILE';
+    var messageStringId =
+        extension === '.exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
+                               'NO_ACTION_FOR_FILE';
     var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
-    var text = loadTimeData.getStringF(
-        messageString,
-        webStoreUrl,
-        FileTasks.NO_ACTION_FOR_FILE_URL);
+    var text = strf(messageStringId,
+                    webStoreUrl,
+                    FileTasks.NO_ACTION_FOR_FILE_URL);
     this.fileManager_.alert.showHtml(filename, text, function() {});
     callback(false, entries);
   }.bind(this);
