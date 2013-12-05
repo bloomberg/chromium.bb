@@ -43,10 +43,11 @@ struct URLKeywordInfo;
 // importer host, who actually does the writing.
 class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
  public:
-  ExternalProcessImporterClient(ExternalProcessImporterHost* importer_host,
-                                const importer::SourceProfile& source_profile,
-                                uint16 items,
-                                InProcessImporterBridge* bridge);
+  ExternalProcessImporterClient(
+      base::WeakPtr<ExternalProcessImporterHost> importer_host,
+      const importer::SourceProfile& source_profile,
+      uint16 items,
+      InProcessImporterBridge* bridge);
 
   // Launches the task to start the external process.
   void Start();
@@ -124,8 +125,10 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   // Notifications received from the ProfileImportProcessHost are passed back
   // to process_importer_host_, which calls the ProfileWriter to record the
   // import data.  When the import process is done, process_importer_host_
-  // deletes itself.
-  ExternalProcessImporterHost* process_importer_host_;
+  // deletes itself. This is a weak ptr so that any messages received after
+  // the host has deleted itself are ignored (e.g., it's possible to receive
+  // OnProcessCrashed() after NotifyImportEnded()).
+  base::WeakPtr<ExternalProcessImporterHost> process_importer_host_;
 
   // Handles sending messages to the external process.  Deletes itself when
   // the external process dies (see

@@ -21,7 +21,7 @@ using content::BrowserThread;
 using content::UtilityProcessHost;
 
 ExternalProcessImporterClient::ExternalProcessImporterClient(
-    ExternalProcessImporterHost* importer_host,
+    base::WeakPtr<ExternalProcessImporterHost> importer_host,
     const importer::SourceProfile& source_profile,
     uint16 items,
     InProcessImporterBridge* bridge)
@@ -65,7 +65,10 @@ void ExternalProcessImporterClient::OnProcessCrashed(int exit_code) {
   if (cancelled_)
     return;
 
-  process_importer_host_->Cancel();
+  // If the host is still around, cancel the import; otherwise it means the
+  // import was already cancelled or completed and this message can be dropped.
+  if (process_importer_host_.get())
+    process_importer_host_->Cancel();
 }
 
 bool ExternalProcessImporterClient::OnMessageReceived(
@@ -261,7 +264,7 @@ void ExternalProcessImporterClient::Cleanup() {
   if (cancelled_)
     return;
 
-  if (process_importer_host_)
+  if (process_importer_host_.get())
     process_importer_host_->NotifyImportEnded();
   Release();
 }

@@ -30,13 +30,13 @@ ExternalProcessImporterHost::ExternalProcessImporterHost()
       client_(NULL),
       items_(0),
       cancelled_(false),
-      import_process_launched_(false),
       weak_ptr_factory_(this) {
 }
 
 void ExternalProcessImporterHost::Cancel() {
   cancelled_ = true;
-  if (import_process_launched_)
+  // There is only a |client_| if the import was started.
+  if (client_)
     client_->Cancel();
   NotifyImportEnded();  // Tells the observer that we're done, and deletes us.
 }
@@ -110,9 +110,8 @@ void ExternalProcessImporterHost::LaunchImportIfReady() {
   InProcessImporterBridge* bridge =
       new InProcessImporterBridge(writer_.get(),
                                   weak_ptr_factory_.GetWeakPtr());
-  client_ = new ExternalProcessImporterClient(this, source_profile_, items_,
-                                              bridge);
-  import_process_launched_ = true;
+  client_ = new ExternalProcessImporterClient(
+      weak_ptr_factory_.GetWeakPtr(), source_profile_, items_, bridge);
   client_->Start();
 }
 
