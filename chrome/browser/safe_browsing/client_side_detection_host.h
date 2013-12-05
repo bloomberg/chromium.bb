@@ -52,7 +52,16 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   virtual void OnSafeBrowsingHit(
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
 
+  // Called when the SafeBrowsingService finds a match on the SB lists.
+  // Called on the UI thread. Called even if the resource is whitelisted.
+  virtual void OnSafeBrowsingMatch(
+      const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
+
   virtual scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
+
+  // Returns whether the current page contains a malware or phishing safe
+  // browsing match.
+  bool DidPageReceiveSafeBrowsingMatch() const;
 
  protected:
   explicit ClientSideDetectionHost(content::WebContents* tab);
@@ -107,7 +116,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // interstitial for the current page.  This is only true if the user has
   // actually clicked through the warning.  This method is called on the UI
   // thread.
-  bool DidShowSBInterstitial();
+  bool DidShowSBInterstitial() const;
 
   // Used for testing.  This function does not take ownership of the service
   // class.
@@ -159,6 +168,10 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Whether the malware bad ip matching and report feature is enabled.
   // This should be accessed from UI thread.
   bool malware_report_enabled_;
+
+  // Set to true if we got a match on malware or phishing for the current
+  // page load. Is reset to false when DidNavigateMainFrame is received.
+  bool malware_or_phishing_match_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };

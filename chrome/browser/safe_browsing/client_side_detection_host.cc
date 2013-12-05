@@ -47,14 +47,6 @@ namespace safe_browsing {
 const int ClientSideDetectionHost::kMaxUrlsPerIP = 20;
 const int ClientSideDetectionHost::kMaxIPsPerBrowse = 200;
 
-namespace {
-
-void EmptyUrlCheckCallback(bool processed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
-}  // namespace
-
 // This class is instantiated each time a new toplevel URL loads, and
 // asynchronously checks whether the phishing classifier should run for this
 // URL.  If so, it notifies the renderer with a StartPhishingDetection IPC.
@@ -256,7 +248,8 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
       weak_factory_(this),
       unsafe_unique_page_id_(-1),
       malware_killswitch_on_(false),
-      malware_report_enabled_(false) {
+      malware_report_enabled_(false),
+      malware_or_phishing_match_(false) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service will be NULL here in testing.
   csd_service_ = g_browser_process->safe_browsing_detection_service();
@@ -298,6 +291,8 @@ bool ClientSideDetectionHost::OnMessageReceived(const IPC::Message& message) {
 void ClientSideDetectionHost::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  malware_or_phishing_match_ = false;
+
   // TODO(noelutz): move this DCHECK to WebContents and fix all the unit tests
   // that don't call this method on the UI thread.
   // DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -366,9 +361,18 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   unsafe_resource_->callback.Reset();  // Don't do anything stupid.
 }
 
+void ClientSideDetectionHost::OnSafeBrowsingMatch(
+    const SafeBrowsingUIManager::UnsafeResource& resource) {
+  malware_or_phishing_match_ = true;
+}
+
 scoped_refptr<SafeBrowsingDatabaseManager>
 ClientSideDetectionHost::database_manager() {
-    return database_manager_;
+  return database_manager_;
+}
+
+bool ClientSideDetectionHost::DidPageReceiveSafeBrowsingMatch() const {
+  return malware_or_phishing_match_ || DidShowSBInterstitial();
 }
 
 void ClientSideDetectionHost::WebContentsDestroyed(WebContents* tab) {
@@ -463,9 +467,8 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.
         web_contents()->GetController().DiscardNonCommittedEntries();
-        resource.callback = base::Bind(&EmptyUrlCheckCallback);
-        ui_manager_->DoDisplayBlockingPage(resource);
       }
+      ui_manager_->DoDisplayBlockingPage(resource);
     }
     // If there is true phishing verdict, invalidate weakptr so that no longer
     // consider the malware vedict.
@@ -495,9 +498,8 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.
         web_contents()->GetController().DiscardNonCommittedEntries();
-        resource.callback = base::Bind(&EmptyUrlCheckCallback);
-        ui_manager_->DoDisplayBlockingPage(resource);
       }
+      ui_manager_->DoDisplayBlockingPage(resource);
     }
     // If there is true malware verdict, invalidate weakptr so that no longer
     // consider the phishing vedict.
@@ -575,7 +577,7 @@ void ClientSideDetectionHost::Observe(
   }
 }
 
-bool ClientSideDetectionHost::DidShowSBInterstitial() {
+bool ClientSideDetectionHost::DidShowSBInterstitial() const {
   if (unsafe_unique_page_id_ <= 0 || !web_contents()) {
     return false;
   }

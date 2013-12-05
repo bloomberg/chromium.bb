@@ -320,6 +320,8 @@ class MockObserver : public SafeBrowsingUIManager::Observer {
   virtual ~MockObserver() {}
   MOCK_METHOD1(OnSafeBrowsingHit,
                void(const SafeBrowsingUIManager::UnsafeResource&));
+  MOCK_METHOD1(OnSafeBrowsingMatch,
+               void(const SafeBrowsingUIManager::UnsafeResource&));
 };
 
 MATCHER_P(IsUnsafeResourceFor, url, "") {
@@ -440,6 +442,18 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     sb_service->RefreshState();
   }
 
+  void ProceedAndWhitelist(
+      const SafeBrowsingUIManager::UnsafeResource& resource) {
+    std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+    resources.push_back(resource);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&SafeBrowsingUIManager::OnBlockingPageDone,
+                   g_browser_process->safe_browsing_service()->ui_manager(),
+                   resources, true));
+    WaitForIOThread();
+  }
+
  protected:
   StrictMock<MockObserver> observer_;
 
@@ -483,10 +497,48 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   int chunk_id = 0;
   GenUrlFullhashResult(url, safe_browsing_util::kMalwareList, chunk_id,
                        &malware_full_hash);
+  EXPECT_CALL(observer_,
+              OnSafeBrowsingMatch(IsUnsafeResourceFor(url))).Times(1);
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1);
   SetupResponseForUrl(url, malware_full_hash);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(ShowingInterstitialPage());
+  g_browser_process->safe_browsing_service()->
+      ui_manager()->RemoveObserver(&observer_);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWithWhitelist) {
+  GURL url = test_server()->GetURL(kEmptyPage);
+  g_browser_process->safe_browsing_service()->
+      ui_manager()->AddObserver(&observer_);
+
+  // After adding the url to safebrowsing database and getfullhash result,
+  // we should see the interstitial page.
+  SBFullHashResult malware_full_hash;
+  int chunk_id = 0;
+  GenUrlFullhashResult(url, safe_browsing_util::kMalwareList, chunk_id,
+                       &malware_full_hash);
+  EXPECT_CALL(observer_,
+              OnSafeBrowsingMatch(IsUnsafeResourceFor(url))).Times(1);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1)
+      .WillOnce(testing::Invoke(
+          this, &SafeBrowsingServiceTest::ProceedAndWhitelist));
+  SetupResponseForUrl(url, malware_full_hash);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  // Mock calls OnBlockingPageDone set to proceed, so the interstitial
+  // is removed.
+  EXPECT_FALSE(ShowingInterstitialPage());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  // Navigate back to kEmptyPage -- should hit the whitelist, and send a match
+  // call, but no hit call.
+  EXPECT_CALL(observer_,
+              OnSafeBrowsingMatch(IsUnsafeResourceFor(url))).Times(1);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(0);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(ShowingInterstitialPage());
+
   g_browser_process->safe_browsing_service()->
       ui_manager()->RemoveObserver(&observer_);
 }
@@ -534,6 +586,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
 
   // However, when we navigate to the malware page, we should still get
   // the interstitial.
+  EXPECT_CALL(observer_, OnSafeBrowsingMatch(IsUnsafeResourceFor(malware_url)))
+      .Times(1);
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(malware_url)))
       .Times(1);
   ui_test_utils::NavigateToURL(browser(), malware_url);

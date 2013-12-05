@@ -128,10 +128,10 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
   // object.
   void InvokeOnBlockingPageComplete(const UrlCheckCallback& callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    DCHECK(!callback.is_null());
     // Note: this will delete the client object in the case of the CsdClient
     // implementation.
-    callback.Run(false);
+    if (!callback.is_null())
+      callback.Run(false);
   }
 
  protected:
@@ -326,7 +326,11 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
         GetID();
     resource.render_view_id =
         web_contents()->GetRenderViewHost()->GetRoutingID();
+    ASSERT_FALSE(csd_host_->DidPageReceiveSafeBrowsingMatch());
+    csd_host_->OnSafeBrowsingMatch(resource);
+    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     csd_host_->OnSafeBrowsingHit(resource);
+    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     resource.callback.Reset();
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
     TestUnsafeResourceCopied(resource);
@@ -353,6 +357,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.render_process_host_id = pending_rvh()->GetProcess()->GetID();
     resource.render_view_id = pending_rvh()->GetRoutingID();
+    csd_host_->OnSafeBrowsingMatch(resource);
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
 
@@ -360,6 +365,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     // a notification that it actually navigated.
     content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
 
+    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
     TestUnsafeResourceCopied(resource);
   }

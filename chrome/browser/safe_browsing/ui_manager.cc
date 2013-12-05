@@ -121,6 +121,14 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
 void SafeBrowsingUIManager::DoDisplayBlockingPage(
     const UnsafeResource& resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Indicate to interested observers that the resource in question matched the
+  // SB filters. If the resource is already whitelisted, OnSafeBrowsingHit
+  // won't be called.
+  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingMatch(resource));
+  }
+
   // Check if the user has already ignored our warning for this render_view
   // and domain.
   if (IsWhitelisted(resource)) {
@@ -290,3 +298,4 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   }
   return false;
 }
+
