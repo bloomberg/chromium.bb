@@ -6,15 +6,19 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../gin/gin.gyp:gin',
-        'hello_world_service',
         'mojo_common_lib',
+        'mojo_gles2',
+        'mojo_gles2_bindings',
+        'mojo_native_viewport_bindings',
         'mojo_system',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../gin/gin.gyp:gin',
-        'hello_world_service',
         'mojo_common_lib',
+        'mojo_gles2',
+        'mojo_gles2_bindings',
+        'mojo_native_viewport_bindings',
         'mojo_system',
       ],
       'sources': [
