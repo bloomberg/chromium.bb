@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
@@ -18,10 +19,30 @@
 
 class BookmarkNodeDataTest : public testing::Test {
  public:
-  BookmarkNodeDataTest() {}
+  BookmarkNodeDataTest() : model_(NULL) {}
+
+  virtual void SetUp() OVERRIDE {
+    profile_.reset(new TestingProfile);
+    profile_->SetID(L"id");
+    profile_->CreateBookmarkModel(false);
+    model_ = BookmarkModelFactory::GetForProfile(profile_.get());
+    test::WaitForBookmarkModelToLoad(model_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    profile_.reset();
+  }
+
+  Profile* profile() { return profile_.get(); }
+
+  BookmarkModel* model() { return model_; }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestingProfile> profile_;
+  BookmarkModel* model_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkNodeDataTest);
 };
 
 namespace {
@@ -69,15 +90,10 @@ TEST_F(BookmarkNodeDataTest, JustURL) {
 
 TEST_F(BookmarkNodeDataTest, URL) {
   // Write a single node representing a URL to the clipboard.
-  TestingProfile profile;
-  profile.SetID(L"id");
-  profile.CreateBookmarkModel(false);
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  test::WaitForBookmarkModelToLoad(model);
-  const BookmarkNode* root = model->bookmark_bar_node();
+  const BookmarkNode* root = model()->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
   const base::string16 title(ASCIIToUTF16("foo.com"));
-  const BookmarkNode* node = model->AddURL(root, 0, title, url);
+  const BookmarkNode* node = model()->AddURL(root, 0, title, url);
   BookmarkNodeData drag_data(node);
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1u, drag_data.elements.size());
@@ -88,7 +104,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   EXPECT_EQ(node->date_folder_modified(),
             drag_data.elements[0].date_folder_modified);
   ui::OSExchangeData data;
-  drag_data.Write(&profile, &data);
+  drag_data.Write(profile(), &data);
 
   // Now read the data back in.
   ui::OSExchangeData data2(CloneProvider(data));
@@ -101,7 +117,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   EXPECT_EQ(title, read_data.elements[0].title);
   EXPECT_TRUE(read_data.elements[0].date_added.is_null());
   EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
-  EXPECT_TRUE(read_data.GetFirstNode(&profile) == node);
+  EXPECT_TRUE(read_data.GetFirstNode(profile()) == node);
 
   // Make sure asking for the node with a different profile returns NULL.
   TestingProfile profile2;
@@ -117,17 +133,10 @@ TEST_F(BookmarkNodeDataTest, URL) {
 
 // Tests writing a folder to the clipboard.
 TEST_F(BookmarkNodeDataTest, Folder) {
-  TestingProfile profile;
-  profile.SetID(L"id");
-  profile.CreateBookmarkModel(false);
-
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  test::WaitForBookmarkModelToLoad(model);
-
-  const BookmarkNode* root = model->bookmark_bar_node();
-  const BookmarkNode* g1 = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
-  model->AddFolder(g1, 0, ASCIIToUTF16("g11"));
-  const BookmarkNode* g12 = model->AddFolder(g1, 0, ASCIIToUTF16("g12"));
+  const BookmarkNode* root = model()->bookmark_bar_node();
+  const BookmarkNode* g1 = model()->AddFolder(root, 0, ASCIIToUTF16("g1"));
+  model()->AddFolder(g1, 0, ASCIIToUTF16("g11"));
+  const BookmarkNode* g12 = model()->AddFolder(g1, 0, ASCIIToUTF16("g12"));
 
   BookmarkNodeData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
@@ -139,7 +148,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
             drag_data.elements[0].date_folder_modified);
 
   ui::OSExchangeData data;
-  drag_data.Write(&profile, &data);
+  drag_data.Write(profile(), &data);
 
   // Now read the data back in.
   ui::OSExchangeData data2(CloneProvider(data));
@@ -153,7 +162,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   EXPECT_TRUE(read_data.elements[0].date_folder_modified.is_null());
 
   // We should get back the same node when asking for the same profile.
-  const BookmarkNode* r_g12 = read_data.GetFirstNode(&profile);
+  const BookmarkNode* r_g12 = read_data.GetFirstNode(profile());
   EXPECT_TRUE(g12 == r_g12);
 
   // A different profile should return NULL for the node.
@@ -163,25 +172,18 @@ TEST_F(BookmarkNodeDataTest, Folder) {
 
 // Tests reading/writing a folder with children.
 TEST_F(BookmarkNodeDataTest, FolderWithChild) {
-  TestingProfile profile;
-  profile.SetID(L"id");
-  profile.CreateBookmarkModel(false);
-
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  test::WaitForBookmarkModelToLoad(model);
-
-  const BookmarkNode* root = model->bookmark_bar_node();
-  const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
+  const BookmarkNode* root = model()->bookmark_bar_node();
+  const BookmarkNode* folder = model()->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
   const base::string16 title(ASCIIToUTF16("blah2"));
 
-  model->AddURL(folder, 0, title, url);
+  model()->AddURL(folder, 0, title, url);
 
   BookmarkNodeData drag_data(folder);
 
   ui::OSExchangeData data;
-  drag_data.Write(&profile, &data);
+  drag_data.Write(profile(), &data);
 
   // Now read the data back in.
   ui::OSExchangeData data2(CloneProvider(data));
@@ -200,26 +202,19 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   EXPECT_TRUE(read_child.is_url);
 
   // And make sure we get the node back.
-  const BookmarkNode* r_folder = read_data.GetFirstNode(&profile);
+  const BookmarkNode* r_folder = read_data.GetFirstNode(profile());
   EXPECT_TRUE(folder == r_folder);
 }
 
 // Tests reading/writing of multiple nodes.
 TEST_F(BookmarkNodeDataTest, MultipleNodes) {
-  TestingProfile profile;
-  profile.SetID(L"id");
-  profile.CreateBookmarkModel(false);
-
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
-  test::WaitForBookmarkModelToLoad(model);
-
-  const BookmarkNode* root = model->bookmark_bar_node();
-  const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
+  const BookmarkNode* root = model()->bookmark_bar_node();
+  const BookmarkNode* folder = model()->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
   const base::string16 title(ASCIIToUTF16("blah2"));
 
-  const BookmarkNode* url_node = model->AddURL(folder, 0, title, url);
+  const BookmarkNode* url_node = model()->AddURL(folder, 0, title, url);
 
   // Write the nodes to the clipboard.
   std::vector<const BookmarkNode*> nodes;
@@ -227,7 +222,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   nodes.push_back(url_node);
   BookmarkNodeData drag_data(nodes);
   ui::OSExchangeData data;
-  drag_data.Write(&profile, &data);
+  drag_data.Write(profile(), &data);
 
   // Read the data back in.
   ui::OSExchangeData data2(CloneProvider(data));
@@ -250,12 +245,40 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   EXPECT_EQ(0u, read_url.children.size());
 
   // And make sure we get the node back.
-  std::vector<const BookmarkNode*> read_nodes = read_data.GetNodes(&profile);
+  std::vector<const BookmarkNode*> read_nodes = read_data.GetNodes(profile());
   ASSERT_EQ(2u, read_nodes.size());
   EXPECT_TRUE(read_nodes[0] == folder);
   EXPECT_TRUE(read_nodes[1] == url_node);
 
   // Asking for the first node should return NULL with more than one element
   // present.
-  EXPECT_TRUE(read_data.GetFirstNode(&profile) == NULL);
+  EXPECT_TRUE(read_data.GetFirstNode(profile()) == NULL);
+}
+
+// Tests reading/writing of meta info.
+TEST_F(BookmarkNodeDataTest, MetaInfo) {
+  // Create a node containing meta info.
+  const BookmarkNode* node = model()->AddURL(model()->other_node(),
+                                             0,
+                                             ASCIIToUTF16("foo bar"),
+                                             GURL("http://www.google.com"));
+  model()->SetNodeMetaInfo(node, "somekey", "somevalue");
+  model()->SetNodeMetaInfo(node, "someotherkey", "someothervalue");
+
+  BookmarkNodeData node_data(node);
+  ui::OSExchangeData data;
+  node_data.Write(profile(), &data);
+
+  // Read the data back in.
+  ui::OSExchangeData data2(CloneProvider(data));
+  BookmarkNodeData read_data;
+  EXPECT_TRUE(read_data.Read(data2));
+  EXPECT_TRUE(read_data.is_valid());
+  ASSERT_EQ(1u, read_data.elements.size());
+
+  // Verify that the read data contains the same meta info.
+  BookmarkNode::MetaInfoMap meta_info_map = read_data.elements[0].meta_info_map;
+  EXPECT_EQ(2u, meta_info_map.size());
+  EXPECT_EQ("somevalue", meta_info_map["somekey"]);
+  EXPECT_EQ("someothervalue", meta_info_map["someotherkey"]);
 }

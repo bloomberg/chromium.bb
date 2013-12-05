@@ -488,6 +488,25 @@ void BookmarkModel::SetNodeMetaInfo(const BookmarkNode* node,
                     BookmarkMetaInfoChanged(this, node));
 }
 
+void BookmarkModel::SetNodeMetaInfoMap(
+    const BookmarkNode* node,
+    const BookmarkNode::MetaInfoMap& meta_info_map) {
+  const BookmarkNode::MetaInfoMap* old_meta_info_map = node->GetMetaInfoMap();
+  if ((!old_meta_info_map && meta_info_map.empty()) ||
+      (old_meta_info_map && meta_info_map == *old_meta_info_map))
+    return;
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillChangeBookmarkMetaInfo(this, node));
+
+  AsMutable(node)->SetMetaInfoMap(meta_info_map);
+  if (store_.get())
+    store_->ScheduleSave();
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkMetaInfoChanged(this, node));
+}
+
 void BookmarkModel::DeleteNodeMetaInfo(const BookmarkNode* node,
                                        const std::string& key) {
   const BookmarkNode::MetaInfoMap* meta_info_map = node->GetMetaInfoMap();

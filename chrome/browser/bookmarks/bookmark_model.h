@@ -422,6 +422,8 @@ class BookmarkModel : public content::NotificationObserver,
   void SetNodeMetaInfo(const BookmarkNode* node,
                        const std::string& key,
                        const std::string& value);
+  void SetNodeMetaInfoMap(const BookmarkNode* node,
+                          const BookmarkNode::MetaInfoMap& meta_info_map);
   void DeleteNodeMetaInfo(const BookmarkNode* node,
                           const std::string& key);
 

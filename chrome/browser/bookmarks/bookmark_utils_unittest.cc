@@ -4,9 +4,12 @@
 
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 
+#include <vector>
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -127,6 +130,38 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
   real_parent = GetParentForNewNodes(model.bookmark_bar_node(), nodes, &index);
   EXPECT_EQ(real_parent, model.bookmark_bar_node());
   EXPECT_EQ(2, index);
+}
+
+// Verifies that meta info is copied when nodes are cloned.
+TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
+  BookmarkModel model(NULL);
+  // Add a node containing meta info.
+  const BookmarkNode* node = model.AddURL(model.other_node(),
+                                          0,
+                                          ASCIIToUTF16("foo bar"),
+                                          GURL("http://www.google.com"));
+  model.SetNodeMetaInfo(node, "somekey", "somevalue");
+  model.SetNodeMetaInfo(node, "someotherkey", "someothervalue");
+
+  // Clone node to a different folder.
+  const BookmarkNode* folder = model.AddFolder(model.bookmark_bar_node(), 0,
+                                               ASCIIToUTF16("Folder"));
+  std::vector<BookmarkNodeData::Element> elements;
+  BookmarkNodeData::Element node_data(node);
+  elements.push_back(node_data);
+  EXPECT_EQ(0, folder->child_count());
+  CloneBookmarkNode(&model, elements, folder, 0, false);
+  ASSERT_EQ(1, folder->child_count());
+
+  // Verify that the cloned node contains the same meta info.
+  const BookmarkNode* clone = folder->GetChild(0);
+  ASSERT_TRUE(clone->GetMetaInfoMap());
+  EXPECT_EQ(2u, clone->GetMetaInfoMap()->size());
+  std::string value;
+  EXPECT_TRUE(clone->GetMetaInfo("somekey", &value));
+  EXPECT_EQ("somevalue", value);
+  EXPECT_TRUE(clone->GetMetaInfo("someotherkey", &value));
+  EXPECT_EQ("someothervalue", value);
 }
 
 }  // namespace

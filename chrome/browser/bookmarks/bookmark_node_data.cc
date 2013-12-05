@@ -28,6 +28,8 @@ BookmarkNodeData::Element::Element(const BookmarkNode* node)
       date_added(node->date_added()),
       date_folder_modified(node->date_folder_modified()),
       id_(node->id()) {
+  if (node->GetMetaInfoMap())
+    meta_info_map = *node->GetMetaInfoMap();
   for (int i = 0; i < node->child_count(); ++i)
     children.push_back(Element(node->GetChild(i)));
 }
@@ -40,6 +42,12 @@ void BookmarkNodeData::Element::WriteToPickle(Pickle* pickle) const {
   pickle->WriteString(url.spec());
   pickle->WriteString16(title);
   pickle->WriteInt64(id_);
+  pickle->WriteUInt64(meta_info_map.size());
+  for (BookmarkNode::MetaInfoMap::const_iterator it = meta_info_map.begin();
+      it != meta_info_map.end(); ++it) {
+    pickle->WriteString(it->first);
+    pickle->WriteString(it->second);
+  }
   if (!is_url) {
     pickle->WriteUInt64(children.size());
     for (std::vector<Element>::const_iterator i = children.begin();
@@ -61,6 +69,19 @@ bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
   url = GURL(url_spec);
   date_added = base::Time();
   date_folder_modified = base::Time();
+  meta_info_map.clear();
+  uint64 meta_field_count;
+  if (!pickle->ReadUInt64(iterator, &meta_field_count))
+    return false;
+  for (uint64 i = 0; i < meta_field_count; ++i) {
+    std::string key;
+    std::string value;
+    if (!pickle->ReadString(iterator, &key) ||
+        !pickle->ReadString(iterator, &value)) {
+      return false;
+    }
+    meta_info_map[key] = value;
+  }
   children.clear();
   if (!is_url) {
     uint64 children_count;
