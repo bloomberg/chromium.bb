@@ -212,13 +212,12 @@ function testNormalizationFailures(importedKeys)
 
     shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: null}, keys.aesCtr, data)");
     shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR'}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array[0]}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array[16]}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array[16]}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array[16], length: 0}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array[16], length: 18}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array[16], length: -3}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array[16], length: Infinity}, keys.aesCtr, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(0)}, keys.aesCtr, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 0}, keys.aesCtr, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 18}, keys.aesCtr, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 256}, keys.aesCtr, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: -3}, keys.aesCtr, data)");
+    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: Infinity}, keys.aesCtr, data)");
 
     // Try calling with the wrong key type.
     aesCbc = {name: 'AES-CBC', iv: new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])};
