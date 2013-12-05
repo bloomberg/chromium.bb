@@ -126,7 +126,7 @@ WebViewInternal.prototype.maybeGetExperimentalEvents_ = function() {
 };
 
 WebViewInternal.prototype.maybeGetExperimentalPermissions_ = function() {
-  return ['loadplugin'];
+  return [];
 };
 
 /** @private */

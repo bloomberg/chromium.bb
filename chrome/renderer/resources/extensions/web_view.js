@@ -640,7 +640,7 @@ WebViewInternal.prototype.setupEventProperty_ = function(eventName) {
  * @private
  */
 WebViewInternal.prototype.getPermissionTypes_ = function() {
-  return ['media', 'geolocation', 'pointerLock', 'download'];
+  return ['media', 'geolocation', 'pointerLock', 'download', 'loadplugin'];
 };
 
 /**
