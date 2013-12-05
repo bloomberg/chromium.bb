@@ -121,7 +121,9 @@ TEST(ProcessMemoryTest, MacMallocFailureDoesNotTerminate) {
         buf = malloc(std::numeric_limits<size_t>::max() - (2 * PAGE_SIZE) - 1);
       },
       testing::KilledBySignal(SIGTRAP),
-      "\\*\\*\\* error: can't allocate region.*\\n?.*");
+      "\\*\\*\\* error: can't allocate region.*"
+          "(Terminating process due to a potential for future heap "
+          "corruption){0}");
 
   base::debug::Alias(buf);
 }
@@ -141,8 +143,8 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
   ASSERT_DEATH(free(buf), "attempting free on address which "
       "was not malloc\\(\\)-ed");
 #else
-  ASSERT_DEATH(free(buf), "being freed.*\\n?\\.*"
-      "\\*\\*\\* set a breakpoint in malloc_error_break to debug.*\\n?.*"
+  ASSERT_DEATH(free(buf), "being freed.*"
+      "\\*\\*\\* set a breakpoint in malloc_error_break to debug.*"
       "Terminating process due to a potential for future heap corruption");
 #endif  // ARCH_CPU_64_BITS || defined(ADDRESS_SANITIZER)
 }
