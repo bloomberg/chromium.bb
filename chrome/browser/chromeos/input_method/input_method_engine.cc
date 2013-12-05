@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
@@ -58,7 +58,7 @@ void UpdateAuxiliaryText(const std::string& text, bool is_visible) {
 
 }  // namespace
 
-InputMethodEngineIBus::InputMethodEngineIBus()
+InputMethodEngine::InputMethodEngine()
     : focused_(false),
       active_(false),
       context_id_(0),
@@ -70,7 +70,7 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       candidate_window_(new input_method::CandidateWindow()),
       window_visible_(false) {}
 
-InputMethodEngineIBus::~InputMethodEngineIBus() {
+InputMethodEngine::~InputMethodEngine() {
   input_method::InputMethodManager::Get()->RemoveInputMethodExtension(ibus_id_);
 
   // Do not unset engine before removing input method extension, above
@@ -81,7 +81,7 @@ InputMethodEngineIBus::~InputMethodEngineIBus() {
     IBusBridge::Get()->SetEngineHandler(NULL);
 }
 
-void InputMethodEngineIBus::Initialize(
+void InputMethodEngine::Initialize(
     InputMethodEngineInterface::Observer* observer,
     const char* engine_name,
     const char* extension_id,
@@ -114,14 +114,14 @@ void InputMethodEngineIBus::Initialize(
   IBusBridge::Get()->InitEngineHandler(ibus_id_, this);
 }
 
-void InputMethodEngineIBus::StartIme() {
+void InputMethodEngine::StartIme() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   if (manager && ibus_id_ == manager->GetCurrentInputMethod().id())
     Enable();
 }
 
-bool InputMethodEngineIBus::SetComposition(
+bool InputMethodEngine::SetComposition(
     int context_id,
     const char* text,
     int selection_start,
@@ -171,8 +171,8 @@ bool InputMethodEngineIBus::SetComposition(
   return true;
 }
 
-bool InputMethodEngineIBus::ClearComposition(int context_id,
-                                             std::string* error)  {
+bool InputMethodEngine::ClearComposition(int context_id,
+                                         std::string* error)  {
   if (!active_) {
     *error = kErrorNotActive;
     return false;
@@ -188,8 +188,8 @@ bool InputMethodEngineIBus::ClearComposition(int context_id,
   return true;
 }
 
-bool InputMethodEngineIBus::CommitText(int context_id, const char* text,
-                                       std::string* error) {
+bool InputMethodEngine::CommitText(int context_id, const char* text,
+                                   std::string* error) {
   if (!active_) {
     // TODO: Commit the text anyways.
     *error = kErrorNotActive;
@@ -204,12 +204,12 @@ bool InputMethodEngineIBus::CommitText(int context_id, const char* text,
   return true;
 }
 
-const InputMethodEngineIBus::CandidateWindowProperty&
-InputMethodEngineIBus::GetCandidateWindowProperty() const {
+const InputMethodEngine::CandidateWindowProperty&
+InputMethodEngine::GetCandidateWindowProperty() const {
   return candidate_window_property_;
 }
 
-void InputMethodEngineIBus::SetCandidateWindowProperty(
+void InputMethodEngine::SetCandidateWindowProperty(
     const CandidateWindowProperty& property) {
   // Type conversion from InputMethodEngineInterface::CandidateWindowProperty to
   // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
@@ -232,8 +232,8 @@ void InputMethodEngineIBus::SetCandidateWindowProperty(
   }
 }
 
-bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
-                                                      std::string* error) {
+bool InputMethodEngine::SetCandidateWindowVisible(bool visible,
+                                                  std::string* error) {
   if (!active_) {
     *error = kErrorNotActive;
     return false;
@@ -247,7 +247,7 @@ bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
   return true;
 }
 
-void InputMethodEngineIBus::SetCandidateWindowAuxText(const char* text) {
+void InputMethodEngine::SetCandidateWindowAuxText(const char* text) {
   aux_text_.assign(text);
   if (active_) {
     // Should not show auxiliary text if the whole window visibility is false.
@@ -255,7 +255,7 @@ void InputMethodEngineIBus::SetCandidateWindowAuxText(const char* text) {
   }
 }
 
-void InputMethodEngineIBus::SetCandidateWindowAuxTextVisible(bool visible) {
+void InputMethodEngine::SetCandidateWindowAuxTextVisible(bool visible) {
   aux_text_visible_ = visible;
   if (active_) {
     // Should not show auxiliary text if the whole window visibility is false.
@@ -263,7 +263,7 @@ void InputMethodEngineIBus::SetCandidateWindowAuxTextVisible(bool visible) {
   }
 }
 
-bool InputMethodEngineIBus::SetCandidates(
+bool InputMethodEngine::SetCandidates(
     int context_id,
     const std::vector<Candidate>& candidates,
     std::string* error) {
@@ -304,8 +304,8 @@ bool InputMethodEngineIBus::SetCandidates(
   return true;
 }
 
-bool InputMethodEngineIBus::SetCursorPosition(int context_id, int candidate_id,
-                                              std::string* error) {
+bool InputMethodEngine::SetCursorPosition(int context_id, int candidate_id,
+                                          std::string* error) {
   if (!active_) {
     *error = kErrorNotActive;
     return false;
@@ -330,11 +330,11 @@ bool InputMethodEngineIBus::SetCursorPosition(int context_id, int candidate_id,
   return true;
 }
 
-bool InputMethodEngineIBus::SetMenuItems(const std::vector<MenuItem>& items) {
+bool InputMethodEngine::SetMenuItems(const std::vector<MenuItem>& items) {
   return UpdateMenuItems(items);
 }
 
-bool InputMethodEngineIBus::UpdateMenuItems(
+bool InputMethodEngine::UpdateMenuItems(
     const std::vector<MenuItem>& items) {
   if (!active_)
     return false;
@@ -355,22 +355,22 @@ bool InputMethodEngineIBus::UpdateMenuItems(
   return true;
 }
 
-bool InputMethodEngineIBus::IsActive() const {
+bool InputMethodEngine::IsActive() const {
   return active_;
 }
 
-void InputMethodEngineIBus::KeyEventDone(input_method::KeyEventHandle* key_data,
-                                         bool handled) {
+void InputMethodEngine::KeyEventDone(input_method::KeyEventHandle* key_data,
+                                     bool handled) {
   KeyEventDoneCallback* callback =
       reinterpret_cast<KeyEventDoneCallback*>(key_data);
   callback->Run(handled);
   delete callback;
 }
 
-bool InputMethodEngineIBus::DeleteSurroundingText(int context_id,
-                                                  int offset,
-                                                  size_t number_of_chars,
-                                                  std::string* error) {
+bool InputMethodEngine::DeleteSurroundingText(int context_id,
+                                              int offset,
+                                              size_t number_of_chars,
+                                              std::string* error) {
   if (!active_) {
     *error = kErrorNotActive;
     return false;
@@ -393,7 +393,7 @@ bool InputMethodEngineIBus::DeleteSurroundingText(int context_id,
   return true;
 }
 
-void InputMethodEngineIBus::FocusIn(
+void InputMethodEngine::FocusIn(
     const IBusEngineHandlerInterface::InputContext& input_context) {
   focused_ = true;
   if (!active_)
@@ -427,7 +427,7 @@ void InputMethodEngineIBus::FocusIn(
   observer_->OnFocus(context);
 }
 
-void InputMethodEngineIBus::FocusOut() {
+void InputMethodEngine::FocusOut() {
   focused_ = false;
   if (!active_)
     return;
@@ -436,7 +436,7 @@ void InputMethodEngineIBus::FocusOut() {
   observer_->OnBlur(context_id);
 }
 
-void InputMethodEngineIBus::Enable() {
+void InputMethodEngine::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
   IBusEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
@@ -450,7 +450,7 @@ void InputMethodEngineIBus::Enable() {
   }
 }
 
-void InputMethodEngineIBus::Disable() {
+void InputMethodEngine::Disable() {
   active_ = false;
   observer_->OnDeactivated(engine_id_);
 
@@ -462,18 +462,18 @@ void InputMethodEngineIBus::Disable() {
   }
 }
 
-void InputMethodEngineIBus::PropertyActivate(const std::string& property_name) {
+void InputMethodEngine::PropertyActivate(const std::string& property_name) {
   observer_->OnMenuItemActivated(engine_id_, property_name);
 }
 
-void InputMethodEngineIBus::Reset() {
+void InputMethodEngine::Reset() {
   observer_->OnReset(engine_id_);
 }
 
 namespace {
 void GetExtensionKeyboardEventFromKeyEvent(
     const ui::KeyEvent& event,
-    InputMethodEngineIBus::KeyboardEvent* ext_event) {
+    InputMethodEngine::KeyboardEvent* ext_event) {
   DCHECK(event.type() == ui::ET_KEY_RELEASED ||
          event.type() == ui::ET_KEY_PRESSED);
   DCHECK(ext_event);
@@ -508,7 +508,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
 }
 }  // namespace
 
-void InputMethodEngineIBus::ProcessKeyEvent(
+void InputMethodEngine::ProcessKeyEvent(
     const ui::KeyEvent& key_event,
     const KeyEventDoneCallback& callback) {
 
@@ -523,7 +523,7 @@ void InputMethodEngineIBus::ProcessKeyEvent(
       reinterpret_cast<input_method::KeyEventHandle*>(handler));
 }
 
-void InputMethodEngineIBus::CandidateClicked(uint32 index) {
+void InputMethodEngine::CandidateClicked(uint32 index) {
   if (index > candidate_ids_.size()) {
     return;
   }
@@ -533,16 +533,16 @@ void InputMethodEngineIBus::CandidateClicked(uint32 index) {
       engine_id_, candidate_ids_.at(index), MOUSE_BUTTON_LEFT);
 }
 
-void InputMethodEngineIBus::SetSurroundingText(const std::string& text,
-                                               uint32 cursor_pos,
-                                               uint32 anchor_pos) {
+void InputMethodEngine::SetSurroundingText(const std::string& text,
+                                           uint32 cursor_pos,
+                                           uint32 anchor_pos) {
   observer_->OnSurroundingTextChanged(engine_id_,
                                       text,
                                       static_cast<int>(cursor_pos),
                                       static_cast<int>(anchor_pos));
 }
 
-void InputMethodEngineIBus::MenuItemToProperty(
+void InputMethodEngine::MenuItemToProperty(
     const MenuItem& item,
     input_method::InputMethodProperty* property) {
   property->key = item.id;

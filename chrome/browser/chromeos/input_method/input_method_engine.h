@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_IBUS_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_IBUS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
 
 #include <map>
 #include <string>
@@ -26,12 +26,12 @@ struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
 
-class InputMethodEngineIBus : public InputMethodEngineInterface,
+class InputMethodEngine : public InputMethodEngineInterface,
                               public IBusEngineHandlerInterface {
  public:
-  InputMethodEngineIBus();
+  InputMethodEngine();
 
-  virtual ~InputMethodEngineIBus();
+  virtual ~InputMethodEngine();
 
   void Initialize(
       InputMethodEngineInterface::Observer* observer,
@@ -147,4 +147,4 @@ class InputMethodEngineIBus : public InputMethodEngineInterface,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_IBUS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_

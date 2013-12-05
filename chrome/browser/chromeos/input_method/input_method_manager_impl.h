@@ -20,7 +20,7 @@
 namespace chromeos {
 class ComponentExtensionIMEManager;
 class ComponentExtensionIMEManagerDelegate;
-class InputMethodEngineIBus;
+class InputMethodEngine;
 namespace input_method {
 class InputMethodDelegate;
 class XKeyboard;

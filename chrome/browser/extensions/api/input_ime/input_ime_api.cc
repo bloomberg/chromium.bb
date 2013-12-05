@@ -7,7 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -306,8 +306,7 @@ bool InputImeEventRouter::RegisterIme(
   std::vector<std::string> languages;
   languages.assign(component.languages.begin(), component.languages.end());
 
-  chromeos::InputMethodEngineIBus* engine =
-      new chromeos::InputMethodEngineIBus();
+  chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
   engine->Initialize(observer, component.name.c_str(), extension_id.c_str(),
                      component.id.c_str(), languages, layouts,
                      component.options_page_url, component.input_view_url);
