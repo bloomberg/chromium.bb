@@ -1462,17 +1462,6 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
     return NodeIterator::create(root, whatToShow, filter);
 }
 
-PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionState& exceptionState)
-{
-    if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
-        return 0;
-    }
-    // FIXME: Warn if |expandEntityReferences| is specified. This optional argument is deprecated in DOM4.
-    UNUSED_PARAM(expandEntityReferences);
-    return NodeIterator::create(root, whatToShow, filter);
-}
-
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& exceptionState)
 {
     if (!root) {
@@ -1493,16 +1482,6 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
-    if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
-        return 0;
-    }
-    return TreeWalker::create(root, whatToShow, filter);
-}
-
-PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionState& exceptionState)
-{
-    UNUSED_PARAM(expandEntityReferences);
     if (!root) {
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;

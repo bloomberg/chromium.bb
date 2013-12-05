@@ -94,22 +94,23 @@ function testIteratorForwardAndBackward(iterator, expectedNodes)
     assert_equals(iterator.pointerBeforeReferenceNode, true);
 }
 
+var expectedAll = [
+    { type: Element, id: 'a' },
+    { type: Text, nodeValue: 'b' },
+    { type: Element, id: 'c' },
+    { type: Element, id: 'd' },
+    { type: Text, nodeValue: 'e' },
+    { type: Element, id: 'f' },
+    { type: Text, nodeValue: 'g' },
+    { type: Comment, nodeValue: 'h' },
+    { type: Text, nodeValue: 'i' },
+    { type: Comment, nodeValue: 'j' },
+];
+
 test(function ()
 {
-    var expected = [
-        { type: Element, id: 'a' },
-        { type: Text, nodeValue: 'b' },
-        { type: Element, id: 'c' },
-        { type: Element, id: 'd' },
-        { type: Text, nodeValue: 'e' },
-        { type: Element, id: 'f' },
-        { type: Text, nodeValue: 'g' },
-        { type: Comment, nodeValue: 'h' },
-        { type: Text, nodeValue: 'i' },
-        { type: Comment, nodeValue: 'j' },
-    ];
     var iterator = document.createNodeIterator(createSampleDOM());
-    testIteratorForwardAndBackward(iterator, expected);
+    testIteratorForwardAndBackward(iterator, expectedAll);
 }, 'Iterate over all nodes forward then backward.');
 
 test(function ()
@@ -179,6 +180,19 @@ test(function ()
     var iterator = document.createNodeIterator(createSampleDOM(), NodeFilter.SHOW_ALL, filter);
     testIteratorForwardAndBackward(iterator, expected);
 }, 'Test the behavior of NodeIterator when NodeFilter is specified.');
+
+test(function ()
+{
+    var filter = function (node) {
+        return NodeFilter.FILTER_ACCEPT;
+    };
+    [true, false].forEach(function (expandEntityReferences) {
+        var iterator = document.createNodeIterator(createSampleDOM(), NodeFilter.SHOW_ALL, filter, expandEntityReferences);
+        assert_true(iterator instanceof NodeIterator);
+        assert_false(iterator.expandEntityReferences);
+        testIteratorForwardAndBackward(iterator, expectedAll);
+    });
+}, 'Test that the fourth argument (expandEntityReferences) is ignored.');
 </script>
 </body>
 </html>

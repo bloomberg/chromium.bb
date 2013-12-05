@@ -9,4 +9,5 @@ PASS Iterate over all text nodes forward then backward.
 PASS Iterate over all comment nodes forward then backward. 
 PASS Test the behavior of NodeIterator when no nodes match with the given filter. 
 PASS Test the behavior of NodeIterator when NodeFilter is specified. 
+PASS Test that the fourth argument (expandEntityReferences) is ignored. 
 

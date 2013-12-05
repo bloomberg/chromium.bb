@@ -440,12 +440,10 @@ public:
     PassRefPtr<NodeIterator> createNodeIterator(Node* root, ExceptionState&);
     PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, ExceptionState&);
     PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionState&);
-    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionState&);
 
     PassRefPtr<TreeWalker> createTreeWalker(Node* root, ExceptionState&);
     PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, ExceptionState&);
     PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionState&);
-    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionState&);
 
     // Special support for editing
     PassRefPtr<CSSStyleDeclaration> createCSSStyleDeclaration();

@@ -107,6 +107,18 @@ test(function ()
 }, 'Walk over nodes.');
 
 // FIXME: Add tests that use |whatToShow| argument and/or |filter| argument.
+
+test(function ()
+{
+    var filter = function () {
+        return NodeFilter.FILTER_ACCEPT;
+    };
+    [true, false].forEach(function (expandEntityReferences) {
+        var walker = document.createTreeWalker(createSampleDOM(), NodeFilter.SHOW_ALL, filter, expandEntityReferences);
+        assert_true(walker instanceof TreeWalker);
+        assert_false(walker.expandEntityReferences);
+    });
+}, 'Test that the fourth argument (expandEntityReferences) is ignored.');
 </script>
 </body>
 </html>
