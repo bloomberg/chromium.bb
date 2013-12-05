@@ -3258,6 +3258,12 @@ if nacl_irt_env.Bit('bitcode'):
                                    '--pnacl-allow-translate',
                                    '-arch', 'x86-64'])
 
+# The IRT is C only, don't link with the C++ linker so that it doesn't
+# start depending on the C++ standard library and (in the case of
+# libc++) pthread.
+nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
+                           replace('pnacl-clang++', 'pnacl-clang')))
+
 # All IRT code must avoid direct use of the TLS ABI register, which
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
 # call to __nacl_read_tp, which the IRT code overrides to segregate
