@@ -688,11 +688,7 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
     var uid = InspectorTest._nextUid++;
     var snapshot = generator();
     var profileType = WebInspector.panels.profiles.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId);
-    var profile = profileType.createProfile({
-        title: "Mock snapshot #" + uid,
-        uid: uid,
-        maxJSObjectId: snapshot.maxJSObjectId
-    });
+    var profile = new WebInspector.HeapProfileHeader(profileType, "Mock snapshot #" + uid, uid, snapshot.maxJSObjectId);
     delete snapshot.maxJSObjectId;
     function pushGeneratedSnapshot(uid, callback)
     {
