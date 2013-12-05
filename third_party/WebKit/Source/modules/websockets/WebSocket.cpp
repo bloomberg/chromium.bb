@@ -652,6 +652,19 @@ void WebSocket::didClose(unsigned long unhandledBufferedAmount, ClosingHandshake
     if (!m_channel)
         return;
     bool wasClean = m_state == CLOSING && !unhandledBufferedAmount && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
+
+    // hasPendingActivity() returns false when m_state is CLOSED. So, it's
+    // possible that the wrapper gets garbage-collected during execution of the
+    // event. We need to keep this object alive to continue the rest of this
+    // method. Since the event we dispatch below sets "this" to the wrapper
+    // object, it doesn't get collected, but just to be sure, put a reference
+    // for protection.
+    //
+    // We can move m_channel clean up code before event dispatching, but it
+    // makes it harder to check correctness. Comparing cost, we now have this
+    // temporary reference.
+    RefPtr<WebSocket> protect(this);
+
     m_state = CLOSED;
     m_bufferedAmount = unhandledBufferedAmount;
     m_eventQueue->dispatch(CloseEvent::create(wasClean, code, reason));
