@@ -60,8 +60,6 @@ public class ContentViewRenderView extends FrameLayout {
         mNativeContentViewRenderView = nativeInit(rootWindow.getNativePointer());
         assert mNativeContentViewRenderView != 0;
 
-        setBackgroundColor(Color.WHITE);
-
         mSurfaceView = createSurfaceView(getContext());
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override
@@ -88,6 +86,7 @@ public class ContentViewRenderView extends FrameLayout {
             }
         };
         mSurfaceView.getHolder().addCallback(mSurfaceCallback);
+        setSurfaceViewBackgroundColor(Color.WHITE);
 
         mVSyncAdapter = new VSyncAdapter(getContext());
         addView(mSurfaceView,
@@ -157,6 +156,18 @@ public class ContentViewRenderView extends FrameLayout {
 
         void requestUpdate() {
             mVSyncMonitor.requestUpdate();
+        }
+    }
+
+    /**
+     * Sets the background color of the surface view.  This method is necessary because the
+     * background color of ContentViewRenderView itself is covered by the background of
+     * SurfaceView.
+     * @param color The color of the background.
+     */
+    public void setSurfaceViewBackgroundColor(int color) {
+        if (mSurfaceView != null) {
+            mSurfaceView.setBackgroundColor(color);
         }
     }
 
@@ -279,11 +290,11 @@ public class ContentViewRenderView extends FrameLayout {
         boolean didDraw = nativeComposite(mNativeContentViewRenderView);
         if (didDraw) {
             mPendingSwapBuffers++;
-            if (getBackground() != null) {
+            if (mSurfaceView.getBackground() != null) {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        setBackgroundResource(0);
+                        mSurfaceView.setBackgroundResource(0);
                     }
                 });
             }
