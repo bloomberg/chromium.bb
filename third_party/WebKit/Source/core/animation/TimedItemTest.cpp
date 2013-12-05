@@ -754,7 +754,7 @@ TEST(AnimationTimedItemTest, TimeToEffectChange)
 
     timedItem->updateInheritedTime(0);
     EXPECT_EQ(0, timedItem->takeLocalTime());
-    EXPECT_TRUE(isNull(timedItem->takeTimeToNextIteration()));
+    EXPECT_TRUE(std::isinf(timedItem->takeTimeToNextIteration()));
 
     // Normal iteration.
     timedItem->updateInheritedTime(1.75);
@@ -770,13 +770,13 @@ TEST(AnimationTimedItemTest, TimeToEffectChange)
     timedItem->updateInheritedTime(3.4);
     ASSERT_EQ(TimedItem::PhaseActive, timedItem->phase());
     EXPECT_EQ(3.4, timedItem->takeLocalTime());
-    EXPECT_TRUE(isNull(timedItem->takeTimeToNextIteration()));
+    EXPECT_TRUE(std::isinf(timedItem->takeTimeToNextIteration()));
 
     // Item has finished.
     timedItem->updateInheritedTime(3.5);
     ASSERT_EQ(TimedItem::PhaseAfter, timedItem->phase());
     EXPECT_EQ(3.5, timedItem->takeLocalTime());
-    EXPECT_TRUE(isNull(timedItem->takeTimeToNextIteration()));
+    EXPECT_TRUE(std::isinf(timedItem->takeTimeToNextIteration()));
 }
 
 }

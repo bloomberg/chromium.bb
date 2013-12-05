@@ -130,8 +130,7 @@ double Animation::calculateTimeToEffectChange(double localTime, double timeToNex
         if (hasActiveAnimationsOnCompositor()) {
             // Need service to apply fill / fire events.
             const double activeEndTime = activeStartTime + activeDuration();
-            ASSERT(isNull(timeToNextIteration) || timeToNextIteration <= (activeEndTime - localTime));
-            return isNull(timeToNextIteration) ? activeEndTime - localTime : timeToNextIteration;
+            return std::min(activeEndTime - localTime, timeToNextIteration);
         }
         return 0;
     case PhaseAfter:

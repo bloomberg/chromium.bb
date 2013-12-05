@@ -71,7 +71,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
 
     double currentIteration;
     double timeFraction;
-    double timeToNextIteration = nullValue();
+    double timeToNextIteration = std::numeric_limits<double>::infinity();
     if (iterationDuration) {
         const double startOffset = multiplyZeroAlwaysGivesZero(m_specified.iterationStart, iterationDuration);
         ASSERT(startOffset >= 0);
@@ -80,7 +80,8 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
 
         currentIteration = calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, m_specified);
         timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_specified) / iterationDuration;
-        timeToNextIteration = (iterationDuration - iterationTime) / abs(m_specified.playbackRate);
+        if (!isNull(iterationTime))
+            timeToNextIteration = (iterationDuration - iterationTime) / abs(m_specified.playbackRate);
     } else {
         const double localIterationDuration = 1;
         const double localRepeatedDuration = localIterationDuration * m_specified.iterationCount;
@@ -120,7 +121,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
     bool didTriggerStyleRecalc = updateChildrenAndEffects();
 
     if (activeDuration - activeTime < timeToNextIteration)
-        timeToNextIteration = nullValue();
+        timeToNextIteration = std::numeric_limits<double>::infinity();
 
     m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, timeToNextIteration);
     return didTriggerStyleRecalc;
