@@ -115,11 +115,9 @@ class ReplaceContentClientRenderer;
 
 // Temporarily disabled in LeakSanitizer builds due to memory leaks.
 // http://crbug.com/148865
-#if defined(LEAK_SANITIZER)
+// Disabling all tests for now since they are flaky.
+// http://crbug.com/167298
 #define MAYBE_WebRTCAudioDeviceTest DISABLED_WebRTCAudioDeviceTest
-#else
-#define MAYBE_WebRTCAudioDeviceTest WebRTCAudioDeviceTest
-#endif
 
 class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
                                     public IPC::Listener {
