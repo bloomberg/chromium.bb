@@ -14,37 +14,65 @@ import sys
 import optparse
 
 kUndesiredLibraryList = [
-  # 'libasound',  # ALSA sound - needs to go eventually
+  'libX11',
+  'libXau',
+  'libXcomposite',
+  'libXcursor',
+  'libXdamage',
+  'libXdmcp',
+  'libXext',
+  'libXfixes',
+  'libXi',
+  'libXrandr',
+  'libXrender',
+  'libXtst',
+  'libasound',
   'libcairo',
+  'libdbus',
+  'libffi',
+  'libgconf',
+  'libgio',
   'libglib',
+  'libgmodule',
+  'libgobject',
   'libpango',
+  'libpcre',
+  'libpixman',
+  'libpng',
+  'libresolv',
+  'libselinux',
   'libudev',
+  'libxcb',
 ]
 
 kAllowedLibraryList = [
+  # Toolchain libraries (gcc/glibc)
+  'ld-linux',
   'libc',
-  'libcap',
   'libdl',
-  'libdrm',
-  'libexpat',
-  'libffi',
-  'libfontconfig',
-  'libfreetype',
   'libgcc_s',
-  'libgobject-2.0',
   'libm',
-  'libnspr4',
-  'libnss3',
-  'libnssutil3',
-  'libpcre',
-  'libplc4',
-  'libplds4',
   'libpthread',
   'librt',
-  'libsmime3',
   'libstdc++',
-  'libz',
   'linux-vdso',
+
+  # Needed for default ozone platforms
+  'libdrm',
+
+  # NSS & NSPR
+  'libnss3',
+  'libnssutil3',
+  'libnspr4',
+  'libplc4',
+  'libplds4',
+  'libsmime3',
+
+  # Miscellaneous
+  'libcap',
+  'libexpat',
+  'libfontconfig',
+  'libz',
 ]
 
 binary_target = 'content_shell'
@@ -95,9 +123,11 @@ def _main():
                                      options.target)
 
   if options.build_dir != None:
-    target = os.path.join(options.build_dir, binary_target)
+    build_dir = os.path.abspath(options.build_dir)
   else:
-    target = binary_target
+    build_dir = os.getcwd()
+
+  target = os.path.join(build_dir, binary_target)
 
   if options.annotate:
     output.update({
@@ -116,10 +146,7 @@ def _main():
   mapping_regexp = re.compile(r"\s*([^/]*) => (.*)")
   blessed_regexp = re.compile(r"(%s)[-0-9.]*\.so" % string.join(map(re.escape,
       kAllowedLibraryList), '|'))
-  if options.build_dir != None:
-    built_regexp = re.compile(re.escape(options.build_dir))
-  else:
-    built_regexp = re.compile(re.escape('lib'))
+  built_regexp = re.compile(re.escape(build_dir + os.sep))
 
   success = 0
   warning = 0
