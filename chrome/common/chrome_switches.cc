@@ -861,7 +861,7 @@ const char kForceAppMode[]                  = "force-app-mode";
 const char kForceFirstRun[]                 = "force-first-run";
 
 // Forces additional Chrome Variation Ids that will be sent in
-// X-Chrome-Variations header, specified as a comma-separated list of numeric
+// X-Client-Data header, specified as a 64-bit encoded list of numeric
 // experiment ids.
 const char kForceVariationIds[]             = "force-variation-ids";
 

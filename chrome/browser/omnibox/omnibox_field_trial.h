@@ -34,7 +34,7 @@ class OmniboxFieldTrial {
   // the autocomplete dynamic and static field trials is that the former
   // don't require any code changes on the Chrome side as they are controlled
   // on the server side.  Chrome binary simply propagates all necessary
-  // information through the X-Chrome-Variations header.
+  // information through the X-Client-Data header.
   // This method, unlike ActivateStaticTrials(), may be called multiple times.
   static void ActivateDynamicTrials();
 

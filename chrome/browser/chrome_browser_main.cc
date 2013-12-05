@@ -613,7 +613,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   }
   if (command_line->HasSwitch(switches::kForceVariationIds)) {
     // Create default variation ids which will always be included in the
-    // X-Chrome-Variations request header.
+    // X-Client-Data request header.
     chrome_variations::VariationsHttpHeaderProvider* provider =
         chrome_variations::VariationsHttpHeaderProvider::GetInstance();
     bool result = provider->SetDefaultVariationIds(

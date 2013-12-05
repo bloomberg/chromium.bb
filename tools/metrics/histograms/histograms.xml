@@ -20256,7 +20256,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Variations.HeaderConstructionTime" units="microseconds">
-  <summary>How long it took to create the X-Chrome-Variations header.</summary>
+  <summary>How long it took to create the X-Client-Data header.</summary>
 </histogram>
 
 <histogram name="Variations.NetworkAvailability" enum="BooleanSuccess">

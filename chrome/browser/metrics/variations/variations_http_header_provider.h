@@ -46,7 +46,7 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
                      bool uma_enabled,
                      net::HttpRequestHeaders* headers);
 
-  // Sets *additional* variation ids to be encoded in the X-Chrome-Varations
+  // Sets *additional* variation ids to be encoded in the X-Client-Data
   // request header.  This is intended for development use to force a server
   // side experiment id.  |variation_ids| should be a comma-separated string of
   // numeric experiment ids.

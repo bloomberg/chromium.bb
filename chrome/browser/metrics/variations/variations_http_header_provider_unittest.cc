@@ -74,8 +74,8 @@ TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Valid) {
   EXPECT_TRUE(provider.SetDefaultVariationIds("12,456"));
   provider.InitVariationIDsCacheIfNeeded();
   provider.AppendHeaders(url, false, false, &headers);
-  EXPECT_TRUE(headers.HasHeader("X-Chrome-Variations"));
-  headers.GetHeader("X-Chrome-Variations", &variations);
+  EXPECT_TRUE(headers.HasHeader("X-Client-Data"));
+  headers.GetHeader("X-Client-Data", &variations);
   std::set<VariationID> variation_ids;
   ASSERT_TRUE(ExtractVariationIds(variations, &variation_ids));
   EXPECT_TRUE(variation_ids.find(12) != variation_ids.end());
@@ -92,7 +92,7 @@ TEST(VariationsHttpHeaderProviderTest, SetDefaultVariationIds_Invalid) {
   EXPECT_FALSE(provider.SetDefaultVariationIds("abcd12,456"));
   provider.InitVariationIDsCacheIfNeeded();
   provider.AppendHeaders(url, false, false, &headers);
-  EXPECT_FALSE(headers.HasHeader("X-Chrome-Variations"));
+  EXPECT_FALSE(headers.HasHeader("X-Client-Data"));
 }
 
 }  // namespace chrome_variations
