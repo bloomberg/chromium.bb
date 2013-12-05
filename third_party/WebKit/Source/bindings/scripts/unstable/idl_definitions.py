@@ -75,6 +75,10 @@ class TypedObject:
 
     def resolve_typedefs(self, typedefs):
         """Resolve typedefs to actual types in the object."""
+        # Constructors don't have their own return type, because it's the
+        # interface itself.
+        if not self.idl_type:
+            return
         # Convert string representation to and from an IdlType object
         # to handle parsing of composite types (arrays and sequences)
         idl_type_object = IdlType.from_string(self.idl_type)
