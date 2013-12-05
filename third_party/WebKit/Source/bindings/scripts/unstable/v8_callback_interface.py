@@ -53,14 +53,6 @@ CALLBACK_INTERFACE_CPP_INCLUDES = set([
 
 # FIXME: eliminate, per http://crbug.com/323681
 LEGACY_REF_COUNTED_CALLBACK_INTERFACES = set([
-    # WebSQL
-    'DatabaseCallback',
-    'SQLTransactionCallback',
-    'SQLTransactionErrorCallback',
-    'SQLTransactionSyncCallback',
-    'SQLStatementCallback',
-    'SQLStatementErrorCallback',
-    'SQLVoidCallback',
     # Filesystem
     'EntryCallback',
     'EntriesCallback',
