@@ -982,6 +982,9 @@ void StyleResolver::collectViewportRules()
 {
     viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::defaultStyle, ViewportStyleResolver::UserAgentOrigin);
 
+    if (!InspectorInstrumentation::applyViewportStyleOverride(&document(), this))
+        viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::defaultViewportStyle, ViewportStyleResolver::UserAgentOrigin);
+
     if (document().isMobileDocument())
         viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::xhtmlMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
 

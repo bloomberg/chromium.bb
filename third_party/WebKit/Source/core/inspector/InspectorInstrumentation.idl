@@ -263,6 +263,9 @@ interface InspectorInstrumentation {
     void applyUserAgentOverride(Frame*, String* userAgent);
 
     [Page, Inline=FastReturn]
+    bool applyViewportStyleOverride(Document*, StyleResolver*);
+
+    [Page, Inline=FastReturn]
     void applyEmulatedMedia(Frame*, String* media);
 
     [Timeline, Resource]

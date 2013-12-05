@@ -32,8 +32,11 @@
 #include "core/inspector/InspectorPageAgent.h"
 
 #include "HTMLNames.h"
+#include "UserAgentStyleSheets.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -325,6 +328,7 @@ InspectorPageAgent::InspectorPageAgent(InstrumentingAgents* instrumentingAgents,
     , m_geolocationOverridden(false)
     , m_ignoreScriptsEnabledNotification(false)
     , m_deviceMetricsOverridden(false)
+    , m_emulateViewportEnabled(false)
 {
 }
 
@@ -1080,6 +1084,8 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
     if (width && height && !m_page->settings().acceleratedCompositingEnabled())
         return;
 
+    m_deviceMetricsOverridden = width && height;
+    m_emulateViewportEnabled = emulateViewport;
     m_client->overrideDeviceMetrics(width, height, static_cast<float>(deviceScaleFactor), emulateViewport, fitWindow);
 
     Document* document = mainFrame()->document();
@@ -1090,7 +1096,6 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
     InspectorInstrumentation::mediaQueryResultChanged(document);
 
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
-    m_deviceMetricsOverridden = width && height;
     m_client->setShowFPSCounter(m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter) && !m_deviceMetricsOverridden);
     m_client->setContinuousPaintingEnabled(m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled) && !m_deviceMetricsOverridden);
 }
@@ -1197,6 +1202,19 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
         document->styleResolverChanged(RecalcStyleImmediately);
         document->updateLayout();
     }
+}
+
+bool InspectorPageAgent::applyViewportStyleOverride(StyleResolver* resolver)
+{
+    if (!m_deviceMetricsOverridden || !m_emulateViewportEnabled)
+        return false;
+
+    RefPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode));
+    styleSheet->parseString(String(viewportAndroidUserAgentStyleSheet, sizeof(viewportAndroidUserAgentStyleSheet)));
+    OwnPtr<RuleSet> ruleSet = RuleSet::create();
+    ruleSet->addRulesFromSheet(styleSheet.get(), MediaQueryEvaluator("screen"));
+    resolver->viewportStyleResolver()->collectViewportRules(ruleSet.get(), ViewportStyleResolver::UserAgentOrigin);
+    return true;
 }
 
 void InspectorPageAgent::applyEmulatedMedia(String* media)

@@ -954,7 +954,6 @@
           ],
         }],
         ['OS=="android"', {
-          'sources/': [['exclude', 'ViewportStyle\\.cpp$']],
           'cflags': [
             # WebCore does not work with strict aliasing enabled.
             # https://bugs.webkit.org/show_bug.cgi?id=25864

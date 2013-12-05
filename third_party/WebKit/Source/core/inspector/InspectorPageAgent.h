@@ -57,6 +57,7 @@ class LayoutRect;
 class Page;
 class RenderObject;
 class SharedBuffer;
+class StyleResolver;
 
 typedef String ErrorString;
 
@@ -144,10 +145,7 @@ public:
     void frameClearedScheduledNavigation(Frame*);
     void willRunJavaScriptDialog(const String& message);
     void didRunJavaScriptDialog();
-    void applyScreenWidthOverride(long*);
-    bool shouldApplyScreenWidthOverride();
-    void applyScreenHeightOverride(long*);
-    bool shouldApplyScreenHeightOverride();
+    bool applyViewportStyleOverride(StyleResolver*);
     void applyEmulatedMedia(String*);
     void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
     void didLayout(RenderObject*);
@@ -208,6 +206,7 @@ private:
     bool m_geolocationOverridden;
     bool m_ignoreScriptsEnabledNotification;
     bool m_deviceMetricsOverridden;
+    bool m_emulateViewportEnabled;
     RefPtr<GeolocationPosition> m_geolocationPosition;
     RefPtr<GeolocationPosition> m_platformGeolocationPosition;
 };

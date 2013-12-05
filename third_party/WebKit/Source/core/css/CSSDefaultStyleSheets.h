@@ -32,12 +32,14 @@ class StyleSheetContents;
 class CSSDefaultStyleSheets {
 public:
     static RuleSet* defaultStyle;
+    static RuleSet* defaultViewportStyle;
     static RuleSet* defaultQuirksStyle;
     static RuleSet* defaultPrintStyle;
     static RuleSet* defaultViewSourceStyle;
     static RuleSet* defaultXHTMLMobileProfileStyle;
 
     static StyleSheetContents* defaultStyleSheet;
+    static StyleSheetContents* viewportStyleSheet;
     static StyleSheetContents* quirksStyleSheet;
     static StyleSheetContents* svgStyleSheet;
     static StyleSheetContents* mediaControlsStyleSheet;

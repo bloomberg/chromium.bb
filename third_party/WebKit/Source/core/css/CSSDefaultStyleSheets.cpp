@@ -33,7 +33,6 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/ViewportStyle.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -45,12 +44,14 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RuleSet* CSSDefaultStyleSheets::defaultStyle;
+RuleSet* CSSDefaultStyleSheets::defaultViewportStyle;
 RuleSet* CSSDefaultStyleSheets::defaultQuirksStyle;
 RuleSet* CSSDefaultStyleSheets::defaultPrintStyle;
 RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle;
 RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle;
 
 StyleSheetContents* CSSDefaultStyleSheets::defaultStyleSheet;
+StyleSheetContents* CSSDefaultStyleSheets::viewportStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::quirksStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::svgStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::mediaControlsStyleSheet;
@@ -90,6 +91,7 @@ void CSSDefaultStyleSheets::loadDefaultStyle()
 {
     ASSERT(!defaultStyle);
     defaultStyle = RuleSet::create().leakPtr();
+    defaultViewportStyle = RuleSet::create().leakPtr();
     defaultPrintStyle = RuleSet::create().leakPtr();
     defaultQuirksStyle = RuleSet::create().leakPtr();
 
@@ -97,7 +99,13 @@ void CSSDefaultStyleSheets::loadDefaultStyle()
     String defaultRules = String(htmlUserAgentStyleSheet, sizeof(htmlUserAgentStyleSheet)) + RenderTheme::theme().extraDefaultStyleSheet();
     defaultStyleSheet = parseUASheet(defaultRules);
     defaultStyle->addRulesFromSheet(defaultStyleSheet, screenEval());
-    defaultStyle->addRulesFromSheet(parseUASheet(ViewportStyle::viewportStyleSheet()), screenEval());
+#if OS(ANDROID)
+    String viewportRules(viewportAndroidUserAgentStyleSheet, sizeof(viewportAndroidUserAgentStyleSheet));
+#else
+    String viewportRules;
+#endif
+    viewportStyleSheet = parseUASheet(viewportRules);
+    defaultViewportStyle->addRulesFromSheet(viewportStyleSheet, screenEval());
     defaultPrintStyle->addRulesFromSheet(defaultStyleSheet, printEval());
 
     // Quirks-mode rules.
