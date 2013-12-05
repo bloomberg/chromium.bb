@@ -1223,6 +1223,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_EXPOSE:
 			expose = (xcb_expose_event_t *) event;
 			output = x11_compositor_find_output(c, expose->window);
+			weston_output_damage(&output->base);
 			weston_output_schedule_repaint(&output->base);
 			break;
 
