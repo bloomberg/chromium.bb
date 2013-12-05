@@ -934,6 +934,11 @@ function registerBrowserPluginElement() {
     internal.handleBrowserPluginAttributeMutation_(name, newValue);
   };
 
+  proto.enteredViewCallback = function() {
+    // Load the plugin immediately.
+    var unused = this.nonExistentAttribute;
+  };
+
   WebViewInternal.BrowserPlugin =
       DocumentNatives.RegisterElement('browser-plugin', {extends: 'object',
                                                          prototype: proto});

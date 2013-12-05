@@ -23,7 +23,8 @@
 namespace {
 const char kHTMLForBrowserPluginObject[] =
     "<object id='browserplugin' width='640px' height='480px'"
-    " src='foo' type='%s'>";
+    " src='foo' type='%s'></object>"
+    "<script>document.querySelector('object').nonExistentAttribute;</script>";
 
 const char kHTMLForBrowserPluginWithAllAttributes[] =
     "<object id='browserplugin' width='640' height='480' type='%s'"
