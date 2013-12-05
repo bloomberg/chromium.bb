@@ -167,6 +167,30 @@
     "message": "Take a picture",
     "description": "Label for the red picture taking button."
   },
+  "toggleTimerButton": {
+    "message": "Toggle timer",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Toggle multi-shot",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Timer active",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Timer inactive",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Multi-shot active",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Multi-shot inactive",
+    "description": "Message shown when inactivating the multi-shot feature."
+  },
   "dialogYesButton": {
     "message": "Yes",
     "description": "Label for the accepting button in the confirmation dialog."

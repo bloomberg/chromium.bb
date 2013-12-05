@@ -58,6 +58,13 @@ camera.views.Camera = function(context, router) {
   this.shutterSound_ = document.createElement('audio');
 
   /**
+   * Tick sound player.
+   * @type {Audio}
+   * @private
+   */
+  this.tickSound_ = document.createElement('audio');
+
+  /**
    * Canvas element with the current frame downsampled to small resolution, to
    * be used in effect preview windows.
    *
@@ -226,6 +233,38 @@ camera.views.Camera = function(context, router) {
       }.bind(this));
 
   /**
+   * Timer for hiding the toast message after some delay.
+   * @type {number?}
+   * @private
+   */
+  this.toastHideTimer_ = null;
+
+  /**
+   * Toast transition wrapper. Shows or hides the toast with the passed message.
+   * @type {camera.util.StyleEffect}
+   * @private
+   */
+  this.toastEffect_ = new camera.util.StyleEffect(
+      function(args, callback) {
+        var toastElement = document.querySelector('#toast');
+        var toastMessageElement = document.querySelector('#toast-message');
+        // Hide the message if visible.
+        if (!args.visible && toastElement.classList.contains('visible')) {
+          toastElement.classList.remove('visible');
+          camera.util.waitForTransitionCompletion(
+              toastElement, 500, callback);
+        } else if (args.visible) {
+          // If showing requested, then show.
+          toastMessageElement.textContent = args.message;
+          toastElement.classList.add('visible');
+          camera.util.waitForTransitionCompletion(
+             toastElement, 500, callback);
+        } else {
+          callback();
+        }
+      }.bind(this));
+
+  /**
    * Window controls animation effect wrapper.
    * @type {camera.util.StyleEffect}
    * @private
@@ -337,6 +376,13 @@ camera.views.Camera = function(context, router) {
    */
   this.staleEffectsRefreshIndex_ = 0;
 
+  /**
+   * Timer used to countdown before taking the picture.
+   * @type {number?}
+   * @private
+   */
+  this.takePictureTimer_ = null;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -348,7 +394,7 @@ camera.views.Camera = function(context, router) {
 
   // Sets dimensions of the input canvas for the effects' preview on the ribbon.
   // Keep in sync with CSS.
-  this.previewInputCanvas_.width = 80
+  this.previewInputCanvas_.width = 80;
   this.previewInputCanvas_.height = 80;
 
   // Handle the 'Take' button.
@@ -368,8 +414,18 @@ camera.views.Camera = function(context, router) {
   // TODO(mtomasz): Move managing window controls to main.js.
   window.addEventListener('keydown', this.onWindowKeyDown_.bind(this));
 
-  // Load the shutter sound.
+  document.querySelector('#toggle-timer').addEventListener(
+      'keypress', this.onToggleTimerKeyPress_.bind(this));
+  document.querySelector('#toggle-timer').addEventListener(
+      'click', this.onToggleTimerClicked_.bind(this));
+  document.querySelector('#toggle-multi').addEventListener(
+      'keypress', this.onToggleMultiKeyPress_.bind(this));
+  document.querySelector('#toggle-multi').addEventListener(
+      'click', this.onToggleMultiClicked_.bind(this));
+
+  // Load the shutter and the tick sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
+  this.tickSound_.src = '../sounds/tick.ogg';
 };
 
 /**
@@ -469,17 +525,23 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.addEffect_(new camera.effects.Ghost(this.tracker_));
     this.addEffect_(new camera.effects.Swirl(this.tracker_));
 
-    // Select the default effect.
+    // Select the default effect and state of the timer toggle button.
     // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
     // syncing of the gallery.
-    chrome.storage.local.get('effectIndex', function(values) {
-      if (values.effectIndex !== undefined &&
-          values.effectIndex < this.previewProcessors_.length) {
-        this.setCurrentEffect_(values.effectIndex);
-      } else {
-        this.setCurrentEffect_(0);
-      }
-    }.bind(this));
+    chrome.storage.local.get(
+        {
+          effectIndex: 0,
+          toggleTimer: true,
+          toggleMulti: false
+        },
+        function(values) {
+          if (values.effectIndex < this.previewProcessors_.length)
+            this.setCurrentEffect_(values.effectIndex);
+          else
+            this.setCurrentEffect_(0);
+          document.querySelector('#toggle-timer').checked = values.toggleTimer;
+          document.querySelector('#toggle-multi').checked = values.toggleMulti;
+        }.bind(this));
   }
 
   // Acquire the gallery model.
@@ -528,6 +590,13 @@ camera.views.Camera.prototype.onActivate = function() {
  */
 camera.views.Camera.prototype.onInactivate = function() {
   this.scrollTracker_.stop();
+};
+
+/**
+ * @override
+ */
+camera.views.Camera.prototype.onInactivate = function() {
+  this.resetTakePicture_();
 };
 
 /**
@@ -601,6 +670,52 @@ camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
     default:
       this.setControlsVisible_(true);
   }
+};
+
+/**
+ * Handles pressing a key on the timer switch.
+ * @param {Event} event Key press event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleTimerKeyPress_ = function(event) {
+  if (camera.util.getShortcutIdentifier(event) == 'Enter')
+    document.querySelector('#toggle-timer').click();
+};
+
+/**
+ * Handles pressing a key on the multi-shot switch.
+ * @param {Event} event Key press event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
+  if (camera.util.getShortcutIdentifier(event) == 'Enter')
+    document.querySelector('#toggle-multi').click();
+};
+
+/**
+ * Handles clicking on the timer switch.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleTimerClicked_ = function(event) {
+  var enabled = document.querySelector('#toggle-timer').checked;
+  this.showToastMessage_(
+      chrome.i18n.getMessage(enabled ? 'toggleTimerActiveMessage' :
+                                       'toggleTimerInactiveMessage'));
+  chrome.storage.local.set({toggleTimer: enabled});
+};
+
+/**
+ * Handles clicking on the multi-shot switch.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
+  var enabled = document.querySelector('#toggle-multi').checked;
+  this.showToastMessage_(
+      chrome.i18n.getMessage(enabled ? 'toggleMultiActiveMessage' :
+                                       'toggleMultiInactiveMessage'));
+  chrome.storage.local.set({toggleMulti: enabled});
 };
 
 /**
@@ -790,8 +905,8 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       this.setCurrentEffect_(this.previewProcessors_.length - 1);
       event.preventDefault();
       break;
-    case 'U+0020':
-      this.takePicture_();
+    case 'U+0020':  // Space key for taking the picture.
+      document.querySelector('#take-picture').click();
       event.stopPropagation();
       event.preventDefault();
       break;
@@ -800,6 +915,46 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
   }
+};
+
+/**
+ * Shows a non-intrusive toast message in the middle of the screen.
+ * @param {string} message Message to be shown.
+ * @private
+ */
+camera.views.Camera.prototype.showToastMessage_ = function(message) {
+  var cancelHideTimer = function() {
+    if (this.toastHideTimer_) {
+      clearTimeout(this.toastHideTimer_);
+      this.toastHideTimer_ = null;
+    }
+  }.bind(this);
+
+  // If running, then reinvoke recursively after closing the toast message.
+  if (this.toastEffect_.animating || this.toastHideTimer_) {
+    cancelHideTimer();
+    this.toastEffect_.invoke({
+      visible: false
+    }, this.showToastMessage_.bind(this, message));
+    return;
+  }
+
+  // Cancel any pending hide timers.
+  cancelHideTimer();
+
+  // Start the hide timer.
+  this.toastHideTimer_ = setTimeout(function() {
+    this.toastEffect_.invoke({
+      visible: false
+    }, function() {});
+    this.toastHideTimer_ = null;
+  }.bind(this), 2000);
+
+  // Show the toast message.
+  this.toastEffect_.invoke({
+    visible: true,
+    message: message
+  }, function() {});
 };
 
 /**
@@ -881,12 +1036,88 @@ camera.views.Camera.prototype.showVersion_ = function() {
 };
 
 /**
- * Takes the picture, saves and puts to the album with a nice animation.
+ * Takes the picture with a timer if enabled, otherwise immediately.
  * @private
  */
 camera.views.Camera.prototype.takePicture_ = function() {
   if (!this.running_)
     return;
+
+  var toggleTimer = document.querySelector('#toggle-timer');
+  var toggleMulti = document.querySelector('#toggle-multi');
+
+  var timerEnabled = toggleTimer.checked;
+  var multiEnabled = toggleMulti.checked;
+
+  toggleTimer.disabled = true;
+  toggleMulti.disabled = true;
+  document.querySelector('#take-picture').disabled = true;
+
+  var tickCounter = timerEnabled ? 6 : 1;
+  var multiShotCounter = multiEnabled ? 3 : 1;
+  var onTimerTick = function() {
+    tickCounter--;
+    if (tickCounter == 0) {
+      var takePicture = function() {
+        // If in timer mode, but the timer got cancelled, then do not continue.
+        if (!this.takePictureTimer_)
+          return;
+        this.takePictureImmediately_(function() {
+          multiShotCounter--;
+          if (!multiShotCounter) {
+            // Reset the controls.
+            this.resetTakePicture_();
+          } else {
+            setTimeout(takePicture, 500);
+          }
+        }.bind(this));
+      }.bind(this);
+      takePicture();
+    } else {
+      this.takePictureTimer_ = setTimeout(onTimerTick, 1000);
+      this.tickSound_.play();
+      // Blink the toggle timer button.
+      toggleTimer.classList.add('animate');
+      setTimeout(function() {
+        if (this.takePictureTimer_)
+          toggleTimer.classList.remove('animate');
+      }.bind(this), 500);
+    }
+  }.bind(this);
+
+  // First tick immediately in the next message loop cycle.
+  this.takePictureTimer_ = setTimeout(onTimerTick, 0);
+};
+
+/**
+ * Resets scheduled picture takes (if any).
+ * @private
+ */
+camera.views.Camera.prototype.resetTakePicture_ = function() {
+  if (this.takePictureTimer_) {
+    clearTimeout(this.takePictureTimer_);
+    this.takePictureTimer_ = null;
+  }
+  var toggleTimer = document.querySelector('#toggle-timer');
+  toggleTimer.classList.remove('animate');
+  toggleTimer.disabled = false;
+  document.querySelector('#take-picture').disabled = false;
+  document.querySelector('#toggle-multi').disabled = false;
+};
+
+/**
+ * Takes the picture immediately, and saves and puts to the album with a nice
+ * animation.
+ *
+ * @param {function()=} opt_callback Completion callback.
+ * @private
+ */
+camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
+  if (!this.running_) {
+    if (opt_callback)
+      opt_callback();
+    return;
+  }
 
   // Lock refreshing for smoother experience.
   this.taking_ = true;
@@ -961,8 +1192,12 @@ camera.views.Camera.prototype.takePicture_ = function() {
     // Add to DOM.
     picturePreview.appendChild(img);
 
-    // Call the callback with the picture.
+    // Add the picture to the model.
     this.model_.addPicture(dataURL);
+
+    // Call the callback asynchronously, so the picture is displayed in DOM.
+    if (opt_callback)
+      setTimeout(opt_callback, 0);
   }.bind(this), 0);
 };
 
@@ -1259,7 +1494,7 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // while performing animations.
   if (this.taking_ || this.toolbarEffect_.animating ||
       this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
-      this.context.isUIAnimating() ||
+      this.context.isUIAnimating() || this.toastEffect_.animating ||
       (this.scrollTracker_.scrolling && this.expanded_)) {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.OPTIMIZED);
   } else {
@@ -1271,8 +1506,8 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
   if (this.expanded_ && !this.taking_ && !this.controlsEffect_.animating &&
-      !this.context.isUIAnimating() && !this.scrollTracker_.scrolling ||
-      this.ribbonInitialization_) {
+      !this.context.isUIAnimating() && !this.scrollTracker_.scrolling &&
+      !this.toastEffect_.animating || this.ribbonInitialization_) {
 
     // Every third frame draw only the visible effects. Also, other frames
     // are periodically refreshed, to avoid stale pictures.
