@@ -213,6 +213,10 @@ bool SetJobObjectLimitFlags(HANDLE job_object, DWORD limit_flags) {
 }
 
 bool GetAppOutput(const CommandLine& cl, std::string* output) {
+  return GetAppOutput(cl.GetCommandLineString(), output);
+}
+
+bool GetAppOutput(const StringPiece16& cl, std::string* output) {
   HANDLE out_read = NULL;
   HANDLE out_write = NULL;
 
@@ -238,7 +242,8 @@ bool GetAppOutput(const CommandLine& cl, std::string* output) {
     return false;
   }
 
-  FilePath::StringType writable_command_line_string(cl.GetCommandLineString());
+  FilePath::StringType writable_command_line_string;
+  writable_command_line_string.assign(cl.data(), cl.size());
 
   STARTUPINFO start_info = {};
 

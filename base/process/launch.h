@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_piece.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/file_descriptor_shuffle.h"
@@ -179,6 +180,13 @@ BASE_EXPORT void RouteStdioToConsole();
 // on success (application launched and exited cleanly, with exit code
 // indicating success).
 BASE_EXPORT bool GetAppOutput(const CommandLine& cl, std::string* output);
+
+#if defined(OS_WIN)
+// A Windows-specific version of GetAppOutput that takes a command line string
+// instead of a CommandLine object. Useful for situations where you need to
+// control the command line arguments directly.
+BASE_EXPORT bool GetAppOutput(const StringPiece16& cl, std::string* output);
+#endif
 
 #if defined(OS_POSIX)
 // A POSIX-specific version of GetAppOutput that takes an argv array

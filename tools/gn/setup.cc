@@ -12,8 +12,10 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file.h"
@@ -101,48 +103,6 @@ base::FilePath FindDotFile(const base::FilePath& current_dir) {
 
   return FindDotFile(up_one_dir);
 }
-
-#if defined(OS_WIN)
-// Searches the list of strings, and returns the FilePat corresponding to the
-// one ending in the given substring, or the empty path if none match.
-base::FilePath GetPathEndingIn(
-    const std::vector<base::FilePath::StringType>& list,
-    const base::FilePath::StringType ending_in) {
-  for (size_t i = 0; i < list.size(); i++) {
-    if (EndsWith(list[i], ending_in, true))
-      return base::FilePath(list[i]);
-  }
-  return base::FilePath();
-}
-
-// Finds the depot tools directory in the path environment variable and returns
-// its value. Returns an empty file path if not found.
-//
-// We detect the depot_tools path by looking for a directory with depot_tools
-// at the end (optionally followed by a separator).
-base::FilePath ExtractDepotToolsFromPath() {
-  static const wchar_t kPathVarName[] = L"Path";
-  DWORD env_buf_size = GetEnvironmentVariable(kPathVarName, NULL, 0);
-  if (env_buf_size == 0)
-    return base::FilePath();
-  base::string16 path;
-  path.resize(env_buf_size);
-  GetEnvironmentVariable(kPathVarName, &path[0],
-                         static_cast<DWORD>(path.size()));
-  path.resize(path.size() - 1);  // Trim off null.
-
-  std::vector<base::string16> components;
-  base::SplitString(path, ';', &components);
-
-  base::string16 ending_in1 = L"depot_tools\\";
-  base::FilePath::StringType ending_in2 = FILE_PATH_LITERAL("depot_tools");
-
-  base::FilePath found = GetPathEndingIn(components, ending_in1);
-  if (!found.empty())
-    return found;
-  return GetPathEndingIn(components, ending_in2);
-}
-#endif
 
 // Called on any thread. Post the item to the builder on the main thread.
 void ItemDefinedCallback(base::MessageLoop* main_loop,
@@ -343,29 +303,23 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
 
 void Setup::FillPythonPath() {
 #if defined(OS_WIN)
-  // We use python from the depot tools which should be on the path. If we
-  // converted the python_path to a python_command_line then we could
-  // potentially use "cmd.exe /c python.exe" and remove this.
-  static const wchar_t kPythonName[] = L"python.exe";
-  base::FilePath depot_tools = ExtractDepotToolsFromPath();
-  if (!depot_tools.empty()) {
-    base::FilePath python =
-        depot_tools.Append(L"python_bin").Append(kPythonName);
+  // Find Python on the path so we can use the absolute path in the build.
+  const base::char16 kGetPython[] =
+      L"cmd.exe /c python -c \"import sys; print sys.executable\"";
+  std::string python_path;
+  if (base::GetAppOutput(kGetPython, &python_path)) {
+    TrimWhitespaceASCII(python_path, TRIM_ALL, &python_path);
     if (scheduler_.verbose_logging())
-      scheduler_.Log("Using python", FilePathToUTF8(python));
-    build_settings_.set_python_path(python);
-    return;
+      scheduler_.Log("Found python", python_path);
+  } else {
+    scheduler_.Log("WARNING", "Could not find python on path, using "
+        "just \"python.exe\"");
+    python_path = "python.exe";
   }
-
-  if (scheduler_.verbose_logging()) {
-    scheduler_.Log("WARNING", "Could not find depot_tools on path, using "
-        "just " + FilePathToUTF8(kPythonName));
-  }
+  build_settings_.set_python_path(base::FilePath(UTF8ToUTF16(python_path)));
 #else
-  static const char kPythonName[] = "python";
+  build_settings_.set_python_path(base::FilePath("python"));
 #endif
-
-  build_settings_.set_python_path(base::FilePath(kPythonName));
 }
 
 bool Setup::RunConfigFile() {
