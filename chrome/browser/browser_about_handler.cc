@@ -65,14 +65,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIHelpHost) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIHelpHost + url->path();
-  } else if (host == chrome::kChromeUIRestartHost) {
-    // Call AttemptRestart after chrome::Navigate() completes to avoid access of
-    // gtk objects after they are destoyed by BrowserWindowGtk::Close().
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&chrome::AttemptRestart));
-  } else if (host == chrome::kChromeUIQuitHost) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&chrome::AttemptExit));
   }
 
   GURL::Replacements replacements;
@@ -86,6 +78,20 @@ bool WillHandleBrowserAboutURL(GURL* url,
 }
 
 bool HandleNonNavigationAboutURL(const GURL& url) {
+  const std::string host(url.host());
+
+  if (host == chrome::kChromeUIRestartHost) {
+    // Call AttemptRestart after chrome::Navigate() completes to avoid access of
+    // gtk objects after they are destroyed by BrowserWindowGtk::Close().
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&chrome::AttemptRestart));
+    return true;
+  } else if (host == chrome::kChromeUIQuitHost) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&chrome::AttemptExit));
+    return true;
+  }
+
   // chrome://ipc/ is currently buggy, so we disable it for official builds.
 #if !defined(OFFICIAL_BUILD)
 
