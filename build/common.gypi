@@ -2033,12 +2033,11 @@
       # Set this to use the new DX11 version of ANGLE.
       # TODO(apatrick): Remove this when the transition is complete.
       'ANGLE_DX11',
+
+      # Don't use deprecated V8 APIs anywhere.
+      'V8_DEPRECATION_WARNINGS',
     ],
     'conditions': [
-      # TODO(jochen): Enable this unconditionally.
-      ['OS!="mac"', {
-        'defines': ['V8_DEPRECATION_WARNINGS'],
-      }],
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
