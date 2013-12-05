@@ -5,6 +5,7 @@
 #include "components/wifi/wifi_service.h"
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "components/onc/onc_constants.h"
 
@@ -97,12 +98,112 @@ class FakeWiFiService : public WiFiService {
     }
   }
 
+  virtual void GetManagedProperties(const std::string& network_guid,
+                                    DictionaryValue* managed_properties,
+                                    std::string* error) OVERRIDE {
+    const std::string network_properties =
+        "{"
+        "  \"ConnectionState\": {"
+        "    \"Active\": \"NotConnected\","
+        "    \"Effective\": \"Unmanaged\""
+        "  },"
+        "  \"GUID\": \"stub_wifi2\","
+        "  \"Name\": {"
+        "    \"Active\": \"wifi2_PSK\","
+        "    \"Effective\": \"UserPolicy\","
+        "    \"UserPolicy\": \"My WiFi Network\""
+        "  },"
+        "  \"Type\": {"
+        "    \"Active\": \"WiFi\","
+        "    \"Effective\": \"UserPolicy\","
+        "    \"UserPolicy\": \"WiFi\""
+        "  },"
+        "  \"WiFi\": {"
+        "    \"AutoConnect\": {"
+        "      \"Active\": false,"
+        "      \"UserEditable\": true"
+        "    },"
+        "    \"Frequency\" : {"
+        "      \"Active\": 5000,"
+        "      \"Effective\": \"Unmanaged\""
+        "    },"
+        "    \"FrequencyList\" : {"
+        "      \"Active\": [2400, 5000],"
+        "      \"Effective\": \"Unmanaged\""
+        "    },"
+        "    \"Passphrase\": {"
+        "      \"Effective\": \"UserSetting\","
+        "      \"UserEditable\": true,"
+        "      \"UserSetting\": \"FAKE_CREDENTIAL_VPaJDV9x\""
+        "    },"
+        "    \"SSID\": {"
+        "      \"Active\": \"wifi2_PSK\","
+        "      \"Effective\": \"UserPolicy\","
+        "      \"UserPolicy\": \"wifi2_PSK\""
+        "    },"
+        "    \"Security\": {"
+        "      \"Active\": \"WPA-PSK\","
+        "      \"Effective\": \"UserPolicy\","
+        "      \"UserPolicy\": \"WPA-PSK\""
+        "    },"
+        "    \"SignalStrength\": {"
+        "      \"Active\": 80,"
+        "      \"Effective\": \"Unmanaged\""
+        "    }"
+        "  }"
+        "}";
+    scoped_ptr<DictionaryValue> properties_value(
+        reinterpret_cast<DictionaryValue*>(
+            base::JSONReader::Read(network_properties)));
+    managed_properties->MergeDictionary(properties_value.get());
+  }
+
+  virtual void GetState(const std::string& network_guid,
+                        DictionaryValue* properties,
+                        std::string* error) OVERRIDE {
+    NetworkList::iterator network_properties = FindNetwork(network_guid);
+    if (network_properties == networks_.end()) {
+      *error = "Error.InvalidParameter";
+      return;
+    }
+
+    const std::string network_state =
+        "{"
+        "  \"ConnectionState\": \"NotConnected\","
+        "  \"GUID\": \"stub_wifi2\","
+        "  \"Name\": \"wifi2_PSK\","
+        "  \"Type\": \"WiFi\","
+        "  \"WiFi\": {"
+        "    \"Security\": \"WPA-PSK\","
+        "    \"SignalStrength\": 80"
+        "  }"
+        "}";
+    scoped_ptr<DictionaryValue> properties_value(
+        reinterpret_cast<DictionaryValue*>(
+            base::JSONReader::Read(network_state)));
+    properties->MergeDictionary(properties_value.get());
+  }
+
   virtual void SetProperties(const std::string& network_guid,
                              scoped_ptr<base::DictionaryValue> properties,
                              std::string* error) OVERRIDE {
     NetworkList::iterator network_properties = FindNetwork(network_guid);
     if (network_properties == networks_.end() ||
         !network_properties->UpdateFromValue(*properties)) {
+      *error = "Error.DBusFailed";
+    }
+  }
+
+  virtual void CreateNetwork(bool shared,
+                             scoped_ptr<base::DictionaryValue> properties,
+                             std::string* network_guid,
+                             std::string* error) OVERRIDE {
+    WiFiService::NetworkProperties network_properties;
+    if (network_properties.UpdateFromValue(*properties)) {
+      network_properties.guid = network_properties.ssid;
+      networks_.push_back(network_properties);
+      *network_guid = network_properties.guid;
+    } else {
       *error = "Error.DBusFailed";
     }
   }

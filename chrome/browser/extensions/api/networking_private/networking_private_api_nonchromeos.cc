@@ -72,61 +72,33 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
   scoped_ptr<api::GetManagedProperties::Params> params =
       api::GetManagedProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  const std::string network_properties =
-      "{"
-      "  \"ConnectionState\": {"
-      "    \"Active\": \"NotConnected\","
-      "    \"Effective\": \"Unmanaged\""
-      "  },"
-      "  \"GUID\": \"stub_wifi2\","
-      "  \"Name\": {"
-      "    \"Active\": \"wifi2_PSK\","
-      "    \"Effective\": \"UserPolicy\","
-      "    \"UserPolicy\": \"My WiFi Network\""
-      "  },"
-      "  \"Type\": {"
-      "    \"Active\": \"WiFi\","
-      "    \"Effective\": \"UserPolicy\","
-      "    \"UserPolicy\": \"WiFi\""
-      "  },"
-      "  \"WiFi\": {"
-      "    \"AutoConnect\": {"
-      "      \"Active\": false,"
-      "      \"UserEditable\": true"
-      "    },"
-      "    \"Frequency\" : {"
-      "      \"Active\": 5000,"
-      "      \"Effective\": \"Unmanaged\""
-      "    },"
-      "    \"FrequencyList\" : {"
-      "      \"Active\": [2400, 5000],"
-      "      \"Effective\": \"Unmanaged\""
-      "    },"
-      "    \"Passphrase\": {"
-      "      \"Effective\": \"UserSetting\","
-      "      \"UserEditable\": true,"
-      "      \"UserSetting\": \"FAKE_CREDENTIAL_VPaJDV9x\""
-      "    },"
-      "    \"SSID\": {"
-      "      \"Active\": \"wifi2_PSK\","
-      "      \"Effective\": \"UserPolicy\","
-      "      \"UserPolicy\": \"wifi2_PSK\""
-      "    },"
-      "    \"Security\": {"
-      "      \"Active\": \"WPA-PSK\","
-      "      \"Effective\": \"UserPolicy\","
-      "      \"UserPolicy\": \"WPA-PSK\""
-      "    },"
-      "    \"SignalStrength\": {"
-      "      \"Active\": 80,"
-      "      \"Effective\": \"Unmanaged\""
-      "    }"
-      "  }"
-      "}";
+  NetworkingPrivateServiceClient* service_client =
+      NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
 
-  SetResult(base::JSONReader::Read(network_properties));
-  SendResponse(true);
+  service_client->GetManagedProperties(
+      params->network_guid,
+      base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success,
+                 this),
+      base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Failure,
+                 this));
   return true;
+}
+
+void NetworkingPrivateGetManagedPropertiesFunction::Success(
+    const std::string& network_guid,
+    const base::DictionaryValue& dictionary) {
+  scoped_ptr<base::DictionaryValue> network_properties(dictionary.DeepCopy());
+  network_properties->SetStringWithoutPathExpansion(onc::network_config::kGUID,
+                                                    network_guid);
+  SetResult(network_properties.release());
+  SendResponse(true);
+}
+
+void NetworkingPrivateGetManagedPropertiesFunction::Failure(
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  error_ = error_name;
+  SendResponse(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,22 +112,31 @@ bool NetworkingPrivateGetStateFunction::RunImpl() {
   scoped_ptr<api::GetState::Params> params =
       api::GetState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  const std::string network_state =
-      "{"
-      "  \"ConnectionState\": \"NotConnected\","
-      "  \"GUID\": \"stub_wifi2\","
-      "  \"Name\": \"wifi2_PSK\","
-      "  \"Type\": \"WiFi\","
-      "  \"WiFi\": {"
-      "    \"Security\": \"WPA-PSK\","
-      "    \"SignalStrength\": 80"
-      "  }"
-      "}";
-  SetResult(base::JSONReader::Read(network_state));
-  SendResponse(true);
+  NetworkingPrivateServiceClient* service_client =
+      NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
+
+  service_client->GetState(
+      params->network_guid,
+      base::Bind(&NetworkingPrivateGetStateFunction::Success,
+                 this),
+      base::Bind(&NetworkingPrivateGetStateFunction::Failure,
+                 this));
   return true;
 }
 
+void NetworkingPrivateGetStateFunction::Success(
+    const std::string& network_guid,
+    const base::DictionaryValue& dictionary) {
+  SetResult(dictionary.DeepCopy());
+  SendResponse(true);
+}
+
+void NetworkingPrivateGetStateFunction::Failure(
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  error_ = error_name;
+  SendResponse(false);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateSetPropertiesFunction
@@ -204,10 +185,31 @@ bool NetworkingPrivateCreateNetworkFunction::RunImpl() {
   scoped_ptr<api::CreateNetwork::Params> params =
       api::CreateNetwork::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
+  scoped_ptr<base::DictionaryValue> properties_dict(
+      params->properties.ToValue());
 
-  results_ = api::CreateNetwork::Results::Create("fake_guid");
-  SendResponse(true);
+  NetworkingPrivateServiceClient* service_client =
+      NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
+
+  service_client->CreateNetwork(
+      params->shared,
+      *properties_dict,
+      base::Bind(&NetworkingPrivateCreateNetworkFunction::ResultCallback, this),
+      base::Bind(&NetworkingPrivateCreateNetworkFunction::ErrorCallback, this));
   return true;
+}
+
+void NetworkingPrivateCreateNetworkFunction::ErrorCallback(
+    const std::string& error_name,
+    const scoped_ptr<base::DictionaryValue> error_data) {
+  error_ = error_name;
+  SendResponse(false);
+}
+
+void NetworkingPrivateCreateNetworkFunction::ResultCallback(
+    const std::string& guid) {
+  results_ = api::CreateNetwork::Results::Create(guid);
+  SendResponse(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -204,6 +204,58 @@ void NetworkingPrivateServiceClient::GetProperties(
                  base::Owned(error)));
 }
 
+void NetworkingPrivateServiceClient::GetManagedProperties(
+    const std::string& network_guid,
+    const DictionaryResultCallback& callback,
+    const ErrorCallback& error_callback) {
+  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
+  service_callbacks->error_callback = error_callback;
+  service_callbacks->get_properties_callback = callback;
+
+  DictionaryValue* properties = new DictionaryValue();
+  std::string* error = new std::string;
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&WiFiService::GetManagedProperties,
+                 base::Unretained(wifi_service_.get()),
+                 network_guid,
+                 properties,
+                 error),
+      base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
+                 weak_factory_.GetWeakPtr(),
+                 service_callbacks->id,
+                 network_guid,
+                 base::Owned(properties),
+                 base::Owned(error)));
+}
+
+void NetworkingPrivateServiceClient::GetState(
+    const std::string& network_guid,
+    const DictionaryResultCallback& callback,
+    const ErrorCallback& error_callback) {
+  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
+  service_callbacks->error_callback = error_callback;
+  service_callbacks->get_properties_callback = callback;
+
+  DictionaryValue* properties = new DictionaryValue();
+  std::string* error = new std::string;
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&WiFiService::GetState,
+                 base::Unretained(wifi_service_.get()),
+                 network_guid,
+                 properties,
+                 error),
+      base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
+                 weak_factory_.GetWeakPtr(),
+                 service_callbacks->id,
+                 network_guid,
+                 base::Owned(properties),
+                 base::Owned(error)));
+}
+
 void NetworkingPrivateServiceClient::GetVisibleNetworks(
     const std::string& network_type,
     const ListResultCallback& callback) {
@@ -256,6 +308,33 @@ void NetworkingPrivateServiceClient::SetProperties(
                  base::Owned(error)));
 }
 
+void NetworkingPrivateServiceClient::CreateNetwork(
+    bool shared,
+    const base::DictionaryValue& properties,
+    const StringResultCallback& callback,
+    const ErrorCallback& error_callback) {
+  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
+  service_callbacks->error_callback = error_callback;
+  service_callbacks->create_network_callback = callback;
+
+  scoped_ptr<base::DictionaryValue> properties_ptr(properties.DeepCopy());
+  std::string* network_guid = new std::string;
+  std::string* error = new std::string;
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&WiFiService::CreateNetwork,
+                 base::Unretained(wifi_service_.get()),
+                 shared,
+                 base::Passed(&properties_ptr),
+                 network_guid,
+                 error),
+      base::Bind(&NetworkingPrivateServiceClient::AfterCreateNetwork,
+                 weak_factory_.GetWeakPtr(),
+                 service_callbacks->id,
+                 base::Owned(network_guid),
+                 base::Owned(error)));
+}
 
 void NetworkingPrivateServiceClient::StartConnect(
     const std::string& network_guid,
@@ -391,6 +470,23 @@ void NetworkingPrivateServiceClient::AfterSetProperties(
   } else {
     DCHECK(!service_callbacks->set_properties_callback.is_null());
     service_callbacks->set_properties_callback.Run();
+  }
+  RemoveServiceCallbacks(callback_id);
+}
+
+void NetworkingPrivateServiceClient::AfterCreateNetwork(
+    ServiceCallbacksID callback_id,
+    const std::string* network_guid,
+    const std::string* error) {
+  ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
+  DCHECK(service_callbacks);
+  if (!error->empty()) {
+    DCHECK(!service_callbacks->error_callback.is_null());
+    service_callbacks->error_callback.Run(*error,
+                                          scoped_ptr<base::DictionaryValue>());
+  } else {
+    DCHECK(!service_callbacks->create_network_callback.is_null());
+    service_callbacks->create_network_callback.Run(*network_guid);
   }
   RemoveServiceCallbacks(callback_id);
 }

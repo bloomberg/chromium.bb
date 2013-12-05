@@ -332,21 +332,22 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetState) {
   EXPECT_TRUE(RunNetworkingSubtest("getState")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, SetProperties) {
-  EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
-}
-
-#if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, CreateNetwork) {
-  EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetStateNonExistent) {
   EXPECT_TRUE(RunNetworkingSubtest("getStateNonExistent")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, SetProperties) {
+  EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, CreateNetwork) {
+  EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        GetManagedProperties) {
+#if defined(OS_CHROMEOS)
+  // TODO(mef): Move this to ChromeOS-specific helper or SetUpOnMainThread.
   ShillServiceClient::TestInterface* service_test =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
   const std::string uidata_blob =
@@ -394,10 +395,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();
+#endif  // OS_CHROMEOS
 
   EXPECT_TRUE(RunNetworkingSubtest("getManagedProperties")) << message_;
 }
-#endif  // OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        OnNetworksChangedEventConnect) {

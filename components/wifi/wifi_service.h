@@ -48,10 +48,36 @@ class WIFI_EXPORT WiFiService {
                              DictionaryValue* properties,
                              std::string* error) = 0;
 
+  // Gets the merged properties of the network with id |network_guid| from the
+  // sources: User settings, shared settings, user policy, device policy and
+  // the currently active settings. Populates |managed_properties| on success,
+  // |error| on failure.
+  virtual void GetManagedProperties(const std::string& network_guid,
+                                    DictionaryValue* managed_properties,
+                                    std::string* error) = 0;
+
+  // Get the cached read-only properties of the network with id |network_guid|.
+  // This is meant to be a higher performance function than |GetProperties|,
+  // which requires a round trip to query the networking subsystem. It only
+  // returns a subset of the properties returned by |GetProperties|. Populates
+  // |properties| on success, |error| on failure.
+  virtual void GetState(const std::string& network_guid,
+                        DictionaryValue* properties,
+                        std::string* error) = 0;
+
   // Set Properties of network identified by |network_guid|. Populates |error|
   // on failure.
   virtual void SetProperties(const std::string& network_guid,
                              scoped_ptr<base::DictionaryValue> properties,
+                             std::string* error) = 0;
+
+  // Creates a new network configuration from |properties|. If |shared| is true,
+  // share this network configuration with other users. If a matching configured
+  // network already exists, this will fail and populate |error|. On success
+  // populates the |network_guid| of the new network.
+  virtual void CreateNetwork(bool shared,
+                             scoped_ptr<base::DictionaryValue> properties,
+                             std::string* network_guid,
                              std::string* error) = 0;
 
   // Get list of visible networks of |network_type| (one of onc::network_type).

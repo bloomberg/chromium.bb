@@ -117,6 +117,23 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
                      const DictionaryResultCallback& callback,
                      const ErrorCallback& error_callback);
 
+  // Gets the merged properties of the network with id |network_guid| from these
+  // sources: User settings, shared settings, user policy, device policy and
+  // the currently active settings. See note on
+  // |callback| and |error_callback|, in class description above.
+  void GetManagedProperties(const std::string& network_guid,
+                            const DictionaryResultCallback& callback,
+                            const ErrorCallback& error_callback);
+
+  // Gets the cached read-only properties of the network with id |network_guid|.
+  // This is meant to be a higher performance function than |GetProperties|,
+  // which requires a round trip to query the networking subsystem. It only
+  // returns a subset of the properties returned by |GetProperties|. See note on
+  // |callback| and |error_callback|, in class description above.
+  void GetState(const std::string& network_guid,
+                const DictionaryResultCallback& callback,
+                const ErrorCallback& error_callback);
+
   // Start connect to the network with id |network_guid|. See note on
   // |callback| and |error_callback|, in class description above.
   void StartConnect(const std::string& network_guid,
@@ -134,6 +151,16 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
   void SetProperties(const std::string& network_guid,
                      const base::DictionaryValue& properties,
                      const base::Closure& callback,
+                     const ErrorCallback& error_callback);
+
+  // Creates a new network configuration from |properties|. If |shared| is true,
+  // share this network configuration with other users. If a matching configured
+  // network already exists, this will fail. On success invokes |callback| with
+  // the |network_guid| of the new network. See note on |callback| and
+  // error_callback|, in class description above.
+  void CreateNetwork(bool shared,
+                     const base::DictionaryValue& properties,
+                     const StringResultCallback& callback,
                      const ErrorCallback& error_callback);
 
   // Requests network scan. Broadcasts NetworkListChangedEvent upon completion.
@@ -174,6 +201,7 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
     base::Closure start_connect_callback;
     base::Closure start_disconnect_callback;
     base::Closure set_properties_callback;
+    StringResultCallback create_network_callback;
     ListResultCallback get_visible_networks_callback;
     ErrorCallback error_callback;
 
@@ -193,6 +221,9 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
                           const DictionaryValue* properties,
                           const std::string* error);
   void AfterSetProperties(ServiceCallbacksID callback_id,
+                          const std::string* error);
+  void AfterCreateNetwork(ServiceCallbacksID callback_id,
+                          const std::string* network_guid,
                           const std::string* error);
   void AfterGetVisibleNetworks(ServiceCallbacksID callback_id,
                                const ListValue* network_list);

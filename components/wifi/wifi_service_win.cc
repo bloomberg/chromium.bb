@@ -152,38 +152,38 @@ class WiFiServiceImpl : public WiFiService, base::NonThreadSafe {
 
   virtual void UnInitialize() OVERRIDE;
 
-  // Get Properties of network identified by |network_guid|. Populates
-  // |properties| on success, |error| on failure.
   virtual void GetProperties(const std::string& network_guid,
                              DictionaryValue* properties,
                              std::string* error) OVERRIDE;
 
-  // Set Properties of network identified by |network_guid|. Populates |error|
-  // on failure.
+  virtual void GetManagedProperties(const std::string& network_guid,
+                                    DictionaryValue* managed_properties,
+                                    std::string* error) OVERRIDE;
+
+  virtual void GetState(const std::string& network_guid,
+                        DictionaryValue* properties,
+                        std::string* error) OVERRIDE;
+
   virtual void SetProperties(const std::string& network_guid,
                              scoped_ptr<base::DictionaryValue> properties,
                              std::string* error) OVERRIDE;
 
-  // Get list of visible networks of |network_type| (one of onc::network_type).
-  // Populates |network_list| on success.
+  virtual void CreateNetwork(bool shared,
+                             scoped_ptr<base::DictionaryValue> properties,
+                             std::string* network_guid,
+                             std::string* error) OVERRIDE;
+
   virtual void GetVisibleNetworks(const std::string& network_type,
                                    ListValue* network_list) OVERRIDE;
 
-  // Request network scan. Send |NetworkListChanged| event on completion.
   virtual void RequestNetworkScan() OVERRIDE;
 
-  // Start connect to network identified by |network_guid|. Populates |error|
-  // on failure.
   virtual void StartConnect(const std::string& network_guid,
                             std::string* error) OVERRIDE;
 
-  // Start disconnect from network identified by |network_guid|. Populates
-  // |error| on failure.
   virtual void StartDisconnect(const std::string& network_guid,
                                std::string* error) OVERRIDE;
 
-  // Set observers to run when |NetworksChanged| and |NetworksListChanged|
-  // events needs to be sent. Notifications are posted on |message_loop_proxy|.
   virtual void SetEventObservers(
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       const NetworkGuidListCallback& networks_changed_observer,
@@ -443,6 +443,18 @@ void WiFiServiceImpl::GetProperties(const std::string& network_guid,
   CheckError(error_code, kWiFiServiceError, error);
 }
 
+void WiFiServiceImpl::GetManagedProperties(const std::string& network_guid,
+                                           DictionaryValue* managed_properties,
+                                           std::string* error) {
+  CheckError(ERROR_CALL_NOT_IMPLEMENTED, kWiFiServiceError, error);
+}
+
+void WiFiServiceImpl::GetState(const std::string& network_guid,
+                               DictionaryValue* properties,
+                               std::string* error) {
+  CheckError(ERROR_CALL_NOT_IMPLEMENTED, kWiFiServiceError, error);
+}
+
 void WiFiServiceImpl::SetProperties(
     const std::string& network_guid,
     scoped_ptr<base::DictionaryValue> properties,
@@ -457,6 +469,14 @@ void WiFiServiceImpl::SetProperties(
   }
   connect_properties_.SetWithoutPathExpansion(network_guid,
                                               properties.release());
+}
+
+void WiFiServiceImpl::CreateNetwork(
+    bool shared,
+    scoped_ptr<base::DictionaryValue> properties,
+    std::string* network_guid,
+    std::string* error) {
+  CheckError(ERROR_CALL_NOT_IMPLEMENTED, kWiFiServiceError, error);
 }
 
 void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,

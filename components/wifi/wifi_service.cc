@@ -64,10 +64,20 @@ scoped_ptr<base::DictionaryValue> WiFiService::NetworkProperties::ToValue(
 bool WiFiService::NetworkProperties::UpdateFromValue(
     const base::DictionaryValue& value) {
   const base::DictionaryValue* wifi = NULL;
-  std::string wifi_security;
-  if (value.GetDictionary(onc::network_type::kWiFi, &wifi) &&
-      wifi->GetString(onc::wifi::kSecurity, &wifi_security)) {
-    security = wifi_security;
+  std::string network_type;
+  // Get network type and make sure that it is WiFi (if specified).
+  if (value.GetString(onc::network_config::kType, &network_type)) {
+    if (network_type != onc::network_type::kWiFi)
+      return false;
+    type = network_type;
+  }
+  if (value.GetDictionary(onc::network_type::kWiFi, &wifi)) {
+    std::string wifi_security;
+    if (wifi->GetString(onc::wifi::kSecurity, &wifi_security))
+      security = wifi_security;
+    std::string wifi_ssid;
+    if (wifi->GetString(onc::wifi::kSSID, &wifi_ssid))
+      ssid = wifi_ssid;
     return true;
   }
   return false;

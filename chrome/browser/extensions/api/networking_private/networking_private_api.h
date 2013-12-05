@@ -76,6 +76,11 @@ class NetworkingPrivateGetStateFunction : public ChromeAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  void Success(const std::string& service_path,
+               const base::DictionaryValue& result);
+  void Failure(const std::string& error_name,
+               scoped_ptr<base::DictionaryValue> error_data);
+
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetStateFunction);
 };
 
