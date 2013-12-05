@@ -1004,8 +1004,21 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
     } else {
       int64 parent_tracker_id = parent_tracker->tracker_id();
       const std::string& title = updated_details.title();
-      trackers_by_parent_and_title_[parent_tracker_id][title].Insert(
+      TrackerSet* trackers =
+          &trackers_by_parent_and_title_[parent_tracker_id][title];
+
+      for (TrackerSet::iterator itr = trackers->begin();
+           itr != trackers->end(); ++itr) {
+        if ((*itr)->file_id() == tracker->file_id()) {
+          RemoveTracker(tracker->tracker_id(), batch.get());
+          WriteToDatabase(batch.Pass(), callback);
+          return;
+        }
+      }
+
+      trackers_by_parent_and_title_[parent_tracker_id][std::string()].Erase(
           tracker);
+      trackers->Insert(tracker);
     }
   }
 
