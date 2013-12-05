@@ -179,6 +179,9 @@
     { "name": "history.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "security.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "goto.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "cloud.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "glass.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "play.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     // Other Google-related domains that must use HTTPS.
     { "name": "market.android.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
