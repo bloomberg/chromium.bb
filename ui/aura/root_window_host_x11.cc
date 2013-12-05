@@ -84,10 +84,8 @@ bool IsSideBezelsEnabled() {
 }
 #endif
 
-void SelectEventsForRootWindow(XDisplay* display, ::Window root_window) {
-  if (!ui::IsXInput2Available())
-    return;
-
+void SelectXInput2EventsForRootWindow(XDisplay* display, ::Window root_window) {
+  CHECK(ui::IsXInput2Available());
   unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {};
   memset(mask, 0, sizeof(mask));
 
@@ -101,16 +99,20 @@ void SelectEventsForRootWindow(XDisplay* display, ::Window root_window) {
   evmask.mask = mask;
   XISelectEvents(display, root_window, &evmask, 1);
 
-  // Selecting for touch events seems to fail on some cases (e.g. when logging
-  // in incognito). So select for non-touch events first, and then select for
-  // touch-events (but keep the other events in the mask, i.e. do not memset
-  // |mask| back to 0).
-  // TODO(sad): Figure out why this happens. http://crbug.com/153976
-#if defined(USE_XI2_MT)
-  XISetMask(mask, XI_TouchBegin);
-  XISetMask(mask, XI_TouchUpdate);
-  XISetMask(mask, XI_TouchEnd);
-  XISelectEvents(display, root_window, &evmask, 1);
+#if defined(OS_CHROMEOS)
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    // It is necessary to listen for touch events on the root window for proper
+    // touch event calibration on Chrome OS, but this is not currently necessary
+    // on the desktop. This seems to fail in some cases (e.g. when logging
+    // in incognito). So select for non-touch events first, and then select for
+    // touch-events (but keep the other events in the mask, i.e. do not memset
+    // |mask| back to 0).
+    // TODO(sad): Figure out why this happens. http://crbug.com/153976
+    XISetMask(mask, XI_TouchBegin);
+    XISetMask(mask, XI_TouchUpdate);
+    XISetMask(mask, XI_TouchEnd);
+    XISelectEvents(display, root_window, &evmask, 1);
+  }
 #endif
 }
 
@@ -344,10 +346,10 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
 
-  if (ui::IsXInput2Available())
+  if (ui::IsXInput2Available()) {
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
-
-  SelectEventsForRootWindow(xdisplay_, x_root_window_);
+    SelectXInput2EventsForRootWindow(xdisplay_, x_root_window_);
+  }
 
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
