@@ -1022,7 +1022,13 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     result = CallWindowProc(
         delegate->plugin_wnd_proc_, hwnd, message, wparam, lparam);
 
-    delegate->is_calling_wndproc = false;
+    // The plugin instance may have been destroyed in the CallWindowProc call
+    // above. This will also destroy the plugin window. Before attempting to
+    // access the WebPluginDelegateImpl instance we validate if the window is
+    // still valid.
+    if (::IsWindow(hwnd))
+      delegate->is_calling_wndproc = false;
+
     g_current_plugin_instance = last_plugin_instance;
 
     if (message == WM_NCDESTROY) {
@@ -1038,7 +1044,8 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
       ClearThrottleQueueForWindow(hwnd);
     }
   }
-  delegate->last_message_ = old_message;
+  if (::IsWindow(hwnd))
+    delegate->last_message_ = old_message;
   return result;
 }
 
