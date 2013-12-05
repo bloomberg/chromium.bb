@@ -143,11 +143,12 @@ class AndroidNetworkLibrary {
 
     /**
      * @return the network interfaces list (if any) string. The items in
-     *         the list string are delimited by a semicolon ";", each item
-     *         is a network interface name and address pair and formatted
-     *         as "name,address". e.g.
-     *           eth0,10.0.0.2;eth0,fe80::5054:ff:fe12:3456
-     *         represents a network list string which containts two items.
+     *         the list string are delimited by a new line, each item
+     *         is tab separated network interface name, address with network
+     *         prefix length and network interface index.
+     *         as "name\taddress/prefix\tindex". e.g.
+     *           eth0\t10.0.0.2/8\t5\neth0\tfe80::5054:ff:fe12:3456/16\t5
+     *         represents a network list string with two items.
      */
     @CalledByNative
     static public String getNetworkList() {
@@ -183,6 +184,10 @@ class AndroidNetworkLibrary {
                     addressString.append(ipAddress);
                     addressString.append("/");
                     addressString.append(interfaceAddress.getNetworkPrefixLength());
+                    addressString.append("\t");
+
+                    // TODO(vitalybuka): use netIf.getIndex() when API level 19 is availible.
+                    addressString.append("0");
 
                     if (result.length() != 0)
                         result.append("\n");

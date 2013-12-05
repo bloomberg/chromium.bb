@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -20,6 +21,14 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include <iphlpapi.h>
+#include <objbase.h>
+#include "base/win/windows_version.h"
+#elif !defined(OS_ANDROID)
+#include <net/if.h>
+#endif  // OS_WIN
 
 namespace net {
 
@@ -3310,6 +3319,44 @@ TEST(NetUtilTest, GetNetworkList) {
     EXPECT_FALSE(all_zeroes);
     EXPECT_GT(it->network_prefix, 1u);
     EXPECT_LE(it->network_prefix, it->address.size() * 8);
+
+#if defined(OS_WIN)
+    // On Windows |name| is NET_LUID.
+    base::ScopedNativeLibrary phlpapi_lib(
+        base::FilePath(FILE_PATH_LITERAL("iphlpapi.dll")));
+    ASSERT_TRUE(phlpapi_lib.is_valid());
+    typedef NETIO_STATUS (WINAPI* ConvertInterfaceIndexToLuid)(NET_IFINDEX,
+                                                               PNET_LUID);
+    ConvertInterfaceIndexToLuid interface_to_luid =
+        reinterpret_cast<ConvertInterfaceIndexToLuid>(
+            phlpapi_lib.GetFunctionPointer("ConvertInterfaceIndexToLuid"));
+
+    typedef NETIO_STATUS (WINAPI* ConvertInterfaceLuidToGuid)(NET_LUID*,
+                                                              GUID*);
+    ConvertInterfaceLuidToGuid luid_to_guid =
+        reinterpret_cast<ConvertInterfaceLuidToGuid>(
+            phlpapi_lib.GetFunctionPointer("ConvertInterfaceLuidToGuid"));
+
+    if (interface_to_luid && luid_to_guid) {
+      NET_LUID luid;
+      EXPECT_EQ(interface_to_luid(it->interface_index, &luid), NO_ERROR);
+      GUID guid;
+      EXPECT_EQ(luid_to_guid(&luid, &guid), NO_ERROR);
+      LPOLESTR name;
+      StringFromCLSID(guid, &name);
+      EXPECT_STREQ(UTF8ToWide(it->name).c_str(), name);
+      CoTaskMemFree(name);
+      continue;
+    } else {
+      EXPECT_LT(base::win::GetVersion(), base::win::VERSION_VISTA);
+      EXPECT_LT(it->interface_index, 1u << 24u);  // Must fit 0.x.x.x.
+      EXPECT_NE(it->interface_index, 0u);  // 0 means to use default.
+    }
+#elif !defined(OS_ANDROID)
+    char name[IF_NAMESIZE];
+    EXPECT_TRUE(if_indextoname(it->interface_index, name));
+    EXPECT_STREQ(it->name.c_str(), name);
+#endif
   }
 }
 
