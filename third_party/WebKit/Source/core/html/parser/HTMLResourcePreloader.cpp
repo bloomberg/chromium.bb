@@ -59,9 +59,8 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     initiatorInfo.position = m_initiatorPosition;
     FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
 
-    // FIXME: It's possible CORS should work for other request types?
-    if (m_resourceType == Resource::Script)
-        request.mutableResourceRequest().setAllowCookies(m_crossOriginModeAllowsCookies);
+    if (m_isCORSEnabled)
+        request.setCrossOriginAccessControl(document->securityOrigin(), m_allowCredentials);
     return request;
 }
 
