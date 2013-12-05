@@ -31,10 +31,12 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     ExecutionContext* scriptContext = getExecutionContext();
     {% endif %}
     {# Special cases #}
+    {% if attribute.is_check_security_for_node or
+          attribute.is_getter_raises_exception %}
+    ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {% endif %}
     {% if attribute.is_check_security_for_node %}
     {# FIXME: consider using a local variable to not call getter twice #}
-    {# FIXME: spacing! ' ,' => ', ' #}
-    ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}" ,info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -42,7 +44,6 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     }
     {% endif %}
     {% if attribute.is_getter_raises_exception %}
-    ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}" ,info.Holder(), info.GetIsolate());
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -123,7 +124,6 @@ v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info
 v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
-    {# FIXME: fix Perl (generates this line even for non-wrapper types) #}
     {% if attribute.is_setter_raises_exception or
           attribute.has_strict_type_checking %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
