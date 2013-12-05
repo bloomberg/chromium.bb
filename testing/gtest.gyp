@@ -50,6 +50,16 @@
       'dependencies': [
         'gtest_prod',
       ],
+      'defines': [
+        # In order to allow regex matches in gtest to be shared between Windows
+        # and other systems, we tell gtest to always use it's internal engine.
+        'GTEST_HAS_POSIX_RE=0',
+      ],
+      'all_dependent_settings': {
+        'defines': [
+          'GTEST_HAS_POSIX_RE=0',
+        ],
+      },
       'conditions': [
         ['OS == "mac" or OS == "ios"', {
           'sources': [
