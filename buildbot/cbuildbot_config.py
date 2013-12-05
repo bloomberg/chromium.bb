@@ -348,6 +348,9 @@ _settings = dict(
   hw_tests=[],
 
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
+#                             Upload payloads for test image if the image is
+#                             built. If not, dev image is used and then base
+#                             image.
   upload_hw_test_artifacts=False,
 
 # upload_standalone_images -- If true, uploads individual image tarballs.
@@ -1737,7 +1740,7 @@ _arm_release.add_config('beaglebone-release',
   images=['base'],
   rootfs_verification=False,
   signer_tests=False,
-  upload_hw_test_artifacts=False,
+  upload_hw_test_artifacts=True,
 )
 
 _arm_release.add_config('daisy-release',

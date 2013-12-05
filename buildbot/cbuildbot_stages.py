@@ -2333,8 +2333,15 @@ class BuildImageStage(BuildPackagesStage):
     with osutils.TempDir(prefix='cbuildbot-payloads') as tempdir:
       with self.ArtifactUploader() as queue:
         if self._run.config.upload_hw_test_artifacts:
-          image_path = os.path.join(self.GetImageDirSymlink(),
-                                    'chromiumos_test_image.bin')
+          if 'test' in self._run.config.images:
+            image_name = 'chromiumos_test_image.bin'
+          elif 'dev' in self._run.config.images:
+            image_name = 'chromiumos_dev_image.bin'
+          else:
+            image_name = 'chromiumos_base_image.bin'
+
+          logging.info('Generating payloads to upload for %s', image_name)
+          image_path = os.path.join(self.GetImageDirSymlink(), image_name)
           # For non release builds, we are only interested in generating
           # payloads for the purpose of imaging machines. This means we
           # shouldn't generate delta payloads for n-1->n testing.
