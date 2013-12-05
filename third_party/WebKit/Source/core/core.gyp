@@ -746,7 +746,6 @@
                 ['include', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
                 ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
-                ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
                 ['exclude', 'platform/graphics/win/SimpleFontDataWin\\.cpp$'],
                 ['exclude', 'platform/graphics/win/GlyphPageTreeNodeWin\\.cpp$'],
                 ['exclude', 'platform/graphics/win/FontCacheWin\\.cpp$'],
