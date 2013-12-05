@@ -20,6 +20,7 @@
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -588,6 +589,7 @@ void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
     return;
   }
 
+  DCHECK(!fileapi::VirtualPath::IsRootPath(url_.path()));
   remote_change_processor()->ApplyRemoteChange(
       FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN),
       base::FilePath(),

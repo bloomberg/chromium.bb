@@ -319,6 +319,11 @@ void LocalFileSyncContext::HandleRemoteAddOrUpdate(
   FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
       file_system_context, url);
 
+  if (fileapi::VirtualPath::IsRootPath(url.path())) {
+    DidApplyRemoteChange(url, callback, base::PLATFORM_FILE_OK);
+    return;
+  }
+
   file_system_context->operation_runner()->Remove(
       url_for_sync, true /* recursive */,
       base::Bind(
