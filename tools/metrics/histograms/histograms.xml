@@ -13893,6 +13893,28 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Precache.DownloadedNonPrecache" units="bytes">
+  <summary>
+    The number of bytes that were downloaded over the network for HTTP/HTTPS
+    fetches that were not motivated by precaching. Logged per-request.
+  </summary>
+</histogram>
+
+<histogram name="Precache.DownloadedPrecacheMotivated" units="bytes">
+  <summary>
+    The number of bytes that were downloaded because of precaching. Logged
+    per-request.
+  </summary>
+</histogram>
+
+<histogram name="Precache.Saved" units="bytes">
+  <summary>
+    The number of bytes during user browsing that were served from the cache,
+    but would have been downloaded over a network if precaching was disabled.
+    Logged per-request.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.Event" enum="PrerenderEvent">
   <summary>
     Enumeration of what events related to prerendering have occurred.
@@ -31996,6 +32018,13 @@ other types of suffix sets.
   <group name="widevinecdmadapter.plugin" label="Widevine CDM on Mac"/>
   <affected-histogram name="Plugin.PpapiBrokerLoadResult"/>
   <affected-histogram name="Plugin.PpapiPluginLoadResult"/>
+</fieldtrial>
+
+<fieldtrial name="PrecacheCellular" separator=".">
+  <group name="Cellular"
+      label="covers fetches when connected to cellular networks"/>
+  <affected-histogram name="Precache.DownloadedNonPrecache"/>
+  <affected-histogram name="Precache.Saved"/>
 </fieldtrial>
 
 <fieldtrial name="Prefetch">

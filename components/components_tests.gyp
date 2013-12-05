@@ -37,7 +37,9 @@
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
+            'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
+            'precache/core/precache_url_table_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'test/run_all_unittests.cc',
             'translate/common/translate_metrics_unittest.cc',
@@ -84,7 +86,6 @@
 
             # Dependencies of precache
             'components.gyp:precache_core',
-            'components.gyp:precache_core_proto',
 
             # Dependencies of translate.
             'components.gyp:translate_common',

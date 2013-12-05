@@ -5,16 +5,6 @@
 {
   'targets': [
     {
-      'target_name': 'precache',
-      'type': 'static_library',
-      'dependencies': [
-        'precache_core',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-    },
-    {
       'target_name': 'precache_core',
       'type': 'static_library',
       'dependencies': [
@@ -27,10 +17,14 @@
         '..',
       ],
       'sources': [
+        'precache/core/precache_database.cc',
+        'precache/core/precache_database.h',
         'precache/core/precache_fetcher.cc',
         'precache/core/precache_fetcher.h',
         'precache/core/precache_switches.cc',
         'precache/core/precache_switches.h',
+        'precache/core/precache_url_table.cc',
+        'precache/core/precache_url_table.h',
       ],
       'includes': [ 'precache/precache_defines.gypi', ],
       'direct_dependent_settings': {
