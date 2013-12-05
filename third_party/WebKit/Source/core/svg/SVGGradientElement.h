@@ -107,11 +107,12 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGGradientElement* toSVGGradientElement(Node* node)
+inline bool isSVGGradientElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->hasTagName(SVGNames::radialGradientTag) || node->hasTagName(SVGNames::linearGradientTag)));
-    return static_cast<SVGGradientElement*>(node);
+    return node.hasTagName(SVGNames::radialGradientTag) || node.hasTagName(SVGNames::linearGradientTag);
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
 
 } // namespace WebCore
 

@@ -76,12 +76,12 @@ private:
     OwnPtr<AffineTransform> m_supplementalTransform;
 };
 
-inline SVGGraphicsElement* toSVGGraphicsElement(Node* node)
+inline bool isSVGGraphicsElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isSVGElement());
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isSVGGraphicsElement());
-    return static_cast<SVGGraphicsElement*>(node);
+    return node.isSVGElement() && toSVGElement(node).isSVGGraphicsElement();
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGGraphicsElement);
 
 } // namespace WebCore
 

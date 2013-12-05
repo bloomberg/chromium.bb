@@ -64,11 +64,12 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGPolyElement* toSVGPolyElement(SVGElement* element)
+inline bool isSVGPolyElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->hasTagName(SVGNames::polygonTag) || element->hasTagName(SVGNames::polylineTag));
-    return static_cast<SVGPolyElement*>(element);
+    return node.hasTagName(SVGNames::polygonTag) || node.hasTagName(SVGNames::polylineTag);
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGPolyElement);
 
 } // namespace WebCore
 
