@@ -199,13 +199,21 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       out_q.put('%d> %s' % (thread_num, err))
       ret_codes.put((code, err))
 
-    # Mark executable if necessary. We key off of the custom header
-    # "x-goog-meta-executable".
-    #
-    # TODO(hinoka): It is supposedly faster to use "gsutil stat" but that
-    # doesn't appear to be supported by the gsutil currently in our tree. When
-    # we update, this code should use that instead of "gsutil ls -L".
-    if sys.platform != 'win32':
+    # Set executable bit.
+    if sys.platform == 'cygwin':
+      # Under cygwin, mark all files as executable. The executable flag in
+      # Google Storage will not be set when uploading from Windows, so if
+      # this script is running under cygwin and we're downloading an
+      # executable, it will be unrunnable from inside cygwin without this.
+      st = os.stat(output_filename)
+      os.chmod(output_filename, st.st_mode | stat.S_IEXEC)
+    elif sys.platform != 'win32':
+      # On non-Windows platforms, key off of the custom header
+      # "x-goog-meta-executable".
+      #
+      # TODO(hinoka): It is supposedly faster to use "gsutil stat" but that
+      # doesn't appear to be supported by the gsutil currently in our tree. When
+      # we update, this code should use that instead of "gsutil ls -L".
       code, out, _ = gsutil.check_call('ls', '-L', file_url)
       if code != 0:
         out_q.put('%d> %s' % (thread_num, err))
