@@ -696,6 +696,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ShowBookmarkManager(browser_);
       break;
     case IDC_SHOW_APP_MENU:
+      content::RecordAction(content::UserMetricsAction("Accel_Show_App_Menu"));
       ShowAppMenu(browser_);
       break;
     case IDC_SHOW_AVATAR_MENU:
