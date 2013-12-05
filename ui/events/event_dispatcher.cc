@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#include "ui/events/event_target.h"
+#include "ui/events/event_targeter.h"
+
 namespace ui {
 
 namespace {
@@ -42,6 +45,29 @@ Event* EventDispatcherDelegate::current_event() {
 
 EventDispatchDetails EventDispatcherDelegate::DispatchEvent(EventTarget* target,
                                                             Event* event) {
+  CHECK(target);
+  EventDispatchDetails details = PreDispatchEvent(target, event);
+  if (!details.dispatcher_destroyed)
+    details = DispatchEventToTarget(target, event);
+  if (!details.dispatcher_destroyed)
+    details = PostDispatchEvent(target, *event);
+
+  return details;
+}
+
+EventDispatchDetails EventDispatcherDelegate::PreDispatchEvent(
+    EventTarget* target, Event* event) {
+  return EventDispatchDetails();
+}
+
+EventDispatchDetails EventDispatcherDelegate::PostDispatchEvent(
+    EventTarget* target, const Event& event) {
+  return EventDispatchDetails();
+}
+
+EventDispatchDetails EventDispatcherDelegate::DispatchEventToTarget(
+    EventTarget* target,
+    Event* event) {
   EventDispatcher* old_dispatcher = dispatcher_;
   EventDispatcher dispatcher(this);
   dispatcher_ = &dispatcher;
@@ -53,6 +79,9 @@ EventDispatchDetails EventDispatcherDelegate::DispatchEvent(EventTarget* target,
 
   return dispatcher.details();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// EventDispatcher:
 
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
     : delegate_(delegate),

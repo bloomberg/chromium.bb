@@ -85,6 +85,10 @@
         'event_dispatcher.h',
         'event_handler.cc',
         'event_handler.h',
+        'event_processor.cc',
+        'event_processor.h',
+        'event_source.cc',
+        'event_source.h',
         'event_target.cc',
         'event_target.h',
         'event_target_iterator.h',
@@ -157,6 +161,10 @@
         'test/events_test_utils.h',
         'test/events_test_utils_x11.cc',
         'test/events_test_utils_x11.h',
+        'test/test_event_processor.cc',
+        'test/test_event_processor.h',
+        'test/test_event_target.cc',
+        'test/test_event_target.h',
       ],
       'conditions': [
         ['use_x11==1', {
@@ -181,6 +189,7 @@
       ],
       'sources': [
         'event_dispatcher_unittest.cc',
+        'event_processor_unittest.cc',
         'event_unittest.cc',
         'gestures/velocity_calculator_unittest.cc',
         'keycodes/dom4/keycode_converter_unittest.cc',

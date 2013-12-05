@@ -8,12 +8,14 @@
 #include "base/auto_reset.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/event_target.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/events_export.h"
 
 namespace ui {
 
 class EventDispatcher;
+class EventTarget;
+class EventTargeter;
 
 struct EventDispatchDetails {
   EventDispatchDetails()
@@ -37,14 +39,30 @@ class EVENTS_EXPORT EventDispatcherDelegate {
   // dispatched).
   Event* current_event();
 
- protected:
-  // Dispatches the event to the target. Returns true if the delegate is still
-  // alive after dispatching event, and false if the delegate was destroyed
-  // during the event dispatch.
+  // Dispatches |event| to |target|. This calls |PreDispatchEvent()| before
+  // dispatching the event, and |PostDispatchEvent()| after the event has been
+  // dispatched.
   EventDispatchDetails DispatchEvent(EventTarget* target, Event* event)
       WARN_UNUSED_RESULT;
 
+ protected:
+  // This is called once a target has been determined for an event, right before
+  // the event is dispatched to the target. This function may modify |event| to
+  // prepare it for dispatch (e.g. update event flags, location etc.).
+  virtual EventDispatchDetails PreDispatchEvent(
+      EventTarget* target,
+      Event* event) WARN_UNUSED_RESULT;
+
+  // This is called right after the event dispatch is completed.
+  virtual EventDispatchDetails PostDispatchEvent(
+      EventTarget* target,
+      const Event& event) WARN_UNUSED_RESULT;
+
  private:
+  // Dispatches the event to the target.
+  EventDispatchDetails DispatchEventToTarget(EventTarget* target,
+                                             Event* event) WARN_UNUSED_RESULT;
+
   EventDispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcherDelegate);
