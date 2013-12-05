@@ -205,9 +205,6 @@ public:
     Element* assertElement(ErrorString*, int nodeId);
     Document* assertDocument(ErrorString*, int nodeId);
 
-    // Methods called from other agents.
-    InspectorPageAgent* pageAgent() { return m_pageAgent; }
-
 private:
     enum SearchMode { NotSearching, SearchingForNormal, SearchingForShadow };
 
