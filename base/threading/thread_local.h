@@ -56,7 +56,6 @@
 #endif
 
 namespace base {
-
 namespace internal {
 
 // Helper functions that abstract the cross-platform APIs.  Do not use directly.
@@ -67,10 +66,10 @@ struct BASE_EXPORT ThreadLocalPlatform {
   typedef pthread_key_t SlotType;
 #endif
 
-  static void AllocateSlot(SlotType& slot);
-  static void FreeSlot(SlotType& slot);
-  static void* GetValueFromSlot(SlotType& slot);
-  static void SetValueInSlot(SlotType& slot, void* value);
+  static void AllocateSlot(SlotType* slot);
+  static void FreeSlot(SlotType slot);
+  static void* GetValueFromSlot(SlotType slot);
+  static void SetValueInSlot(SlotType slot, void* value);
 };
 
 }  // namespace internal
@@ -79,7 +78,7 @@ template <typename Type>
 class ThreadLocalPointer {
  public:
   ThreadLocalPointer() : slot_() {
-    internal::ThreadLocalPlatform::AllocateSlot(slot_);
+    internal::ThreadLocalPlatform::AllocateSlot(&slot_);
   }
 
   ~ThreadLocalPointer() {
@@ -106,8 +105,8 @@ class ThreadLocalPointer {
 
 class ThreadLocalBoolean {
  public:
-  ThreadLocalBoolean() { }
-  ~ThreadLocalBoolean() { }
+  ThreadLocalBoolean() {}
+  ~ThreadLocalBoolean() {}
 
   bool Get() {
     return tlp_.Get() != NULL;
