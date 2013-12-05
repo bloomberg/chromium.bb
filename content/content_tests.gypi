@@ -714,7 +714,7 @@
         }],
         ['enable_webrtc==1 and chromeos==1', {
           'sources': [
-            'browser/renderer_host/media/desktop_capture_device_ash_unittest.cc',
+            'browser/renderer_host/media/desktop_capture_device_aura_unittest.cc',
           ],
         }],
         # TODO(jrg): remove the OS=="android" section?

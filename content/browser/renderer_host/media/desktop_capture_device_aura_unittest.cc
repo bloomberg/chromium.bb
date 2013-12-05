@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/desktop_capture_device_ash.h"
+#include "content/browser/renderer_host/media/desktop_capture_device_aura.h"
 
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_thread_impl.h"
@@ -49,18 +49,18 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
 };
 
 // Test harness that sets up a minimal environment with necessary stubs.
-class DesktopCaptureDeviceAshTest : public testing::Test {
+class DesktopCaptureDeviceAuraTest : public testing::Test {
  public:
-  DesktopCaptureDeviceAshTest()
+  DesktopCaptureDeviceAuraTest()
       : browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
-  virtual ~DesktopCaptureDeviceAshTest() {}
+  virtual ~DesktopCaptureDeviceAuraTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
     helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     helper_->SetUp();
 
-    // We need a window to cover desktop area so that DesktopCaptureDeviceAsh
+    // We need a window to cover desktop area so that DesktopCaptureDeviceAura
     // can use gfx::NativeWindow::GetWindowAtScreenPoint() to locate the
     // root window associated with the primary display.
     gfx::Rect desktop_bounds = root_window()->bounds();
@@ -90,13 +90,13 @@ class DesktopCaptureDeviceAshTest : public testing::Test {
   scoped_ptr<aura::Window> desktop_window_;
   scoped_ptr<aura::test::TestWindowDelegate> window_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAshTest);
+  DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAuraTest);
 };
 
-TEST_F(DesktopCaptureDeviceAshTest, StartAndStop) {
+TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
   DesktopMediaID source(DesktopMediaID::TYPE_SCREEN, 0);
   scoped_ptr<media::VideoCaptureDevice> capture_device(
-      DesktopCaptureDeviceAsh::Create(source));
+      DesktopCaptureDeviceAura::Create(source));
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError()).Times(0);

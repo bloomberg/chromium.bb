@@ -1362,8 +1362,8 @@
       'sources': [
         'browser/renderer_host/media/desktop_capture_device.cc',
         'browser/renderer_host/media/desktop_capture_device.h',
-        'browser/renderer_host/media/desktop_capture_device_ash.cc',
-        'browser/renderer_host/media/desktop_capture_device_ash.h',
+        'browser/renderer_host/media/desktop_capture_device_aura.cc',
+        'browser/renderer_host/media/desktop_capture_device_aura.h',
       ],
       'dependencies': [
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',

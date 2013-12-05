@@ -1,8 +1,8 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-#include "content/browser/renderer_host/media/desktop_capture_device_ash.h"
+
+#include "content/browser/renderer_host/media/desktop_capture_device_aura.h"
 
 #include "base/logging.h"
 #include "base/timer/timer.h"
@@ -294,33 +294,33 @@ void DesktopVideoCaptureMachine::OnCompositingEnded(
 
 }  // namespace
 
-DesktopCaptureDeviceAsh::DesktopCaptureDeviceAsh(
+DesktopCaptureDeviceAura::DesktopCaptureDeviceAura(
     const DesktopMediaID& source)
     : impl_(new VideoCaptureDeviceImpl(scoped_ptr<VideoCaptureMachine>(
         new DesktopVideoCaptureMachine(source)))) {}
 
-DesktopCaptureDeviceAsh::~DesktopCaptureDeviceAsh() {
-  DVLOG(2) << "DesktopCaptureDeviceAsh@" << this << " destroying.";
+DesktopCaptureDeviceAura::~DesktopCaptureDeviceAura() {
+  DVLOG(2) << "DesktopCaptureDeviceAura@" << this << " destroying.";
 }
 
 // static
-media::VideoCaptureDevice* DesktopCaptureDeviceAsh::Create(
+media::VideoCaptureDevice* DesktopCaptureDeviceAura::Create(
     const DesktopMediaID& source) {
   // This implementation only supports screen capture.
   if (source.type != DesktopMediaID::TYPE_SCREEN)
     return NULL;
 
-  return new DesktopCaptureDeviceAsh(source);
+  return new DesktopCaptureDeviceAura(source);
 }
 
-void DesktopCaptureDeviceAsh::AllocateAndStart(
+void DesktopCaptureDeviceAura::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
   impl_->AllocateAndStart(params, client.Pass());
 }
 
-void DesktopCaptureDeviceAsh::StopAndDeAllocate() {
+void DesktopCaptureDeviceAura::StopAndDeAllocate() {
   impl_->StopAndDeAllocate();
 }
 

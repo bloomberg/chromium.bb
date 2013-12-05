@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_ASH_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_ASH_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_AURA_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_AURA_H_
 
 #include <string>
 
@@ -20,14 +20,14 @@ namespace content {
 
 class VideoCaptureDeviceImpl;
 
-// An implementation of VideoCaptureDevice that mirrors the desktop on Ash.
-class CONTENT_EXPORT DesktopCaptureDeviceAsh
+// An implementation of VideoCaptureDevice that mirrors an Aura window.
+class CONTENT_EXPORT DesktopCaptureDeviceAura
     : public media::VideoCaptureDevice {
  public:
-  // Creates a VideoCaptureDevice for the Ash desktop.
+  // Creates a VideoCaptureDevice for the Aura desktop.
   static media::VideoCaptureDevice* Create(const DesktopMediaID& source);
 
-  virtual ~DesktopCaptureDeviceAsh();
+  virtual ~DesktopCaptureDeviceAura();
 
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(const media::VideoCaptureParams& params,
@@ -35,14 +35,14 @@ class CONTENT_EXPORT DesktopCaptureDeviceAsh
   virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
-  DesktopCaptureDeviceAsh(const DesktopMediaID& source);
+  DesktopCaptureDeviceAura(const DesktopMediaID& source);
 
   const scoped_ptr<class VideoCaptureDeviceImpl> impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAsh);
+  DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAura);
 };
 
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_ASH_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_AURA_H_
