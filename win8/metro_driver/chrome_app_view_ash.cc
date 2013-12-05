@@ -185,11 +185,11 @@ class ChromeChannelListener : public IPC::Listener {
   }
 
  private:
-  void OnActivateDesktop(const base::FilePath& shortcut) {
+  void OnActivateDesktop(const base::FilePath& shortcut, bool ash_exit) {
     ui_proxy_->PostTask(FROM_HERE,
         base::Bind(&ChromeAppViewAsh::OnActivateDesktop,
         base::Unretained(app_view_),
-        shortcut));
+        shortcut, ash_exit));
   }
 
   void OnOpenURLOnDesktop(const base::FilePath& shortcut,
@@ -676,12 +676,15 @@ HRESULT ChromeAppViewAsh::Unsnap() {
   return hr;
 }
 
-void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path) {
+void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path,
+                                         bool ash_exit) {
   DVLOG(1) << "ChannelAppViewAsh::OnActivateDesktop\n";
 
-  // As we are the top level window, the exiting is done async so we manage
-  // to execute  the entire function including the final Send().
-  MetroExit(core_window_hwnd());
+  if (ash_exit) {
+    // As we are the top level window, the exiting is done async so we manage
+    // to execute  the entire function including the final Send().
+    MetroExit(core_window_hwnd());
+  }
 
   // We are just executing delegate_execute here without parameters. Assumption
   // here is that this process will be reused by shell when asking for
@@ -695,7 +698,13 @@ void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path) {
   sei.nShow = SW_SHOWNORMAL;
   sei.lpFile = file_path.value().c_str();
   sei.lpParameters = NULL;
+  if (!ash_exit)
+    sei.fMask |= SEE_MASK_NOCLOSEPROCESS;
   ::ShellExecuteExW(&sei);
+  if (!ash_exit) {
+    ::TerminateProcess(sei.hProcess, 0);
+    ::CloseHandle(sei.hProcess);
+  }
   ui_channel_->Send(new MetroViewerHostMsg_ActivateDesktopDone());
 }
 

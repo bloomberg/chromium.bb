@@ -97,8 +97,9 @@ IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_ActivateDesktopDone)
 // Messages sent from the browser to the viewer:
 
 // Requests the viewer to activate desktop mode.
-IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_ActivateDesktop,
-                     base::FilePath /* shortcut */);
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_ActivateDesktop,
+                     base::FilePath /* shortcut */,
+                     bool           /* ash exit */);
 
 // Requests the viewer to open a URL in desktop mode.
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_OpenURLOnDesktop,

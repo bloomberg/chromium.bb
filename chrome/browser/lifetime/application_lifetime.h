@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_
 #define CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_
 
+#include "base/compiler_specific.h"
+
 class Browser;
 
 namespace chrome {
@@ -35,6 +37,16 @@ void AttemptRestart();
 void AttemptRestartWithModeSwitch();
 void AttemptRestartToDesktopMode();
 void AttemptRestartToMetroMode();
+
+enum AshExecutionStatus {
+  ASH_KEEP_RUNNING,
+  ASH_TERMINATE,
+};
+
+// Helper function to activate the desktop from Ash mode. The
+// |ash_execution_status| parameter indicates if we should exit Ash after
+// activating desktop.
+void ActivateDesktopHelper(AshExecutionStatus ash_execution_status);
 #endif
 
 // Attempt to exit by closing all browsers.  This is equivalent to

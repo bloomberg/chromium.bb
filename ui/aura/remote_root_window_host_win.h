@@ -88,8 +88,11 @@ AURA_EXPORT void HandleSelectFolder(const base::string16& title,
 
 // Handles the activate desktop command for Metro Chrome Ash. The on_success
 // callback passed in is invoked when activation is completed.
+// The |ash_exit| parameter indicates whether the Ash process would be shutdown
+// after activating the desktop.
 AURA_EXPORT void HandleActivateDesktop(
     const base::FilePath& shortcut,
+    bool ash_exit,
     const ActivateDesktopCompleted& on_success);
 
 // RootWindowHost implementaton that receives events from a different
@@ -117,7 +120,11 @@ class AURA_EXPORT RemoteRootWindowHostWin
   void HandleOpenURLOnDesktop(const base::FilePath& shortcut,
                               const base::string16& url);
 
-  void HandleActivateDesktop(const base::FilePath& shortcut,
+  // The |ash_exit| parameter indicates whether the Ash process would be
+  // shutdown after activating the desktop.
+  void HandleActivateDesktop(
+      const base::FilePath& shortcut,
+      bool ash_exit,
       const ActivateDesktopCompleted& on_success);
 
   void HandleOpenFile(const base::string16& title,

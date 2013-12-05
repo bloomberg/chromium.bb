@@ -19,6 +19,8 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
@@ -133,18 +135,29 @@ namespace platform_util {
 
 void ShowItemInFolder(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
+
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ShowItemInFolderOnFileThread, full_path));
 }
 
 void OpenItem(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(base::IgnoreResult(&ui::win::OpenItemViaShell), full_path));
 }
 
 void OpenExternal(const GURL& url) {
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
+
   // Quote the input scheme to be sure that the command does not have
   // parameters unexpected by the external program. This url should already
   // have been escaped.
