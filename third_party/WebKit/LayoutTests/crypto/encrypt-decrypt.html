@@ -88,7 +88,7 @@ function runSuccessTestCase(testCase)
         shouldBe("tmpKey.type", "'secret'")
         shouldBe("tmpKey.extractable", "false")
         shouldBe("tmpKey.algorithm.name", "'AES-CBC'")
-        shouldBe("tmpKey.usages.join(',')", "'encrypt,decrypt'")
+        shouldBe("tmpKey.usages.join(',')", "'decrypt,encrypt'")
 
         // (2) Encrypt.
         return crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));

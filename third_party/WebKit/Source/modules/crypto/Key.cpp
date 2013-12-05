@@ -59,14 +59,15 @@ struct KeyUsageMapping {
     const char* const name;
 };
 
+// Keep this array sorted.
 const KeyUsageMapping keyUsageMappings[] = {
-    { blink::WebCryptoKeyUsageEncrypt, "encrypt" },
     { blink::WebCryptoKeyUsageDecrypt, "decrypt" },
-    { blink::WebCryptoKeyUsageSign, "sign" },
-    { blink::WebCryptoKeyUsageVerify, "verify" },
     { blink::WebCryptoKeyUsageDeriveKey, "deriveKey" },
-    { blink::WebCryptoKeyUsageWrapKey, "wrapKey" },
+    { blink::WebCryptoKeyUsageEncrypt, "encrypt" },
+    { blink::WebCryptoKeyUsageSign, "sign" },
     { blink::WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
+    { blink::WebCryptoKeyUsageVerify, "verify" },
+    { blink::WebCryptoKeyUsageWrapKey, "wrapKey" },
 };
 
 COMPILE_ASSERT(blink::EndOfWebCryptoKeyUsage == (1 << 6) + 1, update_keyUsageMappings);
