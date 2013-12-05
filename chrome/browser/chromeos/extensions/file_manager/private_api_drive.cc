@@ -44,6 +44,7 @@ void FillDriveEntryPropertiesValue(
     const drive::ResourceEntry& entry_proto,
     api::file_browser_private::DriveEntryProperties* properties) {
   properties->shared_with_me.reset(new bool(entry_proto.shared_with_me()));
+  properties->shared.reset(new bool(entry_proto.shared()));
 
   if (!entry_proto.has_file_specific_info())
     return;

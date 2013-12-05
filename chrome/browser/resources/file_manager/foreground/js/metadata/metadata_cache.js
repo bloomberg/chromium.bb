@@ -822,7 +822,8 @@ DriveProvider.prototype.convert_ = function(data, url) {
     availableWhenMetered: DriveProvider.isAvailableWhenMetered(data),
     customIconUrl: data.customIconUrl || '',
     contentMimeType: data.contentMimeType || '',
-    sharedWithMe: data.sharedWithMe
+    sharedWithMe: data.sharedWithMe,
+    shared: data.shared
   };
 
   if (!data.isPresent) {

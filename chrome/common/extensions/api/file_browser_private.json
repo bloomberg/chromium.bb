@@ -88,6 +88,11 @@
             "type": "boolean",
             "optional": true,
             "description": "True if the entry is labeled as shared-with-me."
+          },
+          "shared": {
+            "type": "boolean",
+            "optional": true,
+            "description": "True if the entry is labeled as shared (either from me to others or to me by others.)"
           }
         }
       },
