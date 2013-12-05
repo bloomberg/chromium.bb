@@ -7222,6 +7222,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MultiProfile.DiscardedTabsPerUser">
+  <summary>
+    The relation of discarded tabs vs. the amount of simultaneous users. The
+    counts are the number of discards and the buckets are the number of users.
+    Since the count values are absolute numbers, they need to be normalized
+    before use - so divide the counts by the percentage of users found under
+    'MultiProfile.UsersPerSession'.
+  </summary>
+</histogram>
+
 <histogram name="MultiProfile.SessionMode" enum="MultiProfileSessionMode">
   <summary>
     The session counter for different multi profile modes which gets stored once

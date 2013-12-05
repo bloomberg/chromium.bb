@@ -48,4 +48,10 @@ void MultiProfileUMA::RecordUserCount(int number_of_users) {
   UMA_HISTOGRAM_COUNTS_100("MultiProfile.UsersPerSession", number_of_users);
 }
 
+// static
+void MultiProfileUMA::RecordDiscardedTab(int number_of_users) {
+  UMA_HISTOGRAM_COUNTS_100("MultiProfile.DiscardedTabsPerUser",
+      number_of_users);
+}
+
 }  // namespace ash

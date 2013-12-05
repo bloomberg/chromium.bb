@@ -8,6 +8,9 @@
 #include <set>
 #include <vector>
 
+#include "ash/multi_profile_uma.h"
+#include "ash/session_state_delegate.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -320,6 +323,12 @@ void OomPriorityManager::RecordDiscardStatistics() {
   // TODO(jamescook): Maybe incorporate extension count?
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Tabs.Discard.TabCount", GetTabCount(), 1, 100, 50);
+
+  // Record the discarded tab in relation to the amount of simultaneously
+  // logged in users.
+  ash::MultiProfileUMA::RecordDiscardedTab(
+      ash::Shell::GetInstance()->session_state_delegate()->
+          NumberOfLoggedInUsers());
 
   // TODO(jamescook): If the time stats prove too noisy, then divide up users
   // based on how heavily they use Chrome using tab count as a proxy.

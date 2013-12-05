@@ -72,6 +72,9 @@ class ASH_EXPORT MultiProfileUMA {
   // Record number of users joined into a session. Called upon logout.
   static void RecordUserCount(int number_of_users);
 
+  // Record a discarded tab in the number of running users bucket.
+  static void RecordDiscardedTab(int number_of_users);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MultiProfileUMA);
 };
