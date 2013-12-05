@@ -35,6 +35,9 @@
 #include "FontFamilyNames.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSParser.h"
@@ -43,13 +46,48 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
+#include "core/platform/graphics/SimpleFontData.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontTraitsMask.h"
 
 namespace WebCore {
+
+class FontFaceReadyPromiseResolver {
+public:
+    static PassOwnPtr<FontFaceReadyPromiseResolver> create(ScriptPromise promise, ExecutionContext* context)
+    {
+        return adoptPtr(new FontFaceReadyPromiseResolver(promise, context));
+    }
+
+    void resolve(PassRefPtr<FontFace> fontFace)
+    {
+        ScriptScope scope(m_scriptState);
+        switch (fontFace->loadStatus()) {
+        case FontFace::Loaded:
+            m_resolver->resolve(fontFace);
+            break;
+        case FontFace::Error:
+            m_resolver->reject(DOMError::create(NetworkError));
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    }
+
+private:
+    FontFaceReadyPromiseResolver(ScriptPromise promise, ExecutionContext* context)
+        : m_scriptState(ScriptState::current())
+        , m_resolver(ScriptPromiseResolver::create(promise, context))
+    { }
+    ScriptState* m_scriptState;
+    RefPtr<ScriptPromiseResolver> m_resolver;
+};
 
 static PassRefPtr<CSSValue> parseCSSValue(const String& s, CSSPropertyID propertyID)
 {
@@ -136,6 +174,7 @@ PassRefPtr<FontFace> FontFace::create(const StyleRuleFontFace* fontFaceRule)
 FontFace::FontFace(PassRefPtr<CSSValue> src)
     : m_src(src)
     , m_status(Unloaded)
+    , m_cssFontFace(0)
 {
 }
 
@@ -302,6 +341,48 @@ String FontFace::status() const
     return emptyString();
 }
 
+void FontFace::setLoadStatus(LoadStatus status)
+{
+    m_status = status;
+    if (m_status == Loaded || m_status == Error)
+        resolveReadyPromises();
+}
+
+void FontFace::load()
+{
+    // FIXME: This does not load FontFace created by JavaScript, since m_cssFontFace is null.
+    if (m_status != Unloaded || !m_cssFontFace)
+        return;
+
+    FontDescription fontDescription;
+    FontFamily fontFamily;
+    fontFamily.setFamily(m_family);
+    fontDescription.setFamily(fontFamily);
+    fontDescription.setTraitsMask(static_cast<FontTraitsMask>(traitsMask()));
+
+    RefPtr<SimpleFontData> fontData = m_cssFontFace->getFontData(fontDescription);
+    if (fontData && fontData->customFontData())
+        fontData->customFontData()->beginLoadIfNeeded();
+}
+
+ScriptPromise FontFace::ready(ExecutionContext* context)
+{
+    ScriptPromise promise = ScriptPromise::createPending(context);
+    OwnPtr<FontFaceReadyPromiseResolver> resolver = FontFaceReadyPromiseResolver::create(promise, context);
+    if (m_status == Loaded || m_status == Error)
+        resolver->resolve(this);
+    else
+        m_readyResolvers.append(resolver.release());
+    return promise;
+}
+
+void FontFace::resolveReadyPromises()
+{
+    for (size_t i = 0; i < m_readyResolvers.size(); i++)
+        m_readyResolvers[i]->resolve(this);
+    m_readyResolvers.clear();
+}
+
 unsigned FontFace::traitsMask() const
 {
     unsigned traitsMask = 0;
@@ -401,7 +482,11 @@ unsigned FontFace::traitsMask() const
 
 PassRefPtr<CSSFontFace> FontFace::createCSSFontFace(Document* document)
 {
+    if (m_cssFontFace)
+        return m_cssFontFace;
+
     RefPtr<CSSFontFace> cssFontFace = CSSFontFace::create(this);
+    m_cssFontFace = cssFontFace.get();
 
     // Each item in the src property's list is a single CSSFontFaceSource. Put them all into a CSSFontFace.
     CSSValueList* srcList = toCSSValueList(m_src.get());

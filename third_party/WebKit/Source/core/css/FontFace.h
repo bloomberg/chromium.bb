@@ -32,6 +32,7 @@
 #define FontFace_h
 
 #include "CSSPropertyNames.h"
+#include "bindings/v8/ScriptPromise.h"
 #include "core/css/CSSValue.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -44,6 +45,7 @@ class CSSValueList;
 class Dictionary;
 class Document;
 class ExceptionState;
+class FontFaceReadyPromiseResolver;
 class StylePropertySet;
 class StyleRuleFontFace;
 
@@ -75,10 +77,14 @@ public:
 
     String status() const;
 
+    void load();
+    ScriptPromise ready(ExecutionContext*);
+
     LoadStatus loadStatus() const { return m_status; }
-    void setLoadStatus(LoadStatus status) { m_status = status; }
+    void setLoadStatus(LoadStatus);
     unsigned traitsMask() const;
     PassRefPtr<CSSFontFace> createCSSFontFace(Document*);
+    void cssFontFaceDestroyed() { m_cssFontFace = 0; }
 
 private:
     FontFace(PassRefPtr<CSSValue> source);
@@ -87,6 +93,7 @@ private:
     bool setPropertyFromStyle(const StylePropertySet*, CSSPropertyID);
     bool setPropertyValue(PassRefPtr<CSSValue>, CSSPropertyID);
     bool setFamilyValue(CSSValueList*);
+    void resolveReadyPromises();
 
     String m_family;
     RefPtr<CSSValue> m_src;
@@ -97,6 +104,9 @@ private:
     RefPtr<CSSValue> m_variant;
     RefPtr<CSSValue> m_featureSettings;
     LoadStatus m_status;
+
+    Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;
+    CSSFontFace* m_cssFontFace;
 };
 
 typedef Vector<RefPtr<FontFace> > FontFaceArray;

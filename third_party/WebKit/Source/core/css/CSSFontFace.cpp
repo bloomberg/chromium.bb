@@ -35,6 +35,11 @@
 
 namespace WebCore {
 
+CSSFontFace::~CSSFontFace()
+{
+    m_fontFace->cssFontFaceDestroyed();
+}
+
 PassRefPtr<CSSFontFace> CSSFontFace::createFromStyleRule(Document* document, const StyleRuleFontFace* fontFaceRule)
 {
     RefPtr<FontFace> fontFace = FontFace::create(fontFaceRule);
@@ -186,6 +191,8 @@ void CSSFontFace::setLoadStatus(FontFace::LoadStatus newStatus)
     ASSERT(m_fontFace);
     m_fontFace->setLoadStatus(newStatus);
 
+    if (!m_segmentedFontFace)
+        return;
     Document* document = m_segmentedFontFace->fontSelector()->document();
     if (!document)
         return;

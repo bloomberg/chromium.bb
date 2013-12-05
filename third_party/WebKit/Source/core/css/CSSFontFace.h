@@ -49,6 +49,8 @@ public:
 
     class UnicodeRangeSet;
 
+    ~CSSFontFace();
+
     FontFace* fontFace() const { return m_fontFace.get(); }
 
     UnicodeRangeSet& ranges() { return m_ranges; }

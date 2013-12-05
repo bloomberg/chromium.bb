@@ -51,7 +51,6 @@ enum FontFaceLoadStatus {
 
     readonly attribute FontFaceLoadStatus status;
 
-    // FIXME: Implement them
-    //  void load();
-    //  Promise ready();
+    void load();
+    [CallWith=ExecutionContext] Promise ready();
 };

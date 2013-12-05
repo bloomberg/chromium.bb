@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<style>
+@font-face {
+    font-family: Font1;
+    src: url(../../resources/Ahem.ttf);
+}
+
+@font-face {
+    font-family: Font2;
+    src: url(../../resources/DownLoadErrorAhem.otf);
+}
+</style>
+<script>
+description('Tests load() and ready() methods of FontFace.');
+
+window.jsTestIsAsync = true;
+
+function fail(message) {
+    return function() {
+        testFailed(message);
+        finishJSTest();
+    };
+}
+
+function testStep1() {
+    face1 = document.fonts.match('10px Font1')[0];
+    face1.ready().then(testStep2, fail('face1.ready() rejected'));
+    shouldBeEqualToString('face1.status', 'unloaded');
+    face1.load();
+    shouldBeEqualToString('face1.status', 'loading');
+}
+
+function testStep2() {
+    shouldBeEqualToString('face1.status', 'loaded');
+
+    face2 = document.fonts.match('10px Font2')[0];
+    face2.ready().then(fail('face2.ready() fulfilled'), testStep3);
+    shouldBeEqualToString('face2.status', 'unloaded');
+    face2.load();
+    shouldBeEqualToString('face2.status', 'loading');
+}
+
+function testStep3() {
+    shouldBeEqualToString('face2.status', 'error');
+    finishJSTest();
+}
+
+if (document.fonts)
+    testStep1();
+else
+    testFailed('document.fonts does not exist');
+
+</script>
+</head>
+<body>
+</body>
+</html>
