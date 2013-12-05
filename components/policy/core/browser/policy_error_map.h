@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_POLICY_ERROR_MAP_H_
-#define CHROME_BROWSER_POLICY_POLICY_ERROR_MAP_H_
+#ifndef COMPONENTS_POLICY_CORE_BROWSER_POLICY_ERROR_MAP_H_
+#define COMPONENTS_POLICY_CORE_BROWSER_POLICY_ERROR_MAP_H_
 
 #include <map>
 #include <string>
@@ -11,11 +11,12 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
 // Collects error messages and their associated policies.
-class PolicyErrorMap {
+class POLICY_EXPORT PolicyErrorMap {
  public:
   typedef std::multimap<std::string, string16> PolicyMapType;
   typedef PolicyMapType::const_iterator const_iterator;
@@ -99,4 +100,4 @@ class PolicyErrorMap {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_POLICY_ERROR_MAP_H_
+#endif  // COMPONENTS_POLICY_CORE_BROWSER_POLICY_ERROR_MAP_H_

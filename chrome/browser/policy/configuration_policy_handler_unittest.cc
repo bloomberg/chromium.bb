@@ -6,7 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
-#include "chrome/browser/policy/policy_error_map.h"
+#include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

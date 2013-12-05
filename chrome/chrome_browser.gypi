@@ -1534,8 +1534,6 @@
         'browser/policy/file_selection_dialogs_policy_handler.h',
         'browser/policy/javascript_policy_handler.cc',
         'browser/policy/javascript_policy_handler.h',
-        'browser/policy/policy_error_map.cc',
-        'browser/policy/policy_error_map.h',
         'browser/policy/policy_load_status.cc',
         'browser/policy/policy_load_status.h',
         'browser/policy/policy_loader_mac.cc',

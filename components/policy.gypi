@@ -9,6 +9,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/ui.gyp:ui',
         'json_schema',
         'component_strings.gyp:component_strings',
       ],
@@ -21,6 +22,8 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
+            'policy/core/browser/policy_error_map.cc',
+            'policy/core/browser/policy_error_map.h',
             'policy/core/common/async_policy_loader.cc',
             'policy/core/common/async_policy_loader.h',
             'policy/core/common/async_policy_provider.cc',

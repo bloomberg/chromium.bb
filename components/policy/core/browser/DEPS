@@ -1,0 +1,5 @@
+include_rules = [
+  "+grit/component_strings.h", # For generated headers
+  "+ui/base/l10n",
+  "+ui/base/resource",
+]

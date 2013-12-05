@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/login_screen_power_management_policy.h"
 
-#include "chrome/browser/policy/policy_error_map.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "components/policy/core/browser/policy_error_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
