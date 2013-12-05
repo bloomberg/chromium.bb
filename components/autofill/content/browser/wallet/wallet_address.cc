@@ -316,6 +316,13 @@ string16 Address::GetInfo(const AutofillType& type,
       // formatting.
       return phone_object_.GetWholeNumber();
 
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+    case ADDRESS_HOME_SORTING_CODE:
+    case COMPANY_NAME:
+      // Fields that some countries request but Wallet doesn't support.
+      // TODO(dbeam): can these be supported by Wallet?
+      return base::string16();
+
     // TODO(estade): implement more.
     default:
       NOTREACHED();
