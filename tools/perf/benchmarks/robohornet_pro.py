@@ -26,7 +26,7 @@ class RobohornetPro(test.Test):
 
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({
-        'archive_data_file': '../data/robohornetpro.json',
+        'archive_data_file': '../page_sets/data/robohornet_pro.json',
         # Measurement require use of real Date.now() for measurement.
         'make_javascript_deterministic': False,
         'pages': [

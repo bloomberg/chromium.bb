@@ -1,5 +1,4 @@
 {
-    "page_set": "../peacekeeper_experimental.json", 
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "peacekeeper_experimental_000.wpr": [

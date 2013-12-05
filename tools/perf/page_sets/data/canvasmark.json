@@ -1,5 +1,4 @@
 {
-    "page_set": "../canvasmark.json",
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.",
     "archives": {
         "canvasmark_000.wpr": [

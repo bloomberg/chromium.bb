@@ -1,5 +1,4 @@
 {
-    "page_set": "../intl_hi_ru.json", 
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "intl_hi_ru_000.wpr": [

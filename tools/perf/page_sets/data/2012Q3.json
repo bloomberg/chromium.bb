@@ -1,6 +1,5 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.",
-    "page_set": "../2012Q3.json",
     "archives": {
         "2012Q3_000.wpr" : [
             "http://www.facebook.com/barackobama",

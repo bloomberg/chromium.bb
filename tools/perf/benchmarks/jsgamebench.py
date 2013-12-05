@@ -27,7 +27,7 @@ class Jsgamebench(test.Test):
 
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({
-        'archive_data_file': '../data/jsgamebench.json',
+        'archive_data_file': '../page_sets/data/jsgamebench.json',
         'pages': [
           { 'url': 'http://localhost/' }
           ]

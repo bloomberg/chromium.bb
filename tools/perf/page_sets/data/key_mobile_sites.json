@@ -1,5 +1,4 @@
 {
-    "page_set": "../key_mobile_sites.json", 
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "key_mobile_sites_000.wpr": [

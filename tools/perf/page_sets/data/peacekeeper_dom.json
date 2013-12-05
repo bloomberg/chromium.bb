@@ -1,5 +1,4 @@
 {
-    "page_set": "../peacekeeper_dom.json", 
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "peacekeeper_dom_000.wpr": [

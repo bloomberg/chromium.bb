@@ -41,7 +41,7 @@ class Kraken(test.Test):
 
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({
-        'archive_data_file': '../data/kraken.json',
+        'archive_data_file': '../page_sets/data/kraken.json',
         'pages': [
           { 'url': 'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html' }
           ]
