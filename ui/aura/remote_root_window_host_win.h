@@ -11,15 +11,18 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/remote_input_method_delegate_win.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/metro_viewer/ime_types.h"
 
 namespace base {
 class FilePath;
 }
 
 namespace ui {
+class RemoteInputMethodPrivateWin;
 class ViewProp;
 }
 
@@ -92,7 +95,9 @@ AURA_EXPORT void HandleActivateDesktop(
 // RootWindowHost implementaton that receives events from a different
 // process. In the case of Windows this is the Windows 8 (aka Metro)
 // frontend process, which forwards input events to this class.
-class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
+class AURA_EXPORT RemoteRootWindowHostWin
+    : public RootWindowHost,
+      public ui::internal::RemoteInputMethodDelegateWin {
  public:
   // Returns the only RemoteRootWindowHostWin, if this is the first time
   // this function is called, it will call Create() wiht empty bounds.
@@ -185,6 +190,15 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   void OnSetCursorPosAck();
   void OnDesktopActivated();
 
+  // For Input Method support:
+  ui::RemoteInputMethodPrivateWin* GetRemoteInputMethodPrivate();
+  void OnImeCompositionChanged(
+      const string16& text,
+      int32 selection_start,
+      int32 selection_end,
+      const std::vector<metro_viewer::UnderlineInfo>& underlines);
+  void OnImeTextCommitted(const string16& text);
+
   // RootWindowHost overrides:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
@@ -207,6 +221,12 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+  // ui::internal::RemoteInputMethodDelegateWin overrides:
+  virtual void CancelComposition() OVERRIDE;
+  virtual void OnTextInputClientUpdated(
+      const std::vector<int32>& input_scopes,
+      const std::vector<gfx::Rect>& composition_character_bounds) OVERRIDE;
 
   // Helper function to dispatch a keyboard message to the desired target.
   // The default target is the RootWindowHostDelegate. For nested message loop

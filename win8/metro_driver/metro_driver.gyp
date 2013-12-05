@@ -85,6 +85,9 @@
                 'file_picker_ash.cc',
                 'file_picker_ash.h',
               ],
+              'includes': [
+                'ime/ime.gypi',
+              ],
             }, {  # use_aura!=1
               'sources': [
                 'chrome_app_view.cc',

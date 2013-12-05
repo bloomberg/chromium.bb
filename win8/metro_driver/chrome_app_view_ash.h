@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "ui/events/event_constants.h"
 #include "win8/metro_driver/direct3d_helper.h"
+#include "win8/metro_driver/ime/text_service_delegate.h"
 
 namespace base {
 class FilePath;
@@ -25,6 +26,15 @@ class Listener;
 class ChannelProxy;
 }
 
+namespace metro_driver {
+class TextService;
+}
+
+namespace metro_viewer {
+struct CharacterBounds;
+struct UnderlineInfo;
+}
+
 class OpenFilePickerSession;
 class SaveFilePickerSession;
 class FolderPickerSession;
@@ -33,7 +43,8 @@ class FilePickerSessionBase;
 struct MetroViewerHostMsg_SaveAsDialogParams;
 
 class ChromeAppViewAsh
-    : public mswr::RuntimeClass<winapp::Core::IFrameworkView> {
+    : public mswr::RuntimeClass<winapp::Core::IFrameworkView>,
+      public metro_driver::TextServiceDelegate {
  public:
   ChromeAppViewAsh();
   ~ChromeAppViewAsh();
@@ -82,9 +93,23 @@ class ChromeAppViewAsh
   void OnFolderPickerCompleted(FolderPickerSession* folder_picker,
                                bool success);
 
+  void OnImeCancelComposition();
+  void OnImeUpdateTextInputClient(
+      const std::vector<int32>& input_scopes,
+      const std::vector<metro_viewer::CharacterBounds>& character_bounds);
+
   HWND core_window_hwnd() const { return  core_window_hwnd_; }
 
+
  private:
+  // TextServiceDelegate overrides.
+  virtual void OnCompositionChanged(
+      const string16& text,
+      int32 selection_start,
+      int32 selection_end,
+      const std::vector<metro_viewer::UnderlineInfo>& underlines) OVERRIDE;
+  virtual void OnTextCommitted(const string16& text) OVERRIDE;
+
   HRESULT OnActivate(winapp::Core::ICoreApplicationView* view,
                      winapp::Activation::IActivatedEventArgs* args);
 
@@ -163,6 +188,9 @@ class ChromeAppViewAsh
 
   // UI message loop to allow message passing into this thread.
   base::MessageLoop ui_loop_;
+
+  // For IME support.
+  scoped_ptr<metro_driver::TextService> text_service_;
 };
 
 #endif  // WIN8_METRO_DRIVER_CHROME_APP_VIEW_ASH_H_

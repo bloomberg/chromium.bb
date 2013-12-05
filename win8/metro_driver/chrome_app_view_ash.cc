@@ -24,6 +24,7 @@
 #include "ui/events/gestures/gesture_sequence.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/file_picker_ash.h"
+#include "win8/metro_driver/ime/text_service.h"
 #include "win8/metro_driver/metro_driver.h"
 #include "win8/metro_driver/winrt_utils.h"
 #include "win8/viewer/metro_viewer_constants.h"
@@ -164,6 +165,10 @@ class ChromeChannelListener : public IPC::Listener {
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_DisplaySelectFolder,
                           OnDisplayFolderPicker)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursorPos, OnSetCursorPos)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeCancelComposition,
+                          OnImeCancelComposition)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeTextInputClientUpdated,
+                          OnImeTextInputClientChanged)
       IPC_MESSAGE_UNHANDLED(__debugbreak())
     IPC_END_MESSAGE_MAP()
     return true;
@@ -241,6 +246,23 @@ class ChromeChannelListener : public IPC::Listener {
                    x, y));
   }
 
+  void OnImeCancelComposition() {
+    ui_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnImeCancelComposition,
+                   base::Unretained(app_view_)));
+  }
+
+  void OnImeTextInputClientChanged(
+      const std::vector<int32>& input_scopes,
+      const std::vector<metro_viewer::CharacterBounds>& character_bounds) {
+    ui_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnImeUpdateTextInputClient,
+                   base::Unretained(app_view_),
+                   input_scopes,
+                   character_bounds));
+  }
 
   scoped_refptr<base::MessageLoopProxy> ui_proxy_;
   ChromeAppViewAsh* app_view_;
@@ -472,6 +494,8 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   hr = interop->get_WindowHandle(&core_window_hwnd_);
   CheckHR(hr);
 
+  text_service_ = metro_driver::CreateTextService(this, core_window_hwnd_);
+
   hr = window_->add_SizeChanged(mswr::Callback<SizeChangedHandler>(
       this, &ChromeAppViewAsh::OnSizeChanged).Get(),
       &sizechange_token_);
@@ -619,6 +643,7 @@ ChromeAppViewAsh::Run() {
 IFACEMETHODIMP
 ChromeAppViewAsh::Uninitialize() {
   DVLOG(1) << __FUNCTION__;
+  text_service_.reset();
   window_ = nullptr;
   view_ = nullptr;
   core_window_hwnd_ = NULL;
@@ -785,6 +810,33 @@ void ChromeAppViewAsh::OnFolderPickerCompleted(
         base::FilePath(folder_picker->result())));
   }
   delete folder_picker;
+}
+
+void ChromeAppViewAsh::OnImeCancelComposition() {
+  if (!text_service_)
+    return;
+  text_service_->CancelComposition();
+}
+
+void ChromeAppViewAsh::OnImeUpdateTextInputClient(
+    const std::vector<int32>& input_scopes,
+    const std::vector<metro_viewer::CharacterBounds>& character_bounds) {
+  if (!text_service_)
+    return;
+  text_service_->OnDocumentChanged(input_scopes, character_bounds);
+}
+
+void ChromeAppViewAsh::OnCompositionChanged(
+    const string16& text,
+    int32 selection_start,
+    int32 selection_end,
+    const std::vector<metro_viewer::UnderlineInfo>& underlines) {
+  ui_channel_->Send(new MetroViewerHostMsg_ImeCompositionChanged(
+      text, selection_start, selection_end, underlines));
+}
+
+void ChromeAppViewAsh::OnTextCommitted(const string16& text) {
+  ui_channel_->Send(new MetroViewerHostMsg_ImeTextCommitted(text));
 }
 
 HRESULT ChromeAppViewAsh::OnActivate(
@@ -1033,6 +1085,8 @@ HRESULT ChromeAppViewAsh::OnWindowActivated(
   // clicked back in Ash after using another app on another monitor) the same.
   if (state == winui::Core::CoreWindowActivationState_CodeActivated ||
       state == winui::Core::CoreWindowActivationState_PointerActivated) {
+    if (text_service_)
+      text_service_->OnWindowActivated();
     ui_channel_->Send(new MetroViewerHostMsg_WindowActivated());
   }
   return S_OK;
