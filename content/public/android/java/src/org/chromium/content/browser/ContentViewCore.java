@@ -53,6 +53,7 @@ import android.widget.FrameLayout;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
 import org.chromium.content.R;
@@ -68,6 +69,7 @@ import org.chromium.content.browser.input.InsertionHandleController;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.input.SelectionHandleController;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -2990,6 +2992,11 @@ public class ContentViewCore
      */
     public boolean isDeviceAccessibilityScriptInjectionEnabled() {
         try {
+            if (CommandLine.getInstance().hasSwitch(
+                    ContentSwitches.DISABLE_ACCESSIBILITY_SCRIPT_INJECTION)) {
+                return false;
+            }
+
             if (!mContentSettings.getJavaScriptEnabled()) {
                 return false;
             }

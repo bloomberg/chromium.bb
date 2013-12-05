@@ -5453,6 +5453,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION" desc="Description of the flag to enable the accessibility tab switcher.">
           Enable the accessibility tab switcher for Android.
         </message>
+        <message name="IDS_FLAGS_DISABLE_ACCESSIBILITY_SCRIPT_INJECTION_NAME" desc="Name of the flag to disable script injection for accessibility.">
+          Disable Script Injection For Accessibility.
+        </message>
+        <message name="IDS_FLAGS_DISABLE_ACCESSIBILITY_SCRIPT_INJECTION_DESCRIPTION" desc="Description of the flag to disable script injection for accessibility.">
+          Disable script injection, enabling native Android accessibility instead.
+        </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_NAME" desc="Name of the flag to enable the add to homescreen menu item.">
         Enable Add to Homescreen

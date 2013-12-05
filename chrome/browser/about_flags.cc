@@ -1717,6 +1717,14 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableAccessibilityTabSwitcher)
   },
+  {
+    "disable-accessibility-script-injection",
+    IDS_FLAGS_DISABLE_ACCESSIBILITY_SCRIPT_INJECTION_NAME,
+    IDS_FLAGS_DISABLE_ACCESSIBILITY_SCRIPT_INJECTION_DESCRIPTION,
+    kOsAndroid,
+    // Java-only switch: ContentSwitches.DISABLE_ACCESSIBILITY_SCRIPT_INJECTION.
+    SINGLE_VALUE_TYPE("disable-accessibility-script-injection")
+  },
 #endif
   {
     "map-image",
