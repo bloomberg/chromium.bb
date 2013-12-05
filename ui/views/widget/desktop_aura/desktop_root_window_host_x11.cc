@@ -352,6 +352,10 @@ void DesktopRootWindowHostX11::SetSize(const gfx::Size& size) {
   NOTIMPLEMENTED();
 }
 
+void DesktopRootWindowHostX11::StackAtTop() {
+  XRaiseWindow(xdisplay_, xwindow_);
+}
+
 void DesktopRootWindowHostX11::CenterWindow(const gfx::Size& size) {
   gfx::Rect parent_bounds = GetWorkAreaBoundsInScreen();
 

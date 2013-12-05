@@ -226,6 +226,10 @@ void DesktopRootWindowHostWin::SetSize(const gfx::Size& size) {
   message_handler_->SetSize(expanded);
 }
 
+void DesktopRootWindowHostWin::StackAtTop() {
+  message_handler_->StackAtTop();
+}
+
 void DesktopRootWindowHostWin::CenterWindow(const gfx::Size& size) {
   gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
   message_handler_->CenterWindow(size_in_pixels);

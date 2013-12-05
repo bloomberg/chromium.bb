@@ -641,6 +641,8 @@ void DesktopNativeWidgetAura::StackAbove(gfx::NativeView native_view) {
 }
 
 void DesktopNativeWidgetAura::StackAtTop() {
+  if (content_window_)
+    desktop_root_window_host_->StackAtTop();
 }
 
 void DesktopNativeWidgetAura::StackBelow(gfx::NativeView native_view) {

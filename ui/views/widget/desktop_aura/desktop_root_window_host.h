@@ -84,6 +84,7 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   virtual bool IsVisible() const = 0;
 
   virtual void SetSize(const gfx::Size& size) = 0;
+  virtual void StackAtTop() = 0;
   virtual void CenterWindow(const gfx::Size& size) = 0;
   virtual void GetWindowPlacement(gfx::Rect* bounds,
                                   ui::WindowShowState* show_state) const = 0;
