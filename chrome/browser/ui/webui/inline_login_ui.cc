@@ -243,22 +243,31 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     dict->GetString("password", &password);
     dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
-    content::WebContents* web_contents = web_ui()->GetWebContents();
+    content::WebContents* contents = web_ui()->GetWebContents();
+    signin::Source source = signin::GetSourceForPromoURL(contents->GetURL());
+    OneClickSigninHelper::CanOfferFor can_offer =
+        source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ?
+        OneClickSigninHelper::CAN_OFFER_FOR_SECONDARY_ACCOUNT :
+        OneClickSigninHelper::CAN_OFFER_FOR_ALL;
     std::string error_msg;
     OneClickSigninHelper::CanOffer(
-        web_contents, OneClickSigninHelper::CAN_OFFER_FOR_ALL,
-        UTF16ToASCII(email), &error_msg);
+        contents, can_offer, UTF16ToASCII(email), &error_msg);
     if (!error_msg.empty()) {
       SyncStarterCallback(
           OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
-      Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-      OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
+      Browser* browser = chrome::FindBrowserWithWebContents(contents);
+      if (!browser) {
+        browser = chrome::FindLastActiveWithProfile(
+            profile_, chrome::GetActiveDesktop());
+      }
+      if (browser)
+        OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
       return;
     }
 
     content::StoragePartition* partition =
         content::BrowserContext::GetStoragePartitionForSite(
-            web_contents->GetBrowserContext(),
+            contents->GetBrowserContext(),
             GURL("chrome-guest://mfffpogegjflfpflabcdkioaeobkgjik/?" +
                  partition_id_));
 

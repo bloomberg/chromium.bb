@@ -696,23 +696,6 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
     if (!manager)
       return false;
 
-    // If the signin manager already has an authenticated name, then this is a
-    // re-auth scenario.  Make sure the email just signed in corresponds to the
-    // the one sign in manager expects.
-    std::string current_email = manager->GetAuthenticatedUsername();
-    const bool same_email = gaia::AreEmailsSame(current_email, email);
-    if (!current_email.empty() && !same_email) {
-      UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
-                                signin::HISTOGRAM_ACCOUNT_MISSMATCH,
-                                signin::HISTOGRAM_MAX);
-      if (error_message) {
-        error_message->assign(
-            l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
-                                      UTF8ToUTF16(current_email)));
-      }
-      return false;
-    }
-
     // Make sure this username is not prohibited by policy.
     if (!manager->IsAllowedUsername(email)) {
       if (error_message) {
@@ -722,21 +705,40 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       return false;
     }
 
-    // If some profile, not just the current one, is already connected to this
-    // account, don't show the infobar.
-    if (g_browser_process && !same_email) {
-      ProfileManager* manager = g_browser_process->profile_manager();
-      if (manager) {
-        string16 email16 = UTF8ToUTF16(email);
-        ProfileInfoCache& cache = manager->GetProfileInfoCache();
+    if (can_offer_for != CAN_OFFER_FOR_SECONDARY_ACCOUNT) {
+      // If the signin manager already has an authenticated name, then this is a
+      // re-auth scenario.  Make sure the email just signed in corresponds to
+      // the one sign in manager expects.
+      std::string current_email = manager->GetAuthenticatedUsername();
+      const bool same_email = gaia::AreEmailsSame(current_email, email);
+      if (!current_email.empty() && !same_email) {
+        UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
+                                  signin::HISTOGRAM_ACCOUNT_MISSMATCH,
+                                  signin::HISTOGRAM_MAX);
+        if (error_message) {
+          error_message->assign(
+              l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
+                                        UTF8ToUTF16(current_email)));
+        }
+        return false;
+      }
 
-        for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-          if (email16 == cache.GetUserNameOfProfileAtIndex(i)) {
-            if (error_message) {
-              error_message->assign(
-                  l10n_util::GetStringUTF8(IDS_SYNC_USER_NAME_IN_USE_ERROR));
+      // If some profile, not just the current one, is already connected to this
+      // account, don't show the infobar.
+      if (g_browser_process && !same_email) {
+        ProfileManager* manager = g_browser_process->profile_manager();
+        if (manager) {
+          string16 email16 = UTF8ToUTF16(email);
+          ProfileInfoCache& cache = manager->GetProfileInfoCache();
+
+          for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+            if (email16 == cache.GetUserNameOfProfileAtIndex(i)) {
+              if (error_message) {
+                error_message->assign(
+                    l10n_util::GetStringUTF8(IDS_SYNC_USER_NAME_IN_USE_ERROR));
+              }
+              return false;
             }
-            return false;
           }
         }
       }

@@ -79,7 +79,10 @@ class OneClickSigninHelper
   // Argument to CanOffer().
   enum CanOfferFor {
     CAN_OFFER_FOR_ALL,
-    CAN_OFFER_FOR_INTERSTITAL_ONLY
+    CAN_OFFER_FOR_INTERSTITAL_ONLY,
+    CAN_OFFER_FOR_SECONDARY_ACCOUNT
+    // TODO(guohui): needs to handle adding secondary account through
+    // interstitial.
   };
 
   static void CreateForWebContentsWithPasswordManager(
