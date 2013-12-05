@@ -32,6 +32,7 @@
 
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptState.h"
+#include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -46,6 +47,7 @@
 
 namespace WebCore {
 
+class Document;
 class InjectedScriptManager;
 class InspectorFrontend;
 class InstrumentingAgents;
@@ -125,9 +127,17 @@ public:
     virtual void setOverlayMessage(ErrorString*, const String*);
     virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId);
     virtual void skipStackFrames(ErrorString*, const String* pattern);
+    virtual void setAsyncCallStackDepth(ErrorString*, int depth);
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
+    void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
+    void didRemoveTimer(ExecutionContext*, int timerId);
+    bool willFireTimer(ExecutionContext*, int timerId);
     void didFireTimer();
+    void didRequestAnimationFrame(Document*, int callbackId);
+    void didCancelAnimationFrame(Document*, int callbackId);
+    bool willFireAnimationFrame(Document*, int callbackId);
+    void didFireAnimationFrame();
     void didHandleEvent();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
@@ -215,6 +225,7 @@ private:
     int m_skipStepInCount;
     bool m_skipAllPauses;
     OwnPtr<RegularExpression> m_cachedSkipStackRegExp;
+    AsyncCallStackTracker m_asyncCallStackTracker;
 };
 
 } // namespace WebCore
