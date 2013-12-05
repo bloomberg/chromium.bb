@@ -1528,6 +1528,9 @@ const char kDisableAddToHomescreen[]         = "disable-add-to-homescreen";
 // Disables the new NTP.
 const char kDisableNewNTP[]                  = "disable-new-ntp";
 
+// Disables zero suggest experiment on Dev channel.
+const char kDisableZeroSuggest[] = "disable-zero-suggest";
+
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
@@ -1543,6 +1546,21 @@ const char kEnableTranslate[]               = "enable-translate";
 
 // Enables support for playing videos on Chromecast devices.
 const char kEnableCast[]                    = "enable-cast";
+
+// Enables zero suggest functionality on Dev channel, showing contextual
+// suggestions (EtherSuggest) for http pages and google.com search queries.
+const char kEnableZeroSuggestEtherSerp[] =
+    "enable-zero-suggest-ether-serp";
+
+// Enables zero suggest functionality on Dev channel, showing contextual
+// suggestions (EtherSuggest) for http pages.
+const char kEnableZeroSuggestEtherNoSerp[] =
+    "enable-zero-suggest-ether-noserp";
+
+// Enables zero suggest functionality on Dev channel, showing most visited
+// sites as default suggestions.
+const char kEnableZeroSuggestMostVisited[] =
+    "enable-zero-suggest-most-visited";
 
 #endif
 

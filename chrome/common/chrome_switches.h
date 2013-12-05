@@ -416,11 +416,15 @@ extern const char kEnableSpdyProxyAuth[];
 #if defined(OS_ANDROID)
 extern const char kDisableAddToHomescreen[];
 extern const char kDisableNewNTP[];
+extern const char kDisableZeroSuggest[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableAddToHomescreen[];
 extern const char kEnableNewNTP[];
 extern const char kEnableTranslate[];
 extern const char kEnableCast[];
+extern const char kEnableZeroSuggestEtherSerp[];
+extern const char kEnableZeroSuggestEtherNoSerp[];
+extern const char kEnableZeroSuggestMostVisited[];
 #endif
 
 #if defined(USE_ASH)

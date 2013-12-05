@@ -15606,6 +15606,23 @@ Do you accept?
     <message name="IDS_A11Y_ALERT_WINDOW_NEEDED" desc="Alert sent to the accessibility api when the user attempts a keyboard command that requires a window to work.">
       Command unavailable. Press control-N to open a new window.
     </message>
+
+    <!-- Zero suggest experiment flags -->
+    <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME" desc="An about:flags experiment for zero suggest">
+      Zero Suggest
+    </message>
+    <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION" desc="Describes about:flags experiment options for zero suggest">
+      NOTE: Only works dev and canary channels. Turns on suggestions in the omnibox that are shown on focus before typing.
+    </message>
+    <message name="IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED" desc="A choice in dropdown dialog on about:flags page for the most visited sites option">
+      Most visited
+    </message>
+    <message name="IDS_FLAGS_ZERO_SUGGEST_ETHER_SERP" desc="A choice in dropdown dialog on about:flags page to show zero suggest on http pages and Google.com">
+      Related URLs and Google.com searches
+    </message>
+    <message name="IDS_FLAGS_ZERO_SUGGEST_ETHER_NO_SERP" desc="A choice in dropdown dialog on about:flags page to show zero suggest on http pages only">
+      Related URLs only
+    </message>
   </messages>
 
   <structures fallback_to_english="true">

@@ -319,6 +319,20 @@ const Experiment::Choice kMapImageChoices[] = {
     cc::switches::kDisableMapImage, ""}
 };
 
+#if defined(OS_ANDROID)
+const Experiment::Choice kZeroSuggestExperimentsChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED,
+    switches::kEnableZeroSuggestMostVisited, ""},
+  { IDS_FLAGS_ZERO_SUGGEST_ETHER_SERP,
+    switches::kEnableZeroSuggestEtherSerp, ""},
+  { IDS_FLAGS_ZERO_SUGGEST_ETHER_NO_SERP,
+    switches::kEnableZeroSuggestEtherNoSerp, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableZeroSuggest, ""}
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1856,6 +1870,15 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kEnableEnhancedBookmarks, "1",
                                         switches::kEnableEnhancedBookmarks, "0")
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-zero-suggest-experiment",
+    IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME,
+    IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION,
+    kOsAndroid,
+    MULTI_VALUE_TYPE(kZeroSuggestExperimentsChoices)
+  }
+#endif
 };
 
 const Experiment* experiments = kExperiments;
