@@ -87,6 +87,20 @@ shouldBe("(new File([], 'world.html', {type:'text/html'})).type", "'text/html'")
 shouldBe("(new File([], 'world.html', {type:'text/html'})).size", "0");
 shouldBe("(new File([], 'world.html', {type:'text/plain;charset=UTF-8'})).type", "'text/plain;charset=utf-8'");
 
+// Test that the lastModified is correctly added to the File.
+var aDate = new Date(441532800000);
+shouldBe("(new File([], 'world.html', {lastModified: 441532800000})).lastModified", "441532800000");
+// Unless specified, lastModified should default to now.
+shouldBeNow("(new File([], 'world.html')).lastModified", 20000);
+shouldBeNow("(new File([], 'world.html', {})).lastModified", 20000);
+shouldBeNow("(new File([], 'world.html', {type: 'text/plain'})).lastModified", 20000);
+// Test that Date instances are implicitly converted to numbers.
+shouldBe("(new File([], 'world.html', {lastModified: new Date(441532800000)})).lastModified", "441532800000");
+
+// Test the deprecated attribute lastModifiedDate.
+shouldBeTrue("(new File([], 'world.html', {lastModified: 441532800000})).lastModifiedDate instanceof Date");
+shouldBe("(new File([], 'world.html', {lastModified: 441532800000})).lastModifiedDate.valueOf()", "441532800000");
+
 // Test the number of expected arguments in the File constructor.
 shouldBe("window.File.length", "2");
 

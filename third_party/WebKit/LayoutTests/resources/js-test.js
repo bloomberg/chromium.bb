@@ -569,8 +569,16 @@ function shouldThrow(_a, _e)
     testFailed(_a + " should throw " + (typeof _e == "undefined" ? "an exception" : _ev) + ". Was " + _av + ".");
 }
 
-function shouldBeNow(a)
+function shouldBeNow(a, delta)
 {
+    // Right now, V8 and Chromium / Blink use two different clock
+    // implementations. On Windows, the implementations are non-trivial and can
+    // be slightly out of sync. The delta is intended to compensate for that.
+    //
+    // FIXME: reconsider this when the V8 and Blink clocks get unified, see http://crbug.com/324110
+    if (delta === undefined)
+        delta = 1000;
+
     for (var i = 0; i < 1000; ++i) {
         var startDate = Date.now();
         var av = eval(a);
@@ -587,11 +595,11 @@ function shouldBeNow(a)
             testFailed(a + " is not a number or a Date. Got " + av);
             return;
         }
-        if (date < startDate) {
+        if (date < startDate - delta) {
             testFailed(a + " is not the curent time. Got " + av + " which is " + (startDate - date) / 1000 + " seconds in the past.");
             return;
         }
-        if (date > endDate) {
+        if (date > endDate + delta) {
             testFailed(a + " is not the current time. Got " + av + " which is " + (date - endDate) / 1000 + " seconds in the future.");
             return;
         }
