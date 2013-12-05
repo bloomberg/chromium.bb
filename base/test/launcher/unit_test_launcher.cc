@@ -32,10 +32,6 @@ const size_t kDefaultTestBatchLimit = 10;
 
 const char kHelpFlag[] = "help";
 
-// Flag to enable the new launcher logic.
-// TODO(phajdan.jr): Remove it, http://crbug.com/236893 .
-const char kBraveNewTestLauncherFlag[] = "brave-new-test-launcher";
-
 // Flag to run all tests in a single process.
 const char kSingleProcessTestsFlag[] = "single-process-tests";
 
@@ -94,7 +90,6 @@ CommandLine GetCommandLineForChildGTestProcess(
   new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
   new_cmd_line.AppendSwitchASCII(kGTestFilterFlag, JoinString(test_names, ":"));
   new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
-  new_cmd_line.AppendSwitch(kBraveNewTestLauncherFlag);
 
   return new_cmd_line;
 }
@@ -469,8 +464,7 @@ int LaunchUnitTestsInternal(int argc,
                             int default_jobs) {
   CommandLine::Init(argc, argv);
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(kBraveNewTestLauncherFlag)) {
+      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag)) {
     return run_test_suite.Run();
   }
 
