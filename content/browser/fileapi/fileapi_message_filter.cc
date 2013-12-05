@@ -814,11 +814,22 @@ void FileAPIMessageFilter::DidCreateSnapshot(
 
 bool FileAPIMessageFilter::ValidateFileSystemURL(
     int request_id, const fileapi::FileSystemURL& url) {
-  if (FileSystemURLIsValid(context_, url))
-    return true;
-  Send(new FileSystemMsg_DidFail(request_id,
-                                 base::PLATFORM_FILE_ERROR_INVALID_URL));
-  return false;
+  if (!FileSystemURLIsValid(context_, url)) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_INVALID_URL));
+    return false;
+  }
+
+  // Deny access to files in PluginPrivate FileSystem from JavaScript.
+  // TODO(nhiroki): Move this filter somewhere else since this is not for
+  // validation.
+  if (url.type() == fileapi::kFileSystemTypePluginPrivate) {
+    Send(new FileSystemMsg_DidFail(request_id,
+                                   base::PLATFORM_FILE_ERROR_SECURITY));
+    return false;
+  }
+
+  return true;
 }
 
 scoped_refptr<Stream> FileAPIMessageFilter::GetStreamForURL(const GURL& url) {
