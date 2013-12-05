@@ -328,6 +328,56 @@ void test_setjmp_called_via_invoke() {
 }
 
 
+void allowed_exception_spec() throw(MyException) {
+  throw MyException(600);
+}
+
+// Test a case in which an exception propagates through an exception
+// spec which allows the exception type.
+void test_exception_spec_allowed() {
+  bool caught = false;
+  try {
+    allowed_exception_spec();
+  } catch (MyException &exc) {
+    assert(exc.value == 600);
+    caught = true;
+  }
+  assert(caught);
+}
+
+
+class VirtualBase {
+ public:
+  VirtualBase() : value(321) {}
+  int value;
+};
+
+class VirtualDerived : virtual public VirtualBase {};
+
+void allowed_exception_spec_virtual_base() throw(VirtualBase) {
+  throw VirtualDerived();
+}
+
+// Test that exception types with virtual base classes work when the
+// base class appears in an exception spec.
+//
+// In this case, the C++ runtime library must dereference the
+// exception's vtable to find the offset of VirtualBase within
+// VirtualDerived.  That is not the case with non-virtual bases, for
+// which the std::type_info data is enough to adjust the pointer to
+// the exception without dereferencing it.
+void test_exception_spec_allowed_with_virtual_base() {
+  bool caught = false;
+  try {
+    allowed_exception_spec_virtual_base();
+  } catch (VirtualBase &exc) {
+    assert(exc.value == 321);
+    caught = true;
+  }
+  assert(caught);
+}
+
+
 class RethrowExc {};
 
 bool g_dtor_called;
@@ -359,7 +409,7 @@ void func_with_exception_spec() throw(RethrowExc) {
 // std::set_unexpected() handler is called.  The handler is allowed to
 // throw a new exception that matches the exception spec -- we test
 // this case to avoid aborting execution.
-void test_exception_spec() {
+void test_exception_spec_calls_handler() {
   g_dtor_called = false;
   std::unexpected_handler old_unexpected_handler =
       std::set_unexpected(rethrow_unexpected_handler);
@@ -367,6 +417,33 @@ void test_exception_spec() {
   try {
     func_with_exception_spec();
   } catch (RethrowExc &) {
+    caught = true;
+  }
+  assert(caught);
+  // Clean up.
+  std::set_unexpected(old_unexpected_handler);
+}
+
+
+void unexpected_handler_throwing_virtual_base() {
+  throw VirtualDerived();
+}
+
+void disallowed_exception_spec_virtual_base() throw(VirtualBase) {
+  throw MyException(0);
+}
+
+// Test that if a std::set_unexpected() handler throws an exception
+// with a virtual base class, this new exception is checked against
+// the original exception spec correctly.
+void test_exception_spec_handler_throws_virtual_base() {
+  std::unexpected_handler old_unexpected_handler =
+      std::set_unexpected(unexpected_handler_throwing_virtual_base);
+  bool caught = false;
+  try {
+    disallowed_exception_spec_virtual_base();
+  } catch (VirtualBase &exc) {
+    assert(exc.value == 321);
     caught = true;
   }
   assert(caught);
@@ -576,7 +653,10 @@ int main() {
   RUN_TEST(test_multiple_inheritance_exception_ptr());
   RUN_TEST(test_throw_catch_nested_in_dtor());
   RUN_TEST(test_setjmp_called_via_invoke());
-  RUN_TEST(test_exception_spec());
+  RUN_TEST(test_exception_spec_allowed());
+  RUN_TEST(test_exception_spec_allowed_with_virtual_base());
+  RUN_TEST(test_exception_spec_calls_handler());
+  RUN_TEST(test_exception_spec_handler_throws_virtual_base());
   RUN_TEST(test_exception_spec_rethrow_inside_unexpected_handler());
   RUN_TEST(test_exception_spec_convert_to_bad_exception());
 #if SUPPORTS_CXX11
