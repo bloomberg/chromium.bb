@@ -313,9 +313,19 @@ message DeviceLocalAccountsProto {
 
   // Whether the keyboard shortcut to prevent zero-delay auto-login should be
   // enabled or not. If this keyboard shortcut is engaged, the auto-login will
-  // be delayed by 3 minutes so administrators can log in or make configuration
+  // be delayed by 3 seconds so administrators can log in or make configuration
   // changes.
   optional bool enable_auto_login_bailout = 4 [default = true];
+
+  // Whether network configuration should be offered or not when the device
+  // does not have access to the Internet. If the policy is omitted or set to
+  // true, the network configuration will be offered. Otherwise, only an error
+  // message is displayed.
+  // Note: If both this policy and enable_auto_login_bailout policy above is
+  // set to false, there are chances that the device might become totally
+  // unusable when there is no Internet access and has to go through the
+  // recovery process.
+  optional bool prompt_for_network_when_offline = 5 [default = true];
 }
 
 message AllowRedeemChromeOsRegistrationOffersProto {

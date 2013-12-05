@@ -54,9 +54,12 @@ bool IsAppInstalled(Profile* profile, const std::string& app_id) {
 
 
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
-                                       const std::string& app_id)
+                                       const std::string& app_id,
+                                       StartupAppLauncher::Delegate* delegate)
     : profile_(profile),
       app_id_(app_id),
+      delegate_(delegate),
+      install_attempted_(false),
       ready_to_launch_(false) {
   DCHECK(profile_);
   DCHECK(Extension::IdIsValid(app_id_));
@@ -67,25 +70,22 @@ StartupAppLauncher::~StartupAppLauncher() {
   // through a user bailout shortcut.
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
       ->RemoveObserver(this);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void StartupAppLauncher::Initialize() {
-  DVLOG(1) << "Starting... connection = "
-           <<  net::NetworkChangeNotifier::GetConnectionType();
   StartLoadingOAuthFile();
 }
 
-void StartupAppLauncher::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void StartupAppLauncher::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
+void StartupAppLauncher::ContinueWithNetworkReady() {
+  // Starts install if it is not started.
+  if (!install_attempted_) {
+    install_attempted_ = true;
+    BeginInstall();
+  }
 }
 
 void StartupAppLauncher::StartLoadingOAuthFile() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnLoadingOAuthFile());
+  delegate_->OnLoadingOAuthFile();
 
   KioskOAuthParams* auth_params = new KioskOAuthParams();
   BrowserThread::PostBlockingPoolTaskAndReply(
@@ -137,17 +137,11 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
 }
 
 void StartupAppLauncher::InitializeNetwork() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnInitializingNetwork());
-
-  // TODO(tengs): Use NetworkStateInformer instead because it can handle
-  // portal and proxy detection. We will need to do some refactoring to
-  // make NetworkStateInformer more independent from the WebUI handlers.
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
+  delegate_->InitializeNetwork();
 }
 
 void StartupAppLauncher::InitializeTokenService() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnInitializingTokenService());
+  delegate_->OnInitializingTokenService();
 
   ProfileOAuth2TokenService* profile_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
@@ -190,14 +184,14 @@ void StartupAppLauncher::OnRefreshTokensLoaded() {
 }
 
 void StartupAppLauncher::OnLaunchSuccess() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnLaunchSucceeded());
+  delegate_->OnLaunchSucceeded();
 }
 
 void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
   LOG(ERROR) << "App launch failed, error: " << error;
   DCHECK_NE(KioskAppLaunchError::NONE, error);
 
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnLaunchFailed(error));
+  delegate_->OnLaunchFailed(error);
 }
 
 void StartupAppLauncher::LaunchApp() {
@@ -231,10 +225,7 @@ void StartupAppLauncher::LaunchApp() {
 }
 
 void StartupAppLauncher::BeginInstall() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnInstallingApp());
-
-  DVLOG(1) << "BeginInstall... connection = "
-           <<  net::NetworkChangeNotifier::GetConnectionType();
+  delegate_->OnInstallingApp();
 
   if (IsAppInstalled(profile_, app_id_)) {
     OnReadyToLaunch();
@@ -269,21 +260,7 @@ void StartupAppLauncher::InstallCallback(bool success,
 
 void StartupAppLauncher::OnReadyToLaunch() {
   ready_to_launch_ = true;
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnReadyToLaunch());
-}
-
-void StartupAppLauncher::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  DVLOG(1) << "OnNetworkChanged... connection = "
-           <<  net::NetworkChangeNotifier::GetConnectionType();
-  if (!net::NetworkChangeNotifier::IsOffline()) {
-    DVLOG(1) << "Network up and running!";
-    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-
-    BeginInstall();
-  } else {
-    DVLOG(1) << "Network not running yet!";
-  }
+  delegate_->OnReadyToLaunch();
 }
 
 }   // namespace chromeos

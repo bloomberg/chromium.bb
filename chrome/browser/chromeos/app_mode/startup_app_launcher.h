@@ -10,10 +10,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "net/base/network_change_notifier.h"
 
 class Profile;
 
@@ -34,36 +32,39 @@ namespace chromeos {
 // - If all goes good, launches the app and finish the flow;
 class StartupAppLauncher
     : public base::SupportsWeakPtr<StartupAppLauncher>,
-      public OAuth2TokenService::Observer,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public OAuth2TokenService::Observer {
  public:
-  class Observer {
+  class Delegate {
    public:
+    // Invoked to perform actual network initialization work. Note the app
+    // launch flow is paused until ContinueWithNetworkReady is called.
+    virtual void InitializeNetwork() = 0;
+
     virtual void OnLoadingOAuthFile() = 0;
     virtual void OnInitializingTokenService() = 0;
-    virtual void OnInitializingNetwork() = 0;
     virtual void OnInstallingApp() = 0;
     virtual void OnReadyToLaunch() = 0;
     virtual void OnLaunchSucceeded() = 0;
     virtual void OnLaunchFailed(KioskAppLaunchError::Error error) = 0;
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Delegate() {}
   };
 
-  StartupAppLauncher(Profile* profile, const std::string& app_id);
+  StartupAppLauncher(Profile* profile,
+                     const std::string& app_id,
+                     Delegate* delegate);
 
   virtual ~StartupAppLauncher();
 
   // Prepares the environment for an app launch.
   void Initialize();
 
+  // Continues the initialization after network is ready.
+  void ContinueWithNetworkReady();
+
   // Launches the app after the initialization is successful.
   void LaunchApp();
-
-  // Add and remove observers for app launch procedure.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
  private:
   // OAuth parameters from /home/chronos/kiosk_auth file.
@@ -91,13 +92,10 @@ class StartupAppLauncher
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokensLoaded() OVERRIDE;
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver overrides:
-  virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
   Profile* profile_;
   const std::string app_id_;
-  ObserverList<Observer> observer_list_;
+  Delegate* delegate_;
+  bool install_attempted_;
   bool ready_to_launch_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;

@@ -30,6 +30,8 @@ const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[] =
     "cros.accounts.deviceLocalAccountAutoLoginDelay";
 const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[] =
     "cros.accounts.deviceLocalAccountAutoLoginBailoutEnabled";
+const char kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline[] =
+    "cros.accounts.deviceLocalAccountPromptForNetworkWhenOffline";
 const char kAccountsPrefSupervisedUsersEnabled[] =
     "cros.accounts.supervisedUsersEnabled";
 

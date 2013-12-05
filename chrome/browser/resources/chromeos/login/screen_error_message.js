@@ -165,6 +165,20 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     get buttons() {
       var buttons = [];
 
+      var rebootButton = this.ownerDocument.createElement('button');
+      rebootButton.textContent = loadTimeData.getString('rebootButton');
+      rebootButton.classList.add('show-with-ui-state-kiosk-mode');
+      rebootButton.addEventListener('click', function(e) {
+        chrome.send('rebootButtonClicked');
+        e.stopPropagation();
+      });
+      buttons.push(rebootButton);
+
+      var spacer = this.ownerDocument.createElement('div');
+      spacer.classList.add('button-spacer');
+      spacer.classList.add('show-with-ui-state-kiosk-mode');
+      buttons.push(spacer);
+
       var powerwashButton = this.ownerDocument.createElement('button');
       powerwashButton.id = 'error-message-restart-and-powerwash-button';
       powerwashButton.textContent =

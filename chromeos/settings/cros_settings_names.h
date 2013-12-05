@@ -27,6 +27,8 @@ CHROMEOS_EXPORT extern const char
     kAccountsPrefDeviceLocalAccountAutoLoginDelay[];
 CHROMEOS_EXPORT extern const char
     kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[];
+CHROMEOS_EXPORT extern const char
+    kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline[];
 CHROMEOS_EXPORT extern const char kAccountsPrefSupervisedUsersEnabled[];
 
 CHROMEOS_EXPORT extern const char kSignedDataRoamingEnabled[];

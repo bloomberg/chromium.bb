@@ -21,7 +21,13 @@ class OobeScreenWaiter : public OobeUI::Observer {
   explicit OobeScreenWaiter(OobeDisplay::Screen expected_screen);
   virtual ~OobeScreenWaiter();
 
+  // Run message loop to wait for the expected_screen.
   void Wait();
+
+  // Similar to Wait() but does not assert the current screen is
+  // expected_screen on exit. Use this when there are multiple screen changes
+  // during the wait and the screen to be waited is not the final one.
+  void WaitNoAssertCurrentScreen();
 
   // OobeUI::Observer implementation:
   virtual void OnCurrentScreenChanged(

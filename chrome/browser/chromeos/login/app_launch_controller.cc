@@ -10,6 +10,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -19,7 +20,9 @@
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -40,8 +43,10 @@ const int kAppInstallSplashScreenMinTimeMS = 3000;
 bool AppLaunchController::skip_splash_wait_ = false;
 int AppLaunchController::network_wait_time_ = 10;
 base::Closure* AppLaunchController::network_timeout_callback_ = NULL;
-AppLaunchController::CanConfigureNetworkCallback*
+AppLaunchController::ReturnBoolCallback*
     AppLaunchController::can_configure_network_callback_ = NULL;
+AppLaunchController::ReturnBoolCallback*
+    AppLaunchController::need_owner_auth_to_configure_network_callback_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppLaunchController::AppWindowWatcher
@@ -88,15 +93,12 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
       oobe_display_(oobe_display),
       app_launch_splash_screen_actor_(
           oobe_display_->GetAppLaunchSplashScreenActor()),
-      error_screen_actor_(oobe_display_->GetErrorScreenActor()),
       webui_visible_(false),
       launcher_ready_(false),
       waiting_for_network_(false),
       network_wait_timedout_(false),
       showing_network_dialog_(false),
       launch_splash_start_time_(0) {
-  signin_screen_.reset(new AppLaunchSigninScreen(
-     static_cast<OobeUI*>(oobe_display_), this));
 }
 
 AppLaunchController::~AppLaunchController() {
@@ -122,28 +124,40 @@ void AppLaunchController::StartAppLaunch() {
   kiosk_profile_loader_->Start();
 }
 
+// static
 void AppLaunchController::SkipSplashWaitForTesting() {
   skip_splash_wait_ = true;
 }
 
+// static
 void AppLaunchController::SetNetworkWaitForTesting(int wait_time_secs) {
   network_wait_time_ = wait_time_secs;
 }
 
+// static
 void AppLaunchController::SetNetworkTimeoutCallbackForTesting(
     base::Closure* callback) {
   network_timeout_callback_ = callback;
 }
 
+// static
 void AppLaunchController::SetCanConfigureNetworkCallbackForTesting(
-    CanConfigureNetworkCallback* can_configure_network_callback) {
+    ReturnBoolCallback* can_configure_network_callback) {
   can_configure_network_callback_ = can_configure_network_callback;
+}
+
+// static
+void AppLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
+    ReturnBoolCallback* need_owner_auth_callback) {
+  need_owner_auth_to_configure_network_callback_ = need_owner_auth_callback;
 }
 
 void AppLaunchController::OnConfigureNetwork() {
   DCHECK(profile_);
   showing_network_dialog_ = true;
-  if (CanConfigureNetwork()) {
+  if (CanConfigureNetwork() && NeedOwnerAuthToConfigureNetwork()) {
+    signin_screen_.reset(new AppLaunchSigninScreen(
+       static_cast<OobeUI*>(oobe_display_), this));
     signin_screen_->Show();
   } else {
     // If kiosk mode was configured through enterprise policy, we may
@@ -155,12 +169,7 @@ void AppLaunchController::OnConfigureNetwork() {
 }
 
 void AppLaunchController::OnOwnerSigninSuccess() {
-  error_screen_actor_->SetErrorState(
-      ErrorScreen::ERROR_STATE_OFFLINE, std::string());
-  error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_KIOSK_MODE);
-
-  error_screen_actor_->Show(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH, NULL);
-
+  app_launch_splash_screen_actor_->ShowNetworkConfigureUI();
   signin_screen_.reset();
 }
 
@@ -183,13 +192,22 @@ void AppLaunchController::OnCancelAppLaunch() {
   OnLaunchFailed(KioskAppLaunchError::USER_CANCEL);
 }
 
+void AppLaunchController::OnNetworkStateChanged(bool online) {
+  if (!waiting_for_network_)
+    return;
+
+  if (online)
+    startup_app_launcher_->ContinueWithNetworkReady();
+  else if (network_wait_timedout_)
+    MaybeShowNetworkConfigureUI();
+}
+
 void AppLaunchController::OnProfileLoaded(Profile* profile) {
   DVLOG(1) << "Profile loaded... Starting app launch.";
   profile_ = profile;
 
   kiosk_profile_loader_.reset();
-  startup_app_launcher_.reset(new StartupAppLauncher(profile_, app_id_));
-  startup_app_launcher_->AddObserver(this);
+  startup_app_launcher_.reset(new StartupAppLauncher(profile_, app_id_, this));
   startup_app_launcher_->Initialize();
 }
 
@@ -212,12 +230,7 @@ void AppLaunchController::OnNetworkWaitTimedout() {
                <<  net::NetworkChangeNotifier::GetConnectionType();
   network_wait_timedout_ = true;
 
-  if (CanConfigureNetwork()) {
-    app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
-  } else {
-    app_launch_splash_screen_actor_->UpdateAppLaunchState(
-        AppLaunchSplashScreenActor::APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT);
-  }
+  MaybeShowNetworkConfigureUI();
 
   if (network_timeout_callback_)
     network_timeout_callback_->Run();
@@ -232,7 +245,53 @@ bool AppLaunchController::CanConfigureNetwork() {
   if (can_configure_network_callback_)
     return can_configure_network_callback_->Run();
 
+  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    bool should_prompt;
+    if (CrosSettings::Get()->GetBoolean(
+            kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
+            &should_prompt)) {
+      return should_prompt;
+    }
+
+    // Default to true to allow network configuration if the policy is missing.
+    return true;
+  }
+
   return !UserManager::Get()->GetOwnerEmail().empty();
+}
+
+bool AppLaunchController::NeedOwnerAuthToConfigureNetwork() {
+  if (need_owner_auth_to_configure_network_callback_)
+    return need_owner_auth_to_configure_network_callback_->Run();
+
+  return !g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
+}
+
+void AppLaunchController::MaybeShowNetworkConfigureUI() {
+  if (CanConfigureNetwork()) {
+    if (NeedOwnerAuthToConfigureNetwork()) {
+      app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
+    } else {
+      showing_network_dialog_ = true;
+      app_launch_splash_screen_actor_->ShowNetworkConfigureUI();
+    }
+  } else {
+    app_launch_splash_screen_actor_->UpdateAppLaunchState(
+        AppLaunchSplashScreenActor::APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT);
+  }
+}
+
+void AppLaunchController::InitializeNetwork() {
+  // Show the network configration dialog if network is not initialized
+  // after a brief wait time.
+  waiting_for_network_ = true;
+  network_wait_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(network_wait_time_),
+      this, &AppLaunchController::OnNetworkWaitTimedout);
+
+  app_launch_splash_screen_actor_->UpdateAppLaunchState(
+      AppLaunchSplashScreenActor::APP_LAUNCH_STATE_PREPARING_NETWORK);
 }
 
 void AppLaunchController::OnLoadingOAuthFile() {
@@ -245,23 +304,11 @@ void AppLaunchController::OnInitializingTokenService() {
       AppLaunchSplashScreenActor::APP_LAUNCH_STATE_LOADING_TOKEN_SERVICE);
 }
 
-void AppLaunchController::OnInitializingNetwork() {
-  app_launch_splash_screen_actor_->UpdateAppLaunchState(
-      AppLaunchSplashScreenActor::APP_LAUNCH_STATE_PREPARING_NETWORK);
-
-  // Show the network configration dialog if network is not initialized
-  // after a brief wait time.
-  waiting_for_network_ = true;
-  network_wait_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(network_wait_time_),
-      this, &AppLaunchController::OnNetworkWaitTimedout);
-}
-
 void AppLaunchController::OnInstallingApp() {
   app_launch_splash_screen_actor_->UpdateAppLaunchState(
       AppLaunchSplashScreenActor::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
 
+  waiting_for_network_ = false;
   network_wait_timer_.Stop();
   app_launch_splash_screen_actor_->ToggleNetworkConfig(false);
 

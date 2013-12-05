@@ -22,16 +22,20 @@ OobeScreenWaiter::~OobeScreenWaiter() {
 }
 
 void OobeScreenWaiter::Wait() {
-  if (GetOobeUI()->current_screen() == expected_screen_) {
+  WaitNoAssertCurrentScreen();
+
+  ASSERT_EQ(expected_screen_, GetOobeUI()->current_screen());
+}
+
+void OobeScreenWaiter::WaitNoAssertCurrentScreen() {
+  if (GetOobeUI()->current_screen() == expected_screen_)
     return;
-  }
 
   waiting_for_screen_ = true;
   GetOobeUI()->AddObserver(this);
 
   runner_ = new content::MessageLoopRunner;
   runner_->Run();
-  ASSERT_EQ(expected_screen_, GetOobeUI()->current_screen());
   ASSERT_FALSE(waiting_for_screen_);
 }
 

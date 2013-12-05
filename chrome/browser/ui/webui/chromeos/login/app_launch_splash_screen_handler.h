@@ -10,14 +10,21 @@
 
 #include "chrome/browser/chromeos/login/screens/app_launch_splash_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 
 namespace chromeos {
 
+class ErrorScreenActor;
+
 // A class that handles the WebUI hooks for the app launch splash screen.
-class AppLaunchSplashScreenHandler : public BaseScreenHandler,
-                                     public AppLaunchSplashScreenActor {
+class AppLaunchSplashScreenHandler
+    : public BaseScreenHandler,
+      public AppLaunchSplashScreenActor,
+      public NetworkStateInformer::NetworkStateInformerObserver {
  public:
-  AppLaunchSplashScreenHandler();
+  AppLaunchSplashScreenHandler(
+      const scoped_refptr<NetworkStateInformer>& network_state_informer,
+      ErrorScreenActor* error_screen_actor);
   virtual ~AppLaunchSplashScreenHandler();
 
   // BaseScreenHandler implementation:
@@ -35,6 +42,11 @@ class AppLaunchSplashScreenHandler : public BaseScreenHandler,
   virtual void UpdateAppLaunchState(AppLaunchState state) OVERRIDE;
   virtual void SetDelegate(
       AppLaunchSplashScreenHandler::Delegate* delegate) OVERRIDE;
+  virtual void ShowNetworkConfigureUI() OVERRIDE;
+
+  // NetworkStateInformer::NetworkStateInformerObserver implementation:
+  virtual void OnNetworkReady() OVERRIDE;
+  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
 
  private:
   void PopulateAppInfo(base::DictionaryValue* out_info);
@@ -47,6 +59,9 @@ class AppLaunchSplashScreenHandler : public BaseScreenHandler,
   bool show_on_init_;
   std::string app_id_;
   AppLaunchState state_;
+
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
+  ErrorScreenActor* error_screen_actor_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchSplashScreenHandler);
 };

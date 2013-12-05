@@ -93,3 +93,7 @@
 .offline-network-list-label {
   -webkit-margin-end: 10px;
 }
+
+.button-spacer {
+  -webkit-box-flex: 1;
+}

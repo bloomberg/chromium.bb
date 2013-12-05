@@ -22997,6 +22997,7 @@ other types of suffix sets.
              session"/>
   <int value="248" label="Report device users"/>
   <int value="249" label="User avatar image"/>
+  <int value="250" label="Enable network configuration prompt when offline"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

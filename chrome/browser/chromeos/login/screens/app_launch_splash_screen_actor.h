@@ -23,8 +23,15 @@ class AppLaunchSplashScreenActor {
 
   class Delegate {
    public:
+    // Invoked when the configure network control is clicked.
     virtual void OnConfigureNetwork() = 0;
+
+    // Invoked when the app launch bailout shortcut key is pressed.
     virtual void OnCancelAppLaunch() = 0;
+
+    // Invoked when network state is changed. |online| is true if the device
+    // is connected to the Internet.
+    virtual void OnNetworkStateChanged(bool online) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -47,8 +54,11 @@ class AppLaunchSplashScreenActor {
   // Set the current app launch state.
   virtual void UpdateAppLaunchState(AppLaunchState state) = 0;
 
-  // Sets whether continue control is enabled.
+  // Sets whether configure network control is visible.
   virtual void ToggleNetworkConfig(bool visible) = 0;
+
+  // Shows the network error and configure UI.
+  virtual void ShowNetworkConfigureUI() = 0;
 };
 
 }  // namespace chromeos

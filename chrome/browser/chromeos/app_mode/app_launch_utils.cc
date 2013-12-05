@@ -14,15 +14,13 @@ namespace chromeos {
 // A simple manager for the app launch that starts the launch
 // and deletes itself when the launch finishes. On launch failure,
 // it exits the browser process.
-class AppLaunchManager : public StartupAppLauncher::Observer {
+class AppLaunchManager : public StartupAppLauncher::Delegate {
  public:
   AppLaunchManager(Profile* profile, const std::string& app_id)
-      : waiting_for_network_(false) {
-    startup_app_launcher_.reset(new StartupAppLauncher(profile, app_id));
+      : startup_app_launcher_(new StartupAppLauncher(profile, app_id, this)) {
   }
 
   void Start() {
-    startup_app_launcher_->AddObserver(this);
     startup_app_launcher_->Initialize();
   }
 
@@ -31,34 +29,19 @@ class AppLaunchManager : public StartupAppLauncher::Observer {
 
   void Cleanup() { delete this; }
 
-  void OnNetworkWaitTimedout() {
-    DCHECK(waiting_for_network_);
-    LOG(ERROR) << "Timed out while waiting for network during app launch.";
-    OnLaunchFailed(KioskAppLaunchError::UNABLE_TO_INSTALL);
+  // StartupAppLauncher::Delegate overrides:
+  virtual void InitializeNetwork() OVERRIDE {
+    // This is on crash-restart path and assumes network is online.
+    // TODO(xiyuan): Remove the crash-restart path for kiosk or add proper
+    // network configure handling.
+    startup_app_launcher_->ContinueWithNetworkReady();
   }
-
-  // StartupAppLauncher::Observer overrides:
   virtual void OnLoadingOAuthFile() OVERRIDE {}
   virtual void OnInitializingTokenService() OVERRIDE {}
-
-  virtual void OnInitializingNetwork() OVERRIDE {
-    waiting_for_network_ = true;
-    const int kMaxNetworkWaitSeconds = 5 * 60;
-    network_wait_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kMaxNetworkWaitSeconds),
-        this, &AppLaunchManager::OnNetworkWaitTimedout);
-  }
-
-  virtual void OnInstallingApp() OVERRIDE {
-    waiting_for_network_ = false;
-    network_wait_timer_.Stop();
-  }
-
+  virtual void OnInstallingApp() OVERRIDE {}
   virtual void OnReadyToLaunch() OVERRIDE {
     startup_app_launcher_->LaunchApp();
   }
-
   virtual void OnLaunchSucceeded() OVERRIDE { Cleanup(); }
   virtual void OnLaunchFailed(KioskAppLaunchError::Error error) OVERRIDE {
     KioskAppLaunchError::Save(error);
@@ -66,8 +49,6 @@ class AppLaunchManager : public StartupAppLauncher::Observer {
     Cleanup();
   }
 
-  base::OneShotTimer<AppLaunchManager> network_wait_timer_;
-  bool waiting_for_network_;
   scoped_ptr<StartupAppLauncher> startup_app_launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchManager);

@@ -51,6 +51,7 @@ const char* kKnownSettings[] = {
   kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
   kAccountsPrefDeviceLocalAccountAutoLoginDelay,
   kAccountsPrefDeviceLocalAccountAutoLoginId,
+  kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
   kAccountsPrefEphemeralUsersEnabled,
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefSupervisedUsersEnabled,
@@ -307,6 +308,15 @@ void DeviceSettingsProvider::SetInPolicy() {
       device_local_accounts->set_enable_auto_login_bailout(enabled);
     else
       NOTREACHED();
+  } else if (prop ==
+             kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        device_settings_.mutable_device_local_accounts();
+    bool should_prompt;
+    if (value->GetAsBoolean(&should_prompt))
+      device_local_accounts->set_prompt_for_network_when_offline(should_prompt);
+    else
+      NOTREACHED();
   } else if (prop == kSignedDataRoamingEnabled) {
     em::DataRoamingEnabledProto* roam =
         device_settings_.mutable_data_roaming_enabled();
@@ -554,6 +564,9 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
   new_values_cache->SetBoolean(
       kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
       policy.device_local_accounts().enable_auto_login_bailout());
+  new_values_cache->SetBoolean(
+      kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
+      policy.device_local_accounts().prompt_for_network_when_offline());
 
   if (policy.has_start_up_flags()) {
     base::ListValue* list = new base::ListValue();
@@ -816,9 +829,9 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
     migration_values_.SetValue(kStatsReportingPref,
                                base::Value::CreateBooleanValue(new_value));
     AttemptMigration();
-    LOG(INFO) << "No metrics policy set will revert to checking "
-              << "consent file which is "
-              << (new_value ? "on." : "off.");
+    VLOG(1) << "No metrics policy set will revert to checking "
+            << "consent file which is "
+            << (new_value ? "on." : "off.");
     UMA_HISTOGRAM_COUNTS("DeviceSettings.MetricsMigrated", 1);
   }
   VLOG(1) << "Metrics policy is being set to : " << new_value

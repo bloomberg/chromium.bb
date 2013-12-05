@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -140,6 +141,10 @@ void ErrorScreenHandler::HandleLocalStateErrorPowerwashButtonClicked() {
       StartDeviceWipe();
 }
 
+void ErrorScreenHandler::HandleRebootButtonClicked() {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
 void ErrorScreenHandler::RegisterMessages() {
   AddCallback("showCaptivePortal",
               &ErrorScreenHandler::HandleShowCaptivePortal);
@@ -147,6 +152,8 @@ void ErrorScreenHandler::RegisterMessages() {
               &ErrorScreenHandler::HandleHideCaptivePortal);
   AddCallback("localStateErrorPowerwashButtonClicked",
               &ErrorScreenHandler::HandleLocalStateErrorPowerwashButtonClicked);
+  AddCallback("rebootButtonClicked",
+              &ErrorScreenHandler::HandleRebootButtonClicked);
 }
 
 void ErrorScreenHandler::DeclareLocalizedValues(
@@ -168,6 +175,7 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("localStateErrorText1", IDS_LOCAL_STATE_ERROR_TEXT_1);
   builder->Add("localStateErrorPowerwashButton",
                IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
+  builder->Add("rebootButton", IDS_RELAUNCH_BUTTON);
 }
 
 void ErrorScreenHandler::Initialize() {

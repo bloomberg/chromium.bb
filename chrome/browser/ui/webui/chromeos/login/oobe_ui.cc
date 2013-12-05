@@ -252,7 +252,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(signin_screen_handler_);
 
   AppLaunchSplashScreenHandler* app_launch_splash_screen_handler =
-      new AppLaunchSplashScreenHandler();
+      new AppLaunchSplashScreenHandler(network_state_informer_,
+                                       error_screen_handler_);
   AddScreenHandler(app_launch_splash_screen_handler);
   app_launch_splash_screen_actor_ = app_launch_splash_screen_handler;
 

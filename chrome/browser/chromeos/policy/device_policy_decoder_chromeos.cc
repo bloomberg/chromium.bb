@@ -182,6 +182,14 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                         container.enable_auto_login_bailout()),
                     NULL);
     }
+    if (container.has_prompt_for_network_when_offline()) {
+      policies->Set(key::kDeviceLocalAccountPromptForNetworkWhenOffline,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.prompt_for_network_when_offline()),
+                    NULL);
+    }
   }
 
   if (policy.has_supervised_users_settings()) {

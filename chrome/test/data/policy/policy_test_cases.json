@@ -2076,6 +2076,9 @@
   "DeviceLocalAccountAutoLoginBailoutEnabled": {
   },
 
+  "DeviceLocalAccountPromptForNetworkWhenOffline": {
+  },
+
   "DeviceLoginScreenPowerManagement": {
   },
 
