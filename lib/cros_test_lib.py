@@ -1561,7 +1561,7 @@ class MoxTestCase(TestCase):
         self.stubs.SmartUnsetAll()
 
 
-class MoxTempDirTestCase(TempDirTestCase, MoxTestCase):
+class MoxTempDirTestCase(MoxTestCase, TempDirTestCase):
   """Convenience class mixing TempDir and Mox
 
   Note: mox is deprecated; please use MockTempDirTestCase instead.

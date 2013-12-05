@@ -163,7 +163,7 @@ class TestHelloWorld(TestBackgroundWrapper):
 
   def _ParallelHelloWorld(self):
     """Write 'hello world' to stdout using multiple processes."""
-    with multiprocessing.Manager() as manager:
+    with parallel.Manager() as manager:
       queue = manager.Queue()
       with parallel.BackgroundTaskRunner(self._HelloWorld, queue=queue):
         queue.put([])
@@ -185,6 +185,17 @@ class TestHelloWorld(TestBackgroundWrapper):
     """Test that multiple threads can be created."""
     parallel.RunParallelSteps([self.testParallelHelloWorld] * 2)
 
+  def testLongTempDirectory(self):
+    """Test that we can handle a long temporary directory."""
+    with osutils.TempDir() as tempdir:
+      new_tempdir = os.path.join(tempdir, 'xxx/' * 100)
+      osutils.SafeMakedirs(new_tempdir)
+      old_tempdir, old_tempdir_env = osutils.SetGlobalTempDir(new_tempdir)
+      try:
+        self.testParallelHelloWorld()
+      finally:
+        osutils.SetGlobalTempDir(old_tempdir, old_tempdir_env)
+
 
 def _BackgroundTaskRunnerArgs(results, arg1, arg2, kwarg1=None, kwarg2=None):
   """Helper for TestBackgroundTaskRunnerArgs
@@ -198,7 +209,7 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
 
   def testArgs(self):
     """Test that we can pass args down to the task."""
-    with multiprocessing.Manager() as manager:
+    with parallel.Manager() as manager:
       results = manager.Queue()
       arg2s = set((1, 2, 3))
       with parallel.BackgroundTaskRunner(_BackgroundTaskRunnerArgs, results,

@@ -34,6 +34,29 @@ _BUFSIZE = 1024
 logger = logging.getLogger(__name__)
 
 
+def Manager():
+  """Create a background process for managing interprocess communication.
+
+  This manager wraps multiprocessing.Manager() and ensures that any sockets
+  created during initialization are created in '/tmp' rather than in a custom
+  temp directory. This is needed because TMPDIR might be really long, and
+  named sockets are limited to 108 characters.
+
+  Usage:
+    with Manager() as manager:
+      queue = manager.Queue()
+      ...
+
+  Returns:
+    The return value of multiprocessing.Manager()
+  """
+  old_tempdir_value, old_tempdir_env = osutils.SetGlobalTempDir('/tmp')
+  try:
+    return multiprocessing.Manager()
+  finally:
+    osutils.SetGlobalTempDir(old_tempdir_value, old_tempdir_env)
+
+
 class BackgroundFailure(results_lib.StepFailure):
   pass
 
@@ -384,7 +407,7 @@ class _BackgroundTask(multiprocessing.Process):
       semaphore = multiprocessing.Semaphore(max_parallel)
 
     # First, start all the steps.
-    with multiprocessing.Manager() as manager:
+    with Manager() as manager:
       bg_tasks = collections.deque()
       for step in steps:
         task = cls(step, queue=manager.Queue(), semaphore=semaphore)
@@ -516,7 +539,7 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False,
       # large return values.  But with a managed queue, the manager process will
       # read the items and hold on to them until the managed queue goes out of
       # scope and is cleaned up.
-      manager = stack.Add(multiprocessing.Manager)
+      manager = stack.Add(Manager)
       for step in steps:
         queue = manager.Queue()
         queues.append(queue)
@@ -581,7 +604,7 @@ def BackgroundTaskRunner(task, *args, **kwargs):
 
   with cros_build_lib.ContextManagerStack() as stack:
     if queue is None:
-      manager = stack.Add(multiprocessing.Manager)
+      manager = stack.Add(Manager)
       queue = manager.Queue()
 
     if not processes:

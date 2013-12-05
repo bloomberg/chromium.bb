@@ -320,6 +320,48 @@ def FindInPathParents(path_to_find, start_path, test_func=None):
 
 
 # pylint: disable=W0212,R0904,W0702
+def SetGlobalTempDir(tempdir_value, tempdir_env=None):
+  """Set the global temp directory to the specified |tempdir_value|
+
+  Args:
+    tempdir_value: The new location for the global temp directory.
+    tempdir_env: Optional. A list of key/value pairs to set in the
+      environment. If not provided, set all global tempdir environment
+      variables to point at |tempdir_value|.
+
+  Returns:
+    Returns (old_tempdir_value, old_tempdir_env).
+
+    old_tempdir_value: The old value of the global temp directory.
+    old_tempdir_env: A list of the key/value pairs that control the tempdir
+      environment and were set prior to this function. If the environment
+      variable was not set, it is recorded as None.
+  """
+  with tempfile._once_lock:
+    old_tempdir_value = tempfile._get_default_tempdir()
+    old_tempdir_env = tuple((x, os.environ.get(x)) for x in _TEMPDIR_ENV_VARS)
+
+    # Now update TMPDIR/TEMP/TMP, and poke the python
+    # internals to ensure all subprocess/raw tempfile
+    # access goes into this location.
+    if tempdir_env is None:
+      os.environ.update((x, tempdir_value) for x in _TEMPDIR_ENV_VARS)
+    else:
+      for key, value in tempdir_env:
+        if value is None:
+          os.environ.pop(key, None)
+        else:
+          os.environ[key] = value
+
+    # Finally, adjust python's cached value (we know it's cached by here
+    # since we invoked _get_default_tempdir from above).  Note this
+    # is necessary since we want *all* output from that point
+    # forward to go to this location.
+    tempfile.tempdir = tempdir_value
+
+  return (old_tempdir_value, old_tempdir_env)
+
+
 def _TempDirSetup(self, prefix='tmp', set_global=False, base_dir=None):
   """Generate a tempdir, modifying the object, and env to use it.
 
@@ -334,22 +376,10 @@ def _TempDirSetup(self, prefix='tmp', set_global=False, base_dir=None):
   os.chmod(self.tempdir, 0o700)
 
   if set_global:
-    with tempfile._once_lock:
-      self._tempdir_value = tempfile._get_default_tempdir()
-      self._tempdir_env = tuple((x, os.environ.get(x))
-                                for x in _TEMPDIR_ENV_VARS)
-      # Now update TMPDIR/TEMP/TMP, and poke the python
-      # internal to ensure all subprocess/raw tempfile
-      # access goes into this location.
-      os.environ.update((x, self.tempdir) for x in _TEMPDIR_ENV_VARS)
-      # Finally, adjust python's cached value (we know it's cached by here
-      # since we invoked _get_default_tempdir from above).  Note this
-      # is necessary since we want *all* output from that point
-      # forward to go to this location.
-      tempfile.tempdir = self.tempdir
+    self._orig_tempdir_value, self._orig_tempdir_env = \
+        SetGlobalTempDir(self.tempdir)
 
 
-# pylint: disable=W0212,R0904,W0702
 def _TempDirTearDown(self, force_sudo):
   # Note that _TempDirSetup may have failed, resulting in these attributes
   # not being set; this is why we use getattr here (and must).
@@ -365,15 +395,9 @@ def _TempDirTearDown(self, force_sudo):
       raise
 
   # Restore environment modification if necessary.
-  tempdir_value = getattr(self, '_tempdir_value', None)
-  if tempdir_value is not None:
-    with tempfile._once_lock:
-      tempfile.tempdir = self._tempdir_value
-      for key, value in self._tempdir_env:
-        if value is None:
-          os.environ.pop(key, None)
-        else:
-          os.environ[key] = value
+  orig_tempdir_value = getattr(self, '_orig_tempdir_value', None)
+  if orig_tempdir_value is not None:
+    SetGlobalTempDir(orig_tempdir_value, self._orig_tempdir_env)
 
 
 class TempDir(object):
