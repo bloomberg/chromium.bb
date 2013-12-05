@@ -1298,7 +1298,7 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
   this.deleteTasks_.push(task);
   this.eventRouter_.sendDeleteEvent('BEGIN', task.taskId, task.entries);
   this.maybeScheduleCloseBackgroundPage_();
-  if (this.deleteTasks_.length == 1)
+  if (this.deleteTasks_.length === 1)
     this.serviceAllDeleteTasks_();
 };
 
@@ -1311,79 +1311,64 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
  * @private
  */
 FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
-  var onTaskSuccess = function() {
-    var task = this.deleteTasks_.shift();
-    this.eventRouter_.sendDeleteEvent('SUCCESS', task.taskId, task.entries);
-
-    if (!this.deleteTasks_.length) {
-      // All tasks have been serviced, clean up and exit.
-      this.maybeScheduleCloseBackgroundPage_();
-      return;
-    }
-
-    var nextTask = this.deleteTasks_[0];
-    this.eventRouter_.sendDeleteEvent('PROGRESS',
-                                      nextTask.taskId,
-                                      nextTask.entries);
-    this.serviceDeleteTask_(nextTask, onTaskSuccess, onTaskFailure);
-  }.bind(this);
-
-  var onTaskFailure = function(error) {
-    var task = this.deleteTasks_[0];
-    this.deleteTasks_ = [];
-    this.eventRouter_.sendDeleteEvent('ERROR', task.taskId, task.entries);
+  if (!this.deleteTasks_.length) {
     this.maybeScheduleCloseBackgroundPage_();
-  }.bind(this);
-
-  this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess, onTaskFailure);
+    return;
+  }
+  this.serviceDeleteTask_(
+      this.deleteTasks_[0],
+      function() {
+        this.deleteTasks_.shift();
+        this.serviceAllDeleteTasks_();
+      }.bind(this));
 };
 
 /**
  * Performs the deletion.
  *
  * @param {Object} task The delete task (see deleteEntries function).
- * @param {function()} successCallback Callback run on success.
- * @param {function(FileOperationManager.Error)} errorCallback Callback run on
- *     error.
+ * @param {function()} callback Callback run on task end.
  * @private
  */
-FileOperationManager.prototype.serviceDeleteTask_ = function(
-    task, successCallback, errorCallback) {
-  var downcount = task.entries.length;
-  if (downcount == 0) {
-    successCallback();
-    return;
-  }
+FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
+  var queue = new AsyncUtil.Queue();
 
-  var filesystemError = null;
-  var onComplete = function() {
-    if (--downcount > 0)
+  // Delete each entry.
+  var error = null;
+  var deleteOneEntry = function(inCallback) {
+    if (!task.entries.length || task.canceled || error) {
+      inCallback();
       return;
-
-    // All remove operations are processed. Run callback.
-    if (filesystemError) {
-      errorCallback(new FileOperationManager.Error(
-          util.FileOperationErrorType.FILESYSTEM_ERROR, filesystemError));
-    } else {
-      successCallback();
     }
-  };
-
-  for (var i = 0; i < task.entries.length; i++) {
-    var entry = task.entries[i];
+    this.eventRouter_.sendDeleteEvent('PROGRESS', task.taskId, task.entries);
     util.removeFileOrDirectory(
-        entry,
-        function(currentEntry) {
+        task.entries[0],
+        function() {
           this.eventRouter_.sendEntryChangedEvent(
-              util.EntryChangedKind.DELETED, currentEntry);
-          onComplete();
-        }.bind(this, entry),
-        function(error) {
-          if (!filesystemError)
-            filesystemError = error;
-          onComplete();
-        });
-  }
+              util.EntryChangedKind.DELETED, task.entries[0]);
+          task.entries.shift();
+          deleteOneEntry(inCallback);
+        }.bind(this),
+        function(inError) {
+          error = inError;
+          inCallback();
+        }.bind(this));
+  }.bind(this);
+  queue.run(deleteOneEntry);
+
+  // Send an event and finish the async steps.
+  queue.run(function(inCallback) {
+    var reason;
+    if (error)
+      reason = 'ERROR';
+    else if (task.canceled)
+      reason = 'CANCELED';
+    else
+      reason = 'SUCCESS';
+    this.eventRouter_.sendDeleteEvent(reason, task.taskId, task.entries);
+    inCallback();
+    callback();
+  }.bind(this));
 };
 
 /**

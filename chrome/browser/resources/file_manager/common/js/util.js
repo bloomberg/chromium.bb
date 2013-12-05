@@ -1103,14 +1103,17 @@ util.createFileError = function(code) {
 };
 
 /**
+ * Compares two entries.
  * @param {Entry|Object} entry1 The entry to be compared. Can be a fake.
  * @param {Entry|Object} entry2 The entry to be compared. Can be a fake.
- * @return {boolean} True if the both entry represents a same file or directory.
+ * @return {boolean} True if the both entry represents a same file or
+ *     directory. Returns true if both entries are null.
  */
 util.isSameEntry = function(entry1, entry2) {
   // Currently, we can assume there is only one root.
   // When we support multi-file system, we need to look at filesystem, too.
-  return entry1 === null ? entry2 === null : entry1.fullPath == entry2.fullPath;
+  return (entry1 && entry2 && entry1.fullPath === entry2.fullPath) ||
+      (!entry1 && !entry2);
 };
 
 /**
@@ -1237,4 +1240,3 @@ util.VolumeType = Object.freeze({
   REMOVABLE: 'removable',
   ARCHIVE: 'archive'
 });
-
