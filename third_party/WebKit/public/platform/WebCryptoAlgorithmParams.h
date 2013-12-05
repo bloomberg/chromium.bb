@@ -195,7 +195,7 @@ public:
     const WebVector<unsigned char>& iv() const { return m_iv; }
 
     bool hasAdditionalData() const { return m_hasAdditionalData; }
-    bool getAdditionalData(const WebVector<unsigned char>*& additionalData)
+    bool getAdditionalData(const WebVector<unsigned char>*& additionalData) const
     {
         if (!m_hasAdditionalData)
             return false;
@@ -204,7 +204,7 @@ public:
     }
 
     bool hasTagLength() const { return m_hasTagLength; }
-    bool getTagLength(unsigned& tagLength)
+    bool getTagLength(unsigned& tagLength) const
     {
         if (!m_hasTagLength)
             return false;
@@ -234,7 +234,7 @@ public:
     const WebCryptoAlgorithm& hash() const { return m_hash; }
 
     bool hasLabel() const { return m_hasLabel; }
-    bool getLabel(const WebVector<unsigned char>*& label)
+    bool getLabel(const WebVector<unsigned char>*& label) const
     {
         if (!m_hasLabel)
             return false;
