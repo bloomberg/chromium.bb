@@ -144,7 +144,13 @@ int WebSocketBasicHandshakeStream::SendRequest(
   // Sec-WebSockey-Key header.
   HttpRequestHeaders enriched_headers;
   enriched_headers.CopyFrom(headers);
-  std::string handshake_challenge = GenerateHandshakeChallenge();
+  std::string handshake_challenge;
+  if (handshake_challenge_for_testing_) {
+    handshake_challenge = *handshake_challenge_for_testing_;
+    handshake_challenge_for_testing_.reset();
+  } else {
+    handshake_challenge = GenerateHandshakeChallenge();
+  }
   enriched_headers.SetHeader(websockets::kSecWebSocketKey, handshake_challenge);
 
   AddVectorHeaderIfNonEmpty(websockets::kSecWebSocketProtocol,
@@ -251,6 +257,11 @@ scoped_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
                                state_.read_buf(),
                                sub_protocol_,
                                extensions_));
+}
+
+void WebSocketBasicHandshakeStream::SetWebSocketKeyForTesting(
+    const std::string& key) {
+  handshake_challenge_for_testing_.reset(new std::string(key));
 }
 
 void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(

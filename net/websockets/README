@@ -63,12 +63,14 @@ websocket_frame_test.cc
 websocket_handshake_stream_base.h
 websocket_handshake_stream_create_helper.cc
 websocket_handshake_stream_create_helper.h
+websocket_handshake_stream_create_helper_test.cc
 websocket_inflater.cc
 websocket_inflater.h
 websocket_inflater_test.cc
 websocket_mux.h
 websocket_stream.cc
 websocket_stream.h
+websocket_stream_test.cc
 websocket_test_util.cc
 websocket_test_util.h
 

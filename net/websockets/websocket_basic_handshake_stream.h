@@ -66,6 +66,11 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   // Upgrade() has been called and should be disposed of as soon as possible.
   virtual scoped_ptr<WebSocketStream> Upgrade() OVERRIDE;
 
+  // Set the value used for the next Sec-WebSocket-Key header
+  // deterministically. The key is only used once, and then discarded.
+  // For tests only.
+  void SetWebSocketKeyForTesting(const std::string& key);
+
  private:
   // A wrapper for the ReadResponseHeaders callback that checks whether or not
   // the connection has been accepted.
@@ -88,6 +93,10 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
 
   // This is stored in SendRequest() for use by ReadResponseHeaders().
   HttpResponseInfo* http_response_info_;
+
+  // The key to be sent in the next Sec-WebSocket-Key header. Usually NULL (the
+  // key is generated on the fly).
+  scoped_ptr<std::string> handshake_challenge_for_testing_;
 
   // The required value for the Sec-WebSocket-Accept header.
   std::string handshake_challenge_response_;

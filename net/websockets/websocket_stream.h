@@ -50,7 +50,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
  public:
   // A concrete object derived from ConnectDelegate is supplied by the caller to
   // CreateAndConnectStream() to receive the result of the connection.
-  class ConnectDelegate {
+  class NET_EXPORT_PRIVATE ConnectDelegate {
    public:
     virtual ~ConnectDelegate();
     // Called on successful connection. The parameter is an object derived from
