@@ -160,7 +160,9 @@ def set_read_only(path, read_only):
   else:
     if stat.S_ISLNK(mode):
       # Skip symlink without lchmod() support.
-      logging.debug('Can\'t change +w bit on symlink %s' % path)
+      logging.debug(
+          'Can\'t change %sw bit on symlink %s',
+          '-' if read_only else '+', path)
       return
 
     # TODO(maruel): Implement proper DACL modification on Windows.
