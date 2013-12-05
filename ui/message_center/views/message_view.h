@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/insets.h"
 #include "ui/message_center/message_center_export.h"
@@ -14,6 +15,7 @@
 
 namespace views {
 class ImageButton;
+class Painter;
 class ScrollView;
 }
 
@@ -58,6 +60,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
@@ -81,6 +86,8 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   views::ScrollView* scroller_;
 
   string16 accessible_name_;
+
+  scoped_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };

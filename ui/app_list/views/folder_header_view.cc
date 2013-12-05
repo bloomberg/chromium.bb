@@ -14,6 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/painter.h"
 
 namespace app_list {
 
@@ -37,7 +38,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   FolderNameView() {
     set_border(views::Border::CreateEmptyBorder(1, 1, 1, 1));
     const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
-    set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
           kFocusBorderColor,
           gfx::Insets(0, 0, 1, 1)));
   }

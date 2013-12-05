@@ -31,7 +31,6 @@
 #include "ui/gfx/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/focus_border.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_comptr.h"
@@ -515,11 +514,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void set_border(Border* b) { border_.reset(b); }
   const Border* border() const { return border_.get(); }
   Border* border() { return border_.get(); }
-
-  // The focus_border object is owned by this object and may be NULL.
-  void set_focus_border(FocusBorder* b) { focus_border_.reset(b); }
-  const FocusBorder* focus_border() const { return focus_border_.get(); }
-  FocusBorder* focus_border() { return focus_border_.get(); }
 
   // Get the theme provider from the parent widget.
   virtual ui::ThemeProvider* GetThemeProvider() const;
@@ -1089,10 +1083,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Override to paint a border not specified by SetBorder().
   virtual void OnPaintBorder(gfx::Canvas* canvas);
 
-  // Override to paint a focus border not specified by set_focus_border() around
-  // relevant contents.  The focus border is usually a dotted rectangle.
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
-
   // Accelerated painting ------------------------------------------------------
 
   // Returns the offset from this view to the nearest ancestor with a layer. If
@@ -1511,9 +1501,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Border.
   scoped_ptr<Border> border_;
-
-  // Focus border.
-  scoped_ptr<FocusBorder> focus_border_;
 
   // RTL painting --------------------------------------------------------------
 

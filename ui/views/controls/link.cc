@@ -11,6 +11,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/link_listener.h"
@@ -60,6 +61,25 @@ gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
 #endif
+}
+
+void Link::OnPaint(gfx::Canvas* canvas) {
+  Label::OnPaint(canvas);
+
+  if (HasFocus())
+    canvas->DrawFocusRect(GetLocalBounds());
+}
+
+void Link::OnFocus() {
+  Label::OnFocus();
+  // We render differently focused.
+  SchedulePaint();
+}
+
+void Link::OnBlur() {
+  Label::OnBlur();
+  // We render differently focused.
+  SchedulePaint();
 }
 
 bool Link::HitTestRect(const gfx::Rect& rect) const {

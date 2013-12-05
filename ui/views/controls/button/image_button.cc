@@ -10,6 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -27,7 +28,8 @@ ImageButton::ImageButton(ButtonListener* listener)
       h_alignment_(ALIGN_LEFT),
       v_alignment_(ALIGN_TOP),
       preferred_size_(kDefaultWidth, kDefaultHeight),
-      draw_image_mirrored_(false) {
+      draw_image_mirrored_(false),
+      focus_painter_(Painter::CreateDashedFocusPainter()) {
   // By default, we request that the gfx::Canvas passed to our View::OnPaint()
   // implementation is flipped horizontally so that the button's images are
   // mirrored when the UI directionality is right-to-left.
@@ -73,6 +75,10 @@ void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
   SchedulePaint();
 }
 
+void ImageButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
+  focus_painter_ = focus_painter.Pass();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, View overrides:
 
@@ -114,11 +120,24 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
     if (!overlay_image_.isNull())
       canvas->DrawImageInt(overlay_image_, position.x(), position.y());
   }
-  OnPaintFocusBorder(canvas);
+
+  Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, protected:
+
+void ImageButton::OnFocus() {
+  View::OnFocus();
+  if (focus_painter_.get())
+    SchedulePaint();
+}
+
+void ImageButton::OnBlur() {
+  View::OnBlur();
+  if (focus_painter_.get())
+    SchedulePaint();
+}
 
 gfx::ImageSkia ImageButton::GetImageToPaint() {
   gfx::ImageSkia img;

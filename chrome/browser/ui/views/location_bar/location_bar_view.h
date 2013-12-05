@@ -223,9 +223,6 @@ class LocationBarView : public LocationBar,
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // No focus border for the location bar, the caret is enough.
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {}
-
   // Set if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   // Repaints if necessary.

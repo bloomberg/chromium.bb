@@ -23,6 +23,7 @@
 #include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/painter.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -78,8 +79,8 @@ Textfield::Textfield()
         GetDefaultTextfieldObscuredRevealDuration();
   }
 
-  if (!NativeViewHost::kRenderNativeControlFocus)
-    set_focus_border(NULL);
+  if (NativeViewHost::kRenderNativeControlFocus)
+    focus_painter_ = Painter::CreateDashedFocusPainter();
 }
 
 Textfield::Textfield(StyleFlags style)
@@ -108,8 +109,8 @@ Textfield::Textfield(StyleFlags style)
         GetDefaultTextfieldObscuredRevealDuration();
   }
 
-  if (!NativeViewHost::kRenderNativeControlFocus)
-    set_focus_border(NULL);
+  if (NativeViewHost::kRenderNativeControlFocus)
+    focus_painter_ = Painter::CreateDashedFocusPainter();
 }
 
 Textfield::~Textfield() {
@@ -407,6 +408,10 @@ void Textfield::ExecuteCommand(int command_id) {
   native_wrapper_->ExecuteTextCommand(command_id);
 }
 
+void Textfield::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
+  focus_painter_ = focus_painter.Pass();
+}
+
 bool Textfield::HasTextBeingDragged() {
   return native_wrapper_->HasTextBeingDragged();
 }
@@ -449,9 +454,10 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   return e.key_code() == ui::VKEY_BACK || e.IsUnicodeKeyCode();
 }
 
-void Textfield::OnPaintFocusBorder(gfx::Canvas* canvas) {
+void Textfield::OnPaint(gfx::Canvas* canvas) {
+  View::OnPaint(canvas);
   if (NativeViewHost::kRenderNativeControlFocus)
-    View::OnPaintFocusBorder(canvas);
+    Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
 bool Textfield::OnKeyPressed(const ui::KeyEvent& e) {

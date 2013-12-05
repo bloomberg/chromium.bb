@@ -12,12 +12,12 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/corewm/shadow_types.h"
-#include "ui/views/focus_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -85,7 +85,9 @@ class DesktopMediaSourceView : public views::View {
   virtual void Layout() OVERRIDE;
   virtual views::View* GetSelectedViewForGroup(int group) OVERRIDE;
   virtual bool IsGroupFocusTraversable() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
  private:
@@ -264,10 +266,6 @@ void DesktopMediaSourceView::Layout() {
                          kThumbnailWidth, kThumbnailHeight);
   label_->SetBounds(kThumbnailMargin, kThumbnailHeight + kThumbnailMargin,
                     kThumbnailWidth, kLabelHeight);
-
-  set_focus_border(views::FocusBorder::CreateDashedFocusBorder(
-      kThumbnailMargin / 2, kThumbnailMargin / 2,
-      kThumbnailMargin / 2, kThumbnailMargin / 2));
 }
 
 views::View* DesktopMediaSourceView::GetSelectedViewForGroup(int group) {
@@ -290,10 +288,27 @@ bool DesktopMediaSourceView::IsGroupFocusTraversable() const {
   return false;
 }
 
+void DesktopMediaSourceView::OnPaint(gfx::Canvas* canvas) {
+  View::OnPaint(canvas);
+  if (HasFocus()) {
+    gfx::Rect bounds(GetLocalBounds());
+    bounds.Inset(kThumbnailMargin / 2, kThumbnailMargin / 2);
+    canvas->DrawFocusRect(bounds);
+  }
+}
+
 void DesktopMediaSourceView::OnFocus() {
   View::OnFocus();
   SetSelected(true);
   ScrollRectToVisible(gfx::Rect(size()));
+  // We paint differently when focused.
+  SchedulePaint();
+}
+
+void DesktopMediaSourceView::OnBlur() {
+  View::OnBlur();
+  // We paint differently when focused.
+  SchedulePaint();
 }
 
 bool DesktopMediaSourceView::OnMousePressed(const ui::MouseEvent& event) {

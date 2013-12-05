@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_constants.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_button_host.h"
 #include "grit/ash_resources.h"
@@ -17,6 +18,7 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 namespace internal {
@@ -43,6 +45,8 @@ AppListButton::AppListButton(views::ButtonListener* listener,
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
   SetSize(gfx::Size(kLauncherPreferredSize, kLauncherPreferredSize));
   SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_TOP);
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+                      kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
 }
 
 AppListButton::~AppListButton() {

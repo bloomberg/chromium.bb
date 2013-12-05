@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
@@ -15,6 +16,8 @@
 #include "ui/views/native_theme_delegate.h"
 
 namespace views {
+
+class Painter;
 
 // LabelButton is an alternative to TextButton, it's not focusable by default.
 class VIEWS_EXPORT LabelButton : public CustomButton,
@@ -65,16 +68,19 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   ButtonStyle style() const { return style_; }
   void SetStyle(ButtonStyle style);
 
+  void SetFocusPainter(scoped_ptr<Painter> focus_painter);
+
   // View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
  protected:
-   ImageView* image() const { return image_; }
-   Label* label() const { return label_; }
+  ImageView* image() const { return image_; }
+  Label* label() const { return label_; }
 
-  // Overridden from View:
+  // View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 
@@ -137,6 +143,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // The button's overall style.
   ButtonStyle style_;
+
+  scoped_ptr<Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButton);
 };

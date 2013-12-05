@@ -37,6 +37,9 @@ class VIEWS_EXPORT Link : public Label {
   virtual void OnEnabledChanged() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;

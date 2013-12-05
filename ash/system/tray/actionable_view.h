@@ -21,6 +21,8 @@ namespace internal {
 // Exported for SystemTray.
 class ASH_EXPORT ActionableView : public views::View {
  public:
+  static const char kViewClassName[];
+
   ActionableView();
 
   virtual ~ActionableView();
@@ -28,10 +30,11 @@ class ASH_EXPORT ActionableView : public views::View {
   void SetAccessibleName(const base::string16& name);
   const base::string16& accessible_name() const { return accessible_name_; }
 
-  static const char kViewClassName[];
-
  protected:
-  void DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds);
+  void OnPaintFocus(gfx::Canvas* canvas);
+
+  // Returns the bounds to paint the focus rectangle in.
+  virtual gfx::Rect GetFocusBounds();
 
   // Performs an action when user clicks on the view (on mouse-press event), or
   // presses a key when this view is in focus. Returns true if the event has
@@ -45,7 +48,9 @@ class ASH_EXPORT ActionableView : public views::View {
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // Overridden from ui::EventHandler.
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

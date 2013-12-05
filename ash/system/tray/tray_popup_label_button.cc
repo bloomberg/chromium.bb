@@ -8,6 +8,7 @@
 #include "ash/system/tray/tray_popup_label_button_border.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 namespace internal {
@@ -20,7 +21,7 @@ TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
   set_request_focus_on_press(false);
   set_animate_on_state_change(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor,
       gfx::Insets(1, 1, 2, 2)));
 }

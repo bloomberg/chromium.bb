@@ -51,7 +51,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_search.h"
-#include "ui/views/focus_border.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
@@ -932,9 +931,6 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
       break;
   }
   view->set_context_menu_controller(this);
-  view->set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
-      kFocusBorderColor,
-      gfx::Insets(1, 1, 1, 1)));
 
   DCHECK(view);
   ConfigureChildView(view);

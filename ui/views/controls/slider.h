@@ -41,8 +41,7 @@ class VIEWS_EXPORT SliderListener {
   virtual ~SliderListener() {}
 };
 
-class VIEWS_EXPORT Slider : public View,
-                            public gfx::AnimationDelegate {
+class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
  public:
   enum Orientation {
     HORIZONTAL,
@@ -80,6 +79,8 @@ class VIEWS_EXPORT Slider : public View,
   // Moves the button to the specified point and updates the value accordingly.
   void MoveButtonTo(const gfx::Point& point);
 
+  void OnPaintFocus(gfx::Canvas* canvas);
+
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -88,7 +89,6 @@ class VIEWS_EXPORT Slider : public View,
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // ui::EventHandler overrides:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

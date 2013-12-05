@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/shelf/shelf_button_host.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -468,6 +469,15 @@ void ShelfButton::OnFocus() {
 void ShelfButton::OnBlur() {
   ClearState(STATE_FOCUSED);
   CustomButton::OnBlur();
+}
+
+void ShelfButton::OnPaint(gfx::Canvas* canvas) {
+  CustomButton::OnPaint(canvas);
+  if (HasFocus()) {
+    gfx::Rect paint_bounds(GetLocalBounds());
+    paint_bounds.Inset(1, 1, 1, 1);
+    canvas->DrawSolidFocusRect(paint_bounds, kFocusBorderColor);
+  }
 }
 
 void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {

@@ -14,6 +14,8 @@ class Canvas;
 
 namespace views {
 
+class Painter;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // ImageView class.
@@ -75,8 +77,12 @@ class VIEWS_EXPORT ImageView : public View {
 
   void set_interactive(bool interactive) { interactive_ = interactive; }
 
+  void SetFocusPainter(scoped_ptr<Painter> focus_painter);
+
   // Overriden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
@@ -84,6 +90,8 @@ class VIEWS_EXPORT ImageView : public View {
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
  private:
+  void OnPaintImage(gfx::Canvas* canvas);
+
   // Returns true if |img| is the same as the last image we painted. This is
   // intended to be a quick check, not exhaustive. In other words it's possible
   // for this to return false even though the images are in fact equal.
@@ -120,6 +128,8 @@ class VIEWS_EXPORT ImageView : public View {
   // Address of bytes we last painted. This is used only for comparison, so its
   // safe to cache.
   void* last_painted_bitmap_pixels_;
+
+  scoped_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageView);
 };

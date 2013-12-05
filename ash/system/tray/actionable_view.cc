@@ -22,10 +22,14 @@ ActionableView::ActionableView()
 ActionableView::~ActionableView() {
 }
 
-void ActionableView::DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds) {
-  gfx::Rect rect = bounds;
+void ActionableView::OnPaintFocus(gfx::Canvas* canvas) {
+  gfx::Rect rect(GetFocusBounds());
   rect.Inset(1, 1, 3, 2);
   canvas->DrawSolidFocusRect(rect, kFocusBorderColor);
+}
+
+gfx::Rect ActionableView::GetFocusBounds() {
+  return GetLocalBounds();
 }
 
 const char* ActionableView::GetClassName() const {
@@ -59,19 +63,31 @@ void ActionableView::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
-void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus())
-    DrawBorder(canvas, GetLocalBounds());
+void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->name = accessible_name_;
+}
+
+void ActionableView::OnPaint(gfx::Canvas* canvas) {
+  View::OnPaint(canvas);
+  OnPaintFocus(canvas);
+}
+
+void ActionableView::OnFocus() {
+  View::OnFocus();
+  // We render differently when focused.
+  SchedulePaint();
+}
+
+void ActionableView::OnBlur() {
+  View::OnBlur();
+  // We render differently when focused.
+  SchedulePaint();
 }
 
 void ActionableView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP && PerformAction(*event))
     event->SetHandled();
-}
-
-void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = accessible_name_;
 }
 
 }  // namespace internal

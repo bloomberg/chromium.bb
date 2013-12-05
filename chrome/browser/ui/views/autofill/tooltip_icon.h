@@ -21,10 +21,10 @@ class InfoBubble;
 class TooltipIcon : public views::ImageView,
                     public views::MouseWatcherListener {
  public:
+  static const char kViewClassName[];
+
   explicit TooltipIcon(const base::string16& tooltip);
   virtual ~TooltipIcon();
-
-  static const char kViewClassName[];
 
   // views::ImageView:
   virtual const char* GetClassName() const OVERRIDE;

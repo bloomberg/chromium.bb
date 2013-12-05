@@ -113,7 +113,7 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
   // From TextButton::PaintButton, draw everything but the text.
   OnPaintBackground(canvas);
   OnPaintBorder(canvas);
-  OnPaintFocusBorder(canvas);
+  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 
   gfx::Rect rect;
   // In RTL languages the marker gets drawn leftmost, so account for its offset.

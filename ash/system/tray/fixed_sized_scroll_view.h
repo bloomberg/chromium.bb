@@ -33,7 +33,6 @@ class FixedSizedScrollView : public views::ScrollView {
  protected:
   // Overridden from views::View:
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   gfx::Size fixed_size_;

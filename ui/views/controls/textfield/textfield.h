@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -38,7 +39,7 @@ class TextInputClient;
 namespace views {
 
 class ImageView;
-
+class Painter;
 class TextfieldController;
 
 // This class implements a View that wraps a native text (edit) field.
@@ -239,6 +240,8 @@ class VIEWS_EXPORT Textfield : public View {
   // Performs the action associated with the specified command id.
   void ExecuteCommand(int command_id);
 
+  void SetFocusPainter(scoped_ptr<Painter> focus_painter);
+
   // Provided only for testing:
   gfx::NativeView GetTestingHandle() const {
     return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;
@@ -257,7 +260,7 @@ class VIEWS_EXPORT Textfield : public View {
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& e) OVERRIDE;
@@ -342,6 +345,8 @@ class VIEWS_EXPORT Textfield : public View {
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;
+
+  scoped_ptr<Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };

@@ -17,7 +17,7 @@ const char NativeViewHost::kViewClassName[] = "NativeViewHost";
 const char kWidgetNativeViewHostKey[] = "WidgetNativeViewHost";
 
 #if defined(USE_AURA)
-// Views implmenetatxion draws the focus.
+// Views implementation draws the focus.
 // TODO(oshima): Eliminate this flag and consolidate
 // the focus border code.
 const bool NativeViewHost::kRenderNativeControlFocus = false;

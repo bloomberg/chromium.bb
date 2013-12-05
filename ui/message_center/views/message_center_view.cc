@@ -78,8 +78,6 @@ BoundedScrollView::BoundedScrollView(int min_height, int max_height)
     : min_height_(min_height),
       max_height_(max_height) {
   set_notify_enter_exit_on_child(true);
-  // Cancels the default dashed focus border.
-  set_focus_border(NULL);
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
   SetVerticalScrollBar(new views::OverlayScrollBar(false));

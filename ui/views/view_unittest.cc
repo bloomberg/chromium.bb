@@ -27,7 +27,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
-#include "ui/views/focus_border.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -2212,9 +2211,7 @@ TEST_F(ViewTest, FocusBlurPaints) {
   parent_view.scheduled_paint_rects_.clear();
   child_view1->scheduled_paint_rects_.clear();
 
-  // If no FocusBorder is installed then focus changes shouldn't
-  // SchedulePaint().
-  child_view1->set_focus_border(NULL);
+  // Focus change shouldn't trigger paints.
   child_view1->DoFocus();
 
   EXPECT_TRUE(parent_view.scheduled_paint_rects_.empty());
@@ -2223,15 +2220,6 @@ TEST_F(ViewTest, FocusBlurPaints) {
   child_view1->DoBlur();
   EXPECT_TRUE(parent_view.scheduled_paint_rects_.empty());
   EXPECT_TRUE(child_view1->scheduled_paint_rects_.empty());
-
-  // Repeat with a FocusBorder, should now paint.
-  child_view1->set_focus_border(FocusBorder::CreateDashedFocusBorder());
-  child_view1->DoFocus();
-  EXPECT_FALSE(child_view1->scheduled_paint_rects_.empty());
-  child_view1->scheduled_paint_rects_.clear();
-
-  child_view1->DoBlur();
-  EXPECT_FALSE(child_view1->scheduled_paint_rects_.empty());
 }
 
 // Verifies SetBounds(same bounds) doesn't trigger a SchedulePaint().

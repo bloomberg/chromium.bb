@@ -161,7 +161,6 @@ View::View()
       registered_for_visible_bounds_notification_(false),
       clip_insets_(0, 0, 0, 0),
       needs_layout_(true),
-      focus_border_(FocusBorder::CreateDashedFocusBorder()),
       flip_canvas_on_paint_for_rtl_ui_(false),
       paint_to_layer_(false),
       accelerator_focus_manager_(NULL),
@@ -1404,7 +1403,6 @@ void View::PaintChildren(gfx::Canvas* canvas) {
 void View::OnPaint(gfx::Canvas* canvas) {
   TRACE_EVENT1("views", "View::OnPaint", "class", GetClassName());
   OnPaintBackground(canvas);
-  OnPaintFocusBorder(canvas);
   OnPaintBorder(canvas);
 }
 
@@ -1423,15 +1421,6 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
                  "width", canvas->sk_canvas()->getDevice()->width(),
                  "height", canvas->sk_canvas()->getDevice()->height());
     border_->Paint(*this, canvas);
-  }
-}
-
-void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (focus_border_.get() && HasFocus()) {
-    TRACE_EVENT2("views", "views::OnPaintFocusBorder",
-                 "width", canvas->sk_canvas()->getDevice()->width(),
-                 "height", canvas->sk_canvas()->getDevice()->height());
-    focus_border_->Paint(*this, canvas);
   }
 }
 
@@ -1606,14 +1595,10 @@ void View::OnBlur() {
 }
 
 void View::Focus() {
-  if (focus_border_.get())
-    SchedulePaint();
   OnFocus();
 }
 
 void View::Blur() {
-  if (focus_border_.get())
-    SchedulePaint();
   OnBlur();
 }
 

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/views/toolbar/back_button.h"
 
+#include "ui/gfx/insets.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/focus_border.h"
+#include "ui/views/painter.h"
 
 BackButton::BackButton(views::ButtonListener* listener,
                        ui::MenuModel* model)
@@ -36,9 +37,9 @@ void BackButton::SetLeadingMargin(int margin) {
   // TODO(gbillock): Refactor this magic number somewhere global to views,
   // probably a FocusBorder constant.
   const int kFocusRectInset = 3;
-  set_focus_border(views::FocusBorder::CreateDashedFocusBorder(
-      kFocusRectInset + margin, kFocusRectInset,
-      kFocusRectInset, kFocusRectInset));
+  SetFocusPainter(views::Painter::CreateDashedFocusPainterWithInsets(
+                      gfx::Insets(kFocusRectInset, kFocusRectInset + margin,
+                                  kFocusRectInset, kFocusRectInset)));
 
   margin_leading_ = margin;
   InvalidateLayout();

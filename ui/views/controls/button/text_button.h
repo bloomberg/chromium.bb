@@ -166,6 +166,9 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   bool show_multiple_icon_states() const { return show_multiple_icon_states_; }
   void SetShowMultipleIconStates(bool show_multiple_icon_states);
 
+  void SetFocusPainter(scoped_ptr<Painter> focus_painter);
+  Painter* focus_painter() { return focus_painter_.get(); }
+
   // Paint the button into the specified canvas. If |mode| is |PB_FOR_DRAG|, the
   // function paints a drag image representation into the canvas.
   enum PaintButtonMode { PB_NORMAL, PB_FOR_DRAG };
@@ -220,6 +223,10 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual ui::NativeTheme::State GetForegroundThemeState(
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
+
+  // Overridden from View:
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
@@ -288,6 +295,8 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   bool use_disabled_color_from_theme_;
   bool use_highlight_color_from_theme_;
   bool use_hover_color_from_theme_;
+
+  scoped_ptr<Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButtonBase);
 };

@@ -171,6 +171,19 @@ void Slider::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
 
+void Slider::OnPaintFocus(gfx::Canvas* canvas) {
+  if (!HasFocus())
+    return;
+
+  if (!focus_border_color_) {
+    canvas->DrawFocusRect(GetLocalBounds());
+  } else if (HasFocus()) {
+    canvas->DrawSolidFocusRect(
+        gfx::Rect(1, 1, width() - 3, height() - 3),
+        focus_border_color_);
+  }
+}
+
 gfx::Size Slider::GetPreferredSize() {
   const int kSizeMajor = 200;
   const int kSizeMinor = 40;
@@ -248,6 +261,7 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(*thumb_, thumb_x, button_cy);
   }
   View::OnPaint(canvas);
+  OnPaintFocus(canvas);
 }
 
 bool Slider::OnMousePressed(const ui::MouseEvent& event) {
@@ -314,16 +328,6 @@ void Slider::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   state->value = UTF8ToUTF16(
       base::StringPrintf("%d%%", (int)(value_ * 100 + 0.5)));
-}
-
-void Slider::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (!focus_border_color_) {
-    View::OnPaintFocusBorder(canvas);
-  } else if (HasFocus()) {
-    canvas->DrawSolidFocusRect(
-        gfx::Rect(1, 1, width() - 3, height() - 3),
-        focus_border_color_);
-  }
 }
 
 }  // namespace views

@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/views_export.h"
 
@@ -25,6 +26,8 @@ class Size;
 
 namespace views {
 
+class View;
+
 // Painter, as the name implies, is responsible for painting in a particular
 // region. Think of Painter as a Border or Background that can be painted
 // in any region of a View.
@@ -38,6 +41,12 @@ class VIEWS_EXPORT Painter {
   static void PaintPainterAt(gfx::Canvas* canvas,
                              Painter* painter,
                              const gfx::Rect& rect);
+
+  // Convenience that paints |focus_painter| only if |view| HasFocus() and
+  // |focus_painter| is non-NULL.
+  static void PaintFocusPainter(View* view,
+                                gfx::Canvas* canvas,
+                                Painter* focus_painter);
 
   // Creates a painter that draws a gradient between the two colors.
   static Painter* CreateHorizontalGradient(SkColor c1, SkColor c2);
@@ -64,6 +73,13 @@ class VIEWS_EXPORT Painter {
   // The center image may be zero (to be skipped). This ordering must be used:
   // Top-Left/Top/Top-Right/Left/[Center]/Right/Bottom-Left/Bottom/Bottom-Right.
   static Painter* CreateImageGridPainter(const int image_ids[]);
+
+  // Factory methods for creating painters intended for rendering focus.
+  static scoped_ptr<Painter> CreateDashedFocusPainter();
+  static scoped_ptr<Painter> CreateDashedFocusPainterWithInsets(
+      const gfx::Insets& insets);
+  static scoped_ptr<Painter> CreateSolidFocusPainter(SkColor color,
+                                                     const gfx::Insets& insets);
 
   // Returns the minimum size this painter can paint without obvious graphical
   // problems (e.g. overlapping images).

@@ -80,9 +80,8 @@ void FocusRingLayer::SetForView(views::View* view) {
     view_bounds.Inset(2, 2, 2, 2);
   }
 
-  // Workarounds for system tray items that has a customized
-  // OnPaintFocusBorder.    The insets here must be consistent with
-  // the ones used in OnPaintFocusBorder and DrawBorder.
+  // Workarounds for system tray items that have customized focus borders.  The
+  // insets here must be consistent with the ones used by those classes.
   if (view->GetClassName() ==
       ash::internal::ActionableView::kViewClassName) {
     view_bounds = view->GetLocalBounds();

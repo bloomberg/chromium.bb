@@ -70,12 +70,12 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+  virtual gfx::Rect GetFocusBounds() OVERRIDE;
 
   // Overridden from internal::BackgroundAnimatorDelegate.
   virtual void UpdateBackground(int alpha) OVERRIDE;

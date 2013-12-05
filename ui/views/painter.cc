@@ -15,11 +15,82 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-
+#include "ui/views/view.h"
 
 namespace views {
 
 namespace {
+
+// DashedFocusPainter ----------------------------------------------------------
+
+class DashedFocusPainter : public Painter {
+ public:
+  explicit DashedFocusPainter(const gfx::Insets& insets);
+  virtual ~DashedFocusPainter();
+
+  // Painter:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+
+ private:
+  const gfx::Insets insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(DashedFocusPainter);
+};
+
+DashedFocusPainter::DashedFocusPainter(const gfx::Insets& insets)
+    : insets_(insets) {
+}
+
+DashedFocusPainter::~DashedFocusPainter() {
+}
+
+gfx::Size DashedFocusPainter::GetMinimumSize() const {
+  return gfx::Size();
+}
+
+void DashedFocusPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+  gfx::Rect rect(size);
+  rect.Inset(insets_);
+  canvas->DrawFocusRect(rect);
+}
+
+// SolidFocusPainter -----------------------------------------------------------
+
+class SolidFocusPainter : public Painter {
+ public:
+  SolidFocusPainter(SkColor color, const gfx::Insets& insets);
+  virtual ~SolidFocusPainter();
+
+  // Painter:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+
+ private:
+  const SkColor color_;
+  const gfx::Insets insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(SolidFocusPainter);
+};
+
+SolidFocusPainter::SolidFocusPainter(SkColor color,
+                                     const gfx::Insets& insets)
+    : color_(color),
+      insets_(insets) {
+}
+
+SolidFocusPainter::~SolidFocusPainter() {
+}
+
+gfx::Size SolidFocusPainter::GetMinimumSize() const {
+  return gfx::Size();
+}
+
+void SolidFocusPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+  gfx::Rect rect(size);
+  rect.Inset(insets_);
+  canvas->DrawSolidFocusRect(rect, color_);
+}
 
 // GradientPainter ------------------------------------------------------------
 
@@ -87,7 +158,6 @@ void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
                                       SkIntToScalar(size.width()),
                                       SkIntToScalar(size.height()), paint);
 }
-
 
 // ImagePainter ---------------------------------------------------------------
 
@@ -239,6 +309,14 @@ void Painter::PaintPainterAt(gfx::Canvas* canvas,
 }
 
 // static
+void Painter::PaintFocusPainter(View* view,
+                                gfx::Canvas* canvas,
+                                Painter* focus_painter) {
+  if (focus_painter && view->HasFocus())
+    PaintPainterAt(canvas, focus_painter, view->GetLocalBounds());
+}
+
+// static
 Painter* Painter::CreateHorizontalGradient(SkColor c1, SkColor c2) {
   SkColor colors[2];
   colors[0] = c1;
@@ -274,6 +352,23 @@ Painter* Painter::CreateImageGridPainter(const int image_ids[]) {
   return new ImagePainter(image_ids);
 }
 
+// static
+scoped_ptr<Painter> Painter::CreateDashedFocusPainter() {
+  return scoped_ptr<Painter>(new DashedFocusPainter(gfx::Insets())).Pass();
+}
+
+// static
+scoped_ptr<Painter> Painter::CreateDashedFocusPainterWithInsets(
+    const gfx::Insets& insets) {
+  return scoped_ptr<Painter>(new DashedFocusPainter(insets)).Pass();
+}
+
+// static
+scoped_ptr<Painter> Painter::CreateSolidFocusPainter(
+    SkColor color,
+    const gfx::Insets& insets) {
+  return scoped_ptr<Painter>(new SolidFocusPainter(color, insets)).Pass();
+}
 
 // HorizontalPainter ----------------------------------------------------------
 

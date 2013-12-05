@@ -10,6 +10,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
+#include "ui/views/painter.h"
 
 namespace views {
 
@@ -19,7 +20,8 @@ ImageView::ImageView()
       vert_alignment_(CENTER),
       interactive_(true),
       last_paint_scale_(0.f),
-      last_painted_bitmap_pixels_(NULL) {
+      last_painted_bitmap_pixels_(NULL),
+      focus_painter_(Painter::CreateDashedFocusPainter()) {
 }
 
 ImageView::~ImageView() {
@@ -71,6 +73,10 @@ gfx::Rect ImageView::GetImageBounds() const {
 
 void ImageView::ResetImageSize() {
   image_size_set_ = false;
+}
+
+void ImageView::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
+  focus_painter_ = focus_painter.Pass();
 }
 
 gfx::Size ImageView::GetPreferredSize() {
@@ -126,31 +132,22 @@ gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
   return gfx::Point(x, y);
 }
 
+void ImageView::OnFocus() {
+  View::OnFocus();
+  if (focus_painter_.get())
+    SchedulePaint();
+}
+
+void ImageView::OnBlur() {
+  View::OnBlur();
+  if (focus_painter_.get())
+    SchedulePaint();
+}
+
 void ImageView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
-
-  last_paint_scale_ = canvas->image_scale();
-  last_painted_bitmap_pixels_ = NULL;
-
-  if (image_.isNull())
-    return;
-
-  gfx::Rect image_bounds(GetImageBounds());
-  if (image_bounds.IsEmpty())
-    return;
-
-  if (image_bounds.size() != gfx::Size(image_.width(), image_.height())) {
-    // Resize case
-    SkPaint paint;
-    paint.setFilterBitmap(true);
-    canvas->DrawImageInt(image_, 0, 0, image_.width(), image_.height(),
-        image_bounds.x(), image_bounds.y(), image_bounds.width(),
-        image_bounds.height(), true, paint);
-  } else {
-    canvas->DrawImageInt(image_, image_bounds.x(), image_bounds.y());
-  }
-  last_painted_bitmap_pixels_ =
-      image_.GetRepresentation(last_paint_scale_).sk_bitmap().getPixels();
+  OnPaintImage(canvas);
+  Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
 void ImageView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -198,6 +195,32 @@ bool ImageView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
 
 bool ImageView::HitTestRect(const gfx::Rect& rect) const {
   return interactive_ ? View::HitTestRect(rect) : false;
+}
+
+
+void ImageView::OnPaintImage(gfx::Canvas* canvas) {
+  last_paint_scale_ = canvas->image_scale();
+  last_painted_bitmap_pixels_ = NULL;
+
+  if (image_.isNull())
+    return;
+
+  gfx::Rect image_bounds(GetImageBounds());
+  if (image_bounds.IsEmpty())
+    return;
+
+  if (image_bounds.size() != gfx::Size(image_.width(), image_.height())) {
+    // Resize case
+    SkPaint paint;
+    paint.setFilterBitmap(true);
+    canvas->DrawImageInt(image_, 0, 0, image_.width(), image_.height(),
+        image_bounds.x(), image_bounds.y(), image_bounds.width(),
+        image_bounds.height(), true, paint);
+  } else {
+    canvas->DrawImageInt(image_, image_bounds.x(), image_bounds.y());
+  }
+  last_painted_bitmap_pixels_ =
+      image_.GetRepresentation(last_paint_scale_).sk_bitmap().getPixels();
 }
 
 }  // namespace views

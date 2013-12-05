@@ -9,7 +9,6 @@ namespace internal {
 
 FixedSizedScrollView::FixedSizedScrollView() {
   set_notify_enter_exit_on_child(true);
-  set_focus_border(NULL);
 }
 
 FixedSizedScrollView::~FixedSizedScrollView() {
@@ -52,10 +51,6 @@ void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
   bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
   contents()->SetBoundsRect(bounds);
-}
-
-void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  // Do not paint the focus border.
 }
 
 }  // namespace internal

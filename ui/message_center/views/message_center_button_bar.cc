@@ -24,6 +24,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/painter.h"
 
 namespace message_center {
 
@@ -76,7 +77,7 @@ NotificationCenterButton::NotificationCenterButton(
   set_focusable(true);
   set_request_focus_on_press(false);
 
-  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor,
       gfx::Insets(1, 2, 2, 2)));
 }

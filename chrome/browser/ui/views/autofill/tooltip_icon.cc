@@ -10,8 +10,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/focus_border.h"
 #include "ui/views/mouse_watcher_view_host.h"
+#include "ui/views/painter.h"
 
 namespace autofill {
 
@@ -79,9 +79,8 @@ void TooltipIcon::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void TooltipIcon::OnBoundsChanged(const gfx::Rect& prev_bounds) {
-  gfx::Insets insets = GetPreferredInsets(this);
-  set_focus_border(views::FocusBorder::CreateDashedFocusBorder(
-      insets.left(), insets.top(), insets.right(), insets.bottom()));
+  SetFocusPainter(views::Painter::CreateDashedFocusPainterWithInsets(
+                      GetPreferredInsets(this)));
 }
 
 void TooltipIcon::OnFocus() {

@@ -9,14 +9,15 @@
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/painter.h"
 
 namespace message_center {
 
 PaddedButton::PaddedButton(views::ButtonListener* listener)
-  : views::ImageButton(listener) {
+    : views::ImageButton(listener) {
   set_focusable(true);
   set_request_focus_on_press(false);
-  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor,
       gfx::Insets(1, 2, 2, 2)));
 }
@@ -68,7 +69,7 @@ void PaddedButton::OnPaint(gfx::Canvas* canvas) {
     if (!overlay_image_.isNull())
       canvas->DrawImageInt(overlay_image_, position.x(), position.y());
   }
-  OnPaintFocusBorder(canvas);
+  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
 
 void PaddedButton::OnFocus() {

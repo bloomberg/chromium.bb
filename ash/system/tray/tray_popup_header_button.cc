@@ -8,6 +8,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 namespace internal {
@@ -38,9 +39,9 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
   set_focusable(true);
   set_request_focus_on_press(false);
 
-  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
-      kFocusBorderColor,
-      gfx::Insets(1, 2, 2, 3)));
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+                      kFocusBorderColor,
+                      gfx::Insets(1, 2, 2, 3)));
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}

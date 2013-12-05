@@ -35,8 +35,6 @@ WebView::WebView(content::BrowserContext* browser_context)
       is_embedding_fullscreen_widget_(false),
       browser_context_(browser_context),
       allow_accelerators_(false) {
-  // WebView shouldn't render focus.
-  set_focus_border(NULL);
   AddChildView(wcv_holder_);
   NativeViewAccessibility::RegisterWebView(this);
 }

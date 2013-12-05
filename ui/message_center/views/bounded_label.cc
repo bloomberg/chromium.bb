@@ -168,7 +168,6 @@ void InnerBoundedLabel::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void InnerBoundedLabel::OnPaint(gfx::Canvas* canvas) {
   views::Label::OnPaintBackground(canvas);
-  views::Label::OnPaintFocusBorder(canvas);
   views::Label::OnPaintBorder(canvas);
   int lines = owner_->GetLineLimit();
   int height = GetSizeForWidthAndLines(width(), lines).height();

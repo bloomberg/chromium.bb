@@ -4,8 +4,10 @@
 
 #include "ash/shelf/alternate_app_list_button.h"
 
+#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_button_host.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -22,6 +24,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 namespace internal {
@@ -39,6 +42,8 @@ AlternateAppListButton::AlternateAppListButton(views::ButtonListener* listener,
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
   SetSize(gfx::Size(ShelfLayoutManager::kShelfSize,
                     ShelfLayoutManager::kShelfSize));
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+                      kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
 }
 
 AlternateAppListButton::~AlternateAppListButton() {
@@ -156,7 +161,7 @@ void AlternateAppListButton::OnPaint(gfx::Canvas* canvas) {
                        forground_bounds.x(),
                        forground_bounds.y());
 
-  OnPaintFocusBorder(canvas);
+  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
 
 void AlternateAppListButton::GetAccessibleState(

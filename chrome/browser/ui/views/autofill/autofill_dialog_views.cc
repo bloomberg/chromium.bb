@@ -60,6 +60,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -476,11 +477,8 @@ AutofillDialogViews::AccountChooser::AccountChooser(
   menu_button_->set_background(NULL);
   menu_button_->set_border(NULL);
   gfx::Insets insets = GetInsets();
-  menu_button_->set_focus_border(
-      views::FocusBorder::CreateDashedFocusBorder(insets.left(),
-                                                  insets.top(),
-                                                  insets.right(),
-                                                  insets.bottom()));
+  menu_button_->SetFocusPainter(
+      views::Painter::CreateDashedFocusPainterWithInsets(insets));
   menu_button_->set_focusable(true);
   AddChildView(menu_button_);
 
@@ -937,11 +935,8 @@ AutofillDialogViews::SuggestedButton::SuggestedButton(
   gfx::Insets insets = GetInsets();
   insets += gfx::Insets(-kFocusBorderWidth, -kFocusBorderWidth,
                         -kFocusBorderWidth, -kFocusBorderWidth);
-  set_focus_border(
-      views::FocusBorder::CreateDashedFocusBorder(insets.left(),
-                                                  insets.top(),
-                                                  insets.right(),
-                                                  insets.bottom()));
+  SetFocusPainter(
+      views::Painter::CreateDashedFocusPainterWithInsets(insets));
   set_focusable(true);
 }
 
@@ -966,7 +961,7 @@ void AutofillDialogViews::SuggestedButton::OnPaint(gfx::Canvas* canvas) {
   const gfx::Insets insets = GetInsets();
   canvas->DrawImageInt(*rb.GetImageSkiaNamed(ResourceIDForState()),
                        insets.left(), insets.top());
-  views::View::OnPaintFocusBorder(canvas);
+  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
 
 int AutofillDialogViews::SuggestedButton::ResourceIDForState() const {

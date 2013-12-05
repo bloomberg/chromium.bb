@@ -101,8 +101,6 @@ Combobox::Combobox(ui::ComboboxModel* model)
   model_->AddObserver(this);
   UpdateFromModel();
   set_focusable(true);
-  // |text_border_| draws focus.
-  set_focus_border(NULL);
   set_border(text_border_);
 }
 

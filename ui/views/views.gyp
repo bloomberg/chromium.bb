@@ -293,8 +293,6 @@
         'focus/view_storage.h',
         'focus/widget_focus_manager.cc',
         'focus/widget_focus_manager.h',
-        'focus_border.cc',
-        'focus_border.h',
         'ime/input_method_base.cc',
         'ime/input_method_base.h',
         'ime/input_method_bridge.cc',

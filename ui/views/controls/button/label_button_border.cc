@@ -147,11 +147,6 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
     rect.Inset(insets_);
     canvas->FillRect(rect, extra.button.background_color);
   }
-
-  // Draw the Views focus border for the native theme style.
-  if (style() == Button::STYLE_NATIVE_TEXTBUTTON &&
-      view.focus_border() && extra.button.is_focused)
-    view.focus_border()->Paint(view, canvas);
 }
 
 gfx::Insets LabelButtonBorder::GetInsets() const {

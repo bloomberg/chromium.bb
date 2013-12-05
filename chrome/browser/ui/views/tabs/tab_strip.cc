@@ -631,8 +631,6 @@ TabStrip::TabStrip(TabStripController* controller)
       mouse_move_count_(0),
       immersive_style_(false) {
   Init();
-  // TODO(sky): temporary work around for 323255.
-  set_focus_border(NULL);
 }
 
 TabStrip::~TabStrip() {
