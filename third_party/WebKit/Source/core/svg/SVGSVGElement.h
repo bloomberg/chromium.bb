@@ -180,17 +180,12 @@ private:
     WeakPtrFactory<SVGSVGElement> m_weakFactory;
 };
 
-inline SVGSVGElement* toSVGSVGElement(Node* node)
+inline bool isSVGSVGElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isSVGSVGElement());
-    return static_cast<SVGSVGElement*>(node);
+    return node.isSVGElement() && toSVGElement(node).isSVGSVGElement();
 }
 
-inline const SVGSVGElement* toSVGSVGElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isSVGSVGElement());
-    return static_cast<const SVGSVGElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGSVGElement);
 
 } // namespace WebCore
 
