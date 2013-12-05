@@ -40,11 +40,6 @@ enum PreferPlugInsForImagesOption {
     ShouldNotPreferPlugInsForImages
 };
 
-enum PluginCreationOption {
-    CreateAnyWidgetType,
-    CreateOnlyNonNetscapePlugins,
-};
-
 class HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     virtual ~HTMLPlugInElement();
@@ -59,7 +54,7 @@ public:
     // Public for FrameView::addWidgetToUpdate()
     bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
-    virtual void updateWidget(PluginCreationOption) = 0;
+    void updateWidget();
 
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
@@ -81,7 +76,6 @@ protected:
     bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
     RenderEmbeddedObject* renderEmbeddedObject() const;
     bool allowedToLoadFrameURL(const String& url);
-    bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
     bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
     bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
 
@@ -89,6 +83,7 @@ protected:
     String m_url;
     KURL m_loadedUrl;
     OwnPtr<HTMLImageLoader> m_imageLoader;
+    bool m_isDelayingLoadEvent;
 
 private:
     // EventTarget functions:
@@ -115,6 +110,7 @@ private:
     // Return any existing RenderWidget without triggering relayout, or 0 if it
     // doesn't yet exist.
     virtual RenderWidget* existingRenderWidget() const = 0;
+    virtual void updateWidgetInternal() = 0;
 
     enum DisplayState {
         Restarting,
@@ -124,10 +120,9 @@ private:
     DisplayState displayState() const { return m_displayState; }
     void setDisplayState(DisplayState state) { m_displayState = state; }
     const String loadedMimeType() const;
-    static void updateWidgetCallback(Node*);
-    void updateWidgetIfNecessary();
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
     bool pluginIsLoadable(const KURL&, const String& mimeType);
+    bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
     mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
     NPObject* m_NPObject;

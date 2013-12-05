@@ -45,7 +45,7 @@ private:
 
     virtual RenderWidget* existingRenderWidget() const OVERRIDE;
 
-    virtual void updateWidget(PluginCreationOption);
+    virtual void updateWidgetInternal() OVERRIDE;
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 

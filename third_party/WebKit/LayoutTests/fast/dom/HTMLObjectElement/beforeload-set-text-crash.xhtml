@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+<body>
 Test passes if it does not crash.
 <object id="object" type="image/svg+xml" />
 <script src="../../../resources/js-test.js"></script>
@@ -22,5 +23,6 @@ event = document.createEvent("Event");
 event.initEvent("beforeload", false);
 document.documentElement.dispatchEvent(event);
 </script>
+</body>
 </html>
 

@@ -58,6 +58,7 @@ using namespace HTMLNames;
 
 HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLFrameOwnerElement(tagName, doc)
+    , m_isDelayingLoadEvent(false)
     , m_NPObject(0)
     , m_isCapturingMouseEvents(false)
     , m_inBeforeLoadEventHandler(false)
@@ -75,6 +76,7 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
 HTMLPlugInElement::~HTMLPlugInElement()
 {
     ASSERT(!m_pluginWrapper); // cleared in detach()
+    ASSERT(!m_isDelayingLoadEvent);
 
     if (m_NPObject) {
         _NPN_ReleaseObject(m_NPObject);
@@ -113,35 +115,32 @@ void HTMLPlugInElement::didMoveToNewDocument(Document& oldDocument)
 
 void HTMLPlugInElement::attach(const AttachContext& context)
 {
-    bool isImage = isImageType();
-
-    if (!isImage)
-        PostAttachCallbacks::queueCallback(HTMLPlugInElement::updateWidgetCallback, this);
-
     HTMLFrameOwnerElement::attach(context);
 
-    if (isImage && renderer() && !useFallbackContent()) {
+    if (!renderer() || useFallbackContent())
+        return;
+    if (isImageType()) {
         if (!m_imageLoader)
             m_imageLoader = adoptPtr(new HTMLImageLoader(this));
         m_imageLoader->updateFromElement();
+    } else if (needsWidgetUpdate()
+        && renderEmbeddedObject()
+        && !renderEmbeddedObject()->showsUnavailablePluginIndicator()
+        && !wouldLoadAsNetscapePlugin(m_url, m_serviceType)
+        && !m_isDelayingLoadEvent) {
+        m_isDelayingLoadEvent = true;
+        document().incrementLoadEventDelayCount();
     }
 }
 
-void HTMLPlugInElement::updateWidgetCallback(Node* n)
+void HTMLPlugInElement::updateWidget()
 {
-    toHTMLPlugInElement(n)->updateWidgetIfNecessary();
-}
-
-void HTMLPlugInElement::updateWidgetIfNecessary()
-{
-    document().updateStyleIfNeeded();
-
-    if (!needsWidgetUpdate() || useFallbackContent() || isImageType())
-        return;
-    if (!renderEmbeddedObject() || renderEmbeddedObject()->showsUnavailablePluginIndicator())
-        return;
-
-    updateWidget(CreateOnlyNonNetscapePlugins);
+    RefPtr<HTMLPlugInElement> protector(this);
+    updateWidgetInternal();
+    if (m_isDelayingLoadEvent) {
+        m_isDelayingLoadEvent = false;
+        document().decrementLoadEventDelayCount();
+    }
 }
 
 void HTMLPlugInElement::detach(const AttachContext& context)
@@ -150,6 +149,10 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     // FIXME: None of this "needsWidgetUpdate" related code looks right.
     if (renderer() && !useFallbackContent())
         setNeedsWidgetUpdate(true);
+    if (m_isDelayingLoadEvent) {
+        m_isDelayingLoadEvent = false;
+        document().decrementLoadEventDelayCount();
+    }
 
     resetInstance();
 

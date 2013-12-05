@@ -38,7 +38,7 @@
 #include "WebScriptSource.h"
 #include "WebSettings.h"
 #include "WebView.h"
-#include <gtest/gtest.h>
+#include "core/dom/Document.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -46,8 +46,11 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebDocument.h"
+#include <gtest/gtest.h>
 
 using namespace blink;
+using WebCore::Document;
 using blink::FrameTestHelpers::runPendingTasks;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
@@ -207,6 +210,12 @@ TEST_F(WebPageNewSerializeTest, PageWithFrames)
     registerMockedURLLoad(toKURL("http://www.test.com/blue_background.png"), WebString::fromUTF8("blue_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
 
     loadURLInTopFrame(topFrameURL);
+    // OBJECT/EMBED have some delay to start to load their content. The first
+    // serveAsynchronousMockedRequests call in loadURLInTopFrame() finishes
+    // before the start.
+    RefPtr<Document> document = static_cast<PassRefPtr<Document> >(m_webView->mainFrame()->document());
+    document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     WebVector<WebPageSerializer::Resource> resources;
     WebPageSerializer::serialize(m_webView, &resources);
