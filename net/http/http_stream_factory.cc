@@ -76,18 +76,18 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   std::vector<std::string> port_protocol_vector;
   base::SplitString(alternate_protocol_str, ':', &port_protocol_vector);
   if (port_protocol_vector.size() != 2) {
-    DLOG(WARNING) << kAlternateProtocolHeader
-                  << " header has too many tokens: "
-                  << alternate_protocol_str;
+    DVLOG(1) << kAlternateProtocolHeader
+             << " header has too many tokens: "
+             << alternate_protocol_str;
     return;
   }
 
   int port;
   if (!base::StringToInt(port_protocol_vector[0], &port) ||
       port <= 0 || port >= 1 << 16) {
-    DLOG(WARNING) << kAlternateProtocolHeader
-                  << " header has unrecognizable port: "
-                  << port_protocol_vector[0];
+    DVLOG(1) << kAlternateProtocolHeader
+             << " header has unrecognizable port: "
+             << port_protocol_vector[0];
     return;
   }
 
@@ -98,9 +98,9 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   }
 
   if (protocol == ALTERNATE_PROTOCOL_BROKEN) {
-    DLOG(WARNING) << kAlternateProtocolHeader
-                  << " header has unrecognized protocol: "
-                  << port_protocol_vector[1];
+    DVLOG(1) << kAlternateProtocolHeader
+             << " header has unrecognized protocol: "
+             << port_protocol_vector[1];
     return;
   }
 
