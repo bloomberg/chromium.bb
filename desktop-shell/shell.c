@@ -5172,10 +5172,9 @@ switcher_next(struct switcher *switcher)
 
 	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
 		shsurf = get_shell_surface(view->surface);
-		switch (shsurf->type) {
-		case SHELL_SURFACE_TOPLEVEL:
-			if (shsurf->parent)
-				break;
+		if (shsurf &&
+		    shsurf->type == SHELL_SURFACE_TOPLEVEL &&
+		    shsurf->parent == NULL) {
 			if (first == NULL)
 				first = view->surface;
 			if (prev == switcher->current)
@@ -5184,12 +5183,6 @@ switcher_next(struct switcher *switcher)
 			view->alpha = 0.25;
 			weston_view_geometry_dirty(view);
 			weston_surface_damage(view->surface);
-			break;
-		case SHELL_SURFACE_POPUP:
-		case SHELL_SURFACE_XWAYLAND:
-		case SHELL_SURFACE_NONE:
-		default:
-			break;
 		}
 
 		if (is_black_surface(view->surface, NULL)) {
