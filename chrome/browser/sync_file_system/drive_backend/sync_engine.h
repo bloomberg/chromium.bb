@@ -148,7 +148,6 @@ class SyncEngine : public RemoteFileSyncService,
   void DidFetchChangeList(SyncStatusCallback& callback);
 
   void MaybeStartFetchChanges();
-  void DidFetchChanges(SyncStatusCode status);
   void UpdateServiceStateFromSyncStatusCode(SyncStatusCode state,
                                             bool used_network);
   void UpdateServiceState(RemoteServiceState state,

@@ -480,27 +480,21 @@ void SyncEngine::MaybeStartFetchChanges() {
     return;
 
   base::TimeTicks now = base::TimeTicks::Now();
-  if (!should_check_remote_change_ && now < time_to_check_changes_)
+  if (!should_check_remote_change_ && now < time_to_check_changes_) {
+    if (!metadata_database_->HasDirtyTracker()) {
+      task_manager_->ScheduleSyncTaskIfIdle(
+          scoped_ptr<SyncTask>(new ConflictResolver(this)),
+          SyncStatusCallback());
+    }
     return;
+  }
 
   if (task_manager_->ScheduleSyncTaskIfIdle(
           scoped_ptr<SyncTask>(new ListChangesTask(this)),
-          base::Bind(&SyncEngine::DidFetchChanges,
-                     weak_ptr_factory_.GetWeakPtr()))) {
+          SyncStatusCallback())) {
     should_check_remote_change_ = false;
     time_to_check_changes_ =
         now + base::TimeDelta::FromSeconds(kListChangesRetryDelaySeconds);
-  }
-}
-
-void SyncEngine::DidFetchChanges(SyncStatusCode status) {
-  if (status != SYNC_STATUS_OK)
-    return;
-
-  if (!metadata_database_->HasDirtyTracker()) {
-    task_manager_->ScheduleSyncTaskIfIdle(
-        scoped_ptr<SyncTask>(new ConflictResolver(this)),
-        SyncStatusCallback());
   }
 }
 
