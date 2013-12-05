@@ -51,4 +51,10 @@
 # the Skia roll to 12018 again altered the way roundrects are drawn
 crbug.com/314499 fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
+# the Skia roll to r12494 altered convex path rendering on the GPU
+crbug.com/326138 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
+crbug.com/326138 virtual/gpu/fast/canvas/canvas-composite.html [ ImageOnlyFailure ]
+crbug.com/326138 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
+crbug.com/326138 virtual/gpu/fast/canvas/quadraticCurveTo.xml [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
