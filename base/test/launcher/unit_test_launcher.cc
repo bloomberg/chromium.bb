@@ -463,10 +463,15 @@ int LaunchUnitTestsInternal(int argc,
                             const RunTestSuiteCallback& run_test_suite,
                             int default_jobs) {
   CommandLine::Init(argc, argv);
+#if defined(OS_ANDROID)
+  // We can't easily fork on Android, just run the test suite directly.
+  return run_test_suite.Run();
+#else
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
       CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag)) {
     return run_test_suite.Run();
   }
+#endif
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kHelpFlag)) {
     PrintUsage();
