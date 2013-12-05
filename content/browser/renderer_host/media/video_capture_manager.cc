@@ -19,8 +19,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
+#include "media/base/media_switches.h"
 #include "media/base/scoped_histogram_timer.h"
 #include "media/video/capture/fake_video_capture_device.h"
+#include "media/video/capture/file_video_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
 
 #if defined(ENABLE_SCREEN_CAPTURE)
@@ -45,7 +47,7 @@ VideoCaptureManager::DeviceEntry::~DeviceEntry() {}
 VideoCaptureManager::VideoCaptureManager()
     : listener_(NULL),
       new_capture_session_id_(1),
-      use_fake_device_(false) {
+      artificial_device_source_for_testing_ (DISABLED) {
 }
 
 VideoCaptureManager::~VideoCaptureManager() {
@@ -131,7 +133,12 @@ void VideoCaptureManager::Close(int capture_session_id) {
 }
 
 void VideoCaptureManager::UseFakeDevice() {
-  use_fake_device_ = true;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFileForFakeVideoCapture)) {
+    artificial_device_source_for_testing_ = Y4M_FILE;
+  } else {
+    artificial_device_source_for_testing_ = TEST_PATTERN;
+  }
 }
 
 void VideoCaptureManager::DoStartDeviceOnDeviceThread(
@@ -150,9 +157,20 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
       media::VideoCaptureDevice::Name* found =
           video_capture_devices_.FindById(entry->id);
       if (found) {
-        video_capture_device.reset(use_fake_device_ ?
-            media::FakeVideoCaptureDevice::Create(*found) :
-            media::VideoCaptureDevice::Create(*found));
+        switch (artificial_device_source_for_testing_) {
+          case DISABLED:
+            video_capture_device.reset(
+                media::VideoCaptureDevice::Create(*found));
+            break;
+          case TEST_PATTERN:
+            video_capture_device.reset(
+                media::FakeVideoCaptureDevice::Create(*found));
+            break;
+          case Y4M_FILE:
+            video_capture_device.reset(
+                media::FileVideoCaptureDevice::Create(*found));
+            break;
+        }
       }
       break;
     }
@@ -320,10 +338,16 @@ VideoCaptureManager::GetAvailableDevicesOnDeviceThread(
       // Cache the latest enumeration of video capture devices.
       // We'll refer to this list again in OnOpen to avoid having to
       // enumerate the devices again.
-      if (!use_fake_device_) {
-        media::VideoCaptureDevice::GetDeviceNames(&result);
-      } else {
-        media::FakeVideoCaptureDevice::GetDeviceNames(&result);
+      switch (artificial_device_source_for_testing_) {
+        case DISABLED:
+          media::VideoCaptureDevice::GetDeviceNames(&result);
+          break;
+        case TEST_PATTERN:
+          media::FakeVideoCaptureDevice::GetDeviceNames(&result);
+          break;
+        case Y4M_FILE:
+          media::FileVideoCaptureDevice::GetDeviceNames(&result);
+          break;
       }
 
       // TODO(nick): The correctness of device start depends on this cache being

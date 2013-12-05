@@ -57,6 +57,8 @@ MEDIA_EXPORT extern const char kUseCras[];
 
 MEDIA_EXPORT extern const char kDisableSystemSoundsManager[];
 
+MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

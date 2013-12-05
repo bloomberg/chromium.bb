@@ -168,9 +168,15 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   typedef std::set<DeviceEntry*> DeviceEntries;
   DeviceEntries devices_;
 
-  // Set to true if using fake video capture devices for testing, false by
-  // default. This is only used for the MEDIA_DEVICE_VIDEO_CAPTURE device type.
-  bool use_fake_device_;
+  // For unit testing and for performance/quality tests, a test device can be
+  // used instead of a real one. The device can be a simple fake device (a
+  // rolling pacman), or a file that is played in a loop continuously. This only
+  // applies to the MEDIA_DEVICE_VIDEO_CAPTURE device type.
+  enum {
+    DISABLED,
+    TEST_PATTERN,
+    Y4M_FILE
+  } artificial_device_source_for_testing_;
 
   // We cache the enumerated video capture devices in
   // GetAvailableDevicesOnDeviceThread() and then later look up the requested ID

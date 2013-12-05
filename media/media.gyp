@@ -419,6 +419,8 @@
         'video/capture/android/video_capture_device_android.h',
         'video/capture/fake_video_capture_device.cc',
         'video/capture/fake_video_capture_device.h',
+        'video/capture/file_video_capture_device.cc',
+        'video/capture/file_video_capture_device.h',
         'video/capture/linux/video_capture_device_linux.cc',
         'video/capture/linux/video_capture_device_linux.h',
         'video/capture/mac/avfoundation_glue.h',
