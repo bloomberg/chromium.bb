@@ -165,6 +165,7 @@ class RenderWidget::ScreenMetricsEmulator {
   virtual ~ScreenMetricsEmulator();
 
   float scale() { return scale_; }
+  gfx::Point offset() { return offset_; }
   gfx::Rect widget_rect() const { return widget_rect_; }
   gfx::Rect original_screen_rect() const { return original_view_screen_rect_; }
 
@@ -536,8 +537,9 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
     ScreenMetricsEmulator* emulator) {
   popup_origin_scale_for_emulation_ = emulator->scale();
   popup_view_origin_for_emulation_ = emulator->widget_rect().origin();
-  popup_screen_origin_for_emulation_ =
-      emulator->original_screen_rect().origin();
+  popup_screen_origin_for_emulation_ = gfx::Point(
+      emulator->original_screen_rect().origin().x() + emulator->offset().x(),
+      emulator->original_screen_rect().origin().y() + emulator->offset().y());
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
@@ -550,7 +552,8 @@ void RenderWidget::SetScreenMetricsEmulationParameters(
 
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator) {
-  popup->SetOriginScaleForEmulation(emulator->scale());
+  popup->SetOriginScaleAndOffsetForEmulation(
+      emulator->scale(), emulator->offset());
 }
 
 void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {

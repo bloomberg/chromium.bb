@@ -27,7 +27,8 @@ class ExternalPopupMenu : public blink::WebExternalPopupMenu {
 
   virtual ~ExternalPopupMenu() {}
 
-  void SetOriginScaleForEmulation(float scale);
+  void SetOriginScaleAndOffsetForEmulation(
+      float scale, const gfx::Point& offset);
 
 #if defined(OS_MACOSX)
   // Called when the user has selected an item. |selected_item| is -1 if the
@@ -50,8 +51,9 @@ class ExternalPopupMenu : public blink::WebExternalPopupMenu {
   blink::WebExternalPopupMenuClient* popup_menu_client_;
 
   // Popups may be displaced when screen metrics emulation is enabled.
-  // This scale is used to properly adjust popup position.
+  // These scale and offset are used to properly adjust popup position.
   float origin_scale_for_emulation_;
+  gfx::Point origin_offset_for_emulation_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPopupMenu);
 };
