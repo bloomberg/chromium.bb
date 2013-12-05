@@ -33,6 +33,8 @@ void EnsureV8Initialized(bool gin_managed) {
   }
   v8_is_initialized = true;
   v8_is_gin_managed = gin_managed;
+  if (!gin_managed)
+    return;
 
   v8::V8::SetArrayBufferAllocator(ArrayBufferAllocator::SharedInstance());
   static const char v8_flags[] = "--use_strict --harmony";
