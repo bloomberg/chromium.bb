@@ -29,6 +29,8 @@ class FakeContentLayer : public ContentLayer {
       ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion) OVERRIDE;
 
+  gfx::Rect LastPaintRect() const;
+
   void set_always_update_resources(bool always_update_resources) {
     always_update_resources_ = always_update_resources;
   }

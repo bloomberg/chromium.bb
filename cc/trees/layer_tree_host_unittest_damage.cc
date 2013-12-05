@@ -363,18 +363,24 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
         child_damage_rect_ = gfx::RectF(10, 11, 12, 13);
         break;
       case 3:
-        if (!delegating_renderer() &&
-            !host_impl->settings().impl_side_painting) {
-          // The update rect in the child should be damaged.
-          // TODO(danakj): Remove this when impl side painting is always on.
-          EXPECT_EQ(gfx::RectF(100+10, 100+11, 12, 13).ToString(),
-                    root_damage.ToString());
-        } else {
+        // The update rect in the child should be damaged and the damaged area
+        // should match the invalidation.
+        EXPECT_EQ(gfx::RectF(100+10, 100+11, 12, 13).ToString(),
+                  root_damage.ToString());
+
+        // TODO(danakj): Remove this when impl side painting is always on.
+        if (delegating_renderer() ||
+            host_impl->settings().impl_side_painting) {
           // When using a delegating renderer, or using impl side painting, the
           // entire child is considered damaged as we need to replace its
-          // resources with newly created ones.
-          EXPECT_EQ(gfx::RectF(child_->position(), child_->bounds()).ToString(),
-                    root_damage.ToString());
+          // resources with newly created ones. The damaged area is kept as it
+          // is, but entire child is painted.
+
+          // The paint rect should match the layer bounds.
+          gfx::RectF paint_rect = child_->LastPaintRect();
+          paint_rect.set_origin(child_->position());
+          EXPECT_EQ(gfx::RectF(100, 100, 30, 30).ToString(),
+                    paint_rect.ToString());
         }
         EXPECT_FALSE(frame_data->has_no_damage);
 

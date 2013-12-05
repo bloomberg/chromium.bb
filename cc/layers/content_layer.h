@@ -60,9 +60,11 @@ class CC_EXPORT ContentLayer : public TiledLayer {
   explicit ContentLayer(ContentLayerClient* client);
   virtual ~ContentLayer();
 
- private:
   // TiledLayer implementation.
   virtual LayerUpdater* Updater() const OVERRIDE;
+
+ private:
+  // TiledLayer implementation.
   virtual void CreateUpdaterIfNeeded() OVERRIDE;
 
   void UpdateCanUseLCDText();

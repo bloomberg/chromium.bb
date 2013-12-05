@@ -103,12 +103,15 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
                             int right,
                             int bottom,
                             bool ignore_occlusions);
-  gfx::Rect MarkTilesForUpdate(int left,
-                               int top,
-                               int right,
-                               int bottom,
-                               bool ignore_occlusions);
-  void UpdateTileTextures(gfx::Rect paint_rect,
+  void MarkTilesForUpdate(gfx::Rect* update_rect,
+                          gfx::Rect* paint_rect,
+                          int left,
+                          int top,
+                          int right,
+                          int bottom,
+                          bool ignore_occlusions);
+  void UpdateTileTextures(gfx::Rect update_rect,
+                          gfx::Rect paint_rect,
                           int left,
                           int top,
                           int right,
