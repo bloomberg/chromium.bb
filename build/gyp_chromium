@@ -146,7 +146,7 @@ def RunGN(supplemental_includes):
 
   # The binaries in platform-specific subdirectories in src/tools/gn/bin.
   gnpath = SRC_DIR + '/tools/gn/bin/'
-  if sys.platform == 'win32':
+  if sys.platform in ('cygwin', 'win32'):
     gnpath += 'win/gn.exe'
   elif sys.platform.startswith('linux'):
     # On Linux we have 32-bit and 64-bit versions.
