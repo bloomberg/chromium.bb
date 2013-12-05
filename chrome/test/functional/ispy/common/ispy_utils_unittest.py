@@ -79,6 +79,7 @@ class ISpyUtilsUnitTest(unittest.TestCase):
     # Upload some tests to the datastore.
     self.ispy_utils.GenerateExpectation('test', [self.white, self.black])
     self.ispy_utils.GenerateExpectation('test1', [self.black, self.black])
+    self.ispy_utils.GenerateExpectation('test2', [self.black])
     # Confirm that the tests were successfully uploaded.
     self.assertEquals(self.bucket.datastore[
         ispy_utils.GetExpectationPath('test', 'expected.png')],
@@ -91,6 +92,12 @@ class ISpyUtilsUnitTest(unittest.TestCase):
         image_tools.EncodePNG(self.black))
     self.assertEquals(self.bucket.datastore[
         ispy_utils.GetExpectationPath('test1', 'mask.png')],
+        image_tools.EncodePNG(self.black))
+    self.assertEquals(self.bucket.datastore[
+        ispy_utils.GetExpectationPath('test2', 'expected.png')],
+        image_tools.EncodePNG(self.black))
+    self.assertEquals(self.bucket.datastore[
+        ispy_utils.GetExpectationPath('test2', 'mask.png')],
         image_tools.EncodePNG(self.black))
 
   def testPerformComparison(self):

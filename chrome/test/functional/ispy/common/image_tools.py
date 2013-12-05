@@ -87,7 +87,7 @@ def CreateMask(images):
   everywhere else.
 
   Args:
-    images: the images to compute the mask from.
+    images: list of images to compute the mask from.
 
   Returns:
     an image of only black and white pixels where white pixels represent
@@ -95,10 +95,10 @@ def CreateMask(images):
 
   Raises:
     Exception: if the images passed in are not of the same size.
-    Exception: if fewer than two images are passed in.
+    Exception: if fewer than one image is passed in.
   """
-  if len(images) < 2:
-    raise Exception('mask must be created from two or more images.')
+  if not images:
+    raise Exception('mask must be created from one or more images.')
   mask = Image.new('RGBA', images[0].size, (0, 0, 0, 255))
   image = images[0]
   for other_image in images[1:]:
