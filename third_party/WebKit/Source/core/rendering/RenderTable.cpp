@@ -733,15 +733,6 @@ void RenderTable::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& p
     paintBoxDecorationsWithRect(paintInfo, paintOffset, rect);
 }
 
-void RenderTable::paintBackgroundWithBorderAndBoxShadow(PaintInfo& paintInfo, const LayoutRect& rect, BackgroundBleedAvoidance bleedAvoidance)
-{
-    paintBackground(paintInfo, rect, bleedAvoidance);
-    paintBoxShadow(paintInfo, rect, style(), Inset);
-
-    if (bleedAvoidance != BackgroundBleedBackgroundOverBorder && !style()->hasAppearance() && style()->hasBorder() && !collapseBorders())
-        paintBorder(paintInfo, rect, style());
-}
-
 void RenderTable::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)

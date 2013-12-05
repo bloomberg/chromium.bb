@@ -1346,7 +1346,7 @@ void RenderBox::paintBackgroundWithBorderAndBoxShadow(PaintInfo& paintInfo, cons
     paintBoxShadow(paintInfo, paintRect, style(), Inset);
 
     // The theme will tell us whether or not we should also paint the CSS border.
-    if (bleedAvoidance != BackgroundBleedBackgroundOverBorder && (!style()->hasAppearance() || (!themePainted && RenderTheme::theme().paintBorderOnly(this, paintInfo, snappedPaintRect))) && style()->hasBorder())
+    if (bleedAvoidance != BackgroundBleedBackgroundOverBorder && (!style()->hasAppearance() || (!themePainted && RenderTheme::theme().paintBorderOnly(this, paintInfo, snappedPaintRect))) && style()->hasBorder() && !(isTable() && toRenderTable(this)->collapseBorders()))
         paintBorder(paintInfo, paintRect, style(), bleedAvoidance);
 }
 
