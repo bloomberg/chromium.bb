@@ -72,6 +72,12 @@ def FormatKeyForGN(key):
   return ''.join([c if c in string.ascii_letters else '_' for c in key])
 
 
+def EscapeStringForGN(s):
+  """Converts a string to a GN string literal."""
+  # Escape $ characters which have special meaning to GN.
+  return '"' + s.replace('$', '\\$').replace('"', '\\"') + '"'
+
+
 def GetVarsStringForGN(supplemental_files):
   vars_dict = {}
 
@@ -84,8 +90,7 @@ def GetVarsStringForGN(supplemental_files):
         raise
       variables = file_data.get('variables', [])
       for v in variables:
-        vars_dict[FormatKeyForGN(v)] = '"' + \
-            str(variables[v]).replace("$", "\\$") + '"'
+        vars_dict[FormatKeyForGN(v)] = EscapeStringForGN(str(variables[v]))
 
   env_string = os.environ.get('GYP_DEFINES', '')
   items = shlex.split(env_string)
@@ -94,8 +99,7 @@ def GetVarsStringForGN(supplemental_files):
     # Some GYP variables have hyphens, which we don't support.
     key = FormatKeyForGN(tokens[0])
     if len(tokens) == 2:
-      # Escape $ characters which have special meaning to GN.
-      vars_dict[key] = '"' + tokens[1].replace("$", "\\$") + '"'
+      vars_dict[key] = EscapeStringForGN(tokens[1])
     else:
       # No value supplied, treat it as a boolean and set it.
       vars_dict[key] = 'true'
