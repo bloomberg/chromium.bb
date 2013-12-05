@@ -97,6 +97,7 @@ static const char EvaluateScript[] = "EvaluateScript";
 
 static const char MarkLoad[] = "MarkLoad";
 static const char MarkDOMContent[] = "MarkDOMContent";
+static const char MarkFirstPaint[] = "MarkFirstPaint";
 
 static const char TimeStamp[] = "TimeStamp";
 static const char Time[] = "Time";
@@ -405,6 +406,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
     m_layerToNodeMap.clear();
     m_pixelRefToImageInfo.clear();
     m_imageBeingPainted = 0;
+    m_mayEmitFirstPaint = false;
 
     for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
         String message = String::format("Timeline '%s' terminated.", m_consoleTimelines[i].utf8().data());
@@ -580,6 +582,10 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, const GraphicsLaye
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
     entry.data = TimelineRecordFactory::createPaintData(quad, nodeId(renderer), graphicsLayerId);
     didCompleteCurrentRecord(TimelineRecordType::Paint);
+    if (m_mayEmitFirstPaint && !graphicsLayer) {
+        m_mayEmitFirstPaint = false;
+        appendRecord(JSONObject::create(), TimelineRecordType::MarkFirstPaint, false, 0);
+    }
 }
 
 void InspectorTimelineAgent::willPaintImage(RenderImage* renderImage)
@@ -637,6 +643,10 @@ void InspectorTimelineAgent::willComposite()
 void InspectorTimelineAgent::didComposite()
 {
     didCompleteCurrentRecord(TimelineRecordType::CompositeLayers);
+    if (m_mayEmitFirstPaint) {
+        m_mayEmitFirstPaint = false;
+        appendRecord(JSONObject::create(), TimelineRecordType::MarkFirstPaint, false, 0);
+    }
 }
 
 bool InspectorTimelineAgent::willWriteHTML(Document* document, unsigned startLine)
@@ -824,6 +834,8 @@ void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
 {
     bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkDOMContent, false, frame);
+    if (isMainFrame)
+        m_mayEmitFirstPaint = true;
 }
 
 void InspectorTimelineAgent::loadEventFired(Frame* frame)
@@ -1131,6 +1143,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_platformInstrumentationClientInstalledAtStackDepth(0)
     , m_imageBeingPainted(0)
     , m_styleRecalcElementCounter(0)
+    , m_mayEmitFirstPaint(false)
 {
 }
 

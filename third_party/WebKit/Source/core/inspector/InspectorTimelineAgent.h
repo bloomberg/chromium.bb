@@ -335,6 +335,7 @@ private:
     unsigned m_styleRecalcElementCounter;
     typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
     ThreadStateMap m_threadStates;
+    bool m_mayEmitFirstPaint;
 };
 
 } // namespace WebCore

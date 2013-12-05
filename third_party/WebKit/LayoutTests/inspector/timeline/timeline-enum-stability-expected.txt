@@ -18,6 +18,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     InvalidateLayout : "InvalidateLayout"
     Layout : "Layout"
     MarkDOMContent : "MarkDOMContent"
+    MarkFirstPaint : "MarkFirstPaint"
     MarkLoad : "MarkLoad"
     Paint : "Paint"
     PaintSetup : "PaintSetup"
