@@ -9,49 +9,14 @@
 namespace content {
 
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(
-    scoped_ptr<base::SharedMemory> shared_memory,
-    size_t width,
-    size_t height,
-    unsigned internalformat)
-    : shared_memory_(shared_memory.Pass()),
-      size_(gfx::Size(width, height)),
+    gfx::Size size, unsigned internalformat)
+    : size_(size),
       internalformat_(internalformat),
       mapped_(false) {
-  DCHECK(!shared_memory_->memory());
   DCHECK(IsFormatValid(internalformat));
 }
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
-}
-
-void GpuMemoryBufferImpl::Map(AccessMode mode, void** vaddr) {
-  DCHECK(!mapped_);
-  *vaddr = NULL;
-  if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(internalformat_)))
-    return;
-  *vaddr = shared_memory_->memory();
-  mapped_ = true;
-}
-
-void GpuMemoryBufferImpl::Unmap() {
-  DCHECK(mapped_);
-  shared_memory_->Unmap();
-  mapped_ = false;
-}
-
-bool GpuMemoryBufferImpl::IsMapped() const {
-  return mapped_;
-}
-
-uint32 GpuMemoryBufferImpl::GetStride() const {
-  return size_.width() * BytesPerPixel(internalformat_);
-}
-
-gfx::GpuMemoryBufferHandle GpuMemoryBufferImpl::GetHandle() const {
-  gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::SHARED_MEMORY_BUFFER;
-  handle.handle = shared_memory_->handle();
-  return handle;
 }
 
 // static
@@ -75,6 +40,14 @@ size_t GpuMemoryBufferImpl::BytesPerPixel(unsigned internalformat) {
       NOTREACHED();
       return 0;
   }
+}
+
+bool GpuMemoryBufferImpl::IsMapped() const {
+  return mapped_;
+}
+
+uint32 GpuMemoryBufferImpl::GetStride() const {
+  return size_.width() * BytesPerPixel(internalformat_);
 }
 
 }  // namespace content

@@ -14,6 +14,15 @@ typedef mach_port_t (*IOSurfaceCreateMachPortProcPtr)(CFTypeRef io_surface);
 typedef CFTypeRef (*IOSurfaceLookupFromMachPortProcPtr)(mach_port_t port);
 typedef size_t (*IOSurfaceGetWidthPtr)(CFTypeRef io_surface);
 typedef size_t (*IOSurfaceGetHeightPtr)(CFTypeRef io_surface);
+typedef size_t (*IOSurfaceGetBytesPerRowPtr)(CFTypeRef io_surface);
+typedef void* (*IOSurfaceGetBaseAddressPtr)(CFTypeRef io_surface);
+typedef IOReturn (*IOSurfaceLockPtr)(CFTypeRef io_surface,
+                                     uint32 options,
+                                     uint32* seed);
+typedef IOReturn (*IOSurfaceUnlockPtr)(CFTypeRef io_surface,
+                                       uint32 options,
+                                       uint32* seed);
+
 typedef CGLError (*CGLTexImageIOSurface2DProcPtr)(CGLContextObj ctx,
                                                   GLenum target,
                                                   GLenum internal_format,
@@ -37,6 +46,7 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   virtual CFStringRef GetKIOSurfaceWidth() OVERRIDE;
   virtual CFStringRef GetKIOSurfaceHeight() OVERRIDE;
   virtual CFStringRef GetKIOSurfaceBytesPerElement() OVERRIDE;
+  virtual CFStringRef GetKIOSurfacePixelFormat() OVERRIDE;
   virtual CFStringRef GetKIOSurfaceIsGlobal() OVERRIDE;
 
   virtual CFTypeRef IOSurfaceCreate(CFDictionaryRef properties) OVERRIDE;
@@ -47,6 +57,15 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
 
   virtual size_t IOSurfaceGetWidth(CFTypeRef io_surface) OVERRIDE;
   virtual size_t IOSurfaceGetHeight(CFTypeRef io_surface) OVERRIDE;
+  virtual size_t IOSurfaceGetBytesPerRow(CFTypeRef io_surface) OVERRIDE;
+  virtual void* IOSurfaceGetBaseAddress(CFTypeRef io_surface) OVERRIDE;
+
+  virtual IOReturn IOSurfaceLock(CFTypeRef io_surface,
+                                 uint32 options,
+                                 uint32* seed) OVERRIDE;
+  virtual IOReturn IOSurfaceUnlock(CFTypeRef io_surface,
+                                   uint32 options,
+                                   uint32* seed) OVERRIDE;
 
   virtual CGLError CGLTexImageIOSurface2D(CGLContextObj ctx,
                                           GLenum target,
@@ -73,6 +92,7 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   CFStringRef k_io_surface_width_;
   CFStringRef k_io_surface_height_;
   CFStringRef k_io_surface_bytes_per_element_;
+  CFStringRef k_io_surface_pixel_format_;
   CFStringRef k_io_surface_is_global_;
   IOSurfaceCreateProcPtr io_surface_create_;
   IOSurfaceGetIDProcPtr io_surface_get_id_;
@@ -81,6 +101,10 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   IOSurfaceLookupFromMachPortProcPtr io_surface_lookup_from_mach_port_;
   IOSurfaceGetWidthPtr io_surface_get_width_;
   IOSurfaceGetHeightPtr io_surface_get_height_;
+  IOSurfaceGetBytesPerRowPtr io_surface_get_bytes_per_row_;
+  IOSurfaceGetBaseAddressPtr io_surface_get_base_address_;
+  IOSurfaceLockPtr io_surface_lock_;
+  IOSurfaceUnlockPtr io_surface_unlock_;
   CGLTexImageIOSurface2DProcPtr cgl_tex_image_io_surface_2d_;
   CVPixelBufferGetIOSurfaceProcPtr cv_pixel_buffer_get_io_surface_;
   bool initialized_successfully_;
@@ -106,6 +130,10 @@ CFStringRef IOSurfaceSupportImpl::GetKIOSurfaceHeight() {
 
 CFStringRef IOSurfaceSupportImpl::GetKIOSurfaceBytesPerElement() {
   return k_io_surface_bytes_per_element_;
+}
+
+CFStringRef IOSurfaceSupportImpl::GetKIOSurfacePixelFormat() {
+  return k_io_surface_pixel_format_;
 }
 
 CFStringRef IOSurfaceSupportImpl::GetKIOSurfaceIsGlobal() {
@@ -142,6 +170,25 @@ size_t IOSurfaceSupportImpl::IOSurfaceGetHeight(CFTypeRef io_surface) {
   return io_surface_get_height_(io_surface);
 }
 
+size_t IOSurfaceSupportImpl::IOSurfaceGetBytesPerRow(CFTypeRef io_surface) {
+  return io_surface_get_bytes_per_row_(io_surface);
+}
+
+void* IOSurfaceSupportImpl::IOSurfaceGetBaseAddress(CFTypeRef io_surface) {
+  return io_surface_get_base_address_(io_surface);
+}
+
+IOReturn IOSurfaceSupportImpl::IOSurfaceLock(CFTypeRef io_surface,
+                                             uint32 options,
+                                             uint32* seed) {
+  return io_surface_lock_(io_surface, options, seed);
+}
+
+IOReturn IOSurfaceSupportImpl::IOSurfaceUnlock(CFTypeRef io_surface,
+                                               uint32 options,
+                                               uint32* seed) {
+  return io_surface_unlock_(io_surface, options, seed);
+}
 
 CGLError IOSurfaceSupportImpl::CGLTexImageIOSurface2D(CGLContextObj ctx,
                                                       GLenum target,
@@ -175,6 +222,7 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       k_io_surface_width_(NULL),
       k_io_surface_height_(NULL),
       k_io_surface_bytes_per_element_(NULL),
+      k_io_surface_pixel_format_(NULL),
       k_io_surface_is_global_(NULL),
       io_surface_create_(NULL),
       io_surface_get_id_(NULL),
@@ -183,6 +231,10 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       io_surface_lookup_from_mach_port_(NULL),
       io_surface_get_width_(NULL),
       io_surface_get_height_(NULL),
+      io_surface_get_bytes_per_row_(NULL),
+      io_surface_get_base_address_(NULL),
+      io_surface_lock_(NULL),
+      io_surface_unlock_(NULL),
       cgl_tex_image_io_surface_2d_(NULL),
       cv_pixel_buffer_get_io_surface_(NULL),
       initialized_successfully_(false) {
@@ -206,6 +258,8 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
   void* surface_height_ptr = dlsym(iosurface_handle_, "kIOSurfaceHeight");
   void* surface_bytes_per_element_ptr =
       dlsym(iosurface_handle_, "kIOSurfaceBytesPerElement");
+  void* surface_pixel_format_ptr =
+      dlsym(iosurface_handle_, "kIOSurfacePixelFormat");
   void* surface_is_global_ptr =
       dlsym(iosurface_handle_, "kIOSurfaceIsGlobal");
   void* surface_create_ptr = dlsym(iosurface_handle_, "IOSurfaceCreate");
@@ -219,6 +273,12 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       dlsym(iosurface_handle_, "IOSurfaceGetWidth");
   void* io_surface_get_height_ptr =
       dlsym(iosurface_handle_, "IOSurfaceGetHeight");
+  void* io_surface_get_bytes_per_row_ptr =
+      dlsym(iosurface_handle_, "IOSurfaceGetBytesPerRow");
+  void* io_surface_get_base_address_ptr =
+      dlsym(iosurface_handle_, "IOSurfaceGetBaseAddress");
+  void* io_surface_lock_ptr = dlsym(iosurface_handle_, "IOSurfaceLock");
+  void* io_surface_unlock_ptr = dlsym(iosurface_handle_, "IOSurfaceUnlock");
   void* tex_image_io_surface_2d_ptr =
       dlsym(opengl_handle_, "CGLTexImageIOSurface2D");
   void* cv_pixel_buffer_get_io_surface =
@@ -226,6 +286,7 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
   if (!surface_width_ptr ||
       !surface_height_ptr ||
       !surface_bytes_per_element_ptr ||
+      !surface_pixel_format_ptr ||
       !surface_is_global_ptr ||
       !surface_create_ptr ||
       !surface_get_id_ptr ||
@@ -234,6 +295,10 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       !surface_lookup_from_mach_port_ptr ||
       !io_surface_get_width_ptr ||
       !io_surface_get_height_ptr ||
+      !io_surface_get_bytes_per_row_ptr ||
+      !io_surface_get_base_address_ptr ||
+      !io_surface_lock_ptr ||
+      !io_surface_unlock_ptr ||
       !tex_image_io_surface_2d_ptr ||
       !cv_pixel_buffer_get_io_surface) {
     CloseLibraryHandles();
@@ -244,6 +309,8 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
   k_io_surface_height_ = *static_cast<CFStringRef*>(surface_height_ptr);
   k_io_surface_bytes_per_element_ =
       *static_cast<CFStringRef*>(surface_bytes_per_element_ptr);
+  k_io_surface_pixel_format_ =
+      *static_cast<CFStringRef*>(surface_pixel_format_ptr);
   k_io_surface_is_global_ = *static_cast<CFStringRef*>(surface_is_global_ptr);
   io_surface_create_ = reinterpret_cast<IOSurfaceCreateProcPtr>(
       surface_create_ptr);
@@ -263,6 +330,15 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
   io_surface_get_height_ =
       reinterpret_cast<IOSurfaceGetHeightPtr>(
           io_surface_get_height_ptr);
+  io_surface_get_bytes_per_row_ =
+      reinterpret_cast<IOSurfaceGetBytesPerRowPtr>(
+          io_surface_get_bytes_per_row_ptr);
+  io_surface_get_base_address_ =
+      reinterpret_cast<IOSurfaceGetBaseAddressPtr>(
+          io_surface_get_base_address_ptr);
+  io_surface_lock_ = reinterpret_cast<IOSurfaceLockPtr>(io_surface_lock_ptr);
+  io_surface_unlock_ = reinterpret_cast<IOSurfaceUnlockPtr>(
+      io_surface_unlock_ptr);
   cgl_tex_image_io_surface_2d_ =
       reinterpret_cast<CGLTexImageIOSurface2DProcPtr>(
           tex_image_io_surface_2d_ptr);

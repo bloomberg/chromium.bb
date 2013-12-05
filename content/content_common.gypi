@@ -198,6 +198,13 @@
     'common/gpu/client/gpu_channel_host.h',
     'common/gpu/client/gpu_memory_buffer_impl.cc',
     'common/gpu/client/gpu_memory_buffer_impl.h',
+    'common/gpu/client/gpu_memory_buffer_impl_android.cc',
+    'common/gpu/client/gpu_memory_buffer_impl_linux.cc',
+    'common/gpu/client/gpu_memory_buffer_impl_mac.cc',
+    'common/gpu/client/gpu_memory_buffer_impl_ozone.cc',
+    'common/gpu/client/gpu_memory_buffer_impl_shm.cc',
+    'common/gpu/client/gpu_memory_buffer_impl_shm.h',
+    'common/gpu/client/gpu_memory_buffer_impl_win.cc',
     'common/gpu/client/gpu_video_decode_accelerator_host.cc',
     'common/gpu/client/gpu_video_decode_accelerator_host.h',
     'common/gpu/client/gpu_video_encode_accelerator_host.cc',
@@ -442,6 +449,10 @@
       ],
     }],
     ['OS=="mac"', {
+      'sources': [
+        'common/gpu/client/gpu_memory_buffer_impl_io_surface.cc',
+        'common/gpu/client/gpu_memory_buffer_impl_io_surface.h',
+      ],
       'sources!': [
         'common/plugin_list_posix.cc',
       ],

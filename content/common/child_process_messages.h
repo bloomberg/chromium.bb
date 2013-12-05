@@ -60,6 +60,9 @@ IPC_ENUM_TRAITS(gfx::GpuMemoryBufferType)
 IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(handle)
+#if defined(OS_MACOSX)
+  IPC_STRUCT_TRAITS_MEMBER(io_surface_id)
+#endif
 IPC_STRUCT_TRAITS_END()
 
 #undef IPC_MESSAGE_EXPORT
@@ -148,6 +151,8 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TcmallocStats,
 #endif
 
 // Asks the browser to create a gpu memory buffer.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
-                            uint32 /* buffer size */,
+IPC_SYNC_MESSAGE_CONTROL3_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
+                            uint32 /* width */,
+                            uint32 /* height */,
+                            uint32 /* internalformat */,
                             gfx::GpuMemoryBufferHandle)

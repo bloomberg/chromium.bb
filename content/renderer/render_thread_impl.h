@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/child/child_thread.h"
@@ -505,6 +506,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   base::ProcessId renderer_process_id_;
+
+  // TODO(reveman): Allow AllocateGpuMemoryBuffer to be called from
+  // multiple threads. Current allocation mechanism for IOSurface
+  // backed GpuMemoryBuffers prevent this. crbug.com/325045
+  base::ThreadChecker allocate_gpu_memory_buffer_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

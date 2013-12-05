@@ -11,28 +11,26 @@
 
 namespace content {
 
-// Provides common implementation of a GPU memory buffer based
-// on a shared memory handle.
+// Provides common implementation of a GPU memory buffer.
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  GpuMemoryBufferImpl(scoped_ptr<base::SharedMemory> shared_memory,
-                      size_t width,
-                      size_t height,
-                      unsigned internalformat);
-  virtual ~GpuMemoryBufferImpl();
+  static scoped_ptr<GpuMemoryBufferImpl> Create(
+      gfx::GpuMemoryBufferHandle handle,
+      gfx::Size size,
+      unsigned internalformat);
 
-  // Overridden from gfx::GpuMemoryBuffer:
-  virtual void Map(AccessMode mode, void** vaddr) OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-  virtual bool IsMapped() const OVERRIDE;
-  virtual uint32 GetStride() const OVERRIDE;
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;
+  virtual ~GpuMemoryBufferImpl();
 
   static bool IsFormatValid(unsigned internalformat);
   static size_t BytesPerPixel(unsigned internalformat);
 
- private:
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  // Overridden from gfx::GpuMemoryBuffer:
+  virtual bool IsMapped() const OVERRIDE;
+  virtual uint32 GetStride() const OVERRIDE;
+
+ protected:
+  GpuMemoryBufferImpl(gfx::Size size, unsigned internalformat);
+
   const gfx::Size size_;
   unsigned internalformat_;
   bool mapped_;

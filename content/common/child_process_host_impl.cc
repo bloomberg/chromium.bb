@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -296,10 +297,15 @@ void ChildProcessHostImpl::OnShutdownRequest() {
 }
 
 void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
-    uint32 buffer_size,
+    uint32 width,
+    uint32 height,
+    uint32 internalformat,
     gfx::GpuMemoryBufferHandle* handle) {
   handle->type = gfx::SHARED_MEMORY_BUFFER;
-  AllocateSharedMemory(buffer_size, peer_handle_, &handle->handle);
+  AllocateSharedMemory(
+      width * height * GpuMemoryBufferImpl::BytesPerPixel(internalformat),
+      peer_handle_,
+      &handle->handle);
 }
 
 }  // namespace content

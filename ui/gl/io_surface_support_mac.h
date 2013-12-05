@@ -31,6 +31,7 @@ class GL_EXPORT IOSurfaceSupport {
   virtual CFStringRef GetKIOSurfaceWidth() = 0;
   virtual CFStringRef GetKIOSurfaceHeight() = 0;
   virtual CFStringRef GetKIOSurfaceBytesPerElement() = 0;
+  virtual CFStringRef GetKIOSurfacePixelFormat() = 0;
   virtual CFStringRef GetKIOSurfaceIsGlobal() = 0;
 
   virtual CFTypeRef IOSurfaceCreate(CFDictionaryRef properties) = 0;
@@ -49,6 +50,15 @@ class GL_EXPORT IOSurfaceSupport {
 
   virtual size_t IOSurfaceGetWidth(CFTypeRef io_surface) = 0;
   virtual size_t IOSurfaceGetHeight(CFTypeRef io_surface) = 0;
+  virtual size_t IOSurfaceGetBytesPerRow(CFTypeRef io_surface) = 0;
+  virtual void* IOSurfaceGetBaseAddress(CFTypeRef io_surface) = 0;
+
+  virtual IOReturn IOSurfaceLock(CFTypeRef io_surface,
+                                 uint32 options,
+                                 uint32* seed) = 0;
+  virtual IOReturn IOSurfaceUnlock(CFTypeRef io_surface,
+                                   uint32 options,
+                                   uint32* seed) = 0;
 
   virtual CGLError CGLTexImageIOSurface2D(CGLContextObj ctx,
                                           GLenum target,

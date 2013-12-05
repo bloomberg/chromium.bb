@@ -30,6 +30,7 @@
 #include "ui/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/scoped_cftyperef.h"
 #include "content/common/mac/font_loader.h"
 #endif
 
@@ -259,7 +260,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
                             uint32_t data_size);
 #endif
 
-  void OnAllocateGpuMemoryBuffer(uint32 buffer_size,
+  void OnAllocateGpuMemoryBuffer(uint32 width,
+                                 uint32 height,
+                                 uint32 internalformat,
                                  gfx::GpuMemoryBufferHandle* handle);
 
   // Cached resource request dispatcher host and plugin service, guaranteed to
@@ -301,6 +304,10 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
+
+#if defined(OS_MACOSX)
+  base::ScopedCFTypeRef<CFTypeRef> last_io_surface_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };

@@ -33,6 +33,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/cookie_data.h"
 #include "content/common/desktop_notification_messages.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -68,7 +69,9 @@
 #include "ui/gfx/color_profile.h"
 
 #if defined(OS_MACOSX)
+#include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 #include "content/common/mac/font_descriptor.h"
+#include "ui/gl/io_surface_support_mac.h"
 #else
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -203,6 +206,23 @@ class OpenChannelToPpapiBrokerCallback
   scoped_refptr<RenderMessageFilter> filter_;
   int routing_id_;
 };
+
+#if defined(OS_MACOSX)
+void AddBooleanValue(CFMutableDictionaryRef dictionary,
+                     const CFStringRef key,
+                     bool value) {
+  CFDictionaryAddValue(
+      dictionary, key, value ? kCFBooleanTrue : kCFBooleanFalse);
+}
+
+void AddIntegerValue(CFMutableDictionaryRef dictionary,
+                     const CFStringRef key,
+                     int32 value) {
+  base::ScopedCFTypeRef<CFNumberRef> number(
+      CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
+  CFDictionaryAddValue(dictionary, key, number.get());
+}
+#endif
 
 }  // namespace
 
@@ -1156,21 +1176,78 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
 #endif
 
 void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
-    uint32 buffer_size,
+    uint32 width,
+    uint32 height,
+    uint32 internalformat,
     gfx::GpuMemoryBufferHandle* handle) {
-  // TODO(reveman): Implement allocation of real GpuMemoryBuffer.
-  // Currently this function creates a fake GpuMemoryBuffer that is
-  // backed by shared memory and requires an upload before it can
-  // be used as a texture. The plan is to instead have this function
-  // allocate a real GpuMemoryBuffer in whatever form is supported
-  // by platform and drivers.
-  //
-  // Note: |buffer_size| likely needs to be replaced by a more
-  // specific buffer description but is enough for the shared memory
-  // backed GpuMemoryBuffer currently returned.
+  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat)) {
+    handle->type = gfx::EMPTY_BUFFER;
+    return;
+  }
+
+#if defined(OS_MACOSX)
+  if (GpuMemoryBufferImplIOSurface::IsFormatSupported(internalformat)) {
+    IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
+    if (io_surface_support) {
+      base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
+      properties.reset(
+          CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                    0,
+                                    &kCFTypeDictionaryKeyCallBacks,
+                                    &kCFTypeDictionaryValueCallBacks));
+      AddIntegerValue(properties,
+                      io_surface_support->GetKIOSurfaceWidth(),
+                      width);
+      AddIntegerValue(properties,
+                      io_surface_support->GetKIOSurfaceHeight(),
+                      height);
+      AddIntegerValue(properties,
+                      io_surface_support->GetKIOSurfaceBytesPerElement(),
+                      GpuMemoryBufferImpl::BytesPerPixel(internalformat));
+      AddIntegerValue(properties,
+                      io_surface_support->GetKIOSurfacePixelFormat(),
+                      GpuMemoryBufferImplIOSurface::PixelFormat(
+                          internalformat));
+      // TODO(reveman): Remove this when using a mach_port_t to transfer
+      // IOSurface to renderer process. crbug.com/323304
+      AddBooleanValue(properties,
+                      io_surface_support->GetKIOSurfaceIsGlobal(),
+                      true);
+
+      base::ScopedCFTypeRef<CFTypeRef> io_surface(
+          io_surface_support->IOSurfaceCreate(properties));
+      if (io_surface) {
+        handle->type = gfx::IO_SURFACE_BUFFER;
+        handle->io_surface_id = io_surface_support->IOSurfaceGetID(io_surface);
+
+        // TODO(reveman): This makes the assumption that the renderer will
+        // grab a reference to the surface before sending another message.
+        // crbug.com/325045
+        last_io_surface_ = io_surface;
+        return;
+      }
+    }
+  }
+#endif
+
+  uint64 stride = static_cast<uint64>(width) *
+      GpuMemoryBufferImpl::BytesPerPixel(internalformat);
+  if (stride > std::numeric_limits<uint32>::max()) {
+    handle->type = gfx::EMPTY_BUFFER;
+    return;
+  }
+
+  uint64 buffer_size = stride * static_cast<uint64>(height);
+  if (buffer_size > std::numeric_limits<size_t>::max()) {
+    handle->type = gfx::EMPTY_BUFFER;
+    return;
+  }
+
+  // Fallback to fake GpuMemoryBuffer that is backed by shared memory and
+  // requires an upload before it can be used as a texture.
   handle->type = gfx::SHARED_MEMORY_BUFFER;
   ChildProcessHostImpl::AllocateSharedMemory(
-      buffer_size, PeerHandle(), &handle->handle);
+      static_cast<size_t>(buffer_size), PeerHandle(), &handle->handle);
 }
 
 }  // namespace content

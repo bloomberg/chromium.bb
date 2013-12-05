@@ -36,6 +36,7 @@ extern "C" {
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/layout.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/io_surface_support_mac.h"
 
 namespace content {
 namespace {
@@ -305,6 +306,15 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
   {
     // Allow access to /dev/urandom.
     base::GetUrandomFD();
+  }
+
+  { // IOSurfaceLookup() - 10.7
+    // Needed by zero-copy texture update framework - crbug.com/323338
+    IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
+    if (io_surface_support) {
+      base::ScopedCFTypeRef<CFTypeRef> io_surface(
+          io_surface_support->IOSurfaceLookup(0));
+    }
   }
 
   // Process-type dependent warm-up.

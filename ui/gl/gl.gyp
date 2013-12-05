@@ -254,6 +254,8 @@
           'sources': [
             'gl_context_cgl.cc',
             'gl_context_cgl.h',
+            'gl_image_io_surface.cc',
+            'gl_image_io_surface.h',
             'gl_surface_cgl.cc',
             'gl_surface_cgl.h',
             'gl_context_nsview.mm',

@@ -50,6 +50,9 @@ bool GpuChannelHost::IsValidGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER:
+#if defined(OS_MACOSX)
+    case gfx::IO_SURFACE_BUFFER:
+#endif
       return true;
     default:
       return false;
@@ -303,6 +306,10 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
       handle.handle = ShareToGpuProcess(source_handle.handle);
       return handle;
     }
+#if defined(OS_MACOSX)
+    case gfx::IO_SURFACE_BUFFER:
+      return source_handle;
+#endif
     default:
       NOTREACHED();
       return gfx::GpuMemoryBufferHandle();

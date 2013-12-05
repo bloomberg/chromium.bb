@@ -79,7 +79,9 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void OnShutdownRequest();
   void OnAllocateSharedMemory(uint32 buffer_size,
                               base::SharedMemoryHandle* handle);
-  void OnAllocateGpuMemoryBuffer(uint32 buffer_size,
+  void OnAllocateGpuMemoryBuffer(uint32 width,
+                                 uint32 height,
+                                 uint32 internalformat,
                                  gfx::GpuMemoryBufferHandle* handle);
 
   ChildProcessHostDelegate* delegate_;

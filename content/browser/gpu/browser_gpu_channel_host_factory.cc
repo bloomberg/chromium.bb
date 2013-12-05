@@ -11,7 +11,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
@@ -380,11 +380,12 @@ scoped_ptr<gfx::GpuMemoryBuffer>
   if (!shm->CreateAnonymous(size))
     return scoped_ptr<gfx::GpuMemoryBuffer>();
 
-  return make_scoped_ptr<gfx::GpuMemoryBuffer>(
-      new GpuMemoryBufferImpl(shm.Pass(),
-                              width,
-                              height,
-                              internalformat));
+  scoped_ptr<GpuMemoryBufferImplShm> buffer(
+      new GpuMemoryBufferImplShm(gfx::Size(width, height), internalformat));
+  if (!buffer->InitializeFromSharedMemory(shm.Pass()))
+    return scoped_ptr<gfx::GpuMemoryBuffer>();
+
+  return buffer.PassAs<gfx::GpuMemoryBuffer>();
 }
 
 // static
