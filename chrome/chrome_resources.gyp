@@ -107,6 +107,11 @@
             },
           ],
         }],
+        ['chromeos==1 and disable_nacl==0 and disable_nacl_untrusted==0', {
+          'dependencies': [
+            '../chrome/third_party/chromevox/chromevox.gyp:chromevox_resources',
+          ],
+        }],
       ],
     },
     {

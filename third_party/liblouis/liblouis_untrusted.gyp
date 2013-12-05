@@ -67,7 +67,6 @@
             '../../native_client/tools.gyp:prep_toolchain',
           ],
         },
-
         {
           'target_name': 'liblouis_nacl_wrapper_untrusted',
           'type': 'none',
@@ -138,24 +137,22 @@
           ],
           # Copy specific files into the product directory to avoid
           # copying over the unstripped binary file.
-          # TODO(plundblad): Temporarily disabled while the rest of chromevox
-          # lands.
-          # 'copies': [
-          #   {
-          #     'destination': '<(braille_chromevox_dir)',
-          #     'files': [
-          #       '<(nmf)',
-          #       '>@(nexe_files)',
-          #       'tables.json',
-          #     ],
-          #   },
-          #   {
-          #     'destination': '<(braille_chromevox_dir)/tables',
-          #     'files': [
-          #       '<@(table_files)',
-          #     ],
-          #   },
-          # ],
+          'copies': [
+            {
+              'destination': '<(braille_chromevox_dir)',
+              'files': [
+                '<(nmf)',
+                '>@(nexe_files)',
+                'tables.json',
+              ],
+            },
+            {
+              'destination': '<(braille_chromevox_dir)/tables',
+              'files': [
+                '<@(table_files)',
+              ],
+            },
+          ],
         },
         {
           'target_name': 'liblouis_test_data',
