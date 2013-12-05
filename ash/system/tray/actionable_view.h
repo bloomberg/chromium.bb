@@ -31,8 +31,6 @@ class ASH_EXPORT ActionableView : public views::View {
   const base::string16& accessible_name() const { return accessible_name_; }
 
  protected:
-  void OnPaintFocus(gfx::Canvas* canvas);
-
   // Returns the bounds to paint the focus rectangle in.
   virtual gfx::Rect GetFocusBounds();
 
@@ -58,6 +56,8 @@ class ASH_EXPORT ActionableView : public views::View {
  private:
   base::string16 accessible_name_;
   bool has_capture_;
+
+  scoped_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionableView);
 };
