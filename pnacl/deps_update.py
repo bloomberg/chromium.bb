@@ -20,6 +20,8 @@ import sys
 
 def MatchKey(data, key):
   # Search for "key=value" line in the COMPONENT_REVISIONS file.
+  # Also, the keys have underscores instead of dashes.
+  key = key.replace('-', '_')
   match = re.search('^%s=(\S+)?$' % key, data, re.M)
   if match is None:
     raise Exception('Key %r not found' % key)
@@ -105,7 +107,10 @@ def Main(args):
                         'clang': 'Clang',
                         'gcc': 'GCC',
                         'binutils': 'Binutils',
-                        'libcxx': 'libc++'}
+                        'libcxx': 'libc++',
+                        'llvm-test-suite': 'LLVM test suite',
+                        'nacl-newlib': 'Newlib',
+                        'compiler-rt': 'compiler-rt'}
   component_name = component_name_map.get(options.component, options.component)
   if options.component == 'gcc':
     pnacl_branch = 'origin/pnacl'
