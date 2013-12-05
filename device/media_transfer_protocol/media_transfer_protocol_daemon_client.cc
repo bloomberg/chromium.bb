@@ -28,6 +28,7 @@ class MediaTransferProtocolDaemonClientImpl
       : proxy_(bus->GetObjectProxy(
           mtpd::kMtpdServiceName,
           dbus::ObjectPath(mtpd::kMtpdServicePath))),
+        listen_for_changes_called_(false),
         weak_ptr_factory_(this) {
   }
 
@@ -212,8 +213,11 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void SetUpConnections(
+  virtual void ListenForChanges(
       const MTPStorageEventHandler& handler) OVERRIDE {
+    DCHECK(!listen_for_changes_called_);
+    listen_for_changes_called_ = true;
+
     static const SignalEventTuple kSignalEventTuples[] = {
       { mtpd::kMTPStorageAttached, true },
       { mtpd::kMTPStorageDetached, false },
@@ -400,6 +404,8 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   dbus::ObjectProxy* proxy_;
+
+  bool listen_for_changes_called_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
