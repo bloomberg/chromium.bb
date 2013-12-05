@@ -162,9 +162,11 @@ def stream_read(stream, chunk_size):
     yield data
 
 
-def file_read(filepath, chunk_size=DISK_FILE_CHUNK):
-  """Yields file content in chunks of given |chunk_size|."""
+def file_read(filepath, chunk_size=DISK_FILE_CHUNK, offset=0):
+  """Yields file content in chunks of |chunk_size| starting from |offset|."""
   with open(filepath, 'rb') as f:
+    if offset:
+      f.seek(offset)
     while True:
       data = f.read(chunk_size)
       if not data:
@@ -781,11 +783,12 @@ class StorageApi(object):
     """
     raise NotImplementedError()
 
-  def fetch(self, digest):
+  def fetch(self, digest, offset=0):
     """Fetches an object and yields its content.
 
     Arguments:
       digest: hash digest of item to download.
+      offset: offset (in bytes) from the start of the file to resume fetch from.
 
     Yields:
       Chunks of downloaded item (as str objects).
@@ -904,17 +907,50 @@ class IsolateServer(StorageApi):
     return '%s/content-gs/retrieve/%s/%s' % (
         self.base_url, self.namespace, digest)
 
-  def fetch(self, digest):
+  def fetch(self, digest, offset=0):
     source_url = self.get_fetch_url(digest)
-    logging.debug('download_file(%s)', source_url)
+    logging.debug('download_file(%s, %d)', source_url, offset)
 
     # Because the app engine DB is only eventually consistent, retry 404 errors
     # because the file might just not be visible yet (even though it has been
     # uploaded).
     connection = net.url_open(
-        source_url, retry_404=True, read_timeout=DOWNLOAD_READ_TIMEOUT)
+        source_url,
+        retry_404=True,
+        read_timeout=DOWNLOAD_READ_TIMEOUT,
+        headers={'Range': 'bytes=%d-' % offset} if offset else None)
+
     if not connection:
       raise IOError('Unable to open connection to %s' % source_url)
+
+    # If |offset| is used, verify server respects it by checking Content-Range.
+    if offset:
+      content_range = connection.get_header('Content-Range')
+      if not content_range:
+        raise IOError('Missing Content-Range header')
+
+      # 'Content-Range' format is 'bytes <offset>-<last_byte_index>/<size>'.
+      # According to a spec, <size> can be '*' meaning "Total size of the file
+      # is not known in advance".
+      try:
+        match = re.match(r'bytes (\d+)-(\d+)/(\d+|\*)', content_range)
+        if not match:
+          raise ValueError()
+        content_offset = int(match.group(1))
+        last_byte_index = int(match.group(2))
+        size = None if match.group(3) == '*' else int(match.group(3))
+      except ValueError:
+        raise IOError('Invalid Content-Range header: %s' % content_range)
+
+      # Ensure returned offset equals requested one.
+      if offset != content_offset:
+        raise IOError('Expecting offset %d, got %d (Content-Range is %s)' % (
+            offset, content_offset, content_range))
+
+      # Ensure entire tail of the file is returned.
+      if size is not None and last_byte_index + 1 != size:
+        raise IOError('Incomplete response. Content-Range: %s' % content_range)
+
     return stream_read(connection, NET_IO_FILE_CHUNK)
 
   def push(self, item, content):
@@ -1032,9 +1068,9 @@ class FileSystem(StorageApi):
   def get_fetch_url(self, digest):
     return None
 
-  def fetch(self, digest):
+  def fetch(self, digest, offset=0):
     assert isinstance(digest, basestring)
-    return file_read(os.path.join(self.base_path, digest))
+    return file_read(os.path.join(self.base_path, digest), offset=offset)
 
   def push(self, item, content):
     assert isinstance(item, Item)

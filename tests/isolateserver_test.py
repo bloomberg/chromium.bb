@@ -3,9 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-# pylint: disable=W0212
-# pylint: disable=W0223
-# pylint: disable=W0231
+# pylint: disable=W0212,W0223,W0231,W0613
 
 import hashlib
 import json
@@ -69,10 +67,11 @@ class TestCase(auto_stub.TestCase):
       kwargs.pop('stream', None)
       for i, n in enumerate(self._requests):
         if n[0] == url:
-          _, expected_kwargs, result = self._requests.pop(i)
+          _, expected_kwargs, result, headers = self._requests.pop(i)
           self.assertEqual(expected_kwargs, kwargs)
           if result is not None:
-            return isolateserver.net.HttpResponse.get_fake_response(result, url)
+            return isolateserver.net.HttpResponse.get_fake_response(
+                result, url, headers)
           return None
     self.fail('Unknown request %s' % url)
 
@@ -270,7 +269,7 @@ class StorageTest(TestCase):
     # 'push' calls.
     push_calls = []
 
-    def mocked_file_read(filepath, _chunk_size=0):
+    def mocked_file_read(filepath, chunk_size=0, offset=0):
       self.assertEqual(root, os.path.dirname(filepath))
       filename = os.path.basename(filepath)
       self.assertIn(filename, files_data)
@@ -339,14 +338,21 @@ class IsolateServerStorageApiTest(TestCase):
         'data': json.dumps(handshake_request, separators=(',', ':')),
       },
       json.dumps(handshake_response),
+      None,
     )
 
   @staticmethod
-  def mock_fetch_request(server, namespace, item, data):
+  def mock_fetch_request(server, namespace, item, data,
+                         request_headers=None, response_headers=None):
     return (
       server + '/content-gs/retrieve/%s/%s' % (namespace, item),
-      {'retry_404': True, 'read_timeout': 60},
+      {
+        'retry_404': True,
+        'read_timeout': 60,
+        'headers': request_headers,
+      },
       data,
+      response_headers,
     )
 
   @staticmethod
@@ -361,6 +367,7 @@ class IsolateServerStorageApiTest(TestCase):
         'method': 'POST',
       },
       json.dumps(response),
+      None,
     )
 
   def test_server_capabilities_success(self):
@@ -385,7 +392,7 @@ class IsolateServerStorageApiTest(TestCase):
     namespace = 'default'
     handshake_req = self.mock_handshake_request(server)
     self._requests = [
-      (handshake_req[0], handshake_req[1], 'Im a bad response'),
+      (handshake_req[0], handshake_req[1], 'Im a bad response', None),
     ]
     storage = isolateserver.IsolateServer(server, namespace)
     with self.assertRaises(isolateserver.MappingError):
@@ -427,6 +434,63 @@ class IsolateServerStorageApiTest(TestCase):
     with self.assertRaises(IOError):
       _ = ''.join(storage.fetch(item))
 
+  def test_fetch_offset_success(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    data = ''.join(str(x) for x in xrange(1000))
+    item = ALGO(data).hexdigest()
+    offset = 200
+    size = len(data)
+
+    good_content_range_headers = [
+      'bytes %d-%d/%d' % (offset, size - 1, size),
+      'bytes %d-%d/*' % (offset, size - 1),
+    ]
+
+    for content_range_header in good_content_range_headers:
+      self._requests = [
+        self.mock_fetch_request(
+            server, namespace, item, data[offset:],
+            request_headers={'Range': 'bytes=%d-' % offset},
+            response_headers={'Content-Range': content_range_header}),
+      ]
+      storage = isolateserver.IsolateServer(server, namespace)
+      fetched = ''.join(storage.fetch(item, offset))
+      self.assertEqual(data[offset:], fetched)
+
+  def test_fetch_offset_bad_header(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    data = ''.join(str(x) for x in xrange(1000))
+    item = ALGO(data).hexdigest()
+    offset = 200
+    size = len(data)
+
+    bad_content_range_headers = [
+      # Missing header.
+      None,
+      '',
+      # Bad format.
+      'not bytes %d-%d/%d' % (offset, size - 1, size),
+      'bytes %d-%d' % (offset, size - 1),
+      # Bad offset.
+      'bytes %d-%d/%d' % (offset - 1, size - 1, size),
+      # Incomplete chunk.
+      'bytes %d-%d/%d' % (offset, offset + 10, size),
+    ]
+
+    for content_range_header in bad_content_range_headers:
+      self._requests = [
+        self.mock_fetch_request(
+            server, namespace, item, data[offset:],
+            request_headers={'Range': 'bytes=%d-' % offset},
+            response_headers={'Content-Range': content_range_header}),
+      ]
+      storage = isolateserver.IsolateServer(server, namespace)
+      with self.assertRaises(IOError):
+        _ = ''.join(storage.fetch(item, offset))
+
+
   def test_push_success(self):
     server = 'http://example.com'
     namespace = 'default'
@@ -447,7 +511,8 @@ class IsolateServerStorageApiTest(TestCase):
           'content_type': 'application/octet-stream',
           'method': 'PUT',
         },
-        ''
+        '',
+        None,
       ),
       (
         push_urls[1],
@@ -456,7 +521,8 @@ class IsolateServerStorageApiTest(TestCase):
           'content_type': 'application/json',
           'method': 'POST',
         },
-        ''
+        '',
+        None,
       ),
     ]
     storage = isolateserver.IsolateServer(server, namespace)
@@ -486,7 +552,8 @@ class IsolateServerStorageApiTest(TestCase):
           'content_type': 'application/octet-stream',
           'method': 'PUT',
         },
-        None
+        None,
+        None,
       ),
     ]
     storage = isolateserver.IsolateServer(server, namespace)
@@ -517,7 +584,8 @@ class IsolateServerStorageApiTest(TestCase):
           'content_type': 'application/octet-stream',
           'method': 'PUT',
         },
-        ''
+        '',
+        None,
       ),
       (
         push_urls[1],
@@ -526,7 +594,8 @@ class IsolateServerStorageApiTest(TestCase):
           'content_type': 'application/json',
           'method': 'POST',
         },
-        None
+        None,
+        None,
       ),
     ]
     storage = isolateserver.IsolateServer(server, namespace)
@@ -578,7 +647,7 @@ class IsolateServerStorageApiTest(TestCase):
     req = self.mock_contains_request(server, namespace, token, [], [])
     self._requests = [
       self.mock_handshake_request(server, token),
-      (req[0], req[1], None),
+      (req[0], req[1], None, None),
     ]
     storage = isolateserver.IsolateServer(server, namespace)
     with self.assertRaises(isolateserver.MappingError):
@@ -617,13 +686,15 @@ class IsolateServerDownloadTest(TestCase):
     self._requests = [
       (
         server + '/content-gs/retrieve/default-gzip/sha-1',
-        {'read_timeout': 60, 'retry_404': True},
+        {'read_timeout': 60, 'retry_404': True, 'headers': None},
         zlib.compress('Coucou'),
+        None,
       ),
       (
         server + '/content-gs/retrieve/default-gzip/sha-2',
-        {'read_timeout': 60, 'retry_404': True},
+        {'read_timeout': 60, 'retry_404': True, 'headers': None},
         zlib.compress('Bye Bye'),
+        None,
       ),
     ]
     cmd = [
@@ -671,8 +742,10 @@ class IsolateServerDownloadTest(TestCase):
         {
           'read_timeout': isolateserver.DOWNLOAD_READ_TIMEOUT,
           'retry_404': True,
+          'headers': None,
         },
         zlib.compress(v),
+        None,
       ) for h, v in requests
     ]
     cmd = [
@@ -689,6 +762,7 @@ class IsolateServerDownloadTest(TestCase):
         'To run this test please run from the directory %s:\n  Absurb command\n'
         % os.path.join(self.tempdir, 'a'))
     self.checkOutput(expected_stdout, '')
+
 
 class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_empty(self):
