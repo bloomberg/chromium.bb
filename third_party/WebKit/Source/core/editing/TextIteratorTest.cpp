@@ -161,6 +161,47 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOption)
     EXPECT_EQ(expectedTextChunks, actualTextChunks);
 }
 
+TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex)
+{
+    static const char* input = "<input type=\"text\" value=\"Beginning of range\"><div><div><input type=\"text\" value=\"Under DOM nodes\"></div></div><input type=\"text\" value=\"End of range\">";
+    static const char* expectedTextChunksRawString[] = {
+        "\n", // FIXME: Why newline here?
+        "Beginning of range",
+        "\n",
+        "Under DOM nodes",
+        "\n",
+        "End of range"
+    };
+    Vector<String> expectedTextChunks;
+    expectedTextChunks.append(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+
+    setBodyInnerHTML(input);
+    Vector<String> actualTextChunks = iterate(TextIteratorEntersTextControls);
+    EXPECT_EQ(expectedTextChunks, actualTextChunks);
+}
+
+TEST_F(TextIteratorTest, NotEnteringTextControlHostingShadowTreeEvenWithOption)
+{
+    static const char* bodyContent = "<div>Hello, <input type=\"text\" value=\"input\" id=\"input\"> iterator.</div>";
+    static const char* shadowContent = "<span>shadow</span>";
+    // TextIterator doesn't emit "input" nor "shadow" since (1) the renderer for <input> is not created; and
+    // (2) we don't (yet) recurse into shadow trees.
+    static const char* expectedTextChunksRawString[] = {
+        "Hello, ",
+        "", // FIXME: Why is an empty string emitted here?
+        " iterator."
+    };
+    Vector<String> expectedTextChunks;
+    expectedTextChunks.append(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+
+    setBodyInnerHTML(bodyContent);
+    RefPtr<ShadowRoot> shadowRoot = document().getElementById(AtomicString::fromUTF8("input"))->createShadowRoot(ASSERT_NO_EXCEPTION);
+    shadowRoot->setInnerHTML(String::fromUTF8(shadowContent), ASSERT_NO_EXCEPTION);
+
+    Vector<String> actualTextChunks = iterate();
+    EXPECT_EQ(expectedTextChunks, actualTextChunks);
+}
+
 TEST_F(TextIteratorTest, NotEnteringShadowTree)
 {
     static const char* bodyContent = "<div>Hello, <span id=\"host\">text</span> iterator.</div>";
