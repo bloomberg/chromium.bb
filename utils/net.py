@@ -23,6 +23,7 @@ import urlparse
 
 from third_party import requests
 from third_party.requests import adapters
+from third_party.requests import structures
 from third_party.rietveld import upload
 
 from utils import zip_package
@@ -233,6 +234,17 @@ def get_cacerts_bundle():
     return _ca_certs
 
 
+def get_case_insensitive_dict(original):
+  """Given a dict with string keys returns new CaseInsensitiveDict.
+
+  Raises ValueError if there are duplicate keys.
+  """
+  normalized = structures.CaseInsensitiveDict(original or {})
+  if len(normalized) != len(original):
+    raise ValueError('Duplicate keys in: %s' % repr(original))
+  return normalized
+
+
 class HttpService(object):
   """Base class for a class that provides an API to HTTP based service:
     - Provides 'request' method.
@@ -284,7 +296,8 @@ class HttpService(object):
       timeout=URL_OPEN_TIMEOUT,
       read_timeout=None,
       stream=True,
-      method=None):
+      method=None,
+      headers=None):
     """Attempts to open the given url multiple times.
 
     |urlpath| is relative to the server root, i.e. '/some/request?param=1'.
@@ -306,6 +319,9 @@ class HttpService(object):
     If |method| is given it can be 'GET', 'POST' or 'PUT' and it will be used
     when performing the request. By default it's GET if |data| is None and POST
     if |data| is not None.
+
+    If |headers| is given, it should be a dict with HTTP headers to append
+    to request. Caller is responsible for providing headers that make sense.
 
     If |read_timeout| is not None will configure underlying socket to
     raise TimeoutError exception whenever there's no response from the server
@@ -337,7 +353,7 @@ class HttpService(object):
     query_params = urlparse.parse_qsl(parsed.query)
 
     # Prepare headers.
-    headers = {}
+    headers = get_case_insensitive_dict(headers or {})
     if body is not None:
       headers['Content-Length'] = len(body)
       if content_type:
@@ -448,9 +464,9 @@ class HttpRequest(object):
     else:
       return '%s?%s' % (self.url, urllib.urlencode(self.params))
 
-  def make_fake_response(self, content=''):
+  def make_fake_response(self, content='', headers=None):
     """Makes new fake HttpResponse to this request, useful in tests."""
-    return HttpResponse.get_fake_response(content, self.get_full_url())
+    return HttpResponse.get_fake_response(content, self.get_full_url(), headers)
 
 
 class HttpResponse(object):
@@ -459,14 +475,18 @@ class HttpResponse(object):
   def __init__(self, stream, url, headers):
     self._stream = stream
     self._url = url
-    self._headers = headers
+    self._headers = get_case_insensitive_dict(headers)
     self._read = 0
 
   @property
   def content_length(self):
     """Total length to the response or None if not known in advance."""
-    length = self._headers.get('Content-Length')
+    length = self.get_header('Content-Length')
     return int(length) if length is not None else None
+
+  def get_header(self, header):
+    """Returns response header (as str) or None if no such header."""
+    return self._headers.get(header)
 
   def read(self, size=None):
     """Reads up to |size| bytes from the stream and returns them.
@@ -486,10 +506,11 @@ class HttpResponse(object):
       raise TimeoutError(e)
 
   @classmethod
-  def get_fake_response(cls, content, url):
+  def get_fake_response(cls, content, url, headers=None):
     """Returns HttpResponse with predefined content, useful in tests."""
-    return cls(StringIO.StringIO(content),
-        url, {'content-length': len(content)})
+    headers = dict(headers or {})
+    headers['Content-Length'] = len(content)
+    return cls(StringIO.StringIO(content), url, headers)
 
 
 class Authenticator(object):
