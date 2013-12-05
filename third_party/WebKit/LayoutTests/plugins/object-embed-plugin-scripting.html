@@ -8,8 +8,8 @@ function print(message)
     document.getElementById("console").appendChild(paragraph);
 }
 
-function test() 
-{ 
+function test()
+{
     if (window.testRunner) {
         testRunner.dumpAsText();
     }
@@ -21,8 +21,12 @@ function test()
     print("plugin <embed> nested in image <object>: should not have a plugin and does " + (document.getElementById('myE3').testCallback ? "" : "not"));
     print("plugin <embed> nested in empty <object> nested in plugin <object>: should not have a plugin and does " + (document.getElementById('myE4').testCallback ? "" : "not"));
     print("standalone plugin <embed>: should have a plugin and does " + (document.getElementById('myE5').testCallback ? "" : "not"));
-    print("plugin <object> with nested plugin <embed> of the same name should have a plugin and does " + (document.Plugin.testCallback ? "" : "not"));
-    print("empty <object> with nested plugin <embed> of the same name should have a plugin and does " + (document.Plugin2.testCallback ? "" : "not"));
+
+    function showPlugin(p) {
+        return p.testCallback ? ("[" + p.getAttribute('location') + "]") : "not";
+    }
+    print("plugin <object> with nested plugin <embed> of the same name should have an <embed> plugin and does " + showPlugin(document.Plugin));
+    print("empty <object> with nested plugin <embed> of the same name should have an <embed> plugin and does " + showPlugin(document.Plugin2));
 }
 </script>
 </head>
@@ -32,15 +36,15 @@ function test()
 <hr>
 <div id="console"></div>
 
-<OBJECT 
+<OBJECT
     id="myO"
     type="application/x-webkit-test-netscape"
     width = 0 height = 0
     >
     <PARAM name="src" value="resources/simple_blank.swf">
     <PARAM name="autostart" value="false">
-    
-    <EMBED 
+
+    <EMBED
         id="myE"
         type="application/x-webkit-test-netscape"
         autostart="false"
@@ -51,7 +55,7 @@ function test()
 </OBJECT>
 
 <object id="myO2">
-    <embed 
+    <embed
         id="myE2"
         type="application/x-webkit-test-netscape"
         autostart="false"
@@ -60,12 +64,12 @@ function test()
     >
 </object>
 
-<object 
-    data="resources/apple.gif" 
+<object
+    data="resources/apple.gif"
     type="image/gif"
     width = 0 height = 0
 >
-    <embed 
+    <embed
         id="myE3"
         type="application/x-webkit-test-netscape"
         autostart="false"
@@ -74,13 +78,13 @@ function test()
     >
 </object>
 
-<object 
-    data="resources/apple.gif" 
+<object
+    data="resources/apple.gif"
     type="image/gif"
     width = 0 height = 0
 >
     <object>
-        <embed 
+        <embed
             id="myE4"
             type="application/x-webkit-test-netscape"
             autostart="false"
@@ -90,7 +94,7 @@ function test()
     </object>
 </object>
 
-<embed 
+<embed
     id="myE5"
     type="application/x-webkit-test-netscape"
     autostart="false"
@@ -102,28 +106,31 @@ function test()
     name="Plugin"
     type="application/x-webkit-test-netscape"
     width = 0 height = 0
+    location="outer"
     >
     <param name="src" value="resources/simple_blank.swf">
     <param name="autostart" value="false">
     <param name="enablejavascript" value="true">
-    
+
     <embed
         name="Plugin"
         type="application/x-webkit-test-netscape"
         autostart="false"
         enablejavascript="true"
         width = 0 height = 0
+        location="inner"
     >
     </embed>
 </object>
 
-<object name="Plugin2">
+<object name="Plugin2" location="outer">
     <embed
         name="Plugin2"
         type="application/x-webkit-test-netscape"
         autostart="false"
         enablejavascript="true"
         width = 0 height = 0
+        location="inner"
     >
     </embed>
 </object>

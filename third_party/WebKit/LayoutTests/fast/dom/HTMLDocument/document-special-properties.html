@@ -72,6 +72,8 @@ if (window.testRunner)
 <embed name="embed5" width="0" height="0"></embed>
 <embed id="embed5" width="0" height="0"></embed>
 <object name="embed6"><embed name="embed6"></embed></object>
+<object name="embed7_0"><embed name="embed7"></embed></object>
+<object name="object8_0" width="0" height="0"><param><embed name="embed8" width="0" height="0"></object></param></object>
 
 <object name="object1" width="0" height="0"></object>
 <object name="object2" width="0" height="0"></object>
@@ -83,6 +85,8 @@ if (window.testRunner)
 <object name="object5" width="0" height="0"></object>
 <object name="object5" width="0" height="0"></object>
 <object id="object5" width="0" height="0"></object>
+<object name="object6" width="0" height="0"><object name="object6" width="0" height="0"></object></object>
+<object name="object7_0" width="0" height="0"><object name="object7" width="0" height="0"></object></object>
 
 <iframe name="iframe1" width="0" height="0"></iframe>
 <iframe name="iframe2" width="0" height="0"></iframe>
@@ -226,6 +230,8 @@ testProperty("Object by name (multiple)", "object2");
 testProperty("Object by id (unique)", "object3");
 testProperty("Object by id (multiple)", "object4");
 testProperty("Object by id/name mixed", "object5");
+testProperty("Object by name nested in object with the same name", "object6");
+testProperty("Object by name nested in object with a different name", "object7");
 print("<br>");
 
 testProperty("Nonexistent embed name", "embed0");
@@ -235,6 +241,8 @@ testProperty("Embed by id (unique)", "embed3");
 testProperty("Embed by id (multiple)", "embed4");
 testProperty("Embed by id/name mixed", "embed5");
 testProperty("Embed by name nested in object with the same name", "embed6");
+testProperty("Embed by name nested in object with a different name", "embed7");
+testProperty("Embed by name nested in param of an object with a different name", "embed8");
 print("<br>");
 
 testProperty("Nonexistent iframe name", "iframe0");

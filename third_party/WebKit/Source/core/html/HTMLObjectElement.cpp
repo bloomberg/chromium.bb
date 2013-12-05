@@ -51,7 +51,6 @@ using namespace HTMLNames;
 
 inline HTMLObjectElement::HTMLObjectElement(Document& document, HTMLFormElement* form, bool createdByParser)
     : HTMLPlugInElement(objectTag, document, createdByParser, ShouldNotPreferPlugInsForImages)
-    , m_docNamedItem(true)
     , m_useFallbackContent(false)
 {
     setForm(form ? form : findFormAncestor());
@@ -328,7 +327,6 @@ void HTMLObjectElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLObjectElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-    updateDocNamedItem();
     if (inDocument() && !useFallbackContent()) {
         setNeedsWidgetUpdate(true);
         setNeedsStyleRecalc();
@@ -384,64 +382,18 @@ void HTMLObjectElement::renderFallbackContent()
     reattachFallbackContent();
 }
 
-// FIXME: This should be removed, all callers are almost certainly wrong.
-static bool isRecognizedTagName(const QualifiedName& tagName)
+bool HTMLObjectElement::isExposed() const
 {
-    DEFINE_STATIC_LOCAL(HashSet<StringImpl*>, tagList, ());
-    if (tagList.isEmpty()) {
-        const QualifiedName* const* tags = HTMLNames::getHTMLTags();
-        for (size_t i = 0; i < HTMLNames::HTMLTagsCount; i++) {
-            if (*tags[i] == bgsoundTag
-                || *tags[i] == commandTag
-                || *tags[i] == detailsTag
-                || *tags[i] == figcaptionTag
-                || *tags[i] == figureTag
-                || *tags[i] == summaryTag
-                || *tags[i] == trackTag) {
-                // Even though we have atoms for these tags, we don't want to
-                // treat them as "recognized tags" for the purpose of parsing
-                // because that changes how we parse documents.
-                continue;
-            }
-            tagList.add(tags[i]->localName().impl());
-        }
+    // http://www.whatwg.org/specs/web-apps/current-work/#exposed
+    for (Node* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
+        if (ancestor->hasTagName(objectTag) && toHTMLObjectElement(ancestor)->isExposed())
+            return false;
     }
-    return tagList.contains(tagName.localName().impl());
-}
-
-void HTMLObjectElement::updateDocNamedItem()
-{
-    // The rule is "<object> elements with no children other than
-    // <param> elements, unknown elements and whitespace can be
-    // found by name in a document, and other <object> elements cannot."
-    bool wasNamedItem = m_docNamedItem;
-    bool isNamedItem = true;
-    Node* child = firstChild();
-    while (child && isNamedItem) {
-        if (child->isElementNode()) {
-            Element* element = toElement(child);
-            // FIXME: Use of isRecognizedTagName is almost certainly wrong here.
-            if (isRecognizedTagName(element->tagQName()) && !element->hasTagName(paramTag))
-                isNamedItem = false;
-        } else if (child->isTextNode()) {
-            if (!toText(child)->containsOnlyWhitespace())
-                isNamedItem = false;
-        } else {
-            isNamedItem = false;
-        }
-        child = child->nextSibling();
+    for (Node* node = firstChild(); node; node = NodeTraversal::next(*node, this)) {
+        if (node->hasTagName(objectTag) || node->hasTagName(embedTag))
+            return false;
     }
-    if (isNamedItem != wasNamedItem && document().isHTMLDocument()) {
-        HTMLDocument& document = toHTMLDocument(this->document());
-        if (isNamedItem) {
-            document.addNamedItem(getNameAttribute());
-            document.addExtraNamedItem(getIdAttribute());
-        } else {
-            document.removeNamedItem(getNameAttribute());
-            document.removeExtraNamedItem(getIdAttribute());
-        }
-    }
-    m_docNamedItem = isNamedItem;
+    return true;
 }
 
 bool HTMLObjectElement::containsJavaApplet() const

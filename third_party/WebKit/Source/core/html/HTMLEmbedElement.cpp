@@ -205,4 +205,14 @@ bool HTMLEmbedElement::isInteractiveContent() const
     return true;
 }
 
+bool HTMLEmbedElement::isExposed() const
+{
+    // http://www.whatwg.org/specs/web-apps/current-work/#exposed
+    for (Node* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
+        if (ancestor->hasTagName(objectTag) && toHTMLObjectElement(ancestor)->isExposed())
+            return false;
+    }
+    return true;
+}
+
 }

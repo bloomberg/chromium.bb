@@ -31,6 +31,8 @@ class HTMLEmbedElement FINAL : public HTMLPlugInElement {
 public:
     static PassRefPtr<HTMLEmbedElement> create(Document&, bool createdByParser = false);
 
+    bool isExposed() const;
+
 private:
     HTMLEmbedElement(Document&, bool createdByParser);
 
@@ -54,6 +56,8 @@ private:
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
     virtual bool isInteractiveContent() const OVERRIDE;
 };
+
+DEFINE_NODE_TYPE_CASTS(HTMLEmbedElement, hasTagName(HTMLNames::embedTag));
 
 }
 
