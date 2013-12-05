@@ -78,18 +78,24 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // Queue of motion events.
     private final Deque<MotionEvent> mPendingMotionEvents = new ArrayDeque<MotionEvent>();
 
-    // Has WebKit told us the current page requires touch events.
-    private boolean mHasTouchHandlers = false;
+    // All events are forwarded to the GestureDetector, bypassing Javascript.
+    private static final int NO_TOUCH_HANDLER = 0;
 
-    // True if the down event for the current gesture was returned back to the browser with
-    // INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS
-    private boolean mNoTouchHandlerForGesture = false;
+    // All events are forwarded as normal to Javascript, and if unconsumed to the GestureDetector.
+    //     * Activated from the renderer by way of |hasTouchEventHandlers(true)|.
+    private static final int HAS_TOUCH_HANDLER = 1;
 
-    // True if JavaScript touch event handlers returned an ACK with
-    // INPUT_EVENT_ACK_STATE_CONSUMED. In this case we should avoid, sending events from
-    // this gesture to the Gesture Detector since it will have already missed at least
-    // one event.
-    private boolean mJavaScriptIsConsumingGesture = false;
+    // Events in the current gesture are forwarded to the GestureDetector, bypassing Javascript.
+    //     * Activated if the touch down for the current gesture had no Javascript consumer.
+    private static final int NO_TOUCH_HANDLER_FOR_GESTURE = 2;
+
+    // Events in the current gesture are forwarded to Javascript, and not to the GestureDetector.
+    //     * Activated if *any* touch event in the current sequence was consumed by Javascript.
+    private static final int JAVASCRIPT_CONSUMING_GESTURE = 3;
+
+    private static final int TOUCH_HANDLING_STATE_DEFAULT = NO_TOUCH_HANDLER;
+
+    private int mTouchHandlingState = TOUCH_HANDLING_STATE_DEFAULT;
 
     // Remember whether onShowPress() is called. If it is not, in onSingleTapConfirmed()
     // we will first show the press state, then trigger the click.
@@ -868,8 +874,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
             // enabled.  Ending the fling ensures scrolling has stopped as well as terminating the
             // current fling if applicable.
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                mNoTouchHandlerForGesture = false;
-                mJavaScriptIsConsumingGesture = false;
                 endFlingIfNecessary(event.getEventTime());
             } else if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
                 endDoubleTapDragIfNecessary(null);
@@ -923,16 +927,23 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * Sets the flag indicating that the content has registered listeners for touch events.
      */
     void hasTouchEventHandlers(boolean hasTouchHandlers) {
-        mHasTouchHandlers = hasTouchHandlers;
-        // When mainframe is loading, FrameLoader::transitionToCommitted will
-        // call this method to set mHasTouchHandlers to false. We use this as
-        // an indicator to clear the pending motion events so that events from
-        // the previous page will not be carried over to the new page.
-        if (!mHasTouchHandlers) mPendingMotionEvents.clear();
+        if (hasTouchHandlers) {
+            // If no touch handler was previously registered, ensure that we
+            // don't send a partial gesture to Javascript.
+            if (mTouchHandlingState == NO_TOUCH_HANDLER)
+                mTouchHandlingState = NO_TOUCH_HANDLER_FOR_GESTURE;
+        } else {
+            // When mainframe is loading, FrameLoader::transitionToCommitted will
+            // call this method with |hasTouchHandlers| of false. We use this as
+            // an indicator to clear the pending motion events so that events from
+            // the previous page will not be carried over to the new page.
+            mTouchHandlingState = NO_TOUCH_HANDLER;
+            mPendingMotionEvents.clear();
+        }
     }
 
     private boolean offerTouchEventToJavaScript(MotionEvent event) {
-        if (!mHasTouchHandlers || mNoTouchHandlerForGesture) return false;
+        if (mTouchHandlingState == NO_TOUCH_HANDLER) return false;
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
             // Avoid flooding the renderer process with move events: if the previous pending
@@ -982,17 +993,27 @@ class ContentViewGestureHandler implements LongPressDelegate {
             assert false : "Cannot send from an empty pending event queue";
             return EVENT_NOT_FORWARDED;
         }
+        assert mTouchHandlingState != NO_TOUCH_HANDLER;
+
+        // The start of a new (multi)touch sequence will reset the touch handling state, and
+        // should always be offered to Javascript (when there is any touch handler).
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            mTouchHandlingState = HAS_TOUCH_HANDLER;
+        }
 
         if (mTouchEventTimeoutHandler.hasTimeoutEvent()) return EVENT_NOT_FORWARDED;
 
         mLongPressDetector.onOfferTouchEventToJavaScript(event);
+
+        if (mTouchHandlingState == NO_TOUCH_HANDLER_FOR_GESTURE) return EVENT_NOT_FORWARDED;
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
             // If javascript has not yet prevent-defaulted the touch sequence,
             // only send move events if the move has exceeded the slop threshold.
             boolean moveEventConfirmed =
                     mLongPressDetector.confirmOfferMoveEventToJavaScript(event);
-            if (!mJavaScriptIsConsumingGesture && !moveEventConfirmed) {
+            if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
+                    && !moveEventConfirmed) {
                 return EVENT_DROPPED;
             }
         }
@@ -1007,7 +1028,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 // If confirmTouchEvent() is called synchronously with respect to sendTouchEvent(),
                 // then |event| will have been recycled. Only start the timer if the sent event has
                 // not yet been confirmed.
-                if (!mJavaScriptIsConsumingGesture
+                if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
                         && !mShouldDisableDoubleTap
                         && event == mPendingMotionEvents.peekFirst()
                         && event.getAction() != MotionEvent.ACTION_UP
@@ -1079,6 +1100,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 Log.w(TAG, "confirmTouchEvent with Empty pending list!");
                 return;
             }
+            assert mTouchHandlingState != NO_TOUCH_HANDLER;
+            assert mTouchHandlingState != NO_TOUCH_HANDLER_FOR_GESTURE;
 
             MotionEvent ackedEvent = mPendingMotionEvents.removeFirst();
             switch (ackResult) {
@@ -1088,18 +1111,25 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     break;
                 case INPUT_EVENT_ACK_STATE_CONSUMED:
                 case INPUT_EVENT_ACK_STATE_IGNORED:
-                    mJavaScriptIsConsumingGesture = true;
+                    mTouchHandlingState = JAVASCRIPT_CONSUMING_GESTURE;
                     mZoomManager.passTouchEventThrough(ackedEvent);
                     trySendPendingEventsToNative();
                     break;
                 case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
-                    if (!mJavaScriptIsConsumingGesture) processTouchEvent(ackedEvent);
+                    if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE) {
+                        processTouchEvent(ackedEvent);
+                    }
                     trySendPendingEventsToNative();
                     break;
                 case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
-                    mNoTouchHandlerForGesture = true;
-                    processTouchEvent(ackedEvent);
-                    drainAllPendingEventsUntilNextDown();
+                    if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE) {
+                        processTouchEvent(ackedEvent);
+                    }
+                    if (ackedEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                        drainAllPendingEventsUntilNextDown();
+                    } else {
+                        trySendPendingEventsToNative();
+                    }
                     break;
                 default:
                     break;
@@ -1121,7 +1151,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
             // received INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, we should keep sending
             // events on the queue to native.
             MotionEvent event = mPendingMotionEvents.removeFirst();
-            if (!mJavaScriptIsConsumingGesture && forward != EVENT_DROPPED) {
+            if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
+                    && forward != EVENT_DROPPED) {
                 processTouchEvent(event);
             }
             recycleEvent(event);
@@ -1129,6 +1160,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     private void drainAllPendingEventsUntilNextDown() {
+        assert mTouchHandlingState == HAS_TOUCH_HANDLER;
+        mTouchHandlingState = NO_TOUCH_HANDLER_FOR_GESTURE;
+
         // Now process all events that are in the queue until the next down event.
         MotionEvent nextEvent = mPendingMotionEvents.peekFirst();
         while (nextEvent != null && nextEvent.getActionMasked() != MotionEvent.ACTION_DOWN) {
@@ -1138,9 +1172,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
             nextEvent = mPendingMotionEvents.peekFirst();
         }
 
-        if (nextEvent == null) return;
-
-        mNoTouchHandlerForGesture = false;
         trySendPendingEventsToNative();
     }
 

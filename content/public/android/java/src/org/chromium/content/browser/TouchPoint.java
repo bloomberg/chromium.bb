@@ -109,9 +109,12 @@ class TouchPoint {
                 type = TOUCH_EVENT_TYPE_CANCEL;
                 defaultState = TOUCH_POINT_STATE_CANCELLED;
                 break;
-            case MotionEvent.ACTION_POINTER_DOWN:  // fall through.
+            case MotionEvent.ACTION_POINTER_DOWN:
+                type = TOUCH_EVENT_TYPE_START;
+                defaultState = TOUCH_POINT_STATE_STATIONARY;
+                break;
             case MotionEvent.ACTION_POINTER_UP:
-                type = TOUCH_EVENT_TYPE_MOVE;
+                type = TOUCH_EVENT_TYPE_END;
                 defaultState = TOUCH_POINT_STATE_STATIONARY;
                 break;
             default:

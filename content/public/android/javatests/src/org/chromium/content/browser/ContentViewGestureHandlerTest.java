@@ -1732,7 +1732,12 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         mGestureHandler.hasTouchEventHandlers(true);
 
-        MotionEvent event = MotionEvent.obtain(
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        mGestureHandler.confirmTouchEvent(ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(TouchPoint.TOUCH_EVENT_TYPE_START, mMockMotionEventDelegate.mLastTouchAction);
+
+        event = MotionEvent.obtain(
                 downTime, eventTime + 5, MotionEvent.ACTION_MOVE,
                 FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
@@ -2089,4 +2094,178 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                         ContentViewGestureHandler.GESTURE_PINCH_END));
     }
 
+    /**
+     * Verify that a secondary pointer press with no consumer does not interfere
+     * with Javascript touch handling.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testSecondaryPointerWithNoConsumer() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        // Queue a primary pointer press, a secondary pointer press and release,
+        // and a primary pointer move.
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = motionEvent(MotionEvent.ACTION_POINTER_DOWN, downTime, eventTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = motionEvent(MotionEvent.ACTION_POINTER_UP, downTime, eventTime + 10);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(3, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 15, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(4, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // Simulate preventDefault from Javascript, forcing all touch events to Javascript
+        // for the current sequence.
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(3, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        assertEquals("Even if the secondary pointer has no consumer, continue sending events",
+                2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+        assertEquals("Even if the secondary pointer has no consumer, continue sending events",
+                1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        assertEquals("No gestures should result from the Javascript-consumed sequence",
+                0, mMockMotionEventDelegate.mTotalSentGestureCount);
+    }
+
+    /**
+     * Verify that multiple touch sequences in the queue are handled properly when
+     * the Javascript response is different for each.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testMultiplyEnqueuedTouches() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        mGestureHandler.hasTouchEventHandlers(true);
+        mGestureHandler.updateDoubleTapSupport(false);
+
+        // Queue a tap sequence.
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 5);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // Queue a scroll sequence.
+        event = motionEvent(MotionEvent.ACTION_DOWN, downTime + 10, downTime + 10);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(3, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = MotionEvent.obtain(
+                downTime + 10, eventTime + 15, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertFalse(mGestureHandler.isNativeScrolling());
+        assertEquals(4, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = motionEvent(MotionEvent.ACTION_UP, downTime + 10, downTime + 20);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(5, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // Consume the first gesture.
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(4, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(3, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // Don't consume the second gesture; it should be fed to the gesture detector.
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertEquals("The down touch event should have been sent to the gesture detector",
+                MotionEvent.ACTION_DOWN, mMockGestureDetector.mLastEvent.getActionMasked());
+        assertFalse(mGestureHandler.isNativeScrolling());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals("The move touch event should have been sent to the gesture detector",
+                MotionEvent.ACTION_MOVE, mMockGestureDetector.mLastEvent.getActionMasked());
+    }
+
+    /**
+     * Verify that only complete gestures are forwarded to Javascript if we receive
+     * a touch handler notification.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testOnlyCompleteGesturesForwardedToTouchHandler() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        mGestureHandler.hasTouchEventHandlers(false);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals("Initial down events should not be sent to Javascript without a touch handler",
+                0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertTrue("Should have a pending gesture", mMockGestureDetector.mLastEvent != null);
+        mMockGestureDetector.mLastEvent = null;
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 5, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals("A move event should only be offered to javascript if the down was offered",
+                0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertTrue("Should have a pending gesture", mMockGestureDetector.mLastEvent != null);
+
+        event = motionEvent(MotionEvent.ACTION_POINTER_DOWN, downTime, eventTime + 10);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals("A pointer event should only be offered to Javascript if the down was offered",
+                0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // Ensure that redundant notifications have no effect.
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        event = motionEvent(MotionEvent.ACTION_POINTER_UP, downTime, eventTime + 15);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals("A pointer event should only be offered to Javascript if the down was offered",
+                0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 20);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals("A pointer event should only be offered to Javascript if the down was offered",
+                0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = motionEvent(MotionEvent.ACTION_DOWN, downTime + 25, downTime + 25);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals("A down event should be offered to Javascript with a registered touch handler",
+                1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+    }
 }
