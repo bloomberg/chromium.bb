@@ -119,6 +119,9 @@ class ChromeTests:
       # Valgrind runs tests slowly, so slow tests hurt more; show elapased time
       # so we can find the slowpokes.
       cmd.append("--gtest_print_time")
+      # Built-in test launcher for gtest-based executables runs tests using
+      # multiple process by default. Force the single-process mode back.
+      cmd.append("--single-process-tests")
     if self._options.gtest_repeat:
       cmd.append("--gtest_repeat=%s" % self._options.gtest_repeat)
     if self._options.gtest_shuffle:
