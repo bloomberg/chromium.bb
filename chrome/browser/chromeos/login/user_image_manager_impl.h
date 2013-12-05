@@ -62,7 +62,11 @@ class UserImageManagerImpl : public UserImageManager,
   virtual UserImageSyncObserver* GetSyncObserver() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
+  static void IgnoreProfileDataDownloadDelayForTesting();
+
  private:
+  friend class UserImageManagerTest;
+
   // Every image load or update is encapsulated by a Job. Whenever an image load
   // or update is requested for a user, the Job currently running for that user
   // (if any) is canceled. This ensures that at most one Job is running per user

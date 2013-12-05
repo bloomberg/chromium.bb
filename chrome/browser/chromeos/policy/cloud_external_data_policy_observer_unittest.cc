@@ -78,7 +78,7 @@ void ConstructAvatarPolicy(const std::string& file_name,
   base::FilePath test_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   ASSERT_TRUE(base::ReadFileToString(
-      test_data_dir.Append("policy").Append(file_name),
+      test_data_dir.Append("chromeos").Append(file_name),
       policy_data));
   const std::string sha1 = base::SHA1HashString(*policy_data);
 

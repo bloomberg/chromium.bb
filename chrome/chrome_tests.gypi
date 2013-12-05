@@ -1037,6 +1037,8 @@
         'browser/chromeos/login/test_login_utils.h',
         'browser/chromeos/login/user_adding_screen_browsertest.cc',
         'browser/chromeos/login/user_image_manager_browsertest.cc',
+        'browser/chromeos/login/user_image_manager_test_util.cc',
+        'browser/chromeos/login/user_image_manager_test_util.h',
         'browser/chromeos/login/wizard_controller_browsertest.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.h',

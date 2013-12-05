@@ -28,6 +28,10 @@ std::string GetUserName(const std::string& email) {
 
 }  // namespace
 
+const int User::kExternalImageIndex;
+const int User::kProfileImageIndex;
+const int User::kInvalidImageIndex;
+
 class RegularUser : public User {
  public:
   explicit RegularUser(const std::string& email);

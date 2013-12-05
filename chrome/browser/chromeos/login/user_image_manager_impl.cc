@@ -35,7 +35,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -93,10 +92,15 @@ const char kProfileDownloadSuccessTime[] =
     "UserImage.ProfileDownloadTime.Success";
 // Time histogram suffix for a profile image download after login.
 const char kProfileDownloadReasonLoggedIn[] = "LoggedIn";
+// Time histogram suffix for a profile image download when the user chooses the
+// profile image but it has not been downloaded yet.
+const char kProfileDownloadReasonProfileImageChosen[] = "ProfileImageChosen";
 // Time histogram suffix for a scheduled profile image download.
 const char kProfileDownloadReasonScheduled[] = "Scheduled";
 // Time histogram suffix for a profile image download retry.
 const char kProfileDownloadReasonRetry[] = "Retry";
+
+static bool g_ignore_profile_data_download_delay_ = false;
 
 // Add a histogram showing the time it takes to download profile image.
 // Separate histograms are reported for each download |reason| and |result|.
@@ -547,7 +551,6 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& user_id,
 
   // Reset the downloaded profile image as a new user logged in.
   downloaded_profile_image_ = gfx::ImageSkia();
-  downloaded_profile_image_data_url_.clear();
   profile_image_url_ = GURL();
   profile_image_requested_ = false;
 
@@ -558,7 +561,9 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& user_id,
     // optionally image).
     profile_download_one_shot_timer_.Start(
         FROM_HERE,
-        base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec),
+        g_ignore_profile_data_download_delay_ ?
+            base::TimeDelta() :
+            base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec),
         base::Bind(&UserImageManagerImpl::DownloadProfileData,
                    base::Unretained(this),
                    kProfileDownloadReasonLoggedIn));
@@ -619,6 +624,10 @@ void UserImageManagerImpl::SaveUserImageFromProfileImage(
                   downloaded_profile_image_.isNull() ?
                       UserImage() :
                       UserImage::CreateAndEncode(downloaded_profile_image_));
+  // If no profile image has been downloaded yet, ensure that a download is
+  // started.
+  if (downloaded_profile_image_.isNull())
+    DownloadProfileData(kProfileDownloadReasonProfileImageChosen);
 }
 
 void UserImageManagerImpl::DeleteUserImage(const std::string& user_id) {
@@ -662,8 +671,6 @@ void UserImageManagerImpl::TryToInitDownloadedProfileImage() {
     // profile image and the user image has been loaded successfully.
     VLOG(1) << "Profile image initialized from disk.";
     downloaded_profile_image_ = user->image();
-    downloaded_profile_image_data_url_ =
-        webui::GetBitmapDataUrl(*downloaded_profile_image_.bitmap());
     profile_image_url_ = user->image_url();
   }
 }
@@ -694,6 +701,11 @@ void UserImageManagerImpl::DownloadProfileData(const std::string& reason) {
   profile_image_load_start_time_ = base::TimeTicks::Now();
   profile_downloader_.reset(new ProfileDownloader(this));
   profile_downloader_->Start();
+}
+
+// static
+void UserImageManagerImpl::IgnoreProfileDataDownloadDelayForTesting() {
+  g_ignore_profile_data_download_delay_ = true;
 }
 
 bool UserImageManagerImpl::NeedsProfilePicture() const {
@@ -764,23 +776,14 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
         content::Source<UserImageManager>(this),
         content::NotificationService::NoDetails());
+  } else {
+    profile_image_requested_ = false;
   }
 
   // Nothing to do if the picture is cached or is the default avatar.
   if (result != kDownloadSuccess)
     return;
 
-  profile_image_requested_ = false;
-
-  // Check if this image is not the same as already downloaded.
-  const std::string new_image_data_url =
-      webui::GetBitmapDataUrl(SkBitmap(downloader->GetProfilePicture()));
-  if (!downloaded_profile_image_data_url_.empty() &&
-      new_image_data_url == downloaded_profile_image_data_url_) {
-    return;
-  }
-
-  downloaded_profile_image_data_url_ = new_image_data_url;
   downloaded_profile_image_ = gfx::ImageSkia::CreateFrom1xBitmap(
       downloader->GetProfilePicture());
   profile_image_url_ = GURL(downloader->GetProfilePictureURL());
