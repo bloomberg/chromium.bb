@@ -637,6 +637,7 @@ void TracingControllerImpl::OnWatchEventMatched() {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnWatchEventMatched,
                    base::Unretained(this)));
+    return;
   }
 
   if (!watch_event_callback_.is_null())
