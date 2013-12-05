@@ -230,7 +230,6 @@ void InspectorProfilerAgent::start(ErrorString*)
         m_overlay->startedRecordingProfile();
     String title = getCurrentUserInitiatedProfileName(true);
     ScriptProfiler::start(title);
-    toggleRecordButton(true);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
 
@@ -257,15 +256,8 @@ PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::stop(Er
         profileHeader = createProfileHeader(*profile);
     } else if (errorString)
         *errorString = "Profile wasn't found";
-    toggleRecordButton(false);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, false);
     return profileHeader;
-}
-
-void InspectorProfilerAgent::toggleRecordButton(bool isProfiling)
-{
-    if (m_frontend)
-        m_frontend->setRecordingProfile(isProfiling);
 }
 
 void InspectorProfilerAgent::idleFinished()

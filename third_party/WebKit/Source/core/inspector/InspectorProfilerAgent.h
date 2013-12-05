@@ -75,8 +75,6 @@ public:
     virtual void clearFrontend();
     virtual void restore();
 
-    void toggleRecordButton(bool isProfiling);
-
     void willProcessTask();
     void didProcessTask();
     void willEnterNestedRunLoop();
