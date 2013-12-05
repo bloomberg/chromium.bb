@@ -18,7 +18,7 @@ import cr.auto.build
 import cr.auto.client
 
 # The config version currently supported.
-VERSION = '0.3'
+VERSION = '0.4'
 # The default directory name to store config inside
 CLIENT_CONFIG_PATH = '.cr'
 # The partial filename to add to a directory to get it's config file.

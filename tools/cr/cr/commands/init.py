@@ -145,6 +145,8 @@ class InitCommand(cr.Command):
       # Run all the output directory fixup tasks
       for fixup in InitFixup.Plugins():
         fixup.Fixup(context, old_version, build_package.config)
+      # Redo activations, they might have changed
+      cr.plugin.Activate(context)
 
     # Write out the new configuration, and select it as the default
     cr.base.client.WriteConfig(context, context.Get('CR_BUILD_DIR'),
