@@ -226,7 +226,7 @@ PassRefPtr<Text> Text::replaceWholeText(const String& newText)
 
 String Text::nodeName() const
 {
-    return textAtom.string();
+    return "#text";
 }
 
 Node::NodeType Text::nodeType() const

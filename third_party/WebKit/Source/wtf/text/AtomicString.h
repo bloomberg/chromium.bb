@@ -225,8 +225,6 @@ inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return e
 #ifndef ATOMICSTRING_HIDE_GLOBALS
 WTF_EXPORT extern const AtomicString nullAtom;
 WTF_EXPORT extern const AtomicString emptyAtom;
-WTF_EXPORT extern const AtomicString textAtom;
-WTF_EXPORT extern const AtomicString commentAtom;
 WTF_EXPORT extern const AtomicString starAtom;
 WTF_EXPORT extern const AtomicString xmlAtom;
 WTF_EXPORT extern const AtomicString xmlnsAtom;
@@ -263,8 +261,6 @@ template<> struct DefaultHash<AtomicString> {
 using WTF::AtomicString;
 using WTF::nullAtom;
 using WTF::emptyAtom;
-using WTF::textAtom;
-using WTF::commentAtom;
 using WTF::starAtom;
 using WTF::xmlAtom;
 using WTF::xmlnsAtom;

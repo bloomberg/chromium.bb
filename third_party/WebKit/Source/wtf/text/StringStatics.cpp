@@ -47,8 +47,6 @@ StringImpl* StringImpl::empty()
 
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, nullAtom)
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, emptyAtom)
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, textAtom)
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, commentAtom)
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, starAtom)
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlAtom)
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlnsAtom)
@@ -76,8 +74,6 @@ void StringStatics::init()
     ASSERT(isMainThread());
 
     // FIXME: These should be allocated at compile time.
-    new (NotNull, (void*)&textAtom) AtomicString("#text", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&commentAtom) AtomicString("#comment", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&starAtom) AtomicString("*", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&xmlAtom) AtomicString("xml", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&xmlnsAtom) AtomicString("xmlns", AtomicString::ConstructFromLiteral);
