@@ -4937,7 +4937,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl.release(), &V8TestObject::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -5221,7 +5221,7 @@ void V8TestObject::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        info.GetReturnValue().Set(info.Holder());
+        v8SetReturnValue(info, info.Holder());
         return;
     }
 

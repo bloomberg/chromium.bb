@@ -84,7 +84,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestOverloadedConstructors>(impl.release(), &V8TestOverloadedConstructors::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -95,7 +95,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestOverloadedConstructors>(impl.release(), &V8TestOverloadedConstructors::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -106,7 +106,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestOverloadedConstructors>(impl.release(), &V8TestOverloadedConstructors::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -117,7 +117,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestOverloadedConstructors>(impl.release(), &V8TestOverloadedConstructors::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -157,7 +157,7 @@ void V8TestOverloadedConstructors::constructorCallback(const v8::FunctionCallbac
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        info.GetReturnValue().Set(info.Holder());
+        v8SetReturnValue(info, info.Holder());
         return;
     }
 

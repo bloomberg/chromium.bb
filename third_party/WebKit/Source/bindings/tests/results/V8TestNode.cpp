@@ -137,7 +137,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestNode>(impl.release(), &V8TestNode::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 } // namespace TestNodeV8Internal
@@ -156,7 +156,7 @@ void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        info.GetReturnValue().Set(info.Holder());
+        v8SetReturnValue(info, info.Holder());
         return;
     }
 

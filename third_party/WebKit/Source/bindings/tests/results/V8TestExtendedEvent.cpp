@@ -158,7 +158,7 @@ void V8TestExtendedEvent::constructorCallback(const v8::FunctionCallbackInfo<v8:
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        info.GetReturnValue().Set(info.Holder());
+        v8SetReturnValue(info, info.Holder());
         return;
     }
 

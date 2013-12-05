@@ -448,7 +448,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 } // namespace TestTypedefsV8Internal
@@ -482,7 +482,7 @@ void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Valu
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        info.GetReturnValue().Set(info.Holder());
+        v8SetReturnValue(info, info.Holder());
         return;
     }
 

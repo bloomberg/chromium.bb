@@ -149,7 +149,7 @@ void V8Float64Array::constructorCallback(const v8::FunctionCallbackInfo<v8::Valu
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        info.GetReturnValue().Set(info.Holder());
+        v8SetReturnValue(info, info.Holder());
         return;
     }
 

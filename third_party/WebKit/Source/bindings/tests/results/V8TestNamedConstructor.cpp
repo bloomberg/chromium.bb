@@ -86,7 +86,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        info.GetReturnValue().Set(info.Holder());
+        v8SetReturnValue(info, info.Holder());
         return;
     }
 
@@ -112,7 +112,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
         return;
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestNamedConstructor>(impl.release(), &V8TestNamedConstructorConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
+    v8SetReturnValue(info, wrapper);
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
