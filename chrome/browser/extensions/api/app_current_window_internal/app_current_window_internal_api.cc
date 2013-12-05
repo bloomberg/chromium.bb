@@ -45,6 +45,9 @@ const char kNoAssociatedShellWindow[] =
 const char kDevChannelOnly[] =
     "This function is currently only available in the Dev channel.";
 
+const char kRequiresFramelessWindow[] =
+    "This function requires a frameless window (frame:none).";
+
 const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
 
 }  // namespace
@@ -226,6 +229,11 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
     ShellWindow* window) {
+
+  if (window->GetBaseWindow()->IsFrameless()) {
+    error_ = kRequiresFramelessWindow;
+    return false;
+  }
 
   const char* whitelist[] = {
     "0F42756099D914A026DADFA182871C015735DD95",  // http://crbug.com/323773
