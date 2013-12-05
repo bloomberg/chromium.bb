@@ -282,11 +282,8 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void didReceiveResourceData(const InspectorInstrumentationCookie&);
 
-    [Timeline]
-    InspectorInstrumentationCookie willReceiveResourceResponse([Keep] Frame*, unsigned long identifier, const ResourceResponse&);
-
     [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
-    void didReceiveResourceResponse(const InspectorInstrumentationCookie&, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveResourceResponse([Keep] Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
     [Inline=Forward]
     void continueAfterXFrameOptionsDenied(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
@@ -304,7 +301,7 @@ interface InspectorInstrumentation {
     void didFinishLoading(Frame* frame, unsigned long identifier, DocumentLoader*, double finishTime);
 
     [Resource]
-    void didReceiveCORSRedirectResponse(Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveCORSRedirectResponse([Keep] Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
     [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
     void didFailLoading(Frame* frame, unsigned long identifier, DocumentLoader*, const ResourceError&);

@@ -745,16 +745,10 @@ void InspectorTimelineAgent::didReceiveResourceData()
     didCompleteCurrentRecord(TimelineRecordType::ResourceReceivedData);
 }
 
-bool InspectorTimelineAgent::willReceiveResourceResponse(Frame* frame, unsigned long identifier, const ResourceResponse& response)
+void InspectorTimelineAgent::didReceiveResourceResponse(Frame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
-    pushCurrentRecord(TimelineRecordFactory::createResourceReceiveResponseData(requestId, response), TimelineRecordType::ResourceReceiveResponse, false, frame);
-    return true;
-}
-
-void InspectorTimelineAgent::didReceiveResourceResponse(unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
-{
-    didCompleteCurrentRecord(TimelineRecordType::ResourceReceiveResponse);
+    appendRecord(TimelineRecordFactory::createResourceReceiveResponseData(requestId, response), TimelineRecordType::ResourceReceiveResponse, false, frame);
 }
 
 void InspectorTimelineAgent::didFinishLoadingResource(unsigned long identifier, bool didFail, double finishTime, Frame* frame)

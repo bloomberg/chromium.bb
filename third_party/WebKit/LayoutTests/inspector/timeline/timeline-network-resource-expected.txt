@@ -20,14 +20,12 @@ ResourceSendRequest Properties:
 
 ResourceReceiveResponse Properties:
 {
-    children : <object>
     counters : <object>
     data : {
         mimeType : <string>
         requestId : <string>
         statusCode : 0
     }
-    endTime : <number>
     frameId : <string>
     startTime : <number>
     type : "ResourceReceiveResponse"

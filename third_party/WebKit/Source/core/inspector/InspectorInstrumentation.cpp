@@ -101,8 +101,7 @@ void continueAfterPingLoaderImpl(InstrumentingAgents* instrumentingAgents, unsig
 
 void didReceiveResourceResponseButCanceledImpl(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
-    InspectorInstrumentationCookie cookie = willReceiveResourceResponse(frame, identifier, r);
-    didReceiveResourceResponse(cookie, identifier, loader, r, 0);
+    didReceiveResourceResponse(frame, identifier, loader, r, 0);
 }
 
 void continueAfterXFrameOptionsDeniedImpl(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
