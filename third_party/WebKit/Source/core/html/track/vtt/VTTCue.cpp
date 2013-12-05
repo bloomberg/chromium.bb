@@ -677,8 +677,9 @@ void VTTCue::markFutureAndPastNodes(ContainerNode* root, double previousTimestam
         if (child->nodeName() == timestampTag) {
             unsigned position = 0;
             String timestamp = child->nodeValue();
-            double currentTimestamp = VTTParser::collectTimeStamp(timestamp, &position);
-            ASSERT(currentTimestamp != -1);
+            double currentTimestamp;
+            bool check = VTTParser::collectTimeStamp(timestamp, &position, currentTimestamp);
+            ASSERT_UNUSED(check, check);
 
             if (currentTimestamp > movieTime)
                 isPastNode = false;

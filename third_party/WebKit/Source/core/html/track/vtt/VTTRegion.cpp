@@ -235,25 +235,22 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, scrollUpValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
-    bool isValidSetting;
-    String numberAsString;
-    int number;
-    FloatPoint anchorPosition;
-
     switch (setting) {
     case Id:
         if (value.find("-->") == kNotFound)
             m_id = value;
         break;
-    case Width:
-        number = VTTParser::parseFloatPercentageValue(value, isValidSetting);
-        if (isValidSetting)
-            m_width = number;
+    case Width: {
+        float floatWidth;
+        if (VTTParser::parseFloatPercentageValue(value, floatWidth))
+            m_width = floatWidth;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Width");
         break;
+    }
     case Height: {
         unsigned position = 0;
+        int number;
         if (VTTParser::collectDigitsToInt(value, &position, number) && position == value.length())
             m_heightInLines = number;
         else
@@ -261,17 +258,11 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
         break;
     }
     case RegionAnchor:
-        anchorPosition = VTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
-        if (isValidSetting)
-            m_regionAnchor = anchorPosition;
-        else
+        if (!VTTParser::parseFloatPercentageValuePair(value, ',', m_regionAnchor))
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
         break;
     case ViewportAnchor:
-        anchorPosition = VTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
-        if (isValidSetting)
-            m_viewportAnchor = anchorPosition;
-        else
+        if (!VTTParser::parseFloatPercentageValuePair(value, ',', m_viewportAnchor))
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid ViewportAnchor");
         break;
     case Scroll:

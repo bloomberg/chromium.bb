@@ -95,11 +95,11 @@ public:
     }
     static unsigned collectDigitsToInt(const String& input, unsigned* position, int& number);
     static String collectWord(const String&, unsigned*);
-    static double collectTimeStamp(const String&, unsigned*);
+    static bool collectTimeStamp(const String&, unsigned*, double& timeStamp);
 
     // Useful functions for parsing percentage settings.
-    static float parseFloatPercentageValue(const String&, bool&);
-    static FloatPoint parseFloatPercentageValuePair(const String&, char, bool&);
+    static bool parseFloatPercentageValue(const String&, float&);
+    static bool parseFloatPercentageValuePair(const String&, char, FloatPoint&);
 
     // Create the DocumentFragment representation of the WebVTT cue text.
     static PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(Document&, const String&);

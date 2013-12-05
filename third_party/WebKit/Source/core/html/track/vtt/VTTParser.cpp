@@ -43,7 +43,6 @@ namespace WebCore {
 const double secondsPerHour = 3600;
 const double secondsPerMinute = 60;
 const double secondsPerMillisecond = 0.001;
-const double malformedTime = -1;
 const unsigned fileIdentifierLength = 6;
 
 static unsigned scanDigits(const String& input, unsigned* position)
@@ -91,13 +90,11 @@ void VTTParser::skipWhiteSpace(const String& line, unsigned* position)
         (*position)++;
 }
 
-float VTTParser::parseFloatPercentageValue(const String& value, bool& isValidSetting)
+bool VTTParser::parseFloatPercentageValue(const String& value, float& percentage)
 {
     // '%' must be present and at the end of the setting value.
-    if (value.find('%', 1) != value.length() - 1) {
-        isValidSetting = false;
-        return 0;
-    }
+    if (value.isEmpty() || value[value.length() - 1] != '%')
+        return false;
 
     unsigned position = 0;
     unsigned digitsBeforeDot = scanDigits(value, &position);
@@ -109,35 +106,36 @@ float VTTParser::parseFloatPercentageValue(const String& value, bool& isValidSet
     }
 
     // At least one digit required.
-    if (!digitsBeforeDot && !digitsAfterDot) {
-        isValidSetting = false;
-        return 0;
-    }
+    if (!digitsBeforeDot && !digitsAfterDot)
+        return false;
 
     float number = value.toFloat();
-    isValidSetting = number >= 0 && number <= 100;
-    return number;
+    if (number < 0 || number > 100)
+        return false;
+
+    percentage = number;
+    return true;
 }
 
-FloatPoint VTTParser::parseFloatPercentageValuePair(const String& value, char delimiter, bool& isValidSetting)
+bool VTTParser::parseFloatPercentageValuePair(const String& value, char delimiter, FloatPoint& valuePair)
 {
     // The delimiter can't be the first or second value because a pair of
     // percentages (x%,y%) implies that at least the first two characters
     // are the first percentage value.
     size_t delimiterOffset = value.find(delimiter, 2);
-    if (delimiterOffset == kNotFound || delimiterOffset == value.length() - 1) {
-        isValidSetting = false;
-        return FloatPoint(0, 0);
-    }
+    if (delimiterOffset == kNotFound || delimiterOffset == value.length() - 1)
+        return false;
 
-    bool isFirstValueValid;
-    float firstCoord = parseFloatPercentageValue(value.substring(0, delimiterOffset), isFirstValueValid);
+    float firstCoord;
+    if (!parseFloatPercentageValue(value.substring(0, delimiterOffset), firstCoord))
+        return false;
 
-    bool isSecondValueValid;
-    float secondCoord = parseFloatPercentageValue(value.substring(delimiterOffset + 1, value.length() - 1), isSecondValueValid);
+    float secondCoord;
+    if (!parseFloatPercentageValue(value.substring(delimiterOffset + 1, value.length() - 1), secondCoord))
+        return false;
 
-    isValidSetting = isFirstValueValid && isSecondValueValid;
-    return FloatPoint(firstCoord, secondCoord);
+    valuePair = FloatPoint(firstCoord, secondCoord);
+    return true;
 }
 
 VTTParser::VTTParser(VTTParserClient* client, Document& document)
@@ -315,8 +313,7 @@ VTTParser::ParseState VTTParser::collectTimingsAndSettings(const String& line)
     skipWhiteSpace(line, &position);
 
     // Steps 4 - 5 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue start time be the collected time.
-    m_currentStartTime = collectTimeStamp(line, &position);
-    if (m_currentStartTime == malformedTime)
+    if (!collectTimeStamp(line, &position, m_currentStartTime))
         return BadCue;
     if (position >= line.length())
         return BadCue;
@@ -333,8 +330,7 @@ VTTParser::ParseState VTTParser::collectTimingsAndSettings(const String& line)
     skipWhiteSpace(line, &position);
 
     // Steps 10 - 11 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue end time be the collected time.
-    m_currentEndTime = collectTimeStamp(line, &position);
-    if (m_currentEndTime == malformedTime)
+    if (!collectTimeStamp(line, &position, m_currentEndTime))
         return BadCue;
     skipWhiteSpace(line, &position);
 
@@ -472,7 +468,7 @@ void VTTParser::createNewRegion(const String& headerValue)
     m_regionList.append(region);
 }
 
-double VTTParser::collectTimeStamp(const String& line, unsigned* position)
+bool VTTParser::collectTimeStamp(const String& line, unsigned* position, double& timeStamp)
 {
     // Collect a WebVTT timestamp (5.3 WebVTT cue timings and settings parsing.)
     // Steps 1 - 4 - Initial checks, let most significant units be minutes.
@@ -484,24 +480,24 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
     int value1;
     unsigned value1Digits = collectDigitsToInt(line, position, value1);
     if (!value1Digits)
-        return malformedTime;
+        return false;
     if (value1Digits != 2 || value1 > 59)
         mode = Hours;
 
     // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
     if (*position >= line.length() || line[(*position)++] != ':')
-        return malformedTime;
+        return false;
     int value2;
     if (collectDigitsToInt(line, position, value2) != 2)
-        return malformedTime;
+        return false;
 
     // Step 12 - Detect whether this timestamp includes hours.
     int value3;
     if (mode == Hours || (*position < line.length() && line[*position] == ':')) {
         if (*position >= line.length() || line[(*position)++] != ':')
-            return malformedTime;
+            return false;
         if (collectDigitsToInt(line, position, value3) != 2)
-            return malformedTime;
+            return false;
     } else {
         value3 = value2;
         value2 = value1;
@@ -510,15 +506,16 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
 
     // Steps 13 - 17 - Collect next sequence of 0-9 after '.' (must be 3 chars).
     if (*position >= line.length() || line[(*position)++] != '.')
-        return malformedTime;
+        return false;
     int value4;
     if (collectDigitsToInt(line, position, value4) != 3)
-        return malformedTime;
+        return false;
     if (value2 > 59 || value3 > 59)
-        return malformedTime;
+        return false;
 
     // Steps 18 - 19 - Calculate result.
-    return (value1 * secondsPerHour) + (value2 * secondsPerMinute) + value3 + (value4 * secondsPerMillisecond);
+    timeStamp = (value1 * secondsPerHour) + (value2 * secondsPerMinute) + value3 + (value4 * secondsPerMillisecond);
+    return true;
 }
 
 static VTTNodeType tokenToNodeType(VTTToken& token)
@@ -616,8 +613,8 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
     case VTTTokenTypes::TimestampTag: {
         unsigned position = 0;
         String charactersString = m_token.characters();
-        double time = VTTParser::collectTimeStamp(charactersString, &position);
-        if (time != malformedTime)
+        double parsedTimeStamp;
+        if (VTTParser::collectTimeStamp(charactersString, &position, parsedTimeStamp))
             m_currentNode->parserAppendChild(ProcessingInstruction::create(document, "timestamp", charactersString));
         break;
     }
