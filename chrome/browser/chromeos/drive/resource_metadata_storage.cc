@@ -284,7 +284,7 @@ bool ResourceMetadataStorage::UpgradeOldDB(
     const ResourceIdCanonicalizer& id_canonicalizer) {
   base::ThreadRestrictions::AssertIOAllowed();
   COMPILE_ASSERT(
-      kDBVersion == 11,
+      kDBVersion == 12,
       db_version_and_this_function_should_be_updated_at_the_same_time);
 
   const base::FilePath resource_map_path =
@@ -357,7 +357,28 @@ bool ResourceMetadataStorage::UpgradeOldDB(
     batch.Put(GetHeaderDBKey(), serialized_header);
 
     return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
+  } else if (header.version() < 12) {  // Cache and ID map entries are reusable.
+    leveldb::ReadOptions options;
+    options.verify_checksums = true;
+    scoped_ptr<leveldb::Iterator> it(resource_map->NewIterator(options));
+
+    leveldb::WriteBatch batch;
+    for (it->SeekToFirst(); it->Valid(); it->Next()) {
+      if (!IsCacheEntryKey(it->key()) && !IsIdEntryKey(it->key()))
+        batch.Delete(it->key());
+    }
+    if (!it->status().ok())
+      return false;
+
+    // Put header with the latest version number.
+    std::string serialized_header;
+    if (!GetDefaultHeaderEntry().SerializeToString(&serialized_header))
+      return false;
+    batch.Put(GetHeaderDBKey(), serialized_header);
+
+    return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
   }
+
   LOG(WARNING) << "Unexpected DB version: " << header.version();
   return false;
 }

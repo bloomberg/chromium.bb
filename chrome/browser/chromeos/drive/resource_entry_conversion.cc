@@ -20,13 +20,13 @@ namespace drive {
 namespace {
 
 const char kSharedWithMeLabel[] = "shared-with-me";
+const char kSharedLabel[] = "shared";
 
-// Checks if |entry| has a label "shared-with-me", which is added to entries
-// shared with the user.
-bool HasSharedWithMeLabel(const google_apis::ResourceEntry& entry) {
+// Checks if |entry| has a specified label.
+bool HasLabel(const google_apis::ResourceEntry& entry,
+              const std::string& label) {
   std::vector<std::string>::const_iterator it =
-      std::find(entry.labels().begin(), entry.labels().end(),
-                kSharedWithMeLabel);
+      std::find(entry.labels().begin(), entry.labels().end(), label);
   return it != entry.labels().end();
 }
 
@@ -64,7 +64,8 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
     parent_resource_id = util::kDriveOtherDirLocalId;
 
   converted.set_deleted(input.deleted());
-  converted.set_shared_with_me(HasSharedWithMeLabel(input));
+  converted.set_shared_with_me(HasLabel(input, kSharedWithMeLabel));
+  converted.set_shared(HasLabel(input, kSharedLabel));
 
   PlatformFileInfoProto* file_info = converted.mutable_file_info();
 

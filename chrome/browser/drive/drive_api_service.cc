@@ -105,7 +105,7 @@ const char kFileResourceFields[] =
     "md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
-    "modifiedDate,lastViewedByMeDate";
+    "modifiedDate,lastViewedByMeDate,shared";
 const char kFileResourceOpenWithLinksFields[] =
     "kind,id,openWithLinks/*";
 const char kFileListFields[] =
@@ -113,13 +113,13 @@ const char kFileListFields[] =
     "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
-    "modifiedDate,lastViewedByMeDate),nextLink";
+    "modifiedDate,lastViewedByMeDate,shared),nextLink";
 const char kChangeListFields[] =
     "kind,items(file(kind,id,title,createdDate,sharedWithMeDate,downloadUrl,"
     "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
-    "modifiedDate,lastViewedByMeDate),deleted,id,fileId),nextLink,"
+    "modifiedDate,lastViewedByMeDate,shared),deleted,id,fileId),nextLink,"
     "largestChangeId";
 
 // Callback invoked when the parsing of resource list is completed,

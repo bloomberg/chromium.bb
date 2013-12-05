@@ -149,6 +149,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_FALSE(file1.labels().is_trashed());
   EXPECT_FALSE(file1.labels().is_restricted());
   EXPECT_TRUE(file1.labels().is_viewed());
+  EXPECT_FALSE(file1.shared());
 
   EXPECT_EQ(640, file1.image_media_metadata().width());
   EXPECT_EQ(480, file1.image_media_metadata().height());
@@ -201,6 +202,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_TRUE(file2.labels().is_trashed());
   EXPECT_TRUE(file2.labels().is_restricted());
   EXPECT_TRUE(file2.labels().is_viewed());
+  EXPECT_TRUE(file2.shared());
 
   EXPECT_EQ(-1, file2.image_media_metadata().width());
   EXPECT_EQ(-1, file2.image_media_metadata().height());
@@ -230,6 +232,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ("TestFolder", file3.title());
   EXPECT_EQ("application/vnd.google-apps.folder", file3.mime_type());
   ASSERT_TRUE(file3.IsDirectory());
+  EXPECT_FALSE(file3.shared());
 
   ASSERT_EQ(1U, file3.parents().size());
   EXPECT_EQ("0AIv7G8yEYAWHUk9ABC", file3.parents()[0]->file_id());
@@ -262,18 +265,21 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_FALSE(change1.is_deleted());
   EXPECT_EQ("1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC", change1.file_id());
   EXPECT_EQ(change1.file_id(), change1.file()->file_id());
+  EXPECT_FALSE(change1.file()->shared());
 
   const ChangeResource& change2 = *changelist->items()[1];
   EXPECT_EQ(8424, change2.change_id());
   EXPECT_FALSE(change2.is_deleted());
   EXPECT_EQ("0B4v7G8yEYAWHUmRrU2lMS2hLABC", change2.file_id());
   EXPECT_EQ(change2.file_id(), change2.file()->file_id());
+  EXPECT_TRUE(change2.file()->shared());
 
   const ChangeResource& change3 = *changelist->items()[2];
   EXPECT_EQ(8429, change3.change_id());
   EXPECT_FALSE(change3.is_deleted());
   EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", change3.file_id());
   EXPECT_EQ(change3.file_id(), change3.file()->file_id());
+  EXPECT_FALSE(change3.file()->shared());
 
   // Deleted entry.
   const ChangeResource& change4 = *changelist->items()[3];

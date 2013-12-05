@@ -60,6 +60,7 @@
    ],
    "lastModifyingUserName": "Test User",
    "editable": true,
+   "shared": false,
    "writersCanShare": true
   },
   {
@@ -102,6 +103,7 @@
    ],
    "lastModifyingUserName": "Test User",
    "editable": true,
+   "shared": true,
    "writersCanShare": true
   },
   {
@@ -145,6 +147,7 @@
    ],
    "lastModifyingUserName": "Test User",
    "editable": true,
+   "shared": false,
    "writersCanShare": true
   }
  ]

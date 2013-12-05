@@ -36,6 +36,7 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
 
   EXPECT_FALSE(entry.deleted());
   EXPECT_FALSE(entry.shared_with_me());
+  EXPECT_FALSE(entry.shared());
 
   base::Time expected_creation_time;
   base::Time expected_modified_time;
@@ -112,6 +113,7 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_FALSE(entry.deleted());
   EXPECT_FALSE(entry.shared_with_me());
+  EXPECT_FALSE(entry.shared());
 
   // 2011-12-12T23:28:52.783Z
   base::Time::Exploded exploded;
@@ -193,6 +195,7 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_FALSE(entry.deleted());
   EXPECT_FALSE(entry.shared_with_me());
+  EXPECT_FALSE(entry.shared());
 
   // 2011-04-01T18:34:08.234Z
   base::Time::Exploded exploded;
@@ -264,6 +267,7 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_TRUE(entry.deleted());  // The document was deleted.
   EXPECT_FALSE(entry.shared_with_me());
+  EXPECT_FALSE(entry.shared());
 
   // 2012-04-10T22:50:55.797Z
   base::Time::Exploded exploded;
@@ -334,6 +338,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_TRUE(ConvertToResourceEntry(*gdata_resource_entry, &entry,
                                      &parent_resource_id));
   EXPECT_TRUE(entry.shared_with_me());
+  EXPECT_TRUE(entry.shared());
 }
 
 TEST(ResourceEntryConversionTest, ToPlatformFileInfo) {

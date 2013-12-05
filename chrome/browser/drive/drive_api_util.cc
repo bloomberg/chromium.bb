@@ -312,11 +312,14 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
   file->set_created_date(entry.published_time());
 
   if (std::find(entry.labels().begin(), entry.labels().end(),
-                "shared-with-me") == entry.labels().end()) {
+                "shared-with-me") != entry.labels().end()) {
     // Set current time to mark the file is shared_with_me, since ResourceEntry
     // doesn't have |shared_with_me_date| equivalent.
     file->set_shared_with_me_date(base::Time::Now());
   }
+
+  file->set_shared(std::find(entry.labels().begin(), entry.labels().end(),
+                             "shared") != entry.labels().end());
 
   file->set_download_url(entry.download_url());
   if (entry.is_folder())
@@ -411,12 +414,13 @@ ConvertFileResourceToResourceEntry(
   entry->set_kind(GetKind(file_resource));
   entry->set_title(file_resource.title());
   entry->set_published_time(file_resource.created_date());
-  // TODO(kochi): entry->labels_
-  if (!file_resource.shared_with_me_date().is_null()) {
-    std::vector<std::string> labels;
+
+  std::vector<std::string> labels;
+  if (!file_resource.shared_with_me_date().is_null())
     labels.push_back("shared-with-me");
-    entry->set_labels(labels);
-  }
+  if (file_resource.shared())
+    labels.push_back("shared");
+  entry->set_labels(labels);
 
   // This should be the url to download the file_resource.
   {

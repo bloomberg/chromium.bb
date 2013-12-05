@@ -402,6 +402,49 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
   EXPECT_TRUE(storage_->GetCacheEntry(id, &cache_entry));
 }
 
+TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
+  const int64 kLargestChangestamp = 1234567890;
+  const std::string resource_id = "abcd";
+  const std::string local_id = "local-abcd";
+
+  // Construct M32 version DB.
+  SetDBVersion(11);
+  EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
+
+  leveldb::WriteBatch batch;
+
+  // Put a file entry and its cache and id entry.
+  ResourceEntry entry;
+  std::string serialized_entry;
+  entry.set_resource_id(resource_id);
+  EXPECT_TRUE(entry.SerializeToString(&serialized_entry));
+  batch.Put(local_id, serialized_entry);
+
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(cache_entry.SerializeToString(&serialized_entry));
+  batch.Put(local_id + '\0' + "CACHE", serialized_entry);
+
+  batch.Put('\0' + std::string("ID") + '\0' + resource_id, local_id);
+
+  EXPECT_TRUE(resource_map()->Write(leveldb::WriteOptions(), &batch).ok());
+
+  // Upgrade and reopen.
+  storage_.reset();
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
+      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  // Data is erased, except cache and id mapping entries.
+  std::string id;
+  EXPECT_TRUE(storage_->GetIdByResourceId(resource_id, &id));
+  EXPECT_EQ(local_id, id);
+  EXPECT_EQ(0, storage_->GetLargestChangestamp());
+  EXPECT_FALSE(storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(storage_->GetCacheEntry(id, &cache_entry));
+}
+
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   const int64 kLargestChangestamp = 1234567890;
   const std::string key1 = "abcd";

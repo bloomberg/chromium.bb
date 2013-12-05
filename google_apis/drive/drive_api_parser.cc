@@ -140,6 +140,7 @@ const char kWebContentLink[] = "webContentLink";
 const char kOpenWithLinks[] = "openWithLinks";
 const char kLabels[] = "labels";
 const char kImageMediaMetadata[] = "imageMediaMetadata";
+const char kShared[] = "shared";
 // These 5 flags are defined under |labels|.
 const char kLabelStarred[] = "starred";
 const char kLabelHidden[] = "hidden";
@@ -423,7 +424,7 @@ bool ParentReference::Parse(const base::Value& value) {
 ////////////////////////////////////////////////////////////////////////////////
 // FileResource implementation
 
-FileResource::FileResource() : file_size_(0) {}
+FileResource::FileResource() : shared_(false), file_size_(0) {}
 
 FileResource::~FileResource() {}
 
@@ -460,6 +461,7 @@ void FileResource::RegisterJSONConverter(
       kSharedWithMeDate,
       &FileResource::shared_with_me_date_,
       &util::GetTimeFromString);
+  converter->RegisterBoolField(kShared, &FileResource::shared_);
   converter->RegisterCustomField<GURL>(kDownloadUrl,
                                        &FileResource::download_url_,
                                        GetGURLFromString);
