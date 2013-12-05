@@ -77,7 +77,7 @@ class AndroidPlatform(cr.Platform):
         # See what the env would be without env setup
         before = context.exported
         # Run env setup and capture/parse it's output
-        envsetup = 'source {CR_ENVSETUP} --target-arch={CR_ARCH}'
+        envsetup = 'source {CR_ENVSETUP} --target-arch={CR_ENVSETUP_ARCH}'
         output = cr.Host.CaptureShell(context, envsetup + ' > /dev/null && env')
         env_setup = cr.Config('envsetup', literal=True, export=True)
         for line in output.split('\n'):
