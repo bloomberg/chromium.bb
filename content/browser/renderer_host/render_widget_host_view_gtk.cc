@@ -1355,6 +1355,13 @@ bool RenderWidgetHostViewGtk::LockMouse() {
   // but may be out of date due to switching tabs.
   MarkCachedWidgetCenterStale();
 
+  // Ensure that if we were previously warping the cursor to a specific point
+  // that we no longer track doing so when entering lock. It should be cleared
+  // by the cursor moving to the warp point, and this shouldn't be necessary.
+  // But, this is a small effort to ensure robustness in the event a warp isn't
+  // completed.
+  mouse_is_being_warped_to_unlocked_position_ = false;
+
   return true;
 }
 
@@ -1485,7 +1492,7 @@ void RenderWidgetHostViewGtk::ModifyEventMovementAndCoords(
     event->windowY = unlocked_mouse_position_.y();
     event->globalX = unlocked_global_mouse_position_.x();
     event->globalY = unlocked_global_mouse_position_.y();
-  } else {
+  } else if (!mouse_is_being_warped_to_unlocked_position_) {
     unlocked_mouse_position_.SetPoint(event->windowX, event->windowY);
     unlocked_global_mouse_position_.SetPoint(event->globalX, event->globalY);
   }
