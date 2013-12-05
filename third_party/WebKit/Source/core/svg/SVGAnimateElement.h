@@ -75,15 +75,15 @@ private:
     OwnPtr<SVGAnimatedTypeAnimator> m_animator;
 };
 
-inline SVGAnimateElement* toSVGAnimateElement(Element* element)
+inline bool isSVGAnimateElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!element
-        || element->hasTagName(SVGNames::animateTag)
-        || element->hasTagName(SVGNames::animateColorTag)
-        || element->hasTagName(SVGNames::animateTransformTag)
-        || element->hasTagName(SVGNames::setTag));
-    return static_cast<SVGAnimateElement*>(element);
+    return node.hasTagName(SVGNames::animateTag)
+        || node.hasTagName(SVGNames::animateColorTag)
+        || node.hasTagName(SVGNames::animateTransformTag)
+        || node.hasTagName(SVGNames::setTag);
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
 
 } // namespace WebCore
 
