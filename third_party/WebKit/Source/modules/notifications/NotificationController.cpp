@@ -38,8 +38,6 @@ NotificationController::NotificationController(NotificationClient* client)
 
 NotificationController::~NotificationController()
 {
-    if (m_client)
-        m_client->notificationControllerDestroyed();
 }
 
 PassOwnPtr<NotificationController> NotificationController::create(NotificationClient* client)

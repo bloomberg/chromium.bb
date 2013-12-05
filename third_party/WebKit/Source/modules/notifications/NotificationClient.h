@@ -38,11 +38,8 @@
 
 namespace WebCore {
 
-class Document;
-class KURL;
-class NotificationBase;
-class Page;
 class ExecutionContext;
+class NotificationBase;
 
 class NotificationClient {
 
@@ -59,17 +56,10 @@ public:
     // Requests that a notification that has already been shown be canceled.
     virtual void cancel(NotificationBase*) = 0;
 
-    // When the user closes a page, or quits the client application, all of the page's
-    // associated notifications are cleared.
-    virtual void clearNotifications(ExecutionContext*) { }
-
     // Informs the presenter that a Notification object has been destroyed
     // (such as by a page transition). The presenter may continue showing
     // the notification, but must not attempt to call the event handlers.
     virtual void notificationObjectDestroyed(NotificationBase*) = 0;
-
-    // Informs the presenter the controller attached to the page has been destroyed.
-    virtual void notificationControllerDestroyed() = 0;
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
     // Requests user permission to show desktop notifications from a particular
@@ -79,17 +69,12 @@ public:
 #endif
     virtual void requestPermission(ExecutionContext*, PassOwnPtr<NotificationPermissionCallback>) = 0;
 
-    // Cancel all outstanding requests for the ExecutionContext
-    virtual void cancelRequestsForPermission(ExecutionContext*) = 0;
-
     // Checks the current level of permission.
     virtual Permission checkPermission(ExecutionContext*) = 0;
 
 protected:
     virtual ~NotificationClient() { }
 };
-
-void provideNotification(Page*, NotificationClient*);
 
 } // namespace WebCore
 

@@ -113,10 +113,6 @@ void NotificationPresenterImpl::notificationObjectDestroyed(NotificationBase* no
     m_presenter->objectDestroyed(PassRefPtr<NotificationBase>(notification));
 }
 
-void NotificationPresenterImpl::notificationControllerDestroyed()
-{
-}
-
 NotificationClient::Permission NotificationPresenterImpl::checkPermission(ExecutionContext* context)
 {
     int result = m_presenter->checkPermission(WebSecurityOrigin(context->securityOrigin()));

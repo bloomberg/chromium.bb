@@ -95,10 +95,6 @@ void NotificationCenter::requestPermission(PassOwnPtr<VoidCallback> callback)
 
 void NotificationCenter::stop()
 {
-    if (!m_client)
-        return;
-    m_client->cancelRequestsForPermission(executionContext());
-    m_client->clearNotifications(executionContext());
     m_client = 0;
 }
 

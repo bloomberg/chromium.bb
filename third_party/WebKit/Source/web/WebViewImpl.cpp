@@ -126,6 +126,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "modules/geolocation/GeolocationController.h"
+#include "modules/notifications/NotificationController.h"
 #include "painting/ContinuousPainter.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"

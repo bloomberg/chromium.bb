@@ -52,6 +52,8 @@ private:
     NotificationClient* m_client;
 };
 
+void provideNotification(Page*, NotificationClient*);
+
 } // namespace WebCore
 
 #endif // NotificationController_h
