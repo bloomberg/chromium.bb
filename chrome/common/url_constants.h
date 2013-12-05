@@ -329,6 +329,8 @@ extern const char kChromeHelpViaWebUIURL[];
 #if defined(OS_CHROMEOS)
 // Accessibility help link for Chrome.
 extern const char kChromeAccessibilityHelpURL[];
+// Accessibility settings link for Chrome.
+extern const char kChromeAccessibilitySettingsURL[];
 #endif
 
 #if defined (ENABLE_ONE_CLICK_SIGNIN)

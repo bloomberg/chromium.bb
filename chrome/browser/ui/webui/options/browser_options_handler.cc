@@ -325,6 +325,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #if defined(OS_CHROMEOS)
     { "accessibilityExplanation",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION },
+    { "accessibilitySettings",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SETTINGS },
     { "accessibilityHighContrast",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION },
     { "accessibilityScreenMagnifier",
@@ -489,6 +491,13 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   values->SetString("accessibilityLearnMoreURL",
                     chrome::kChromeAccessibilityHelpURL);
+
+  std::string settings_url = std::string("chrome-extension://") +
+      extension_misc::kChromeVoxExtensionId +
+      chrome::kChromeAccessibilitySettingsURL;
+
+  values->SetString("accessibilitySettingsURL",
+                    settings_url);
 
   values->SetString("contentProtectionAttestationLearnMoreURL",
                     chrome::kAttestationForContentProtectionLearnMoreURL);

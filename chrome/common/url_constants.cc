@@ -372,6 +372,8 @@ const char kChromeHelpViaWebUIURL[] =
 #if defined(OS_CHROMEOS)
 const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromeos/?p=accessibility_menu";
+const char kChromeAccessibilitySettingsURL[] =
+    "/chromevox/background/options.html";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
