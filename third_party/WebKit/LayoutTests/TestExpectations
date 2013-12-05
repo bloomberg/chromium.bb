@@ -203,10 +203,6 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom
 crbug.com/318980 [ Linux ] editing/input/reveal-caret-of-multiline-input.html [ ImageOnlyFailure Pass ]
 
 crbug.com/322272 virtual/threaded/transitions/interrupted-accelerated-transition.html [ Pass Timeout ]
-crbug.com/322272 compositing/repaint/opacity-between-absolute.html [ Pass Failure ]
-crbug.com/322272 compositing/repaint/opacity-between-absolute2.html [ Pass Failure ]
-crbug.com/322272 virtual/softwarecompositing/repaint/opacity-between-absolute.html [ Pass Failure ]
-crbug.com/322272 virtual/softwarecompositing/repaint/opacity-between-absolute2.html [ Pass Failure ]
 crbug.com/322272 virtual/threaded/animations/3d/replace-filling-transform.html [ Pass ImageOnlyFailure ]
 crbug.com/322272 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/322272 virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
@@ -613,6 +609,11 @@ crbug.com/324553 fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline 
 crbug.com/324553 fast/writing-mode/japanese-lr-text.html [ NeedsRebaseline ]
 crbug.com/324553 fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
 crbug.com/324553 fast/writing-mode/japanese-rl-text.html [ NeedsRebaseline ]
+
+crbug.com/322272 virtual/legacy-animations-engine/animations/interpolation/sample-interpolation-reftest.html [ ImageOnlyFailure ]
+
+crbug.com/322272 virtual/threaded/animations/sample-on-last-keyframe.html [ Pass Timeout ]
+crbug.com/322272 virtual/threaded/transitions/transition-on-element-with-content.html [ Pass Timeout ]
 
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]

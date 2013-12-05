@@ -323,9 +323,8 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVisitedLinkColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyFillOpacity:
-        // FIXME: This forces a layer to be created in the presence of an
-        // opacity animation.
-        style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 0.999999));
+        // Avoiding a value of 1 forces a layer to be created.
+        style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, nextafterf(1, 0)));
         return;
     case CSSPropertyFill:
         {
@@ -403,7 +402,8 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setObjectPosition(animatableValueToLengthPoint(value, state));
         return;
     case CSSPropertyOpacity:
-        style->setOpacity(toAnimatableDouble(value)->toDouble());
+        // Avoiding a value of 1 forces a layer to be created.
+        style->setOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, nextafterf(1, 0)));
         return;
     case CSSPropertyOrphans:
         style->setOrphans(animatableValueRoundClampTo<unsigned short>(value, 1));
