@@ -45,12 +45,12 @@ FileEntry::FileEntry(PassRefPtr<DOMFileSystemBase> fileSystem, const String& ful
     ScriptWrappable::init(this);
 }
 
-void FileEntry::createWriter(PassRefPtr<FileWriterCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
+void FileEntry::createWriter(PassOwnPtr<FileWriterCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     filesystem()->createWriter(this, successCallback, errorCallback);
 }
 
-void FileEntry::file(PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
+void FileEntry::file(PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     filesystem()->createFile(this, successCallback, errorCallback);
 }

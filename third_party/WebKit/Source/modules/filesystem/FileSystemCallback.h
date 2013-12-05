@@ -31,13 +31,11 @@
 #ifndef FileSystemCallback_h
 #define FileSystemCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
 class DOMFileSystem;
 
-class FileSystemCallback : public RefCounted<FileSystemCallback> {
+class FileSystemCallback {
 public:
     virtual ~FileSystemCallback() { }
     virtual bool handleEvent(DOMFileSystem*) = 0;

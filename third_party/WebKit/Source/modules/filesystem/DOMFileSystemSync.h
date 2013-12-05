@@ -53,7 +53,7 @@ public:
 
     virtual ~DOMFileSystemSync();
 
-    virtual void reportError(PassRefPtr<ErrorCallback>, PassRefPtr<FileError>) OVERRIDE;
+    virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtr<FileError>) OVERRIDE;
 
     PassRefPtr<DirectoryEntrySync> root();
 

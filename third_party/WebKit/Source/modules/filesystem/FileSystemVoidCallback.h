@@ -26,11 +26,10 @@
 #ifndef FileSystemVoidCallback_h
 #define FileSystemVoidCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
-class FileSystemVoidCallback : public RefCounted<FileSystemVoidCallback> {
+// FIXME: Replace this with VoidCallback.
+class FileSystemVoidCallback {
 public:
     virtual ~FileSystemVoidCallback() { }
     virtual bool handleEvent() = 0;

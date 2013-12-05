@@ -31,13 +31,11 @@
 #ifndef MetadataCallback_h
 #define MetadataCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
 class Metadata;
 
-class MetadataCallback : public RefCounted<MetadataCallback> {
+class MetadataCallback {
 public:
     virtual ~MetadataCallback() { }
     virtual bool handleEvent(Metadata*) = 0;

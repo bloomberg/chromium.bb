@@ -50,11 +50,11 @@ class Entry : public EntryBase, public ScriptWrappable {
 public:
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
 
-    void getMetadata(PassRefPtr<MetadataCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0);
-    void moveTo(PassRefPtr<DirectoryEntry> parent, const String& name = String(), PassRefPtr<EntryCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0) const;
-    void copyTo(PassRefPtr<DirectoryEntry> parent, const String& name = String(), PassRefPtr<EntryCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0) const;
-    void remove(PassRefPtr<FileSystemVoidCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0) const;
-    void getParent(PassRefPtr<EntryCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0) const;
+    void getMetadata(PassOwnPtr<MetadataCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
+    void moveTo(PassRefPtr<DirectoryEntry> parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
+    void copyTo(PassRefPtr<DirectoryEntry> parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
+    void remove(PassOwnPtr<FileSystemVoidCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
+    void getParent(PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
 
 protected:
     Entry(PassRefPtr<DOMFileSystemBase>, const String& fullPath);

@@ -44,7 +44,7 @@ DirectoryReader::DirectoryReader(PassRefPtr<DOMFileSystemBase> fileSystem, const
     ScriptWrappable::init(this);
 }
 
-void DirectoryReader::readEntries(PassRefPtr<EntriesCallback> entriesCallback, PassRefPtr<ErrorCallback> errorCallback)
+void DirectoryReader::readEntries(PassOwnPtr<EntriesCallback> entriesCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     if (!m_hasMoreEntries) {
         filesystem()->scheduleCallback(entriesCallback, EntryVector());

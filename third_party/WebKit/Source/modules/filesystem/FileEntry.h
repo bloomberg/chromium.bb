@@ -46,8 +46,8 @@ public:
         return adoptRef(new FileEntry(fileSystem, fullPath));
     }
 
-    void createWriter(PassRefPtr<FileWriterCallback>, PassRefPtr<ErrorCallback> = 0);
-    void file(PassRefPtr<FileCallback>, PassRefPtr<ErrorCallback> = 0);
+    void createWriter(PassOwnPtr<FileWriterCallback>, PassOwnPtr<ErrorCallback> = nullptr);
+    void file(PassOwnPtr<FileCallback>, PassOwnPtr<ErrorCallback> = nullptr);
 
     virtual bool isFile() const { return true; }
 

@@ -107,7 +107,7 @@ void DOMFileSystem::removePendingCallbacks()
     unsetPendingActivity(this);
 }
 
-void DOMFileSystem::reportError(PassRefPtr<ErrorCallback> errorCallback, PassRefPtr<FileError> fileError)
+void DOMFileSystem::reportError(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtr<FileError> fileError)
 {
     scheduleCallback(errorCallback, fileError);
 }
@@ -116,9 +116,9 @@ namespace {
 
 class ConvertToFileWriterCallback : public FileWriterBaseCallback {
 public:
-    static PassRefPtr<ConvertToFileWriterCallback> create(PassRefPtr<FileWriterCallback> callback)
+    static PassOwnPtr<ConvertToFileWriterCallback> create(PassOwnPtr<FileWriterCallback> callback)
     {
-        return adoptRef(new ConvertToFileWriterCallback(callback));
+        return adoptPtr(new ConvertToFileWriterCallback(callback));
     }
 
     bool handleEvent(FileWriterBase* fileWriterBase)
@@ -126,22 +126,22 @@ public:
         return m_callback->handleEvent(static_cast<FileWriter*>(fileWriterBase));
     }
 private:
-    ConvertToFileWriterCallback(PassRefPtr<FileWriterCallback> callback)
+    ConvertToFileWriterCallback(PassOwnPtr<FileWriterCallback> callback)
         : m_callback(callback)
     {
     }
-    RefPtr<FileWriterCallback> m_callback;
+    OwnPtr<FileWriterCallback> m_callback;
 };
 
 }
 
-void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassRefPtr<FileWriterCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
+void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassOwnPtr<FileWriterCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     ASSERT(fileEntry);
 
     RefPtr<FileWriter> fileWriter = FileWriter::create(executionContext());
-    RefPtr<FileWriterBaseCallback> conversionCallback = ConvertToFileWriterCallback::create(successCallback);
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback);
+    OwnPtr<FileWriterBaseCallback> conversionCallback = ConvertToFileWriterCallback::create(successCallback);
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback.release(), errorCallback);
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter.get(), callbacks.release());
 }
 
@@ -149,7 +149,7 @@ namespace {
 
 class SnapshotFileCallback : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
     {
         return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback)));
     }
@@ -183,7 +183,7 @@ public:
     }
 
 private:
-    SnapshotFileCallback(PassRefPtr<DOMFileSystem> filesystem, const String& name,  const KURL& url, PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
+    SnapshotFileCallback(PassRefPtr<DOMFileSystem> filesystem, const String& name,  const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
         : FileSystemCallbacksBase(errorCallback, filesystem.get())
         , m_name(name)
         , m_url(url)
@@ -193,12 +193,12 @@ private:
 
     String m_name;
     KURL m_url;
-    RefPtr<FileCallback> m_successCallback;
+    OwnPtr<FileCallback> m_successCallback;
 };
 
 } // namespace
 
-void DOMFileSystem::createFile(const FileEntry* fileEntry, PassRefPtr<FileCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
+void DOMFileSystem::createFile(const FileEntry* fileEntry, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL, successCallback, errorCallback));

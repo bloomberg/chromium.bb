@@ -31,7 +31,6 @@
 #ifndef EntriesCallback_h
 #define EntriesCallback_h
 
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -39,7 +38,7 @@ namespace WebCore {
 class Entry;
 typedef Vector<RefPtr<Entry> > EntryVector;
 
-class EntriesCallback : public RefCounted<EntriesCallback> {
+class EntriesCallback {
 public:
     virtual ~EntriesCallback() { }
     virtual bool handleEvent(const EntryVector&) = 0;

@@ -31,13 +31,11 @@
 #ifndef EntryCallback_h
 #define EntryCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
 class Entry;
 
-class EntryCallback : public RefCounted<EntryCallback> {
+class EntryCallback {
 public:
     virtual ~EntryCallback() { }
     virtual bool handleEvent(Entry*) = 0;

@@ -54,9 +54,9 @@ public:
     virtual bool isDirectory() const { return true; }
 
     PassRefPtr<DirectoryReader> createReader();
-    void getFile(const String& path, const Dictionary&, PassRefPtr<EntryCallback> = 0, PassRefPtr<ErrorCallback> = 0);
-    void getDirectory(const String& path, const Dictionary&, PassRefPtr<EntryCallback> = 0, PassRefPtr<ErrorCallback> = 0);
-    void removeRecursively(PassRefPtr<FileSystemVoidCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0) const;
+    void getFile(const String& path, const Dictionary&, PassOwnPtr<EntryCallback> = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
+    void getDirectory(const String& path, const Dictionary&, PassOwnPtr<EntryCallback> = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
+    void removeRecursively(PassOwnPtr<FileSystemVoidCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
 
 private:
     DirectoryEntry(PassRefPtr<DOMFileSystemBase>, const String& fullPath);

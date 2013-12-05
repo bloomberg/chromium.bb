@@ -51,7 +51,7 @@ public:
         return adoptRef(new DirectoryReader(fileSystem, fullPath));
     }
 
-    void readEntries(PassRefPtr<EntriesCallback>, PassRefPtr<ErrorCallback> = 0);
+    void readEntries(PassOwnPtr<EntriesCallback>, PassOwnPtr<ErrorCallback> = nullptr);
 
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
 

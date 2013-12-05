@@ -87,9 +87,7 @@ public:
     typedef typename ResultTypeTrait::ReturnType ResultReturnType;
 
     SyncCallbackHelper()
-        : m_successCallback(SuccessCallbackImpl::create(this))
-        , m_errorCallback(ErrorCallbackImpl::create(this))
-        , m_errorCode(FileError::OK)
+        : m_errorCode(FileError::OK)
         , m_completed(false)
     {
     }
@@ -102,15 +100,15 @@ public:
         return m_result;
     }
 
-    PassRefPtr<SuccessCallback> successCallback() { return m_successCallback; }
-    PassRefPtr<ErrorCallback> errorCallback() { return m_errorCallback; }
+    PassOwnPtr<SuccessCallback> successCallback() { return SuccessCallbackImpl::create(this); }
+    PassOwnPtr<ErrorCallback> errorCallback() { return ErrorCallbackImpl::create(this); }
 
 private:
     class SuccessCallbackImpl : public SuccessCallback {
     public:
-        static PassRefPtr<SuccessCallbackImpl> create(HelperType* helper)
+        static PassOwnPtr<SuccessCallbackImpl> create(HelperType* helper)
         {
-            return adoptRef(new SuccessCallbackImpl(helper));
+            return adoptPtr(new SuccessCallbackImpl(helper));
         }
 
         virtual bool handleEvent()
@@ -135,9 +133,9 @@ private:
 
     class ErrorCallbackImpl : public ErrorCallback {
     public:
-        static PassRefPtr<ErrorCallbackImpl> create(HelperType* helper)
+        static PassOwnPtr<ErrorCallbackImpl> create(HelperType* helper)
         {
-            return adoptRef(new ErrorCallbackImpl(helper));
+            return adoptPtr(new ErrorCallbackImpl(helper));
         }
 
         virtual bool handleEvent(FileError* error)
@@ -155,9 +153,6 @@ private:
         HelperType* m_helper;
     };
 
-    friend class SuccessCallbackImpl;
-    friend class ErrorCallbackImpl;
-
     void setError(FileError::ErrorCode code)
     {
         m_errorCode = code;
@@ -170,8 +165,6 @@ private:
         m_completed = true;
     }
 
-    RefPtr<SuccessCallbackImpl> m_successCallback;
-    RefPtr<ErrorCallbackImpl> m_errorCallback;
     ResultStorageType m_result;
     FileError::ErrorCode m_errorCode;
     bool m_completed;
