@@ -21,7 +21,8 @@ cr.define('speech', function() {
   var SpeechState = {
     READY: 'READY',
     HOTWORD_RECOGNIZING: 'HOTWORD_RECOGNIZING',
-    RECOGNIZING: 'RECOGNIZING'
+    RECOGNIZING: 'RECOGNIZING',
+    STOPPING: 'STOPPING'
   };
 
   /**
@@ -125,7 +126,7 @@ cr.define('speech', function() {
    */
   SpeechManager.prototype.onSpeechRecognitionEnded = function() {
     // Restarts the hotword recognition.
-    if (this.pluginManager_) {
+    if (this.state != SpeechState.STOPPING && this.pluginManager_) {
       this.pluginManager_.startRecognizer();
       this.audioManager_.start();
       this.setState_(SpeechState.HOTWORD_RECOGNIZING);
@@ -141,7 +142,8 @@ cr.define('speech', function() {
    * @param {SpeechRecognitionError} e The error object.
    */
   SpeechManager.prototype.onSpeechRecognitionError = function(e) {
-    this.setState_(SpeechState.READY);
+    if (this.state != SpeechState.STOPPING)
+      this.setState_(SpeechState.READY);
   };
 
   /**
@@ -151,7 +153,7 @@ cr.define('speech', function() {
     if (!this.pluginManager_)
       return;
 
-    if (this.state != SpeechState.READY) {
+    if (this.state == SpeechState.HOTWORD_RECOGNIZING) {
       console.warn('Already in recognition state...');
       return;
     }
@@ -167,9 +169,15 @@ cr.define('speech', function() {
   SpeechManager.prototype.stop = function() {
     if (this.pluginManager_)
       this.pluginManager_.stopRecognizer();
+
+    // SpeechRecognition is asynchronous.
     this.audioManager_.stop();
-    this.speechRecognitionManager_.stop();
-    this.setState_(SpeechState.READY);
+    if (this.state == SpeechState.RECOGNIZING) {
+      this.setState_(SpeechState.STOPPING);
+      this.speechRecognitionManager_.stop();
+    } else {
+      this.setState_(SpeechState.READY);
+    }
   };
 
   /**
