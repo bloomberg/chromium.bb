@@ -5,7 +5,7 @@ if (window.testRunner)
     testRunner.waitUntilDone();
 
 window.addEventListener('message', function(evt) {
-    shouldBeEqualToString("frames[0].document.body.textContent", "DONE\n");
+    shouldBeEqualToString("frames[0].document.body.textContent.trim()", "DONE");
 
     if (window.testRunner)
         testRunner.notifyDone();
