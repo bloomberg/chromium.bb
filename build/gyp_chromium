@@ -82,7 +82,7 @@ def GetVarsStringForGN(supplemental_files):
       except SyntaxError, e:
         e.filename = os.path.abspath(supplement)
         raise
-      variables = file_data.get('variables')
+      variables = file_data.get('variables', [])
       for v in variables:
         vars_dict[FormatKeyForGN(v)] = '"' + \
             str(variables[v]).replace("$", "\\$") + '"'
