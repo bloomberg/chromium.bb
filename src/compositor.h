@@ -1152,6 +1152,10 @@ weston_view_schedule_repaint(struct weston_view *view);
 int
 weston_surface_is_mapped(struct weston_surface *surface);
 
+WL_EXPORT void
+weston_surface_set_size(struct weston_surface *surface,
+			int32_t width, int32_t height);
+
 void
 weston_surface_schedule_repaint(struct weston_surface *surface);
 

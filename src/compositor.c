@@ -1219,8 +1219,7 @@ weston_surface_is_mapped(struct weston_surface *surface)
 }
 
 static void
-weston_surface_set_size(struct weston_surface *surface,
-			int32_t width, int32_t height)
+surface_set_size(struct weston_surface *surface, int32_t width, int32_t height)
 {
 	struct weston_view *view;
 
@@ -1234,13 +1233,21 @@ weston_surface_set_size(struct weston_surface *surface,
 		weston_view_geometry_dirty(view);
 }
 
+WL_EXPORT void
+weston_surface_set_size(struct weston_surface *surface,
+			int32_t width, int32_t height)
+{
+	assert(!surface->resource);
+	surface_set_size(surface, width, height);
+}
+
 static void
 weston_surface_set_size_from_buffer(struct weston_surface *surface)
 {
 	int32_t width, height;
 
 	if (!surface->buffer_ref.buffer) {
-		weston_surface_set_size(surface, 0, 0);
+		surface_set_size(surface, 0, 0);
 		return;
 	}
 
@@ -1260,7 +1267,7 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 
 	width = width / surface->buffer_viewport.scale;
 	height = height / surface->buffer_viewport.scale;
-	weston_surface_set_size(surface, width, height);
+	surface_set_size(surface, width, height);
 }
 
 WL_EXPORT uint32_t

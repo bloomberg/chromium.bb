@@ -508,8 +508,7 @@ create_focus_surface(struct weston_compositor *ec,
 	fsurf->view = weston_view_create (surface);
 	fsurf->view->output = output;
 
-	surface->width = output->width;
-	surface->height = output->height;
+	weston_surface_set_size(surface, output->width, output->height);
 	weston_view_set_position(fsurf->view, output->x, output->y);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
 	pixman_region32_fini(&surface->opaque);
@@ -2471,8 +2470,7 @@ create_black_surface(struct weston_compositor *ec,
 	pixman_region32_fini(&surface->input);
 	pixman_region32_init_rect(&surface->input, 0, 0, w, h);
 
-	surface->width = w;
-	surface->height = h;
+	weston_surface_set_size(surface, w, y);
 	weston_view_set_position(view, x, y);
 
 	return view;
@@ -4593,8 +4591,7 @@ shell_fade_create_surface(struct desktop_shell *shell)
 		return NULL;
 	}
 
-	surface->width = 8192;
-	surface->height = 8192;
+	weston_surface_set_size(surface, 8192, 8192);
 	weston_view_set_position(view, 0, 0);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
 	wl_list_insert(&compositor->fade_layer.view_list,
