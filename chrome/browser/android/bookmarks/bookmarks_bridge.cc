@@ -298,10 +298,11 @@ bool BookmarksBridge::IsLoaded() const {
 
 bool BookmarksBridge::IsFolderAvailable(
     const BookmarkNode* folder) const {
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      profile_->GetOriginalProfile());
   return (folder->type() != BookmarkNode::BOOKMARK_BAR &&
       folder->type() != BookmarkNode::OTHER_NODE) ||
-      !SigninManagerFactory::GetForProfile(
-          profile_)->GetAuthenticatedUsername().empty();
+      (signin && !signin->GetAuthenticatedUsername().empty());
 }
 
 void BookmarksBridge::NotifyIfDoneLoading() {
