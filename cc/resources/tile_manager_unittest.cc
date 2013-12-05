@@ -86,7 +86,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
                                                            1.0,
                                                            0,
                                                            0,
-                                                           true);
+                                                           Tile::USE_LCD_TEXT);
       tile->SetPriority(ACTIVE_TREE, active_priority);
       tile->SetPriority(PENDING_TREE, pending_priority);
       tiles.push_back(tile);

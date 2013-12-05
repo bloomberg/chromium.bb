@@ -181,6 +181,12 @@ bool CheckImplSidePaintingStatus() {
   return false;
 #endif
 }
+
+bool CheckGPURasterizationStatus() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(cc::switches::kEnableGPURasterization);
+}
+
 }  // namespace
 
 bool IsImplSidePaintingEnabled() {
@@ -189,8 +195,8 @@ bool IsImplSidePaintingEnabled() {
 }
 
 bool IsGPURasterizationEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(cc::switches::kEnableGPURasterization);
+  static bool enabled = CheckGPURasterizationStatus();
+  return enabled;
 }
 
 bool IsMapImageEnabled() {

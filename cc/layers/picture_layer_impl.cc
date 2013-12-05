@@ -463,11 +463,23 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
   return pile_->GetFlattenedPicture();
 }
 
+bool PictureLayerImpl::ShouldUseGPURasterization() const {
+  // TODO(skaslev): Add a proper heuristic for hybrid (software or GPU)
+  // tile rasterization. Currently, when --enable-gpu-rasterization is
+  // set all tiles get GPU rasterized.
+  return layer_tree_impl()->settings().gpu_rasterization;
+}
+
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                  gfx::Rect content_rect) {
   if (!pile_->CanRaster(tiling->contents_scale(), content_rect))
     return scoped_refptr<Tile>();
 
+  int flags = 0;
+  if (is_using_lcd_text_)
+    flags |= Tile::USE_LCD_TEXT;
+  if (ShouldUseGPURasterization())
+    flags |= Tile::USE_GPU_RASTERIZATION;
   return layer_tree_impl()->tile_manager()->CreateTile(
       pile_.get(),
       content_rect.size(),
@@ -476,7 +488,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       tiling->contents_scale(),
       id(),
       layer_tree_impl()->source_frame_number(),
-      is_using_lcd_text_);
+      flags);
 }
 
 void PictureLayerImpl::UpdatePile(Tile* tile) {

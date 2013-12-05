@@ -21,6 +21,11 @@ class PicturePileImpl;
 
 class CC_EXPORT Tile : public RefCountedManaged<Tile> {
  public:
+  enum TileRasterFlags {
+    USE_LCD_TEXT = 1 << 0,
+    USE_GPU_RASTERIZATION = 1 << 1
+  };
+
   typedef uint64 Id;
 
   Id id() const {
@@ -53,11 +58,25 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   }
 
   void set_can_use_lcd_text(bool can_use_lcd_text) {
-    can_use_lcd_text_ = can_use_lcd_text;
+    if (can_use_lcd_text)
+      flags_ |= USE_LCD_TEXT;
+    else
+      flags_ &= ~USE_LCD_TEXT;
   }
 
   bool can_use_lcd_text() const {
-    return can_use_lcd_text_;
+    return !!(flags_ & USE_LCD_TEXT);
+  }
+
+  void set_use_gpu_rasterization(bool use_gpu_rasterization) {
+    if (use_gpu_rasterization)
+      flags_ |= USE_GPU_RASTERIZATION;
+    else
+      flags_ &= ~USE_GPU_RASTERIZATION;
+  }
+
+  bool use_gpu_rasterization() const {
+    return !!(flags_ & USE_GPU_RASTERIZATION);
   }
 
   scoped_ptr<base::Value> AsValue() const;
@@ -122,7 +141,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
        float contents_scale,
        int layer_id,
        int source_frame_number,
-       bool can_use_lcd_text);
+       int flags);
   ~Tile();
 
   ManagedTileState& managed_state() { return managed_state_; }
@@ -139,7 +158,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   ManagedTileState managed_state_;
   int layer_id_;
   int source_frame_number_;
-  bool can_use_lcd_text_;
+  int flags_;
 
   Id id_;
   static Id s_next_id_;

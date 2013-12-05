@@ -116,7 +116,7 @@ class TileManagerPerfTest : public testing::Test {
                                     1.0,
                                     0,
                                     0,
-                                    true);
+                                    Tile::USE_LCD_TEXT);
       tile->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
       tile->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
       tiles->push_back(std::make_pair(tile, bin));

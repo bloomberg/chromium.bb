@@ -46,7 +46,7 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
   if (!allow_create_tile_)
     return scoped_refptr<Tile>();
   return tile_manager_->CreateTile(
-      pile_.get(), tile_size_, rect, gfx::Rect(), 1, 0, 0, true);
+      pile_.get(), tile_size_, rect, gfx::Rect(), 1, 0, 0, Tile::USE_LCD_TEXT);
 }
 
 void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {

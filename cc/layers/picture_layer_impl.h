@@ -107,6 +107,7 @@ class CC_EXPORT PictureLayerImpl
   bool CanHaveTilings() const;
   bool CanHaveTilingWithScale(float contents_scale) const;
   void SanityCheckTilingState() const;
+  bool ShouldUseGPURasterization() const;
 
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;

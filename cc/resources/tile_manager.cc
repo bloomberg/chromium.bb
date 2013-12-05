@@ -970,7 +970,7 @@ scoped_refptr<Tile> TileManager::CreateTile(PicturePileImpl* picture_pile,
                                             float contents_scale,
                                             int layer_id,
                                             int source_frame_number,
-                                            bool can_use_lcd_text) {
+                                            int flags) {
   scoped_refptr<Tile> tile = make_scoped_refptr(new Tile(this,
                                                          picture_pile,
                                                          tile_size,
@@ -979,7 +979,7 @@ scoped_refptr<Tile> TileManager::CreateTile(PicturePileImpl* picture_pile,
                                                          contents_scale,
                                                          layer_id,
                                                          source_frame_number,
-                                                         can_use_lcd_text));
+                                                         flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile;

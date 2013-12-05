@@ -72,7 +72,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
                                  float contents_scale,
                                  int layer_id,
                                  int source_frame_number,
-                                 bool can_use_lcd_text);
+                                 int flags);
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
