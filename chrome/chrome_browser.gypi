@@ -523,6 +523,8 @@
         'browser/diagnostics/recon_diagnostics.h',
         'browser/diagnostics/sqlite_diagnostics.cc',
         'browser/diagnostics/sqlite_diagnostics.h',
+        'browser/dom_distiller/dom_distiller_service_factory.cc',
+        'browser/dom_distiller/dom_distiller_service_factory.h',
         'browser/download/all_download_item_notifier.cc',
         'browser/download/all_download_item_notifier.h',
         'browser/download/chrome_download_manager_delegate.cc',

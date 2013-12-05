@@ -112,8 +112,6 @@
               'sources': [
                 'dom_distiller/content/distiller_page_web_contents.cc',
                 'dom_distiller/content/distiller_page_web_contents.h',
-                'dom_distiller/content/dom_distiller_service_factory.cc',
-                'dom_distiller/content/dom_distiller_service_factory.h',
               ],
             },
           ],

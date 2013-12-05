@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/dom_distiller_service_factory.h"
+#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
@@ -72,9 +72,8 @@ BrowserContextKeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
 content::BrowserContext* DomDistillerServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // TODO(cjhopman): Do we want this to be
-  // GetBrowserContextRedirectedInIncognito? If so, find some way to use that in
-  // components/.
+  // GetBrowserContextRedirectedInIncognito?
   return context;
 }
 
-}  // namespace apps
+}  // namespace dom_distiller

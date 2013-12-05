@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_DOM_DISTILLER_SERVICE_FACTORY_H_
-#define COMPONENTS_DOM_DISTILLER_CONTENT_DOM_DISTILLER_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
@@ -50,4 +50,4 @@ class DomDistillerServiceFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace dom_distiller
 
-#endif
+#endif  // CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_H_
