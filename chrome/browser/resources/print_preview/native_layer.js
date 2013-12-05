@@ -197,7 +197,7 @@ cr.define('print_preview', function() {
             destination.id ==
                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         'printWithCloudPrint': destination != null && !destination.isLocal,
-        'printWithPrivet': destination.isPrivet,
+        'printWithPrivet': destination != null && destination.isPrivet,
         'deviceName': destination == null ? 'foo' : destination.id,
         'generateDraftData': documentInfo.isModifiable,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),

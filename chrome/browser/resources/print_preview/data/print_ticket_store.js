@@ -393,6 +393,13 @@ cr.define('print_preview', function() {
           print_preview.DestinationStore.EventType.
               SELECTED_DESTINATION_CAPABILITIES_READY,
           this.onSelectedDestinationCapabilitiesReady_.bind(this));
+
+      this.tracker_.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.
+              CACHED_SELECTED_DESTINATION_INFO_READY,
+          this.onSelectedDestinationCapabilitiesReady_.bind(this));
+
       // TODO(rltoscano): Print ticket store shouldn't be re-dispatching these
       // events, the consumers of the print ticket store events should listen
       // for the events from document info instead. Will move this when

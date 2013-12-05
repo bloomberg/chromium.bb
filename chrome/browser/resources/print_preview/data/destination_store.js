@@ -154,6 +154,8 @@ cr.define('print_preview', function() {
     DESTINATION_SELECT: 'print_preview.DestinationStore.DESTINATION_SELECT',
     DESTINATIONS_INSERTED:
         'print_preview.DestinationStore.DESTINATIONS_INSERTED',
+    CACHED_SELECTED_DESTINATION_INFO_READY:
+        'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
     SELECTED_DESTINATION_CAPABILITIES_READY:
         'print_preview.DestinationStore.SELECTED_DESTINATION_CAPABILITIES_READY'
   };
@@ -276,6 +278,24 @@ cr.define('print_preview', function() {
           // TODO(noamsml): Resolve a specific printer instead of listing all
           // privet printers in this case.
           this.nativeLayer_.startGetPrivetDestinations();
+
+          // Create a fake selectedDestination_ that is not actually in the
+          // destination store. When the real destination is created, this
+          // destination will be overwritten.
+          this.selectedDestination_ = new print_preview.Destination(
+              this.initialDestinationId_,
+              print_preview.Destination.Type.LOCAL,
+              print_preview.Destination.Origin.PRIVET,
+              '',
+              false /*isRecent*/,
+              print_preview.Destination.ConnectionStatus.ONLINE);
+          this.selectedDestination_.capabilities =
+              this.appState_.selectedDestinationCapabilities;
+
+          cr.dispatchSimpleEvent(
+            this,
+            DestinationStore.EventType.CACHED_SELECTED_DESTINATION_INFO_READY);
+
         } else {
           this.onAutoSelectFailed_();
         }
@@ -411,8 +431,8 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Updates an existing print destination with capabilities information. If
-     * the destination doesn't already exist, it will be added.
+     * Updates an existing print destination with capabilities and display name
+     * information. If the destination doesn't already exist, it will be added.
      * @param {!print_preview.Destination} destination Destination to update.
      * @return {!print_preview.Destination} The existing destination that was
      *     updated or {@code null} if it was the new destination.
@@ -422,11 +442,19 @@ cr.define('print_preview', function() {
       var existingDestination = this.destinationMap_[key];
       if (existingDestination != null) {
         existingDestination.capabilities = destination.capabilities;
-        return existingDestination;
       } else {
         this.insertDestination(destination);
-        return null;
       }
+
+      if (existingDestination == this.selectedDestination_ ||
+          destination == this.selectedDestination_) {
+        this.appState_.persistSelectedDestination(this.selectedDestination_);
+        cr.dispatchSimpleEvent(
+            this,
+            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
+      }
+
+      return existingDestination;
     },
 
     /** Initiates loading of local print destinations. */
@@ -646,12 +674,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintPrinterDone_: function(event) {
-      var dest = this.updateDestination(event.printer);
-      if (this.selectedDestination_ == dest) {
-        cr.dispatchSimpleEvent(
-            this,
-            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
-      }
+      this.updateDestination(event.printer);
     },
 
     /**
@@ -695,12 +718,6 @@ cr.define('print_preview', function() {
       dest.capabilities = event.capabilities;
 
       this.updateDestination(dest);
-      if (this.selectedDestination_.isPrivet &&
-          this.selectedDestination_.id == dest.id) {
-        cr.dispatchSimpleEvent(
-            this,
-            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
-      }
     },
 
     /**
