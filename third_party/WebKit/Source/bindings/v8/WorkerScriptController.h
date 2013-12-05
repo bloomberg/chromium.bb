@@ -39,6 +39,10 @@
 #include "wtf/text/TextPosition.h"
 #include <v8.h>
 
+namespace gin {
+class IsolateHolder;
+}
+
 namespace WebCore {
 
     class ScriptSourceCode;
@@ -109,6 +113,7 @@ namespace WebCore {
 
         WorkerGlobalScope& m_workerGlobalScope;
         v8::Isolate* m_isolate;
+        gin::IsolateHolder* m_ginIsolateHolder;
         ScopedPersistent<v8::Context> m_context;
         OwnPtr<V8PerContextData> m_perContextData;
         String m_disableEvalPending;
