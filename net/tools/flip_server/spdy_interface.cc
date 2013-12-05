@@ -23,7 +23,7 @@ std::string SpdySM::forward_ip_header_;
 class SpdyFrameDataFrame : public DataFrame {
  public:
   explicit SpdyFrameDataFrame(SpdyFrame* spdy_frame)
-    : frame(spdy_frame) {
+      : frame(spdy_frame) {
     data = spdy_frame->data();
     size = spdy_frame->size();
   }
@@ -75,11 +75,11 @@ void SpdySM::InitSMConnection(SMConnectionPoolInterface* connection_pool,
 
 SMInterface* SpdySM::NewConnectionInterface() {
   SMConnection* server_connection =
-    SMConnection::NewSMConnection(epoll_server_,
-                                  NULL,
-                                  memory_cache_,
-                                  acceptor_,
-                                  "http_conn: ");
+      SMConnection::NewSMConnection(epoll_server_,
+                                    NULL,
+                                    memory_cache_,
+                                    acceptor_,
+                                    "http_conn: ");
   if (server_connection == NULL) {
     LOG(ERROR) << "SpdySM: Could not create server connection";
     return NULL;
@@ -137,49 +137,87 @@ int SpdySM::SpdyHandleNewStream(
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: # headers: "
           << headers.size();
 
-  SpdyHeaderBlock::const_iterator url = headers.find("url");
-  SpdyHeaderBlock::const_iterator method = headers.find("method");
-  if (url == headers.end() || method == headers.end()) {
-    VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: didn't find method or url "
-            << "or method. Not creating stream";
-    return 0;
+  SpdyHeaderBlock supplement;
+  SpdyHeaderBlock::const_iterator method = headers.end();
+  SpdyHeaderBlock::const_iterator host = headers.end();
+  SpdyHeaderBlock::const_iterator path = headers.end();
+  SpdyHeaderBlock::const_iterator scheme = headers.end();
+  SpdyHeaderBlock::const_iterator version = headers.end();
+  SpdyHeaderBlock::const_iterator url = headers.end();
+
+  if (spdy_version() == SPDY2) {
+    url = headers.find("url");
+    method = headers.find("method");
+    version = headers.find("version");
+    scheme = headers.find("scheme");
+    if (url == headers.end() || method == headers.end() ||
+        version == headers.end() || scheme == headers.end()) {
+      VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: A mandatory header is "
+              << "missing. Not creating stream";
+      return 0;
+    }
+    // url->second here only ever seems to contain just the path. When this
+    // path contains a query string with a http:// in one of its values,
+    // UrlUtilities::GetUrlPath will fail and always return a / breaking
+    // the request. GetUrlPath assumes the absolute URL is being passed in.
+    std::string path_string = UrlUtilities::GetUrlPath(url->second);
+    std::string host_string = UrlUtilities::GetUrlHost(url->second);
+    path = supplement.insert(std::make_pair(":path", path_string)).first;
+    host = supplement.insert(std::make_pair(":host", host_string)).first;
+  } else {
+    method = headers.find(":method");
+    host = headers.find(":host");
+    path = headers.find(":path");
+    scheme = headers.find(":scheme");
+    version = supplement.insert(std::make_pair(":version", "HTTP/1.1")).first;
+    if (method == headers.end() || host == headers.end() ||
+        path == headers.end() || scheme == headers.end()) {
+      VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: A mandatory header is "
+              << "missing. Not creating stream";
+      return 0;
+    }
   }
 
-  SpdyHeaderBlock::const_iterator scheme = headers.find("scheme");
   if (scheme->second.compare("https") == 0) {
     *is_https_scheme = true;
   }
 
-  // url->second here only ever seems to contain just the path. When this
-  // path contains a query string with a http:// in one of its values,
-  // UrlUtilities::GetUrlPath will fail and always return a / breaking
-  // the request. GetUrlPath assumes the absolute URL is being passed in.
-  std::string uri;
-  if (url->second.compare(0, 4, "http") == 0)
-    uri = UrlUtilities::GetUrlPath(url->second);
-  else
-    uri = std::string(url->second);
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
-    std::string host = UrlUtilities::GetUrlHost(url->second);
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second
-            << " " << uri;
-    std::string filename = EncodeURL(uri, host, method->second);
+            << " " << path->second;
+    std::string filename = EncodeURL(path->second,
+                                     host->second,
+                                     method->second);
     NewStream(stream_id, priority, filename);
   } else {
-    SpdyHeaderBlock::const_iterator version = headers.find("version");
-    http_data += method->second + " " + uri + " " + version->second + "\r\n";
+    http_data +=
+        method->second + " " + path->second + " " + version->second + "\r\n";
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second << " "
-            << uri << " " << version->second;
+            << path->second << " " << version->second;
+    http_data += "Host: " + (*is_https_scheme ?
+                             acceptor_->https_server_ip_ :
+                             acceptor_->http_server_ip_) + "\r\n";
     for (SpdyHeaderBlock::const_iterator i = headers.begin();
          i != headers.end(); ++i) {
-      http_data += i->first + ": " + i->second + "\r\n";
-      VLOG(2) << ACCEPTOR_CLIENT_IDENT << i->first.c_str() << ":"
-              << i->second.c_str();
+      if ((i->first.size() > 0 && i->first[0] == ':') ||
+          i->first == "host" ||
+          i == method ||
+          i == host ||
+          i == path ||
+          i == scheme ||
+          i == version ||
+          i == url) {
+        // Ignore the entry.
+      } else {
+        http_data += i->first + ": " + i->second + "\r\n";
+        VLOG(2) << ACCEPTOR_CLIENT_IDENT << i->first.c_str() << ":"
+                << i->second.c_str();
+      }
     }
     if (forward_ip_header_.length()) {
       // X-Client-Cluster-IP header
       http_data += forward_ip_header_ + ": " +
-                    connection_->client_ip() + "\r\n";
+          connection_->client_ip() + "\r\n";
     }
     http_data += "\r\n";
   }
@@ -361,7 +399,7 @@ size_t SpdySM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
 }
 
 void SpdySM::SendDataFrame(uint32 stream_id, const char* data, int64 len,
-                   uint32 flags, bool compress) {
+                           uint32 flags, bool compress) {
   SpdyDataFlags spdy_flags = static_cast<SpdyDataFlags>(flags);
   SendDataFrameImpl(stream_id, data, len, spdy_flags, compress);
 }
@@ -387,7 +425,7 @@ void SpdySM::KillStream(uint32 stream_id) {
 
 void SpdySM::CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers) {
   for (BalsaHeaders::const_header_lines_iterator hi =
-       headers.header_lines_begin();
+           headers.header_lines_begin();
        hi != headers.header_lines_end();
        ++hi) {
     // It is illegal to send SPDY headers with empty value or header
@@ -416,16 +454,34 @@ void SpdySM::CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers) {
 size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
                                  const BalsaHeaders& headers) {
   SpdyHeaderBlock block;
-  block["method"] = headers.request_method().as_string();
-  if (!headers.HasHeader("version"))
-    block["version"] =headers.request_version().as_string();
-  if (headers.HasHeader("X-Original-Url")) {
-    std::string original_url = headers.GetHeader("X-Original-Url").as_string();
-    block["url"] = UrlUtilities::GetUrlPath(original_url);
-  } else {
-    block["url"] = headers.request_uri().as_string();
-  }
   CopyHeaders(block, headers);
+  if (spdy_version() == SPDY2) {
+    block["method"] = headers.request_method().as_string();
+    if (!headers.HasHeader("version"))
+      block["version"] = headers.request_version().as_string();
+    if (headers.HasHeader("X-Original-Url")) {
+      std::string original_url =
+          headers.GetHeader("X-Original-Url").as_string();
+      block["url"] = UrlUtilities::GetUrlPath(original_url);
+    } else {
+      block["url"] = headers.request_uri().as_string();
+    }
+  } else {
+    block[":method"] = headers.request_method().as_string();
+    block[":version"] = headers.request_version().as_string();
+    if (headers.HasHeader("X-Original-Url")) {
+      std::string original_url =
+          headers.GetHeader("X-Original-Url").as_string();
+      block[":path"] = UrlUtilities::GetUrlPath(original_url);
+      block[":host"] = UrlUtilities::GetUrlPath(original_url);
+    } else {
+      block[":path"] = headers.request_uri().as_string();
+      if (block.find("host") != block.end()) {
+        block[":host"] = headers.GetHeader("Host").as_string();
+        block.erase("host");
+      }
+    }
+  }
 
   SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
       stream_id, 0, 0, 0, CONTROL_FLAG_NONE, &block);
@@ -440,9 +496,15 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
 size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
   SpdyHeaderBlock block;
   CopyHeaders(block, headers);
-  block["status"] = headers.response_code().as_string() + " " +
-                    headers.response_reason_phrase().as_string();
-  block["version"] = headers.response_version().as_string();
+  if (spdy_version() == SPDY2) {
+    block["status"] = headers.response_code().as_string() + " " +
+        headers.response_reason_phrase().as_string();
+    block["version"] = headers.response_version().as_string();
+  } else {
+    block[":status"] = headers.response_code().as_string() + " " +
+        headers.response_reason_phrase().as_string();
+    block[":version"] = headers.response_version().as_string();
+  }
 
   SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
       stream_id, CONTROL_FLAG_NONE, &block);
@@ -455,7 +517,7 @@ size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
 }
 
 void SpdySM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
-                       SpdyDataFlags flags, bool compress) {
+                               SpdyDataFlags flags, bool compress) {
   // TODO(mbelshe):  We can't compress here - before going into the
   //                 priority queue.  Compression needs to be done
   //                 with late binding.

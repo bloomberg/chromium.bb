@@ -162,6 +162,9 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   static void set_forward_ip_header(const std::string& value) {
     forward_ip_header_ = value;
   }
+  SpdyMajorVersion spdy_version() const {
+    return buffered_spdy_framer_->protocol_version();
+  }
 
  private:
   void SendEOFImpl(uint32 stream_id);

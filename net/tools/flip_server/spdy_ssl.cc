@@ -10,7 +10,13 @@
 
 namespace net {
 
-#define NEXT_PROTO_STRING "\x06spdy/2\x08http/1.1\x08http/1.0"
+// Each element consists of <the length of the string><string> .
+#define NEXT_PROTO_STRING \
+  "\x08spdy/4a2" \
+  "\x06spdy/3" \
+  "\x06spdy/2" \
+  "\x08http/1.1" \
+  "\x08http/1.0"
 #define SSL_CIPHER_LIST "!aNULL:!ADH:!eNull:!LOW:!EXP:RC4+RSA:MEDIUM:HIGH"
 
 int ssl_set_npn_callback(SSL *s,
@@ -107,4 +113,3 @@ void PrintSslError() {
 }
 
 }  // namespace net
-

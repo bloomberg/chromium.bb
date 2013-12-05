@@ -309,7 +309,8 @@ void SMConnection::HandleEvents() {
 }
 
 // Decide if SPDY was negotiated.
-bool SMConnection::WasSpdyNegotiated() {
+bool SMConnection::WasSpdyNegotiated(SpdyMajorVersion* version_negotiated) {
+  *version_negotiated = SPDY3;
   if (force_spdy())
     return true;
 
@@ -323,8 +324,20 @@ bool SMConnection::WasSpdyNegotiated() {
       VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
               << "NPN protocol detected: " << npn_proto_str;
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
-                   "spdy/2", npn_proto_len))
+                   "spdy/2", npn_proto_len)) {
+        *version_negotiated = SPDY2;
         return true;
+      }
+      if (!strncmp(reinterpret_cast<const char*>(npn_proto),
+                   "spdy/3", npn_proto_len)) {
+        *version_negotiated = SPDY3;
+        return true;
+      }
+      if (!strncmp(reinterpret_cast<const char*>(npn_proto),
+                   "spdy/4a2", npn_proto_len)) {
+        *version_negotiated = SPDY4;
+        return true;
+      }
     }
   }
 
@@ -335,7 +348,8 @@ bool SMConnection::SetupProtocolInterfaces() {
   DCHECK(!protocol_detected_);
   protocol_detected_ = true;
 
-  bool spdy_negotiated = WasSpdyNegotiated();
+  SpdyMajorVersion version;
+  bool spdy_negotiated = WasSpdyNegotiated(&version);
   bool using_ssl = ssl_ != NULL;
 
   if (using_ssl)
@@ -394,7 +408,7 @@ bool SMConnection::SetupProtocolInterfaces() {
                                           epoll_server_,
                                           memory_cache_,
                                           acceptor_,
-                                          SPDY2);
+                                          version);
         sm_interface_ = sm_spdy_interface_;
       }
       break;

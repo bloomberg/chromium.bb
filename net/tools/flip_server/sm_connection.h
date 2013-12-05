@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "net/spdy/spdy_protocol.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/flip_server/create_listener.h"
 #include "net/tools/flip_server/mem_cache.h"
@@ -99,7 +100,7 @@ class SMConnection : public SMConnectionInterface,
 
  private:
   // Decide if SPDY was negotiated.
-  bool WasSpdyNegotiated();
+  bool WasSpdyNegotiated(SpdyMajorVersion* version_negotiated);
 
   // Initialize the protocol interfaces we'll need for this connection.
   // Returns true if successful, false otherwise.
