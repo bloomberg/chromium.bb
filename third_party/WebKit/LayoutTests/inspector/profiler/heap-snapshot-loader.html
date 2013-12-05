@@ -20,9 +20,9 @@ function test()
         var dispatcher = InspectorBackend._domainDispatchers["HeapProfiler"];
         var panel = WebInspector.panels.profiles;
         panel._reset();
-        panel._createTemporaryProfile("HEAP");
 
         var profileType = panel.getProfileType("HEAP");
+        profileType.addProfile(profileType.createTemporaryProfile());
         profileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, snapshotLoaded, this);
         function snapshotLoaded(event)
         {
