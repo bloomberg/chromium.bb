@@ -49,6 +49,9 @@ key_handler(struct window *window,
             uint32_t key, uint32_t sym, enum wl_keyboard_key_state state,
             void *data);
 static void
+keyboard_focus_handler(struct window *window,
+		       struct input *device, void *data);
+static void
 fullscreen_handler(struct window *window, void *data);
 static void
 redraw_handler(struct widget *widget, void *data);
@@ -71,6 +74,7 @@ new_window(struct stacking *stacking, struct window *parent_window)
 
 	window_set_title(new_window, "Stacking Test");
 	window_set_key_handler(new_window, key_handler);
+	window_set_keyboard_focus_handler(new_window, keyboard_focus_handler);
 	window_set_fullscreen_handler(new_window, fullscreen_handler);
 	widget_set_button_handler(new_widget, button_handler);
 	widget_set_redraw_handler(new_widget, redraw_handler);
@@ -164,6 +168,13 @@ key_handler(struct window *window,
 	default:
 		break;
 	}
+}
+
+static void
+keyboard_focus_handler(struct window *window,
+		       struct input *device, void *data)
+{
+	window_schedule_redraw(window);
 }
 
 static void
