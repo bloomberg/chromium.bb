@@ -290,9 +290,6 @@ void Settings::setViewportEnabled(bool enabled)
     if (m_viewportEnabled == enabled)
         return;
 
-    // FIXME: Remove once Chromium-side lands.
-    setViewportMetaEnabled(enabled);
-
     m_viewportEnabled = enabled;
     if (m_page->mainFrame())
         m_page->mainFrame()->document()->updateViewportDescription();

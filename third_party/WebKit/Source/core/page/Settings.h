@@ -120,9 +120,7 @@ public:
     void setViewportMetaEnabled(bool);
     bool viewportMetaEnabled() const
     {
-        // FIXME: Remove and uncomment once chromium side changes land.
-        return true;
-        // return m_viewportMetaEnabled;
+        return m_viewportMetaEnabled;
     }
 
     // FIXME: This is a temporary flag and should be removed once accelerated

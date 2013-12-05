@@ -701,9 +701,6 @@ void WebSettingsImpl::setFixedPositionCreatesStackingContext(bool creates)
 
 void WebSettingsImpl::setViewportEnabled(bool enabled)
 {
-    // FIXME: Remove once Chromium side changes land.
-    setMainFrameResizesAreOrientationChanges(enabled);
-
     m_settings->setViewportEnabled(enabled);
 }
 
