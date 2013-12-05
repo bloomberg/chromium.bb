@@ -157,6 +157,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # http://crbug.com/326117
+    # https://bitbucket.org/chrisatlee/poster/issue/21
+    'third_party/chromite/third_party/poster': [
+        'UNKNOWN',
+    ],
+
     # Not used. http://crbug.com/156020
     # Using third_party/cros_dbus_cplusplus/cros_dbus_cplusplus.gyp instead.
     'third_party/cros_dbus_cplusplus/source/autogen.sh': [
