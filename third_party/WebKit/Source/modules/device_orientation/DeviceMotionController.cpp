@@ -45,6 +45,7 @@ DeviceMotionController::DeviceMotionController(Document* document)
 
 DeviceMotionController::~DeviceMotionController()
 {
+    stopUpdating();
 }
 
 void DeviceMotionController::didChangeDeviceMotion(DeviceMotionData* deviceMotionData)

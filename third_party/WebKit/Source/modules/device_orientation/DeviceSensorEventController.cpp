@@ -45,7 +45,6 @@ DeviceSensorEventController::DeviceSensorEventController(Document* document)
 
 DeviceSensorEventController::~DeviceSensorEventController()
 {
-    stopUpdating();
 }
 
 void DeviceSensorEventController::fireDeviceEvent(Timer<DeviceSensorEventController>* timer)
