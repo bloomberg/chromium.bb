@@ -1105,30 +1105,6 @@ class GerritTestCase(TempDirTestCase):
     })
     cls.constants_patcher.start()
 
-    # Workaround for syntax that is supported in production gerrit, but not in
-    # the stable binary distribution used for testing.
-    def _GetChangeDetail(host, change, o_params=None):
-      o_params = ('DETAILED_ACCOUNTS', 'DETAILED_LABELS',
-                  'CURRENT_COMMIT', 'CURRENT_REVISION')
-      q_params = {}
-      if len(str(change).split('~')) == 3:
-        project, branch, changeid = [
-            urllib.quote(x, '') for x in str(change).split('~')]
-        q_params['project'] = project
-        q_params['branch'] = branch
-        q_params['change'] = changeid
-        change = ''
-      result = gob_util.QueryChanges(
-          host, q_params, str(change), o_params=o_params)
-      # The original method would return None if more than one CL matched the
-      # 'change' argument, so we reproduce that behavior.
-      if result and len(result) == 1:
-        return result[0]
-
-    cls.get_change_detail_patcher = mock.patch(
-        'chromite.lib.gob_util.GetChangeDetail', _GetChangeDetail)
-    cls.get_change_detail_patcher.start()
-
   @classmethod
   def createProject(cls, name, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):
@@ -1312,7 +1288,6 @@ class GerritTestCase(TempDirTestCase):
     cls.httplib_patcher.stop()
     cls.protocol_patcher.stop()
     cls.constants_patcher.stop()
-    cls.get_change_detail_patcher.stop()
     if cls.TEARDOWN:
       cls._stop_gerrit(cls.gerrit_instance)
       cls.gerritdir_obj.Cleanup()
