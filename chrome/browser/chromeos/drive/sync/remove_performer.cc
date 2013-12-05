@@ -188,6 +188,20 @@ void RemovePerformer::UnparentResourceAfterGetResourceEntry(
     return;
   }
 
+  if (!entry.shared_with_me()) {
+    // shared_with_me() has changed on the server.
+    UnparentResourceAfterUpdateRemoteState(callback, local_id,
+                                           google_apis::HTTP_CONFLICT);
+    return;
+  }
+
+  if (parent_resource_id == util::kDriveOtherDirLocalId) {
+    // This entry is unparented already.
+    UnparentResourceAfterUpdateRemoteState(callback, local_id,
+                                           google_apis::HTTP_NO_CONTENT);
+    return;
+  }
+
   scheduler_->RemoveResourceFromDirectory(
       parent_resource_id,
       entry.resource_id(),
