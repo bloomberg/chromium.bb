@@ -130,7 +130,7 @@ TEST(CommandTest, ExtensionCommandParsing) {
                  "| index: " + base::IntToString(i));
 
     extensions::Command command;
-    string16 error;
+    base::string16 error;
     bool result =
         command.Parse(input.get(), kTests[i].command_name, i, &error);
 
@@ -182,7 +182,7 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   input->SetString("description", description);
 
   extensions::Command command;
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(command.Parse(input.get(), command_name, 0, &error));
   EXPECT_STREQ(description.c_str(),
                UTF16ToASCII(command.description()).c_str());

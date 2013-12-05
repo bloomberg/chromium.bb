@@ -51,7 +51,7 @@ bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages) const {
 
 void SocketPermission::AddSubdomainHostMessage(
     PermissionMessages& messages) const {
-  std::set<string16> domains;
+  std::set<base::string16> domains;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
     if (i->entry().GetHostType() == SocketPermissionEntry::HOSTS_IN_DOMAINS)
@@ -66,14 +66,14 @@ void SocketPermission::AddSubdomainHostMessage(
         l10n_util::GetStringFUTF16(
             id,
             JoinString(
-                std::vector<string16>(
+                std::vector<base::string16>(
                     domains.begin(), domains.end()), ' '))));
   }
 }
 
 void SocketPermission::AddSpecificHostMessage(
     PermissionMessages& messages) const {
-  std::set<string16> hostnames;
+  std::set<base::string16> hostnames;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
     if (i->entry().GetHostType() == SocketPermissionEntry::SPECIFIC_HOSTS)
@@ -88,7 +88,7 @@ void SocketPermission::AddSpecificHostMessage(
         l10n_util::GetStringFUTF16(
             id,
             JoinString(
-                std::vector<string16>(
+                std::vector<base::string16>(
                     hostnames.begin(), hostnames.end()), ' '))));
   }
 }

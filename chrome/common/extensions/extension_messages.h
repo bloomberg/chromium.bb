@@ -51,7 +51,7 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_DOMAction_Params)
   IPC_STRUCT_MEMBER(GURL, url)
 
   // Title of the page.
-  IPC_STRUCT_MEMBER(string16, url_title)
+  IPC_STRUCT_MEMBER(base::string16, url_title)
 
   // API name.
   IPC_STRUCT_MEMBER(std::string, api_call)

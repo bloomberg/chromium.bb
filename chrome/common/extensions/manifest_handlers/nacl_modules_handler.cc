@@ -40,8 +40,7 @@ NaClModulesHandler::NaClModulesHandler() {
 NaClModulesHandler::~NaClModulesHandler() {
 }
 
-bool NaClModulesHandler::Parse(Extension* extension,
-                               string16* error) {
+bool NaClModulesHandler::Parse(Extension* extension, base::string16* error) {
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kNaClModules, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidNaClModules);

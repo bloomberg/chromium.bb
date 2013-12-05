@@ -17,7 +17,7 @@ class ProtocolHandler {
  public:
   static ProtocolHandler CreateProtocolHandler(const std::string& protocol,
                                                const GURL& url,
-                                               const string16& title);
+                                               const base::string16& title);
 
   // Creates a ProtocolHandler with fields from the dictionary. Returns an
   // empty ProtocolHandler if the input is invalid.
@@ -48,7 +48,7 @@ class ProtocolHandler {
 
   const std::string& protocol() const { return protocol_; }
   const GURL& url() const { return url_;}
-  const string16& title() const { return title_; }
+  const base::string16& title() const { return title_; }
 
   bool IsEmpty() const {
     return protocol_.empty();
@@ -66,12 +66,12 @@ class ProtocolHandler {
  private:
   ProtocolHandler(const std::string& protocol,
                   const GURL& url,
-                  const string16& title);
+                  const base::string16& title);
   ProtocolHandler();
 
   std::string protocol_;
   GURL url_;
-  string16 title_;
+  base::string16 title_;
 };
 
 #endif  // CHROME_COMMON_CUSTOM_HANDLERS_PROTOCOL_HANDLER_H_

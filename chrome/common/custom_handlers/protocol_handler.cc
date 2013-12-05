@@ -11,7 +11,7 @@
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
                                  const GURL& url,
-                                 const string16& title)
+                                 const base::string16& title)
     : protocol_(protocol),
       url_(url),
       title_(title) {
@@ -20,7 +20,7 @@ ProtocolHandler::ProtocolHandler(const std::string& protocol,
 ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     const std::string& protocol,
     const GURL& url,
-    const string16& title) {
+    const base::string16& title) {
   std::string lower_protocol = StringToLowerASCII(protocol);
   return ProtocolHandler(lower_protocol, url, title);
 }
@@ -49,7 +49,7 @@ ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     return EmptyProtocolHandler();
   }
   std::string protocol, url;
-  string16 title;
+  base::string16 title;
   value->GetString("protocol", &protocol);
   value->GetString("url", &url);
   value->GetString("title", &title);

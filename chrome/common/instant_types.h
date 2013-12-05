@@ -22,12 +22,12 @@ typedef int InstantRestrictedID;
 // server what suggestion to prefetch.
 struct InstantSuggestion {
   InstantSuggestion();
-  InstantSuggestion(const string16& in_text,
+  InstantSuggestion(const base::string16& in_text,
                     const std::string& in_metadata);
   ~InstantSuggestion();
 
   // Full suggested text.
-  string16 text;
+  base::string16 text;
 
   // JSON metadata from the server response which produced this suggestion.
   std::string metadata;
@@ -39,20 +39,20 @@ struct InstantAutocompleteResult {
   ~InstantAutocompleteResult();
 
   // The provider name, as returned by AutocompleteProvider::GetName().
-  string16 provider;
+  base::string16 provider;
 
   // The type of the result.
   AutocompleteMatchType::Type type;
 
   // The description (title), same as AutocompleteMatch::description.
-  string16 description;
+  base::string16 description;
 
   // The URL of the match, same as AutocompleteMatch::destination_url.
-  string16 destination_url;
+  base::string16 destination_url;
 
   // The search query for this match. Only set for matches coming from
   // SearchProvider. Populated using AutocompleteMatch::contents.
-  string16 search_query;
+  base::string16 search_query;
 
   // The transition type to use when the user opens this match. Same as
   // AutocompleteMatch::transition.
@@ -165,7 +165,7 @@ struct InstantMostVisitedItem {
 
   // The title of the Most Visited page.  May be empty, in which case the |url|
   // is used as the title.
-  string16 title;
+  base::string16 title;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.

@@ -62,7 +62,7 @@ WebAccessibleResourcesHandler::~WebAccessibleResourcesHandler() {
 }
 
 bool WebAccessibleResourcesHandler::Parse(Extension* extension,
-                                          string16* error) {
+                                          base::string16* error) {
   scoped_ptr<WebAccessibleResourcesInfo> info(new WebAccessibleResourcesInfo);
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kWebAccessibleResources,

@@ -19,7 +19,7 @@ class ScriptBadgeHandler : public ManifestHandler {
   ScriptBadgeHandler();
   virtual ~ScriptBadgeHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
   virtual const std::vector<std::string> PrerequisiteKeys() const OVERRIDE;
   virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
 

@@ -531,7 +531,7 @@ void LocalizedError::GetStrings(int error_code,
     options.suggestions = SUGGEST_NONE;
   }
 
-  string16 failed_url_string(net::FormatUrl(
+  base::string16 failed_url_string(net::FormatUrl(
       failed_url, accept_languages, net::kFormatUrlOmitNothing,
       net::UnescapeRule::NORMAL, NULL, NULL, NULL));
   // URLs are always LTR.
@@ -569,7 +569,7 @@ void LocalizedError::GetStrings(int error_code,
         "errorDetails", l10n_util::GetStringUTF16(options.details_resource_id));
   }
 
-  string16 error_string;
+  base::string16 error_string;
   if (error_domain == net::kErrorDomain) {
     // Non-internationalized error string, for debugging Chrome itself.
     std::string ascii_error_string = net::ErrorToString(error_code);
@@ -769,8 +769,8 @@ void LocalizedError::GetStrings(int error_code,
   error_strings->Set("suggestions", suggestions);
 }
 
-string16 LocalizedError::GetErrorDetails(const blink::WebURLError& error,
-                                         bool is_post) {
+base::string16 LocalizedError::GetErrorDetails(const blink::WebURLError& error,
+                                               bool is_post) {
   const LocalizedErrorMap* error_map =
       LookupErrorMap(error.domain.utf8(), error.reason, is_post);
   if (error_map)
@@ -796,7 +796,7 @@ void LocalizedError::GetAppErrorStrings(
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
 
-  string16 failed_url(ASCIIToUTF16(display_url.spec()));
+  base::string16 failed_url(ASCIIToUTF16(display_url.spec()));
   // URLs are always LTR.
   if (rtl)
     base::i18n::WrapStringWithLTRFormatting(&failed_url);

@@ -56,7 +56,7 @@ ExternallyConnectableHandler::ExternallyConnectableHandler() {}
 ExternallyConnectableHandler::~ExternallyConnectableHandler() {}
 
 bool ExternallyConnectableHandler::Parse(Extension* extension,
-                                         string16* error) {
+                                         base::string16* error) {
   const base::Value* externally_connectable = NULL;
   CHECK(extension->manifest()->Get(keys::kExternallyConnectable,
                                    &externally_connectable));
@@ -91,7 +91,7 @@ ExternallyConnectableInfo* ExternallyConnectableInfo::Get(
 scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
     const base::Value& value,
     std::vector<InstallWarning>* install_warnings,
-    string16* error) {
+    base::string16* error) {
   scoped_ptr<ExternallyConnectable> externally_connectable =
       ExternallyConnectable::FromValue(value, error);
   if (!externally_connectable)

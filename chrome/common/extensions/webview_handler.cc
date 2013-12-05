@@ -66,7 +66,7 @@ WebviewHandler::WebviewHandler() {
 WebviewHandler::~WebviewHandler() {
 }
 
-bool WebviewHandler::Parse(Extension* extension, string16* error) {
+bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<WebviewInfo> info(new WebviewInfo());
 
   const base::DictionaryValue* dict_value = NULL;

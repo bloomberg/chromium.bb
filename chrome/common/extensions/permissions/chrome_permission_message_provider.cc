@@ -48,10 +48,10 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
 }
 
 // static
-std::vector<string16> ChromePermissionMessageProvider::GetWarningMessages(
+std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
-  std::vector<string16> message_strings;
+  std::vector<base::string16> message_strings;
   PermissionMessages messages =
       GetPermissionMessages(permissions, extension_type);
 
@@ -118,11 +118,11 @@ std::vector<string16> ChromePermissionMessageProvider::GetWarningMessages(
 }
 
 // static
-std::vector<string16>
+std::vector<base::string16>
 ChromePermissionMessageProvider::GetWarningMessagesDetails(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
-  std::vector<string16> message_strings;
+  std::vector<base::string16> message_strings;
   PermissionMessages messages =
       GetPermissionMessages(permissions, extension_type);
 
@@ -177,12 +177,14 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
   // TODO(sammc): Remove this. See http://crbug.com/284849.
   std::set<PermissionMessage>::iterator write_directory_message =
       messages.find(PermissionMessage(
-          PermissionMessage::kFileSystemWriteDirectory, string16()));
+          PermissionMessage::kFileSystemWriteDirectory, base::string16()));
   if (write_directory_message != messages.end()) {
     messages.erase(
-        PermissionMessage(PermissionMessage::kFileSystemWrite, string16()));
+        PermissionMessage(PermissionMessage::kFileSystemWrite,
+                          base::string16()));
     messages.erase(
-        PermissionMessage(PermissionMessage::kFileSystemDirectory, string16()));
+        PermissionMessage(PermissionMessage::kFileSystemDirectory,
+                          base::string16()));
   }
 
   // A special hack: The warning message for declarativeWebRequest
@@ -193,7 +195,7 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
   if (permissions->HasEffectiveAccessToAllHosts()) {
     messages.erase(
         PermissionMessage(
-            PermissionMessage::kDeclarativeWebRequest, string16()));
+            PermissionMessage::kDeclarativeWebRequest, base::string16()));
   }
 
   return messages;
@@ -260,12 +262,14 @@ bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
   // kFileSystemWrite.
   // TODO(sammc): Remove this. See http://crbug.com/284849.
   if (old_warnings.find(PermissionMessage(
-          PermissionMessage::kFileSystemWriteDirectory, string16())) !=
+          PermissionMessage::kFileSystemWriteDirectory, base::string16())) !=
       old_warnings.end()) {
     delta_warnings.erase(
-        PermissionMessage(PermissionMessage::kFileSystemDirectory, string16()));
+        PermissionMessage(PermissionMessage::kFileSystemDirectory,
+                          base::string16()));
     delta_warnings.erase(
-        PermissionMessage(PermissionMessage::kFileSystemWrite, string16()));
+        PermissionMessage(PermissionMessage::kFileSystemWrite,
+                          base::string16()));
   }
 
   // It is a privilege increase if there are additional warnings present.

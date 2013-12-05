@@ -61,7 +61,7 @@ CommandsHandler::CommandsHandler() {
 CommandsHandler::~CommandsHandler() {
 }
 
-bool CommandsHandler::Parse(Extension* extension, string16* error) {
+bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->HasKey(keys::kCommands)) {
     scoped_ptr<CommandsInfo> commands_info(new CommandsInfo);
     MaybeSetBrowserActionDefault(extension, commands_info.get());
@@ -139,7 +139,7 @@ void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
       !info->browser_action_command.get()) {
     info->browser_action_command.reset(
         new Command(manifest_values::kBrowserActionCommandEvent,
-                    string16(),
+                    base::string16(),
                     std::string(),
                     false));
   }

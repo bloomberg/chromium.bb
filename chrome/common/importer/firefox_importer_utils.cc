@@ -25,7 +25,7 @@ namespace {
 // Retrieves the file system path of the profile name.
 base::FilePath GetProfilePath(const DictionaryValue& root,
                               const std::string& profile_name) {
-  string16 path16;
+  base::string16 path16;
   std::string is_relative;
   if (!root.GetStringASCII(profile_name + ".IsRelative", &is_relative) ||
       !root.GetString(profile_name + ".Path", &path16))
@@ -253,7 +253,7 @@ std::string GetPrefsJsValue(const std::string& content,
 //   ID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
 //   .........................................
 // In this example the function returns "Iceweasel" (or a localized equivalent).
-string16 GetFirefoxImporterName(const base::FilePath& app_path) {
+base::string16 GetFirefoxImporterName(const base::FilePath& app_path) {
   const base::FilePath app_ini_file = app_path.AppendASCII("application.ini");
   std::string branding_name;
   if (base::PathExists(app_ini_file)) {

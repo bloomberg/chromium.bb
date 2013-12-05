@@ -38,10 +38,10 @@ struct WebApplicationInfo {
   bool is_bookmark_app;
 
   // Title of the application.
-  string16 title;
+  base::string16 title;
 
   // Description of the application.
-  string16 description;
+  base::string16 description;
 
   // The launch URL for the app.
   GURL app_url;

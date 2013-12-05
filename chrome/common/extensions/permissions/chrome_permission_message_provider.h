@@ -23,10 +23,10 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   virtual PermissionMessages GetPermissionMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const OVERRIDE;
-  virtual std::vector<string16> GetWarningMessages(
+  virtual std::vector<base::string16> GetWarningMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const OVERRIDE;
-  virtual std::vector<string16> GetWarningMessagesDetails(
+  virtual std::vector<base::string16> GetWarningMessagesDetails(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const OVERRIDE;
   virtual bool IsPrivilegeIncrease(

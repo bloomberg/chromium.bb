@@ -7,7 +7,7 @@
 InstantSuggestion::InstantSuggestion() {
 }
 
-InstantSuggestion::InstantSuggestion(const string16& in_text,
+InstantSuggestion::InstantSuggestion(const base::string16& in_text,
                                      const std::string& in_metadata)
     : text(in_text),
       metadata(in_metadata) {

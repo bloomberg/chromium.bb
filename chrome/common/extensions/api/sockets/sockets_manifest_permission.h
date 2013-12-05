@@ -32,7 +32,7 @@ class SocketsManifestPermission : public ManifestPermission {
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
   static scoped_ptr<SocketsManifestPermission> FromValue(
       const base::Value& value,
-      string16* error);
+      base::string16* error);
 
   bool CheckRequest(const Extension* extension,
                     const content::SocketPermissionRequest& request) const;

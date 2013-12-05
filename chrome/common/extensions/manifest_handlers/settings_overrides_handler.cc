@@ -30,7 +30,7 @@ scoped_ptr<GURL> CreateManifestURL(const std::string& url) {
 }
 
 scoped_ptr<GURL> ParseHomepage(const ChromeSettingsOverrides& overrides,
-                               string16* error) {
+                               base::string16* error) {
   if (!overrides.homepage)
     return scoped_ptr<GURL>();
   scoped_ptr<GURL> manifest_url = CreateManifestURL(*overrides.homepage);
@@ -42,7 +42,7 @@ scoped_ptr<GURL> ParseHomepage(const ChromeSettingsOverrides& overrides,
 }
 
 std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
-                                   string16* error) {
+                                   base::string16* error) {
   std::vector<GURL> urls;
   if (!overrides.startup_pages)
     return urls;
@@ -64,7 +64,7 @@ std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
 
 scoped_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
     ChromeSettingsOverrides* overrides,
-    string16* error) {
+    base::string16* error) {
   if (!overrides->search_provider)
     return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
   if (!CreateManifestURL(overrides->search_provider->favicon_url)) {
@@ -106,7 +106,8 @@ SettingsOverridesHandler::SettingsOverridesHandler() {}
 
 SettingsOverridesHandler::~SettingsOverridesHandler() {}
 
-bool SettingsOverridesHandler::Parse(Extension* extension, string16* error) {
+bool SettingsOverridesHandler::Parse(Extension* extension,
+                                     base::string16* error) {
   const base::Value* dict = NULL;
   CHECK(extension->manifest()->Get(manifest_keys::kSettingsOverride, &dict));
   scoped_ptr<ChromeSettingsOverrides> settings(

@@ -45,7 +45,7 @@ OAuth2ManifestHandler::~OAuth2ManifestHandler() {
 }
 
 bool OAuth2ManifestHandler::Parse(Extension* extension,
-                                  string16* error) {
+                                  base::string16* error) {
   scoped_ptr<OAuth2Info> info(new OAuth2Info);
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kOAuth2, &dict)) {

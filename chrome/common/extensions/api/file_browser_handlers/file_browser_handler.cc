@@ -133,7 +133,7 @@ namespace {
 FileBrowserHandler* LoadFileBrowserHandler(
     const std::string& extension_id,
     const DictionaryValue* file_browser_handler,
-    string16* error) {
+    base::string16* error) {
   scoped_ptr<FileBrowserHandler> result(new FileBrowserHandler());
   result->set_extension_id(extension_id);
 
@@ -245,7 +245,7 @@ bool LoadFileBrowserHandlers(
     const std::string& extension_id,
     const ListValue* extension_actions,
     FileBrowserHandler::List* result,
-    string16* error) {
+    base::string16* error) {
   for (ListValue::const_iterator iter = extension_actions->begin();
        iter != extension_actions->end();
        ++iter) {
@@ -266,7 +266,7 @@ bool LoadFileBrowserHandlers(
 }  // namespace
 
 bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
-                                     string16* error) {
+                                     base::string16* error) {
   const ListValue* file_browser_handlers_value = NULL;
   if (!extension->manifest()->GetList(keys::kFileBrowserHandlers,
                                       &file_browser_handlers_value)) {

@@ -11,8 +11,8 @@
 IPC_MESSAGE_CONTROL4(ValidationMessageMsg_ShowValidationMessage,
                      int /* route id */,
                      gfx::Rect /* anchor rectangle in root view coordinate */,
-                     string16 /* validation message */,
-                     string16 /* supplemental text */)
+                     base::string16 /* validation message */,
+                     base::string16 /* supplemental text */)
 
 IPC_MESSAGE_CONTROL0(ValidationMessageMsg_HideValidationMessage)
 

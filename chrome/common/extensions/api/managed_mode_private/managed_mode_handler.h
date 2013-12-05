@@ -33,16 +33,16 @@ class ManagedModeHandler : public ManifestHandler {
   ManagedModeHandler();
   virtual ~ManagedModeHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 
   bool LoadSites(ManagedModeInfo* info,
                  const base::DictionaryValue* content_pack_value,
-                 string16* error);
+                 base::string16* error);
   bool LoadConfigurations(ManagedModeInfo* info,
                           const base::DictionaryValue* content_pack_value,
-                          string16* error);
+                          base::string16* error);
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeHandler);
 };

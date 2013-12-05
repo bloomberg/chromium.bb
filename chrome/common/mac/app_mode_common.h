@@ -115,7 +115,7 @@ struct ChromeAppModeInfo {
   std::string app_mode_id;  // Required: v1.0
 
   // Unrestricted (e.g., several-word) UTF8-encoded name for the shortcut.
-  string16 app_mode_name;  // Optional: v1.0
+  base::string16 app_mode_name;  // Optional: v1.0
 
   // URL for the shortcut. Must be a valid URL.
   std::string app_mode_url;  // Required: v1.0

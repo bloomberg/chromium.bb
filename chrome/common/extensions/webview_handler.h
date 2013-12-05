@@ -40,7 +40,7 @@ class WebviewHandler : public ManifestHandler {
   WebviewHandler();
   virtual ~WebviewHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;

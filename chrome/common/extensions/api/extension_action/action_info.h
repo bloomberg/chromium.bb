@@ -35,7 +35,7 @@ struct ActionInfo {
   // Loads an ActionInfo from the given DictionaryValue.
   static scoped_ptr<ActionInfo> Load(const Extension* extension,
                                      const base::DictionaryValue* dict,
-                                     string16* error);
+                                     base::string16* error);
 
   // Returns the extension's browser action, if any.
   static const ActionInfo* GetBrowserActionInfo(const Extension* extension);

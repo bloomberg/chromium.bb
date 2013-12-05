@@ -42,7 +42,7 @@ FileHandlersParser::~FileHandlersParser() {
 bool LoadFileHandler(const std::string& handler_id,
                      const base::DictionaryValue& handler_info,
                      std::vector<FileHandlerInfo>* file_handlers,
-                     string16* error) {
+                     base::string16* error) {
   DCHECK(error);
   FileHandlerInfo handler;
 
@@ -110,7 +110,7 @@ bool LoadFileHandler(const std::string& handler_id,
   return true;
 }
 
-bool FileHandlersParser::Parse(Extension* extension, string16* error) {
+bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<FileHandlers> info(new FileHandlers);
   const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(keys::kFileHandlers,

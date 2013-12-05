@@ -65,6 +65,6 @@ IEImporterTestRegistryOverrider::~IEImporterTestRegistryOverrider() {
 base::string16 IEImporterTestRegistryOverrider::GetTestRegistryOverride() {
   base::string16 key;
   if (!GetTestKeyFromEnvironment(&key))
-    return string16();
+    return base::string16();
   return key;
 }

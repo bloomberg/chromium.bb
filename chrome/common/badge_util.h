@@ -31,8 +31,8 @@ SkPaint* GetBadgeTextPaintSingleton();
 // rendered instead (or nothing, if |fallback| is empty).
 SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
                               float font_size_in_pixels,
-                              const string16& text,
-                              const string16& fallback);
+                              const base::string16& text,
+                              const base::string16& fallback);
 
 // Paints badge with specified parameters to |canvas|.
 void PaintBadge(gfx::Canvas* canvas,

@@ -33,7 +33,7 @@ static bool ParseHostPattern(
     SocketsManifestPermission* permission,
     content::SocketPermissionRequest::OperationType operation_type,
     const std::string& host_pattern,
-    string16* error) {
+    base::string16* error) {
   SocketPermissionEntry entry;
   if (!SocketPermissionEntry::ParseHostPattern(
         operation_type, host_pattern, &entry)) {
@@ -49,7 +49,7 @@ static bool ParseHostPatterns(
     SocketsManifestPermission* permission,
     content::SocketPermissionRequest::OperationType operation_type,
     const scoped_ptr<SocketHostPatterns>& host_patterns,
-    string16* error) {
+    base::string16* error) {
   if (!host_patterns)
     return true;
 
@@ -92,7 +92,7 @@ SocketsManifestPermission::~SocketsManifestPermission() {}
 // static
 scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
     const base::Value& value,
-    string16* error) {
+    base::string16* error) {
   scoped_ptr<Sockets> sockets = Sockets::FromValue(value, error);
   if (!sockets)
     return scoped_ptr<SocketsManifestPermission>();
@@ -176,7 +176,7 @@ PermissionMessages SocketsManifestPermission::GetMessages() const {
 bool SocketsManifestPermission::FromValue(const base::Value* value) {
   if (!value)
     return false;
-  string16 error;
+  base::string16 error;
   scoped_ptr<SocketsManifestPermission> manifest_permission(
       SocketsManifestPermission::FromValue(*value, &error));
 
@@ -320,7 +320,7 @@ bool SocketsManifestPermission::AddAnyHostMessage(
 
 void SocketsManifestPermission::AddSubdomainHostMessage(
     PermissionMessages& messages) const {
-  std::set<string16> domains;
+  std::set<base::string16> domains;
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
       it != permissions_.end(); ++it) {
     if (it->GetHostType() == SocketPermissionEntry::HOSTS_IN_DOMAINS)
@@ -335,14 +335,14 @@ void SocketsManifestPermission::AddSubdomainHostMessage(
         l10n_util::GetStringFUTF16(
             id,
             JoinString(
-                std::vector<string16>(
+                std::vector<base::string16>(
                     domains.begin(), domains.end()), ' '))));
   }
 }
 
 void SocketsManifestPermission::AddSpecificHostMessage(
     PermissionMessages& messages) const {
-  std::set<string16> hostnames;
+  std::set<base::string16> hostnames;
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
     it != permissions_.end(); ++it) {
     if (it->GetHostType() == SocketPermissionEntry::SPECIFIC_HOSTS)
@@ -357,7 +357,7 @@ void SocketsManifestPermission::AddSpecificHostMessage(
         l10n_util::GetStringFUTF16(
             id,
             JoinString(
-                std::vector<string16>(
+                std::vector<base::string16>(
                     hostnames.begin(), hostnames.end()), ' '))));
   }
 }

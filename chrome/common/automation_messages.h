@@ -29,7 +29,7 @@ IPC_ENUM_TRAITS(content::PageType)
 
 IPC_STRUCT_BEGIN(AutomationMsg_Find_Params)
   // The word(s) to find on the page.
-  IPC_STRUCT_MEMBER(string16, search_string)
+  IPC_STRUCT_MEMBER(base::string16, search_string)
 
   // Whether to search forward or backward within the page.
   IPC_STRUCT_MEMBER(bool, forward)

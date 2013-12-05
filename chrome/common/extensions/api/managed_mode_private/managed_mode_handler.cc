@@ -44,7 +44,7 @@ ManagedModeHandler::ManagedModeHandler() {
 ManagedModeHandler::~ManagedModeHandler() {
 }
 
-bool ManagedModeHandler::Parse(Extension* extension, string16* error) {
+bool ManagedModeHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->HasKey(keys::kContentPack))
     return true;
 
@@ -72,7 +72,7 @@ const std::vector<std::string> ManagedModeHandler::Keys() const {
 bool ManagedModeHandler::LoadSites(
     ManagedModeInfo* info,
     const base::DictionaryValue* content_pack_value,
-    string16* error) {
+    base::string16* error) {
   if (!content_pack_value->HasKey(keys::kContentPackSites))
     return true;
 
@@ -91,7 +91,7 @@ bool ManagedModeHandler::LoadSites(
 bool ManagedModeHandler::LoadConfigurations(
     ManagedModeInfo* info,
     const base::DictionaryValue* content_pack_value,
-    string16* error) {
+    base::string16* error) {
   NOTIMPLEMENTED();
   return true;
 }

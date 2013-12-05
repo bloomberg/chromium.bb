@@ -36,7 +36,7 @@ struct SourceProfile {
   SourceProfile();
   ~SourceProfile();
 
-  string16 importer_name;
+  base::string16 importer_name;
   ImporterType importer_type;
   base::FilePath source_path;
   base::FilePath app_path;
@@ -49,8 +49,8 @@ struct SourceProfile {
 // Contains information needed for importing bookmarks/search engine urls, etc.
 struct URLKeywordInfo {
   GURL url;
-  string16 keyword;
-  string16 display_name;
+  base::string16 keyword;
+  base::string16 display_name;
 };
 
 #if defined(OS_WIN)

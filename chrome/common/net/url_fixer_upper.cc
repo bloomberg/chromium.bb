@@ -40,8 +40,9 @@ url_parse::Component UTF8ComponentToUTF16Component(
       text_utf8.substr(0, component_utf8.begin);
   std::string component_string = text_utf8.substr(component_utf8.begin,
                                                   component_utf8.len);
-  string16 before_component_string_16 = UTF8ToUTF16(before_component_string);
-  string16 component_string_16 = UTF8ToUTF16(component_string);
+  base::string16 before_component_string_16 =
+      UTF8ToUTF16(before_component_string);
+  base::string16 component_string_16 = UTF8ToUTF16(component_string);
   url_parse::Component component_16(before_component_string_16.length(),
                                     component_string_16.length());
   return component_16;
@@ -80,8 +81,8 @@ TrimPositions TrimWhitespaceUTF8(const std::string& input,
   // twice. Please feel free to file a bug if this function hurts the
   // performance of Chrome.
   DCHECK(IsStringUTF8(input));
-  string16 input16 = UTF8ToUTF16(input);
-  string16 output16;
+  base::string16 input16 = UTF8ToUTF16(input);
+  base::string16 output16;
   TrimPositions result = TrimWhitespace(input16, positions, &output16);
   *output = UTF16ToUTF8(output16);
   return result;
@@ -483,8 +484,8 @@ std::string URLFixerUpper::SegmentURL(const std::string& text,
   return SegmentURLInternal(&mutable_text, parts);
 }
 
-string16 URLFixerUpper::SegmentURL(const string16& text,
-                                   url_parse::Parsed* parts) {
+base::string16 URLFixerUpper::SegmentURL(const base::string16& text,
+                                         url_parse::Parsed* parts) {
   std::string text_utf8 = UTF16ToUTF8(text);
   url_parse::Parsed parts_utf8;
   std::string scheme_utf8 = SegmentURL(text_utf8, &parts_utf8);

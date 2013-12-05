@@ -124,7 +124,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   scoped_ptr<CommandLine> autorun_command_line;
 #if defined(OS_WIN)
   std::string value_name = GetServiceProcessScopedName("_service_run");
-  string16 value;
+  base::string16 value;
   EXPECT_TRUE(base::win::ReadCommandFromAutoRun(HKEY_CURRENT_USER,
                                                 UTF8ToWide(value_name),
                                                 &value));

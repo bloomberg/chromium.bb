@@ -31,7 +31,8 @@ namespace URLFixerUpper {
   // Returns the canonicalized scheme, or the empty string when |text| is only
   // whitespace.
   std::string SegmentURL(const std::string& text, url_parse::Parsed* parts);
-  string16 SegmentURL(const string16& text, url_parse::Parsed* parts);
+  base::string16 SegmentURL(const base::string16& text,
+                            url_parse::Parsed* parts);
 
   // Converts |text| to a fixed-up URL and returns it. Attempts to make
   // some "smart" adjustments to obviously-invalid input where possible.

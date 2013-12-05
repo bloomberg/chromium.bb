@@ -94,8 +94,8 @@ SkPaint* GetBadgeTextPaintSingleton() {
 
 SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
                               float font_size,
-                              const string16& text,
-                              const string16& fallback) {
+                              const base::string16& text,
+                              const base::string16& fallback) {
   const int kMinPadding = 1;
 
   // Calculate the proper style/text overlay to render on the badge.

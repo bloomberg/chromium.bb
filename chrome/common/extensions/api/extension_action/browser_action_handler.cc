@@ -24,7 +24,7 @@ BrowserActionHandler::~BrowserActionHandler() {
 }
 
 bool BrowserActionHandler::Parse(Extension* extension,
-                                 string16* error) {
+                                 base::string16* error) {
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(
           manifest_keys::kBrowserAction, &dict)) {

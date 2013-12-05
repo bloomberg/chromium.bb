@@ -18,7 +18,7 @@ namespace chrome {
 std::string VersionInfo::GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
   base::FilePath module;
-  string16 channel;
+  base::string16 channel;
   if (PathService::Get(base::FILE_MODULE, &module)) {
     bool is_system_install =
         !InstallUtil::IsPerUserInstall(module.value().c_str());

@@ -24,7 +24,7 @@ SpellcheckHandler::SpellcheckHandler() {
 SpellcheckHandler::~SpellcheckHandler() {
 }
 
-bool SpellcheckHandler::Parse(Extension* extension, string16* error) {
+bool SpellcheckHandler::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* spellcheck_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kSpellcheck,
                                             &spellcheck_value)) {

@@ -30,7 +30,7 @@ const std::vector<std::string> ScriptBadgeHandler::PrerequisiteKeys() const {
   return SingleKey(keys::kIcons);
 }
 
-bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
+bool ScriptBadgeHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<ActionInfo> action_info(new ActionInfo);
 
   // Provide a default script badge if one isn't declared in the manifest.

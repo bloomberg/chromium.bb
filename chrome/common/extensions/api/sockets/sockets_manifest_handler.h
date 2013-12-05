@@ -24,7 +24,7 @@ class SocketsManifestHandler : public ManifestHandler {
   virtual ~SocketsManifestHandler();
 
   // ManifestHandler overrides.
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
   virtual ManifestPermission* CreatePermission() OVERRIDE;
   virtual ManifestPermission* CreateInitialRequiredPermission(
     const Extension* extension) OVERRIDE;

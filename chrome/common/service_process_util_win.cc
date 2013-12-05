@@ -22,12 +22,12 @@ namespace {
 
 const char* kTerminateEventSuffix = "_service_terminate_evt";
 
-string16 GetServiceProcessReadyEventName() {
+base::string16 GetServiceProcessReadyEventName() {
   return UTF8ToWide(
       GetServiceProcessScopedVersionedName("_service_ready"));
 }
 
-string16 GetServiceProcessTerminateEventName() {
+base::string16 GetServiceProcessTerminateEventName() {
   return UTF8ToWide(
       GetServiceProcessScopedVersionedName(kTerminateEventSuffix));
 }
@@ -55,7 +55,7 @@ class ServiceProcessTerminateMonitor
       : terminate_task_(terminate_task) {
   }
   void Start() {
-    string16 event_name = GetServiceProcessTerminateEventName();
+    base::string16 event_name = GetServiceProcessTerminateEventName();
     DCHECK(event_name.length() <= MAX_PATH);
     terminate_event_.Set(CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
     watcher_.StartWatching(terminate_event_.Get(), this);
@@ -87,7 +87,7 @@ bool ForceServiceProcessShutdown(const std::string& version,
   base::win::ScopedHandle terminate_event;
   std::string versioned_name = version;
   versioned_name.append(kTerminateEventSuffix);
-  string16 event_name =
+  base::string16 event_name =
       UTF8ToWide(GetServiceProcessScopedName(versioned_name));
   terminate_event.Set(OpenEvent(EVENT_MODIFY_STATE, FALSE, event_name.c_str()));
   if (!terminate_event.IsValid())
@@ -97,7 +97,7 @@ bool ForceServiceProcessShutdown(const std::string& version,
 }
 
 bool CheckServiceProcessReady() {
-  string16 event_name = GetServiceProcessReadyEventName();
+  base::string16 event_name = GetServiceProcessReadyEventName();
   base::win::ScopedHandle event(
       OpenEvent(SYNCHRONIZE | READ_CONTROL, false, event_name.c_str()));
   if (!event.IsValid())
@@ -119,7 +119,7 @@ void ServiceProcessState::CreateState() {
 
 bool ServiceProcessState::TakeSingletonLock() {
   DCHECK(state_);
-  string16 event_name = GetServiceProcessReadyEventName();
+  base::string16 event_name = GetServiceProcessReadyEventName();
   DCHECK(event_name.length() <= MAX_PATH);
   base::win::ScopedHandle service_process_ready_event;
   service_process_ready_event.Set(

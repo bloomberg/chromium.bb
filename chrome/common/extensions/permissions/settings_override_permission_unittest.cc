@@ -66,7 +66,7 @@ TEST_F(SettingsOverridePermissionTest, HomePage) {
       extension->GetActivePermissions());
 
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kHomepage));
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your home page to: google.com/",
@@ -83,7 +83,7 @@ TEST_F(SettingsOverridePermissionTest, SartupPages) {
       extension->GetActivePermissions());
 
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kStartupPages));
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your start page to: startup.com/startup.html",
@@ -100,7 +100,7 @@ TEST_F(SettingsOverridePermissionTest, SearchSettings) {
       extension->GetActivePermissions());
 
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kSearchProvider));
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your search settings to: google.com",

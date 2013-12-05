@@ -39,7 +39,7 @@ class SocketsManifestData : public Extension::ManifestData {
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
   static scoped_ptr<SocketsManifestData> FromValue(
       const base::Value& value,
-      string16* error);
+      base::string16* error);
 
   const SocketsManifestPermission* permission() const {
     return permission_.get();

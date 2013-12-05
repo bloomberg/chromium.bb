@@ -47,7 +47,7 @@ InputComponentsHandler::~InputComponentsHandler() {
 }
 
 bool InputComponentsHandler::Parse(Extension* extension,
-                                   string16* error) {
+                                   base::string16* error) {
   scoped_ptr<InputComponents> info(new InputComponents);
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kInputComponents, &list_value)) {

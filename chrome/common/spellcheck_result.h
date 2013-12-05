@@ -28,7 +28,7 @@ struct SpellCheckResult {
       Decoration d = SPELLING,
       int loc = 0,
       int len = 0,
-      const string16& rep = string16(),
+      const base::string16& rep = base::string16(),
       uint32 h = 0)
       : decoration(d), location(loc), length(len), replacement(rep), hash(h) {
   }
@@ -36,7 +36,7 @@ struct SpellCheckResult {
   Decoration decoration;
   int location;
   int length;
-  string16 replacement;
+  base::string16 replacement;
   uint32 hash;
 };
 

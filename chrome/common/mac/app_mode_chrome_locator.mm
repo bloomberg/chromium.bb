@@ -25,7 +25,7 @@ bool FindBundleById(NSString* bundle_id, base::FilePath* out_bundle) {
 }
 
 bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
-                         string16* raw_version_str,
+                         base::string16* raw_version_str,
                          base::FilePath* version_path,
                          base::FilePath* framework_shlib_path) {
   using base::mac::ObjCCast;

@@ -15,7 +15,8 @@ SocketsManifestHandler::SocketsManifestHandler() {}
 
 SocketsManifestHandler::~SocketsManifestHandler() {}
 
-bool SocketsManifestHandler::Parse(Extension* extension, string16* error) {
+bool SocketsManifestHandler::Parse(Extension* extension,
+                                   base::string16* error) {
   const base::Value* sockets = NULL;
   CHECK(extension->manifest()->Get(manifest_keys::kSockets, &sockets));
   scoped_ptr<SocketsManifestData> data =

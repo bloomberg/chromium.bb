@@ -17,11 +17,11 @@ namespace x509_certificate_model {
 
 std::string ProcessIDN(const std::string& input) {
   // Convert the ASCII input to a string16 for ICU.
-  string16 input16;
+  base::string16 input16;
   input16.reserve(input.length());
   input16.insert(input16.end(), input.begin(), input.end());
 
-  string16 output16 = net::IDNToUnicode(input, std::string());
+  base::string16 output16 = net::IDNToUnicode(input, std::string());
   if (input16 == output16)
     return input;  // Input did not contain any encoded data.
 

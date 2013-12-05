@@ -92,7 +92,7 @@ class FileBrowserHandlerParser : public extensions::ManifestHandler {
   virtual ~FileBrowserHandlerParser();
 
   virtual bool Parse(extensions::Extension* extension,
-                     string16* error) OVERRIDE;
+                     base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;

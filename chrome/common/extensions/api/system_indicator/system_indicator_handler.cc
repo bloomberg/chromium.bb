@@ -21,7 +21,8 @@ SystemIndicatorHandler::SystemIndicatorHandler() {
 SystemIndicatorHandler::~SystemIndicatorHandler() {
 }
 
-bool SystemIndicatorHandler::Parse(Extension* extension, string16* error) {
+bool SystemIndicatorHandler::Parse(Extension* extension,
+                                   base::string16* error) {
   const base::DictionaryValue* system_indicator_value = NULL;
   if (!extension->manifest()->GetDictionary(
           manifest_keys::kSystemIndicator, &system_indicator_value)) {

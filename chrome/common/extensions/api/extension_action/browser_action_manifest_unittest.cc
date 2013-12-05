@@ -103,7 +103,7 @@ TEST_F(BrowserActionManifestTest,
                DictionaryBuilder().Set("19", std::string())  // Invalid value.
                    .Set("24", "icon24.png").Set("38", "icon38.png"))).Build();
 
-  string16 error = ErrorUtils::FormatErrorMessageUTF16(
+  base::string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");
   LoadAndExpectError(Manifest(manifest_value.get(), "Invalid default icon"),
                      errors::kInvalidIconPath);

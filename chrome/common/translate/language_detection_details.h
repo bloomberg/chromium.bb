@@ -37,7 +37,7 @@ struct LanguageDetectionDetails {
   std::string adopted_language;
 
   // The contents which is used for detection.
-  string16 contents;
+  base::string16 contents;
 };
 
 #endif  // CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_DETAILS_H_

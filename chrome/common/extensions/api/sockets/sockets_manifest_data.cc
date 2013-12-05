@@ -38,7 +38,7 @@ bool SocketsManifestData::CheckRequest(
 // static
 scoped_ptr<SocketsManifestData> SocketsManifestData::FromValue(
     const base::Value& value,
-    string16* error) {
+    base::string16* error) {
   scoped_ptr<SocketsManifestPermission> permission =
       SocketsManifestPermission::FromValue(value, error);
   if (!permission)

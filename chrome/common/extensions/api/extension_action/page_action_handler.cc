@@ -23,7 +23,7 @@ PageActionHandler::PageActionHandler() {
 PageActionHandler::~PageActionHandler() {
 }
 
-bool PageActionHandler::Parse(Extension* extension, string16* error) {
+bool PageActionHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<ActionInfo> page_action_info;
   const base::DictionaryValue* page_action_value = NULL;
 

@@ -41,8 +41,8 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
   std::vector<std::string> host_list(hosts.begin(), hosts.end());
   DCHECK(host_list.size());
   PermissionMessage::ID message_id;
-  string16 message;
-  string16 details;
+  base::string16 message;
+  base::string16 details;
 
   switch (host_list.size()) {
     case 1:

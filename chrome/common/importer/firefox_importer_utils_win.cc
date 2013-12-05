@@ -47,7 +47,7 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
 
 base::FilePath GetFirefoxInstallPathFromRegistry() {
   // Detects the path that Firefox is installed in.
-  string16 registry_path = kFirefoxPath;
+  base::string16 registry_path = kFirefoxPath;
   wchar_t buffer[MAX_PATH];
   DWORD buffer_length = sizeof(buffer);
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, registry_path.c_str(),
@@ -57,7 +57,7 @@ base::FilePath GetFirefoxInstallPathFromRegistry() {
   if (result != ERROR_SUCCESS)
     return base::FilePath();
 
-  registry_path += L"\\" + string16(buffer) + L"\\Main";
+  registry_path += L"\\" + base::string16(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
   base::win::RegKey reg_key_directory(HKEY_LOCAL_MACHINE,
                                       registry_path.c_str(), KEY_READ);

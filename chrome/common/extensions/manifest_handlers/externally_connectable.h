@@ -38,7 +38,7 @@ class ExternallyConnectableHandler : public ManifestHandler {
   ExternallyConnectableHandler();
   virtual ~ExternallyConnectableHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
@@ -58,7 +58,7 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
   static scoped_ptr<ExternallyConnectableInfo> FromValue(
       const base::Value& value,
       std::vector<InstallWarning>* install_warnings,
-      string16* error);
+      base::string16* error);
 
   virtual ~ExternallyConnectableInfo();
 

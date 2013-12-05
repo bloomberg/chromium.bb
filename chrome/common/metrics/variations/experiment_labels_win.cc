@@ -22,14 +22,14 @@ const wchar_t kVariationPrefix[] = L"CrVar";
 // including a timestamp that is a year in the future from |current_time|. Since
 // multiple headers can be transmitted, |count| is a number that is appended
 // after the label key to differentiate the labels.
-string16 CreateSingleExperimentLabel(int count, VariationID id,
-                                     const base::Time& current_time) {
+base::string16 CreateSingleExperimentLabel(int count, VariationID id,
+                                           const base::Time& current_time) {
   // Build the parts separately so they can be validated.
-  const string16 key = kVariationPrefix + base::IntToString16(count);
+  const base::string16 key = kVariationPrefix + base::IntToString16(count);
   DCHECK_LE(key.size(), 8U);
-  const string16 value = base::IntToString16(id);
+  const base::string16 value = base::IntToString16(id);
   DCHECK_LE(value.size(), 8U);
-  string16 label(key);
+  base::string16 label(key);
   label += L'=';
   label += value;
   label += L'|';
@@ -39,9 +39,9 @@ string16 CreateSingleExperimentLabel(int count, VariationID id,
 
 }  // namespace
 
-string16 BuildGoogleUpdateExperimentLabel(
+base::string16 BuildGoogleUpdateExperimentLabel(
     const base::FieldTrial::ActiveGroups& active_groups) {
-  string16 experiment_labels;
+  base::string16 experiment_labels;
   int counter = 0;
 
   const base::Time current_time(base::Time::Now());
@@ -64,16 +64,16 @@ string16 BuildGoogleUpdateExperimentLabel(
   return experiment_labels;
 }
 
-string16 ExtractNonVariationLabels(const string16& labels) {
-  string16 non_variation_labels;
+base::string16 ExtractNonVariationLabels(const base::string16& labels) {
+  base::string16 non_variation_labels;
 
   // First, split everything by the label separator.
-  std::vector<string16> entries;
+  std::vector<base::string16> entries;
   base::SplitStringUsingSubstr(labels, google_update::kExperimentLabelSep,
                                &entries);
 
   // For each label, keep the ones that do not look like a Variations label.
-  for (std::vector<string16>::const_iterator it = entries.begin();
+  for (std::vector<base::string16>::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
     if (it->empty() || StartsWith(*it, kVariationPrefix, false))
       continue;
@@ -87,8 +87,8 @@ string16 ExtractNonVariationLabels(const string16& labels) {
   return non_variation_labels;
 }
 
-string16 CombineExperimentLabels(const string16& variation_labels,
-                                 const string16& other_labels) {
+base::string16 CombineExperimentLabels(const base::string16& variation_labels,
+                                       const base::string16& other_labels) {
   DCHECK(!StartsWith(variation_labels, google_update::kExperimentLabelSep,
                      false));
   DCHECK(!EndsWith(variation_labels, google_update::kExperimentLabelSep,
@@ -96,7 +96,7 @@ string16 CombineExperimentLabels(const string16& variation_labels,
   DCHECK(!StartsWith(other_labels, google_update::kExperimentLabelSep, false));
   DCHECK(!EndsWith(other_labels, google_update::kExperimentLabelSep, false));
   // Note that if either label is empty, a separator is not necessary.
-  string16 combined_labels = other_labels;
+  base::string16 combined_labels = other_labels;
   if (!other_labels.empty() && !variation_labels.empty())
     combined_labels += google_update::kExperimentLabelSep;
   combined_labels += variation_labels;

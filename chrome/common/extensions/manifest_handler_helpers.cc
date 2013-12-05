@@ -35,7 +35,7 @@ bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
                              const int* icon_sizes,
                              size_t num_icon_sizes,
                              ExtensionIconSet* icons,
-                             string16* error) {
+                             base::string16* error) {
   DCHECK(icons);
   for (size_t i = 0; i < num_icon_sizes; ++i) {
     std::string key = base::IntToString(icon_sizes[i]);

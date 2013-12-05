@@ -31,7 +31,7 @@ bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
                              const int* icon_sizes,
                              size_t num_icon_sizes,
                              ExtensionIconSet* icons,
-                             string16* error);
+                             base::string16* error);
 
 }  // namespace manifest_handler_helpers
 }  // namespace extensions

@@ -91,7 +91,7 @@ UrlHandlersParser::~UrlHandlersParser() {
 bool ParseUrlHandler(const std::string& handler_id,
                      const DictionaryValue& handler_info,
                      std::vector<UrlHandlerInfo>* url_handlers,
-                     string16* error) {
+                     base::string16* error) {
   DCHECK(error);
 
   UrlHandlerInfo handler;
@@ -132,7 +132,7 @@ bool ParseUrlHandler(const std::string& handler_id,
   return true;
 }
 
-bool UrlHandlersParser::Parse(Extension* extension, string16* error) {
+bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<UrlHandlers> info(new UrlHandlers);
   const DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(

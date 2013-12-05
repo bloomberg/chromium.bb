@@ -37,8 +37,8 @@ class LocalizedError {
                          base::DictionaryValue* strings);
 
   // Returns a description of the encountered error.
-  static string16 GetErrorDetails(const blink::WebURLError& error,
-                                  bool is_post);
+  static base::string16 GetErrorDetails(const blink::WebURLError& error,
+                                        bool is_post);
 
   // Returns true if an error page exists for the specified parameters.
   static bool HasStrings(const std::string& error_domain, int error_code);

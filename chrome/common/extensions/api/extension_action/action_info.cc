@@ -55,7 +55,7 @@ ActionInfo::~ActionInfo() {
 // static
 scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
                                         const base::DictionaryValue* dict,
-                                        string16* error) {
+                                        base::string16* error) {
   scoped_ptr<ActionInfo> result(new ActionInfo());
 
   if (extension->manifest_version() == 1) {

@@ -35,7 +35,7 @@ class OAuth2ManifestHandler : public ManifestHandler {
   virtual ~OAuth2ManifestHandler();
 
   virtual bool Parse(Extension* extension,
-                     string16* error) OVERRIDE;
+                     base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;

@@ -30,7 +30,7 @@ class AppIsolationHandler : public ManifestHandler {
   AppIsolationHandler();
   virtual ~AppIsolationHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
   virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
 
  private:

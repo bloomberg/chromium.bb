@@ -67,9 +67,9 @@ IPC_MESSAGE_CONTROL1(SpellCheckHostMsg_RespondDocumentMarkers,
 // If the service is not available, the 4th parameter should be false and the
 // 5th parameter should contain the requested sentence.
 IPC_MESSAGE_ROUTED4(SpellCheckMsg_RespondSpellingService,
-                    int         /* request identifier given by WebKit */,
-                    bool        /* succeeded calling service */,
-                    string16    /* sentence */,
+                    int             /* request identifier given by WebKit */,
+                    bool            /* succeeded calling service */,
+                    base::string16  /* sentence */,
                     std::vector<SpellCheckResult>)
 #endif
 
@@ -97,7 +97,7 @@ IPC_MESSAGE_CONTROL0(SpellCheckHostMsg_RequestDictionary)
 
 // Tracks spell checking occurrence to collect histogram.
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
-                    string16 /* word */,
+                    base::string16 /* word */,
                     bool /* true if checked word is misspelled */)
 
 #if !defined(OS_MACOSX)
@@ -107,7 +107,7 @@ IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
 IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     string16 /* sentence */,
+                     base::string16 /* sentence */,
                      std::vector<SpellCheckMarker> /* markers */)
 #endif
 
@@ -118,22 +118,22 @@ IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_ShowSpellingPanel,
 
 // Tells the browser to update the spelling panel with the given word.
 IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord,
-                    string16 /* the word to update the panel with */)
+                    base::string16 /* the word to update the panel with */)
 
 // TODO(groby): This needs to originate from SpellcheckProvider.
 IPC_SYNC_MESSAGE_CONTROL2_1(SpellCheckHostMsg_CheckSpelling,
-                            string16 /* word */,
+                            base::string16 /* word */,
                             int /* route_id */,
                             bool /* correct */)
 
 IPC_SYNC_MESSAGE_CONTROL1_1(SpellCheckHostMsg_FillSuggestionList,
-                            string16 /* word */,
-                            std::vector<string16> /* suggestions */)
+                            base::string16 /* word */,
+                            std::vector<base::string16> /* suggestions */)
 
 IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_RequestTextCheck,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     string16 /* sentence */,
+                     base::string16 /* sentence */,
                      std::vector<SpellCheckMarker> /* markers */)
 
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_ToggleSpellCheck,

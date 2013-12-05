@@ -18,7 +18,8 @@ const char16 kIEStorage2Key[] =
 const char16 kIESettingsMainKey[] =
   L"Software\\Microsoft\\Internet Explorer\\Main";
 
-string16 GetPotentiallyOverridenIEKey(const string16& desired_key_path) {
+base::string16 GetPotentiallyOverridenIEKey(
+    const base::string16& desired_key_path) {
   base::string16 test_reg_override(
       IEImporterTestRegistryOverrider::GetTestRegistryOverride());
   return test_reg_override.empty() ? desired_key_path : test_reg_override;

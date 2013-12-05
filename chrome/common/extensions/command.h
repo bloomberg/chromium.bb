@@ -25,7 +25,7 @@ class Command {
  public:
   Command();
   Command(const std::string& command_name,
-          const string16& description,
+          const base::string16& description,
           const std::string& accelerator,
           bool global);
   ~Command();
@@ -46,7 +46,7 @@ class Command {
   bool Parse(const base::DictionaryValue* command,
              const std::string& command_name,
              int index,
-             string16* error);
+             base::string16* error);
 
   // Convert a Command object from |extension| to a DictionaryValue.
   // |active| specifies whether the command is active or not.
@@ -56,7 +56,7 @@ class Command {
   // Accessors:
   const std::string& command_name() const { return command_name_; }
   const ui::Accelerator& accelerator() const { return accelerator_; }
-  const string16& description() const { return description_; }
+  const base::string16& description() const { return description_; }
   bool global() const { return global_; }
 
   // Setter:
@@ -70,7 +70,7 @@ class Command {
  private:
   std::string command_name_;
   ui::Accelerator accelerator_;
-  string16 description_;
+  base::string16 description_;
   bool global_;
 };
 

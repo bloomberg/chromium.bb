@@ -65,7 +65,7 @@ policy::Schema StorageSchemaManifestHandler::GetSchema(
 #endif
 
 bool StorageSchemaManifestHandler::Parse(Extension* extension,
-                                         string16* error) {
+                                         base::string16* error) {
   std::string path;
   if (!extension->manifest()->GetString(kStorageManagedSchema, &path)) {
     *error = ASCIIToUTF16(

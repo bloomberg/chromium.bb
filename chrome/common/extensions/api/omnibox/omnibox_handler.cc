@@ -34,7 +34,7 @@ OmniboxHandler::OmniboxHandler() {
 OmniboxHandler::~OmniboxHandler() {
 }
 
-bool OmniboxHandler::Parse(Extension* extension, string16* error) {
+bool OmniboxHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<OmniboxInfo> info(new OmniboxInfo);
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(manifest_keys::kOmnibox,

@@ -16,7 +16,7 @@ namespace content_settings_helper {
 // Return simplified string representing origin. If origin is using http or
 // the standard port, those parts are not included in the output.
 std::string OriginToString(const GURL& origin);
-string16 OriginToString16(const GURL& origin);
+base::string16 OriginToString16(const GURL& origin);
 
 }  // namespace content_settings_helper
 

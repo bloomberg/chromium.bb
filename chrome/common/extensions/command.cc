@@ -47,7 +47,7 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
                           const std::string& platform_key,
                           int index,
                           bool should_parse_media_keys,
-                          string16* error) {
+                          base::string16* error) {
   error->clear();
   if (platform_key != values::kKeybindingPlatformWin &&
       platform_key != values::kKeybindingPlatformMac &&
@@ -255,13 +255,13 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
 Command::Command() : global_(false) {}
 
 Command::Command(const std::string& command_name,
-                 const string16& description,
+                 const base::string16& description,
                  const std::string& accelerator,
                  bool global)
     : command_name_(command_name),
       description_(description),
       global_(global) {
-  string16 error;
+  base::string16 error;
   accelerator_ = ParseImpl(accelerator, CommandPlatform(), 0,
                            IsNamedCommand(command_name), &error);
 }
@@ -286,7 +286,7 @@ std::string Command::CommandPlatform() {
 // static
 ui::Accelerator Command::StringToAccelerator(const std::string& accelerator,
                                              const std::string& command_name) {
-  string16 error;
+  base::string16 error;
   ui::Accelerator parsed =
       ParseImpl(accelerator, Command::CommandPlatform(), 0,
                 IsNamedCommand(command_name), &error);
@@ -384,10 +384,10 @@ std::string Command::AcceleratorToString(const ui::Accelerator& accelerator) {
 bool Command::Parse(const base::DictionaryValue* command,
                     const std::string& command_name,
                     int index,
-                    string16* error) {
+                    base::string16* error) {
   DCHECK(!command_name.empty());
 
-  string16 description;
+  base::string16 description;
   if (IsNamedCommand(command_name)) {
     if (!command->GetString(keys::kDescription, &description) ||
         description.empty()) {
@@ -514,7 +514,7 @@ base::DictionaryValue* Command::ToValue(const Extension* extension,
                                         bool active) const {
   base::DictionaryValue* extension_data = new base::DictionaryValue();
 
-  string16 command_description;
+  base::string16 command_description;
   bool extension_action = false;
   if (command_name() == values::kBrowserActionCommandEvent ||
       command_name() == values::kPageActionCommandEvent ||

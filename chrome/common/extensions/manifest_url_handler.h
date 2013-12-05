@@ -67,7 +67,7 @@ class DevToolsPageHandler : public ManifestHandler {
   DevToolsPageHandler();
   virtual ~DevToolsPageHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
@@ -81,7 +81,7 @@ class HomepageURLHandler : public ManifestHandler {
   HomepageURLHandler();
   virtual ~HomepageURLHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
@@ -95,7 +95,7 @@ class UpdateURLHandler : public ManifestHandler {
   UpdateURLHandler();
   virtual ~UpdateURLHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
@@ -109,7 +109,7 @@ class OptionsPageHandler : public ManifestHandler {
   OptionsPageHandler();
   virtual ~OptionsPageHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
   virtual bool Validate(const Extension* extension,
                         std::string* error,
                         std::vector<InstallWarning>* warnings) const OVERRIDE;
@@ -126,7 +126,7 @@ class URLOverridesHandler : public ManifestHandler {
   URLOverridesHandler();
   virtual ~URLOverridesHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;

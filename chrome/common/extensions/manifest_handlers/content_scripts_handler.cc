@@ -36,7 +36,7 @@ namespace {
 bool LoadGlobsHelper(const base::DictionaryValue* content_script,
                      int content_script_index,
                      const char* globs_property_name,
-                     string16* error,
+                     base::string16* error,
                      void(UserScript::*add_method)(const std::string& glob),
                      UserScript* instance) {
   if (!content_script->HasKey(globs_property_name))
@@ -73,7 +73,7 @@ bool LoadGlobsHelper(const base::DictionaryValue* content_script,
 bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
                                   int definition_index,
                                   Extension* extension,
-                                  string16* error,
+                                  base::string16* error,
                                   UserScript* result) {
   // run_at
   if (content_script->HasKey(keys::kRunAt)) {
@@ -380,7 +380,7 @@ const std::vector<std::string> ContentScriptsHandler::Keys() const {
   return std::vector<std::string>(keys, keys + arraysize(keys));
 }
 
-bool ContentScriptsHandler::Parse(Extension* extension, string16* error) {
+bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<ContentScriptsInfo> content_scripts_info(new ContentScriptsInfo);
   const base::ListValue* scripts_list = NULL;
   if (!extension->manifest()->GetList(keys::kContentScripts, &scripts_list)) {
