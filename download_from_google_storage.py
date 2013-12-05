@@ -32,6 +32,14 @@ class InvalidFileError(IOError):
   pass
 
 
+def GetNormalizedPlatform():
+  """Returns the result of sys.platform accounting for cygwin.
+  Under cygwin, this will always return "win32" like the native Python."""
+  if sys.platform == 'cygwin':
+    return 'win32'
+  return sys.platform
+
+
 # Common utilities
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
@@ -197,7 +205,7 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
     # TODO(hinoka): It is supposedly faster to use "gsutil stat" but that
     # doesn't appear to be supported by the gsutil currently in our tree. When
     # we update, this code should use that instead of "gsutil ls -L".
-    if not sys.platform.startswith('win'):
+    if sys.platform != 'win32':
       code, out, _ = gsutil.check_call('ls', '-L', file_url)
       if code != 0:
         out_q.put('%d> %s' % (thread_num, err))

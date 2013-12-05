@@ -43,7 +43,7 @@ def FindSourceRootOnPath():
 def RunGN(sourceroot):
   # The binaries in platform-specific subdirectories in src/tools/gn/bin.
   gnpath = sourceroot + '/tools/gn/bin/'
-  if sys.platform == 'win32':
+  if sys.platform in ('cygwin', 'win32'):
     gnpath += 'win/gn.exe'
   elif sys.platform.startswith('linux'):
     gnpath += 'linux/gn'
