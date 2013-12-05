@@ -31,6 +31,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/VoidCallback.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/AbstractSQLTransactionBackend.h"
 #include "modules/webdatabase/Database.h"
@@ -42,21 +43,20 @@
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionClient.h" // FIXME: Should be used in the backend only.
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
-#include "modules/webdatabase/SQLVoidCallback.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 PassRefPtr<SQLTransaction> SQLTransaction::create(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
-    PassOwnPtr<SQLVoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
+    PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
     bool readOnly)
 {
     return adoptRef(new SQLTransaction(db, callback, successCallback, errorCallback, readOnly));
 }
 
 SQLTransaction::SQLTransaction(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
-    PassOwnPtr<SQLVoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
+    PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
     bool readOnly)
     : m_database(db)
     , m_callbackWrapper(callback, db->executionContext())
@@ -218,7 +218,7 @@ SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
 SQLTransactionState SQLTransaction::deliverSuccessCallback()
 {
     // Spec 4.3.2.8: Deliver success callback.
-    OwnPtr<SQLVoidCallback> successCallback = m_successCallbackWrapper.unwrap();
+    OwnPtr<VoidCallback> successCallback = m_successCallbackWrapper.unwrap();
     if (successCallback)
         successCallback->handleEvent();
 

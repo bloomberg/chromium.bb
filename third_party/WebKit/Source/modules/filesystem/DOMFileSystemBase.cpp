@@ -33,6 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
+#include "core/html/VoidCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
@@ -42,7 +43,6 @@
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/FileSystemVoidCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -249,7 +249,7 @@ void DOMFileSystemBase::copy(const EntryBase* source, EntryBase* parent, const S
     fileSystem()->copy(createFileSystemURL(source), parent->filesystem()->createFileSystemURL(destinationPath), callbacks.release());
 }
 
-void DOMFileSystemBase::remove(const EntryBase* entry, PassOwnPtr<FileSystemVoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
+void DOMFileSystemBase::remove(const EntryBase* entry, PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
 {
     ASSERT(entry);
     // We don't allow calling remove() on the root directory.
@@ -264,7 +264,7 @@ void DOMFileSystemBase::remove(const EntryBase* entry, PassOwnPtr<FileSystemVoid
     fileSystem()->remove(createFileSystemURL(entry), callbacks.release());
 }
 
-void DOMFileSystemBase::removeRecursively(const EntryBase* entry, PassOwnPtr<FileSystemVoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
+void DOMFileSystemBase::removeRecursively(const EntryBase* entry, PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
 {
     ASSERT(entry && entry->isDirectory());
     // We don't allow calling remove() on the root directory.

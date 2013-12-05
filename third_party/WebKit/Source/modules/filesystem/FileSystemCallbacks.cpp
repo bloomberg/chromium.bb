@@ -33,6 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
+#include "core/html/VoidCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -42,7 +43,6 @@
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
-#include "modules/filesystem/FileSystemVoidCallback.h"
 #include "modules/filesystem/FileWriterBase.h"
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/Metadata.h"
@@ -233,12 +233,12 @@ void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<blink::WebFileWrite
 
 // VoidCallbacks --------------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> VoidCallbacks::create(PassOwnPtr<FileSystemVoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem)
+PassOwnPtr<AsyncFileSystemCallbacks> VoidCallbacks::create(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem)
 {
     return adoptPtr(new VoidCallbacks(successCallback, errorCallback, fileSystem));
 }
 
-VoidCallbacks::VoidCallbacks(PassOwnPtr<FileSystemVoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem)
+VoidCallbacks::VoidCallbacks(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem)
     : FileSystemCallbacksBase(errorCallback, fileSystem)
     , m_successCallback(successCallback)
 {

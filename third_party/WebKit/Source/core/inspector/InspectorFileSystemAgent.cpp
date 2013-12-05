@@ -39,9 +39,10 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReader.h"
+#include "core/frame/Frame.h"
+#include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
-#include "core/frame/Frame.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
@@ -52,7 +53,6 @@
 #include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/FileSystemVoidCallback.h"
 #include "modules/filesystem/LocalFileSystem.h"
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
@@ -512,7 +512,7 @@ public:
 
 private:
     // CallbackDispatcherFactory doesn't handle 0-arg handleEvent methods
-    class VoidCallbackImpl : public FileSystemVoidCallback {
+    class VoidCallbackImpl : public VoidCallback {
     public:
         explicit VoidCallbackImpl(PassRefPtr<DeleteEntryRequest> handler)
             : m_handler(handler)
@@ -564,7 +564,7 @@ void DeleteEntryRequest::start(ExecutionContext* executionContext)
     }
 
     if (path == "/") {
-        OwnPtr<FileSystemVoidCallback> successCallback = adoptPtr(new VoidCallbackImpl(this));
+        OwnPtr<VoidCallback> successCallback = adoptPtr(new VoidCallbackImpl(this));
         OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = VoidCallbacks::create(successCallback.release(), errorCallback.release(), 0);
         LocalFileSystem::from(executionContext)->deleteFileSystem(executionContext, type, fileSystemCallbacks.release());
     } else {
@@ -576,7 +576,7 @@ void DeleteEntryRequest::start(ExecutionContext* executionContext)
 
 bool DeleteEntryRequest::didGetEntry(Entry* entry)
 {
-    OwnPtr<FileSystemVoidCallback> successCallback = adoptPtr(new VoidCallbackImpl(this));
+    OwnPtr<VoidCallback> successCallback = adoptPtr(new VoidCallbackImpl(this));
     OwnPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &DeleteEntryRequest::didHitError);
     if (entry->isDirectory()) {
         DirectoryEntry* directoryEntry = static_cast<DirectoryEntry*>(entry);

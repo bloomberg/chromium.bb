@@ -32,10 +32,10 @@
 #include "modules/filesystem/DirectoryEntry.h"
 
 #include "core/fileapi/FileError.h"
+#include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
-#include "modules/filesystem/FileSystemVoidCallback.h"
 
 namespace WebCore {
 
@@ -62,7 +62,7 @@ void DirectoryEntry::getDirectory(const String& path, const Dictionary& options,
     m_fileSystem->getDirectory(this, path, flags, successCallback, errorCallback);
 }
 
-void DirectoryEntry::removeRecursively(PassOwnPtr<FileSystemVoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
+void DirectoryEntry::removeRecursively(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
 {
     m_fileSystem->removeRecursively(this, successCallback, errorCallback);
 }

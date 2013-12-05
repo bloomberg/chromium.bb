@@ -35,6 +35,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/frame/Frame.h"
+#include "core/html/VoidCallback.h"
 #include "core/page/Page.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/SQLError.h"
@@ -45,7 +46,6 @@
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
-#include "modules/webdatabase/SQLVoidCallback.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "platform/JSONValues.h"
 #include "wtf/Vector.h"
@@ -175,7 +175,7 @@ private:
     RefPtr<ExecuteSQLCallback> m_requestCallback;
 };
 
-class TransactionSuccessCallback : public SQLVoidCallback {
+class TransactionSuccessCallback : public VoidCallback {
 public:
     static PassOwnPtr<TransactionSuccessCallback> create()
     {
@@ -298,7 +298,7 @@ void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, 
 
     OwnPtr<SQLTransactionCallback> callback(TransactionCallback::create(query, requestCallback.get()));
     OwnPtr<SQLTransactionErrorCallback> errorCallback(TransactionErrorCallback::create(requestCallback.get()));
-    OwnPtr<SQLVoidCallback> successCallback(TransactionSuccessCallback::create());
+    OwnPtr<VoidCallback> successCallback(TransactionSuccessCallback::create());
     database->transaction(callback.release(), errorCallback.release(), successCallback.release());
 }
 

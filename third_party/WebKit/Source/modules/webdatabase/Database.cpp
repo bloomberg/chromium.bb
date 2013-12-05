@@ -32,6 +32,7 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/html/VoidCallback.h"
 #include "core/page/Page.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
@@ -46,7 +47,6 @@
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
-#include "modules/webdatabase/SQLVoidCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -140,18 +140,18 @@ void Database::closeImmediately()
     }
 }
 
-void Database::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<SQLVoidCallback> successCallback)
+void Database::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<VoidCallback> successCallback)
 {
     ChangeVersionData data(oldVersion, newVersion);
     runTransaction(callback, errorCallback, successCallback, false, &data);
 }
 
-void Database::transaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<SQLVoidCallback> successCallback)
+void Database::transaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<VoidCallback> successCallback)
 {
     runTransaction(callback, errorCallback, successCallback, false);
 }
 
-void Database::readTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<SQLVoidCallback> successCallback)
+void Database::readTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<VoidCallback> successCallback)
 {
     runTransaction(callback, errorCallback, successCallback, true);
 }
@@ -162,7 +162,7 @@ static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtr<SQLTransa
 }
 
 void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
-    PassOwnPtr<SQLVoidCallback> successCallback, bool readOnly, const ChangeVersionData* changeVersionData)
+    PassOwnPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* changeVersionData)
 {
     // FIXME: Rather than passing errorCallback to SQLTransaction and then sometimes firing it ourselves,
     // this code should probably be pushed down into DatabaseBackend so that we only create the SQLTransaction

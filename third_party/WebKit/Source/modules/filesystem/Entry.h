@@ -44,7 +44,7 @@ class EntryCallback;
 class EntrySync;
 class ErrorCallback;
 class MetadataCallback;
-class FileSystemVoidCallback;
+class VoidCallback;
 
 class Entry : public EntryBase, public ScriptWrappable {
 public:
@@ -53,7 +53,7 @@ public:
     void getMetadata(PassOwnPtr<MetadataCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
     void moveTo(PassRefPtr<DirectoryEntry> parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
     void copyTo(PassRefPtr<DirectoryEntry> parent, const String& name = String(), PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
-    void remove(PassOwnPtr<FileSystemVoidCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
+    void remove(PassOwnPtr<VoidCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
     void getParent(PassOwnPtr<EntryCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
 
 protected:

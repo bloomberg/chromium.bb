@@ -54,7 +54,7 @@ class FileError;
 class MetadataCallback;
 class ExecutionContext;
 class SecurityOrigin;
-class FileSystemVoidCallback;
+class VoidCallback;
 
 // A common base class for DOMFileSystem and DOMFileSystemSync.
 class DOMFileSystemBase : public RefCounted<DOMFileSystemBase> {
@@ -107,8 +107,8 @@ public:
     void getMetadata(const EntryBase*, PassOwnPtr<MetadataCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
     void move(const EntryBase* source, EntryBase* parent, const String& name, PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
     void copy(const EntryBase* source, EntryBase* parent, const String& name, PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    void remove(const EntryBase*, PassOwnPtr<FileSystemVoidCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    void removeRecursively(const EntryBase*, PassOwnPtr<FileSystemVoidCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void remove(const EntryBase*, PassOwnPtr<VoidCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void removeRecursively(const EntryBase*, PassOwnPtr<VoidCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
     void getParent(const EntryBase*, PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>);
     void getFile(const EntryBase*, const String& path, const FileSystemFlags&, PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
     void getDirectory(const EntryBase*, const String& path, const FileSystemFlags&, PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, SynchronousType = Asynchronous);
