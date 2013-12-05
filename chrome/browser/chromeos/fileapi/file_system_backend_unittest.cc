@@ -32,6 +32,10 @@ FileSystemURL CreateFileSystemURL(const std::string& extension,
 }
 
 TEST(ChromeOSFileSystemBackendTest, DefaultMountPoints) {
+  // Make sure no system-level mount points are registered before testing
+  // to avoid flakiness.
+  fileapi::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
+
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
       new quota::MockSpecialStoragePolicy();
   scoped_refptr<fileapi::ExternalMountPoints> mount_points(

@@ -233,6 +233,12 @@ FileSystemURL ExternalMountPoints::CreateExternalFileSystemURL(
           base::FilePath::kSeparators[0] + path.value()));
 }
 
+void ExternalMountPoints::RevokeAllFileSystems() {
+  base::AutoLock locker(lock_);
+  instance_map_.clear();
+  path_to_name_map_.clear();
+}
+
 ExternalMountPoints::ExternalMountPoints() {}
 
 ExternalMountPoints::~ExternalMountPoints() {

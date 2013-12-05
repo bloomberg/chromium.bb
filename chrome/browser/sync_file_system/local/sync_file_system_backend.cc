@@ -72,8 +72,6 @@ SyncFileSystemBackend::SyncFileSystemBackend(Profile* profile)
 }
 
 SyncFileSystemBackend::~SyncFileSystemBackend() {
-  RevokeSyncableFileSystem();
-
   if (change_tracker_) {
     GetDelegate()->file_task_runner()->DeleteSoon(
         FROM_HERE, change_tracker_.release());

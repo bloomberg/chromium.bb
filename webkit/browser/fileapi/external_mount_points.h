@@ -101,6 +101,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
       const std::string& mount_name,
       const base::FilePath& path) const;
 
+  // Revoke all registered filesystems. Used only by testing (for clean-ups).
+  void RevokeAllFileSystems();
+
  private:
   friend class base::RefCountedThreadSafe<ExternalMountPoints>;
 
