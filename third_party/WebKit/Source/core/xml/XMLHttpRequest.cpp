@@ -897,8 +897,6 @@ void XMLHttpRequest::abort()
 
 void XMLHttpRequest::clearVariablesForLoading()
 {
-    // FIXME: when we add the support for multi-part XHR, we will have to think be careful with this initialization.
-    m_receivedLength = 0;
     m_decoder.clear();
 
     m_responseEncoding = String();
@@ -951,6 +949,10 @@ bool XMLHttpRequest::internalAbort(DropProtection async)
 
 void XMLHttpRequest::clearResponse()
 {
+    // FIXME: when we add the support for multi-part XHR, we will have to
+    // be careful with this initialization.
+    m_receivedLength = 0;
+
     m_response = ResourceResponse();
 
     m_responseText.clear();
@@ -1261,6 +1263,8 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_responseStream)
         m_responseStream->finalize();
 
+    clearVariablesForLoading();
+
     InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, identifier, m_responseText, m_url, m_lastSendURL, m_lastSendLineNumber);
 
     // Prevent dropProtection releasing the last reference, and retain |this| until the end of this method.
@@ -1272,8 +1276,6 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     }
 
     changeState(DONE);
-
-    clearVariablesForLoading();
 }
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
