@@ -5,6 +5,7 @@
 #ifndef MOJO_APPS_JS_BINDINGS_WAITING_CALLBACK_H_
 #define MOJO_APPS_JS_BINDINGS_WAITING_CALLBACK_H_
 
+#include "gin/handle.h"
 #include "gin/runner.h"
 #include "gin/wrappable.h"
 #include "mojo/public/bindings/lib/bindings_support.h"
@@ -15,7 +16,7 @@ namespace js {
 class WaitingCallback : public gin::Wrappable,
                         public BindingsSupport::AsyncWaitCallback {
  public:
-  static scoped_refptr<WaitingCallback> Create(
+  static gin::Handle<WaitingCallback> Create(
       v8::Isolate* isolate, v8::Handle<v8::Function> callback);
 
   static gin::WrapperInfo kWrapperInfo;

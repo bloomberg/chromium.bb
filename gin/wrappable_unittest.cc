@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "gin/arguments.h"
+#include "gin/handle.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
@@ -15,7 +16,7 @@ namespace {
 
 class MyObject : public Wrappable {
  public:
-  static scoped_refptr<MyObject> Create();
+  static gin::Handle<MyObject> Create(v8::Isolate* isolate);
 
   int value() const { return value_; }
   void set_value(int value) { value_ = value; }
@@ -32,8 +33,8 @@ class MyObject : public Wrappable {
 
 WrapperInfo MyObject::kWrapperInfo = { kEmbedderNativeGin };
 
-scoped_refptr<MyObject> MyObject::Create() {
-  return make_scoped_refptr(new MyObject());
+gin::Handle<MyObject> MyObject::Create(v8::Isolate* isolate) {
+  return CreateHandle(isolate, new MyObject());
 }
 
 WrapperInfo* MyObject::GetWrapperInfo() {
@@ -92,14 +93,14 @@ TEST_F(WrappableTest, WrapAndUnwrap) {
   v8::HandleScope handle_scope(isolate);
 
   RegisterTemplate(isolate);
-  scoped_refptr<MyObject> obj = MyObject::Create();
+  Handle<MyObject> obj = MyObject::Create(isolate);
 
   v8::Handle<v8::Value> wrapper = ConvertToV8(isolate, obj.get());
   EXPECT_FALSE(wrapper.IsEmpty());
 
   MyObject* unwrapped = 0;
   EXPECT_TRUE(ConvertFromV8(isolate, wrapper, &unwrapped));
-  EXPECT_EQ(obj, unwrapped);
+  EXPECT_EQ(obj.get(), unwrapped);
 }
 
 TEST_F(WrappableTest, GetAndSetProperty) {
@@ -107,7 +108,7 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   v8::HandleScope handle_scope(isolate);
 
   RegisterTemplate(isolate);
-  scoped_refptr<MyObject> obj = MyObject::Create();
+  gin::Handle<MyObject> obj = MyObject::Create(isolate);
 
   obj->set_value(42);
   EXPECT_EQ(42, obj->value());

@@ -5,25 +5,15 @@
 #ifndef GIN_WRAPPABLE_H_
 #define GIN_WRAPPABLE_H_
 
-#include "base/memory/ref_counted.h"
 #include "gin/converter.h"
 #include "gin/public/wrapper_info.h"
 
 namespace gin {
 
 // Wrappable is an abstract base class for C++ objects that have cooresponding
-// v8 wrapper objects. Wrappable are RefCounted, which means they can be
-// retained either by V8's garbage collector or by a scoped_refptr.
-//
-// WARNING: If you retain a Wrappable object with a scoped_refptr, it's possible
-//          that the v8 wrapper can "fall off" if the wrapper object is not
-//          referenced elsewhere in the V8 heap. Although Wrappable opens a
-//          handle to the wrapper object, we make that handle as weak, which
-//          means V8 is free to reclaim the wrapper. (We can't make the handle
-//          strong without risking introducing a memory leak if an object that
-//          holds a scoped_refptr is reachable from the wrapper.)
-//
-class Wrappable : public base::RefCounted<Wrappable> {
+// v8 wrapper objects. To retain a Wrappable object on the stack, use a
+// gin::Handle.
+class Wrappable {
  public:
   // Subclasses must return the WrapperInfo object associated with the
   // v8::ObjectTemplate for their subclass. When creating a v8 wrapper for
@@ -51,12 +41,18 @@ class Wrappable : public base::RefCounted<Wrappable> {
   // instead of overriding this function.
   v8::Handle<v8::Object> GetWrapper(v8::Isolate* isolate);
 
+  // Subclasses should have private constructors and expose a static Create
+  // function that returns a gin::Handle. Forcing creators through this static
+  // Create function will enforce that clients actually create a wrapper for
+  // the object. If clients fail to create a wrapper for a wrappable object,
+  // the object will leak because we use the weak callback from the wrapper
+  // as the signal to delete the wrapped object.
+
  protected:
   Wrappable();
   virtual ~Wrappable();
 
  private:
-  friend class base::RefCounted<Wrappable>;
   friend struct Converter<Wrappable*>;
 
   static void WeakCallback(

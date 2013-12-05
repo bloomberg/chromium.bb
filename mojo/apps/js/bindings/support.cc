@@ -24,7 +24,7 @@ namespace {
 WaitingCallback* AsyncWait(const gin::Arguments& args, mojo::Handle handle,
                            MojoWaitFlags flags,
                            v8::Handle<v8::Function> callback) {
-  scoped_refptr<WaitingCallback> waiting_callback =
+  gin::Handle<WaitingCallback> waiting_callback =
       WaitingCallback::Create(args.isolate(), callback);
 
   BindingsSupport::AsyncWaitID wait_id = BindingsSupport::Get()->AsyncWait(

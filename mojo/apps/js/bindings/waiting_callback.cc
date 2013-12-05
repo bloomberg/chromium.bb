@@ -30,9 +30,9 @@ WaitingCallback::~WaitingCallback() {
   DCHECK(!wait_id_) << "Waiting callback was destroyed before being cancelled.";
 }
 
-scoped_refptr<WaitingCallback> WaitingCallback::Create(
+gin::Handle<WaitingCallback> WaitingCallback::Create(
     v8::Isolate* isolate, v8::Handle<v8::Function> callback) {
-  return make_scoped_refptr(new WaitingCallback(isolate, callback));
+  return gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
 }
 
 gin::WrapperInfo WaitingCallback::kWrapperInfo = { gin::kEmbedderNativeGin };

@@ -26,7 +26,7 @@ void Wrappable::WeakCallback(
     const v8::WeakCallbackData<v8::Object, Wrappable>& data) {
   Wrappable* wrappable = data.GetParameter();
   wrappable->wrapper_.Reset();
-  wrappable->Release();  // Balanced in Wrappable::ConfigureWrapper.
+  delete wrappable;
 }
 
 v8::Handle<v8::Object> Wrappable::CreateWrapper(v8::Isolate* isolate) {
@@ -39,7 +39,6 @@ v8::Handle<v8::Object> Wrappable::CreateWrapper(v8::Isolate* isolate) {
   wrapper->SetAlignedPointerInInternalField(kWrapperInfoIndex, info);
   wrapper->SetAlignedPointerInInternalField(kEncodedValueIndex, this);
   wrapper_.Reset(isolate, wrapper);
-  AddRef();  // Balanced in Wrappable::WeakCallback.
   wrapper_.SetWeak(this, WeakCallback);
   return wrapper;
 }

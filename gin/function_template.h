@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/handle.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
@@ -306,8 +307,9 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate,
     const base::Callback<R()> callback) {
   typedef internal::CallbackHolder<R()> HolderT;
-  scoped_refptr<HolderT> holder(new HolderT(callback));
+  gin::Handle<HolderT> holder = CreateHandle(isolate, new HolderT(callback));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::DispatchToCallback<R>,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }
@@ -317,8 +319,9 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate,
     const base::Callback<R(P1)> callback) {
   typedef internal::CallbackHolder<R(P1)> HolderT;
-  scoped_refptr<HolderT> holder(new HolderT(callback));
+  gin::Handle<HolderT> holder = CreateHandle(isolate, new HolderT(callback));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::DispatchToCallback<R, P1>,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }
@@ -328,8 +331,9 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate,
     const base::Callback<R(P1, P2)> callback) {
   typedef internal::CallbackHolder<R(P1, P2)> HolderT;
-  scoped_refptr<HolderT> holder(new HolderT(callback));
+  gin::Handle<HolderT> holder = CreateHandle(isolate, new HolderT(callback));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::DispatchToCallback<R, P1, P2>,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }
@@ -339,8 +343,9 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate,
     const base::Callback<R(P1, P2, P3)> callback) {
   typedef internal::CallbackHolder<R(P1, P2, P3)> HolderT;
-  scoped_refptr<HolderT> holder(new HolderT(callback));
+  gin::Handle<HolderT> holder = CreateHandle(isolate, new HolderT(callback));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::DispatchToCallback<R, P1, P2, P3>,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }
@@ -350,8 +355,9 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate,
     const base::Callback<R(P1, P2, P3, P4)> callback) {
   typedef internal::CallbackHolder<R(P1, P2, P3, P4)> HolderT;
-  scoped_refptr<HolderT> holder(new HolderT(callback));
+  gin::Handle<HolderT> holder = CreateHandle(isolate, new HolderT(callback));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::DispatchToCallback<R, P1, P2, P3, P4>,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }

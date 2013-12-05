@@ -18,6 +18,7 @@ $var MAX_ARITY = 4
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/handle.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
@@ -174,7 +175,7 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
     v8::Isolate* isolate,
     const base::Callback<R($for ARG , [[P$(ARG)]])> callback) {
   typedef internal::CallbackHolder<R($for ARG , [[P$(ARG)]])> HolderT;
-  scoped_refptr<HolderT> holder(new HolderT(callback));
+  gin::Handle<HolderT> holder = CreateHandle(isolate, new HolderT(callback));
   return v8::FunctionTemplate::New(
       isolate,
       &internal::DispatchToCallback<R$for ARG [[, P$(ARG)]]>,

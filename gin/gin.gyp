@@ -31,6 +31,7 @@
         'dictionary.h',
         'function_template.cc',
         'function_template.h',
+        'handle.h',
         'isolate_holder.cc',
         'modules/console.cc',
         'modules/console.h',
