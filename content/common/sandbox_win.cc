@@ -40,6 +40,9 @@ namespace {
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
 // when they are loaded in the renderer. Note: at runtime we generate short
 // versions of the dll name only if the dll has an extension.
+// For more information about how this list is generated, and how to get off
+// of it, see:
+// https://sites.google.com/a/chromium.org/dev/Home/third-party-developers
 const wchar_t* const kTroublesomeDlls[] = {
   L"adialhk.dll",                 // Kaspersky Internet Security.
   L"acpiz.dll",                   // Unknown.
