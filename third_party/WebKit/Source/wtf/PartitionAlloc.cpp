@@ -163,7 +163,7 @@ bool partitionAllocShutdown(PartitionRoot* root)
     ASSERT(numSuperPages == root->totalSizeOfSuperPages / kSuperPageSize);
     for (size_t i = 0; i < numSuperPages; ++i) {
         SuperPageBitmap::unregisterSuperPage(superPages[i]);
-        freePages(superPages[i], kSuperPageSize);
+        freeSuperPages(superPages[i], kSuperPageSize);
     }
 
     return noLeaks;
@@ -187,27 +187,32 @@ static ALWAYS_INLINE PartitionPage* partitionAllocPage(PartitionRoot* root)
     // Need a new super page.
     root->totalSizeOfSuperPages += kSuperPageSize;
     RELEASE_ASSERT(root->totalSizeOfSuperPages <= kMaxPartitionSize);
-    char* requestedAddress = root->nextSuperPage;
-    char* superPage = reinterpret_cast<char*>(allocPages(requestedAddress, kSuperPageSize, kSuperPageSize));
-    SuperPageBitmap::registerSuperPage(superPage);
-    root->nextSuperPage = superPage + kSuperPageSize;
-    root->nextPartitionPageEnd = root->nextSuperPage;
-    char* ret = superPage;
     // We need to put a guard page in front if either:
-    // a) This is the first super page allocation (denoted by null address).
+    // a) This is the first super page allocation.
     // b) The super page did not end up at our suggested address.
-    bool needsGuard = (superPage != requestedAddress);
+    bool needsGuard = false;
+    if (UNLIKELY(root->nextSuperPage == 0)) {
+        needsGuard = true;
+        root->nextSuperPage = getRandomSuperPageBase();
+    }
+    char* superPage = reinterpret_cast<char*>(allocSuperPages(root->nextSuperPage, kSuperPageSize));
+    SuperPageBitmap::registerSuperPage(superPage);
+    char* ret = superPage;
+    if (superPage != root->nextSuperPage) {
+        needsGuard = true;
+        // Re-randomize the base location for next time just in case the
+        // underlying operating system picks lousy locations for mappings.
+        root->nextSuperPage = 0;
+    } else {
+        root->nextSuperPage = superPage + kSuperPageSize;
+    }
+    root->nextPartitionPageEnd = superPage + kSuperPageSize;
     if (needsGuard) {
         // Leave a writeable hole in the middle of the guard partition page.
         // We'll only fault it if we need to create a new super page extent, in which case it will used to maintain a singly linked list of super page extents.
         setSystemPagesInaccessible(superPage, kSystemPageSize);
         setSystemPagesInaccessible(superPage + (kPartitionPageSize - kSystemPageSize), kSystemPageSize);
         ret += kPartitionPageSize;
-        // If we were after a specific address, but didn't get it, assume that
-        // the system chose a lousy address and re-randomize the next
-        // allocation.
-        if (requestedAddress)
-            root->nextSuperPage = 0;
     }
     root->nextPartitionPage = ret + kPartitionPageSize;
 

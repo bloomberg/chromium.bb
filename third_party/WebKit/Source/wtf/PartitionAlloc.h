@@ -135,17 +135,6 @@ static const size_t kPartitionPageHeaderSize = 64;
 // pointers will fault and dirty a private page, which is very wasteful if we
 // never actually store objects there.
 static const size_t kNumSystemPagesPerPartitionPage = kPartitionPageSize / kSystemPageSize;
-
-// Our granulatity of page allocation is 64KB. This is a Windows limitation,
-// but we apply the same requirement for all platforms in order to keep
-// things simple and consistent.
-// We term these 64KB allocations "super pages". They're just a clump of
-// underlying 4KB system pages.
-static const size_t kSuperPageShift = 16; // 64KB
-static const size_t kSuperPageSize = 1 << kSuperPageShift;
-static const size_t kSuperPageOffsetMask = kSuperPageSize - 1;
-static const size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
-
 // Special bucket id for internal metadata.
 static const size_t kInternalMetadataBucket = 0;
 
