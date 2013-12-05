@@ -12,6 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -198,6 +199,9 @@ int GpuMain(const MainFunctionParams& parameters) {
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
   GetContentClient()->SetGpuInfo(gpu_info);
 
+  base::TimeDelta collect_context_time;
+  base::TimeDelta initialize_one_off_time;
+
   // Warm up resources that don't need access to GPUInfo.
   if (WarmUpSandbox(command_line)) {
 #if defined(OS_LINUX)
@@ -213,6 +217,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 #endif  // defined(OS_LINUX)
 
+    base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();
+
     // Load and initialize the GL implementation and locate the GL entry points.
     if (gfx::GLSurface::InitializeOneOff()) {
       // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
@@ -223,6 +229,8 @@ int GpuMain(const MainFunctionParams& parameters) {
       // By skipping the following code on Mac, we don't really lose anything,
       // because the basic GPU information is passed down from browser process
       // and we already registered them through SetGpuInfo() above.
+      base::TimeTicks before_collect_context_graphics_info =
+          base::TimeTicks::Now();
 #if !defined(OS_MACOSX)
       if (!gpu::CollectContextGraphicsInfo(&gpu_info))
         VLOG(1) << "gpu::CollectGraphicsInfo failed";
@@ -242,10 +250,15 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif  // !defined(OS_CHROMEOS)
 #endif  // defined(OS_LINUX)
 #endif  // !defined(OS_MACOSX)
+      collect_context_time =
+          base::TimeTicks::Now() - before_collect_context_graphics_info;
     } else {
       VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
       dead_on_arrival = true;
     }
+
+    initialize_one_off_time =
+        base::TimeTicks::Now() - before_initialize_one_off;
 
     if (enable_watchdog && delayed_watchdog_enable) {
       watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
@@ -278,6 +291,11 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(NULL);
 
   GpuProcess gpu_process;
+
+  // These UMA must be stored after GpuProcess is constructed as it
+  // initializes StatisticsRecorder which tracks the histograms.
+  UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
+  UMA_HISTOGRAM_TIMES("GPU.InitializeOneOffTime", initialize_one_off_time);
 
   GpuChildThread* child_thread = new GpuChildThread(watchdog_thread.get(),
                                                     dead_on_arrival,

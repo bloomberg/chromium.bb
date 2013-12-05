@@ -12,6 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -286,12 +287,15 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
   settings.initial_debug_state.show_non_occluding_rects =
       command_line->HasSwitch(cc::switches::kUIShowNonOccludingRects);
 
+  base::TimeTicks before_create = base::TimeTicks::Now();
   if (!!g_compositor_thread) {
     host_ = cc::LayerTreeHost::CreateThreaded(
         this, NULL, settings, g_compositor_thread->message_loop_proxy());
   } else {
     host_ = cc::LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
   }
+  UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
+                      base::TimeTicks::Now() - before_create);
   host_->SetRootLayer(root_web_layer_);
   host_->SetLayerTreeHostClientReady();
 }
