@@ -2037,6 +2037,8 @@
         'browser/signin/google_auto_login_helper.h',
         'browser/signin/local_auth.cc',
         'browser/signin/local_auth.h',
+        'browser/signin/principals_message_filter.cc',
+        'browser/signin/principals_message_filter.h',
         'browser/signin/profile_oauth2_token_service.cc',
         'browser/signin/profile_oauth2_token_service.h',
         'browser/signin/profile_oauth2_token_service_factory.cc',

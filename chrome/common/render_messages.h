@@ -409,6 +409,18 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_RetrieveWebappInformation,
                     GURL /* expected_url */)
 #endif  // defined(OS_ANDROID)
 
+// chrome.principals messages ------------------------------------------------
+
+// Message sent from the renderer to the browser to get the list of browser
+// managed accounts for the given origin.
+IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_GetManagedAccounts,
+                            GURL /* current URL */,
+                            std::vector<std::string> /* managed accounts */)
+
+// Message sent from the renderer to the browser to show the browser account
+// management UI.
+IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
+
 // JavaScript related messages -----------------------------------------------
 
 // Notify the JavaScript engine in the render to change its parameters

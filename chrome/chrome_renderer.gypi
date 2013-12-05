@@ -180,6 +180,8 @@
         'renderer/net_benchmarking_extension.h',
         'renderer/playback_extension.cc',
         'renderer/playback_extension.h',
+        'renderer/principals_extension_bindings.cc',
+        'renderer/principals_extension_bindings.h',
         'renderer/resource_bundle_source_map.cc',
         'renderer/resource_bundle_source_map.h',
         'renderer/resources/extensions/app_custom_bindings.js',

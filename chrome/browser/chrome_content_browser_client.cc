@@ -70,6 +70,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
+#include "chrome/browser/signin/principals_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
@@ -936,6 +937,10 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 #if defined(OS_ANDROID)
   host->AddFilter(new EncryptedMediaMessageFilterAndroid());
 #endif
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNewProfileManagement)) {
+    host->AddFilter(new PrincipalsMessageFilter(id));
+  }
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
