@@ -799,7 +799,7 @@ bool RenderBox::scrollImpl(ScrollDirection direction, ScrollGranularity granular
     return layer && layer->scrollableArea() && layer->scrollableArea()->scroll(direction, granularity, multiplier);
 }
 
-bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
+bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode, Node* startNode, IntPoint absolutePoint)
 {
     if (scrollImpl(direction, granularity, multiplier)) {
         if (stopNode)
@@ -810,9 +810,21 @@ bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity,
     if (stopNode && *stopNode && *stopNode == node())
         return true;
 
-    RenderBlock* b = containingBlock();
-    if (b && !b->isRenderView())
-        return b->scroll(direction, granularity, multiplier, stopNode);
+    RenderBlock* nextScrollBlock = containingBlock();
+
+    if (nextScrollBlock && nextScrollBlock->isRenderNamedFlowThread()) {
+        RenderBox* flowedBox = this;
+
+        if (startNode) {
+            if (RenderBox* box = startNode->renderBox())
+                flowedBox = box;
+        }
+
+        nextScrollBlock = toRenderFlowThread(nextScrollBlock)->regionFromAbsolutePointAndBox(absolutePoint, flowedBox);
+    }
+
+    if (nextScrollBlock && !nextScrollBlock->isRenderView())
+        return nextScrollBlock->scroll(direction, granularity, multiplier, stopNode, startNode, absolutePoint);
     return false;
 }
 
