@@ -4198,8 +4198,18 @@ void RenderBlock::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidt
                 // Case (2). Inline replaced elements and floats.
                 // Go ahead and terminate the current line as far as
                 // minwidth is concerned.
-                childMin += child->minPreferredLogicalWidth().ceilToFloat();
-                childMax += child->maxPreferredLogicalWidth().ceilToFloat();
+                LayoutUnit childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth;
+                if (child->isBox() && child->isHorizontalWritingMode() != isHorizontalWritingMode()) {
+                    RenderBox* childBox = toRenderBox(child);
+                    LogicalExtentComputedValues computedValues;
+                    childBox->computeLogicalHeight(childBox->borderAndPaddingLogicalHeight(), 0, computedValues);
+                    childMinPreferredLogicalWidth = childMaxPreferredLogicalWidth = computedValues.m_extent;
+                } else {
+                    childMinPreferredLogicalWidth = child->minPreferredLogicalWidth();
+                    childMaxPreferredLogicalWidth = child->maxPreferredLogicalWidth();
+                }
+                childMin += childMinPreferredLogicalWidth.ceilToFloat();
+                childMax += childMaxPreferredLogicalWidth.ceilToFloat();
 
                 bool clearPreviousFloat;
                 if (child->isFloating()) {
