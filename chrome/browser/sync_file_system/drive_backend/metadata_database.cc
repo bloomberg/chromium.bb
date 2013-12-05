@@ -890,7 +890,7 @@ void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
 
   FileTracker* new_tracker = *new_trackers.begin();
   DCHECK(!new_tracker->active());
-  DCHECK(!new_tracker->has_synced_details());
+  DCHECK(new_tracker->has_synced_details());
   DCHECK_EQ(parent_tracker_id, new_tracker->parent_tracker_id());
 
   std::string title = new_file_details.title();
@@ -898,10 +898,6 @@ void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
   if (FindTrackersByParentAndTitle(parent_tracker_id, title, &trackers) &&
       trackers.has_active())
     MakeTrackerInactive(trackers.active_tracker()->tracker_id(), batch.get());
-
-  // TODO(tzik): Simplify this part.
-  *new_tracker->mutable_synced_details() = new_file_details;
-  trackers_by_parent_and_title_[parent_tracker_id][title].Insert(new_tracker);
 
   MakeTrackerActive(new_tracker->tracker_id(), batch.get());
 
@@ -1391,6 +1387,24 @@ void MetadataDatabase::CreateTrackerForParentAndFileID(
     const FileTracker& parent_tracker,
     const std::string& file_id,
     leveldb::WriteBatch* batch) {
+  CreateTrackerInternal(parent_tracker, file_id, NULL, batch);
+}
+
+void MetadataDatabase::CreateTrackerForParentAndFileMetadata(
+    const FileTracker& parent_tracker,
+    const FileMetadata& file_metadata,
+    leveldb::WriteBatch* batch) {
+  DCHECK(file_metadata.has_details());
+  CreateTrackerInternal(parent_tracker,
+                        file_metadata.file_id(),
+                        &file_metadata.details(),
+                        batch);
+}
+
+void MetadataDatabase::CreateTrackerInternal(const FileTracker& parent_tracker,
+                                             const std::string& file_id,
+                                             const FileDetails* details,
+                                             leveldb::WriteBatch* batch) {
   int64 tracker_id = GetNextTrackerID(batch);
   scoped_ptr<FileTracker> tracker(new FileTracker);
   tracker->set_tracker_id(tracker_id);
@@ -1401,6 +1415,11 @@ void MetadataDatabase::CreateTrackerForParentAndFileID(
   tracker->set_dirty(true);
   tracker->set_active(false);
   tracker->set_needs_folder_listing(false);
+  if (details) {
+    *tracker->mutable_synced_details() = *details;
+    tracker->mutable_synced_details()->set_missing(true);
+    tracker->mutable_synced_details()->clear_md5();
+  }
   PutTrackerToBatch(*tracker, batch);
 
   trackers_by_file_id_[file_id].Insert(tracker.get());
@@ -1408,7 +1427,10 @@ void MetadataDatabase::CreateTrackerForParentAndFileID(
   // FileMetadata::details but from FileTracker::synced_details, which is filled
   // on tracker updated phase.  Use empty string as the title since
   // FileTracker::synced_details is empty here.
-  trackers_by_parent_and_title_[parent_tracker.tracker_id()][std::string()]
+  std::string title;
+  if (details)
+    title = details->title();
+  trackers_by_parent_and_title_[parent_tracker.tracker_id()][title]
       .Insert(tracker.get());
   dirty_trackers_.insert(tracker.get());
   DCHECK(!ContainsKey(tracker_by_id_, tracker_id));
@@ -1492,7 +1514,7 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
       if (ContainsKey(parents_to_exclude, parent_tracker_id))
         continue;
 
-      CreateTrackerForParentAndFileID(*parent_tracker, file.file_id(), batch);
+      CreateTrackerForParentAndFileMetadata(*parent_tracker, file, batch);
     }
   }
 }

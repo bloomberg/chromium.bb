@@ -884,7 +884,8 @@ TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {
   reorganized_file.tracker.set_dirty(true);
   updated_file.tracker.set_dirty(true);
   noop_file.tracker.set_dirty(true);
-  new_file.tracker.clear_synced_details();
+  new_file.tracker.mutable_synced_details()->set_missing(true);
+  new_file.tracker.mutable_synced_details()->clear_md5();
   new_file.tracker.set_active(false);
   new_file.tracker.set_dirty(true);
   ResetTrackerID(&new_file.tracker);

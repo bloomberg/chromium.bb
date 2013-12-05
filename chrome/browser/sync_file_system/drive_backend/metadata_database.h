@@ -358,6 +358,13 @@ class MetadataDatabase {
   void CreateTrackerForParentAndFileID(const FileTracker& parent_tracker,
                                        const std::string& file_id,
                                        leveldb::WriteBatch* batch);
+  void CreateTrackerForParentAndFileMetadata(const FileTracker& parent_tracker,
+                                             const FileMetadata& file_metadata,
+                                             leveldb::WriteBatch* batch);
+  void CreateTrackerInternal(const FileTracker& parent_tracker,
+                             const std::string& file_id,
+                             const FileDetails* details,
+                             leveldb::WriteBatch* batch);
 
   void RemoveTracker(int64 tracker_id, leveldb::WriteBatch* batch);
   void RemoveTrackerIgnoringSameTitle(int64 tracker_id,
