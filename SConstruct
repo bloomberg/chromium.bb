@@ -90,8 +90,6 @@ def PrintFinalReport():
       test_name = '%s (%s)' % (test_name, failure['raw_name'])
     print "%s failed: %s\n" % (test_name, failure['errstr'])
 
-atexit.register(PrintFinalReport)
-
 
 def VerboseConfigInfo(env):
   "Should we print verbose config information useful for bug reports"
@@ -508,6 +506,10 @@ pre_base_env.SetBitFromOption('nacl_glibc', False)
 # This function should be called ASAP after the environment is created, but
 # after ExpandArguments.
 SetUpArgumentBits(pre_base_env)
+
+# Register PrintFinalReport only after SetUpArgumentBits since it references
+# bits that get declared in SetUpArgumentBits
+atexit.register(PrintFinalReport)
 
 def DisableCrashDialog():
   if sys.platform == 'win32':
@@ -2199,7 +2201,7 @@ Automagically generated help:
 """)
 
 
-def SetupClang(env):
+def SetUpClang(env):
   env['CLANG_DIR'] = '${SOURCE_ROOT}/third_party/llvm-build/Release+Asserts/bin'
   env['CLANG_OPTS'] = []
   if env.Bit('asan'):
@@ -2232,7 +2234,7 @@ def SetupClang(env):
 
 def GenerateOptimizationLevels(env):
   if env.Bit('clang'):
-    SetupClang(env)
+    SetUpClang(env)
 
   # Generate debug variant.
   debug_env = env.Clone(tools = ['target_debug'])
@@ -2429,7 +2431,7 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
   return False
 
 
-def SetupLinuxEnvArm(env):
+def SetUpLinuxEnvArm(env):
   jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
   if env.Bit('arm_hard_float'):
     arm_abi = 'gnueabihf'
@@ -2486,7 +2488,7 @@ def SetupLinuxEnvArm(env):
   # get_plugin_dirname.cc has a dependency on dladdr
   env.Append(LIBS=['dl'])
 
-def SetupAndroidEnv(env):
+def SetUpAndroidEnv(env):
   env.FilterOut(CPPDEFINES=[['NACL_ANDROID', '0']])
   env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
   ndk = os.environ.get('ANDROID_NDK_ROOT')
@@ -2567,7 +2569,7 @@ def SetupAndroidEnv(env):
   env.FilterOut(LINKFLAGS=['-pie'])
   return env
 
-def SetupLinuxEnvMips(env):
+def SetUpLinuxEnvMips(env):
   jail = '${SCONSTRUCT_DIR}/toolchain/linux_mips-trusted'
   if not platform.machine().startswith('mips'):
     # Allow emulation on non-MIPS hosts.
@@ -2637,9 +2639,9 @@ def MakeLinuxEnv():
         LINKFLAGS = ['-m64'],
         )
   elif linux_env.Bit('build_arm'):
-    SetupLinuxEnvArm(linux_env)
+    SetUpLinuxEnvArm(linux_env)
   elif linux_env.Bit('build_mips32'):
-    SetupLinuxEnvMips(linux_env)
+    SetUpLinuxEnvMips(linux_env)
   else:
     Banner('Strange platform: %s' % env.GetPlatform())
 
@@ -2669,7 +2671,7 @@ def MakeLinuxEnv():
   linux_env.Replace(ASFLAGS=['${CCFLAGS}'])
 
   if linux_env.Bit('android'):
-    SetupAndroidEnv(linux_env)
+    SetUpAndroidEnv(linux_env)
 
   return linux_env
 
