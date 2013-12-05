@@ -21,6 +21,13 @@ static const int64 kMinSchedulingDelayMs = 1;
 namespace media {
 namespace cast {
 
+DecodedAudioCallbackData::DecodedAudioCallbackData()
+    : number_of_10ms_blocks(0),
+      desired_frequency(0),
+      callback() {}
+
+DecodedAudioCallbackData::~DecodedAudioCallbackData() {}
+
 // Local implementation of RtpData (defined in rtp_rtcp_defines.h).
 // Used to pass payload data into the audio receiver.
 class LocalRtpAudioData : public RtpData {
@@ -174,27 +181,37 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
     audio_decoder_->IncomingParsedRtpPacket(
         reinterpret_cast<const uint8*>(plaintext.data()), plaintext.size(),
         rtp_header);
+    if (!queued_decoded_callbacks_.empty()) {
+      DecodedAudioCallbackData decoded_data = queued_decoded_callbacks_.front();
+      queued_decoded_callbacks_.pop_front();
+      cast_environment_->PostTask(CastEnvironment::AUDIO_DECODER, FROM_HERE,
+        base::Bind(&AudioReceiver::DecodeAudioFrameThread,
+                   base::Unretained(this),
+                   decoded_data.number_of_10ms_blocks,
+                   decoded_data.desired_frequency,
+                   decoded_data.callback));
+    }
     return;
   }
+
   DCHECK(audio_buffer_) << "Invalid internal state";
   DCHECK(!audio_decoder_) << "Invalid internal state";
+
   bool complete = audio_buffer_->InsertPacket(payload_data, payload_size,
                                               rtp_header);
   if (!complete) return;  // Audio frame not complete; wait for more packets.
-  if (queued_encoded_callbacks_.empty()) return;  // No pending callback.
-
+  if (queued_encoded_callbacks_.empty()) return;
   AudioFrameEncodedCallback callback = queued_encoded_callbacks_.front();
   queued_encoded_callbacks_.pop_front();
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&AudioReceiver::GetEncodedAudioFrame,
-          weak_factory_.GetWeakPtr(), callback));
+      weak_factory_.GetWeakPtr(), callback));
 }
 
 void AudioReceiver::GetRawAudioFrame(int number_of_10ms_blocks,
       int desired_frequency, const AudioFrameDecodedCallback& callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_decoder_) << "Invalid function call in this configuration";
-
   // TODO(pwestin): we can skip this function by posting direct to the decoder.
   cast_environment_->PostTask(CastEnvironment::AUDIO_DECODER, FROM_HERE,
       base::Bind(&AudioReceiver::DecodeAudioFrameThread,
@@ -217,8 +234,11 @@ void AudioReceiver::DecodeAudioFrameThread(
                                         desired_frequency,
                                         audio_frame.get(),
                                         &rtp_timestamp)) {
-    // TODO(pwestin): This looks wrong, we would loose the pending call to
-    // the application provided callback.
+    DecodedAudioCallbackData callback_data;
+    callback_data.number_of_10ms_blocks = number_of_10ms_blocks;
+    callback_data.desired_frequency = desired_frequency;
+    callback_data.callback = callback;
+    queued_decoded_callbacks_.push_back(callback_data);
     return;
   }
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();

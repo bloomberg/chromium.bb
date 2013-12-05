@@ -34,6 +34,14 @@ class PacedPacketSender;
 class RtpReceiver;
 class RtpReceiverStatistics;
 
+struct DecodedAudioCallbackData {
+  DecodedAudioCallbackData();
+  ~DecodedAudioCallbackData();
+  int number_of_10ms_blocks;
+  int desired_frequency;
+  AudioFrameDecodedCallback callback;
+};
+
 // This class is not thread safe. Should only be called from the Main cast
 // thread.
 class AudioReceiver : public base::NonThreadSafe,
@@ -126,6 +134,7 @@ class AudioReceiver : public base::NonThreadSafe,
   std::string iv_mask_;
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
+  std::list<DecodedAudioCallbackData> queued_decoded_callbacks_;
 };
 
 }  // namespace cast

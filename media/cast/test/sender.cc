@@ -21,6 +21,9 @@
 #include "media/cast/test/video_utility.h"
 #include "ui/gfx/size.h"
 
+namespace media {
+namespace cast {
+// Settings chosen to match default receiver settings.
 #define DEFAULT_SEND_PORT "2344"
 #define DEFAULT_RECEIVE_PORT "2346"
 #define DEFAULT_SEND_IP "127.0.0.1"
@@ -38,9 +41,6 @@
 #define DEFAULT_VIDEO_CODEC_MAX_BITRATE "4000"
 #define DEFAULT_VIDEO_CODEC_MIN_BITRATE "1000"
 
-namespace media {
-namespace cast {
-
 namespace {
 static const int kAudioChannels = 2;
 static const int kAudioSamplingFrequency = 48000;
@@ -49,6 +49,12 @@ static const int kSoundFrequency = 1234;  // Frequency of sinusoid wave.
 // a normal video is 30 fps hence the 33 ms between frames.
 static const float kSoundVolume = 0.5f;
 static const int kFrameTimerMs = 33;
+
+// Dummy callback function that does nothing except to accept ownership of
+// |audio_bus| for destruction. This guarantees that the audio_bus is valid for
+// the entire duration of the encode/send process (not equivalent to DoNothing).
+void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
+}
 } // namespace
 
 void GetPorts(int* tx_port, int* rx_port) {
@@ -231,7 +237,7 @@ class SendProcess {
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
     AudioBus* const audio_bus_ptr = audio_bus.get();
     frame_input_->InsertAudio(audio_bus_ptr, clock_->NowTicks(),
-        base::Bind(base::DoNothing));
+        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     gfx::Size size(video_config_.width, video_config_.height);
     // TODO(mikhal): Use the provided timestamp.

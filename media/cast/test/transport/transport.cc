@@ -114,8 +114,7 @@ class LocalPacketSender : public PacketSender,
 
   virtual bool SendPacket(const Packet& packet) OVERRIDE {
     io_thread_proxy_->PostTask(FROM_HERE,
-    base::Bind(&LocalPacketSender::SendPacketToNetwork,
-               this, packet));
+    base::Bind(&LocalPacketSender::SendPacketToNetwork, this, packet));
     return true;
   }
 
@@ -128,6 +127,7 @@ class LocalPacketSender : public PacketSender,
         VLOG(1) << "Drop packet f:" << static_cast<int>(data[12 + 1])
                 << " p:" << static_cast<int>(data[12 + 3])
                 << " m:" << static_cast<int>(data[12 + 5]);
+        return;
       }
     }
     net::TestCompletionCallback callback;

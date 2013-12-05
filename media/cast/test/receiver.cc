@@ -29,13 +29,13 @@
 
 namespace media {
 namespace cast {
-
+// Settings chosen to match default sender settings.
 #define DEFAULT_SEND_PORT "2346"
 #define DEFAULT_RECEIVE_PORT "2344"
 #define DEFAULT_SEND_IP "127.0.0.1"
 #define DEFAULT_RESTART "0"
-#define DEFAULT_AUDIO_FEEDBACK_SSRC "2"
-#define DEFAULT_AUDIO_INCOMING_SSRC "1"
+#define DEFAULT_AUDIO_FEEDBACK_SSRC "1"
+#define DEFAULT_AUDIO_INCOMING_SSRC "2"
 #define DEFAULT_AUDIO_PAYLOAD_TYPE "127"
 #define DEFAULT_VIDEO_FEEDBACK_SSRC "12"
 #define DEFAULT_VIDEO_INCOMING_SSRC "11"
@@ -180,7 +180,7 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
         base::TimeDelta::FromMilliseconds(kFrameTimerMs);
     if (!last_playout_time_.is_null()){
         time_diff = playout_time - last_playout_time_;
-        VLOG(0) << " PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
+        VLOG(0) << " ***PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_playout_time_ = playout_time;
     GetAudioFrame(time_diff);
