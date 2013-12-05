@@ -711,7 +711,6 @@ bool InProcessCommandBuffer::GenerateMailboxNames(
 }
 
 uint32 InProcessCommandBuffer::InsertSyncPoint() {
-  NOTREACHED();
   return 0;
 }
 

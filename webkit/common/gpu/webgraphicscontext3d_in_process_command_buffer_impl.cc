@@ -1189,10 +1189,7 @@ DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
 DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT,
                  WGC3Dsizei, const WGC3Denum*)
 
-unsigned WebGraphicsContext3DInProcessCommandBufferImpl::insertSyncPoint() {
-  shallowFlushCHROMIUM();
-  return 0;
-}
+DELEGATE_TO_GL_R(insertSyncPoint, InsertSyncPointCHROMIUM, unsigned)
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::loseContextCHROMIUM(
     WGC3Denum current, WGC3Denum other) {
