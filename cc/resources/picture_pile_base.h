@@ -65,6 +65,10 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
 
   virtual ~PicturePileBase();
 
+  void SetRecordedRegionForTesting(const Region& recorded_region) {
+    recorded_region_ = recorded_region;
+  }
+
   int num_raster_threads() { return num_raster_threads_; }
   int buffer_pixels() const { return tiling_.border_texels(); }
   void Clear();

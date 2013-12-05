@@ -4,6 +4,10 @@
 
 #include "cc/test/fake_picture_layer_impl.h"
 
+#include <vector>
+#include "cc/resources/tile.h"
+#include "cc/trees/layer_tree_impl.h"
+
 namespace cc {
 
 FakePictureLayerImpl::FakePictureLayerImpl(
@@ -64,6 +68,59 @@ PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
     }
   }
   return result;
+}
+
+void FakePictureLayerImpl::SetAllTilesVisible() {
+  WhichTree tree =
+      layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+
+  for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
+       ++tiling_idx) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(tiling_idx);
+    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
+    for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
+      Tile* tile = tiles[tile_idx];
+      TilePriority priority;
+      priority.resolution = HIGH_RESOLUTION;
+      priority.time_to_visible_in_seconds = 0.f;
+      priority.distance_to_visible_in_pixels = 0.f;
+      tile->SetPriority(tree, priority);
+    }
+  }
+}
+
+void FakePictureLayerImpl::SetAllTilesReady() {
+  for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
+       ++tiling_idx) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(tiling_idx);
+    SetAllTilesReadyInTiling(tiling);
+  }
+}
+
+void FakePictureLayerImpl::SetAllTilesReadyInTiling(
+    PictureLayerTiling* tiling) {
+  std::vector<Tile*> tiles = tiling->AllTilesForTesting();
+  for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
+    Tile* tile = tiles[tile_idx];
+    ManagedTileState& state = tile->managed_state();
+    for (size_t mode_idx = 0; mode_idx < NUM_RASTER_MODES; ++mode_idx)
+      state.tile_versions[mode_idx].SetSolidColorForTesting(true);
+    DCHECK(tile->IsReadyToDraw());
+  }
+}
+
+void FakePictureLayerImpl::CreateDefaultTilingsAndTiles() {
+  layer_tree_impl()->UpdateDrawProperties();
+
+  if (CanHaveTilings()) {
+    DCHECK_EQ(tilings()->num_tilings(), 2u);
+    DCHECK_EQ(tilings()->tiling_at(0)->resolution(), HIGH_RESOLUTION);
+    DCHECK_EQ(tilings()->tiling_at(1)->resolution(), LOW_RESOLUTION);
+    HighResTiling()->CreateAllTilesForTesting();
+    LowResTiling()->CreateAllTilesForTesting();
+  } else {
+    DCHECK_EQ(tilings()->num_tilings(), 0u);
+  }
 }
 
 }  // namespace cc

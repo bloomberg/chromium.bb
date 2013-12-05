@@ -21,6 +21,11 @@ class FakePicturePileImpl : public PicturePileImpl {
       gfx::Size tile_size,
       gfx::Size layer_bounds);
 
+  static scoped_refptr<FakePicturePileImpl> CreatePileWithRecordedRegion(
+      gfx::Size tile_size,
+      gfx::Size layer_bounds,
+      const Region& recorded_region);
+
   static scoped_refptr<FakePicturePileImpl> CreatePile();
 
   TilingData& tiling() { return tiling_; }

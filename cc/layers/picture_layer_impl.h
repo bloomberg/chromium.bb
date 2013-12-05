@@ -60,7 +60,7 @@ class CC_EXPORT PictureLayerImpl
       gfx::Size content_bounds) const OVERRIDE;
   virtual const Region* GetInvalidation() OVERRIDE;
   virtual const PictureLayerTiling* GetTwinTiling(
-      const PictureLayerTiling* tiling) OVERRIDE;
+      const PictureLayerTiling* tiling) const OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree.
   void SyncTiling(const PictureLayerTiling* tiling);
@@ -91,6 +91,13 @@ class CC_EXPORT PictureLayerImpl
   void UpdateLCDTextStatus(bool new_status);
   void ResetRasterScale();
   void MarkVisibleResourcesAsRequired() const;
+  bool MarkVisibleTilesAsRequired(
+      PictureLayerTiling* tiling,
+      const PictureLayerTiling* optional_twin_tiling,
+      float contents_scale,
+      gfx::Rect rect,
+      const Region& missing_region) const;
+
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)
       DoPostCommitInitialization();
