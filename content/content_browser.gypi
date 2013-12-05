@@ -274,6 +274,7 @@
     'browser/android/load_url_params.h',
     'browser/android/overscroll_glow.h',
     'browser/android/overscroll_glow.cc',
+    'browser/android/popup_item_type_list.h',
     'browser/android/surface_texture_peer_browser_impl.cc',
     'browser/android/surface_texture_peer_browser_impl.h',
     'browser/android/touch_point.cc',

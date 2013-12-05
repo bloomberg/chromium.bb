@@ -68,12 +68,15 @@ using blink::WebGestureEvent;
 using blink::WebInputEvent;
 
 // Describes the type and enabled state of a select popup item.
-// Keep in sync with the value defined in SelectPopupDialog.java
-enum PopupItemType {
-  POPUP_ITEM_TYPE_GROUP = 0,
-  POPUP_ITEM_TYPE_DISABLED,
-  POPUP_ITEM_TYPE_ENABLED
+namespace {
+
+enum {
+#define DEFINE_POPUP_ITEM_TYPE(name, value) POPUP_ITEM_TYPE_##name = value,
+#include "content/browser/android/popup_item_type_list.h"
+#undef DEFINE_POPUP_ITEM_TYPE
 };
+
+} //namespace
 
 namespace content {
 
