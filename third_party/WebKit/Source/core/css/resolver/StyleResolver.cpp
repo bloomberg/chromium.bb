@@ -746,15 +746,15 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle& elementStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const RenderStyle& elementStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
     ASSERT(documentSettings());
     ASSERT(!hasPendingAuthorStyleSheets());
 
-    if (e == document().documentElement())
+    if (element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
-    StyleResolverState state(document(), e);
+    StyleResolverState state(document(), element);
 
     MatchResult result;
     if (keyframe->properties())
@@ -874,15 +874,15 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
     }
 }
 
-PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
+PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
 {
     ASSERT(document().frame());
     ASSERT(documentSettings());
     ASSERT(parentStyle);
-    if (!e)
+    if (!element)
         return 0;
 
-    StyleResolverState state(document(), e, parentStyle);
+    StyleResolverState state(document(), element, parentStyle);
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());
@@ -910,7 +910,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
         state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
-        applyMatchedProperties(state, collector.matchedResult(), e->pseudoElement(pseudoStyleRequest.pseudoId));
+        applyMatchedProperties(state, collector.matchedResult(), element->pseudoElement(pseudoStyleRequest.pseudoId));
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
@@ -923,7 +923,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     didAccess();
 
-    if (PseudoElement* pseudoElement = e->pseudoElement(pseudoStyleRequest.pseudoId))
+    if (PseudoElement* pseudoElement = element->pseudoElement(pseudoStyleRequest.pseudoId))
         setAnimationUpdateIfNeeded(state, *pseudoElement);
 
     // Now return the style.
@@ -1292,8 +1292,8 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
 
-            if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && animatingElement
-                && (animatingElement->hasActiveAnimations()
+            if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
+                && ((animatingElement && animatingElement->hasActiveAnimations())
                     || (state.style()->transitions() && !state.style()->transitions()->isEmpty())
                     || (state.style()->animations() && !state.style()->animations()->isEmpty())))
                 applyAnimatedProperties(state, animatingElement);

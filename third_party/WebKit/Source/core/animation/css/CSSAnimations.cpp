@@ -347,13 +347,13 @@ CSSAnimationUpdateScope::~CSSAnimationUpdateScope()
         activeAnimations->cssAnimations().maybeApplyPendingUpdate(m_target);
 }
 
-const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver* resolver, const Element* e, const StringImpl* animationName)
+const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver* resolver, const Element* element, const StringImpl* animationName)
 {
     if (resolver->styleTreeHasOnlyScopedResolverForDocument())
         return resolver->styleTreeScopedStyleResolverForDocument()->keyframeStylesForAnimation(animationName);
 
     Vector<ScopedStyleResolver*, 8> stack;
-    resolver->styleTreeResolveScopedKeyframesRules(e, stack);
+    resolver->styleTreeResolveScopedKeyframesRules(element, stack);
     if (stack.isEmpty())
         return 0;
 
