@@ -1129,8 +1129,12 @@ InlineIterator BreakingContext::handleEndOfLine()
     // of the next object instead to avoid confusing the rest of the
     // code.
     if (m_lineBreak.m_pos > 0) {
-        m_lineBreak.m_pos--;
-        m_lineBreak.increment();
+        // This loop enforces the invariant that line breaks should never point
+        // at an empty inline. See http://crbug.com/305904.
+        do {
+            m_lineBreak.m_pos--;
+            m_lineBreak.increment();
+        } while (!m_lineBreak.atEnd() && isEmptyInline(m_lineBreak.object()));
     }
 
     return m_lineBreak;

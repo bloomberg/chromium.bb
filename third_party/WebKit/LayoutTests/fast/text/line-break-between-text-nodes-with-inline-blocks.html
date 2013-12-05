@@ -6,6 +6,7 @@
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
+        testRunner.useUnfortunateSynchronousResizeMode();
     }
 
     window.onload = function() {
@@ -19,7 +20,9 @@
         window.resizeTo(42);
 
         document.getElementById("results").innerText = "Test passes if no crash."
-        testRunner.notifyDone();
+        if (window.testRunner) {
+            testRunner.notifyDone();
+        }
     }
 </script>
 </head>
