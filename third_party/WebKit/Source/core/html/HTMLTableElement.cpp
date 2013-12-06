@@ -563,12 +563,12 @@ PassRefPtr<HTMLCollection> HTMLTableElement::tBodies()
     return ensureCachedHTMLCollection(TableTBodies);
 }
 
-String HTMLTableElement::rules() const
+const AtomicString& HTMLTableElement::rules() const
 {
     return getAttribute(rulesAttr);
 }
 
-String HTMLTableElement::summary() const
+const AtomicString& HTMLTableElement::summary() const
 {
     return getAttribute(summaryAttr);
 }

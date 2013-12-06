@@ -83,7 +83,7 @@ public:
 
     void apply()
     {
-        m_element->setAttribute(m_name, m_value);
+        m_element->setAttribute(m_name, AtomicString(m_value));
     }
 
 private:

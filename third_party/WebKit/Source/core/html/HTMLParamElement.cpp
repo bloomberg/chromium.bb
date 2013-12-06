@@ -42,14 +42,14 @@ PassRefPtr<HTMLParamElement> HTMLParamElement::create(Document& document)
     return adoptRef(new HTMLParamElement(document));
 }
 
-String HTMLParamElement::name() const
+const AtomicString& HTMLParamElement::name() const
 {
     if (hasName())
         return getNameAttribute();
     return document().isHTMLDocument() ? emptyAtom : getIdAttribute();
 }
 
-String HTMLParamElement::value() const
+const AtomicString& HTMLParamElement::value() const
 {
     return fastGetAttribute(valueAttr);
 }

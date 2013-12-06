@@ -103,7 +103,7 @@ bool BaseCheckableInputType::storesValueSeparateFromAttribute()
 
 void BaseCheckableInputType::setValue(const String& sanitizedValue, bool, TextFieldEventBehavior)
 {
-    element().setAttribute(valueAttr, sanitizedValue);
+    element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
 bool BaseCheckableInputType::isCheckable()

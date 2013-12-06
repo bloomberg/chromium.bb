@@ -497,7 +497,7 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
         return false;
     }
 
-    String declaredMimeType = document().isPluginDocument() && document().ownerElement() ?
+    AtomicString declaredMimeType = document().isPluginDocument() && document().ownerElement() ?
         document().ownerElement()->fastGetAttribute(HTMLNames::typeAttr) :
         fastGetAttribute(HTMLNames::typeAttr);
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)

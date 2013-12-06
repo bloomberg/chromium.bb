@@ -39,9 +39,9 @@ class HTMLMetaElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLMetaElement> create(Document&);
 
-    String content() const;
-    String httpEquiv() const;
-    String name() const;
+    const AtomicString& content() const;
+    const AtomicString& httpEquiv() const;
+    const AtomicString& name() const;
 
 private:
     explicit HTMLMetaElement(Document&);

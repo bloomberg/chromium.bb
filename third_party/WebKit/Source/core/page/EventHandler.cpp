@@ -1776,7 +1776,7 @@ static bool findDropZone(Node* target, Clipboard* clipboard)
     Element* element = target->isElementNode() ? toElement(target) : target->parentElement();
     for (; element; element = element->parentElement()) {
         bool matched = false;
-        String dropZoneStr = element->fastGetAttribute(webkitdropzoneAttr);
+        AtomicString dropZoneStr = element->fastGetAttribute(webkitdropzoneAttr);
 
         if (dropZoneStr.isEmpty())
             continue;

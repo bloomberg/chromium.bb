@@ -56,10 +56,10 @@ public:
     Node* item(unsigned index);
 
     String enctype() const { return m_attributes.encodingType(); }
-    void setEnctype(const String&);
+    void setEnctype(const AtomicString&);
 
     String encoding() const { return m_attributes.encodingType(); }
-    void setEncoding(const String& value) { setEnctype(value); }
+    void setEncoding(const AtomicString& value) { setEnctype(value); }
 
     bool shouldAutocomplete() const;
 
@@ -84,14 +84,11 @@ public:
 
     bool noValidate() const;
 
-    String acceptCharset() const { return m_attributes.acceptCharset(); }
-    void setAcceptCharset(const String&);
-
-    String action() const;
-    void setAction(const String&);
+    const AtomicString& action() const;
+    void setAction(const AtomicString&);
 
     String method() const;
-    void setMethod(const String&);
+    void setMethod(const AtomicString&);
 
     virtual String target() const;
 

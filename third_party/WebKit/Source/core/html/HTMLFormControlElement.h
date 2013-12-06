@@ -46,9 +46,9 @@ public:
     HTMLFormElement* form() const { return FormAssociatedElement::form(); }
 
     String formEnctype() const;
-    void setFormEnctype(const String&);
+    void setFormEnctype(const AtomicString&);
     String formMethod() const;
-    void setFormMethod(const String&);
+    void setFormMethod(const AtomicString&);
     bool formNoValidate() const;
 
     void ancestorDisabledStateWasChanged();

@@ -115,12 +115,12 @@ void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicStr
     HTMLElement::parseAttribute(name, value);
 }
 
-String HTMLTrackElement::kind()
+const AtomicString& HTMLTrackElement::kind()
 {
     return track()->kind();
 }
 
-void HTMLTrackElement::setKind(const String& kind)
+void HTMLTrackElement::setKind(const AtomicString& kind)
 {
     setAttribute(kindAttr, kind);
 }

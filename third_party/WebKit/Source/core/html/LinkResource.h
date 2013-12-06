@@ -68,13 +68,13 @@ public:
 
     bool isValid() const { return !m_url.isEmpty() && m_url.isValid(); }
     const KURL& url() const { return m_url; }
-    const String& charset() const { return m_charset; }
+    const AtomicString& charset() const { return m_charset; }
     FetchRequest build(bool blocking) const;
 
 private:
     HTMLLinkElement* m_owner;
     KURL m_url;
-    String m_charset;
+    AtomicString m_charset;
 };
 
 } // namespace WebCore

@@ -94,7 +94,7 @@ void HTMLTableColElement::setSpan(int n)
     setIntegralAttribute(spanAttr, n);
 }
 
-String HTMLTableColElement::width() const
+const AtomicString& HTMLTableColElement::width() const
 {
     return getAttribute(widthAttr);
 }

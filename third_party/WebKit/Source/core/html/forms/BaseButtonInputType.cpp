@@ -76,7 +76,7 @@ bool BaseButtonInputType::storesValueSeparateFromAttribute()
 
 void BaseButtonInputType::setValue(const String& sanitizedValue, bool, TextFieldEventBehavior)
 {
-    element().setAttribute(valueAttr, sanitizedValue);
+    element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
 } // namespace WebCore

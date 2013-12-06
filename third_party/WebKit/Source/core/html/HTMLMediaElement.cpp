@@ -580,7 +580,7 @@ PassRefPtr<MediaError> HTMLMediaElement::error() const
     return m_error;
 }
 
-void HTMLMediaElement::setSrc(const String& url)
+void HTMLMediaElement::setSrc(const AtomicString& url)
 {
     setAttribute(srcAttr, url);
 }
@@ -2885,7 +2885,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             RefPtr<MediaQuerySet> media = MediaQuerySet::create(source->media());
 #if !LOG_DISABLED
             if (shouldLog)
-                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'media' is %s", source->media().utf8().data());
+                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'media' is %s", source->media().string().utf8().data());
 #endif
             if (!screenEval.eval(media.get())) {
                 UseCounter::count(document(), UseCounter::SourceElementNonMatchingMedia);

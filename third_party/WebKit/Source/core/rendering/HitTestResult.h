@@ -100,7 +100,7 @@ public:
     bool isSelected() const;
     String spellingToolTip(TextDirection&) const;
     String title(TextDirection&) const;
-    String altDisplayString() const;
+    const AtomicString& altDisplayString() const;
     String titleDisplayString() const;
     Image* image() const;
     IntRect imageRect() const;

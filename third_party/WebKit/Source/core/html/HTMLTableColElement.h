@@ -37,7 +37,7 @@ public:
     int span() const { return m_span; }
     void setSpan(int);
 
-    String width() const;
+    const AtomicString& width() const;
 
 private:
     HTMLTableColElement(const QualifiedName& tagName, Document&);

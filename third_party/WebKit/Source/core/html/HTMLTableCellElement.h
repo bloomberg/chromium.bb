@@ -41,12 +41,12 @@ public:
 
     void setCellIndex(int);
 
-    String abbr() const;
-    String axis() const;
+    const AtomicString& abbr() const;
+    const AtomicString& axis() const;
     void setColSpan(int);
-    String headers() const;
+    const AtomicString& headers() const;
     void setRowSpan(int);
-    String scope() const;
+    const AtomicString& scope() const;
 
     HTMLTableCellElement* cellAbove() const;
 

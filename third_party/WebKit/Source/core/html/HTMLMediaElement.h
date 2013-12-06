@@ -104,7 +104,7 @@ public:
     PassRefPtr<MediaError> error() const;
 
     // network state
-    void setSrc(const String&);
+    void setSrc(const AtomicString&);
     const KURL& currentSrc() const { return m_currentSrc; }
 
     enum NetworkState { NETWORK_EMPTY, NETWORK_IDLE, NETWORK_LOADING, NETWORK_NO_SOURCE };

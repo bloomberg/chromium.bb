@@ -124,14 +124,14 @@ public:
     virtual ~HTMLLinkElement();
 
     KURL href() const;
-    String rel() const;
+    const AtomicString& rel() const;
     String media() const { return m_media; }
     String typeValue() const { return m_type; }
     const LinkRelAttribute& relAttribute() const { return m_relAttribute; }
 
     virtual String target() const;
 
-    String type() const;
+    const AtomicString& type() const;
 
     IconType iconType() const;
 

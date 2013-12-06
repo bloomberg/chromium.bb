@@ -134,7 +134,7 @@ public:
     int size() const;
     bool sizeShouldIncludeDecoration(int& preferredSize) const;
 
-    void setType(const String&);
+    void setType(const AtomicString&);
 
     String value() const;
     void setValue(const String&, ExceptionState&, TextFieldEventBehavior = DispatchNoEvent);
@@ -190,13 +190,13 @@ public:
 
     int maxResults() const { return m_maxResults; }
 
-    String defaultValue() const;
-    void setDefaultValue(const String&);
+    const AtomicString& defaultValue() const;
+    void setDefaultValue(const AtomicString&);
 
     Vector<String> acceptMIMETypes();
     Vector<String> acceptFileExtensions();
-    String accept() const;
-    String alt() const;
+    const AtomicString& accept() const;
+    const AtomicString& alt() const;
 
     void setSize(unsigned);
     void setSize(unsigned, ExceptionState&);

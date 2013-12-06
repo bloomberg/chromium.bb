@@ -72,25 +72,25 @@ void HTMLSourceElement::removedFrom(ContainerNode* removalRoot)
 
 void HTMLSourceElement::setSrc(const String& url)
 {
-    setAttribute(srcAttr, url);
+    setAttribute(srcAttr, AtomicString(url));
 }
 
-String HTMLSourceElement::media() const
+const AtomicString& HTMLSourceElement::media() const
 {
     return getAttribute(mediaAttr);
 }
 
-void HTMLSourceElement::setMedia(const String& media)
+void HTMLSourceElement::setMedia(const AtomicString& media)
 {
     setAttribute(mediaAttr, media);
 }
 
-String HTMLSourceElement::type() const
+const AtomicString& HTMLSourceElement::type() const
 {
     return getAttribute(typeAttr);
 }
 
-void HTMLSourceElement::setType(const String& type)
+void HTMLSourceElement::setType(const AtomicString& type)
 {
     setAttribute(typeAttr, type);
 }

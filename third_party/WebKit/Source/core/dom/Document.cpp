@@ -1085,7 +1085,7 @@ bool Document::isLoadCompleted()
     return m_readyState == Complete;
 }
 
-String Document::encodingName() const
+AtomicString Document::encodingName() const
 {
     // TextEncoding::name() returns a char*, no need to allocate a new
     // String for it each time.

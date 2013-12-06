@@ -62,8 +62,8 @@ public:
     PassRefPtr<HTMLCollection> rows();
     PassRefPtr<HTMLCollection> tBodies();
 
-    String rules() const;
-    String summary() const;
+    const AtomicString& rules() const;
+    const AtomicString& summary() const;
 
     const StylePropertySet* additionalCellStyle();
     const StylePropertySet* additionalGroupStyle(bool rows);

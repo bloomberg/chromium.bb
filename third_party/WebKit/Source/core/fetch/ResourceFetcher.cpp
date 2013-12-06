@@ -1077,7 +1077,7 @@ void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request,
 {
     String encoding;
     if (type == Resource::Script || type == Resource::CSSStyleSheet)
-        encoding = charset.isEmpty() ? m_document->charset() : charset;
+        encoding = charset.isEmpty() ? m_document->charset().string() : charset;
 
     request.setCharset(encoding);
     request.setForPreload(true);

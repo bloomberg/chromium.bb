@@ -105,7 +105,7 @@ namespace WebCore {
 
         const KURL& originalURL() const;
         const KURL& requestURL() const;
-        const String& responseMIMEType() const;
+        const AtomicString& responseMIMEType() const;
 
         void updateForSameDocumentNavigation(const KURL&);
         void stopLoading();

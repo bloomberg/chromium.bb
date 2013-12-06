@@ -1730,7 +1730,7 @@ bool InspectorStyleSheetForInlineStyle::setStyleText(CSSStyleDeclaration* style,
 
     {
         InspectorCSSAgent::InlineStyleOverrideScope overrideScope(m_element->ownerDocument());
-        m_element->setAttribute("style", text, exceptionState);
+        m_element->setAttribute("style", AtomicString(text), exceptionState);
     }
 
     m_styleText = text;

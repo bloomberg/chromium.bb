@@ -60,7 +60,7 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
     return adoptRef(new HTMLOptionElement(document));
 }
 
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const String& value,
+PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
     bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
     RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(document));
@@ -202,7 +202,7 @@ String HTMLOptionElement::value() const
     return collectOptionInnerText().stripWhiteSpace(isHTMLSpace<UChar>).simplifyWhiteSpace(isHTMLSpace<UChar>);
 }
 
-void HTMLOptionElement::setValue(const String& value)
+void HTMLOptionElement::setValue(const AtomicString& value)
 {
     setAttribute(valueAttr, value);
 }
@@ -285,7 +285,7 @@ String HTMLOptionElement::label() const
     return collectOptionInnerText().stripWhiteSpace(isHTMLSpace<UChar>).simplifyWhiteSpace(isHTMLSpace<UChar>);
 }
 
-void HTMLOptionElement::setLabel(const String& label)
+void HTMLOptionElement::setLabel(const AtomicString& label)
 {
     setAttribute(labelAttr, label);
 }

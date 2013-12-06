@@ -144,16 +144,15 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         HTMLElement::parseAttribute(name, value);
 }
 
-String HTMLImageElement::altText() const
+const AtomicString& HTMLImageElement::altText() const
 {
     // lets figure out the alt text.. magic stuff
     // http://www.w3.org/TR/1998/REC-html40-19980424/appendix/notes.html#altgen
     // also heavily discussed by Hixie on bugzilla
-    String alt = getAttribute(altAttr);
+    if (!getAttribute(altAttr).isNull())
+        return getAttribute(altAttr);
     // fall back to title attribute
-    if (alt.isNull())
-        alt = getAttribute(titleAttr);
-    return alt;
+    return getAttribute(titleAttr);
 }
 
 RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
@@ -319,7 +318,7 @@ KURL HTMLImageElement::src() const
 
 void HTMLImageElement::setSrc(const String& value)
 {
-    setAttribute(srcAttr, value);
+    setAttribute(srcAttr, AtomicString(value));
 }
 
 void HTMLImageElement::setWidth(int value)

@@ -471,17 +471,17 @@ void HTMLMetaElement::process()
         processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
 }
 
-String HTMLMetaElement::content() const
+const AtomicString& HTMLMetaElement::content() const
 {
     return getAttribute(contentAttr);
 }
 
-String HTMLMetaElement::httpEquiv() const
+const AtomicString& HTMLMetaElement::httpEquiv() const
 {
     return getAttribute(http_equivAttr);
 }
 
-String HTMLMetaElement::name() const
+const AtomicString& HTMLMetaElement::name() const
 {
     return getNameAttribute();
 }

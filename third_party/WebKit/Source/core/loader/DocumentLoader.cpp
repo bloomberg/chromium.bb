@@ -776,7 +776,7 @@ const KURL& DocumentLoader::requestURL() const
     return request().url();
 }
 
-const String& DocumentLoader::responseMIMEType() const
+const AtomicString& DocumentLoader::responseMIMEType() const
 {
     return m_response.mimeType();
 }

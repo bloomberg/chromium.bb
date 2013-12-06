@@ -55,7 +55,7 @@ RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
 
     RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(document());
     defaultSummary->appendChild(Text::create(document(), locale().queryString(blink::WebLocalizedString::DetailsLabel)));

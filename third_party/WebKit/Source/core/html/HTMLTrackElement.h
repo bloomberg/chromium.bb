@@ -38,8 +38,8 @@ class HTMLTrackElement FINAL : public HTMLElement, public TextTrackClient {
 public:
     static PassRefPtr<HTMLTrackElement> create(Document&);
 
-    String kind();
-    void setKind(const String&);
+    const AtomicString& kind();
+    void setKind(const AtomicString&);
 
     enum ReadyState { NONE = 0, LOADING = 1, LOADED = 2, TRACK_ERROR = 3 };
     ReadyState readyState();

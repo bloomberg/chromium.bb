@@ -314,7 +314,7 @@ KURL HTMLLinkElement::href() const
     return document().completeURL(getAttribute(hrefAttr));
 }
 
-String HTMLLinkElement::rel() const
+const AtomicString& HTMLLinkElement::rel() const
 {
     return getAttribute(relAttr);
 }
@@ -324,7 +324,7 @@ String HTMLLinkElement::target() const
     return getAttribute(targetAttr);
 }
 
-String HTMLLinkElement::type() const
+const AtomicString& HTMLLinkElement::type() const
 {
     return getAttribute(typeAttr);
 }

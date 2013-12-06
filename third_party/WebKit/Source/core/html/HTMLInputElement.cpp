@@ -387,7 +387,7 @@ void HTMLInputElement::handleBlurEvent()
     m_inputTypeView->handleBlurEvent();
 }
 
-void HTMLInputElement::setType(const String& type)
+void HTMLInputElement::setType(const AtomicString& type)
 {
     // FIXME: This should just call setAttribute. No reason to handle the empty string specially.
     // We should write a test case to show that setting to the empty string does not remove the
@@ -444,7 +444,7 @@ void HTMLInputElement::updateType()
     bool willStoreValue = m_inputType->storesValueSeparateFromAttribute();
 
     if (didStoreValue && !willStoreValue && hasDirtyValue()) {
-        setAttribute(valueAttr, m_valueIfDirty);
+        setAttribute(valueAttr, AtomicString(m_valueIfDirty));
         m_valueIfDirty = String();
     }
     if (!didStoreValue && willStoreValue) {
@@ -1205,12 +1205,12 @@ bool HTMLInputElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == srcAttr || attribute.name() == formactionAttr || HTMLTextFormControlElement::isURLAttribute(attribute);
 }
 
-String HTMLInputElement::defaultValue() const
+const AtomicString& HTMLInputElement::defaultValue() const
 {
     return fastGetAttribute(valueAttr);
 }
 
-void HTMLInputElement::setDefaultValue(const String &value)
+void HTMLInputElement::setDefaultValue(const AtomicString& value)
 {
     setAttribute(valueAttr, value);
 }
@@ -1269,12 +1269,12 @@ Vector<String> HTMLInputElement::acceptFileExtensions()
     return parseAcceptAttribute(fastGetAttribute(acceptAttr), isValidFileExtension);
 }
 
-String HTMLInputElement::accept() const
+const AtomicString& HTMLInputElement::accept() const
 {
     return fastGetAttribute(acceptAttr);
 }
 
-String HTMLInputElement::alt() const
+const AtomicString& HTMLInputElement::alt() const
 {
     return fastGetAttribute(altAttr);
 }

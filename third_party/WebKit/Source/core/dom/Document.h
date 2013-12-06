@@ -324,11 +324,11 @@ public:
 
     String defaultCharset() const;
 
-    String inputEncoding() const { return Document::encodingName(); }
-    String charset() const { return Document::encodingName(); }
-    String characterSet() const { return Document::encodingName(); }
+    AtomicString inputEncoding() const { return Document::encodingName(); }
+    AtomicString charset() const { return Document::encodingName(); }
+    AtomicString characterSet() const { return Document::encodingName(); }
 
-    String encodingName() const;
+    AtomicString encodingName() const;
 
     void setCharset(const String&);
 

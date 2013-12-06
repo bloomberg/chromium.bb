@@ -1443,19 +1443,19 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtr<Node> passedStart, Pas
     if (styleChange.applyFontColor() || styleChange.applyFontFace() || styleChange.applyFontSize()) {
         if (fontContainer) {
             if (styleChange.applyFontColor())
-                setNodeAttribute(fontContainer, colorAttr, styleChange.fontColor());
+                setNodeAttribute(fontContainer, colorAttr, AtomicString(styleChange.fontColor()));
             if (styleChange.applyFontFace())
-                setNodeAttribute(fontContainer, faceAttr, styleChange.fontFace());
+                setNodeAttribute(fontContainer, faceAttr, AtomicString(styleChange.fontFace()));
             if (styleChange.applyFontSize())
-                setNodeAttribute(fontContainer, sizeAttr, styleChange.fontSize());
+                setNodeAttribute(fontContainer, sizeAttr, AtomicString(styleChange.fontSize()));
         } else {
             RefPtr<Element> fontElement = createFontElement(document());
             if (styleChange.applyFontColor())
-                fontElement->setAttribute(colorAttr, styleChange.fontColor());
+                fontElement->setAttribute(colorAttr, AtomicString(styleChange.fontColor()));
             if (styleChange.applyFontFace())
-                fontElement->setAttribute(faceAttr, styleChange.fontFace());
+                fontElement->setAttribute(faceAttr, AtomicString(styleChange.fontFace()));
             if (styleChange.applyFontSize())
-                fontElement->setAttribute(sizeAttr, styleChange.fontSize());
+                fontElement->setAttribute(sizeAttr, AtomicString(styleChange.fontSize()));
             surroundNodeRangeWithElement(startNode, endNode, fontElement.get());
         }
     }
@@ -1469,12 +1469,13 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtr<Node> passedStart, Pas
                 if (!existingText.isEmpty())
                     cssText.append(' ');
                 cssText.append(styleChange.cssStyle());
-                setNodeAttribute(styleContainer, styleAttr, cssText.toString());
-            } else
-                setNodeAttribute(styleContainer, styleAttr, styleChange.cssStyle());
+                setNodeAttribute(styleContainer, styleAttr, cssText.toAtomicString());
+            } else {
+                setNodeAttribute(styleContainer, styleAttr, AtomicString(styleChange.cssStyle()));
+            }
         } else {
             RefPtr<Element> styleElement = createStyleSpanElement(document());
-            styleElement->setAttribute(styleAttr, styleChange.cssStyle());
+            styleElement->setAttribute(styleAttr, AtomicString(styleChange.cssStyle()));
             surroundNodeRangeWithElement(startNode, endNode, styleElement.release());
         }
     }

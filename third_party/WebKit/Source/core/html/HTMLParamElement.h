@@ -31,8 +31,8 @@ class HTMLParamElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLParamElement> create(Document&);
 
-    String name() const;
-    String value() const;
+    const AtomicString& name() const;
+    const AtomicString& value() const;
 
     static bool isURLParameter(const String&);
 

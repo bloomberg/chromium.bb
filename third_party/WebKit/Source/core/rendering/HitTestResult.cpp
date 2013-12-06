@@ -248,10 +248,10 @@ String HitTestResult::title(TextDirection& dir) const
     return String();
 }
 
-String HitTestResult::altDisplayString() const
+const AtomicString& HitTestResult::altDisplayString() const
 {
     if (!m_innerNonSharedNode)
-        return String();
+        return nullAtom;
 
     if (m_innerNonSharedNode->hasTagName(imgTag)) {
         HTMLImageElement* image = toHTMLImageElement(m_innerNonSharedNode);
@@ -263,7 +263,7 @@ String HitTestResult::altDisplayString() const
         return input->alt();
     }
 
-    return String();
+    return nullAtom;
 }
 
 Image* HitTestResult::image() const

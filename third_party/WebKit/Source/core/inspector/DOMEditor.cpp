@@ -130,7 +130,7 @@ private:
 class DOMEditor::RemoveAttributeAction : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(RemoveAttributeAction);
 public:
-    RemoveAttributeAction(Element* element, const String& name)
+    RemoveAttributeAction(Element* element, const AtomicString& name)
         : InspectorHistory::Action("RemoveAttribute")
         , m_element(element)
         , m_name(name)
@@ -157,14 +157,14 @@ public:
 
 private:
     RefPtr<Element> m_element;
-    String m_name;
-    String m_value;
+    AtomicString m_name;
+    AtomicString m_value;
 };
 
 class DOMEditor::SetAttributeAction : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(SetAttributeAction);
 public:
-    SetAttributeAction(Element* element, const String& name, const String& value)
+    SetAttributeAction(Element* element, const AtomicString& name, const AtomicString& value)
         : InspectorHistory::Action("SetAttribute")
         , m_element(element)
         , m_name(name)
@@ -198,10 +198,10 @@ public:
 
 private:
     RefPtr<Element> m_element;
-    String m_name;
-    String m_value;
+    AtomicString m_name;
+    AtomicString m_value;
     bool m_hadAttribute;
-    String m_oldValue;
+    AtomicString m_oldValue;
 };
 
 class DOMEditor::SetOuterHTMLAction : public InspectorHistory::Action {

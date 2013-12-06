@@ -339,7 +339,7 @@ KURL HTMLAnchorElement::url() const
 
 void HTMLAnchorElement::setURL(const KURL& url)
 {
-    setHref(url.string());
+    setHref(AtomicString(url.string()));
 }
 
 String HTMLAnchorElement::input() const

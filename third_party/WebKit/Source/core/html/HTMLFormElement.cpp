@@ -641,17 +641,17 @@ bool HTMLFormElement::noValidate() const
 // FIXME: This function should be removed because it does not do the same thing as the
 // JavaScript binding for action, which treats action as a URL attribute. Last time I
 // (Darin Adler) removed this, someone added it back, so I am leaving it in for now.
-String HTMLFormElement::action() const
+const AtomicString& HTMLFormElement::action() const
 {
     return getAttribute(actionAttr);
 }
 
-void HTMLFormElement::setAction(const String &value)
+void HTMLFormElement::setAction(const AtomicString& value)
 {
     setAttribute(actionAttr, value);
 }
 
-void HTMLFormElement::setEnctype(const String &value)
+void HTMLFormElement::setEnctype(const AtomicString& value)
 {
     setAttribute(enctypeAttr, value);
 }
@@ -661,7 +661,7 @@ String HTMLFormElement::method() const
     return FormSubmission::Attributes::methodString(m_attributes.method());
 }
 
-void HTMLFormElement::setMethod(const String &value)
+void HTMLFormElement::setMethod(const AtomicString& value)
 {
     setAttribute(methodAttr, value);
 }

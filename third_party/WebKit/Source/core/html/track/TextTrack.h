@@ -64,7 +64,7 @@ public:
     void setMediaElement(HTMLMediaElement* element) { m_mediaElement = element; }
     HTMLMediaElement* mediaElement() { return m_mediaElement; }
 
-    AtomicString kind() const { return m_kind; }
+    const AtomicString& kind() const { return m_kind; }
     void setKind(const AtomicString&);
 
     static const AtomicString& subtitlesKeyword();

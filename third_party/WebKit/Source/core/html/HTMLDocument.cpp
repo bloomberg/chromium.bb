@@ -79,15 +79,15 @@ HTMLDocument::~HTMLDocument()
 {
 }
 
-String HTMLDocument::dir()
+const AtomicString& HTMLDocument::dir()
 {
     HTMLElement* b = body();
     if (!b)
-        return String();
+        return nullAtom;
     return b->getAttribute(dirAttr);
 }
 
-void HTMLDocument::setDir(const String& value)
+void HTMLDocument::setDir(const AtomicString& value)
 {
     HTMLElement* b = body();
     if (b)
