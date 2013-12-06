@@ -5,6 +5,7 @@
 #include "gin/per_context_data.h"
 
 #include "base/logging.h"
+#include "gin/public/context_holder.h"
 #include "gin/public/wrapper_info.h"
 
 namespace gin {
@@ -17,7 +18,8 @@ ContextSupplement::~ContextSupplement() {
 
 PerContextData::PerContextData(v8::Handle<v8::Context> context)
     : runner_(NULL) {
-  context->SetAlignedPointerInEmbedderData(kEncodedValueIndex, this);
+  context->SetAlignedPointerInEmbedderData(
+      kPerContextDataStartIndex + kEmbedderNativeGin, this);
 }
 
 PerContextData::~PerContextData() {
@@ -26,7 +28,8 @@ PerContextData::~PerContextData() {
 
 void PerContextData::Detach(v8::Handle<v8::Context> context) {
   DCHECK(From(context) == this);
-  context->SetAlignedPointerInEmbedderData(kEncodedValueIndex, NULL);
+  context->SetAlignedPointerInEmbedderData(
+      kPerContextDataStartIndex + kEmbedderNativeGin, NULL);
 
   SuplementVector supplements;
   supplements.swap(supplements_);

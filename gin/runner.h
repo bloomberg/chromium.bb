@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "gin/context_holder.h"
+#include "gin/public/context_holder.h"
 
 namespace gin {
 

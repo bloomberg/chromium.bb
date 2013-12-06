@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gin/context_holder.h"
+#include "gin/public/context_holder.h"
 
 #include "base/logging.h"
 #include "gin/per_context_data.h"

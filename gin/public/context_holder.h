@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GIN_CONTEXT_HOLDER_H_
-#define GIN_CONTEXT_HOLDER_H_
+#ifndef GIN_PUBLIC_CONTEXT_HOLDER_H_
+#define GIN_PUBLIC_CONTEXT_HOLDER_H_
 
 #include <list>
 
@@ -12,6 +12,15 @@
 #include "v8/include/v8.h"
 
 namespace gin {
+
+// Gin embedder that store embedder data in v8::Contexts must do so in a
+// single field with the index kPerContextDataStartIndex + GinEmbedder-enum.
+// The field at kDebugIdIndex is treated specially by V8 and is reserved for
+// a V8 debugger implementation (not used by gin).
+enum ContextEmbedderDataFields {
+  kDebugIdIndex = 0,
+  kPerContextDataStartIndex,
+};
 
 class PerContextData;
 
@@ -41,4 +50,4 @@ class ContextHolder {
 
 }  // namespace gin
 
-#endif  // GIN_CONTEXT_HOLDER_H_
+#endif  // GIN_PUBLIC_CONTEXT_HOLDER_H_
