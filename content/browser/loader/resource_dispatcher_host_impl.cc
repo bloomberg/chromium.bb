@@ -1100,6 +1100,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           route_id,
           request_data.origin_pid,
           request_id,
+          request_data.render_frame_id,
           request_data.is_main_frame,
           request_data.frame_id,
           request_data.parent_is_main_frame,
@@ -1271,6 +1272,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       route_id,
       0,
       request_id_,
+      MSG_ROUTING_NONE,  // render_frame_id
       false,     // is_main_frame
       -1,        // frame_id
       false,     // parent_is_main_frame

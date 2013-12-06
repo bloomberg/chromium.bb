@@ -175,7 +175,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.routing_id = 0;
     RequestExtraData extra_data(blink::WebReferrerPolicyDefault,
                                 blink::WebString(),
-                                false, true, 0, GURL(),
+                                false, MSG_ROUTING_NONE, true, 0, GURL(),
                                 false, -1, true,
                                 PAGE_TRANSITION_LINK, false, -1, -1);
     request_info.extra_data = &extra_data;

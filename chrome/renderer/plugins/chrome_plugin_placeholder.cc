@@ -12,6 +12,7 @@
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -281,7 +282,7 @@ void ChromePluginPlaceholder::PluginListChanged() {
   ChromeViewHostMsg_GetPluginInfo_Output output;
   std::string mime_type(GetPluginParams().mimeType.utf8());
   render_view()->Send(
-      new ChromeViewHostMsg_GetPluginInfo(routing_id(),
+      new ChromeViewHostMsg_GetPluginInfo(GetRenderFrame()->GetRoutingID(),
                                           GURL(GetPluginParams().url),
                                           document.url(),
                                           mime_type,

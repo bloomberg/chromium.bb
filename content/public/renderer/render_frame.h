@@ -24,6 +24,9 @@ struct WebPluginInfo;
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                    public IPC::Sender {
  public:
+  // Get the routing ID of the frame.
+  virtual int GetRoutingID() = 0;
+
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
   // plugin was found.
   virtual blink::WebPlugin* CreatePlugin(

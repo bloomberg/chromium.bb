@@ -37,10 +37,10 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
   // Overrides the plugin lookup mechanism for a given tab and object URL to use
   // a specifc plugin.
-  void OverridePluginForTab(int render_process_id,
-                            int render_view_id,
-                            const GURL& url,
-                            const content::WebPluginInfo& plugin);
+  void OverridePluginForFrame(int render_process_id,
+                              int render_frame_id,
+                              const GURL& url,
+                              const content::WebPluginInfo& plugin);
 
   // Restricts the given plugin to the given profile and origin of the given
   // URL.
@@ -64,7 +64,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   // PluginServiceFilter implementation:
   virtual bool IsPluginAvailable(
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const void* context,
       const GURL& url,
       const GURL& policy_url,
@@ -83,8 +83,8 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
     OverriddenPlugin();
     ~OverriddenPlugin();
 
-    int render_view_id;
-    GURL url;  // If empty, the override applies to all urls in render_view.
+    int render_frame_id;
+    GURL url;  // If empty, the override applies to all urls in render_frame.
     content::WebPluginInfo plugin;
   };
 

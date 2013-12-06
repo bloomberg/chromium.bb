@@ -67,7 +67,7 @@ ppapi::proxy::Connection PepperInProcessRouter::GetPluginConnection(
   int routing_id = 0;
   RenderFrame* frame = host_impl_->GetRenderFrameForInstance(instance);
   if (frame)
-    routing_id = (static_cast<RenderFrameImpl*>(frame))->routing_id();
+    routing_id = frame->GetRoutingID();
   return ppapi::proxy::Connection(browser_channel_.get(),
                                   plugin_to_host_router_.get(),
                                   routing_id);

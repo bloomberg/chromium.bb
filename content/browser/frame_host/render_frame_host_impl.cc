@@ -56,6 +56,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
 }
 
+int RenderFrameHostImpl::GetRoutingID() {
+  return routing_id_;
+}
+
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
   return GetProcess()->Send(message);
 }

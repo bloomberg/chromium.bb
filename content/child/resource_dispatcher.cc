@@ -129,6 +129,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   if (request_info.extra_data) {
     RequestExtraData* extra_data =
         static_cast<RequestExtraData*>(request_info.extra_data);
+    request_.render_frame_id = extra_data->render_frame_id();
     request_.is_main_frame = extra_data->is_main_frame();
     request_.frame_id = extra_data->frame_id();
     request_.parent_is_main_frame = extra_data->parent_is_main_frame();
@@ -143,6 +144,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
         extra_data->transferred_request_request_id();
     frame_origin_ = extra_data->frame_origin();
   } else {
+    request_.render_frame_id = MSG_ROUTING_NONE;
     request_.is_main_frame = false;
     request_.frame_id = -1;
     request_.parent_is_main_frame = false;

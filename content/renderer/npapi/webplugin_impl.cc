@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -482,7 +483,7 @@ WebPluginImpl::WebPluginImpl(
     const WebPluginParams& params,
     const base::FilePath& file_path,
     const base::WeakPtr<RenderViewImpl>& render_view,
-    RenderFrame* render_frame)
+    RenderFrameImpl* render_frame)
     : windowless_(false),
       window_(gfx::kNullPluginWindow),
       accepts_input_events_(false),
@@ -650,7 +651,8 @@ WebPluginDelegate* WebPluginImpl::CreatePluginDelegate() {
 #endif
   }
 
-  return new WebPluginDelegateProxy(this, mime_type_, render_view_);
+  return new WebPluginDelegateProxy(
+      this, mime_type_, render_view_, render_frame_);
 }
 
 WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(

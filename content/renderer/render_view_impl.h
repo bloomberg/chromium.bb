@@ -305,18 +305,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
   void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
-
-  // Helper function to retrieve information about a plugin for a URL and mime
-  // type. Returns false if no plugin was found.
-  // |actual_mime_type| is the actual mime type supported by the
-  // plugin found that match the URL given (one for each item in
-  // |info|).
-  bool GetPluginInfo(const GURL& url,
-                     const GURL& page_url,
-                     const std::string& mime_type,
-                     WebPluginInfo* plugin_info,
-                     std::string* actual_mime_type);
-
 #endif  // ENABLE_PLUGINS
 
   void TransferActiveWheelFlingAnimation(

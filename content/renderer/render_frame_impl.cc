@@ -460,6 +460,10 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
+int RenderFrameImpl::GetRoutingID() {
+  return routing_id_;
+}
+
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,
@@ -503,9 +507,10 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 #if defined(ENABLE_PLUGINS)
   WebPluginInfo info;
   std::string mime_type;
-  bool found = render_view_->GetPluginInfo(
-      params.url, frame->top()->document().url(), params.mimeType.utf8(),
-      &info, &mime_type);
+  bool found = false;
+  Send(new FrameHostMsg_GetPluginInfo(
+      routing_id_, params.url, frame->top()->document().url(),
+      params.mimeType.utf8(), &found, &info, &mime_type));
   if (!found)
     return NULL;
 
@@ -1019,6 +1024,7 @@ void RenderFrameImpl::willSendRequest(
       new RequestExtraData(referrer_policy,
                            custom_user_agent,
                            was_after_preconnect_request,
+                           routing_id_,
                            (frame == top_frame),
                            frame->identifier(),
                            GURL(frame->document().securityOrigin().toString()),

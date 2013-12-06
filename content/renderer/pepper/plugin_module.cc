@@ -637,7 +637,7 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
     int plugin_child_id,
     bool is_external) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(new PepperHungPluginFilter(
-      path, render_frame->routing_id(), plugin_child_id));
+      path, render_frame->GetRoutingID(), plugin_child_id));
   scoped_ptr<HostDispatcherWrapper> dispatcher(
       new HostDispatcherWrapper(this,
                                 peer_pid,

@@ -148,6 +148,7 @@ class ResourceSchedulerTest : public testing::Test {
         route_id,                          // route_id
         0,                                 // origin_pid
         ++next_request_id_,                // request_id
+        MSG_ROUTING_NONE,                  // render_frame_id
         false,                             // is_main_frame
         0,                                 // frame_id
         false,                             // parent_is_main_frame

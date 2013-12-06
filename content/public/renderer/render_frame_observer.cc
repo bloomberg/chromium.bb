@@ -16,7 +16,7 @@ RenderFrameObserver::RenderFrameObserver(RenderFrame* render_frame)
   // |render_frame| can be NULL on unit testing.
   if (render_frame) {
     RenderFrameImpl* impl = static_cast<RenderFrameImpl*>(render_frame);
-    routing_id_ = impl->routing_id();
+    routing_id_ = impl->GetRoutingID();
     impl->AddObserver(this);
   }
 }

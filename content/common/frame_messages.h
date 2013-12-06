@@ -51,3 +51,28 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_PepperPluginHung,
                     int /* plugin_child_id */,
                     base::FilePath /* path */,
                     bool /* is_hung */)
+
+// Return information about a plugin for the given URL and MIME
+// type. If there is no matching plugin, |found| is false.
+// |actual_mime_type| is the actual mime type supported by the
+// found plugin.
+IPC_SYNC_MESSAGE_CONTROL4_3(FrameHostMsg_GetPluginInfo,
+                            int /* render_frame_id */,
+                            GURL /* url */,
+                            GURL /* page_url */,
+                            std::string /* mime_type */,
+                            bool /* found */,
+                            content::WebPluginInfo /* plugin info */,
+                            std::string /* actual_mime_type */)
+
+// A renderer sends this to the browser process when it wants to
+// create a plugin.  The browser will create the plugin process if
+// necessary, and will return a handle to the channel on success.
+// On error an empty string is returned.
+IPC_SYNC_MESSAGE_CONTROL4_2(FrameHostMsg_OpenChannelToPlugin,
+                            int /* render_frame_id */,
+                            GURL /* url */,
+                            GURL /* page_url */,
+                            std::string /* mime_type */,
+                            IPC::ChannelHandle /* channel_handle */,
+                            content::WebPluginInfo /* info */)

@@ -59,8 +59,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // to using RenderFrame instead of RenderView.
   RenderViewImpl* render_view() { return render_view_; }
 
-  int routing_id() const { return routing_id_; }
-
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
 
@@ -153,6 +151,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // RenderFrame implementation:
+  virtual int GetRoutingID() OVERRIDE;
   virtual blink::WebPlugin* CreatePlugin(
       blink::WebFrame* frame,
       const WebPluginInfo& info,

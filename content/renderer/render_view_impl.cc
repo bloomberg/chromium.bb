@@ -1172,18 +1172,6 @@ void RenderViewImpl::UnregisterPluginDelegate(
   plugin_delegates_.erase(delegate);
 }
 
-bool RenderViewImpl::GetPluginInfo(const GURL& url,
-                                   const GURL& page_url,
-                                   const std::string& mime_type,
-                                   WebPluginInfo* plugin_info,
-                                   std::string* actual_mime_type) {
-  bool found = false;
-  Send(new ViewHostMsg_GetPluginInfo(
-      routing_id_, url, page_url, mime_type, &found, plugin_info,
-      actual_mime_type));
-  return found;
-}
-
 #if defined(OS_WIN)
 void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
   if (focused)

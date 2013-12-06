@@ -119,20 +119,20 @@ void PluginInfoMessageFilter::OnDestruct() const {
 PluginInfoMessageFilter::~PluginInfoMessageFilter() {}
 
 struct PluginInfoMessageFilter::GetPluginInfo_Params {
-  int render_view_id;
+  int render_frame_id;
   GURL url;
   GURL top_origin_url;
   std::string mime_type;
 };
 
 void PluginInfoMessageFilter::OnGetPluginInfo(
-    int render_view_id,
+    int render_frame_id,
     const GURL& url,
     const GURL& top_origin_url,
     const std::string& mime_type,
     IPC::Message* reply_msg) {
   GetPluginInfo_Params params = {
-    render_view_id,
+    render_frame_id,
     url,
     top_origin_url,
     mime_type
@@ -150,7 +150,7 @@ void PluginInfoMessageFilter::PluginsLoaded(
   ChromeViewHostMsg_GetPluginInfo_Output output;
   // This also fills in |actual_mime_type|.
   scoped_ptr<PluginMetadata> plugin_metadata;
-  if (context_.FindEnabledPlugin(params.render_view_id, params.url,
+  if (context_.FindEnabledPlugin(params.render_frame_id, params.url,
                                  params.top_origin_url, params.mime_type,
                                  &output.status, &output.plugin,
                                  &output.actual_mime_type,
@@ -209,9 +209,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   if (plugin.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
     CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     // NPAPI plugins are not supported inside <webview> guests.
-    ExtensionRendererState::WebViewInfo info;
-    if (ExtensionRendererState::GetInstance()->GetWebViewInfo(
-            render_process_id_, params.render_view_id, &info)) {
+    if (ExtensionRendererState::GetInstance()->IsWebViewRenderer(
+            render_process_id_)) {
       status->value =
           ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
       return;
@@ -283,17 +282,15 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     // the guest. In order to do this, set the status to 'Unauthorized' here,
     // and update the status as appropriate depending on the response from the
     // embedder.
-    ExtensionRendererState::WebViewInfo info;
-    if (ExtensionRendererState::GetInstance()->GetWebViewInfo(
-            render_process_id_, params.render_view_id, &info)) {
-      status->value =
-          ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
+    if (ExtensionRendererState::GetInstance()->IsWebViewRenderer(
+            render_process_id_)) {
+      status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
     }
   }
 }
 
 bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
-    int render_view_id,
+    int render_frame_id,
     const GURL& url,
     const GURL& top_origin_url,
     const std::string& mime_type,
@@ -316,7 +313,7 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
   size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
     if (!filter || filter->IsPluginAvailable(render_process_id_,
-                                             render_view_id,
+                                             render_frame_id,
                                              resource_context_,
                                              url,
                                              top_origin_url,

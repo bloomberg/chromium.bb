@@ -176,6 +176,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // True if the request was user initiated.
   IPC_STRUCT_MEMBER(bool, has_user_gesture)
 
+  // The routing id of the RenderFrame.
+  IPC_STRUCT_MEMBER(int, render_frame_id)
+
   // True if |frame_id| is the main frame of a RenderView.
   IPC_STRUCT_MEMBER(bool, is_main_frame)
 

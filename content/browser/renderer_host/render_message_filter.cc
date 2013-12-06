@@ -33,6 +33,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/cookie_data.h"
 #include "content/common/desktop_notification_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
@@ -296,8 +297,8 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
 
  private:
   void WriteReplyAndDeleteThis(const IPC::ChannelHandle& handle) {
-    ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg(),
-                                                      handle, info_);
+    FrameHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg(),
+                                                       handle, info_);
     filter()->OnCompletedOpenChannelToNpapiPlugin(this);
     SendReplyAndDeleteThis();
   }
@@ -400,8 +401,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
+    IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_OpenChannelToPlugin,
                                     OnOpenChannelToPlugin)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
                                     OnOpenChannelToPepperPlugin)
@@ -734,7 +735,7 @@ void RenderMessageFilter::GetPluginsCallback(
 }
 
 void RenderMessageFilter::OnGetPluginInfo(
-    int routing_id,
+    int render_frame_id,
     const GURL& url,
     const GURL& page_url,
     const std::string& mime_type,
@@ -743,12 +744,12 @@ void RenderMessageFilter::OnGetPluginInfo(
     std::string* actual_mime_type) {
   bool allow_wildcard = true;
   *found = plugin_service_->GetPluginInfo(
-      render_process_id_, routing_id, resource_context_,
+      render_process_id_, render_frame_id, resource_context_,
       url, page_url, mime_type, allow_wildcard,
       NULL, info, actual_mime_type);
 }
 
-void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
+void RenderMessageFilter::OnOpenChannelToPlugin(int render_frame_id,
                                                 const GURL& url,
                                                 const GURL& policy_url,
                                                 const std::string& mime_type,
@@ -758,7 +759,7 @@ void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
   DCHECK(!ContainsKey(plugin_host_clients_, client));
   plugin_host_clients_.insert(client);
   plugin_service_->OpenChannelToNpapiPlugin(
-      render_process_id_, routing_id,
+      render_process_id_, render_frame_id,
       url, policy_url, mime_type, client);
 }
 

@@ -444,7 +444,7 @@ bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
   bool allow_wildcard = false;
   WebPluginInfo plugin;
   return PluginServiceImpl::GetInstance()->GetPluginInfo(
-      info->GetChildID(), info->GetRouteID(), info->GetContext(),
+      info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
       request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
       stale, &plugin, NULL);
 #else

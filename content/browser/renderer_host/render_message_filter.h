@@ -163,14 +163,14 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void GetPluginsCallback(IPC::Message* reply_msg,
                           const std::vector<WebPluginInfo>& plugins);
-  void OnGetPluginInfo(int routing_id,
+  void OnGetPluginInfo(int render_frame_id,
                        const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
                        bool* found,
                        WebPluginInfo* info,
                        std::string* actual_mime_type);
-  void OnOpenChannelToPlugin(int routing_id,
+  void OnOpenChannelToPlugin(int render_frame_id,
                              const GURL& url,
                              const GURL& policy_url,
                              const std::string& mime_type,

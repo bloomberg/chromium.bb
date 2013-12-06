@@ -30,6 +30,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   virtual ~RenderFrameHostImpl();
 
+  // RenderFrameHost
+  virtual int GetRoutingID() OVERRIDE;
+
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 

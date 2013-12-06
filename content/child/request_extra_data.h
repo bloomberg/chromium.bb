@@ -13,13 +13,14 @@
 namespace content {
 
 // The RenderView stores an instance of this class in the "extra data" of each
-// ResourceRequest (see RenderView::willSendRequest).
+// ResourceRequest (see RenderFrameImpl::willSendRequest).
 class CONTENT_EXPORT RequestExtraData
     : NON_EXPORTED_BASE(public webkit_glue::WebURLRequestExtraDataImpl) {
  public:
   RequestExtraData(blink::WebReferrerPolicy referrer_policy,
                    const blink::WebString& custom_user_agent,
                    bool was_after_preconnect_request,
+                   int render_frame_id,
                    bool is_main_frame,
                    int64 frame_id,
                    const GURL& frame_origin,
@@ -32,6 +33,7 @@ class CONTENT_EXPORT RequestExtraData
                    int transferred_request_request_id);
   virtual ~RequestExtraData();
 
+  int render_frame_id() const { return render_frame_id_; }
   bool is_main_frame() const { return is_main_frame_; }
   int64 frame_id() const { return frame_id_; }
   GURL frame_origin() const { return frame_origin_; }
@@ -50,6 +52,7 @@ class CONTENT_EXPORT RequestExtraData
   }
 
  private:
+  int render_frame_id_;
   bool is_main_frame_;
   int64 frame_id_;
   GURL frame_origin_;

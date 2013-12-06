@@ -212,6 +212,16 @@ bool ExtensionRendererState::GetTabAndWindowId(
   return false;
 }
 
+bool ExtensionRendererState::IsWebViewRenderer(int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (WebViewInfoMap::iterator i = webview_info_map_.begin();
+       i != webview_info_map_.end(); ++i) {
+    if (i->first.first == render_process_id)
+      return true;
+  }
+  return false;
+}
+
 void ExtensionRendererState::AddWebView(int guest_process_id,
                                         int guest_routing_id,
                                         const WebViewInfo& webview_info) {

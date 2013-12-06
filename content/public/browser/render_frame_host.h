@@ -17,6 +17,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
  public:
   virtual ~RenderFrameHost() {}
 
+  // Returns the route id for this frame.
+  virtual int GetRoutingID() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

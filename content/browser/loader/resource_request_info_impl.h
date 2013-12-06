@@ -45,6 +45,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       int route_id,
       int origin_pid,
       int request_id,
+      int render_frame_id,
       bool is_main_frame,
       int64 frame_id,
       bool parent_is_main_frame,
@@ -68,6 +69,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual int GetRouteID() const OVERRIDE;
   virtual int GetOriginPID() const OVERRIDE;
   virtual int GetRequestID() const OVERRIDE;
+  virtual int GetRenderFrameID() const OVERRIDE;
   virtual bool IsMainFrame() const OVERRIDE;
   virtual int64 GetFrameID() const OVERRIDE;
   virtual bool ParentIsMainFrame() const OVERRIDE;
@@ -164,6 +166,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int route_id_;
   int origin_pid_;
   int request_id_;
+  int render_frame_id_;
   bool is_main_frame_;
   int64 frame_id_;
   bool parent_is_main_frame_;

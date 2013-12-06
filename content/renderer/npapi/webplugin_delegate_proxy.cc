@@ -31,6 +31,7 @@
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
@@ -202,8 +203,10 @@ class ResourceClientProxy : public WebPluginResourceClient {
 WebPluginDelegateProxy::WebPluginDelegateProxy(
     WebPluginImpl* plugin,
     const std::string& mime_type,
-    const base::WeakPtr<RenderViewImpl>& render_view)
+    const base::WeakPtr<RenderViewImpl>& render_view,
+    RenderFrameImpl* render_frame)
     : render_view_(render_view),
+      render_frame_(render_frame),
       plugin_(plugin),
       uses_shared_bitmaps_(false),
 #if defined(OS_MACOSX)
@@ -305,8 +308,8 @@ bool WebPluginDelegateProxy::Initialize(
 #endif
 
     IPC::ChannelHandle channel_handle;
-    if (!RenderThreadImpl::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
-            render_view_->routing_id(), url, page_url_, mime_type_,
+    if (!RenderThreadImpl::current()->Send(new FrameHostMsg_OpenChannelToPlugin(
+            render_frame_->GetRoutingID(), url, page_url_, mime_type_,
             &channel_handle, &info_))) {
       continue;
     }

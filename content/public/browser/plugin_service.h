@@ -70,7 +70,7 @@ class PluginService {
   // the |context| and renderer IDs. This will report whether the data is stale
   // via |is_stale| and returns whether or not the plugin can be found.
   virtual bool GetPluginInfo(int render_process_id,
-                             int render_view_id,
+                             int render_frame_id,
                              ResourceContext* context,
                              const GURL& url,
                              const GURL& page_url,

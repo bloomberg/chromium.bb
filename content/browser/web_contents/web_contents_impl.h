@@ -174,6 +174,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual const NavigationControllerImpl& GetController() const OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
+  virtual RenderFrameHost* GetMainFrame() OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual void GetRenderViewHostAtPosition(
       int x,

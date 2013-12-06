@@ -42,6 +42,7 @@ namespace content {
 class BrowserContext;
 class InterstitialPage;
 class PageState;
+class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHostView;
@@ -158,6 +159,9 @@ class WebContents : public PageNavigator,
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.
   virtual RenderProcessHost* GetRenderProcessHost() const = 0;
+
+  // Returns the main frame for the currently active view.
+  virtual RenderFrameHost* GetMainFrame() = 0;
 
   // Gets the current RenderViewHost for this tab.
   virtual RenderViewHost* GetRenderViewHost() const = 0;

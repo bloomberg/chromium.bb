@@ -607,6 +607,10 @@ RenderProcessHost* WebContentsImpl::GetRenderProcessHost() const {
   return host ? host->GetProcess() : NULL;
 }
 
+RenderFrameHost* WebContentsImpl::GetMainFrame() {
+  return frame_tree_.root()->render_frame_host();
+}
+
 RenderViewHost* WebContentsImpl::GetRenderViewHost() const {
   return GetRenderManager()->current_host();
 }

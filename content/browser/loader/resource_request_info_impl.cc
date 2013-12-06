@@ -37,6 +37,7 @@ void ResourceRequestInfo::AllocateForTesting(
           render_view_id,                    // route_id
           0,                                 // origin_pid
           0,                                 // request_id
+          MSG_ROUTING_NONE,                  // render_frame_id
           resource_type == ResourceType::MAIN_FRAME,  // is_main_frame
           0,                                 // frame_id
           false,                             // parent_is_main_frame
@@ -90,6 +91,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     int route_id,
     int origin_pid,
     int request_id,
+    int render_frame_id,
     bool is_main_frame,
     int64 frame_id,
     bool parent_is_main_frame,
@@ -112,6 +114,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       route_id_(route_id),
       origin_pid_(origin_pid),
       request_id_(request_id),
+      render_frame_id_(render_frame_id),
       is_main_frame_(is_main_frame),
       frame_id_(frame_id),
       parent_is_main_frame_(parent_is_main_frame),
@@ -152,6 +155,10 @@ int ResourceRequestInfoImpl::GetOriginPID() const {
 
 int ResourceRequestInfoImpl::GetRequestID() const {
   return request_id_;
+}
+
+int ResourceRequestInfoImpl::GetRenderFrameID() const {
+  return render_frame_id_;
 }
 
 bool ResourceRequestInfoImpl::IsMainFrame() const {

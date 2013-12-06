@@ -501,7 +501,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
 // about specific reasons why a plug-in can't be used, for example because it's
 // disabled.
 IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_GetPluginInfo,
-                            int /* render_view_id */,
+                            int /* render_frame_id */,
                             GURL /* url */,
                             GURL /* top origin url */,
                             std::string /* mime_type */,

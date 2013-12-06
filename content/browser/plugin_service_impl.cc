@@ -367,7 +367,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
 
 void PluginServiceImpl::OpenChannelToNpapiPlugin(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const GURL& url,
     const GURL& page_url,
     const std::string& mime_type,
@@ -379,7 +379,7 @@ void PluginServiceImpl::OpenChannelToNpapiPlugin(
   // Make sure plugins are loaded if necessary.
   PluginServiceFilterParams params = {
     render_process_id,
-    render_view_id,
+    render_frame_id,
     page_url,
     client->GetResourceContext()
   };
@@ -430,14 +430,14 @@ void PluginServiceImpl::ForwardGetAllowedPluginForOpenChannelToPlugin(
     const std::string& mime_type,
     PluginProcessHost::Client* client,
     const std::vector<WebPluginInfo>&) {
-  GetAllowedPluginForOpenChannelToPlugin(params.render_process_id,
-      params.render_view_id, url, params.page_url, mime_type, client,
-      params.resource_context);
+  GetAllowedPluginForOpenChannelToPlugin(
+      params.render_process_id, params.render_frame_id, url, params.page_url,
+      mime_type, client, params.resource_context);
 }
 
 void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const GURL& url,
     const GURL& page_url,
     const std::string& mime_type,
@@ -446,7 +446,7 @@ void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
   WebPluginInfo info;
   bool allow_wildcard = true;
   bool found = GetPluginInfo(
-      render_process_id, render_view_id, resource_context,
+      render_process_id, render_frame_id, resource_context,
       url, page_url, mime_type, allow_wildcard,
       NULL, &info, NULL);
   base::FilePath plugin_path;
@@ -498,7 +498,7 @@ bool PluginServiceImpl::GetPluginInfoArray(
 }
 
 bool PluginServiceImpl::GetPluginInfo(int render_process_id,
-                                      int render_view_id,
+                                      int render_frame_id,
                                       ResourceContext* context,
                                       const GURL& url,
                                       const GURL& page_url,
@@ -516,7 +516,7 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
 
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (!filter_ || filter_->IsPluginAvailable(render_process_id,
-                                               render_view_id,
+                                               render_frame_id,
                                                context,
                                                url,
                                                page_url,

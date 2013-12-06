@@ -38,6 +38,7 @@ class WaitableEvent;
 namespace content {
 class NPObjectStub;
 class PluginChannelHost;
+class RenderFrameImpl;
 class RenderViewImpl;
 class WebPluginImpl;
 
@@ -51,7 +52,8 @@ class WebPluginDelegateProxy
  public:
   WebPluginDelegateProxy(WebPluginImpl* plugin,
                          const std::string& mime_type,
-                         const base::WeakPtr<RenderViewImpl>& render_view);
+                         const base::WeakPtr<RenderViewImpl>& render_view,
+                         RenderFrameImpl* render_frame);
 
   // WebPluginDelegate implementation:
   virtual void PluginDestroyed() OVERRIDE;
@@ -253,6 +255,7 @@ class WebPluginDelegateProxy
 #endif
 
   base::WeakPtr<RenderViewImpl> render_view_;
+  RenderFrameImpl* render_frame_;
   WebPluginImpl* plugin_;
   bool uses_shared_bitmaps_;
 #if defined(OS_MACOSX)

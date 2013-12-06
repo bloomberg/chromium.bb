@@ -38,15 +38,15 @@ void ChromePluginServiceFilter::UnregisterResourceContext(
   resource_context_map_.erase(context);
 }
 
-void ChromePluginServiceFilter::OverridePluginForTab(
+void ChromePluginServiceFilter::OverridePluginForFrame(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const GURL& url,
     const content::WebPluginInfo& plugin) {
   base::AutoLock auto_lock(lock_);
   ProcessDetails* details = GetOrRegisterProcess(render_process_id);
   OverriddenPlugin overridden_plugin;
-  overridden_plugin.render_view_id = render_view_id;
+  overridden_plugin.render_frame_id = render_frame_id;
   overridden_plugin.url = url;
   overridden_plugin.plugin = plugin;
   details->overridden_plugins.push_back(overridden_plugin);
@@ -75,7 +75,7 @@ bool ChromePluginServiceFilter::IsPluginRestricted(
 
 bool ChromePluginServiceFilter::IsPluginAvailable(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const void* context,
     const GURL& url,
     const GURL& policy_url,
@@ -86,7 +86,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
   // Check whether the plugin is overridden.
   if (details) {
     for (size_t i = 0; i < details->overridden_plugins.size(); ++i) {
-      if (details->overridden_plugins[i].render_view_id == render_view_id &&
+      if (details->overridden_plugins[i].render_frame_id == render_frame_id &&
           (details->overridden_plugins[i].url == url ||
            details->overridden_plugins[i].url.is_empty())) {
 
@@ -217,7 +217,7 @@ ChromePluginServiceFilter::GetProcess(
 }
 
 ChromePluginServiceFilter::OverriddenPlugin::OverriddenPlugin()
-    : render_view_id(MSG_ROUTING_NONE) {
+    : render_frame_id(MSG_ROUTING_NONE) {
 }
 
 ChromePluginServiceFilter::OverriddenPlugin::~OverriddenPlugin() {

@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -63,9 +64,9 @@ void EnableInternalPDFPluginForContents(WebContents* preview_dialog) {
       pdf_plugin_path, &pdf_plugin))
     return;
 
-  ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
+  ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
       preview_dialog->GetRenderProcessHost()->GetID(),
-      preview_dialog->GetRenderViewHost()->GetRoutingID(),
+      preview_dialog->GetMainFrame()->GetRoutingID(),
       GURL(), pdf_plugin);
 }
 

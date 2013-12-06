@@ -44,6 +44,9 @@ class ExtensionRendererState {
   bool GetTabAndWindowId(
       int render_process_host_id, int routing_id, int* tab_id, int* window_id);
 
+  // Returns true if the given renderer is used by webviews.
+  bool IsWebViewRenderer(int render_process_id);
+
  private:
   class RenderViewHostObserver;
   class TabObserver;
