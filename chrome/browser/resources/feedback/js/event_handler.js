@@ -79,8 +79,7 @@ function startFeedbackUI(feedbackInfo) {
       width: FEEDBACK_WIDTH,
       height: FEEDBACK_HEIGHT,
       hidden: true,
-      resizable: false,
-      singleton: true },
+      resizable: false },
       function(appWindow) {});
 }
 
