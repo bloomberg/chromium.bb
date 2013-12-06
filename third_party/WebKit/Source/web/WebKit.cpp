@@ -184,8 +184,7 @@ void shutdown()
         s_endOfTaskRunner = 0;
     }
 
-    WebCore::V8PerIsolateData::dispose(WebCore::mainThreadIsolate());
-    WebCore::setMainThreadIsolate(0);
+    WebCore::V8PerIsolateData::dispose(v8::Isolate::GetCurrent());
     v8::V8::Dispose();
 
     shutdownWithoutV8();

@@ -50,7 +50,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "gin/public/isolate_holder.h"
 #include <v8.h>
 
 #include "public/platform/Platform.h"
@@ -61,7 +60,6 @@ namespace WebCore {
 WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
     , m_isolate(v8::Isolate::New())
-    , m_ginIsolateHolder(new gin::IsolateHolder(m_isolate))
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
 {
@@ -84,7 +82,6 @@ WorkerScriptController::~WorkerScriptController()
 
     disposeContext();
     V8PerIsolateData::dispose(m_isolate);
-    delete m_ginIsolateHolder;
     m_isolate->Exit();
     m_isolate->Dispose();
 }

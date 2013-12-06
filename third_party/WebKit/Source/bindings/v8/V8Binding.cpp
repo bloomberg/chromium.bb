@@ -52,7 +52,6 @@
 #include "core/page/Settings.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
-#include "gin/public/isolate_holder.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
@@ -613,7 +612,6 @@ v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, Sc
 }
 
 static v8::Isolate* mainIsolate = 0;
-static gin::IsolateHolder* mainIsolateHolder = 0;
 
 v8::Isolate* mainThreadIsolate()
 {
@@ -624,13 +622,9 @@ v8::Isolate* mainThreadIsolate()
 
 void setMainThreadIsolate(v8::Isolate* isolate)
 {
-    ASSERT(!mainIsolate || !isolate);
+    ASSERT(!mainIsolate);
     ASSERT(isMainThread());
     mainIsolate = isolate;
-    if (isolate)
-        mainIsolateHolder = new gin::IsolateHolder(isolate);
-    else
-        delete mainIsolateHolder;
 }
 
 v8::Isolate* toIsolate(ExecutionContext* context)

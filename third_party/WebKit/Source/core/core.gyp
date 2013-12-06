@@ -221,7 +221,6 @@
         'debugger_script_source',
         '../platform/platform_derived_sources.gyp:make_platform_derived_sources',
         '../wtf/wtf.gyp:wtf',
-        '<(DEPTH)/gin/gin.gyp:gin',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
