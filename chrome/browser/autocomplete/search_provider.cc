@@ -1852,9 +1852,12 @@ void SearchProvider::AddMatchToMap(const string16& input_text,
   match.RecordAdditionalInfo(kShouldPrefetchKey,
                              should_prefetch ? kTrue : kFalse);
 
-  if (!deletion_url.empty() && GURL(deletion_url).is_valid()) {
-    match.RecordAdditionalInfo(kDeletionUrlKey, deletion_url);
-    match.deletable = true;
+  if (!deletion_url.empty()) {
+    GURL url(match.destination_url.GetOrigin().Resolve(deletion_url));
+    if (url.is_valid()) {
+      match.RecordAdditionalInfo(kDeletionUrlKey, url.spec());
+      match.deletable = true;
+    }
   }
 
   // Metadata is needed only for prefetching queries.
