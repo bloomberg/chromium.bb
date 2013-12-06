@@ -182,13 +182,6 @@ RenderBlock::~RenderBlock()
         removeBlockFromDescendantAndContainerMaps(this, gPositionedDescendantsMap, gPositionedContainerMap);
 }
 
-RenderBlock* RenderBlock::createAnonymous(Document* document)
-{
-    RenderBlock* renderer = new RenderBlockFlow(0);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
-}
-
 void RenderBlock::willBeDestroyed()
 {
     // Mark as being destroyed to avoid trouble with merges in removeChild().
@@ -448,7 +441,7 @@ void RenderBlock::addChildToAnonymousColumnBlocks(RenderObject* newChild, Render
     return;
 }
 
-RenderBlock* RenderBlock::containingColumnsBlock(bool allowAnonymousColumnBlock)
+RenderBlockFlow* RenderBlock::containingColumnsBlock(bool allowAnonymousColumnBlock)
 {
     RenderBlock* firstChildIgnoringAnonymousWrappers = 0;
     for (RenderObject* curr = this; curr; curr = curr->parent()) {
@@ -456,18 +449,18 @@ RenderBlock* RenderBlock::containingColumnsBlock(bool allowAnonymousColumnBlock)
             || curr->isInlineBlockOrInlineTable())
             return 0;
 
-        // FIXME: Tables, RenderButtons, and RenderListItems all do special management
-        // of their children that breaks when the flow is split through them. Disabling
-        // multi-column for them to avoid this problem.
-        if (curr->isTable() || curr->isRenderButton() || curr->isListItem())
+        // FIXME: Renderers that do special management of their children (tables, buttons,
+        // lists, flexboxes, etc.) breaks when the flow is split through them. Disabling
+        // multi-column for them to avoid this problem.)
+        if (!curr->isRenderBlockFlow() || curr->isListItem())
             return 0;
 
-        RenderBlock* currBlock = toRenderBlock(curr);
+        RenderBlockFlow* currBlock = toRenderBlockFlow(curr);
         if (!currBlock->createsAnonymousWrapper())
             firstChildIgnoringAnonymousWrappers = currBlock;
 
         if (currBlock->style()->specifiesColumns() && (allowAnonymousColumnBlock || !currBlock->isAnonymousColumnsBlock()))
-            return firstChildIgnoringAnonymousWrappers;
+            return toRenderBlockFlow(firstChildIgnoringAnonymousWrappers);
 
         if (currBlock->isAnonymousColumnSpanBlock())
             return 0;
@@ -621,10 +614,10 @@ void RenderBlock::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox,
     post->setNeedsLayoutAndPrefWidthsRecalc();
 }
 
-void RenderBlock::makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlock* newBlockBox, RenderObject* newChild)
+void RenderBlock::makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlockFlow* newBlockBox, RenderObject* newChild)
 {
-    RenderBlock* pre = 0;
-    RenderBlock* post = 0;
+    RenderBlockFlow* pre = 0;
+    RenderBlockFlow* post = 0;
     RenderBlock* block = this; // Eventually block will not just be |this|, but will also be a block nested inside |this|.  Assign to a variable
                                // so that we don't have to patch all of the rest of the code later on.
 
@@ -672,7 +665,7 @@ void RenderBlock::makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, R
         post->setNeedsLayoutAndPrefWidthsRecalc();
 }
 
-RenderBlock* RenderBlock::columnsBlockForSpanningElement(RenderObject* newChild)
+RenderBlockFlow* RenderBlock::columnsBlockForSpanningElement(RenderObject* newChild)
 {
     // FIXME: This function is the gateway for the addition of column-span support.  It will
     // be added to in three stages:
@@ -681,7 +674,7 @@ RenderBlock* RenderBlock::columnsBlockForSpanningElement(RenderObject* newChild)
     // (3) Nested children with block or inline ancestors between them and the multi-column block can span (this is when we
     // cross the streams and have to cope with both types of continuations mixed together).
     // This function currently supports (1) and (2).
-    RenderBlock* columnsBlockAncestor = 0;
+    RenderBlockFlow* columnsBlockAncestor = 0;
     if (!newChild->isText() && newChild->style()->columnSpan() && !newChild->isBeforeOrAfterContent()
         && !newChild->isFloatingOrOutOfFlowPositioned() && !newChild->isInline() && !isAnonymousColumnSpanBlock()) {
         columnsBlockAncestor = containingColumnsBlock(false);
@@ -746,11 +739,11 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
 
     // Check for a spanning element in columns.
     if (gColumnFlowSplitEnabled) {
-        RenderBlock* columnsBlockAncestor = columnsBlockForSpanningElement(newChild);
+        RenderBlockFlow* columnsBlockAncestor = columnsBlockForSpanningElement(newChild);
         if (columnsBlockAncestor) {
             TemporaryChange<bool> columnFlowSplitEnabled(gColumnFlowSplitEnabled, false);
             // We are placing a column-span element inside a block.
-            RenderBlock* newBox = createAnonymousColumnSpanBlock();
+            RenderBlockFlow* newBox = createAnonymousColumnSpanBlock();
 
             if (columnsBlockAncestor != this && !isRenderFlowThread()) {
                 // We are nested inside a multi-column element and are being split by the span. We have to break up
@@ -4757,7 +4750,7 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
         if (pseudoStyle->display() == INLINE)
             newFirstLetter = RenderInline::createAnonymous(&document());
         else
-            newFirstLetter = RenderBlock::createAnonymous(&document());
+            newFirstLetter = RenderBlockFlow::createAnonymous(&document());
         newFirstLetter->setStyle(pseudoStyle);
 
         // Move the first letter into the new renderer.
@@ -4839,7 +4832,7 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     if (pseudoStyle->display() == INLINE)
         firstLetter = RenderInline::createAnonymous(&document());
     else
-        firstLetter = RenderBlock::createAnonymous(&document());
+        firstLetter = RenderBlockFlow::createAnonymous(&document());
     firstLetter->setStyle(pseudoStyle);
     firstLetterContainer->addChild(firstLetter, currentChild);
 
@@ -5766,7 +5759,7 @@ RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const Rend
         newBox = RenderFlexibleBox::createAnonymous(&parent->document());
         newDisplay = FLEX;
     } else {
-        newBox = RenderBlock::createAnonymous(&parent->document());
+        newBox = RenderBlockFlow::createAnonymous(&parent->document());
         newDisplay = BLOCK;
     }
 
@@ -5775,22 +5768,22 @@ RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const Rend
     return newBox;
 }
 
-RenderBlock* RenderBlock::createAnonymousColumnsWithParentRenderer(const RenderObject* parent)
+RenderBlockFlow* RenderBlock::createAnonymousColumnsWithParentRenderer(const RenderObject* parent)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), BLOCK);
     newStyle->inheritColumnPropertiesFrom(parent->style());
 
-    RenderBlock* newBox = RenderBlock::createAnonymous(&parent->document());
+    RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
     newBox->setStyle(newStyle.release());
     return newBox;
 }
 
-RenderBlock* RenderBlock::createAnonymousColumnSpanWithParentRenderer(const RenderObject* parent)
+RenderBlockFlow* RenderBlock::createAnonymousColumnSpanWithParentRenderer(const RenderObject* parent)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), BLOCK);
     newStyle->setColumnSpan(ColumnSpanAll);
 
-    RenderBlock* newBox = RenderBlock::createAnonymous(&parent->document());
+    RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
     newBox->setStyle(newStyle.release());
     return newBox;
 }

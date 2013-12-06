@@ -52,6 +52,9 @@ public:
     explicit RenderBlockFlow(ContainerNode*);
     virtual ~RenderBlockFlow();
 
+    static RenderBlockFlow* createAnonymous(Document*);
+    RenderBlockFlow* createAnonymousBlockFlow() const;
+
     virtual bool isRenderBlockFlow() const OVERRIDE FINAL { return true; }
 
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;

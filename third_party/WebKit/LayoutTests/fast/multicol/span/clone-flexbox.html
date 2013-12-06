@@ -7,6 +7,8 @@
 #flexbox1 { color: white; }
 </style>
 <script>
+if (window.testRunner)
+    testRunner.dumpAsText();
 document.body.offsetTop;
 var container = document.createElement('div');
 container.setAttribute('id', 'container');
@@ -20,6 +22,7 @@ flexbox1.style.display = '-webkit-flex';
 flexbox1.appendChild(document.createTextNode('a'));
 flexbox1.appendChild(div1);
 flexbox1.appendChild(document.createTextNode('b'));
+onload = function () { document.write("Test passes if no crash."); }
 </script>
 </body>
 </html>
