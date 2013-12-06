@@ -2479,8 +2479,7 @@
               '-Wno-format',
             ],
             'cflags_cc!': [
-              # TODO(fischman): remove this.
-              # http://code.google.com/p/chromium/issues/detail?id=90453
+              # Necessary because llvm.org/PR10448 is WONTFIX (crbug.com/90453).
               '-Wsign-compare',
             ]
           }],
@@ -2929,9 +2928,7 @@
           # Surprisingly, not covered by -fvisibility=hidden.
           '-fvisibility-inlines-hidden',
           # GCC turns on -Wsign-compare for C++ under -Wall, but clang doesn't,
-          # so we specify it explicitly.
-          # TODO(fischman): remove this if http://llvm.org/PR10448 obsoletes it.
-          # http://code.google.com/p/chromium/issues/detail?id=90453
+          # so we specify it explicitly.  (llvm.org/PR10448, crbug.com/90453)
           '-Wsign-compare',
         ],
         'ldflags': [
