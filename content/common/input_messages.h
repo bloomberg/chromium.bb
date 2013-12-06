@@ -61,6 +61,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticSmoothScrollGestureParams)
   IPC_STRUCT_TRAITS_PARENT(content::SyntheticGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(distance)
   IPC_STRUCT_TRAITS_MEMBER(anchor)
+  IPC_STRUCT_TRAITS_MEMBER(prevent_fling)
   IPC_STRUCT_TRAITS_MEMBER(speed_in_pixels_s)
 IPC_STRUCT_TRAITS_END()
 

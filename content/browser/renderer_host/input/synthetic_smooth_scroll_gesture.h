@@ -12,6 +12,8 @@
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/vector2d.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace content {
 
@@ -40,14 +42,21 @@ class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
 
   void ForwardTouchEvent(SyntheticGestureTarget* target) const;
   void ForwardMouseWheelEvent(SyntheticGestureTarget* target,
-                              float delta) const;
+                              const gfx::Vector2dF& delta) const;
 
-  float GetPositionDelta(const base::TimeDelta& interval) const;
-  float ComputeAbsoluteRemainingDistance() const;
+  void PressTouchPoint(SyntheticGestureTarget* target);
+  void MoveTouchPoint(SyntheticGestureTarget* target);
+  void ReleaseTouchPoint(SyntheticGestureTarget* target);
+
+  void AddTouchSlopToDistance(SyntheticGestureTarget* target);
+  gfx::Vector2dF GetPositionDelta(const base::TimeDelta& interval) const;
+  gfx::Vector2dF ProjectLengthOntoScrollDirection(float delta_length) const;
+  gfx::Vector2dF ComputeRemainingDelta() const;
   bool HasScrolledEntireDistance() const;
 
   SyntheticSmoothScrollGestureParams params_;
-  float current_y_;
+  gfx::Vector2dF total_delta_;
+  gfx::Vector2d total_delta_discrete_;
   SyntheticWebTouchEvent touch_event_;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;

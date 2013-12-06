@@ -7,15 +7,21 @@
 #include "base/logging.h"
 
 namespace content {
+namespace {
+
+const int kDefaultSpeedInPixelsS = 800;
+
+}  // namespace
 
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams()
-    : distance(100), speed_in_pixels_s(500) {}
+    : prevent_fling(true), speed_in_pixels_s(kDefaultSpeedInPixelsS) {}
 
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams(
       const SyntheticSmoothScrollGestureParams& other)
     : SyntheticGestureParams(other),
       distance(other.distance),
       anchor(other.anchor),
+      prevent_fling(other.prevent_fling),
       speed_in_pixels_s(other.speed_in_pixels_s) {}
 
 SyntheticSmoothScrollGestureParams::~SyntheticSmoothScrollGestureParams() {}

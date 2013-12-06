@@ -281,27 +281,36 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "chrome.gpuBenchmarking.smoothScrollBy = "
           "    function(pixels_to_scroll, opt_callback, opt_start_x,"
           "             opt_start_y, opt_gesture_source_type,"
-          "             opt_speed_in_pixels_s) {"
+          "             opt_direction, opt_speed_in_pixels_s) {"
           "  pixels_to_scroll = pixels_to_scroll || 0;"
           "  callback = opt_callback || function() { };"
           "  gesture_source_type = opt_gesture_source_type ||"
           "      chrome.gpuBenchmarking.DEFAULT_INPUT;"
+          "  direction = opt_direction || 'down';"
           "  speed_in_pixels_s = opt_speed_in_pixels_s || 800;"
           "  native function BeginSmoothScroll();"
-          "  if (typeof opt_start_x !== 'undefined' &&"
-          "      typeof opt_start_y !== 'undefined') {"
-          "    return BeginSmoothScroll(pixels_to_scroll, callback,"
-          "                             gesture_source_type, speed_in_pixels_s,"
-          "                             opt_start_x, opt_start_y);"
-          "  } else {"
-          "    return BeginSmoothScroll(pixels_to_scroll, callback,"
-          "                             gesture_source_type,"
-          "                             speed_in_pixels_s);"
-          "  }"
+          "  return BeginSmoothScroll(pixels_to_scroll, callback,"
+          "                           gesture_source_type, direction,"
+          "                           speed_in_pixels_s, true,"
+          "                           opt_start_x, opt_start_y);"
           "};"
           "chrome.gpuBenchmarking.smoothScrollBySendsTouch = function() {"
           "  native function SmoothScrollSendsTouch();"
           "  return SmoothScrollSendsTouch();"
+          "};"
+          "chrome.gpuBenchmarking.swipe = "
+          "    function(direction, distance, opt_callback,"
+          "             opt_start_x, opt_start_y,"
+          "             opt_speed_in_pixels_s) {"
+          "  direction = direction || 'up';"
+          "  distance = distance || 0;"
+          "  callback = opt_callback || function() { };"
+          "  speed_in_pixels_s = opt_speed_in_pixels_s || 800;"
+          "  native function BeginSmoothScroll();"
+          "  return BeginSmoothScroll(-distance, callback,"
+          "                           chrome.gpuBenchmarking.TOUCH_INPUT,"
+          "                           direction, speed_in_pixels_s, false,"
+          "                           opt_start_x, opt_start_y);"
           "};"
           "chrome.gpuBenchmarking.pinchBy = "
           "    function(zoom_in, pixels_to_cover, anchor_x, anchor_y,"
@@ -489,13 +498,15 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (!context.Init(false))
       return;
 
-    // Account for the 2 optional arguments, start_x and start_y.
+    // The last two arguments can be undefined. We check their validity later.
     int arglen = args.Length();
-    if (arglen < 4 ||
+    if (arglen < 8 ||
         !args[0]->IsNumber() ||
         !args[1]->IsFunction() ||
         !args[2]->IsNumber() ||
-        !args[3]->IsNumber()) {
+        !args[3]->IsString() ||
+        !args[4]->IsNumber() ||
+        !args[5]->IsBoolean()) {
       args.GetReturnValue().Set(false);
       return;
     }
@@ -514,7 +525,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // Convert coordinates from CSS pixels to density independent pixels (DIPs).
     float page_scale_factor = context.web_view()->pageScaleFactor();
 
-    gesture_params->distance = args[0]->IntegerValue() * page_scale_factor;
     int gesture_source_type = args[2]->IntegerValue();
     if (gesture_source_type < 0 ||
         gesture_source_type > SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX) {
@@ -524,23 +534,39 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     gesture_params->gesture_source_type =
         static_cast<SyntheticGestureParams::GestureSourceType>(
             gesture_source_type);
-    gesture_params->speed_in_pixels_s = args[3]->IntegerValue();
 
-    if (arglen == 4) {
+    int distance = args[0]->IntegerValue() * page_scale_factor;
+    v8::String::Utf8Value direction(args[3]);
+    DCHECK(*direction);
+    std::string direction_str(*direction);
+    if (direction_str == "down")
+      gesture_params->distance.set_y(distance);
+    else if (direction_str == "up")
+      gesture_params->distance.set_y(-distance);
+    else if (direction_str == "right")
+      gesture_params->distance.set_x(distance);
+    else if (direction_str == "left")
+      gesture_params->distance.set_x(-distance);
+    else {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    gesture_params->speed_in_pixels_s = args[4]->IntegerValue();
+    gesture_params->prevent_fling = args[5]->BooleanValue();
+
+    // Account for the 2 optional arguments, start_x and start_y.
+    if (args[6]->IsUndefined() || args[7]->IsUndefined()) {
       blink::WebRect rect = context.render_view_impl()->windowRect();
       gesture_params->anchor.SetPoint(rect.x + rect.width / 2,
                                       rect.y + rect.height / 2);
-    } else {
-      if (arglen != 6 ||
-          !args[4]->IsNumber() ||
-          !args[5]->IsNumber()) {
-        args.GetReturnValue().Set(false);
-        return;
-      }
-
+    } else if (args[6]->IsNumber() && args[7]->IsNumber()) {
       gesture_params->anchor.SetPoint(
-          args[4]->IntegerValue() * page_scale_factor,
-          args[5]->IntegerValue() * page_scale_factor);
+          args[6]->IntegerValue() * page_scale_factor,
+          args[7]->IntegerValue() * page_scale_factor);
+    } else {
+      args.GetReturnValue().Set(false);
+      return;
     }
 
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
