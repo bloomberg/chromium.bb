@@ -16,7 +16,7 @@ specific_include_rules = {
   # These files will stay.
   r"(browser_policy_connector|"
   r"configuration_policy_handler_android|"
-  r"configuration_policy_handler_list|"
+  r"configuration_policy_handler_list_factory|"
   r"file_selection_dialogs_policy_handler|"
   r"file_selection_dialogs_policy_handler_unittest|"
   r"generate_policy_source_unittest|"

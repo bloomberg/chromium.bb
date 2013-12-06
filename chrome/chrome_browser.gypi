@@ -1533,6 +1533,8 @@
         'browser/policy/configuration_policy_handler_android.h',
         'browser/policy/configuration_policy_handler_list.cc',
         'browser/policy/configuration_policy_handler_list.h',
+        'browser/policy/configuration_policy_handler_list_factory.cc',
+        'browser/policy/configuration_policy_handler_list_factory.h',
         'browser/policy/configuration_policy_pref_store.cc',
         'browser/policy/configuration_policy_pref_store.h',
         'browser/policy/file_selection_dialogs_policy_handler.cc',

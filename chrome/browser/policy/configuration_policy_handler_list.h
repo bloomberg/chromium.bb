@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/policy/core/common/policy_details.h"
 
 class PrefValueMap;
 
@@ -24,7 +26,8 @@ struct PolicyToPreferenceMapEntry;
 // cleaning up policy values for displaying.
 class ConfigurationPolicyHandlerList {
  public:
-  ConfigurationPolicyHandlerList();
+  explicit ConfigurationPolicyHandlerList(
+      const GetChromePolicyDetailsCallback& details_callback);
   ~ConfigurationPolicyHandlerList();
 
   // Adds a policy handler to the list.
@@ -42,12 +45,10 @@ class ConfigurationPolicyHandlerList {
 
  private:
   std::vector<ConfigurationPolicyHandler*> handlers_;
+  GetChromePolicyDetailsCallback details_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyHandlerList);
 };
-
-// Builds a platform-specific handler list.
-scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList();
 
 }  // namespace policy
 
