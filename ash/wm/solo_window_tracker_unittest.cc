@@ -29,10 +29,14 @@ namespace {
 class WindowRepaintChecker : public aura::WindowObserver {
  public:
   explicit WindowRepaintChecker(aura::Window* window)
-      : is_paint_scheduled_(false) {
-    window->AddObserver(this);
+      : window_(window),
+        is_paint_scheduled_(false) {
+    window_->AddObserver(this);
   }
+
   virtual ~WindowRepaintChecker() {
+    if (window_)
+      window_->RemoveObserver(this);
   }
 
   bool IsPaintScheduledAndReset() {
@@ -47,10 +51,12 @@ class WindowRepaintChecker : public aura::WindowObserver {
                                       const gfx::Rect& region) OVERRIDE {
     is_paint_scheduled_ = true;
   }
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-    window->RemoveObserver(this);
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+    DCHECK_EQ(window_, window);
+    window_ = NULL;
   }
 
+  aura::Window* window_;
   bool is_paint_scheduled_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowRepaintChecker);

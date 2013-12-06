@@ -248,7 +248,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
   // Snaps the window to left or right of the desktop with given bounds.

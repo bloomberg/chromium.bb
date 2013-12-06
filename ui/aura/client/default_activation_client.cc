@@ -102,7 +102,6 @@ void DefaultActivationClient::OnWindowDestroyed(Window* window) {
     last_active_ = NULL;
 
   if (window == GetActiveWindow()) {
-    window->RemoveObserver(this);
     active_windows_.pop_back();
     Window* next_active = GetActiveWindow();
     if (next_active && aura::client::GetActivationChangeObserver(next_active)) {
