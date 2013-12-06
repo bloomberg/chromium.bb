@@ -4,7 +4,9 @@
 
 #include "ui/base/ime/input_method_base.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_client.h"
@@ -128,6 +130,40 @@ void InputMethodBase::SetFocusedTextInputClientInternal(
   text_input_client_ = client;  // NULL allowed.
   OnDidChangeFocusedClient(old, client);
   NotifyTextInputStateChanged(text_input_client_);
+}
+
+void InputMethodBase::OnCandidateWindowShown() {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&InputMethodBase::CandidateWindowShownCallback, AsWeakPtr()));
+}
+
+void InputMethodBase::OnCandidateWindowUpdated() {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&InputMethodBase::CandidateWindowUpdatedCallback,
+                 AsWeakPtr()));
+}
+
+void InputMethodBase::OnCandidateWindowHidden() {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&InputMethodBase::CandidateWindowHiddenCallback, AsWeakPtr()));
+}
+
+void InputMethodBase::CandidateWindowShownCallback() {
+  if (text_input_client_)
+    text_input_client_->OnCandidateWindowShown();
+}
+
+void InputMethodBase::CandidateWindowUpdatedCallback() {
+  if (text_input_client_)
+    text_input_client_->OnCandidateWindowUpdated();
+}
+
+void InputMethodBase::CandidateWindowHiddenCallback() {
+  if (text_input_client_)
+    text_input_client_->OnCandidateWindowHidden();
 }
 
 }  // namespace ui

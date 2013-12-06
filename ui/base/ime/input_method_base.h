@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_export.h"
@@ -23,7 +24,9 @@ class TextInputClient;
 
 // A helper class providing functionalities shared among ui::InputMethod
 // implementations.
-class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
+class UI_EXPORT InputMethodBase
+   : NON_EXPORTED_BASE(public InputMethod),
+     public base::SupportsWeakPtr<InputMethodBase> {
  public:
   InputMethodBase();
   virtual ~InputMethodBase();
@@ -77,12 +80,26 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);
 
+  // Interface for for signalling candidate window events.
+  // See also *Callback functions below. To avoid reentrancy issue that
+  // TextInputClient manipulates IME state during even handling, these methods
+  // defer sending actual signals to renderer.
+  void OnCandidateWindowShown();
+  void OnCandidateWindowUpdated();
+  void OnCandidateWindowHidden();
+
   bool system_toplevel_window_focused() const {
     return system_toplevel_window_focused_;
   }
 
  private:
   void SetFocusedTextInputClientInternal(TextInputClient* client);
+
+  // Deferred callbacks for signalling TextInputClient about candidate window
+  // appearance changes.
+  void CandidateWindowShownCallback();
+  void CandidateWindowUpdatedCallback();
+  void CandidateWindowHiddenCallback();
 
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;

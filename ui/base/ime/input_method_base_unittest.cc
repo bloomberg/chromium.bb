@@ -4,6 +4,10 @@
 
 #include "ui/base/ime/input_method_base.h"
 
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/dummy_text_input_client.h"
@@ -110,11 +114,30 @@ class ClientChangeVerifier {
   DISALLOW_COPY_AND_ASSIGN(ClientChangeVerifier);
 };
 
+class InputMethodBaseTest : public testing::Test {
+ protected:
+  InputMethodBaseTest() {
+  }
+  virtual ~InputMethodBaseTest() {
+  }
+
+  virtual void SetUp() {
+    message_loop_.reset(new base::MessageLoopForUI);
+  }
+
+  virtual void TearDown() {
+    message_loop_.reset();
+  }
+
+ private:
+  scoped_ptr<base::MessageLoop> message_loop_;
+  DISALLOW_COPY_AND_ASSIGN(InputMethodBaseTest);
+};
+
 class MockInputMethodBase : public InputMethodBase {
  public:
   // Note: this class does not take the ownership of |verifier|.
-  MockInputMethodBase(ClientChangeVerifier* verifier)
-      : verifier_(verifier) {
+  MockInputMethodBase(ClientChangeVerifier* verifier) : verifier_(verifier) {
   }
   virtual ~MockInputMethodBase() {
   }
@@ -159,6 +182,8 @@ class MockInputMethodBase : public InputMethodBase {
   }
 
   ClientChangeVerifier* verifier_;
+
+  FRIEND_TEST_ALL_PREFIXES(InputMethodBaseTest, CandidateWindowEvents);
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodBase);
 };
 
@@ -190,10 +215,38 @@ class MockInputMethodObserver : public InputMethodObserver {
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodObserver);
 };
 
+class MockTextInputClient : public DummyTextInputClient {
+ public:
+  MockTextInputClient()
+      : shown_event_count_(0), updated_event_count_(0), hidden_event_count_(0) {
+  }
+  virtual ~MockTextInputClient() {
+  }
+
+  virtual void OnCandidateWindowShown() OVERRIDE {
+    ++shown_event_count_;
+  }
+  virtual void OnCandidateWindowUpdated() OVERRIDE {
+    ++updated_event_count_;
+  }
+  virtual void OnCandidateWindowHidden() OVERRIDE {
+    ++hidden_event_count_;
+  }
+
+  int shown_event_count() const { return shown_event_count_; }
+  int updated_event_count() const { return updated_event_count_; }
+  int hidden_event_count() const { return hidden_event_count_; }
+
+ private:
+  int shown_event_count_;
+  int updated_event_count_;
+  int hidden_event_count_;
+};
+
 typedef ScopedObserver<InputMethod, InputMethodObserver>
     InputMethodScopedObserver;
 
-TEST(InputMethodBaseTest, SetFocusedTextInputClient) {
+TEST_F(InputMethodBaseTest, SetFocusedTextInputClient) {
   DummyTextInputClient text_input_client_1st;
   DummyTextInputClient text_input_client_2nd;
 
@@ -252,7 +305,7 @@ TEST(InputMethodBaseTest, SetFocusedTextInputClient) {
   }
 }
 
-TEST(InputMethodBaseTest, DetachTextInputClient) {
+TEST_F(InputMethodBaseTest, DetachTextInputClient) {
   DummyTextInputClient text_input_client;
   DummyTextInputClient text_input_client_the_other;
 
@@ -293,6 +346,53 @@ TEST(InputMethodBaseTest, DetachTextInputClient) {
     EXPECT_EQ(NULL, input_method.GetTextInputClient());
     verifier.Verify();
   }
+}
+
+TEST_F(InputMethodBaseTest, CandidateWindowEvents) {
+  MockTextInputClient text_input_client;
+
+  {
+    ClientChangeVerifier verifier;
+    MockInputMethodBase input_method_base(&verifier);
+    input_method_base.OnFocus();
+
+    verifier.ExpectClientChange(NULL, &text_input_client);
+    input_method_base.SetFocusedTextInputClient(&text_input_client);
+
+    EXPECT_EQ(0, text_input_client.shown_event_count());
+    EXPECT_EQ(0, text_input_client.updated_event_count());
+    EXPECT_EQ(0, text_input_client.hidden_event_count());
+
+    input_method_base.OnCandidateWindowShown();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, text_input_client.shown_event_count());
+    EXPECT_EQ(0, text_input_client.updated_event_count());
+    EXPECT_EQ(0, text_input_client.hidden_event_count());
+
+    input_method_base.OnCandidateWindowUpdated();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, text_input_client.shown_event_count());
+    EXPECT_EQ(1, text_input_client.updated_event_count());
+    EXPECT_EQ(0, text_input_client.hidden_event_count());
+
+    input_method_base.OnCandidateWindowHidden();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, text_input_client.shown_event_count());
+    EXPECT_EQ(1, text_input_client.updated_event_count());
+    EXPECT_EQ(1, text_input_client.hidden_event_count());
+
+    input_method_base.OnCandidateWindowShown();
+  }
+
+  // If InputMethod is deleted immediately after an event happens, but before
+  // its callback is invoked, the callback will be cancelled.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, text_input_client.shown_event_count());
+  EXPECT_EQ(1, text_input_client.updated_event_count());
+  EXPECT_EQ(1, text_input_client.hidden_event_count());
 }
 
 }  // namespace

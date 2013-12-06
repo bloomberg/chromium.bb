@@ -235,13 +235,25 @@ LRESULT InputMethodIMM32::OnImeNotify(UINT message,
                                       BOOL* handled) {
   *handled = FALSE;
 
+  bool previous_state = is_candidate_popup_open_;
+
   // Update |is_candidate_popup_open_|, whether a candidate window is open.
   switch (wparam) {
   case IMN_OPENCANDIDATE:
     is_candidate_popup_open_ = true;
+    if (!previous_state)
+      OnCandidateWindowShown();
     break;
   case IMN_CLOSECANDIDATE:
     is_candidate_popup_open_ = false;
+    if (previous_state)
+      OnCandidateWindowHidden();
+    break;
+  case IMN_CHANGECANDIDATE:
+    // TODO(kochi): The IME API expects this event to notify window size change,
+    // while this may fire more often without window resize. There is no generic
+    // way to get bounds of candidate window.
+    OnCandidateWindowUpdated();
     break;
   }
 
