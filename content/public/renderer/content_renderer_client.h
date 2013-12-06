@@ -49,6 +49,7 @@ struct WebURLError;
 }
 
 namespace content {
+class DocumentState;
 class RenderFrame;
 class RenderView;
 class SynchronousCompositor;
@@ -173,13 +174,22 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if a popup window should be allowed.
   virtual bool AllowPopup();
 
+#ifdef OS_ANDROID
+  // TODO(sgurun) This callback is deprecated and will be removed as soon
+  // as android webview completes implementation of a resource throttle based
+  // shouldoverrideurl implementation. See crbug.com/325351
+  //
   // Returns true if the navigation was handled by the embedder and should be
-  // ignored by WebKit. This method is used by CEF.
-  virtual bool HandleNavigation(blink::WebFrame* frame,
+  // ignored by WebKit. This method is used by CEF and android_webview.
+  virtual bool HandleNavigation(RenderView* view,
+                                DocumentState* document_state,
+                                int opener_id,
+                                blink::WebFrame* frame,
                                 const blink::WebURLRequest& request,
                                 blink::WebNavigationType type,
                                 blink::WebNavigationPolicy default_policy,
                                 bool is_redirect);
+#endif
 
   // Returns true if we should fork a new process for the given navigation.
   // If |send_referrer| is set to false (which is the default), no referrer

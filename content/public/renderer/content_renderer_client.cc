@@ -93,7 +93,11 @@ bool ContentRendererClient::AllowPopup() {
   return false;
 }
 
+#ifdef OS_ANDROID
 bool ContentRendererClient::HandleNavigation(
+    RenderView* view,
+    DocumentState* document_state,
+    int opener_id,
     blink::WebFrame* frame,
     const blink::WebURLRequest& request,
     blink::WebNavigationType type,
@@ -101,6 +105,7 @@ bool ContentRendererClient::HandleNavigation(
     bool is_redirect) {
   return false;
 }
+#endif
 
 bool ContentRendererClient::ShouldFork(blink::WebFrame* frame,
                                        const GURL& url,
