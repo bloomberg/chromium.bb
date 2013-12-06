@@ -34,15 +34,11 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual class GrContext* GrContext() = 0;
 
   struct Capabilities {
-    bool discard_backbuffer : 1;
     bool egl_image_external : 1;
     bool fast_npot_mo8_textures : 1;
     bool iosurface : 1;
     bool map_image : 1;
-    bool map_sub : 1;
     bool post_sub_buffer : 1;
-    bool set_visibility : 1;
-    bool shallow_flush : 1;
     bool swapbuffers_complete_callback : 1;
     bool texture_format_bgra8888 : 1;
     bool texture_format_etc1 : 1;

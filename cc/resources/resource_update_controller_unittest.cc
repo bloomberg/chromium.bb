@@ -35,9 +35,7 @@ class ResourceUpdateControllerTest;
 class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
  public:
   explicit WebGraphicsContext3DForUploadTest(ResourceUpdateControllerTest* test)
-      : test_(test) {
-    test_capabilities_.shallow_flush = true;
-  }
+      : test_(test) {}
 
   virtual void flush() OVERRIDE;
   virtual void shallowFlushCHROMIUM() OVERRIDE;

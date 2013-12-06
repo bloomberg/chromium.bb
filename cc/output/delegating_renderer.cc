@@ -78,7 +78,6 @@ bool DelegatingRenderer::Initialize() {
 
   DCHECK(!caps.iosurface || caps.texture_rectangle);
 
-  capabilities_.using_set_visibility = caps.set_visibility;
   capabilities_.using_egl_image = caps.egl_image_external;
   capabilities_.using_map_image = settings_->use_map_image && caps.map_image;
 
@@ -162,13 +161,11 @@ void DelegatingRenderer::SetVisible(bool visible) {
     if (context_provider)
       context_provider->Context3d()->flush();
   }
-  if (capabilities_.using_set_visibility) {
-    // We loop visibility to the GPU process, since that's what manages memory.
-    // That will allow it to feed us with memory allocations that we can act
-    // upon.
-    DCHECK(context_provider);
-    context_provider->Context3d()->setVisibilityCHROMIUM(visible);
-  }
+  // We loop visibility to the GPU process, since that's what manages memory.
+  // That will allow it to feed us with memory allocations that we can act
+  // upon.
+  DCHECK(context_provider);
+  context_provider->Context3d()->setVisibilityCHROMIUM(visible);
 }
 
 void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,

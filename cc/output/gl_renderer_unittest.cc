@@ -132,10 +132,7 @@ TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
 class FrameCountingContext : public TestWebGraphicsContext3D {
  public:
   FrameCountingContext()
-      : frame_(0) {
-    test_capabilities_.set_visibility = true;
-    test_capabilities_.discard_backbuffer = true;
-  }
+      : frame_(0) {}
 
   // WebGraphicsContext3D methods.
 
@@ -738,10 +735,7 @@ class VisibilityChangeIsLastCallTrackingContext
     : public TestWebGraphicsContext3D {
  public:
   VisibilityChangeIsLastCallTrackingContext()
-      : last_call_was_set_visibility_(false) {
-    test_capabilities_.set_visibility = true;
-    test_capabilities_.discard_backbuffer = true;
-  }
+      : last_call_was_set_visibility_(false) {}
 
   // WebGraphicsContext3D methods.
   virtual void setVisibilityCHROMIUM(bool visible) {
@@ -1599,7 +1593,6 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
 class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
  public:
   OutputSurfaceMockContext() {
-    test_capabilities_.discard_backbuffer = true;
     test_capabilities_.post_sub_buffer = true;
   }
 

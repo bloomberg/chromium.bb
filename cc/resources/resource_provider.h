@@ -488,7 +488,6 @@ class CC_EXPORT ResourceProvider {
   ResourceType default_resource_type_;
   bool use_texture_storage_ext_;
   bool use_texture_usage_hint_;
-  bool use_shallow_flush_;
   bool use_compressed_texture_etc1_;
   scoped_ptr<TextureUploader> texture_uploader_;
   int max_texture_size_;

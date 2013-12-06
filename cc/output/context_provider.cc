@@ -9,15 +9,11 @@
 namespace cc {
 
 ContextProvider::Capabilities::Capabilities()
-    : discard_backbuffer(false),
-      egl_image_external(false),
+    : egl_image_external(false),
       fast_npot_mo8_textures(false),
       iosurface(false),
       map_image(false),
-      map_sub(false),
       post_sub_buffer(false),
-      set_visibility(false),
-      shallow_flush(false),
       swapbuffers_complete_callback(false),
       texture_format_bgra8888(false),
       texture_format_etc1(false),
@@ -29,15 +25,11 @@ ContextProvider::Capabilities::Capabilities()
 
 ContextProvider::Capabilities::Capabilities(
     const gpu::Capabilities& gpu_capabilities)
-    : discard_backbuffer(false),
-      egl_image_external(gpu_capabilities.egl_image_external),
+    : egl_image_external(gpu_capabilities.egl_image_external),
       fast_npot_mo8_textures(gpu_capabilities.fast_npot_mo8_textures),
       iosurface(gpu_capabilities.iosurface),
       map_image(gpu_capabilities.map_image),
-      map_sub(false),
       post_sub_buffer(gpu_capabilities.post_sub_buffer),
-      set_visibility(false),
-      shallow_flush(false),
       swapbuffers_complete_callback(false),
       texture_format_bgra8888(gpu_capabilities.texture_format_bgra8888),
       texture_format_etc1(gpu_capabilities.texture_format_etc1),

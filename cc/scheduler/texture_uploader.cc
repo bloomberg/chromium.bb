@@ -74,14 +74,10 @@ unsigned TextureUploader::Query::Value() {
   return value_;
 }
 
-TextureUploader::TextureUploader(blink::WebGraphicsContext3D* context,
-                                 bool use_map_tex_sub_image,
-                                 bool use_shallow_flush)
+TextureUploader::TextureUploader(blink::WebGraphicsContext3D* context)
     : context_(context),
       num_blocking_texture_uploads_(0),
-      use_map_tex_sub_image_(use_map_tex_sub_image),
       sub_image_size_(0),
-      use_shallow_flush_(use_shallow_flush),
       num_texture_uploads_since_last_flush_(0) {
   for (size_t i = kUploadHistorySizeInitial; i > 0; i--)
     textures_per_second_history_.insert(kDefaultEstimatedTexturesPerSecond);
@@ -148,13 +144,8 @@ void TextureUploader::Upload(const uint8* image,
     DCHECK(is_full_upload);
     UploadWithTexImageETC1(image, size);
   } else {
-    if (use_map_tex_sub_image_) {
-      UploadWithMapTexSubImage(
-          image, image_rect, source_rect, dest_offset, format);
-    } else {
-      UploadWithTexSubImage(
-          image, image_rect, source_rect, dest_offset, format);
-    }
+    UploadWithMapTexSubImage(
+        image, image_rect, source_rect, dest_offset, format);
   }
 
   if (is_full_upload)
@@ -169,8 +160,7 @@ void TextureUploader::Flush() {
   if (!num_texture_uploads_since_last_flush_)
     return;
 
-  if (use_shallow_flush_)
-    context_->shallowFlushCHROMIUM();
+  context_->shallowFlushCHROMIUM();
 
   num_texture_uploads_since_last_flush_ = 0;
 }

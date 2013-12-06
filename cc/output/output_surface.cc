@@ -44,7 +44,6 @@ namespace cc {
 
 OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
     : context_provider_(context_provider),
-      has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
       max_frames_pending_(0),
@@ -60,7 +59,6 @@ OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
 OutputSurface::OutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
     : software_device_(software_device.Pass()),
-      has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
       max_frames_pending_(0),
@@ -78,7 +76,6 @@ OutputSurface::OutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
     : context_provider_(context_provider),
       software_device_(software_device.Pass()),
-      has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
       max_frames_pending_(0),
@@ -320,7 +317,6 @@ void OutputSurface::SetUpContext3d() {
   const ContextProvider::Capabilities& caps =
       context_provider_->ContextCapabilities();
 
-  has_gl_discard_backbuffer_ = caps.discard_backbuffer;
   has_swap_buffers_complete_callback_ = caps.swapbuffers_complete_callback;
 
   context_provider_->SetLostContextCallback(
@@ -356,14 +352,14 @@ void OutputSurface::ResetContext3d() {
 }
 
 void OutputSurface::EnsureBackbuffer() {
-  if (context_provider_ && has_gl_discard_backbuffer_)
+  if (context_provider_)
     context_provider_->Context3d()->ensureBackbufferCHROMIUM();
   if (software_device_)
     software_device_->EnsureBackbuffer();
 }
 
 void OutputSurface::DiscardBackbuffer() {
-  if (context_provider_ && has_gl_discard_backbuffer_)
+  if (context_provider_)
     context_provider_->Context3d()->discardBackbufferCHROMIUM();
   if (software_device_)
     software_device_->DiscardBackbuffer();

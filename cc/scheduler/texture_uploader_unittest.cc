@@ -166,7 +166,7 @@ TEST(TextureUploaderTest, NumBlockingUploads) {
   scoped_ptr<TestWebGraphicsContext3DTextureUpload> fake_context(
       new TestWebGraphicsContext3DTextureUpload);
   scoped_ptr<TextureUploader> uploader =
-      TextureUploader::Create(fake_context.get(), false, false);
+      TextureUploader::Create(fake_context.get());
 
   fake_context->SetResultAvailable(0);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
@@ -188,7 +188,7 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking) {
   scoped_ptr<TestWebGraphicsContext3DTextureUpload> fake_context(
       new TestWebGraphicsContext3DTextureUpload);
   scoped_ptr<TextureUploader> uploader =
-      TextureUploader::Create(fake_context.get(), false, false);
+      TextureUploader::Create(fake_context.get());
 
   fake_context->SetResultAvailable(0);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
@@ -212,7 +212,7 @@ TEST(TextureUploaderTest, UploadContentsTest) {
   scoped_ptr<TestWebGraphicsContext3DTextureUpload> fake_context(
       new TestWebGraphicsContext3DTextureUpload);
   scoped_ptr<TextureUploader> uploader =
-      TextureUploader::Create(fake_context.get(), false, false);
+      TextureUploader::Create(fake_context.get());
   uint8 buffer[256 * 256 * 4];
 
   // Upload a tightly packed 256x256 RGBA texture.

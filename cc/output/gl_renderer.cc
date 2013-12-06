@@ -202,8 +202,6 @@ bool GLRenderer::Initialize() {
   capabilities_.using_partial_swap =
       settings_->partial_swap_enabled && context_caps.post_sub_buffer;
 
-  capabilities_.using_set_visibility = context_caps.set_visibility;
-
   DCHECK(!context_caps.iosurface || context_caps.texture_rectangle);
 
   capabilities_.using_egl_image = context_caps.egl_image_external;
@@ -283,8 +281,7 @@ void GLRenderer::SetVisible(bool visible) {
   // TODO(jamesr): Replace setVisibilityCHROMIUM() with an extension to
   // explicitly manage front/backbuffers
   // crbug.com/116049
-  if (capabilities_.using_set_visibility)
-    context_->setVisibilityCHROMIUM(visible);
+  context_->setVisibilityCHROMIUM(visible);
 }
 
 void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,

@@ -712,7 +712,7 @@ void ResourceProvider::Finish() {
 bool ResourceProvider::ShallowFlushIfSupported() {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
-  if (!context3d || !use_shallow_flush_)
+  if (!context3d)
     return false;
 
   context3d->shallowFlushCHROMIUM();
@@ -899,7 +899,6 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface,
       default_resource_type_(InvalidType),
       use_texture_storage_ext_(false),
       use_texture_usage_hint_(false),
-      use_shallow_flush_(false),
       use_compressed_texture_etc1_(false),
       max_texture_size_(0),
       best_texture_format_(RGBA_8888),
@@ -938,15 +937,12 @@ bool ResourceProvider::InitializeGL() {
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 
-  bool use_map_sub = caps.map_sub;
   bool use_bgra = caps.texture_format_bgra8888;
   use_texture_storage_ext_ = caps.texture_storage;
-  use_shallow_flush_ = caps.shallow_flush;
   use_texture_usage_hint_ = caps.texture_usage;
   use_compressed_texture_etc1_ = caps.texture_format_etc1;
 
-  texture_uploader_ =
-      TextureUploader::Create(context3d, use_map_sub, use_shallow_flush_);
+  texture_uploader_ = TextureUploader::Create(context3d);
   max_texture_size_ = 0;  // Context expects cleared value.
   GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE,
                                         &max_texture_size_));

@@ -123,16 +123,7 @@ bool ContextProviderInProcess::BindToCurrentThread() {
 }
 
 void ContextProviderInProcess::InitializeCapabilities() {
-  Capabilities caps(context3d_->GetImplementation()->capabilities());
-
-  // We always use a WebGraphicsContext3DInProcessCommandBufferImpl which
-  // provides the following capabilities:
-  caps.discard_backbuffer = true;
-  caps.map_sub = true;
-  caps.set_visibility = true;
-  caps.shallow_flush = true;
-
-  capabilities_ = caps;
+  capabilities_ = Capabilities(context3d_->GetImplementation()->capabilities());
 }
 
 cc::ContextProvider::Capabilities

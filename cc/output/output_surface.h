@@ -154,7 +154,6 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   struct cc::OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
   scoped_ptr<cc::SoftwareOutputDevice> software_device_;
-  bool has_gl_discard_backbuffer_;
   bool has_swap_buffers_complete_callback_;
   gfx::Size surface_size_;
   float device_scale_factor_;

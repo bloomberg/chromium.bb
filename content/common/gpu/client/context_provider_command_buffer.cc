@@ -215,17 +215,7 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
 }
 
 void ContextProviderCommandBuffer::InitializeCapabilities() {
-  // The command buffer provides the following capabilities always.
-  // TODO(jamesr): This information is duplicated with
-  // gpu::gles2::FeatureInfo::AddFeatures().
   Capabilities caps(context3d_->GetImplementation()->capabilities());
-  caps.discard_backbuffer = true;
-  caps.set_visibility = true;
-
-  // TODO(jamesr): These are also added in
-  // gpu::gles2::GLES2Implementation::GetStringHelper() on the client side.
-  caps.map_sub = true;
-  caps.shallow_flush = true;
 
   // The swapbuffers complete callback is always supported by multi-process
   // command buffer implementations.

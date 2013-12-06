@@ -2129,8 +2129,6 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
       case GL_EXTENSIONS:
         str += std::string(str.empty() ? "" : " ") +
             "GL_CHROMIUM_flipy "
-            "GL_CHROMIUM_map_sub "
-            "GL_CHROMIUM_shallow_flush "
             "GL_EXT_unpack_subimage";
         if (capabilities_.map_image) {
           // The first space character is intentional.

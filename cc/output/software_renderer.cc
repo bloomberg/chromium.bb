@@ -86,7 +86,6 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
     capabilities_.best_texture_format =
         resource_provider_->best_texture_format();
   }
-  capabilities_.using_set_visibility = true;
   // The updater can access bitmaps while the SoftwareRenderer is using them.
   capabilities_.allow_partial_texture_updates = true;
   capabilities_.using_partial_swap = true;
