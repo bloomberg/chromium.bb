@@ -20,6 +20,71 @@ GIT_REVISIONS = {
     'newlib': '9f95ad0b4875d153b9d138090e61ac4c24e9a87d',
     }
 
+GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
+
+
+def CollectSources():
+  sources = {}
+
+  for package in GIT_REVISIONS:
+    sources[package] = {
+        'type': 'source',
+        'commands': [
+            command.SyncGitRepo('%s/nacl-%s.git' % (GIT_BASE_URL, package),
+                                '%(output)s', GIT_REVISIONS[package])
+            ]
+        }
+
+  # The gcc_libs component gets the whole GCC source tree.
+  sources['gcc_libs'] = sources['gcc'].copy()
+
+  # The gcc component omits all the source directories that are used solely
+  # for building target libraries.  We don't want those included in the
+  # input hash calculation so that we don't rebuild the compiler when the
+  # the only things that have changed are target libraries.
+  # TODO(mcgrathr): Make this copy from the gcc_libs component rather than
+  # repeating the git clone.
+  sources['gcc']['commands'] += [command.RemoveDirectory(dir) for dir in [
+      'boehm-gc',
+      'libada',
+      'libffi',
+      'libgcc',
+      'libgfortran',
+      'libgo',
+      'libgomp',
+      'libitm',
+      'libjava',
+      'libmudflap',
+      'libobjc',
+      'libquadmath',
+      'libssp',
+      'libstdc++-v3',
+      ]]
+
+  # We have to populate the newlib source tree with the "exported" form of
+  # some headers from the native_client source tree.  The newlib build
+  # needs these to be in the expected place.  By doing this in the source
+  # target, these files will be part of the input hash and so we don't need
+  # to do anything else to keep track of when they might have changed in
+  # the native_client source tree.
+  newlib_sys_nacl = command.path.join('%(output)s',
+                                      'newlib', 'libc', 'sys', 'nacl')
+  newlib_unpack = [command.RemoveDirectory(command.path.join(newlib_sys_nacl,
+                                                             dirname))
+                   for dirname in ['bits', 'sys', 'machine']]
+  newlib_unpack.append(command.Command([
+      'python',
+      command.path.join('%(top_srcdir)s', 'src',
+                        'trusted', 'service_runtime', 'export_header.py'),
+      command.path.join('%(top_srcdir)s', 'src',
+                        'trusted', 'service_runtime', 'include'),
+      newlib_sys_nacl,
+      ]))
+  sources['newlib']['commands'] += newlib_unpack
+
+  return sources
+
+
 TARGET_LIST = ['arm']
 
 # These are extra arguments to pass gcc's configure that vary by target.
@@ -30,8 +95,6 @@ TARGET_GCC_CONFIG = {
 
 PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
 BUG_URL = 'http://gonacl.com/reportissue'
-
-GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
 
 TAR_XV = ['tar', '-x', '-v']
 EXTRACT_STRIP_TGZ = TAR_XV + ['--gzip', '--strip-components=1', '-f']
@@ -99,7 +162,7 @@ def InstallDocFiles(subdir, files):
   dirs = sorted(set([command.path.dirname(command.path.join(doc_dir, file))
                      for file in files]))
   commands = ([command.Mkdir(dir, parents=True) for dir in dirs] +
-              [command.Copy(command.path.join('%(src)s', file),
+              [command.Copy(command.path.join('%(' + subdir + ')s', file),
                             command.path.join(doc_dir, file))
                for file in files])
   return commands
@@ -192,12 +255,14 @@ def UnpackSrc(is_gzip):
   else:
     extract = EXTRACT_STRIP_TBZ2
   return [
+      command.RemoveDirectory('src'),
       command.Mkdir('src'),
       command.Command(extract + ['%(src)s'], cwd='src'),
       ]
 
 def PopulateDeps(dep_dirs):
-  commands = [command.Mkdir('all_deps')]
+  commands = [command.RemoveDirectory('all_deps'),
+              command.Mkdir('all_deps')]
   commands += [command.Command('cp -r "%s/"* all_deps' % dirname, shell=True)
                for dirname in dep_dirs]
   return commands
@@ -206,6 +271,7 @@ def WithDepsOptions(options):
   return ['--with-' + option + '=%(abs_all_deps)s' for option in options]
 
 # These are libraries that go into building the compiler itself.
+# TODO(mcgrathr): Make these use source targets in some fashion.
 HOST_GCC_LIBS = {
     'gmp': {
         'type': 'build',
@@ -308,7 +374,10 @@ HOST_GCC_LIBS = {
 
 HOST_GCC_LIBS_DEPS = ['gmp', 'mpfr', 'mpc', 'isl', 'cloog']
 
-GCC_GIT_URL = GIT_BASE_URL + '/nacl-gcc.git'
+
+def ConfigureCommand(source_component):
+  return [command % {'src': '%(' + source_component + ')s'}
+          for command in CONFIGURE_CMD]
 
 
 def GccCommand(target, cmd):
@@ -317,11 +386,11 @@ def GccCommand(target, cmd):
                                         'bin')])
 
 
-def ConfigureGccCommand(target, extra_args=[]):
+def ConfigureGccCommand(source_component, target, extra_args=[]):
   target_cflagstr = ' '.join(CommonTargetCflags(target))
   return GccCommand(
       target,
-      CONFIGURE_CMD +
+      ConfigureCommand(source_component) +
       CONFIGURE_HOST_TOOL +
       ConfigureTargetArgs(target) +
       TARGET_GCC_CONFIG.get(target, []) + [
@@ -346,11 +415,10 @@ def HostTools(target):
   tools = {
       'binutils_' + target: {
           'type': 'build',
-          'git_url': GIT_BASE_URL + '/nacl-binutils.git',
-          'git_revision': GIT_REVISIONS['binutils'],
+          'dependencies': ['binutils'],
           'commands': ConfigureTargetPrep(target) + [
               command.Command(
-                  CONFIGURE_CMD +
+                  ConfigureCommand('binutils') +
                   CONFIGURE_HOST_TOOL +
                   ConfigureTargetArgs(target) + [
                       '--enable-deterministic-archives',
@@ -375,31 +443,9 @@ def HostTools(target):
 
       'gcc_' + target: {
           'type': 'build',
-          'dependencies': HOST_GCC_LIBS_DEPS + ['binutils_' + target],
-          'git_url': GCC_GIT_URL,
-          'git_revision': GIT_REVISIONS['gcc'],
-          # Remove all the source directories that are used solely for
-          # building target libraries.  We don't want those included in the
-          # input hash calculation so that we don't rebuild the compiler
-          # when the the only things that have changed are target libraries.
-          'unpack_commands': [command.RemoveDirectory(dirname) for dirname in [
-                  'boehm-gc',
-                  'libada',
-                  'libffi',
-                  'libgcc',
-                  'libgfortran',
-                  'libgo',
-                  'libgomp',
-                  'libitm',
-                  'libjava',
-                  'libmudflap',
-                  'libobjc',
-                  'libquadmath',
-                  'libssp',
-                  'libstdc++-v3',
-                  ]],
+          'dependencies': ['gcc'] + HOST_GCC_LIBS_DEPS + ['binutils_' + target],
           'commands': ConfigureTargetPrep(target) + [
-              ConfigureGccCommand(target),
+              ConfigureGccCommand('gcc', target),
               # GCC's configure step writes configargs.h with some strings
               # including the configure command line, which get embedded
               # into the gcc driver binary.  The build only works if we use
@@ -471,26 +517,6 @@ def TargetCommands(target, command_list):
 def TargetLibs(target):
   lib_deps = ['binutils_' + target, 'gcc_' + target]
 
-  # We have to populate the newlib source tree with the "exported" form of
-  # some headers from the native_client source tree.  The newlib build
-  # needs these to be in the expected place.  By doing this in the
-  # 'unpack_commands' stage, these files will be part of the input hash and
-  # so we don't need to do anything else to keep track of when they might
-  # have changed in the native_client source tree.
-  newlib_sys_nacl = command.path.join('%(src)s',
-                                      'newlib', 'libc', 'sys', 'nacl')
-  newlib_unpack = [command.RemoveDirectory(command.path.join(newlib_sys_nacl,
-                                                             dirname))
-                   for dirname in ['bits', 'sys', 'machine']]
-  newlib_unpack.append(command.Command([
-      'python',
-      command.path.join('%(top_srcdir)s', 'src',
-                        'trusted', 'service_runtime', 'export_header.py'),
-      command.path.join('%(top_srcdir)s', 'src',
-                        'trusted', 'service_runtime', 'include'),
-      newlib_sys_nacl,
-      ]))
-
   def NewlibFile(subdir, name):
     return command.path.join('%(output)s', target + '-nacl', subdir, name)
 
@@ -499,18 +525,15 @@ def TargetLibs(target):
 
   # See the comment at ConfigureTargetPrep, above.
   newlib_install_data = ' '.join(['STRIPPROG=%(cwd)s/strip_for_target',
-                                  '%(abs_src)s/install-sh',
+                                  '%(abs_newlib)s/install-sh',
                                   '-c', '-s', '-m', '644'])
 
   libs = {
       'newlib_' + target: {
           'type': 'build',
-          'dependencies': lib_deps,
-          'git_url': GIT_BASE_URL + '/nacl-newlib.git',
-          'git_revision': GIT_REVISIONS['newlib'],
-          'unpack_commands': newlib_unpack,
+          'dependencies': ['newlib'] + lib_deps,
           'commands': ConfigureTargetPrep(target) + TargetCommands(target, [
-              CONFIGURE_CMD +
+              ConfigureCommand('newlib') +
               CONFIGURE_HOST_TOOL +
               ConfigureTargetArgs(target) + [
                   '--disable-libgloss',
@@ -540,9 +563,8 @@ def TargetLibs(target):
 
       'gcc_libs_' + target: {
           'type': 'build',
-          'dependencies': lib_deps + ['newlib_' + target] + HOST_GCC_LIBS_DEPS,
-          'git_url': GCC_GIT_URL,
-          'git_revision': GIT_REVISIONS['gcc'],
+          'dependencies': (['gcc_libs'] + lib_deps +
+                           ['newlib_' + target] + HOST_GCC_LIBS_DEPS),
           # This actually builds the compiler again and uses that compiler
           # to build the target libraries.  That's by far the easiest thing
           # to get going given the interdependencies of the target
@@ -553,7 +575,7 @@ def TargetLibs(target):
           # interdependencies better, unpack the compiler, configure with
           # --disable-gcc, and just build all-target.
           'commands': ConfigureTargetPrep(target) + [
-              ConfigureGccCommand(target, [
+              ConfigureGccCommand('gcc_libs', target, [
                   '--with-build-sysroot=' + newlib_sysroot,
                   ]),
               GccCommand(target, MAKE_PARALLEL_CMD + [
@@ -569,7 +591,8 @@ def TargetLibs(target):
 
 
 def CollectPackages(targets):
-  packages = HOST_GCC_LIBS.copy()
+  packages = CollectSources()
+  packages.update(HOST_GCC_LIBS)
   for target in targets:
     packages.update(HostTools(target))
     # We build target libraries only on Linux for two reasons:
