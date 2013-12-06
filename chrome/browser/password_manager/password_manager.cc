@@ -425,6 +425,9 @@ void PasswordManager::Autofill(
 
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents());
-  if (manage_passwords_bubble_ui_controller)
+  if (manage_passwords_bubble_ui_controller &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSavePasswordBubble)) {
     manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
+  }
 }
