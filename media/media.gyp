@@ -1124,7 +1124,6 @@
         '../testing/gtest.gyp:gtest',
         '../testing/perf/perf_test.gyp:perf_test',
         '../ui/gfx/gfx.gyp:gfx',
-        '../ui/ui.gyp:ui',
         '../ui/gl/gl.gyp:gl',
       ],
       'sources': [
@@ -1406,7 +1405,6 @@
             '../base/base.gyp:base',
             '../ui/gl/gl.gyp:gl',
             '../ui/gfx/gfx.gyp:gfx',
-            '../ui/ui.gyp:ui',
           ],
           'link_settings': {
             'libraries': [
