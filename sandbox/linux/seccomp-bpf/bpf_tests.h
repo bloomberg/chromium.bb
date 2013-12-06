@@ -10,7 +10,6 @@
 #include <sys/types.h>
 
 #include "build/build_config.h"
-#include "build/build_config_functions.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
@@ -93,8 +92,7 @@ class BpfTests : public UnitTests {
       // Android, ARM and Valgrind are the three only configurations where we
       // accept not having kernel BPF support.
       // TODO(jln): remote ARM from this list when possible (crbug.com/243478).
-      if (!build::IsAndroid() && !IsRunningOnValgrind() &&
-          !build::IsArchitectureARM()) {
+      if (!IsAndroid() && !IsRunningOnValgrind() && !IsArchitectureArm()) {
         const bool seccomp_bpf_is_supported = false;
         BPF_ASSERT(seccomp_bpf_is_supported);
       }

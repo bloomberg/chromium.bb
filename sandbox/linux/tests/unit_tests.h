@@ -11,6 +11,11 @@
 
 namespace sandbox {
 
+// Has this been compiled to run on Android?
+bool IsAndroid();
+
+bool IsArchitectureArm();
+
 // Is Valgrind currently being used?
 bool IsRunningOnValgrind();
 
