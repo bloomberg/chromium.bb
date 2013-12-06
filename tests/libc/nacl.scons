@@ -44,7 +44,12 @@ AddLibcTest(env, 'malloc_realloc_calloc_free.c', '0')
 AddLibcTest(env, 'strtoll.c', '0')
 AddLibcTest(env, 'strtoull.c', '0')
 AddLibcTest(env, 'wcstoll.c', '0', is_broken=env.Bit('nacl_glibc'))
-AddLibcTest(env, 'iconv.c', '0', is_broken=env.Bit('nacl_glibc'))
+
+iconv_broken = (env.Bit('nacl_glibc') or
+  # The PNaCl archived frontend tests use an archived newlib,
+  # but the iconv test requires a new-enough newlib with fixes.
+  (env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] < 3))
+AddLibcTest(env, 'iconv.c', '0', is_broken=iconv_broken)
 
 # Test that using link-time optimization does not convert calls to
 # library functions that were never linked in.
