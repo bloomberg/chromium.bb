@@ -20,6 +20,7 @@ class EntryRevertPerformerTest : public file_system::OperationTestBase {
   virtual void SetUp() OVERRIDE {
    OperationTestBase::SetUp();
    performer_.reset(new EntryRevertPerformer(blocking_task_runner(),
+                                             observer(),
                                              scheduler(),
                                              metadata()));
   }
@@ -63,6 +64,9 @@ TEST_F(EntryRevertPerformerTest, RevertEntry) {
             GetLocalResourceEntryById(src_entry.local_id(), &result_entry));
   EXPECT_EQ(src_entry.title(), result_entry.title());
   EXPECT_EQ(ResourceEntry::CLEAN, result_entry.metadata_edit_state());
+
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(path.DirName()));
 }
 
 TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
@@ -97,6 +101,10 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
 
   // Verify the entry was deleted locally.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntryById(local_id, &entry));
+
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(
+      util::GetDriveMyDriveRootPath()));
 }
 
 TEST_F(EntryRevertPerformerTest, RevertEntry_DeletedOnServer) {
@@ -126,6 +134,9 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_DeletedOnServer) {
   // Verify the entry was deleted locally.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntryById(entry.local_id(), &entry));
+
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(path.DirName()));
 }
 
 }  // namespace internal

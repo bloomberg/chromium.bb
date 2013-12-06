@@ -73,15 +73,18 @@ FileError FinishUpdate(ResourceMetadata* metadata,
 
 EntryUpdatePerformer::EntryUpdatePerformer(
     base::SequencedTaskRunner* blocking_task_runner,
+    file_system::OperationObserver* observer,
     JobScheduler* scheduler,
     ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
       remove_performer_(new RemovePerformer(blocking_task_runner,
+                                            observer,
                                             scheduler,
                                             metadata)),
       entry_revert_performer_(new EntryRevertPerformer(blocking_task_runner,
+                                                       observer,
                                                        scheduler,
                                                        metadata)),
       weak_ptr_factory_(this) {

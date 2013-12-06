@@ -21,6 +21,7 @@ class EntryUpdatePerformerTest : public file_system::OperationTestBase {
   virtual void SetUp() OVERRIDE {
    OperationTestBase::SetUp();
    performer_.reset(new EntryUpdatePerformer(blocking_task_runner(),
+                                             observer(),
                                              scheduler(),
                                              metadata()));
   }

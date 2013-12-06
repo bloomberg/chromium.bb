@@ -25,6 +25,10 @@ namespace drive {
 class JobScheduler;
 class ResourceEntry;
 
+namespace file_system {
+class OperationObserver;
+}  // namespace file_system
+
 namespace internal {
 
 class EntryRevertPerformer;
@@ -36,6 +40,7 @@ class ResourceMetadata;
 class RemovePerformer {
  public:
   RemovePerformer(base::SequencedTaskRunner* blocking_task_runner,
+                  file_system::OperationObserver* observer,
                   JobScheduler* scheduler,
                   ResourceMetadata* metadata);
   ~RemovePerformer();

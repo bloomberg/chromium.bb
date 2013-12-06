@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_ENTRY_REVERT_PERFORMER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_ENTRY_REVERT_PERFORMER_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,6 +27,10 @@ namespace drive {
 class JobScheduler;
 class ResourceEntry;
 
+namespace file_system {
+class OperationObserver;
+}  // namespace file_system
+
 namespace internal {
 
 class ResourceMetadata;
@@ -33,6 +39,7 @@ class ResourceMetadata;
 class EntryRevertPerformer {
  public:
   EntryRevertPerformer(base::SequencedTaskRunner* blocking_task_runner,
+                       file_system::OperationObserver* observer,
                        JobScheduler* scheduler,
                        ResourceMetadata* metadata);
   ~EntryRevertPerformer();
@@ -57,7 +64,14 @@ class EntryRevertPerformer {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
+  // Part of RevertEntry(). Called after local metadata is updated.
+  void RevertEntryAfterFinishRevert(
+      const FileOperationCallback& callback,
+      const std::set<base::FilePath>* changed_directories,
+      FileError error);
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  file_system::OperationObserver* observer_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
 

@@ -15,7 +15,8 @@ namespace internal {
 typedef file_system::OperationTestBase RemovePerformerTest;
 
 TEST_F(RemovePerformerTest, RemoveFile) {
-  RemovePerformer performer(blocking_task_runner(), scheduler(), metadata());
+  RemovePerformer performer(blocking_task_runner(), observer(), scheduler(),
+                            metadata());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   base::FilePath file_in_subdir(
@@ -60,7 +61,8 @@ TEST_F(RemovePerformerTest, RemoveFile) {
 }
 
 TEST_F(RemovePerformerTest, RemoveShared) {
-  RemovePerformer performer(blocking_task_runner(), scheduler(), metadata());
+  RemovePerformer performer(blocking_task_runner(), observer(), scheduler(),
+                            metadata());
 
   const base::FilePath kPathInMyDrive(FILE_PATH_LITERAL(
       "drive/root/shared.txt"));
