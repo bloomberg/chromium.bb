@@ -9362,22 +9362,23 @@ void CSSParser::ensureLineEndings()
 CSSParserSelector* CSSParser::createFloatingSelectorWithTagName(const QualifiedName& tagQName)
 {
     CSSParserSelector* selector = new CSSParserSelector(tagQName);
-    m_floatingSelectors.add(selector);
+    m_floatingSelectors.append(selector);
     return selector;
 }
 
 CSSParserSelector* CSSParser::createFloatingSelector()
 {
     CSSParserSelector* selector = new CSSParserSelector;
-    m_floatingSelectors.add(selector);
+    m_floatingSelectors.append(selector);
     return selector;
 }
 
 PassOwnPtr<CSSParserSelector> CSSParser::sinkFloatingSelector(CSSParserSelector* selector)
 {
     if (selector) {
-        ASSERT(m_floatingSelectors.contains(selector));
-        m_floatingSelectors.remove(selector);
+        size_t index = m_floatingSelectors.reverseFind(selector);
+        ASSERT(index != kNotFound);
+        m_floatingSelectors.remove(index);
     }
     return adoptPtr(selector);
 }
@@ -9385,15 +9386,16 @@ PassOwnPtr<CSSParserSelector> CSSParser::sinkFloatingSelector(CSSParserSelector*
 Vector<OwnPtr<CSSParserSelector> >* CSSParser::createFloatingSelectorVector()
 {
     Vector<OwnPtr<CSSParserSelector> >* selectorVector = new Vector<OwnPtr<CSSParserSelector> >;
-    m_floatingSelectorVectors.add(selectorVector);
+    m_floatingSelectorVectors.append(selectorVector);
     return selectorVector;
 }
 
 PassOwnPtr<Vector<OwnPtr<CSSParserSelector> > > CSSParser::sinkFloatingSelectorVector(Vector<OwnPtr<CSSParserSelector> >* selectorVector)
 {
     if (selectorVector) {
-        ASSERT(m_floatingSelectorVectors.contains(selectorVector));
-        m_floatingSelectorVectors.remove(selectorVector);
+        size_t index = m_floatingSelectorVectors.reverseFind(selectorVector);
+        ASSERT(index != kNotFound);
+        m_floatingSelectorVectors.remove(index);
     }
     return adoptPtr(selectorVector);
 }
@@ -9401,15 +9403,16 @@ PassOwnPtr<Vector<OwnPtr<CSSParserSelector> > > CSSParser::sinkFloatingSelectorV
 CSSParserValueList* CSSParser::createFloatingValueList()
 {
     CSSParserValueList* list = new CSSParserValueList;
-    m_floatingValueLists.add(list);
+    m_floatingValueLists.append(list);
     return list;
 }
 
 PassOwnPtr<CSSParserValueList> CSSParser::sinkFloatingValueList(CSSParserValueList* list)
 {
     if (list) {
-        ASSERT(m_floatingValueLists.contains(list));
-        m_floatingValueLists.remove(list);
+        size_t index = m_floatingValueLists.reverseFind(list);
+        ASSERT(index != kNotFound);
+        m_floatingValueLists.remove(index);
     }
     return adoptPtr(list);
 }
@@ -9417,7 +9420,7 @@ PassOwnPtr<CSSParserValueList> CSSParser::sinkFloatingValueList(CSSParserValueLi
 CSSParserFunction* CSSParser::createFloatingFunction()
 {
     CSSParserFunction* function = new CSSParserFunction;
-    m_floatingFunctions.add(function);
+    m_floatingFunctions.append(function);
     return function;
 }
 
@@ -9432,8 +9435,9 @@ CSSParserFunction* CSSParser::createFloatingFunction(const CSSParserString& name
 PassOwnPtr<CSSParserFunction> CSSParser::sinkFloatingFunction(CSSParserFunction* function)
 {
     if (function) {
-        ASSERT(m_floatingFunctions.contains(function));
-        m_floatingFunctions.remove(function);
+        size_t index = m_floatingFunctions.reverseFind(function);
+        ASSERT(index != kNotFound);
+        m_floatingFunctions.remove(index);
     }
     return adoptPtr(function);
 }
@@ -9441,8 +9445,9 @@ PassOwnPtr<CSSParserFunction> CSSParser::sinkFloatingFunction(CSSParserFunction*
 CSSParserValue& CSSParser::sinkFloatingValue(CSSParserValue& value)
 {
     if (value.unit == CSSParserValue::Function) {
-        ASSERT(m_floatingFunctions.contains(value.function));
-        m_floatingFunctions.remove(value.function);
+        size_t index = m_floatingFunctions.reverseFind(value.function);
+        ASSERT(index != kNotFound);
+        m_floatingFunctions.remove(index);
     }
     return value;
 }
