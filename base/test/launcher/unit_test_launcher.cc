@@ -497,7 +497,7 @@ int LaunchUnitTestsInternal(int argc,
   MessageLoopForIO message_loop;
 
   UnitTestLauncherDelegate delegate(batch_limit);
-  base::TestLauncher launcher(&delegate, SysInfo::NumberOfProcessors());
+  base::TestLauncher launcher(&delegate, default_jobs);
   bool success = launcher.Run(argc, argv);
 
   fprintf(stdout,

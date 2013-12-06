@@ -86,7 +86,6 @@
       'target_name': 'dbus_unittests',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../build/linux/system.gyp:dbus',
         '../testing/gmock.gyp:gmock',
@@ -105,6 +104,7 @@
         'object_manager_unittest.cc',
         'object_proxy_unittest.cc',
         'property_unittest.cc',
+        'run_all_unittests.cc',
         'signal_sender_verification_unittest.cc',
         'string_util_unittest.cc',
         'test_service.cc',
