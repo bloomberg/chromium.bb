@@ -61,11 +61,29 @@ bool AddEntryToZip(zipFile zip_file, const base::FilePath& path,
   if (is_directory)
     str_path += "/";
 
-  if (ZIP_OK != zipOpenNewFileInZip(
-      zip_file, str_path.c_str(),
-      NULL, NULL, 0u, NULL, 0u, NULL,  // file info, extrafield local, length,
-                                       // extrafield global, length, comment
-      Z_DEFLATED, Z_DEFAULT_COMPRESSION)) {
+  // Section 4.4.4 http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+  // Setting the Language encoding flag so the file is told to be in utf-8.
+  const unsigned long LANGUAGE_ENCODING_FLAG = 0x1 << 11;
+
+  if (ZIP_OK != zipOpenNewFileInZip4(
+                    zip_file,  //file
+                    str_path.c_str(),  // filename
+                    NULL,  // zipfi (file_info)
+                    NULL,  // extrafield_local,
+                    0u,  // size_extrafield_local
+                    NULL,  // extrafield_global
+                    0u,  // size_extrafield_global
+                    NULL,  // comment
+                    Z_DEFLATED,  // method
+                    Z_DEFAULT_COMPRESSION,  // level
+                    0,  // raw
+                    -MAX_WBITS,  // windowBits
+                    DEF_MEM_LEVEL,  // memLevel
+                    Z_DEFAULT_STRATEGY,  // strategy
+                    NULL,  //password
+                    0,  // crcForCrypting
+                    0,  // versionMadeBy
+                    LANGUAGE_ENCODING_FLAG)) {  // flagBase
     DLOG(ERROR) << "Could not open zip file entry " << str_path;
     return false;
   }
