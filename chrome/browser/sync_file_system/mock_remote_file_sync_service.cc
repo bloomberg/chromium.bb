@@ -53,6 +53,10 @@ scoped_ptr<base::ListValue> MockRemoteFileSyncService::DumpFiles(
   return scoped_ptr<base::ListValue>();
 }
 
+scoped_ptr<base::ListValue> MockRemoteFileSyncService::DumpDatabase() {
+  return scoped_ptr<base::ListValue>();
+}
+
 void MockRemoteFileSyncService::SetServiceState(RemoteServiceState state) {
   state_ = state;
 }

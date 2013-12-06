@@ -250,6 +250,11 @@ scoped_ptr<base::ListValue> DriveFileSyncService::DumpFiles(
   return metadata_store_->DumpFiles(origin);
 }
 
+scoped_ptr<base::ListValue> DriveFileSyncService::DumpDatabase() {
+  // Not implemented (yet).
+  return scoped_ptr<base::ListValue>();
+}
+
 void DriveFileSyncService::SetSyncEnabled(bool enabled) {
   if (sync_enabled_ == enabled)
     return;

@@ -2549,6 +2549,8 @@
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui.h',
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui_handler.cc',
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui_handler.h',
+        'browser/ui/webui/sync_file_system_internals/dump_database_handler.cc',
+        'browser/ui/webui/sync_file_system_internals/dump_database_handler.h',
         'browser/ui/webui/sync_file_system_internals/extension_statuses_handler.cc',
         'browser/ui/webui/sync_file_system_internals/extension_statuses_handler.h',
         'browser/ui/webui/sync_file_system_internals/file_metadata_handler.cc',

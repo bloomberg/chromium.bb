@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
-#include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_service_state.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
 
+class Profile;
 class ProfileSyncServiceBase;
 
 namespace fileapi {
@@ -35,6 +35,7 @@ class FileSystemContext;
 
 namespace sync_file_system {
 
+class LocalFileSyncService;
 class LocalSyncRunner;
 class RemoteSyncRunner;
 class SyncEventObserver;
@@ -60,6 +61,7 @@ class SyncFileSystemService
   SyncServiceState GetSyncServiceState();
   void GetExtensionStatusMap(std::map<GURL, std::string>* status_map);
   void DumpFiles(const GURL& origin, const DumpFilesCallback& callback);
+  scoped_ptr<base::ListValue> DumpDatabase();
 
   // Returns the file |url|'s sync status.
   void GetFileSyncStatus(

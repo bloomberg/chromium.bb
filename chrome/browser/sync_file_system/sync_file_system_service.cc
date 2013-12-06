@@ -324,6 +324,10 @@ void SyncFileSystemService::DumpFiles(const GURL& origin,
                  AsWeakPtr(), origin, callback));
 }
 
+scoped_ptr<base::ListValue> SyncFileSystemService::DumpDatabase() {
+  return remote_service_->DumpDatabase();
+}
+
 void SyncFileSystemService::GetFileSyncStatus(
     const FileSystemURL& url, const SyncFileStatusCallback& callback) {
   DCHECK(local_service_);

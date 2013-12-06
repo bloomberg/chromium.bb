@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/sync_file_system_internals/dump_database_handler.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/extension_statuses_handler.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/file_metadata_handler.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_handler.h"
@@ -31,6 +32,8 @@ content::WebUIDataSource* CreateSyncFileSystemInternalsHTMLSource() {
       "file_metadata.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_FILE_METADATA_JS);
   source->AddResourcePath(
       "sync_service.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_SYNC_SERVICE_JS);
+  source->AddResourcePath(
+      "dump_database.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_DUMP_DATABASE_JS);
   source->AddResourcePath("file.png", IDR_DEFAULT_FAVICON);
   source->AddResourcePath("folder_closed.png", IDR_FOLDER_CLOSED);
   source->SetDefaultResource(IDR_SYNC_FILE_SYSTEM_INTERNALS_MAIN_HTML);
@@ -43,11 +46,13 @@ SyncFileSystemInternalsUI::SyncFileSystemInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(
+      new syncfs_internals::SyncFileSystemInternalsHandler(profile));
+  web_ui->AddMessageHandler(
       new syncfs_internals::ExtensionStatusesHandler(profile));
   web_ui->AddMessageHandler(
       new syncfs_internals::FileMetadataHandler(profile));
   web_ui->AddMessageHandler(
-      new syncfs_internals::SyncFileSystemInternalsHandler(profile));
+      new syncfs_internals::DumpDatabaseHandler(profile));
   content::WebUIDataSource::Add(profile,
                                 CreateSyncFileSystemInternalsHTMLSource());
 }

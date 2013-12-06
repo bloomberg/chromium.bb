@@ -192,6 +192,9 @@ class RemoteFileSyncService {
   // Returns file metadata for |origin|.
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) = 0;
 
+  // Returns the dump of internal database.
+  virtual scoped_ptr<base::ListValue> DumpDatabase() = 0;
+
   // Enables or disables the background sync.
   // Setting this to false should disable the synchronization (and make
   // the service state to REMOTE_SERVICE_DISABLED), while setting this to

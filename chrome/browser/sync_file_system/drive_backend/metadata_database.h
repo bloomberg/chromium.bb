@@ -134,6 +134,9 @@ class MetadataDatabase {
   // Returns all file metadata for the given |app_id|.
   scoped_ptr<base::ListValue> DumpFiles(const std::string& app_id);
 
+  // Returns all database data.
+  scoped_ptr<base::ListValue> DumpDatabase();
+
   // TODO(tzik): Move GetLargestKnownChangeID() to private section, and hide its
   // handling in the class, instead of letting user do.
   //
@@ -225,6 +228,11 @@ class MetadataDatabase {
   // |path| can be NULL.
   // The file path is relative to app-root and have a leading path separator.
   bool BuildPathForTracker(int64 tracker_id, base::FilePath* path) const;
+
+  // Builds the file path for the given tracker for display purpose.
+  // This may return a path ending with '<unknown>' if the given tracker does
+  // not have title information (yet). This may return an empty path.
+  base::FilePath BuildDisplayPathForTracker(const FileTracker& tracker) const;
 
   // Returns false if no registered app exists associated to |app_id|.
   // If |full_path| is active, assigns the tracker of |full_path| to |tracker|.
@@ -413,6 +421,9 @@ class MetadataDatabase {
                        const SyncStatusCallback& callback);
 
   bool HasNewerFileMetadata(const std::string& file_id, int64 change_id);
+
+  scoped_ptr<base::ListValue> DumpTrackers();
+  scoped_ptr<base::ListValue> DumpMetadata();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<leveldb::DB> db_;

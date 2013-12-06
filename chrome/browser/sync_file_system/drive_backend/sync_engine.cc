@@ -239,6 +239,12 @@ scoped_ptr<base::ListValue> SyncEngine::DumpFiles(const GURL& origin) {
   return metadata_database_->DumpFiles(origin.host());
 }
 
+scoped_ptr<base::ListValue> SyncEngine::DumpDatabase() {
+  if (!metadata_database_)
+    return scoped_ptr<base::ListValue>();
+  return metadata_database_->DumpDatabase();
+}
+
 void SyncEngine::SetSyncEnabled(bool enabled) {
   if (sync_enabled_ == enabled)
     return;
