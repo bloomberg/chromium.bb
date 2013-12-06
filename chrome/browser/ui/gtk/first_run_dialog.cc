@@ -135,7 +135,7 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
   if (report_crashes_ &&
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {
     if (GoogleUpdateSettings::SetCollectStatsConsent(true))
-      breakpad::InitCrashReporter();
+      breakpad::InitCrashReporter(std::string());
   } else {
     GoogleUpdateSettings::SetCollectStatsConsent(false);
   }
