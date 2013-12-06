@@ -105,7 +105,7 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   virtual bool HasCapture() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
-  virtual void SetWindowTitle(const string16& title) OVERRIDE;
+  virtual bool SetWindowTitle(const string16& title) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
@@ -276,6 +276,8 @@ private:
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.
   static std::list<XID>* open_windows_;
+
+  string16 window_title_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostX11);
 };

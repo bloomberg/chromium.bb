@@ -1598,6 +1598,63 @@ TEST_F(WidgetTest, SingleWindowClosing) {
   EXPECT_EQ(1, delegate->count());
 }
 
+class WidgetWindowTitleTest : public WidgetTest {
+ protected:
+  void RunTest(bool desktop_native_widget) {
+    Widget* widget = new Widget();  // Destroyed by CloseNow() below.
+    Widget::InitParams init_params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW);
+    widget->Init(init_params);
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+    if (desktop_native_widget)
+      init_params.native_widget = new DesktopNativeWidgetAura(widget);
+#else
+    DCHECK(!desktop_native_widget)
+        << "DesktopNativeWidget does not exist on non-Aura or on ChromeOS.";
+#endif
+
+    internal::NativeWidgetPrivate* native_widget =
+        widget->native_widget_private();
+
+    string16 empty;
+    string16 s1(UTF8ToUTF16("Title1"));
+    string16 s2(UTF8ToUTF16("Title2"));
+    string16 s3(UTF8ToUTF16("TitleLong"));
+
+    // The widget starts with no title, setting empty should not change
+    // anything.
+    EXPECT_FALSE(native_widget->SetWindowTitle(empty));
+    // Setting the title to something non-empty should cause a change.
+    EXPECT_TRUE(native_widget->SetWindowTitle(s1));
+    // Setting the title to something else with the same length should cause a
+    // change.
+    EXPECT_TRUE(native_widget->SetWindowTitle(s2));
+    // Setting the title to something else with a different length should cause
+    // a change.
+    EXPECT_TRUE(native_widget->SetWindowTitle(s3));
+    // Setting the title to the same thing twice should not cause a change.
+    EXPECT_FALSE(native_widget->SetWindowTitle(s3));
+
+    widget->CloseNow();
+  }
+};
+
+TEST_F(WidgetWindowTitleTest, SetWindowTitleChanged_NativeWidget) {
+  // Use the default NativeWidget.
+  bool desktop_native_widget = false;
+  RunTest(desktop_native_widget);
+}
+
+// DesktopNativeWidget does not exist on non-Aura or on ChromeOS.
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+TEST_F(WidgetWindowTitleTest, SetWindowTitleChanged_DesktopNativeWidget) {
+  // Override to use a DesktopNativeWidget.
+  bool desktop_native_widget = true;
+  RunTest(desktop_native_widget);
+}
+#endif  // USE_AURA && !OS_CHROMEOS
+
 // Used by SetTopLevelCorrectly to track calls to OnBeforeWidgetInit().
 class VerifyTopLevelDelegate : public TestViewsDelegate {
  public:

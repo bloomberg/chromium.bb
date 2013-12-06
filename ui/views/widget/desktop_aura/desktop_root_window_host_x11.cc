@@ -520,9 +520,11 @@ bool DesktopRootWindowHostX11::IsAlwaysOnTop() const {
   return is_always_on_top_;
 }
 
-void DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
+bool DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
+  if (window_title_ == title)
+    return false;
+  window_title_ = title;
   std::string utf8str = UTF16ToUTF8(title);
-
   XChangeProperty(xdisplay_,
                   xwindow_,
                   atom_cache_.GetAtom("_NET_WM_NAME"),
@@ -531,12 +533,12 @@ void DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
                   PropModeReplace,
                   reinterpret_cast<const unsigned char*>(utf8str.c_str()),
                   utf8str.size());
-
   // TODO(erg): This is technically wrong. So XStoreName and friends expect
   // this in Host Portable Character Encoding instead of UTF-8, which I believe
   // is Compound Text. This shouldn't matter 90% of the time since this is the
   // fallback to the UTF8 property above.
   XStoreName(xdisplay_, xwindow_, utf8str.c_str());
+  return true;
 }
 
 void DesktopRootWindowHostX11::ClearNativeFocus() {

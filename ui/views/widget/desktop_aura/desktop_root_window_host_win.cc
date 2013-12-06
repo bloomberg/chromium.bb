@@ -325,8 +325,8 @@ bool DesktopRootWindowHostWin::IsAlwaysOnTop() const {
   return message_handler_->IsAlwaysOnTop();
 }
 
-void DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
-  message_handler_->SetTitle(title);
+bool DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
+  return message_handler_->SetTitle(title);
 }
 
 void DesktopRootWindowHostWin::ClearNativeFocus() {

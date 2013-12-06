@@ -807,7 +807,8 @@ void Widget::UpdateWindowTitle() {
   // the native frame is being used, since this also updates the taskbar, etc.
   string16 window_title = widget_delegate_->GetWindowTitle();
   base::i18n::AdjustStringForLocaleDirection(&window_title);
-  native_widget_->SetWindowTitle(window_title);
+  if (!native_widget_->SetWindowTitle(window_title))
+    return;
   non_client_view_->UpdateWindowTitle();
 
   // If the non-client view is rendering its own title, it'll need to relayout
