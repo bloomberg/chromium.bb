@@ -3522,7 +3522,7 @@ void SSLClientSocketNSS::VerifyCT() {
   int result = cert_transparency_verifier_->Verify(
       server_cert_verify_result_.verified_cert,
       std::string(), // SCT list from OCSP response
-      std::string(),  // SCT list from TLS extension
+      core_->state().sct_list_from_tls_extension,
       &ct_verify_result_,
       net_log_);
 
