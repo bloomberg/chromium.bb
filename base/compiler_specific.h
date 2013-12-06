@@ -141,6 +141,10 @@
 #define OVERRIDE override
 #elif defined(__clang__)
 #define OVERRIDE override
+#elif defined(COMPILER_GCC) && __cplusplus >= 201103 && \
+      (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
+// GCC 4.7 supports explicit virtual overrides when C++11 support is enabled.
+#define OVERRIDE override
 #else
 #define OVERRIDE
 #endif
@@ -154,6 +158,10 @@
 // TODO(jered): Change this to "final" when chromium no longer uses MSVC 2010.
 #define FINAL sealed
 #elif defined(__clang__)
+#define FINAL final
+#elif defined(COMPILER_GCC) && __cplusplus >= 201103 && \
+      (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40700
+// GCC 4.7 supports explicit virtual overrides when C++11 support is enabled.
 #define FINAL final
 #else
 #define FINAL
