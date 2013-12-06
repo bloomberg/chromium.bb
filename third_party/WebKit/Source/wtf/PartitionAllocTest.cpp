@@ -618,8 +618,6 @@ TEST(WTF_PartitionAlloc, PartialPages)
     TestShutdown();
 }
 
-#if OS(POSIX)
-
 // Test correct handling if our mapping collides with another.
 TEST(WTF_PartitionAlloc, MappingCollision)
 {
@@ -682,8 +680,6 @@ TEST(WTF_PartitionAlloc, MappingCollision)
 
     TestShutdown();
 }
-
-#endif
 
 } // namespace
 
