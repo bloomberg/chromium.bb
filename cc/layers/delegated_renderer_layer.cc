@@ -76,10 +76,6 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
     delegated_impl->SetFrameData(frame_data_, frame_damage_);
   frame_data_ = NULL;
   frame_damage_ = gfx::RectF();
-
-  // TODO(danakj): The following line needs to be removed. Currently, removal
-  // breaks unit tests.  crbug.com/259090
-  needs_push_properties_ = true;
 }
 
 void DelegatedRendererLayer::ProviderHasNewFrame() {
@@ -131,6 +127,7 @@ bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue,
   if (FrameDataRequiresFilterContext(frame_data_))
     layer_tree_host()->set_needs_filter_context();
 
+  SetNeedsPushProperties();
   return true;
 }
 
