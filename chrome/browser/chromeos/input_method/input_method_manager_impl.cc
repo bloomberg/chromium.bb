@@ -182,6 +182,13 @@ void InputMethodManagerImpl::EnableLayouts(const std::string& language_code,
   }
 
   active_input_method_ids_.swap(layouts);
+
+  // Initialize candidate window controller and widgets such as
+  // candidate window, infolist and mode indicator.  Note, mode
+  // indicator is used by only keyboard layout input methods.
+  if (active_input_method_ids_.size() > 1)
+    MaybeInitializeCandidateWindowController();
+
   ChangeInputMethod(initial_layout);  // you can pass empty |initial_layout|.
 }
 
@@ -537,6 +544,7 @@ bool InputMethodManagerImpl::SwitchToNextInputMethod() {
     DVLOG(1) << "active input method is empty";
     return false;
   }
+
   if (current_input_method_.id().empty()) {
     DVLOG(1) << "current_input_method_ is unknown";
     return false;

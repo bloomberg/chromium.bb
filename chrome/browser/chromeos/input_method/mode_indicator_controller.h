@@ -8,11 +8,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace chromeos {
 namespace input_method {
 
-class ModeIndicatorObserver;
+class ModeIndicatorObserverInterface : public views::WidgetObserver {
+ public:
+  ModeIndicatorObserverInterface() {}
+  virtual ~ModeIndicatorObserverInterface() {}
+
+  virtual void AddModeIndicatorWidget(views::Widget* widget) = 0;
+};
+
 
 // ModeIndicatorController is the controller of ModeIndicatiorDelegateView
 // on the MVC model.
@@ -29,6 +37,12 @@ class ModeIndicatorController
 
   // Notify the focus state to the mode indicator.
   void FocusStateChanged(bool is_focused);
+
+  // Accessor of the widget observer for testing.  The caller keeps the
+  // ownership of the observer object.
+  static void SetModeIndicatorObserverForTesting(
+      ModeIndicatorObserverInterface* observer);
+  static ModeIndicatorObserverInterface* GetModeIndicatorObserverForTesting();
 
  private:
   // InputMethodManager::Observer implementation.
@@ -50,7 +64,7 @@ class ModeIndicatorController
 
   // Observer of the widgets created by BubbleDelegateView.  This is used to
   // close the previous widget when a new widget is created.
-  scoped_ptr<ModeIndicatorObserver> mi_observer_;
+  scoped_ptr<ModeIndicatorObserverInterface> mi_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ModeIndicatorController);
 };

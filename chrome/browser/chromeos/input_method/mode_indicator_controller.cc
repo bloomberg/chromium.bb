@@ -14,16 +14,24 @@
 namespace chromeos {
 namespace input_method {
 
-class ModeIndicatorObserver : public views::WidgetObserver {
+namespace {
+ModeIndicatorObserverInterface* g_mode_indicator_observer_for_testing_ = NULL;
+}  // namespace
+
+class ModeIndicatorObserver : public ModeIndicatorObserverInterface {
  public:
   ModeIndicatorObserver()
     : active_widget_(NULL) {}
 
-  virtual ~ModeIndicatorObserver() {}
+  virtual ~ModeIndicatorObserver() {
+    if (active_widget_)
+      active_widget_->RemoveObserver(this);
+  }
 
   // If other active mode indicator widget is shown, close it immedicately
   // without fading animation.  Then store this widget as the active widget.
-  void UpdateActiveModeIndicator(views::Widget* widget) {
+  virtual void AddModeIndicatorWidget(views::Widget* widget) OVERRIDE {
+    DCHECK(widget);
     if (active_widget_)
       active_widget_->Close();
     active_widget_ = widget;
@@ -62,11 +70,22 @@ void ModeIndicatorController::FocusStateChanged(bool is_focused) {
   is_focused_ = is_focused;
 }
 
+// static
+void ModeIndicatorController::SetModeIndicatorObserverForTesting(
+    ModeIndicatorObserverInterface* observer) {
+  g_mode_indicator_observer_for_testing_ = observer;
+}
+
+// static
+ModeIndicatorObserverInterface*
+ModeIndicatorController::GetModeIndicatorObserverForTesting() {
+  return g_mode_indicator_observer_for_testing_;
+}
+
 void ModeIndicatorController::InputMethodChanged(InputMethodManager* manager,
                                                  bool show_message) {
   if (!show_message)
     return;
-
   ShowModeIndicator();
 }
 
@@ -99,7 +118,12 @@ void ModeIndicatorController::ShowModeIndicator() {
   ModeIndicatorDelegateView* mi_delegate_view =
       new ModeIndicatorDelegateView(cursor_bounds_, short_name);
   views::BubbleDelegateView::CreateBubble(mi_delegate_view);
-  mi_observer_->UpdateActiveModeIndicator(mi_delegate_view->GetWidget());
+
+  views::Widget* mi_widget = mi_delegate_view->GetWidget();
+  if (GetModeIndicatorObserverForTesting())
+    GetModeIndicatorObserverForTesting()->AddModeIndicatorWidget(mi_widget);
+
+  mi_observer_->AddModeIndicatorWidget(mi_widget);
   mi_delegate_view->ShowAndFadeOut();
 }
 
