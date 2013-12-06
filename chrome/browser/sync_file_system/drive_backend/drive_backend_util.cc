@@ -172,7 +172,7 @@ scoped_ptr<google_apis::ResourceEntry> GetOldestCreatedFolderResource(
   scoped_ptr<google_apis::ResourceEntry> oldest;
   for (size_t i = 0; i < candidates.size(); ++i) {
     google_apis::ResourceEntry* entry = candidates[i];
-    if (!entry->is_folder())
+    if (!entry->is_folder() || entry->deleted())
       continue;
 
     if (!oldest || oldest->published_time() > entry->published_time()) {

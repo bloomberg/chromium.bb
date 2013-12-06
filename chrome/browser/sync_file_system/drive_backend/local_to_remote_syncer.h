@@ -96,6 +96,11 @@ class LocalToRemoteSyncer : public SyncTask {
       ScopedVector<google_apis::ResourceEntry> candidates,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> resource_list);
+  void DidUpdateDatabaseForCreateNewFolder(const SyncStatusCallback& callback,
+                                           const std::string& file_id,
+                                           SyncStatusCode status);
+  void DidDetachResourceForCreationConflict(const SyncStatusCallback& callback,
+                                            google_apis::GDataErrorCode error);
 
   bool IsContextReady();
   drive::DriveServiceInterface* drive_service();

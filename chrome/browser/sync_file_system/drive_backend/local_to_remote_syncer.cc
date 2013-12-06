@@ -513,14 +513,10 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
     return;
   }
 
-  // Check if any other browser instance created the folder.
-  // TODO(tzik): Do similar in RegisterAppTask.
   drive_service()->SearchByTitle(
-      entry->title(),
-      remote_parent_folder_tracker_->file_id(),
+      entry->title(), remote_parent_folder_tracker_->file_id(),
       base::Bind(&LocalToRemoteSyncer::DidListFolderForEnsureUniqueness,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
+                 weak_ptr_factory_.GetWeakPtr(), callback,
                  base::Passed(ScopedVector<google_apis::ResourceEntry>())));
 }
 
@@ -551,19 +547,56 @@ void LocalToRemoteSyncer::DidListFolderForEnsureUniqueness(
     return;
   }
 
+  ScopedVector<google_apis::FileResource> files;
+  files.reserve(candidates.size());
+  for (size_t i = 0; i < candidates.size(); ++i) {
+    files.push_back(drive::util::ConvertResourceEntryToFileResource(
+        *candidates[i]).release());
+  }
+
   scoped_ptr<google_apis::ResourceEntry> oldest =
       GetOldestCreatedFolderResource(candidates.Pass());
-  if (!oldest) {
-    callback.Run(SYNC_STATUS_FAILED);
+  std::string file_id = oldest->resource_id();
+
+  metadata_database()->UpdateByFileResourceList(
+      files.Pass(),
+      base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForCreateNewFolder,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, file_id));
+}
+
+void LocalToRemoteSyncer::DidUpdateDatabaseForCreateNewFolder(
+    const SyncStatusCallback& callback,
+    const std::string& file_id,
+    SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
-  DCHECK(oldest);
-  // TODO(tzik): Delete all remote resource but |oldest|.
-  metadata_database()->ReplaceActiveTrackerWithNewResource(
-      remote_parent_folder_tracker_->tracker_id(),
-      *drive::util::ConvertResourceEntryToFileResource(*oldest),
-      callback);
+  if (metadata_database()->TryNoSideEffectActivation(
+          remote_parent_folder_tracker_->tracker_id(),
+          file_id, callback)) {
+    // |callback| will be invoked by MetadataDatabase in this case.
+    return;
+  }
+
+  drive_service()->RemoveResourceFromDirectory(
+      remote_parent_folder_tracker_->file_id(), file_id,
+      base::Bind(&LocalToRemoteSyncer::DidDetachResourceForCreationConflict,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void LocalToRemoteSyncer::DidDetachResourceForCreationConflict(
+    const SyncStatusCallback& callback,
+    google_apis::GDataErrorCode error) {
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    return;
+  }
+
+  callback.Run(SYNC_STATUS_RETRY);
 }
 
 bool LocalToRemoteSyncer::IsContextReady() {

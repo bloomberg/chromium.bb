@@ -1105,6 +1105,11 @@ bool MetadataDatabase::TryNoSideEffectActivation(
         tracker);
   }
   MakeTrackerActive(tracker->tracker_id(), batch.get());
+  tracker->set_dirty(false);
+  dirty_trackers_.erase(tracker);
+  low_priority_dirty_trackers_.erase(tracker);
+  PutTrackerToBatch(*tracker, batch.get());
+
   WriteToDatabase(batch.Pass(), callback);
   return true;
 }

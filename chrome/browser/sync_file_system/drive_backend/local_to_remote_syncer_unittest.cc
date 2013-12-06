@@ -460,7 +460,36 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateDeleteOnFile) {
   EXPECT_NE(file_id, entries[0]->resource_id());
 }
 
-// TODO(nhiroki): Add folder-folder conflict (reusing remote folder) case.
+TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFolder) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  const std::string folder_id = CreateRemoteFolder(app_root, "foo");
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY),
+      URL(kOrigin, "foo")));
+
+  ScopedVector<google_apis::ResourceEntry> entries =
+      GetResourceEntriesForParentAndTitle(app_root, "foo");
+  ASSERT_EQ(2u, entries.size());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FOLDER, entries[0]->kind());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FOLDER, entries[1]->kind());
+  EXPECT_TRUE(!entries[0]->deleted());
+  EXPECT_TRUE(!entries[1]->deleted());
+  EXPECT_TRUE(folder_id == entries[0]->resource_id() ||
+              folder_id == entries[1]->resource_id());
+
+  TrackerSet trackers;
+  EXPECT_TRUE(GetMetadataDatabase()->FindTrackersByFileID(
+      folder_id, &trackers));
+  EXPECT_EQ(1u, trackers.size());
+  ASSERT_TRUE(trackers.has_active());
+}
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
