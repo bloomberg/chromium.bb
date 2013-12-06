@@ -2839,36 +2839,6 @@ WebGLRenderingContextResource.prototype = {
             wrapFunctions["createRenderbuffer"] = Resource.WrapFunction.resourceFactoryMethod(WebGLRenderbufferResource, "WebGLRenderbuffer");
             wrapFunctions["getUniformLocation"] = Resource.WrapFunction.resourceFactoryMethod(WebGLUniformLocationResource, "WebGLUniformLocation");
 
-            /**
-             * @param {string} methodName
-             * @param {function(this:Resource, !Call)=} pushCallFunc
-             */
-            function stateModifyingWrapFunction(methodName, pushCallFunc)
-            {
-                if (pushCallFunc) {
-                    /**
-                     * @param {Object|number} target
-                     * @this Resource.WrapFunction
-                     */
-                    wrapFunctions[methodName] = function(target)
-                    {
-                        var resource = this._resource.currentBinding(target);
-                        if (resource)
-                            pushCallFunc.call(resource, this.call());
-                    }
-                } else {
-                    /**
-                     * @param {Object|number} target
-                     * @this Resource.WrapFunction
-                     */
-                    wrapFunctions[methodName] = function(target)
-                    {
-                        var resource = this._resource.currentBinding(target);
-                        if (resource)
-                            resource.pushCall(this.call());
-                    }
-                }
-            }
             stateModifyingWrapFunction("bindAttribLocation");
             stateModifyingWrapFunction("compileShader");
             stateModifyingWrapFunction("detachShader");
@@ -2988,6 +2958,38 @@ WebGLRenderingContextResource.prototype = {
 
             WebGLRenderingContextResource._wrapFunctions = wrapFunctions;
         }
+
+        /**
+         * @param {string} methodName
+         * @param {function(this:Resource, !Call)=} pushCallFunc
+         */
+        function stateModifyingWrapFunction(methodName, pushCallFunc)
+        {
+            if (pushCallFunc) {
+                /**
+                 * @param {Object|number} target
+                 * @this Resource.WrapFunction
+                 */
+                wrapFunctions[methodName] = function(target)
+                {
+                    var resource = this._resource.currentBinding(target);
+                    if (resource)
+                        pushCallFunc.call(resource, this.call());
+                }
+            } else {
+                /**
+                 * @param {Object|number} target
+                 * @this Resource.WrapFunction
+                 */
+                wrapFunctions[methodName] = function(target)
+                {
+                    var resource = this._resource.currentBinding(target);
+                    if (resource)
+                        resource.pushCall(this.call());
+                }
+            }
+        }
+
         return wrapFunctions;
     },
 
@@ -3382,27 +3384,6 @@ CanvasRenderingContext2DResource.prototype = {
             wrapFunctions["createRadialGradient"] = Resource.WrapFunction.resourceFactoryMethod(LogEverythingResource, "CanvasGradient");
             wrapFunctions["createPattern"] = Resource.WrapFunction.resourceFactoryMethod(LogEverythingResource, "CanvasPattern");
 
-            /**
-             * @param {string} methodName
-             * @param {function(this:Resource, !Call)=} func
-             */
-            function stateModifyingWrapFunction(methodName, func)
-            {
-                if (func) {
-                    /** @this Resource.WrapFunction */
-                    wrapFunctions[methodName] = function()
-                    {
-                        func.call(this._resource, this.call());
-                    }
-                } else {
-                    /** @this Resource.WrapFunction */
-                    wrapFunctions[methodName] = function()
-                    {
-                        this._resource.pushCall(this.call());
-                    }
-                }
-            }
-
             for (var i = 0, methodName; methodName = CanvasRenderingContext2DResource.TransformationMatrixMethods[i]; ++i)
                 stateModifyingWrapFunction(methodName, methodName === "setTransform" ? this.pushCall_setTransform : undefined);
             for (var i = 0, methodName; methodName = CanvasRenderingContext2DResource.PathMethods[i]; ++i)
@@ -3414,6 +3395,28 @@ CanvasRenderingContext2DResource.prototype = {
 
             CanvasRenderingContext2DResource._wrapFunctions = wrapFunctions;
         }
+
+        /**
+         * @param {string} methodName
+         * @param {function(this:Resource, !Call)=} func
+         */
+        function stateModifyingWrapFunction(methodName, func)
+        {
+            if (func) {
+                /** @this Resource.WrapFunction */
+                wrapFunctions[methodName] = function()
+                {
+                    func.call(this._resource, this.call());
+                }
+            } else {
+                /** @this Resource.WrapFunction */
+                wrapFunctions[methodName] = function()
+                {
+                    this._resource.pushCall(this.call());
+                }
+            }
+        }
+
         return wrapFunctions;
     },
 
