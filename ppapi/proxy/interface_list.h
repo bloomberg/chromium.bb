@@ -85,7 +85,6 @@ class InterfaceList {
 
   // Old-style add functions. These should be removed when the rest of the
   // proxies are converted over to using the new system.
-  void AddPPB(const InterfaceProxy::Info* info, Permission perm);
   void AddPPP(const InterfaceProxy::Info* info);
 
   PpapiPermissions permissions_;

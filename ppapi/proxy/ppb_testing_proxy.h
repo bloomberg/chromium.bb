@@ -25,7 +25,7 @@ class PPB_Testing_Proxy : public InterfaceProxy {
   PPB_Testing_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Testing_Proxy();
 
-  static const Info* GetInfo();
+  static const PPB_Testing_Private* GetProxyInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

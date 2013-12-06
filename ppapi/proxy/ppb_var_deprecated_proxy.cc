@@ -276,10 +276,6 @@ PP_Var CreateObject(PP_Instance instance,
   return ret_var;
 }
 
-InterfaceProxy* CreateVarDeprecatedProxy(Dispatcher* dispatcher) {
-  return new PPB_Var_Deprecated_Proxy(dispatcher );
-}
-
 }  // namespace
 
 PPB_Var_Deprecated_Proxy::PPB_Var_Deprecated_Proxy(
@@ -297,7 +293,7 @@ PPB_Var_Deprecated_Proxy::~PPB_Var_Deprecated_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Var_Deprecated_Proxy::GetInfo() {
+const PPB_Var_Deprecated* PPB_Var_Deprecated_Proxy::GetProxyInterface() {
   static const PPB_Var_Deprecated var_deprecated_interface = {
     ppapi::PPB_Var_Shared::GetVarInterface1_0()->AddRef,
     ppapi::PPB_Var_Shared::GetVarInterface1_0()->Release,
@@ -314,15 +310,7 @@ const InterfaceProxy::Info* PPB_Var_Deprecated_Proxy::GetInfo() {
     &IsInstanceOf,
     &CreateObject
   };
-
-  static const Info info = {
-    &var_deprecated_interface,
-    PPB_VAR_DEPRECATED_INTERFACE,
-    API_ID_PPB_VAR_DEPRECATED,
-    false,
-    &CreateVarDeprecatedProxy,
-  };
-  return &info;
+  return &var_deprecated_interface;
 }
 
 bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {

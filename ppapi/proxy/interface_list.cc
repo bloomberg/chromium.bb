@@ -248,8 +248,14 @@ InterfaceList::InterfaceList() {
   // PPB (browser) interfaces.
   // Do not add more stuff here, they should be added to interface_list*.h
   // TODO(brettw) remove these.
-  AddPPB(PPB_Instance_Proxy::GetInfoPrivate(), PERMISSION_PRIVATE);
-  AddPPB(PPB_Var_Deprecated_Proxy::GetInfo(), PERMISSION_DEV);
+  AddProxy(API_ID_PPB_INSTANCE_PRIVATE, &ProxyFactory<PPB_Instance_Proxy>);
+  AddPPB(PPB_INSTANCE_PRIVATE_INTERFACE_0_1, API_ID_PPB_INSTANCE_PRIVATE,
+         thunk::GetPPB_Instance_Private_0_1_Thunk(),
+         PERMISSION_PRIVATE);
+
+  AddProxy(API_ID_PPB_VAR_DEPRECATED, &ProxyFactory<PPB_Var_Deprecated_Proxy>);
+  AddPPB(PPB_VAR_DEPRECATED_INTERFACE, API_ID_PPB_VAR_DEPRECATED,
+         PPB_Var_Deprecated_Proxy::GetProxyInterface(), PERMISSION_DEV);
 
   // TODO(tomfinegan): Figure out where to put these once we refactor things
   // to load the PPP interface struct from the PPB interface.
@@ -259,7 +265,9 @@ InterfaceList::InterfaceList() {
          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
          PPP_ContentDecryptor_Private_Proxy::GetProxyInterface());
 #endif
-  AddPPB(PPB_Testing_Proxy::GetInfo(), PERMISSION_TESTING);
+  AddProxy(API_ID_PPB_TESTING, &ProxyFactory<PPB_Testing_Proxy>);
+  AddPPB(PPB_TESTING_PRIVATE_INTERFACE, API_ID_PPB_TESTING,
+         PPB_Testing_Proxy::GetProxyInterface(), PERMISSION_TESTING);
 
   // PPP (plugin) interfaces.
   // TODO(brettw) move these to interface_list*.h
@@ -375,11 +383,6 @@ void InterfaceList::AddPPP(const char* name,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
   name_to_plugin_info_[name] = InterfaceInfo(id, iface, PERMISSION_NONE);
-}
-
-void InterfaceList::AddPPB(const InterfaceProxy::Info* info, Permission perm) {
-  AddProxy(info->id, info->create_proxy);
-  AddPPB(info->name, info->id, info->interface_ptr, perm);
 }
 
 void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {

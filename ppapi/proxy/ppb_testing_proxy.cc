@@ -139,10 +139,6 @@ const PPB_Testing_Private testing_interface = {
   &SetMinimumArrayBufferSizeForShmem
 };
 
-InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher) {
-  return new PPB_Testing_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPB_Testing_Proxy::PPB_Testing_Proxy(Dispatcher* dispatcher)
@@ -158,15 +154,8 @@ PPB_Testing_Proxy::~PPB_Testing_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Testing_Proxy::GetInfo() {
-  static const Info info = {
-    &testing_interface,
-    PPB_TESTING_PRIVATE_INTERFACE,
-    API_ID_PPB_TESTING,
-    false,
-    &CreateTestingProxy,
-  };
-  return &info;
+const PPB_Testing_Private* PPB_Testing_Proxy::GetProxyInterface() {
+  return &testing_interface;
 }
 
 bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {

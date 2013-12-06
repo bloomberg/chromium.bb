@@ -28,7 +28,7 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
   explicit PPB_Var_Deprecated_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Var_Deprecated_Proxy();
 
-  static const Info* GetInfo();
+  static const PPB_Var_Deprecated* GetProxyInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
