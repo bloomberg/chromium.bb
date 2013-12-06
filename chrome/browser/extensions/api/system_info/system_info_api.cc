@@ -89,6 +89,7 @@ SystemInfoEventRouter* SystemInfoEventRouter::GetInstance() {
 
 SystemInfoEventRouter::SystemInfoEventRouter() {
   StorageMonitor::GetInstance()->AddObserver(this);
+  StorageMonitor::GetInstance()->EnsureInitialized(base::Closure());
 }
 
 SystemInfoEventRouter::~SystemInfoEventRouter() {
