@@ -13,39 +13,19 @@ namespace content {
 class NavigationControllerImpl;
 class NavigatorDelegate;
 
-// This class is responsible for performing navigations in a node of the
-// FrameTree. Its lifetime is bound to all FrameTreeNode objects that are
-// using it and will be released once all nodes that use it are freed.
-// The Navigator is bound to a single frame tree and cannot be used by multiple
-// instances of FrameTree.
+// Implementations of this interface are responsible for performing navigations
+// in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
+// objects that are using it and will be released once all nodes that use it are
+// freed. The Navigator is bound to a single frame tree and cannot be used by
+// multiple instances of FrameTree.
 // TODO(nasko): Move all navigation methods, such as didStartProvisionalLoad
-// from WebContentsImpl to this class.
+// from WebContentsImpl to this interface.
 class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
  public:
-  Navigator(NavigationControllerImpl* nav_controller,
-            NavigatorDelegate* delegate);
 
-  NavigationControllerImpl* controller() {
-    return controller_;
-  }
-
-  NavigatorDelegate* delegate() {
-    return delegate_;
-  }
-
- private:
+ protected:
   friend class base::RefCounted<Navigator>;
   virtual ~Navigator() {}
-
-  // The NavigationController that will keep track of session history for all
-  // RenderFrameHost objects using this Navigator.
-  // TODO(nasko): Move ownership of the NavigationController from
-  // WebContentsImpl to this class.
-  NavigationControllerImpl* controller_;
-
-  // Used to notify the object embedding this Navigator about navigation
-  // events. Can be NULL in tests.
-  NavigatorDelegate* delegate_;
 };
 
 }  // namespace content

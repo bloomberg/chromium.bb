@@ -50,7 +50,6 @@ class DownloadItem;
 class InterstitialPageImpl;
 class JavaBridgeDispatcherHostManager;
 class JavaScriptDialogManager;
-class Navigator;
 class PowerSaveBlocker;
 class RenderViewHost;
 class RenderViewHostDelegateView;

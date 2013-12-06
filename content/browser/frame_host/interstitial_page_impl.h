@@ -23,7 +23,6 @@
 namespace content {
 class NavigationEntry;
 class NavigationControllerImpl;
-class Navigator;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class WebContentsView;
