@@ -47,9 +47,6 @@ public:
 
     unsigned length() const;
     SerializedScriptValue* state();
-    void back();
-    void forward();
-    void go(int distance);
 
     void back(ExecutionContext*);
     void forward(ExecutionContext*);
