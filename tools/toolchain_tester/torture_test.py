@@ -53,18 +53,21 @@ def standard_tests(context, config, exclude, extra_args):
   except buildbot_lib.StepFailed:
     return 1
 
-def eh_tests(context, config, exclude, extra_args):
+def eh_tests(context, config, exclude, extra_args, use_sjlj_eh):
   # TODO: toolchain_tester.py runnable as a library?
   command = ['tools/toolchain_tester/toolchain_tester.py',
              '--exclude=tools/toolchain_tester/' + exclude,
              '--exclude=tools/toolchain_tester/unsuitable_dejagnu_tests.txt',
              '--config=' + config]
   if 'pnacl' in config:
-    command.append('--append=CFLAGS:--pnacl-allow-exceptions')
-    command.append('--append=FINALIZE_FLAGS:--no-finalize')
-    command.append('--append=TRANSLATE_FLAGS:--pnacl-allow-exceptions')
-    command.append('--append=TRANSLATE_FLAGS:--allow-llvm-bitcode-input')
     command.append('--append_file=tools/toolchain_tester/extra_flags_pnacl.txt')
+    if use_sjlj_eh:
+      command.append('--append=CFLAGS:--pnacl-exceptions=sjlj')
+    else:
+      command.append('--append=CFLAGS:--pnacl-allow-exceptions')
+      command.append('--append=FINALIZE_FLAGS:--no-finalize')
+      command.append('--append=TRANSLATE_FLAGS:--pnacl-allow-exceptions')
+      command.append('--append=TRANSLATE_FLAGS:--allow-llvm-bitcode-input')
   command.extend(extra_args)
   command.extend(glob.glob(os.path.join(TEST_PATH_CPP, 'eh', '*.C')))
   print command
@@ -92,15 +95,26 @@ def run_torture(status, compiler, platform, extra_args):
     optmodes = ['O0', 'O3']
   for optmode in optmodes:
     # TODO: support an option like -k? For now, always keep going
-    retcode = eh_tests(status.context,
-                      '_'.join((config_map[compiler], platform, optmode)),
-                      'known_eh_failures_' + compiler + '.txt', extra_args)
-    if retcode:
-      failures.append(optmode + ' eh')
+    config = '_'.join((config_map[compiler], platform, optmode))
 
+    # Test zero-cost C++ exception handling.
+    retcode = eh_tests(status.context, config,
+                       'known_eh_failures_' + compiler + '.txt', extra_args,
+                       use_sjlj_eh=False)
+    if retcode:
+      failures.append(optmode + ' zerocost eh')
+
+    # Test SJLJ C++ exception handling.
+    if compiler == 'pnacl':
+      retcode = eh_tests(status.context, config,
+                         'known_eh_failures_' + compiler + '.txt', extra_args,
+                         use_sjlj_eh=True)
+      if retcode:
+        failures.append(optmode + ' sjlj eh')
+
+    # Run the normal (non-exception-handling) tests.
     retcode = standard_tests(
-        status.context,
-        '_'.join((config_map[compiler], platform, optmode)),
+        status.context, config,
         'known_failures_' + compiler + '.txt', extra_args)
     if retcode:
       failures.append(optmode + ' standard')

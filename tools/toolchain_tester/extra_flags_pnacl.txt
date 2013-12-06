@@ -21,7 +21,6 @@
 20060420-1.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-1.C,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-2.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
-simd-3.C,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-4.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-5.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-6.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input

@@ -12,6 +12,10 @@ init-temp1.C
 # uncaughtExceptions seems different.
 uncaught1.C
 
+# simd-3.C causes an error in the ABI simplification passes because it
+# uses "volatile" on a vector type.
+simd-3.C
+
 # ======================================================================
 # NOTE: the tests below fail on a regular gcc as well
 # ======================================================================
