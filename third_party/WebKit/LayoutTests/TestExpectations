@@ -977,3 +977,5 @@ crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failu
 crbug.com/323915 svg/animations/repeatn-remove-add-animation.html [ Failure ]
 crbug.com/305216 fast/table/table-with-border-radius.html [ NeedsRebaseline ]
 crbug.com/305216 fast/table/border-radius-with-image.html [ NeedsRebaseline ]
+
+crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure ]
