@@ -64,12 +64,6 @@ cr.define('options', function() {
       urlField.addEventListener('blur', function(event) {
         self.autocompleteList_.detach();
       });
-
-      // Text fields may change widths and positions when the window changes
-      // size, so make sure the suggestion list stays in sync.
-      window.addEventListener('resize', function() {
-        self.autocompleteList_.syncWidthAndPositionToInput();
-      });
     },
 
     /** @override */

@@ -173,6 +173,14 @@ cr.define('cr.ui', function() {
 
       input.addEventListener('keydown', this.textFieldKeyHandler_, true);
       input.addEventListener('input', this.textFieldInputHandler_);
+
+      if (!this.boundSyncWidthAndPositionToInput_) {
+        this.boundSyncWidthAndPositionToInput_ =
+            this.syncWidthAndPositionToInput.bind(this);
+      }
+      // We need to call syncWidthAndPositionToInput whenever page zoom level or
+      // page size is changed.
+      window.addEventListener('resize', this.boundSyncWidthAndPositionToInput_);
     },
 
     /**
@@ -187,6 +195,10 @@ cr.define('cr.ui', function() {
       input.removeEventListener('input', this.textFieldInputHandler_);
       this.targetInput_ = null;
       this.suggestions = [];
+      if (this.boundSyncWidthAndPositionToInput_) {
+        window.removeEventListener(
+            'resize', this.boundSyncWidthAndPositionToInput_);
+      }
     },
 
     /**
@@ -201,6 +213,13 @@ cr.define('cr.ui', function() {
         cr.ui.positionPopupAroundElement(input, this, cr.ui.AnchorType.BELOW);
       }
     },
+
+    /**
+     * syncWidthAndPositionToInput function bound to |this|.
+     * @type {Function}
+     * @private
+     */
+    boundSyncWidthAndPositionToInput_: undefined,
 
     /**
      * @return {HTMLElement} The text field the autocomplete popup is currently
