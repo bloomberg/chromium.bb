@@ -542,6 +542,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       Print(browser_);
       break;
     case IDC_ADVANCED_PRINT:
+      content::RecordAction(content::UserMetricsAction("Accel_Advanced_Print"));
       AdvancedPrint(browser_);
       break;
     case IDC_PRINT_TO_DESTINATION:
@@ -628,18 +629,23 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
     // Focus various bits of UI
     case IDC_FOCUS_TOOLBAR:
+      content::RecordAction(content::UserMetricsAction("Accel_Focus_Toolbar"));
       FocusToolbar(browser_);
       break;
     case IDC_FOCUS_LOCATION:
+      content::RecordAction(content::UserMetricsAction("Accel_Focus_Location"));
       FocusLocationBar(browser_);
       break;
     case IDC_FOCUS_SEARCH:
+      content::RecordAction(content::UserMetricsAction("Accel_Focus_Search"));
       FocusSearch(browser_);
       break;
     case IDC_FOCUS_MENU_BAR:
       FocusAppMenu(browser_);
       break;
     case IDC_FOCUS_BOOKMARKS:
+      content::RecordAction(
+          content::UserMetricsAction("Accel_Focus_Bookmarks"));
       FocusBookmarksToolbar(browser_);
       break;
     case IDC_FOCUS_INFOBARS:
