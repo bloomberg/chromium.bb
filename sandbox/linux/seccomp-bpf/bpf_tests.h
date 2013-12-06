@@ -10,9 +10,9 @@
 #include <sys/types.h>
 
 #include "build/build_config.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/services/build_config_functions.h"
+#include "build/build_config_functions.h"
 #include "sandbox/linux/tests/unit_tests.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
 namespace sandbox {
 
