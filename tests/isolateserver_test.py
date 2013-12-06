@@ -1042,8 +1042,11 @@ class TestArchive(TestCase):
       # TODO(maruel): The problem here is that the test depends on the file mode
       # of the files in this directory.
       # Fix is to copy the files in a temporary directory with known file modes.
+      #
+      # If you modify isolateserver.ISOLATED_FILE_VERSION, you'll have to update
+      # the hash below. Sorry about that.
       self.checkOutput(
-          '0e74bdc7dd57ca7694f2d68f1b38c007a2311209 %s\n' % p,
+          '650c96bf4150c842a081683580f92d5735b78ce2 %s\n' % p,
           '')
     finally:
       os.chdir(old_cwd)

@@ -64,7 +64,7 @@ class IsolateTest(IsolateBase):
       'child_isolated_files': [],
       'config_variables': {},
       'command': [],
-      'command_variables': {},
+      'extra_variables': {},
       'files': {},
       'isolate_file': 'fake.isolate',
       'path_variables': {},
@@ -78,11 +78,11 @@ class IsolateTest(IsolateBase):
     # not read.
     open(os.path.join(self.cwd, 'fake.isolate'), 'wb').close()
     values = {
-      'command_variables': {
-        'foo': 42,
-      },
       'config_variables': {
         'OS': isolate.get_flavor(),
+      },
+      'extra_variables': {
+        'foo': 42,
       },
       'isolate_file': 'fake.isolate',
     }
@@ -90,11 +90,11 @@ class IsolateTest(IsolateBase):
       'algo': 'sha-1',
       'child_isolated_files': [],
       'command': [],
-      'command_variables': {
-        'foo': 42,
-      },
       'config_variables': {
         'OS': isolate.get_flavor(),
+      },
+      'extra_variables': {
+        'foo': 42,
       },
       'files': {},
       'isolate_file': 'fake.isolate',
@@ -928,7 +928,6 @@ class IsolateTest(IsolateBase):
     parser.require_isolated = False
     expected_path = {
       'Baz': 'sub=string',
-      'EXECUTABLE_SUFFIX': '.exe' if isolate.get_flavor() == 'win' else '',
     }
     expected_config = {
       'Foo': 'bar',
@@ -936,15 +935,16 @@ class IsolateTest(IsolateBase):
     }
     expected_extra = {
       'biz': 'b uz=a',
+      'EXECUTABLE_SUFFIX': '.exe' if isolate.get_flavor() == 'win' else '',
     }
 
     options, args = parser.parse_args(
         ['--config-variable', 'Foo', 'bar',
           '--path-variable', 'Baz=sub=string',
-          '--command-variable', 'biz', 'b uz=a'])
+          '--extra-variable', 'biz', 'b uz=a'])
     self.assertEqual(expected_path, options.path_variables)
     self.assertEqual(expected_config, options.config_variables)
-    self.assertEqual(expected_extra, options.command_variables)
+    self.assertEqual(expected_extra, options.extra_variables)
     self.assertEqual([], args)
 
   def test_variable_arg_fail(self):
@@ -1010,7 +1010,7 @@ class IsolateLoad(IsolateBase):
       isolate = isolate_file
       path_variables = {}
       config_variables = {'OS': OS, 'chromeos': chromeos_value}
-      command_variables = {'foo': 'bar'}
+      extra_variables = {'foo': 'bar'}
       ignore_broken_items = False
     return Options()
 
@@ -1087,12 +1087,12 @@ class IsolateLoad(IsolateBase):
       'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
-      'command_variables': {
-        'foo': 'bar',
-      },
       'config_variables': {
         'OS': isolate.get_flavor(),
         'chromeos': options.config_variables['chromeos'],
+      },
+      'extra_variables': {
+        'foo': 'bar',
       },
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
@@ -1151,12 +1151,12 @@ class IsolateLoad(IsolateBase):
       'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
-      'command_variables': {
-        'foo': 'bar',
-      },
       'config_variables': {
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
+      },
+      'extra_variables': {
+        'foo': 'bar',
       },
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
@@ -1220,12 +1220,12 @@ class IsolateLoad(IsolateBase):
       'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
-      'command_variables': {
-        'foo': 'bar',
-      },
       'config_variables': {
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
+      },
+      'extra_variables': {
+        'foo': 'bar',
       },
       'files': {
         os.path.join(u'tests', 'isolate', 'touch_root.py'): {
@@ -1299,12 +1299,12 @@ class IsolateLoad(IsolateBase):
       'algo': 'sha-1',
       'child_isolated_files': [],
       'command': ['python', 'touch_root.py'],
-      'command_variables': {
-        'foo': 'bar',
-      },
       'config_variables': {
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
+      },
+      'extra_variables': {
+        'foo': 'bar',
       },
       'files': {
         u'isolate.py': {
@@ -1388,12 +1388,12 @@ class IsolateLoad(IsolateBase):
       'algo': 'sha-1',
       'child_isolated_files': [],
       'command': [],
-      'command_variables': {
-        'foo': 'bar',
-      },
       'config_variables': {
         'OS': isolate.get_flavor(),
         'chromeos': chromeos_value,
+      },
+      'extra_variables': {
+        'foo': 'bar',
       },
       'files': {
         os.path.join(u'tests', 'isolate', 'files1', 'subdir', '42.txt'): {
@@ -1517,11 +1517,11 @@ class IsolateLoad(IsolateBase):
         isolated_base[:-len('.isolated')] + '.1.isolated',
       ],
       u'command': [u'python', u'split.py'],
-      u'command_variables': {
-        u'foo': u'bar',
-      },
       u'config_variables': {
         u'OS': unicode(isolate.get_flavor()),
+      },
+      u'extra_variables': {
+        u'foo': u'bar',
       },
       u'files': {
         os.path.join(u'files1', 'subdir', '42.txt'): {
@@ -1619,7 +1619,7 @@ class IsolateCommand(IsolateBase):
       actual_isolated = f.read()
     expected_isolated = (
         '{"algo":"sha-1","command":["foo"],"files":{},"os":"dendy",'
-        '"relative_cwd":".","version":"1.1"}')
+        '"relative_cwd":".","version":"1.2"}')
     self.assertEqual(expected_isolated, actual_isolated)
     isolated_data = json.loads(actual_isolated)
 
@@ -1627,9 +1627,10 @@ class IsolateCommand(IsolateBase):
       actual_isolated_state = f.read()
     expected_isolated_state = (
         '{"algo":"sha-1","child_isolated_files":[],"command":["foo"],'
-        '"command_variables":{},"config_variables":{"OS":"dendy"},"files":{},'
-        '"isolate_file":"x.isolate","path_variables":{"EXECUTABLE_SUFFIX":""},'
-        '"relative_cwd":".","version":"1.1"}')
+        '"config_variables":{"OS":"dendy"},'
+        '"extra_variables":{"EXECUTABLE_SUFFIX":""},"files":{},'
+        '"isolate_file":"x.isolate","path_variables":{},'
+        '"relative_cwd":".","version":"1.2"}')
     self.assertEqual(expected_isolated_state, actual_isolated_state)
     isolated_state_data = json.loads(actual_isolated_state)
 

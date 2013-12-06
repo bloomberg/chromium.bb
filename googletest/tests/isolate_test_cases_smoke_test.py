@@ -96,7 +96,7 @@ class IsolateTestCases(unittest.TestCase):
     cmd = [
       sys.executable, 'isolate.py',
       'check',
-      '--command-variable', 'FLAG', 'run',
+      '--extra-variable', 'FLAG', 'run',
       '--isolate', os.path.join(self.tempdir, gtest_fake_pass_isolate),
       '--isolated', isolated,
     ]

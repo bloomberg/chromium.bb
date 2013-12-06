@@ -265,24 +265,24 @@ class IsolateModeBase(IsolateBase):
       u'algo': u'sha-1',
       u'child_isolated_files': [],
       u'command': [],
-      u'command_variables': {},
       u'config_variables': {
         u'OS': unicode(flavor),
         u'chromeos': chromeos_value,
+      },
+      u'extra_variables': {
+        u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',
       },
       u'files': self._gen_files(read_only, empty_file, True),
       u'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(unicode(self.filename())),
           unicode(os.path.dirname(self.isolated))),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'path_variables': {
-        u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',
-      },
+      u'path_variables': {},
       u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-    expected['command_variables'].update(extra_vars or {})
+    expected['extra_variables'].update(extra_vars or {})
     self.assertEqual(expected, json.load(open(self.saved_state(), 'r')))
 
   def _expect_results(self, args, read_only, extra_vars, empty_file):
@@ -482,7 +482,7 @@ class Isolate_check(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'check', 'touch_only.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        'check', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
@@ -495,7 +495,7 @@ class Isolate_check(IsolateModeBase):
 
   def test_with_flag(self):
     self._execute(
-        'check', 'with_flag.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        'check', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     self._expect_no_tree()
     self._expect_results(
@@ -614,7 +614,7 @@ class Isolate_archive(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'archive', 'touch_only.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        'archive', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_hash_tree(empty)
@@ -627,7 +627,7 @@ class Isolate_archive(IsolateModeBase):
 
   def test_with_flag(self):
     self._execute(
-        'archive', 'with_flag.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        'archive', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     self._expected_hash_tree(None)
     self._expect_results(
@@ -694,7 +694,7 @@ class Isolate_remap(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'remap', 'touch_only.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        'remap', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     self._expected_tree()
     empty = os.path.join('files1', 'test_file1.txt')
@@ -708,7 +708,7 @@ class Isolate_remap(IsolateModeBase):
 
   def test_with_flag(self):
     self._execute(
-        'remap', 'with_flag.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        'remap', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     self._expected_tree()
     self._expect_results(
@@ -767,7 +767,7 @@ class Isolate_run(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'run', 'touch_only.isolate', ['--command-variable', 'FLAG', 'run'],
+        'run', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'run'],
         False)
     self._expect_empty_tree()
     empty = os.path.join('files1', 'test_file1.txt')
@@ -781,7 +781,7 @@ class Isolate_run(IsolateModeBase):
 
   def test_with_flag(self):
     self._execute(
-        'run', 'with_flag.isolate', ['--command-variable', 'FLAG', 'run'],
+        'run', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'run'],
         False)
     # Not sure about the empty tree, should be deleted.
     self._expect_empty_tree()
@@ -869,7 +869,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     out = self._execute(
-        'trace', 'touch_only.isolate', ['--command-variable', 'FLAG', 'trace'],
+        'trace', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'trace'],
         True)
     self.assertEqual('', out)
     self._expect_no_tree()
@@ -913,7 +913,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
   @trace_test_util.check_can_trace
   def test_with_flag(self):
     out = self._execute(
-        'trace', 'with_flag.isolate', ['--command-variable', 'FLAG', 'trace'],
+        'trace', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'trace'],
         True)
     self.assertEqual('', out)
     self._expect_no_tree()

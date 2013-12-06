@@ -52,9 +52,6 @@ KEY_UNTRACKED = 'isolate_dependency_untracked'
 
 # Valid variable name.
 VALID_VARIABLE = '[A-Za-z_]+'
-# path variables with this suffix should not be used to reduce the start of the
-# path.
-SUFFIX_PATH_VARIABLE = '_SUFFIX'
 
 
 class ExecutionError(Exception):
@@ -187,11 +184,7 @@ def replace_variable(part, variables):
 
 def _normalize_path_variable(cwd, relative_base_dir, key, value):
   """Normalizes a path variable into a relative directory.
-
-  It skips any variable ending with SUFFIX_PATH_VARIABLE.
   """
-  if key.endswith(SUFFIX_PATH_VARIABLE):
-    return value
   # Variables could contain / or \ on windows. Always normalize to
   # os.path.sep.
   x = os.path.join(cwd, value.strip().replace('/', os.path.sep))
@@ -211,8 +204,6 @@ def normalize_path_variables(cwd, path_variables, relative_base_dir):
 
   For each 'path' variable: first normalizes it based on |cwd|, verifies it
   exists then sets it as relative to relative_base_dir.
-
-  It skips any variable ending with SUFFIX_PATH_VARIABLE.
   """
   logging.info(
       'normalize_path_variables(%s, %s, %s)', cwd, path_variables,
@@ -282,7 +273,7 @@ def classify_files(root_dir, tracked, untracked):
   return variables
 
 
-def chromium_fix(f, path_variables):
+def chromium_fix(f, variables):
   """Fixes an isolate dependency with Chromium-specific fixes."""
   # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
   # separator.
@@ -302,7 +293,7 @@ def chromium_fix(f, path_variables):
 
   EXECUTABLE = re.compile(
       r'^(\<\(PRODUCT_DIR\)\/[^\/\.]+)' +
-      re.escape(path_variables.get('EXECUTABLE_SUFFIX', '')) +
+      re.escape(variables.get('EXECUTABLE_SUFFIX', '')) +
       r'$')
   match = EXECUTABLE.match(f)
   if match:
@@ -331,8 +322,8 @@ def chromium_fix(f, path_variables):
 
 
 def generate_simplified(
-    tracked, untracked, touched, root_dir, path_variables, relative_cwd,
-    trace_blacklist):
+    tracked, untracked, touched, root_dir, path_variables, extra_variables,
+    relative_cwd, trace_blacklist):
   """Generates a clean and complete .isolate 'variables' dictionary.
 
   Cleans up and extracts only files from within root_dir then processes
@@ -340,19 +331,21 @@ def generate_simplified(
   """
   root_dir = os.path.realpath(root_dir)
   logging.info(
-      'generate_simplified(%d files, %s, %s, %s)' %
+      'generate_simplified(%d files, %s, %s, %s, %s)' %
       (len(tracked) + len(untracked) + len(touched),
-        root_dir, path_variables, relative_cwd))
+        root_dir, path_variables, extra_variables, relative_cwd))
 
   # Preparation work.
   relative_cwd = file_path.cleanup_path(relative_cwd)
   assert not os.path.isabs(relative_cwd), relative_cwd
-  def normalize_to_posix(k, v):
-    if not k.endswith(SUFFIX_PATH_VARIABLE):
-      v = v.replace(os.path.sep, '/')
-    return k, v
+
+  # Normalizes to posix path. .isolate files are using posix paths on all OSes
+  # for coherency.
   path_variables = dict(
-      normalize_to_posix(k, v) for k, v in path_variables.iteritems())
+      (k, v.replace(os.path.sep, '/')) for k, v in path_variables.iteritems())
+  # Contains normalized path_variables plus extra_variables.
+  total_variables = path_variables.copy()
+  total_variables.update(extra_variables)
 
   # Actual work: Process the files.
   # TODO(maruel): if all the files in a directory are in part tracked and in
@@ -384,8 +377,6 @@ def generate_simplified(
       # Use the longest value first.
       for key, value in sorted(
           path_variables.iteritems(), key=lambda x: -len(x[1])):
-        if key.endswith(SUFFIX_PATH_VARIABLE):
-          continue
         if f.startswith(value):
           f = '<(%s)%s' % (key, f[len(value):])
           logging.debug('Converted to %s' % f)
@@ -398,7 +389,7 @@ def generate_simplified(
     """
     variables_converted = (fix(f.path) for f in items)
     chromium_fixed = (
-        chromium_fix(f, path_variables) for f in variables_converted)
+        chromium_fix(f, total_variables) for f in variables_converted)
     return set(f for f in chromium_fixed if f)
 
   tracked = fix_all(tracked)
@@ -412,11 +403,11 @@ def generate_simplified(
 
 def generate_isolate(
     tracked, untracked, touched, root_dir, path_variables, config_variables,
-    relative_cwd, trace_blacklist):
+    extra_variables, relative_cwd, trace_blacklist):
   """Generates a clean and complete .isolate file."""
   dependencies = generate_simplified(
-      tracked, untracked, touched, root_dir, path_variables, relative_cwd,
-      trace_blacklist)
+      tracked, untracked, touched, root_dir, path_variables, extra_variables,
+      relative_cwd, trace_blacklist)
   config_variable_names, config_values = zip(
       *sorted(config_variables.iteritems()))
   out = Configs(None)
@@ -1152,11 +1143,12 @@ class SavedState(Flattenable):
     # files are never loaded by isolate.py so it's the only way to load the
     # command safely.
     'command',
-    # GYP variables that will be replaced in 'command'.
-    'command_variables',
     # GYP variables that are used to generate conditions. The most frequent
     # example is 'OS'.
     'config_variables',
+    # GYP variables that will be replaced in 'command' and paths but will not be
+    # considered a relative directory.
+    'extra_variables',
     # Cache of the files found so the next run can skip hash calculation.
     'files',
     # Path of the original .isolate file. Relative path to isolated_basedir.
@@ -1191,8 +1183,8 @@ class SavedState(Flattenable):
     self.algo = isolateserver.SUPPORTED_ALGOS['sha-1']
     self.child_isolated_files = []
     self.command = []
-    self.command_variables = {}
     self.config_variables = {}
+    self.extra_variables = {}
     self.files = {}
     self.isolate_file = None
     self.path_variables = {}
@@ -1201,7 +1193,7 @@ class SavedState(Flattenable):
     self.version = isolateserver.ISOLATED_FILE_VERSION
 
   def update(
-      self, isolate_file, path_variables, config_variables, command_variables):
+      self, isolate_file, path_variables, config_variables, extra_variables):
     """Updates the saved state with new data to keep GYP variables and internal
     reference to the original .isolate file.
     """
@@ -1215,8 +1207,8 @@ class SavedState(Flattenable):
     # .isolated.state.
     assert isolate_file == self.isolate_file or not self.isolate_file, (
         isolate_file, self.isolate_file)
-    self.command_variables.update(command_variables)
     self.config_variables.update(config_variables)
+    self.extra_variables.update(extra_variables)
     self.isolate_file = isolate_file
     self.path_variables.update(path_variables)
 
@@ -1323,7 +1315,7 @@ class SavedState(Flattenable):
     out += '  child_isolated_files: %s\n' % self.child_isolated_files
     out += '  path_variables: %s\n' % dict_to_str(self.path_variables)
     out += '  config_variables: %s\n' % dict_to_str(self.config_variables)
-    out += '  command_variables: %s\n' % dict_to_str(self.command_variables)
+    out += '  extra_variables: %s\n' % dict_to_str(self.extra_variables)
     return out
 
 
@@ -1349,7 +1341,7 @@ class CompleteState(object):
 
   def load_isolate(
       self, cwd, isolate_file, path_variables, config_variables,
-      command_variables, ignore_broken_items):
+      extra_variables, ignore_broken_items):
     """Updates self.isolated and self.saved_state with information loaded from a
     .isolate file.
 
@@ -1360,7 +1352,7 @@ class CompleteState(object):
     isolate_file = file_path.get_native_path_case(isolate_file)
     logging.info(
         'CompleteState.load_isolate(%s, %s, %s, %s, %s, %s)',
-        cwd, isolate_file, path_variables, config_variables, command_variables,
+        cwd, isolate_file, path_variables, config_variables, extra_variables,
         ignore_broken_items)
     relative_base_dir = os.path.dirname(isolate_file)
 
@@ -1369,7 +1361,7 @@ class CompleteState(object):
         cwd, path_variables, relative_base_dir)
     # Update the saved state.
     self.saved_state.update(
-        isolate_file, path_variables, config_variables, command_variables)
+        isolate_file, path_variables, config_variables, extra_variables)
     path_variables = self.saved_state.path_variables
 
     with open(isolate_file, 'r') as f:
@@ -1378,16 +1370,16 @@ class CompleteState(object):
       command, infiles, touched, read_only = load_isolate_for_config(
           os.path.dirname(isolate_file), f.read(),
           self.saved_state.config_variables)
+
     total_variables = self.saved_state.path_variables.copy()
     total_variables.update(self.saved_state.config_variables)
-    total_variables.update(self.saved_state.command_variables)
+    total_variables.update(self.saved_state.extra_variables)
     command = [eval_variables(i, total_variables) for i in command]
-    infiles = [
-        eval_variables(f, self.saved_state.path_variables) for f in infiles
-    ]
-    touched = [
-        eval_variables(f, self.saved_state.path_variables) for f in touched
-    ]
+
+    total_variables = self.saved_state.path_variables.copy()
+    total_variables.update(self.saved_state.extra_variables)
+    infiles = [eval_variables(f, total_variables) for f in infiles]
+    touched = [eval_variables(f, total_variables) for f in touched]
     # root_dir is automatically determined by the deepest root accessed with the
     # form '../../foo/bar'. Note that path variables must be taken in account
     # too, add them as if they were input files.
@@ -1401,8 +1393,6 @@ class CompleteState(object):
     # Now that we know where the root is, check that the path_variables point
     # inside it.
     for k, v in self.saved_state.path_variables.iteritems():
-      if k.endswith(SUFFIX_PATH_VARIABLE):
-        continue
       if not file_path.path_starts_with(
           root_dir, os.path.join(relative_base_dir, v)):
         raise isolateserver.MappingError(
@@ -1576,7 +1566,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
     # Then load the .isolate and expands directories.
     complete_state.load_isolate(
         cwd, isolate, options.path_variables, options.config_variables,
-        options.command_variables, options.ignore_broken_items)
+        options.extra_variables, options.ignore_broken_items)
 
   # Regenerate complete_state.saved_state.files.
   if subdir:
@@ -1621,6 +1611,7 @@ def read_trace_as_isolate_dict(complete_state, trace_blacklist):
         complete_state.root_dir,
         complete_state.saved_state.path_variables,
         complete_state.saved_state.config_variables,
+        complete_state.saved_state.extra_variables,
         complete_state.saved_state.relative_cwd,
         trace_blacklist)
     return value, exceptions
@@ -2049,9 +2040,9 @@ def add_variable_option(parser):
       help=optparse.SUPPRESS_HELP)
   is_win = sys.platform in ('win32', 'cygwin')
   # There is really 3 kind of variables:
-  # - path variables, like DEPTH, PRODUCT_DIR or EXECUTABE_SUFFIX that should be
+  # - path variables, like DEPTH or PRODUCT_DIR that should be
   #   replaced opportunistically when tracing tests.
-  # - extraneous things like .
+  # - extraneous things like EXECUTABE_SUFFIX.
   # - configuration variables that are to be used in deducing the matrix to
   #   reduce.
   # - unrelated variables that are used as command flags for example.
@@ -2070,20 +2061,20 @@ def add_variable_option(parser):
       '--path-variable',
       action='callback',
       callback=_process_variable_arg,
-      default=[('EXECUTABLE_SUFFIX', '.exe' if is_win else '')],
+      default=[],
       dest='path_variables',
       metavar='FOO BAR',
       help='Path variables are used to replace file paths when loading a '
            '.isolate file, default: %default')
   parser.add_option(
-      '--command-variable',
+      '--extra-variable',
       action='callback',
       callback=_process_variable_arg,
-      default=[],
-      dest='command_variables',
+      default=[('EXECUTABLE_SUFFIX', '.exe' if is_win else '')],
+      dest='extra_variables',
       metavar='FOO BAR',
-      help='Extraneous variables are only replaced on the \'command\' entry in '
-           'the .isolate file.')
+      help='Extraneous variables are replaced on the \'command\' entry and on '
+           'paths in the .isolate file but are not considered relative paths.')
 
 
 def add_trace_option(parser):
@@ -2120,7 +2111,7 @@ def parse_variable_option(options):
   options.config_variables = dict(
       (k, try_make_int(v)) for k, v in options.config_variables)
   options.path_variables = dict(options.path_variables)
-  options.command_variables = dict(options.command_variables)
+  options.extra_variables = dict(options.extra_variables)
 
 
 class OptionParserIsolate(tools.OptionParserWithLogging):

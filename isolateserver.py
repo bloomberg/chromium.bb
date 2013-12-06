@@ -35,7 +35,7 @@ from utils import tools
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
 # Version stored and expected in .isolated files.
-ISOLATED_FILE_VERSION = '1.1'
+ISOLATED_FILE_VERSION = '1.2'
 
 
 # The number of files to check the isolate server per /pre-upload query.
