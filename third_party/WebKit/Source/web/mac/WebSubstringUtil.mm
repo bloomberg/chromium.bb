@@ -46,10 +46,10 @@
 #include "core/html/HTMLElement.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/mac/ColorMac.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/fonts/Font.h"
+#include "platform/mac/ColorMac.h"
 #include "public/platform/WebRect.h"
 
 using namespace WebCore;

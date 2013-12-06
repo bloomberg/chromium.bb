@@ -22,10 +22,10 @@
 
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFitToViewBox.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

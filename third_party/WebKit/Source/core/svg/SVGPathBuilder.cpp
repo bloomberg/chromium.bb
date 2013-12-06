@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/svg/SVGPathBuilder.h"
 
-#include "core/platform/graphics/Path.h"
+#include "platform/graphics/Path.h"
 
 namespace WebCore {
 

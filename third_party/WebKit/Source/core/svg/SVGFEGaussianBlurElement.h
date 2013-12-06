@@ -21,9 +21,9 @@
 #ifndef SVGFEGaussianBlurElement_h
 #define SVGFEGaussianBlurElement_h
 
-#include "core/platform/graphics/filters/FEGaussianBlur.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/FEGaussianBlur.h"
 
 namespace WebCore {
 

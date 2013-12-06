@@ -23,10 +23,10 @@
 
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 #include "wtf/TemporaryChange.h"
 

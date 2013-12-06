@@ -24,8 +24,6 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 #include "SVGNames.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/WidthIterator.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
@@ -34,6 +32,8 @@
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGGlyphElement.h"
 #include "platform/fonts/GlyphBuffer.h"
+#include "platform/fonts/WidthIterator.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

@@ -32,9 +32,9 @@
 
 #include "core/platform/DragImage.h"
 
-#include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/Image.h"
+#include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

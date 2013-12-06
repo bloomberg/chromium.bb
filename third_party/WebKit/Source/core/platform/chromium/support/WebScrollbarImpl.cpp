@@ -26,8 +26,8 @@
 
 #include "core/platform/chromium/support/WebScrollbarImpl.h"
 
-#include "core/platform/Scrollbar.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/scroll/Scrollbar.h"
 
 namespace blink {
 

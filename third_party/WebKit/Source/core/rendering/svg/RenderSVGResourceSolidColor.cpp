@@ -23,10 +23,10 @@
 
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

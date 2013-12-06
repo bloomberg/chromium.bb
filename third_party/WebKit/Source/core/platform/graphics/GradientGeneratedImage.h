@@ -27,10 +27,10 @@
 #define GradientGeneratedImage_h
 
 #include "core/platform/graphics/GeneratedImage.h"
-#include "core/platform/graphics/Gradient.h"
-#include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/Gradient.h"
+#include "platform/graphics/Image.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

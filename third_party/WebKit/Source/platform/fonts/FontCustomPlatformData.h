@@ -32,6 +32,7 @@
 #ifndef FontCustomPlatformData_h
 #define FontCustomPlatformData_h
 
+#include "platform/PlatformExport.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "wtf/Forward.h"
@@ -58,7 +59,7 @@ namespace WebCore {
 class FontPlatformData;
 class SharedBuffer;
 
-class FontCustomPlatformData {
+class PLATFORM_EXPORT FontCustomPlatformData {
     WTF_MAKE_NONCOPYABLE(FontCustomPlatformData);
 public:
     static PassOwnPtr<FontCustomPlatformData> create(SharedBuffer*);

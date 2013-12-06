@@ -24,11 +24,11 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/OpaqueRectTrackingContentLayerDelegate.h"
+#include "platform/graphics/OpaqueRectTrackingContentLayerDelegate.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "skia/ext/platform_canvas.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"

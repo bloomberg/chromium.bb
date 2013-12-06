@@ -32,8 +32,8 @@
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/platform/graphics/filters/FilterOperation.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/filters/FilterOperation.h"
 #include "platform/graphics/filters/custom/CustomFilterProgramClient.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"

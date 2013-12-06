@@ -26,9 +26,9 @@
 #include "SkFlattenableBuffers.h"
 #include "SkTileImageFilter.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/Pattern.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/Pattern.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkDevice.h"

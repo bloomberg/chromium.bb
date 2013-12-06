@@ -26,13 +26,13 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/frame/Frame.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "wtf/HashMap.h"
 
 using namespace std;

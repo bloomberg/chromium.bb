@@ -31,11 +31,13 @@
 #ifndef WebLayerClient_h
 #define WebLayerClient_h
 
+#include "WebCommon.h"
+
 namespace blink {
 
 class WebGraphicsLayerDebugInfo;
 
-class WebLayerClient {
+class BLINK_PLATFORM_EXPORT WebLayerClient {
 public:
     virtual WebString debugName(WebLayer*) = 0;
 

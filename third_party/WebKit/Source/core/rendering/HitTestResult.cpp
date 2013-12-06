@@ -40,9 +40,9 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/platform/Scrollbar.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderTextFragment.h"
+#include "platform/scroll/Scrollbar.h"
 
 namespace WebCore {
 

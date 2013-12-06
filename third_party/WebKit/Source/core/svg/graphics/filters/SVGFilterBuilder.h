@@ -21,7 +21,7 @@
 #ifndef SVGFilterBuilder_h
 #define SVGFilterBuilder_h
 
-#include "core/platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"

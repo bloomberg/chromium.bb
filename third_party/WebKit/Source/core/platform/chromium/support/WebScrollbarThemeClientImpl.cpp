@@ -26,7 +26,7 @@
 #include "config.h"
 
 #include "core/platform/chromium/support/WebScrollbarThemeClientImpl.h"
-#include "core/platform/ScrollbarTheme.h"
+#include "platform/scroll/ScrollbarTheme.h"
 
 using blink::WebScrollbar;
 

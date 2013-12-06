@@ -31,7 +31,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/graphics/Image.h"
+#include "platform/graphics/Image.h"
 
 namespace WebCore {
 

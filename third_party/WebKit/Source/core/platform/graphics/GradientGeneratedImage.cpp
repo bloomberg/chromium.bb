@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/platform/graphics/GradientGeneratedImage.h"
 
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace WebCore {
 

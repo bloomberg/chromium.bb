@@ -29,7 +29,6 @@
 
 #include "core/rendering/svg/RenderSVGShape.h"
 
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/LayoutRectRecorder.h"
@@ -43,6 +42,7 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

@@ -35,7 +35,7 @@
 
 #include <algorithm>
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "platform/geometry/FloatSize.h"
 #else
 #include <cmath>
@@ -63,7 +63,7 @@ struct WebFloatSize {
     {
     }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     WebFloatSize(const WebCore::FloatSize& s)
         : width(s.width())
         , height(s.height())

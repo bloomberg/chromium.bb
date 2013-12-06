@@ -44,7 +44,7 @@
                 '../Source/web/web.gyp:webkit',
                 '../Source/platform/blink_platform.gyp:blink_platform',
                 'blink_minimal',
-            ]
+            ],
         },
         {
             # This target provides a minimal set of Blink APIs such as WebString to use in

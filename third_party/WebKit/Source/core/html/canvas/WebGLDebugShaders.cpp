@@ -29,7 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/canvas/WebGLShader.h"
-#include "core/platform/graphics/Extensions3D.h"
+#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 

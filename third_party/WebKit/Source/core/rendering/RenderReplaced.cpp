@@ -25,7 +25,6 @@
 #include "core/rendering/RenderReplaced.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
@@ -33,6 +32,7 @@
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

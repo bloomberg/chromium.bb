@@ -44,7 +44,7 @@
           'action_name': 'FontFamilyNames',
           'inputs': [
             '<@(make_names_files)',
-            'graphics/fonts/FontFamilyNames.in',
+            'fonts/FontFamilyNames.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
@@ -53,7 +53,7 @@
           'action': [
             'python',
             '../build/scripts/make_names.py',
-            'graphics/fonts/FontFamilyNames.in',
+            'fonts/FontFamilyNames.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],

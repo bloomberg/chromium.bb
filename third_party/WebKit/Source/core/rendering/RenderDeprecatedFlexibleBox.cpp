@@ -26,10 +26,10 @@
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/platform/graphics/Font.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "platform/fonts/Font.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
 

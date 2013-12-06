@@ -51,10 +51,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/SimpleFontData.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontTraitsMask.h"
+#include "platform/fonts/SimpleFontData.h"
 
 namespace WebCore {
 

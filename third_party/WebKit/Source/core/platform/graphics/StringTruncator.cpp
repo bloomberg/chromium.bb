@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/platform/graphics/StringTruncator.h"
 
-#include "core/platform/graphics/Font.h"
+#include "platform/fonts/Font.h"
 #include "platform/graphics/TextRun.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Assertions.h"

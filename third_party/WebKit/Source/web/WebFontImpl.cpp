@@ -34,9 +34,9 @@
 #include <skia/ext/platform_canvas.h>
 #include "WebFontDescription.h"
 #include "WebTextRun.h"
-#include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/GraphicsContext.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/TextRun.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"

@@ -21,7 +21,7 @@
 #define SVGFontData_h
 
 #if ENABLE(SVG_FONTS)
-#include "core/platform/graphics/CustomFontData.h"
+#include "platform/fonts/CustomFontData.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

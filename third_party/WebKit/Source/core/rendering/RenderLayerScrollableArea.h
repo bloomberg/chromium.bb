@@ -44,7 +44,7 @@
 #ifndef RenderLayerScrollableArea_h
 #define RenderLayerScrollableArea_h
 
-#include "core/platform/ScrollableArea.h"
+#include "platform/scroll/ScrollableArea.h"
 
 namespace WebCore {
 

@@ -28,8 +28,8 @@
 #include "SkColorFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkFlattenableBuffers.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkDevice.h"
 

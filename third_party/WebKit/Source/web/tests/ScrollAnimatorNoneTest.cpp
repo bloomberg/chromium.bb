@@ -27,15 +27,15 @@
 
 #include "config.h"
 
-#include "core/platform/ScrollAnimatorNone.h"
+#include "platform/scroll/ScrollAnimatorNone.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "platform/Logging.h"
-#include "core/platform/ScrollAnimator.h"
-#include "core/platform/ScrollableArea.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollableArea.h"
 
 using namespace std;
 using namespace WebCore;

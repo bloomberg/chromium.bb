@@ -26,14 +26,14 @@
 
 #include "core/platform/graphics/filters/FEDisplacementMap.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/text/TextStream.h"
 #include "wtf/Uint8ClampedArray.h"
 
 #include "SkBitmapSource.h"
 #include "SkDisplacementMapEffect.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

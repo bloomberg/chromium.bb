@@ -20,9 +20,9 @@
 #ifndef SVGImageCache_h
 #define SVGImageCache_h
 
-#include "core/platform/graphics/Image.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/Image.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"

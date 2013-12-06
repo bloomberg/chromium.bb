@@ -26,7 +26,7 @@
 #ifndef RenderScrollbarTheme_h
 #define RenderScrollbarTheme_h
 
-#include "core/platform/ScrollbarTheme.h"
+#include "platform/scroll/ScrollbarTheme.h"
 
 namespace WebCore {
 

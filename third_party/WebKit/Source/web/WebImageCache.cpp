@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebImageCache.h"
 
-#include "core/platform/graphics/ImageDecodingStore.h"
+#include "platform/graphics/ImageDecodingStore.h"
 
 using WebCore::ImageDecodingStore;
 

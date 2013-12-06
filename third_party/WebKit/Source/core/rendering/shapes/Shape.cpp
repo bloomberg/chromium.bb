@@ -31,12 +31,12 @@
 #include "core/rendering/shapes/Shape.h"
 
 #include "core/fetch/ImageResource.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/shapes/PolygonShape.h"
 #include "core/rendering/shapes/RasterShape.h"
 #include "core/rendering/shapes/RectangleShape.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/WindRule.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"

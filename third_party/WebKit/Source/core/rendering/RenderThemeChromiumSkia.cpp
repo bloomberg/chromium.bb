@@ -25,9 +25,6 @@
 #include "core/rendering/RenderThemeChromiumSkia.h"
 
 #include "UserAgentStyleSheets.h"
-#include "core/platform/ScrollbarTheme.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/Image.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderMediaControls.h"
@@ -35,6 +32,9 @@
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/Image.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 

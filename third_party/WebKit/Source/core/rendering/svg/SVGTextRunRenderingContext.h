@@ -21,7 +21,7 @@
 #ifndef SVGTextRunRenderingContext_h
 #define SVGTextRunRenderingContext_h
 
-#include "core/platform/graphics/Font.h"
+#include "platform/fonts/Font.h"
 #include "platform/graphics/TextRun.h"
 
 namespace WebCore {

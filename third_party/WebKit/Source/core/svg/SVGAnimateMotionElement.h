@@ -21,8 +21,8 @@
 #ifndef SVGAnimateMotionElement_h
 #define SVGAnimateMotionElement_h
 
-#include "core/platform/graphics/Path.h"
 #include "core/svg/SVGAnimationElement.h"
+#include "platform/graphics/Path.h"
 
 namespace WebCore {
 

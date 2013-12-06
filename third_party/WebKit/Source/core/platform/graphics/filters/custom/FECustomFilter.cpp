@@ -33,10 +33,10 @@
 
 #include "core/platform/graphics/filters/custom/FECustomFilter.h"
 
-#include "core/platform/graphics/Extensions3D.h"
-#include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterRenderer.h"
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
+#include "platform/graphics/Extensions3D.h"
+#include "platform/graphics/GraphicsContext3D.h"
 #include "platform/text/TextStream.h"
 #include "wtf/Uint8ClampedArray.h"
 

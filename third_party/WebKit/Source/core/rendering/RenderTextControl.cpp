@@ -23,9 +23,9 @@
 #include "core/rendering/RenderTextControl.h"
 
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/unicode/CharacterNames.h"
 
 using namespace std;

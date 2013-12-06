@@ -29,7 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasContextAttributes.h"
-#include "core/platform/graphics/GraphicsContext3D.h"
+#include "platform/graphics/GraphicsContext3D.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

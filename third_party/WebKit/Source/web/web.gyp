@@ -87,7 +87,6 @@
                         '<(DEPTH)/testing/gtest.gyp:gtest',
                         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
-                        '<(libjpeg_gyp_path):libjpeg',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
                         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
                         '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
@@ -97,6 +96,7 @@
                         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
                         '<(DEPTH)/url/url.gyp:url_lib',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+                        '<(libjpeg_gyp_path):libjpeg',
                         # We must not add webkit_support here because of cyclic dependency.
                     ],
                     'export_dependent_settings': [
@@ -237,7 +237,6 @@
                 ['OS=="android"', {
                     'sources/': [
                         ['include', '^linux/WebFontRendering\\.cpp$'],
-                        ['include', '^linux/WebFontRenderStyle\\.cpp$'],
                     ],
                 }],
             ],

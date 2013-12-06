@@ -33,7 +33,7 @@ namespace blink {
 //
 // Deleting the thread blocks until all pending, non-delayed tasks have been
 // run.
-class WebThread {
+class BLINK_PLATFORM_EXPORT WebThread {
 public:
     class Task {
     public:
@@ -41,7 +41,7 @@ public:
         virtual void run() = 0;
     };
 
-    class TaskObserver {
+    class BLINK_PLATFORM_EXPORT TaskObserver {
     public:
         virtual ~TaskObserver() { }
         virtual void willProcessTask() = 0;

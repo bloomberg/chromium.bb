@@ -24,9 +24,9 @@
 
 #include "core/rendering/svg/RenderSVGResourceGradient.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

@@ -26,11 +26,11 @@
 #ifndef CompositedLayerMapping_h
 #define CompositedLayerMapping_h
 
-#include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/rendering/RenderLayer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace WebCore {

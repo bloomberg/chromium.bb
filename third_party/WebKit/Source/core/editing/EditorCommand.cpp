@@ -57,9 +57,9 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Pasteboard.h"
-#include "core/platform/Scrollbar.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/KillRing.h"
+#include "platform/scroll/Scrollbar.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

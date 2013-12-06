@@ -31,7 +31,7 @@
 #ifndef AnimationTranslationUtil_h
 #define AnimationTranslationUtil_h
 
-#include "core/platform/graphics/filters/FilterOperations.h"
+#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformOperations.h"
 #include "public/platform/WebTransformOperations.h"
 #include "wtf/PassOwnPtr.h"

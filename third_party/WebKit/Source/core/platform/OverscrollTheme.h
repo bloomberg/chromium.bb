@@ -27,8 +27,8 @@
 #ifndef OverscrollTheme_h
 #define OverscrollTheme_h
 
-#include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/Image.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/Image.h"
 
 namespace WebCore {
 

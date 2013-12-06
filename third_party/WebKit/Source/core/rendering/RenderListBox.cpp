@@ -47,9 +47,6 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/platform/Scrollbar.h"
-#include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
@@ -57,6 +54,9 @@
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/fonts/FontCache.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/scroll/Scrollbar.h"
 
 using namespace std;
 

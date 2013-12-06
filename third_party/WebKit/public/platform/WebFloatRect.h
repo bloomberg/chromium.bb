@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "platform/geometry/FloatRect.h"
 #else
 #include <algorithm>
@@ -67,7 +67,7 @@ struct WebFloatRect {
     {
     }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     WebFloatRect(const WebCore::FloatRect& r)
         : x(r.x())
         , y(r.y())

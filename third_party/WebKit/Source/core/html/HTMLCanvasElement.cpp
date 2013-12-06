@@ -43,10 +43,10 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {

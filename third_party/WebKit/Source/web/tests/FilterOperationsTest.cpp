@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/filters/FilterOperations.h"
+#include "platform/graphics/filters/FilterOperations.h"
 
 #include <gtest/gtest.h>
 

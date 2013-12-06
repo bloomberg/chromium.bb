@@ -27,12 +27,13 @@
 #define WebContentLayerClient_h
 
 #include "WebCanvas.h"
+#include "WebCommon.h"
 
 namespace blink {
 struct WebRect;
 struct WebFloatRect;
 
-class WebContentLayerClient {
+class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 public:
     // Paints the content area for the layer, typically dirty rects submitted
     // through WebContentLayer::setNeedsDisplay, submitting drawing commands

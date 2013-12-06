@@ -27,7 +27,7 @@
 #ifndef SVGImage_h
 #define SVGImage_h
 
-#include "core/platform/graphics/Image.h"
+#include "platform/graphics/Image.h"
 
 namespace WebCore {
 

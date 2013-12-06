@@ -26,12 +26,12 @@
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
 #include "SkBitmapSource.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/Filter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 

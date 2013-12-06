@@ -21,11 +21,11 @@
 
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/DisplayList.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"

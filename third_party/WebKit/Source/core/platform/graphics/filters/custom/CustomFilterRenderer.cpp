@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/platform/graphics/filters/custom/CustomFilterRenderer.h"
 
-#include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
 #include "core/platform/graphics/filters/custom/CustomFilterMesh.h"
+#include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterParameter.h"

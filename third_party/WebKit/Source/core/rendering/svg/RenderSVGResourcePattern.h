@@ -21,13 +21,13 @@
 #ifndef RenderSVGResourcePattern_h
 #define RenderSVGResourcePattern_h
 
-#include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/Pattern.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/Pattern.h"
 #include "platform/transforms/AffineTransform.h"
 
 #include "wtf/HashMap.h"

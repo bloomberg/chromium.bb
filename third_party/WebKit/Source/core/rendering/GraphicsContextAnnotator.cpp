@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 
-#include "core/platform/graphics/GraphicsContextAnnotation.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/graphics/GraphicsContextAnnotation.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace {
@@ -122,7 +122,7 @@ void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const Render
         elementTag = element->tagName();
 
     m_context = paintInfo.context;
-    m_context->beginAnnotation(GraphicsContextAnnotation(rendererName, paintPhase, elementId, elementClass, elementTag));
+    m_context->beginAnnotation(rendererName, paintPhase, elementId, elementClass, elementTag);
 }
 
 void GraphicsContextAnnotator::finishAnnotation()

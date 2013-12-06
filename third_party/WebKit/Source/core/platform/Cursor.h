@@ -26,8 +26,8 @@
 #ifndef Cursor_h
 #define Cursor_h
 
-#include "core/platform/graphics/Image.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/graphics/Image.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 

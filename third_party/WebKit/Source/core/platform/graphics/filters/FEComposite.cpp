@@ -30,14 +30,13 @@
 #include "SkFlattenableBuffers.h"
 #include "SkXfermodeImageFilter.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/cpu/arm/filters/FECompositeArithmeticNEON.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
 #include "wtf/Uint8ClampedArray.h"
-
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 

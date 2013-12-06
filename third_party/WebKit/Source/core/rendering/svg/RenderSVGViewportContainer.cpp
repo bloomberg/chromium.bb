@@ -25,10 +25,10 @@
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 
 #include "SVGNames.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGUseElement.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

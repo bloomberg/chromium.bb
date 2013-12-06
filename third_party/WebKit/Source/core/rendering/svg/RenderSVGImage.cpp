@@ -27,7 +27,6 @@
 
 #include "core/rendering/svg/RenderSVGImage.h"
 
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/LayoutRectRecorder.h"
@@ -39,6 +38,7 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGImageElement.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace WebCore {
 

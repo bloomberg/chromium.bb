@@ -49,11 +49,11 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"
-#include "core/platform/ScrollableArea.h"
-#include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/scroll/ScrollableArea.h"
+#include "platform/scroll/ScrollbarTheme.h"
 
 namespace WebCore {
 

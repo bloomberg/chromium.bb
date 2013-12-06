@@ -20,15 +20,15 @@
 #include "config.h"
 #include "core/rendering/EllipsisBox.h"
 
-#include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/style/ShadowList.h"
+#include "platform/fonts/Font.h"
 #include "platform/graphics/DrawLooper.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/TextRun.h"
 
 namespace WebCore {

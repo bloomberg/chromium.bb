@@ -41,11 +41,14 @@
 #include "core/dom/Microtask.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
-#include "core/platform/graphics/ImageDecodingStore.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
+#include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/media/MediaPlayer.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebPrerenderingSupport.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
@@ -53,9 +56,6 @@
 #include "wtf/WTF.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebPrerenderingSupport.h"
-#include "public/platform/WebThread.h"
 #include <v8.h>
 
 namespace blink {

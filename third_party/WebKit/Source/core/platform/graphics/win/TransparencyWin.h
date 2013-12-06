@@ -33,7 +33,7 @@
 
 #include <windows.h>
 
-#include "core/platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/transforms/AffineTransform.h"
 
 #include "wtf/Noncopyable.h"

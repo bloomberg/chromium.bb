@@ -32,7 +32,7 @@
 
 #include <gtest/gtest.h>
 
-#include "core/platform/graphics/win/UniscribeHelper.h"
+#include "platform/fonts/win/UniscribeHelper.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;

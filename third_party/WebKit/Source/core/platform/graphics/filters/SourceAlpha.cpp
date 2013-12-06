@@ -22,8 +22,9 @@
 
 #include "core/platform/graphics/filters/SourceAlpha.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"

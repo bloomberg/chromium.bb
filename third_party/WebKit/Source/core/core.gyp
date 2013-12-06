@@ -233,7 +233,6 @@
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-        '<(libjpeg_gyp_path):libjpeg',
       ],
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/blink',
@@ -376,7 +375,6 @@
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-        '<(libjpeg_gyp_path):libjpeg',
       ],
       'export_dependent_settings': [
         '../wtf/wtf.gyp:wtf',
@@ -396,7 +394,6 @@
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-        '<(libjpeg_gyp_path):libjpeg',
       ],
       'direct_dependent_settings': {
         'defines': [
@@ -605,27 +602,6 @@
         ['exclude', 'platform/graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
       ],
       'conditions': [
-        ['OS=="linux" or OS=="android"', {
-          'sources/': [
-            # Cherry-pick files excluded by the broader regular expressions above.
-            ['include', 'platform/graphics/harfbuzz/FontHarfBuzz\\.cpp$'],
-            ['include', 'platform/graphics/harfbuzz/FontPlatformDataHarfBuzz\\.cpp$'],
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzFace\\.(cpp|h)$'],
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzFaceSkia\\.cpp$'],
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzShaperBase\\.(cpp|h)$'],
-            ['include', 'platform/graphics/opentype/OpenTypeTypes\\.h$'],
-            ['include', 'platform/graphics/opentype/OpenTypeVerticalData\\.(cpp|h)$'],
-            ['include', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
-          ],
-          'dependencies': [
-            '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
-          ],
-        }, { # OS!="linux" and OS!="android"
-          'sources/': [
-            ['exclude', 'Harfbuzz[^/]+\\.(cpp|h)$'],
-          ],
-        }],
         ['OS!="linux"', {
           'sources/': [
             ['exclude', 'Linux\\.cpp$'],
@@ -637,9 +613,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'dependencies': [
-            '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
-          ],
           'sources': [
             'editing/SmartReplaceCF.cpp',
           ],
@@ -655,21 +628,9 @@
             # The Mac build is USE(CF).
             ['include', 'CF\\.cpp$'],
 
-            # Use native Mac font code from core.
-            ['include', 'platform/(graphics/)?mac/[^/]*Font[^/]*\\.(cpp|mm?)$'],
-            ['include', 'platform/graphics/mac/ComplexText[^/]*\\.(cpp|h)$'],
-
             # Cherry-pick some files that can't be included by broader regexps.
             # Some of these are used instead of Chromium platform files, see
             # the specific exclusions in the "exclude" list below.
-            ['include', 'platform/graphics/mac/ColorMac\\.mm$'],
-            ['include', 'platform/graphics/mac/ComplexTextControllerCoreText\\.mm$'],
-            ['include', 'platform/graphics/mac/GlyphPageTreeNodeMac\\.cpp$'],
-            ['include', 'platform/mac/BlockExceptions\\.mm$'],
-            ['include', 'platform/mac/LocalCurrentGraphicsContext\\.mm$'],
-            ['include', 'platform/mac/NSScrollerImpDetails\\.mm$'],
-            ['include', 'platform/mac/ScrollAnimatorMac\\.mm$'],
-            ['include', 'platform/mac/ScrollElasticityController\\.mm$'],
             ['include', 'platform/mac/ThemeMac\\.h$'],
             ['include', 'platform/mac/ThemeMac\\.mm$'],
             ['include', 'platform/mac/WebCoreSystemInterface\\.h$'],
@@ -678,101 +639,21 @@
             ['include', 'platform/text/mac/String(Impl)?Mac\\.mm$'],
             # Use USE_NEW_THEME on Mac.
             ['include', 'platform/Theme\\.cpp$'],
-
-            # The Mac currently uses FontCustomPlatformDataMac.cpp,
-            # included by regex above, instead.
-            ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
-
-            ['exclude', 'platform/ScrollbarThemeNonMacCommon\\.(cpp|h)$'],
-
-            # Mac uses only ScrollAnimatorMac.
-            ['exclude', 'platform/ScrollAnimatorNone\\.cpp$'],
-            ['exclude', 'platform/ScrollAnimatorNone\\.h$'],
-
-            ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
-            ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
-            ['exclude', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
-
-            # Mac uses Harfbuzz.
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzFaceCoreText\\.cpp$'],
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzFace\\.(cpp|h)$'],
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
-            ['include', 'platform/graphics/harfbuzz/HarfBuzzShaperBase\\.(cpp|h)$'],
           ],
         },{ # OS!="mac"
           'sources/': [
             ['exclude', 'Mac\\.(cpp|mm?)$'],
-            ['exclude', 'ScrollbarThemeMac'],
-
-            # FIXME: We will eventually compile this too, but for now it's
-            # only used on mac.
-            ['exclude', 'platform/graphics/FontPlatformData\\.cpp$'],
-          ],
-        }],
-        ['OS != "linux" and OS != "mac" and (OS != "win" or (OS == "win" and "ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines))', {
-          'sources/': [
-            ['exclude', 'VDMX[^/]+\\.(cpp|h)$'],
           ],
         }],
         ['OS=="win"', {
           'sources/': [
             ['exclude', 'Posix\\.cpp$'],
 
-            ['include', 'platform/ScrollbarThemeWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/win/FontFallbackWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/win/FontPlatformDataWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/win/FontWin\\.cpp$'],
             ['include', 'platform/graphics/win/TransparencyWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/win/UniscribeHelper\\.(cpp|h)$'],
-            ['include', 'platform/graphics/win/UniscribeHelperTextRun\\.(cpp|h)$'],
-            ['include', 'platform/graphics/opentype/'],
-            ['include', 'platform/graphics/skia/SkiaFontWin\\.(cpp|h)$'],
-
-            # SystemInfo.cpp is useful and we don't want to copy it.
-            ['include', 'platform/win/SystemInfo\\.cpp$'],
-          ],
-          'conditions': [
-            ['"ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines', {
-              'sources/': [
-                ['include', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
-                ['exclude', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
-                ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
-              ],
-            },{ # ENABLE_GDI_FONTS_ON_WINDOWS!=1
-              'sources/': [
-                ['include', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
-                ['include', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
-                ['include', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
-                ['include', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/win/SimpleFontDataWin\\.cpp$'],
-                ['exclude', 'platform/graphics/win/GlyphPageTreeNodeWin\\.cpp$'],
-                ['exclude', 'platform/graphics/win/FontCacheWin\\.cpp$'],
-                ['exclude', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
-              ],
-            }],
-            ['"ENABLE_HARFBUZZ_ON_WINDOWS=1" in feature_defines', {
-              'sources/': [
-                ['include', 'platform/graphics/harfbuzz/FontHarfBuzz\\.cpp$'],
-                ['include', 'platform/graphics/harfbuzz/HarfBuzzFace\\.(cpp|h)$'],
-                ['include', 'platform/graphics/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
-                ['include', 'platform/graphics/harfbuzz/HarfBuzzShaperBase\\.(cpp|h)$'],
-                ['include', 'platform/graphics/harfbuzz/HarfBuzzFaceSkia\\.cpp$'],
-                ['exclude', 'platform/graphics/win/FontWin\\.cpp$'],
-                ['exclude', '/(Uniscribe)[^/]*\\.(cpp|h)$'],
-              ],
-              'dependencies': [
-                '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
-              ],
-            }],
           ],
         },{ # OS!="win"
           'sources/': [
             ['exclude', 'Win\\.cpp$'],
-            ['exclude', '/(Windows|Uniscribe)[^/]*\\.cpp$'],
-            ['include', 'platform/graphics/opentype/OpenTypeSanitizer\\.cpp$'],
           ],
         }],
         ['OS=="win" and chromium_win_pch==1', {
@@ -784,8 +665,6 @@
           'sources/': [
             ['include', 'platform/chromium/ClipboardChromiumLinux\\.cpp$'],
             ['include', 'platform/chromium/FileSystemChromiumLinux\\.cpp$'],
-            ['include', 'platform/graphics/linux/GlyphPageTreeNodeLinux\\.cpp$'],
-            ['include', 'platform/graphics/VDMXParser\\.cpp$'],
           ],
         }, { # OS!="android"
           'sources/': [
@@ -794,12 +673,10 @@
         }],
         ['use_default_render_theme==1', {
           'sources/': [
-            ['exclude', 'platform/ScrollbarThemeWin\\.(cpp|h)'],
             ['exclude', 'platform/chromium/PlatformThemeChromiumWin\\.(cpp|h)'],
           ],
         }, { # use_default_render_theme==0
           'sources/': [
-            ['exclude', 'platform/ScrollbarThemeGtkOrAura\\.(cpp|h)'],
             ['exclude', 'platform/chromium/PlatformThemeChromiumDefault\\.(cpp|h)'],
           ],
         }],

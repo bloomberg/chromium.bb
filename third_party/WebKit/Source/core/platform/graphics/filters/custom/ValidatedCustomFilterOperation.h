@@ -30,7 +30,7 @@
 #ifndef ValidatedCustomFilterOperation_h
 #define ValidatedCustomFilterOperation_h
 
-#include "core/platform/graphics/filters/FilterOperation.h"
+#include "platform/graphics/filters/FilterOperation.h"
 #include "platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "platform/graphics/filters/custom/CustomFilterParameterList.h"
 

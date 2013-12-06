@@ -34,8 +34,8 @@
 #include "WebViewImpl.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/GraphicsLayerClient.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/GraphicsLayerClient.h"
 #include "public/platform/WebLayer.h"
 
 using namespace WebCore;

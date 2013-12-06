@@ -65,7 +65,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/platform/ScrollView.h"
 #include "core/rendering/AbstractInlineTextBox.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
@@ -75,6 +74,7 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderView.h"
+#include "platform/scroll/ScrollView.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

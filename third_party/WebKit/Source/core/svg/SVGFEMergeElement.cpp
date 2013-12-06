@@ -23,7 +23,7 @@
 #include "core/svg/SVGFEMergeElement.h"
 
 #include "SVGNames.h"
-#include "core/platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "core/svg/SVGFEMergeNodeElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 

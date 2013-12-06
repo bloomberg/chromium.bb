@@ -35,7 +35,6 @@
 #include "core/platform/graphics/filters/FEColorMatrix.h"
 #include "core/platform/graphics/filters/FEComponentTransfer.h"
 #include "core/platform/graphics/filters/FEDropShadow.h"
-#include "core/platform/graphics/filters/FEGaussianBlur.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 #include "core/platform/graphics/filters/custom/FECustomFilter.h"
@@ -48,6 +47,7 @@
 #include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/filters/FEGaussianBlur.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 

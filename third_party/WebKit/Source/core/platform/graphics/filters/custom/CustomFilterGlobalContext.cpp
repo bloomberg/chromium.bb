@@ -31,8 +31,8 @@
 
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 
-#include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
+#include "platform/graphics/GraphicsContext3D.h"
 
 namespace WebCore {
 

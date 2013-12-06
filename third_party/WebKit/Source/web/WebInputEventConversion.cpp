@@ -39,10 +39,10 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
-#include "core/platform/ScrollView.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/Widget.h"
+#include "platform/scroll/ScrollView.h"
 
 using namespace WebCore;
 

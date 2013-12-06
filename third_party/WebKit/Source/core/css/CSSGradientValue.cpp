@@ -31,11 +31,11 @@
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/TextLinkColors.h"
-#include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GradientGeneratedImage.h"
-#include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/Gradient.h"
+#include "platform/graphics/Image.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 

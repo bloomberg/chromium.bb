@@ -25,8 +25,8 @@
 #include "core/platform/graphics/filters/FEMerge.h"
 
 #include "SkMergeImageFilter.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/OwnPtr.h"
 

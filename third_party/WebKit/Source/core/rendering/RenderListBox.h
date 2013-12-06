@@ -31,8 +31,8 @@
 #ifndef RenderListBox_h
 #define RenderListBox_h
 
-#include "core/platform/ScrollableArea.h"
 #include "core/rendering/RenderBlockFlow.h"
+#include "platform/scroll/ScrollableArea.h"
 
 namespace WebCore {
 

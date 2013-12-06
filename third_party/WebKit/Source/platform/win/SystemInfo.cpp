@@ -26,6 +26,8 @@
 #include "config.h"
 #include "platform/win/SystemInfo.h"
 
+#include "platform/PlatformExport.h"
+
 #if _WIN32_WINNT_WINBLUE
 #include <versionhelpers.h>
 #endif

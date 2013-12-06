@@ -36,13 +36,20 @@
     'target_name': 'blink_platform_unittests',
     'type': 'executable',
     'dependencies': [
-      'blink_platform.gyp:blink_platform',
-      'blink_platform.gyp:blink_common',
       '../config.gyp:unittest_config',
       '../wtf/wtf.gyp:wtf',
       '../wtf/wtf_tests.gyp:run_all_tests',
       '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
+      'blink_platform.gyp:blink_platform',
+      'blink_platform.gyp:blink_common',
+      '<(DEPTH)/skia/skia.gyp:skia',
       '<(DEPTH)/url/url.gyp:url_lib',
+    ],
+    'defines': [
+      'INSIDE_BLINK',
+    ],
+    'include_dirs': [
+      '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
     'sources': [
       '<@(platform_test_files)',
@@ -53,7 +60,7 @@
           '<(DEPTH)/base/base.gyp:base',
           '<(DEPTH)/base/allocator/allocator.gyp:allocator',
         ]
-      }]
+      }],
     ]
   }],
 }

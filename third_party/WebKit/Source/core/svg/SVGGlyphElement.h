@@ -24,8 +24,8 @@
 
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
-#include "core/platform/graphics/SVGGlyph.h"
 #include "core/svg/SVGElement.h"
+#include "platform/fonts/SVGGlyph.h"
 
 namespace WebCore {
 

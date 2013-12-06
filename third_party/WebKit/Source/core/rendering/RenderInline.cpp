@@ -26,7 +26,6 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
@@ -41,6 +40,7 @@
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

@@ -35,7 +35,7 @@ class WebGraphicsContext3D;
 class WebExternalBitmap;
 struct WebExternalTextureMailbox;
 
-class WebExternalTextureLayerClient {
+class BLINK_PLATFORM_EXPORT WebExternalTextureLayerClient {
 public:
     virtual WebGraphicsContext3D* context() = 0;
 

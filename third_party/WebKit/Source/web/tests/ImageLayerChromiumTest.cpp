@@ -25,9 +25,9 @@
 #include "config.h"
 
 #include <gtest/gtest.h>
-#include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/Image.h"
+#include "platform/graphics/skia/NativeImageSkia.h"
 #include "public/platform/WebImageLayer.h"
 #include "wtf/PassOwnPtr.h"
 

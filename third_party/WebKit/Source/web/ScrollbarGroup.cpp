@@ -28,8 +28,8 @@
 
 #include "WebPluginScrollbarImpl.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/Scrollbar.h"
-#include "core/platform/ScrollbarTheme.h"
+#include "platform/scroll/Scrollbar.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebRect.h"
 
 using namespace WebCore;

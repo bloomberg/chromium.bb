@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/win/TransparencyWin.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/transforms/AffineTransform.h"
 #include "skia/ext/platform_canvas.h"
 

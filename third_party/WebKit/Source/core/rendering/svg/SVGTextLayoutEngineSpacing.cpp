@@ -21,9 +21,9 @@
 
 #include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
 
-#include "core/platform/graphics/Font.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/svg/SVGLengthContext.h"
+#include "platform/fonts/Font.h"
 
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGFontData.h"

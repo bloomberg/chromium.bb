@@ -29,13 +29,12 @@
 
 #include "core/platform/graphics/filters/FELighting.h"
 
-#include "core/platform/graphics/cpu/arm/filters/FELightingNEON.h"
-#include "core/platform/graphics/filters/ParallelJobs.h"
-
 #include "SkLightingImageFilter.h"
+#include "core/platform/graphics/cpu/arm/filters/FELightingNEON.h"
 #include "core/platform/graphics/filters/DistantLightSource.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "platform/graphics/filters/ParallelJobs.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

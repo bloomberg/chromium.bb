@@ -29,7 +29,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
@@ -42,6 +41,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

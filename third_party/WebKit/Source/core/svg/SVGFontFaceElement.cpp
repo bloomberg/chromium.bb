@@ -35,11 +35,11 @@
 #include "core/css/StyleRule.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
-#include "core/platform/graphics/Font.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceSrcElement.h"
 #include "core/svg/SVGGlyphElement.h"
+#include "platform/fonts/Font.h"
 
 namespace WebCore {
 

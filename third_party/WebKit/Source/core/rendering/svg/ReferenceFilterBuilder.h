@@ -32,7 +32,7 @@
 #define ReferenceFilterBuilder_h
 
 #include "core/fetch/DocumentResourceReference.h"
-#include "core/platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 

@@ -28,13 +28,13 @@
 #include "SVGNames.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/graphics/DisplayList.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {

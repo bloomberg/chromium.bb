@@ -43,10 +43,10 @@
 #include "core/page/Page.h"
 #include "core/page/PageScaleConstraints.h"
 #include "core/page/Settings.h"
-#include "core/platform/ScrollbarTheme.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include <gmock/gmock.h>

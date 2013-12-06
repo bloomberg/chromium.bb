@@ -28,9 +28,6 @@
 
 #include "core/rendering/svg/RenderSVGText.h"
 
-#include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/SimpleFontData.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
@@ -49,8 +46,11 @@
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/FloatConversion.h"
+#include "platform/fonts/FontCache.h"
+#include "platform/fonts/SimpleFontData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace WebCore {
 

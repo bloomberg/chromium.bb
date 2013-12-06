@@ -26,7 +26,9 @@
 
 #include "core/platform/graphics/filters/FEComponentTransfer.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/text/TextStream.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -34,8 +36,6 @@
 
 #include "SkColorFilterImageFilter.h"
 #include "SkTableColorFilter.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

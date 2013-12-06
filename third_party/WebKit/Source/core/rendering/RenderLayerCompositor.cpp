@@ -48,8 +48,6 @@
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/OverscrollTheme.h"
-#include "core/platform/ScrollbarTheme.h"
-#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderApplet.h"
@@ -64,6 +62,8 @@
 #include "core/rendering/RenderView.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "wtf/TemporaryChange.h"
 

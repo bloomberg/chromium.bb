@@ -29,8 +29,8 @@
 
 #include "core/rendering/svg/RenderSVGPath.h"
 
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/svg/SVGSubpathData.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace WebCore {
 

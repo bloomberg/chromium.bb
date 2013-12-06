@@ -26,6 +26,7 @@
 #ifndef ScrollbarThemeClient_h
 #define ScrollbarThemeClient_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
@@ -37,7 +38,7 @@ namespace WebCore {
 
 class Widget;
 
-class ScrollbarThemeClient {
+class PLATFORM_EXPORT ScrollbarThemeClient {
 public:
     virtual int x() const = 0;
     virtual int y() const = 0;

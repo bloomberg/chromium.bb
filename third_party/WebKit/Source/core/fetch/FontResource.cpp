@@ -29,9 +29,9 @@
 
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/TextResourceDecoder.h"
-#include "core/platform/graphics/FontPlatformData.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCustomPlatformData.h"
+#include "platform/fonts/FontPlatformData.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 

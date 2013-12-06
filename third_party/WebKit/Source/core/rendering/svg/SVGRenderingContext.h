@@ -25,9 +25,9 @@
 #ifndef SVGRenderingContext_h
 #define SVGRenderingContext_h
 
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "platform/graphics/ImageBuffer.h"
 
 namespace WebCore {
 

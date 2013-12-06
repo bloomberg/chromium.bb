@@ -21,10 +21,10 @@
 #ifndef SVGFilter_h
 #define SVGFilter_h
 
-#include "core/platform/graphics/filters/Filter.h"
-#include "core/platform/graphics/filters/FilterEffect.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

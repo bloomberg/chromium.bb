@@ -30,8 +30,6 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Settings.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/Path.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
@@ -45,6 +43,8 @@
 #include "core/rendering/style/ShadowList.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/DrawLooper.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/Path.h"
 #include "wtf/CurrentTime.h"
 
 using namespace std;

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "public/web/linux/WebFontRendering.h"
 
-#include "core/platform/graphics/FontPlatformData.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontPlatformData.h"
 
 #if OS(LINUX)
 #include "public/platform/linux/WebFontInfo.h"

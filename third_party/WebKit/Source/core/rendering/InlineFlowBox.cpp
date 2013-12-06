@@ -22,8 +22,6 @@
 
 #include "CSSPropertyNames.h"
 #include "core/dom/Document.h"
-#include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
@@ -35,6 +33,8 @@
 #include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RootInlineBox.h"
+#include "platform/fonts/Font.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 #include <math.h>
 

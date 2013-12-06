@@ -30,6 +30,7 @@
 #ifndef GlyphPage_h
 #define GlyphPage_h
 
+#include "platform/PlatformExport.h"
 #include "platform/fonts/Glyph.h"
 #include <string.h>
 #include "wtf/PassRefPtr.h"
@@ -67,7 +68,7 @@ struct GlyphData {
 // missing in the primary font. It is owned by exactly one GlyphPageTreeNode,
 // although multiple nodes may reference it as their "page" if they are supposed
 // to be overriding the parent's node, but provide no additional information.
-class GlyphPage : public RefCounted<GlyphPage> {
+class PLATFORM_EXPORT GlyphPage : public RefCounted<GlyphPage> {
 public:
     static PassRefPtr<GlyphPage> createForMixedFontData(GlyphPageTreeNode* owner)
     {

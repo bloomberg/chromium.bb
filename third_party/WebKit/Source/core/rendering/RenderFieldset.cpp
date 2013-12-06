@@ -26,8 +26,8 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/PaintInfo.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 using std::min;
 using std::max;

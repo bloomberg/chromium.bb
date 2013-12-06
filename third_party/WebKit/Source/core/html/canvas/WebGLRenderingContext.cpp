@@ -70,11 +70,11 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/Extensions3D.h"
-#include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/NotImplemented.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/Extensions3D.h"
+#include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Uint32Array.h"

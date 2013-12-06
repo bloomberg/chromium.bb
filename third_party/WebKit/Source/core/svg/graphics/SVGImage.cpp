@@ -36,8 +36,6 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocument.h"
@@ -47,6 +45,8 @@
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/PassRefPtr.h"
 

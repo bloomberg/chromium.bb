@@ -36,8 +36,8 @@
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/RenderBox.h"
+#include "platform/scroll/ScrollbarTheme.h"
 
 namespace WebCore {
 

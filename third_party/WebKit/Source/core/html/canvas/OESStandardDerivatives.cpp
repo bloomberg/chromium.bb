@@ -26,7 +26,7 @@
 #include "config.h"
 
 #include "core/html/canvas/OESStandardDerivatives.h"
-#include "core/platform/graphics/Extensions3D.h"
+#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 

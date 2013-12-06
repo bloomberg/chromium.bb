@@ -30,7 +30,6 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
@@ -45,6 +44,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 using namespace std;
 

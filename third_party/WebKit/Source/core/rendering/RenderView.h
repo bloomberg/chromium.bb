@@ -23,11 +23,11 @@
 #define RenderView_h
 
 #include "core/frame/FrameView.h"
-#include "core/platform/ScrollableArea.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/LayoutState.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/PODFreeListArena.h"
+#include "platform/scroll/ScrollableArea.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {

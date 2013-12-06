@@ -31,7 +31,7 @@
 #ifndef FramelessScrollView_h
 #define FramelessScrollView_h
 
-#include "core/platform/ScrollView.h"
+#include "platform/scroll/ScrollView.h"
 
 namespace WebCore {
 

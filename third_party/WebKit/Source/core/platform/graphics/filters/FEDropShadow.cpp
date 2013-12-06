@@ -22,9 +22,10 @@
 
 #include "core/platform/graphics/filters/FEDropShadow.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/FEGaussianBlur.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"

@@ -28,7 +28,7 @@
 #include "core/html/shadow/DateTimeSymbolicFieldElement.h"
 
 #include "core/events/KeyboardEvent.h"
-#include "core/platform/graphics/Font.h"
+#include "platform/fonts/Font.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/Unicode.h"

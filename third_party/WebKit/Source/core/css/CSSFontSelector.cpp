@@ -40,8 +40,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/SimpleFontData.h"
+#include "platform/fonts/FontCache.h"
+#include "platform/fonts/SimpleFontData.h"
 #include "wtf/text/AtomicString.h"
 
 using namespace std;
@@ -116,13 +116,13 @@ CSSFontSelector::CSSFontSelector(Document* document)
 
     ASSERT(m_document);
     ASSERT(m_document->frame());
-    fontCache()->addClient(this);
+    FontCache::fontCache()->addClient(this);
 }
 
 CSSFontSelector::~CSSFontSelector()
 {
     clearDocument();
-    fontCache()->removeClient(this);
+    FontCache::fontCache()->removeClient(this);
 }
 
 void CSSFontSelector::registerForInvalidationCallbacks(FontSelectorClient* client)
@@ -201,7 +201,7 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDes
     if (settingsFamilyName.isEmpty())
         return 0;
 
-    return fontCache()->getFontData(fontDescription, settingsFamilyName);
+    return FontCache::fontCache()->getFontData(fontDescription, settingsFamilyName);
 }
 
 CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDescription, const AtomicString& familyName)

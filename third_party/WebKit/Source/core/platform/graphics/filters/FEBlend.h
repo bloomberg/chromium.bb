@@ -23,9 +23,9 @@
 #ifndef FEBlend_h
 #define FEBlend_h
 
-#include "core/platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FilterEffect.h"
 
-#include "core/platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/Filter.h"
 
 namespace WebCore {
 

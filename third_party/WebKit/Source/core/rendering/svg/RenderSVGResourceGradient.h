@@ -22,11 +22,11 @@
 #ifndef RenderSVGResourceGradient_h
 #define RenderSVGResourceGradient_h
 
-#include "core/platform/graphics/Gradient.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGGradientElement.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/Gradient.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 

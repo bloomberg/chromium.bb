@@ -43,9 +43,9 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
-#include "core/platform/graphics/BitmapImage.h"
-#include "core/platform/graphics/ImageSource.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/ImageSource.h"
+#include "platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

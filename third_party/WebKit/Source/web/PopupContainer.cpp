@@ -39,7 +39,6 @@
 #include "core/page/Page.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/chromium/FramelessScrollViewClient.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
@@ -48,6 +47,7 @@
 #include "platform/PlatformWheelEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/GraphicsContext.h"
 #include <limits>
 
 namespace WebCore {

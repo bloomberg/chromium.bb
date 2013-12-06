@@ -14,15 +14,15 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/TimeRanges.h"
-#include "core/platform/graphics/GaneshUtils.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/skia/GaneshUtils.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebCString.h"
@@ -39,7 +39,7 @@
 #include "GrTypes.h"
 #include "SkCanvas.h"
 #include "SkGrPixelRef.h"
-#include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
+#include "platform/graphics/gpu/SharedGraphicsContext3D.h"
 #endif
 
 

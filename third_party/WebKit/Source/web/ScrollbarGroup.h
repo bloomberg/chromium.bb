@@ -26,7 +26,7 @@
 #ifndef ScrollbarGroup_h
 #define ScrollbarGroup_h
 
-#include "core/platform/ScrollableArea.h"
+#include "platform/scroll/ScrollableArea.h"
 
 #include "wtf/RefPtr.h"
 

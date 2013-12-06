@@ -23,8 +23,8 @@
 #ifndef FEMorphology_h
 #define FEMorphology_h
 
-#include "core/platform/graphics/filters/Filter.h"
-#include "core/platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

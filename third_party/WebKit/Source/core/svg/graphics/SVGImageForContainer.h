@@ -26,10 +26,10 @@
 #ifndef SVGImageForContainer_h
 #define SVGImageForContainer_h
 
-#include "core/platform/graphics/Image.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/Image.h"
 
 namespace WebCore {
 

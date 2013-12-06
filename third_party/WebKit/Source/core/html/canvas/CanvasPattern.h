@@ -27,7 +27,7 @@
 #define CanvasPattern_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/graphics/Pattern.h"
+#include "platform/graphics/Pattern.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

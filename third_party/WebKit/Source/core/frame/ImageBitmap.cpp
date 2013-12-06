@@ -9,9 +9,9 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/platform/graphics/BitmapImage.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/ImageBuffer.h"
+#include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "wtf/RefPtr.h"
 
 using namespace std;

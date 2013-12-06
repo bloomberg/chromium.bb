@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/WebGLCompressedTextureATC.h"
 
-#include "core/platform/graphics/Extensions3D.h"
+#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 

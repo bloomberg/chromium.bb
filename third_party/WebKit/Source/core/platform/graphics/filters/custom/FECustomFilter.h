@@ -31,10 +31,10 @@
 #ifndef FECustomFilter_h
 #define FECustomFilter_h
 
-#include "core/platform/graphics/filters/Filter.h"
-#include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "wtf/RefPtr.h"
 

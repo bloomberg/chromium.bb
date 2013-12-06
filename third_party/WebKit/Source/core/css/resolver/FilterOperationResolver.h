@@ -23,7 +23,7 @@
 #define FilterOperationResolver_h
 
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/platform/graphics/filters/FilterOperations.h"
+#include "platform/graphics/filters/FilterOperations.h"
 
 namespace WebCore {
 

@@ -27,8 +27,8 @@
 #define RenderLayerCompositor_h
 
 #include "core/page/ChromeClient.h"
-#include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/rendering/RenderLayer.h"
+#include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

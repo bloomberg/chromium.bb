@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebFontCache.h"
 
-#include "core/platform/graphics/FontCache.h"
+#include "platform/fonts/FontCache.h"
 
 using namespace WebCore;
 
@@ -40,7 +40,7 @@ namespace blink {
 // static
 void WebFontCache::clear()
 {
-    fontCache()->invalidate();
+    FontCache::fontCache()->invalidate();
 }
 
 }  // namespace blink

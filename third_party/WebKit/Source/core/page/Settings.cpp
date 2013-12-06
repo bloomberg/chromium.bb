@@ -35,8 +35,8 @@
 #include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/TextAutosizer.h"
+#include "platform/scroll/ScrollbarTheme.h"
 
 using namespace std;
 

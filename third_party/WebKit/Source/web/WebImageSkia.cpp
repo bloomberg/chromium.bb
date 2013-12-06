@@ -32,9 +32,9 @@
 
 #include <algorithm>
 #include "platform/SharedBuffer.h"
-#include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
-#include "core/platform/image-decoders/ImageDecoder.h"
+#include "platform/graphics/Image.h"
+#include "platform/graphics/skia/NativeImageSkia.h"
+#include "platform/image-decoders/ImageDecoder.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebImage.h"
 #include "public/platform/WebSize.h"

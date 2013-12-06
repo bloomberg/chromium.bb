@@ -23,8 +23,8 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/PaintInfo.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

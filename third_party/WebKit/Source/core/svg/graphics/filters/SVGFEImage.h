@@ -24,7 +24,7 @@
 #ifndef SVGFEImage_h
 #define SVGFEImage_h
 
-#include "core/platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 
 namespace WebCore {

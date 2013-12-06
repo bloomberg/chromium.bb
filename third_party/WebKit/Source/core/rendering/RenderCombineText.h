@@ -21,8 +21,8 @@
 #ifndef RenderCombineText_h
 #define RenderCombineText_h
 
-#include "core/platform/graphics/Font.h"
 #include "core/rendering/RenderText.h"
+#include "platform/fonts/Font.h"
 
 namespace WebCore {
 

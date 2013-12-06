@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/win/TransparencyWin.h"
 
+#include "platform/fonts/SimpleFontData.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "SkColorPriv.h"
 #include "skia/ext/platform_canvas.h"
 

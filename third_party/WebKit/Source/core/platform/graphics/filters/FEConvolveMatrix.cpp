@@ -26,13 +26,13 @@
 
 #include "core/platform/graphics/filters/FEConvolveMatrix.h"
 
-#include "core/platform/graphics/filters/ParallelJobs.h"
+#include "platform/graphics/filters/ParallelJobs.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Uint8ClampedArray.h"
 
 #include "SkMatrixConvolutionImageFilter.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 

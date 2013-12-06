@@ -24,9 +24,9 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/GraphicsLayer.h"
 
-#include "core/platform/ScrollableArea.h"
+#include "platform/scroll/ScrollableArea.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"

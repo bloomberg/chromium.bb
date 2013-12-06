@@ -32,7 +32,7 @@
 #define AnimatableFilterOperations_h
 
 #include "core/animation/AnimatableValue.h"
-#include "core/platform/graphics/filters/FilterOperations.h"
+#include "platform/graphics/filters/FilterOperations.h"
 
 namespace WebCore {
 

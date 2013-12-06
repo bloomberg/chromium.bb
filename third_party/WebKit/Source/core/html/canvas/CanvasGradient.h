@@ -28,7 +28,7 @@
 #define CanvasGradient_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/graphics/Gradient.h"
+#include "platform/graphics/Gradient.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

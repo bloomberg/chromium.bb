@@ -23,9 +23,9 @@
 #ifndef FEComposite_h
 #define FEComposite_h
 
-#include "core/platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FilterEffect.h"
 
-#include "core/platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/Filter.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

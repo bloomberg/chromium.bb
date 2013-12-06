@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebScrollbarTheme.h"
 
-#include "core/platform/ScrollbarThemeMacCommon.h"
+#include "platform/scroll/ScrollbarThemeMacCommon.h"
 
 using namespace WebCore;
 

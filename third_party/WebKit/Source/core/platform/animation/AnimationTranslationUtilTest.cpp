@@ -28,8 +28,8 @@
 
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/animation/KeyframeValueList.h"
-#include "core/platform/graphics/filters/FilterOperations.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"

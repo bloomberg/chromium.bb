@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-PLATFORM_EXPORT bool isWindowsVistaOrGreater();
+extern "C" PLATFORM_EXPORT bool isWindowsVistaOrGreater();
 
 } // namespace WebCore
 

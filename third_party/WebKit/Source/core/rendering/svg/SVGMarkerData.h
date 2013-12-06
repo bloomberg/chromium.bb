@@ -20,8 +20,8 @@
 #ifndef SVGMarkerData_h
 #define SVGMarkerData_h
 
-#include "core/platform/graphics/Path.h"
 #include "platform/FloatConversion.h"
+#include "platform/graphics/Path.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

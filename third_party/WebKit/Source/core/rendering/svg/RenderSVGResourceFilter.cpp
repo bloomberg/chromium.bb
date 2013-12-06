@@ -27,10 +27,10 @@
 
 #include "core/page/Settings.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
-#include "core/platform/graphics/filters/SourceGraphic.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/SourceGraphic.h"
 
 using namespace std;
 
