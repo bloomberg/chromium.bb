@@ -114,7 +114,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "IntentHelper", RegisterIntentHelper },
   { "JavascriptAppModalDialog",
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
-  { "MostVisitedSites", RegisterMostVisitedSites },
+  { "MostVisitedSites", MostVisitedSites::Register },
   { "NativeInfoBar", RegisterNativeInfoBar },
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "NewTabPagePrefs",

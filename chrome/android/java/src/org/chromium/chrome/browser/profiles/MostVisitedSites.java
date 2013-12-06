@@ -12,23 +12,27 @@ import org.chromium.base.CalledByNative;
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.
  */
 public class MostVisitedSites {
-    private Profile mProfile;
+
+    private long mNativeMostVisitedSites;
 
     /**
-     * Interface for callback object for fetching most visited urls.
+     * Interface for receiving the list of most visited urls.
      */
-    public interface MostVisitedURLsCallback {
+    public interface MostVisitedURLsObserver {
         /**
-         * Callback method for fetching most visited URLs.
+         * This is called when the list of most visited URLs is initially available or updated.
          * Parameters guaranteed to be non-null.
          *
          * @param titles Array of most visited url page titles.
          * @param urls Array of most visited urls.
          */
-        @CalledByNative("MostVisitedURLsCallback")
+        @CalledByNative("MostVisitedURLsObserver")
         public void onMostVisitedURLsAvailable(String[] titles, String[] urls);
     }
 
+    /**
+     * Interface for receiving a thumbnail for a most visited site.
+     */
     public interface ThumbnailCallback {
         /**
          * Callback method for fetching thumbnail of a most visited URL.
@@ -43,20 +47,46 @@ public class MostVisitedSites {
     /**
      * MostVisitedSites constructor requires a valid user profile object.
      *
-     * @param profile A valid user profile object.
+     * @param profile The profile for which to fetch most visited sites.
      */
     public MostVisitedSites(Profile profile) {
-        mProfile = profile;
+        mNativeMostVisitedSites = nativeInit(profile);
     }
 
     /**
-     * Asynchronous method that fetches most visited urls and their page titles.
-     *
-     * @param callback Instance of a callback object.
-     * @param numResults Maximum number of results to return.
+     * Cleans up the C++ side of this class. This instance must not be used after calling destroy().
      */
-    public void getMostVisitedURLs(MostVisitedURLsCallback callback, int numResults) {
-        nativeGetMostVisitedURLs(mProfile, callback, numResults);
+    public void destroy() {
+        assert mNativeMostVisitedSites != 0;
+        nativeDestroy(mNativeMostVisitedSites);
+        mNativeMostVisitedSites = 0;
+    }
+
+    @Override
+    protected void finalize() {
+        // Ensure that destroy() was called.
+        assert mNativeMostVisitedSites == 0;
+    }
+
+    /**
+     * Sets the MostVisitedURLsObserver to receive the list of most visited sites now or soon, and
+     * after any changes to the list. Note: the observer may be notified synchronously or
+     * asynchronously.
+     * @param observer The MostVisitedURLsObserver to be called once when the most visited sites
+     *            are initially available and again whenever the list of most visited sites changes.
+     * @param numSites The maximum number of most visited sites to return.
+     */
+    public void setMostVisitedURLsObserver(final MostVisitedURLsObserver observer, int numSites) {
+        MostVisitedURLsObserver wrappedObserver = new MostVisitedURLsObserver() {
+            @Override
+            public void onMostVisitedURLsAvailable(String[] titles, String[] urls) {
+                // Don't notify observer if we've already been destroyed.
+                if (mNativeMostVisitedSites != 0) {
+                    observer.onMostVisitedURLsAvailable(titles, urls);
+                }
+            }
+        };
+        nativeSetMostVisitedURLsObserver(mNativeMostVisitedSites, wrappedObserver, numSites);
     }
 
     /**
@@ -65,8 +95,17 @@ public class MostVisitedSites {
      * @param url String representation of url.
      * @param callback Instance of a callback object.
      */
-    public void getURLThumbnail(String url, ThumbnailCallback callback) {
-        nativeGetURLThumbnail(mProfile, url, callback);
+    public void getURLThumbnail(String url, final ThumbnailCallback callback) {
+        ThumbnailCallback wrappedCallback = new ThumbnailCallback() {
+            @Override
+            public void onMostVisitedURLsThumbnailAvailable(Bitmap thumbnail) {
+                // Don't notify callback if we've already been destroyed.
+                if (mNativeMostVisitedSites != 0) {
+                    callback.onMostVisitedURLsThumbnailAvailable(thumbnail);
+                }
+            }
+        };
+        nativeGetURLThumbnail(mNativeMostVisitedSites, url, wrappedCallback);
     }
 
     /**
@@ -74,12 +113,14 @@ public class MostVisitedSites {
      * @param url The URL to be blacklisted.
      */
     public void blacklistUrl(String url) {
-        nativeBlacklistUrl(mProfile, url);
+        nativeBlacklistUrl(mNativeMostVisitedSites, url);
     }
 
-    private static native void nativeGetMostVisitedURLs(
-            Profile profile, MostVisitedURLsCallback callback, int numResults);
-    private static native void nativeGetURLThumbnail(
-            Profile profile, String url, ThumbnailCallback callback);
-    private static native void nativeBlacklistUrl(Profile profile, String url);
+    private native long nativeInit(Profile profile);
+    private native void nativeDestroy(long nativeMostVisitedSites);
+    private native void nativeSetMostVisitedURLsObserver(long nativeMostVisitedSites,
+            MostVisitedURLsObserver observer, int numSites);
+    private native void nativeGetURLThumbnail(long nativeMostVisitedSites, String url,
+            ThumbnailCallback callback);
+    private native void nativeBlacklistUrl(long nativeMostVisitedSites, String url);
 }

@@ -8,11 +8,13 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_source.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -27,62 +29,40 @@ using base::android::CheckException;
 using content::BrowserThread;
 using history::TopSites;
 
-namespace chrome {
-namespace android {
-
-bool RegisterMostVisitedSites(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-}  // namespace android
-}  // namespace chrome
-
 namespace {
 
-class NativeCallback : public base::RefCounted<NativeCallback> {
- public:
-  NativeCallback(jobject j_callback_obj, int num_results)
-      : num_results_(num_results) {
-    JNIEnv* env = AttachCurrentThread();
-    j_callback_obj_.Reset(env, j_callback_obj);
+void ExtractMostVisitedTitlesAndURLs(
+    const history::MostVisitedURLList& visited_list,
+    std::vector<base::string16>* titles,
+    std::vector<std::string>* urls,
+    int num_sites) {
+  size_t max = static_cast<size_t>(num_sites);
+  for (size_t i = 0; i < visited_list.size() && i < max; ++i) {
+    const history::MostVisitedURL& visited = visited_list[i];
+
+    if (visited.url.is_empty())
+      break;  // This is the signal that there are no more real visited sites.
+
+    titles->push_back(visited.title);
+    urls->push_back(visited.url.spec());
   }
+}
 
-  void OnMostVisitedURLsAvailable(
-      const history::MostVisitedURLList& visited_list) {
-    std::vector<base::string16> titles;
-    std::vector<std::string> urls;
-    ExtractMostVisitedTitlesAndURLs(visited_list, &titles, &urls);
+void OnMostVisitedURLsAvailable(
+    ScopedJavaGlobalRef<jobject>* j_observer,
+    int num_sites,
+    const history::MostVisitedURLList& visited_list) {
+  std::vector<base::string16> titles;
+  std::vector<std::string> urls;
+  ExtractMostVisitedTitlesAndURLs(visited_list, &titles, &urls, num_sites);
 
-    JNIEnv* env = AttachCurrentThread();
-    Java_MostVisitedURLsCallback_onMostVisitedURLsAvailable(
-        env,
-        j_callback_obj_.obj(),
-        ToJavaArrayOfStrings(env, titles).obj(),
-        ToJavaArrayOfStrings(env, urls).obj());
-  }
-
- private:
-  friend class base::RefCounted<NativeCallback>;
-  ~NativeCallback() {}
-
-  void ExtractMostVisitedTitlesAndURLs(
-      const history::MostVisitedURLList& visited_list,
-      std::vector<base::string16>* titles,
-      std::vector<std::string>* urls) {
-    for (size_t i = 0; i < visited_list.size() && i < num_results_; ++i) {
-      const history::MostVisitedURL& visited = visited_list[i];
-
-      if (visited.url.is_empty())
-        break;  // This is the signal that there are no more real visited sites.
-
-      titles->push_back(visited.title);
-      urls->push_back(visited.url.spec());
-    }
-  }
-
-  ScopedJavaGlobalRef<jobject> j_callback_obj_;
-  size_t num_results_;
-};
+  JNIEnv* env = AttachCurrentThread();
+  Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
+      env,
+      j_observer->obj(),
+      ToJavaArrayOfStrings(env, titles).obj(),
+      ToJavaArrayOfStrings(env, urls).obj());
+}
 
 SkBitmap ExtractThumbnail(const base::RefCountedMemory& image_data) {
   scoped_ptr<SkBitmap> image(gfx::JPEGCodec::Decode(
@@ -93,17 +73,17 @@ SkBitmap ExtractThumbnail(const base::RefCountedMemory& image_data) {
 
 void OnObtainedThumbnail(
     ScopedJavaGlobalRef<jobject>* bitmap,
-    ScopedJavaGlobalRef<jobject>* j_callback_ref) {
+    ScopedJavaGlobalRef<jobject>* j_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
   Java_ThumbnailCallback_onMostVisitedURLsThumbnailAvailable(
-      env, j_callback_ref->obj(), bitmap->obj());
+      env, j_callback->obj(), bitmap->obj());
 }
 
 void GetUrlThumbnailTask(
     std::string url_string,
     scoped_refptr<TopSites> top_sites,
-    ScopedJavaGlobalRef<jobject>* j_callback_ref) {
+    ScopedJavaGlobalRef<jobject>* j_callback) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaGlobalRef<jobject>* j_bitmap_ref =
@@ -121,84 +101,110 @@ void GetUrlThumbnailTask(
     }
   }
 
-  // Since j_callback_ref is owned by this callback,
-  // when the callback falls out of scope it will be deleted.
-  // We need to pass ownership to the next callback.
-  ScopedJavaGlobalRef<jobject>* j_callback_ref_pass =
-      new ScopedJavaGlobalRef<jobject>(*j_callback_ref);
+  // Since j_callback is owned by this callback, when the callback falls out of
+  // scope it will be deleted. We need to pass ownership to the next callback.
+  ScopedJavaGlobalRef<jobject>* j_callback_pass =
+      new ScopedJavaGlobalRef<jobject>(*j_callback);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &OnObtainedThumbnail,
-          base::Owned(j_bitmap_ref),base::Owned(j_callback_ref_pass)));
+          base::Owned(j_bitmap_ref), base::Owned(j_callback_pass)));
 }
 
 }  // namespace
 
-void GetMostVisitedURLs(
-    JNIEnv* env,
-    jclass clazz,
-    jobject j_profile,
-    jobject j_callback_obj,
-    jint num_results) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+MostVisitedSites::MostVisitedSites(Profile* profile)
+    : profile_(profile), num_sites_(0) {
+}
 
-  DCHECK(profile);
-  if (!profile)
-    return;
+MostVisitedSites::~MostVisitedSites() {
+}
 
-  TopSites* top_sites = profile->GetTopSites();
-  if (!top_sites)
-    return;
+void MostVisitedSites::Destroy(JNIEnv* env, jobject obj) {
+  delete this;
+}
 
-  // TopSites updates itself after a delay. To ensure up-to-date results, force
-  // an update now.
-  top_sites->SyncWithHistory();
+void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
+                                                  jobject obj,
+                                                  jobject j_observer,
+                                                  jint num_sites) {
+  observer_.Reset(env, j_observer);
+  num_sites_ = num_sites;
 
-  scoped_refptr<NativeCallback> native_callback =
-      new NativeCallback(j_callback_obj, static_cast<int>(num_results));
-  top_sites->GetMostVisitedURLs(
-      base::Bind(&NativeCallback::OnMostVisitedURLsAvailable,
-                 native_callback), false);
+  QueryMostVisitedURLs();
+
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (top_sites) {
+    // TopSites updates itself after a delay. To ensure up-to-date results,
+    // force an update now.
+    top_sites->SyncWithHistory();
+
+    // Register for notification when TopSites changes so that we can update
+    // ourself.
+    registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+                   content::Source<history::TopSites>(top_sites));
+  }
 }
 
 // May be called from any thread
-void GetURLThumbnail(
-    JNIEnv* env,
-    jclass clazz,
-    jobject j_profile,
-    jstring url,
-    jobject j_callback_obj) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-
-  DCHECK(profile);
-  if (!profile)
-    return;
-
-  ScopedJavaGlobalRef<jobject>* j_callback_ref =
+void MostVisitedSites::GetURLThumbnail(JNIEnv* env,
+                                       jobject obj,
+                                       jstring url,
+                                       jobject j_callback_obj) {
+  ScopedJavaGlobalRef<jobject>* j_callback =
       new ScopedJavaGlobalRef<jobject>();
-  j_callback_ref->Reset(env, j_callback_obj);
+  j_callback->Reset(env, j_callback_obj);
 
   std::string url_string = ConvertJavaStringToUTF8(env, url);
-  scoped_refptr<TopSites> top_sites(profile->GetTopSites());
+  scoped_refptr<TopSites> top_sites(profile_->GetTopSites());
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE, base::Bind(
           &GetUrlThumbnailTask,
           url_string,
-          top_sites, base::Owned(j_callback_ref)));
+          top_sites, base::Owned(j_callback)));
 }
 
-void BlacklistUrl(JNIEnv* env, jclass clazz, jobject j_profile, jstring j_url) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-
-  DCHECK(profile);
-  if (!profile)
-    return;
-
-  TopSites* top_sites = profile->GetTopSites();
+void MostVisitedSites::BlacklistUrl(JNIEnv* env,
+                                    jobject obj,
+                                    jstring j_url) {
+  TopSites* top_sites = profile_->GetTopSites();
   if (!top_sites)
     return;
 
   std::string url_string = ConvertJavaStringToUTF8(env, j_url);
   top_sites->AddBlacklistedURL(GURL(url_string));
+}
+
+void MostVisitedSites::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
+
+  // Most visited urls changed, query again.
+  QueryMostVisitedURLs();
+}
+
+// static
+bool MostVisitedSites::Register(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+void MostVisitedSites::QueryMostVisitedURLs() {
+  TopSites* top_sites = profile_->GetTopSites();
+  if (!top_sites)
+    return;
+
+  top_sites->GetMostVisitedURLs(
+      base::Bind(
+          &OnMostVisitedURLsAvailable,
+          base::Owned(new ScopedJavaGlobalRef<jobject>(observer_)),
+          num_sites_),
+      false);
+}
+
+static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {
+  MostVisitedSites* most_visited_sites =
+      new MostVisitedSites(ProfileAndroid::FromProfileAndroid(jprofile));
+  return reinterpret_cast<intptr_t>(most_visited_sites);
 }
