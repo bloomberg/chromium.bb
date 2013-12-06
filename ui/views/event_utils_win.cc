@@ -50,10 +50,10 @@ bool RepostLocatedEvent(gfx::NativeWindow window
   int window_x = screen_loc.x();
   int window_y = screen_loc.y();
   if (in_client_area) {
-    RECT window_bounds;
-    GetWindowRect(window, &window_bounds);
-    window_x -= window_bounds.left;
-    window_y -= window_bounds.top;
+    POINT pt = {window_x, window_y};
+    ScreenToClient(window, &pt);
+    window_x = pt.x;
+    window_y = pt.y;
   }
 
   WPARAM target = in_client_area ? event.native_event().wParam : nc_hit_result;

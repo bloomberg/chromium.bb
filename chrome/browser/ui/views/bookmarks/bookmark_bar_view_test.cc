@@ -1751,8 +1751,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
 #else
-// TODO(ananta): Investigate and fix: http://crbug.com/325540
-#define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
+#define MAYBE_ContextMenuExitTest ContextMenuExitTest
 #endif
 
 VIEW_TEST(BookmarkBarViewTest20, MAYBE_ContextMenuExitTest)
