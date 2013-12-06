@@ -1520,13 +1520,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         if (mediaType == 'image' || mediaType == 'video') {
           task = function() {
             // TODO(mtomasz): Replace the url with an entry.
-            new FileTasks(this, this.params_).openGallery(
-                [opt_selectionEntry.toURL()]);
+            new FileTasks(this, this.params_).openGallery([opt_selectionEntry]);
           }.bind(this);
         } else if (mediaType == 'archive') {
           task = function() {
             new FileTasks(this, this.params_).mountArchives(
-                [opt_selectionEntry.toURL()]);
+                [opt_selectionEntry]);
           }.bind(this);
         }
       }

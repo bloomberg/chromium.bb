@@ -559,18 +559,21 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
 
   // TODO(mtomasz): Pass Entries instead of URLs.
   var urls = util.entriesToURLs(entries);
-  fm.resolveSelectResults_(urls, function(entries) {
-    for (var index = 0; index < entries.length; ++index) {
+  fm.resolveSelectResults_(urls, function(resolvedURLs) {
+    for (var index = 0; index < resolvedURLs.length; ++index) {
       // TODO(mtomasz): Pass Entry instead of URL.
-      fm.volumeManager_.mountArchive(entries[index].toURL(),
+      fm.volumeManager_.mountArchive(resolvedURLs[index],
         function(mountPath) {
           tracker.stop();
           if (!tracker.hasChanged)
             fm.directoryModel_.changeDirectory(mountPath);
-        }, function(entry, error) {
+        }, function(url, error) {
           tracker.stop();
-          fm.alert.show(strf('ARCHIVE_MOUNT_FAILED', entry.name, error));
-        }.bind(null, entries[index]));
+          var path = util.extractFilePath(url);
+          var namePos = path.lastIndexOf('/');
+          fm.alert.show(strf('ARCHIVE_MOUNT_FAILED',
+                             path.substr(namePos + 1), error));
+        }.bind(null, resolvedURLs[index]));
       }
   });
 };
