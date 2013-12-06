@@ -2184,6 +2184,8 @@ set_fullscreen(struct shell_surface *shsurf,
 	shsurf->fullscreen.type = method;
 	shsurf->fullscreen.framerate = framerate;
 
+	shsurf->next_state.fullscreen = true;
+	shsurf->state_changed = true;
 	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 
 	shsurf->client->send_configure(shsurf->surface, 0,
@@ -2243,8 +2245,6 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shell_surface_set_parent(shsurf, NULL);
 
 	surface_clear_next_states(shsurf);
-	shsurf->next_state.fullscreen = true;
-	shsurf->state_changed = true;
 	set_fullscreen(shsurf, method, framerate, output);
 }
 
@@ -3122,13 +3122,10 @@ xdg_surface_set_fullscreen(struct wl_client *client,
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
-	if (!shsurf->next_state.fullscreen) {
-		shsurf->next_state.fullscreen = true;
-		shsurf->state_changed = true;
+	if (!shsurf->next_state.fullscreen)
 		set_fullscreen(shsurf,
 			       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 			       0, shsurf->recommended_output);
-	}
 }
 
 static void
