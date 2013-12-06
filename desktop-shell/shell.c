@@ -2304,6 +2304,8 @@ set_maximized(struct shell_surface *shsurf,
 	                               shsurf->output->width,
 	                               shsurf->output->height - panel_height);
 
+	shsurf->next_state.maximized = true;
+	shsurf->state_changed = true;
 	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 }
 
@@ -2341,8 +2343,6 @@ shell_surface_set_maximized(struct wl_client *client,
 	shell_surface_set_parent(shsurf, NULL);
 
 	surface_clear_next_states(shsurf);
-	shsurf->next_state.maximized = true;
-	shsurf->state_changed = true;
 	set_maximized(shsurf, output);
 }
 
@@ -3169,11 +3169,8 @@ xdg_surface_set_maximized(struct wl_client *client,
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
-	if (!shsurf->next_state.maximized) {
-		shsurf->next_state.maximized = true;
-		shsurf->state_changed = true;
+	if (!shsurf->next_state.maximized)
 		set_maximized(shsurf, NULL);
-	}
 }
 
 static void
