@@ -46,6 +46,7 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/image_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -365,7 +366,7 @@ WebContentsImpl::WebContentsImpl(
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
       color_chooser_identifier_(0),
-      message_source_(NULL),
+      render_view_message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
@@ -473,6 +474,15 @@ RenderFrameHostManager* WebContentsImpl::GetRenderManagerForTesting() {
 
 bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                         const IPC::Message& message) {
+  // Message handlers should be aware of which RenderViewHost sent the
+  // message, which is temporarily stored in render_view_message_source_.
+  render_view_message_source_ = render_view_host;
+  bool handled = OnMessageReceived(message);
+  render_view_message_source_ = NULL;
+  return handled;
+}
+
+bool WebContentsImpl::OnMessageReceived(const IPC::Message& message) {
   if (GetWebUI() &&
       static_cast<WebUIImpl*>(GetWebUI())->OnMessageReceived(message)) {
     return true;
@@ -484,12 +494,11 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     if (observer->OnMessageReceived(message))
       return true;
 
-  // Message handlers should be aware of which RenderViewHost sent the
-  // message, which is temporarily stored in message_source_.
-  message_source_ = render_view_host;
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebContentsImpl, message, message_is_ok)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PepperPluginHung, OnPepperPluginHung)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
@@ -508,7 +517,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenColorChooser, OnOpenColorChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EndColorChooser, OnEndColorChooser)
@@ -536,7 +544,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
-  message_source_ = NULL;
 
   if (!message_is_ok) {
     RecordAction(UserMetricsAction("BadMessageTerminate_RVD"));
@@ -2240,8 +2247,9 @@ void WebContentsImpl::OnDidRunInsecureContent(
 }
 
 void WebContentsImpl::OnDocumentLoadedInFrame(int64 frame_id) {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DocumentLoadedInFrame(frame_id, message_source_));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver, observers_,
+      DocumentLoadedInFrame(frame_id, render_view_message_source_));
 }
 
 void WebContentsImpl::OnDidFinishLoad(
@@ -2249,11 +2257,12 @@ void WebContentsImpl::OnDidFinishLoad(
     const GURL& url,
     bool is_main_frame) {
   GURL validated_url(url);
-  RenderProcessHost* render_process_host = message_source_->GetProcess();
+  RenderProcessHost* render_process_host =
+      render_view_message_source_->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFinishLoad(frame_id, validated_url, is_main_frame,
-                                  message_source_));
+                                  render_view_message_source_));
 }
 
 void WebContentsImpl::OnDidFailLoadWithError(
@@ -2263,12 +2272,13 @@ void WebContentsImpl::OnDidFailLoadWithError(
     int error_code,
     const base::string16& error_description) {
   GURL validated_url(url);
-  RenderProcessHost* render_process_host = message_source_->GetProcess();
+  RenderProcessHost* render_process_host =
+      render_view_message_source_->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFailLoad(frame_id, validated_url, is_main_frame,
                                 error_code, error_description,
-                                message_source_));
+                                render_view_message_source_));
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
@@ -2368,12 +2378,21 @@ void WebContentsImpl::OnOpenDateTimeDialog(
 
 void WebContentsImpl::OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg) {
   java_bridge_dispatcher_host_manager_->OnGetChannelHandle(
-      message_source_, reply_msg);
+      render_view_message_source_, reply_msg);
 }
 
 #endif
 
-void WebContentsImpl::OnCrashedPlugin(const base::FilePath& plugin_path,
+void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
+                                         const base::FilePath& path,
+                                         bool is_hung) {
+  UMA_HISTOGRAM_COUNTS("Pepper.PluginHung", 1);
+
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    PluginHungStatusChanged(plugin_child_id, path, is_hung));
+}
+
+void WebContentsImpl::OnPluginCrashed(const base::FilePath& plugin_path,
                                       base::ProcessId plugin_pid) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     PluginCrashed(plugin_path, plugin_pid));
@@ -2502,11 +2521,13 @@ void WebContentsImpl::OnMediaNotification(int64 player_cookie,
           "Playing audio");
     }
 
-    if (blocker)
-      power_save_blockers_[message_source_][player_cookie] = blocker.release();
+    if (blocker) {
+      power_save_blockers_[render_view_message_source_][player_cookie] =
+          blocker.release();
+    }
   } else {
-    delete power_save_blockers_[message_source_][player_cookie];
-    power_save_blockers_[message_source_].erase(player_cookie);
+    delete power_save_blockers_[render_view_message_source_][player_cookie];
+    power_save_blockers_[render_view_message_source_].erase(player_cookie);
   }
 #endif  // !defined(OS_CHROMEOS)
 }
@@ -2733,13 +2754,9 @@ void WebContentsImpl::NotifyNavigationEntryCommitted(
       WebContentsObserver, observers_, NavigationEntryCommitted(load_details));
 }
 
-void WebContentsImpl::PepperPluginHung(int plugin_child_id,
-                                       const base::FilePath& path,
-                                       bool is_hung) {
-  UMA_HISTOGRAM_COUNTS("Pepper.PluginHung", 1);
-
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    PluginHungStatusChanged(plugin_child_id, path, is_hung));
+bool WebContentsImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
+                                        const IPC::Message& message) {
+  return OnMessageReceived(message);
 }
 
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
