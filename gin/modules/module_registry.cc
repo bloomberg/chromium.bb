@@ -202,7 +202,7 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
   if (ConvertFromV8(isolate, module, &factory)) {
     PerContextData* data = PerContextData::From(isolate->GetCurrentContext());
     Runner* runner = data->runner();
-    module = runner->Call(factory, runner->global(), argc, argv.data());
+    module = runner->Call(factory, runner->global(), argc, &argv.front());
     if (pending->id.empty())
       ConvertFromV8(isolate, factory->GetScriptOrigin().ResourceName(),
                     &pending->id);
