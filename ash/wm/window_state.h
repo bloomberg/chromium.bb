@@ -173,12 +173,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void AddObserver(WindowStateObserver* observer);
   void RemoveObserver(WindowStateObserver* observer);
 
-  // Whether the window is tracked by workspace code. Default is
-  // true. If set to false the workspace does not switch the current
-  // workspace, nor does it attempt to impose constraints on the
-  // bounds of the window. This is intended for tab dragging.
-  bool tracked_by_workspace() const { return tracked_by_workspace_; }
-  void SetTrackedByWorkspace(bool tracked_by_workspace);
+  // Whether the window is being dragged. Default is false.
+  bool is_dragged() const { return is_dragged_; }
+  void set_is_dragged(bool is_dragged) { is_dragged_ = is_dragged; }
 
   // Whether or not the window's position can be managed by the
   // auto management logic.
@@ -262,7 +259,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   aura::Window* window_;
   scoped_ptr<WindowStateDelegate> delegate_;
 
-  bool tracked_by_workspace_;
+  bool is_dragged_;
   bool window_position_managed_;
   bool bounds_changed_by_user_;
   bool panel_attached_;

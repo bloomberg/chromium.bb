@@ -31,7 +31,7 @@ bool WindowState::IsMaximizedOrFullscreenState(ui::WindowShowState show_state) {
 
 WindowState::WindowState(aura::Window* window)
     : window_(window),
-      tracked_by_workspace_(true),
+      is_dragged_(false),
       window_position_managed_(false),
       bounds_changed_by_user_(false),
       panel_attached_(true),
@@ -253,15 +253,6 @@ void WindowState::AddObserver(WindowStateObserver* observer) {
 
 void WindowState::RemoveObserver(WindowStateObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-void WindowState::SetTrackedByWorkspace(bool tracked_by_workspace) {
-  if (tracked_by_workspace_ == tracked_by_workspace)
-    return;
-  bool old = tracked_by_workspace_;
-  tracked_by_workspace_ = tracked_by_workspace;
-  FOR_EACH_OBSERVER(WindowStateObserver, observer_list_,
-                    OnTrackedByWorkspaceChanged(this, old));
 }
 
 void WindowState::OnWindowPropertyChanged(aura::Window* window,

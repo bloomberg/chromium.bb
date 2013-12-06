@@ -14,11 +14,6 @@ class WindowState;
 
 class ASH_EXPORT WindowStateObserver {
  public:
-  // Called when the tracked_by_workspace has changed.
-  virtual void OnTrackedByWorkspaceChanged(
-      WindowState* window,
-      bool old_value) {}
-
   // Called when the window's show type has changed. This is different from
   // kWindowShowStatekey property change as this will be invoked when the window
   // gets left/right maximized, and auto positioned. |old_type| is the value

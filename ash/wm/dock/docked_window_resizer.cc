@@ -75,23 +75,14 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
   gfx::Point offset;
   gfx::Rect bounds(CalculateBoundsForDrag(details_, location));
-  bool set_tracked_by_workspace = MaybeSnapToEdge(bounds, &offset);
-
-  // Temporarily clear kWindowTrackedByWorkspaceKey for windows that are snapped
-  // to screen edges e.g. when they are docked. This prevents the windows from
-  // getting snapped to other nearby windows during the drag.
-  wm::WindowState* window_state = wm::GetWindowState(GetTarget());
-  bool was_tracked_by_workspace = window_state->tracked_by_workspace();
-  if (set_tracked_by_workspace)
-    window_state->SetTrackedByWorkspace(false);
-  gfx::Point modified_location(location.x() + offset.x(),
-                               location.y() + offset.y());
+  MaybeSnapToEdge(bounds, &offset);
+  gfx::Point modified_location(location);
+  modified_location.Offset(offset.x(), offset.y());
 
   base::WeakPtr<DockedWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
   next_window_resizer_->Drag(modified_location, event_flags);
   if (!resizer)
     return;
-  window_state->SetTrackedByWorkspace(was_tracked_by_workspace);
 
   DockedWindowLayoutManager* new_dock_layout =
       GetDockedLayoutManagerAtPoint(last_location_);
@@ -125,25 +116,15 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void DockedWindowResizer::CompleteDrag(int event_flags) {
-  // Temporarily clear kWindowTrackedByWorkspaceKey for panels so that they
-  // don't get forced into the workspace that may be shrunken because of docked
-  // windows.
-  wm::WindowState* window_state = wm::GetWindowState(GetTarget());
-  bool was_tracked_by_workspace = window_state->tracked_by_workspace();
-  window_state->SetTrackedByWorkspace(false);
   // The root window can change when dragging into a different screen.
   next_window_resizer_->CompleteDrag(event_flags);
   FinishedDragging();
-  window_state->SetTrackedByWorkspace(was_tracked_by_workspace);
 }
 
 void DockedWindowResizer::RevertDrag() {
   // Temporarily clear kWindowTrackedByWorkspaceKey for panels so that they
   // don't get forced into the workspace that may be shrunken because of docked
   // windows.
-  wm::WindowState* window_state = wm::GetWindowState(GetTarget());
-  bool was_tracked_by_workspace = window_state->tracked_by_workspace();
-  window_state->SetTrackedByWorkspace(false);
   next_window_resizer_->RevertDrag();
   // Restore docked state to what it was before the drag if necessary.
   if (is_docked_ != was_docked_) {
@@ -154,7 +135,6 @@ void DockedWindowResizer::RevertDrag() {
       dock_layout_->UndockDraggedWindow();
   }
   FinishedDragging();
-  window_state->SetTrackedByWorkspace(was_tracked_by_workspace);
 }
 
 aura::Window* DockedWindowResizer::GetTarget() {
@@ -188,11 +168,11 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
   is_docked_ = was_docked_;
 }
 
-bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
+void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
                                           gfx::Point* offset) {
   // Windows only snap magnetically when they were previously docked.
   if (!was_docked_)
-    return false;
+    return;
   DockedAlignment dock_alignment = dock_layout_->CalculateAlignment();
   gfx::Rect dock_bounds = ScreenAsh::ConvertRectFromScreen(
       GetTarget()->parent(),
@@ -207,23 +187,21 @@ bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
     const int distance = bounds.x() - dock_bounds.x();
     if (distance < kSnapToDockDistance && distance > 0) {
       offset->set_x(-distance);
-      return true;
+      return;
     }
   }
   if (dock_alignment == DOCKED_ALIGNMENT_RIGHT ||
       dock_alignment == DOCKED_ALIGNMENT_NONE) {
     const int distance = dock_bounds.right() - bounds.right();
-    if (distance < kSnapToDockDistance && distance > 0) {
+    if (distance < kSnapToDockDistance && distance > 0)
       offset->set_x(distance);
-      return true;
-    }
   }
-  return false;
 }
 
 void DockedWindowResizer::StartedDragging() {
   // During resizing the window width is preserved by DockedwindowLayoutManager.
   wm::WindowState* window_state = wm::GetWindowState(GetTarget());
+  window_state->set_is_dragged(true);
   if (is_docked_ &&
       (details_.bounds_change & WindowResizer::kBoundsChange_Resizes)) {
     window_state->set_bounds_changed_by_user(true);
@@ -299,6 +277,7 @@ void DockedWindowResizer::FinishedDragging() {
         details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
             DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
   is_docked_ = false;
+  window_state->set_is_dragged(false);
 }
 
 DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(

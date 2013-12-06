@@ -119,7 +119,7 @@ void WorkspaceLayoutManager::SetChildBounds(
     Window* child,
     const gfx::Rect& requested_bounds) {
   wm::WindowState* window_state = wm::GetWindowState(child);
-  if (!window_state->tracked_by_workspace()) {
+  if (window_state->is_dragged()) {
     SetChildBoundsDirect(child, requested_bounds);
     return;
   }
@@ -154,19 +154,6 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
       window->GetProperty(aura::client::kAlwaysOnTopKey)) {
     GetRootWindowController(window->GetRootWindow())->
         always_on_top_controller()->GetContainer(window)->AddChild(window);
-  }
-}
-
-void WorkspaceLayoutManager::OnTrackedByWorkspaceChanged(
-    wm::WindowState* window_state,
-    bool old){
-  if (window_state->tracked_by_workspace()) {
-    if (!SetMaximizedOrFullscreenBounds(window_state)) {
-      gfx::Rect bounds = window_state->window()->bounds();
-      AdjustSnappedBounds(window_state, &bounds);
-      if (window_state->window()->bounds() != bounds)
-        SetChildBoundsDirect(window_state->window(), bounds);
-    }
   }
 }
 
@@ -228,7 +215,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
 void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
     wm::WindowState* window_state,
     AdjustWindowReason reason) {
-  if (!window_state->tracked_by_workspace())
+  if (window_state->is_dragged())
     return;
 
   // Do not cross fade here: the window's layer hierarchy may be messed up for
@@ -273,7 +260,7 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
   if (window_state->window()->bounds().IsEmpty())
     return;
 
-  if (!window_state->tracked_by_workspace())
+  if (window_state->is_dragged())
     return;
 
   if (SetMaximizedOrFullscreenBounds(window_state))
@@ -382,8 +369,7 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(
 
 bool WorkspaceLayoutManager::SetMaximizedOrFullscreenBounds(
     wm::WindowState* window_state) {
-  if (!window_state->tracked_by_workspace())
-    return false;
+  DCHECK(!window_state->is_dragged());
 
   // During animations there is a transform installed on the workspace
   // windows. For this reason this code uses the parent so that the transform is
@@ -410,7 +396,7 @@ void WorkspaceLayoutManager::AdjustSnappedBounds(wm::WindowState* window_state,
   // to false during the drag. The same can be done in WorkspaceWindowResizer.
   // This will allow us to remove the check for window_resizer() to determine if
   // the window is being dragged.
-  if (!window_state->tracked_by_workspace() ||
+  if (window_state->is_dragged() ||
       !window_state->IsSnapped() ||
       window_state->window_resizer())
     return;

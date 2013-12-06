@@ -74,7 +74,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     // is set by tab dragging code.
     if (!window_state->IsNormalShowState() &&
         (window_component != HTCAPTION ||
-         window_state->tracked_by_workspace())) {
+         !window_state->is_dragged())) {
       return scoped_ptr<WindowResizer>();
     }
     window_resizer = internal::WorkspaceWindowResizer::Create(
@@ -753,9 +753,9 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
     magnetism_window_ = NULL;
   }
 
-  // Avoid magnetically snapping to popups, menus, tooltips, controls and
-  // windows that are not tracked by workspace.
-  if (!window_state()->CanResize() || !window_state()->tracked_by_workspace())
+  // Avoid magnetically snapping windows that are not resizable.
+  // TODO(oshima): change this to window.type() == TYPE_NORMAL.
+  if (!window_state()->CanResize())
     return false;
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();

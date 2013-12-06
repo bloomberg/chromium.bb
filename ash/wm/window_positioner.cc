@@ -58,8 +58,7 @@ bool UseAutoWindowManager(const aura::Window* window) {
   if (disable_auto_positioning)
     return false;
   const wm::WindowState* window_state = wm::GetWindowState(window);
-  return window_state->tracked_by_workspace() &&
-      window_state->window_position_managed();
+  return !window_state->is_dragged() && window_state->window_position_managed();
 }
 
 // Check if a given |window| can be managed. This includes that it's state is

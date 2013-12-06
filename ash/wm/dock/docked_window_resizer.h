@@ -54,9 +54,9 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   DockedWindowResizer(WindowResizer* next_window_resizer,
                       const Details& details);
 
-  // Checks if the provided window bounds should snap to the side of a screen.
-  // If so the offset returned gives the necessary adjustment to snap.
-  bool MaybeSnapToEdge(const gfx::Rect& bounds, gfx::Point* offset);
+  // If the provided window bounds should snap to the side of a screen,
+  // returns the offset that gives the necessary adjustment to snap.
+  void MaybeSnapToEdge(const gfx::Rect& bounds, gfx::Point* offset);
 
   // Tracks the window's initial position and attachment at the start of a drag
   // and informs the DockLayoutManager that a drag has started if necessary.

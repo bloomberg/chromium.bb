@@ -103,7 +103,6 @@ class WorkspaceControllerTest : public test::AshTestBase {
     aura::Window* window = CreateTestWindow();
     window->SetBounds(bounds);
     wm::WindowState* window_state = wm::GetWindowState(window);
-    window_state->SetTrackedByWorkspace(true);
     window_state->set_window_position_managed(true);
     window->Show();
     return window;
@@ -688,47 +687,6 @@ TEST_F(WorkspaceControllerTest, TransientParent) {
   EXPECT_EQ(w2->parent(), w1->parent());
 }
 
-// Verifies changing TrackedByWorkspace works.
-TEST_F(WorkspaceControllerTest, TrackedByWorkspace) {
-  // Create a fullscreen window.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
-  EXPECT_TRUE(w1->IsVisible());
-
-  // Create a second fullscreen window and mark it not tracked by workspace
-  // manager.
-  scoped_ptr<Window> w2(CreateTestWindowUnparented());
-  w2->SetBounds(gfx::Rect(1, 6, 25, 30));
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  ParentWindowInPrimaryRootWindow(w2.get());
-  w2->Show();
-  wm::GetWindowState(w2.get())->SetTrackedByWorkspace(false);
-  wm::ActivateWindow(w2.get());
-
-  // Activating |w2| should force it to have the same parent as |w1|.
-  EXPECT_EQ(w1->parent(), w2->parent());
-  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  EXPECT_TRUE(w1->IsVisible());
-  EXPECT_TRUE(w2->IsVisible());
-
-  // Because |w2| isn't tracked we should be able to set the bounds of it.
-  gfx::Rect bounds(w2->bounds());
-  bounds.Offset(4, 5);
-  w2->SetBounds(bounds);
-  EXPECT_EQ(bounds.ToString(), w2->bounds().ToString());
-
-  // Transition it to tracked by worskpace. It should end up in the desktop
-  // workspace.
-  wm::GetWindowState(w2.get())->SetTrackedByWorkspace(true);
-  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  EXPECT_TRUE(w1->IsVisible());
-  EXPECT_TRUE(w2->IsVisible());
-  EXPECT_EQ(w1->parent(), w2->parent());
-}
-
 // Test the placement of newly created windows.
 TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnCreate) {
   if (!SupportsHostWindowResize())
@@ -1270,105 +1228,6 @@ class DragMaximizedNonTrackedWindowObserver
 };
 
 }  // namespace
-
-// Verifies setting tracked by workspace to false and then dragging a fullscreen
-// window doesn't result in changing the window hierarchy (which typically
-// indicates new workspaces have been created).
-TEST_F(WorkspaceControllerTest, DragFullscreenNonTrackedWindow) {
-  aura::test::EventGenerator generator(
-      Shell::GetPrimaryRootWindow(), gfx::Point());
-  generator.MoveMouseTo(5, 5);
-
-  aura::test::TestWindowDelegate delegate;
-  delegate.set_window_component(HTCAPTION);
-  scoped_ptr<Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&delegate,
-                                               aura::client::WINDOW_TYPE_NORMAL,
-                                               gfx::Rect(5, 6, 7, 8),
-                                               NULL));
-  ParentWindowInPrimaryRootWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  DragMaximizedNonTrackedWindowObserver observer(w1.get());
-  w1->parent()->parent()->AddObserver(&observer);
-  const gfx::Rect max_bounds(w1->bounds());
-
-  generator.PressLeftButton();
-  generator.MoveMouseTo(100, 100);
-  // The bounds shouldn't change (drag should result in nothing happening
-  // now.
-  EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
-
-  generator.ReleaseLeftButton();
-  EXPECT_EQ(0, observer.change_count());
-
-  // Set tracked to false and repeat, now the window should move.
-  wm::GetWindowState(w1.get())->SetTrackedByWorkspace(false);
-  generator.MoveMouseTo(5, 5);
-  generator.PressLeftButton();
-  generator.MoveMouseBy(100, 100);
-  EXPECT_EQ(gfx::Rect(max_bounds.x() + 100, max_bounds.y() + 100,
-                      max_bounds.width(), max_bounds.height()).ToString(),
-            w1->bounds().ToString());
-
-  generator.ReleaseLeftButton();
-  wm::GetWindowState(w1.get())->SetTrackedByWorkspace(true);
-  // Marking the window tracked again should snap back to origin.
-  EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
-  EXPECT_EQ(0, observer.change_count());
-
-  w1->parent()->parent()->RemoveObserver(&observer);
-}
-
-// Verifies setting tracked by workspace to false and then dragging a maximized
-// window can change the bound.
-TEST_F(WorkspaceControllerTest, DragMaximizedNonTrackedWindow) {
-  aura::test::EventGenerator generator(
-      Shell::GetPrimaryRootWindow(), gfx::Point());
-  generator.MoveMouseTo(5, 5);
-
-  aura::test::TestWindowDelegate delegate;
-  delegate.set_window_component(HTCAPTION);
-  scoped_ptr<Window> w1(
-      aura::test::CreateTestWindowWithDelegate(&delegate,
-                                               aura::client::WINDOW_TYPE_NORMAL,
-                                               gfx::Rect(5, 6, 7, 8),
-                                               NULL));
-  ParentWindowInPrimaryRootWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  DragMaximizedNonTrackedWindowObserver observer(w1.get());
-  w1->parent()->parent()->AddObserver(&observer);
-  const gfx::Rect max_bounds(w1->bounds());
-
-  generator.PressLeftButton();
-  generator.MoveMouseTo(100, 100);
-  // The bounds shouldn't change (drag should result in nothing happening
-  // now.
-  EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
-
-  generator.ReleaseLeftButton();
-  EXPECT_EQ(0, observer.change_count());
-
-  // Set tracked to false and repeat, now the window should move.
-  wm::GetWindowState(w1.get())->SetTrackedByWorkspace(false);
-  generator.MoveMouseTo(5, 5);
-  generator.PressLeftButton();
-  generator.MoveMouseBy(100, 100);
-  EXPECT_EQ(gfx::Rect(max_bounds.x() + 100, max_bounds.y() + 100,
-                      max_bounds.width(), max_bounds.height()).ToString(),
-            w1->bounds().ToString());
-
-  generator.ReleaseLeftButton();
-  wm::GetWindowState(w1.get())->SetTrackedByWorkspace(true);
-  // Marking the window tracked again should snap back to origin.
-  EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
-  EXPECT_EQ(0, observer.change_count());
-
-  w1->parent()->parent()->RemoveObserver(&observer);
-}
 
 // Verifies that a new maximized window becomes visible after its activation
 // is requested, even though it does not become activated because a system

@@ -197,9 +197,9 @@ class DockView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(DockView);
 };
 
-void SetTrackedByWorkspace(gfx::NativeWindow window, bool value) {
+void SetIsDragged(gfx::NativeWindow window, bool value) {
 #if defined(USE_ASH)
-  ash::wm::GetWindowState(window)->SetTrackedByWorkspace(value);
+  ash::wm::GetWindowState(window)->set_is_dragged(value);
 #endif
 }
 
@@ -423,7 +423,7 @@ TabDragController::~TabDragController() {
 
   if (move_loop_widget_) {
     move_loop_widget_->RemoveObserver(this);
-    SetTrackedByWorkspace(move_loop_widget_->GetNativeView(), true);
+    SetIsDragged(move_loop_widget_->GetNativeView(), false);
     SetWindowPositionManaged(move_loop_widget_->GetNativeView(), true);
   }
 
@@ -1529,7 +1529,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 
   move_loop_widget_ = GetAttachedBrowserWidget();
   DCHECK(move_loop_widget_);
-  SetTrackedByWorkspace(move_loop_widget_->GetNativeView(), false);
+  SetIsDragged(move_loop_widget_->GetNativeView(), true);
   move_loop_widget_->AddObserver(this);
   is_dragging_window_ = true;
   base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
@@ -1779,7 +1779,7 @@ void TabDragController::EndDragImpl(EndDragType type) {
     waiting_for_run_loop_to_exit_ = true;
 
     if (type == NORMAL || (type == TAB_DESTROYED && drag_data_.size() > 1)) {
-      SetTrackedByWorkspace(GetAttachedBrowserWidget()->GetNativeView(), true);
+      SetIsDragged(GetAttachedBrowserWidget()->GetNativeView(), false);
       SetWindowPositionManaged(GetAttachedBrowserWidget()->GetNativeView(),
                                true);
     }
@@ -2337,7 +2337,7 @@ Browser* TabDragController::CreateBrowserForDrag(
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
   is_dragging_new_browser_ = true;
-  SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);
+  SetIsDragged(browser->window()->GetNativeWindow(), true);
   SetWindowPositionManaged(browser->window()->GetNativeWindow(), false);
   // If the window is created maximized then the bounds we supplied are ignored.
   // We need to reset them again so they are honored.

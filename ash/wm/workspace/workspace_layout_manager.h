@@ -56,10 +56,6 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
                                        const void* key,
                                        intptr_t old) OVERRIDE;
 
-  // ash::WindowSettings::Observer overrides:
-  virtual void OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
-                                           bool old) OVERRIDE;
-
   // WindowStateObserver overrides:
   virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
                                        wm::WindowShowType old_type) OVERRIDE;
