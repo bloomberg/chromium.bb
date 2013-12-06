@@ -1190,17 +1190,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                   event.error.data.sourceFileUrl.split('/').pop()),
               str('GOOGLE_DRIVE_BUY_STORAGE_URL')));
     }
-
-    // TODO(benchan): Currently, there is no FileWatcher emulation for
-    // drive::FileSystem, so we need to manually trigger the directory rescan
-    // after paste operations complete. Remove this once we emulate file
-    // watching functionalities in drive::FileSystem.
-    if (this.isOnDrive()) {
-      if (event.reason == 'SUCCESS' || event.reason == 'ERROR' ||
-          event.reason == 'CANCELLED') {
-        this.directoryModel_.rescanLater();
-      }
-    }
   };
 
   /**
