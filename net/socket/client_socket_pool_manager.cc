@@ -437,6 +437,31 @@ int InitSocketHandleForRawConnect(
       callback);
 }
 
+int InitSocketHandleForTlsConnect(
+    const HostPortPair& host_port_pair,
+    HttpNetworkSession* session,
+    const ProxyInfo& proxy_info,
+    const SSLConfig& ssl_config_for_origin,
+    const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
+    const BoundNetLog& net_log,
+    ClientSocketHandle* socket_handle,
+    const CompletionCallback& callback) {
+  DCHECK(socket_handle);
+  // Synthesize an HttpRequestInfo.
+  GURL request_url = GURL("https://" + host_port_pair.ToString());
+  HttpRequestHeaders request_extra_headers;
+  int request_load_flags = 0;
+  RequestPriority request_priority = MEDIUM;
+
+  return InitSocketPoolHelper(
+      request_url, request_extra_headers, request_load_flags, request_priority,
+      session, proxy_info, false, false, ssl_config_for_origin,
+      ssl_config_for_proxy, true, privacy_mode, net_log, 0, socket_handle,
+      HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
+      callback);
+}
+
 int PreconnectSocketsForHttpRequest(
     const GURL& request_url,
     const HttpRequestHeaders& request_extra_headers,

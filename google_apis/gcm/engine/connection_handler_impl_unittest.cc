@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gcm/engine/connection_handler.h"
+#include "google_apis/gcm/engine/connection_handler_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -97,10 +97,10 @@ std::string BuildDataMessage(const std::string& from,
   return data_message.SerializeAsString();
 }
 
-class GCMConnectionHandlerTest : public testing::Test {
+class GCMConnectionHandlerImplTest : public testing::Test {
  public:
-  GCMConnectionHandlerTest();
-  virtual ~GCMConnectionHandlerTest();
+  GCMConnectionHandlerImplTest();
+  virtual ~GCMConnectionHandlerImplTest();
 
   net::StreamSocket* BuildSocket(const ReadList& read_list,
                                  const WriteList& write_list);
@@ -108,7 +108,9 @@ class GCMConnectionHandlerTest : public testing::Test {
   // Pump |message_loop_|, resetting |run_loop_| after completion.
   void PumpLoop();
 
-  ConnectionHandler* connection_handler() { return &connection_handler_; }
+  ConnectionHandlerImpl* connection_handler() {
+    return connection_handler_.get();
+  }
   base::MessageLoop* message_loop() { return &message_loop_; };
   net::DelayedSocketData* data_provider() { return data_provider_.get(); }
   int last_error() const { return last_error_; }
@@ -133,7 +135,7 @@ class GCMConnectionHandlerTest : public testing::Test {
   scoped_ptr<SocketOutputStream> socket_output_stream_;
 
   // The connection handler being tested.
-  ConnectionHandler connection_handler_;
+  scoped_ptr<ConnectionHandlerImpl> connection_handler_;
 
   // The last connection error received.
   int last_error_;
@@ -147,18 +149,17 @@ class GCMConnectionHandlerTest : public testing::Test {
   scoped_ptr<base::RunLoop> run_loop_;
 };
 
-GCMConnectionHandlerTest::GCMConnectionHandlerTest()
-    : connection_handler_(TestTimeouts::tiny_timeout()),
-      last_error_(0) {
+GCMConnectionHandlerImplTest::GCMConnectionHandlerImplTest()
+  : last_error_(0) {
   net::IPAddressNumber ip_number;
   net::ParseIPLiteralToNumber("127.0.0.1", &ip_number);
   address_list_ = net::AddressList::CreateFromIPAddress(ip_number, kMCSPort);
 }
 
-GCMConnectionHandlerTest::~GCMConnectionHandlerTest() {
+GCMConnectionHandlerImplTest::~GCMConnectionHandlerImplTest() {
 }
 
-net::StreamSocket* GCMConnectionHandlerTest::BuildSocket(
+net::StreamSocket* GCMConnectionHandlerImplTest::BuildSocket(
     const ReadList& read_list,
     const WriteList& write_list) {
   mock_reads_ = read_list;
@@ -180,49 +181,51 @@ net::StreamSocket* GCMConnectionHandlerTest::BuildSocket(
   return socket_.get();
 }
 
-void GCMConnectionHandlerTest::PumpLoop() {
+void GCMConnectionHandlerImplTest::PumpLoop() {
   run_loop_->RunUntilIdle();
   run_loop_.reset(new base::RunLoop());
 }
 
-void GCMConnectionHandlerTest::Connect(
+void GCMConnectionHandlerImplTest::Connect(
     ScopedMessage* dst_proto) {
-  connection_handler_.Init(
-      socket_.Pass(),
-      *BuildLoginRequest(kAuthId, kAuthToken),
-      base::Bind(&GCMConnectionHandlerTest::ReadContinuation,
-                 base::Unretained(this),
-                 dst_proto),
-      base::Bind(&GCMConnectionHandlerTest::WriteContinuation,
-                 base::Unretained(this)),
-      base::Bind(&GCMConnectionHandlerTest::ConnectionContinuation,
-                 base::Unretained(this)));
+  connection_handler_.reset(new ConnectionHandlerImpl(
+      TestTimeouts::tiny_timeout(),
+          base::Bind(&GCMConnectionHandlerImplTest::ReadContinuation,
+                     base::Unretained(this),
+                     dst_proto),
+          base::Bind(&GCMConnectionHandlerImplTest::WriteContinuation,
+                     base::Unretained(this)),
+          base::Bind(&GCMConnectionHandlerImplTest::ConnectionContinuation,
+                     base::Unretained(this))));
+  EXPECT_FALSE(connection_handler()->CanSendMessage());
+  connection_handler_->Init(*BuildLoginRequest(kAuthId, kAuthToken),
+                            socket_.Pass());
 }
 
-void GCMConnectionHandlerTest::ReadContinuation(
+void GCMConnectionHandlerImplTest::ReadContinuation(
     ScopedMessage* dst_proto,
     ScopedMessage new_proto) {
   *dst_proto = new_proto.Pass();
   run_loop_->Quit();
 }
 
-void GCMConnectionHandlerTest::WaitForMessage() {
+void GCMConnectionHandlerImplTest::WaitForMessage() {
   run_loop_->Run();
   run_loop_.reset(new base::RunLoop());
 }
 
-void GCMConnectionHandlerTest::WriteContinuation() {
+void GCMConnectionHandlerImplTest::WriteContinuation() {
   run_loop_->Quit();
 }
 
-void GCMConnectionHandlerTest::ConnectionContinuation(int error) {
+void GCMConnectionHandlerImplTest::ConnectionContinuation(int error) {
   last_error_ = error;
   run_loop_->Quit();
 }
 
 // Initialize the connection handler and ensure the handshake completes
 // successfully.
-TEST_F(GCMConnectionHandlerTest, Init) {
+TEST_F(GCMConnectionHandlerImplTest, Init) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -234,7 +237,6 @@ TEST_F(GCMConnectionHandlerTest, Init) {
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
-  EXPECT_FALSE(connection_handler()->CanSendMessage());
   Connect(&received_message);
   EXPECT_FALSE(connection_handler()->CanSendMessage());
   WaitForMessage();  // The login send.
@@ -246,7 +248,7 @@ TEST_F(GCMConnectionHandlerTest, Init) {
 
 // Simulate the handshake response returning an older version. Initialization
 // should fail.
-TEST_F(GCMConnectionHandlerTest, InitFailedVersionCheck) {
+TEST_F(GCMConnectionHandlerImplTest, InitFailedVersionCheck) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -270,7 +272,7 @@ TEST_F(GCMConnectionHandlerTest, InitFailedVersionCheck) {
 
 // Attempt to initialize, but receive no server response, resulting in a time
 // out.
-TEST_F(GCMConnectionHandlerTest, InitTimeout) {
+TEST_F(GCMConnectionHandlerImplTest, InitTimeout) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -290,7 +292,7 @@ TEST_F(GCMConnectionHandlerTest, InitTimeout) {
 
 // Attempt to initialize, but receive an incomplete server response, resulting
 // in a time out.
-TEST_F(GCMConnectionHandlerTest, InitIncompleteTimeout) {
+TEST_F(GCMConnectionHandlerImplTest, InitIncompleteTimeout) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -314,7 +316,7 @@ TEST_F(GCMConnectionHandlerTest, InitIncompleteTimeout) {
 }
 
 // Reinitialize the connection handler after failing to initialize.
-TEST_F(GCMConnectionHandlerTest, ReInit) {
+TEST_F(GCMConnectionHandlerImplTest, ReInit) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -347,7 +349,7 @@ TEST_F(GCMConnectionHandlerTest, ReInit) {
 }
 
 // Verify that messages can be received after initialization.
-TEST_F(GCMConnectionHandlerTest, RecvMsg) {
+TEST_F(GCMConnectionHandlerImplTest, RecvMsg) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -377,7 +379,7 @@ TEST_F(GCMConnectionHandlerTest, RecvMsg) {
 }
 
 // Verify that if two messages arrive at once, they're treated appropriately.
-TEST_F(GCMConnectionHandlerTest, Recv2Msgs) {
+TEST_F(GCMConnectionHandlerImplTest, Recv2Msgs) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -414,7 +416,7 @@ TEST_F(GCMConnectionHandlerTest, Recv2Msgs) {
 }
 
 // Receive a long (>128 bytes) message.
-TEST_F(GCMConnectionHandlerTest, RecvLongMsg) {
+TEST_F(GCMConnectionHandlerImplTest, RecvLongMsg) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -445,7 +447,7 @@ TEST_F(GCMConnectionHandlerTest, RecvLongMsg) {
 }
 
 // Receive two long (>128 bytes) message.
-TEST_F(GCMConnectionHandlerTest, Recv2LongMsgs) {
+TEST_F(GCMConnectionHandlerImplTest, Recv2LongMsgs) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -484,7 +486,7 @@ TEST_F(GCMConnectionHandlerTest, Recv2LongMsgs) {
 
 // Simulate a message where the end of the data does not arrive in time and the
 // read times out.
-TEST_F(GCMConnectionHandlerTest, ReadTimeout) {
+TEST_F(GCMConnectionHandlerImplTest, ReadTimeout) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -527,7 +529,7 @@ TEST_F(GCMConnectionHandlerTest, ReadTimeout) {
 }
 
 // Receive a message with zero data bytes.
-TEST_F(GCMConnectionHandlerTest, RecvMsgNoData) {
+TEST_F(GCMConnectionHandlerImplTest, RecvMsgNoData) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -558,7 +560,7 @@ TEST_F(GCMConnectionHandlerTest, RecvMsgNoData) {
 }
 
 // Send a message after performing the handshake.
-TEST_F(GCMConnectionHandlerTest, SendMsg) {
+TEST_F(GCMConnectionHandlerImplTest, SendMsg) {
   mcs_proto::DataMessageStanza data_message;
   data_message.set_from(kDataMsgFrom);
   data_message.set_category(kDataMsgCategory);
@@ -592,7 +594,7 @@ TEST_F(GCMConnectionHandlerTest, SendMsg) {
 }
 
 // Attempt to send a message after the socket is disconnected due to a timeout.
-TEST_F(GCMConnectionHandlerTest, SendMsgSocketDisconnected) {
+TEST_F(GCMConnectionHandlerImplTest, SendMsgSocketDisconnected) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list;
   write_list.push_back(net::MockWrite(net::ASYNC,

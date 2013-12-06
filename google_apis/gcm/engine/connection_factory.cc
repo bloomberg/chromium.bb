@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gcm/engine/connection_handler.h"
+#include "google_apis/gcm/engine/connection_factory.h"
 
 namespace gcm {
 
-ConnectionHandler::ConnectionHandler() {
-}
-
-ConnectionHandler::~ConnectionHandler() {
-}
+ConnectionFactory::ConnectionFactory() {}
+ConnectionFactory::~ConnectionFactory() {}
 
 }  // namespace gcm

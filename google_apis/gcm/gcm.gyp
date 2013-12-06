@@ -34,7 +34,8 @@
         '../../components/components.gyp:encryptor',
         '../../net/net.gyp:net',
         '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../../third_party/protobuf/protobuf.gyp:protobuf_lite'
+        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../../url/url.gyp:url_lib',
       ],
       'sources': [
         'base/mcs_message.h',
@@ -43,8 +44,14 @@
         'base/mcs_util.cc',
         'base/socket_stream.h',
         'base/socket_stream.cc',
+        'engine/connection_factory.h',
+        'engine/connection_factory.cc',
+        'engine/connection_factory_impl.h',
+        'engine/connection_factory_impl.cc',
         'engine/connection_handler.h',
         'engine/connection_handler.cc',
+        'engine/connection_handler_impl.h',
+        'engine/connection_handler_impl.cc',
         'engine/rmq_store.h',
         'engine/rmq_store.cc',
         'gcm_client.cc',
@@ -78,7 +85,8 @@
       'sources': [
         'base/mcs_util_unittest.cc',
         'base/socket_stream_unittest.cc',
-        'engine/connection_handler_unittest.cc',
+        'engine/connection_factory_impl_unittest.cc',
+        'engine/connection_handler_impl_unittest.cc',
         'engine/rmq_store_unittest.cc',
       ]
     },

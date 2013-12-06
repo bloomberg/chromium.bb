@@ -147,6 +147,21 @@ NET_EXPORT int InitSocketHandleForRawConnect(
     ClientSocketHandle* socket_handle,
     const CompletionCallback& callback);
 
+// A helper method that uses the passed in proxy information to initialize a
+// ClientSocketHandle with the relevant socket pool. Use this method for
+// a raw socket connection with TLS negotiation to a host-port pair (that needs
+// to tunnel through the proxies).
+NET_EXPORT int InitSocketHandleForTlsConnect(
+    const HostPortPair& host_port_pair,
+    HttpNetworkSession* session,
+    const ProxyInfo& proxy_info,
+    const SSLConfig& ssl_config_for_origin,
+    const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
+    const BoundNetLog& net_log,
+    ClientSocketHandle* socket_handle,
+    const CompletionCallback& callback);
+
 // Similar to InitSocketHandleForHttpRequest except that it initiates the
 // desired number of preconnect streams from the relevant socket pool.
 int PreconnectSocketsForHttpRequest(
