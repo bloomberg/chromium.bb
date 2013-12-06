@@ -8,7 +8,7 @@
 
 namespace ui {
 
-void EventSource::SendEventToClient(Event* event) {
+void EventSource::SendEventToProcessor(Event* event) {
   EventProcessor* processor = GetEventProcessor();
   CHECK(processor);
   EventDispatchDetails details = processor->OnEventFromSource(event);

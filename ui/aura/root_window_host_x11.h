@@ -18,6 +18,7 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -34,6 +35,7 @@ class TouchEventCalibrate;
 
 class AURA_EXPORT RootWindowHostX11 : public RootWindowHost,
                                       public base::MessageLoop::Dispatcher,
+                                      public ui::EventSource,
                                       public EnvObserver {
  public:
   explicit RootWindowHostX11(const gfx::Rect& bounds);
@@ -68,6 +70,10 @@ class AURA_EXPORT RootWindowHostX11 : public RootWindowHost,
   // EnvObserver overrides.
   virtual void OnWindowInitialized(Window* window) OVERRIDE;
   virtual void OnRootWindowInitialized(RootWindow* root_window) OVERRIDE;
+
+  // ui::EventSource overrides.
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
+
  private:
   class MouseMoveFilter;
 

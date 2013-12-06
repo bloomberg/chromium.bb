@@ -9,10 +9,15 @@
 #include "ui/aura/root_window_host_x11.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window_tree_host_delegate.h"
+#include "ui/events/event_processor.h"
+#include "ui/events/event_target.h"
+#include "ui/events/event_target_iterator.h"
 #include "ui/events/test/events_test_utils_x11.h"
 
 namespace {
-class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {
+class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate,
+                                   public ui::EventProcessor,
+                                   public ui::EventTarget {
  public:
   TestRootWindowHostDelegate() : last_touch_type_(ui::ET_UNKNOWN),
                                  last_touch_id_(-1),
@@ -20,17 +25,16 @@ class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {
   }
   virtual ~TestRootWindowHostDelegate() {}
 
+  // aura::RootWindowHostDelegate:
   virtual bool OnHostKeyEvent(ui::KeyEvent* event) OVERRIDE {
     return true;
   }
-
   virtual bool OnHostMouseEvent(ui::MouseEvent* event) OVERRIDE {
     return true;
   }
   virtual bool OnHostScrollEvent(ui::ScrollEvent* event) OVERRIDE {
     return true;
   }
-
   virtual bool OnHostTouchEvent(ui::TouchEvent* event) OVERRIDE {
     last_touch_id_ = event->touch_id();
     last_touch_type_ = event->type();
@@ -39,32 +43,42 @@ class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {
   }
 
   virtual void OnHostCancelMode() OVERRIDE {}
-
-  // Called when the windowing system activates the window.
   virtual void OnHostActivated() OVERRIDE {}
-
-  // Called when system focus is changed to another window.
   virtual void OnHostLostWindowCapture() OVERRIDE {}
-
-  // Called when the windowing system has mouse grab because it's performing a
-  // window move on our behalf, but we should still paint as if we're active.
   virtual void OnHostLostMouseGrab() OVERRIDE {}
-
   virtual void OnHostPaint(const gfx::Rect& damage_rect) OVERRIDE {}
-
   virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE {}
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE {}
-
-  virtual float GetDeviceScaleFactor() OVERRIDE {
-    return 1.0f;
+  virtual float GetDeviceScaleFactor() OVERRIDE { return 1.0f; }
+  virtual aura::RootWindow* AsRootWindow() OVERRIDE { return NULL; }
+  virtual const aura::RootWindow* AsRootWindow() const OVERRIDE { return NULL; }
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE {
+    return this;
   }
 
-  virtual aura::RootWindow* AsRootWindow() OVERRIDE {
-    return NULL;
+  // ui::EventProcessor:
+  virtual ui::EventTarget* GetRootTarget() OVERRIDE { return this; }
+  virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE {
+    return true;
   }
-  virtual const aura::RootWindow* AsRootWindow() const OVERRIDE {
-    return NULL;
+
+  // ui::EventHandler:
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    last_touch_id_ = event->touch_id();
+    last_touch_type_ = event->type();
+    last_touch_location_ = event->location();
   }
+
+  // ui::EventTarget:
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE {
+    return true;
+  }
+  virtual ui::EventTarget* GetParentTarget() OVERRIDE { return NULL; }
+  virtual scoped_ptr<ui::EventTargetIterator>
+  GetChildIterator() const OVERRIDE {
+    return scoped_ptr<ui::EventTargetIterator>();
+  }
+  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE { return &targeter_; }
 
   ui::EventType last_touch_type() {
     return last_touch_type_;
@@ -82,6 +96,7 @@ class TestRootWindowHostDelegate : public aura::RootWindowHostDelegate {
   ui::EventType last_touch_type_;
   int last_touch_id_;
   gfx::Point last_touch_location_;
+  ui::EventTargeter targeter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRootWindowHostDelegate);
 };

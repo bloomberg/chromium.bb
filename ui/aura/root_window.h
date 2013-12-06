@@ -21,7 +21,8 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/event_dispatcher.h"
+#include "ui/events/event_processor.h"
+#include "ui/events/event_targeter.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -50,9 +51,10 @@ class RootWindowHost;
 class RootWindowObserver;
 class RootWindowTransformer;
 class TestScreen;
+class WindowTargeter;
 
 // RootWindow is responsible for hosting a set of windows.
-class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
+class AURA_EXPORT RootWindow : public ui::EventProcessor,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
                                public aura::client::CaptureDelegate,
@@ -243,8 +245,6 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   ui::EventDispatchDetails DispatchMouseEnterOrExit(
       const ui::MouseEvent& event,
       ui::EventType type) WARN_UNUSED_RESULT;
-  ui::EventDispatchDetails ProcessEvent(Window* target,
-                                        ui::Event* event) WARN_UNUSED_RESULT;
   ui::EventDispatchDetails ProcessGestures(
       ui::GestureRecognizer::Gestures* gestures) WARN_UNUSED_RESULT;
 
@@ -271,8 +271,15 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   virtual void SetNativeCapture() OVERRIDE;
   virtual void ReleaseNativeCapture() OVERRIDE;
 
+  // Overridden from ui::EventProcessor:
+  virtual ui::EventTarget* GetRootTarget() OVERRIDE;
+
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
+  virtual ui::EventDispatchDetails PreDispatchEvent(ui::EventTarget* target,
+                                                    ui::Event* event) OVERRIDE;
+  virtual ui::EventDispatchDetails PostDispatchEvent(
+      ui::EventTarget* target, const ui::Event& event) OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.
   virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
@@ -302,6 +309,7 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   virtual float GetDeviceScaleFactor() OVERRIDE;
   virtual RootWindow* AsRootWindow() OVERRIDE;
   virtual const RootWindow* AsRootWindow() const OVERRIDE;
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   ui::EventDispatchDetails OnHostMouseEventImpl(ui::MouseEvent* event)
       WARN_UNUSED_RESULT;
@@ -354,6 +362,7 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
   Window* event_dispatch_target_;
+  Window* old_dispatch_target_;
 
   bool synthesize_mouse_move_;
   bool waiting_on_compositing_end_;

@@ -21,6 +21,7 @@
 #include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
@@ -148,12 +149,15 @@ RootWindow::RootWindow(const CreateParams& params)
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       event_dispatch_target_(NULL),
+      old_dispatch_target_(NULL),
       synthesize_mouse_move_(false),
       move_hold_count_(0),
       repost_event_factory_(this),
       held_event_factory_(this) {
   window()->set_dispatcher(this);
   window()->SetName("RootWindow");
+  window()->set_event_targeter(
+      scoped_ptr<ui::EventTargeter>(new WindowTargeter()));
 
   compositor_.reset(new ui::Compositor(host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
@@ -332,7 +336,7 @@ void RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
   Window* target = GetGestureTarget(event);
   if (target) {
     event->ConvertLocationToTarget(window(), target);
-    DispatchDetails details = ProcessEvent(target, event);
+    DispatchDetails details = DispatchEvent(target, event);
     if (details.dispatcher_destroyed)
       return;
   }
@@ -522,20 +526,7 @@ ui::EventDispatchDetails RootWindow::DispatchMouseEnterOrExit(
                                   mouse_moved_handler_,
                                   type,
                                   event.flags() | ui::EF_IS_SYNTHESIZED);
-  return ProcessEvent(mouse_moved_handler_, &translated_event);
-}
-
-ui::EventDispatchDetails RootWindow::ProcessEvent(Window* target,
-                                                  ui::Event* event) {
-  Window* old_target = event_dispatch_target_;
-  event_dispatch_target_ = target;
-  DispatchDetails details = DispatchEvent(target, event);
-  if (!details.dispatcher_destroyed) {
-    if (event_dispatch_target_ != target)
-      details.target_destroyed = true;
-    event_dispatch_target_ = old_target;
-  }
-  return details;
+  return DispatchEvent(mouse_moved_handler_, &translated_event);
 }
 
 ui::EventDispatchDetails RootWindow::ProcessGestures(
@@ -548,7 +539,7 @@ ui::EventDispatchDetails RootWindow::ProcessGestures(
   for (size_t i = 0; i < gestures->size(); ++i) {
     ui::GestureEvent* event = gestures->get().at(i);
     event->ConvertLocationToTarget(window(), target);
-    details = ProcessEvent(target, event);
+    details = DispatchEvent(target, event);
     if (details.dispatcher_destroyed || details.target_destroyed)
       break;
   }
@@ -634,7 +625,7 @@ void RootWindow::UpdateCapture(Window* old_capture,
     ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                          gfx::Point(), 0);
 
-    DispatchDetails details = ProcessEvent(old_capture, &event);
+    DispatchDetails details = DispatchEvent(old_capture, &event);
     if (details.dispatcher_destroyed)
       return;
 
@@ -669,10 +660,36 @@ void RootWindow::ReleaseNativeCapture() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// RootWindow, ui::EventProcessor implementation:
+ui::EventTarget* RootWindow::GetRootTarget() {
+  return window();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RootWindow, ui::EventDispatcherDelegate implementation:
 
 bool RootWindow::CanDispatchToTarget(ui::EventTarget* target) {
   return event_dispatch_target_ == target;
+}
+
+ui::EventDispatchDetails RootWindow::PreDispatchEvent(ui::EventTarget* target,
+                                                      ui::Event* event) {
+  old_dispatch_target_ = event_dispatch_target_;
+  event_dispatch_target_ = static_cast<Window*>(target);
+  return DispatchDetails();
+}
+
+ui::EventDispatchDetails RootWindow::PostDispatchEvent(ui::EventTarget* target,
+                                                       const ui::Event& event) {
+  DispatchDetails details;
+  if (target != event_dispatch_target_)
+    details.target_destroyed = true;
+  event_dispatch_target_ = old_dispatch_target_;
+  old_dispatch_target_ = NULL;
+#ifndef NDEBUG
+  DCHECK(!event_dispatch_target_ || window()->Contains(event_dispatch_target_));
+#endif
+  return details;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -722,7 +739,7 @@ bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
     client::GetFocusClient(window())->FocusWindow(NULL);
     return false;
   }
-  details = ProcessEvent(focused_window ? focused_window : window(), event);
+  details = DispatchEvent(focused_window ? focused_window : window(), event);
   if (details.dispatcher_destroyed)
     return true;
   return event->handled();
@@ -757,7 +774,7 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
     flags |= ui::EF_IS_NON_CLIENT;
   event->set_flags(flags);
 
-  details = ProcessEvent(target, event);
+  details = DispatchEvent(target, event);
   if (details.dispatcher_destroyed)
     return true;
   return event->handled();
@@ -790,7 +807,7 @@ void RootWindow::OnHostCancelMode() {
   ui::CancelModeEvent event;
   Window* focused_window = client::GetFocusClient(window())->GetFocusedWindow();
   DispatchDetails details =
-      ProcessEvent(focused_window ? focused_window : window(), &event);
+      DispatchEvent(focused_window ? focused_window : window(), &event);
   if (details.dispatcher_destroyed)
     return;
 }
@@ -849,6 +866,10 @@ RootWindow* RootWindow::AsRootWindow() {
 }
 
 const RootWindow* RootWindow::AsRootWindow() const {
+  return this;
+}
+
+ui::EventProcessor* RootWindow::GetEventProcessor() {
   return this;
 }
 
@@ -983,7 +1004,7 @@ ui::EventDispatchDetails RootWindow::DispatchMouseEventToTarget(
     event->ConvertLocationToTarget(window(), target);
     if (IsNonClientLocation(target, event->location()))
       event->set_flags(event->flags() | ui::EF_IS_NON_CLIENT);
-    return ProcessEvent(target, event);
+    return DispatchEvent(target, event);
   }
   return DispatchDetails();
 }
@@ -1030,7 +1051,7 @@ ui::EventDispatchDetails RootWindow::DispatchTouchEventImpl(
   if (!target && !window()->bounds().Contains(event->location())) {
     // If the initial touch is outside the root window, target the root.
     target = window();
-    DispatchDetails details = ProcessEvent(target ? target : NULL, event);
+    DispatchDetails details = DispatchEvent(target ? target : NULL, event);
     if (details.dispatcher_destroyed)
       return details;
     result = event->result();
@@ -1043,7 +1064,7 @@ ui::EventDispatchDetails RootWindow::DispatchTouchEventImpl(
     }
 
     event->ConvertLocationToTarget(window(), target);
-    DispatchDetails details = ProcessEvent(target, event);
+    DispatchDetails details = DispatchEvent(target, event);
     if (details.dispatcher_destroyed)
       return details;
     result = event->result();

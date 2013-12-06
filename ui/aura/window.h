@@ -251,6 +251,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool HasObserver(WindowObserver* observer);
 
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
+  bool ignore_events() const { return ignore_events_; }
 
   // Sets the window to grab hits for mouse and touch to an area extending
   // -|mouse_insets| and -|touch_insets| pixels outside its bounds. This can be
@@ -376,6 +377,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
  private:
   friend class test::WindowTestApi;
   friend class LayoutManager;
+  friend class WindowTargeter;
   friend class RootWindow;
 
   // Used when stacking windows.

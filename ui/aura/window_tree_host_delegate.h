@@ -15,6 +15,7 @@ class Size;
 
 namespace ui {
 class Event;
+class EventProcessor;
 class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
@@ -54,6 +55,8 @@ class AURA_EXPORT RootWindowHostDelegate {
 
   virtual RootWindow* AsRootWindow() = 0;
   virtual const RootWindow* AsRootWindow() const = 0;
+
+  virtual ui::EventProcessor* GetEventProcessor() = 0;
 
  protected:
   virtual ~RootWindowHostDelegate() {}

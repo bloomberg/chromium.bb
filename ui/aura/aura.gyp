@@ -99,6 +99,8 @@
         'root_window.h',
         'window.cc',
         'window.h',
+        'window_targeter.cc',
+        'window_targeter.h',
         'window_delegate.h',
         'window_layer_type.h',
         'window_observer.h',
@@ -267,6 +269,7 @@
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
+        'window_targeter_unittest.cc',
         'window_unittest.cc',
       ],
       'conditions': [

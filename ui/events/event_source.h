@@ -21,7 +21,7 @@ class EVENTS_EXPORT EventSource {
   virtual EventProcessor* GetEventProcessor() = 0;
 
  protected:
-  void SendEventToClient(Event* event);
+  void SendEventToProcessor(Event* event);
 };
 
 }  // namespace ui

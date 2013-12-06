@@ -822,6 +822,10 @@ void RootWindowHostX11::OnRootWindowInitialized(RootWindow* root_window) {
   SetCrOSTapPaused(false);
 }
 
+ui::EventProcessor* RootWindowHostX11::GetEventProcessor() {
+  return delegate_->GetEventProcessor();
+}
+
 bool RootWindowHostX11::DispatchEventForRootWindow(
     const base::NativeEvent& event) {
   switch (event->type) {
