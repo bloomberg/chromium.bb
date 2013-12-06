@@ -205,7 +205,7 @@ TEST(ChromiumEnv, GetChildrenPriorResults) {
   base::FilePath dir = scoped_temp_dir.path();
 
   base::FilePath new_file_dir = dir.Append(FPL("tmp_file"));
-  FILE* f = fopen(new_file_dir.value().c_str(), "w");
+  FILE* f = fopen(new_file_dir.AsUTF8Unsafe().c_str(), "w");
   if (f) {
     fputs("Temp file contents", f);
     fclose(f);
