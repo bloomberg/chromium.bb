@@ -34,6 +34,8 @@ class MEDIA_EXPORT FakeAudioManager : public AudioManagerBase {
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params,
       const std::string& device_id) OVERRIDE;
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) OVERRIDE;
 
  protected:
   virtual ~FakeAudioManager();

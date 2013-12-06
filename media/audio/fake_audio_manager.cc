@@ -6,6 +6,13 @@
 
 namespace media {
 
+namespace {
+
+const int kDefaultInputBufferSize = 1024;
+const int kDefaultSampleRate = 48000;
+
+}  // namespace
+
 FakeAudioManager::FakeAudioManager(AudioLogFactory* audio_log_factory)
     : AudioManagerBase(audio_log_factory) {}
 
@@ -64,6 +71,13 @@ AudioParameters FakeAudioManager::GetPreferredOutputStreamParameters(
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
       sample_rate, bits_per_sample, buffer_size);
+}
+
+AudioParameters FakeAudioManager::GetInputStreamParameters(
+    const std::string& device_id) {
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
 }  // namespace media
