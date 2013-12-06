@@ -1305,6 +1305,7 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
         event.y = m_currentGestureLocation.y;
         break;
     case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::GestureFlingStart:
         event.x = m_currentGestureLocation.x;
         event.y = m_currentGestureLocation.y;
         break;

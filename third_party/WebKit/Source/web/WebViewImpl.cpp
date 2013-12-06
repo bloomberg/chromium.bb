@@ -655,13 +655,11 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     bool eventSwallowed = false;
     bool eventCancelled = false; // for disambiguation
 
-    // Special handling for slow-path fling gestures, which have no PlatformGestureEvent equivalent.
+    // Special handling for slow-path fling gestures.
     switch (event.type) {
     case WebInputEvent::GestureFlingStart: {
-        if (mainFrameImpl()->frame()->eventHandler().isScrollbarHandlingGestures()) {
-            m_client->didHandleGestureEvent(event, eventCancelled);
-            return eventSwallowed;
-        }
+        if (mainFrameImpl()->frame()->eventHandler().isScrollbarHandlingGestures())
+            break;
         m_client->cancelScheduledContentIntents();
         m_positionOnFlingStart = WebPoint(event.x / pageScaleFactor(), event.y / pageScaleFactor());
         m_globalPositionOnFlingStart = WebPoint(event.globalX, event.globalY);
@@ -795,7 +793,8 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTapUnconfirmed:
     case WebInputEvent::GesturePinchEnd:
-    case WebInputEvent::GesturePinchUpdate: {
+    case WebInputEvent::GesturePinchUpdate:
+    case WebInputEvent::GestureFlingStart: {
         eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(platformEvent);
         break;
     }
