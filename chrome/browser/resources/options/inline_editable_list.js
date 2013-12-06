@@ -95,10 +95,8 @@ cr.define('options', function() {
      * Updates the edit state based on the current selected and lead states.
      */
     updateEditState: function() {
-      if (this.editable) {
-        this.editing = this.selected && this.lead &&
-          !this.isExtraFocusableControl(document.activeElement);
-      }
+      if (this.editable)
+        this.editing = this.selected && this.lead;
     },
 
     /**
@@ -126,12 +124,21 @@ cr.define('options', function() {
         this.editClickTarget_ = null;
 
         if (focusElement) {
-          focusElement.focus();
-          // select() doesn't work well in mousedown event handler.
-          setTimeout(function() {
-              if (focusElement.ownerDocument.activeElement == focusElement)
-                focusElement.select();
-          }, 0);
+          var self = this;
+          // We should delay to give focus on |focusElement| if this is called
+          // in mousedown event handler. If we did give focus immediately, Blink
+          // would try to focus on an ancestor of the mousedown target element,
+          // and remove focus from |focusElement|.
+          if (focusElement.staticVersion &&
+              focusElement.staticVersion.hasAttribute('tabindex')) {
+            setTimeout(function() {
+              if (self.editing)
+                self.focusAndMaybeSelect_(focusElement);
+              focusElement.staticVersion.removeAttribute('tabindex');
+            }, 0);
+          } else {
+            this.focusAndMaybeSelect_(focusElement);
+          }
         }
       } else {
         if (!this.editCancelled_ && this.hasBeenEdited &&
@@ -146,6 +153,18 @@ cr.define('options', function() {
           cr.dispatchSimpleEvent(this, 'canceledit', true);
         }
       }
+    },
+
+    /**
+     * Focus on the specified element, and select the editable text in it
+     * if possible.
+     * @param {!Element} control An element to be focused.
+     * @private
+     */
+    focusAndMaybeSelect_: function(control) {
+      control.focus();
+      if (control.tagName == 'INPUT')
+        control.select();
     },
 
     /**
@@ -215,9 +234,9 @@ cr.define('options', function() {
      */
     createEditableTextCell: function(text) {
       var container = this.ownerDocument.createElement('div');
-
+      var textEl;
       if (!this.isPlaceholder) {
-        var textEl = this.ownerDocument.createElement('div');
+        textEl = this.ownerDocument.createElement('div');
         textEl.className = 'static-text';
         textEl.textContent = text;
         textEl.setAttribute('displaymode', 'static');
@@ -229,7 +248,6 @@ cr.define('options', function() {
       inputEl.value = text;
       if (!this.isPlaceholder) {
         inputEl.setAttribute('displaymode', 'edit');
-        inputEl.staticVersion = textEl;
       } else {
         // At this point |this| is not attached to the parent list yet, so give
         // a short timeout in order for the attachment to occur.
@@ -251,9 +269,21 @@ cr.define('options', function() {
          window.setTimeout(handler, 0);
       });
       container.appendChild(inputEl);
-      this.editFields_.push(inputEl);
+      this.addEditField(inputEl, textEl);
 
       return container;
+    },
+
+    /**
+     * Register an edit field.
+     * @param {!Element} control An editable element. It's a form control
+     *     element typically.
+     * @param {Element} staticElement An element representing non-editable
+     *     state.
+     */
+    addEditField: function(control, staticElement) {
+      control.staticVersion = staticElement;
+      this.editFields_.push(control);
     },
 
     /**
@@ -342,30 +372,16 @@ cr.define('options', function() {
         return;
 
       var clickTarget = e.target;
-      if (this.isExtraFocusableControl(clickTarget)) {
-        clickTarget.focus();
-        return;
-      }
-
       var editFields = this.editFields_;
       for (var i = 0; i < editFields.length; i++) {
+        if (editFields[i].staticVersion == clickTarget)
+          clickTarget.tabIndex = 0;
         if (editFields[i] == clickTarget ||
             editFields[i].staticVersion == clickTarget) {
           this.editClickTarget_ = editFields[i];
           return;
         }
       }
-    },
-
-    /**
-     * Check if the specified element is a focusable form control which is in
-     * the list item and not in |editFields_|.
-     * @param {!Element} element An element.
-     * @return {boolean} Returns true if the element is one of focusable
-     *     controls in this list item.
-     */
-    isExtraFocusableControl: function(element) {
-      return false;
     },
   };
 

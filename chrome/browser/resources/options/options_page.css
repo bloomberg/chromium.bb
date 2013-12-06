@@ -332,7 +332,12 @@ list > :not([editing]) [displaymode='edit'] {
 }
 
 list > [editing] [displaymode='static'] {
-  display: none;
+  /* Don't use display:none because we need to keep an element focusable. */
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: -10em;
 }
 
 list > [editing] input:invalid {
