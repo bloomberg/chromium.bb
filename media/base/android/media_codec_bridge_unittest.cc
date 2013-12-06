@@ -111,8 +111,7 @@ static inline const base::TimeDelta InfiniteTimeOut() {
 void DecodeMediaFrame(
     VideoCodecBridge* media_codec, const uint8* data, size_t data_size,
     const base::TimeDelta input_presentation_timestamp,
-    const base::TimeDelta initial_timestamp_lower_bound,
-    bool expected_key_frame) {
+    const base::TimeDelta initial_timestamp_lower_bound) {
   base::TimeDelta input_pts = input_presentation_timestamp;
   base::TimeDelta timestamp = initial_timestamp_lower_bound;
   base::TimeDelta new_timestamp;
@@ -129,18 +128,16 @@ void DecodeMediaFrame(
     size_t size = 0;
     bool eos = false;
     int output_buf_index = -1;
-    bool key_frame = false;
     status = media_codec->DequeueOutputBuffer(InfiniteTimeOut(),
                                               &output_buf_index,
                                               &unused_offset,
                                               &size,
                                               &new_timestamp,
                                               &eos,
-                                              &key_frame);
+                                              NULL);
 
     if (status == MEDIA_CODEC_OK && output_buf_index > 0) {
       media_codec->ReleaseOutputBuffer(output_buf_index, false);
-      ASSERT_EQ(expected_key_frame, key_frame);
     }
     // Output time stamp should not be smaller than old timestamp.
     ASSERT_TRUE(new_timestamp >= timestamp);
@@ -252,8 +249,7 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   delete[] very_large_header;
 }
 
-// TODO(qinmin): fix this test crbug.com/325999
-TEST(DISABLED_MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
+TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   scoped_ptr<VideoCodecBridge> media_codec(VideoCodecBridge::CreateDecoder(
@@ -265,8 +261,7 @@ TEST(DISABLED_MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
                    buffer->data(),
                    buffer->data_size(),
                    base::TimeDelta(),
-                   base::TimeDelta(),
-                   true);
+                   base::TimeDelta());
 
   // Simulate a seek to 10 seconds, and each chunk has 2 I-frames.
   std::vector<uint8> chunk(buffer->data(),
@@ -278,8 +273,7 @@ TEST(DISABLED_MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
                    &chunk[0],
                    chunk.size(),
                    base::TimeDelta::FromMicroseconds(10000000),
-                   base::TimeDelta::FromMicroseconds(9900000),
-                   true);
+                   base::TimeDelta::FromMicroseconds(9900000));
 
   // Simulate a seek to 5 seconds.
   media_codec->Reset();
@@ -287,8 +281,7 @@ TEST(DISABLED_MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
                    &chunk[0],
                    chunk.size(),
                    base::TimeDelta::FromMicroseconds(5000000),
-                   base::TimeDelta::FromMicroseconds(4900000),
-                   true);
+                   base::TimeDelta::FromMicroseconds(4900000));
 }
 
 TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {

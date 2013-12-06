@@ -260,15 +260,15 @@ class MediaCodecBridge {
         int status = MEDIA_CODEC_ERROR;
         int index = -1;
         try {
-            int index_or_status = mMediaCodec.dequeueInputBuffer(timeoutUs);
-            if (index_or_status >= 0) { // index!
+            int indexOrStatus = mMediaCodec.dequeueInputBuffer(timeoutUs);
+            if (indexOrStatus >= 0) { // index!
                 status = MEDIA_CODEC_OK;
-                index = index_or_status;
-            } else if (index_or_status == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                index = indexOrStatus;
+            } else if (indexOrStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 Log.e(TAG, "dequeueInputBuffer: MediaCodec.INFO_TRY_AGAIN_LATER");
                 status = MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER;
             } else {
-                Log.e(TAG, "Unexpected index_or_status: " + index_or_status);
+                Log.e(TAG, "Unexpected index_or_status: " + indexOrStatus);
                 assert(false);
             }
         } catch(Exception e) {
