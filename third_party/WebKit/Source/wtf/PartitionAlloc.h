@@ -75,8 +75,7 @@
 // - Freed pages will only be re-used within the partition.
 // - Freed pages will only hold same-sized objects when re-used.
 // - Dereference of freelist pointer should fault.
-// - Linear overflow into page header should be trapped, as long as ASLR has
-// not been bypassed.
+// - Out-of-line main metadata: linear over or underflow cannot corrupt it.
 // - Partial pointer overwrite of freelist pointer should fault.
 // - Rudimentary double-free detection.
 //
@@ -105,11 +104,11 @@
 
 namespace WTF {
 
-// Maximum size of a partition's mappings. 2047MB. Note that the total amount of
+// Maximum size of a partition's mappings. 2046MB. Note that the total amount of
 // bytes allocatable at the API will be smaller. This is because things like
 // guard pages, metadata, page headers and wasted space come out of the total.
-// The 1GB is not necessarily contiguous in virtual address space.
-static const size_t kMaxPartitionSize = 2047u * 1024u * 1024u;
+// The 2GB is not necessarily contiguous in virtual address space.
+static const size_t kMaxPartitionSize = 2046u * 1024u * 1024u;
 // Allocation granularity of sizeof(void*) bytes.
 static const size_t kAllocationGranularity = sizeof(void*);
 static const size_t kAllocationGranularityMask = kAllocationGranularity - 1;
@@ -118,16 +117,12 @@ static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
 // for a partition page to be based on multiple system pages. We rarely deal
 // with system pages. Most references to "page" refer to partition pages. We
 // do also have the concept of "super pages" -- these are the underlying
-// system allocations we make. Super pages can typically fit multiple
-// partition pages inside them. See PageAllocator.h for more details on
-// super pages.
-static const size_t kPartitionPageSize = 1 << 14; // 16KB
+// system allocations we make. Super pages contain multiple partition pages
+// inside them.
+static const size_t kPartitionPageShift = 14; // 16KB
+static const size_t kPartitionPageSize = 1 << kPartitionPageShift;
 static const size_t kPartitionPageOffsetMask = kPartitionPageSize - 1;
 static const size_t kPartitionPageBaseMask = ~kPartitionPageOffsetMask;
-// This is set to a typical modern cacheline size, to minimize effects of
-// partitionAlloc() cacheline bouncing, or more accurately, to behave similarly
-// to other bucketing allocators such as tcmalloc.
-static const size_t kPartitionPageHeaderSize = 64;
 // To avoid fragmentation via never-used freelist entries, we hand out partition
 // freelist sections gradually, in units of the dominant system page size.
 // What we're actually doing is avoiding filling the full partition page
@@ -136,18 +131,19 @@ static const size_t kPartitionPageHeaderSize = 64;
 // never actually store objects there.
 static const size_t kNumSystemPagesPerPartitionPage = kPartitionPageSize / kSystemPageSize;
 
-// Our granulatity of page allocation is 64KB. This is a Windows limitation,
-// but we apply the same requirement for all platforms in order to keep
-// things simple and consistent.
-// We term these 64KB allocations "super pages". They're just a clump of
-// underlying 4KB system pages.
-static const size_t kSuperPageShift = 16; // 64KB
+// We reserve virtual address space in 2MB chunks (aligned to 2MB as well).
+// These chunks are called "super pages". We do this so that we can store
+// metadata in the first few pages of each 2MB aligned section. This leads to
+// a very fast free(). We specifically choose 2MB because this virtual address
+// block represents a full but single PTE allocation on ARM, ia32 and x64.
+static const size_t kSuperPageShift = 21; // 2MB
 static const size_t kSuperPageSize = 1 << kSuperPageShift;
 static const size_t kSuperPageOffsetMask = kSuperPageSize - 1;
 static const size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
+static const size_t kNumPartitionPagesPerSuperPage = kSuperPageSize / kPartitionPageSize;
 
-// Special bucket id for internal metadata.
-static const size_t kInternalMetadataBucket = 0;
+static const size_t kPageMetadataShift = 6; // 64 bytes per partition page.
+static const size_t kPageMetadataSize = 1 << kPageMetadataShift;
 
 #ifndef NDEBUG
 // These two byte values match tcmalloc.
@@ -176,19 +172,17 @@ struct PartitionPage {
     PartitionPage* prev;
 };
 
-struct PartitionFreepagelistEntry {
-    PartitionPage* page;
-    PartitionFreepagelistEntry* next;
-};
-
 struct PartitionBucket {
     PartitionRoot* root;
-    PartitionPage* currPage;
-    PartitionFreepagelistEntry* freePages;
+    PartitionPage* activePagesHead;
+    PartitionPage* freePagesHead;
     unsigned numFullPages;
     unsigned pageSize;
 };
 
+// An "extent" is a span of consecutive superpages. We link to the partition's
+// next extent (if there is one) at the very start of a superpage's metadata
+// area.
 struct PartitionSuperPageExtentEntry {
     char* superPageBase;
     char* superPagesEnd;
@@ -318,24 +312,55 @@ ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
 {
     PartitionRoot* root = bucket->root;
     size_t index = bucket - &root->buckets()[0];
-    size_t size;
-    if (UNLIKELY(index == kInternalMetadataBucket))
-        size = partitionCookieSizeAdjustAdd(sizeof(PartitionFreepagelistEntry));
-    else
-        size = index << kBucketShift;
+    size_t size = index << kBucketShift;
+    // Make sure the zero-sized bucket actually has space for freelist pointers.
+    if (UNLIKELY(!size))
+        size = kAllocationGranularity;
     return size;
+}
+
+ALWAYS_INLINE char* partitionSuperPageToMetadataArea(char* ptr)
+{
+    uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
+    ASSERT(!(pointerAsUint & kSuperPageOffsetMask));
+    // The metadata area is exactly one system page (the guard page) into the
+    // super page.
+    return reinterpret_cast<char*>(pointerAsUint + kSystemPageSize);
+}
+
+ALWAYS_INLINE PartitionPage* partitionPointerToPageNoAlignmentCheck(void* ptr)
+{
+    uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
+    char* superPagePtr = reinterpret_cast<char*>(pointerAsUint & kSuperPageBaseMask);
+    uintptr_t partitionPageIndex = (pointerAsUint & kSuperPageOffsetMask) >> kPartitionPageShift;
+    // Index 0 is invalid because it is the metadata area and the last index is invalid because it is a guard page.
+    ASSERT(partitionPageIndex);
+    ASSERT(partitionPageIndex < kNumPartitionPagesPerSuperPage - 1);
+    PartitionPage* page = reinterpret_cast<PartitionPage*>(partitionSuperPageToMetadataArea(superPagePtr) + (partitionPageIndex << kPageMetadataShift));
+    return page;
 }
 
 ALWAYS_INLINE PartitionPage* partitionPointerToPage(void* ptr)
 {
-    uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
-    // Checks that the pointer is after the page header. You can't free the
-    // page header!
-    ASSERT((pointerAsUint & kPartitionPageOffsetMask) >= kPartitionPageHeaderSize);
-    PartitionPage* page = reinterpret_cast<PartitionPage*>(pointerAsUint & kPartitionPageBaseMask);
+    PartitionPage* page = partitionPointerToPageNoAlignmentCheck(ptr);
     // Checks that the pointer is a multiple of bucket size.
-    ASSERT(!(((pointerAsUint & kPartitionPageOffsetMask) - kPartitionPageHeaderSize) % partitionBucketSize(page->bucket)));
+    ASSERT(!((reinterpret_cast<uintptr_t>(ptr) & kPartitionPageOffsetMask) % partitionBucketSize(page->bucket)));
     return page;
+}
+
+ALWAYS_INLINE void* partitionPageToPointer(PartitionPage* page)
+{
+    uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(page);
+    uintptr_t superPageOffset = (pointerAsUint & kSuperPageOffsetMask);
+    ASSERT(superPageOffset > kSystemPageSize);
+    ASSERT(superPageOffset < kSystemPageSize + (kNumPartitionPagesPerSuperPage * kPageMetadataSize));
+    uintptr_t partitionPageIndex = (superPageOffset - kSystemPageSize) >> kPageMetadataShift;
+    // Index 0 is invalid because it is the metadata area and the last index is invalid because it is a guard page.
+    ASSERT(partitionPageIndex);
+    ASSERT(partitionPageIndex < kNumPartitionPagesPerSuperPage - 1);
+    uintptr_t superPageBase = (pointerAsUint & kSuperPageBaseMask);
+    void* ret = reinterpret_cast<void*>(superPageBase + (partitionPageIndex << kPartitionPageShift));
+    return ret;
 }
 
 ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
@@ -366,7 +391,7 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
 
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 {
-    PartitionPage* page = bucket->currPage;
+    PartitionPage* page = bucket->activePagesHead;
     void* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
