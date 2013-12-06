@@ -36,7 +36,7 @@ class Smoothness(page_measurement.PageMeasurement):
     if self.options.metric == 'smoothness':
       self._metric = smoothness.SmoothnessMetric()
     elif self.options.metric == 'timeline':
-      self._metric = timeline.TimelineMetric(timeline.TRACING_MODE)
+      self._metric = timeline.ThreadTimesTimelineMetric()
 
     self._metric.Start(page, tab)
 
@@ -45,7 +45,7 @@ class Smoothness(page_measurement.PageMeasurement):
 
   def DidRunAction(self, page, tab, action):
     timeline_marker_name = action.GetTimelineMarkerName()
-    if timeline_marker_name:
+    if self.options.metric == 'smoothness' and timeline_marker_name:
       self._metric.AddTimelineMarkerNameToIncludeInMetric(timeline_marker_name)
 
   def DidRunActions(self, page, tab):
