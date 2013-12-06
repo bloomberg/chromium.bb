@@ -16,6 +16,7 @@ package org.chromium.ui;
  */
 public final class R {
     public static final class string {
+        public static int copy_to_clipboard_failure_message;
         public static int low_memory_error;
         public static int opening_file_error;
         public static int color_picker_button_more;

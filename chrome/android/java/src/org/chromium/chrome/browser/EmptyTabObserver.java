@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import android.view.ContextMenu;
+
 /**
  * An implementation of the {@link TabObserver} which has empty implementations of all methods.
  */
@@ -20,6 +22,9 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onWebContentsSwapped(TabBase tab) { }
+
+    @Override
+    public void onContextMenuShown(TabBase tab, ContextMenu menu) { }
 
     @Override
     public void onLoadProgressChanged(TabBase tab, int progress) { }

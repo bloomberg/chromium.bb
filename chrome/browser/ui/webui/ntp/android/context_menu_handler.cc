@@ -9,9 +9,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -106,9 +106,10 @@ void ContextMenuHandler::HandleShowContextMenu(
     menu.custom_items.push_back(menu_item);
   }
 
-  TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
-  if (tab) {
-    tab->ShowCustomContextMenu(
+  ContextMenuHelper* context_menu_helper =
+      ContextMenuHelper::FromWebContents(web_ui()->GetWebContents());
+  if (context_menu_helper) {
+    context_menu_helper->ShowCustomContextMenu(
         menu,
         base::Bind(&ContextMenuHandler::OnItemSelected,
                    weak_ptr_factory_.GetWeakPtr()));

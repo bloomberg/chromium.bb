@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import android.view.ContextMenu;
+
 /**
  * An observer that is notified of changes to a {@link TabBase} object.
  */
@@ -32,6 +34,13 @@ public interface TabObserver {
      * @param tab The notifying {@link TabBase}.
      */
     void onWebContentsSwapped(TabBase tab);
+
+    /**
+     * Called when a context menu is shown for a {@link ContentView} owned by a {@link TabBase}.
+     * @param tab  The notifying {@link TabBase}.
+     * @param menu The {@link ContextMenu} that is being shown.
+     */
+    void onContextMenuShown(TabBase tab, ContextMenu menu);
 
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 

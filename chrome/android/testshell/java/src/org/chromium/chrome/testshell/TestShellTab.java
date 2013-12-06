@@ -8,6 +8,8 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
+import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.LoadUrlParams;
@@ -125,6 +127,15 @@ public class TestShellTab extends TabBase {
        };
     }
 
+    @Override
+    protected ContextMenuPopulator createContextMenuPopulator() {
+        return new ChromeContextMenuPopulator(new TabBaseChromeContextMenuItemDelegate() {
+            @Override
+            public void onOpenImageUrl(String url) {
+                loadUrlWithSanitization(url);
+            }
+        });
+    }
 
     private class TestShellTabBaseChromeWebContentsDelegateAndroid
             extends TabBaseChromeWebContentsDelegateAndroid {

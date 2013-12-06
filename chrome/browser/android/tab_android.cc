@@ -31,6 +31,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
+#include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -90,6 +91,7 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
       g_browser_process->GetApplicationLocale(),
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   BookmarkTabHelper::CreateForWebContents(contents);
+  ContextMenuHelper::CreateForWebContents(contents);
   CoreTabHelper::CreateForWebContents(contents);
   extensions::TabHelper::CreateForWebContents(contents);
   FaviconTabHelper::CreateForWebContents(contents);
@@ -288,7 +290,8 @@ void TabAndroid::InitWebContents(JNIEnv* env,
                                  jobject obj,
                                  jboolean incognito,
                                  jobject jcontent_view_core,
-                                 jobject jweb_contents_delegate) {
+                                 jobject jweb_contents_delegate,
+                                 jobject jcontext_menu_populator) {
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::GetNativeContentViewCore(env,
                                                          jcontent_view_core);
@@ -300,6 +303,8 @@ void TabAndroid::InitWebContents(JNIEnv* env,
 
   session_tab_id_.set_id(
       SessionTabHelper::FromWebContents(web_contents())->session_id().id());
+  ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
+      jcontext_menu_populator);
   WindowAndroidHelper::FromWebContents(web_contents())->
       SetWindowAndroid(content_view_core->GetWindowAndroid());
   CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);

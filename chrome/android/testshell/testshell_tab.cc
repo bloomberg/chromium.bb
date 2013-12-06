@@ -41,17 +41,6 @@ void TestShellTab::OnReceivedHttpAuthRequest(jobject auth_handler,
   NOTIMPLEMENTED();
 }
 
-void TestShellTab::ShowContextMenu(
-    const content::ContextMenuParams& params) {
-  NOTIMPLEMENTED();
-}
-
-void TestShellTab::ShowCustomContextMenu(
-    const content::ContextMenuParams& params,
-    const base::Callback<void(int)>& callback) {
-  NOTIMPLEMENTED();
-}
-
 void TestShellTab::AddShortcutToBookmark(
     const GURL& url, const string16& title, const SkBitmap& skbitmap,
     int r_value, int g_value, int b_value) {

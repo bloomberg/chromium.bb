@@ -7,12 +7,14 @@ package org.chromium.ui.base;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.ui.R;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android
@@ -31,7 +33,7 @@ public class Clipboard {
      *
      * @param context for accessing the clipboard
      */
-    private Clipboard(final Context context) {
+    public Clipboard(final Context context) {
         mContext = context;
         mClipboardManager = (ClipboardManager)
                 context.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -100,12 +102,39 @@ public class Clipboard {
      * clipboard's current primary clip to a plain-text clip that consists of
      * the specified string.
      *
+     * @param label will become the label of the clipboard's primary clip
+     * @param text  will become the content of the clipboard's primary clip
+     */
+    public void setText(final String label, final String text) {
+        setPrimaryClipNoException(ClipData.newPlainText(label, text));
+    }
+
+    /**
+     * Emulates the behavior of the now-deprecated
+     * {@link android.text.ClipboardManager#setText(CharSequence)}, setting the
+     * clipboard's current primary clip to a plain-text clip that consists of
+     * the specified string.
+     *
      * @param text will become the content of the clipboard's primary clip
      */
-    @SuppressWarnings("javadoc")
     @CalledByNative
-    private void setText(final String text) {
-        mClipboardManager.setPrimaryClip(ClipData.newPlainText(null, text));
+    public void setText(final String text) {
+        setText(null, text);
+    }
+
+    /**
+     * Writes HTML to the clipboard, together with a plain-text representation
+     * of that very data. This API is only available in Android JellyBean+ and
+     * will be a no-operation in older versions.
+     *
+     * @param html  The HTML content to be pasted to the clipboard.
+     * @param label The Plain-text label for the HTML content.
+     * @param text  Plain-text representation of the HTML content.
+     */
+    public void setHTMLText(final String html, final String label, final String text) {
+        if (isHTMLClipboardSupported()) {
+            setPrimaryClipNoException(ClipData.newHtmlText(label, text, html));
+        }
     }
 
     /**
@@ -117,15 +146,22 @@ public class Clipboard {
      * @param text Plain-text representation of the HTML content.
      */
     @CalledByNative
-    private void setHTMLText(final String html, final String text) {
-        if (isHTMLClipboardSupported()) {
-            mClipboardManager.setPrimaryClip(
-                    ClipData.newHtmlText(null, text, html));
-        }
+    public void setHTMLText(final String html, final String text) {
+        setHTMLText(html, null, text);
     }
 
     @CalledByNative
     private static boolean isHTMLClipboardSupported() {
         return ApiCompatibilityUtils.isHTMLClipboardSupported();
+    }
+
+    private void setPrimaryClipNoException(ClipData clip) {
+        try {
+            mClipboardManager.setPrimaryClip(clip);
+        } catch (Exception ex) {
+            // Ignore any exceptions here as certain devices have bugs and will fail.
+            String text = mContext.getString(R.string.copy_to_clipboard_failure_message);
+            Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
+        }
     }
 }

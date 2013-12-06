@@ -18,9 +18,9 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.JavascriptAppModalDialog;
+import org.chromium.chrome.test.util.TabBaseTabUtils;
+import org.chromium.chrome.test.util.TabBaseTabUtils.TestCallbackHelperContainerForTab;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.chrome.testshell.TabShellTabUtils;
-import org.chromium.chrome.testshell.TabShellTabUtils.TestCallbackHelperContainerForTab;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -419,6 +419,6 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
     }
 
     private TestCallbackHelperContainerForTab getActiveTabTestCallbackHelperContainer() {
-        return TabShellTabUtils.getTestCallbackHelperContainer(getActivity().getActiveTab());
+        return TabBaseTabUtils.getTestCallbackHelperContainer(getActivity().getActiveTab());
     }
 }

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h"
 
 #include "base/logging.h"
-#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/android/context_menu_helper.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -41,12 +41,11 @@ void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
     }
   }
 
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents_);
-  // We may not have a Tab if we're running in Android WebView mode.
-  // TODO: The long term plan is to factor out the context menu code into
-  // a shared class and have WebView use a separate delegate.
-  if (tab)
-    tab->ShowContextMenu(params);
+  // TODO(dtrainor, kouhei): Give WebView a Populator/delegate so it can use the
+  // same context menu code.
+  ContextMenuHelper* helper = ContextMenuHelper::FromWebContents(web_contents_);
+  if (helper)
+    helper->ShowContextMenu(params);
 }
 
 namespace chrome {

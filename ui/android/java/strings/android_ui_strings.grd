@@ -53,6 +53,9 @@
       <message desc="Accessibility label for button to select the white color." name="IDS_COLOR_PICKER_BUTTON_WHITE">
         White
       </message>
+      <message desc="Notification for when copying to the clipboard fails. [CHAR-LIMIT=64]" name="IDS_COPY_TO_CLIPBOARD_FAILURE_MESSAGE">
+        Failed to copy to the clipboard
+      </message>
     </messages>
   </release>
   <translations>

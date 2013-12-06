@@ -3655,6 +3655,8 @@
             'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',
             'android/java/src/org/chromium/chrome/browser/ChromeWebContentsDelegateAndroid.java',
             'android/java/src/org/chromium/chrome/browser/ContentViewUtil.java',
+            'android/java/src/org/chromium/chrome/browser/contextmenu/ContextMenuHelper.java',
+            'android/java/src/org/chromium/chrome/browser/contextmenu/ContextMenuParams.java',
             'android/java/src/org/chromium/chrome/browser/DevToolsServer.java',
             'android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java',
             'android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java',

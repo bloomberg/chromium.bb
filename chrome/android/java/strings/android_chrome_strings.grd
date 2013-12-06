@@ -139,6 +139,43 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_MENU_BACK" desc="Content description for the backard navigation button.">
         Go back
       </message>
+      <!-- ContextMenu -->
+      <message name="IDS_CONTEXTMENU_OPEN_IN_NEW_TAB" desc="Context sensitive menu item to open the selected link in a new tab. [CHAR-LIMIT=30]">
+        Open in new tab
+      </message>
+      <message name="IDS_CONTEXTMENU_OPEN_IN_INCOGNITO_TAB" desc="Context sensitive menu item to open the selected link in a new incognito tab. [CHAR-LIMIT=30]">
+        Open in incognito tab
+      </message>
+      <message name="IDS_CONTEXTMENU_COPY_LINK_ADDRESS" desc="Context sensitive menu item for copying the selected link URL / address. [CHAR-LIMIT=30]">
+        Copy link address
+      </message>
+      <message name="IDS_CONTEXTMENU_COPY_LINK_TEXT" desc="Context sensitive menu item for copying the selected link's text. [CHAR-LIMIT=30]">
+        Copy link text
+      </message>
+      <message name="IDS_CONTEXTMENU_SAVE_LINK" desc="Context sensitive menu item for saving the target of a link [CHAR-LIMIT=30]">
+        Save link
+      </message>
+      <message name="IDS_CONTEXTMENU_SAVE_IMAGE" desc="Context sensitive menu item for saving the selected image. [CHAR-LIMIT=30]">
+        Save image
+      </message>
+      <message name="IDS_CONTEXTMENU_OPEN_IMAGE" desc="Context sensitive menu item for opening/viewing the selected image. [CHAR-LIMIT=30]">
+        Open image
+      </message>
+      <message name="IDS_CONTEXTMENU_OPEN_IMAGE_IN_NEW_TAB" desc="Context sensitive menu item for opening/viewing the selected image in a new tab. [CHAR-LIMIT=30]">
+        Open image in new tab
+      </message>
+      <message name="IDS_CONTEXTMENU_OPEN_ORIGINAL_IMAGE_IN_NEW_TAB" desc="Context sensitive menu item for opening/viewing the original version of the selected image in a new tab. [CHAR-LIMIT=30]">
+        Open original image in new tab
+      </message>
+      <message name="IDS_CONTEXTMENU_SEARCH_WEB_FOR_IMAGE" desc="Context sensitive menu item for search-for-Image command in a new tab. [CHAR-LIMIT=30]">
+        Search <ph name="SEARCH_ENGINE">%1$s<ex>Google</ex></ph> for this image
+      </message>
+      <message name="IDS_CONTEXTMENU_COPY_IMAGE" desc="Context sensitive menu item for copying an image to the clipboard. [CHAR-LIMIT=30]">
+        Copy image
+      </message>
+      <message name="IDS_CONTEXTMENU_SAVE_VIDEO" desc="Context sensitive menu item for saving the selected video. [CHAR-LIMIT=30]">
+        Save video
+      </message>
     </messages>
   </release>
   <translations>

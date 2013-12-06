@@ -34,7 +34,6 @@ class ChromeWebContentsDelegateAndroid;
 
 namespace content {
 class ContentViewCore;
-struct ContextMenuParams;
 class WebContents;
 }
 
@@ -82,14 +81,6 @@ class TabAndroid : public CoreTabHelperDelegate,
                                          const base::string16& host,
                                          const base::string16& realm) = 0;
 
-  // Called to show the regular context menu that is triggered by a long press.
-  virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
-
-  // Called to show a custom context menu. Used by the NTP.
-  virtual void ShowCustomContextMenu(
-      const content::ContextMenuParams& params,
-      const base::Callback<void(int)>& callback) = 0;
-
   // Called when context menu option to create the bookmark shortcut on
   // homescreen is called.
   virtual void AddShortcutToBookmark(
@@ -130,7 +121,8 @@ class TabAndroid : public CoreTabHelperDelegate,
                                jobject obj,
                                jboolean incognito,
                                jobject jcontent_view_core,
-                               jobject jweb_contents_delegate);
+                               jobject jweb_contents_delegate,
+                               jobject jcontext_menu_populator);
 
   virtual void DestroyWebContents(JNIEnv* env,
                                   jobject obj,
@@ -142,7 +134,6 @@ class TabAndroid : public CoreTabHelperDelegate,
                                            jobject obj,
                                            jstring jurl,
                                            jstring jtitle);
-
   bool Print(JNIEnv* env, jobject obj);
 
  protected:

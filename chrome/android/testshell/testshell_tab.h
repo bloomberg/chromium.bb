@@ -44,12 +44,6 @@ class TestShellTab : public TabAndroid {
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
                                          const string16& host,
                                          const string16& realm) OVERRIDE;
-  virtual void ShowContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
-
-  virtual void ShowCustomContextMenu(
-      const content::ContextMenuParams& params,
-      const base::Callback<void(int)>& callback) OVERRIDE;
 
   virtual void AddShortcutToBookmark(const GURL& url,
                                      const string16& title,
