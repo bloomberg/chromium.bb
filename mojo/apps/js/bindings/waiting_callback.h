@@ -46,12 +46,4 @@ class WaitingCallback : public gin::Wrappable,
 }  // namespace js
 }  // namespace mojo
 
-namespace gin {
-
-template<>
-struct Converter<mojo::js::WaitingCallback*>
-    : public WrappableConverter<mojo::js::WaitingCallback> {};
-
-} // namespace gin
-
 #endif  // MOJO_APPS_JS_BINDINGS_WAITING_CALLBACK_H_

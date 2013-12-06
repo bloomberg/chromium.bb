@@ -43,14 +43,38 @@ WrapperInfo* MyObject::GetWrapperInfo() {
   return &kWrapperInfo;
 }
 
-}  // namespace
 
-template<>
-struct Converter<MyObject*> : public WrappableConverter<MyObject> {};
+class MyObject2 : public Wrappable {
+ public:
+  MyObject2() {
+  }
+  static WrapperInfo kWrapperInfo;
+  virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
+};
 
-namespace {
+WrapperInfo MyObject2::kWrapperInfo = { kEmbedderNativeGin };
 
-void RegisterTemplate(v8::Isolate* isolate) {
+WrapperInfo* MyObject2::GetWrapperInfo() {
+  return &kWrapperInfo;
+}
+
+
+class MyObjectBlink : public Wrappable {
+ public:
+  MyObjectBlink() {
+  }
+  static WrapperInfo kWrapperInfo;
+  virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
+};
+
+WrapperInfo MyObjectBlink::kWrapperInfo = { kEmbedderBlink };
+
+WrapperInfo* MyObjectBlink::GetWrapperInfo() {
+  return &kWrapperInfo;
+}
+
+
+void RegisterTemplates(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   DCHECK(data->GetObjectTemplate(&MyObject::kWrapperInfo).IsEmpty());
 
@@ -59,6 +83,14 @@ void RegisterTemplate(v8::Isolate* isolate) {
       .Build();
   templ->SetInternalFieldCount(kNumberOfInternalFields);
   data->SetObjectTemplate(&MyObject::kWrapperInfo, templ);
+
+  templ = v8::ObjectTemplate::New(isolate);
+  templ->SetInternalFieldCount(kNumberOfInternalFields);
+  data->SetObjectTemplate(&MyObject2::kWrapperInfo, templ);
+
+  templ = v8::ObjectTemplate::New(isolate);
+  templ->SetInternalFieldCount(kNumberOfInternalFields);
+  data->SetObjectTemplate(&MyObjectBlink::kWrapperInfo, templ);
 }
 
 typedef V8Test WrappableTest;
@@ -67,22 +99,52 @@ TEST_F(WrappableTest, WrapAndUnwrap) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  RegisterTemplate(isolate);
+  RegisterTemplates(isolate);
   Handle<MyObject> obj = MyObject::Create(isolate);
 
   v8::Handle<v8::Value> wrapper = ConvertToV8(isolate, obj.get());
   EXPECT_FALSE(wrapper.IsEmpty());
 
-  MyObject* unwrapped = 0;
+  MyObject* unwrapped = NULL;
   EXPECT_TRUE(ConvertFromV8(isolate, wrapper, &unwrapped));
   EXPECT_EQ(obj.get(), unwrapped);
+}
+
+TEST_F(WrappableTest, UnwrapFailures) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  RegisterTemplates(isolate);
+
+  // Something that isn't an object.
+  v8::Handle<v8::Value> thing = v8::Number::New(42);
+  MyObject* unwrapped = NULL;
+  EXPECT_FALSE(ConvertFromV8(isolate, thing, &unwrapped));
+  EXPECT_FALSE(unwrapped);
+
+  // An object that's not wrapping anything.
+  thing = v8::Object::New(isolate);
+  EXPECT_FALSE(ConvertFromV8(isolate, thing, &unwrapped));
+  EXPECT_FALSE(unwrapped);
+
+  // An object that's wrapping a C++ object from Blink.
+  thing.Clear();
+  thing = ConvertToV8(isolate, new MyObjectBlink());
+  EXPECT_FALSE(ConvertFromV8(isolate, thing, &unwrapped));
+  EXPECT_FALSE(unwrapped);
+
+  // An object that's wrapping a C++ object of the wrong type.
+  thing.Clear();
+  thing = ConvertToV8(isolate, new MyObject2());
+  EXPECT_FALSE(ConvertFromV8(isolate, thing, &unwrapped));
+  EXPECT_FALSE(unwrapped);
 }
 
 TEST_F(WrappableTest, GetAndSetProperty) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  RegisterTemplate(isolate);
+  RegisterTemplates(isolate);
   gin::Handle<MyObject> obj = MyObject::Create(isolate);
 
   obj->set_value(42);

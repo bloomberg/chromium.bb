@@ -17,9 +17,9 @@ Wrappable::~Wrappable() {
 }
 
 v8::Handle<v8::Object> Wrappable::GetWrapper(v8::Isolate* isolate) {
-  v8::Handle<v8::Value> wrapper = ConvertToV8(isolate, this);
-  DCHECK(wrapper->IsObject());
-  return v8::Handle<v8::Object>::Cast(wrapper);
+  if (wrapper_.IsEmpty())
+    CreateWrapper(isolate);
+  return v8::Local<v8::Object>::New(isolate, wrapper_);
 }
 
 void Wrappable::WeakCallback(
@@ -41,28 +41,6 @@ v8::Handle<v8::Object> Wrappable::CreateWrapper(v8::Isolate* isolate) {
   wrapper_.Reset(isolate, wrapper);
   wrapper_.SetWeak(this, WeakCallback);
   return wrapper;
-}
-
-v8::Handle<v8::Value> Converter<Wrappable*>::ToV8(v8::Isolate* isolate,
-                                                  Wrappable* val) {
-  if (val->wrapper_.IsEmpty())
-    return val->CreateWrapper(isolate);
-  return v8::Local<v8::Object>::New(isolate, val->wrapper_);
-}
-
-bool Converter<Wrappable*>::FromV8(v8::Isolate* isolate,
-                                   v8::Handle<v8::Value> val, Wrappable** out) {
-  if (!val->IsObject())
-    return false;
-  v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(val);
-  WrapperInfo* info = WrapperInfo::From(obj);
-  if (!info)
-    return false;
-  void* pointer = obj->GetAlignedPointerFromInternalField(kEncodedValueIndex);
-  Wrappable* wrappable = static_cast<Wrappable*>(pointer);
-  CHECK(wrappable->GetWrapperInfo() == info);  // Security check for cast above.
-  *out = wrappable;
-  return true;
 }
 
 }  // namespace gin

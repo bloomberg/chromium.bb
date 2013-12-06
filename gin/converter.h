@@ -13,7 +13,7 @@
 
 namespace gin {
 
-template<typename T>
+template<typename T, typename Enable = void>
 struct Converter {};
 
 template<>

@@ -5,6 +5,7 @@
 #ifndef GIN_WRAPPABLE_H_
 #define GIN_WRAPPABLE_H_
 
+#include "base/template_util.h"
 #include "gin/converter.h"
 #include "gin/public/wrapper_info.h"
 
@@ -53,8 +54,6 @@ class Wrappable {
   virtual ~Wrappable();
 
  private:
-  friend struct Converter<Wrappable*>;
-
   static void WeakCallback(
       const v8::WeakCallbackData<v8::Object, Wrappable>& data);
   v8::Handle<v8::Object> CreateWrapper(v8::Isolate* isolate);
@@ -64,28 +63,38 @@ class Wrappable {
   DISALLOW_COPY_AND_ASSIGN(Wrappable);
 };
 
-template<>
-struct Converter<Wrappable*> {
-  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
-                                    Wrappable* val);
-  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
-                     Wrappable** out);
-};
-
+// This converter handles any subclass of Wrappable.
 template<typename T>
-struct WrappableConverter {
+struct Converter<T*, typename base::enable_if<
+                      base::is_convertible<T*, Wrappable*>::value>::type> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate, T* val) {
-    return Converter<Wrappable*>::ToV8(isolate, val);
+    return val->GetWrapper(isolate);
   }
+
   static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val, T** out) {
-    Wrappable* wrappable = NULL;
-    if (!Converter<Wrappable*>::FromV8(isolate, val, &wrappable)
-        || wrappable->GetWrapperInfo() != &T::kWrapperInfo)
+    if (!val->IsObject())
       return false;
-    // Currently we require that you unwrap to the exact runtime type of the
-    // wrapped object.
-    // TODO(abarth): Support unwrapping to a base class.
-    *out = static_cast<T*>(wrappable);
+    v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(val);
+    WrapperInfo* info = WrapperInfo::From(obj);
+
+    // If this fails, the object is not managed by Gin. It is either a normal JS
+    // object that's not wrapping any external C++ object, or it is wrapping
+    // some C++ object, but that object isn't managed by Gin (maybe Blink).
+    if (!info)
+      return false;
+
+    // If this fails, the object is managed by Gin, but it's not wrapping an
+    // instance of T.
+    if (info != &T::kWrapperInfo)
+      return false;
+
+    void* pointer = obj->GetAlignedPointerFromInternalField(kEncodedValueIndex);
+    T* result = static_cast<T*>(pointer);
+
+    // If this fails, something fishy is going on. |info| should have come from
+    // T::GetWrapperInfo(), but somehow is now different than it. So panic.
+    CHECK(result->GetWrapperInfo() == info);
+    *out = result;
     return true;
   }
 };

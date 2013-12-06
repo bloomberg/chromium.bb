@@ -188,14 +188,6 @@ $for ARG [[    typename CallbackParamTraits<P$(ARG)>::LocalType a$(ARG);
 void InitFunctionTemplates(PerIsolateData* isolate_data);
 
 
-// This has to be outside the internal namespace because template
-// specializations must be declared in the same namespace as the original
-// template.
-template<>
-struct Converter<internal::CallbackHolderBase*>
-    : public WrappableConverter<internal::CallbackHolderBase> {};
-
-
 // CreateFunctionTemplate creates a v8::FunctionTemplate that will create
 // JavaScript functions that execute a provided C++ function or base::Callback.
 // JavaScript arguments are automatically converted via gin::Converter, as is

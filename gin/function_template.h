@@ -32,6 +32,7 @@ enum CreateFunctionTemplateFlags {
 
 namespace internal {
 
+// TODO(aa): Move this to base/template_util.h as remove_const.
 template<typename T>
 struct CallbackParamTraits {
   typedef T LocalType;
@@ -331,14 +332,6 @@ struct Dispatcher<R(P1, P2, P3, P4)> {
 // This should be called once per-isolate to initialize the function template
 // system.
 void InitFunctionTemplates(PerIsolateData* isolate_data);
-
-
-// This has to be outside the internal namespace because template
-// specializations must be declared in the same namespace as the original
-// template.
-template<>
-struct Converter<internal::CallbackHolderBase*>
-    : public WrappableConverter<internal::CallbackHolderBase> {};
 
 
 // CreateFunctionTemplate creates a v8::FunctionTemplate that will create
