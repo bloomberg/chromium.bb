@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
       ui_manager()->RemoveObserver(&observer_);
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWithWhitelist) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, DISABLED_MalwareWithWhitelist) {
   GURL url = test_server()->GetURL(kEmptyPage);
   g_browser_process->safe_browsing_service()->
       ui_manager()->AddObserver(&observer_);
