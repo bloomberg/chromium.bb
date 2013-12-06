@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
@@ -23,13 +25,20 @@ class Profile;
 
 // WelcomeNotification is a part of DesktopNotificationService and manages
 // showing and hiding a welcome notification for built-in components that
-// show notifications.
-class WelcomeNotification {
+// show notifications. The Welcome Notification presumes network connectivity
+// since it relies on synced preferences to work. This is generally fine since
+// the current consumers on the welcome notification also presume network
+// connectivity.
+class WelcomeNotification
+    : public PrefServiceSyncableObserver {
  public:
   WelcomeNotification(
       Profile* profile,
       message_center::MessageCenter* message_center);
-  ~WelcomeNotification();
+  virtual ~WelcomeNotification();
+
+  // PrefServiceSyncableObserver
+  virtual void OnIsSyncingChanged() OVERRIDE;
 
   // Adds in a the welcome notification if required for components built
   // into Chrome that show notifications like Chrome Now.
@@ -66,6 +75,13 @@ class WelcomeNotification {
 
   // Notification ID of the Welcome Notification.
   std::string welcome_notification_id_;
+
+  // If the preferences are still syncing, store the last notification here
+  // so we can replay ShowWelcomeNotificationIfNecessary once the sync finishes.
+  // Simplifying Assumption: The delayed notification has passed the
+  // extension ID check. This means we do not need to store all of the
+  // notifications that may also show a welcome notification.
+  scoped_ptr<Notification> delayed_notification_;
 
   message_center::MessageCenter* message_center_;  // Weak reference.
 };

@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
@@ -88,27 +89,51 @@ WelcomeNotification::WelcomeNotification(
         base::Unretained(this)));
 }
 
-WelcomeNotification::~WelcomeNotification() {}
+WelcomeNotification::~WelcomeNotification() {
+  if (delayed_notification_) {
+    delayed_notification_.reset();
+    PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
+  }
+}
+
+void WelcomeNotification::OnIsSyncingChanged() {
+  DCHECK(delayed_notification_);
+  PrefServiceSyncable* pref_service_syncable =
+      PrefServiceSyncable::FromProfile(profile_);
+  if (pref_service_syncable->IsSyncing()) {
+    pref_service_syncable->RemoveObserver(this);
+    scoped_ptr<Notification> previous_notification(
+        delayed_notification_.release());
+    ShowWelcomeNotificationIfNecessary(*(previous_notification.get()));
+  }
+}
 
 void WelcomeNotification::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
   message_center::NotifierId notifier_id = notification.notifier_id();
-  if (notifier_id.id == kChromeNowExtensionID) {
-    PrefService* pref_service = profile_->GetPrefs();
-    if (!pref_service->GetBoolean(prefs::kWelcomeNotificationDismissed)) {
-      PopUpRequest pop_up_request =
-          pref_service->GetBoolean(
-              prefs::kWelcomeNotificationPreviouslyPoppedUp)
-          ? POP_UP_HIDDEN
-          : POP_UP_SHOWN;
-      if (pop_up_request == POP_UP_SHOWN) {
-        pref_service->SetBoolean(
-            prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
-      }
+  if ((notifier_id.id == kChromeNowExtensionID) && !delayed_notification_) {
+    PrefServiceSyncable* pref_service_syncable =
+        PrefServiceSyncable::FromProfile(profile_);
+    if (pref_service_syncable->IsSyncing()) {
+      PrefService* pref_service = profile_->GetPrefs();
+      if (!pref_service->GetBoolean(prefs::kWelcomeNotificationDismissed)) {
+        PopUpRequest pop_up_request =
+            pref_service->GetBoolean(
+                prefs::kWelcomeNotificationPreviouslyPoppedUp)
+            ? POP_UP_HIDDEN
+            : POP_UP_SHOWN;
+        if (pop_up_request == POP_UP_SHOWN) {
+          pref_service->SetBoolean(
+              prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
+        }
 
-      ShowWelcomeNotification(notifier_id,
-                              notification.display_source(),
-                              pop_up_request);
+        ShowWelcomeNotification(notifier_id,
+                                notification.display_source(),
+                                pop_up_request);
+      }
+    } else {
+      delayed_notification_.reset(new Notification(notification));
+      pref_service_syncable->AddObserver(this);
     }
   }
 }
