@@ -523,7 +523,7 @@ bool TextIterator::handleTextNode()
             return false;
         }
         if (!m_handledFirstLetter && renderer->isTextFragment() && !m_offset) {
-            handleTextNodeFirstLetter(static_cast<RenderTextFragment*>(renderer));
+            handleTextNodeFirstLetter(toRenderTextFragment(renderer));
             if (m_firstLetterText) {
                 String firstLetter = m_firstLetterText->text();
                 emitText(m_node, m_firstLetterText, m_offset, m_offset + firstLetter.length());
@@ -550,7 +550,7 @@ bool TextIterator::handleTextNode()
 
     bool shouldHandleFirstLetter = !m_handledFirstLetter && renderer->isTextFragment() && !m_offset;
     if (shouldHandleFirstLetter)
-        handleTextNodeFirstLetter(static_cast<RenderTextFragment*>(renderer));
+        handleTextNodeFirstLetter(toRenderTextFragment(renderer));
 
     if (!renderer->firstTextBox() && str.length() > 0 && !shouldHandleFirstLetter) {
         if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
@@ -748,7 +748,7 @@ bool TextIterator::hasVisibleTextNode(RenderText* renderer)
     if (renderer->style()->visibility() == VISIBLE)
         return true;
     if (renderer->isTextFragment()) {
-        RenderTextFragment* fragment = static_cast<RenderTextFragment*>(renderer);
+        RenderTextFragment* fragment = toRenderTextFragment(renderer);
         if (fragment->firstLetter() && fragment->firstLetter()->style()->visibility() == VISIBLE)
             return true;
     }
