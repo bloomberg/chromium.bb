@@ -1293,6 +1293,35 @@ testcase.suggestAppDialog = function() {
           ['#suggest-app-dialog:not(.show-spinner)'],
           this.next);
     },
+    // Override task APIs for test.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      callRemoteTestUtil(
+          'overrideTasks',
+          appId,
+          [[
+            {
+              driveApp: false,
+              iconUrl: 'chrome://theme/IDR_DEFAULT_FAVICON',  // Dummy icon
+              isDefault: true,
+              taskId: 'dummytaskid|drive|open-with',
+              title: 'The dummy task for test'
+            }
+          ]],
+          this.next);
+    },
+    // Override installWebstoreItem API for test.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      callRemoteTestUtil(
+          'overrideInstallWebstoreItemApi',
+          appId,
+          [
+            'DUMMY_ITEM_ID_FOR_TEST',  // Same ID in cws_container_mock/main.js.
+            null  // Success
+          ],
+          this.next);
+    },
     // Initiate an installation from the widget.
     function(result) {
       chrome.test.assertTrue(!!result);
@@ -1313,9 +1342,17 @@ testcase.suggestAppDialog = function() {
                           true],  // inverse
                          this.next);
     },
-    // Check the styles
+    // Wait until the task is executed.
     function(result) {
       chrome.test.assertTrue(!!result);
+      callRemoteTestUtil(
+          'waitUntilTaskExecutes',
+          appId,
+          ['dummytaskid|drive|open-with'],
+          this.next);
+    },
+    // Check error
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);

@@ -719,6 +719,41 @@ test.util.sync.execCommand = function(contentWindow, command) {
 };
 
 /**
+ * Override the installWebstoreItem method in private api for test.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} expectedItemId Item ID to be called this method with.
+ * @param {?string} intendedError Error message to be returned when the item id
+ *     matches. 'null' represents no error.
+ * @return {boolean} Always return true.
+ */
+test.util.sync.overrideInstallWebstoreItemApi =
+    function(contentWindow, expectedItemId, intendedError) {
+  var setLastError = function(message) {
+    contentWindow.chrome.runtime.lastError =
+        message ? {message: message} : null;
+  };
+
+  var installWebstoreItem = function(itemId, callback) {
+    setTimeout(function() {
+      if (itemId !== expectedItemId) {
+        setLastError('Invalid Chrome Web Store item ID');
+        callback();
+        return;
+      }
+
+      setLastError(intendedError);
+      callback();
+    });
+  };
+
+  test.util.executedTasks_ = [];
+  contentWindow.chrome.fileBrowserPrivate.installWebstoreItem =
+      installWebstoreItem;
+  return true;
+};
+
+/**
  * Override the task-related methods in private api for test.
  *
  * @param {Window} contentWindow Window to be tested.
