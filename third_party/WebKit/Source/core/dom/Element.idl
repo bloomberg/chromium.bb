@@ -49,7 +49,7 @@
                                     [Default=Undefined] optional DOMString localName);
     [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                   [Default=Undefined] optional DOMString localName); // Removed from DOM4.
-    [RaisesException, CustomElementCallbacks] Attr setAttributeNodeNS([Default=Undefined, StrictTypeChecking] optional Attr newAttr);
+    [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNodeNS] Attr setAttributeNodeNS([Default=Undefined, StrictTypeChecking] optional Attr newAttr); // Removed from DOM4.
     boolean hasAttribute(DOMString name);
     boolean hasAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                            [Default=Undefined] optional DOMString localName);
