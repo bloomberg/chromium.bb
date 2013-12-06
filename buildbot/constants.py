@@ -19,6 +19,7 @@ def _FindSourceRoot():
   return source_root
 
 SOURCE_ROOT = _FindSourceRoot()
+CHROOT_SOURCE_ROOT = '/mnt/host/source'
 
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
 CHROMITE_BIN_SUBDIR = 'chromite/bin'

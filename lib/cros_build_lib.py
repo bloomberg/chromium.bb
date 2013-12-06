@@ -1248,7 +1248,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
 
   Args:
     buildroot: The directory containing the chromite to check.
-    validate_version:  If set to true, checks the target chromite for
+    validate_version: If set to true, checks the target chromite for
       compatibility, and raises an ApiMismatchError when there is an
       incompatibility.
 
@@ -1343,7 +1343,7 @@ def PredicateSplit(func, iterable):
   """Splits an iterable into two groups based on a predicate return value.
 
   Args:
-    func:  A functor that takes an item as its argument and returns a boolean
+    func: A functor that takes an item as its argument and returns a boolean
       value indicating which group the item belongs.
     iterable: The collection to split.
 
@@ -1592,3 +1592,28 @@ class FrozenAttributesMixin(object):
   as a mixin instead to accomplish the same thing.
   """
   __metaclass__ = FrozenAttributesClass
+
+
+def GetIPv4Address(dev=None, global_ip=True):
+  """Returns any global/host IP address or the IP address of the given device.
+
+  socket.gethostname() is insufficient for machines where the host files are
+  not set up "correctly."  Since some of our builders may have this issue,
+  this method gives you a generic way to get the address so you are reachable
+  either via a VM or remote machine on the same network.
+
+  Args:
+    dev: Get the IP address of the device (e.g. 'eth0').
+    global_ip: If set True, returns a globally valid IP address. Otherwise,
+      returns a local IP address (default: True).
+  """
+  cmd = ['ip', 'addr', 'show']
+  cmd += ['scope', 'global' if global_ip else 'host']
+  cmd += [] if dev is None else ['dev', dev]
+
+  result = RunCommandCaptureOutput(cmd, print_cmd=False)
+  matches = re.findall(r'\binet (\d+\.\d+\.\d+\.\d+).*', result.output)
+  if matches:
+    return matches[0]
+  Warning('Failed to find ip address in %r', result.output)
+  return None

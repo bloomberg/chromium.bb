@@ -8,122 +8,232 @@
 import logging
 import multiprocessing
 import os
-import re
-import sys
 import tempfile
-import time
 import urllib2
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
-
-# Wait up to 15 minutes for the dev server to start. It can take a while to
-# start when generating payloads in parallel.
-DEV_SERVER_TIMEOUT = 900
-CHECK_HEALTH_URL = 'http://127.0.0.1:8080/check_health'
-KILL_TIMEOUT = 10
-
-
-def GetIPAddress(device='eth0'):
-  """Returns the IP Address for a given device using ifconfig.
-
-  socket.gethostname() is insufficient for machines where the host files are
-  not set up "correctly."  Since some of our builders may have this issue,
-  this method gives you a generic way to get the address so you are reachable
-  either via a VM or remote machine on the same network.
-  """
-  result = cros_build_lib.RunCommandCaptureOutput(
-      ['/sbin/ifconfig', device], print_cmd=False)
-  match = re.search('.*inet addr:(\d+\.\d+\.\d+\.\d+).*', result.output)
-  if match:
-    return match.group(1)
-  cros_build_lib.Warning('Failed to find ip address in %r', result.output)
-  return None
+from chromite.lib import git
+from chromite.lib import osutils
+from chromite.lib import timeout_util
 
 
 def GenerateUpdateId(target, src, key, for_vm):
-  """Returns a simple representation id of target and src paths."""
+  """Returns a simple representation id of |target| and |src| paths.
+
+  Args:
+    target: Target image of the update payloads.
+    src: Base image to of the delta update payloads.
+    key: Private key used to sign the payloads.
+    for_vm: Whether the update payloads are to be used in a VM .
+  """
   update_id = target
-  if src: update_id = '->'.join([src, update_id])
-  if key: update_id = '+'.join([update_id, key])
-  if not for_vm: update_id = '+'.join([update_id, 'patched_kernel'])
+  if src:
+    update_id = '->'.join([src, update_id])
+
+  if key:
+    update_id = '+'.join([update_id, key])
+
+  if not for_vm:
+    update_id = '+'.join([update_id, 'patched_kernel'])
+
   return update_id
 
 
+# Chroot helper methods. Devserver needs to run inside chroot to
+# generate full/delta payloads from image(s). Since we may call a
+# script into chroot with paths created outside the chroot,
+# translation back and forth is needed. These methods all assume the
+# default chroot dir.
+def ToChrootPath(path):
+  """Reinterprets |path| to be used inside of chroot.
+
+  Returns:
+    A reinterpreted path if currently outside chroot or |path| if
+    inside chroot.
+  """
+  full_path = osutils.ExpandPath(path)
+  if cros_build_lib.IsInsideChroot():
+    return full_path
+
+  return git.ReinterpretPathForChroot(full_path)
+
+
+def FromChrootPath(path):
+  """Interprets a chroot |path| to be used inside or outside chroot.
+
+  Returns:
+    If currently outside chroot, returns the reinterpreted |path| to
+    be used outside chroot. Otherwise, returns |path|.
+  """
+  full_path = osutils.ExpandPath(path)
+  if cros_build_lib.IsInsideChroot():
+    return full_path
+
+  # Replace chroot source root with current source root, if applicable.
+  if full_path.startswith(constants.CHROOT_SOURCE_ROOT):
+    return os.path.join(
+        constants.SOURCE_ROOT,
+        full_path[len(constants.CHROOT_SOURCE_ROOT):].strip(os.path.sep))
+  else:
+    return os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR,
+                        path.strip(os.path.sep))
+
+
 class DevServerException(Exception):
-  """Thrown when the devserver fails to start up correctly."""
+  """Thrown when the devserver fails to start up or responds with an error."""
 
 
 class DevServerWrapper(multiprocessing.Process):
   """A Simple wrapper around a dev server instance."""
 
-  def __init__(self, test_root=None):
+  # Wait up to 15 minutes for the dev server to start. It can take a
+  # while to start when generating payloads in parallel.
+  DEV_SERVER_TIMEOUT = 900
+  KILL_TIMEOUT = 10
+
+  def __init__(self, static_dir=None, port=None, log_dir=None, src_image=None):
+    """Initialize a DevServerWrapper instance.
+
+    Args:
+      static_dir: The static directory to be used by the devserver.
+      port: The port to used by the devserver.
+      log_dir: Directory to store the log files.
+      src_image: The path to the image to be used as the base to
+        generate delta payloads.
+    """
     super(DevServerWrapper, self).__init__()
-    self.test_root = test_root or DevServerWrapper.MkChrootTemp(is_dir=True)
-    self._log_filename = os.path.join(self.test_root, 'dev_server.log')
-    self._pid_file = DevServerWrapper.MkChrootTemp(is_dir=False)
+    self.devserver_bin = 'start_devserver'
+    self.port = 8080 if not port else port
+    self.src_image = src_image
+    self.tempdir = None
+    self.log_dir = log_dir
+    if not self.log_dir:
+      self.tempdir = osutils.TempDir(base_dir=FromChrootPath('/tmp'),
+                                     prefix='devserver_wrapper',
+                                     sudo_rm=True)
+      self.log_dir = self.tempdir.tempdir
+    self.static_dir = static_dir
+    self.log_filename = os.path.join(self.log_dir, 'dev_server.log')
+    self._pid_file = self._GetPIDFilePath()
     self._pid = None
 
-  # Chroot helper methods. Since we call a script into the chroot with paths
-  # created outside the chroot, translation back and forth is needed. These
-  # methods all assume the default chroot dir.
+  @classmethod
+  def DownloadFile(cls, url, dest):
+    """Download the file from the URL to a local path."""
+    if os.path.isdir(dest):
+      dest = os.path.join(dest, os.path.basename(url))
 
-  @staticmethod
-  def MkChrootTemp(is_dir):
-    """Returns a temp(dir if is_dir, file otherwise) in the chroot."""
-    chroot_tmp = os.path.join(constants.SOURCE_ROOT,
-                              constants.DEFAULT_CHROOT_DIR, 'tmp')
-    if is_dir:
-      return tempfile.mkdtemp(prefix='devserver_wrapper', dir=chroot_tmp)
+    logging.info('Downloading %s to %s', url, dest)
+    osutils.WriteFile(dest, DevServerWrapper.OpenURL(url), mode='wb')
+
+  @classmethod
+  def GetDevServerURL(cls, ip=None, port=None, sub_dir=None):
+    """Returns the dev server url.
+
+    Args:
+      ip: IP address of the devserver. If not set, use the IP
+        address of this machine.
+      port: Port number of devserver.
+      sub_dir: The subdirectory of the devserver url.
+    """
+    ip = cros_build_lib.GetIPv4Address() if not ip else ip
+    port = 8080 if not port else port
+    url = 'http://%(ip)s:%(port)s' % {'ip': ip, 'port': str(port)}
+    if sub_dir:
+      url += '/' + sub_dir
+
+    return url
+
+  @classmethod
+  def OpenURL(cls, url, ignore_url_error=False, timeout=60):
+    """Returns the HTTP response of a URL."""
+    logging.debug('Retrieving %s', url)
+    try:
+      res = urllib2.urlopen(url, timeout=timeout)
+    except urllib2.HTTPError as e:
+      logging.error('Devserver responsded with an error!')
+      raise DevServerException(e)
+    except urllib2.URLError as e:
+      if not ignore_url_error:
+        logging.error('Cannot connect to devserver!')
+        raise DevServerException(e)
     else:
-      return tempfile.NamedTemporaryFile(prefix='devserver_wrapper',
-                                         dir=chroot_tmp, delete=False).name
+      return res.read()
 
-  @staticmethod
-  def ToChrootPath(path):
-    """Converts the path outside the chroot to one that can be used inside."""
-    path = os.path.abspath(path)
-    if '/chroot/' not in path:
-      raise ValueError('Path %s is not a path that points inside the chroot' %
-                       path)
+  @classmethod
+  def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
+    """Cleans up devserver cache of payloads.
 
-    return '/' + path.partition('/chroot/')[2]
+    Args:
+      devserver_bin: path to the devserver binary.
+      static_dir: path to use as the static directory of the devserver instance.
+    """
+    cros_build_lib.Info('Cleaning up previously generated payloads.')
+    cmd = [devserver_bin, '--clear_cache', '--exit']
+    if static_dir:
+      cmd.append('--static_dir=%s' % static_dir)
+    cros_build_lib.SudoRunCommand(
+        cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
+        redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
+
+  def IsReady(self):
+    """Check if devserver is up and running."""
+    if not self.is_alive():
+      raise DevServerException('Devserver crashed while starting')
+
+    url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
+    if self.OpenURL(url, ignore_url_error=True, timeout=0.05):
+      return True
+
+    return False
+
+  def _GetPIDFilePath(self):
+    """Returns pid file path."""
+    return tempfile.NamedTemporaryFile(prefix='devserver_wrapper',
+                                       dir=self.log_dir,
+                                       delete=False).name
+
+  def _GetPID(self):
+    """Returns the pid read from the pid file."""
+    # Pid file was passed into the chroot.
+    return osutils.ReadFile(self._pid_file).rstrip()
 
   def _WaitUntilStarted(self):
     """Wait until the devserver has started."""
-    current_time = time.time()
-    deadline = current_time + DEV_SERVER_TIMEOUT
-    while current_time <= deadline:
-      try:
-        if not self.is_alive():
-          raise DevServerException('Devserver crashed while starting')
-
-        urllib2.urlopen(CHECK_HEALTH_URL, timeout=0.05)
-        return
-      except IOError:
-        # urlopen errors will throw a subclass of IOError if we can't connect.
-        pass
-      finally:
-        # Let's not churn needlessly in this loop as the devserver starts up.
-        time.sleep(1)
-
-      current_time = time.time()
-    else:
+    try:
+      timeout_util.WaitForReturnValue([True], self.IsReady,
+                                      timeout=self.DEV_SERVER_TIMEOUT,
+                                      period=2)
+    except timeout_util.TimeoutError:
       self.terminate()
       raise DevServerException('Devserver did not start')
 
   def run(self):
     """Kicks off devserver in a separate process and waits for it to finish."""
-    cmd = ['start_devserver',
-           '--pidfile', DevServerWrapper.ToChrootPath(self._pid_file),
-           '--logfile', DevServerWrapper.ToChrootPath(self._log_filename)]
-    return_obj = cros_build_lib.SudoRunCommand(
-        cmd, enter_chroot=True, debug_level=logging.DEBUG,
+    # Truncate the log file if it already exists.
+    if os.path.exists(self.log_filename):
+      osutils.SafeUnlink(self.log_filename, sudo=True)
+
+    cmd = [self.devserver_bin,
+           '--port', str(self.port),
+           '--pidfile', ToChrootPath(self._pid_file),
+           '--logfile', ToChrootPath(self.log_filename)]
+
+    if self.static_dir:
+      cmd.append('--static_dir=%s' % self.static_dir)
+
+    if self.src_image:
+      cmd.append('--src_image=%s' % ToChrootPath(self.src_image))
+
+    enter_chroot = not cros_build_lib.IsInsideChroot()
+    result = self._RunCommand(
+        cmd, enter_chroot=enter_chroot,
         cwd=constants.SOURCE_ROOT, error_code_ok=True,
         redirect_stdout=True, combine_stdout_stderr=True)
-    if return_obj.returncode != 0:
+    if result.returncode != 0:
       logging.error('Devserver terminated unexpectedly!')
-      logging.error(return_obj.output)
+      logging.error(result.output)
 
   def Start(self):
     """Starts a background devserver and waits for it to start.
@@ -133,9 +243,7 @@ class DevServerWrapper(multiprocessing.Process):
     """
     self.start()
     self._WaitUntilStarted()
-    # Pid file was passed into the chroot.
-    with open(self._pid_file, 'r') as f:
-      self._pid = f.read()
+    self._pid = self._GetPID()
 
   def Stop(self):
     """Kills the devserver instance with SIGTERM and SIGKILL if SIGTERM fails"""
@@ -145,42 +253,128 @@ class DevServerWrapper(multiprocessing.Process):
 
     logging.debug('Stopping devserver instance with pid %s', self._pid)
     if self.is_alive():
-      cros_build_lib.SudoRunCommand(['kill', self._pid],
-                                    debug_level=logging.DEBUG)
+      self._RunCommand(['kill', self._pid])
     else:
       logging.error('Devserver not running!')
       return
 
-    self.join(KILL_TIMEOUT)
+    self.join(self.KILL_TIMEOUT)
     if self.is_alive():
       logging.warning('Devserver is unstoppable. Killing with SIGKILL')
-      cros_build_lib.SudoRunCommand(['kill', '-9', self._pid],
-                                    debug_level=logging.DEBUG)
+      self._RunCommand(['kill', '-9', self._pid])
 
   def PrintLog(self):
     """Print devserver output to stdout."""
-    print '--- Start output from %s ---' % self._log_filename
-    # Open in update mode in case the child process hasn't opened the file yet.
-    with open(self._log_filename) as log:
-      sys.stdout.writelines(log)
+    print self.TailLog(num_lines='+1')
 
-    print '--- End output from %s ---' % self._log_filename
+  def TailLog(self, num_lines=20):
+    """Returns the most recent |num_lines| lines of the devserver log file."""
+    fname = self.log_filename
+    if os.path.exists(fname):
+      result = self._RunCommand(['tail', '-n', str(num_lines), fname],
+                                capture_output=True)
+      output = '--- Start output from %s ---' % fname
+      output += result.output
+      output += '--- End output from %s ---' % fname
+      return output
+
+  def _RunCommand(self, *args, **kwargs):
+    """Runs a shell commmand."""
+    kwargs.setdefault('debug_level', logging.DEBUG)
+
+    if kwargs.pop('capture_output', False):
+      func = cros_build_lib.RunCommandCaptureOutput
+    else:
+      func = cros_build_lib.SudoRunCommand
+
+    return func(*args, **kwargs)
+
+
+class RemoteDevServerWrapper(DevServerWrapper):
+  """A wrapper of a devserver on a remote device.
+
+  Devserver wrapper for RemoteDevice. This wrapper kills all existing
+  running devserver instances before startup, thus allowing one
+  devserver running at a time.
+
+  We assume there is no chroot on the device, thus we do not launch
+  devserver inside chroot.
+  """
+
+  # Shorter timeout because the remote devserver instance does not
+  # need to generate payloads.
+  DEV_SERVER_TIMEOUT = 30
+  KILL_TIMEOUT = 10
+  PID_FILE_PATH = '/tmp/devserver_wrapper.pid'
+
+  def __init__(self, remote_device, devserver_bin, **kwargs):
+    """Initializes a RemoteDevserverPortal object with the remote device.
+
+    Args:
+      remote_device: A RemoteDevice object.
+      devserver_bin: The path to the devserver script on the device.
+      **kwargs: See DevServerWrapper documentation.
+    """
+    super(RemoteDevServerWrapper, self).__init__(**kwargs)
+    self.device = remote_device
+    self.devserver_bin = devserver_bin
+    self.hostname = remote_device.hostname
+
+  def _GetPID(self):
+    """Returns the pid read from pid file."""
+    result = self._RunCommand(['cat', self._pid_file])
+    return result.output
+
+  def _GetPIDFilePath(self):
+    """Returns the pid filename"""
+    return self.PID_FILE_PATH
+
+  def _RunCommand(self, *args, **kwargs):
+    """Runs a remote shell command.
+
+    Args:
+      *args: See RemoteAccess.RemoteDevice documentation.
+      **kwargs: See RemoteAccess.RemoteDevice documentation.
+    """
+    # Discard the keyword because RemoteDevice.RemoteSh always captures output.
+    kwargs.pop('capture_output', True)
+
+    kwargs.setdefault('debug_level', logging.DEBUG)
+    return self.device.RunCommand(*args, **kwargs)
+
+  def IsReady(self):
+    """Returns True if devserver is ready to accept requests."""
+    if not self.is_alive():
+      raise DevServerException('Devserver crashed while starting')
+
+    url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
+    # Running wget through ssh because the port on the device is not
+    # accessible by default.
+    result = self.device.RunCommand(
+        ['wget', url, '-q', '-O', '/dev/null'], error_code_ok=True)
+    return result.returncode == 0
+
+  def run(self):
+    """Launches a devserver process on the device."""
+    self._RunCommand(['cat', '/dev/null', '>|', self.log_filename])
+    self._RunCommand(['pkill', os.path.basename(self.devserver_bin)],
+                     error_code_ok=True)
+    cmd = ['python', self.devserver_bin,
+           '--port=%s' % str(self.port),
+           '--logfile=%s' % self.log_filename,
+           '--pidfile', self._pid_file]
+
+    if self.static_dir:
+      cmd.append('--static_dir=%s' % self.static_dir)
+
+    logging.info('Starting devserver %s', self.GetDevServerURL(ip=self.hostname,
+                                                               port=self.port))
+    result = self._RunCommand(cmd)
+    if result.returncode != 0:
+      logging.error('Remote devserver terminated unexpectedly!')
+      logging.error(result.output)
 
   @classmethod
-  def GetDevServerURL(cls, port=None, sub_dir=None):
-    """Returns the dev server url for a given port and sub directory."""
-    if not port: port = 8080
-    url = 'http://%(ip)s:%(port)s' % {'ip': GetIPAddress(), 'port': str(port)}
-    if sub_dir:
-      url += '/' + sub_dir
-
-    return url
-
-  @classmethod
-  def WipePayloadCache(cls):
+  def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
     """Cleans up devserver cache of payloads."""
-    cros_build_lib.Info('Cleaning up previously generated payloads.')
-    cmd = ['start_devserver', '--clear_cache', '--exit']
-    cros_build_lib.SudoRunCommand(
-        cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
-        redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
+    raise NotImplementedError()
