@@ -270,6 +270,10 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+void WindowState::OnWindowDestroying(aura::Window* window) {
+  window_->RemoveObserver(this);
+}
+
 void WindowState::SnapWindow(WindowShowType left_or_right,
                              const gfx::Rect& bounds) {
   // Compute the bounds that the window will restore to. If the window does not

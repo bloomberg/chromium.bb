@@ -44,22 +44,16 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
     return window_[index];
   }
 
-  // Delete the window at the given index, and set the referefence to NULL.
-  void delete_window_at(size_t index) {
-    delete window_[index];
-    window_[index] = NULL;
-  }
-
   // The accessor to the MultiWindowManager.
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager() {
     return multi_user_window_manager_;
   }
 
   // Returns a list of all open windows in the following form:
-  // "<H(idden)/S(hown)/D(eleted)>[<Owner>[,<shownForUser>]], .."
+  // "<H(idden)/S(hown)>[<Owner>[,<shownForUser>]], .."
   // Like: "S[B], .." would mean that window#0 is shown and belongs to user B.
   // or "S[B,A], .." would mean that window#0 is shown, belongs to B but is
-  // shown by A, and "D,..." would mean that window#0 is deleted.
+  // shown by A.
   std::string GetStatus();
 
   TestSessionStateDelegate* session_state_delegate() {
@@ -124,10 +118,6 @@ std::string MultiUserWindowManagerChromeOSTest::GetStatus() {
   for (size_t i = 0; i < window_.size(); i++) {
     if (i)
       s += ", ";
-    if (!window(i)) {
-      s += "D";
-      continue;
-    }
     s += window(i)->IsVisible() ? "S[" : "H[";
     const std::string& owner =
         multi_user_window_manager_->GetWindowOwner(window(i));
@@ -219,34 +209,20 @@ TEST_F(MultiUserWindowManagerChromeOSTest, OwnerTests) {
 }
 
 TEST_F(MultiUserWindowManagerChromeOSTest, CloseWindowTests) {
-  SetUpForThisManyWindows(1);
+  SetUpForThisManyWindows(2);
   multi_user_window_manager()->SetWindowOwner(window(0), "B");
-  EXPECT_EQ("H[B]", GetStatus());
+  EXPECT_EQ("H[B], S[]", GetStatus());
   multi_user_window_manager()->ShowWindowForUser(window(0), "A");
-  EXPECT_EQ("S[B,A]", GetStatus());
+  EXPECT_EQ("S[B,A], S[]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
 
-  aura::Window* to_be_deleted = window(0);
+  // Simulate a close of the shared window.
+  multi_user_window_manager()->OnWindowDestroyed(window(0));
 
-  EXPECT_EQ(std::string("A"),
-            multi_user_window_manager()->GetUserPresentingWindow(
-                to_be_deleted));
-  EXPECT_EQ(std::string("B"),
-            multi_user_window_manager()->GetWindowOwner(
-                to_be_deleted));
-
-  // Close the window.
-  delete_window_at(0);
-
-  EXPECT_EQ("D", GetStatus());
   // There should be no owner anymore for that window and the shared windows
   // should be gone as well.
-  EXPECT_EQ(std::string(),
-            multi_user_window_manager()->GetUserPresentingWindow(
-                to_be_deleted));
-  EXPECT_EQ(std::string(),
-            multi_user_window_manager()->GetWindowOwner(
-                to_be_deleted));
+  EXPECT_EQ("S[], S[]", GetStatus());
+  EXPECT_FALSE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
 }
 
 TEST_F(MultiUserWindowManagerChromeOSTest, SharedWindowTests) {
@@ -302,7 +278,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, SharedWindowTests) {
 
 // Make sure that adding a window to another desktop does not cause harm.
 TEST_F(MultiUserWindowManagerChromeOSTest, DoubleSharedWindowTests) {
-  SetUpForThisManyWindows(1);
+  SetUpForThisManyWindows(2);
   multi_user_window_manager()->SetWindowOwner(window(0), "B");
 
   // Add two references to the same window.
@@ -310,10 +286,9 @@ TEST_F(MultiUserWindowManagerChromeOSTest, DoubleSharedWindowTests) {
   multi_user_window_manager()->ShowWindowForUser(window(0), "A");
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
 
-  // Close the window.
-  delete_window_at(0);
+  // Simulate a close of the shared window.
+  multi_user_window_manager()->OnWindowDestroyed(window(0));
 
-  EXPECT_EQ("D", GetStatus());
   // There should be no shares anymore open.
   EXPECT_FALSE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
 }

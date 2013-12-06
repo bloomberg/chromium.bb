@@ -168,12 +168,7 @@ Window::~Window() {
   // Delegate and observers need to be notified after transients are deleted.
   if (delegate_)
     delegate_->OnWindowDestroyed();
-  ObserverListBase<WindowObserver>::Iterator iter(observers_);
-  WindowObserver* observer;
-  while ((observer = iter.GetNext())) {
-    RemoveObserver(observer);
-    observer->OnWindowDestroyed(this);
-  }
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 
   // Clear properties.
   for (std::map<const void*, Value>::const_iterator iter = prop_map_.begin();

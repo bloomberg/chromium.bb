@@ -222,6 +222,8 @@ void WindowStateManager::RemoveObserverIfUnreferenced(aura::Window* window) {
 }
 
 void WindowStateManager::OnWindowDestroyed(aura::Window* window) {
+  window->RemoveObserver(this);
+
   for (UserIDHashWindowListMap::iterator iter =
            user_id_hash_window_list_map_.begin();
        iter != user_id_hash_window_list_map_.end();

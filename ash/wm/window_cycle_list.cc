@@ -72,6 +72,8 @@ int WindowCycleList::GetWindowIndex(aura::Window* window) {
 }
 
 void WindowCycleList::OnWindowDestroyed(aura::Window* window) {
+  window->RemoveObserver(this);
+
   WindowList::iterator i = std::find(windows_.begin(), windows_.end(), window);
   DCHECK(i != windows_.end());
   int removed_index = static_cast<int>(i - windows_.begin());

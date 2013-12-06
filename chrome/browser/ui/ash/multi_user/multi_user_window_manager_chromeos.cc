@@ -416,6 +416,7 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
   }
   // Remove the state and the window observer.
   ash::wm::GetWindowState(window)->RemoveObserver(this);
+  window->RemoveObserver(this);
   // Remove the window from the owners list.
   delete window_to_entry_[window];
   window_to_entry_.erase(window);

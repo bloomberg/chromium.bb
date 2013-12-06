@@ -588,7 +588,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   gfx::Insets hit_test_bounds_override_outer_touch_;
   gfx::Insets hit_test_bounds_override_inner_;
 
-  ObserverList<WindowObserver, true> observers_;
+  ObserverList<WindowObserver> observers_;
 
   // Value struct to keep the name and deallocator for this property.
   // Key cannot be used for this purpose because it can be char* or

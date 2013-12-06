@@ -87,14 +87,8 @@ class AURA_EXPORT WindowObserver {
   // destructor). This is called before the window is removed from its parent.
   virtual void OnWindowDestroying(Window* window) {}
 
-  // Invoked when the Window has been destroyed (i.e. at the end of
-  // its destructor). This is called after the window is removed from
-  // its parent.  Window automatically removes its WindowObservers
-  // before calling this method, so the following code is no op.
-  //
-  // void MyWindowObserver::OnWindowDestroyed(aura::Window* window) {
-  //    window->RemoveObserver(this);
-  // }
+  // Invoked when the Window has been destroyed (i.e. at the end of its
+  // destructor). This is called after the window is removed from its parent.
   virtual void OnWindowDestroyed(Window* window) {}
 
   // Called when a Window has been added to a RootWindow.

@@ -461,10 +461,14 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void DragDropController::OnWindowDestroyed(aura::Window* window) {
-  if (drag_window_ == window)
+  if (drag_window_ == window) {
+    drag_window_->RemoveObserver(this);
     drag_window_ = NULL;
-  if (drag_source_window_ == window)
+  }
+  if (drag_source_window_ == window) {
+    drag_source_window_->RemoveObserver(this);
     drag_source_window_ = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -632,55 +632,44 @@ Shell::~Shell() {
   // Drag-and-drop must be canceled prior to close all windows.
   drag_drop_controller_.reset();
 
-  // Controllers who have WindowObserver added must be deleted
-  // before |display_controller_| is deleted.
-
-#if defined(OS_CHROMEOS)
-  // VideoActivityNotifier must be deleted before |video_detector_| is
-  // deleted because it's observing video activity through
-  // VideoDetectorObserver interface.
-  video_activity_notifier_.reset();
-#endif  // defined(OS_CHROMEOS)
-  video_detector_.reset();
-
-  shadow_controller_.reset();
-  resize_shadow_controller_.reset();
-
-  window_cycle_controller_.reset();
-  mru_window_tracker_.reset();
-
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
   display_controller_->CloseNonDesktopDisplay();
 
-  // Chrome implementation of launcher delegate depends on FocusClient,
-  // so must be deleted before |focus_client_|.
-  launcher_delegate_.reset();
-  focus_client_.reset();
-
   // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
   // needs to remove observers from it.
   system_tray_notifier_.reset();
+
+#if defined(OS_CHROMEOS)
+  // Destroy VideoActivityNotifier before destroying VideoDetector.
+  video_activity_notifier_.reset();
+#endif  // defined(OS_CHROMEOS)
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical. TODO(oshima): sort.
   magnification_controller_.reset();
   partial_magnification_controller_.reset();
+  resize_shadow_controller_.reset();
+  shadow_controller_.reset();
   tooltip_controller_.reset();
   event_client_.reset();
+  window_cycle_controller_.reset();
   nested_dispatcher_controller_.reset();
   user_action_client_.reset();
   visibility_controller_.reset();
+  launcher_delegate_.reset();
   // |shelf_item_delegate_manager_| observes |shelf_model_|. It must be
   // destroyed before |shelf_model_| is destroyed.
   shelf_item_delegate_manager_.reset();
   // |shelf_window_watcher_| has a weak pointer to |shelf_Model_|.
   shelf_window_watcher_.reset();
   shelf_model_.reset();
+  video_detector_.reset();
 
   power_button_controller_.reset();
   lock_state_controller_.reset();
+  mru_window_tracker_.reset();
 
   resolution_notification_controller_.reset();
   desktop_background_controller_.reset();
