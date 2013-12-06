@@ -1,6 +1,9 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+import sys
+
 from measurements import media
 from telemetry import test
 
@@ -12,6 +15,7 @@ class Media(test.Test):
 class MediaNetworkSimulation(test.Test):
   """Obtains media metrics under different network simulations."""
   test = media.Media
+  enabled = not sys.platform.startswith('linux')
   page_set = 'page_sets/media_cns_cases.json'
 
 class MediaAndroid(test.Test):
