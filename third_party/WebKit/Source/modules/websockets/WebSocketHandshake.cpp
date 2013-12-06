@@ -581,7 +581,7 @@ bool WebSocketHandshake::checkResponseHeaders()
             }
         }
         if (!match) {
-            m_failureReason = formatHandshakeFailureReason("Sent non-empty 'Sec-WebSocket-Protocol' header but no response is received");
+            m_failureReason = formatHandshakeFailureReason("Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received");
             return false;
         }
     }
