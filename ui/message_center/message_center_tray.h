@@ -76,6 +76,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
   virtual void OnNotificationDisplayed(
       const std::string& notification_id) OVERRIDE;
   virtual void OnQuietModeChanged(bool in_quiet_mode) OVERRIDE;
+  virtual void OnBlockingStateChanged(NotificationBlocker* blocker) OVERRIDE;
 
  private:
   void OnMessageCenterChanged();

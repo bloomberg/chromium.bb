@@ -626,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
   }
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Failing after disabling Linux Aura: http://crbug.com/319689
 #define MAYBE_TestPartialUpdate DISABLED_TestPartialUpdate
 #else

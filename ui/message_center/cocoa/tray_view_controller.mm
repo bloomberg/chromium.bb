@@ -749,7 +749,7 @@ const CGFloat kTrayBottomMargin = 75;
   [settingsButton_ setEnabled:YES];
   [clipView_ setFrozen:NO];
 
-  messageCenter_->RemoveAllNotifications(true);
+  messageCenter_->RemoveAllVisibleNotifications(true);
 }
 
 - (void)updateQuietModeButtonImage {

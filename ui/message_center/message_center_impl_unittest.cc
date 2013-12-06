@@ -83,8 +83,7 @@ class ToggledNotificationBlocker : public NotificationBlocker {
   void SetNotificationsEnabled(bool enabled) {
     if (notifications_enabled_ != enabled) {
       notifications_enabled_ = enabled;
-      FOR_EACH_OBSERVER(
-          NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
+      NotifyBlockingStateChanged();
     }
   }
 
@@ -121,11 +120,40 @@ class PopupNotificationBlocker : public ToggledNotificationBlocker {
   DISALLOW_COPY_AND_ASSIGN(PopupNotificationBlocker);
 };
 
+class TotalNotificationBlocker : public PopupNotificationBlocker {
+ public:
+  TotalNotificationBlocker(MessageCenter* message_center,
+                           const NotifierId& allowed_notifier)
+      : PopupNotificationBlocker(message_center, allowed_notifier) {}
+  virtual ~TotalNotificationBlocker() {}
+
+  // NotificationBlocker overrides:
+  virtual bool ShouldShowNotification(
+      const NotifierId& notifier_id) const OVERRIDE {
+    return ShouldShowNotificationAsPopup(notifier_id);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TotalNotificationBlocker);
+};
+
 bool PopupNotificationsContain(
     const NotificationList::PopupNotifications& popups,
     const std::string& id) {
   for (NotificationList::PopupNotifications::const_iterator iter =
            popups.begin(); iter != popups.end(); ++iter) {
+    if ((*iter)->id() == id)
+      return true;
+  }
+  return false;
+}
+
+// Right now, MessageCenter::HasNotification() returns regardless of blockers.
+bool NotificationsContain(
+    const NotificationList::Notifications& notifications,
+    const std::string& id) {
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
     if ((*iter)->id() == id)
       return true;
   }
@@ -457,6 +485,96 @@ TEST_F(MessageCenterImplTest, NotificationBlockerAllowsPopups) {
   EXPECT_TRUE(PopupNotificationsContain(popups, "id3"));
   EXPECT_TRUE(PopupNotificationsContain(popups, "id4"));
   EXPECT_EQ(4u, message_center()->GetVisibleNotifications().size());
+}
+
+// TotalNotificationBlocker suppresses showing notifications even from the list.
+// This would provide the feature to 'separated' message centers per-profile for
+// ChromeOS multi-login.
+TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
+  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
+  NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
+  TotalNotificationBlocker blocker(message_center(), notifier_id2);
+
+  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
+      NOTIFICATION_TYPE_SIMPLE,
+      "id1",
+      UTF8ToUTF16("title"),
+      UTF8ToUTF16("message"),
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      notifier_id1,
+      RichNotificationData(),
+      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
+      NOTIFICATION_TYPE_SIMPLE,
+      "id2",
+      UTF8ToUTF16("title"),
+      UTF8ToUTF16("message"),
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      notifier_id2,
+      RichNotificationData(),
+      NULL)));
+
+  // "id1" becomes invisible while "id2" is still visible.
+  blocker.SetNotificationsEnabled(false);
+  EXPECT_EQ(1u, message_center()->NotificationCount());
+  NotificationList::Notifications notifications =
+      message_center()->GetVisibleNotifications();
+  EXPECT_FALSE(NotificationsContain(notifications, "id1"));
+  EXPECT_TRUE(NotificationsContain(notifications, "id2"));
+
+  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
+      NOTIFICATION_TYPE_SIMPLE,
+      "id3",
+      UTF8ToUTF16("title"),
+      UTF8ToUTF16("message"),
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      notifier_id1,
+      RichNotificationData(),
+      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
+      NOTIFICATION_TYPE_SIMPLE,
+      "id4",
+      UTF8ToUTF16("title"),
+      UTF8ToUTF16("message"),
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      notifier_id2,
+      RichNotificationData(),
+      NULL)));
+  EXPECT_EQ(2u, message_center()->NotificationCount());
+  notifications = message_center()->GetVisibleNotifications();
+  EXPECT_FALSE(NotificationsContain(notifications, "id1"));
+  EXPECT_TRUE(NotificationsContain(notifications, "id2"));
+  EXPECT_FALSE(NotificationsContain(notifications, "id3"));
+  EXPECT_TRUE(NotificationsContain(notifications, "id4"));
+
+  blocker.SetNotificationsEnabled(true);
+  EXPECT_EQ(4u, message_center()->NotificationCount());
+  notifications = message_center()->GetVisibleNotifications();
+  EXPECT_TRUE(NotificationsContain(notifications, "id1"));
+  EXPECT_TRUE(NotificationsContain(notifications, "id2"));
+  EXPECT_TRUE(NotificationsContain(notifications, "id3"));
+  EXPECT_TRUE(NotificationsContain(notifications, "id4"));
+
+  // RemoveAllVisibleNotifications should remove just visible notifications.
+  blocker.SetNotificationsEnabled(false);
+  message_center()->RemoveAllVisibleNotifications(false /* by_user */);
+  EXPECT_EQ(0u, message_center()->NotificationCount());
+  blocker.SetNotificationsEnabled(true);
+  EXPECT_EQ(2u, message_center()->NotificationCount());
+  notifications = message_center()->GetVisibleNotifications();
+  EXPECT_TRUE(NotificationsContain(notifications, "id1"));
+  EXPECT_FALSE(NotificationsContain(notifications, "id2"));
+  EXPECT_TRUE(NotificationsContain(notifications, "id3"));
+  EXPECT_FALSE(NotificationsContain(notifications, "id4"));
+
+  // And RemoveAllNotifications should remove all.
+  blocker.SetNotificationsEnabled(false);
+  message_center()->RemoveAllNotifications(false /* by_user */);
+  EXPECT_EQ(0u, message_center()->NotificationCount());
 }
 
 TEST_F(MessageCenterImplTest, QueueUpdatesWithCenterVisible) {

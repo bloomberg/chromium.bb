@@ -87,7 +87,8 @@ class BalloonNotificationUIManager
   virtual void OnBalloonSpaceChanged() OVERRIDE;
 
   // NotificationBlocker::Observer overrides:
-  virtual void OnBlockingStateChanged() OVERRIDE;
+  virtual void OnBlockingStateChanged(
+      message_center::NotificationBlocker* blocker) OVERRIDE;
 
   // A queue of notifications which are waiting to be shown.
   typedef std::deque<linked_ptr<QueuedNotification> > NotificationDeque;

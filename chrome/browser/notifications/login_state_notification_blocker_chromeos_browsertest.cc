@@ -41,17 +41,23 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
     chromeos::LoginState::Get()->set_always_logged_in(false);
   }
 
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    if (blocker_)
+      blocker_->RemoveObserver(this);
+    blocker_.reset();
+    chromeos::LoginManagerTest::CleanUpOnMainThread();
+  }
+
  protected:
-  scoped_ptr<message_center::NotificationBlocker> CreateBlocker() {
-    LoginStateNotificationBlockerChromeOS* blocker =
-        new LoginStateNotificationBlockerChromeOS(
-            message_center::MessageCenter::Get());
-    blocker->AddObserver(this);
-    return scoped_ptr<message_center::NotificationBlocker>(blocker);
+  void CreateBlocker() {
+    blocker_.reset(new LoginStateNotificationBlockerChromeOS(
+        message_center::MessageCenter::Get()));
+    blocker_->AddObserver(this);
   }
 
   // message_center::NotificationBlocker::Observer ovverrides:
-  virtual void OnBlockingStateChanged() OVERRIDE {
+  virtual void OnBlockingStateChanged(
+      message_center::NotificationBlocker* blocker) OVERRIDE {
     state_changed_count_++;
   }
 
@@ -61,8 +67,14 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
     return result;
   }
 
+  bool ShouldShowNotificationAsPopup(
+      const message_center::NotifierId& notifier_id) {
+    return blocker_->ShouldShowNotificationAsPopup(notifier_id);
+  }
+
  private:
   int state_changed_count_;
+  scoped_ptr<message_center::NotificationBlocker> blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerChromeOSBrowserTest);
 };
@@ -76,26 +88,26 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        BaseTest) {
-  scoped_ptr<message_center::NotificationBlocker> blocker(CreateBlocker());
+  CreateBlocker();
   message_center::NotifierId notifier_id;
 
   // Logged in as a normal user.
   EXPECT_CALL(login_utils(), DoBrowserLaunch(_, _)).Times(1);
   LoginUser(kTestUsers[0]);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch.
   chromeos::UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_FALSE(blocker->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch off.
   chromeos::UserAddingScreen::Get()->Cancel();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
 
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
@@ -107,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        AlwaysAllowedNotifier) {
-  scoped_ptr<message_center::NotificationBlocker> blocker(CreateBlocker());
+  CreateBlocker();
 
   // NOTIFIER_DISPLAY is allowed to shown in the login screen.
   message_center::NotifierId notifier_id(
@@ -117,17 +129,17 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
   EXPECT_CALL(login_utils(), DoBrowserLaunch(_, _)).Times(1);
   LoginUser(kTestUsers[0]);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch.
   chromeos::UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch off.
   chromeos::UserAddingScreen::Get()->Cancel();
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }

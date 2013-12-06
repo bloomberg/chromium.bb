@@ -162,6 +162,7 @@ class MessageCenterImpl : public MessageCenter,
       OVERRIDE;
   virtual void RemoveNotification(const std::string& id, bool by_user) OVERRIDE;
   virtual void RemoveAllNotifications(bool by_user) OVERRIDE;
+  virtual void RemoveAllVisibleNotifications(bool by_user) OVERRIDE;
   virtual void SetNotificationIcon(const std::string& notification_id,
                                    const gfx::Image& image) OVERRIDE;
   virtual void SetNotificationImage(const std::string& notification_id,
@@ -188,13 +189,25 @@ class MessageCenterImpl : public MessageCenter,
   virtual void PausePopupTimers() OVERRIDE;
 
   // NotificationBlocker::Observer overrides:
-  virtual void OnBlockingStateChanged() OVERRIDE;
+  virtual void OnBlockingStateChanged(NotificationBlocker* blocker) OVERRIDE;
 
  protected:
   virtual void DisableTimersForTest() OVERRIDE;
 
  private:
+  struct NotificationCache {
+    NotificationCache();
+    ~NotificationCache();
+    void Rebuild(const NotificationList::Notifications& notificaitons);
+
+    NotificationList::Notifications visible_notifications;
+    size_t unread_count;
+  };
+
+  void RemoveNotifications(bool by_user, const NotificationBlockers& blockers);
+
   scoped_ptr<NotificationList> notification_list_;
+  NotificationCache notification_cache_;
   ObserverList<MessageCenterObserver> observer_list_;
   scoped_ptr<internal::PopupTimersController> popup_timers_controller_;
   scoped_ptr<base::OneShotTimer<MessageCenterImpl> > quiet_mode_timer_;

@@ -11,6 +11,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/notification_blocker.h"
 
 namespace message_center {
 
@@ -152,6 +153,10 @@ void MessageCenterTray::OnNotificationDisplayed(
 
 void MessageCenterTray::OnQuietModeChanged(bool in_quiet_mode) {
   NotifyMessageCenterTrayChanged();
+}
+
+void MessageCenterTray::OnBlockingStateChanged(NotificationBlocker* blocker) {
+  OnMessageCenterChanged();
 }
 
 void MessageCenterTray::OnMessageCenterChanged() {

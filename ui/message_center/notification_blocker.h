@@ -7,7 +7,7 @@
 
 #include "base/observer_list.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notification.h"
 
 namespace message_center {
 class MessageCenter;
@@ -19,7 +19,7 @@ class MESSAGE_CENTER_EXPORT NotificationBlocker {
  public:
   class Observer {
    public:
-    virtual void OnBlockingStateChanged() = 0;
+    virtual void OnBlockingStateChanged(NotificationBlocker* blocker) = 0;
   };
 
   explicit NotificationBlocker(MessageCenter* message_center);
@@ -31,6 +31,10 @@ class MESSAGE_CENTER_EXPORT NotificationBlocker {
   // Checks the current state and updates the availability.
   virtual void CheckState() {}
 
+  // Returns true when notifications from |notifier_id| should appear in the
+  // message center. Default returns true always.
+  virtual bool ShouldShowNotification(const NotifierId& notifier_id) const;
+
   // Returns true when notifications from |notifier_id| should be shown as
   // popups on screen.  If it's false, those notifications should be queued.
   // When a blocker starts returning false for a notification which is already
@@ -39,12 +43,15 @@ class MESSAGE_CENTER_EXPORT NotificationBlocker {
       const NotifierId& notifier_id) const = 0;
 
  protected:
-  ObserverList<Observer>& observers() { return observers_; }
+  MessageCenter* message_center() { return message_center_; }
+  void NotifyBlockingStateChanged();
 
  private:
   ObserverList<Observer> observers_;
   MessageCenter* message_center_;  // weak
 };
+
+typedef std::vector<NotificationBlocker*> NotificationBlockers;
 
 }  // namespace message_center
 

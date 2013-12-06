@@ -39,6 +39,7 @@ class FakeMessageCenter : public MessageCenter {
 
   virtual void RemoveNotification(const std::string& id, bool by_user) OVERRIDE;
   virtual void RemoveAllNotifications(bool by_user) OVERRIDE;
+  virtual void RemoveAllVisibleNotifications(bool by_user) OVERRIDE;
   virtual void SetNotificationIcon(const std::string& notification_id,
                                    const gfx::Image& image) OVERRIDE;
 

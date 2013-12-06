@@ -36,6 +36,9 @@ bool NotifierId::operator==(const NotifierId& other) const {
   if (type != other.type)
     return false;
 
+  if (profile_id != other.profile_id)
+    return false;
+
   switch (type) {
     case WEB_PAGE:
       return url == other.url;

@@ -33,6 +33,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
+#include "chrome/browser/notifications/multi_user_notification_blocker_chromeos.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -64,6 +66,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 #if defined(OS_CHROMEOS)
   blockers_.push_back(
       new LoginStateNotificationBlockerChromeOS(message_center));
+  blockers_.push_back(new MultiUserNotificationBlockerChromeOS(message_center));
 #else
   blockers_.push_back(new ScreenLockNotificationBlocker(message_center));
 #endif
@@ -404,6 +407,9 @@ MessageCenterNotificationManager::ProfileNotification::ProfileNotification(
       notification_(notification),
       downloads_(new ImageDownloads(message_center, this)) {
   DCHECK(profile);
+#if defined(OS_CHROMEOS)
+  notification_.set_profile_id(multi_user_util::GetUserIDFromProfile(profile));
+#endif
 }
 
 MessageCenterNotificationManager::ProfileNotification::~ProfileNotification() {

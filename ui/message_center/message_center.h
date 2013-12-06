@@ -89,6 +89,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // Removes an existing notification.
   virtual void RemoveNotification(const std::string& id, bool by_user) = 0;
   virtual void RemoveAllNotifications(bool by_user) = 0;
+  virtual void RemoveAllVisibleNotifications(bool by_user) = 0;
 
   // Sets the icon image. Icon appears at the top-left of the notification.
   virtual void SetNotificationIcon(const std::string& notification_id,

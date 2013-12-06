@@ -28,4 +28,14 @@ void NotificationBlocker::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+bool NotificationBlocker::ShouldShowNotification(
+    const NotifierId& notifier_id) const {
+  return true;
+}
+
+void NotificationBlocker::NotifyBlockingStateChanged() {
+  FOR_EACH_OBSERVER(
+      NotificationBlocker::Observer, observers_, OnBlockingStateChanged(this));
+}
+
 }  // namespace message_center

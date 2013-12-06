@@ -217,7 +217,8 @@ void BalloonNotificationUIManager::OnBalloonSpaceChanged() {
   CheckAndShowNotifications();
 }
 
-void BalloonNotificationUIManager::OnBlockingStateChanged() {
+void BalloonNotificationUIManager::OnBlockingStateChanged(
+    message_center::NotificationBlocker* blocker) {
   CheckAndShowNotifications();
 }
 
@@ -246,15 +247,12 @@ bool BalloonNotificationUIManager::UpdateNotification(
 
 BalloonCollection::PositionPreference
 BalloonNotificationUIManager::GetPositionPreference() const {
-  LOG(INFO) << "Current position preference: " << position_pref_.GetValue();
-
   return static_cast<BalloonCollection::PositionPreference>(
       position_pref_.GetValue());
 }
 
 void BalloonNotificationUIManager::SetPositionPreference(
     BalloonCollection::PositionPreference preference) {
-  LOG(INFO) << "Setting position preference: " << preference;
   position_pref_.SetValue(static_cast<int>(preference));
   balloon_collection_->SetPositionPreference(preference);
 }

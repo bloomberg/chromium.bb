@@ -61,8 +61,7 @@ bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
 
 void LoginStateNotificationBlockerChromeOS::OnLockStateChanged(bool locked) {
   locked_ = locked;
-  FOR_EACH_OBSERVER(
-      NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
+  NotifyBlockingStateChanged();
 }
 
 void LoginStateNotificationBlockerChromeOS::OnAppTerminating() {
@@ -72,16 +71,13 @@ void LoginStateNotificationBlockerChromeOS::OnAppTerminating() {
 }
 
 void LoginStateNotificationBlockerChromeOS::LoggedInStateChanged() {
-  FOR_EACH_OBSERVER(
-      NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
+  NotifyBlockingStateChanged();
 }
 
 void LoginStateNotificationBlockerChromeOS::OnUserAddingStarted() {
-  FOR_EACH_OBSERVER(
-      NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
+  NotifyBlockingStateChanged();
 }
 
 void LoginStateNotificationBlockerChromeOS::OnUserAddingFinished() {
-  FOR_EACH_OBSERVER(
-      NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
+  NotifyBlockingStateChanged();
 }

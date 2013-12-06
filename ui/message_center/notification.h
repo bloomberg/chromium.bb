@@ -88,6 +88,10 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   const NotifierId& notifier_id() const { return notifier_id_; }
 
+  void set_profile_id(const std::string& profile_id) {
+    notifier_id_.profile_id = profile_id;
+  }
+
   // Begin unpacked values from optional_fields.
   int priority() const { return optional_fields_.priority; }
   void set_priority(int priority) { optional_fields_.priority = priority; }
@@ -144,7 +148,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   }
 
   // Read status in the message center.
-  bool is_read() const { return is_read_; }
+  bool IsRead() const;
   void set_is_read(bool read) { is_read_ = read; }
 
   // Expanded status in the message center (not the popups).

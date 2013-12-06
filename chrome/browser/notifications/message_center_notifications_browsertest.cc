@@ -287,11 +287,13 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
   manager()->Add(CreateTestNotification("n2", &delegate2), profile());
 
-  EXPECT_EQ("add-n", observer.log());
+  // 'update-n' should happen since SetVisibility updates is_read status of n.
+  // TODO(mukai): fix event handling to happen update-n just once.
+  EXPECT_EQ("add-n_update-n_update-n", observer.log());
 
   message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
 
-  EXPECT_EQ("add-n_add-n2", observer.log());
+  EXPECT_EQ("add-n_update-n_update-n_add-n2", observer.log());
 
   delegate->Release();
   delegate2->Release();

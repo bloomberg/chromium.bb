@@ -391,6 +391,25 @@ void PopupTimersController::OnNotificationRemoved(const std::string& id,
 }  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
+// MessageCenterImpl::NotificationCache
+
+MessageCenterImpl::NotificationCache::NotificationCache()
+    : unread_count(0) {}
+
+MessageCenterImpl::NotificationCache::~NotificationCache() {}
+
+void MessageCenterImpl::NotificationCache::Rebuild(
+    const NotificationList::Notifications& notifications) {
+  visible_notifications = notifications;
+  unread_count = 0;
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    if (!(*iter)->IsRead())
+      ++unread_count;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // MessageCenterImpl
 
 MessageCenterImpl::MessageCenterImpl()
@@ -430,7 +449,7 @@ void MessageCenterImpl::RemoveNotificationBlocker(
   blockers_.erase(iter);
 }
 
-void MessageCenterImpl::OnBlockingStateChanged() {
+void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
   std::list<std::string> blocked_ids;
   NotificationList::PopupNotifications popups =
       notification_list_->GetPopupNotifications(blockers_, &blocked_ids);
@@ -439,6 +458,11 @@ void MessageCenterImpl::OnBlockingStateChanged() {
        iter != blocked_ids.end(); ++iter) {
     MarkSinglePopupAsShown((*iter), true);
   }
+  notification_cache_.Rebuild(
+      notification_list_->GetVisibleNotifications(blockers_));
+  FOR_EACH_OBSERVER(MessageCenterObserver,
+                    observer_list_,
+                    OnBlockingStateChanged(blocker));
 }
 
 void MessageCenterImpl::SetVisibility(Visibility visibility) {
@@ -466,11 +490,11 @@ bool MessageCenterImpl::IsMessageCenterVisible() {
 }
 
 size_t MessageCenterImpl::NotificationCount() const {
-  return notification_list_->NotificationCount();
+  return notification_cache_.visible_notifications.size();
 }
 
 size_t MessageCenterImpl::UnreadNotificationCount() const {
-  return notification_list_->unread_count();
+  return notification_cache_.unread_count;
 }
 
 bool MessageCenterImpl::HasPopupNotifications() const {
@@ -478,6 +502,11 @@ bool MessageCenterImpl::HasPopupNotifications() const {
 }
 
 bool MessageCenterImpl::HasNotification(const std::string& id) {
+  // This will return true if the notification with |id| is hidden by the
+  // ChromeOS multi-profile feature. This would be harmless for now because
+  // this check will be used from the UI, so the |id| for hidden profile won't
+  // arrive here.
+  // TODO(mukai): fix this if necessary.
   return notification_list_->HasNotification(id);
 }
 
@@ -493,7 +522,7 @@ bool MessageCenterImpl::HasClickedListener(const std::string& id) {
 
 const NotificationList::Notifications&
 MessageCenterImpl::GetVisibleNotifications() {
-  return notification_list_->GetNotifications();
+  return notification_cache_.visible_notifications;
 }
 
 NotificationList::PopupNotifications
@@ -520,6 +549,8 @@ void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
   const std::string& id = notification->id();
   bool already_exists = notification_list_->HasNotification(id);
   notification_list_->AddNotification(notification.Pass());
+  notification_cache_.Rebuild(
+      notification_list_->GetVisibleNotifications(blockers_));
 
   if (already_exists) {
     FOR_EACH_OBSERVER(
@@ -562,6 +593,8 @@ void MessageCenterImpl::UpdateNotification(
   std::string new_id = new_notification->id();
   notification_list_->UpdateNotificationMessage(old_id,
                                                 new_notification.Pass());
+  notification_cache_.Rebuild(
+     notification_list_->GetVisibleNotifications(blockers_));
   if (old_id == new_id) {
     FOR_EACH_OBSERVER(
         MessageCenterObserver, observer_list_, OnNotificationUpdated(new_id));
@@ -593,14 +626,28 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
   // copies the id explicitly here.
   std::string copied_id(id);
   notification_list_->RemoveNotification(copied_id);
+  notification_cache_.Rebuild(
+      notification_list_->GetVisibleNotifications(blockers_));
   FOR_EACH_OBSERVER(MessageCenterObserver,
                     observer_list_,
                     OnNotificationRemoved(copied_id, by_user));
 }
 
 void MessageCenterImpl::RemoveAllNotifications(bool by_user) {
-  const NotificationList::Notifications& notifications =
-      notification_list_->GetNotifications();
+  // Using not |blockers_| but an empty list since it wants to remove literally
+  // all notifications.
+  RemoveNotifications(by_user, NotificationBlockers());
+}
+
+void MessageCenterImpl::RemoveAllVisibleNotifications(bool by_user) {
+  RemoveNotifications(by_user, blockers_);
+}
+
+void MessageCenterImpl::RemoveNotifications(
+    bool by_user,
+    const NotificationBlockers& blockers) {
+  const NotificationList::Notifications notifications =
+      notification_list_->GetVisibleNotifications(blockers);
   std::set<std::string> ids;
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
@@ -608,9 +655,13 @@ void MessageCenterImpl::RemoveAllNotifications(bool by_user) {
     NotificationDelegate* delegate = (*iter)->delegate();
     if (delegate)
       delegate->Close(by_user);
+    notification_list_->RemoveNotification((*iter)->id());
   }
-  notification_list_->RemoveAllNotifications();
 
+  if (!ids.empty()) {
+    notification_cache_.Rebuild(
+        notification_list_->GetVisibleNotifications(blockers_));
+  }
   for (std::set<std::string>::const_iterator iter = ids.begin();
        iter != ids.end(); ++iter) {
     FOR_EACH_OBSERVER(MessageCenterObserver,
@@ -693,6 +744,10 @@ void MessageCenterImpl::DisableNotificationsByNotifier(
     std::string id = (*iter)->id();
     iter++;
     RemoveNotification(id, false);
+  }
+  if (!notifications.empty()) {
+    notification_cache_.Rebuild(
+        notification_list_->GetVisibleNotifications(blockers_));
   }
 }
 

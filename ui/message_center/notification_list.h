@@ -16,6 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
 
 namespace base {
@@ -24,7 +25,6 @@ class DictionaryValue;
 
 namespace message_center {
 
-class NotificationBlocker;
 class NotificationDelegate;
 
 namespace test {
@@ -67,8 +67,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   void RemoveNotification(const std::string& id);
 
-  void RemoveAllNotifications();
-
   Notifications GetNotificationsByNotifierId(const NotifierId& notifier_id);
 
   // Returns true if the notification exists and was updated.
@@ -94,7 +92,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   // Returns false if the first notification has been shown as a popup (which
   // means that all notifications have been shown).
-  bool HasPopupNotifications(const std::vector<NotificationBlocker*>& blockers);
+  bool HasPopupNotifications(const NotificationBlockers& blockers);
 
   // Returns the recent notifications of the priority higher then LOW,
   // that have not been shown as a popup. kMaxVisiblePopupNotifications are
@@ -103,7 +101,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // to |blocked_ids|. |blocked_ids| can be NULL if the caller doesn't care
   // which notifications are blocked.
   PopupNotifications GetPopupNotifications(
-      const std::vector<NotificationBlocker*>& blockers,
+      const NotificationBlockers& blockers,
       std::list<std::string>* blocked_ids);
 
   // Marks a specific popup item as shown. Set |mark_notification_as_read| to
@@ -128,11 +126,13 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // specified time-delta from now.
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in);
 
-  // Returns all notifications, in a (priority-timestamp) order. Suitable for
-  // rendering notifications in a NotificationCenter.
-  const Notifications& GetNotifications();
-  size_t NotificationCount() const;
-  size_t unread_count() const { return unread_count_; }
+  // Returns all visible notifications, in a (priority-timestamp) order.
+  // Suitable for rendering notifications in a MessageCenter.
+  Notifications GetVisibleNotifications(
+      const NotificationBlockers& blockers) const;
+  size_t NotificationCount(const NotificationBlockers& blockers) const;
+  size_t UnreadCount(const NotificationBlockers& blockers) const;
+
   bool is_message_center_visible() const { return message_center_visible_; }
 
  private:
@@ -149,7 +149,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   Notifications notifications_;
   bool message_center_visible_;
-  size_t unread_count_;
   bool quiet_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationList);

@@ -1310,6 +1310,8 @@
         'browser/notifications/fullscreen_notification_blocker.h',
         'browser/notifications/login_state_notification_blocker_chromeos.cc',
         'browser/notifications/login_state_notification_blocker_chromeos.h',
+        'browser/notifications/multi_user_notification_blocker_chromeos.cc',
+        'browser/notifications/multi_user_notification_blocker_chromeos.h',
         'browser/notifications/notification_delegate.cc',
         'browser/notifications/notification_delegate.h',
         'browser/notifications/notification_object_proxy.cc',

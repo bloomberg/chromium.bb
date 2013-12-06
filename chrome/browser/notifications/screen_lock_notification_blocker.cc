@@ -23,10 +23,8 @@ ScreenLockNotificationBlocker::~ScreenLockNotificationBlocker() {
 void ScreenLockNotificationBlocker::CheckState() {
   bool was_locked = is_locked_;
   is_locked_ = CheckIdleStateIsLocked();
-  if (is_locked_ != was_locked) {
-    FOR_EACH_OBSERVER(
-        NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
-  }
+  if (is_locked_ != was_locked)
+    NotifyBlockingStateChanged();
 
   if (is_locked_) {
     timer_.Start(FROM_HERE,

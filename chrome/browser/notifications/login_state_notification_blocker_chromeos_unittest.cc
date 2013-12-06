@@ -9,6 +9,7 @@
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 #include "chromeos/login/login_state.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 
 class LoginStateNotificationBlockerChromeOSTest
     : public ash::test::AshTestBase,
@@ -35,10 +36,9 @@ class LoginStateNotificationBlockerChromeOSTest
     chromeos::LoginState::Shutdown();
   }
 
-  message_center::NotificationBlocker* blocker() { return blocker_.get(); }
-
   // message_center::NotificationBlocker::Observer ovverrides:
-  virtual void OnBlockingStateChanged() OVERRIDE {
+  virtual void OnBlockingStateChanged(
+      message_center::NotificationBlocker* blocker) OVERRIDE {
     state_changed_count_++;
   }
 
@@ -48,9 +48,14 @@ class LoginStateNotificationBlockerChromeOSTest
     return result;
   }
 
+  bool ShouldShowNotificationAsPopup(
+      const message_center::NotifierId& notifier_id) {
+    return blocker_->ShouldShowNotificationAsPopup(notifier_id);
+  }
+
  private:
   int state_changed_count_;
-  scoped_ptr<LoginStateNotificationBlockerChromeOS> blocker_;
+  scoped_ptr<message_center::NotificationBlocker> blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerChromeOSTest);
 };
@@ -58,31 +63,31 @@ class LoginStateNotificationBlockerChromeOSTest
 TEST_F(LoginStateNotificationBlockerChromeOSTest, BaseTest) {
   // Default status: OOBE.
   message_center::NotifierId notifier_id;
-  EXPECT_FALSE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_NONE,
       chromeos::LoginState::LOGGED_IN_USER_NONE);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_FALSE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_ACTIVE,
       chromeos::LoginState::LOGGED_IN_USER_REGULAR);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
   ash::Shell::GetInstance()->OnLockStateChanged(true);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_FALSE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Unlock.
   ash::Shell::GetInstance()->OnLockStateChanged(false);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
 
 TEST_F(LoginStateNotificationBlockerChromeOSTest, AlwaysAllowedNotifier) {
@@ -91,29 +96,29 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, AlwaysAllowedNotifier) {
       ash::system_notifier::NOTIFIER_DISPLAY);
 
   // Default status: OOBE.
-  EXPECT_TRUE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_NONE,
       chromeos::LoginState::LOGGED_IN_USER_NONE);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_ACTIVE,
       chromeos::LoginState::LOGGED_IN_USER_REGULAR);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Lock.
   ash::Shell::GetInstance()->OnLockStateChanged(true);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Unlock.
   ash::Shell::GetInstance()->OnLockStateChanged(false);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(blocker()->ShouldShowNotificationAsPopup(notifier_id));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }

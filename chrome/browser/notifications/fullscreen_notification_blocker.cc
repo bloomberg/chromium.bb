@@ -60,10 +60,8 @@ FullscreenNotificationBlocker::~FullscreenNotificationBlocker() {
 void FullscreenNotificationBlocker::CheckState() {
   bool was_fullscreen_mode = is_fullscreen_mode_;
   is_fullscreen_mode_ = DoesFullscreenModeBlockNotifications();
-  if (is_fullscreen_mode_ != was_fullscreen_mode) {
-    FOR_EACH_OBSERVER(
-        NotificationBlocker::Observer, observers(), OnBlockingStateChanged());
-  }
+  if (is_fullscreen_mode_ != was_fullscreen_mode)
+    NotifyBlockingStateChanged();
 }
 
 bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
@@ -71,8 +69,8 @@ bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
   bool enabled = !is_fullscreen_mode_;
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance())
-    enabled = enabled ||
-        ash::system_notifier::ShouldAlwaysShowPopups(notifier_id);
+    enabled = enabled || ash::system_notifier::ShouldAlwaysShowPopups(
+        notifier_id);
 #endif
 
   return enabled;

@@ -737,7 +737,7 @@ void MessageCenterView::OnAllNotificationsCleared() {
   scroller_->SetEnabled(true);
   button_bar_->SetAllButtonsEnabled(true);
   button_bar_->SetCloseAllButtonEnabled(false);
-  message_center_->RemoveAllNotifications(true);  // Action by user.
+  message_center_->RemoveAllVisibleNotifications(true);  // Action by user.
 }
 
 size_t MessageCenterView::NumMessageViewsForTest() const {

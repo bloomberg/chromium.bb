@@ -106,9 +106,13 @@ Notification& Notification::operator=(const Notification& other) {
 
 Notification::~Notification() {}
 
+bool Notification::IsRead() const {
+  return is_read_ || optional_fields_.priority == MIN_PRIORITY;
+}
+
 void Notification::CopyState(Notification* base) {
   shown_as_popup_ = base->shown_as_popup();
-  is_read_ = base->is_read();
+  is_read_ = base->is_read_;
   is_expanded_ = base->is_expanded();
   if (!delegate_.get())
     delegate_ = base->delegate();

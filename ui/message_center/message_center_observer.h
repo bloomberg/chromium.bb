@@ -11,6 +11,7 @@
 #include "ui/message_center/message_center_types.h"
 
 namespace message_center {
+class NotificationBlocker;
 
 // An observer class for the change of notifications in the MessageCenter.
 class MESSAGE_CENTER_EXPORT MessageCenterObserver {
@@ -49,6 +50,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   // Called whenever the quiet mode changes as a result of user action or when
   // quiet mode expires.
   virtual void OnQuietModeChanged(bool in_quiet_mode) {}
+
+  // Called when the blocking state of |blocker| is changed.
+  virtual void OnBlockingStateChanged(NotificationBlocker* blocker) {}
 };
 
 }  // namespace message_center
