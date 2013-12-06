@@ -62,6 +62,7 @@ struct MimeToExt {
 const struct MimeToExt mime_type_ext_map[] = {
   {"application/pdf", "pdf"},
   {"application/x-tar", "tar"},
+  {"application/zip", "zip"},
   {"audio/mpeg", "mp3"},
   {"image/gif", "gif"},
   {"image/jpeg", "jpg"},
