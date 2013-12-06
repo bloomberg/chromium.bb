@@ -138,11 +138,7 @@ public class AndroidProtocolHandler {
     private static InputStream openContent(Context context, Uri uri) {
         assert(uri.getScheme().equals(CONTENT_SCHEME));
         try {
-            // We strip the query parameters before opening the stream to
-            // ensure that the URL we try to load exactly matches the URL
-            // we have permission to read.
-            Uri baseUri = stripQueryParameters(uri);
-            return context.getContentResolver().openInputStream(baseUri);
+            return context.getContentResolver().openInputStream(uri);
         } catch (Exception e) {
             Log.e(TAG, "Unable to open content URL: " + uri);
             return null;
@@ -203,21 +199,6 @@ public class AndroidProtocolHandler {
             return null;
         }
         return uri;
-    }
-
-    /**
-     * Remove query parameters from a Uri.
-     * @param uri The input uri.
-     * @return The given uri without query parameters.
-     */
-    private static Uri stripQueryParameters(Uri uri) {
-        assert(uri.getAuthority() != null);
-        assert(uri.getPath() != null);
-        Uri.Builder builder = new Uri.Builder();
-        builder.scheme(uri.getScheme());
-        builder.encodedAuthority(uri.getAuthority());
-        builder.encodedPath(uri.getPath());
-        return builder.build();
     }
 
     /**
