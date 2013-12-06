@@ -37,7 +37,6 @@ class AppListTestModel::AppListTestItemModel : public AppListItemModel {
 AppListTestModel::AppListTestModel()
     : activate_count_(0),
       last_activated_(NULL) {
-  SetSignedIn(true);
 }
 
 std::string AppListTestModel::GetItemName(int id) {

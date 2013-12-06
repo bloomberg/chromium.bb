@@ -29,6 +29,7 @@ namespace app_list {
 
 class AppListItemModel;
 class AppListModel;
+class AppListViewDelegateObserver;
 class SearchResult;
 class SigninDelegate;
 
@@ -124,6 +125,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Returns the list of users (for AppListMenu).
   virtual const Users& GetUsers() const = 0;
+
+  // Adds/removes an observer for profile changes.
+  virtual void AddObserver(AppListViewDelegateObserver* observer) {}
+  virtual void RemoveObserver(AppListViewDelegateObserver* observer) {}
 };
 
 }  // namespace app_list

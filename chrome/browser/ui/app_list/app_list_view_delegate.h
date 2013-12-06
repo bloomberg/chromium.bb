@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/ui/app_list/chrome_signin_delegate.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
@@ -83,6 +84,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       const base::FilePath& profile_path) OVERRIDE;
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
+  virtual void AddObserver(
+      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
 
   // Overridden from app_list::StartPageObserver:
   virtual void OnSearch(const base::string16& query) OVERRIDE;
@@ -118,6 +123,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 #if defined(USE_ASH)
   scoped_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 #endif
+
+  ObserverList<app_list::AppListViewDelegateObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

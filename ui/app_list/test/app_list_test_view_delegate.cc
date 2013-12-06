@@ -9,20 +9,61 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_view_delegate_observer.h"
+#include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {
 namespace test {
 
+class TestSigninDelegate : public SigninDelegate {
+ public:
+  TestSigninDelegate() : signed_in_(true) {}
+
+  void set_signed_in(bool signed_in) { signed_in_ = signed_in; }
+
+  // SigninDelegate overrides:
+  virtual bool NeedSignin() OVERRIDE { return !signed_in_; }
+  virtual void ShowSignin() OVERRIDE {}
+  virtual void OpenLearnMore() OVERRIDE {}
+  virtual void OpenSettings() OVERRIDE {}
+
+  virtual base::string16 GetSigninHeading() OVERRIDE {
+    return base::string16();
+  }
+  virtual base::string16 GetSigninText() OVERRIDE { return base::string16(); }
+  virtual base::string16 GetSigninButtonText() OVERRIDE {
+    return base::string16();
+  }
+  virtual base::string16 GetLearnMoreLinkText() OVERRIDE {
+    return base::string16();
+  }
+  virtual base::string16 GetSettingsLinkText() OVERRIDE {
+    return base::string16();
+  }
+
+ private:
+  bool signed_in_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSigninDelegate);
+};
+
 AppListTestViewDelegate::AppListTestViewDelegate()
     : dismiss_count_(0),
       open_search_result_count_(0),
-      test_signin_delegate_(NULL),
+      test_signin_delegate_(new TestSigninDelegate),
       model_(new AppListTestModel) {
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
+
+void AppListTestViewDelegate::SetSignedIn(bool signed_in) {
+  test_signin_delegate_->set_signed_in(signed_in);
+  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver,
+                    observers_,
+                    OnProfilesChanged());
+}
 
 bool AppListTestViewDelegate::ForceNativeDesktop() const {
   return false;
@@ -33,7 +74,7 @@ AppListModel* AppListTestViewDelegate::GetModel() {
 }
 
 SigninDelegate* AppListTestViewDelegate::GetSigninDelegate() {
-  return test_signin_delegate_;
+  return test_signin_delegate_.get();
 }
 
 void AppListTestViewDelegate::GetShortcutPathForApp(
@@ -66,6 +107,16 @@ const AppListViewDelegate::Users& AppListTestViewDelegate::GetUsers() const {
 void AppListTestViewDelegate::ReplaceTestModel(int item_count) {
   model_.reset(new AppListTestModel);
   model_->PopulateApps(item_count);
+}
+
+void AppListTestViewDelegate::AddObserver(
+    app_list::AppListViewDelegateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AppListTestViewDelegate::RemoveObserver(
+    app_list::AppListViewDelegateObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace test

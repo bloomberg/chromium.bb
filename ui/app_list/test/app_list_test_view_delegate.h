@@ -10,12 +10,14 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
 namespace app_list {
 namespace test {
 
 class AppListTestModel;
+class TestSigninDelegate;
 
 // A concrete AppListViewDelegate for unit tests.
 class AppListTestViewDelegate : public AppListViewDelegate {
@@ -25,13 +27,13 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 
   int dismiss_count() { return dismiss_count_; }
   int open_search_result_count() { return open_search_result_count_; }
-  void set_test_signin_delegate(SigninDelegate* signin_delegate) {
-    test_signin_delegate_ = signin_delegate;
-  }
-
   void SetUsers(const Users& users) {
     users_ = users;
   }
+
+  // Sets the signin status of the signin delegate, creating one if there isn't
+  // one already.
+  void SetSignedIn(bool signed_in);
 
   // AppListViewDelegate overrides:
   virtual bool ForceNativeDesktop() const OVERRIDE;
@@ -59,6 +61,10 @@ class AppListTestViewDelegate : public AppListViewDelegate {
       const base::FilePath& profile_path) OVERRIDE {}
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
+  virtual void AddObserver(
+      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
@@ -69,8 +75,9 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   int dismiss_count_;
   int open_search_result_count_;
   Users users_;
-  SigninDelegate* test_signin_delegate_;  // Weak. Owned by test.
+  scoped_ptr<TestSigninDelegate> test_signin_delegate_;
   scoped_ptr<AppListTestModel> model_;
+  ObserverList<app_list::AppListViewDelegateObserver> observers_;
 };
 
 }  // namespace test

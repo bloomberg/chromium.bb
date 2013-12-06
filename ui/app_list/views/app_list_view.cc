@@ -76,11 +76,11 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       app_list_main_view_(NULL),
       signin_view_(NULL) {
   CHECK(delegate);
-  delegate_->GetModel()->AddObserver(this);
+  delegate_->AddObserver(this);
 }
 
 AppListView::~AppListView() {
-  delegate_->GetModel()->RemoveObserver(this);
+  delegate_->RemoveObserver(this);
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
 }
@@ -157,10 +157,13 @@ void AppListView::Prerender() {
   app_list_main_view_->Prerender();
 }
 
-void AppListView::OnSigninStatusChanged() {
-  AppListModel* model = delegate_->GetModel();
-  signin_view_->SetVisible(!model->signed_in());
-  app_list_main_view_->SetVisible(model->signed_in());
+void AppListView::OnProfilesChanged() {
+  app_list::SigninDelegate* signin_delegate =
+      delegate_ ? delegate_->GetSigninDelegate() : NULL;
+  bool show_signin_view = signin_delegate && signin_delegate->NeedSignin();
+
+  signin_view_->SetVisible(show_signin_view);
+  app_list_main_view_->SetVisible(!show_signin_view);
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
@@ -213,7 +216,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                      app_list_main_view_->GetPreferredSize().width());
   AddChildView(signin_view_);
 
-  OnSigninStatusChanged();
+  OnProfilesChanged();
   set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
   set_move_with_anchor(true);
@@ -336,10 +339,6 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
   // Whether we need to signin or not may have changed since last time we were
   // shown.
   Layout();
-}
-
-void AppListView::OnAppListModelSigninStatusChanged() {
-  OnSigninStatusChanged();
 }
 
 }  // namespace app_list

@@ -24,7 +24,6 @@ class TestObserver : public AppListModelObserver,
  public:
   TestObserver()
       : status_changed_count_(0),
-        signin_changed_count_(0),
         items_added_(0),
         items_removed_(0),
         items_moved_(0) {
@@ -35,10 +34,6 @@ class TestObserver : public AppListModelObserver,
   // AppListModelObserver
   virtual void OnAppListModelStatusChanged() OVERRIDE {
     ++status_changed_count_;
-  }
-
-  virtual void OnAppListModelSigninStatusChanged() OVERRIDE {
-    ++signin_changed_count_;
   }
 
   // AppListItemListObserver
@@ -121,19 +116,6 @@ TEST_F(AppListModelTest, SetStatus) {
   // Set the same status, no change is expected.
   model_.SetStatus(AppListModel::STATUS_NORMAL);
   EXPECT_EQ(2, observer_.status_changed_count());
-}
-
-TEST_F(AppListModelTest, SetSignedIn) {
-  EXPECT_TRUE(model_.signed_in());
-  model_.SetSignedIn(false);
-  EXPECT_EQ(1, observer_.signin_changed_count());
-  EXPECT_FALSE(model_.signed_in());
-  model_.SetSignedIn(true);
-  EXPECT_EQ(2, observer_.signin_changed_count());
-  EXPECT_TRUE(model_.signed_in());
-  // Set the same signin state, no change is expected.
-  model_.SetSignedIn(true);
-  EXPECT_EQ(2, observer_.signin_changed_count());
 }
 
 TEST_F(AppListModelTest, AppsObserver) {

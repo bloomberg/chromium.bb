@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -41,6 +43,11 @@ app_list::AppListModel* GetAppListModel(AppListService* service) {
 AppListService* GetAppListService() {
   // TODO(tapted): Consider testing ash explicitly on the win-ash trybot.
   return AppListService::Get(chrome::GetActiveDesktop());
+}
+
+void SigninProfile(Profile* profile) {
+  SigninManagerFactory::GetForProfile(profile)->
+      SetAuthenticatedUsername("user@example.com");
 }
 
 }  // namespace
@@ -130,6 +137,8 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, MAYBE_ShowAndDismiss) {
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
                        MAYBE_SwitchAppListProfiles) {
   InitSecondProfile();
+  SigninProfile(browser()->profile());
+  SigninProfile(profile2_);
 
   AppListService* service = GetAppListService();
   ASSERT_TRUE(service);
@@ -142,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
   controller->ShowForProfileByPath(browser()->profile()->GetPath());
   app_list::AppListModel* model = GetAppListModel(service);
   ASSERT_TRUE(model);
-  model->SetSignedIn(true);
+
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(service->IsAppListVisible());
@@ -152,7 +161,6 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
   controller->ShowForProfileByPath(profile2_->GetPath());
   model = GetAppListModel(service);
   ASSERT_TRUE(model);
-  model->SetSignedIn(true);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(service->IsAppListVisible());
@@ -164,6 +172,8 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
                        MAYBE_SwitchAppListProfilesDuringSearch) {
   InitSecondProfile();
+  SigninProfile(browser()->profile());
+  SigninProfile(profile2_);
 
   AppListService* service = GetAppListService();
   ASSERT_TRUE(service);
@@ -175,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
   controller->ShowForProfileByPath(browser()->profile()->GetPath());
   app_list::AppListModel* model = GetAppListModel(service);
   ASSERT_TRUE(model);
-  model->SetSignedIn(true);
+
   model->search_box()->SetText(ASCIIToUTF16("minimal"));
   base::RunLoop().RunUntilIdle();
 
@@ -183,7 +193,6 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
   controller->ShowForProfileByPath(profile2_->GetPath());
   model = GetAppListModel(service);
   ASSERT_TRUE(model);
-  model->SetSignedIn(true);
   base::RunLoop().RunUntilIdle();
 
   // Ensure the search box is empty.
@@ -312,6 +321,7 @@ class AppListControllerSearchResultsBrowserTest
 // Test showing search results, and uninstalling one of them while displayed.
 IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
                        UninstallSearchResult) {
+  SigninProfile(browser()->profile());
   base::FilePath test_extension_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));
   test_extension_path = test_extension_path.AppendASCII("extensions")
@@ -328,7 +338,6 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
 
   app_list::AppListModel* model = GetAppListModel(service);
   ASSERT_TRUE(model);
-  model->SetSignedIn(true);
   WatchResultsLookingForItem(model->results(), extension->name());
 
   // Ensure a search finds the extension.

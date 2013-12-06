@@ -18,7 +18,6 @@ class AppListModelPicklerUnitTest : public testing::Test {
  protected:
   void CheckIsSame(AppListModel* m1, AppListModel* m2) {
     ASSERT_EQ(m1->item_list()->item_count(), m2->item_list()->item_count());
-    ASSERT_EQ(m1->signed_in(), m2->signed_in());
     for (size_t i = 0; i < m1->item_list()->item_count(); i++) {
       ASSERT_EQ(m1->item_list()->item_at(i)->id(),
                 m2->item_list()->item_at(i)->id());
@@ -117,20 +116,6 @@ TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(gfx::ImageSkia(), true);
   model.item_list()->AddItem(app1);
-
-  DoConsistencyChecks(&model);
-}
-
-TEST_F(AppListModelPicklerUnitTest, SignedIn) {
-  AppListModel model;
-  model.SetSignedIn(true);
-
-  DoConsistencyChecks(&model);
-}
-
-TEST_F(AppListModelPicklerUnitTest, SignedOut) {
-  AppListModel model;
-  model.SetSignedIn(false);
 
   DoConsistencyChecks(&model);
 }

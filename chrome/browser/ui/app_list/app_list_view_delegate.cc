@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
+#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 
 #if defined(USE_ASH)
@@ -129,7 +130,9 @@ void AppListViewDelegate::OnProfileChanged() {
   app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
 #endif
 
-  model_->SetSignedIn(!GetSigninDelegate()->NeedSignin());
+  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver,
+                    observers_,
+                    OnProfilesChanged());
 
   // Don't populate the app list users if we are on the ash desktop.
   chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
@@ -318,4 +321,14 @@ content::WebContents* AppListViewDelegate::GetStartPageContents() {
 const app_list::AppListViewDelegate::Users&
 AppListViewDelegate::GetUsers() const {
   return users_;
+}
+
+void AppListViewDelegate::AddObserver(
+    app_list::AppListViewDelegateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AppListViewDelegate::RemoveObserver(
+    app_list::AppListViewDelegateObserver* observer) {
+  observers_.RemoveObserver(observer);
 }

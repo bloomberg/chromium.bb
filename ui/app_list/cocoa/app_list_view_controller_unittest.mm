@@ -7,22 +7,20 @@
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/test/apps_grid_controller_test_helper.h"
-#include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 
 namespace app_list {
 namespace test {
 
-class AppListViewControllerTest : public AppsGridControllerTestHelper,
-                                  public SigninDelegate {
+class AppListViewControllerTest : public AppsGridControllerTestHelper {
  public:
   AppListViewControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
     app_list_view_controller_.reset([[AppListViewController alloc] init]);
     scoped_ptr<AppListTestViewDelegate> delegate(new AppListTestViewDelegate);
-    delegate->set_test_signin_delegate(this);
+    delegate->SetSignedIn(true);
     [app_list_view_controller_
         setDelegate:delegate.PassAs<app_list::AppListViewDelegate>()];
     SetUpWithGridController([app_list_view_controller_ appsGridController]);
@@ -43,26 +41,6 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper,
     delegate->ReplaceTestModel(item_count);
     [app_list_view_controller_
         setDelegate:delegate.PassAs<app_list::AppListViewDelegate>()];
-  }
-
-  // SigninDelegate overrides:
-  virtual bool NeedSignin() OVERRIDE { return false; }
-  virtual void ShowSignin() OVERRIDE {}
-  virtual void OpenLearnMore() OVERRIDE {}
-  virtual void OpenSettings() OVERRIDE {}
-
-  virtual base::string16 GetSigninHeading() OVERRIDE {
-    return base::string16();
-  }
-  virtual base::string16 GetSigninText() OVERRIDE { return base::string16(); }
-  virtual base::string16 GetSigninButtonText() OVERRIDE {
-    return base::string16();
-  }
-  virtual base::string16 GetLearnMoreLinkText() OVERRIDE {
-    return base::string16();
-  }
-  virtual base::string16 GetSettingsLinkText() OVERRIDE {
-    return base::string16();
   }
 
   AppListTestViewDelegate* delegate() {
@@ -136,12 +114,12 @@ TEST_F(AppListViewControllerTest, SignedIn) {
 // Test the view when signin is required.
 TEST_F(AppListViewControllerTest, NeedsSignin) {
   // Begin the test with a signed out app list.
-  model()->SetSignedIn(false);
+  delegate()->SetSignedIn(false);
   EXPECT_EQ(2u, [[[app_list_view_controller_ view] subviews] count]);
   EXPECT_TRUE([[app_list_view_controller_ backgroundView] isHidden]);
 
   // Simulate signing in, should enter the SignedIn state.
-  model()->SetSignedIn(true);
+  delegate()->SetSignedIn(true);
   EXPECT_EQ(1u, [[[app_list_view_controller_ view] subviews] count]);
   EXPECT_FALSE([[app_list_view_controller_ backgroundView] isHidden]);
 }

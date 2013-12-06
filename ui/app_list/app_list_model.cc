@@ -15,7 +15,6 @@ AppListModel::AppListModel()
     : item_list_(new AppListItemList),
       search_box_(new SearchBoxModel),
       results_(new SearchResults),
-      signed_in_(false),
       status_(STATUS_NORMAL) {
 }
 
@@ -38,16 +37,6 @@ void AppListModel::SetStatus(Status status) {
   FOR_EACH_OBSERVER(AppListModelObserver,
                     observers_,
                     OnAppListModelStatusChanged());
-}
-
-void AppListModel::SetSignedIn(bool signed_in) {
-  if (signed_in_ == signed_in)
-    return;
-
-  signed_in_ = signed_in;
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListModelSigninStatusChanged());
 }
 
 }  // namespace app_list

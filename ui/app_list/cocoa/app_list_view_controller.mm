@@ -10,8 +10,8 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/signin_delegate.h"
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
@@ -81,14 +81,14 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
 
 namespace app_list {
 
-class AppListModelObserverBridge : public AppListModelObserver {
+class AppListModelObserverBridge : public AppListViewDelegateObserver {
  public:
   AppListModelObserverBridge(AppListViewController* parent);
   virtual ~AppListModelObserverBridge();
 
  private:
-  // Overridden from app_list::AppListModelObserver:
-  virtual void OnAppListModelSigninStatusChanged() OVERRIDE;
+  // Overridden from app_list::AppListViewDelegateObserver:
+  virtual void OnProfilesChanged() OVERRIDE;
 
   AppListViewController* parent_;  // Weak. Owns us.
 
@@ -98,15 +98,15 @@ class AppListModelObserverBridge : public AppListModelObserver {
 AppListModelObserverBridge::AppListModelObserverBridge(
     AppListViewController* parent)
     : parent_(parent) {
-  [[parent_ appsGridController] model]->AddObserver(this);
+  [parent_ delegate]->AddObserver(this);
 }
 
 AppListModelObserverBridge::~AppListModelObserverBridge() {
-  [[parent_ appsGridController] model]->RemoveObserver(this);
+  [parent_ delegate]->RemoveObserver(this);
 }
 
-void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
-  [parent_ onSigninStatusChanged];
+void AppListModelObserverBridge::OnProfilesChanged() {
+  [parent_ onProfilesChanged];
 }
 
 }  // namespace app_list
@@ -174,7 +174,7 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
   [appsSearchResultsController_ setDelegate:self];
   app_list_model_observer_bridge_.reset(
       new app_list::AppListModelObserverBridge(self));
-  [self onSigninStatusChanged];
+  [self onProfilesChanged];
 }
 
 -(void)loadAndSetView {
@@ -329,17 +329,16 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
   [self modelTextDidChange];
 }
 
-- (void)onSigninStatusChanged {
+- (void)onProfilesChanged {
   [appsSearchBoxController_ rebuildMenu];
   app_list::SigninDelegate* signinDelegate =
       delegate_ ? delegate_->GetSigninDelegate() : NULL;
-  BOOL show_signin_view =
-      signinDelegate && ![appsGridController_ model]->signed_in();
+  BOOL showSigninView = signinDelegate && signinDelegate->NeedSignin();
 
   [[signinViewController_ view] removeFromSuperview];
   signinViewController_.reset();
 
-  if (!show_signin_view) {
+  if (!showSigninView) {
     [backgroundView_ setHidden:NO];
     return;
   }

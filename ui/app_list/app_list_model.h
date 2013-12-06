@@ -40,20 +40,17 @@ class APP_LIST_EXPORT AppListModel {
   void RemoveObserver(AppListModelObserver* observer);
 
   void SetStatus(Status status);
-  void SetSignedIn(bool signed_in);
 
   AppListItemList* item_list() { return item_list_.get(); }
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }
   Status status() const { return status_; }
-  bool signed_in() const { return signed_in_; }
 
  private:
   scoped_ptr<AppListItemList> item_list_;
   scoped_ptr<SearchBoxModel> search_box_;
   scoped_ptr<SearchResults> results_;
 
-  bool signed_in_;
   Status status_;
   ObserverList<AppListModelObserver> observers_;
 
