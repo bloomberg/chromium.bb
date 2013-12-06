@@ -30,7 +30,7 @@ LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
 
 void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {
   if (prop == &logging_notify_)
-    Dump("/var/log/touchpad_activity_log.txt");
+    Dump("/var/log/xorg/touchpad_activity_log.txt");
   if (prop == &logging_reset_)
     Clear();
 };
