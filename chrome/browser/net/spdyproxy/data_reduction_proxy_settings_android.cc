@@ -211,6 +211,9 @@ void DataReductionProxySettingsAndroid::AddDefaultProxyBypassRules() {
   // reduction proxy is breaking the omnibox SearchProvider.  Remove this rule
   // when this is fixed.
   AddURLPatternToBypass("http://www.google.com/complete/search*");
+  // Chrome cannot authenticate with the data reduction proxy when fetching URLs
+  // from the settings menu.
+  AddURLPatternToBypass("http://www.google.com/policies/privacy*");
 }
 
 void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
