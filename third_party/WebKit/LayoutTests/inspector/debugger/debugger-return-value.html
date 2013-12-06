@@ -35,7 +35,7 @@ var test = function()
             WebInspector.panels.sources._stepOverButton.element.click();
             InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
         } else {
-            InspectorTest.captureStackTrace(callFrames, null, { printReturnValue: true });
+            InspectorTest.captureStackTraceExtended(callFrames);
             InspectorTest.completeDebuggerTest();
         }
         ++stepCount;
