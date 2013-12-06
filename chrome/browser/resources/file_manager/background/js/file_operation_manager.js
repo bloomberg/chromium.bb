@@ -351,18 +351,18 @@ FileOperationManager.EventRouter.prototype.sendEntryChangedEvent = function(
  *
  * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
  *     or "ERROR". TODO(hidehiko): Use enum.
- * @param {string} taskId ID of task related with the event.
- * @param {Array.<Entry>} entries An array of entries which are affected by
- *     delete operation.
+ * @param {DeleteTask} task Delete task related with the event.
  */
 FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
-    reason, taskId, entries) {
+    reason, task) {
   var event = new Event('delete');
   event.reason = reason;
-  event.taskId = taskId;
-  event.entries = entries;
+  event.taskId = task.taskId;
+  event.entries = task.entries;
+  event.totalBytes = task.totalBytes;
+  event.processedBytes = task.processedBytes;
   // TODO(hirono): Remove the urls property from the event.
-  event.urls = util.entriesToURLs(entries);
+  event.urls = util.entriesToURLs(task.entries);
   this.dispatchEvent(event);
 };
 
@@ -1101,7 +1101,7 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
     task.requestCancel();
     // If the task is not on progress, remove it immediately.
     if (i != 0) {
-      this.eventRouter_.sendDeleteEvent('CANCELED', task.taskId, task.entries);
+      this.eventRouter_.sendDeleteEvent('CANCELED', task);
       this.deleteTasks_.splice(i, 1);
     }
   }
@@ -1293,13 +1293,38 @@ FileOperationManager.DELETE_TIMEOUT = 30 * 1000;
 FileOperationManager.prototype.deleteEntries = function(entries) {
   var task = {
     entries: entries,
-    taskId: this.generateTaskId_()
+    taskId: this.generateTaskId_(),
+    entrySize: {},
+    totalBytes: 0,
+    processedBytes: 0
   };
-  this.deleteTasks_.push(task);
-  this.eventRouter_.sendDeleteEvent('BEGIN', task.taskId, task.entries);
-  this.maybeScheduleCloseBackgroundPage_();
-  if (this.deleteTasks_.length === 1)
-    this.serviceAllDeleteTasks_();
+
+  // Obtains entry size and sum them up.
+  var group = new AsyncUtil.Group();
+  for (var i = 0; i < task.entries.length; i++) {
+    group.add(function(entry, callback) {
+      entry.getMetadata(function(metadata) {
+        var index = task.entries.indexOf(entries);
+        task.entrySize[entry.toURL()] = metadata.size;
+        task.totalBytes += metadata.size;
+        callback();
+      }, function() {
+        // Fail to obtain the metadata. Use fake value 1.
+        task.entrySize[entry.toURL()] = 1;
+        task.totalBytes += 1;
+        callback();
+      });
+    }.bind(this, task.entries[i]));
+  }
+
+  // Add a delete task.
+  group.run(function() {
+    this.deleteTasks_.push(task);
+    this.eventRouter_.sendDeleteEvent('BEGIN', task);
+    this.maybeScheduleCloseBackgroundPage_();
+    if (this.deleteTasks_.length === 1)
+      this.serviceAllDeleteTasks_();
+  }.bind(this));
 };
 
 /**
@@ -1340,12 +1365,13 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
       inCallback();
       return;
     }
-    this.eventRouter_.sendDeleteEvent('PROGRESS', task.taskId, task.entries);
+    this.eventRouter_.sendDeleteEvent('PROGRESS', task);
     util.removeFileOrDirectory(
         task.entries[0],
         function() {
           this.eventRouter_.sendEntryChangedEvent(
               util.EntryChangedKind.DELETED, task.entries[0]);
+          task.processedBytes += task.entrySize[task.entries[0].toURL()];
           task.entries.shift();
           deleteOneEntry(inCallback);
         }.bind(this),
@@ -1365,7 +1391,7 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
       reason = 'CANCELED';
     else
       reason = 'SUCCESS';
-    this.eventRouter_.sendDeleteEvent(reason, task.taskId, task.entries);
+    this.eventRouter_.sendDeleteEvent(reason, task);
     inCallback();
     callback();
   }.bind(this));
