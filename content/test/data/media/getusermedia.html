@@ -29,8 +29,11 @@
     navigator.webkitGetUserMedia(
         constraints,
         function(stream) {
-          displayAndDetectVideo(stream,
-                                waitAndStopVideoTrack(waitTimeInSeconds));
+          displayAndDetectVideo(
+            stream,
+            function() {
+              waitAndStopVideoTrack(waitTimeInSeconds);
+            });
         },
         failedCallback);
   }

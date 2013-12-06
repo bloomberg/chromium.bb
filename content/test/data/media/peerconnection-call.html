@@ -395,7 +395,9 @@
     // Event handler for when |gSecondConnection| receive a new dataChannel.
     gSecondConnection.ondatachannel = function (event) {
       var secondDataChannel = event.channel;
-      secondDataChannel.send(sendDataString);
+      secondDataChannel.onopen = function() {
+        secondDataChannel.send(sendDataString);
+      }
 
       // When |secondDataChannel| receive a message, close the channel and
       // initiate a new offer/answer exchange to complete the closure.
@@ -450,7 +452,7 @@
 
     gLocalStream = localStream;
   }
-  
+
   // Called if getUserMedia fails.
   function printGetUserMediaError(error) {
      document.title = 'getUserMedia request failed with code ' + error.code;
@@ -547,10 +549,10 @@
 
   function onOfferCreated(offer, caller, callee) {
     offer.sdp = transformSdp(offer.sdp);
-    caller.setLocalDescription(offer, null, onLocalDescriptionError);
-
-    expectEquals('have-local-offer', caller.signalingState);
-    receiveOffer(offer.sdp, caller, callee);
+    caller.setLocalDescription(offer, function() {
+      expectEquals('have-local-offer', caller.signalingState);
+      receiveOffer(offer.sdp, caller, callee);
+    }, onLocalDescriptionError);
   }
 
   function receiveOffer(offerSdp, caller, callee) {
