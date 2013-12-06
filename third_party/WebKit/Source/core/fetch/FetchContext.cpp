@@ -85,7 +85,7 @@ void FetchContext::dispatchDidFail(DocumentLoader*, unsigned long, const Resourc
 {
 }
 
-void FetchContext::sendRemainingDelegateMessages(DocumentLoader*, unsigned long, const ResourceResponse&, const char*, int, int, const ResourceError&)
+void FetchContext::sendRemainingDelegateMessages(DocumentLoader*, unsigned long, const ResourceResponse&, int)
 {
 }
 

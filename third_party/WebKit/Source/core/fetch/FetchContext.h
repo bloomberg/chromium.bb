@@ -69,7 +69,7 @@ public:
     virtual void dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength);
     virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier, double finishTime);
     virtual void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&);
-    virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, const char* data, int dataLength, int encodedDataLength, const ResourceError&);
+    virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, int dataLength);
 };
 
 }

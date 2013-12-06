@@ -157,18 +157,15 @@ void FrameFetchContext::dispatchDidFail(DocumentLoader* loader, unsigned long id
     InspectorInstrumentation::didFailLoading(m_frame, identifier, ensureLoader(loader), error);
 }
 
-void FrameFetchContext::sendRemainingDelegateMessages(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& response, const char* data, int dataLength, int encodedDataLength, const ResourceError& error)
+void FrameFetchContext::sendRemainingDelegateMessages(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& response, int dataLength)
 {
     if (!response.isNull())
         dispatchDidReceiveResponse(ensureLoader(loader), identifier, response);
 
     if (dataLength > 0)
-        dispatchDidReceiveData(ensureLoader(loader), identifier, data, dataLength, encodedDataLength);
+        dispatchDidReceiveData(ensureLoader(loader), identifier, 0, dataLength, 0);
 
-    if (error.isNull())
-        dispatchDidFinishLoading(ensureLoader(loader), identifier, 0);
-    else
-        dispatchDidFail(ensureLoader(loader), identifier, error);
+    dispatchDidFinishLoading(ensureLoader(loader), identifier, 0);
 }
 
 } // namespace WebCore

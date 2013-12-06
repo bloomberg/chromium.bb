@@ -60,7 +60,7 @@ public:
     virtual void dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength)  OVERRIDE;
     virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier, double finishTime) OVERRIDE;
     virtual void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&) OVERRIDE;
-    virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, const char* data, int dataLength, int encodedDataLength, const ResourceError&) OVERRIDE;
+    virtual void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, int dataLength) OVERRIDE;
 
 private:
     explicit FrameFetchContext(Frame*);
