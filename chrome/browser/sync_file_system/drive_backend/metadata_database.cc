@@ -1036,20 +1036,58 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
 }
 
 bool MetadataDatabase::TryNoSideEffectActivation(
-    int64 tracker_id,
+    int64 parent_tracker_id,
+    const std::string& file_id,
     const SyncStatusCallback& callback) {
-  DCHECK(ContainsKey(tracker_by_id_, tracker_id));
-  const FileTracker& tracker = *tracker_by_id_[tracker_id];
-  if (tracker.active()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+  DCHECK(ContainsKey(tracker_by_id_, parent_tracker_id));
+  DCHECK(ContainsKey(file_by_id_, file_id));
+
+  FileMetadata file;
+  if (!FindFileByFileID(file_id, &file)) {
+    NOTREACHED();
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
     return true;
   }
+  std::string title = file.details().title();
+  DCHECK(!HasInvalidTitle(title));
 
-  if (!CanActivateTracker(tracker))
-    return false;
+  TrackerSet same_file_id;
+  FindTrackersByFileID(file_id, &same_file_id);
+
+  FileTracker* tracker = NULL;
+  for (TrackerSet::iterator itr = same_file_id.begin();
+       itr != same_file_id.end(); ++itr) {
+    FileTracker* candidate = *itr;
+    if (candidate->parent_tracker_id() != parent_tracker_id)
+      continue;
+
+    if (candidate->has_synced_details() &&
+        candidate->synced_details().title() != title)
+      continue;
+    tracker = candidate;
+  }
+
+  DCHECK(tracker);
+
+  if (!tracker->active()) {
+    if (same_file_id.has_active())
+      return false;
+
+    TrackerSet same_title;
+    FindTrackersByParentAndTitle(parent_tracker_id, title, &same_title);
+    if (same_title.has_active())
+      return false;
+  }
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
-  MakeTrackerActive(tracker_id, batch.get());
+  if (!tracker->has_synced_details()) {
+    *tracker->mutable_synced_details() = file.details();
+    trackers_by_parent_and_title_[parent_tracker_id][std::string()].Erase(
+        tracker);
+    trackers_by_parent_and_title_[parent_tracker_id][title].Insert(
+        tracker);
+  }
+  MakeTrackerActive(tracker->tracker_id(), batch.get());
   WriteToDatabase(batch.Pass(), callback);
   return true;
 }

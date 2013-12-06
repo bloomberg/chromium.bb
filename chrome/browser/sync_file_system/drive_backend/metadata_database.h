@@ -277,12 +277,14 @@ class MetadataDatabase {
                      const FileDetails& updated_details,
                      const SyncStatusCallback& callback);
 
-  // Returns true if the tracker can be safely activated without deactivating
-  // any other trackers.  In this case, tries to activate the tracker, and
-  // invokes |callback| upon completion.
+  // Returns true if a tracker of the file can be safely activated without
+  // deactivating any other trackers.  In this case, tries to activate the
+  // tracker, and invokes |callback| upon completion.
   // Returns false otherwise.  In false case, |callback| will not be invoked.
-  bool TryNoSideEffectActivation(int64 tracker_id,
+  bool TryNoSideEffectActivation(int64 parent_tracker_id,
+                                 const std::string& file_id,
                                  const SyncStatusCallback& callback);
+
 
   // Changes the priority of the tracker to low.
   void LowerTrackerPriority(int64 tracker_id);
