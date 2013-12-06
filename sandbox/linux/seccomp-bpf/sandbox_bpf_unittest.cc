@@ -22,12 +22,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "build/build_config_functions.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/broker_process.h"
+#include "sandbox/linux/services/build_config_functions.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"

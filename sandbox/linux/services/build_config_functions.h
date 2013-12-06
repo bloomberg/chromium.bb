@@ -6,12 +6,12 @@
 // compile without them. Thanks to compiler optimizations, the final generated
 // binary should look the same when using these.
 
-#ifndef BUILD_BUILD_CONFIG_FUNCTIONS_H_
-#define BUILD_BUILD_CONFIG_FUNCTIONS_H_
+#ifndef SANDBOX_LINUX_SERVICES_BUILD_CONFIG_FUNCTIONS_H_
+#define SANDBOX_LINUX_SERVICES_BUILD_CONFIG_FUNCTIONS_H_
 
 #include "build/build_config.h"
 
-namespace build {
+namespace sandbox {
 
 namespace {
 
@@ -41,30 +41,6 @@ inline bool IsChromeOS() {
 
 inline bool IsAndroid() {
 #if defined(OS_ANDROID)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsPOSIX() {
-#if defined(OS_POSIX)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsWindows() {
-#if defined(OS_WIN)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsMac() {
-#if defined(OS_MACOSX)
   return true;
 #else
   return false;
@@ -105,6 +81,6 @@ inline bool IsUsingToolKitGtk() {
 
 }  // namespace.
 
-}  // namespace build.
+}  // namespace sandbox.
 
-#endif  // BUILD_BUILD_CONFIG_FUNCTIONS_H_
+#endif  // SANDBOX_LINUX_SERVICES_BUILD_CONFIG_FUNCTIONS_H_
