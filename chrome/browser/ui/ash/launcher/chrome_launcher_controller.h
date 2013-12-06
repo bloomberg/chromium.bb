@@ -25,12 +25,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
@@ -57,6 +57,10 @@ class Window;
 
 namespace content {
 class WebContents;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace ui {

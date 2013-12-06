@@ -39,6 +39,7 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -46,7 +47,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
-#include "extensions/common/constants.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 

@@ -32,7 +32,8 @@ void OpenWallpaperManager() {
   if (!extension)
     return;
 
-  OpenApplication(AppLaunchParams(profile, extension, extensions::LAUNCH_WINDOW,
+  OpenApplication(AppLaunchParams(profile, extension,
+                                  extensions::LAUNCH_CONTAINER_WINDOW,
                                   NEW_WINDOW));
 }
 

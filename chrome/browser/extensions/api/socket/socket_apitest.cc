@@ -83,8 +83,10 @@ class SocketPpapiTest : public SocketApiTest {
     const Extension* extension = LoadExtension(app_dir_);
     ASSERT_TRUE(extension);
 
-    AppLaunchParams params(browser()->profile(), extension,
-                           extensions::LAUNCH_NONE, NEW_WINDOW);
+    AppLaunchParams params(browser()->profile(),
+                           extension,
+                           extensions::LAUNCH_CONTAINER_NONE,
+                           NEW_WINDOW);
     params.command_line = CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

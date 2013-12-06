@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -69,6 +68,7 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -1931,7 +1931,7 @@ AppLaunchObserver::AppLaunchObserver(
       reply_message_(reply_message),
       launch_container_(launch_container),
       new_window_id_(extension_misc::kUnknownWindowId) {
-  if (launch_container_ == extensions::LAUNCH_TAB) {
+  if (launch_container_ == extensions::LAUNCH_CONTAINER_TAB) {
     // Need to wait for the currently-active tab to reload.
     content::Source<NavigationController> source(controller_);
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
@@ -1958,7 +1958,7 @@ void AppLaunchObserver::Observe(int type,
   DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
   SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(
       content::Source<NavigationController>(source)->GetWebContents());
-  if ((launch_container_ == extensions::LAUNCH_TAB) ||
+  if ((launch_container_ == extensions::LAUNCH_CONTAINER_TAB) ||
       (session_tab_helper &&
           (session_tab_helper->window_id().id() == new_window_id_))) {
     if (automation_.get()) {

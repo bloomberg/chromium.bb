@@ -132,8 +132,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPI, DISABLED_TestRestoreGeometryCacheChange) {
       test_data_dir_.AppendASCII("platform_apps").AppendASCII("window_api"));
   EXPECT_TRUE(extension);
 
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, extensions::LAUNCH_NONE, NEW_WINDOW));
+  OpenApplication(AppLaunchParams(browser()->profile(),
+                                  extension,
+                                  extensions::LAUNCH_CONTAINER_NONE,
+                                  NEW_WINDOW));
 
   ExtensionTestMessageListener geometry_listener("ListenGeometryChange", true);
 

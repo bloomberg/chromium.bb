@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "extensions/common/constants.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -30,15 +30,15 @@ struct AppLaunchParams {
                   extensions::LaunchContainer container,
                   WindowOpenDisposition disposition);
 
-  // Helper to create AppLaunchParams using ExtensionPrefs::GetLaunchContainer
-  // with LAUNCH_TYPE_REGULAR to check for a user-configured container.
+  // Helper to create AppLaunchParams using extensions::GetLaunchContainer with
+  // LAUNCH_TYPE_REGULAR to check for a user-configured container.
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
                   WindowOpenDisposition disposition);
 
   // Helper to create AppLaunchParams using event flags that allows user to
   // override the user-configured container using modifier keys, falling back to
-  // ExtensionPrefs::GetLaunchContainer() with no modifiers. |desktop_type|
+  // extensions::GetLaunchContainer() with no modifiers. |desktop_type|
   // indicates the desktop upon which to launch (Ash or Native).
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,

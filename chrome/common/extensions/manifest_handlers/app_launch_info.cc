@@ -59,7 +59,7 @@ const AppLaunchInfo& GetAppLaunchInfo(const Extension* extension) {
 }  // namespace
 
 AppLaunchInfo::AppLaunchInfo()
-    : launch_container_(LAUNCH_TAB),
+    : launch_container_(LAUNCH_CONTAINER_TAB),
       launch_width_(0),
       launch_height_(0) {
 }
@@ -238,15 +238,15 @@ bool AppLaunchInfo::LoadLaunchContainer(Extension* extension,
   }
 
   if (launch_container_string == values::kLaunchContainerPanel) {
-    launch_container_ = LAUNCH_PANEL;
+    launch_container_ = LAUNCH_CONTAINER_PANEL;
   } else if (launch_container_string == values::kLaunchContainerTab) {
-    launch_container_ = LAUNCH_TAB;
+    launch_container_ = LAUNCH_CONTAINER_TAB;
   } else {
     *error = ASCIIToUTF16(errors::kInvalidLaunchContainer);
     return false;
   }
 
-  bool can_specify_initial_size = launch_container_ == LAUNCH_PANEL;
+  bool can_specify_initial_size = launch_container_ == LAUNCH_CONTAINER_PANEL;
 
   // Validate the container width if present.
   if (!ReadLaunchDimension(extension->manifest(),

@@ -161,7 +161,8 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   OpenApplication(AppLaunchParams(
       browser()->profile(),
       extension_,
-      is_platform_app() ? extensions::LAUNCH_NONE : extensions::LAUNCH_TAB,
+      is_platform_app() ? extensions::LAUNCH_CONTAINER_NONE :
+          extensions::LAUNCH_CONTAINER_TAB,
       is_platform_app() ? NEW_WINDOW : CURRENT_TAB));
 
   observer.Wait();

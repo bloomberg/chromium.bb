@@ -29,7 +29,7 @@ void LaunchFirstRunDialog() {
     return;
 
   OpenApplication(AppLaunchParams(
-      profile, extension, extensions::LAUNCH_WINDOW, NEW_WINDOW));
+      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
 }
 
 void LaunchFirstRunTutorial() {

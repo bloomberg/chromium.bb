@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -38,13 +37,13 @@ enum CommandId {
   DETAILS,
   MENU_NEW_WINDOW,
   MENU_NEW_INCOGNITO_WINDOW,
-  // Order matters in LAUNCHER_TYPE_xxxx and must match LaunchType.
-  LAUNCH_TYPE_START = 200,
-  LAUNCH_TYPE_PINNED_TAB = LAUNCH_TYPE_START,
-  LAUNCH_TYPE_REGULAR_TAB,
-  LAUNCH_TYPE_FULLSCREEN,
-  LAUNCH_TYPE_WINDOW,
-  LAUNCH_TYPE_LAST,
+  // Order matters in USE_LAUNCH_TYPE_* and must match the LaunchType enum.
+  USE_LAUNCH_TYPE_COMMAND_START = 200,
+  USE_LAUNCH_TYPE_PINNED = USE_LAUNCH_TYPE_COMMAND_START,
+  USE_LAUNCH_TYPE_REGULAR,
+  USE_LAUNCH_TYPE_FULLSCREEN,
+  USE_LAUNCH_TYPE_WINDOW,
+  USE_LAUNCH_TYPE_COMMAND_END,
 };
 
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
@@ -116,33 +115,33 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
 
     if (!is_platform_app_) {
       menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-      // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
-      // LAUNCH_REGULAR.
+      // Streamlined hosted apps can only toggle between USE_LAUNCH_TYPE_WINDOW
+      // and USE_LAUNCH_TYPE_REGULAR.
       if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableStreamlinedHostedApps)) {
         menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_REGULAR_TAB,
+            USE_LAUNCH_TYPE_REGULAR,
             IDS_APP_CONTEXT_MENU_OPEN_TAB);
       } else {
         menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_REGULAR_TAB,
+            USE_LAUNCH_TYPE_REGULAR,
             IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
         menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_PINNED_TAB,
+            USE_LAUNCH_TYPE_PINNED,
             IDS_APP_CONTEXT_MENU_OPEN_PINNED);
 #if defined(OS_MACOSX)
         // Mac does not support standalone web app browser windows or maximize.
         menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_FULLSCREEN,
+            USE_LAUNCH_TYPE_FULLSCREEN,
             IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
 #else
         menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_WINDOW,
+            USE_LAUNCH_TYPE_WINDOW,
             IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
         // Even though the launch type is Full Screen it is more accurately
         // described as Maximized in Ash.
         menu_model_->AddCheckItemWithStringId(
-            LAUNCH_TYPE_FULLSCREEN,
+            USE_LAUNCH_TYPE_FULLSCREEN,
             IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
 #endif
       }
@@ -174,8 +173,8 @@ string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
     // Even fullscreen windows launch in a browser tab on Mac.
     const bool launches_in_tab = true;
 #else
-    const bool launches_in_tab = IsCommandIdChecked(LAUNCH_TYPE_PINNED_TAB) ||
-        IsCommandIdChecked(LAUNCH_TYPE_REGULAR_TAB);
+    const bool launches_in_tab = IsCommandIdChecked(USE_LAUNCH_TYPE_PINNED) ||
+        IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR);
 #endif
     return launches_in_tab ?
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB) :
@@ -187,9 +186,10 @@ string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
 }
 
 bool AppContextMenu::IsCommandIdChecked(int command_id) const {
-  if (command_id >= LAUNCH_TYPE_START && command_id < LAUNCH_TYPE_LAST) {
+  if (command_id >= USE_LAUNCH_TYPE_COMMAND_START &&
+      command_id < USE_LAUNCH_TYPE_COMMAND_END) {
     return static_cast<int>(controller_->GetExtensionLaunchType(
-        profile_, app_id_)) + LAUNCH_TYPE_START == command_id;
+        profile_, app_id_)) + USE_LAUNCH_TYPE_COMMAND_START == command_id;
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_menu_items_->IsCommandIdChecked(command_id);
@@ -239,12 +239,12 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller_->PinApp(app_id_);
   } else if (command_id == CREATE_SHORTCUTS) {
     controller_->DoCreateShortcutsFlow(profile_, app_id_);
-  } else if (command_id >= LAUNCH_TYPE_START &&
-             command_id < LAUNCH_TYPE_LAST) {
-    extensions::LaunchType launch_type =
-        static_cast<extensions::LaunchType>(command_id - LAUNCH_TYPE_START);
-    // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
-    // LAUNCH_REGULAR.
+  } else if (command_id >= USE_LAUNCH_TYPE_COMMAND_START &&
+             command_id < USE_LAUNCH_TYPE_COMMAND_END) {
+    extensions::LaunchType launch_type = static_cast<extensions::LaunchType>(
+        command_id - USE_LAUNCH_TYPE_COMMAND_START);
+    // Streamlined hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
+    // LAUNCH_TYPE_REGULAR.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableStreamlinedHostedApps)) {
       launch_type = (controller_->GetExtensionLaunchType(profile_, app_id_) ==

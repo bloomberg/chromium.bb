@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/launch_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ExtensionSet;

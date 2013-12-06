@@ -807,7 +807,8 @@ void ExtensionSettingsHandler::HandleLaunchMessage(
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id, false);
   OpenApplication(AppLaunchParams(extension_service_->profile(), extension,
-                                  extensions::LAUNCH_WINDOW, NEW_WINDOW));
+                                  extensions::LAUNCH_CONTAINER_WINDOW,
+                                  NEW_WINDOW));
 }
 
 void ExtensionSettingsHandler::HandleReloadMessage(

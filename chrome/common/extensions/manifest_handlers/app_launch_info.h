@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "extensions/common/constants.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handler.h"

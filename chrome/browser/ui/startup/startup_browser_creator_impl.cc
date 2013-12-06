@@ -208,7 +208,7 @@ bool GetAppLaunchContainer(
 
   if (!extensions::HasPreferredLaunchContainer(
           extensions_service->extension_prefs(), extension))
-    launch_container = extensions::LAUNCH_WINDOW;
+    launch_container = extensions::LAUNCH_CONTAINER_WINDOW;
 
   *out_extension = extension;
   *out_launch_container = launch_container;
@@ -370,7 +370,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     if (extension) {
       RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
       AppLaunchParams params(profile, extension,
-                             extensions::LAUNCH_NONE, NEW_WINDOW);
+                             extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW);
       params.command_line = &command_line_;
       params.current_directory = cur_dir_;
       OpenApplicationWithReenablePrompt(params);
@@ -481,13 +481,14 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
     return false;
 
   // If the user doesn't want to open a tab, fail.
-  if (launch_container != extensions::LAUNCH_TAB)
+  if (launch_container != extensions::LAUNCH_CONTAINER_TAB)
     return false;
 
   RecordCmdLineAppHistogram(extension->GetType());
 
   WebContents* app_tab = OpenApplication(AppLaunchParams(
-      profile, extension, extensions::LAUNCH_TAB, NEW_FOREGROUND_TAB));
+      profile, extension, extensions::LAUNCH_CONTAINER_TAB,
+      NEW_FOREGROUND_TAB));
   return (app_tab != NULL);
 }
 
@@ -516,7 +517,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     // and avoid calling GetAppLaunchContainer() both here and in
     // OpenApplicationTab().
 
-    if (launch_container == extensions::LAUNCH_TAB)
+    if (launch_container == extensions::LAUNCH_CONTAINER_TAB)
       return false;
 
     RecordCmdLineAppHistogram(extension->GetType());

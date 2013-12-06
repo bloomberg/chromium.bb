@@ -518,8 +518,8 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     // TODO(jamescook): Proper support for background tabs.
     AppLaunchParams params(profile, extension,
                            disposition == NEW_WINDOW ?
-                               extensions::LAUNCH_WINDOW :
-                               extensions::LAUNCH_TAB,
+                               extensions::LAUNCH_CONTAINER_WINDOW :
+                               extensions::LAUNCH_CONTAINER_TAB,
                            disposition);
     params.override_url = GURL(url);
     OpenApplication(params);

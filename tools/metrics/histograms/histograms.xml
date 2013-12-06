@@ -21225,10 +21225,10 @@ other types of suffix sets.
 </enum>
 
 <enum name="AppLaunchContainer" type="int">
-  <int value="0" label="LAUNCH_WINDOW"/>
-  <int value="1" label="LAUNCH_PANEL"/>
-  <int value="2" label="LAUNCH_TAB"/>
-  <int value="3" label="LAUNCH_NONE (v2 packaged apps)"/>
+  <int value="0" label="LAUNCH_CONTAINER_WINDOW"/>
+  <int value="1" label="LAUNCH_CONTAINER_PANEL"/>
+  <int value="2" label="LAUNCH_CONTAINER_TAB"/>
+  <int value="3" label="LAUNCH_CONTAINER_NONE (v2 packaged apps)"/>
 </enum>
 
 <enum name="AppLauncherPromo" type="int">

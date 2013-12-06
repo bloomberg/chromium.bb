@@ -309,4 +309,33 @@ namespace extension_misc {
   extern const size_t kNumScriptBadgeIconSizes;
 }  // namespace extension_misc
 
+namespace extensions {
+  // This enum is used for the launch type the user wants to use for an
+  // application.
+  // Do not remove items or re-order this enum as it is used in preferences
+  // and histograms.
+  enum LaunchType {
+    LAUNCH_TYPE_PINNED,
+    LAUNCH_TYPE_REGULAR,
+    LAUNCH_TYPE_FULLSCREEN,
+    LAUNCH_TYPE_WINDOW,
+
+    // Launch an app in the in the way a click on the NTP would,
+    // if no user pref were set.  Update this constant to change
+    // the default for the NTP and chrome.management.launchApp().
+    LAUNCH_TYPE_DEFAULT = LAUNCH_TYPE_REGULAR
+  };
+
+  // Don't remove items or change the order of this enum.  It's used in
+  // histograms and preferences.
+  enum LaunchContainer {
+    LAUNCH_CONTAINER_WINDOW,
+    LAUNCH_CONTAINER_PANEL,
+    LAUNCH_CONTAINER_TAB,
+    // For platform apps, which don't actually have a container (they just get a
+    // "onLaunched" event).
+    LAUNCH_CONTAINER_NONE
+  };
+}  // namespace extensions
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

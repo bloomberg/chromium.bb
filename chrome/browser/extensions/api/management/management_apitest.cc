@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/manifest.h"

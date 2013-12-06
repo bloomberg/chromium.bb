@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
@@ -148,17 +149,15 @@ ui::WindowShowState DetermineWindowShowState(
     Profile* profile,
     extensions::LaunchContainer container,
     const Extension* extension) {
-  if (!extension ||
-      container != extensions::LAUNCH_WINDOW) {
+  if (!extension || container != extensions::LAUNCH_CONTAINER_WINDOW)
     return ui::SHOW_STATE_DEFAULT;
-  }
 
   if (chrome::IsRunningInForcedAppMode())
     return ui::SHOW_STATE_FULLSCREEN;
 
 #if defined(USE_ASH)
-  // In ash, LAUNCH_FULLSCREEN launches in a maximized app window and
-  // LAUNCH_WINDOW launches in a normal app window.
+  // In ash, LAUNCH_TYPE_FULLSCREEN launches in a maximized app window and
+  // LAUNCH_TYPE_WINDOW launches in a normal app window.
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extensions::LaunchType launch_type = extensions::GetLaunchType(
@@ -362,15 +361,15 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   prefs->SetLastLaunchTime(extension->id(), base::Time::Now());
 
   switch (params.container) {
-    case extensions::LAUNCH_NONE: {
+    case extensions::LAUNCH_CONTAINER_NONE: {
       NOTREACHED();
       break;
     }
-    case extensions::LAUNCH_PANEL:
-    case extensions::LAUNCH_WINDOW:
+    case extensions::LAUNCH_CONTAINER_PANEL:
+    case extensions::LAUNCH_CONTAINER_WINDOW:
       tab = OpenApplicationWindow(params);
       break;
-    case extensions::LAUNCH_TAB: {
+    case extensions::LAUNCH_CONTAINER_TAB: {
       tab = OpenApplicationTab(params);
       break;
     }
@@ -401,7 +400,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
                                  WindowOpenDisposition disposition)
     : profile(profile),
       extension(extension),
-      container(extensions::LAUNCH_NONE),
+      container(extensions::LAUNCH_CONTAINER_NONE),
       disposition(disposition),
       desktop_type(chrome::GetActiveDesktop()),
       override_url(),
@@ -423,16 +422,16 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
                                  chrome::HostDesktopType desktop_type)
     : profile(profile),
       extension(extension),
-      container(extensions::LAUNCH_NONE),
+      container(extensions::LAUNCH_CONTAINER_NONE),
       disposition(ui::DispositionFromEventFlags(event_flags)),
       desktop_type(desktop_type),
       override_url(),
       override_bounds(),
       command_line(NULL) {
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
-    container = extensions::LAUNCH_TAB;
+    container = extensions::LAUNCH_CONTAINER_TAB;
   } else if (disposition == NEW_WINDOW) {
-    container = extensions::LAUNCH_WINDOW;
+    container = extensions::LAUNCH_CONTAINER_WINDOW;
   } else {
     ExtensionService* service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -472,7 +471,7 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
   AppLaunchParams launch_params(
       profile,
       NULL,  // this is a URL app.  No extension.
-      extensions::LAUNCH_WINDOW,
+      extensions::LAUNCH_CONTAINER_WINDOW,
       NEW_WINDOW);
   launch_params.override_url = url;
   launch_params.override_bounds = override_bounds;
