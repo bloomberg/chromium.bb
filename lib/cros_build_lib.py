@@ -615,6 +615,8 @@ def GetHostDomain():
 def GenericRetry(handler, max_retry, functor, *args, **kwds):
   """Generic retry loop w/ optional break out depending on exceptions.
 
+  To retry based on the return value of |functor| see the timeout_util module.
+
   Args:
     handler: A functor invoked w/ the exception instance that
       functor(*args, **kwds) threw.  If it returns True, then a

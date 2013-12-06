@@ -148,7 +148,7 @@ def TimeoutDecorator(max_time):
   return NestedTimeoutDecorator
 
 
-def WaitForCondition(*args, **kwargs):
+def WaitForReturnTrue(*args, **kwargs):
   """Periodically run a function, waiting in between runs.
 
   Continues to run until the function returns True.
@@ -162,19 +162,44 @@ def WaitForCondition(*args, **kwargs):
   WaitForReturnValue([True], *args, **kwargs)
 
 
-def WaitForReturnValue(values, func, timeout, period=1, side_effect_func=None,
-                       func_args=None, func_kwargs=None):
+def WaitForReturnValue(values, *args, **kwargs):
   """Periodically run a function, waiting in between runs.
 
   Continues to run until the function return value is in the list
-  of accepted |values|.
+  of accepted |values|.  See WaitForSuccess for more details.
 
   Args:
-    values: A list or set of acceptable return values from |func|.
+    values: A list or set of acceptable return values.
+    *args, **kwargs: See WaitForSuccess for remaining arguments.
+
+  Returns:
+    The value most recently returned by |func|.
+
+  Raises:
+    TimeoutError when the timeout is exceeded.
+  """
+  def _Retry(return_value):
+    return return_value not in values
+
+  return WaitForSuccess(_Retry, *args, **kwargs)
+
+
+def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
+                   func_args=None, func_kwargs=None):
+  """Periodically run a function, waiting in between runs.
+
+  Continues to run given function until return value is accepted by retry check.
+
+  To retry based on raised exceptions see GenericRetry in cros_build_lib.
+
+  Args:
+    retry_check: A functor that will be passed the return value of |func| as
+      the only argument.  If |func| should be retried |retry_check| should
+      return True.
     func: The function to run to test for a value.
     timeout: The maximum amount of time to wait, in integer seconds. Minimum
       value: 1.
-    period: Integer number of seconds between calls to |func|. Default: 1
+    period: Integer number of seconds between calls to |func|.
     side_effect_func: Optional function to be called between polls of func,
                       typically to output logging messages.
     func_args: Optional list of positional arguments to be passed to |func|.
@@ -182,7 +207,7 @@ def WaitForReturnValue(values, func, timeout, period=1, side_effect_func=None,
                  |func|.
 
   Returns:
-    The value most recently returned by |func|.
+    The value most recently returned by |func| that was not flagged for retry.
 
   Raises:
     TimeoutError when the timeout is exceeded.
@@ -196,7 +221,7 @@ def WaitForReturnValue(values, func, timeout, period=1, side_effect_func=None,
     while True:
       timestamp = time.time()
       value = func(*func_args, **func_kwargs)
-      if value in values:
+      if not retry_check(value):
         return value
 
       time_remaining = period - int(time.time() - timestamp)
