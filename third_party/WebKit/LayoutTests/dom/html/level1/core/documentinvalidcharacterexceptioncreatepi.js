@@ -89,50 +89,23 @@ function loadComplete() {
 */
 function documentinvalidcharacterexceptioncreatepi() {
    var success;
-    if(checkInitialization(builder, "documentinvalidcharacterexceptioncreatepi") != null) return;
-    var doc;
-      var badPI;
-      
-      var docRef = null;
-      if (typeof(this.doc) != 'undefined') {
-        docRef = this.doc;
-      }
-      doc = load(docRef, "doc", "hc_staff");
-      
-	if(
-	
-	(builder.contentType == "text/html")
+   if (checkInitialization(builder, "documentinvalidcharacterexceptioncreatepi1") != null) return;
+   var doc;
+   var badPI;
 
-	) {
-	
-	{
-		success = false;
-		try {
-            badPI = doc.createProcessingInstruction("foo","data");
-        }
-		catch(ex) {
-      success = (typeof(ex.code) != 'undefined' && ex.code == 9);
-		}
-		assertTrue("throw_NOT_SUPPORTED_ERR",success);
-	}
+   var docRef = null;
+   if (typeof(this.doc) != 'undefined') {
+      docRef = this.doc;
+   }
+   doc = load(docRef, "doc", "hc_staff");
 
-	}
-	
-		else {
-			
-	{
-		success = false;
-		try {
-            badPI = doc.createProcessingInstruction("invalid^Name","data");
-        }
-		catch(ex) {
+   success = false;
+   try {
+      badPI = doc.createProcessingInstruction("invalid^Name","data");
+   } catch(ex) {
       success = (typeof(ex.code) != 'undefined' && ex.code == 5);
-		}
-		assertTrue("throw_INVALID_CHARACTER_ERR",success);
-	}
-
-		}
-	
+   }
+   assertTrue("throw_INVALID_CHARACTER_ERR",success);
 }
 
 

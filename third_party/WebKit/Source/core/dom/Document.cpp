@@ -787,7 +787,7 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
-    if (data.find("]]>") != WTF::kNotFound) {
+    if (data.contains("]]>")) {
         exceptionState.throwDOMException(InvalidCharacterError, "String cannot contain ']]>' since that is the end delimiter of a CData section.");
         return 0;
     }
@@ -797,11 +797,11 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
 PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionState& exceptionState)
 {
     if (!isValidName(target)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        exceptionState.throwDOMException(InvalidCharacterError, "The target provided ('" + target + "') is not a valid name.");
         return 0;
     }
-    if (isHTMLDocument()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+    if (data.contains("?>")) {
+        exceptionState.throwDOMException(InvalidCharacterError, "The data provided ('" + data + "') contains '?>'.");
         return 0;
     }
     return ProcessingInstruction::create(*this, target, data);

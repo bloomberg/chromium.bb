@@ -156,10 +156,8 @@ shouldBe("element.prefix", "'html'");
 shouldBe("element.nodeValue", "null");
 shouldBe("element.attributes.toString()", "'[object NamedNodeMap]'");
 
-// Not possible to create Notation nodes via the DOM, WebKit doesn't create them from parsing
-
-shouldThrow("document.createProcessingInstruction('xml-stylesheet', 'type=\"text/xsl\" href=\"missing.xsl\"')");
-var processingInstruction = xmlDoc.createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="missing.xsl"');
+debug("Processing instruction creation using createProcessingInstruction on an HTML doc:")
+var processingInstruction = document.createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="missing.xsl"');
 shouldBe("processingInstruction.nodeName", "'xml-stylesheet'");
 shouldBe("processingInstruction.localName", "null");
 shouldBe("processingInstruction.namespaceURI", "null");
@@ -172,6 +170,17 @@ shouldBe("processingInstruction.nodeValue", "'type=\"text/xsl\" href=\"missing.x
 shouldBe("processingInstruction.target", "'xml-stylesheet'");
 shouldBe("processingInstruction.data", "'type=\"text/xsl\" href=\"missing.xsl\"'");
 
+debug("Processing instruction creation using createProcessingInstruction on an XHTML doc:")
+processingInstruction = xmlDoc.createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="missing.xsl"');
+shouldBe("processingInstruction.nodeName", "'xml-stylesheet'");
+shouldBe("processingInstruction.localName", "null");
+shouldBe("processingInstruction.namespaceURI", "null");
+shouldBe("processingInstruction.prefix", "null");
+shouldBe("processingInstruction.nodeValue", "'type=\"text/xsl\" href=\"missing.xsl\"'");
+shouldBe("processingInstruction.target", "'xml-stylesheet'");
+shouldBe("processingInstruction.data", "'type=\"text/xsl\" href=\"missing.xsl\"'");
+
+debug("Text node creation using createTextNode on an HTML doc:")
 var text = document.createTextNode("foo");
 shouldBe("text.nodeName", "'#text'");
 shouldBe("text.localName", "null");
