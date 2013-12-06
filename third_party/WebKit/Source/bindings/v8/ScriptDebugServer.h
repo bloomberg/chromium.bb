@@ -31,7 +31,6 @@
 #ifndef ScriptDebugServer_h
 #define ScriptDebugServer_h
 
-
 #include "InspectorBackendDispatcher.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "core/inspector/ScriptBreakpoint.h"
@@ -79,7 +78,7 @@ public:
     void stepOutOfFunction(const ScriptValue& frame);
 
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, ScriptObject* result);
-    void updateCallStack(ScriptValue* callFrame);
+    ScriptValue currentCallFrames();
 
     class Task {
     public:
@@ -108,8 +107,6 @@ public:
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
     virtual ~ScriptDebugServer();
-
-    ScriptValue currentCallFrame();
 
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) = 0;
     virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) = 0;

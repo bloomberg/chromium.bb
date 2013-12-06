@@ -148,10 +148,10 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void didScheduleResourceRequest([Keep] Document*, const String& url);
 
-    [DOMDebugger, Timeline, Inline=FastReturn]
+    [DOMDebugger, Debugger, Timeline, Inline=FastReturn]
     void didInstallTimer([Keep] ExecutionContext*, int timerId, int timeout, bool singleShot);
 
-    [DOMDebugger, Timeline, Inline=FastReturn]
+    [DOMDebugger, Debugger, Timeline, Inline=FastReturn]
     void didRemoveTimer([Keep] ExecutionContext*, int timerId);
 
     [Timeline, Inline=FastReturn]
@@ -196,7 +196,7 @@ interface InspectorInstrumentation {
     [PageRuntime, Inline=FastReturn]
     void didCreateIsolatedContext([Keep] Frame*, ScriptState*, SecurityOrigin*);
 
-    [DOMDebugger, Timeline, Inline=FastReturn]
+    [DOMDebugger, Debugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
 
     [Debugger, Timeline, Inline=FastReturn]
@@ -381,16 +381,16 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void didWriteHTML(const InspectorInstrumentationCookie&, unsigned endLine);
 
-    [DOMDebugger, Timeline]
+    [DOMDebugger, Debugger, Timeline]
     void didRequestAnimationFrame([Keep] Document*, int callbackId);
 
-    [DOMDebugger, Timeline]
+    [DOMDebugger, Debugger, Timeline]
     void didCancelAnimationFrame([Keep] Document*, int callbackId);
 
-    [DOMDebugger, Timeline]
+    [DOMDebugger, Debugger, Timeline]
     InspectorInstrumentationCookie willFireAnimationFrame([Keep] Document*, int callbackId);
 
-    [Timeline, Inline=FastReturn]
+    [Timeline, Debugger, Inline=FastReturn]
     void didFireAnimationFrame(const InspectorInstrumentationCookie&);
 
     [DOMStorage, Inline=FastReturn]

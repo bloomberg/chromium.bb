@@ -1023,6 +1023,8 @@
             'fileapi/Stream.cpp',
             'fileapi/Stream.h',
             'history/HistoryItem.cpp',
+            'inspector/AsyncCallStackTracker.cpp',
+            'inspector/AsyncCallStackTracker.h',
             'inspector/BindingVisitors.h',
             'inspector/ConsoleAPITypes.h',
             'inspector/ConsoleMessage.cpp',

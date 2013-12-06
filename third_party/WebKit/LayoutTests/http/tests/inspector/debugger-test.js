@@ -120,31 +120,42 @@ InspectorTest.resumeExecution = function(callback)
     InspectorTest.waitUntilResumed(callback);
 };
 
-InspectorTest.captureStackTrace = function(callFrames, dropLineNumbers, printReturnValue)
+InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
 {
-    InspectorTest.addResult("Call stack:");
-    for (var i = 0; i < callFrames.length; i++) {
-        var frame = callFrames[i];
-        var script = WebInspector.debuggerModel.scriptForId(frame.location.scriptId);
-        var url;
-        var lineNumber;
-        if (script) {
-            url = WebInspector.displayNameForURL(script.sourceURL);
-            lineNumber = frame.location.lineNumber + 1;
-        } else {
-            url = "(internal script)";
-            lineNumber = "(line number)";
-        }
-        var s = "    " + i + ") " + frame.functionName + " (" + url + (dropLineNumbers ? "" : ":" + lineNumber) + ")";
-        InspectorTest.addResult(s);
-        if (printReturnValue && frame.returnValue)
-            InspectorTest.addResult("       <return>: " + frame.returnValue.description);
-    }
-};
+    options = options || {};
 
-InspectorTest.captureStackTraceExtended = function(callFrames, dropLineNumbers)
-{
-    InspectorTest.captureStackTrace(callFrames, dropLineNumbers, true);
+    function printCallFrames(callFrames, indent)
+    {
+        indent = indent || "";
+        for (var i = 0; i < callFrames.length; i++) {
+            var frame = callFrames[i];
+            var script = WebInspector.debuggerModel.scriptForId(frame.location.scriptId);
+            var url;
+            var lineNumber;
+            if (script) {
+                url = WebInspector.displayNameForURL(script.sourceURL);
+                lineNumber = frame.location.lineNumber + 1;
+            } else {
+                url = "(internal script)";
+                lineNumber = "(line number)";
+            }
+            var s = "    " + i + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
+            InspectorTest.addResult(indent + s);
+            if (options.printReturnValue && frame.returnValue)
+                InspectorTest.addResult(indent + "       <return>: " + frame.returnValue.description);
+        }
+    }
+
+    InspectorTest.addResult("Call stack:");
+    printCallFrames(callFrames);
+
+    while (asyncStackTrace) {
+        InspectorTest.addResult("    [Async Call]");
+        printCallFrames(asyncStackTrace.callFrames, "    ");
+        if (asyncStackTrace.callFrames[0].functionName === "testFunction")
+            break;
+        asyncStackTrace = asyncStackTrace.asyncStackTrace;
+    }
 };
 
 InspectorTest.dumpSourceFrameContents = function(sourceFrame)
@@ -156,11 +167,11 @@ InspectorTest.dumpSourceFrameContents = function(sourceFrame)
     InspectorTest.addResult("==Source frame contents end==");
 };
 
-InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointIds)
+InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    InspectorTest._pausedScriptArguments = [callFrames, reason, breakpointIds];
+    InspectorTest._pausedScriptArguments = [callFrames, reason, breakpointIds, asyncStackTrace];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
