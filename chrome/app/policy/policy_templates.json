@@ -4962,7 +4962,7 @@
           },
           'example_value': True,
           'id': 247,
-          'caption': '''Specify whether power management delays and the session length limit should only start running after initial user activity in a session''',
+          'caption': '''Wait for initial user activity''',
           'desc': '''Specifies whether power management delays and the session length limit should only start running after the first user activity has been observed in a session.
 
           If this policy is set to True, power management delays and the session length limit do not start running until after the first user activity has been observed in a session.
