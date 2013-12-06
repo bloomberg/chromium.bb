@@ -130,20 +130,14 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
   if (self = [super initWithNibName:nil bundle:nil]) {
     delegate_ = delegate;
 
-    base::scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:NSZeroRect]);
-    [view setBoxType:NSBoxCustom];
-    [view setBorderType:NSNoBorder];
-    [view setContentViewMargins:NSZeroSize];
-    [view setTitlePosition:NSNoTitle];
-
     messageView_.reset([[AutofillMessageView alloc] initWithFrame:NSZeroRect]);
     imageView_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
     [imageView_ setImageAlignment:NSImageAlignCenter];
 
+    base::scoped_nsobject<NSView> view(
+        [[NSView alloc] initWithFrame:NSZeroRect]);
     [view setSubviews:@[messageView_, imageView_]];
     [self setView:view];
-
-    [view setFillColor:[[view window] backgroundColor]];
   }
   return self;
 }

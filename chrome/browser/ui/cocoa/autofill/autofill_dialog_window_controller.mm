@@ -254,6 +254,8 @@ const CGFloat kMinimumContentsHeight = 101;
   NSSize size;
 
   if (![[overlayController_ view] isHidden]) {
+    // Overlay never changes window width.
+    size.width = NSWidth([[[self window] contentView] frame]);
     size.height = [overlayController_ heightForWidth:size.width];
   } else {
     // Overall size is determined by either main container or sign in view.
