@@ -183,7 +183,9 @@ static void* getRandomPageBase()
 void* allocPages(void* addr, size_t len, size_t align)
 {
     RELEASE_ASSERT(len < INT_MAX - align);
+    ASSERT(len >= kPageAllocationGranularity);
     ASSERT(!(len & kPageAllocationGranularityOffsetMask));
+    ASSERT(align >= kPageAllocationGranularity);
     ASSERT(!(align & kPageAllocationGranularityOffsetMask));
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & kPageAllocationGranularityOffsetMask));
     size_t alignOffsetMask = align - 1;
@@ -206,9 +208,7 @@ void* allocPages(void* addr, size_t len, size_t align)
     // second, slower attempt.
     freePages(ret, len);
 
-    size_t tryLen = len;
-    ASSERT(align > kPageAllocationGranularity);
-    tryLen += (align - kSystemPageSize);
+    size_t tryLen = len + align;
 
     // We loop to cater for the unlikely case where another thread maps on top
     // of the aligned location we choose.
