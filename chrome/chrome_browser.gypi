@@ -1225,6 +1225,9 @@
         'browser/net/net_pref_observer.h',
         'browser/net/network_stats.cc',
         'browser/net/network_stats.h',
+        'browser/net/nss_context_chromeos.cc',
+        'browser/net/nss_context_linux.cc',
+	'browser/net/nss_context.h',
         'browser/net/preconnect.cc',
         'browser/net/preconnect.h',
         'browser/net/predictor.cc',
@@ -3115,6 +3118,9 @@
           'sources!': [
             'browser/certificate_manager_model.cc',
             'browser/certificate_manager_model.h',
+            'browser/net/nss_context_chromeos.cc',
+            'browser/net/nss_context_linux.cc',
+	    'browser/net/nss_context.h',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

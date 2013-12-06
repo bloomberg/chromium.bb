@@ -89,11 +89,17 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "crypto/nss_util.h"
+#include "crypto/nss_util_internal.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS)
@@ -228,6 +234,112 @@ class DebugDevToolsInterceptor
 };
 #endif  // defined(DEBUG_DEVTOOLS)
 
+#if defined(OS_CHROMEOS)
+// The following four functions are responsible for initializing NSS for each
+// profile on ChromeOS, which has a separate NSS database and TPM slot
+// per-profile.
+//
+// Initialization basically follows these steps:
+// 1) Get some info from chromeos::UserManager about the User for this profile.
+// 2) Tell nss_util to initialize the software slot for this profile.
+// 3) Wait for the TPM module to be loaded by nss_util if it isn't already.
+// 4) Ask CryptohomeClient which TPM slot id corresponds to this profile.
+// 5) Tell nss_util to use that slot id on the TPM module.
+//
+// Some of these steps must happen on the UI thread, others must happen on the
+// IO thread:
+//               UI thread                              IO Thread
+//
+//  ProfileIOData::InitializeOnUIThread
+//                   |
+// chromeos::UserManager::GetUserByProfile
+//                   \---------------------------------------v
+//                                                 StartNSSInitOnIOThread
+//                                                           |
+//                                          crypto::InitializeNSSForChromeOSUser
+//                                                           |
+//                                                crypto::IsTPMTokenReady
+//                                                           |
+//                                          StartTPMSlotInitializationOnIOThread
+//                   v---------------------------------------/
+//     GetTPMInfoForUserOnUIThread
+//                   |
+// CryptohomeClient::Pkcs11GetTpmTokenInfoForUser
+//                   |
+//     DidGetTPMInfoForUserOnUIThread
+//                   \---------------------------------------v
+//                                          crypto::InitializeTPMForChromeOSUser
+
+void DidGetTPMInfoForUserOnUIThread(const std::string& username_hash,
+                                    chromeos::DBusMethodCallStatus call_status,
+                                    const std::string& label,
+                                    const std::string& user_pin,
+                                    int slot_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (call_status == chromeos::DBUS_METHOD_CALL_FAILURE) {
+    NOTREACHED() << "dbus error getting TPM info for " << username_hash;
+    return;
+  }
+  DVLOG(1) << "Got TPM slot for " << username_hash << ": " << slot_id;
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &crypto::InitializeTPMForChromeOSUser, username_hash, slot_id));
+}
+
+void GetTPMInfoForUserOnUIThread(const std::string& username,
+                                 const std::string& username_hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(1) << "Getting TPM info from cryptohome for "
+           << " " << username << " " << username_hash;
+  chromeos::DBusThreadManager::Get()
+      ->GetCryptohomeClient()
+      ->Pkcs11GetTpmTokenInfoForUser(
+            username,
+            base::Bind(&DidGetTPMInfoForUserOnUIThread, username_hash));
+}
+
+void StartTPMSlotInitializationOnIOThread(const std::string& username,
+                                          const std::string& username_hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GetTPMInfoForUserOnUIThread, username, username_hash));
+}
+
+void StartNSSInitOnIOThread(const std::string& username,
+                            const std::string& username_hash,
+                            const base::FilePath& path,
+                            bool is_primary_user) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "Starting NSS init for " << username
+           << "  hash:" << username_hash
+           << "  is_primary_user:" << is_primary_user;
+
+  if (!crypto::InitializeNSSForChromeOSUser(
+           username, username_hash, is_primary_user, path)) {
+    // If the user already exists in nss_util's map, it is already initialized
+    // or in the process of being initialized. In either case, there's no need
+    // to do anything.
+    return;
+  }
+
+  if (crypto::IsTPMTokenEnabledForNSS()) {
+    if (crypto::IsTPMTokenReady(base::Bind(
+            &StartTPMSlotInitializationOnIOThread, username, username_hash))) {
+      StartTPMSlotInitializationOnIOThread(username, username_hash);
+    } else {
+      DVLOG(1) << "Waiting for tpm ready ...";
+    }
+  } else {
+    crypto::InitializePrivateSoftwareSlotForChromeOSUser(username_hash);
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
@@ -277,6 +389,25 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       ManagedUserServiceFactory::GetForProfile(profile);
   params->managed_mode_url_filter =
       managed_user_service->GetURLFilterForIOThread();
+#endif
+#if defined(OS_CHROMEOS)
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  if (user_manager) {
+    chromeos::User* user = user_manager->GetUserByProfile(profile);
+    if (user) {
+      params->username_hash = user->username_hash();
+      bool is_primary_user = (user_manager->GetPrimaryUser() == user);
+      BrowserThread::PostTask(BrowserThread::IO,
+                              FROM_HERE,
+                              base::Bind(&StartNSSInitOnIOThread,
+                                         user->email(),
+                                         user->username_hash(),
+                                         profile->GetPath(),
+                                         is_primary_user));
+    }
+  }
+  if (params->username_hash.empty())
+    LOG(WARNING) << "no username_hash";
 #endif
 
   params->profile = profile;
@@ -833,6 +964,7 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
     main_request_context_->set_cert_verifier(
         io_thread_globals->cert_verifier.get());
   }
+  username_hash_ = profile_params_->username_hash;
 #else
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());

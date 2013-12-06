@@ -177,6 +177,12 @@ class ProfileIOData {
     return transport_security_state_.get();
   }
 
+#if defined(OS_CHROMEOS)
+  std::string username_hash() const {
+    return username_hash_;
+  }
+#endif
+
   bool is_incognito() const {
     return is_incognito_;
   }
@@ -268,6 +274,10 @@ class ProfileIOData {
 
 #if defined(ENABLE_MANAGED_USERS)
     scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter;
+#endif
+
+#if defined(OS_CHROMEOS)
+    std::string username_hash;
 #endif
 
     // The profile this struct was populated from. It's passed as a void* to
@@ -494,6 +504,7 @@ class ProfileIOData {
       http_server_properties_;
 #if defined(OS_CHROMEOS)
   mutable scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
+  mutable std::string username_hash_;
 #endif
 
   mutable scoped_ptr<net::TransportSecurityPersister>

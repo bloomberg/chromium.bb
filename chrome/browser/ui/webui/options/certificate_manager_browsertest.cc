@@ -46,8 +46,34 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
+  void SetUpOnIOThread() {
+#if defined(OS_CHROMEOS)
+    test_nssdb_.reset(new crypto::ScopedTestNSSDB());
+#endif
+  }
+
+  void TearDownOnIOThread() {
+#if defined(OS_CHROMEOS)
+    test_nssdb_.reset();
+#endif
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&CertificateManagerBrowserTest::SetUpOnIOThread, this));
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+
     content::RunAllPendingInMessageLoop();
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&CertificateManagerBrowserTest::TearDownOnIOThread, this));
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
   }
 
 #if defined(OS_CHROMEOS)
@@ -86,7 +112,7 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
   policy::MockConfigurationPolicyProvider provider_;
 #if defined(OS_CHROMEOS)
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
-  crypto::ScopedTestNSSDB test_nssdb_;
+  scoped_ptr<crypto::ScopedTestNSSDB> test_nssdb_;
 #endif
 };
 
