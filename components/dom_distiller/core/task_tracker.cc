@@ -36,7 +36,7 @@ void TaskTracker::StartDistiller(DistillerFactory* factory) {
   GURL url(entry_.pages(0).url());
   DCHECK(url.is_valid());
 
-  distiller_ = factory->CreateDistiller().Pass();
+  distiller_ = factory->CreateDistiller();
   distiller_->DistillPage(url,
                           base::Bind(&TaskTracker::OnDistilledDataReady,
                                      weak_ptr_factory_.GetWeakPtr()));

@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
-  <message name="IDS_DOM_DISTILLER_TITLE" desc="The title to show on the DOM Distiller debug page.">
+  <message name="IDS_DOM_DISTILLER_WEBUI_TITLE" desc="The title to show on the DOM Distiller debug page.">
     DOM Distiller
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_TITLE" desc="The label for the title of an entry on the DOM Distiller debug page.">
+    Title
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_URL" desc="The label for the URL of an entry on the DOM Distiller debug page.">
+    URL
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD" desc="The label for for the button for adding a new entry on the DOM Distiller debug page.">
+    Add
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD_FAILED" desc="The label to show when adding an article failed on the DOM Distiller debug page.">
+    Failed to add article.
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_REFRESH" desc="The label for the button for refreshing the list of entries on the DOM Distiller debug page.">
+    Refresh
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_FETCHING_ENTRIES" desc="The text to show while fetching the list of entries on the DOM Distiller debug page.">
+    Fetching entries...
   </message>
 
 </grit-part>

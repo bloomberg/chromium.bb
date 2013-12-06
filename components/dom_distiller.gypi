@@ -11,20 +11,22 @@
           'type': 'static_library',
           'dependencies': [
             'component_strings.gyp:component_strings',
+            'distilled_page_proto',
             'dom_distiller_core',
             'dom_distiller_resources',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../skia/skia.gyp:skia',
+            '../sync/sync.gyp:sync',
           ],
           'include_dirs': [
             '..',
           ],
           'sources': [
-            'dom_distiller/webui/dom_distiller_ui.cc',
-            'dom_distiller/webui/dom_distiller_ui.h',
             'dom_distiller/webui/dom_distiller_handler.cc',
             'dom_distiller/webui/dom_distiller_handler.h',
+            'dom_distiller/webui/dom_distiller_ui.cc',
+            'dom_distiller/webui/dom_distiller_ui.h',
           ],
         },
         {

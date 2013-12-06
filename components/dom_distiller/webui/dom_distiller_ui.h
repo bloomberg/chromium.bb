@@ -2,21 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_H_
-#define COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_H_
+#ifndef COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_UI_H_
+#define COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_UI_H_
 
 #include "content/public/browser/web_ui_controller.h"
 
 namespace dom_distiller {
 
-// The WebUI handler for chrome://dom-distiller.
-class DomDistillerUI : public content::WebUIController {
+class DomDistillerService;
+
+// The WebUI controller for chrome://dom-distiller.
+class DomDistillerUi : public content::WebUIController {
  public:
-  explicit DomDistillerUI(content::WebUI* web_ui);
-  virtual ~DomDistillerUI();
+  DomDistillerUi(content::WebUI* web_ui,
+                 DomDistillerService* service,
+                 const std::string& scheme);
+  virtual ~DomDistillerUi();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DomDistillerUI);
+  DISALLOW_COPY_AND_ASSIGN(DomDistillerUi);
 };
 
 }  // namespace dom_distiller

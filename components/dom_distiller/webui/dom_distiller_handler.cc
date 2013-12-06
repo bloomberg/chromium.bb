@@ -6,12 +6,18 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "content/public/browser/web_ui.h"
+#include "url/gurl.h"
 
 namespace dom_distiller {
 
-DomDistillerHandler::DomDistillerHandler()
-    : weak_ptr_factory_(this) {
+DomDistillerHandler::DomDistillerHandler(DomDistillerService* service,
+                                         const std::string& scheme)
+    : weak_ptr_factory_(this),
+      service_(service) {
+  article_scheme_ = scheme;
 }
 
 DomDistillerHandler::~DomDistillerHandler() {}
@@ -21,22 +27,49 @@ void DomDistillerHandler::RegisterMessages() {
       "requestEntries",
       base::Bind(&DomDistillerHandler::HandleRequestEntries,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "addArticle",
+      base::Bind(&DomDistillerHandler::HandleAddArticle,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "selectArticle",
+      base::Bind(&DomDistillerHandler::HandleSelectArticle,
+      base::Unretained(this)));
+}
+
+void DomDistillerHandler::HandleAddArticle(const ListValue* args) {
+  std::string url;
+  args->GetString(0, &url);
+  GURL gurl(url);
+  if (gurl.is_valid())
+    service_->AddToList(gurl);
+  else
+    web_ui()->CallJavascriptFunction("domDistiller.onArticleAddFailed");
+}
+
+void DomDistillerHandler::HandleSelectArticle(const ListValue* args) {
+  std::string entry_id;
+  args->GetString(0, &entry_id);
+
+  // TODO(nyquist): Do something here.
 }
 
 void DomDistillerHandler::HandleRequestEntries(const ListValue* args) {
   base::ListValue entries;
-
-  // Add some temporary placeholder entries.
-  scoped_ptr<base::DictionaryValue> entry1(new base::DictionaryValue());
-  entry1->SetString("title", "Google");
-  entry1->SetString("url", "http://www.google.com/");
-  entries.Append(entry1.release());
-  scoped_ptr<base::DictionaryValue> entry2(new base::DictionaryValue());
-  entry2->SetString("title", "Chrome");
-  entry2->SetString("url", "http://www.chrome.com/");
-  entries.Append(entry2.release());
-
-  web_ui()->CallJavascriptFunction("onGotEntries", entries);
+  const std::vector<ArticleEntry>& entries_specifics = service_->GetEntries();
+  for (std::vector<ArticleEntry>::const_iterator it = entries_specifics.begin();
+       it != entries_specifics.end();
+       ++it) {
+    const ArticleEntry& article = *it;
+    DCHECK(IsEntryValid(article));
+    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
+    entry->SetString("entry_id", article.entry_id());
+    std::string title = (!article.has_title() || article.title().empty()) ?
+        article.entry_id() : article.title();
+    entry->SetString("title", title);
+    entries.Append(entry.release());
+  }
+  web_ui()->CallJavascriptFunction("domDistiller.onReceivedEntries", entries);
 }
 
 }  // namespace dom_distiller
