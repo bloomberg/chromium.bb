@@ -44,6 +44,8 @@ const char kRemoteContent[] = "World!";
 // made with the specified resource ID.
 class SyncClientTestDriveService : public ::drive::FakeDriveService {
  public:
+  SyncClientTestDriveService() : download_file_count_(0) {}
+
   // FakeDriveService override:
   virtual google_apis::CancelCallback DownloadFile(
       const base::FilePath& local_cache_path,
@@ -51,12 +53,19 @@ class SyncClientTestDriveService : public ::drive::FakeDriveService {
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE {
+    ++download_file_count_;
     if (resource_id == resource_id_to_be_cancelled_) {
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(download_action_callback,
                      google_apis::GDATA_CANCELLED,
                      base::FilePath()));
+      return google_apis::CancelCallback();
+    }
+    if (resource_id == resource_id_to_be_paused_) {
+      paused_action_ = base::Bind(download_action_callback,
+                                  google_apis::GDATA_OTHER_ERROR,
+                                  base::FilePath());
       return google_apis::CancelCallback();
     }
     return FakeDriveService::DownloadFile(local_cache_path,
@@ -66,12 +75,23 @@ class SyncClientTestDriveService : public ::drive::FakeDriveService {
                                           progress_callback);
   }
 
+  int download_file_count() const { return download_file_count_; }
+
   void set_resource_id_to_be_cancelled(const std::string& resource_id) {
     resource_id_to_be_cancelled_ = resource_id;
   }
 
+  void set_resource_id_to_be_paused(const std::string& resource_id) {
+    resource_id_to_be_paused_ = resource_id;
+  }
+
+  const base::Closure& paused_action() const { return paused_action_; }
+
  private:
+  int download_file_count_;
   std::string resource_id_to_be_cancelled_;
+  std::string resource_id_to_be_paused_;
+  base::Closure paused_action_;
 };
 
 class DummyOperationObserver : public file_system::OperationObserver {
@@ -390,6 +410,27 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_dirty());
+}
+
+TEST_F(SyncClientTest, ScheduleRerun) {
+  // Add a fetch task for "foo", this should result in being paused.
+  drive_service_->set_resource_id_to_be_paused(resource_ids_["foo"]);
+  sync_client_->AddFetchTask(GetLocalId("foo"));
+  base::RunLoop().RunUntilIdle();
+
+  // While the first task is paused, add a task again.
+  // This results in scheduling rerun of the task.
+  sync_client_->AddFetchTask(GetLocalId("foo"));
+  base::RunLoop().RunUntilIdle();
+
+  // Resume the paused task.
+  drive_service_->set_resource_id_to_be_paused(std::string());
+  ASSERT_FALSE(drive_service_->paused_action().is_null());
+  drive_service_->paused_action().Run();
+  base::RunLoop().RunUntilIdle();
+
+  // Task should be run twice.
+  EXPECT_EQ(2, drive_service_->download_file_count());
 }
 
 }  // namespace internal

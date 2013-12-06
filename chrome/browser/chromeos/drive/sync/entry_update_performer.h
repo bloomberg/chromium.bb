@@ -60,11 +60,6 @@ class EntryUpdatePerformer {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
-  // Part of UpdateEntry(). Called after local metadata is updated.
-  void UpdateEntryAfterFinish(const FileOperationCallback& callback,
-                              const ResourceEntry* entry,
-                              FileError error);
-
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;

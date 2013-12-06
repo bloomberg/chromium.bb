@@ -128,7 +128,7 @@ void CheckExistingPinnedFiles(ResourceMetadata* metadata,
 
 }  // namespace
 
-SyncClient::SyncTask::SyncTask() : state(PENDING) {}
+SyncClient::SyncTask::SyncTask() : state(PENDING), should_run_again(false) {}
 SyncClient::SyncTask::~SyncTask() {}
 
 SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
@@ -288,9 +288,19 @@ void SyncClient::AddTask(const SyncTasks::key_type& key,
                          const base::TimeDelta& delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // If the same task is found, ignore this task.
-  if (tasks_.count(key))
+  SyncTasks::iterator it = tasks_.find(key);
+  if (it != tasks_.end()) {
+    switch (it->second.state) {
+      case PENDING:
+        // The same task will run, do nothing.
+        break;
+      case RUNNING:
+        // Something has changed since the task started. Schedule rerun.
+        it->second.should_run_again = true;
+        break;
+    }
     return;
+  }
 
   DCHECK_EQ(PENDING, task.state);
   tasks_[key] = task;
@@ -353,13 +363,32 @@ void SyncClient::AddFetchTasks(const std::vector<std::string>* local_ids) {
     AddFetchTask((*local_ids)[i]);
 }
 
+bool SyncClient::OnTaskComplete(SyncType type, const std::string& local_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const SyncTasks::key_type key(type, local_id);
+  SyncTasks::iterator it = tasks_.find(key);
+  DCHECK(it != tasks_.end());
+
+  if (it->second.should_run_again) {
+    DVLOG(1) << "Running again: type = " << type << ", id = " << local_id;
+    it->second.should_run_again = false;
+    it->second.task.Run();
+    return false;
+  }
+
+  tasks_.erase(it);
+  return true;
+}
+
 void SyncClient::OnFetchFileComplete(const std::string& local_id,
                                      FileError error,
                                      const base::FilePath& local_path,
                                      scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  tasks_.erase(SyncTasks::key_type(FETCH, local_id));
+  if (!OnTaskComplete(FETCH, local_id))
+    return;
 
   if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Fetched " << local_id << ": " << local_path.value();
@@ -390,7 +419,8 @@ void SyncClient::OnUploadFileComplete(const std::string& local_id,
                                       FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  tasks_.erase(SyncTasks::key_type(UPLOAD, local_id));
+  if (!OnTaskComplete(UPLOAD, local_id))
+    return;
 
   if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Uploaded " << local_id;
@@ -419,7 +449,8 @@ void SyncClient::OnUpdateComplete(const std::string& local_id,
                                   FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  tasks_.erase(SyncTasks::key_type(UPDATE, local_id));
+  if (!OnTaskComplete(UPDATE, local_id))
+    return;
 
   if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Updated " << local_id;

@@ -104,6 +104,7 @@ class SyncClient {
     ~SyncTask();
     SyncState state;
     base::Closure task;
+    bool should_run_again;
   };
 
   typedef std::map<std::pair<SyncType, std::string>, SyncTask> SyncTasks;
@@ -138,6 +139,9 @@ class SyncClient {
 
   // Adds fetch tasks.
   void AddFetchTasks(const std::vector<std::string>* local_ids);
+
+  // Erases the task and returns true if task is completed.
+  bool OnTaskComplete(SyncType type, const std::string& local_id);
 
   // Called when the file for |local_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
