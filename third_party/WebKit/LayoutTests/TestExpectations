@@ -904,8 +904,7 @@ crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-laye
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
-crbug.com/323858 [ Release ] fast/workers/storage/interrupt-database.html [ Pass Timeout ]
-crbug.com/323858 [ Debug ] fast/workers/storage/interrupt-database.html [ Crash Pass ]
+crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
 # FIXME(crbug.com/322782): remove these lines once html expectations are supported for virtual tests.
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-block-or-table.html [ ImageOnlyFailure ]
