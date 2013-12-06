@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/CrossOriginAccessControl.h"
-#include "core/html/HTMLImportLoader.h"
+#include "core/html/HTMLImportChild.h"
 #include "core/html/HTMLImportsController.h"
 #include "core/html/HTMLLinkElement.h"
 

@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportLoaderClient_h
-#define HTMLImportLoaderClient_h
+#ifndef HTMLImportChildClient_h
+#define HTMLImportChildClient_h
 
 namespace WebCore {
 
-class HTMLImportLoaderClient {
+class HTMLImportChildClient {
 public:
-    virtual ~HTMLImportLoaderClient() { }
+    virtual ~HTMLImportChildClient() { }
     virtual void didFinish() = 0;
     virtual void loaderWillBeDestroyed() = 0;
 };
 
 } // namespace WebCore
 
-#endif // HTMLImportLoaderClient_h
+#endif // HTMLImportChildClient_h

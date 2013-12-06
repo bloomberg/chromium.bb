@@ -39,7 +39,7 @@ namespace WebCore {
 class Frame;
 class Document;
 class Frame;
-class HTMLImportLoader;
+class HTMLImportChild;
 class HTMLImportRoot;
 class HTMLImportsController;
 class KURL;
@@ -55,11 +55,10 @@ class KURL;
 //   document as a DocumentSupplement. HTMLImportsController has an abstract class called
 //   HTMLImportRoot to deal with cycler dependency.
 //
-// * The non-root nodes are HTMLImportLoader (FIXME: rename to HTMLImportChild),
-//   which is owned by LinkStyle, that is owned by HTMLLinkElement.
-//   LinkStyle is wired into HTMLImportLoader by implementing HTMLImportLoaderClient interface
+// * The non-root nodes are HTMLImportChild, which is owned by LinkStyle, that is owned by HTMLLinkElement.
+//   LinkStyle is wired into HTMLImportChild by implementing HTMLImportChildClient interface
 //
-// * Both HTMLImportsController and HTMLImportLoader are derived from HTMLImport superclass
+// * Both HTMLImportsController and HTMLImportChild are derived from HTMLImport superclass
 //   that models the tree data structure using WTF::TreeNode and provides a set of
 //   virtual functions.
 //
@@ -70,21 +69,21 @@ class KURL;
 //    HTMLImport <|- HTMLImportRoot <|- HTMLImportsController <- Document
 //                                      *
 //                                      |
-//               <|-                    HTMLImportLoader <- LinkStyle <- HTMLLinkElement
+//               <|-                    HTMLImportChild <- LinkStyle <- HTMLLinkElement
 //
 //
 // # Import Sharing and HTMLImportData
 //
 // The HTML Imports spec calls for de-dup mechanism to share already loaded imports.
-// To implement this, the actual loading machinery is split out from HTMLImportLoader to
-// HTMLImportData (FIXME: rename HTMLImportLoader),
+// To implement this, the actual loading machinery is split out from HTMLImportChild to
+// HTMLImportData (FIXME: rename HTMLImportChild),
 // and each loader shares HTMLImportData with other loader if the URL is same.
 // Check around HTMLImportsController::findLink() for more detail.
 //
 // Note that HTMLImportData provides HTMLImportDataClient to hook it up.
 // As it can be shared, HTMLImportData supports multiple clients.
 //
-//    HTMLImportLoader (1)-->(*) HTMLImportData
+//    HTMLImportChild (1)-->(*) HTMLImportData
 //
 //
 // # Script Blocking
@@ -128,7 +127,7 @@ class KURL;
 // "script-blocked".
 //
 
-// The superclass of HTMLImportsController and HTMLImportLoader
+// The superclass of HTMLImportsController and HTMLImportChild
 // This represents the import tree data structure.
 class HTMLImport : public TreeNode<HTMLImport> {
 public:
@@ -187,7 +186,7 @@ class HTMLImportRoot : public HTMLImport {
 public:
     virtual void blockerGone() = 0;
     virtual HTMLImportsController* toController() = 0;
-    virtual HTMLImportLoader* findLinkFor(const KURL&, HTMLImport* excluding = 0) const = 0;
+    virtual HTMLImportChild* findLinkFor(const KURL&, HTMLImport* excluding = 0) const = 0;
 };
 
 } // namespace WebCore

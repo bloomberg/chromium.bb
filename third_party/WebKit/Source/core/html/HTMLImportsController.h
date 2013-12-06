@@ -45,8 +45,8 @@ namespace WebCore {
 class FetchRequest;
 class ExecutionContext;
 class ResourceFetcher;
-class HTMLImportLoader;
-class HTMLImportLoaderClient;
+class HTMLImportChild;
+class HTMLImportChildClient;
 
 class HTMLImportsController : public HTMLImportRoot, public DocumentSupplement {
     WTF_MAKE_FAST_ALLOCATED;
@@ -67,9 +67,9 @@ public:
     // HTMLImportRoot
     virtual void blockerGone() OVERRIDE;
     virtual HTMLImportsController* toController() OVERRIDE { return this; }
-    virtual HTMLImportLoader* findLinkFor(const KURL&, HTMLImport* excluding = 0) const OVERRIDE;
+    virtual HTMLImportChild* findLinkFor(const KURL&, HTMLImport* excluding = 0) const OVERRIDE;
 
-    HTMLImportLoader* load(HTMLImport* parent, HTMLImportLoaderClient*, FetchRequest);
+    HTMLImportChild* load(HTMLImport* parent, HTMLImportChildClient*, FetchRequest);
     void showSecurityErrorMessage(const String&);
 
     SecurityOrigin* securityOrigin() const;
@@ -79,14 +79,14 @@ public:
     void unblockTimerFired(Timer<HTMLImportsController>*);
 
 private:
-    HTMLImportLoader* createLoader(const KURL&, HTMLImport* parent, HTMLImportLoaderClient*);
+    HTMLImportChild* createChild(const KURL&, HTMLImport* parent, HTMLImportChildClient*);
     void clear();
 
     Document* m_master;
     Timer<HTMLImportsController> m_unblockTimer;
 
     // List of import which has been loaded or being loaded.
-    typedef Vector<OwnPtr<HTMLImportLoader> > ImportList;
+    typedef Vector<OwnPtr<HTMLImportChild> > ImportList;
     ImportList m_imports;
 };
 

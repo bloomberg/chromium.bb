@@ -44,7 +44,7 @@ class HTMLImportDataClient;
 //
 // Owning imported Document lifetime. It also implements ResourceClient through HTMLImportResourceOwner
 // to feed fetched bytes to the DocumentWriter of the imported document.
-// HTMLImportData is owned by and shared between HTMLImportLoader.
+// HTMLImportData is owned by and shared between HTMLImportChild.
 //
 // FIXME: Should be renamed to HTMLImportLoader
 //

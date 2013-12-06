@@ -33,8 +33,8 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/html/HTMLImportLoader.h"
-#include "core/html/HTMLImportLoaderClient.h"
+#include "core/html/HTMLImportChild.h"
+#include "core/html/HTMLImportChildClient.h"
 
 namespace WebCore {
 
@@ -66,22 +66,22 @@ void HTMLImportsController::clear()
     m_master = 0;
 }
 
-HTMLImportLoader* HTMLImportsController::createLoader(const KURL& url, HTMLImport* parent, HTMLImportLoaderClient* client)
+HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImport* parent, HTMLImportChildClient* client)
 {
-    OwnPtr<HTMLImportLoader> loader = adoptPtr(new HTMLImportLoader(url, client));
+    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(url, client));
     parent->appendChild(loader.get());
     m_imports.append(loader.release());
     return m_imports.last().get();
 }
 
-HTMLImportLoader* HTMLImportsController::load(HTMLImport* parent, HTMLImportLoaderClient* client, FetchRequest request)
+HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChildClient* client, FetchRequest request)
 {
     ASSERT(!request.url().isEmpty() && request.url().isValid());
 
-    if (HTMLImportLoader* found = findLinkFor(request.url())) {
-        HTMLImportLoader* loader = createLoader(request.url(), parent, client);
-        loader->wasAlreadyLoadedAs(found);
-        return loader;
+    if (HTMLImportChild* found = findLinkFor(request.url())) {
+        HTMLImportChild* child = createChild(request.url(), parent, client);
+        child->wasAlreadyLoadedAs(found);
+        return child;
     }
 
     request.setCrossOriginAccessControl(securityOrigin(), DoNotAllowStoredCredentials);
@@ -89,12 +89,12 @@ HTMLImportLoader* HTMLImportsController::load(HTMLImport* parent, HTMLImportLoad
     if (!resource)
         return 0;
 
-    HTMLImportLoader* loader = createLoader(request.url(), parent, client);
+    HTMLImportChild* child = createChild(request.url(), parent, client);
     // We set resource after the import tree is built since
     // Resource::addClient() immediately calls back to feed the bytes when the resource is cached.
-    loader->startLoading(resource);
+    child->startLoading(resource);
 
-    return loader;
+    return child;
 }
 
 void HTMLImportsController::showSecurityErrorMessage(const String& message)
@@ -102,10 +102,10 @@ void HTMLImportsController::showSecurityErrorMessage(const String& message)
     m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-HTMLImportLoader* HTMLImportsController::findLinkFor(const KURL& url, HTMLImport* excluding) const
+HTMLImportChild* HTMLImportsController::findLinkFor(const KURL& url, HTMLImport* excluding) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
-        HTMLImportLoader* candidate = m_imports[i].get();
+        HTMLImportChild* candidate = m_imports[i].get();
         if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && !candidate->isDocumentBlocked())
             return candidate;
     }

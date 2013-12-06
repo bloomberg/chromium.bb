@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportLoader_h
-#define HTMLImportLoader_h
+#ifndef HTMLImportChild_h
+#define HTMLImportChild_h
 
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLImportDataClient.h"
@@ -39,28 +39,26 @@
 namespace WebCore {
 
 class HTMLImportData;
-class HTMLImportLoaderClient;
+class HTMLImportChildClient;
 
 //
 // An import tree node subclas to encapsulate imported document
 // lifecycle. This class is owned by LinkStyle. The actual loading
 // is done by HTMLImportData, which can be shared among multiple
-// HTMLImportLoader of same link URL.
+// HTMLImportChild of same link URL.
 //
-// HTMLImportLoader implements ResourceClient through HTMLImportResourceOwner
+// HTMLImportChild implements ResourceClient through HTMLImportResourceOwner
 // so that it can speculatively request linked resources while it is unblocked.
 //
-// FIXME: Should be renamed to HTMLImportChild
-//
-class HTMLImportLoader : public HTMLImport, public HTMLImportDataClient, public HTMLImportResourceOwner {
+class HTMLImportChild : public HTMLImport, public HTMLImportDataClient, public HTMLImportResourceOwner {
 public:
-    HTMLImportLoader(const KURL&, HTMLImportLoaderClient*);
-    virtual ~HTMLImportLoader();
+    HTMLImportChild(const KURL&, HTMLImportChildClient*);
+    virtual ~HTMLImportChild();
 
     Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 
-    void wasAlreadyLoadedAs(HTMLImportLoader* found);
+    void wasAlreadyLoadedAs(HTMLImportChild* found);
     void startLoading(const ResourcePtr<RawResource>&);
     void importDestroyed();
     bool isLoaded() const;
@@ -78,7 +76,7 @@ public:
 
 private:
     // RawResourceOwner doing nothing.
-    // HTMLImportLoader owns the resource so that the contents of prefetched Resource doesn't go away.
+    // HTMLImportChild owns the resource so that the contents of prefetched Resource doesn't go away.
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE { }
     virtual void dataReceived(Resource*, const char*, int) OVERRIDE { }
     virtual void notifyFinished(Resource*) OVERRIDE { }
@@ -87,13 +85,13 @@ private:
     virtual void didFinish() OVERRIDE;
 
     void createData();
-    void shareData(HTMLImportLoader*);
+    void shareData(HTMLImportChild*);
 
     KURL m_url;
-    HTMLImportLoaderClient* m_client;
+    HTMLImportChildClient* m_client;
     RefPtr<HTMLImportData> m_data;
 };
 
 } // namespace WebCore
 
-#endif // HTMLImportLoader_h
+#endif // HTMLImportChild_h
