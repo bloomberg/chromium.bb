@@ -708,7 +708,7 @@ sub GenerateHeader
         }
     }
 
-    $header{nameSpaceWebCore}->addHeader("\nclass Dictionary;") if IsConstructorTemplate($interface, "Event");
+    $header{nameSpaceWebCore}->addHeader("\nclass Dictionary;") if $interface->extendedAttributes->{"EventConstructor"};
 
     my $nativeType = GetNativeTypeForConversions($interface);
     if ($interface->extendedAttributes->{"NamedConstructor"}) {
@@ -1025,7 +1025,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<${
 
 END
 
-    if (IsConstructorTemplate($interface, "Event")) {
+    if ($interface->extendedAttributes->{"EventConstructor"}) {
         $header{nameSpaceWebCore}->add("bool fill${implClassName}Init(${implClassName}Init&, const Dictionary&, ExceptionState&, const String& = \"\");\n\n");
     }
 }
@@ -1147,7 +1147,7 @@ sub IsConstructable
 {
     my $interface = shift;
 
-    return $interface->extendedAttributes->{"CustomConstructor"} || $interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"ConstructorTemplate"};
+    return $interface->extendedAttributes->{"CustomConstructor"} || $interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"EventConstructor"};
 }
 
 sub HasCustomConstructor
@@ -2402,17 +2402,6 @@ END
 
     $code .= GenerateArgumentsCountCheck($function, $interface);
 
-    if ($name eq "set" and IsConstructorTemplate($interface, "TypedArray")) {
-        AddToImplIncludes("bindings/v8/custom/V8ArrayBufferViewCustom.h");
-        $code .= <<END;
-    setWebGLArrayHelper<$implClassName, ${v8ClassName}>(info);
-}
-
-END
-        $implementation{nameSpaceInternal}->add($code);
-        return;
-    }
-
     if ($svgNativeType) {
         my $nativeClassName = GetNativeType($interfaceName);
         if ($interfaceName =~ /List$/) {
@@ -2819,7 +2808,7 @@ sub GetInterfaceLength
     my $interface = shift;
 
     my $leastConstructorLength = 0;
-    if (IsConstructorTemplate($interface, "Event") || IsConstructorTemplate($interface, "TypedArray")) {
+    if ($interface->extendedAttributes->{"EventConstructor"}) {
         $leastConstructorLength = 1;
     } elsif ($interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"CustomConstructor"}) {
         my @constructors = @{$interface->constructors};
@@ -4316,21 +4305,6 @@ END
         GenerateSecurityCheckFunctions($interface);
     }
 
-    if (IsConstructorTemplate($interface, "TypedArray")) {
-        my ($nativeType, $arrayType) = GetNativeTypeOfTypedArray($interface);
-        $implementation{nameSpaceWebCore}->add(<<END);
-v8::Handle<v8::Object> wrap($implClassName* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
-    if (!wrapper.IsEmpty())
-        wrapper->SetIndexedPropertiesToExternalArrayData(impl->baseAddress(), $arrayType, impl->length());
-    return wrapper;
-}
-
-END
-    }
-
     my @perContextEnabledFunctions;
     my @normalFunctions;
     my $needsDomainSafeFunctionSetter = 0;
@@ -4470,7 +4444,7 @@ END
             GenerateNamedConstructor(@{$interface->constructors}[0], $interface);
         } elsif ($interface->extendedAttributes->{"Constructor"}) {
             GenerateConstructor($interface);
-        } elsif (IsConstructorTemplate($interface, "Event")) {
+        } elsif ($interface->extendedAttributes->{"EventConstructor"}) {
             GenerateEventConstructor($interface);
         }
     }
@@ -5993,14 +5967,6 @@ sub FindSuperMethod
         }
     });
     return $indexer;
-}
-
-sub IsConstructorTemplate
-{
-    my $interface = shift;
-    my $template = shift;
-
-    return $interface->extendedAttributes->{"ConstructorTemplate"} && $interface->extendedAttributes->{"ConstructorTemplate"} eq $template;
 }
 
 sub IsPrimitiveType

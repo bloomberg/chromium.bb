@@ -25,7 +25,7 @@
 
 [
     NoInterfaceObject,
-    ConstructorTemplate=Event
+    EventConstructor,
 ] interface SpeechRecognitionError : Event {
     [InitializedByEventConstructor] readonly attribute DOMString error;
     [InitializedByEventConstructor] readonly attribute DOMString message;

@@ -29,7 +29,7 @@
  */
 
 [
-    ConstructorTemplate=Event
+    EventConstructor,
 ] interface CloseEvent : Event {
     [InitializedByEventConstructor] readonly attribute boolean wasClean;
     [InitializedByEventConstructor] readonly attribute unsigned short code;

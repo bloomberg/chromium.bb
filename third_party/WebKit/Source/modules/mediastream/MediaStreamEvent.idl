@@ -23,7 +23,7 @@
  */
 
 [
-    ConstructorTemplate=Event
+    EventConstructor,
 ] interface MediaStreamEvent : Event {
    [InitializedByEventConstructor] readonly attribute MediaStream? stream;
 };

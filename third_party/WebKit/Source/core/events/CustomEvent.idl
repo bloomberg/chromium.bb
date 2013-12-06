@@ -24,7 +24,7 @@
  */
 
 [
-    ConstructorTemplate=Event
+    EventConstructor,
 ] interface CustomEvent : Event {
     [Custom=Getter, InitializedByEventConstructor] readonly attribute any detail;
 

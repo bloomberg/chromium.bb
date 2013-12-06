@@ -23,7 +23,7 @@
  */
 
 [
-    ConstructorTemplate=Event
+    EventConstructor,
 ] interface AutocompleteErrorEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString reason;
 };

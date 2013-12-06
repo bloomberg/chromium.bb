@@ -27,9 +27,9 @@
  */
 [
     Conditional=TEST,
+    EventConstructor,
     ImplementedAs=Event,
     RuntimeEnabled=Test,
-    ConstructorTemplate=Event,
 ] interface TestExtendedEvent : TestEvent {
     [InitializedByEventConstructor] readonly attribute unsigned long location;
     [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation, InitializedByEventConstructor] readonly attribute unsigned long keyLocation;

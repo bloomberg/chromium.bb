@@ -42,7 +42,6 @@ Clamp
 Conditional=*
 Constructor
 ConstructorCallWith=ExecutionContext|Document
-ConstructorTemplate=Event|TypedArray
 Custom=|Getter|Setter
 CustomConstructor
 CustomElementCallbacks
@@ -58,6 +57,7 @@ DoNotCheckConstants
 DoNotCheckSecurity=|Setter
 DoNotCheckSignature
 EnforceRange
+EventConstructor
 ExposeJSAccessors
 GenerateVisitDOMWrapper=document|element|owner|ownerNode
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope

@@ -24,7 +24,7 @@
  */
 
 [
-    ConstructorTemplate=Event
+    EventConstructor,
 ] interface CompositionEvent : UIEvent {
 
     [InitializedByEventConstructor] readonly attribute DOMString data;

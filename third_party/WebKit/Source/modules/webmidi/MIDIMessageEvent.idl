@@ -31,8 +31,8 @@
 // FIXME: The spec doesn't provide details about constructor, yet.
 // See also, https://github.com/WebAudio/web-midi-api/issues/1 .
 [
+    EventConstructor,
     RuntimeEnabled=WebMIDI,
-    ConstructorTemplate=Event
 ] interface MIDIMessageEvent : Event {
     [InitializedByEventConstructor] readonly attribute double receivedTime;
     [InitializedByEventConstructor] readonly attribute Uint8Array data;
