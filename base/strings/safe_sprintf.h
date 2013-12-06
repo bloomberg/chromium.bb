@@ -104,8 +104,6 @@ typedef long ssize_t;
 // like SafeSPrintf(buf, "%p %d", 1, 2) results in "%p 2"). See above for
 // the use of RAW_CHECK() in debug builds, though.
 //
-// The pre-C++11 version cannot handle more than ten arguments.
-//
 // Basic example:
 //   char buf[20];
 //   base::strings::SafeSPrintf(buf, "The answer: %2d", 42);
@@ -190,29 +188,8 @@ BASE_EXPORT size_t GetSafeSPrintfSSizeMaxForTest();
 
 }  // namespace internal
 
-#if __cplusplus >= 201103  // C++11
-
-template<typename... Args>
-ssize_t SafeSNPrintf(char* buf, size_t N, const char* fmt, Args... args) {
-  // Use Arg() object to record type information and then copy arguments to an
-  // array to make it easier to iterate over them.
-  const internal::Arg arg_array[] = { args... };
-  return internal::SafeSNPrintf(buf, N, fmt, arg_array, arraysize(arg_array));
-}
-
-template<size_t N, typename... Args>
-ssize_t SafeSPrintf(char (&buf)[N], const char* fmt, Args... args) {
-  // Use Arg() object to record type information and then copy arguments to an
-  // array to make it easier to iterate over them.
-  const internal::Arg arg_array[] = { args... };
-  return internal::SafeSNPrintf(buf, N, fmt, arg_array, arraysize(arg_array));
-}
-
-#else  // Pre-C++11
-
 // TODO(markus): C++11 has a much more concise and readable solution for
-//   expressing what we are doing here. Delete the fall-back code for older
-//   compilers as soon as we have fully switched to C++11.
+//   expressing what we are doing here.
 
 template<class T0, class T1, class T2, class T3, class T4,
          class T5, class T6, class T7, class T8, class T9>
@@ -426,7 +403,6 @@ ssize_t SafeSPrintf(char (&buf)[N], const char* fmt, T0 arg0) {
   const internal::Arg arg_array[] = { arg0 };
   return internal::SafeSNPrintf(buf, N, fmt, arg_array, arraysize(arg_array));
 }
-#endif
 
 // Fast-path when we don't actually need to substitute any arguments.
 BASE_EXPORT ssize_t SafeSNPrintf(char* buf, size_t N, const char* fmt);
