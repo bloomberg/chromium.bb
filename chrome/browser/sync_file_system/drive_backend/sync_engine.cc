@@ -421,6 +421,8 @@ void SyncEngine::DoEnableApp(const std::string& app_id,
 
 void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK)
+    return;
   metadata_database_ = initializer->PassMetadataDatabase();
   UpdateRegisteredApps();
 }
