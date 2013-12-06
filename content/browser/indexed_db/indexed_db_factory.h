@@ -56,6 +56,11 @@ class CONTENT_EXPORT IndexedDBFactory
       const GURL& origin_url) const;
 
   bool IsBackingStoreOpenForTesting(const GURL& origin_url) const;
+  bool IsBackingStorePendingCloseForTesting(const GURL& origin_url) const;
+
+  // Called by IndexedDBContext after all connections are closed, to
+  // ensure the backing store closed immediately.
+  void ForceClose(const GURL& origin_url);
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   void ContextDestroyed();

@@ -294,6 +294,44 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
 }
 
+TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
+  GURL origin("http://localhost:81");
+
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+
+  scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory(NULL);
+
+  scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
+      new MockIndexedDBDatabaseCallbacks());
+  const int64 transaction_id = 1;
+  factory->Open(ASCIIToUTF16("db"),
+                IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
+                transaction_id,
+                callbacks,
+                db_callbacks,
+                origin,
+                temp_directory.path());
+
+  EXPECT_TRUE(callbacks->connection());
+  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+
+  callbacks->connection()->Close();
+
+  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStorePendingCloseForTesting(origin));
+
+  factory->ForceClose(origin);
+
+  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+
+  // Ensure it is safe if the store is not open.
+  factory->ForceClose(origin);
+}
+
 }  // namespace
 
 }  // namespace content

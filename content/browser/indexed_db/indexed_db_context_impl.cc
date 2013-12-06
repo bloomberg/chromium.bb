@@ -346,6 +346,8 @@ void IndexedDBContextImpl::ForceClose(const GURL origin_url) {
     DCHECK_EQ(connections_[origin_url].size(), 0UL);
     connections_.erase(origin_url);
   }
+  if (factory_)
+    factory_->ForceClose(origin_url);
 }
 
 size_t IndexedDBContextImpl::GetConnectionCount(const GURL& origin_url) {
