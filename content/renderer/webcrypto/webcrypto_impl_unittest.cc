@@ -1287,7 +1287,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(true, public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
@@ -1338,7 +1338,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(true, public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
@@ -1352,7 +1352,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(true, public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
@@ -1368,7 +1368,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
-  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(true, public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());

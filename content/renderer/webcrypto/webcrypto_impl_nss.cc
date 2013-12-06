@@ -778,16 +778,10 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
         return false;
       }
 
-      // One extractable input parameter is provided, and the Web Crypto API
-      // spec at this time says it applies to both members of the key pair.
-      // This is probably not correct: it makes more operational sense to have
-      // extractable apply only to the private key and make the public key
-      // always extractable. For now implement what the spec says and track the
-      // spec bug here: https://www.w3.org/Bugs/Public/show_bug.cgi?id=23695
       *public_key = blink::WebCryptoKey::create(
           new PublicKeyHandle(crypto::ScopedSECKEYPublicKey(sec_public_key)),
           blink::WebCryptoKeyTypePublic,
-          extractable,  // probably should be 'true' always
+          true,
           algorithm,
           usage_mask);
       *private_key = blink::WebCryptoKey::create(

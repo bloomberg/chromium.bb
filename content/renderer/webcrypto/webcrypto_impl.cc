@@ -228,11 +228,7 @@ void WebCryptoImpl::generateKey(
       DCHECK(private_key.handle());
       DCHECK_EQ(algorithm.id(), public_key.algorithm().id());
       DCHECK_EQ(algorithm.id(), private_key.algorithm().id());
-      // TODO(padolph): The public key should probably always be extractable,
-      // regardless of the input 'extractable' parameter, but that is not called
-      // out in the Web Crypto API spec.
-      // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23695
-      DCHECK_EQ(extractable, public_key.extractable());
+      DCHECK_EQ(true, public_key.extractable());
       DCHECK_EQ(extractable, private_key.extractable());
       DCHECK_EQ(usage_mask, public_key.usages());
       DCHECK_EQ(usage_mask, private_key.usages());
