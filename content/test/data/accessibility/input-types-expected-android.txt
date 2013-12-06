@@ -1,0 +1,73 @@
+android.view.View focusable focused scrollable
+    android.view.View
+        android.view.View
+            android.view.View clickable name='Default:'
+            android.widget.EditText editable_text focusable input_type=1
+        android.view.View
+            android.view.View clickable name='Button:'
+            android.widget.Button focusable
+        android.widget.CheckBox checkable clickable focusable name='Checkbox: '
+        android.view.View
+            android.view.View clickable name='Color:'
+            android.view.View focusable
+        android.view.View
+            android.view.View clickable name='Date:'
+            android.view.View focusable input_type=20
+                android.view.View
+        android.view.View
+            android.view.View clickable name='Datetime:'
+            android.widget.EditText editable_text focusable input_type=4
+        android.view.View
+            android.view.View clickable name='Datetime-local:'
+            android.view.View focusable input_type=4
+                android.view.View
+        android.view.View
+            android.view.View clickable name='Email:'
+            android.widget.EditText editable_text focusable input_type=209
+        android.view.View
+            android.view.View clickable name='File:'
+            android.widget.Button clickable focusable name='Choose File'
+        android.view.View
+            android.view.View clickable name='Image:'
+            android.widget.Button focusable
+        android.view.View
+            android.view.View clickable name='Month:'
+            android.view.View focusable input_type=20
+                android.view.View
+        android.view.View
+            android.view.View clickable name='Number:'
+            android.widget.EditText editable_text focusable input_type=2
+        android.view.View
+            android.view.View clickable name='Password:'
+            android.widget.EditText editable_text focusable password input_type=225
+        android.widget.RadioButton checkable clickable focusable name='Radio: '
+        android.view.View
+            android.view.View clickable name='Range:'
+            android.widget.SeekBar focusable range item_index=50 item_count=100 range_max=100 range_current_value=50
+        android.view.View
+            android.view.View clickable name='Reset:'
+            android.widget.Button clickable focusable name='Reset'
+        android.view.View
+            android.view.View clickable name='Search:'
+            android.widget.EditText editable_text focusable input_type=1
+        android.view.View
+            android.view.View clickable name='Submit:'
+            android.widget.Button clickable focusable name='Submit'
+        android.view.View
+            android.view.View clickable name='Tel:'
+            android.widget.EditText editable_text focusable input_type=3
+        android.view.View
+            android.view.View clickable name='Text:'
+            android.widget.EditText editable_text focusable input_type=1
+        android.view.View
+            android.view.View clickable name='Time:'
+            android.view.View focusable input_type=36
+                android.view.View
+        android.view.View
+            android.view.View clickable name='Url:'
+            android.widget.EditText editable_text focusable input_type=17
+        android.view.View
+            android.view.View clickable name='Week:'
+            android.view.View focusable input_type=4
+                android.view.View
+

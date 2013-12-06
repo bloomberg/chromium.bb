@@ -7,13 +7,13 @@ android.view.View focusable focused scrollable
             android.widget.Image clickable editable_text name='image'
             android.view.View clickable editable_text name='and'
             android.widget.Button clickable editable_text focusable name='button'
-        android.widget.GridView editable_text
+        android.widget.GridView collection editable_text row_count=1 column_count=1
             android.view.View editable_text
-                android.view.View clickable editable_text name='Always expose editable tables as tables'
+                android.view.View clickable collection_item editable_text name='Always expose editable tables as tables' row_span=1 column_span=1
             android.view.View
             android.view.View
-        android.widget.ListView editable_text item_count=1
-            android.view.View editable_text
+        android.widget.ListView collection editable_text hierarchical item_count=1 row_count=1
+            android.view.View collection_item editable_text
                 android.view.View clickable name='1'
                 android.view.View clickable editable_text name='Editable list item'
     android.view.View clickable editable_text focusable name='Keep the role, just change the state'

@@ -1,13 +1,13 @@
 android.view.View focusable focused scrollable name='Table example'
-    android.widget.GridView
+    android.widget.GridView collection row_count=2 column_count=3
         android.view.View
-            android.view.View clickable name='A'
-            android.view.View clickable name='B'
-            android.view.View clickable name='C'
+            android.view.View clickable collection_item name='A' row_span=1 column_span=1
+            android.view.View clickable collection_item name='B' row_span=1 column_index=1 column_span=1
+            android.view.View clickable collection_item name='C' row_span=1 column_index=2 column_span=1
         android.view.View
-            android.view.View clickable name='D'
-            android.view.View clickable name='E'
-            android.view.View clickable name='F'
+            android.view.View clickable collection_item name='D' row_index=1 row_span=1 column_span=1
+            android.view.View clickable collection_item name='E' row_index=1 row_span=1 column_index=1 column_span=1
+            android.view.View clickable collection_item name='F' row_index=1 row_span=1 column_index=2 column_span=1
         android.view.View
         android.view.View
         android.view.View

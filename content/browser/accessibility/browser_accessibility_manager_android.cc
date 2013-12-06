@@ -229,6 +229,40 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       absolute_rect.width(), absolute_rect.height(),
       is_root);
 
+  // New KitKat APIs
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoKitKatAttributes(
+      env, obj, info,
+      node->CanOpenPopup(),
+      node->IsContentInvalid(),
+      node->IsDismissable(),
+      node->IsMultiLine(),
+      node->AndroidInputType(),
+      node->AndroidLiveRegionType());
+  if (node->IsCollection()) {
+    Java_BrowserAccessibilityManager_setAccessibilityNodeInfoCollectionInfo(
+        env, obj, info,
+        node->RowCount(),
+        node->ColumnCount(),
+        node->IsHierarchical());
+  }
+  if (node->IsCollectionItem() || node->IsHeading()) {
+    Java_BrowserAccessibilityManager_setAccessibilityNodeInfoCollectionItemInfo(
+        env, obj, info,
+        node->RowIndex(),
+        node->RowSpan(),
+        node->ColumnIndex(),
+        node->ColumnSpan(),
+        node->IsHeading());
+  }
+  if (node->IsRangeType()) {
+    Java_BrowserAccessibilityManager_setAccessibilityNodeInfoRangeInfo(
+        env, obj, info,
+        node->AndroidRangeType(),
+        node->RangeMin(),
+        node->RangeMax(),
+        node->RangeCurrentValue());
+  }
+
   return true;
 }
 
@@ -280,6 +314,40 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
       break;
     default:
       break;
+  }
+
+  // Backwards-compatible fallback for new KitKat APIs.
+  Java_BrowserAccessibilityManager_setAccessibilityEventKitKatAttributes(
+      env, obj, event,
+      node->CanOpenPopup(),
+      node->IsContentInvalid(),
+      node->IsDismissable(),
+      node->IsMultiLine(),
+      node->AndroidInputType(),
+      node->AndroidLiveRegionType());
+  if (node->IsCollection()) {
+    Java_BrowserAccessibilityManager_setAccessibilityEventCollectionInfo(
+        env, obj, event,
+        node->RowCount(),
+        node->ColumnCount(),
+        node->IsHierarchical());
+  }
+  if (node->IsCollectionItem() || node->IsHeading()) {
+    Java_BrowserAccessibilityManager_setAccessibilityEventCollectionItemInfo(
+        env, obj, event,
+        node->RowIndex(),
+        node->RowSpan(),
+        node->ColumnIndex(),
+        node->ColumnSpan(),
+        node->IsHeading());
+  }
+  if (node->IsRangeType()) {
+    Java_BrowserAccessibilityManager_setAccessibilityEventRangeInfo(
+        env, obj, event,
+        node->AndroidRangeType(),
+        node->RangeMin(),
+        node->RangeMax(),
+        node->RangeCurrentValue());
   }
 
   return true;

@@ -9,6 +9,38 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/accessibility_node_data.h"
 
+namespace {
+
+// These are enums from android.text.InputType in Java:
+enum {
+  ANDROID_TEXT_INPUTTYPE_TYPE_NULL = 0,
+  ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME = 0x4,
+  ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME_DATE = 0x14,
+  ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME_TIME = 0x24,
+  ANDROID_TEXT_INPUTTYPE_TYPE_NUMBER = 0x2,
+  ANDROID_TEXT_INPUTTYPE_TYPE_PHONE = 0x3,
+  ANDROID_TEXT_INPUTTYPE_TYPE_TEXT = 0x1,
+  ANDROID_TEXT_INPUTTYPE_TYPE_TEXT_URI = 0x11,
+  ANDROID_TEXT_INPUTTYPE_TYPE_TEXT_WEB_EDIT_TEXT = 0xa1,
+  ANDROID_TEXT_INPUTTYPE_TYPE_TEXT_WEB_EMAIL = 0xd1,
+  ANDROID_TEXT_INPUTTYPE_TYPE_TEXT_WEB_PASSWORD = 0xe1
+};
+
+// These are enums from android.view.View in Java:
+enum {
+  ANDROID_VIEW_VIEW_ACCESSIBILITY_LIVE_REGION_NONE = 0,
+  ANDROID_VIEW_VIEW_ACCESSIBILITY_LIVE_REGION_POLITE = 1,
+  ANDROID_VIEW_VIEW_ACCESSIBILITY_LIVE_REGION_ASSERTIVE = 2
+};
+
+// These are enums from
+// android.view.accessibility.AccessibilityNodeInfo.RangeInfo in Java:
+enum {
+  ANDROID_VIEW_ACCESSIBILITY_RANGE_TYPE_FLOAT = 1
+};
+
+}  // namespace
+
 namespace content {
 
 // static
@@ -78,6 +110,33 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
   return (PlatformIsLeaf() && !GetText().empty());
 }
 
+bool BrowserAccessibilityAndroid::IsCollection() const {
+  return (role() == blink::WebAXRoleGrid ||
+          role() == blink::WebAXRoleList ||
+          role() == blink::WebAXRoleListBox ||
+          role() == blink::WebAXRoleTable ||
+          role() == blink::WebAXRoleTree);
+}
+
+bool BrowserAccessibilityAndroid::IsCollectionItem() const {
+  return (role() == blink::WebAXRoleCell ||
+          role() == blink::WebAXRoleColumnHeader ||
+          role() == blink::WebAXRoleDescriptionListTerm ||
+          role() == blink::WebAXRoleListBoxOption ||
+          role() == blink::WebAXRoleListItem ||
+          role() == blink::WebAXRoleRowHeader ||
+          role() == blink::WebAXRoleTreeItem);
+}
+
+bool BrowserAccessibilityAndroid::IsContentInvalid() const {
+  std::string invalid;
+  return GetHtmlAttribute("aria-invalid", &invalid);
+}
+
+bool BrowserAccessibilityAndroid::IsDismissable() const {
+  return false;  // No concept of "dismissable" on the web currently.
+}
+
 bool BrowserAccessibilityAndroid::IsEnabled() const {
   return HasState(blink::WebAXStateEnabled);
 }
@@ -95,8 +154,29 @@ bool BrowserAccessibilityAndroid::IsFocused() const {
   return manager()->GetFocus(manager()->GetRoot()) == this;
 }
 
+bool BrowserAccessibilityAndroid::IsHeading() const {
+  return (role() == blink::WebAXRoleColumnHeader ||
+          role() == blink::WebAXRoleHeading ||
+          role() == blink::WebAXRoleRowHeader);
+}
+
+bool BrowserAccessibilityAndroid::IsHierarchical() const {
+  return (role() == blink::WebAXRoleList ||
+          role() == blink::WebAXRoleTree);
+}
+
+bool BrowserAccessibilityAndroid::IsMultiLine() const {
+  return role() == blink::WebAXRoleTextArea;
+}
+
 bool BrowserAccessibilityAndroid::IsPassword() const {
   return HasState(blink::WebAXStateProtected);
+}
+
+bool BrowserAccessibilityAndroid::IsRangeType() const {
+  return (role() == blink::WebAXRoleProgressIndicator ||
+          role() == blink::WebAXRoleScrollBar ||
+          role() == blink::WebAXRoleSlider);
 }
 
 bool BrowserAccessibilityAndroid::IsScrollable() const {
@@ -110,6 +190,10 @@ bool BrowserAccessibilityAndroid::IsSelected() const {
 
 bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
   return !HasState(blink::WebAXStateInvisible);
+}
+
+bool BrowserAccessibilityAndroid::CanOpenPopup() const {
+  return HasState(blink::WebAXStateHaspopup);
 }
 
 const char* BrowserAccessibilityAndroid::GetClassName() const {
@@ -215,6 +299,7 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
   switch(role()) {
     case blink::WebAXRoleListItem:
     case blink::WebAXRoleListBoxOption:
+    case blink::WebAXRoleTreeItem:
       index = index_in_parent();
       break;
     case blink::WebAXRoleSlider:
@@ -340,6 +425,113 @@ int BrowserAccessibilityAndroid::GetEditableTextLength() const {
   return value().length();
 }
 
+int BrowserAccessibilityAndroid::AndroidInputType() const {
+  std::string html_tag = GetStringAttribute(
+      AccessibilityNodeData::ATTR_HTML_TAG);
+  if (html_tag != "input")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_NULL;
+
+  std::string type;
+  if (!GetHtmlAttribute("type", &type))
+    return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT;
+
+  if (type == "" || type == "text" || type == "search")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT;
+  else if (type == "date")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME_DATE;
+  else if (type == "datetime" || type == "datetime-local")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME;
+  else if (type == "email")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT_WEB_EMAIL;
+  else if (type == "month")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME_DATE;
+  else if (type == "number")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_NUMBER;
+  else if (type == "password")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT_WEB_PASSWORD;
+  else if (type == "tel")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_PHONE;
+  else if (type == "time")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME_TIME;
+  else if (type == "url")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT_URI;
+  else if (type == "week")
+    return ANDROID_TEXT_INPUTTYPE_TYPE_DATETIME;
+
+  return ANDROID_TEXT_INPUTTYPE_TYPE_NULL;
+}
+
+int BrowserAccessibilityAndroid::AndroidLiveRegionType() const {
+  std::string live = GetStringAttribute(
+      AccessibilityNodeData::ATTR_LIVE_STATUS);
+  if (live == "polite")
+    return ANDROID_VIEW_VIEW_ACCESSIBILITY_LIVE_REGION_POLITE;
+  else if (live == "assertive")
+    return ANDROID_VIEW_VIEW_ACCESSIBILITY_LIVE_REGION_ASSERTIVE;
+  return ANDROID_VIEW_VIEW_ACCESSIBILITY_LIVE_REGION_NONE;
+}
+
+int BrowserAccessibilityAndroid::AndroidRangeType() const {
+  return ANDROID_VIEW_ACCESSIBILITY_RANGE_TYPE_FLOAT;
+}
+
+int BrowserAccessibilityAndroid::RowCount() const {
+  if (role() == blink::WebAXRoleGrid ||
+      role() == blink::WebAXRoleTable) {
+    return CountChildrenWithRole(blink::WebAXRoleRow);
+  }
+
+  if (role() == blink::WebAXRoleList ||
+      role() == blink::WebAXRoleListBox ||
+      role() == blink::WebAXRoleTree) {
+    return PlatformChildCount();
+  }
+
+  return 0;
+}
+
+int BrowserAccessibilityAndroid::ColumnCount() const {
+  if (role() == blink::WebAXRoleGrid ||
+      role() == blink::WebAXRoleTable) {
+    return CountChildrenWithRole(blink::WebAXRoleColumn);
+  }
+  return 0;
+}
+
+int BrowserAccessibilityAndroid::RowIndex() const {
+  if (role() == blink::WebAXRoleListItem ||
+      role() == blink::WebAXRoleListBoxOption ||
+      role() == blink::WebAXRoleTreeItem) {
+    return index_in_parent();
+  }
+
+  return GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX);
+}
+
+int BrowserAccessibilityAndroid::RowSpan() const {
+  return GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN);
+}
+
+int BrowserAccessibilityAndroid::ColumnIndex() const {
+  return GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX);
+}
+
+int BrowserAccessibilityAndroid::ColumnSpan() const {
+  return GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN);
+}
+
+float BrowserAccessibilityAndroid::RangeMin() const {
+  return GetFloatAttribute(AccessibilityNodeData::ATTR_MIN_VALUE_FOR_RANGE);
+}
+
+float BrowserAccessibilityAndroid::RangeMax() const {
+  return GetFloatAttribute(AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE);
+}
+
+float BrowserAccessibilityAndroid::RangeCurrentValue() const {
+  return GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE);
+}
+
 bool BrowserAccessibilityAndroid::HasFocusableChild() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
@@ -406,6 +598,16 @@ void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
     }
     cached_text_ = text;
   }
+}
+
+int BrowserAccessibilityAndroid::CountChildrenWithRole(
+    blink::WebAXRole role) const {
+  int count = 0;
+  for (uint32 i = 0; i < PlatformChildCount(); i++) {
+    if (PlatformGetChild(i)->role() == role)
+      count++;
+  }
+  return count;
 }
 
 }  // namespace content

@@ -25,12 +25,20 @@ const char* BOOL_ATTRIBUTES[] = {
   "checkable",
   "checked",
   "clickable",
+  "collection",
+  "collection_item",
+  "content_invalid",
   "disabled",
+  "dismissable",
   "editable_text",
   "focusable",
   "focused",
+  "heading",
+  "hierarchical",
   "invisible",
+  "multiline",
   "password",
+  "range",
   "scrollable",
   "selected"
 };
@@ -41,7 +49,18 @@ const char* STRING_ATTRIBUTES[] = {
 
 const char* INT_ATTRIBUTES[] = {
   "item_index",
-  "item_count"
+  "item_count",
+  "row_count",
+  "column_count",
+  "row_index",
+  "row_span",
+  "column_index",
+  "column_span",
+  "input_type",
+  "live_region_type",
+  "range_min",
+  "range_max",
+  "range_current_value",
 };
 }
 
@@ -57,17 +76,24 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->SetString("class", android_node->GetClassName());
 
   // Bool attributes.
-  dict->SetBoolean("focusable", android_node->IsFocusable());
-  dict->SetBoolean("focused", android_node->IsFocused());
-  dict->SetBoolean("clickable", android_node->IsClickable());
-  dict->SetBoolean("editable_text", android_node->IsEditableText());
   dict->SetBoolean("checkable", android_node->IsCheckable());
   dict->SetBoolean("checked", android_node->IsChecked());
+  dict->SetBoolean("clickable", android_node->IsClickable());
+  dict->SetBoolean("collection", android_node->IsCollection());
+  dict->SetBoolean("collection_item", android_node->IsCollectionItem());
   dict->SetBoolean("disabled", !android_node->IsEnabled());
-  dict->SetBoolean("scrollable", android_node->IsScrollable());
-  dict->SetBoolean("password", android_node->IsPassword());
-  dict->SetBoolean("selected", android_node->IsSelected());
+  dict->SetBoolean("dismissable", android_node->IsDismissable());
+  dict->SetBoolean("editable_text", android_node->IsEditableText());
+  dict->SetBoolean("focusable", android_node->IsFocusable());
+  dict->SetBoolean("focused", android_node->IsFocused());
+  dict->SetBoolean("heading", android_node->IsHeading());
+  dict->SetBoolean("hierarchical", android_node->IsHierarchical());
   dict->SetBoolean("invisible", !android_node->IsVisibleToUser());
+  dict->SetBoolean("multiline", android_node->IsMultiLine());
+  dict->SetBoolean("range", android_node->IsRangeType());
+  dict->SetBoolean("password", android_node->IsPassword());
+  dict->SetBoolean("scrollable", android_node->IsScrollable());
+  dict->SetBoolean("selected", android_node->IsSelected());
 
   // String attributes.
   dict->SetString("name", android_node->GetText());
@@ -75,6 +101,18 @@ void AccessibilityTreeFormatter::AddProperties(
   // Int attributes.
   dict->SetInteger("item_index", android_node->GetItemIndex());
   dict->SetInteger("item_count", android_node->GetItemCount());
+  dict->SetInteger("row_count", android_node->RowCount());
+  dict->SetInteger("column_count", android_node->ColumnCount());
+  dict->SetInteger("row_index", android_node->RowIndex());
+  dict->SetInteger("row_span", android_node->RowSpan());
+  dict->SetInteger("column_index", android_node->ColumnIndex());
+  dict->SetInteger("column_span", android_node->ColumnSpan());
+  dict->SetInteger("input_type", android_node->AndroidInputType());
+  dict->SetInteger("live_region_type", android_node->AndroidLiveRegionType());
+  dict->SetInteger("range_min", static_cast<int>(android_node->RangeMin()));
+  dict->SetInteger("range_max", static_cast<int>(android_node->RangeMax()));
+  dict->SetInteger("range_current_value",
+                   static_cast<int>(android_node->RangeCurrentValue()));
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(
