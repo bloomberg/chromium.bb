@@ -539,11 +539,6 @@ Call.prototype = {
         var attachments = replayableCall.attachments();
         if (attachments)
             this._attachments = TypeUtils.cloneObject(attachments);
-
-        var thisResource = Resource.forObject(replayObject);
-        if (thisResource)
-            thisResource.onCallReplayed(this);
-
         return this;
     }
 }
@@ -3906,12 +3901,14 @@ CallFormatter.register("WebGLRenderingContext", new WebGLCallFormatter(WebGLRend
  */
 function TraceLog()
 {
-    /** @type {!Array.<ReplayableCall>} */
+    /** @type {!Array.<!ReplayableCall>} */
     this._replayableCalls = [];
     /** @type {!Cache.<ReplayableResource>} */
     this._replayablesCache = new Cache();
     /** @type {!Object.<number, boolean>} */
     this._frameEndCallIndexes = {};
+    /** @type {!Object.<number, boolean>} */
+    this._resourcesCreatedInThisTraceLog = {};
 }
 
 TraceLog.prototype = {
@@ -3924,7 +3921,7 @@ TraceLog.prototype = {
     },
 
     /**
-     * @return {!Array.<ReplayableCall>}
+     * @return {!Array.<!ReplayableCall>}
      */
     replayableCalls: function()
     {
@@ -3941,6 +3938,15 @@ TraceLog.prototype = {
     },
 
     /**
+     * @param {number} resourceId
+     * @return {boolean}
+     */
+    createdInThisTraceLog: function(resourceId)
+    {
+        return !!this._resourcesCreatedInThisTraceLog[resourceId];
+    },
+
+    /**
      * @param {!Resource} resource
      */
     captureResource: function(resource)
@@ -3953,6 +3959,9 @@ TraceLog.prototype = {
      */
     addCall: function(call)
     {
+        var resource = Resource.forObject(call.result());
+        if (resource && !this._replayablesCache.has(resource.id()))
+            this._resourcesCreatedInThisTraceLog[resource.id()] = true;
         this._replayableCalls.push(call.toReplayable(this._replayablesCache));
     },
 
@@ -4020,16 +4029,8 @@ TraceLogPlayer.prototype = {
     },
 
     /**
-     * @return {Call}
-     */
-    step: function()
-    {
-        return this.stepTo(this._nextReplayStep);
-    },
-
-    /**
      * @param {number} stepNum
-     * @return {Call}
+     * @return {{replayTime:number, lastCall:(!Call)}}
      */
     stepTo: function(stepNum)
     {
@@ -4037,20 +4038,50 @@ TraceLogPlayer.prototype = {
         console.assert(stepNum >= 0);
         if (this._nextReplayStep > stepNum)
             this.reset();
-        // FIXME: Replay all the cached resources first to warm-up.
-        var lastCall = null;
+
+        // Replay the calls' arguments first to warm-up, before measuring the actual replay time.
+        this._replayCallArguments(stepNum);
+
         var replayableCalls = this._traceLog.replayableCalls();
-        while (this._nextReplayStep <= stepNum)
-            lastCall = replayableCalls[this._nextReplayStep++].replay(this._replayWorldCache);
-        return lastCall;
+        var replayedCalls = [];
+        replayedCalls.length = stepNum - this._nextReplayStep + 1;
+
+        var beforeTime = TypeUtils.now();
+        for (var i = 0; this._nextReplayStep <= stepNum; ++this._nextReplayStep, ++i)
+            replayedCalls[i] = replayableCalls[this._nextReplayStep].replay(this._replayWorldCache);
+        var replayTime = Math.max(0, TypeUtils.now() - beforeTime);
+
+        for (var i = 0, call; call = replayedCalls[i]; ++i)
+            call.resource().onCallReplayed(call);
+
+        return {
+            replayTime: replayTime,
+            lastCall: replayedCalls[replayedCalls.length - 1]
+        };
     },
 
     /**
-     * @return {Call}
+     * @param {number} stepNum
      */
-    replay: function()
+    _replayCallArguments: function(stepNum)
     {
-        return this.stepTo(this._traceLog.size() - 1);
+        /**
+         * @param {*} obj
+         */
+        function replayIfNotCreatedInThisTraceLog(obj)
+        {
+            if (!(obj instanceof ReplayableResource))
+                return;
+            var replayableResource = /** @type {!ReplayableResource} */ (obj);
+            if (!this._traceLog.createdInThisTraceLog(replayableResource.id()))
+                replayableResource.replay(this._replayWorldCache)
+        }
+        var replayableCalls = this._traceLog.replayableCalls();
+        for (var i = this._nextReplayStep; i <= stepNum; ++i) {
+            replayIfNotCreatedInThisTraceLog.call(this, replayableCalls[i].replayableResource());
+            replayIfNotCreatedInThisTraceLog.call(this, replayableCalls[i].result());
+            replayableCalls[i].args().forEach(replayIfNotCreatedInThisTraceLog.bind(this));
+        }
     }
 }
 
@@ -4334,14 +4365,10 @@ InjectedCanvasModule.prototype = {
         if (!traceLog)
             return "Error: Trace log with the given ID not found.";
         this._traceLogPlayers[traceLogId] = this._traceLogPlayers[traceLogId] || new TraceLogPlayer(traceLog);
-
         injectedScript.releaseObjectGroup(traceLogId);
 
-        var beforeTime = TypeUtils.now();
-        var lastCall = this._traceLogPlayers[traceLogId].stepTo(stepNo);
-        var replayTime = Math.max(0, TypeUtils.now() - beforeTime);
-
-        var resource = lastCall.resource();
+        var replayResult = this._traceLogPlayers[traceLogId].stepTo(stepNo);
+        var resource = replayResult.lastCall.resource();
         var dataURL = resource.toDataURL();
         if (!dataURL) {
             resource = resource.contextResource();
@@ -4349,7 +4376,7 @@ InjectedCanvasModule.prototype = {
         }
         return {
             resourceState: this._makeResourceState(resource.id(), traceLogId, resource, dataURL),
-            replayTime: replayTime
+            replayTime: replayResult.replayTime
         };
     },
 
