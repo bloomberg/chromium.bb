@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_MOVE_OPERATION_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_MOVE_OPERATION_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -55,11 +57,11 @@ class MoveOperation {
 
  private:
   // Part of Move(). Called after updating the local state.
-  void MoveAfterUpdateLocalState(const base::FilePath& src_file_path,
-                                 const base::FilePath& dest_file_path,
-                                 const FileOperationCallback& callback,
-                                 const std::string* local_id,
-                                 FileError error);
+  void MoveAfterUpdateLocalState(
+      const FileOperationCallback& callback,
+      const std::set<base::FilePath>* changed_directories,
+      const std::string* local_id,
+      FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

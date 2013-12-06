@@ -21,6 +21,7 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
                            const base::FilePath& src_path,
                            const base::FilePath& dest_path,
                            bool preserve_last_modified,
+                           std::set<base::FilePath>* changed_directories,
                            std::string* local_id) {
   ResourceEntry entry;
   FileError error = metadata->GetResourceEntryByPath(src_path, &entry);
@@ -58,7 +59,13 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   entry.set_title(new_title);
   entry.set_parent_local_id(parent_entry.local_id());
   entry.set_metadata_edit_state(ResourceEntry::DIRTY);
-  return metadata->RefreshEntry(entry);
+  error = metadata->RefreshEntry(entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  changed_directories->insert(src_path.DirName());
+  changed_directories->insert(dest_path.DirName());
+  return FILE_ERROR_OK;
 }
 
 }  // namespace
@@ -84,6 +91,7 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  std::set<base::FilePath>* changed_directories = new std::set<base::FilePath>;
   std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -93,26 +101,28 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
                  src_file_path,
                  dest_file_path,
                  preserve_last_modified,
+                 changed_directories,
                  local_id),
       base::Bind(&MoveOperation::MoveAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
-                 src_file_path,
-                 dest_file_path,
                  callback,
+                 base::Owned(changed_directories),
                  base::Owned(local_id)));
 }
 
 void MoveOperation::MoveAfterUpdateLocalState(
-    const base::FilePath& src_file_path,
-    const base::FilePath& dest_file_path,
     const FileOperationCallback& callback,
+    const std::set<base::FilePath>* changed_directories,
     const std::string* local_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error == FILE_ERROR_OK) {
     // Notify the change of directory.
-    observer_->OnDirectoryChangedByOperation(src_file_path.DirName());
-    observer_->OnDirectoryChangedByOperation(dest_file_path.DirName());
+    for (std::set<base::FilePath>::const_iterator it =
+             changed_directories->begin();
+         it != changed_directories->end(); ++it)
+      observer_->OnDirectoryChangedByOperation(*it);
+
     observer_->OnEntryUpdatedByOperation(*local_id);
   }
   callback.Run(error);
