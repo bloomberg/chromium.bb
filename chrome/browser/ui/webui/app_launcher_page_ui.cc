@@ -37,8 +37,6 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_APP_LAUNCHER_TAB_TITLE));
 
-#if !defined(OS_ANDROID)
-  // Android uses native UI for sync setup.
   if (NTPLoginHandler::ShouldShow(GetProfile()))
     web_ui->AddMessageHandler(new NTPLoginHandler());
 
@@ -50,7 +48,6 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new CoreAppLauncherHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
   }
-#endif
 
 #if defined(ENABLE_THEMES)
   // The theme handler can require some CPU, so do it after hooking up the most

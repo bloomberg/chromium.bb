@@ -3107,6 +3107,8 @@
             'browser/ui/unload_controller.cc',
             'browser/ui/website_settings/permission_menu_model.cc',
             'browser/ui/website_settings/website_settings_utils.cc',
+            'browser/ui/webui/app_launcher_page_ui.cc',
+            'browser/ui/webui/app_launcher_page_ui.h',
             'browser/ui/webui/certificate_viewer_ui.cc',
             'browser/ui/webui/chrome_web_contents_handler.cc',
             'browser/ui/webui/ntp/app_resource_cache_factory.cc',
