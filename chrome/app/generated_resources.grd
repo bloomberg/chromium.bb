@@ -11964,9 +11964,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION_DESCRIPTION" desc="Description of the about:flag option to enable the webstore integration feature in Files app.">
         Enables the webstore integration feature in Files.app.
       </message>
-      <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
-        Files
-      </message>
       <message name="IDS_FILE_BROWSER_ARCHIVE_DIRECTORY_LABEL" desc="/archive directory label.">
         Archives
       </message>
@@ -12143,9 +12140,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_DELETE" desc="In the Gallery, the title on the button that deletes selected images.">
         Delete
       </message>
-      <message name="IDS_FILE_BROWSER_SEND_TO_DRIVE" desc="Title of the action for copying file to Drive.">
-        Send to Google Drive
-      </message>
 
       <message name="IDS_FILE_BROWSER_GALLERY_EDIT" desc="In the Gallery, the title on the button shows/hides editing buttons.">
         Edit
@@ -12233,101 +12227,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_AUDIO_OFFLINE" desc="In the Audio Player, message informing that the audio file could not be played in the offline mode.">
         This file is not available offline.
-      </message>
-
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_OPENING_METHOD" desc="In the action choice dialog, header with a question about an action to choose.">
-        How would you like to handle photos and videos?
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_PHOTOS_DRIVE" desc="In the action choice dialog, label of action to import photos to Drive.">
-        Save to Google Drive
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_DRIVE_NOT_REACHED" desc="In the action choice dialog, message informing that Drive is unreachable.">
-        Google Drive could not be reached
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_VIEW_FILES" desc="In the action choice dialog, label of action to view all files.">
-        View with the Files app
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_WATCH_SINGLE_VIDEO" desc="In the action choice dialog, label of action to watch a single video.">
-        Watch <ph name="VIDEO_NAME">$1<ex>Best movie</ex></ph>
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_ONCE" desc="In the action choice dialog, label of the button performing the selected action just once, without remembering.">
-        Just once
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_ALWAYS" desc="In the action choice dialog, label of the button performing the selected action with remembering the choice for the future.">
-        Always
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_COUNTER_NO_MEDIA" desc="In the action choice dialog, text with number of files.">
-        <ph name="FILES_COUNT">$1<ex>123</ex></ph> files
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_COUNTER" desc="In the action choice dialog, text with number of files and photos.">
-        <ph name="PHOTOS_COUNT">$1<ex>85</ex></ph> photos
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_LOADING_USB" desc="In the action choice dialog, label informing about loading the usb device.">
-        Checking your USB drive...
-      </message>
-      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_LOADING_SD" desc="In the action choice dialog, label informing about loading the sd device.">
-        Checking your SD card...
-      </message>
-
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_TITLE" desc="In the Photo import, the window title.">
-        Import media
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_BUTTON" desc="In the Photo import, label of import button.">
-        Import
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_CANCEL_BUTTON" desc="In the Photo import, label of cancel button.">
-        Cancel
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DRIVE_ERROR" desc="In the Photo import, error message when drive is unaccessible.">
-        Google Drive cannot be reached. Please try again.
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DESTINATION_ERROR" desc="In the Photo import, error when it is impossible to create a destination directory.">
-        Unable to create the destination directory.
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SOURCE_ERROR" desc="In the Photo import, error message inidcating that photos cannot be read.">
-        Cannot read the photos.
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_UNKNOWN_DATE" desc="In the Photo import, label of group for photos with unknown date.">
-        Unknown date
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_NEW_ALBUM_NAME" desc="In the Photo import, default name for new album.">
-        New Album
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_ALBUM_CAPTION" desc="In the Photo import, caption of select album dialog.">
-        Where to import this photo?
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_ALBUM_CAPTION_PLURAL" desc="In the Photo import, caption of select album dialog (plural).">
-        Where to import these $1 photos?
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING_ERROR" desc="In the Photo import, importing error message.">
-        Cannot import. An error occured.
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING" desc="In the Photo import, text informing that import is running.">
-        Importing to Drive...
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_COMPLETE" desc="In the Photo import, text informing that import is done.">
-        Import complete
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_CAPTION" desc="In the Photo import, caption inside the dialog, with items 'All' and 'None' to select everything and nothing.">
-        Select photos to import
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_ONE_SELECTED" desc="In the Photo import, message informing about one photo selected.">
-        1 selected
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MANY_SELECTED" desc="In the Photo import, message informing about multiple photos selected.">
-        <ph name="COUNT">$1<ex>42</ex></ph> selected
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_ALL" desc="In the Photo import, link to select all photos.">
-        Select all
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_NONE" desc="In the Photo import, link to select no photos.">
-        Select none
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DELETE_AFTER" desc="In the Photo import, label of checkbox to remove files after import is done.">
-        Delete photos after import
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME" desc="Directory name for storing photos.">
-        My Photos
       </message>
 
       <message name="IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME" desc="The name of the direcotry which stores files recovered from Google Drive directory when the locally stored Google Drive data is found to be broken.">
@@ -12470,9 +12369,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="COUNT">$1<ex>10</ex></ph> errors.
       </message>
 
-      <message name="IDS_FILE_BROWSER_UNDO_DELETE" desc="Text on the button to undo the delete operation.">
-        Undo
-      </message>
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
         Cancel
       </message>
@@ -12610,9 +12506,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_DRIVE_LEARN_MORE" desc="In the Loading Google Drive page and in the Welcome to Google Drive banner, a text on the Learn More link.">
         Learn more
-      </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_RETRY" desc="Button label for Google Drive content load retry.">
-        Retry
       </message>
       <message name="IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available to save the selected file offline.">
         To save "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>" offline you must free up an additional <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph> of space:<ph name="MARKUP_1">&lt;br&gt;<ex>&lt;br&gt;</ex></ph>
@@ -12780,12 +12673,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_FILES_HTML" desc="In the File Manager, the message informing the user that the search did not match any files or directories.">
         No items match &lt;b&gt;"<ph name="SEARCH_STRING">$1<ex>abc</ex></ph>"&lt;/b&gt;
-      </message>
-      <message name="IDS_FILE_BROWSER_SEARCH_EXPAND" desc="In the File Manager, the text on the link to expand search when no matching files were found.">
-        Search all <ph name="DRIVE_NAME">$1<ex>Downloads</ex></ph>
-      </message>
-      <message name="IDS_FILE_BROWSER_SEARCH_SPINNER" desc="In the File Manager, the text is shown near the spinner while waiting for the results of a search.">
-        Searching...
       </message>
 
       <message name="IDS_FILE_BROWSER_CHANGE_DEFAULT_MENU_ITEM" desc="In the File Manager, the text in the menu item to change the default action for a particular file type.">

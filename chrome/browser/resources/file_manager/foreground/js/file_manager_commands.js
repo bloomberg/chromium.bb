@@ -425,34 +425,6 @@ CommandHandler.COMMANDS_['format'] = {
 };
 
 /**
- * Imports photos from external drive.
- * @type {Command}
- */
-CommandHandler.COMMANDS_['import-photos'] = {
-  /**
-   * @param {Event} event Command event.
-   * @param {NavigationList} navigationList Target navigation list.
-   */
-  execute: function(event, fileManager) {
-    var navigationList = fileManager.navigationList;
-    var root = CommandUtil.getCommandEntry(navigationList);
-    if (!root)
-      return;
-
-    // TODO(mtomasz): Implement launching Photo Importer.
-  },
-  /**
-   * @param {Event} event Command event.
-   * @param {NavigationList} navigationList Target navigation list.
-   */
-  canExecute: function(event, fileManager) {
-    var navigationList = fileManager.navigationList;
-    var rootType = CommandUtil.getCommandRootType(navigationList);
-    event.canExecute = (rootType != RootType.DRIVE);
-  }
-};
-
-/**
  * Initiates new folder creation.
  * @type {Command}
  */
