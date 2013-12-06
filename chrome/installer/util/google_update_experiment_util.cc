@@ -11,6 +11,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 
+namespace google_update {
+
+#if defined(OS_WIN)
+const wchar_t kExperimentLabels[] = L"experiment_labels";
+#endif
+
+const char kExperimentLabelSep[] = ";";
+
+}  // namespace google_update
+
 namespace installer {
 
 namespace {

@@ -8,6 +8,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -43,7 +44,9 @@ bool SetExperimentLabel(const wchar_t* brand_code,
   // Split the original labels by the label separator.
   std::vector<string16> entries;
   base::SplitStringUsingSubstr(
-      original_labels, google_update::kExperimentLabelSep, &entries);
+      original_labels,
+      ASCIIToUTF16(google_update::kExperimentLabelSep),
+      &entries);
 
   // Keep all labels, but the one we want to add/replace.
   string16 new_labels;
@@ -51,7 +54,7 @@ bool SetExperimentLabel(const wchar_t* brand_code,
        it != entries.end(); ++it) {
     if (!it->empty() && !StartsWith(*it, label + L"=", true)) {
       new_labels += *it;
-      new_labels += google_update::kExperimentLabelSep;
+      new_labels += ASCIIToUTF16(google_update::kExperimentLabelSep);
     }
   }
 

@@ -11,6 +11,20 @@ namespace base {
 class Time;
 }
 
+namespace google_update {
+
+#if defined(OS_WIN)
+// The name of the value where Google Update reads the list of experiments for
+// itself and Chrome.
+extern const wchar_t kExperimentLabels[];
+#endif
+
+// The separator used to separate items in kExperimentLabels.  This is a UTF-8
+// string because it is used on platforms other than Windows.
+extern const char kExperimentLabelSep[];
+
+}  // namespace google_update
+
 namespace installer {
 
 // Constructs a date string in the format understood by Google Update for the

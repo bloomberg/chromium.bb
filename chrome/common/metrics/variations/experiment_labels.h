@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_VARIATIONS_EXPERIMENT_LABELS_WIN_H_
-#define CHROME_COMMON_METRICS_VARIATIONS_EXPERIMENT_LABELS_WIN_H_
+#ifndef CHROME_COMMON_METRICS_VARIATIONS_EXPERIMENT_LABELS_H_
+#define CHROME_COMMON_METRICS_VARIATIONS_EXPERIMENT_LABELS_H_
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
@@ -30,4 +30,4 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels);
 
 }  // namespace chrome_variations
 
-#endif  // CHROME_COMMON_METRICS_VARIATIONS_EXPERIMENT_LABELS_WIN_H_
+#endif  // CHROME_COMMON_METRICS_VARIATIONS_EXPERIMENT_LABELS_H_
