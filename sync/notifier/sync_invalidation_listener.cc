@@ -31,19 +31,19 @@ SyncInvalidationListener::Delegate::~Delegate() {}
 
 SyncInvalidationListener::SyncInvalidationListener(
     scoped_ptr<notifier::PushClient> push_client)
-    : push_client_(push_client.get()),
-      sync_system_resources_(push_client.Pass(), this),
+    : push_client_channel_(push_client.Pass()),
+      sync_system_resources_(&push_client_channel_, this),
       delegate_(NULL),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
       push_client_state_(DEFAULT_INVALIDATION_ERROR),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
-  push_client_->AddObserver(this);
+  push_client_channel_.AddObserver(this);
 }
 
 SyncInvalidationListener::~SyncInvalidationListener() {
   DCHECK(CalledOnValidThread());
-  push_client_->RemoveObserver(this);
+  push_client_channel_.RemoveObserver(this);
   Stop();
   DCHECK(!delegate_);
 }
@@ -94,7 +94,7 @@ void SyncInvalidationListener::Start(
 void SyncInvalidationListener::UpdateCredentials(
     const std::string& email, const std::string& token) {
   DCHECK(CalledOnValidThread());
-  sync_system_resources_.network()->UpdateCredentials(email, token);
+  push_client_channel_.UpdateCredentials(email, token);
 }
 
 void SyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {
@@ -410,23 +410,11 @@ WeakHandle<AckHandler> SyncInvalidationListener::GetThisAsAckHandler() {
   return WeakHandle<AckHandler>(weak_ptr_factory_.GetWeakPtr());
 }
 
-void SyncInvalidationListener::OnNotificationsEnabled() {
+void SyncInvalidationListener::OnNetworkChannelStateChanged(
+    InvalidatorState invalidator_state) {
   DCHECK(CalledOnValidThread());
-  push_client_state_ = INVALIDATIONS_ENABLED;
+  push_client_state_ = invalidator_state;
   EmitStateChange();
-}
-
-void SyncInvalidationListener::OnNotificationsDisabled(
-    notifier::NotificationsDisabledReason reason) {
-  DCHECK(CalledOnValidThread());
-  push_client_state_ = FromNotifierReason(reason);
-  EmitStateChange();
-}
-
-void SyncInvalidationListener::OnIncomingNotification(
-    const notifier::Notification& notification) {
-  DCHECK(CalledOnValidThread());
-  // Do nothing, since this is already handled by |invalidation_client_|.
 }
 
 }  // namespace syncer

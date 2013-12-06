@@ -17,12 +17,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
-#include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/ack_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator_state.h"
+#include "sync/notifier/push_client_channel.h"
 #include "sync/notifier/state_writer.h"
 #include "sync/notifier/sync_system_resources.h"
 #include "sync/notifier/unacked_invalidation_set.h"
@@ -45,7 +45,7 @@ class RegistrationManager;
 class SYNC_EXPORT_PRIVATE SyncInvalidationListener
     : public NON_EXPORTED_BASE(invalidation::InvalidationListener),
       public StateWriter,
-      public NON_EXPORTED_BASE(notifier::PushClientObserver),
+      public SyncNetworkChannel::Observer,
       public AckHandler,
       public base::NonThreadSafe {
  public:
@@ -131,12 +131,9 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
   // StateWriter implementation.
   virtual void WriteState(const std::string& state) OVERRIDE;
 
-  // notifier::PushClientObserver implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      notifier::NotificationsDisabledReason reason) OVERRIDE;
-  virtual void OnIncomingNotification(
-      const notifier::Notification& notification) OVERRIDE;
+  // SyncNetworkChannel::Observer implementation.
+  virtual void OnNetworkChannelStateChanged(
+      InvalidatorState invalidator_state) OVERRIDE;
 
   void DoRegistrationUpdate();
 
@@ -170,8 +167,7 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
 
   WeakHandle<AckHandler> GetThisAsAckHandler();
 
-  // Owned by |sync_system_resources_|.
-  notifier::PushClient* const push_client_;
+  PushClientChannel push_client_channel_;
   SyncSystemResources sync_system_resources_;
   UnackedInvalidationsMap unacked_invalidations_map_;
   WeakHandle<InvalidationStateTracker> invalidation_state_tracker_;

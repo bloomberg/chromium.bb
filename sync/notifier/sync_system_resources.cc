@@ -14,9 +14,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "google/cacheinvalidation/client_gateway.pb.h"
 #include "google/cacheinvalidation/deps/callback.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
@@ -128,6 +128,134 @@ void SyncInvalidationScheduler::RunPostedTask(invalidation::Closure* task) {
   delete task;
 }
 
+SyncNetworkChannel::SyncNetworkChannel()
+    : invalidator_state_(DEFAULT_INVALIDATION_ERROR),
+      scheduling_hash_(0) {
+}
+
+SyncNetworkChannel::~SyncNetworkChannel() {
+  STLDeleteElements(&network_status_receivers_);
+}
+
+void SyncNetworkChannel::SendMessage(const std::string& outgoing_message) {
+  std::string encoded_message;
+  EncodeMessage(&encoded_message, outgoing_message, service_context_,
+      scheduling_hash_);
+  SendEncodedMessage(encoded_message);
+}
+
+void SyncNetworkChannel::SetMessageReceiver(
+    invalidation::MessageCallback* incoming_receiver) {
+  incoming_receiver_.reset(incoming_receiver);
+}
+
+void SyncNetworkChannel::AddNetworkStatusReceiver(
+    invalidation::NetworkStatusCallback* network_status_receiver) {
+  network_status_receiver->Run(invalidator_state_ == INVALIDATIONS_ENABLED);
+  network_status_receivers_.push_back(network_status_receiver);
+}
+
+void SyncNetworkChannel::SetSystemResources(
+    invalidation::SystemResources* resources) {
+  // Do nothing.
+}
+
+void SyncNetworkChannel::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SyncNetworkChannel::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+const std::string& SyncNetworkChannel::GetServiceContextForTest() const {
+  return service_context_;
+}
+
+int64 SyncNetworkChannel::GetSchedulingHashForTest() const {
+  return scheduling_hash_;
+}
+
+std::string SyncNetworkChannel::EncodeMessageForTest(
+    const std::string& message, const std::string& service_context,
+    int64 scheduling_hash) {
+  std::string encoded_message;
+  EncodeMessage(&encoded_message, message, service_context, scheduling_hash);
+  return encoded_message;
+}
+
+bool SyncNetworkChannel::DecodeMessageForTest(
+    const std::string& data,
+    std::string* message,
+    std::string* service_context,
+    int64* scheduling_hash) {
+  return DecodeMessage(data, message, service_context, scheduling_hash);
+}
+
+void SyncNetworkChannel::NotifyStateChange(InvalidatorState invalidator_state) {
+  // Remember state for future NetworkStatusReceivers.
+  invalidator_state_ = invalidator_state;
+  // Notify NetworkStatusReceivers in cacheinvalidation.
+  for (NetworkStatusReceiverList::const_iterator it =
+           network_status_receivers_.begin();
+       it != network_status_receivers_.end(); ++it) {
+    (*it)->Run(invalidator_state_ == INVALIDATIONS_ENABLED);
+  }
+  // Notify observers.
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnNetworkChannelStateChanged(invalidator_state_));
+}
+
+void SyncNetworkChannel::DeliverIncomingMessage(const std::string& data) {
+  if (!incoming_receiver_) {
+    DLOG(ERROR) << "No receiver for incoming notification";
+    return;
+  }
+  std::string message;
+  if (!DecodeMessage(data,
+                     &message, &service_context_, &scheduling_hash_)) {
+    DLOG(ERROR) << "Could not parse ClientGatewayMessage";
+    return;
+  }
+  incoming_receiver_->Run(message);
+}
+
+void SyncNetworkChannel::EncodeMessage(
+    std::string* encoded_message,
+    const std::string& message,
+    const std::string& service_context,
+    int64 scheduling_hash) {
+  ipc::invalidation::ClientGatewayMessage envelope;
+  envelope.set_is_client_to_server(true);
+  if (!service_context.empty()) {
+    envelope.set_service_context(service_context);
+    envelope.set_rpc_scheduling_hash(scheduling_hash);
+  }
+  envelope.set_network_message(message);
+  envelope.SerializeToString(encoded_message);
+}
+
+
+bool SyncNetworkChannel::DecodeMessage(
+    const std::string& data,
+    std::string* message,
+    std::string* service_context,
+    int64* scheduling_hash) {
+  ipc::invalidation::ClientGatewayMessage envelope;
+  if (!envelope.ParseFromString(data)) {
+    return false;
+  }
+  *message = envelope.network_message();
+  if (envelope.has_service_context()) {
+    *service_context = envelope.service_context();
+  }
+  if (envelope.has_rpc_scheduling_hash()) {
+    *scheduling_hash = envelope.rpc_scheduling_hash();
+  }
+  return true;
+}
+
+
 SyncStorage::SyncStorage(StateWriter* state_writer,
                          invalidation::Scheduler* scheduler)
     : state_writer_(state_writer),
@@ -195,14 +323,14 @@ void SyncStorage::RunAndDeleteReadKeyCallback(
 }
 
 SyncSystemResources::SyncSystemResources(
-    scoped_ptr<notifier::PushClient> push_client,
+    SyncNetworkChannel* sync_network_channel,
     StateWriter* state_writer)
     : is_started_(false),
       logger_(new SyncLogger()),
       internal_scheduler_(new SyncInvalidationScheduler()),
       listener_scheduler_(new SyncInvalidationScheduler()),
       storage_(new SyncStorage(state_writer, internal_scheduler_.get())),
-      push_client_channel_(push_client.Pass()) {
+      sync_network_channel_(sync_network_channel) {
 }
 
 SyncSystemResources::~SyncSystemResources() {
@@ -240,8 +368,8 @@ SyncStorage* SyncSystemResources::storage() {
   return storage_.get();
 }
 
-PushClientChannel* SyncSystemResources::network() {
-  return &push_client_channel_;
+SyncNetworkChannel* SyncSystemResources::network() {
+  return sync_network_channel_;
 }
 
 SyncInvalidationScheduler* SyncSystemResources::internal_scheduler() {
