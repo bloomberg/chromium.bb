@@ -973,8 +973,8 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 
   // Swap another frame, with a different surface id.
   EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
-  view_->OnSwapCompositorFrame(
-      3, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  view_->OnSwapCompositorFrame(3,
+                               MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
 
@@ -1078,6 +1078,37 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     views[i]->Destroy();
     delete hosts[i];
   }
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size(100, 100);
+
+  view_->InitAsChild(NULL);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_rect.size());
+  view_->WasShown();
+
+  // With a 1x DPI UI and 1x DPI Renderer.
+  view_->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
+
+  // Save the frame provider.
+  scoped_refptr<cc::DelegatedFrameProvider> frame_provider =
+      view_->frame_provider_;
+
+  // This frame will have the same number of physical pixels, but has a new
+  // scale on it.
+  view_->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(2.f, frame_size, gfx::Rect(frame_size)));
+
+  // When we get a new frame with the same frame size in physical pixels, but a
+  // different scale, we should generate a new frame provider, as the final
+  // result will need to be scaled differently to the screen.
+  EXPECT_NE(frame_provider.get(), view_->frame_provider_.get());
 }
 
 }  // namespace content

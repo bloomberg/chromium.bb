@@ -1423,7 +1423,13 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
       resource_collection_ = new cc::DelegatedFrameResourceCollection;
       resource_collection_->SetClient(this);
     }
-    if (!frame_provider_.get() || frame_size != frame_provider_->frame_size()) {
+    // If the physical frame size changes, we need a new |frame_provider_|. If
+    // the physical frame size is the same, but the size in DIP changed, we
+    // need to adjust the scale at which the frames will be drawn, and we do
+    // this by making a new |frame_provider_| also to ensure the scale change
+    // is presented in sync with the new frame content.
+    if (!frame_provider_.get() || frame_size != frame_provider_->frame_size() ||
+        frame_size_in_dip != current_frame_size_) {
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
       window_->layer()->SetShowDelegatedContent(frame_provider_.get(),
