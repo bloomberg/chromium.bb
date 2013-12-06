@@ -1355,6 +1355,7 @@ internal_paladin.add_config('fox_wtm2-paladin',
   boards=['fox_wtm2'],
   paladin_builder_name='fox_wtm2 paladin',
   vm_tests=None,
+  important=False,
 )
 
 internal_paladin.add_config('leon-paladin',
