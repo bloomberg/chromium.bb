@@ -42,8 +42,6 @@ InputMethodFactory* InputMethodFactory::GetInstance() {
 
 // static
 void InputMethodFactory::SetInstance(InputMethodFactory* instance) {
-  CHECK(!g_input_method_factory);
-
   g_input_method_factory = instance;
 }
 

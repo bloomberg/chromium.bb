@@ -87,6 +87,7 @@ void ShutdownInputMethodForTesting() {
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_was_initialized = false;
   }
+  ui::InputMethodFactory::SetInstance(NULL);
 #elif defined(USE_AURA) && defined(USE_X11)
   const LinuxInputMethodContextFactory* factory =
       LinuxInputMethodContextFactory::instance();
