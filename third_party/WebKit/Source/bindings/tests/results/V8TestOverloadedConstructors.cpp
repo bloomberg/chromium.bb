@@ -79,7 +79,6 @@ template <typename T> void V8_USE(T) { }
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TRYCATCH_VOID(ArrayBuffer*, arrayBuffer, info[0]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0);
-
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(arrayBuffer);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
@@ -90,7 +89,6 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TRYCATCH_VOID(ArrayBufferView*, arrayBufferView, info[0]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(info[0])) : 0);
-
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(arrayBufferView);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
@@ -101,7 +99,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TRYCATCH_VOID(Blob*, blob, V8Blob::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Blob::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
-
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(blob);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
@@ -112,7 +109,6 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, string, info[0]);
-
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(string);
     v8::Handle<v8::Object> wrapper = info.Holder();
 

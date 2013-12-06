@@ -2771,12 +2771,10 @@ END
     if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
         if ($interface->extendedAttributes->{"ConstructorCallWith"} eq "ExecutionContext") {
             push(@beforeArgumentList, "context");
-            $code .= "\n";
-            $code .= "    ExecutionContext* context = getExecutionContext();";
+            $code .= "    ExecutionContext* context = getExecutionContext();\n";
         } elsif ($interface->extendedAttributes->{"ConstructorCallWith"} eq "Document") {
             push(@beforeArgumentList, "document");
-            $code .= "\n";
-            $code .= "    Document& document = *toDocument(getExecutionContext());";
+            $code .= "    Document& document = *toDocument(getExecutionContext());\n";
         }
     }
 
@@ -2797,7 +2795,6 @@ END
     }
 
     my $argumentString = join(", ", @beforeArgumentList, @argumentList, @afterArgumentList);
-    $code .= "\n";
     $code .= "    RefPtr<${implClassName}> impl = ${implClassName}::create(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 

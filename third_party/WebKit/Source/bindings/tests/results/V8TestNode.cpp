@@ -132,7 +132,6 @@ static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-
     RefPtr<TestNode> impl = TestNode::create();
     v8::Handle<v8::Object> wrapper = info.Holder();
 

@@ -64,6 +64,9 @@ public:
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endfilter %}
     {% endfor %}
+    {% if has_constructor %}
+    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    {% endif %}
     {% for attribute in attributes %}
     {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}
     {% filter conditional(attribute.conditional_string) %}

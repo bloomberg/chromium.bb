@@ -114,8 +114,11 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {% endfor %}
 {% block origin_safe_method_setter %}{% endblock %}
+{# Constructors #}
+{% block constructor %}{% endblock %}
 } // namespace {{cpp_class}}V8Internal
 
+{% block constructor_callback %}{% endblock %}
 {% block visit_dom_wrapper %}{% endblock %}
 {% block class_attributes %}{% endblock %}
 {% block class_accessors %}{% endblock %}

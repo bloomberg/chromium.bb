@@ -129,6 +129,46 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 
 
 {##############################################################################}
+{% block constructor %}
+{% if has_constructor %}
+{# FIXME: support overloading #}
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    {# FIXME: support arguments #}
+    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create();
+    v8::Handle<v8::Object> wrapper = info.Holder();
+
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(info, wrapper);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block constructor_callback %}
+{% if has_constructor %}
+void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        return;
+    }
+
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+
+    {{cpp_class}}V8Internal::constructor(info);
+}
+
+{% endif %}
+{% endblock %}
+
+{##############################################################################}
 {% block visit_dom_wrapper %}
 {% if generate_visit_dom_wrapper_function %}
 void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
@@ -232,6 +272,11 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
     {% endfilter %}
 
     UNUSED_PARAM(defaultSignature);
+    {% if has_constructor %}
+    functionTemplate->SetCallHandler({{v8_class}}::constructorCallback);
+    {# FIXME: compute length #}
+    functionTemplate->SetLength(0);
+    {% endif %}
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     UNUSED_PARAM(instanceTemplate);

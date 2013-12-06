@@ -74,7 +74,6 @@ template <typename T> void V8_USE(T) { }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create();
     v8::Handle<v8::Object> wrapper = info.Holder();
 

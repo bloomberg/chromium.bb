@@ -72,6 +72,11 @@ def generate_interface(interface):
         includes.update(['bindings/v8/BindingSecurity.h',
                          'bindings/v8/ExceptionState.h'])
 
+    # [Constructor]
+    has_constructor = 'Constructor' in extended_attributes
+    if has_constructor:
+        includes.add('bindings/v8/V8ObjectConstructor.h')
+
     # [GenerateVisitDOMWrapper]
     generate_visit_dom_wrapper_function = extended_attributes.get('GenerateVisitDOMWrapper')
     if generate_visit_dom_wrapper_function:
@@ -90,6 +95,7 @@ def generate_interface(interface):
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
+        'has_constructor': has_constructor,
         'has_custom_legacy_call': 'CustomLegacyCall' in extended_attributes,  # [CustomLegacyCall]
         'has_custom_to_v8': 'CustomToV8' in extended_attributes,  # [CustomToV8]
         'has_custom_wrap': 'CustomWrap' in extended_attributes,  # [CustomWrap]
