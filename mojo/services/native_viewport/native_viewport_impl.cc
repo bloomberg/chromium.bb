@@ -47,7 +47,29 @@ void NativeViewportImpl::CreateGLES2ContextIfNeeded() {
   gles2_->CreateContext(widget_, native_viewport_->GetSize());
 }
 
-bool NativeViewportImpl::OnEvent(ui::Event* event) {
+bool NativeViewportImpl::OnEvent(ui::Event* ui_event) {
+  AllocationScope scope;
+
+  Event::Builder event;
+  event.set_action(ui_event->type());
+  event.set_time_stamp(ui_event->time_stamp().ToInternalValue());
+
+  if (ui_event->IsMouseEvent() || ui_event->IsTouchEvent()) {
+    ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(ui_event);
+    Point::Builder location;
+    location.set_x(located_event->location().x());
+    location.set_y(located_event->location().y());
+    event.set_location(location.Finish());
+  }
+
+  if (ui_event->IsTouchEvent()) {
+    ui::TouchEvent* touch_event = static_cast<ui::TouchEvent*>(ui_event);
+    TouchData::Builder touch_data;
+    touch_data.set_pointer_id(touch_event->touch_id());
+    event.set_touch_data(touch_data.Finish());
+  }
+
+  client_->HandleEvent(event.Finish());
   return false;
 }
 

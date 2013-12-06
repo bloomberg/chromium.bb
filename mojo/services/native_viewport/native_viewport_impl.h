@@ -37,7 +37,7 @@ class NativeViewportImpl : public NativeViewportStub,
   virtual void OnResized(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedWidgetAvailable(
       gfx::AcceleratedWidget widget) OVERRIDE;
-  virtual bool OnEvent(ui::Event* event) OVERRIDE;
+  virtual bool OnEvent(ui::Event* ui_event) OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
 
   void CreateGLES2ContextIfNeeded();

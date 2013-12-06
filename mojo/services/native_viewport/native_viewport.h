@@ -26,7 +26,7 @@ class NativeViewportDelegate {
 
   virtual void OnResized(const gfx::Size& size) = 0;
   virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
-  virtual bool OnEvent(ui::Event* event) = 0;
+  virtual bool OnEvent(ui::Event* ui_event) = 0;
   virtual void OnDestroyed() = 0;
 };
 

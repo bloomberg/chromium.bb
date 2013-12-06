@@ -4,6 +4,22 @@
 
 module mojo {
 
+struct Point {
+  float x;
+  float y;
+};
+
+struct TouchData {
+  int32 pointer_id;
+};
+
+struct Event {
+  int32 action;
+  int64 time_stamp;
+  Point location;
+  TouchData touch_data;
+};
+
 [Peer=NativeViewportClient]
 interface NativeViewport {
   void Open();
@@ -14,6 +30,7 @@ interface NativeViewport {
 [Peer=NativeViewport]
 interface NativeViewportClient {
   void DidOpen();
+  void HandleEvent(Event event);
 };
 
 }

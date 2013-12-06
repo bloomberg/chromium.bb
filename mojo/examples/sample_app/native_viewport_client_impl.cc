@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 
+#include "base/logging.h"
+
 namespace mojo {
 namespace examples {
 
@@ -30,6 +32,13 @@ void NativeViewportClientImpl::Open() {
 }
 
 void NativeViewportClientImpl::DidOpen() {
+}
+
+void NativeViewportClientImpl::HandleEvent(const Event& event) {
+  if (!event.location().is_null()) {
+    LOG(INFO) << "Located Event @"
+              << event.location().x() << "," << event.location().y();
+  }
 }
 
 }  // namespace examples
