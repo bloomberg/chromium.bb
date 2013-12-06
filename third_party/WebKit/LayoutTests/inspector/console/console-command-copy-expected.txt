@@ -1,4 +1,20 @@
 Tests that console's copy command is copying into front-end buffer.
 
 InspectorFrontendHost.copyText: qwerty
+InspectorFrontendHost.copyText: <p>
+    Tests that console's copy command is copying into front-end buffer.
+</p>
+InspectorFrontendHost.copyText: {
+  "foo": "bar"
+}
+InspectorFrontendHost.copyText: [object Object]
+InspectorFrontendHost.copyText: [object HTMLAllCollection]
+InspectorFrontendHost.copyText: NaN
+InspectorFrontendHost.copyText: Infinity
+InspectorFrontendHost.copyText: null
+InspectorFrontendHost.copyText: undefined
+InspectorFrontendHost.copyText: 1
+InspectorFrontendHost.copyText: true
+InspectorFrontendHost.copyText: false
+InspectorFrontendHost.copyText: null
 

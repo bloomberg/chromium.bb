@@ -6,13 +6,31 @@
 
 function test()
 {
-    InspectorTest.evaluateInConsole("copy('qwerty')");
-    InspectorFrontendHost.copyText = copyText;
+    var testCases = [
+        "copy('qwerty')",
+        "copy(document.querySelector('p'))",
+        "copy({foo:'bar'})",
+        "var a = {}; a.b = a; copy(a)",
+        "copy(document.all)",
+        "copy(NaN)",
+        "copy(Infinity)",
+        "copy(null)",
+        "copy(undefined)",
+        "copy(1)",
+        "copy(true)",
+        "copy(false)"
+    ];
 
     function copyText(text) {
         InspectorTest.addResult("InspectorFrontendHost.copyText: " + text);
-        InspectorTest.completeTest();
     }
+
+    InspectorFrontendHost.copyText = copyText;
+
+    for (var i = 0; i < testCases.length; ++i)
+        RuntimeAgent.evaluate(testCases[i], "", true);
+
+    RuntimeAgent.evaluate("copy(null)", "", true, InspectorTest.completeTest.bind(InspectorTest));
 }
 
 </script>

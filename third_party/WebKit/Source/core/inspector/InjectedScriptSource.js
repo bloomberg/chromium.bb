@@ -1383,9 +1383,19 @@ CommandLineAPIImpl.prototype = {
 
     copy: function(object)
     {
-        if (injectedScript._subtype(object) === "node")
-            object = object.outerHTML;
-        var string = toString(object);
+        var string;
+        if (injectedScript._subtype(object) === "node") {
+            string = object.outerHTML;
+        } else if (injectedScript.isPrimitiveValue(object)) {
+            string = toString(object);
+        } else {
+            try {
+                string = JSON.stringify(object, null, "  ");
+            } catch (e) {
+                string = toString(object);
+            }
+        }
+
         var hints = { copyToClipboard: true };
         var remoteObject = injectedScript._wrapObject(string, "")
         InjectedScriptHost.inspect(remoteObject, hints);
