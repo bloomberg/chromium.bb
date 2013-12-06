@@ -579,7 +579,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         m_client->postProgressStartedNotification();
 
     NavigationHistoryPolicy navigationHistoryPolicy = NavigationReusedHistoryEntry;
-    if (updateBackForwardList == UpdateBackForwardList || sameDocumentNavigationSource == SameDocumentNavigationPushState) {
+    if (updateBackForwardList == UpdateBackForwardList || (sameDocumentNavigationSource == SameDocumentNavigationPushState && m_currentItem)) {
         navigationHistoryPolicy = NavigationCreatedHistoryEntry;
         setHistoryItemStateForCommit(CreateNewHistoryItem);
     }

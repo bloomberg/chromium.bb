@@ -96,7 +96,7 @@ public:
     ~HistoryNode() { }
 
     HistoryNode* addChild(PassRefPtr<HistoryItem>);
-    PassOwnPtr<HistoryNode> cloneAndReplace(HistoryEntry*, HistoryItem* newItem, HistoryItem* oldItem, bool clipAtTarget, Frame*);
+    PassOwnPtr<HistoryNode> cloneAndReplace(HistoryEntry*, HistoryItem* newItem, bool clipAtTarget, Frame* targetFrame, Frame* currentFrame);
     HistoryItem* value() { return m_value.get(); }
     void updateValue(PassRefPtr<HistoryItem> item) { m_value = item; }
     const Vector<OwnPtr<HistoryNode> >& children() const { return m_children; }
@@ -112,7 +112,7 @@ private:
 class HistoryEntry {
 public:
     static PassOwnPtr<HistoryEntry> create(HistoryItem* root);
-    PassOwnPtr<HistoryEntry> cloneAndReplace(HistoryItem* newItem, HistoryItem* oldItem, bool clipAtTarget, Page*);
+    PassOwnPtr<HistoryEntry> cloneAndReplace(HistoryItem* newItem, bool clipAtTarget, Frame* targetFrame, Page*);
 
     HistoryNode* historyNodeForFrame(Frame*);
     HistoryItem* itemForFrame(Frame*);

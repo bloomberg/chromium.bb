@@ -51,18 +51,21 @@ HistoryNode* HistoryNode::addChild(PassRefPtr<HistoryItem> item)
     return m_children.last().get();
 }
 
-PassOwnPtr<HistoryNode> HistoryNode::cloneAndReplace(HistoryEntry* newEntry, HistoryItem* newItem, HistoryItem* oldItem, bool clipAtTarget, Frame* frame)
+PassOwnPtr<HistoryNode> HistoryNode::cloneAndReplace(HistoryEntry* newEntry, HistoryItem* newItem, bool clipAtTarget, Frame* targetFrame, Frame* currentFrame)
 {
-    bool isNodeBeingNavigated = m_value == oldItem;
+    bool isNodeBeingNavigated = targetFrame == currentFrame;
     HistoryItem* itemForCreate = isNodeBeingNavigated ? newItem : m_value.get();
     OwnPtr<HistoryNode> newHistoryNode = create(newEntry, itemForCreate);
 
     if (!clipAtTarget || !isNodeBeingNavigated) {
-        for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        for (Frame* child = currentFrame->tree().firstChild(); child; child = child->tree().nextSibling()) {
             HistoryNode* childHistoryNode = m_entry->m_framesToItems.get(child->frameID());
-            if (!childHistoryNode)
+            if (!childHistoryNode) {
+                if (targetFrame == child)
+                    newHistoryNode->m_children.append(create(newEntry, newItem));
                 continue;
-            newHistoryNode->m_children.append(childHistoryNode->cloneAndReplace(newEntry, newItem, oldItem, clipAtTarget, child));
+            }
+            newHistoryNode->m_children.append(childHistoryNode->cloneAndReplace(newEntry, newItem, clipAtTarget, targetFrame, child));
         }
     }
     return newHistoryNode.release();
@@ -89,10 +92,10 @@ PassOwnPtr<HistoryEntry> HistoryEntry::create(HistoryItem* root)
     return adoptPtr(new HistoryEntry(root));
 }
 
-PassOwnPtr<HistoryEntry> HistoryEntry::cloneAndReplace(HistoryItem* newItem, HistoryItem* oldItem, bool clipAtTarget, Page* page)
+PassOwnPtr<HistoryEntry> HistoryEntry::cloneAndReplace(HistoryItem* newItem, bool clipAtTarget, Frame* targetFrame, Page* page)
 {
     OwnPtr<HistoryEntry> newEntry = adoptPtr(new HistoryEntry());
-    newEntry->m_root = m_root->cloneAndReplace(newEntry.get(), newItem, oldItem, clipAtTarget, page->mainFrame());
+    newEntry->m_root = m_root->cloneAndReplace(newEntry.get(), newItem, clipAtTarget, targetFrame, page->mainFrame());
     return newEntry.release();
 }
 
@@ -136,6 +139,9 @@ void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry)
 
     m_provisionalEntry = targetEntry;
     recursiveGoToEntry(m_page->mainFrame());
+
+    if (m_sameDocumentLoadsInProgress.isEmpty() && m_differentDocumentLoadsInProgress.isEmpty())
+        m_sameDocumentLoadsInProgress.set(m_page->mainFrame(), m_provisionalEntry->root());
 
     if (m_differentDocumentLoadsInProgress.isEmpty()) {
         m_previousEntry = m_currentEntry.release();
@@ -285,7 +291,7 @@ void HistoryController::createNewBackForwardItem(Frame* targetFrame, HistoryItem
         if (!clipAtTarget && oldItem)
             newItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
         m_previousEntry = m_currentEntry.release();
-        m_currentEntry = m_previousEntry->cloneAndReplace(newItem.get(), oldItem, clipAtTarget, m_page);
+        m_currentEntry = m_previousEntry->cloneAndReplace(newItem.get(), clipAtTarget, targetFrame, m_page);
     }
 }
 
