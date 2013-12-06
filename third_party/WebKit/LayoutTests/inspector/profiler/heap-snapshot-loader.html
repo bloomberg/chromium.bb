@@ -22,7 +22,6 @@ function test()
         panel._reset();
 
         var profileType = panel.getProfileType("HEAP");
-        profileType.addProfile(profileType.createTemporaryProfile());
         profileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, snapshotLoaded, this);
         function snapshotLoaded(event)
         {
@@ -38,6 +37,9 @@ function test()
                 dispatcher.addHeapSnapshotChunk(uid, sourceStringified.slice(i, i + partSize));
             callback();
         }
+
+        profileType._profileBeingRecorded = new WebInspector.HeapProfileHeader(profileType, "Snapshotting");
+        profileType.addProfile(profileType._profileBeingRecorded);
 
         dispatcher.addProfileHeader({
             typeId: WebInspector.HeapSnapshotProfileType.TypeId,
