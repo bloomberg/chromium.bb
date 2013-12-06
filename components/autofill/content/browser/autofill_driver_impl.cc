@@ -61,7 +61,8 @@ AutofillDriverImpl::AutofillDriverImpl(
     : content::WebContentsObserver(web_contents),
       autofill_manager_(new AutofillManager(
           this, delegate, app_locale, enable_download_manager)),
-      autofill_external_delegate_(autofill_manager_.get(), this) {
+      autofill_external_delegate_(autofill_manager_.get(), this),
+      request_autocomplete_manager_(this) {
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }
 
@@ -210,8 +211,8 @@ bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(AutofillHostMsg_SetDataList, autofill_manager_.get(),
                         AutofillManager::OnSetDataList)
     IPC_MESSAGE_FORWARD(AutofillHostMsg_RequestAutocomplete,
-                        autofill_manager_.get(),
-                        AutofillManager::OnRequestAutocomplete)
+                        &request_autocomplete_manager_,
+                        RequestAutocompleteManager::OnRequestAutocomplete)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -238,6 +239,5 @@ void AutofillDriverImpl::NavigationEntryCommitted(
 void AutofillDriverImpl::WasHidden() {
   autofill_manager_->delegate()->HideAutofillPopup();
 }
-
 
 }  // namespace autofill

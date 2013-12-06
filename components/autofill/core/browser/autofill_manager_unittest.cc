@@ -50,7 +50,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
-#include "third_party/WebKit/public/web/WebFormElement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -513,12 +512,6 @@ class TestAutofillManager : public AutofillManager {
 
   void ClearFormStructures() {
     form_structures()->clear();
-  }
-
-  virtual void ReturnAutocompleteResult(
-      WebFormElement::AutocompleteResult result,
-      const FormData& form_data) OVERRIDE {
-    request_autocomplete_results_.push_back(std::make_pair(result, form_data));
   }
 
  private:
@@ -2895,18 +2888,6 @@ TEST_F(AutofillManagerTest, RemoveProfileVariant) {
   // update these expectations.
   // http://crbug.com/124211
   EXPECT_TRUE(autofill_manager_->GetProfileWithGUID(guid.c_str()));
-}
-
-TEST_F(AutofillManagerTest, DisabledAutofillDispatchesError) {
-  EXPECT_TRUE(autofill_manager_->request_autocomplete_results().empty());
-
-  autofill_manager_->set_autofill_enabled(false);
-  autofill_manager_->OnRequestAutocomplete(FormData(),
-                                           GURL());
-
-  EXPECT_EQ(1U, autofill_manager_->request_autocomplete_results().size());
-  EXPECT_EQ(WebFormElement::AutocompleteResultErrorDisabled,
-            autofill_manager_->request_autocomplete_results()[0].first);
 }
 
 namespace {

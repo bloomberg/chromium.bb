@@ -309,6 +309,8 @@
           'sources': [
             'autofill/content/browser/autofill_driver_impl.cc',
             'autofill/content/browser/autofill_driver_impl.h',
+            'autofill/content/browser/request_autocomplete_manager.cc',
+            'autofill/content/browser/request_autocomplete_manager.h',
             'autofill/content/browser/risk/fingerprint.cc',
             'autofill/content/browser/risk/fingerprint.h',
             'autofill/content/browser/wallet/form_field_error.cc',
