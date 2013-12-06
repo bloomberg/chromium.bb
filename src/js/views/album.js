@@ -56,6 +56,14 @@ camera.views.Album = function(context, router) {
    */
   this.lastPictureIndex_ = 0;
 
+  /**
+   * Detects whether scrolling is being performed or not.
+   * @type {camera.util.ScrollTracker}
+   * @private
+   */
+  this.scrollTracker_ = new camera.util.ScrollTracker(
+      this.scroller_, function() {}, this.onScrollEnded_.bind(this));
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -77,13 +85,29 @@ camera.views.Album.prototype = {
 camera.views.Album.prototype.onEnter = function() {
   this.onResize();
   this.updateButtons_();
+  this.scrollTracker_.start();
+};
+
+/**
+ * Leaves the view.
+ * @override
+ */
+camera.views.Album.prototype.onLeave = function() {
+  this.scrollTracker_.stop();
 };
 
 /**
  * @override
  */
 camera.views.Album.prototype.onActivate = function() {
-  document.querySelector('#album').focus();
+  camera.views.GalleryBase.prototype.onActivate.apply(this, arguments);
+  if (this.model.currentIndex === null && this.model.length)
+    this.model.currentIndex = this.model.length - 1;
+
+  // Update the focus. If scrolling, then it will be updated once scrolling
+  // is finished in onScrollEnd().
+  if (!this.scrollTracker_.scrolling && !this.scroller_.animating)
+    this.synchronizeFocus();
 };
 
 /**
@@ -132,6 +156,11 @@ camera.views.Album.prototype.onCurrentIndexChanged = function(
 
   // Update visibility of the album buttons.
   this.updateButtons_();
+
+  // Synchronize focus with the selected item immediately if not scrolling.
+  // Otherwise, synchronization will be invoked from onScrollEnd().
+  if (!this.scrollTracker_.scrolling && !this.scroller_.animating)
+    this.synchronizeFocus();
 };
 
 /**
@@ -176,8 +205,11 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
       return;
     case 'Enter':
       // Do not handle enter, if other elements (such as buttons) are focused.
-      if (document.activeElement != document.querySelector('#album'))
+      if (document.activeElement != document.body &&
+          !document.querySelector('#album .padder').contains(
+              document.activeElement)) {
         return;
+      }
       if (currentPicture)
         this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
       event.preventDefault();
@@ -189,12 +221,21 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
 };
 
 /**
+ * Handles end of scrolling.
+ * @private
+ */
+camera.views.Album.prototype.onScrollEnded_ = function() {
+  this.synchronizeFocus();
+};
+
+/**
  * @override
  */
 camera.views.Album.prototype.addPictureToDOM = function(picture) {
   var album = document.querySelector('#album .padder');
   var img = document.createElement('img');
   img.id = 'album-picture-' + (this.lastPictureIndex_++);
+  img.tabIndex = -1;
   img.setAttribute('aria-role', 'option');
   img.setAttribute('aria-selected', 'false');
   album.insertBefore(img, album.firstChild);
@@ -204,6 +245,9 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
 
   // Add handlers.
   img.addEventListener('click', function() {
+    this.model.currentIndex = this.model.pictures.indexOf(picture);
+  }.bind(this));
+  img.addEventListener('focus', function() {
     this.model.currentIndex = this.model.pictures.indexOf(picture);
   }.bind(this));
 
