@@ -41,22 +41,6 @@ int CountThreads() {
 
 namespace sandbox {
 
-bool IsAndroid() {
-#if defined(OS_ANDROID)
-  return true;
-#else
-  return false;
-#endif
-}
-
-bool IsArchitectureArm() {
-#if defined(ARCH_CPU_ARM_FAMILY)
-  return true;
-#else
-  return false;
-#endif
-}
-
 // TODO(jln): figure out why base/.../dynamic_annotations.h's
 // RunningOnValgrind() cannot link.
 bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }

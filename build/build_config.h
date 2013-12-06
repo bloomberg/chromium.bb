@@ -10,6 +10,9 @@
 //  Processor:
 //    ARCH_CPU_X86 / ARCH_CPU_X86_64 / ARCH_CPU_X86_FAMILY (X86 or X86_64)
 //    ARCH_CPU_32_BITS / ARCH_CPU_64_BITS
+//
+// If an #ifdef is not strictly necessary, please consider using
+// build/build_config_functions.h instead.
 
 #ifndef BUILD_BUILD_CONFIG_H_
 #define BUILD_BUILD_CONFIG_H_
