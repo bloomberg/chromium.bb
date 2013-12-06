@@ -86,7 +86,8 @@ void ColorChooserUIController::openColorChooser()
     WebViewClient* webViewClient = static_cast<WebViewImpl*>(m_chromeClient->webView())->client();
     if (!webViewClient)
         return;
-    m_chooser = adoptPtr(webViewClient->createColorChooser(this, static_cast<WebColor>(m_client->currentColor().rgb())));
+    m_chooser = adoptPtr(webViewClient->createColorChooser(
+        this, static_cast<WebColor>(m_client->currentColor().rgb()), m_client->suggestions()));
 }
 
 } // namespace blink
