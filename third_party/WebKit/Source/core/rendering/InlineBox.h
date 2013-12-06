@@ -424,6 +424,9 @@ inline void InlineBox::setHasBadParent()
 }
 #endif
 
+#define DEFINE_INLINE_BOX_TYPE_CASTS(typeName) \
+    DEFINE_TYPE_CASTS(typeName, InlineBox, box, box->is##typeName(), box.is##typeName())
+
 } // namespace WebCore
 
 #ifndef NDEBUG

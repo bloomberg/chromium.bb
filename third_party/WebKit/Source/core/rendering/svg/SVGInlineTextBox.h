@@ -88,11 +88,7 @@ private:
     Vector<SVGTextFragment> m_textFragments;
 };
 
-inline SVGInlineTextBox* toSVGInlineTextBox(InlineBox* box)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!box || box->isSVGInlineTextBox());
-    return static_cast<SVGInlineTextBox*>(box);
-}
+DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineTextBox);
 
 } // namespace WebCore
 
