@@ -73,22 +73,24 @@ class HttpListenSocket : public TCPListenSocket {
 //   return http_response.Pass();
 // }
 //
-// For a test that spawns another process such as browser_tests, you
-// need to stop the server's thread so that there is no no other
+// For a test that spawns another process such as browser_tests, it is
+// suggested to call InitializeAndWaitUntilReady in SetUpOnMainThread after
+// the process is spawned. If you have to do it before the process spawns,
+// you need to stop the server's thread so that there is no no other
 // threads running while spawning the process. To do so, please follow
 // the following example:
 //
 // void SetUp() {
-//   test_server_.reset(new EmbeddedTestServer());
+//   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 //   // EmbeddedTestServer spawns a thread to initialize socket.
 //   // Stop the thread in preparation for fork and exec.
-//   test_server_->StopThread();
+//   embedded_test_server()->StopThread();
 //   ...
 //   InProcessBrowserTest::SetUp();
 // }
 //
 // void SetUpOnMainThread() {
-//   test_server_->RestartThreadAndListen();
+//   embedded_test_server()->RestartThreadAndListen();
 // }
 //
 class EmbeddedTestServer : public StreamListenSocket::Delegate {

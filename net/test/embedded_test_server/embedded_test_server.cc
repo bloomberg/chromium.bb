@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -128,10 +129,29 @@ bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
 }
 
 void EmbeddedTestServer::StopThread() {
+  DCHECK(io_thread_ && io_thread_->IsRunning());
+
+#if defined(OS_LINUX)
+  const int thread_count =
+      base::GetNumberOfThreads(base::GetCurrentProcessHandle());
+#endif
+
   io_thread_->Stop();
   io_thread_.reset();
   thread_checker_.DetachFromThread();
   listen_socket_->DetachFromThread();
+
+#if defined(OS_LINUX)
+  // Busy loop to wait for thread count to decrease. This is needed because
+  // pthread_join does not guarantee that kernel stat is updated when it
+  // returns. Thus, GetNumberOfThreads does not immediately reflect the stopped
+  // thread and hits the thread number DCHECK in render_sandbox_host_linux.cc
+  // in browser_tests.
+  while (thread_count ==
+         base::GetNumberOfThreads(base::GetCurrentProcessHandle())) {
+    base::PlatformThread::YieldCurrentThread();
+  }
+#endif
 }
 
 void EmbeddedTestServer::RestartThreadAndListen() {
