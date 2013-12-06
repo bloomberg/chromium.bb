@@ -330,15 +330,8 @@ base::FilePath ProfileManager::GetInitialProfileDir() {
       // TODO(nkostylev): Remove this code completely once we eliminate
       // legacy --login-profile=user switch and enable multi-profiles on CrOS
       // by default. http://crbug.com/294628
-      std::string login_profile_value =
-          command_line.GetSwitchValueASCII(chromeos::switches::kLoginProfile);
-      if (login_profile_value == chrome::kLegacyProfileDir ||
-          login_profile_value == chrome::kTestUserProfileDir) {
-        profile_dir = base::FilePath(login_profile_value);
-      } else {
-        profile_dir = g_browser_process->platform_part()->profile_helper()->
-            GetUserProfileDir(login_profile_value);
-      }
+      profile_dir = chromeos::ProfileHelper::
+          GetProfileDirByLegacyLoginProfileSwitch();
     } else if (!command_line.HasSwitch(switches::kMultiProfiles)) {
       // We should never be logged in with no profile dir unless
       // multi-profiles are enabled.
@@ -370,8 +363,29 @@ Profile* ProfileManager::GetLastUsedProfile(
     const base::FilePath& user_data_dir) {
 #if defined(OS_CHROMEOS)
   // Use default login profile if user has not logged in yet.
-  if (!logged_in_)
+  if (!logged_in_) {
     return GetDefaultProfile(user_data_dir);
+  } else {
+    // CrOS multi-profiles implementation is different so GetLastUsedProfile
+    // has custom implementation too.
+    base::FilePath profile_dir;
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kMultiProfiles)) {
+      // In case of multi-profiles we ignore "last used profile" preference
+      // since it may refer to profile that has been in use in previous session.
+      // That profile dir may not be mounted in this session so instead return
+      // active profile from current session.
+      profile_dir = g_browser_process->platform_part()->
+          profile_helper()->GetActiveUserProfileDir();
+    } else {
+      // For legacy (not multi-profiles) implementation always default to
+      // --login-profile value.
+      profile_dir =
+          chromeos::ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch();
+    }
+    base::FilePath profile_path(user_data_dir);
+    return GetProfile(profile_path.Append(profile_dir));
+  }
 #endif
 
   return GetProfile(GetLastUsedProfileDir(user_data_dir));

@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -48,6 +49,25 @@ IN_PROC_BROWSER_TEST_P(ProfileHelperTest, ActiveUserProfileDir) {
   expected_dir.append(chrome::kProfileDirPrefix);
   expected_dir.append(kActiveUserHash);
   EXPECT_EQ(expected_dir, profile_dir.BaseName().value());
+}
+
+IN_PROC_BROWSER_TEST_P(ProfileHelperTest,
+                       GetProfileDirByLegacyLoginProfileSwitch) {
+  CommandLine::ForCurrentProcess()->
+      AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                        chrome::kLegacyProfileDir);
+  EXPECT_EQ(chrome::kLegacyProfileDir,
+            ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch().value());
+  CommandLine::ForCurrentProcess()->
+      AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                        chrome::kTestUserProfileDir);
+  EXPECT_EQ(chrome::kTestUserProfileDir,
+            ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch().value());
+  CommandLine::ForCurrentProcess()->
+        AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                          kActiveUserHash);
+  EXPECT_EQ(std::string(chrome::kProfileDirPrefix) + kActiveUserHash,
+            ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch().value());
 }
 
 IN_PROC_BROWSER_TEST_P(ProfileHelperTest, GetProfilePathByUserIdHash) {

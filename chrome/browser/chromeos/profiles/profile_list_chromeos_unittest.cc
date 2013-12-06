@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
@@ -115,6 +116,11 @@ class ProfileListChromeOSTest : public testing::Test {
     avatar_menu_->RebuildMenu();
     EXPECT_EQ(0, change_count());
     return avatar_menu_.get();
+  }
+
+  void ActiveUserChanged(ProfileHelper* profile_helper,
+                         const std::string& hash) {
+    profile_helper->ActiveUserHashChanged(hash);
   }
 
   TestingProfileManager* manager() { return &manager_; }
@@ -224,6 +230,12 @@ TEST_F(ProfileListChromeOSTest, ActiveItem) {
 
   AddProfile(name1, true);
   AddProfile(name2, true);
+
+  // Initialize ProfileHelper, it will be accessed from GetActiveProfileIndex.
+  std::string email_string = UTF16ToASCII(name1) + "@example.com";
+  std::string hash = email_string + kUserIdHashSuffix;
+  ActiveUserChanged(
+      g_browser_process->platform_part()->profile_helper(), hash);
 
   AvatarMenu* menu = GetAvatarMenu();
 

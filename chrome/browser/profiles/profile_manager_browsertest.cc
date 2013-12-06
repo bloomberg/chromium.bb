@@ -15,11 +15,19 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/path_service.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#endif
 
 namespace {
 
@@ -166,6 +174,42 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   EXPECT_EQ(new_profile_path, last_used->GetPath());
 }
 #endif  // OS_MACOSX
+
+#if defined(OS_CHROMEOS)
+
+class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest,
+                                      public testing::WithParamInterface<bool> {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
+  // Make sure that last used profile is correct.
+  Profile* last_used_profile = ProfileManager::GetLastUsedProfile();
+  EXPECT_TRUE(last_used_profile != NULL);
+
+  base::FilePath profile_path;
+  PathService::Get(chrome::DIR_USER_DATA, &profile_path);
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kMultiProfiles)) {
+    profile_path = profile_path.Append(base::FilePath(
+        std::string(chrome::kProfileDirPrefix) + chrome::kTestUserProfileDir));
+  } else {
+    profile_path = profile_path.Append(
+        base::FilePath(chrome::kTestUserProfileDir));
+  }
+  EXPECT_EQ(profile_path.value(), last_used_profile->GetPath().value());
+}
+
+INSTANTIATE_TEST_CASE_P(ProfileManagerCrOSBrowserTestInstantiation,
+                        ProfileManagerCrOSBrowserTest,
+                        testing::Bool());
+
+#endif  // OS_CHROMEOS
 
 // Times out (http://crbug.com/159002)
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,

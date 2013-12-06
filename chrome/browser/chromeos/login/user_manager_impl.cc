@@ -1606,20 +1606,10 @@ base::FilePath UserManagerImpl::GetUserProfileDir(
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(::switches::kMultiProfiles)) {
     const User* user = FindUser(user_id);
-    if (user && !user->username_hash().empty()) {
-      profile_dir = base::FilePath(
-          chrome::kProfileDirPrefix + user->username_hash());
-    }
+    if (user && !user->username_hash().empty())
+      profile_dir = ProfileHelper::GetUserProfileDir(user->username_hash());
   } else if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
-    std::string login_profile_value =
-        command_line.GetSwitchValueASCII(chromeos::switches::kLoginProfile);
-    if (login_profile_value == chrome::kLegacyProfileDir ||
-        login_profile_value == chrome::kTestUserProfileDir) {
-      profile_dir = base::FilePath(login_profile_value);
-    } else {
-      profile_dir = base::FilePath(
-          chrome::kProfileDirPrefix + login_profile_value);
-    }
+    profile_dir = ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch();
   } else {
     // We should never be logged in with no profile dir unless
     // multi-profiles are enabled.

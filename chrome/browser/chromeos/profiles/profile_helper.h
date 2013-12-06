@@ -40,6 +40,9 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Returns Profile instance that corresponds to |user_id_hash|.
   static Profile* GetProfileByUserIdHash(const std::string& user_id_hash);
 
+  // Returns profile dir that corresponds to a --login-profile cmd line switch.
+  static base::FilePath GetProfileDirByLegacyLoginProfileSwitch();
+
   // Returns profile path that corresponds to a given |user_id_hash|.
   static base::FilePath GetProfilePathByUserIdHash(
       const std::string& user_id_hash);
@@ -50,6 +53,9 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Returns user_id hash for |profile| instance or empty string if hash
   // could not be extracted from |profile|.
   static std::string GetUserIdHashFromProfile(Profile* profile);
+
+  // Returns user profile dir in a format [u-user_id_hash].
+  static base::FilePath GetUserProfileDir(const std::string& user_id_hash);
 
   // Returns true if |profile| is the signin Profile. This can be used during
   // construction of the signin Profile to determine if that Profile is the
@@ -62,9 +68,6 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
 
   // Returns active user profile dir in a format [u-$hash].
   base::FilePath GetActiveUserProfileDir();
-
-  // Returns user profile dir in a format [u-user_id_hash].
-  base::FilePath GetUserProfileDir(const std::string& user_id_hash);
 
   // Should called once after UserManager instance has been created.
   void Initialize();
@@ -79,6 +82,7 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
 
  private:
   friend class ProfileHelperTest;
+  friend class ProfileListChromeOSTest;
 
   // BrowsingDataRemover::Observer implementation:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
