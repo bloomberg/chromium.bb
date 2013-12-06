@@ -487,7 +487,7 @@ Event_Dump_Debug_Log(void* vinfo)
     int ret;
     EventStatePtr evstate = device->evstate;
 
-    FILE* fp = fopen("/var/log/cmt_input_events.dat", "wb");
+    FILE* fp = fopen("/var/log/xorg/cmt_input_events.dat", "wb");
     if (!fp) {
         LOG_ERROR(device, "fopen() failed for debug log");
         return;
