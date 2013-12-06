@@ -37,7 +37,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/events/OverflowEvent.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -894,9 +893,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         LayoutIndicator layoutIndicator;
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
-
-        ResourceLoadPriorityOptimizer modifier;
-        rootForThisLayout->didLayout(modifier);
     }
 
     TextAutosizer* textAutosizer = frame().document()->textAutosizer();
@@ -906,9 +902,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         LayoutIndicator layoutIndicator;
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
-
-        ResourceLoadPriorityOptimizer modifier;
-        rootForThisLayout->didLayout(modifier);
     }
 
     m_inLayout = false;
@@ -1677,9 +1670,6 @@ void FrameView::scrollPositionChanged()
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidScroll();
     }
-
-    ResourceLoadPriorityOptimizer modifier;
-    m_frame->document()->renderer()->didScroll(modifier);
 }
 
 void FrameView::repaintFixedElementsAfterScrolling()

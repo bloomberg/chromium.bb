@@ -76,9 +76,6 @@ protected:
     void paintIntoRect(GraphicsContext*, const LayoutRect&);
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
     virtual void layout();
-    virtual void didLayout(ResourceLoadPriorityOptimizer&);
-    virtual void didScroll(ResourceLoadPriorityOptimizer&);
-    void updateImageLoadingPriority(ResourceLoadPriorityOptimizer&);
 
     virtual void intrinsicSizeChanged()
     {

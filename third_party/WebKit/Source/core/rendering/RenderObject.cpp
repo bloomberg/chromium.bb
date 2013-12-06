@@ -35,7 +35,6 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -2821,20 +2820,6 @@ void RenderObject::layout()
         child = child->nextSibling();
     }
     clearNeedsLayout();
-}
-
-void RenderObject::didLayout(ResourceLoadPriorityOptimizer& priorityModifier)
-{
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-        child->didLayout(priorityModifier);
-    }
-}
-
-void RenderObject::didScroll(ResourceLoadPriorityOptimizer& priorityModifier)
-{
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-        child->didScroll(priorityModifier);
-    }
 }
 
 void RenderObject::forceLayout()

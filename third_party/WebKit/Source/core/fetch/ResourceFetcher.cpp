@@ -121,9 +121,7 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
     case Resource::ImportResource:
         return ResourceLoadPriorityMedium;
     case Resource::Image:
-        // We'll default images to VeryLow, and promote whatever is visible. This improves
-        // speed-index by ~5% on average, ~14% at the 99th percentile.
-        return ResourceLoadPriorityVeryLow;
+        return request.forPreload() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityLow;
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
         return ResourceLoadPriorityHigh;

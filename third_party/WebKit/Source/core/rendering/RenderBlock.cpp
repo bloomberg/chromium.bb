@@ -32,7 +32,6 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
-#include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
@@ -59,8 +58,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
-#include "core/rendering/style/ContentData.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -1253,75 +1250,6 @@ void RenderBlock::layout()
         clearLayoutOverflow();
 
     invalidateBackgroundObscurationStatus();
-}
-
-void RenderBlock::didLayout(ResourceLoadPriorityOptimizer& optimizer)
-{
-    RenderBox::didLayout(optimizer);
-    updateStyleImageLoadingPriorities(optimizer);
-}
-
-void RenderBlock::didScroll(ResourceLoadPriorityOptimizer& optimizer)
-{
-    RenderBox::didScroll(optimizer);
-    updateStyleImageLoadingPriorities(optimizer);
-}
-
-void RenderBlock::updateStyleImageLoadingPriorities(ResourceLoadPriorityOptimizer& optimizer)
-{
-    RenderStyle* blockStyle = style();
-    if (!blockStyle)
-        return;
-
-    LayoutRect objectBounds = absoluteContentBox();
-    LayoutRect viewBounds = viewRect();
-
-    // The object bounds might be empty right now, so intersects will fail since it doesn't deal
-    // with empty rects. Use LayoutRect::contains in that case.
-    bool isVisible;
-    if (!objectBounds.isEmpty())
-        isVisible =  viewBounds.intersects(objectBounds);
-    else
-        isVisible = viewBounds.contains(objectBounds);
-
-    ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
-        ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
-
-    for (FillLayer* layer = blockStyle->accessBackgroundLayers(); layer; layer = layer->next()) {
-        if (layer->image()) {
-            ImageResource* img = layer->image()->cachedImage();
-            if (img) {
-                optimizer.notifyImageResourceVisibility(img, status);
-            }
-        }
-    }
-    for (FillLayer* layer = blockStyle->accessMaskLayers(); layer; layer = layer->next()) {
-        if (layer->image()) {
-            ImageResource* img = layer->image()->cachedImage();
-            if (img) {
-                optimizer.notifyImageResourceVisibility(img, status);
-            }
-        }
-    }
-    ContentData* contentData = const_cast<ContentData*>(blockStyle->contentData());
-    if (contentData && contentData->isImage()) {
-        ImageContentData* imageContentData = static_cast<ImageContentData*>(contentData);
-        if (imageContentData->image() && imageContentData->image()->cachedImage())
-            optimizer.notifyImageResourceVisibility(imageContentData->image()->cachedImage(), status);
-    }
-    if (blockStyle->boxReflect()) {
-        if (blockStyle->boxReflect()->mask().image()) {
-            if (blockStyle->boxReflect()->mask().image()->cachedImage()) {
-                optimizer.notifyImageResourceVisibility(blockStyle->boxReflect()->mask().image()->cachedImage(), status);
-            }
-        }
-    }
-    if (blockStyle->listStyleImage() && blockStyle->listStyleImage()->cachedImage())
-        optimizer.notifyImageResourceVisibility(blockStyle->listStyleImage()->cachedImage(), status);
-    if (blockStyle->borderImageSource() && blockStyle->borderImageSource()->cachedImage())
-        optimizer.notifyImageResourceVisibility(blockStyle->borderImageSource()->cachedImage(), status);
-    if (blockStyle->maskBoxImageSource() && blockStyle->maskBoxImageSource()->cachedImage())
-        optimizer.notifyImageResourceVisibility(blockStyle->maskBoxImageSource()->cachedImage(), status);
 }
 
 void RenderBlock::relayoutShapeDescendantIfMoved(RenderBlock* child, LayoutSize offset)
