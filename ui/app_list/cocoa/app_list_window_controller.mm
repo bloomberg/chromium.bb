@@ -40,6 +40,8 @@
   [controlledWindow setOpaque:NO];
   [controlledWindow setHasShadow:YES];
   [controlledWindow setLevel:NSDockWindowLevel];
+  [controlledWindow
+      setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
 
   if ((self = [super initWithWindow:controlledWindow])) {
     appListViewController_.reset([[AppListViewController alloc] init]);
