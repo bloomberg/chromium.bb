@@ -239,7 +239,7 @@ TEST_F(ConflictResolverTest, NoFileToBeResolved) {
   RegisterApp(kOrigin.host(), app_root);
   RunSyncerUntilIdle();
 
-  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, RunConflictResolver());
+  EXPECT_EQ(SYNC_STATUS_NO_CONFLICT, RunConflictResolver());
 }
 
 TEST_F(ConflictResolverTest, ResolveConflict_Files) {

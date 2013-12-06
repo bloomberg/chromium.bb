@@ -86,6 +86,11 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
+  if (change_list_.empty()) {
+    callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC);
+    return;
+  }
+
   metadata_database()->UpdateByChangeList(
       resource_list->largest_changestamp(),
       change_list_.Pass(), callback);

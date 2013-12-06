@@ -402,6 +402,7 @@ SyncEngine::SyncEngine(
       extension_service_(extension_service),
       remote_change_processor_(NULL),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
+      should_check_conflict_(true),
       should_check_remote_change_(true),
       sync_enabled_(false),
       conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
@@ -442,6 +443,8 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                                           SYNC_DIRECTION_REMOTE_TO_LOCAL));
   }
 
+  if (status == SYNC_STATUS_OK)
+    should_check_conflict_ = true;
   callback.Run(status, syncer->url());
 }
 
@@ -477,6 +480,8 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
   if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC)
     metadata_database_->PromoteLowerPriorityTrackersToNormal();
 
+  if (status == SYNC_STATUS_OK)
+    should_check_conflict_ = true;
   callback.Run(status);
 }
 
@@ -489,21 +494,33 @@ void SyncEngine::MaybeStartFetchChanges() {
 
   base::TimeTicks now = base::TimeTicks::Now();
   if (!should_check_remote_change_ && now < time_to_check_changes_) {
-    if (!metadata_database_->HasDirtyTracker()) {
+    if (!metadata_database_->HasDirtyTracker() && should_check_conflict_) {
       task_manager_->ScheduleSyncTaskIfIdle(
           scoped_ptr<SyncTask>(new ConflictResolver(this)),
-          SyncStatusCallback());
+          base::Bind(&SyncEngine::DidResolveConflict,
+                     weak_ptr_factory_.GetWeakPtr()));
     }
     return;
   }
 
   if (task_manager_->ScheduleSyncTaskIfIdle(
           scoped_ptr<SyncTask>(new ListChangesTask(this)),
-          SyncStatusCallback())) {
+          base::Bind(&SyncEngine::DidFetchChanges,
+                     weak_ptr_factory_.GetWeakPtr()))) {
     should_check_remote_change_ = false;
     time_to_check_changes_ =
         now + base::TimeDelta::FromSeconds(kListChangesRetryDelaySeconds);
   }
+}
+
+void SyncEngine::DidResolveConflict(SyncStatusCode status) {
+  if (status == SYNC_STATUS_NO_CONFLICT)
+    should_check_conflict_ = false;
+}
+
+void SyncEngine::DidFetchChanges(SyncStatusCode status) {
+  if (status == SYNC_STATUS_OK)
+    should_check_conflict_ = true;
 }
 
 void SyncEngine::UpdateServiceStateFromSyncStatusCode(

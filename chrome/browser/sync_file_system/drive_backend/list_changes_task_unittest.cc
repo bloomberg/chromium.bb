@@ -212,7 +212,7 @@ TEST_F(ListChangesTaskTest, NoChange) {
   size_t num_dirty_trackers = CountDirtyTracker();
 
   ListChangesTask list_changes(this);
-  EXPECT_EQ(SYNC_STATUS_OK, RunTask(&list_changes));
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, RunTask(&list_changes));
 
   EXPECT_EQ(num_dirty_trackers, CountDirtyTracker());
 }

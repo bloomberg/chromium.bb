@@ -89,7 +89,7 @@ void ConflictResolver::Run(const SyncStatusCallback& callback) {
     return;
   }
 
-  callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC);
+  callback.Run(SYNC_STATUS_NO_CONFLICT);
 }
 
 void ConflictResolver::DetachFromNonPrimaryParents(

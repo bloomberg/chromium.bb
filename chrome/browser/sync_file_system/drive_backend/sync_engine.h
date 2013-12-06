@@ -146,9 +146,11 @@ class SyncEngine : public RemoteFileSyncService,
   void DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                            const SyncStatusCallback& callback,
                            SyncStatusCode status);
-  void DidFetchChangeList(SyncStatusCallback& callback);
 
   void MaybeStartFetchChanges();
+  void DidResolveConflict(SyncStatusCode status);
+  void DidFetchChanges(SyncStatusCode status);
+
   void UpdateServiceStateFromSyncStatusCode(SyncStatusCode state,
                                             bool used_network);
   void UpdateServiceState(RemoteServiceState state,
@@ -177,6 +179,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   RemoteServiceState service_state_;
 
+  bool should_check_conflict_;
   bool should_check_remote_change_;
   base::TimeTicks time_to_check_changes_;
 
