@@ -2011,6 +2011,8 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 	}
 
 	case SHELL_SURFACE_XWAYLAND:
+		return &shsurf->shell->fullscreen_layer.view_list;
+
 	case SHELL_SURFACE_NONE:
 	default:
 		/* Go to the fallback, below. */
