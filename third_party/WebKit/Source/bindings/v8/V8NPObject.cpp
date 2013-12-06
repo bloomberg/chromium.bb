@@ -257,7 +257,7 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
         // Cache templates using identifier as the key.
         if (functionTemplate.isEmpty()) {
             // Create a new template.
-            v8::Local<v8::FunctionTemplate> temp = v8::FunctionTemplate::New();
+            v8::Local<v8::FunctionTemplate> temp = v8::FunctionTemplate::New(isolate);
             temp->SetCallHandler(npObjectMethodHandler, key);
             V8NPTemplateMap::sharedInstance(isolate).set(id, temp);
             v8Function = temp->GetFunction();
@@ -434,7 +434,7 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
     // pointer, and field 1 is the type. There should be an api function that returns unused type id. The same Wrapper type
     // can be used by DOM bindings.
     if (npObjectDesc.IsEmpty()) {
-        v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New();
+        v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate);
         templ->InstanceTemplate()->SetInternalFieldCount(npObjectInternalFieldCount);
         templ->InstanceTemplate()->SetNamedPropertyHandler(npObjectNamedPropertyGetter, npObjectNamedPropertySetter, npObjectQueryProperty, 0, npObjectNamedPropertyEnumerator);
         templ->InstanceTemplate()->SetIndexedPropertyHandler(npObjectIndexedPropertyGetter, npObjectIndexedPropertySetter, 0, 0, npObjectIndexedPropertyEnumerator);

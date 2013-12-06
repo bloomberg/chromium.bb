@@ -205,7 +205,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     v8::Handle<v8::FunctionTemplate> toStringTemplate =
         V8PerIsolateData::current()->lazyEventListenerToStringTemplate();
     if (toStringTemplate.IsEmpty())
-        toStringTemplate = v8::FunctionTemplate::New(V8LazyEventListenerToString);
+        toStringTemplate = v8::FunctionTemplate::New(isolate, V8LazyEventListenerToString);
     v8::Local<v8::Function> toStringFunction;
     if (!toStringTemplate.IsEmpty())
         toStringFunction = toStringTemplate->GetFunction();

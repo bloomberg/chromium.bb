@@ -168,7 +168,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     if (!prototypeIsValid(definition->descriptor().type(), exceptionState))
         return false;
 
-    v8::Local<v8::FunctionTemplate> constructorTemplate = v8::FunctionTemplate::New();
+    v8::Local<v8::FunctionTemplate> constructorTemplate = v8::FunctionTemplate::New(isolate);
     constructorTemplate->SetCallHandler(constructCustomElement);
     m_constructor = constructorTemplate->GetFunction();
     if (m_constructor.IsEmpty()) {

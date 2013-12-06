@@ -64,7 +64,7 @@ v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* privateTemplateUniqueKe
     if (!functionDescriptor.IsEmpty())
         return functionDescriptor->InstanceTemplate();
 
-    functionDescriptor = v8::FunctionTemplate::New();
+    functionDescriptor = v8::FunctionTemplate::New(isolate);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(internalFieldCount);
     data->setPrivateTemplate(currentWorldType, privateTemplateUniqueKey, functionDescriptor);

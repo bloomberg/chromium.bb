@@ -190,7 +190,7 @@ void ScriptDebugServer::breakProgram()
 
     v8::HandleScope scope(m_isolate);
     if (m_breakProgramCallbackTemplate.isEmpty()) {
-        v8::Handle<v8::FunctionTemplate> templ = v8::FunctionTemplate::New();
+        v8::Handle<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate);
         templ->SetCallHandler(&ScriptDebugServer::breakProgramCallback, v8::External::New(m_isolate, this));
         m_breakProgramCallbackTemplate.set(m_isolate, templ);
     }

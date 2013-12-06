@@ -50,7 +50,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     v8::Handle<v8::FunctionTemplate> shadowTemplate = data->privateTemplateIfExists(currentWorldType, &shadowTemplateUniqueKey);
     if (shadowTemplate.IsEmpty()) {
-        shadowTemplate = v8::FunctionTemplate::New();
+        shadowTemplate = v8::FunctionTemplate::New(isolate);
         if (shadowTemplate.IsEmpty())
             return v8::Local<v8::Object>();
         shadowTemplate->SetClassName(v8AtomicString(isolate, "HTMLDocument"));

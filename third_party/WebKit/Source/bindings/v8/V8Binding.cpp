@@ -434,7 +434,7 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
 v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate* isolate)
 {
     v8::EscapableHandleScope scope(isolate);
-    v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(V8ObjectConstructor::isValidConstructorMode);
+    v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
     return scope.Escape(result);
 }
 

@@ -88,7 +88,7 @@ void V8PerIsolateData::dispose(v8::Isolate* isolate)
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
 {
     if (m_toStringTemplate.isEmpty())
-        m_toStringTemplate.set(m_isolate, v8::FunctionTemplate::New(constructorOfToString));
+        m_toStringTemplate.set(m_isolate, v8::FunctionTemplate::New(m_isolate, constructorOfToString));
     return m_toStringTemplate.newLocal(m_isolate);
 }
 
@@ -98,7 +98,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldT
     TemplateMap::iterator result = templates.find(privatePointer);
     if (result != templates.end())
         return result->value.newLocal(m_isolate);
-    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(callback, data, signature, length);
+    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate, callback, data, signature, length);
     templates.add(privatePointer, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
     return templ;
 }
