@@ -93,14 +93,8 @@ IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, DISABLED_ContextLossRaisesInfoBar) {
                     infobar_count());
 }
 
-// This test is flaky on Mac. http://crbug.com/324555
-#if defined(OS_MACOSX)
-#define MAYBE_ContextLossInfoBarReload DISABLED_ContextLossInfoBarReload
-#else
-#define MAYBE_ContextLossInfoBarReload ContextLossInfoBarReload
-#endif
-IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, MAYBE_ContextLossInfoBarReload) {
-#undef MAYBE_ContextLossInfoBarReload
+// This test is flaky. http://crbug.com/324555
+IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, DISABLED_ContextLossInfoBarReload) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
