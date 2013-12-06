@@ -25,6 +25,7 @@
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "base/win/startup_information.h"
 #include "base/win/windows_version.h"
 
 // userenv.dll is required for CreateEnvironmentBlock().
@@ -104,22 +105,23 @@ void RouteStdioToConsole() {
 bool LaunchProcess(const string16& cmdline,
                    const LaunchOptions& options,
                    win::ScopedHandle* process_handle) {
-  STARTUPINFO startup_info = {};
-  startup_info.cb = sizeof(startup_info);
+  win::StartupInformation startup_info_wrapper;
+  STARTUPINFO* startup_info = startup_info_wrapper.startup_info();
+
   if (options.empty_desktop_name)
-    startup_info.lpDesktop = L"";
-  startup_info.dwFlags = STARTF_USESHOWWINDOW;
-  startup_info.wShowWindow = options.start_hidden ? SW_HIDE : SW_SHOW;
+    startup_info->lpDesktop = L"";
+  startup_info->dwFlags = STARTF_USESHOWWINDOW;
+  startup_info->wShowWindow = options.start_hidden ? SW_HIDE : SW_SHOW;
 
   if (options.stdin_handle || options.stdout_handle || options.stderr_handle) {
     DCHECK(options.inherit_handles);
     DCHECK(options.stdin_handle);
     DCHECK(options.stdout_handle);
     DCHECK(options.stderr_handle);
-    startup_info.dwFlags |= STARTF_USESTDHANDLES;
-    startup_info.hStdInput = options.stdin_handle;
-    startup_info.hStdOutput = options.stdout_handle;
-    startup_info.hStdError = options.stderr_handle;
+    startup_info->dwFlags |= STARTF_USESTDHANDLES;
+    startup_info->hStdInput = options.stdin_handle;
+    startup_info->hStdOutput = options.stdout_handle;
+    startup_info->hStdError = options.stderr_handle;
   }
 
   DWORD flags = 0;
@@ -151,7 +153,7 @@ bool LaunchProcess(const string16& cmdline,
         CreateProcessAsUser(options.as_user, NULL,
                             const_cast<wchar_t*>(cmdline.c_str()),
                             NULL, NULL, options.inherit_handles, flags,
-                            enviroment_block, NULL, &startup_info,
+                            enviroment_block, NULL, startup_info,
                             &temp_process_info);
     DestroyEnvironmentBlock(enviroment_block);
     if (!launched) {
@@ -162,7 +164,7 @@ bool LaunchProcess(const string16& cmdline,
     if (!CreateProcess(NULL,
                        const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
                        options.inherit_handles, flags, NULL, NULL,
-                       &startup_info, &temp_process_info)) {
+                       startup_info, &temp_process_info)) {
       DPLOG(ERROR);
       return false;
     }
