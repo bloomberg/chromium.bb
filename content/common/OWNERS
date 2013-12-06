@@ -32,6 +32,7 @@ per-file *_messages*.h=jln@chromium.org
 per-file *_messages*.h=jschuh@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
 per-file *_messages*.h=kenrb@chromium.org
+per-file *_messages*.h=nasko@chromium.org
 
 # Accessibility
 per-file accessibility_node_data.*=dmazzoni@chromium.org
