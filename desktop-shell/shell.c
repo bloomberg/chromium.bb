@@ -2121,6 +2121,8 @@ surface_clear_next_states(struct shell_surface *shsurf)
 static void
 set_toplevel(struct shell_surface *shsurf)
 {
+	shell_surface_set_parent(shsurf, NULL);
+	surface_clear_next_states(shsurf);
 	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 
 	/* The layer_link is updated in set_surface_type(),
@@ -2133,9 +2135,6 @@ shell_surface_set_toplevel(struct wl_client *client,
 {
 	struct shell_surface *surface = wl_resource_get_user_data(resource);
 
-	shell_surface_set_parent(surface, NULL);
-
-	surface_clear_next_states(surface);
 	set_toplevel(surface);
 }
 
