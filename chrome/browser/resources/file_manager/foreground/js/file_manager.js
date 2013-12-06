@@ -762,6 +762,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.renameInput_.addEventListener(
         'blur', this.onRenameInputBlur_.bind(this));
 
+    // TODO(hirono): Rename the handler after creating the DialogFooter class.
+    this.filenameInput_.addEventListener(
+        'input', this.onFilenameInputInput_.bind(this));
     this.filenameInput_.addEventListener(
         'keydown', this.onFilenameInputKeyDown_.bind(this));
     this.filenameInput_.addEventListener(
@@ -2464,11 +2467,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @param {Event} Key event.
    * @private
    */
+  FileManager.prototype.onFilenameInputInput_ = function() {
+    this.selectionHandler_.updateOkButton();
+  };
+
+  /**
+   * @param {Event} Key event.
+   * @private
+   */
   FileManager.prototype.onFilenameInputKeyDown_ = function(event) {
-    var enabled = this.selectionHandler_.updateOkButton();
-    if (enabled &&
-        (util.getKeyModifiers(event) + event.keyCode) == '13' /* Enter */)
-      this.onOk_();
+    if ((util.getKeyModifiers(event) + event.keyCode) === '13' /* Enter */)
+      this.okButton_.click();
   };
 
   /**
