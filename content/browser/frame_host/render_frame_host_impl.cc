@@ -12,7 +12,6 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -66,23 +65,14 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
-  if (delegate_->OnMessageReceived(this, msg))
-    return true;
-
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameHostImpl, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PepperPluginHung, OnPepperPluginHung)
   IPC_END_MESSAGE_MAP_EX()
-
-  if (!msg_is_ok) {
-    // The message had a handler, but its de-serialization failed.
-    // Kill the renderer.
-    RecordAction(UserMetricsAction("BadMessageTerminate_RFH"));
-    GetProcess()->ReceivedBadMessage();
-  }
 
   return handled;
 }
@@ -116,6 +106,12 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
     const GURL& url) {
   render_view_host_->OnDidStartProvisionalLoadForFrame(
       frame_id, parent_frame_id, is_main_frame, url);
+}
+
+void RenderFrameHostImpl::OnPepperPluginHung(int plugin_child_id,
+                                             const base::FilePath& path,
+                                             bool is_hung) {
+  delegate_->PepperPluginHung(plugin_child_id, path, is_hung);
 }
 
 }  // namespace content

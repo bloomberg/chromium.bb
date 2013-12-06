@@ -277,8 +277,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // RenderFrameHostDelegate ---------------------------------------------------
-  virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
-                                 const IPC::Message& message) OVERRIDE;
+  virtual void PepperPluginHung(int plugin_child_id,
+                                const base::FilePath& path,
+                                bool is_hung) OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
@@ -609,8 +610,6 @@ class CONTENT_EXPORT WebContentsImpl
   // |result| is true if permission was granted.
   void OnPpapiBrokerPermissionResult(int routing_id, bool result);
 
-  bool OnMessageReceived(const IPC::Message& message);
-
   // IPC message handlers.
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
@@ -654,10 +653,7 @@ class CONTENT_EXPORT WebContentsImpl
       const ViewHostMsg_DateTimeDialogValue_Params& value);
   void OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg);
 #endif
-  void OnPepperPluginHung(int plugin_child_id,
-                          const base::FilePath& path,
-                          bool is_hung);
-  void OnPluginCrashed(const base::FilePath& plugin_path,
+  void OnCrashedPlugin(const base::FilePath& plugin_path,
                        base::ProcessId plugin_pid);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnOpenColorChooser(int color_chooser_id,
@@ -986,10 +982,9 @@ class CONTENT_EXPORT WebContentsImpl
   // member variables that are gone.
   NotificationRegistrar registrar_;
 
-  // Used during IPC message dispatching from the RenderView so that the
-  // handlers can get a pointer to the RVH through which the message was
-  // received.
-  RenderViewHost* render_view_message_source_;
+  // Used during IPC message dispatching so that the handlers can get a pointer
+  // to the RVH through which the message was received.
+  RenderViewHost* message_source_;
 
   // All live RenderWidgetHostImpls that are created by this object and may
   // outlive it.

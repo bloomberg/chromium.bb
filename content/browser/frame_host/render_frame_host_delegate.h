@@ -5,22 +5,20 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 
-#include "content/common/content_export.h"
-
-namespace IPC {
-class Message;
+namespace base {
+class FilePath;
 }
 
 namespace content {
-class RenderFrameHost;
 
 // An interface implemented by an object interested in knowing about the state
 // of the RenderFrameHost.
-class CONTENT_EXPORT RenderFrameHostDelegate {
+class RenderFrameHostDelegate {
  public:
-  // This is used to give the delegate a chance to filter IPC messages.
-  virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
-                                 const IPC::Message& message);
+  // The given Pepper plugin is not responsive.
+  virtual void PepperPluginHung(int plugin_child_id,
+                                const base::FilePath& path,
+                                bool is_hung) {}
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

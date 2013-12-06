@@ -252,7 +252,8 @@ void RenderFrameImpl::PluginCrashed(const base::FilePath& plugin_path,
                                    base::ProcessId plugin_pid) {
   // TODO(jam): dispatch this IPC in RenderFrameHost and switch to use
   // routing_id_ as a result.
-  Send(new FrameHostMsg_PluginCrashed(routing_id_, plugin_path, plugin_pid));
+  Send(new ViewHostMsg_CrashedPlugin(
+      render_view_->GetRoutingID(), plugin_path, plugin_pid));
 }
 
 void RenderFrameImpl::DidInitiatePaint() {
