@@ -32,7 +32,7 @@ using content::MessageLoopRunner;
 
 namespace {
 
-void OnProfileDownloadedFail(const string16& full_name) {
+void OnProfileDownloadedFail(const base::string16& full_name) {
   ASSERT_TRUE(false) << "Profile download should not have succeeded.";
 }
 
@@ -233,11 +233,11 @@ TEST_F(ManagedUserServiceExtensionTestUnmanaged,
   EXPECT_FALSE(profile_->IsManaged());
 
   scoped_refptr<extensions::Extension> extension = MakeExtension();
-  string16 error_1;
+  base::string16 error_1;
   EXPECT_TRUE(managed_user_service->UserMayLoad(extension.get(), &error_1));
   EXPECT_EQ(string16(), error_1);
 
-  string16 error_2;
+  base::string16 error_2;
   EXPECT_TRUE(
       managed_user_service->UserMayModifySettings(extension.get(), &error_2));
   EXPECT_EQ(string16(), error_2);
@@ -254,7 +254,7 @@ TEST_F(ManagedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
 
   // Check that a supervised user can install a theme.
   scoped_refptr<extensions::Extension> theme = MakeThemeExtension();
-  string16 error_1;
+  base::string16 error_1;
   EXPECT_TRUE(managed_user_service->UserMayLoad(theme.get(), &error_1));
   EXPECT_TRUE(error_1.empty());
   EXPECT_TRUE(
@@ -266,7 +266,7 @@ TEST_F(ManagedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
   EXPECT_FALSE(managed_user_service->UserMayLoad(extension.get(), &error_1));
   EXPECT_FALSE(error_1.empty());
 
-  string16 error_2;
+  base::string16 error_2;
   EXPECT_FALSE(
       managed_user_service->UserMayModifySettings(extension.get(), &error_2));
   EXPECT_FALSE(error_2.empty());

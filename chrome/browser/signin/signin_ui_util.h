@@ -30,8 +30,8 @@ string16 GetSigninMenuLabel(Profile* profile);
 
 void GetStatusLabelsForAuthError(Profile* profile,
                                  const SigninManagerBase& signin_manager,
-                                 string16* status_label,
-                                 string16* link_label);
+                                 base::string16* status_label,
+                                 base::string16* link_label);
 
 }  // namespace signin_ui_util
 

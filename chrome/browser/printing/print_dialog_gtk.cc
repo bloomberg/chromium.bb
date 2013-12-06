@@ -265,7 +265,7 @@ void PrintDialogGtk::ShowDialog(
 }
 
 void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
-                                   const string16& document_name) {
+                                   const base::string16& document_name) {
   // This runs on the print worker thread, does not block the UI thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -385,7 +385,8 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   }
 }
 
-void PrintDialogGtk::SendDocumentToPrinter(const string16& document_name) {
+void PrintDialogGtk::SendDocumentToPrinter(
+    const base::string16& document_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If |printer_| is NULL then somehow the GTK printer list changed out under

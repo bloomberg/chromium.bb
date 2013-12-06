@@ -38,11 +38,11 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate() OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   GURL url_;
@@ -99,7 +99,7 @@ ThreeDAPIInfoBarDelegate*
 string16 ThreeDAPIInfoBarDelegate::GetMessageText() const {
   message_text_queried_ = true;
 
-  string16 api_name;
+  base::string16 api_name;
   switch (requester_) {
     case content::THREE_D_API_TYPE_WEBGL:
       api_name = l10n_util::GetStringUTF16(IDS_3D_APIS_WEBGL_NAME);

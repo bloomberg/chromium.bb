@@ -105,8 +105,8 @@ class StorageMonitor {
   // persistent across sessions.
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
-      string16* device_location,
-      string16* storage_object_id) const = 0;
+      base::string16* device_location,
+      base::string16* storage_object_id) const = 0;
 #endif
 
 #if defined(OS_LINUX)

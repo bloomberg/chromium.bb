@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Wait for the page title is changed after the test finished.
-  const string16 result = watcher.WaitAndGetTitle();
+  const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 }
 
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
       GetNonSecureURL(kRefreshMetaTagTestPath));
 
   // Wait for the page title is changed after the test finished.
-  const string16 result = watcher.WaitAndGetTitle();
+  const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
       GetNonSecureURL(kRefreshMetaTagCaseInsensitiveTestPath));
 
   // Wait for the page title is changed after the test finished.
-  const string16 result = watcher.WaitAndGetTitle();
+  const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
       GetNonSecureURL(kRefreshMetaTagAtOnloadTestPath));
 
   // Wait for the page title is changed after the test finished.
-  const string16 result = watcher.WaitAndGetTitle();
+  const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
       GetNonSecureURL(kUpdateLocationTestPath));
 
   // Wait for the page title is changed after the test finished.
-  const string16 result = watcher.WaitAndGetTitle();
+  const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
       GetNonSecureURL(kUpdateLocationAtOnloadTestPath));
 
   // Wait for the page title is changed after the test finished.
-  const string16 result = watcher.WaitAndGetTitle();
+  const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.

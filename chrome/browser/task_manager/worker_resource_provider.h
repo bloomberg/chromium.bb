@@ -49,7 +49,7 @@ class WorkerResourceProvider : public ResourceProvider,
 
   // content::WorkerServiceObserver implementation.
   virtual void WorkerCreated(const GURL& url,
-                             const string16& name,
+                             const base::string16& name,
                              int process_id,
                              int route_id) OVERRIDE;
   virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE;

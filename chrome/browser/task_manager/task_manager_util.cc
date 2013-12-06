@@ -55,7 +55,7 @@ string16 GetProfileNameFromInfoCache(Profile* profile) {
   size_t index = cache.GetIndexOfProfileWithPath(
       profile->GetOriginalProfile()->GetPath());
   if (index == std::string::npos)
-    return string16();
+    return base::string16();
   else
     return cache.GetNameOfProfileAtIndex(index);
 }
@@ -63,7 +63,7 @@ string16 GetProfileNameFromInfoCache(Profile* profile) {
 string16 GetTitleFromWebContents(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
-  string16 title = web_contents->GetTitle();
+  base::string16 title = web_contents->GetTitle();
   if (title.empty()) {
     GURL url = web_contents->GetURL();
     title = UTF8ToUTF16(url.spec());

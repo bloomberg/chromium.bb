@@ -17,7 +17,7 @@ class FakeDesktopMediaList : public DesktopMediaList {
   void AddSource(int id);
   void RemoveSource(int index);
   void SetSourceThumbnail(int index);
-  void SetSourceName(int index, string16 name);
+  void SetSourceName(int index, base::string16 name);
 
   // DesktopMediaList implementation:
   virtual void SetUpdatePeriod(base::TimeDelta period) OVERRIDE;

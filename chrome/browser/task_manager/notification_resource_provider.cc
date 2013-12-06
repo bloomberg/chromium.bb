@@ -28,8 +28,8 @@ class NotificationResource : public Resource {
   virtual ~NotificationResource();
 
   // Resource interface
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
@@ -50,7 +50,7 @@ class NotificationResource : public Resource {
   base::ProcessHandle process_handle_;
   int pid_;
   int unique_process_id_;
-  string16 title_;
+  base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationResource);
 };
@@ -80,7 +80,7 @@ string16 NotificationResource::GetTitle() const {
 }
 
 string16 NotificationResource::GetProfileName() const {
-  return string16();
+  return base::string16();
 }
 
 gfx::ImageSkia NotificationResource::GetIcon() const {

@@ -143,7 +143,7 @@ bool RelaunchChromeHelper(const CommandLine& command_line,
   // wait is satisfied.
   // The format of the named mutex is important. See DelegateExecuteOperation
   // for more details.
-  string16 mutex_name =
+  base::string16 mutex_name =
       base::StringPrintf(L"chrome.relaunch.%d", ::GetCurrentProcessId());
   HANDLE mutex = ::CreateMutexW(NULL, TRUE, mutex_name.c_str());
   // The |mutex| handle needs to be leaked. See comment above.
@@ -166,8 +166,8 @@ bool RelaunchChromeHelper(const CommandLine& command_line,
         switches::kForceImmersive : switches::kForceDesktop);
   }
 
-  string16 params(relaunch_cmd.GetCommandLineString());
-  string16 path(GetMetroRelauncherPath(chrome_exe, version_str).value());
+  base::string16 params(relaunch_cmd.GetCommandLineString());
+  base::string16 path(GetMetroRelauncherPath(chrome_exe, version_str).value());
 
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_NOCLOSEPROCESS;

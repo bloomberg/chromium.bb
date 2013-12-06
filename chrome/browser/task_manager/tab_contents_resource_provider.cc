@@ -75,8 +75,8 @@ class TabContentsResource : public RendererResource {
 
   // Resource methods:
   virtual Type GetType() const OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
@@ -122,7 +122,7 @@ Resource::Type TabContentsResource::GetType() const {
 string16 TabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
   GURL url = web_contents_->GetURL();
-  string16 tab_title = util::GetTitleFromWebContents(web_contents_);
+  base::string16 tab_title = util::GetTitleFromWebContents(web_contents_);
 
   // Only classify as an app if the URL is an app and the tab is hosting an
   // extension process.  (It's possible to be showing the URL from before it

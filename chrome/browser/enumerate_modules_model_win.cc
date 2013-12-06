@@ -90,7 +90,8 @@ struct FindModule {
 // Returns the long path name given a short path name. A short path name is a
 // path that follows the 8.3 convention and has ~x in it. If the path is already
 // a long path name, the function returns the current path without modification.
-bool ConvertToLongPath(const string16& short_path, string16* long_path) {
+bool ConvertToLongPath(const base::string16& short_path,
+                       base::string16* long_path) {
   wchar_t long_path_buf[MAX_PATH];
   DWORD return_value = GetLongPathName(short_path.c_str(), long_path_buf,
                                        MAX_PATH);
@@ -327,7 +328,7 @@ static void GenerateHash(const std::string& input, std::string* output) {
 
 // static
 void ModuleEnumerator::NormalizeModule(Module* module) {
-  string16 path = module->location;
+  base::string16 path = module->location;
   if (!ConvertToLongPath(path, &module->location))
     module->location = path;
 
@@ -336,7 +337,7 @@ void ModuleEnumerator::NormalizeModule(Module* module) {
   // Location contains the filename, so the last slash is where the path
   // ends.
   size_t last_slash = module->location.find_last_of(L"\\");
-  if (last_slash != string16::npos) {
+  if (last_slash != base::string16::npos) {
     module->name = module->location.substr(last_slash + 1);
     module->location = module->location.substr(0, last_slash + 1);
   } else {
@@ -347,7 +348,7 @@ void ModuleEnumerator::NormalizeModule(Module* module) {
   // Some version strings have things like (win7_rtm.090713-1255) appended
   // to them. Remove that.
   size_t first_space = module->version.find_first_of(L" ");
-  if (first_space != string16::npos)
+  if (first_space != base::string16::npos)
     module->version = module->version.substr(0, first_space);
 
   module->normalized = true;
@@ -538,7 +539,7 @@ void ModuleEnumerator::ReadShellExtensions(HKEY parent) {
       ++registration;
       continue;
     }
-    string16 dll;
+    base::string16 dll;
     if (clsid.ReadValue(L"", &dll) != ERROR_SUCCESS) {
       ++registration;
       continue;
@@ -657,12 +658,12 @@ void ModuleEnumerator::CollapsePath(Module* entry) {
   // example, %systemroot%. The most collapsed path (the one with the
   // minimum length) wins.
   size_t min_length = MAXINT;
-  string16 location = entry->location;
+  base::string16 location = entry->location;
   for (PathMapping::const_iterator mapping = path_mapping_.begin();
        mapping != path_mapping_.end(); ++mapping) {
-    string16 prefix = mapping->first;
+    base::string16 prefix = mapping->first;
     if (StartsWith(location, prefix, false)) {
-      string16 new_location = mapping->second +
+      base::string16 new_location = mapping->second +
                               location.substr(prefix.length() - 1);
       size_t length = new_location.length() - mapping->second.length();
       if (length < min_length) {
@@ -737,7 +738,7 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
                                    &message,
                                    NULL);
   if (!result)
-    return string16();
+    return base::string16();
 
   // Determine the size of the signer info data.
   DWORD signer_info_size = 0;
@@ -747,7 +748,7 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
                               NULL,
                               &signer_info_size);
   if (!result)
-    return string16();
+    return base::string16();
 
   // Allocate enough space to hold the signer info.
   scoped_ptr<BYTE[]> signer_info_buffer(new BYTE[signer_info_size]);
@@ -761,7 +762,7 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
                               signer_info,
                               &signer_info_size);
   if (!result)
-    return string16();
+    return base::string16();
 
   // Search for the signer certificate.
   CERT_INFO CertInfo = {0};
@@ -777,7 +778,7 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
       &CertInfo,
       NULL);
   if (!cert_context)
-    return string16();
+    return base::string16();
 
   // Determine the size of the Subject name.
   DWORD subject_name_size = 0;
@@ -787,10 +788,10 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
                                               NULL,
                                               NULL,
                                               0))) {
-    return string16();
+    return base::string16();
   }
 
-  string16 subject_name;
+  base::string16 subject_name;
   subject_name.resize(subject_name_size);
 
   // Get subject name.
@@ -800,7 +801,7 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
                           NULL,
                           const_cast<LPWSTR>(subject_name.c_str()),
                           subject_name_size))) {
-    return string16();
+    return base::string16();
   }
 
   return subject_name;
@@ -874,7 +875,7 @@ ListValue* EnumerateModulesModel::GetModuleList() const {
        module != enumerated_modules_.end(); ++module) {
     DictionaryValue* data = new DictionaryValue();
     data->SetInteger("type", module->type);
-    string16 type_string;
+    base::string16 type_string;
     if ((module->type & ModuleEnumerator::LOADED_MODULE) == 0) {
       // Module is not loaded, denote type of module.
       if (module->type & ModuleEnumerator::SHELL_EXTENSION)
@@ -902,8 +903,8 @@ ListValue* EnumerateModulesModel::GetModuleList() const {
 
     if (!limited_mode_) {
       // Figure out the possible resolution help string.
-      string16 actions;
-      string16 separator = ASCIIToWide(" ") + l10n_util::GetStringUTF16(
+      base::string16 actions;
+      base::string16 separator = ASCIIToWide(" ") + l10n_util::GetStringUTF16(
           IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPERATOR) +
           ASCIIToWide(" ");
 
@@ -929,7 +930,7 @@ ListValue* EnumerateModulesModel::GetModuleList() const {
         actions += l10n_util::GetStringUTF16(
             IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
       }
-      string16 possible_resolution = actions.empty() ? ASCIIToWide("") :
+      base::string16 possible_resolution = actions.empty() ? ASCIIToWide("") :
           l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
           ASCIIToWide(" ") +
           actions;
@@ -1060,8 +1061,9 @@ GURL EnumerateModulesModel::ConstructHelpCenterUrl(
   GenerateHash(WideToUTF8(module.description), &description);
   GenerateHash(WideToUTF8(module.digital_signer), &signer);
 
-  string16 url = l10n_util::GetStringFUTF16(IDS_HELP_CENTER_VIEW_CONFLICTS,
-      ASCIIToUTF16(filename), ASCIIToUTF16(location),
-      ASCIIToUTF16(description), ASCIIToUTF16(signer));
+  base::string16 url =
+      l10n_util::GetStringFUTF16(IDS_HELP_CENTER_VIEW_CONFLICTS,
+          ASCIIToUTF16(filename), ASCIIToUTF16(location),
+          ASCIIToUTF16(description), ASCIIToUTF16(signer));
   return GURL(UTF16ToUTF8(url));
 }

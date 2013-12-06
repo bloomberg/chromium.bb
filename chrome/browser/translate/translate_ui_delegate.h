@@ -33,7 +33,7 @@ class TranslateUIDelegate {
 
   // A pair whose key is a language code and value is the language's
   // displayable name.
-  typedef std::pair<std::string, string16> LanguageNamePair;
+  typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   TranslateUIDelegate(content::WebContents* web_contents,
                       const std::string& original_language,
@@ -77,7 +77,7 @@ class TranslateUIDelegate {
   std::string GetLanguageCodeAt(size_t index) const;
 
   // Returns the displayable name for the language at |index|.
-  string16 GetLanguageNameAt(size_t index) const;
+  base::string16 GetLanguageNameAt(size_t index) const;
 
   // The original language for Translate.
   std::string GetOriginalLanguageCode() const;

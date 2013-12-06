@@ -39,7 +39,7 @@ std::string GetMtpDeviceId(const std::string& unique_id) {
 void GetStorageInfo(const std::string& storage_name,
                     device::MediaTransferProtocolManager* mtp_manager,
                     std::string* id,
-                    string16* label,
+                    base::string16* label,
                     std::string* location) {
   if (storage_name == kStorageWithInvalidInfo)
     return;  // Do not set any storage details.

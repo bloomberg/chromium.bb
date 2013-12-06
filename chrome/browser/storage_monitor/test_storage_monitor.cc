@@ -98,15 +98,15 @@ bool TestStorageMonitor::GetStorageInfoForPath(
       StorageInfo::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
   *device_info =
       StorageInfo(device_id, path.BaseName().LossyDisplayName(), path.value(),
-                  string16(), string16(), string16(), 0);
+                  base::string16(), base::string16(), base::string16(), 0);
   return true;
 }
 
 #if defined(OS_WIN)
 bool TestStorageMonitor::GetMTPStorageInfoFromDeviceId(
     const std::string& storage_device_id,
-    string16* device_location,
-    string16* storage_object_id) const {
+    base::string16* device_location,
+    base::string16* storage_object_id) const {
   return false;
 }
 #endif

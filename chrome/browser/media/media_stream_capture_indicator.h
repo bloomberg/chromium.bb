@@ -84,7 +84,7 @@ class MediaStreamCaptureIndicator
   void GetStatusTrayIconInfo(bool audio,
                              bool video,
                              gfx::ImageSkia* image,
-                             string16* tool_tip);
+                             base::string16* tool_tip);
 
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.

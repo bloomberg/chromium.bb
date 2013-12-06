@@ -55,7 +55,7 @@ AutocompleteActionPredictorTable::Row::Row()
 }
 
 AutocompleteActionPredictorTable::Row::Row(const Row::Id& id,
-                                           const string16& user_text,
+                                           const base::string16& user_text,
                                            const GURL& url,
                                            int number_of_hits,
                                            int number_of_misses)

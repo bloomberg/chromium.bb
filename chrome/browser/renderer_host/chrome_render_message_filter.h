@@ -163,8 +163,8 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnAllowDatabase(int render_view_id,
                        const GURL& origin_url,
                        const GURL& top_origin_url,
-                       const string16& name,
-                       const string16& display_name,
+                       const base::string16& name,
+                       const base::string16& display_name,
                        bool* allowed);
   void OnAllowDOMStorage(int render_view_id,
                          const GURL& origin_url,
@@ -178,7 +178,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnAllowIndexedDB(int render_view_id,
                         const GURL& origin_url,
                         const GURL& top_origin_url,
-                        const string16& name,
+                        const base::string16& name,
                         bool* allowed);
   void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);

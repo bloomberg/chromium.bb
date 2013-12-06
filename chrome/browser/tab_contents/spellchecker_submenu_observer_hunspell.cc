@@ -51,7 +51,7 @@ void SpellCheckerSubMenuObserver::InitMenu(
          IDC_SPELLCHECK_LANGUAGES_LAST - IDC_SPELLCHECK_LANGUAGES_FIRST);
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < languages_.size(); ++i) {
-    string16 display_name(
+    base::string16 display_name(
         l10n_util::GetDisplayNameForLocale(languages_[i], app_locale, true));
     submenu_model_.AddRadioItem(IDC_SPELLCHECK_LANGUAGES_FIRST + i,
                                 display_name,

@@ -46,7 +46,7 @@ class TemplateURLFetcher : public BrowserContextKeyedService {
   //
   // |web_contents| specifies which WebContents displays the page the OSDD is
   // downloaded for. |web_contents| must not be NULL, except during tests.
-  void ScheduleDownload(const string16& keyword,
+  void ScheduleDownload(const base::string16& keyword,
                         const GURL& osdd_url,
                         const GURL& favicon_url,
                         content::WebContents* web_contents,

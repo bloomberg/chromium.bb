@@ -29,26 +29,27 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
   // Returns the persistent storage unique id of the device specified by the
   // |pnp_device_id|. |storage_object_id| specifies the string ID that uniquely
   // identifies the object on the device.
-  static std::string GetMTPStorageUniqueId(const string16& pnp_device_id,
-                                           const string16& storage_object_id);
+  static std::string GetMTPStorageUniqueId(
+      const base::string16& pnp_device_id,
+      const base::string16& storage_object_id);
 
   // Returns a list of storage object identifiers of the media transfer protocol
   // (MTP) device given a |pnp_device_id|.
   static PortableDeviceWatcherWin::StorageObjectIDs GetMTPStorageObjectIds(
-      const string16& pnp_device_id);
+      const base::string16& pnp_device_id);
 
   // Gets the media transfer protocol (MTP) device storage details given a
   // |pnp_device_id| and |storage_object_id|.
-  static void GetMTPStorageDetails(const string16& pnp_device_id,
-                                   const string16& storage_object_id,
-                                   string16* device_location,
+  static void GetMTPStorageDetails(const base::string16& pnp_device_id,
+                                   const base::string16& storage_object_id,
+                                   base::string16* device_location,
                                    std::string* unique_id,
-                                   string16* name);
+                                   base::string16* name);
 
   // Returns a list of device storage details for the given device specified by
   // |pnp_device_id|.
   static PortableDeviceWatcherWin::StorageObjects GetDeviceStorageObjects(
-      const string16& pnp_device_id);
+      const base::string16& pnp_device_id);
 
   // Used by MediaFileSystemRegistry unit test.
   void set_use_dummy_mtp_storage_info(bool use_dummy_info) {
@@ -58,11 +59,12 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
  private:
   // PortableDeviceWatcherWin:
   virtual void EnumerateAttachedDevices() OVERRIDE;
-  virtual void HandleDeviceAttachEvent(const string16& pnp_device_id) OVERRIDE;
+  virtual void HandleDeviceAttachEvent(
+      const base::string16& pnp_device_id) OVERRIDE;
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
-      string16* device_location,
-      string16* storage_object_id) const OVERRIDE;
+      base::string16* device_location,
+      base::string16* storage_object_id) const OVERRIDE;
 
   // Set to true to get dummy storage details from
   // GetMTPStorageInfoFromDeviceId().

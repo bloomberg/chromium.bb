@@ -172,16 +172,16 @@ class HistoryURLProviderTest : public testing::Test,
   // Runs an autocomplete query on |text| and checks to see that the returned
   // results' destination URLs match those provided.  Also allows checking
   // that the input type was identified correctly.
-  void RunTest(const string16 text,
-               const string16& desired_tld,
+  void RunTest(const base::string16 text,
+               const base::string16& desired_tld,
                bool prevent_inline_autocomplete,
                const UrlAndLegalDefault* expected_urls,
                size_t num_results,
                AutocompleteInput::Type* identified_input_type);
 
   // A version of the above without the final |type| output parameter.
-  void RunTest(const string16 text,
-               const string16& desired_tld,
+  void RunTest(const base::string16 text,
+               const base::string16& desired_tld,
                bool prevent_inline_autocomplete,
                const UrlAndLegalDefault* expected_urls,
                size_t num_results) {
@@ -261,13 +261,13 @@ void HistoryURLProviderTest::FillData() {
 }
 
 void HistoryURLProviderTest::RunTest(
-    const string16 text,
-    const string16& desired_tld,
+    const base::string16 text,
+    const base::string16& desired_tld,
     bool prevent_inline_autocomplete,
     const UrlAndLegalDefault* expected_urls,
     size_t num_results,
     AutocompleteInput::Type* identified_input_type) {
-  AutocompleteInput input(text, string16::npos, desired_tld, GURL(),
+  AutocompleteInput input(text, base::string16::npos, desired_tld, GURL(),
                           AutocompleteInput::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true,
                           AutocompleteInput::ALL_MATCHES);
@@ -303,7 +303,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://slashdot.org/favorite_page.html", false },
     { "http://slashdot.org/", false }
   };
-  RunTest(ASCIIToUTF16("slash"), string16(), true, expected_nonsynth,
+  RunTest(ASCIIToUTF16("slash"), base::string16(), true, expected_nonsynth,
           arraysize(expected_nonsynth));
 
   // Test that hosts get synthesized above less popular pages.
@@ -311,11 +311,11 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://kerneltrap.org/", false },
     { "http://kerneltrap.org/not_very_popular.html", false }
   };
-  RunTest(ASCIIToUTF16("kernel"), string16(), true, expected_synth,
+  RunTest(ASCIIToUTF16("kernel"), base::string16(), true, expected_synth,
           arraysize(expected_synth));
 
   // Test that unpopular pages are ignored completely.
-  RunTest(ASCIIToUTF16("fresh"), string16(), true, NULL, 0);
+  RunTest(ASCIIToUTF16("fresh"), base::string16(), true, NULL, 0);
 
   // Test that if we create or promote shorter suggestions that would not
   // normally be inline autocompletable, we make them inline autocompletable if
@@ -325,15 +325,15 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://synthesisatest.com/", true },
     { "http://synthesisatest.com/foo/", true }
   };
-  RunTest(ASCIIToUTF16("synthesisa"), string16(), false, expected_synthesisa,
-          arraysize(expected_synthesisa));
+  RunTest(ASCIIToUTF16("synthesisa"), base::string16(), false,
+          expected_synthesisa, arraysize(expected_synthesisa));
   EXPECT_LT(matches_.front().relevance, 1200);
   const UrlAndLegalDefault expected_synthesisb[] = {
     { "http://synthesisbtest.com/foo/", true },
     { "http://synthesisbtest.com/foo/bar.html", true }
   };
-  RunTest(ASCIIToUTF16("synthesisb"), string16(), false, expected_synthesisb,
-          arraysize(expected_synthesisb));
+  RunTest(ASCIIToUTF16("synthesisb"), base::string16(), false,
+          expected_synthesisb, arraysize(expected_synthesisb));
   EXPECT_GE(matches_.front().relevance, 1410);
 
   // Test that if we have a synthesized host that matches a suggestion, they
@@ -342,7 +342,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://news.google.com/", false },
     { "http://news.google.com/?ned=us&topic=n", false },
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("news"), string16(), true,
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("news"), base::string16(), true,
       expected_combine, arraysize(expected_combine)));
   // The title should also have gotten set properly on the host for the
   // synthesized one, since it was also in the results.
@@ -356,7 +356,8 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://foo.com/dir/another/again/myfile.html", false },
     { "http://foo.com/dir/", false }
   };
-  RunTest(ASCIIToUTF16("foo"), string16(), true, short_1, arraysize(short_1));
+  RunTest(ASCIIToUTF16("foo"), base::string16(), true,
+          short_1, arraysize(short_1));
 
   // When the user types the whole host, make sure we don't get two results for
   // it.
@@ -366,9 +367,9 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://foo.com/dir/", false },
     { "http://foo.com/dir/another/", false }
   };
-  RunTest(ASCIIToUTF16("foo.com"), string16(), true, short_2,
+  RunTest(ASCIIToUTF16("foo.com"), base::string16(), true, short_2,
           arraysize(short_2));
-  RunTest(ASCIIToUTF16("foo.com/"), string16(), true, short_2,
+  RunTest(ASCIIToUTF16("foo.com/"), base::string16(), true, short_2,
           arraysize(short_2));
 
   // The filename is the second best of the foo.com* entries, but there is a
@@ -380,7 +381,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://foo.com/dir/another/again/myfile.html", false },
     { "http://foo.com/dir/", false }
   };
-  RunTest(ASCIIToUTF16("foo.com/d"), string16(), true, short_3,
+  RunTest(ASCIIToUTF16("foo.com/d"), base::string16(), true, short_3,
           arraysize(short_3));
 
   // We shouldn't promote shorter URLs than the best if they're not good
@@ -390,8 +391,8 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://foo.com/dir/another/again/myfile.html", false },
     { "http://foo.com/dir/another/again/", false }
   };
-  RunTest(ASCIIToUTF16("foo.com/dir/another/a"), string16(), true, short_4,
-          arraysize(short_4));
+  RunTest(ASCIIToUTF16("foo.com/dir/another/a"), base::string16(), true,
+          short_4, arraysize(short_4));
 
   // Exact matches should always be best no matter how much more another match
   // has been typed.
@@ -405,8 +406,10 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://gooey/", true },
     { "http://www.google.com/", true }
   };
-  RunTest(ASCIIToUTF16("g"), string16(), false, short_5a, arraysize(short_5a));
-  RunTest(ASCIIToUTF16("go"), string16(), false, short_5b, arraysize(short_5b));
+  RunTest(ASCIIToUTF16("g"), base::string16(), false,
+          short_5a, arraysize(short_5a));
+  RunTest(ASCIIToUTF16("go"), base::string16(), false,
+          short_5b, arraysize(short_5b));
 }
 
 TEST_F(HistoryURLProviderTest, CullRedirects) {
@@ -443,21 +446,22 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   // Because all the results are part of a redirect chain with other results,
   // all but the first one (A) should be culled. We should get the default
   // "what you typed" result, plus this one.
-  const string16 typing(ASCIIToUTF16("http://redirects/"));
+  const base::string16 typing(ASCIIToUTF16("http://redirects/"));
   const UrlAndLegalDefault expected_results[] = {
     { UTF16ToUTF8(typing), true },
     { test_cases[0].url, false }
   };
-  RunTest(typing, string16(), true, expected_results,
+  RunTest(typing, base::string16(), true, expected_results,
           arraysize(expected_results));
 }
 
 TEST_F(HistoryURLProviderTest, WhatYouTyped) {
   // Make sure we suggest a What You Typed match at the right times.
-  RunTest(ASCIIToUTF16("wytmatch"), string16(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("wytmatch foo bar"), string16(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), string16(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("wytmatch+foo+bar.com"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch"), base::string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch foo bar"), base::string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), base::string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar.com"), base::string16(), false,
+          NULL, 0);
 
   const UrlAndLegalDefault results_1[] = {
     { "http://www.wytmatch.com/", true }
@@ -468,48 +472,49 @@ TEST_F(HistoryURLProviderTest, WhatYouTyped) {
   const UrlAndLegalDefault results_2[] = {
     { "http://wytmatch%20foo%20bar/", true }
   };
-  RunTest(ASCIIToUTF16("http://wytmatch foo bar"), string16(), false, results_2,
-          arraysize(results_2));
+  RunTest(ASCIIToUTF16("http://wytmatch foo bar"), base::string16(), false,
+          results_2, arraysize(results_2));
 
   const UrlAndLegalDefault results_3[] = {
     { "https://wytmatch%20foo%20bar/", true }
   };
-  RunTest(ASCIIToUTF16("https://wytmatch foo bar"), string16(), false,
+  RunTest(ASCIIToUTF16("https://wytmatch foo bar"), base::string16(), false,
           results_3, arraysize(results_3));
 }
 
 TEST_F(HistoryURLProviderTest, Fixup) {
   // Test for various past crashes we've had.
-  RunTest(ASCIIToUTF16("\\"), string16(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("#"), string16(), false, NULL, 0);
-  RunTest(ASCIIToUTF16("%20"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("\\"), base::string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("#"), base::string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("%20"), base::string16(), false, NULL, 0);
   const UrlAndLegalDefault fixup_crash[] = {
     { "http://%EF%BD%A5@s/", true }
   };
-  RunTest(WideToUTF16(L"\uff65@s"), string16(), false, fixup_crash,
+  RunTest(WideToUTF16(L"\uff65@s"), base::string16(), false, fixup_crash,
           arraysize(fixup_crash));
-  RunTest(WideToUTF16(L"\u2015\u2015@ \uff7c"), string16(), false, NULL, 0);
+  RunTest(WideToUTF16(L"\u2015\u2015@ \uff7c"), base::string16(), false,
+          NULL, 0);
 
   // Fixing up "file:" should result in an inline autocomplete offset of just
   // after "file:", not just after "file://".
-  const string16 input_1(ASCIIToUTF16("file:"));
+  const base::string16 input_1(ASCIIToUTF16("file:"));
   const UrlAndLegalDefault fixup_1[] = {
     { "file:///C:/foo.txt", true }
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(input_1, string16(), false, fixup_1,
+  ASSERT_NO_FATAL_FAILURE(RunTest(input_1, base::string16(), false, fixup_1,
                                   arraysize(fixup_1)));
   EXPECT_EQ(ASCIIToUTF16("///C:/foo.txt"),
             matches_.front().inline_autocompletion);
 
   // Fixing up "http:/" should result in an inline autocomplete offset of just
   // after "http:/", not just after "http:".
-  const string16 input_2(ASCIIToUTF16("http:/"));
+  const base::string16 input_2(ASCIIToUTF16("http:/"));
   const UrlAndLegalDefault fixup_2[] = {
     { "http://bogussite.com/a", true },
     { "http://bogussite.com/b", true },
     { "http://bogussite.com/c", true }
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(input_2, string16(), false, fixup_2,
+  ASSERT_NO_FATAL_FAILURE(RunTest(input_2, base::string16(), false, fixup_2,
                                   arraysize(fixup_2)));
   EXPECT_EQ(ASCIIToUTF16("/bogussite.com/a"),
             matches_.front().inline_autocompletion);
@@ -527,14 +532,14 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   const UrlAndLegalDefault fixup_4[] = {
     { "http://127.0.0.1/", true }
   };
-  RunTest(ASCIIToUTF16("127.0.0.1"), string16(), false, fixup_4,
+  RunTest(ASCIIToUTF16("127.0.0.1"), base::string16(), false, fixup_4,
           arraysize(fixup_4));
 
   // An number "17173" should result in "http://www.17173.com/" in db.
   const UrlAndLegalDefault fixup_5[] = {
     { "http://www.17173.com/", true }
   };
-  RunTest(ASCIIToUTF16("17173"), string16(), false, fixup_5,
+  RunTest(ASCIIToUTF16("17173"), base::string16(), false, fixup_5,
           arraysize(fixup_5));
 }
 
@@ -544,7 +549,8 @@ TEST_F(HistoryURLProviderTest, EmptyVisits) {
   // Wait for history to create the in memory DB.
   profile_->BlockUntilHistoryProcessesPendingRequests();
 
-  AutocompleteInput input(ASCIIToUTF16("p"), string16::npos, string16(), GURL(),
+  AutocompleteInput input(ASCIIToUTF16("p"), base::string16::npos,
+                          base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, true,
                           AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
@@ -572,21 +578,22 @@ TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
   UrlAndLegalDefault navigation_1[] = {
     { "http://test.com/", true }
   };
-  RunTest(ASCIIToUTF16("test.com"), string16(), false, navigation_1,
+  RunTest(ASCIIToUTF16("test.com"), base::string16(), false, navigation_1,
           arraysize(navigation_1));
 
   UrlAndLegalDefault navigation_2[] = {
     { "http://slash/", true }
   };
-  RunTest(ASCIIToUTF16("slash"), string16(), false, navigation_2,
+  RunTest(ASCIIToUTF16("slash"), base::string16(), false, navigation_2,
           arraysize(navigation_2));
 
-  RunTest(ASCIIToUTF16("this is a query"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("this is a query"), base::string16(), false, NULL, 0);
 }
 
 TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
-  AutocompleteInput input(ASCIIToUTF16("slash "), string16::npos, string16(),
-                          GURL(), AutocompleteInput::INVALID_SPEC, false, false,
+  AutocompleteInput input(ASCIIToUTF16("slash "), base::string16::npos,
+                          base::string16(), GURL(),
+                          AutocompleteInput::INVALID_SPEC, false, false,
                           true, AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
@@ -607,8 +614,9 @@ TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
   const UrlAndLegalDefault expected[] = {
     { "http://user@foo.com/", true }
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("user@foo.com"), string16(),
-                                  false, expected, arraysize(expected)));
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("user@foo.com"),
+                                  base::string16(), false, expected,
+                                  arraysize(expected)));
   EXPECT_LE(1200, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1210);
 }
@@ -630,14 +638,16 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);
     if (test_cases[i].relevance == 0) {
-      RunTest(ASCIIToUTF16(test_cases[i].input), string16(), false, NULL, 0);
+      RunTest(ASCIIToUTF16(test_cases[i].input), base::string16(), false,
+              NULL, 0);
     } else {
       const UrlAndLegalDefault output[] = {
         { URLFixerUpper::FixupURL(test_cases[i].input, std::string()).spec(),
           true }
       };
       ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
-                              string16(), false, output, arraysize(output)));
+                              base::string16(), false,
+                              output, arraysize(output)));
       // Actual relevance should be at least what test_cases expects and
       // and no more than 10 more.
       EXPECT_LE(test_cases[i].relevance, matches_[0].relevance);
@@ -670,7 +680,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithRefs) {
     AutocompleteInput::Type type;
     ASSERT_NO_FATAL_FAILURE(
         RunTest(ASCIIToUTF16(test_cases[i].input),
-                string16(), false, output, arraysize(output), &type));
+                base::string16(), false, output, arraysize(output), &type));
     // Actual relevance should be at least what test_cases expects and
     // and no more than 10 more.
     EXPECT_LE(test_cases[i].relevance, matches_[0].relevance);
@@ -694,8 +704,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
     { "http://intra/three", true },
     { "http://intra/two", true }
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/t"), string16(), false,
-                                  expected1, arraysize(expected1)));
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/t"), base::string16(),
+                                  false, expected1, arraysize(expected1)));
   EXPECT_LE(1410, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1420);
   EXPECT_EQ(matches_[0].relevance - 1, matches_[1].relevance);
@@ -704,8 +714,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
     { "http://moo/b", true },
     { "http://moo/bar", true }
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("moo/b"), string16(), false,
-                                  expected2, arraysize(expected2)));
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("moo/b"), base::string16(),
+                                  false, expected2, arraysize(expected2)));
   // The url what you typed match should be around 1400, otherwise the
   // search what you typed match is going to be first.
   EXPECT_LE(1400, matches_[0].relevance);
@@ -716,7 +726,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
     { "http://intra/three", true },
     { "http://intra/two", true }
   };
-  RunTest(ASCIIToUTF16("intra"), string16(), false, expected3,
+  RunTest(ASCIIToUTF16("intra"), base::string16(), false, expected3,
           arraysize(expected3));
 
   const UrlAndLegalDefault expected4[] = {
@@ -724,22 +734,22 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
     { "http://intra/three", true },
     { "http://intra/two", true }
   };
-  RunTest(ASCIIToUTF16("intra/"), string16(), false, expected4,
+  RunTest(ASCIIToUTF16("intra/"), base::string16(), false, expected4,
           arraysize(expected4));
 
   const UrlAndLegalDefault expected5[] = {
     { "http://intra/one", true }
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/o"), string16(), false,
-                                  expected5, arraysize(expected5)));
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/o"), base::string16(),
+                                  false, expected5, arraysize(expected5)));
   EXPECT_LE(1410, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1420);
 
   const UrlAndLegalDefault expected6[] = {
     { "http://intra/x", true }
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/x"), string16(), false,
-                                  expected6, arraysize(expected6)));
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/x"), base::string16(),
+                                  false, expected6, arraysize(expected6)));
   EXPECT_LE(1400, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1410);
 
@@ -747,7 +757,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
     { "http://typedhost/untypedpath", true }
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("typedhost/untypedpath"),
-      string16(), false, expected7, arraysize(expected7)));
+      base::string16(), false, expected7, arraysize(expected7)));
   EXPECT_LE(1400, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1410);
 }
@@ -760,8 +770,9 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
     "view-source:x",
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    AutocompleteInput input(ASCIIToUTF16(test_cases[i]), string16::npos,
-                            string16(), GURL(), AutocompleteInput::INVALID_SPEC,
+    AutocompleteInput input(ASCIIToUTF16(test_cases[i]), base::string16::npos,
+                            base::string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC,
                             false, false, true, AutocompleteInput::ALL_MATCHES);
     autocomplete_->Start(input, false);
     if (!autocomplete_->done())
@@ -803,14 +814,14 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
   const UrlAndLegalDefault expected_when_searching_query[] = {
     { test_cases[2].url, false }
   };
-  RunTest(ASCIIToUTF16("foobar"), string16(), true,
+  RunTest(ASCIIToUTF16("foobar"), base::string16(), true,
       expected_when_searching_query, arraysize(expected_when_searching_query));
 
   // We should not see search URLs when typing the search engine name.
   const UrlAndLegalDefault expected_when_searching_site[] = {
     { test_cases[0].url, false }
   };
-  RunTest(ASCIIToUTF16("testsearch"), string16(), true,
+  RunTest(ASCIIToUTF16("testsearch"), base::string16(), true,
       expected_when_searching_site, arraysize(expected_when_searching_site));
 }
 
@@ -876,8 +887,9 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
                                     << test_cases[i].input << ", trim_http: "
                                     << test_cases[i].trim_http);
 
-    AutocompleteInput input(ASCIIToUTF16(test_cases[i].input), string16::npos,
-                            string16(), GURL("about:blank"),
+    AutocompleteInput input(ASCIIToUTF16(test_cases[i].input),
+                            base::string16::npos, base::string16(),
+                            GURL("about:blank"),
                             AutocompleteInput::INVALID_SPEC, false, false, true,
                             AutocompleteInput::ALL_MATCHES);
     AutocompleteMatch match(autocomplete_->SuggestExactInput(

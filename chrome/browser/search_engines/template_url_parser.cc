@@ -166,7 +166,7 @@ class TemplateURLParsingContext {
   bool image_is_valid_for_favicon_;
 
   // Character content for the current element.
-  string16 string_;
+  base::string16 string_;
 
   TemplateURLParser::ParameterFilter* parameter_filter_;
 

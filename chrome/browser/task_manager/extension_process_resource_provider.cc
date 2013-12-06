@@ -42,8 +42,8 @@ class ExtensionProcessResource : public Resource {
   virtual ~ExtensionProcessResource();
 
   // Resource methods:
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
@@ -70,7 +70,7 @@ class ExtensionProcessResource : public Resource {
   base::ProcessHandle process_handle_;
   int pid_;
   int unique_process_id_;
-  string16 title_;
+  base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessResource);
 };
@@ -87,7 +87,7 @@ ExtensionProcessResource::ExtensionProcessResource(
   process_handle_ = render_view_host_->GetProcess()->GetHandle();
   unique_process_id_ = render_view_host->GetProcess()->GetID();
   pid_ = base::GetProcId(process_handle_);
-  string16 extension_name = UTF8ToUTF16(GetExtension()->name());
+  base::string16 extension_name = UTF8ToUTF16(GetExtension()->name());
   DCHECK(!extension_name.empty());
 
   Profile* profile = Profile::FromBrowserContext(

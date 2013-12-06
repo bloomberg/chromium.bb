@@ -40,11 +40,12 @@ class BackgroundContentsResourceProvider
  private:
   virtual ~BackgroundContentsResourceProvider();
 
-  void Add(BackgroundContents* background_contents, const string16& title);
+  void Add(BackgroundContents* background_contents,
+           const base::string16& title);
   void Remove(BackgroundContents* background_contents);
 
   void AddToTaskManager(BackgroundContents* background_contents,
-                        const string16& title);
+                        const base::string16& title);
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().

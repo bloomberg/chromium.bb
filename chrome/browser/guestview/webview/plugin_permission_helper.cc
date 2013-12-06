@@ -51,7 +51,7 @@ bool PluginPermissionHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PluginPermissionHelper::OnBlockedUnauthorizedPlugin(
-    const string16& name,
+    const base::string16& name,
     const std::string& identifier) {
   const char kPluginName[] = "name";
   const char kPluginIdentifier[] = "identifier";

@@ -75,7 +75,7 @@ string16 BrowserProcessResource::GetTitle() const {
 }
 
 string16 BrowserProcessResource::GetProfileName() const {
-  return string16();
+  return base::string16();
 }
 
 gfx::ImageSkia BrowserProcessResource::GetIcon() const {

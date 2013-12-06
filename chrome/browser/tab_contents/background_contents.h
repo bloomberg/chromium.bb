@@ -95,10 +95,10 @@ struct BackgroundContentsOpenedDetails {
   BackgroundContents* contents;
 
   // The name of the parent frame for these contents.
-  const string16& frame_name;
+  const base::string16& frame_name;
 
   // The ID of the parent application (if any).
-  const string16& application_id;
+  const base::string16& application_id;
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_BACKGROUND_CONTENTS_H_

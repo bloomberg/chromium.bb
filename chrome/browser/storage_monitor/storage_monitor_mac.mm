@@ -21,11 +21,11 @@ string16 GetUTF16FromDictionary(CFDictionaryRef dictionary, CFStringRef key) {
   CFStringRef value =
       base::mac::GetValueFromDictionary<CFStringRef>(dictionary, key);
   if (!value)
-    return string16();
+    return base::string16();
   return base::SysCFStringRefToUTF16(value);
 }
 
-string16 JoinName(const string16& name, const string16& addition) {
+string16 JoinName(const base::string16& name, const base::string16& addition) {
   if (addition.empty())
     return name;
   if (name.empty())
@@ -61,11 +61,11 @@ StorageInfo BuildStorageInfo(
   if (size_number)
     CFNumberGetValue(size_number, kCFNumberLongLongType, &size_in_bytes);
 
-  string16 vendor = GetUTF16FromDictionary(
+  base::string16 vendor = GetUTF16FromDictionary(
       dict, kDADiskDescriptionDeviceVendorKey);
-  string16 model = GetUTF16FromDictionary(
+  base::string16 model = GetUTF16FromDictionary(
       dict, kDADiskDescriptionDeviceModelKey);
-  string16 label = GetUTF16FromDictionary(
+  base::string16 label = GetUTF16FromDictionary(
       dict, kDADiskDescriptionVolumeNameKey);
 
   CFUUIDRef uuid = base::mac::GetValueFromDictionary<CFUUIDRef>(
@@ -78,9 +78,9 @@ StorageInfo BuildStorageInfo(
       unique_id = base::SysCFStringRefToUTF8(uuid_string);
   }
   if (unique_id.empty()) {
-    string16 revision = GetUTF16FromDictionary(
+    base::string16 revision = GetUTF16FromDictionary(
         dict, kDADiskDescriptionDeviceRevisionKey);
-    string16 unique_id2 = vendor;
+    base::string16 unique_id2 = vendor;
     unique_id2 = JoinName(unique_id2, model);
     unique_id2 = JoinName(unique_id2, revision);
     unique_id = UTF16ToUTF8(unique_id2);
@@ -97,8 +97,8 @@ StorageInfo BuildStorageInfo(
   if (!unique_id.empty())
     device_id = StorageInfo::MakeDeviceId(device_type, unique_id);
 
-  return StorageInfo(device_id, string16(), location.value(), label, vendor,
-                     model, size_in_bytes);
+  return StorageInfo(device_id, base::string16(), location.value(), label,
+                     vendor, model, size_in_bytes);
 }
 
 void GetDiskInfoAndUpdateOnFileThread(

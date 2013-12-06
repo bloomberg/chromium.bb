@@ -63,7 +63,8 @@ void SpeechRecognitionBubbleController::SetBubbleRecognizingMode() {
   ProcessRequestInUiThread(UIRequest(REQUEST_SET_RECOGNIZING_MODE));
 }
 
-void SpeechRecognitionBubbleController::SetBubbleMessage(const string16& text) {
+void SpeechRecognitionBubbleController::SetBubbleMessage(
+    const base::string16& text) {
   UIRequest request(REQUEST_SET_MESSAGE);
   request.message = text;
   ProcessRequestInUiThread(request);

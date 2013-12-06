@@ -45,10 +45,10 @@ class NativeDesktopMediaList : public DesktopMediaList {
 
   // Struct used to represent sources list the model gets from the Worker.
   struct SourceDescription {
-    SourceDescription(content::DesktopMediaID id, const string16& name);
+    SourceDescription(content::DesktopMediaID id, const base::string16& name);
 
     content::DesktopMediaID id;
-    string16 name;
+    base::string16 name;
   };
 
   // Order comparator for sources. Used to sort list of sources.

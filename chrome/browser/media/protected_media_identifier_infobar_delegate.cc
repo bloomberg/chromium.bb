@@ -115,7 +115,7 @@ string16 ProtectedMediaIdentifierInfoBarDelegate::GetLinkText() const {
       IDS_PROTECTED_MEDIA_IDENTIFIER_SETTINGS_LINK);
 #else
   NOTIMPLEMENTED();
-  return string16();
+  return base::string16();
 #endif
 }
 

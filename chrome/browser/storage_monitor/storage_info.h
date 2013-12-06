@@ -32,11 +32,11 @@ struct StorageInfo {
   StorageInfo();
   // Note: |device_id_in| should be constructed with MakeDeviceId.
   StorageInfo(const std::string& device_id_in,
-              const string16& device_name,
+              const base::string16& device_name,
               const base::FilePath::StringType& device_location,
-              const string16& label,
-              const string16& vendor,
-              const string16& model,
+              const base::string16& label,
+              const base::string16& vendor,
+              const base::string16& model,
               uint64 size_in_bytes);
   ~StorageInfo();
 
@@ -69,15 +69,15 @@ struct StorageInfo {
   static bool IsIPhotoDevice(const std::string& device_id);
 
   const std::string& device_id() const { return device_id_; }
-  const string16& name() const { return name_; }
+  const base::string16& name() const { return name_; }
   const base::FilePath::StringType& location() const { return location_; }
-  const string16& storage_label() const { return storage_label_; }
-  const string16& vendor_name() const { return vendor_name_; }
-  const string16& model_name() const { return model_name_; }
+  const base::string16& storage_label() const { return storage_label_; }
+  const base::string16& vendor_name() const { return vendor_name_; }
+  const base::string16& model_name() const { return model_name_; }
   uint64 total_size_in_bytes() const { return total_size_in_bytes_; }
 
   void set_device_id(const std::string& device_id) { device_id_ = device_id; }
-  void set_name(const string16& name) { name_ = name; }
+  void set_name(const base::string16& name) { name_ = name; }
   void set_location(const base::FilePath::StringType& location) {
     location_ = location;
   }
@@ -90,22 +90,22 @@ struct StorageInfo {
   std::string device_id_;
 
   // Human readable removable storage device name.
-  string16 name_;
+  base::string16 name_;
 
   // Current attached removable storage device location.
   base::FilePath::StringType location_;
 
   // Label given to this storage device by the user.
   // May be empty if not found or the device is unlabeled.
-  string16 storage_label_;
+  base::string16 storage_label_;
 
   // Vendor name for the removable device. (Human readable)
   // May be empty if not collected.
-  string16 vendor_name_;
+  base::string16 vendor_name_;
 
   // Model name for the removable device. (Human readable)
   // May be empty if not collected.
-  string16 model_name_;
+  base::string16 model_name_;
 
   // Size of the removable device in bytes.
   // Zero if not collected or unknown.

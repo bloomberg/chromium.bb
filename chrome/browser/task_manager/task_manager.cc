@@ -316,7 +316,7 @@ int TaskManagerModel::GetResourceIndexByUniqueId(const int unique_id) const {
 
 string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
   if (IsSharedByGroup(col_id) && !IsResourceFirstInGroup(index))
-    return string16();
+    return base::string16();
 
   switch (col_id) {
     case IDS_TASK_MANAGER_TASK_COLUMN:
@@ -375,11 +375,11 @@ string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
 
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
-const string16& TaskManagerModel::GetResourceTitle(int index) const {
+const base::string16& TaskManagerModel::GetResourceTitle(int index) const {
   PerResourceValues& values = GetPerResourceValues(index);
   if (!values.is_title_valid) {
     values.is_title_valid = true;
@@ -388,7 +388,8 @@ const string16& TaskManagerModel::GetResourceTitle(int index) const {
   return values.title;
 }
 
-const string16& TaskManagerModel::GetResourceProfileName(int index) const {
+const base::string16& TaskManagerModel::GetResourceProfileName(
+    int index) const {
   PerResourceValues& values(GetPerResourceValues(index));
   if (!values.is_profile_name_valid) {
     values.is_profile_name_valid = true;
@@ -403,7 +404,7 @@ string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   if (net_usage == 0)
     return ASCIIToUTF16("0");
-  string16 net_byte = ui::FormatSpeed(net_usage);
+  base::string16 net_byte = ui::FormatSpeed(net_usage);
   // Force number string to have LTR directionality.
   return base::i18n::GetDisplayStringInLTRDirectionality(net_byte);
 }
@@ -807,8 +808,8 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
           NOTREACHED();
         }
       }
-      const string16& title1 = GetResourceTitle(row1);
-      const string16& title2 = GetResourceTitle(row2);
+      const base::string16& title1 = GetResourceTitle(row1);
+      const base::string16& title2 = GetResourceTitle(row2);
       UErrorCode compare_status = U_ZERO_ERROR;
       UCollationResult compare_result = collator->compare(
           static_cast<const UChar*>(title1.c_str()),
@@ -821,8 +822,8 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
     }
 
     case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN: {
-      const string16& profile1 = GetResourceProfileName(row1);
-      const string16& profile2 = GetResourceProfileName(row2);
+      const base::string16& profile1 = GetResourceProfileName(row1);
+      const base::string16& profile2 = GetResourceProfileName(row2);
       return profile1.compare(0, profile1.length(), profile2, 0,
                               profile2.length());
     }
@@ -1410,7 +1411,7 @@ double TaskManagerModel::GetCPUUsage(Resource* resource) const {
 
 string16 TaskManagerModel::GetMemCellText(int64 number) const {
 #if !defined(OS_MACOSX)
-  string16 str = base::FormatNumber(number / 1024);
+  base::string16 str = base::FormatNumber(number / 1024);
 
   // Adjust number string if necessary.
   base::i18n::AdjustStringForLocaleDirection(&str);

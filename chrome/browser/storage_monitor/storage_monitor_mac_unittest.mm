@@ -28,8 +28,8 @@ StorageInfo CreateStorageInfo(
     const base::FilePath& mount_point,
     uint64 size_bytes) {
   return StorageInfo(
-      device_id, string16(), mount_point.value(),
-      string16(), string16(), UTF8ToUTF16(model_name),
+      device_id, base::string16(), mount_point.value(),
+      base::string16(), base::string16(), UTF8ToUTF16(model_name),
       size_bytes);
 }
 

@@ -104,20 +104,20 @@ struct WebPluginAction;
 class RenderViewContextMenuProxy {
  public:
   // Add a menu item to a context menu.
-  virtual void AddMenuItem(int command_id, const string16& title) = 0;
-  virtual void AddCheckItem(int command_id, const string16& title) = 0;
+  virtual void AddMenuItem(int command_id, const base::string16& title) = 0;
+  virtual void AddCheckItem(int command_id, const base::string16& title) = 0;
   virtual void AddSeparator() = 0;
 
   // Add a submenu item to a context menu.
   virtual void AddSubMenu(int command_id,
-                          const string16& label,
+                          const base::string16& label,
                           ui::MenuModel* model) = 0;
 
   // Update the status and text of the specified context-menu item.
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const string16& title) = 0;
+                              const base::string16& title) = 0;
 
   // Retrieve the given associated objects with a context menu.
   virtual content::RenderViewHost* GetRenderViewHost() const = 0;
@@ -152,16 +152,18 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual void MenuClosed(ui::SimpleMenuModel* source) OVERRIDE;
 
   // RenderViewContextMenuDelegate implementation.
-  virtual void AddMenuItem(int command_id, const string16& title) OVERRIDE;
-  virtual void AddCheckItem(int command_id, const string16& title) OVERRIDE;
+  virtual void AddMenuItem(int command_id,
+                           const base::string16& title) OVERRIDE;
+  virtual void AddCheckItem(int command_id,
+                            const base::string16& title) OVERRIDE;
   virtual void AddSeparator() OVERRIDE;
   virtual void AddSubMenu(int command_id,
-                          const string16& label,
+                          const base::string16& label,
                           ui::MenuModel* model) OVERRIDE;
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const string16& title) OVERRIDE;
+                              const base::string16& title) OVERRIDE;
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual Profile* GetProfile() const OVERRIDE;
@@ -259,7 +261,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // Returns a (possibly truncated) version of the current selection text
   // suitable or putting in the title of a menu item.
-  string16 PrintableSelectionText();
+  base::string16 PrintableSelectionText();
 
   // The destination URL to use if the user tries to search for or navigate to
   // a text selection.

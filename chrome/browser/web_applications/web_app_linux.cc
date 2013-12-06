@@ -38,7 +38,7 @@ void DeletePlatformShortcuts(
 
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const string16& /*old_app_title*/,
+    const base::string16& /*old_app_title*/,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 

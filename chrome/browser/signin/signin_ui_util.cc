@@ -75,7 +75,7 @@ string16 GetSigninMenuLabel(Profile* profile) {
     if (signin_manager)
       username = signin_manager->GetAuthenticatedUsername();
     if (!username.empty() && !signin_manager->AuthInProgress()) {
-      string16 elided_username = gfx::ElideEmail(UTF8ToUTF16(username),
+      base::string16 elided_username = gfx::ElideEmail(UTF8ToUTF16(username),
                                                  gfx::FontList(),
                                                  kUsernameMaxWidth);
       return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL,
@@ -90,10 +90,11 @@ string16 GetSigninMenuLabel(Profile* profile) {
 // that can be used to display information about the state.
 void GetStatusLabelsForAuthError(Profile* profile,
                                  const SigninManagerBase& signin_manager,
-                                 string16* status_label,
-                                 string16* link_label) {
-  string16 username = UTF8ToUTF16(signin_manager.GetAuthenticatedUsername());
-  string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+                                 base::string16* status_label,
+                                 base::string16* link_label) {
+  base::string16 username =
+      UTF8ToUTF16(signin_manager.GetAuthenticatedUsername());
+  base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   if (link_label)
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
 

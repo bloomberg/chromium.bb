@@ -36,8 +36,8 @@ class PanelResource : public RendererResource {
 
   // Resource methods:
   virtual Type GetType() const OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
@@ -73,7 +73,7 @@ Resource::Type PanelResource::GetType() const {
 }
 
 string16 PanelResource::GetTitle() const {
-  string16 title = panel_->GetWindowTitle();
+  base::string16 title = panel_->GetWindowTitle();
   // Since the title will be concatenated with an IDS_TASK_MANAGER_* prefix
   // we need to explicitly set the title to be LTR format if there is no
   // strong RTL charater in it. Otherwise, if the task manager prefix is an

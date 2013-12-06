@@ -42,7 +42,7 @@ class PrintDialogGtk
       bool has_selection,
       const PrintingContextGtk::PrintSettingsCallback& callback) OVERRIDE;
   virtual void PrintDocument(const printing::Metafile* metafile,
-                             const string16& document_name) OVERRIDE;
+                             const base::string16& document_name) OVERRIDE;
   virtual void AddRefToDialog() OVERRIDE;
   virtual void ReleaseDialog() OVERRIDE;
 
@@ -58,7 +58,7 @@ class PrintDialogGtk
   CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, int);
 
   // Prints document named |document_name|.
-  void SendDocumentToPrinter(const string16& document_name);
+  void SendDocumentToPrinter(const base::string16& document_name);
 
   // Handles print job response.
   static void OnJobCompletedThunk(GtkPrintJob* print_job,

@@ -183,7 +183,7 @@ void ExternalProcessImporterClient::OnHomePageImportReady(
 }
 
 void ExternalProcessImporterClient::OnBookmarksImportStart(
-    const string16& first_folder_name,
+    const base::string16& first_folder_name,
     size_t total_bookmarks_count) {
   if (cancelled_)
     return;

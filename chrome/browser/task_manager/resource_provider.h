@@ -56,8 +56,8 @@ class Resource {
     TASKMANAGER_RESOURCE_TYPE_LIST(TASKMANAGER_RESOURCE_TYPE_LIST_ENUM)
   };
 
-  virtual string16 GetTitle() const = 0;
-  virtual string16 GetProfileName() const = 0;
+  virtual base::string16 GetTitle() const = 0;
+  virtual base::string16 GetProfileName() const = 0;
   virtual gfx::ImageSkia GetIcon() const = 0;
   virtual base::ProcessHandle GetProcess() const = 0;
   virtual int GetUniqueChildProcessId() const = 0;

@@ -33,11 +33,11 @@ class ListValue;
 class ManagedModeSiteList {
  public:
   struct Site {
-    Site(const string16& name, int category_id);
+    Site(const base::string16& name, int category_id);
     ~Site();
 
     // The human-readable name for the site.
-    string16 name;
+    base::string16 name;
 
     // An identifier for the category. Categories are hardcoded and start with
     // 1, but apart from the offset correspond to the return values from

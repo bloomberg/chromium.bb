@@ -105,8 +105,9 @@ class ManagedUserRegistrationUtilityImpl
 
 } // namespace
 
-ManagedUserRegistrationInfo::ManagedUserRegistrationInfo(const string16& name,
-                                                         int avatar_index)
+ManagedUserRegistrationInfo::ManagedUserRegistrationInfo(
+    const base::string16& name,
+    int avatar_index)
     : avatar_index(avatar_index),
       name(name) {
 }

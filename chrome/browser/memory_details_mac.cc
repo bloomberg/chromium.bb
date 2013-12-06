@@ -170,7 +170,7 @@ void MemoryDetails::CollectProcessData(
         info.version = version_info->product_version();
       } else {
         info.product_name = process_data_[index].name;
-        info.version = string16();
+        info.version = base::string16();
       }
 
       // Memory info.
@@ -218,7 +218,7 @@ void MemoryDetails::CollectProcessDataChrome(
     info.version = ASCIIToUTF16(version_info.Version());
   } else {
     info.product_name = process_data_[CHROME_BROWSER].name;
-    info.version = string16();
+    info.version = base::string16();
   }
 
   // Check if this is one of the child processes whose data we collected

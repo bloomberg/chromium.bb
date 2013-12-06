@@ -73,7 +73,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   // we will instead create a subfolder named 'Imported from IE (1)'.
   virtual void AddBookmarks(
       const std::vector<ImportedBookmarkEntry>& bookmarks,
-      const string16& top_level_folder_name);
+      const base::string16& top_level_folder_name);
 
   virtual void AddFavicons(
       const std::vector<ImportedFaviconUsage>& favicons);

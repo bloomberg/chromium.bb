@@ -214,7 +214,7 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
     return;
   }
 
-  string16 document_name =
+  base::string16 document_name =
       printing::SimplifyDocumentTitle(document_->name());
   if (document_name.empty()) {
     document_name = printing::SimplifyDocumentTitle(

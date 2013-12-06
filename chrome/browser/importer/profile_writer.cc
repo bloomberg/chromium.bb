@@ -36,7 +36,7 @@ namespace {
 // Generates a unique folder name. If |folder_name| is not unique, then this
 // repeatedly tests for '|folder_name| + (i)' until a unique name is found.
 string16 GenerateUniqueFolderName(BookmarkModel* model,
-                                  const string16& folder_name) {
+                                  const base::string16& folder_name) {
   // Build a set containing the bookmark bar folder names.
   std::set<string16> existing_folder_names;
   const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
@@ -52,8 +52,8 @@ string16 GenerateUniqueFolderName(BookmarkModel* model,
 
   // Otherwise iterate until we find a unique name.
   for (size_t i = 1; i <= existing_folder_names.size(); ++i) {
-    string16 name = folder_name + ASCIIToUTF16(" (") + base::IntToString16(i) +
-        ASCIIToUTF16(")");
+    base::string16 name = folder_name + ASCIIToUTF16(" (") +
+        base::IntToString16(i) + ASCIIToUTF16(")");
     if (existing_folder_names.find(name) == existing_folder_names.end())
       return name;
   }
@@ -109,7 +109,7 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
 
 void ProfileWriter::AddBookmarks(
     const std::vector<ImportedBookmarkEntry>& bookmarks,
-    const string16& top_level_folder_name) {
+    const base::string16& top_level_folder_name) {
   if (bookmarks.empty())
     return;
 
@@ -161,7 +161,8 @@ void ProfileWriter::AddBookmarks(
       // Add to a folder that will contain all the imported bookmarks not added
       // to the bar.  The first time we do so, create the folder.
       if (!top_level_folder) {
-        string16 name = GenerateUniqueFolderName(model, top_level_folder_name);
+        base::string16 name =
+            GenerateUniqueFolderName(model,top_level_folder_name);
         top_level_folder = model->AddFolder(bookmark_bar,
                                             bookmark_bar->child_count(),
                                             name);

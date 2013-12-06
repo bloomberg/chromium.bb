@@ -80,8 +80,8 @@ class MockCloudPrintFlowHandler
     : public CloudPrintFlowHandler,
       public base::SupportsWeakPtr<MockCloudPrintFlowHandler> {
  public:
-  MockCloudPrintFlowHandler(const string16& title,
-                            const string16& print_ticket,
+  MockCloudPrintFlowHandler(const base::string16& title,
+                            const base::string16& print_ticket,
                             const std::string& file_type,
                             bool close_after_signin,
                             const base::Closure& callback)
@@ -104,7 +104,7 @@ class MockCloudPrintWebDialogDelegate : public CloudPrintWebDialogDelegate {
   MOCK_CONST_METHOD0(GetDialogModalType,
       ui::ModalType());
   MOCK_CONST_METHOD0(GetDialogTitle,
-      string16());
+      base::string16());
   MOCK_CONST_METHOD0(GetDialogContentURL,
       GURL());
   MOCK_CONST_METHOD1(GetWebUIMessageHandlers,
@@ -291,8 +291,8 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    string16 mock_title;
-    string16 mock_print_ticket;
+    base::string16 mock_title;
+    base::string16 mock_print_ticket;
     std::string mock_file_type;
     MockCloudPrintFlowHandler* handler =
         new MockCloudPrintFlowHandler(mock_print_ticket, mock_title,

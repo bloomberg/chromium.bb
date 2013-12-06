@@ -44,8 +44,8 @@ class TestStorageMonitor : public StorageMonitor {
 #if defined(OS_WIN)
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
-      string16* device_location,
-      string16* storage_object_id) const OVERRIDE;
+      base::string16* device_location,
+      base::string16* storage_object_id) const OVERRIDE;
 #endif
 
 #if defined(OS_LINUX)

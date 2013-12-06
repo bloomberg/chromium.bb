@@ -50,7 +50,7 @@ class SpeechRecognitionBubbleController
   void SetBubbleRecognizingMode();
 
   // Displays the given string with the 'Try again' and 'Cancel' buttons.
-  void SetBubbleMessage(const string16& text);
+  void SetBubbleMessage(const base::string16& text);
 
   // Checks whether the bubble is active and is showing a message.
   bool IsShowingMessage() const;
@@ -89,7 +89,7 @@ class SpeechRecognitionBubbleController
 
   struct UIRequest {
     RequestType type;
-    string16 message;
+    base::string16 message;
     gfx::Rect element_rect;
     float volume;
     float noise_volume;

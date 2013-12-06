@@ -24,7 +24,7 @@ class DesktopMediaList {
     content::DesktopMediaID id;
 
     // Name of the source that should be shown to the user.
-    string16 name;
+    base::string16 name;
 
     // The thumbnail for the source.
     gfx::ImageSkia thumbnail;

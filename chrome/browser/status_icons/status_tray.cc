@@ -13,7 +13,7 @@ StatusTray::~StatusTray() {
 
 StatusIcon* StatusTray::CreateStatusIcon(StatusIconType type,
                                          const gfx::ImageSkia& image,
-                                         const string16& tool_tip) {
+                                         const base::string16& tool_tip) {
   StatusIcon* icon = CreatePlatformStatusIcon(type, image, tool_tip);
   if (icon)
     status_icons_.push_back(icon);

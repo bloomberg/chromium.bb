@@ -105,11 +105,11 @@ AutocompleteActionPredictor::~AutocompleteActionPredictor() {
 }
 
 void AutocompleteActionPredictor::RegisterTransitionalMatches(
-    const string16& user_text,
+    const base::string16& user_text,
     const AutocompleteResult& result) {
   if (user_text.length() < kMinimumUserTextLength)
     return;
-  const string16 lower_user_text(base::i18n::ToLower(user_text));
+  const base::string16 lower_user_text(base::i18n::ToLower(user_text));
 
   // Merge this in to an existing match if we already saw |user_text|
   std::vector<TransitionalMatch>::iterator match_it =
@@ -161,7 +161,7 @@ void AutocompleteActionPredictor::StartPrerendering(
 // Given a match, return a recommended action.
 AutocompleteActionPredictor::Action
     AutocompleteActionPredictor::RecommendAction(
-        const string16& user_text,
+        const base::string16& user_text,
         const AutocompleteMatch& match) const {
   bool is_in_db = false;
   const double confidence = CalculateConfidence(user_text, match, &is_in_db);
@@ -333,7 +333,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
       prerender::IsOmniboxEnabled(profile_));
 
   const GURL& opened_url = match.destination_url;
-  const string16 lower_user_text(base::i18n::ToLower(log.text));
+  const base::string16 lower_user_text(base::i18n::ToLower(log.text));
 
   // Traverse transitional matches for those that have a user_text that is a
   // prefix of |lower_user_text|.
@@ -548,7 +548,7 @@ void AutocompleteActionPredictor::FinishInitialization() {
 }
 
 double AutocompleteActionPredictor::CalculateConfidence(
-    const string16& user_text,
+    const base::string16& user_text,
     const AutocompleteMatch& match,
     bool* is_in_db) const {
   const DBCacheKey key = { user_text, match.destination_url };

@@ -40,20 +40,20 @@ class BackgroundContentsResource : public RendererResource {
  public:
   BackgroundContentsResource(
       BackgroundContents* background_contents,
-      const string16& application_name);
+      const base::string16& application_name);
   virtual ~BackgroundContentsResource();
 
   // Resource methods:
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual bool IsBackground() const OVERRIDE;
 
-  const string16& application_name() const { return application_name_; }
+  const base::string16& application_name() const { return application_name_; }
  private:
   BackgroundContents* background_contents_;
 
-  string16 application_name_;
+  base::string16 application_name_;
 
   // The icon painted for BackgroundContents.
   // TODO(atwilson): Use the favicon when there's a way to get the favicon for
@@ -70,7 +70,7 @@ gfx::ImageSkia* BackgroundContentsResource::default_icon_ = NULL;
 // This preserves old behavior but is incorrect, and should be fixed.
 BackgroundContentsResource::BackgroundContentsResource(
     BackgroundContents* background_contents,
-    const string16& application_name)
+    const base::string16& application_name)
     : RendererResource(
           background_contents->web_contents()->GetRenderProcessHost()->
               GetHandle() ?
@@ -95,7 +95,7 @@ BackgroundContentsResource::~BackgroundContentsResource() {
 }
 
 string16 BackgroundContentsResource::GetTitle() const {
-  string16 title = application_name_;
+  base::string16 title = application_name_;
 
   if (title.empty()) {
     // No title (can't locate the parent app for some reason) so just display
@@ -107,7 +107,7 @@ string16 BackgroundContentsResource::GetTitle() const {
 }
 
 string16 BackgroundContentsResource::GetProfileName() const {
-  return string16();
+  return base::string16();
 }
 
 gfx::ImageSkia BackgroundContentsResource::GetIcon() const {
@@ -175,10 +175,10 @@ void BackgroundContentsResourceProvider::StartUpdating() {
     ExtensionService* extension_service = profiles[i]->GetExtensionService();
     for (std::vector<BackgroundContents*>::iterator iterator = contents.begin();
          iterator != contents.end(); ++iterator) {
-      string16 application_name;
+      base::string16 application_name;
       // Lookup the name from the parent extension.
       if (extension_service) {
-        const string16& application_id =
+        const base::string16& application_id =
             background_contents_service->GetParentApplicationId(*iterator);
         const Extension* extension = extension_service->GetExtensionById(
             UTF16ToUTF8(application_id), false);
@@ -226,7 +226,7 @@ void BackgroundContentsResourceProvider::StopUpdating() {
 
 void BackgroundContentsResourceProvider::AddToTaskManager(
     BackgroundContents* background_contents,
-    const string16& application_name) {
+    const base::string16& application_name) {
   BackgroundContentsResource* resource =
       new BackgroundContentsResource(background_contents, application_name);
   resources_[background_contents] = resource;
@@ -234,7 +234,7 @@ void BackgroundContentsResourceProvider::AddToTaskManager(
 }
 
 void BackgroundContentsResourceProvider::Add(
-    BackgroundContents* contents, const string16& application_name) {
+    BackgroundContents* contents, const base::string16& application_name) {
   if (!updating_)
     return;
 
@@ -273,7 +273,7 @@ void BackgroundContentsResourceProvider::Observe(
       // will display the URL instead in this case. This should never happen
       // except in rare cases when an extension is being unloaded or chrome is
       // exiting while the task manager is displayed.
-      string16 application_name;
+      base::string16 application_name;
       ExtensionService* service =
           content::Source<Profile>(source)->GetExtensionService();
       if (service) {
@@ -299,7 +299,7 @@ void BackgroundContentsResourceProvider::Observe(
       // Should never get a NAVIGATED before OPENED.
       DCHECK(resources_.find(contents) != resources_.end());
       // Preserve the application name.
-      string16 application_name(
+      base::string16 application_name(
           resources_.find(contents)->second->application_name());
       Remove(contents);
       Add(contents, application_name);
@@ -316,7 +316,7 @@ void BackgroundContentsResourceProvider::Observe(
       for (Resources::iterator i = resources_.begin(); i != resources_.end();
            i++) {
         if (i->first->web_contents() == web_contents) {
-          string16 application_name = i->second->application_name();
+          base::string16 application_name = i->second->application_name();
           BackgroundContents* contents = i->first;
           Remove(contents);
           Add(contents, application_name);

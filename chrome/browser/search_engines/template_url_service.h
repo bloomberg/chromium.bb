@@ -101,11 +101,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Generates a suitable keyword for the specified url, which must be valid.
   // This is guaranteed not to return an empty string, since TemplateURLs should
   // never have an empty keyword.
-  static string16 GenerateKeyword(const GURL& url);
+  static base::string16 GenerateKeyword(const GURL& url);
 
   // Removes any unnecessary characters from a user input keyword.
   // This removes the leading scheme, "www." and any trailing slash.
-  static string16 CleanUserInputKeyword(const string16& keyword);
+  static base::string16 CleanUserInputKeyword(const base::string16& keyword);
 
   // Returns the search url for t_url.  Returns an empty GURL if t_url has no
   // url().
@@ -128,14 +128,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   //
   // url gives the url of the search query. The url is used to avoid generating
   // a TemplateURL for an existing TemplateURL that shares the same host.
-  bool CanReplaceKeyword(const string16& keyword,
+  bool CanReplaceKeyword(const base::string16& keyword,
                          const GURL& url,
                          TemplateURL** template_url_to_replace);
 
   // Returns (in |matches|) all TemplateURLs whose keywords begin with |prefix|,
   // sorted shortest keyword-first. If |support_replacement_only| is true, only
   // TemplateURLs that support replacement are returned.
-  void FindMatchingKeywords(const string16& prefix,
+  void FindMatchingKeywords(const base::string16& prefix,
                             bool support_replacement_only,
                             TemplateURLVector* matches) const;
 
@@ -143,7 +143,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // the keyword was not found.
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
-  TemplateURL* GetTemplateURLForKeyword(const string16& keyword);
+  TemplateURL* GetTemplateURLForKeyword(const base::string16& keyword);
 
   // Returns that TemplateURL with the specified GUID, or NULL if not found.
   // The caller should not try to delete the returned pointer; the data store
@@ -162,8 +162,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // ones.
   void AddAndSetProfile(TemplateURL* template_url, Profile* profile);
   void AddWithOverrides(TemplateURL* template_url,
-                        const string16& short_name,
-                        const string16& keyword,
+                        const base::string16& short_name,
+                        const base::string16& keyword,
                         const std::string& url);
 
   // Add the search engine of type NORMAL_CONTROLLED_BY_EXTENSION.
@@ -217,8 +217,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Resets the title, keyword and search url of the specified TemplateURL.
   // The TemplateURL is marked as not replaceable.
   void ResetTemplateURL(TemplateURL* url,
-                        const string16& title,
-                        const string16& keyword,
+                        const base::string16& title,
+                        const base::string16& keyword,
                         const std::string& search_url);
 
   // Return true if the given |url| can be made the default. This returns false
@@ -298,8 +298,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Returns the locale-direction-adjusted short name for the given keyword.
   // Also sets the out param to indicate whether the keyword belongs to an
   // Omnibox extension.
-  string16 GetKeywordShortName(const string16& keyword,
-                               bool* is_omnibox_api_extension_keyword);
+  base::string16 GetKeywordShortName(const base::string16& keyword,
+                                     bool* is_omnibox_api_extension_keyword);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -380,7 +380,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This exists and is virtual for testing.
   virtual void SetKeywordSearchTermsForURL(const TemplateURL* t_url,
                                            const GURL& url,
-                                           const string16& term);
+                                           const base::string16& term);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, TestManagedDefaultSearch);
@@ -483,7 +483,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   bool CanReplace(const TemplateURL* t_url);
 
   // Like GetTemplateURLForKeyword(), but ignores extension-provided keywords.
-  TemplateURL* FindNonExtensionTemplateURLForKeyword(const string16& keyword);
+  TemplateURL* FindNonExtensionTemplateURLForKeyword(
+      const base::string16& keyword);
 
   // Updates the information in |existing_turl| using the information from
   // |new_values|, but the ID for |existing_turl| is retained.  Notifying
@@ -576,7 +577,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // and finally it repeatedly appends special characters to the keyword until
   // it is unique to the Service. If |force| is true, then this will only
   // execute the special character appending functionality.
-  string16 UniquifyKeyword(const TemplateURL& turl, bool force);
+  base::string16 UniquifyKeyword(const TemplateURL& turl, bool force);
 
   // Returns true iff |local_turl| is considered "better" than |sync_turl| for
   // the purposes of resolving conflicts. |local_turl| must be a TemplateURL

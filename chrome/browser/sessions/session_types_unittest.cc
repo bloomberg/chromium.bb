@@ -31,12 +31,12 @@ const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
                       blink::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
-const string16 kTitle = ASCIIToUTF16("title");
+const base::string16 kTitle = ASCIIToUTF16("title");
 const content::PageState kPageState =
     content::PageState::CreateFromEncodedData("page state");
 const GURL kOriginalRequestURL("http://www.original-request.com");
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
-const string16 kSearchTerms = ASCIIToUTF16("my search terms");
+const base::string16 kSearchTerms = ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
 
 // Create a typical SessionTab protocol buffer and set an existing

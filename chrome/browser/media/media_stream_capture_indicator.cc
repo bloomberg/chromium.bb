@@ -63,7 +63,7 @@ string16 GetSecurityOrigin(WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!web_contents)
-    return string16();
+    return base::string16();
 
   std::string security_origin = web_contents->GetURL().GetOrigin().spec();
 
@@ -81,13 +81,13 @@ string16 GetTitle(WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!web_contents)
-    return string16();
+    return base::string16();
 
   const extensions::Extension* const extension = GetExtension(web_contents);
   if (extension)
     return UTF8ToUTF16(extension->name());
 
-  string16 tab_title = web_contents->GetTitle();
+  base::string16 tab_title = web_contents->GetTitle();
 
   if (tab_title.empty()) {
     // If the page's title is empty use its security originator.
@@ -350,7 +350,7 @@ void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon(bool audio,
   EnsureStatusTrayIconResources();
 
   gfx::ImageSkia image;
-  string16 tool_tip;
+  base::string16 tool_tip;
   GetStatusTrayIconInfo(audio, video, &image, &tool_tip);
   DCHECK(!image.isNull());
   DCHECK(!tool_tip.empty());
@@ -441,10 +441,11 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
   }
 }
 
-void MediaStreamCaptureIndicator::GetStatusTrayIconInfo(bool audio,
-                                                        bool video,
-                                                        gfx::ImageSkia* image,
-                                                        string16* tool_tip) {
+void MediaStreamCaptureIndicator::GetStatusTrayIconInfo(
+    bool audio,
+    bool video,
+    gfx::ImageSkia* image,
+    base::string16* tool_tip) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(audio || video);
 

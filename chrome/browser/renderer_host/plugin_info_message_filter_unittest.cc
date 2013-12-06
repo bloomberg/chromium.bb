@@ -163,7 +163,7 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     content::WebPluginInfo plugin;
     std::string actual_mime_type;
     std::string identifier;
-    string16 plugin_name;
+    base::string16 plugin_name;
     EXPECT_FALSE(context_.FindEnabledPlugin(
         0, GURL(), GURL(), "foo/bar", &status, &plugin, &actual_mime_type,
         NULL));

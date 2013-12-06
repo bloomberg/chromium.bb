@@ -567,7 +567,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     // the button/link may navigate away before the injected javascript can
     // reply, hanging the test.
     rvh->ExecuteJavascriptInWebFrame(
-        string16(),
+        base::string16(),
         ASCIIToUTF16("document.getElementById('" + node_id + "').click();\n"));
     return true;
   }

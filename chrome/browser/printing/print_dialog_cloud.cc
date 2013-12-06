@@ -166,11 +166,12 @@ void CloudPrintDataSender::CancelPrintDataFile() {
   helper_ = NULL;
 }
 
-CloudPrintDataSender::CloudPrintDataSender(CloudPrintDataSenderHelper* helper,
-                                           const string16& print_job_title,
-                                           const string16& print_ticket,
-                                           const std::string& file_type,
-                                           const base::RefCountedMemory* data)
+CloudPrintDataSender::CloudPrintDataSender(
+    CloudPrintDataSenderHelper* helper,
+    const base::string16& print_job_title,
+    const base::string16& print_ticket,
+    const std::string& file_type,
+    const base::RefCountedMemory* data)
     : helper_(helper),
       print_job_title_(print_job_title),
       print_ticket_(print_ticket),
@@ -219,12 +220,13 @@ void CloudPrintDataSender::SendPrintData() {
 }
 
 
-CloudPrintFlowHandler::CloudPrintFlowHandler(const base::RefCountedMemory* data,
-                                             const string16& print_job_title,
-                                             const string16& print_ticket,
-                                             const std::string& file_type,
-                                             bool close_after_signin,
-                                             const base::Closure& callback)
+CloudPrintFlowHandler::CloudPrintFlowHandler(
+    const base::RefCountedMemory* data,
+    const base::string16& print_job_title,
+    const base::string16& print_ticket,
+    const std::string& file_type,
+    bool close_after_signin,
+    const base::Closure& callback)
     : dialog_delegate_(NULL),
       data_(data),
       print_job_title_(print_job_title),
@@ -457,8 +459,8 @@ CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
     gfx::NativeWindow modal_parent,
     const base::RefCountedMemory* data,
     const std::string& json_arguments,
-    const string16& print_job_title,
-    const string16& print_ticket,
+    const base::string16& print_job_title,
+    const base::string16& print_ticket,
     const std::string& file_type,
     bool close_after_signin,
     const base::Closure& callback)
@@ -530,7 +532,7 @@ ui::ModalType CloudPrintWebDialogDelegate::GetDialogModalType() const {
 }
 
 string16 CloudPrintWebDialogDelegate::GetDialogTitle() const {
-  return string16();
+  return base::string16();
 }
 
 GURL CloudPrintWebDialogDelegate::GetDialogContentURL() const {
@@ -596,8 +598,8 @@ bool CloudPrintWebDialogDelegate::HandleOpenURLFromTab(
 void CreateDialogImpl(content::BrowserContext* browser_context,
                       gfx::NativeWindow modal_parent,
                       const base::RefCountedMemory* data,
-                      const string16& print_job_title,
-                      const string16& print_ticket,
+                      const base::string16& print_job_title,
+                      const base::string16& print_ticket,
                       const std::string& file_type,
                       bool close_after_signin,
                       const base::Closure& callback) {
@@ -630,15 +632,15 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
 void CreateDialogSigninImpl(content::BrowserContext* browser_context,
                             gfx::NativeWindow modal_parent,
                             const base::Closure& callback) {
-  CreateDialogImpl(browser_context, modal_parent, NULL, string16(),
-                   string16(), std::string(), true, callback);
+  CreateDialogImpl(browser_context, modal_parent, NULL, base::string16(),
+                   base::string16(), std::string(), true, callback);
 }
 
 void CreateDialogForFileImpl(content::BrowserContext* browser_context,
                              gfx::NativeWindow modal_parent,
                              const base::FilePath& path_to_file,
-                             const string16& print_job_title,
-                             const string16& print_ticket,
+                             const base::string16& print_job_title,
+                             const base::string16& print_ticket,
                              const std::string& file_type,
                              bool delete_on_close) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -686,8 +688,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                               gfx::NativeWindow modal_parent,
                               const base::FilePath& path_to_file,
-                              const string16& print_job_title,
-                              const string16& print_ticket,
+                              const base::string16& print_job_title,
+                              const base::string16& print_ticket,
                               const std::string& file_type,
                               bool delete_on_close) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
@@ -713,8 +715,8 @@ void CreateCloudPrintSigninDialog(content::BrowserContext* browser_context,
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
                                gfx::NativeWindow modal_parent,
                                const base::RefCountedMemory* data,
-                               const string16& print_job_title,
-                               const string16& print_ticket,
+                               const base::string16& print_job_title,
+                               const base::string16& print_ticket,
                                const std::string& file_type) {
   internal_cloud_print_helpers::CreateDialogImpl(browser_context, modal_parent,
                                                  data, print_job_title,
@@ -729,8 +731,8 @@ bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
     cloud_print_file =
         command_line.GetSwitchValuePath(switches::kCloudPrintFile);
     if (!cloud_print_file.empty()) {
-      string16 print_job_title;
-      string16 print_job_print_ticket;
+      base::string16 print_job_title;
+      base::string16 print_job_print_ticket;
       if (command_line.HasSwitch(switches::kCloudPrintJobTitle)) {
         print_job_title =
           internal_cloud_print_helpers::GetSwitchValueString16(

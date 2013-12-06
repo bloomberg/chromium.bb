@@ -69,7 +69,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
       const std::vector<ImporterURLRow>& history_rows_group,
       int visit_source);
   void OnHomePageImportReady(const GURL& home_page);
-  void OnBookmarksImportStart(const string16& first_folder_name,
+  void OnBookmarksImportStart(const base::string16& first_folder_name,
                               size_t total_bookmarks_count);
   void OnBookmarksImportGroup(
       const std::vector<ImportedBookmarkEntry>& bookmarks_group);
@@ -111,7 +111,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
 
   // Usually some variation on IDS_BOOKMARK_GROUP_...; the name of the folder
   // under which imported bookmarks will be placed.
-  string16 bookmarks_first_folder_name_;
+  base::string16 bookmarks_first_folder_name_;
 
   // Total number of bookmarks to import.
   size_t total_bookmarks_count_;

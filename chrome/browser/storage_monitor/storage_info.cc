@@ -24,11 +24,11 @@ StorageInfo::StorageInfo() : total_size_in_bytes_(0) {
 }
 
 StorageInfo::StorageInfo(const std::string& device_id_in,
-                         const string16& device_name,
+                         const base::string16& device_name,
                          const base::FilePath::StringType& device_location,
-                         const string16& label,
-                         const string16& vendor,
-                         const string16& model,
+                         const base::string16& label,
+                         const base::string16& vendor,
+                         const base::string16& model,
                          uint64 size_in_bytes)
     : device_id_(device_id_in),
       name_(device_name),

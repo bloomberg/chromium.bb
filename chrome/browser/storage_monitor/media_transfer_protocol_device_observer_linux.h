@@ -22,7 +22,7 @@ typedef void (*GetStorageInfoFunc)(
     const std::string& storage_name,
     device::MediaTransferProtocolManager* mtp_manager,
     std::string* id,
-    string16* name,
+    base::string16* name,
     std::string* location);
 
 // Helper class to send MTP storage attachment and detachment events to

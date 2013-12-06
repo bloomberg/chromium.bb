@@ -1070,8 +1070,8 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
 
 TemplateURL* MakePrepopulatedTemplateURL(
     Profile* profile,
-    const string16& name,
-    const string16& keyword,
+    const base::string16& name,
+    const base::string16& keyword,
     const base::StringPiece& search_url,
     const base::StringPiece& suggest_url,
     const base::StringPiece& instant_url,
@@ -1130,8 +1130,8 @@ ScopedVector<TemplateURL> GetPrepopulatedTemplateFromPrefs(Profile* profile) {
   size_t num_engines = list->GetSize();
   for (size_t i = 0; i != num_engines; ++i) {
     const DictionaryValue* engine;
-    string16 name;
-    string16 keyword;
+    base::string16 name;
+    base::string16 keyword;
     std::string search_url;
     std::string favicon_url;
     std::string encoding;

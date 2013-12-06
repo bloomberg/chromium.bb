@@ -35,7 +35,7 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
     bool enabled;
     bool checked;
     bool hidden;
-    string16 title;
+    base::string16 title;
   };
 
   MockRenderViewContextMenu() : observer_(NULL), profile_(new TestingProfile) {}
@@ -60,16 +60,18 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   }
 
   // RenderViewContextMenuProxy implementation.
-  virtual void AddMenuItem(int command_id, const string16& title) OVERRIDE {}
-  virtual void AddCheckItem(int command_id, const string16& title) OVERRIDE {}
+  virtual void AddMenuItem(int command_id,
+                           const base::string16& title) OVERRIDE {}
+  virtual void AddCheckItem(int command_id,
+                            const base::string16& title) OVERRIDE {}
   virtual void AddSeparator() OVERRIDE {}
   virtual void AddSubMenu(int command_id,
-                          const string16& label,
+                          const base::string16& label,
                           ui::MenuModel* model) OVERRIDE {}
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const string16& title) OVERRIDE {}
+                              const base::string16& title) OVERRIDE {}
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE {
     return NULL;
   }

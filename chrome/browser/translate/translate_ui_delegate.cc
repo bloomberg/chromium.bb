@@ -67,7 +67,7 @@ std::vector<TranslateUIDelegate::LanguageNamePair>
        iter != language_codes.end(); ++iter) {
     std::string language_code = *iter;
 
-    string16 language_name = l10n_util::GetDisplayNameForLocale(
+    base::string16 language_name = l10n_util::GetDisplayNameForLocale(
         language_code, locale, true);
     // Insert the language in |language_names| in alphabetical order.
     std::vector<LanguageNamePair>::iterator iter2;
@@ -132,7 +132,7 @@ std::string TranslateUIDelegate::GetLanguageCodeAt(size_t index) const {
 
 string16 TranslateUIDelegate::GetLanguageNameAt(size_t index) const {
   if (index == static_cast<size_t>(NO_INDEX))
-    return string16();
+    return base::string16();
   DCHECK_LT(index, GetNumberOfLanguages());
   return languages_[index].second;
 }

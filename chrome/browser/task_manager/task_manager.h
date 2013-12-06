@@ -164,27 +164,27 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Catchall method that calls off to the appropriate GetResourceXXX method
   // based on |col_id|. |col_id| is an IDS_ value used to identify the column.
-  string16 GetResourceById(int index, int col_id) const;
+  base::string16 GetResourceById(int index, int col_id) const;
 
   // Methods to return formatted resource information.
-  const string16& GetResourceTitle(int index) const;
-  const string16& GetResourceProfileName(int index) const;
-  string16 GetResourceNetworkUsage(int index) const;
-  string16 GetResourceCPUUsage(int index) const;
-  string16 GetResourcePrivateMemory(int index) const;
-  string16 GetResourceSharedMemory(int index) const;
-  string16 GetResourcePhysicalMemory(int index) const;
-  string16 GetResourceProcessId(int index) const;
-  string16 GetResourceGDIHandles(int index) const;
-  string16 GetResourceUSERHandles(int index) const;
-  string16 GetResourceWebCoreImageCacheSize(int index) const;
-  string16 GetResourceWebCoreScriptsCacheSize(int index) const;
-  string16 GetResourceWebCoreCSSCacheSize(int index) const;
-  string16 GetResourceVideoMemory(int index) const;
-  string16 GetResourceFPS(int index) const;
-  string16 GetResourceSqliteMemoryUsed(int index) const;
-  string16 GetResourceGoatsTeleported(int index) const;
-  string16 GetResourceV8MemoryAllocatedSize(int index) const;
+  const base::string16& GetResourceTitle(int index) const;
+  const base::string16& GetResourceProfileName(int index) const;
+  base::string16 GetResourceNetworkUsage(int index) const;
+  base::string16 GetResourceCPUUsage(int index) const;
+  base::string16 GetResourcePrivateMemory(int index) const;
+  base::string16 GetResourceSharedMemory(int index) const;
+  base::string16 GetResourcePhysicalMemory(int index) const;
+  base::string16 GetResourceProcessId(int index) const;
+  base::string16 GetResourceGDIHandles(int index) const;
+  base::string16 GetResourceUSERHandles(int index) const;
+  base::string16 GetResourceWebCoreImageCacheSize(int index) const;
+  base::string16 GetResourceWebCoreScriptsCacheSize(int index) const;
+  base::string16 GetResourceWebCoreCSSCacheSize(int index) const;
+  base::string16 GetResourceVideoMemory(int index) const;
+  base::string16 GetResourceFPS(int index) const;
+  base::string16 GetResourceSqliteMemoryUsed(int index) const;
+  base::string16 GetResourceGoatsTeleported(int index) const;
+  base::string16 GetResourceV8MemoryAllocatedSize(int index) const;
 
   // Gets the private memory (in bytes) that should be displayed for the passed
   // resource index. Caches the result since this calculation can take time on
@@ -359,10 +359,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
     ~PerResourceValues();
 
     bool is_title_valid;
-    string16 title;
+    base::string16 title;
 
     bool is_profile_name_valid;
-    string16 profile_name;
+    base::string16 profile_name;
 
     // No is_network_usage since default (0) is fine.
     int64 network_usage;
@@ -481,7 +481,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Given a number, this function returns the formatted string that should be
   // displayed in the task manager's memory cell.
-  string16 GetMemCellText(int64 number) const;
+  base::string16 GetMemCellText(int64 number) const;
 
   // Verifies the private and shared memory for |handle| is valid in
   // |per_process_cache_|. Returns true if the data in |per_process_cache_| is

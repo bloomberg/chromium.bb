@@ -42,8 +42,8 @@ ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
     return reply;  // RVH destroyed while task was pending.
 
 #if defined(USE_ASH)
-  string16 title;
-  string16 message;
+  base::string16 title;
+  base::string16 message;
 
   switch (permission) {
     case PP_TALKPERMISSION_SCREENCAST:

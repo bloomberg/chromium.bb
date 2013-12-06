@@ -106,7 +106,7 @@ void PrintViewManagerBase::RenderProcessGone(base::TerminationStatus status) {
 }
 
 string16 PrintViewManagerBase::RenderSourceName() {
-  string16 name(web_contents()->GetTitle());
+  base::string16 name(web_contents()->GetTitle());
   if (name.empty())
     name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
   return name;

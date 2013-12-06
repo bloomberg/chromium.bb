@@ -102,7 +102,7 @@ string16 SigninGlobalError::MenuItemLabel() {
       auth_error_.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
     // If the user isn't signed in, or there's no auth error worth elevating to
     // the user, don't display any menu item.
-    return string16();
+    return base::string16();
   } else {
     // There's an auth error the user should know about - notify the user.
     return l10n_util::GetStringUTF16(IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM);
@@ -202,7 +202,7 @@ string16 SigninGlobalError::GetBubbleViewAcceptButtonLabel() {
 }
 
 string16 SigninGlobalError::GetBubbleViewCancelButtonLabel() {
-  return string16();
+  return base::string16();
 }
 
 void SigninGlobalError::OnBubbleViewDidClose(Browser* browser) {

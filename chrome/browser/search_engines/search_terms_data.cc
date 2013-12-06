@@ -62,7 +62,7 @@ std::string SearchTermsData::GetApplicationLocale() const {
 }
 
 string16 SearchTermsData::GetRlzParameterValue() const {
-  return string16();
+  return base::string16();
 }
 
 std::string SearchTermsData::GetSearchClient() const {
@@ -119,7 +119,7 @@ std::string UIThreadSearchTermsData::GetApplicationLocale() const {
 string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
       BrowserThread::CurrentlyOn(BrowserThread::UI));
-  string16 rlz_string;
+  base::string16 rlz_string;
 #if defined(ENABLE_RLZ)
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.

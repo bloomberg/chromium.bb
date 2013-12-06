@@ -111,7 +111,7 @@ void AppendAvailableAutocompletion(size_t type,
   if (!autocompletions->empty())
     autocompletions->append("j");
   base::StringAppendF(autocompletions, "%" PRIuS, type);
-  // Subtype is optional - string16::npos indicates no subtype.
+  // Subtype is optional - base::string16::npos indicates no subtype.
   if (subtype != base::string16::npos)
     base::StringAppendF(autocompletions, "i%" PRIuS, subtype);
   if (count > 1)

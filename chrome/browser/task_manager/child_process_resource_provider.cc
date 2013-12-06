@@ -29,14 +29,14 @@ namespace task_manager {
 class ChildProcessResource : public Resource {
  public:
   ChildProcessResource(int process_type,
-                       const string16& name,
+                       const base::string16& name,
                        base::ProcessHandle handle,
                        int unique_process_id);
   virtual ~ChildProcessResource();
 
   // Resource methods:
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
@@ -50,14 +50,14 @@ class ChildProcessResource : public Resource {
  private:
   // Returns a localized title for the child process.  For example, a plugin
   // process would be "Plug-in: Flash" when name is "Flash".
-  string16 GetLocalizedTitle() const;
+  base::string16 GetLocalizedTitle() const;
 
   int process_type_;
-  string16 name_;
+  base::string16 name_;
   base::ProcessHandle handle_;
   int pid_;
   int unique_process_id_;
-  mutable string16 title_;
+  mutable base::string16 title_;
   bool network_usage_support_;
 
   // The icon painted for the child processs.
@@ -72,7 +72,7 @@ gfx::ImageSkia* ChildProcessResource::default_icon_ = NULL;
 
 ChildProcessResource::ChildProcessResource(
     int process_type,
-    const string16& name,
+    const base::string16& name,
     base::ProcessHandle handle,
     int unique_process_id)
     : process_type_(process_type),
@@ -102,7 +102,7 @@ string16 ChildProcessResource::GetTitle() const {
 }
 
 string16 ChildProcessResource::GetProfileName() const {
-  return string16();
+  return base::string16();
 }
 
 gfx::ImageSkia ChildProcessResource::GetIcon() const {
@@ -150,7 +150,7 @@ void ChildProcessResource::SetSupportNetworkUsage() {
 }
 
 string16 ChildProcessResource::GetLocalizedTitle() const {
-  string16 title = name_;
+  base::string16 title = name_;
   if (title.empty()) {
     switch (process_type_) {
       case content::PROCESS_TYPE_PLUGIN:

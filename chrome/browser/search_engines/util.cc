@@ -25,7 +25,7 @@ using content::BrowserThread;
 string16 GetDefaultSearchEngineName(Profile* profile) {
   if (!profile) {
     NOTREACHED();
-    return string16();
+    return base::string16();
   }
   const TemplateURL* const default_provider =
       TemplateURLServiceFactory::GetForProfile(profile)->
@@ -34,13 +34,13 @@ string16 GetDefaultSearchEngineName(Profile* profile) {
     // TODO(cpu): bug 1187517. It is possible to have no default provider.
     // returning an empty string is a stopgap measure for the crash
     // http://code.google.com/p/chromium/issues/detail?id=2573
-    return string16();
+    return base::string16();
   }
   return default_provider->short_name();
 }
 
 GURL GetDefaultSearchURLForSearchTerms(Profile* profile,
-                                       const string16& terms) {
+                                       const base::string16& terms) {
   DCHECK(profile);
   const TemplateURL* default_provider =
       TemplateURLServiceFactory::GetForProfile(profile)->

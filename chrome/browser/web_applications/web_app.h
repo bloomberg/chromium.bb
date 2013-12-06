@@ -74,7 +74,7 @@ void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 // refreshes existing shortcuts and their icons, but does not create new ones.
 // |old_app_title| contains the title of the app prior to this update.
 // |shortcut_info| contains information about the shortcuts to update.
-void UpdateAllShortcuts(const string16& old_app_title,
+void UpdateAllShortcuts(const base::string16& old_app_title,
                         const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Creates a shortcut. Must be called on the file thread. This is used to
@@ -137,7 +137,7 @@ void DeletePlatformShortcuts(
 // is executed on the FILE thread.
 void UpdatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
-    const string16& old_app_title,
+    const base::string16& old_app_title,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Delete all the shortcuts for an entire profile.
@@ -146,7 +146,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path);
 
 // Sanitizes |name| and returns a version of it that is safe to use as an
 // on-disk file name .
-base::FilePath GetSanitizedFileName(const string16& name);
+base::FilePath GetSanitizedFileName(const base::string16& name);
 
 }  // namespace internals
 

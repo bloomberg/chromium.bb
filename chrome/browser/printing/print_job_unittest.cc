@@ -16,8 +16,8 @@ namespace {
 
 class TestSource : public printing::PrintedPagesSource {
  public:
-  virtual string16 RenderSourceName() OVERRIDE {
-    return string16();
+  virtual base::string16 RenderSourceName() OVERRIDE {
+    return base::string16();
   }
 };
 

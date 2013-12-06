@@ -404,7 +404,7 @@ bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
   // are not valid regular expressions - they should instead be ".*@foo.com").
   // For convenience, detect these patterns and insert a "." character at the
   // front.
-  string16 pattern = UTF8ToUTF16(policy);
+  base::string16 pattern = UTF8ToUTF16(policy);
   if (pattern[0] == L'*')
     pattern.insert(pattern.begin(), L'.');
 
@@ -418,7 +418,7 @@ bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
     // break signin than to quietly allow users to sign in).
     return false;
   }
-  string16 username16 = UTF8ToUTF16(username);
+  base::string16 username16 = UTF8ToUTF16(username);
   icu::UnicodeString icu_input(username16.data(), username16.length());
   matcher.reset(icu_input);
   status = U_ZERO_ERROR;

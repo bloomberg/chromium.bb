@@ -78,7 +78,7 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
 
 NativeDesktopMediaList::SourceDescription::SourceDescription(
     DesktopMediaID id,
-    const string16& name)
+    const base::string16& name)
     : id(id),
       name(name) {
 }

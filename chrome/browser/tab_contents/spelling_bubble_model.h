@@ -25,13 +25,13 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
   virtual ~SpellingBubbleModel();
 
   // ConfirmBubbleModel implementation.
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual string16 GetButtonLabel(BubbleButton button) const OVERRIDE;
+  virtual base::string16 GetButtonLabel(BubbleButton button) const OVERRIDE;
   virtual void Accept() OVERRIDE;
   virtual void Cancel() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
   virtual void LinkClicked() OVERRIDE;
 
  private:

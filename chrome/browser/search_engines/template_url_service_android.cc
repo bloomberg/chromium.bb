@@ -143,7 +143,7 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(JNIEnv* env,
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
-  string16 query(ConvertJavaStringToUTF16(env, jquery));
+  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
 
   std::string url;
   if (default_provider &&
@@ -163,7 +163,7 @@ TemplateUrlServiceAndroid::ReplaceSearchTermsInUrl(JNIEnv* env,
   TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
-  string16 query(ConvertJavaStringToUTF16(env, jquery));
+  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
   GURL current_url(ConvertJavaStringToUTF16(env, jcurrent_url));
   GURL destination_url(current_url);
   if (default_provider && !query.empty()) {

@@ -27,7 +27,7 @@ class ManagedUserRegistrationUtilityStub
 
   std::string managed_user_id() { return managed_user_id_; }
 
-  string16 display_name() { return display_name_; }
+  base::string16 display_name() { return display_name_; }
 
   std::string master_key() { return master_key_; }
 
@@ -38,7 +38,7 @@ class ManagedUserRegistrationUtilityStub
    RegistrationCallback callback_;
    bool register_was_called_;
    std::string managed_user_id_;
-   string16 display_name_;
+   base::string16 display_name_;
    std::string master_key_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserRegistrationUtilityStub);

@@ -127,7 +127,7 @@ class SearchProviderInstallDataTest : public testing::Test {
 
  protected:
   TemplateURL* AddNewTemplateURL(const std::string& url,
-                                 const string16& keyword);
+                                 const base::string16& keyword);
 
   TemplateURLServiceTestUtil util_;
 
@@ -192,7 +192,7 @@ void SearchProviderInstallDataTest::SimulateDefaultSearchIsManaged(
 
 TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(
     const std::string& url,
-    const string16& keyword) {
+    const base::string16& keyword) {
   TemplateURLData data;
   data.short_name = keyword;
   data.SetKeyword(keyword);

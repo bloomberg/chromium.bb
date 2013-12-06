@@ -90,8 +90,8 @@ class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
 
 // Creates a TemplateURL with the |keyword| and |url|. |title| may be empty.
 // This function transfers ownership of the created TemplateURL to the caller.
-TemplateURL* CreateTemplateURL(const string16& title,
-                               const string16& keyword,
+TemplateURL* CreateTemplateURL(const base::string16& title,
+                               const base::string16& keyword,
                                const GURL& url) {
   // Skip if the url is invalid.
   if (!url.is_valid())
@@ -165,7 +165,7 @@ InProcessImporterBridge::InProcessImporterBridge(
 
 void InProcessImporterBridge::AddBookmarks(
     const std::vector<ImportedBookmarkEntry>& bookmarks,
-    const string16& first_folder_name) {
+    const base::string16& first_folder_name) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddBookmarks, writer_, bookmarks,

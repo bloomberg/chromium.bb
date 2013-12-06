@@ -873,11 +873,11 @@ std::string SafeBrowsingBlockingPageV1::GetHTMLContents() {
 
 void SafeBrowsingBlockingPageV1::PopulateStringDictionary(
     DictionaryValue* strings,
-    const string16& title,
-    const string16& headline,
-    const string16& description1,
-    const string16& description2,
-    const string16& description3) {
+    const base::string16& title,
+    const base::string16& headline,
+    const base::string16& description1,
+    const base::string16& description2,
+    const base::string16& description3) {
   strings->SetString("title", title);
   strings->SetString("headLine", headline);
   strings->SetString("description1", description1);
@@ -890,13 +890,13 @@ void SafeBrowsingBlockingPageV1::PopulateStringDictionary(
 void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
     DictionaryValue* strings) {
 
-  string16 malware_label =
+  base::string16 malware_label =
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_LABEL);
-  string16 malware_link =
+  base::string16 malware_link =
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_DIAGNOSTIC_PAGE);
-  string16 phishing_label =
+  base::string16 phishing_label =
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_LABEL);
-  string16 phishing_link =
+  base::string16 phishing_link =
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_REPORT_ERROR);
 
   ListValue* error_strings = new ListValue;
@@ -934,7 +934,7 @@ void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
               UTF8ToUTF16(web_contents_->GetURL().host())),
           l10n_util::GetStringUTF16(
               IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION2),
-          string16());
+          base::string16());
       break;
     case TYPE_MALWARE:
       PopulateStringDictionary(
@@ -957,8 +957,8 @@ void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
           l10n_util::GetStringFUTF16(
               IDS_SAFE_BROWSING_MULTI_PHISHING_DESCRIPTION1,
               UTF8ToUTF16(web_contents_->GetURL().host())),
-          string16(),
-          string16());
+          base::string16(),
+          base::string16());
       break;
   }
 
@@ -1036,11 +1036,11 @@ std::string SafeBrowsingBlockingPageV2::GetHTMLContents() {
 
 void SafeBrowsingBlockingPageV2::PopulateStringDictionary(
     DictionaryValue* strings,
-    const string16& title,
-    const string16& headline,
-    const string16& description1,
-    const string16& description2,
-    const string16& description3) {
+    const base::string16& title,
+    const base::string16& headline,
+    const base::string16& description1,
+    const base::string16& description2,
+    const base::string16& description3) {
   strings->SetString("title", title);
   strings->SetString("headLine", headline);
   strings->SetString("description1", description1);
@@ -1099,7 +1099,7 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
     DictionaryValue* strings) {
   // Check to see if we're blocking the main page, or a sub-resource on the
   // main page.
-  string16 headline, description1, description2, description3;
+  base::string16 headline, description1, description2, description3;
 
 
   description3 = l10n_util::GetStringUTF16(
@@ -1160,7 +1160,7 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
       strings->SetString(kBoxChecked, std::string());
   }
 
-  strings->SetString("report_error", string16());
+  strings->SetString("report_error", base::string16());
   strings->SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_LEARN_MORE));
 }
@@ -1174,7 +1174,7 @@ void SafeBrowsingBlockingPageV2::PopulatePhishingStringDictionary(
       l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION1,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
                                  UTF8ToUTF16(url_.host())),
-      string16(),
+      base::string16(),
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION2));
 
   strings->SetString("details", std::string());

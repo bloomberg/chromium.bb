@@ -115,7 +115,7 @@ const FaviconGroup kIEFaviconGroup[2] = {
 };
 
 bool CreateOrderBlob(const base::FilePath& favorites_folder,
-                     const string16& path,
+                     const base::string16& path,
                      const std::vector<string16>& entries) {
   if (entries.size() > 255)
     return false;
@@ -160,8 +160,8 @@ bool CreateOrderBlob(const base::FilePath& favorites_folder,
 }
 
 bool CreateUrlFileWithFavicon(const base::FilePath& file,
-                              const string16& url,
-                              const string16& favicon_url) {
+                              const base::string16& url,
+                              const base::string16& favicon_url) {
   base::win::ScopedComPtr<IUniformResourceLocator> locator;
   HRESULT result = locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                           CLSCTX_INPROC_SERVER);
@@ -208,8 +208,8 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
       sizeof kDummyFaviconImageData) != -1);
 }
 
-bool CreateUrlFile(const base::FilePath& file, const string16& url) {
-  return CreateUrlFileWithFavicon(file, url, string16());
+bool CreateUrlFile(const base::FilePath& file, const base::string16& url) {
+  return CreateUrlFileWithFavicon(file, url, base::string16());
 }
 
 void ClearPStoreType(IPStore* pstore, const GUID* type, const GUID* subtype) {
@@ -325,8 +325,9 @@ class TestObserver : public ProfileWriter,
     EXPECT_EQ(history::SOURCE_IE_IMPORTED, visit_source);
   }
 
-  virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
-                            const string16& top_level_folder_name) OVERRIDE {
+  virtual void AddBookmarks(
+      const std::vector<ImportedBookmarkEntry>& bookmarks,
+      const base::string16& top_level_folder_name) OVERRIDE {
     ASSERT_LE(bookmark_count_ + bookmarks.size(), arraysize(kIEBookmarks));
     // Importer should import the IE Favorites folder the same as the list,
     // in the same order.
@@ -424,8 +425,9 @@ class MalformedFavoritesRegistryTestObserver
                               history::VisitSource visit_source) {}
   virtual void AddKeyword(std::vector<TemplateURL*> template_url,
                           int default_keyword_index) {}
-  virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
-                            const string16& top_level_folder_name) OVERRIDE {
+  virtual void AddBookmarks(
+      const std::vector<ImportedBookmarkEntry>& bookmarks,
+      const base::string16& top_level_folder_name) OVERRIDE {
     ASSERT_LE(bookmark_count_ + bookmarks.size(),
               arraysize(kIESortedBookmarks));
     for (size_t i = 0; i < bookmarks.size(); ++i) {

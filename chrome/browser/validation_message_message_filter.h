@@ -31,8 +31,8 @@ class ValidationMessageMessageFilter : public content::BrowserMessageFilter {
   virtual ~ValidationMessageMessageFilter();
   void OnShowValidationMessage(int route_id,
                                const gfx::Rect& anchor_in_root_view,
-                               const string16& main_text,
-                               const string16& sub_text);
+                               const base::string16& main_text,
+                               const base::string16& sub_text);
   void OnHideValidationMessage();
   void OnMoveValidationMessage(int route_id,
                                const gfx::Rect& anchor_in_root_view);

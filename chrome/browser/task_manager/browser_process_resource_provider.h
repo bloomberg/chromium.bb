@@ -33,8 +33,8 @@ class BrowserProcessResource : public Resource {
   virtual ~BrowserProcessResource();
 
   // Resource methods:
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
@@ -52,7 +52,7 @@ class BrowserProcessResource : public Resource {
 
  private:
   base::ProcessHandle process_;
-  mutable string16 title_;
+  mutable base::string16 title_;
 
   static gfx::ImageSkia* default_icon_;
 

@@ -58,7 +58,7 @@ class TemplateURLServiceTestUtilBase : public TemplateURLServiceObserver {
 
   // Returns the search term from the last invocation of
   // TemplateURLService::SetKeywordSearchTermsForURL and clears the search term.
-  string16 GetAndClearSearchTerm();
+  base::string16 GetAndClearSearchTerm();
 
   // Set the google base url.  |base_url| must be valid.
   void SetGoogleBaseURL(const GURL& base_url) const;

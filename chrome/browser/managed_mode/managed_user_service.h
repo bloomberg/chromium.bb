@@ -140,9 +140,9 @@ class ManagedUserService : public BrowserContextKeyedService,
   // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
-                           string16* error) const OVERRIDE;
+                           base::string16* error) const OVERRIDE;
   virtual bool UserMayModifySettings(const extensions::Extension* extension,
-                                     string16* error) const OVERRIDE;
+                                     base::string16* error) const OVERRIDE;
 
   // ProfileSyncServiceObserver implementation:
   virtual void OnStateChanged() OVERRIDE;
@@ -197,7 +197,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   // an instance of this service.
   explicit ManagedUserService(Profile* profile);
 
-  void OnCustodianProfileDownloaded(const string16& full_name);
+  void OnCustodianProfileDownloaded(const base::string16& full_name);
 
   void OnManagedUserRegistered(const AuthErrorCallback& callback,
                                Profile* custodian_profile,
@@ -212,7 +212,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   // If |error| is not NULL, it will be filled with an error message if the
   // requested extension action (install, modify status, etc.) is not permitted.
   bool ExtensionManagementPolicyImpl(const extensions::Extension* extension,
-                                     string16* error) const;
+                                     base::string16* error) const;
 
   // Returns a list of all installed and enabled site lists in the current
   // managed profile.

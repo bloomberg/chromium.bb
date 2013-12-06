@@ -70,9 +70,10 @@ DesktopNotificationBalloon::~DesktopNotificationBalloon() {
     CloseBalloon(notification_id_);
 }
 
-void DesktopNotificationBalloon::DisplayBalloon(const gfx::ImageSkia& icon,
-                                                const string16& title,
-                                                const string16& contents) {
+void DesktopNotificationBalloon::DisplayBalloon(
+    const gfx::ImageSkia& icon,
+    const base::string16& title,
+    const base::string16& contents) {
   // Allowing IO access is required here to cover the corner case where
   // there is no last used profile and the default one is loaded.
   // IO access won't be required for normal uses.
@@ -82,6 +83,6 @@ void DesktopNotificationBalloon::DisplayBalloon(const gfx::ImageSkia& icon,
     profile = ProfileManager::GetLastUsedProfile();
   }
   notification_id_ = DesktopNotificationService::AddIconNotification(
-      GURL(), title, contents, gfx::Image(icon), string16(),
+      GURL(), title, contents, gfx::Image(icon), base::string16(),
       new DummyNotificationDelegate(base::IntToString(id_count_++)), profile);
 }

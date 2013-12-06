@@ -88,7 +88,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   StorageInfo::Type type = kTestDeviceData[i].type;
   storage_info.reset(new StorageInfo(
       StorageInfo::MakeDeviceId(type, kTestDeviceData[i].unique_id),
-      string16(),
+      base::string16(),
       mount_point.value(),
       ASCIIToUTF16("volume label"),
       ASCIIToUTF16("vendor name"),

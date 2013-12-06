@@ -35,21 +35,22 @@ class TestingTemplateURLService : public TemplateURLService {
       : TemplateURLService(profile) {
   }
 
-  string16 GetAndClearSearchTerm() {
-    string16 search_term;
+  base::string16 GetAndClearSearchTerm() {
+    base::string16 search_term;
     search_term.swap(search_term_);
     return search_term;
   }
 
  protected:
-  virtual void SetKeywordSearchTermsForURL(const TemplateURL* t_url,
-                                           const GURL& url,
-                                           const string16& term) OVERRIDE {
+  virtual void SetKeywordSearchTermsForURL(
+      const TemplateURL* t_url,
+      const GURL& url,
+      const base::string16& term) OVERRIDE {
     search_term_ = term;
   }
 
  private:
-  string16 search_term_;
+  base::string16 search_term_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingTemplateURLService);
 };

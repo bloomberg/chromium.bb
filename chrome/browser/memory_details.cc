@@ -281,7 +281,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         const Extension* extension =
             extension_service->extensions()->GetByID(url.host());
         if (extension) {
-          string16 title = UTF8ToUTF16(extension->name());
+          base::string16 title = UTF8ToUTF16(extension->name());
           process.titles.push_back(title);
           process.renderer_type =
               ProcessMemoryInformation::RENDERER_EXTENSION;
@@ -314,7 +314,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       if (process.renderer_type == ProcessMemoryInformation::RENDERER_UNKNOWN)
         process.renderer_type = ProcessMemoryInformation::RENDERER_NORMAL;
 
-      string16 title = contents->GetTitle();
+      base::string16 title = contents->GetTitle();
       if (!title.length())
         title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
       process.titles.push_back(title);

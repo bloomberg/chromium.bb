@@ -28,9 +28,9 @@ OptionsMenuModel::OptionsMenuModel(
   // |translate_delegate| must already be owned.
   DCHECK(translate_infobar_delegate_->web_contents());
 
-  string16 original_language = translate_delegate->language_name_at(
+  base::string16 original_language = translate_delegate->language_name_at(
       translate_delegate->original_language_index());
-  string16 target_language = translate_delegate->language_name_at(
+  base::string16 target_language = translate_delegate->language_name_at(
       translate_delegate->target_language_index());
 
   bool autodetermined_source_language =

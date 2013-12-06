@@ -190,7 +190,7 @@ class TemplateURLServiceTest : public testing::Test {
   TemplateURL* CreateReplaceablePreloadedTemplateURL(
       bool safe_for_autoreplace,
       size_t index_offset_from_default,
-      string16* prepopulated_display_url);
+      base::string16* prepopulated_display_url);
 
   // Verifies the behavior of when a preloaded url later gets changed.
   // Since the input is the offset from the default, when one passes in
@@ -306,7 +306,7 @@ TemplateURL* TemplateURLServiceTest::CreatePreloadedTemplateURL(
 TemplateURL* TemplateURLServiceTest::CreateReplaceablePreloadedTemplateURL(
     bool safe_for_autoreplace,
     size_t index_offset_from_default,
-    string16* prepopulated_display_url) {
+    base::string16* prepopulated_display_url) {
   size_t default_search_provider_index = 0;
   ScopedVector<TemplateURL> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
@@ -323,11 +323,11 @@ TemplateURL* TemplateURLServiceTest::CreateReplaceablePreloadedTemplateURL(
 
 void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
     size_t index_offset_from_default) {
-  string16 prepopulated_url;
+  base::string16 prepopulated_url;
   TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(false,
       index_offset_from_default, &prepopulated_url);
 
-  string16 original_url = t_url->url_ref().DisplayURL();
+  base::string16 original_url = t_url->url_ref().DisplayURL();
   std::string original_guid = t_url->sync_guid();
   EXPECT_NE(prepopulated_url, original_url);
 
@@ -756,8 +756,8 @@ TEST_F(TemplateURLServiceTest, Reset) {
   EXPECT_CALL(mock_time, Now()).WillOnce(Return(base::Time::FromDoubleT(1337)));
 
   // Reset the short name, keyword, url and make sure it takes.
-  const string16 new_short_name(ASCIIToUTF16("a"));
-  const string16 new_keyword(ASCIIToUTF16("b"));
+  const base::string16 new_short_name(ASCIIToUTF16("a"));
+  const base::string16 new_keyword(ASCIIToUTF16("b"));
   const std::string new_url("c");
   model()->ResetTemplateURL(t_url, new_short_name, new_keyword, new_url);
   ASSERT_EQ(new_short_name, t_url->short_name());
@@ -994,19 +994,19 @@ TEST_F(TemplateURLServiceTest, RepairSearchEnginesWithManagedDefault) {
 TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {
   struct TestData {
     const std::string url;
-    const string16 term;
+    const base::string16 term;
   } data[] = {
-    { "http://foo/", string16() },
-    { "http://foo/foo?q=xx", string16() },
-    { "http://x/bar?q=xx", string16() },
-    { "http://x/foo?y=xx", string16() },
+    { "http://foo/", base::string16() },
+    { "http://foo/foo?q=xx", base::string16() },
+    { "http://x/bar?q=xx", base::string16() },
+    { "http://x/foo?y=xx", base::string16() },
     { "http://x/foo?q=xx", ASCIIToUTF16("xx") },
     { "http://x/foo?a=b&q=xx", ASCIIToUTF16("xx") },
-    { "http://x/foo?q=b&q=xx", string16() },
+    { "http://x/foo?q=b&q=xx", base::string16() },
     { "http://x/foo#query=xx", ASCIIToUTF16("xx") },
     { "http://x/foo?q=b#query=xx", ASCIIToUTF16("xx") },
     { "http://x/foo?q=b#q=xx", ASCIIToUTF16("b") },
-    { "http://x/foo?query=b#q=xx", string16() },
+    { "http://x/foo?query=b#q=xx", base::string16() },
   };
 
   test_util_.ChangeModelToLoadState();

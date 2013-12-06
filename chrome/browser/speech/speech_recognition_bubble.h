@@ -99,7 +99,7 @@ class SpeechRecognitionBubble {
 
   // Displays the given string with the 'Try again' and 'Cancel' buttons. If the
   // bubble is hidden, |Show| must be called to make it appear on screen.
-  virtual void SetMessage(const string16& text) = 0;
+  virtual void SetMessage(const base::string16& text) = 0;
 
   // Brings up the bubble on screen.
   virtual void Show() = 0;
@@ -142,7 +142,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   virtual void SetWarmUpMode() OVERRIDE;
   virtual void SetRecordingMode() OVERRIDE;
   virtual void SetRecognizingMode() OVERRIDE;
-  virtual void SetMessage(const string16& text) OVERRIDE;
+  virtual void SetMessage(const base::string16& text) OVERRIDE;
   virtual void SetInputVolume(float volume, float noise_volume) OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
 
@@ -155,7 +155,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
 
   DisplayMode display_mode() const { return display_mode_; }
 
-  const string16& message_text() const { return message_text_; }
+  const base::string16& message_text() const { return message_text_; }
 
   gfx::ImageSkia icon_image();
 
@@ -173,7 +173,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   int animation_step_;  // Current index/step of the animation.
 
   DisplayMode display_mode_;
-  string16 message_text_;  // Text displayed in DISPLAY_MODE_MESSAGE
+  base::string16 message_text_;  // Text displayed in DISPLAY_MODE_MESSAGE
 
   // The current microphone image with volume level indication.
   scoped_ptr<SkBitmap> mic_image_;

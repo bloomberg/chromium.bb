@@ -332,9 +332,9 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     // For component extensions, bypass message box.
     bool user_approved = false;
     if (!component_extension) {
-      string16 application_name = UTF8ToUTF16(
+      base::string16 application_name = UTF8ToUTF16(
           extension ? extension->name() : request.security_origin.spec());
-      string16 confirmation_text = l10n_util::GetStringFUTF16(
+      base::string16 confirmation_text = l10n_util::GetStringFUTF16(
           request.audio_type == content::MEDIA_NO_SERVICE ?
               IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT :
               IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT,

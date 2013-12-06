@@ -112,7 +112,8 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
   bool allow_access_requests = managed_user_service->AccessRequestsEnabled();
   strings.SetBoolean("allowAccessRequests", allow_access_requests);
 
-  string16 custodian = UTF8ToUTF16(managed_user_service->GetCustodianName());
+  base::string16 custodian =
+      UTF8ToUTF16(managed_user_service->GetCustodianName());
   strings.SetString(
       "blockPageMessage",
       allow_access_requests

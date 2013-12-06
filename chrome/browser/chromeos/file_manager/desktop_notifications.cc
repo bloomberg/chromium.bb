@@ -299,7 +299,7 @@ void DesktopNotifications::ShowNotification(NotificationType type,
 void DesktopNotifications::ShowNotificationWithMessage(
     NotificationType type,
     const std::string& path,
-    const string16& message) {
+    const base::string16& message) {
   std::string notification_id = GetNotificationId(type, path);
   hidden_notifications_.erase(notification_id);
   ShowNotificationById(type, notification_id, message);
@@ -336,7 +336,7 @@ void DesktopNotifications::HideNotificationDelayed(
 void DesktopNotifications::ShowNotificationById(
     NotificationType type,
     const std::string& notification_id,
-    const string16& message) {
+    const base::string16& message) {
   if (hidden_notifications_.find(notification_id) !=
       hidden_notifications_.end()) {
     // Notification was hidden after a delayed show was requested.
@@ -381,7 +381,7 @@ string16 DesktopNotifications::GetNotificationMessageForTest(
     const std::string& id) const {
   NotificationMap::const_iterator it = notification_map_.find(id);
   if (it == notification_map_.end())
-    return string16();
+    return base::string16();
   return it->second->message();
 }
 

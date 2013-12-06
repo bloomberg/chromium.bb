@@ -212,7 +212,7 @@ void SpeechRecognitionBubbleBase::DoRecognizingAnimationStep() {
       base::TimeDelta::FromMilliseconds(kRecognizingAnimationStepMs));
 }
 
-void SpeechRecognitionBubbleBase::SetMessage(const string16& text) {
+void SpeechRecognitionBubbleBase::SetMessage(const base::string16& text) {
   weak_factory_.InvalidateWeakPtrs();
   message_text_ = text;
   display_mode_ = DISPLAY_MODE_MESSAGE;

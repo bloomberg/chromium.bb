@@ -14,13 +14,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using base::string16;
-
 class BuiltinProviderTest : public testing::Test {
  protected:
   template<class ResultType>
   struct test_data {
-    const string16 input;
+    const base::string16 input;
     const size_t num_results;
     const ResultType output[3];
   };
@@ -54,8 +52,9 @@ void BuiltinProviderTest::RunTest(test_data<ResultType>* builtin_cases,
                                   ResultType AutocompleteMatch::* member) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(builtin_cases[i].input, string16::npos, string16(),
-                            GURL(), AutocompleteInput::INVALID_SPEC, true,
+    AutocompleteInput input(builtin_cases[i].input, base::string16::npos,
+                            base::string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC, true,
                             false, true, AutocompleteInput::ALL_MATCHES);
     builtin_provider_->Start(input, false);
     EXPECT_TRUE(builtin_provider_->done());
@@ -73,11 +72,12 @@ void BuiltinProviderTest::RunTest(test_data<ResultType>* builtin_cases,
 }
 
 TEST_F(BuiltinProviderTest, TypingScheme) {
-  const string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme);
-  const string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme);
-  const string16 kSeparator1 = ASCIIToUTF16(":");
-  const string16 kSeparator2 = ASCIIToUTF16(":/");
-  const string16 kSeparator3 = ASCIIToUTF16(content::kStandardSchemeSeparator);
+  const base::string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme);
+  const base::string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme);
+  const base::string16 kSeparator1 = ASCIIToUTF16(":");
+  const base::string16 kSeparator2 = ASCIIToUTF16(":/");
+  const base::string16 kSeparator3 =
+      ASCIIToUTF16(content::kStandardSchemeSeparator);
 
   // These default URLs should correspond with those in BuiltinProvider::Start.
   const GURL kURL1 = GURL(chrome::kChromeUIChromeURLsURL);
@@ -139,17 +139,21 @@ TEST_F(BuiltinProviderTest, NonChromeURLs) {
 }
 
 TEST_F(BuiltinProviderTest, ChromeURLs) {
-  const string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme);
-  const string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme);
-  const string16 kSeparator1 = ASCIIToUTF16(":");
-  const string16 kSeparator2 = ASCIIToUTF16(":/");
-  const string16 kSeparator3 = ASCIIToUTF16(content::kStandardSchemeSeparator);
+  const base::string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme);
+  const base::string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme);
+  const base::string16 kSeparator1 = ASCIIToUTF16(":");
+  const base::string16 kSeparator2 = ASCIIToUTF16(":/");
+  const base::string16 kSeparator3 =
+      ASCIIToUTF16(content::kStandardSchemeSeparator);
 
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from chrome::kChromeHostURLs[].
-  const string16 kHostM1 = ASCIIToUTF16(content::kChromeUIMediaInternalsHost);
-  const string16 kHostM2 = ASCIIToUTF16(chrome::kChromeUIMemoryHost);
-  const string16 kHostM3 = ASCIIToUTF16(chrome::kChromeUIMemoryInternalsHost);
+  const base::string16 kHostM1 =
+      ASCIIToUTF16(content::kChromeUIMediaInternalsHost);
+  const base::string16 kHostM2 =
+      ASCIIToUTF16(chrome::kChromeUIMemoryHost);
+  const base::string16 kHostM3 =
+      ASCIIToUTF16(chrome::kChromeUIMemoryInternalsHost);
   const GURL kURLM1 = GURL(kChrome + kSeparator3 + kHostM1);
   const GURL kURLM2 = GURL(kChrome + kSeparator3 + kHostM2);
   const GURL kURLM3 = GURL(kChrome + kSeparator3 + kHostM3);
@@ -193,13 +197,14 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
 TEST_F(BuiltinProviderTest, ChromeSettingsSubpages) {
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from chrome::kChromeHostURLs[].
-  const string16 kSettings = ASCIIToUTF16(chrome::kChromeUISettingsURL);
-  const string16 kDefaultPage1 = ASCIIToUTF16(chrome::kAutofillSubPage);
-  const string16 kDefaultPage2 = ASCIIToUTF16(chrome::kClearBrowserDataSubPage);
+  const base::string16 kSettings = ASCIIToUTF16(chrome::kChromeUISettingsURL);
+  const base::string16 kDefaultPage1 = ASCIIToUTF16(chrome::kAutofillSubPage);
+  const base::string16 kDefaultPage2 =
+      ASCIIToUTF16(chrome::kClearBrowserDataSubPage);
   const GURL kDefaultURL1 = GURL(kSettings + kDefaultPage1);
   const GURL kDefaultURL2 = GURL(kSettings + kDefaultPage2);
-  const string16 kPage1 = ASCIIToUTF16(chrome::kSearchEnginesSubPage);
-  const string16 kPage2 = ASCIIToUTF16(chrome::kSyncSetupSubPage);
+  const base::string16 kPage1 = ASCIIToUTF16(chrome::kSearchEnginesSubPage);
+  const base::string16 kPage2 = ASCIIToUTF16(chrome::kSyncSetupSubPage);
   const GURL kURL1 = GURL(kSettings + kPage1);
   const GURL kURL2 = GURL(kSettings + kPage2);
 

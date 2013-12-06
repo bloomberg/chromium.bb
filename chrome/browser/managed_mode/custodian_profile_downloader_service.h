@@ -15,7 +15,7 @@ class CustodianProfileDownloaderService : public BrowserContextKeyedService,
  public:
   // Callback for DownloadProfile() below. If the GAIA profile download is
   // successful, the profile's full (display) name will be returned.
-  typedef base::Callback<void(const string16& /* full name */)>
+  typedef base::Callback<void(const base::string16& /* full name */)>
       DownloadProfileCallback;
 
   virtual ~CustodianProfileDownloaderService();

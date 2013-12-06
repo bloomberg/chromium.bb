@@ -55,17 +55,17 @@ string16 GetPnpDeviceId(LPARAM data) {
   DEV_BROADCAST_DEVICEINTERFACE* dev_interface =
       reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(data);
   if (!dev_interface)
-    return string16();
-  string16 device_id(dev_interface->dbcc_name);
+    return base::string16();
+  base::string16 device_id(dev_interface->dbcc_name);
   DCHECK(IsStringASCII(device_id));
   return StringToLowerASCII(device_id);
 }
 
 // Gets the friendly name of the device specified by the |pnp_device_id|. On
 // success, returns true and fills in |name|.
-bool GetFriendlyName(const string16& pnp_device_id,
+bool GetFriendlyName(const base::string16& pnp_device_id,
                      IPortableDeviceManager* device_manager,
-                     string16* name) {
+                     base::string16* name) {
   DCHECK(device_manager);
   DCHECK(name);
   DWORD name_len = 0;
@@ -81,9 +81,9 @@ bool GetFriendlyName(const string16& pnp_device_id,
 
 // Gets the manufacturer name of the device specified by the |pnp_device_id|.
 // On success, returns true and fills in |name|.
-bool GetManufacturerName(const string16& pnp_device_id,
+bool GetManufacturerName(const base::string16& pnp_device_id,
                          IPortableDeviceManager* device_manager,
-                         string16* name) {
+                         base::string16* name) {
   DCHECK(device_manager);
   DCHECK(name);
   DWORD name_len = 0;
@@ -100,9 +100,9 @@ bool GetManufacturerName(const string16& pnp_device_id,
 
 // Gets the description of the device specified by the |pnp_device_id|. On
 // success, returns true and fills in |description|.
-bool GetDeviceDescription(const string16& pnp_device_id,
+bool GetDeviceDescription(const base::string16& pnp_device_id,
                           IPortableDeviceManager* device_manager,
-                          string16* description) {
+                          base::string16* description) {
   DCHECK(device_manager);
   DCHECK(description);
   DWORD desc_len = 0;
@@ -144,7 +144,7 @@ bool GetClientInformation(
 // Opens the device for communication. |pnp_device_id| specifies the plug and
 // play device ID string. On success, returns true and updates |device| with a
 // reference to the portable device interface.
-bool SetUp(const string16& pnp_device_id,
+bool SetUp(const base::string16& pnp_device_id,
            base::win::ScopedComPtr<IPortableDevice>* device) {
   base::win::ScopedComPtr<IPortableDeviceValues> client_info;
   if (!GetClientInformation(&client_info))
@@ -168,7 +168,7 @@ bool SetUp(const string16& pnp_device_id,
 
 // Returns the unique id property key of the object specified by the
 // |object_id|.
-REFPROPERTYKEY GetUniqueIdPropertyKey(const string16& object_id) {
+REFPROPERTYKEY GetUniqueIdPropertyKey(const base::string16& object_id) {
   return (object_id == WPD_DEVICE_OBJECT_ID) ?
       WPD_DEVICE_SERIAL_NUMBER : WPD_OBJECT_PERSISTENT_UNIQUE_ID;
 }
@@ -176,7 +176,7 @@ REFPROPERTYKEY GetUniqueIdPropertyKey(const string16& object_id) {
 // On success, returns true and populates |properties_to_read| with the
 // property key of the object specified by the |object_id|.
 bool PopulatePropertyKeyCollection(
-    const string16& object_id,
+    const base::string16& object_id,
     base::win::ScopedComPtr<IPortableDeviceKeyCollection>* properties_to_read) {
   HRESULT hr = properties_to_read->CreateInstance(
       __uuidof(PortableDeviceKeyCollection), NULL, CLSCTX_INPROC_SERVER);
@@ -192,7 +192,7 @@ bool PopulatePropertyKeyCollection(
 // Wrapper function to get content property string value.
 bool GetStringPropertyValue(IPortableDeviceValues* properties_values,
                             REFPROPERTYKEY key,
-                            string16* value) {
+                            base::string16* value) {
   DCHECK(properties_values);
   DCHECK(value);
   base::win::ScopedCoMem<char16> buffer;
@@ -206,8 +206,8 @@ bool GetStringPropertyValue(IPortableDeviceValues* properties_values,
 // Constructs a unique identifier for the object specified by the |object_id|.
 // On success, returns true and fills in |unique_id|.
 bool GetObjectUniqueId(IPortableDevice* device,
-                       const string16& object_id,
-                       string16* unique_id) {
+                       const base::string16& object_id,
+                       base::string16* unique_id) {
   DCHECK(device);
   DCHECK(unique_id);
   base::win::ScopedComPtr<IPortableDeviceContent> content;
@@ -241,8 +241,8 @@ bool GetObjectUniqueId(IPortableDevice* device,
 
 // Constructs the device storage unique identifier using |device_serial_num| and
 // |storage_id|. On success, returns true and fills in |device_storage_id|.
-bool ConstructDeviceStorageUniqueId(const string16& device_serial_num,
-                                    const string16& storage_id,
+bool ConstructDeviceStorageUniqueId(const base::string16& device_serial_num,
+                                    const base::string16& storage_id,
                                     std::string* device_storage_id) {
   if (device_serial_num.empty() && storage_id.empty())
     return false;
@@ -295,8 +295,8 @@ bool GetRemovableStorageObjectIds(
 // Returns true if the portable device belongs to a mass storage class.
 // |pnp_device_id| specifies the plug and play device id.
 // |device_name| specifies the name of the device.
-bool IsMassStoragePortableDevice(const string16& pnp_device_id,
-                                 const string16& device_name) {
+bool IsMassStoragePortableDevice(const base::string16& pnp_device_id,
+                                 const base::string16& device_name) {
   // Based on testing, if the pnp device id starts with "\\?\wpdbusenumroot#",
   // then the attached device belongs to a mass storage class.
   if (StartsWith(pnp_device_id, L"\\\\?\\wpdbusenumroot#", false))
@@ -312,10 +312,10 @@ bool IsMassStoragePortableDevice(const string16& pnp_device_id,
 // Returns the name of the device specified by |pnp_device_id|.
 string16 GetDeviceNameOnBlockingThread(
     IPortableDeviceManager* portable_device_manager,
-    const string16& pnp_device_id) {
+    const base::string16& pnp_device_id) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(portable_device_manager);
-  string16 name;
+  base::string16 name;
   GetFriendlyName(pnp_device_id, portable_device_manager, &name) ||
       GetDeviceDescription(pnp_device_id, portable_device_manager, &name) ||
       GetManufacturerName(pnp_device_id, portable_device_manager, &name);
@@ -325,7 +325,7 @@ string16 GetDeviceNameOnBlockingThread(
 // Access the device and gets the device storage details. On success, returns
 // true and populates |storage_objects| with device storage details.
 bool GetDeviceStorageObjectsOnBlockingThread(
-    const string16& pnp_device_id,
+    const base::string16& pnp_device_id,
     PortableDeviceWatcherWin::StorageObjects* storage_objects) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(storage_objects);
@@ -333,7 +333,7 @@ bool GetDeviceStorageObjectsOnBlockingThread(
   if (!SetUp(pnp_device_id, &device))
     return false;
 
-  string16 device_serial_num;
+  base::string16 device_serial_num;
   if (!GetObjectUniqueId(device.get(), WPD_DEVICE_OBJECT_ID,
                          &device_serial_num)) {
     return false;
@@ -344,7 +344,7 @@ bool GetDeviceStorageObjectsOnBlockingThread(
     return false;
   for (PortableDeviceWatcherWin::StorageObjectIDs::const_iterator id_iter =
        storage_obj_ids.begin(); id_iter != storage_obj_ids.end(); ++id_iter) {
-    string16 storage_persistent_id;
+    base::string16 storage_persistent_id;
     if (!GetObjectUniqueId(device.get(), *id_iter, &storage_persistent_id))
       continue;
 
@@ -363,7 +363,7 @@ bool GetDeviceStorageObjectsOnBlockingThread(
 // false. |pnp_device_id| specifies the plug and play device ID string.
 bool GetDeviceInfoOnBlockingThread(
     IPortableDeviceManager* portable_device_manager,
-    const string16& pnp_device_id,
+    const base::string16& pnp_device_id,
     PortableDeviceWatcherWin::DeviceDetails* device_details) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(portable_device_manager);
@@ -433,7 +433,7 @@ bool EnumerateAttachedDevicesOnBlockingThread(
 // success, returns true and populates |device_details| with device information.
 // On failure, returns false.
 bool HandleDeviceAttachedEventOnBlockingThread(
-    const string16& pnp_device_id,
+    const base::string16& pnp_device_id,
     PortableDeviceWatcherWin::DeviceDetails* device_details) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(device_details);
@@ -469,7 +469,7 @@ HDEVNOTIFY RegisterPortableDeviceNotification(HWND hwnd) {
 // PortableDeviceWatcherWin ---------------------------------------------------
 
 PortableDeviceWatcherWin::DeviceStorageObject::DeviceStorageObject(
-    const string16& temporary_id,
+    const base::string16& temporary_id,
     const std::string& persistent_id)
     : object_temporary_id(temporary_id),
       object_persistent_id(persistent_id) {
@@ -500,7 +500,7 @@ void PortableDeviceWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
   if (!IsPortableDeviceStructure(data))
     return;
 
-  string16 device_id = GetPnpDeviceId(data);
+  base::string16 device_id = GetPnpDeviceId(data);
   if (event_type == DBT_DEVICEARRIVAL)
     HandleDeviceAttachEvent(device_id);
   else if (event_type == DBT_DEVICEREMOVECOMPLETE)
@@ -509,8 +509,8 @@ void PortableDeviceWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
 
 bool PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
     const std::string& storage_device_id,
-    string16* device_location,
-    string16* storage_object_id) const {
+    base::string16* device_location,
+    base::string16* storage_object_id) const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(device_location);
   DCHECK(storage_object_id);
@@ -556,8 +556,8 @@ void PortableDeviceWatcherWin::EjectDevice(
   // MTP devices on Windows don't have a detach API needed -- signal
   // the object as if the device is gone and tell the caller it is OK
   // to remove.
-  string16 device_location;      // The device_map_ key.
-  string16 storage_object_id;
+  base::string16 device_location;      // The device_map_ key.
+  base::string16 storage_object_id;
   if (!GetMTPStorageInfoFromDeviceId(device_id,
                                      &device_location, &storage_object_id)) {
     callback.Run(StorageMonitor::EJECT_NO_SUCH_DEVICE);
@@ -593,7 +593,7 @@ void PortableDeviceWatcherWin::OnDidEnumerateAttachedDevices(
 }
 
 void PortableDeviceWatcherWin::HandleDeviceAttachEvent(
-    const string16& pnp_device_id) {
+    const base::string16& pnp_device_id) {
   DCHECK(media_task_runner_.get());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DeviceDetails* device_details = new DeviceDetails;
@@ -614,8 +614,8 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
     return;
 
   const StorageObjects& storage_objects = device_details->storage_objects;
-  const string16& name = device_details->name;
-  const string16& location = device_details->location;
+  const base::string16& name = device_details->name;
+  const base::string16& location = device_details->location;
   DCHECK(!ContainsKey(device_map_, location));
   for (StorageObjects::const_iterator storage_iter = storage_objects.begin();
        storage_iter != storage_objects.end(); ++storage_iter) {
@@ -630,10 +630,10 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
 
     // Device can have several data partitions. Therefore, add the
     // partition identifier to the storage name. E.g.: "Nexus 7 (s10001)"
-    string16 storage_name(name + L" (" + storage_iter->object_temporary_id +
-        L')');
+    base::string16 storage_name(name + L" (" +
+                                storage_iter->object_temporary_id + L')');
     StorageInfo info(storage_id, storage_name, location,
-                     storage_name, string16(), string16(), 0);
+                     storage_name, base::string16(), base::string16(), 0);
     storage_map_[storage_id] = info;
     if (storage_notifications_) {
       info.set_location(GetStoragePathFromStorageId(storage_id));
@@ -644,7 +644,7 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
 }
 
 void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
-    const string16& pnp_device_id) {
+    const base::string16& pnp_device_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   MTPDeviceMap::iterator device_iter = device_map_.find(pnp_device_id);
   if (device_iter == device_map_.end())

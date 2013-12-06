@@ -83,9 +83,9 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   }
 
   // Returns the displayable name for the language at |index|.
-  string16 language_name_at(size_t index) const {
+  base::string16 language_name_at(size_t index) const {
     if (index == static_cast<size_t>(kNoIndex))
-      return string16();
+      return base::string16();
     DCHECK_LT(index, num_languages());
     return languages_[index].second;
   }
@@ -146,8 +146,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
-  string16 GetMessageInfoBarText();
-  string16 GetMessageInfoBarButtonText();
+  base::string16 GetMessageInfoBarText();
+  base::string16 GetMessageInfoBarButtonText();
   void MessageInfoBarButtonPressed();
   bool ShouldShowMessageInfoBarButton();
 
@@ -161,7 +161,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // Convenience method that returns the displayable language name for
   // |language_code| in the current application locale.
-  static string16 GetLanguageDisplayableName(const std::string& language_code);
+  static base::string16 GetLanguageDisplayableName(
+      const std::string& language_code);
 
   // Adds the strings that should be displayed in the after translate infobar to
   // |strings|. If |autodetermined_source_language| is false, the text in that
@@ -190,7 +191,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
  private:
   friend class TranslationInfoBarTest;
-  typedef std::pair<std::string, string16> LanguageNamePair;
+  typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   // Returns a translate infobar that owns |delegate|.
   static scoped_ptr<InfoBar> CreateInfoBar(

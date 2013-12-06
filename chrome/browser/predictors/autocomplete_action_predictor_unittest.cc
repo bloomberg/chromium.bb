@@ -30,9 +30,9 @@ namespace {
 
 struct TestUrlInfo {
   GURL url;
-  string16 title;
+  base::string16 title;
   int days_from_now;
-  string16 user_text;
+  base::string16 user_text;
   int number_of_hits;
   int number_of_misses;
   AutocompleteActionPredictor::Action expected_action;
@@ -63,7 +63,7 @@ struct TestUrlInfo {
     AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/g.html"),
     ASCIIToUTF16("Test - site - just a test"), 12,
-    string16(), 5, 0,
+    base::string16(), 5, 0,
     AutocompleteActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/h.html"),
     ASCIIToUTF16("Test - site - just a test"), 21,

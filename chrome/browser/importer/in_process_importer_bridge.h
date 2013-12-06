@@ -36,7 +36,7 @@ class InProcessImporterBridge : public ImporterBridge {
   // Begin ImporterBridge implementation:
   virtual void AddBookmarks(
       const std::vector<ImportedBookmarkEntry>& bookmarks,
-      const string16& first_folder_name) OVERRIDE;
+      const base::string16& first_folder_name) OVERRIDE;
 
   virtual void AddHomePage(const GURL& home_page) OVERRIDE;
 
@@ -66,7 +66,7 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void NotifyItemEnded(importer::ImportItem item) OVERRIDE;
   virtual void NotifyEnded() OVERRIDE;
 
-  virtual string16 GetLocalizedString(int message_id) OVERRIDE;
+  virtual base::string16 GetLocalizedString(int message_id) OVERRIDE;
   // End ImporterBridge implementation.
 
  private:

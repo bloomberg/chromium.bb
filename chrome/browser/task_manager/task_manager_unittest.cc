@@ -30,10 +30,10 @@ class TestResource : public task_manager::Resource {
  public:
   TestResource() : refresh_called_(false) {}
 
-  virtual string16 GetTitle() const OVERRIDE {
+  virtual base::string16 GetTitle() const OVERRIDE {
     return ASCIIToUTF16("test title");
   }
-  virtual string16 GetProfileName() const OVERRIDE {
+  virtual base::string16 GetProfileName() const OVERRIDE {
     return ASCIIToUTF16("test profile");
   }
   virtual gfx::ImageSkia GetIcon() const OVERRIDE { return gfx::ImageSkia(); }

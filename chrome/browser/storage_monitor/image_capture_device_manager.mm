@@ -105,8 +105,8 @@ ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
       base::SysNSStringToUTF16([cameraDevice name]),
       "",
       base::SysNSStringToUTF16([cameraDevice name]),
-      string16(),
-      string16(),
+      base::string16(),
+      base::string16(),
       0);
   notifications_->ProcessAttach(info);
 }

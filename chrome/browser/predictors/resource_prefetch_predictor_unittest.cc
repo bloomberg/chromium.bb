@@ -84,7 +84,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
                                          Profile::EXPLICIT_ACCESS)->
         AddPageWithDetails(
             GURL(url),
-            string16(),
+            base::string16(),
             visit_count,
             0,
             base::Time::Now(),

@@ -25,7 +25,7 @@ bool ActivateMetroChrome() {
     return false;
   }
 
-  string16 app_id = ShellUtil::GetBrowserModelId(
+  base::string16 app_id = ShellUtil::GetBrowserModelId(
       BrowserDistribution::GetDistribution(),
       InstallUtil::IsPerUserInstall(chrome_exe.value().c_str()));
   if (app_id.empty()) {

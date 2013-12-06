@@ -24,7 +24,7 @@ class KeywordProviderTest : public testing::Test {
 
   template<class ResultType>
   struct TestData {
-    const string16 input;
+    const base::string16 input;
     const size_t num_results;
     const MatchType<ResultType> output[3];
   };
@@ -77,8 +77,9 @@ void KeywordProviderTest::RunTest(
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     SCOPED_TRACE(keyword_cases[i].input);
-    AutocompleteInput input(keyword_cases[i].input, string16::npos, string16(),
-                            GURL(), AutocompleteInput::INVALID_SPEC, true,
+    AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
+                            base::string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC, true,
                             false, true, AutocompleteInput::ALL_MATCHES);
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
@@ -93,7 +94,7 @@ void KeywordProviderTest::RunTest(
 }
 
 TEST_F(KeywordProviderTest, Edit) {
-  const MatchType<string16> kEmptyMatch = { string16(), false };
+  const MatchType<string16> kEmptyMatch = { base::string16(), false };
   TestData<string16> edit_cases[] = {
     // Searching for a nonexistent prefix should give nothing.
     { ASCIIToUTF16("Not Found"), 0,
@@ -208,7 +209,7 @@ TEST_F(KeywordProviderTest, URL) {
 }
 
 TEST_F(KeywordProviderTest, Contents) {
-  const MatchType<string16> kEmptyMatch = { string16(), false };
+  const MatchType<string16> kEmptyMatch = { base::string16(), false };
   TestData<string16> contents_cases[] = {
     // No query input -> substitute "<enter query>" into contents.
     { ASCIIToUTF16("z"), 1,
@@ -253,7 +254,7 @@ TEST_F(KeywordProviderTest, Contents) {
 TEST_F(KeywordProviderTest, AddKeyword) {
   TemplateURLData data;
   data.short_name = ASCIIToUTF16("Test");
-  string16 keyword(ASCIIToUTF16("foo"));
+  base::string16 keyword(ASCIIToUTF16("foo"));
   data.SetKeyword(keyword);
   data.SetURL("http://www.google.com/foo?q={searchTerms}");
   TemplateURL* template_url = new TemplateURL(NULL, data);
@@ -262,7 +263,7 @@ TEST_F(KeywordProviderTest, AddKeyword) {
 }
 
 TEST_F(KeywordProviderTest, RemoveKeyword) {
-  string16 url(ASCIIToUTF16("http://aaaa/?aaaa=1&b={searchTerms}&c"));
+  base::string16 url(ASCIIToUTF16("http://aaaa/?aaaa=1&b={searchTerms}&c"));
   model_->Remove(model_->GetTemplateURLForKeyword(ASCIIToUTF16("aaaa")));
   ASSERT_TRUE(model_->GetTemplateURLForKeyword(ASCIIToUTF16("aaaa")) == NULL);
 }
@@ -285,13 +286,13 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     const std::string updated_text;
     const size_t updated_cursor_position;
   } cases[] = {
-    { "foo", string16::npos, true, "", "foo", string16::npos },
-    { "aa foo", string16::npos, true, "aa.com?foo={searchTerms}", "foo",
-      string16::npos },
+    { "foo", base::string16::npos, true, "", "foo", base::string16::npos },
+    { "aa foo", base::string16::npos, true, "aa.com?foo={searchTerms}", "foo",
+      base::string16::npos },
 
     // Cursor adjustment.
-    { "aa foo", string16::npos, true, "aa.com?foo={searchTerms}", "foo",
-      string16::npos },
+    { "aa foo", base::string16::npos, true, "aa.com?foo={searchTerms}", "foo",
+      base::string16::npos },
     { "aa foo", 4u, true, "aa.com?foo={searchTerms}", "foo", 1u },
     // Cursor at the end.
     { "aa foo", 6u, true, "aa.com?foo={searchTerms}", "foo", 3u },
@@ -301,9 +302,9 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     // Trailing space.
     { "aa foo ", 7u, true, "aa.com?foo={searchTerms}", "foo ", 4u },
     // Trailing space without remaining text, cursor in the middle.
-    { "aa  ", 3u, true, "aa.com?foo={searchTerms}", "", string16::npos },
+    { "aa  ", 3u, true, "aa.com?foo={searchTerms}", "", base::string16::npos },
     // Trailing space without remaining text, cursor at the end.
-    { "aa  ", 4u, true, "aa.com?foo={searchTerms}", "", string16::npos },
+    { "aa  ", 4u, true, "aa.com?foo={searchTerms}", "", base::string16::npos },
     // Extra space after keyword, cursor at the end.
     { "aa  foo ", 8u, true, "aa.com?foo={searchTerms}", "foo ", 4u },
     // Extra space after keyword, cursor in the middle.
@@ -314,11 +315,12 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     { "aa  foo", 5u, true, "aa.com?foo={searchTerms}", "foo", 1u },
 
     // Disallow exact keyword match.
-    { "aa foo", string16::npos, false, "", "aa foo", string16::npos },
+    { "aa foo", base::string16::npos, false, "", "aa foo",
+      base::string16::npos },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     AutocompleteInput input(ASCIIToUTF16(cases[i].text),
-                            cases[i].cursor_position, string16(), GURL(),
+                            cases[i].cursor_position, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
                             cases[i].allow_exact_keyword_match,
                             AutocompleteInput::ALL_MATCHES);

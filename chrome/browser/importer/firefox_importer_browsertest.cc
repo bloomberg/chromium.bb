@@ -157,8 +157,9 @@ class FirefoxObserver : public ProfileWriter,
     ++history_count_;
   }
 
-  virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
-                            const string16& top_level_folder_name) OVERRIDE {
+  virtual void AddBookmarks(
+      const std::vector<ImportedBookmarkEntry>& bookmarks,
+      const base::string16& top_level_folder_name) OVERRIDE {
     ASSERT_LE(bookmark_count_ + bookmarks.size(), arraysize(kFirefoxBookmarks));
     // Importer should import the FF favorites the same as the list, in the same
     // order.
@@ -176,7 +177,7 @@ class FirefoxObserver : public ProfileWriter,
       // The order might not be deterministic, look in the expected list for
       // that template URL.
       bool found = false;
-      string16 keyword = template_urls[i]->keyword();
+      base::string16 keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefoxKeywords); ++j) {
         if (template_urls[i]->keyword() ==
                 WideToUTF16Hack(kFirefoxKeywords[j].keyword)) {

@@ -98,7 +98,7 @@ bool ShouldUpdateIcon(const base::FilePath& icon_file,
 // an --app-id flag.
 bool IsAppShortcutForProfile(const base::FilePath& shortcut_file_name,
                              const base::FilePath& profile_path) {
-  string16 cmd_line_string;
+  base::string16 cmd_line_string;
   if (base::win::ResolveShortcut(shortcut_file_name, NULL, &cmd_line_string)) {
     cmd_line_string = L"program " + cmd_line_string;
     CommandLine shortcut_cmd_line = CommandLine::FromString(cmd_line_string);
@@ -117,7 +117,7 @@ bool IsAppShortcutForProfile(const base::FilePath& shortcut_file_name,
 std::vector<base::FilePath> FindAppShortcutsByProfileAndTitle(
     const base::FilePath& shortcut_path,
     const base::FilePath& profile_path,
-    const string16& shortcut_name) {
+    const base::string16& shortcut_name) {
   std::vector<base::FilePath> shortcut_paths;
 
   if (shortcut_name.empty()) {
@@ -200,16 +200,16 @@ bool CreateShortcutsInPaths(
   // properly quoted for a Windows command line.  The method on
   // CommandLine should probably be renamed to better reflect that
   // fact.
-  string16 wide_switches(cmd_line.GetCommandLineString());
+  base::string16 wide_switches(cmd_line.GetCommandLineString());
 
   // Sanitize description
-  string16 description = shortcut_info.description;
+  base::string16 description = shortcut_info.description;
   if (description.length() >= MAX_PATH)
     description.resize(MAX_PATH - 1);
 
   // Generates app id from web app url and profile path.
   std::string app_name(web_app::GenerateApplicationNameFromInfo(shortcut_info));
-  string16 app_id(ShellIntegration::GetAppModelIdForProfile(
+  base::string16 app_id(ShellIntegration::GetAppModelIdForProfile(
       UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
   bool success = true;
@@ -274,7 +274,7 @@ bool CreateShortcutsInPaths(
 void GetShortcutLocationsAndDeleteShortcuts(
     const base::FilePath& web_app_path,
     const base::FilePath& profile_path,
-    const string16& title,
+    const base::string16& title,
     bool* was_pinned_to_taskbar,
     std::vector<base::FilePath>* shortcut_paths) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -407,7 +407,7 @@ bool CreatePlatformShortcuts(
 
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const string16& old_app_title,
+    const base::string16& old_app_title,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 

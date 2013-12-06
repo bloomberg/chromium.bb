@@ -269,9 +269,9 @@ AdViewGuest* WebViewGuest::AsAdView() {
 }
 
 void WebViewGuest::AddMessageToConsole(int32 level,
-                                       const string16& message,
+                                       const base::string16& message,
                                        int32 line_no,
-                                       const string16& source_id) {
+                                       const base::string16& source_id) {
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   // Log levels are from base/logging.h: LogSeverity.
   args->SetInteger(webview::kLevel, level);
@@ -565,7 +565,7 @@ WebViewGuest::~WebViewGuest() {
 
 void WebViewGuest::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type,
@@ -584,11 +584,11 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
 
 void WebViewGuest::DidFailProvisionalLoad(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description,
+    const base::string16& error_description,
     content::RenderViewHost* render_view_host) {
   // Translate the |error_code| into an error string.
   std::string error_type;

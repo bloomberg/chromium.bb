@@ -32,8 +32,8 @@ class WebApplicationTest : public ChromeRenderViewHostTestHarness {
 #define MAYBE_GetShortcutInfoForTab GetShortcutInfoForTab
 #endif
 TEST_F(WebApplicationTest, MAYBE_GetShortcutInfoForTab) {
-  const string16 title = ASCIIToUTF16("TEST_TITLE");
-  const string16 description = ASCIIToUTF16("TEST_DESCRIPTION");
+  const base::string16 title = ASCIIToUTF16("TEST_TITLE");
+  const base::string16 description = ASCIIToUTF16("TEST_DESCRIPTION");
   const GURL url("http://www.foo.com/bar");
   WebApplicationInfo web_app_info;
   web_app_info.title = title;

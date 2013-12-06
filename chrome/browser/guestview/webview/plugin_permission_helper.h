@@ -23,7 +23,7 @@ class PluginPermissionHelper
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Message handlers:
-  void OnBlockedUnauthorizedPlugin(const string16& name,
+  void OnBlockedUnauthorizedPlugin(const base::string16& name,
                                    const std::string& identifier);
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
   void OnBlockedOutdatedPlugin(int placeholder_id,

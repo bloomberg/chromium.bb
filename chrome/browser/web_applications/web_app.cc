@@ -42,7 +42,7 @@ void DeleteShortcutsOnFileThread(
 }
 
 void UpdateShortcutsOnFileThread(
-    const string16& old_app_title,
+    const base::string16& old_app_title,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -66,9 +66,9 @@ static const char* kCrxAppPrefix = "_crx_";
 
 namespace internals {
 
-base::FilePath GetSanitizedFileName(const string16& name) {
+base::FilePath GetSanitizedFileName(const base::string16& name) {
 #if defined(OS_WIN)
-  string16 file_name = name;
+  base::string16 file_name = name;
 #else
   std::string file_name = UTF16ToUTF8(name);
 #endif
@@ -167,7 +167,7 @@ void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
       base::Bind(&DeleteShortcutsOnFileThread, shortcut_info));
 }
 
-void UpdateAllShortcuts(const string16& old_app_title,
+void UpdateAllShortcuts(const base::string16& old_app_title,
                         const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

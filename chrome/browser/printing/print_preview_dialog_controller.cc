@@ -78,7 +78,7 @@ class PrintPreviewDialogDelegate : public WebDialogDelegate {
   virtual ~PrintPreviewDialogDelegate();
 
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual base::string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
@@ -110,7 +110,7 @@ ui::ModalType PrintPreviewDialogDelegate::GetDialogModalType() const {
 
 string16 PrintPreviewDialogDelegate::GetDialogTitle() const {
   // Only used on Windows? UI folks prefer no title.
-  return string16();
+  return base::string16();
 }
 
 GURL PrintPreviewDialogDelegate::GetDialogContentURL() const {

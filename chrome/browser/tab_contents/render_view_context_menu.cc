@@ -518,7 +518,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   if (!menu_manager)
     return;
 
-  string16 printable_selection_text = PrintableSelectionText();
+  base::string16 printable_selection_text = PrintableSelectionText();
   EscapeAmpersands(&printable_selection_text);
 
   // Get a list of extension id's that have context menu items, and sort by the
@@ -771,12 +771,12 @@ void RenderViewContextMenu::AppendPanelItems() {
 }
 
 void RenderViewContextMenu::AddMenuItem(int command_id,
-                                        const string16& title) {
+                                        const base::string16& title) {
   menu_model_.AddItem(command_id, title);
 }
 
 void RenderViewContextMenu::AddCheckItem(int command_id,
-                                         const string16& title) {
+                                         const base::string16& title) {
   menu_model_.AddCheckItem(command_id, title);
 }
 
@@ -785,7 +785,7 @@ void RenderViewContextMenu::AddSeparator() {
 }
 
 void RenderViewContextMenu::AddSubMenu(int command_id,
-                                       const string16& label,
+                                       const base::string16& label,
                                        ui::MenuModel* model) {
   menu_model_.AddSubMenu(command_id, label, model);
 }
@@ -793,7 +793,7 @@ void RenderViewContextMenu::AddSubMenu(int command_id,
 void RenderViewContextMenu::UpdateMenuItem(int command_id,
                                            bool enabled,
                                            bool hidden,
-                                           const string16& label) {
+                                           const base::string16& label) {
   // This function needs platform-specific implementation.
   NOTIMPLEMENTED();
 }
@@ -959,8 +959,8 @@ void RenderViewContextMenu::AppendPageItems() {
   if (TranslateManager::IsTranslatableURL(params_.page_url)) {
     std::string locale = g_browser_process->GetApplicationLocale();
     locale = TranslateManager::GetLanguageCode(locale);
-    string16 language = l10n_util::GetDisplayNameForLocale(locale, locale,
-                                                           true);
+    base::string16 language =
+        l10n_util::GetDisplayNameForLocale(locale, locale, true);
     menu_model_.AddItem(
         IDC_CONTENT_CONTEXT_TRANSLATE,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
@@ -1025,7 +1025,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
   if (!selection_navigation_url_.is_valid())
     return;
 
-  string16 printable_selection_text = PrintableSelectionText();
+  base::string16 printable_selection_text = PrintableSelectionText();
   EscapeAmpersands(&printable_selection_text);
 
   if (AutocompleteMatch::IsSearchType(match.type)) {
@@ -1931,7 +1931,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           SearchEngineTabHelper::FromWebContents(source_web_contents_);
       if (search_engine_tab_helper &&
           search_engine_tab_helper->delegate()) {
-        string16 keyword(TemplateURLService::GenerateKeyword(params_.page_url));
+        base::string16 keyword(
+            TemplateURLService::GenerateKeyword(params_.page_url));
         TemplateURLData data;
         data.short_name = keyword;
         data.SetKeyword(keyword);

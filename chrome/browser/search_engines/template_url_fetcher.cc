@@ -28,7 +28,7 @@ class TemplateURLFetcher::RequestDelegate : public net::URLFetcherDelegate {
  public:
   // Takes ownership of |callbacks|.
   RequestDelegate(TemplateURLFetcher* fetcher,
-                  const string16& keyword,
+                  const base::string16& keyword,
                   const GURL& osdd_url,
                   const GURL& favicon_url,
                   content::WebContents* web_contents,
@@ -44,7 +44,7 @@ class TemplateURLFetcher::RequestDelegate : public net::URLFetcherDelegate {
   GURL url() const { return osdd_url_; }
 
   // Keyword to use.
-  string16 keyword() const { return keyword_; }
+  base::string16 keyword() const { return keyword_; }
 
   // The type of search provider being fetched.
   ProviderType provider_type() const { return provider_type_; }
@@ -56,7 +56,7 @@ class TemplateURLFetcher::RequestDelegate : public net::URLFetcherDelegate {
   scoped_ptr<net::URLFetcher> url_fetcher_;
   TemplateURLFetcher* fetcher_;
   scoped_ptr<TemplateURL> template_url_;
-  string16 keyword_;
+  base::string16 keyword_;
   const GURL osdd_url_;
   const GURL favicon_url_;
   const ProviderType provider_type_;
@@ -69,7 +69,7 @@ class TemplateURLFetcher::RequestDelegate : public net::URLFetcherDelegate {
 
 TemplateURLFetcher::RequestDelegate::RequestDelegate(
     TemplateURLFetcher* fetcher,
-    const string16& keyword,
+    const base::string16& keyword,
     const GURL& osdd_url,
     const GURL& favicon_url,
     content::WebContents* web_contents,
@@ -226,7 +226,7 @@ TemplateURLFetcher::~TemplateURLFetcher() {
 }
 
 void TemplateURLFetcher::ScheduleDownload(
-    const string16& keyword,
+    const base::string16& keyword,
     const GURL& osdd_url,
     const GURL& favicon_url,
     content::WebContents* web_contents,

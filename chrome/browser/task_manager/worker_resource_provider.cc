@@ -36,7 +36,7 @@ namespace task_manager {
 class SharedWorkerResource : public Resource {
  public:
   SharedWorkerResource(const GURL& url,
-                       const string16& name,
+                       const base::string16& name,
                        int process_id,
                        int routing_id,
                        base::ProcessHandle process_handle);
@@ -50,8 +50,8 @@ class SharedWorkerResource : public Resource {
 
  private:
   // Resource methods:
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
@@ -64,7 +64,7 @@ class SharedWorkerResource : public Resource {
 
   int process_id_;
   int routing_id_;
-  string16 title_;
+  base::string16 title_;
   base::ProcessHandle handle_;
 
   static gfx::ImageSkia* default_icon_;
@@ -76,7 +76,7 @@ gfx::ImageSkia* SharedWorkerResource::default_icon_ = NULL;
 
 SharedWorkerResource::SharedWorkerResource(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     int process_id,
     int routing_id,
     base::ProcessHandle process_handle)
@@ -105,7 +105,7 @@ string16 SharedWorkerResource::GetTitle() const {
 }
 
 string16 SharedWorkerResource::GetProfileName() const {
-  return string16();
+  return base::string16();
 }
 
 gfx::ImageSkia SharedWorkerResource::GetIcon() const {
@@ -260,7 +260,7 @@ void WorkerResourceProvider::BrowserChildProcessHostDisconnected(
 
 void WorkerResourceProvider::WorkerCreated(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     int process_id,
     int route_id) {
   SharedWorkerResource* resource = new SharedWorkerResource(

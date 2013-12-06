@@ -596,7 +596,7 @@ void WifiConfigView::UpdateErrorLabel() {
 }
 
 void WifiConfigView::ContentsChanged(views::Textfield* sender,
-                                     const string16& new_contents) {
+                                     const base::string16& new_contents) {
   UpdateDialogButtons();
 }
 
@@ -948,7 +948,7 @@ void WifiConfigView::Init(bool show_8021x) {
   // Security select
   if (!wifi && !show_8021x) {
     layout->StartRow(0, column_view_set_id);
-    string16 label_text = l10n_util::GetStringUTF16(
+    base::string16 label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY);
     layout->AddView(new views::Label(label_text));
     security_combobox_model_.reset(new internal::SecurityComboboxModel);
@@ -966,7 +966,7 @@ void WifiConfigView::Init(bool show_8021x) {
 
     // EAP method
     layout->StartRow(0, column_view_set_id);
-    string16 eap_label_text = l10n_util::GetStringUTF16(
+    base::string16 eap_label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD);
     layout->AddView(new views::Label(eap_label_text));
     eap_method_combobox_model_.reset(new internal::EAPMethodComboboxModel);
@@ -981,7 +981,7 @@ void WifiConfigView::Init(bool show_8021x) {
 
     // Phase 2 authentication
     layout->StartRow(0, column_view_set_id);
-    string16 phase_2_label_text = l10n_util::GetStringUTF16(
+    base::string16 phase_2_label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH);
     phase_2_auth_label_ = new views::Label(phase_2_label_text);
     layout->AddView(phase_2_auth_label_);
@@ -999,7 +999,7 @@ void WifiConfigView::Init(bool show_8021x) {
 
     // Server CA certificate
     layout->StartRow(0, column_view_set_id);
-    string16 server_ca_cert_label_text = l10n_util::GetStringUTF16(
+    base::string16 server_ca_cert_label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA);
     server_ca_cert_label_ = new views::Label(server_ca_cert_label_text);
     layout->AddView(server_ca_cert_label_);
@@ -1019,7 +1019,7 @@ void WifiConfigView::Init(bool show_8021x) {
 
     // Subject Match
     layout->StartRow(0, column_view_set_id);
-    string16 subject_match_label_text = l10n_util::GetStringUTF16(
+    base::string16 subject_match_label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_SUBJECT_MATCH);
     subject_match_label_ = new views::Label(subject_match_label_text);
     layout->AddView(subject_match_label_);
@@ -1032,7 +1032,7 @@ void WifiConfigView::Init(bool show_8021x) {
 
     // User certificate
     layout->StartRow(0, column_view_set_id);
-    string16 user_cert_label_text = l10n_util::GetStringUTF16(
+    base::string16 user_cert_label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT);
     user_cert_label_ = new views::Label(user_cert_label_text);
     layout->AddView(user_cert_label_);
@@ -1048,7 +1048,7 @@ void WifiConfigView::Init(bool show_8021x) {
 
     // Identity
     layout->StartRow(0, column_view_set_id);
-    string16 identity_label_text = l10n_util::GetStringUTF16(
+    base::string16 identity_label_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY);
     identity_label_ = new views::Label(identity_label_text);
     layout->AddView(identity_label_);
@@ -1064,7 +1064,8 @@ void WifiConfigView::Init(bool show_8021x) {
   // Passphrase input
   layout->StartRow(0, column_view_set_id);
   int label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE;
-  string16 passphrase_label_text = l10n_util::GetStringUTF16(label_text_id);
+  base::string16 passphrase_label_text =
+      l10n_util::GetStringUTF16(label_text_id);
   passphrase_label_ = new views::Label(passphrase_label_text);
   layout->AddView(passphrase_label_);
   passphrase_textfield_ = new PassphraseTextfield();

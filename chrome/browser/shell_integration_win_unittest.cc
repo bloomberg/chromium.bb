@@ -66,7 +66,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
 
     extension_id_ = L"chromiumexampleappidforunittests";
-    string16 app_name =
+    base::string16 app_name =
         UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
         UTF16ToUTF8(extension_id_)));
     extension_app_id_ =
@@ -126,7 +126,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
     // Shortcut 3 is like shortcut 1, but it's appid is a prefix of the expected
     // appid instead of being totally different.
-    string16 chrome_app_id_is_prefix(chrome_app_id_);
+    base::string16 chrome_app_id_is_prefix(chrome_app_id_);
     chrome_app_id_is_prefix.push_back(L'1');
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(chrome_app_id_is_prefix);
@@ -135,7 +135,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
     // Shortcut 4 is like shortcut 1, but it's appid is of the same size as the
     // expected appid.
-    string16 same_size_as_chrome_app_id(L'1', chrome_app_id_.size());
+    base::string16 same_size_as_chrome_app_id(L'1', chrome_app_id_.size());
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(same_size_as_chrome_app_id);
     ASSERT_NO_FATAL_FAILURE(
@@ -210,35 +210,35 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
   base::FilePath other_target_;
 
   // Chrome's AppUserModelId.
-  string16 chrome_app_id_;
+  base::string16 chrome_app_id_;
 
   // A profile that isn't the Default profile.
-  string16 non_default_profile_;
+  base::string16 non_default_profile_;
 
   // A user data dir that isn't the default.
   base::FilePath non_default_user_data_dir_;
 
   // Chrome's AppUserModelId for the non-default profile.
-  string16 non_default_profile_chrome_app_id_;
+  base::string16 non_default_profile_chrome_app_id_;
 
   // Chrome's AppUserModelId for the non-default user data dir.
-  string16 non_default_user_data_dir_chrome_app_id_;
+  base::string16 non_default_user_data_dir_chrome_app_id_;
 
   // Chrome's AppUserModelId for the non-default user data dir and non-default
   // profile.
-  string16 non_default_user_data_dir_and_profile_chrome_app_id_;
+  base::string16 non_default_user_data_dir_and_profile_chrome_app_id_;
 
   // The app launcher's app id.
-  string16 app_list_app_id_;
+  base::string16 app_list_app_id_;
 
   // An example extension id of an example app.
-  string16 extension_id_;
+  base::string16 extension_id_;
 
   // The app id of the example app for the default profile and user data dir.
-  string16 extension_app_id_;
+  base::string16 extension_app_id_;
 
   // The app id of the example app for the non-default profile.
-  string16 non_default_profile_extension_app_id_;
+  base::string16 non_default_profile_extension_app_id_;
 };
 
 }  // namespace
@@ -320,7 +320,7 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, CheckDualMode) {
 }
 
 TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
-  const string16 base_app_id(
+  const base::string16 base_app_id(
       BrowserDistribution::GetDistribution()->GetBaseAppId());
 
   // Empty profile path should get chrome::kBrowserAppID
@@ -348,7 +348,8 @@ TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
 }
 
 TEST(ShellIntegrationWinTest, GetAppListAppModelIdForProfileTest) {
-  string16 base_app_id(BrowserDistribution::GetDistribution()->GetBaseAppId());
+  base::string16 base_app_id(
+      BrowserDistribution::GetDistribution()->GetBaseAppId());
   base_app_id.append(L"AppList");
 
   // Empty profile path should get chrome::kBrowserAppID + AppList

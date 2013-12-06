@@ -20,12 +20,12 @@ class TestStatusIcon : public StatusIcon {
   TestStatusIcon() {}
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE {}
   virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE {}
-  virtual void SetToolTip(const string16& tool_tip) OVERRIDE {}
+  virtual void SetToolTip(const base::string16& tool_tip) OVERRIDE {}
   virtual void UpdatePlatformContextMenu(
       StatusIconMenuModel* menu) OVERRIDE {}
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,
-                              const string16& title,
-                              const string16& contents) OVERRIDE {}
+                              const base::string16& title,
+                              const base::string16& contents) OVERRIDE {}
 };
 
 TEST(StatusIconTest, ObserverAdd) {

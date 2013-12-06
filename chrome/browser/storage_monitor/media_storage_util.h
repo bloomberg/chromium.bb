@@ -53,7 +53,7 @@ class MediaStorageUtil {
   // mass storage device, as defined by IsMassStorageDevice().
   static void RecordDeviceInfoHistogram(bool mass_storage,
                                         const std::string& device_uuid,
-                                        const string16& device_label);
+                                        const base::string16& device_label);
 
   // Returns true if the |id| is both a removable device and also
   // currently attached.

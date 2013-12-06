@@ -561,12 +561,13 @@ void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
   AddActionToExtensionActivityLog(profile_, action);
 }
 
-void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
-                                                const GURL& origin_url,
-                                                const GURL& top_origin_url,
-                                                const string16& name,
-                                                const string16& display_name,
-                                                bool* allowed) {
+void ChromeRenderMessageFilter::OnAllowDatabase(
+    int render_view_id,
+    const GURL& origin_url,
+    const GURL& top_origin_url,
+    const base::string16& name,
+    const base::string16& display_name,
+    bool* allowed) {
   *allowed =
       cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
   BrowserThread::PostTask(
@@ -607,7 +608,7 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
                                                  const GURL& origin_url,
                                                  const GURL& top_origin_url,
-                                                 const string16& name,
+                                                 const base::string16& name,
                                                  bool* allowed) {
   *allowed =
       cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);

@@ -38,8 +38,8 @@ class GuestResource : public RendererResource {
 
   // Resource methods:
   virtual Type GetType() const OVERRIDE;
-  virtual string16 GetTitle() const OVERRIDE;
-  virtual string16 GetProfileName() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
@@ -65,10 +65,10 @@ string16 GuestResource::GetTitle() const {
   WebContents* web_contents = GetWebContents();
   const int message_id = IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
   if (web_contents) {
-    string16 title = util::GetTitleFromWebContents(web_contents);
+    base::string16 title = util::GetTitleFromWebContents(web_contents);
     return l10n_util::GetStringFUTF16(message_id, title);
   }
-  return l10n_util::GetStringFUTF16(message_id, string16());
+  return l10n_util::GetStringFUTF16(message_id, base::string16());
 }
 
 string16 GuestResource::GetProfileName() const {
@@ -78,7 +78,7 @@ string16 GuestResource::GetProfileName() const {
         web_contents->GetBrowserContext());
     return util::GetProfileNameFromInfoCache(profile);
   }
-  return string16();
+  return base::string16();
 }
 
 gfx::ImageSkia GuestResource::GetIcon() const {

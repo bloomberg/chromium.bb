@@ -247,7 +247,8 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
 
 string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   if (infobar_type_ == TRANSLATING) {
-    string16 target_language_name = language_name_at(target_language_index());
+    base::string16 target_language_name =
+        language_name_at(target_language_index());
     return l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_TRANSLATING_TO,
                                       target_language_name);
   }
@@ -277,7 +278,7 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
           language_name_at(target_language_index()));
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
@@ -290,7 +291,7 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
         (error_type_ == TranslateErrors::UNSUPPORTED_LANGUAGE) ?
         IDS_TRANSLATE_INFOBAR_REVERT : IDS_TRANSLATE_INFOBAR_RETRY);
   }
-  return string16();
+  return base::string16();
 }
 
 void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
@@ -338,9 +339,9 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
 
   if (autodetermined_source_language) {
     size_t offset;
-    string16 text = l10n_util::GetStringFUTF16(
+    base::string16 text = l10n_util::GetStringFUTF16(
         IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_AUTODETERMINED_SOURCE_LANGUAGE,
-        string16(),
+        base::string16(),
         &offset);
 
     strings->push_back(text.substr(0, offset));
@@ -350,8 +351,9 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
   DCHECK(swap_languages);
 
   std::vector<size_t> offsets;
-  string16 text = l10n_util::GetStringFUTF16(
-      IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE, string16(), string16(), &offsets);
+  base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE, base::string16(), base::string16(),
+      &offsets);
   DCHECK_EQ(2U, offsets.size());
 
   *swap_languages = (offsets[0] > offsets[1]);

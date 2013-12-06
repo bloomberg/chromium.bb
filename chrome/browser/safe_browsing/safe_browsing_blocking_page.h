@@ -239,11 +239,11 @@ class SafeBrowsingBlockingPageV1 : public SafeBrowsingBlockingPage {
   // A helper method used by the Populate methods above used to populate common
   // fields.
   void PopulateStringDictionary(base::DictionaryValue* strings,
-                                const string16& title,
-                                const string16& headline,
-                                const string16& description1,
-                                const string16& description2,
-                                const string16& description3);
+                                const base::string16& title,
+                                const base::string16& headline,
+                                const base::string16& description1,
+                                const base::string16& description2,
+                                const base::string16& description3);
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV1);
 };
@@ -268,11 +268,11 @@ class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
   // A helper method used by the Populate methods above used to populate common
   // fields.
   void PopulateStringDictionary(base::DictionaryValue* strings,
-                                const string16& title,
-                                const string16& headline,
-                                const string16& description1,
-                                const string16& description2,
-                                const string16& description3);
+                                const base::string16& title,
+                                const base::string16& headline,
+                                const base::string16& description1,
+                                const base::string16& description2,
+                                const base::string16& description3);
 
   // For the FieldTrial: this contains the name of the condition.
   std::string trialCondition_;

@@ -87,7 +87,7 @@ void LogOmniboxSuggestRequest(
                             MAX_SUGGEST_REQUEST_HISTOGRAM_VALUE);
 }
 
-bool HasMultipleWords(const string16& text) {
+bool HasMultipleWords(const base::string16& text) {
   base::i18n::BreakIterator i(text, base::i18n::BreakIterator::BREAK_WORD);
   bool found_word = false;
   if (i.Init()) {
@@ -104,10 +104,10 @@ bool HasMultipleWords(const string16& text) {
 
 // Builds the match contents and classification for the contents, and updates
 // the given |AutocompleteMatch|.
-void SetAndClassifyMatchContents(const string16& query_string,
-                                 const string16& input_text,
-                                 const string16& match_contents,
-                                 const string16& annotation,
+void SetAndClassifyMatchContents(const base::string16& query_string,
+                                 const base::string16& input_text,
+                                 const base::string16& match_contents,
+                                 const base::string16& annotation,
                                  AutocompleteMatch* match) {
   size_t match_contents_start = 0;
   size_t annotation_start = match_contents.size();
@@ -133,7 +133,7 @@ void SetAndClassifyMatchContents(const string16& query_string,
   if (input_text != match_contents) {
     size_t input_position = match->contents.substr(
         match_contents_start, match_contents.length()).find(input_text);
-    if (input_position == string16::npos) {
+    if (input_position == base::string16::npos) {
       // The input text is not a substring of the query string, e.g. input
       // text is "slasdot" and the query string is "slashdot", so we bold the
       // whole thing.
@@ -265,9 +265,9 @@ SearchProvider::Result::~Result() {
 // SearchProvider::SuggestResult ----------------------------------------------
 
 SearchProvider::SuggestResult::SuggestResult(
-    const string16& suggestion,
-    const string16& match_contents,
-    const string16& annotation,
+    const base::string16& suggestion,
+    const base::string16& match_contents,
+    const base::string16& annotation,
     const std::string& suggest_query_params,
     const std::string& deletion_url,
     bool from_keyword_provider,
@@ -286,7 +286,8 @@ SearchProvider::SuggestResult::SuggestResult(
 SearchProvider::SuggestResult::~SuggestResult() {
 }
 
-bool SearchProvider::SuggestResult::IsInlineable(const string16& input) const {
+bool SearchProvider::SuggestResult::IsInlineable(
+    const base::string16& input) const {
   return StartsWith(suggestion_, input, false);
 }
 
@@ -304,7 +305,7 @@ int SearchProvider::SuggestResult::CalculateRelevance(
 SearchProvider::NavigationResult::NavigationResult(
     const AutocompleteProvider& provider,
     const GURL& url,
-    const string16& description,
+    const base::string16& description,
     bool from_keyword_provider,
     int relevance,
     bool relevance_from_server)
@@ -320,7 +321,7 @@ SearchProvider::NavigationResult::~NavigationResult() {
 }
 
 bool SearchProvider::NavigationResult::IsInlineable(
-    const string16& input) const {
+    const base::string16& input) const {
   return URLPrefix::BestURLPrefix(formatted_url_, input) != NULL;
 }
 
@@ -407,14 +408,14 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
 AutocompleteMatch SearchProvider::CreateSearchSuggestion(
     AutocompleteProvider* autocomplete_provider,
     const AutocompleteInput& input,
-    const string16& input_text,
+    const base::string16& input_text,
     int relevance,
     AutocompleteMatch::Type type,
     bool is_keyword,
-    const string16& match_contents,
-    const string16& annotation,
+    const base::string16& match_contents,
+    const base::string16& annotation,
     const TemplateURL* template_url,
-    const string16& query_string,
+    const base::string16& query_string,
     const std::string& suggest_query_params,
     int accepted_suggestion,
     int omnibox_start_margin,
@@ -516,7 +517,7 @@ SearchProvider::~SearchProvider() {
 }
 
 // static
-void SearchProvider::RemoveStaleResults(const string16& input,
+void SearchProvider::RemoveStaleResults(const base::string16& input,
                                         int verbatim_relevance,
                                         SuggestResults* suggest_results,
                                         NavigationResults* navigation_results) {
@@ -628,10 +629,10 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   // If we're still running an old query but have since changed the query text
   // or the providers, abort the query.
-  string16 default_provider_keyword(default_provider ?
-      default_provider->keyword() : string16());
-  string16 keyword_provider_keyword(keyword_provider ?
-      keyword_provider->keyword() : string16());
+  base::string16 default_provider_keyword(default_provider ?
+      default_provider->keyword() : base::string16());
+  base::string16 keyword_provider_keyword(keyword_provider ?
+      keyword_provider->keyword() : base::string16());
   if (!minimal_changes ||
       !providers_.equal(default_provider_keyword, keyword_provider_keyword)) {
     // Cancel any in-flight suggest requests.
@@ -719,7 +720,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     if (response_headers) {
       std::string charset;
       if (response_headers->GetCharset(&charset)) {
-        string16 data_16;
+        base::string16 data_16;
         // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
         if (base::CodepageToUTF16(json_data, charset.c_str(),
                                   base::OnStringConversionError::FAIL,
@@ -1091,10 +1092,10 @@ scoped_ptr<Value> SearchProvider::DeserializeJsonData(std::string json_data) {
 }
 
 bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
-  string16 query;
+  base::string16 query;
   ListValue* root_list = NULL;
   ListValue* results_list = NULL;
-  const string16& input_text =
+  const base::string16& input_text =
       is_keyword ? keyword_input_.text() : input_.text();
   if (!root_val->GetAsList(&root_list) || !root_list->GetString(0, &query) ||
       (query != input_text) || !root_list->GetList(1, &results_list))
@@ -1151,7 +1152,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   results->suggest_results.clear();
   results->navigation_results.clear();
 
-  string16 suggestion;
+  base::string16 suggestion;
   std::string type;
   int relevance = -1;
   // Prohibit navsuggest in FORCED_QUERY mode.  Users wants queries, not URLs.
@@ -1171,7 +1172,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
       // Do not blindly trust the URL coming from the server to be valid.
       GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(suggestion), std::string()));
       if (url.is_valid() && allow_navsuggest) {
-        string16 title;
+        base::string16 title;
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
@@ -1180,8 +1181,8 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     } else {
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       DictionaryValue* suggestion_detail = NULL;
-      string16 match_contents = suggestion;
-      string16 annotation;
+      base::string16 match_contents = suggestion;
+      base::string16 annotation;
       std::string suggest_query_params;
       std::string deletion_url;
 
@@ -1193,7 +1194,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
           if (type == "ENTITY") {
             suggestion_detail->GetString("a", &annotation);
 
-            string16 disambiguating_query;
+            base::string16 disambiguating_query;
             if (suggestion_detail->GetString("dq", &disambiguating_query) &&
                 !disambiguating_query.empty())
               suggestion = disambiguating_query;
@@ -1262,7 +1263,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                   false,
                   input_.text(),
-                  string16(),
+                  base::string16(),
                   input_.text(),
                   did_not_accept_default_suggestion,
                   std::string(),
@@ -1291,7 +1292,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                       AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                       true,
                       keyword_input_.text(),
-                      string16(),
+                      base::string16(),
                       keyword_input_.text(),
                       did_not_accept_keyword_suggestion,
                       std::string(),
@@ -1566,7 +1567,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
   base::TimeTicks start_time(base::TimeTicks::Now());
   bool prevent_inline_autocomplete = input_.prevent_inline_autocomplete() ||
       (input_.type() == AutocompleteInput::URL);
-  const string16& input_text =
+  const base::string16& input_text =
       is_keyword ? keyword_input_.text() : input_.text();
   bool input_multiple_words = HasMultipleWords(input_text);
 
@@ -1600,7 +1601,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                   AutocompleteMatchType::SEARCH_HISTORY,
                   is_keyword,
                   i->suggestion(),
-                  string16(),
+                  base::string16(),
                   i->suggestion(),
                   did_not_accept_suggestion,
                   std::string(),
@@ -1615,7 +1616,7 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     const HistoryResults& results,
     bool base_prevent_inline_autocomplete,
     bool input_multiple_words,
-    const string16& input_text,
+    const base::string16& input_text,
     bool is_keyword) {
   AutocompleteClassifier* classifier =
       AutocompleteClassifierFactory::GetForProfile(profile_);
@@ -1654,8 +1655,9 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
         i->time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
     scored_results.push_back(
-        SuggestResult(i->term, string16(), string16(), std::string(),
-                      std::string(), is_keyword, relevance, false, false));
+        SuggestResult(i->term, base::string16(), base::string16(),
+                      std::string(), std::string(), is_keyword, relevance,
+                      false, false));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -1681,7 +1683,8 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
                                             MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i) {
     const bool is_keyword = results[i].from_keyword_provider();
-    const string16& input = is_keyword ? keyword_input_.text() : input_.text();
+    const base::string16& input = is_keyword ? keyword_input_.text()
+                                             : input_.text();
     AddMatchToMap(input,
                   results[i].relevance(),
                   results[i].relevance_from_server(),
@@ -1807,16 +1810,16 @@ int SearchProvider::CalculateRelevanceForHistory(
   return std::max(0, base_score - score_discount);
 }
 
-void SearchProvider::AddMatchToMap(const string16& input_text,
+void SearchProvider::AddMatchToMap(const base::string16& input_text,
                                    int relevance,
                                    bool relevance_from_server,
                                    bool should_prefetch,
                                    const std::string& metadata,
                                    AutocompleteMatch::Type type,
                                    bool is_keyword,
-                                   const string16& match_contents,
-                                   const string16& annotation,
-                                   const string16& query_string,
+                                   const base::string16& match_contents,
+                                   const base::string16& annotation,
+                                   const base::string16& query_string,
                                    int accepted_suggestion,
                                    const std::string& suggest_query_params,
                                    const std::string& deletion_url,
@@ -1908,7 +1911,7 @@ void SearchProvider::AddMatchToMap(const string16& input_text,
 
 AutocompleteMatch SearchProvider::NavigationToMatch(
     const NavigationResult& navigation) {
-  const string16& input = navigation.from_keyword_provider() ?
+  const base::string16& input = navigation.from_keyword_provider() ?
       keyword_input_.text() : input_.text();
   AutocompleteMatch match(this, navigation.relevance(), false,
                           AutocompleteMatchType::NAVSUGGEST);
@@ -1917,13 +1920,13 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   // First look for the user's input inside the fill_into_edit as it would be
   // without trimming the scheme, so we can find matches at the beginning of the
   // scheme.
-  const string16& untrimmed_fill_into_edit = navigation.formatted_url();
+  const base::string16& untrimmed_fill_into_edit = navigation.formatted_url();
   const URLPrefix* prefix =
       URLPrefix::BestURLPrefix(untrimmed_fill_into_edit, input);
   size_t match_start = (prefix == NULL) ?
       untrimmed_fill_into_edit.find(input) : prefix->prefix.length();
   size_t inline_autocomplete_offset = (prefix == NULL) ?
-      string16::npos : (match_start + input.length());
+      base::string16::npos : (match_start + input.length());
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input) &&
       (!prefix || (match_start != 0));
 
@@ -1940,11 +1943,11 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   // Otherwise, user edits to a suggestion would show non-Search results.
   if (input_.type() == AutocompleteInput::FORCED_QUERY) {
     match.fill_into_edit.insert(0, ASCIIToUTF16("?"));
-    if (inline_autocomplete_offset != string16::npos)
+    if (inline_autocomplete_offset != base::string16::npos)
       ++inline_autocomplete_offset;
   }
   if (!input_.prevent_inline_autocomplete() &&
-      (inline_autocomplete_offset != string16::npos)) {
+      (inline_autocomplete_offset != base::string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
     // A navsuggestion can only be the default match when there is no
     // keyword provider active, lest it appear first and break the user
@@ -1959,7 +1962,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       format_types, net::UnescapeRule::SPACES, NULL, NULL, &match_start);
   // If the first match in the untrimmed string was inside a scheme that we
   // trimmed, look for a subsequent match.
-  if (match_start == string16::npos)
+  if (match_start == base::string16::npos)
     match_start = match.contents.find(input);
   // Safe if |match_start| is npos; also safe if the input is longer than the
   // remaining contents after |match_start|.

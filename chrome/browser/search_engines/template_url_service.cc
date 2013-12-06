@@ -327,14 +327,15 @@ string16 TemplateURLService::GenerateKeyword(const GURL& url) {
   // Special case: if the host was exactly "www." (not sure this can happen but
   // perhaps with some weird intranet and custom DNS server?), ensure we at
   // least don't return the empty string.
-  string16 keyword(net::StripWWWFromHost(url));
+  base::string16 keyword(net::StripWWWFromHost(url));
   return keyword.empty() ? ASCIIToUTF16("www") : keyword;
 }
 
 // static
-string16 TemplateURLService::CleanUserInputKeyword(const string16& keyword) {
+string16 TemplateURLService::CleanUserInputKeyword(
+    const base::string16& keyword) {
   // Remove the scheme.
-  string16 result(base::i18n::ToLower(keyword));
+  base::string16 result(base::i18n::ToLower(keyword));
   TrimWhitespace(result, TRIM_ALL, &result);
   url_parse::Component scheme_component;
   if (url_parse::ExtractScheme(UTF16ToUTF8(keyword).c_str(),
@@ -347,12 +348,12 @@ string16 TemplateURLService::CleanUserInputKeyword(const string16& keyword) {
                        ASCIIToUTF16(content::kHttpScheme)) &&
         result.compare(0, scheme_component.end(),
                        ASCIIToUTF16(content::kHttpsScheme)))
-      return string16();
+      return base::string16();
 
     // Include trailing ':'.
     result.erase(0, scheme_component.end() + 1);
     // Many schemes usually have "//" after them, so strip it too.
-    const string16 after_scheme(ASCIIToUTF16("//"));
+    const base::string16 after_scheme(ASCIIToUTF16("//"));
     if (result.compare(0, after_scheme.length(), after_scheme) == 0)
       result.erase(0, after_scheme.length());
   }
@@ -396,7 +397,7 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
 }
 
 bool TemplateURLService::CanReplaceKeyword(
-    const string16& keyword,
+    const base::string16& keyword,
     const GURL& url,
     TemplateURL** template_url_to_replace) {
   DCHECK(!keyword.empty());  // This should only be called for non-empty
@@ -421,7 +422,7 @@ bool TemplateURLService::CanReplaceKeyword(
 }
 
 void TemplateURLService::FindMatchingKeywords(
-    const string16& prefix,
+    const base::string16& prefix,
     bool support_replacement_only,
     TemplateURLVector* matches) const {
   // Sanity check args.
@@ -452,7 +453,7 @@ void TemplateURLService::FindMatchingKeywords(
 }
 
 TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
-    const string16& keyword) {
+    const base::string16& keyword) {
   KeywordToTemplateMap::const_iterator elem(
       keyword_to_template_map_.find(keyword));
   if (elem != keyword_to_template_map_.end())
@@ -499,8 +500,8 @@ void TemplateURLService::AddAndSetProfile(TemplateURL* template_url,
 }
 
 void TemplateURLService::AddWithOverrides(TemplateURL* template_url,
-                                          const string16& short_name,
-                                          const string16& keyword,
+                                          const base::string16& short_name,
+                                          const base::string16& keyword,
                                           const std::string& url) {
   DCHECK(!keyword.empty());
   DCHECK(!url.empty());
@@ -636,8 +637,8 @@ void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
 }
 
 void TemplateURLService::ResetTemplateURL(TemplateURL* url,
-                                          const string16& title,
-                                          const string16& keyword,
+                                          const base::string16& title,
+                                          const base::string16& keyword,
                                           const std::string& search_url) {
   if (!loaded_)
     return;
@@ -856,7 +857,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 }
 
 string16 TemplateURLService::GetKeywordShortName(
-    const string16& keyword,
+    const base::string16& keyword,
     bool* is_omnibox_api_extension_keyword) {
   const TemplateURL* template_url = GetTemplateURLForKeyword(keyword);
 
@@ -868,7 +869,7 @@ string16 TemplateURLService::GetKeywordShortName(
     return template_url->AdjustedShortNameForLocaleDirection();
   }
   *is_omnibox_api_extension_keyword = false;
-  return string16();
+  return base::string16();
 }
 
 void TemplateURLService::Observe(int type,
@@ -1012,7 +1013,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         // Note that we append a special character to the end of the keyword in
         // an attempt to avoid a ping-poinging situation where receiving clients
         // may try to continually delete the resurrected entry.
-        string16 updated_keyword = UniquifyKeyword(*existing_turl, true);
+        base::string16 updated_keyword = UniquifyKeyword(*existing_turl, true);
         TemplateURLData data(existing_turl->data());
         data.SetKeyword(updated_keyword);
         TemplateURL new_turl(existing_turl->profile(), data);
@@ -1338,7 +1339,7 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
       existing_turl->data() : TemplateURLData());
   data.short_name = UTF8ToUTF16(specifics.short_name());
   data.originating_url = GURL(specifics.originating_url());
-  string16 keyword(UTF8ToUTF16(specifics.keyword()));
+  base::string16 keyword(UTF8ToUTF16(specifics.keyword()));
   // NOTE: Once this code has shipped in a couple of stable releases, we can
   // probably remove the migration portion, comment out the
   // "autogenerate_keyword" field entirely in the .proto file, and fold the
@@ -1418,9 +1419,10 @@ SyncDataMap TemplateURLService::CreateGUIDToSyncDataMap(
   return data_map;
 }
 
-void TemplateURLService::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
-                                                     const GURL& url,
-                                                     const string16& term) {
+void TemplateURLService::SetKeywordSearchTermsForURL(
+    const TemplateURL* t_url,
+    const GURL& url,
+    const base::string16& term) {
   HistoryService* history = profile_  ?
       HistoryServiceFactory::GetForProfile(profile_,
                                            Profile::EXPLICIT_ACCESS) :
@@ -1495,7 +1497,7 @@ void TemplateURLService::Init(const Initializer* initializers,
 }
 
 void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
-  const string16& keyword = template_url->keyword();
+  const base::string16& keyword = template_url->keyword();
   DCHECK_NE(0U, keyword_to_template_map_.count(keyword));
   if (keyword_to_template_map_[keyword] == template_url) {
     // We need to check whether the keyword can now be provided by another
@@ -1534,7 +1536,7 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
 void TemplateURLService::AddToMaps(TemplateURL* template_url) {
   bool template_url_is_omnibox_api =
       template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION;
-  const string16& keyword = template_url->keyword();
+  const base::string16& keyword = template_url->keyword();
   KeywordToTemplateMap::const_iterator i =
       keyword_to_template_map_.find(keyword);
   if (i == keyword_to_template_map_.end()) {
@@ -1692,9 +1694,9 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
     return true;
   }
 
-  string16 name =
+  base::string16 name =
       UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName));
-  string16 keyword =
+  base::string16 keyword =
       UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderKeyword));
   // Force keyword to be non-empty.
   // TODO(pkasting): This is only necessary as long as we're potentially loading
@@ -1810,7 +1812,7 @@ bool TemplateURLService::CanReplace(const TemplateURL* t_url) {
 }
 
 TemplateURL* TemplateURLService::FindNonExtensionTemplateURLForKeyword(
-    const string16& keyword) {
+    const base::string16& keyword) {
   TemplateURL* keyword_turl = GetTemplateURLForKeyword(keyword);
   if (!keyword_turl || (keyword_turl->GetType() == TemplateURL::NORMAL))
     return keyword_turl;
@@ -1835,7 +1837,7 @@ bool TemplateURLService::UpdateNoNotify(
       template_urls_.end())
     return false;
 
-  string16 old_keyword(existing_turl->keyword());
+  base::string16 old_keyword(existing_turl->keyword());
   keyword_to_template_map_.erase(old_keyword);
   if (!existing_turl->sync_guid().empty())
     guid_to_template_map_.erase(existing_turl->sync_guid());
@@ -1847,7 +1849,7 @@ bool TemplateURLService::UpdateNoNotify(
   UIThreadSearchTermsData new_search_terms_data(profile_);
   provider_map_->Add(existing_turl, new_search_terms_data);
 
-  const string16& keyword = existing_turl->keyword();
+  const base::string16& keyword = existing_turl->keyword();
   KeywordToTemplateMap::const_iterator i =
       keyword_to_template_map_.find(keyword);
   if (i == keyword_to_template_map_.end()) {
@@ -1931,7 +1933,7 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
 
   for (TemplateURLSet::const_iterator i = urls_for_host->begin();
        i != urls_for_host->end(); ++i) {
-    string16 search_terms;
+    base::string16 search_terms;
     if ((*i)->ExtractSearchTermsFromURL(row.url(), &search_terms) &&
         !search_terms.empty()) {
       if (content::PageTransitionStripQualifier(details.transition) ==
@@ -2223,7 +2225,8 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
       delete template_url;
       return false;
     } else {
-      string16 new_keyword = UniquifyKeyword(*existing_keyword_turl, false);
+      base::string16 new_keyword =
+          UniquifyKeyword(*existing_keyword_turl, false);
       ResetTemplateURL(existing_keyword_turl,
                        existing_keyword_turl->short_name(), new_keyword,
                        existing_keyword_turl->url());
@@ -2370,7 +2373,7 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
     GURL gurl(turl.url());
     if (gurl.is_valid() &&
         (turl.GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
-      string16 keyword_candidate = GenerateKeyword(gurl);
+      base::string16 keyword_candidate = GenerateKeyword(gurl);
       if (!GetTemplateURLForKeyword(keyword_candidate))
         return keyword_candidate;
     }
@@ -2379,7 +2382,7 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
   // We try to uniquify the keyword by appending a special character to the end.
   // This is a best-effort approach where we try to preserve the original
   // keyword and let the user do what they will after our attempt.
-  string16 keyword_candidate(turl.keyword());
+  base::string16 keyword_candidate(turl.keyword());
   do {
     keyword_candidate.append(ASCIIToUTF16("_"));
   } while (GetTemplateURLForKeyword(keyword_candidate));
@@ -2416,7 +2419,7 @@ void TemplateURLService::ResolveSyncKeywordConflict(
       IsLocalTemplateURLBetter(applied_sync_turl, unapplied_sync_turl);
   TemplateURL* loser = applied_turl_is_better ?
       unapplied_sync_turl : applied_sync_turl;
-  string16 new_keyword = UniquifyKeyword(*loser, false);
+  base::string16 new_keyword = UniquifyKeyword(*loser, false);
   DCHECK(!GetTemplateURLForKeyword(new_keyword));
   if (applied_turl_is_better) {
     // Just set the keyword of |unapplied_sync_turl|. The caller is responsible

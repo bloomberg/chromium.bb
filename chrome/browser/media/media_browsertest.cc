@@ -49,7 +49,7 @@ void MediaBrowserTest::RunMediaTestPage(
     gurl = content::GetFileUrlWithQuery(test_file_path, query);
   }
 
-  string16 final_title = RunTest(gurl, expected_title);
+  base::string16 final_title = RunTest(gurl, expected_title);
   EXPECT_EQ(ASCIIToUTF16(expected_title), final_title);
 }
 

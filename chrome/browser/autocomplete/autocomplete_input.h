@@ -96,8 +96,8 @@ class AutocompleteInput {
   AutocompleteInput();
   // |text| and |cursor_position| represent the input query and location of
   // the cursor with the query respectively.  |cursor_position| may be set to
-  // string16::npos if the input |text| doesn't come directly from the user's
-  // typing.
+  // base::string16::npos if the input |text| doesn't come directly from the
+  // user's typing.
   //
   // |desired_tld| is the user's desired TLD, if one is not already present in
   // the text to autocomplete.  When this is non-empty, it also implies that
@@ -190,8 +190,8 @@ class AutocompleteInput {
   // User-provided text to be completed.
   const base::string16& text() const { return text_; }
 
-  // Returns 0-based cursor position within |text_| or string16::npos if not
-  // used.
+  // Returns 0-based cursor position within |text_| or base::string16::npos if
+  // not used.
   size_t cursor_position() const { return cursor_position_; }
 
   // Use of this setter is risky, since no other internal state is updated

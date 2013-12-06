@@ -58,7 +58,7 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
   std::string unique_id = MakeDeviceUniqueId(*disk);
   // Keep track of device uuid and label, to see how often we receive empty
   // values.
-  string16 device_label = UTF8ToUTF16(disk->device_label());
+  base::string16 device_label = UTF8ToUTF16(disk->device_label());
   MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, device_label);
   if (unique_id.empty())
     return false;
@@ -68,7 +68,7 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
       StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
 
   *info = StorageInfo(StorageInfo::MakeDeviceId(type, unique_id),
-                      string16(),
+                      base::string16(),
                       mount_info.mount_path,
                       device_label,
                       UTF8ToUTF16(disk->vendor_name()),

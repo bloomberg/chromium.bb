@@ -32,7 +32,7 @@ class DesktopMediaPicker {
   // sources or closes the dialog.
   virtual void Show(gfx::NativeWindow context,
                     gfx::NativeWindow parent,
-                    const string16& app_name,
+                    const base::string16& app_name,
                     scoped_ptr<DesktopMediaList> list,
                     const DoneCallback& done_callback) = 0;
 

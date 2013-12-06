@@ -39,7 +39,7 @@ class MediaBrowserTest : public InProcessBrowserTest {
 
   // Opens a URL and waits for the document title to match either one of the
   // default strings or the expected string.
-  string16 RunTest(const GURL& gurl, const char* expected);
+  base::string16 RunTest(const GURL& gurl, const char* expected);
 
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher);
 };

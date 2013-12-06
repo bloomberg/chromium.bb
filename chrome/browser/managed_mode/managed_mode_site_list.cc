@@ -125,7 +125,7 @@ void AddWhitelistEntries(const DictionaryValue* site_dict,
 
 }  // namespace
 
-ManagedModeSiteList::Site::Site(const string16& name,
+ManagedModeSiteList::Site::Site(const base::string16& name,
                                 int category_id)
     : name(name),
       category_id(category_id) {}
@@ -166,7 +166,7 @@ void ManagedModeSiteList::GetSites(std::vector<Site>* sites) {
       continue;
     }
 
-    string16 name;
+    base::string16 name;
     entry->GetString(kNameKey, &name);
 
     // TODO(bauerb): We need to distinguish between "no category assigned" and
