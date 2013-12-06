@@ -326,7 +326,7 @@ PathUtil.getRootLabel = function(path) {
 
   // TODO(haruki): Add support for "drive/root" and "drive/other".
   if (path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT)
-    return str('DRIVE_DIRECTORY_LABEL');
+    return str('DRIVE_MY_DRIVE_LABEL');
 
   if (path === RootDirectory.DRIVE_OFFLINE)
     return str('DRIVE_OFFLINE_COLLECTION_LABEL');

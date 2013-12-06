@@ -1552,7 +1552,7 @@ testcase.traverseNavigationList = function() {
     function() {
       callRemoteTestUtil('checkSelectedVolume',
                          appId,
-                         ['Google Drive', '/drive/root'],
+                         ['My Drive', '/drive/root'],
                          this.next);
     },
     // Ensure that the current directory is changed to 'Gogole Drive'.
@@ -1578,7 +1578,7 @@ testcase.traverseNavigationList = function() {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('checkSelectedVolume',
                          appId,
-                         ['Google Drive', '/drive/root'],
+                         ['My Drive', '/drive/root'],
                          this.next);
     },
     // Press the DOWN key.
