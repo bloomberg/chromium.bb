@@ -702,6 +702,11 @@ GURL WebViewGuest::ResolveURL(const std::string& src) {
     NOTREACHED();
     return GURL(src);
   }
+
+  // Only resolve URL to chrome-extension:// if we support such URLs.
+  if (!AllowChromeExtensionURLs())
+    return GURL(src);
+
   GURL default_url(base::StringPrintf("%s://%s/",
                                       extensions::kExtensionScheme,
                                       extension_id().c_str()));
