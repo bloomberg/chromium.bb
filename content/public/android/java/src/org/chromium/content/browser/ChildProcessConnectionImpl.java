@@ -45,6 +45,9 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     // Set to true when the service disconnects, as opposed to being properly closed. This happens
     // when the process crashes or gets killed by the system out-of-memory killer.
     private boolean mServiceDisconnected = false;
+    // When the service disconnects (i.e. mServiceDisconnected is set to true), the status of the
+    // oom bindings is stashed here for future inspection.
+    private boolean mWasOomProtected = false;
     private int mPID = 0;  // Process ID of the corresponding child process.
     // Initial binding protects the newly spawned process from being killed before it is put to use,
     // it is maintained between calls to start() and removeInitialBinding().
@@ -153,12 +156,16 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         // Called on the main thread to notify that the child service did not disconnect gracefully.
         @Override
         public void onServiceDisconnected(ComponentName className) {
-            // Ensure that the disconnection logic runs only once (instead of once per each
-            // ChildServiceConnection).
-            if (mServiceDisconnected) {
-                return;
+            synchronized (mLock) {
+                // Ensure that the disconnection logic runs only once (instead of once per each
+                // ChildServiceConnection).
+                if (mServiceDisconnected) {
+                    return;
+                }
+                mServiceDisconnected = true;
+                // Stash the status of the oom bindings, since stop() will release all bindings.
+                mWasOomProtected = mInitialBinding.isBound() || mStrongBinding.isBound();
             }
-            mServiceDisconnected = true;
             int pid = mPID;  // Stash the pid for DeathCallback since stop() will clear it.
             boolean disconnectedWhileBeingSetUp = mConnectionParams != null;
             Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=" + pid);
@@ -364,6 +371,17 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     public void removeInitialBinding() {
         synchronized (mLock) {
             mInitialBinding.unbind();
+        }
+    }
+
+    @Override
+    public boolean isOomProtectedOrWasWhenDied() {
+        synchronized (mLock) {
+            if (mServiceDisconnected) {
+                return mWasOomProtected;
+            } else {
+                return mInitialBinding.isBound() || mStrongBinding.isBound();
+            }
         }
     }
 

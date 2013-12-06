@@ -57,6 +57,11 @@ public class BindingManagerTest extends InstrumentationTestCase {
         }
 
         @Override
+        public boolean isOomProtectedOrWasWhenDied() {
+            return mInitialBindingBound || mStrongBindingCount > 0;
+        }
+
+        @Override
         public void dropOomBindings() {
             mInitialBindingBound = false;
             mStrongBindingCount = 0;
@@ -71,6 +76,12 @@ public class BindingManagerTest extends InstrumentationTestCase {
         public void detachAsActive() {
             assert mStrongBindingCount > 0;
             mStrongBindingCount--;
+        }
+
+        @Override
+        public void stop() {
+            mInitialBindingBound = false;
+            mStrongBindingCount = 0;
         }
 
         @Override
@@ -91,9 +102,6 @@ public class BindingManagerTest extends InstrumentationTestCase {
                 Bundle sharedRelros) {
             throw new UnsupportedOperationException();
         }
-
-        @Override
-        public void stop() { throw new UnsupportedOperationException(); }
     }
 
     /**
@@ -242,7 +250,13 @@ public class BindingManagerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verifies that BindingManager correctly keeps the count of oom bindings.
+     * Verifies that BindingManager correctly stashes the status of the connection oom bindings when
+     * the connection is cleared. BindingManager should reply to isOomProtected() queries with live
+     * status of the connection while it's still around and reply with stashed status after
+     * clearConnection() is called.
+     *
+     * This test corresponds to a process crash scenario: after a process dies and its connection is
+     * cleared, isOomProtected() may be called to decide if it was a crash or out-of-memory kill.
      */
     @SmallTest
     @Feature({"ProcessManagement"})
@@ -252,6 +266,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
             BindingManager manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
 
+            // Add a connection to the manager.
             MockChildProcessConnection connection = new MockChildProcessConnection(1);
             manager.addNewConnection(connection.getPid(), connection);
 
@@ -263,21 +278,23 @@ public class BindingManagerTest extends InstrumentationTestCase {
             getInstrumentation().waitForIdleSync();
             assertFalse(message, manager.isOomProtected(connection.getPid()));
 
-            // Add two strong bindings.
-            manager.bindAsHighPriority(connection.getPid());
-            assertTrue(message, manager.isOomProtected(connection.getPid()));
+            // Add a strong binding, restoring the oom protection.
             manager.bindAsHighPriority(connection.getPid());
             assertTrue(message, manager.isOomProtected(connection.getPid()));
 
-            // Remove first strong binding, the connection should be still oom protected.
-            manager.unbindAsHighPriority(connection.getPid());
-            getInstrumentation().waitForIdleSync();
-            assertTrue(message, manager.isOomProtected(connection.getPid()));
+            // Simulate a process crash - clear a connection in binding manager and remove the
+            // bindings.
+            assertNotNull(manager.getConnectionForPid(connection.getPid()));
+            manager.clearConnection(connection.getPid());
+            // Verify that we no longer hold onto the connection reference.
+            assertNull(manager.getConnectionForPid(connection.getPid()));
+            connection.stop();
 
-            // Remove second strong binding, the connection should not be oom protected anymore.
-            manager.unbindAsHighPriority(connection.getPid());
-            getInstrumentation().waitForIdleSync();
-            assertFalse(message, manager.isOomProtected(connection.getPid()));
+            // Verify that the connection doesn't keep any oom bindings, but the manager reports the
+            // oom status as protected.
+            assertFalse(message, connection.isInitialBindingBound());
+            assertFalse(message, connection.isStrongBindingBound());
+            assertTrue(message, manager.isOomProtected(connection.getPid()));
         }
     }
 

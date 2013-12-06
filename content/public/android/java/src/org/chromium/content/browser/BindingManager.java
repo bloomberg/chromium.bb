@@ -4,8 +4,9 @@
 
 package org.chromium.content.browser;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
@@ -20,6 +21,9 @@ import org.chromium.base.ThreadUtils;
  * connections, allowing to enforce policies:
  * - delayed removal of the oom bindings
  * - dropping the current oom bindings when a new connection is started on a low-memory device
+ *
+ * Thread-safety: most of the methods will be called only on the main thread, exceptions are
+ * explicitly noted.
  */
 class BindingManager {
     // Delay of 1 second used when removing the initial oom binding of a process.
@@ -35,74 +39,77 @@ class BindingManager {
     private final long mRemoveStrongBindingDelay;
     private final boolean mIsLowMemoryDevice;
 
-    // Map from pid to the connection to service hosting particular process. Each reference is held
-    // between calls to addNewConnection() and clearConnection().
-    private final SparseArray<ChildProcessConnection> mManagedConnections
-            = new SparseArray<ChildProcessConnection>();
+    /**
+     * Wraps ChildProcessConnection keeping track of additional information needed to manage the
+     * bindings of the connection. The reference to ChildProcessConnection is cleared when the
+     * connection goes away, but ManagedConnection itself is kept (until overwritten by a new entry
+     * for the same pid).
+     */
+    private static class ManagedConnection {
+        private ChildProcessConnection mConnection;
 
-    // Map from pid to the count of oom bindings bound for the service. Should be accessed with
-    // mCountLock.
-    // TODO(ppi): The reason we keep track of this count here is to inspect it after
-    //            ChildProcessConnectionImpl goes away. We probably could just keep a boolean
-    //            instead and populate it when ChildProcessConnectionImpl goes away (in
-    //            clearConnection()). In this way we would eliminate some redundancy, as
-    //            ChildProcessConnection already keeps track of the bindings. We would probably also
-    //            be able to drop mCountLock along the way.
-    private final SparseIntArray mOomBindingCount = new SparseIntArray();
+        // When mConnection is cleared, oom binding status is stashed here.
+        private boolean mWasOomProtected;
+
+        ManagedConnection(ChildProcessConnection connection) {
+            mConnection = connection;
+        }
+
+        ChildProcessConnection getConnection() {
+            return mConnection;
+        }
+
+        boolean isOomProtected() {
+            // When a process crashes, we can be queried about its oom status before or after the
+            // connection is cleared. For the latter case, the oom status is stashed in
+            // mWasOomProtected.
+            return mConnection != null ?
+                    mConnection.isOomProtectedOrWasWhenDied() : mWasOomProtected;
+        }
+
+        void clearConnection() {
+            mWasOomProtected = mConnection.isOomProtectedOrWasWhenDied();
+            mConnection = null;
+        }
+    }
+
+    // This can be manipulated on different threads, synchronize access on mManagedConnections.
+    private final SparseArray<ManagedConnection> mManagedConnections =
+            new SparseArray<ManagedConnection>();
+
+    /**
+     * A helper method that returns the bare ChildProcessConnection for the given pid, returning
+     * null with a log message if there is no entry for the pid.
+     *
+     * This is visible for testing, so that we can verify that we are not holding onto the reference
+     * when we shouldn't.
+     */
+    @VisibleForTesting
+    ChildProcessConnection getConnectionForPid(int pid) {
+        ManagedConnection managedConnection;
+        synchronized (mManagedConnections) {
+            managedConnection = mManagedConnections.get(pid);
+        }
+        if (managedConnection == null) {
+            ChildProcessLauncher.logPidWarning(pid,
+                    "BindingManager never saw a connection for the pid: " + Integer.toString(pid));
+            return null;
+        }
+
+        return managedConnection.getConnection();
+    }
 
     // Pid of the renderer that was most recently oom bound. This is used on low-memory devices
     // to drop oom bindings of a process when another one acquires them, making sure that only
-    // one renderer process at a time is oom bound. Should be accessed with mCountLock.
+    // one renderer process at a time is oom bound.
     private int mLastOomPid = -1;
 
-    // Pid of the renderer that we bound with a strong binding for the background period. Equals
-    // -1 when the embedder is in foreground.
+    // Pid of the renderer that is bound with a strong binding for the background period. Equals
+    // -1 when there is no such renderer.
     private int mBoundForBackgroundPeriodPid = -1;
 
-    // Should be acquired before binding or unbinding the connections and modifying state
-    // variables: mOomBindingCount and mLastOomPid.
-    private final Object mCountLock = new Object();
-
-    /**
-     * Registers an oom binding bound for a child process. Should be called with mCountLock.
-     * @param pid handle of the process.
-     */
-    private void incrementOomCount(int pid) {
-        mOomBindingCount.put(pid, mOomBindingCount.get(pid) + 1);
-        mLastOomPid = pid;
-    }
-
-    /**
-     * Registers an oom binding unbound for a child process. Should be called with mCountLock.
-     * @param pid handle of the process.
-     */
-    private void decrementOomCount(int pid) {
-        int count = mOomBindingCount.get(pid, -1);
-        assert count > 0;
-        count--;
-        if (count > 0) {
-            mOomBindingCount.put(pid, count);
-        } else {
-            mOomBindingCount.delete(pid);
-        }
-    }
-
-    /**
-     * Drops all oom bindings for the given renderer.
-     * @param pid handle of the process.
-     */
-    private void dropOomBindings(int pid) {
-        ChildProcessConnection connection = mManagedConnections.get(pid);
-        if (connection == null) {
-            ChildProcessLauncher.logPidWarning(pid,
-                    "Tried to drop oom bindings for a non-existent connection");
-            return;
-        }
-        synchronized (mCountLock) {
-            connection.dropOomBindings();
-            mOomBindingCount.delete(pid);
-        }
-    }
+    // Synchronizes operations that modify mLastOomPid: addNewConnection() and bindAsHighPriority().
+    private final Object mLastOomPidLock = new Object();
 
     /**
      * The constructor is private to hide parameters exposed for testing from the regular consumer.
@@ -133,20 +140,22 @@ class BindingManager {
      * Registers a freshly started child process. On low-memory devices this will also drop the
      * oom bindings of the last process that was oom-bound. We can do that, because every time a
      * connection is created on the low-end, it is used in foreground (no prerendering, no
-     * loading of tabs opened in background).
+     * loading of tabs opened in background). This can be called on any thread.
      * @param pid handle of the process.
      */
     void addNewConnection(int pid, ChildProcessConnection connection) {
-        synchronized (mCountLock) {
+        synchronized (mLastOomPidLock) {
             if (mIsLowMemoryDevice && mLastOomPid >= 0) {
-                dropOomBindings(mLastOomPid);
+                ChildProcessConnection lastOomConnection = getConnectionForPid(mLastOomPid);
+                if (lastOomConnection != null) lastOomConnection.dropOomBindings();
             }
-            // This will reset the previous entries for the pid in the unlikely event of the OS
+            // This will reset the previous entry for the pid in the unlikely event of the OS
             // reusing renderer pids.
-            mManagedConnections.put(pid, connection);
-            mOomBindingCount.put(pid, 0);
+            synchronized (mManagedConnections) {
+                mManagedConnections.put(pid, new ManagedConnection(connection));
+            }
             // Every new connection is bound with initial oom binding.
-            incrementOomCount(pid);
+            mLastOomPid = pid;
         }
     }
 
@@ -157,21 +166,14 @@ class BindingManager {
      * fixed delay period so that the renderer will not be killed immediately after the call.
      */
     void removeInitialBinding(final int pid) {
-        final ChildProcessConnection connection = mManagedConnections.get(pid);
-        if (connection == null) {
-            ChildProcessLauncher.logPidWarning(pid,
-                    "Tried to remove a binding for a non-existent connection");
-            return;
-        }
-        if (!connection.isInitialBindingBound()) return;
+        final ChildProcessConnection connection = getConnectionForPid(pid);
+        if (connection == null || !connection.isInitialBindingBound()) return;
+
         ThreadUtils.postOnUiThreadDelayed(new Runnable() {
             @Override
             public void run() {
-                synchronized (mCountLock) {
-                    if (connection.isInitialBindingBound()) {
-                        decrementOomCount(pid);
-                        connection.removeInitialBinding();
-                    }
+                if (connection.isInitialBindingBound()) {
+                    connection.removeInitialBinding();
                 }
             }
         }, mRemoveInitialBindingDelay);
@@ -183,14 +185,12 @@ class BindingManager {
      * background renderer process.
      */
     void bindAsHighPriority(final int pid) {
-        ChildProcessConnection connection = mManagedConnections.get(pid);
-        if (connection == null) {
-            ChildProcessLauncher.logPidWarning(pid, "Tried to bind a non-existent connection");
-            return;
-        }
-        synchronized (mCountLock) {
+        ChildProcessConnection connection = getConnectionForPid(pid);
+        if (connection == null) return;
+
+        synchronized (mLastOomPidLock) {
             connection.attachAsActive();
-            incrementOomCount(pid);
+            mLastOomPid = pid;
         }
     }
 
@@ -198,23 +198,16 @@ class BindingManager {
      * Unbinds a high priority process which was previous bound with bindAsHighPriority.
      */
     void unbindAsHighPriority(final int pid) {
-        final ChildProcessConnection connection = mManagedConnections.get(pid);
-        if (connection == null) {
-            ChildProcessLauncher.logPidWarning(pid, "Tried to unbind non-existent connection");
-            return;
-        }
-        if (!connection.isStrongBindingBound()) return;
+        final ChildProcessConnection connection = getConnectionForPid(pid);
+        if (connection == null || !connection.isStrongBindingBound()) return;
 
         // This runnable performs the actual unbinding. It will be executed synchronously when
         // on low-end devices and posted with a delay otherwise.
         Runnable doUnbind = new Runnable() {
             @Override
             public void run() {
-                synchronized (mCountLock) {
-                    if (connection.isStrongBindingBound()) {
-                        decrementOomCount(pid);
-                        connection.detachAsActive();
-                    }
+                if (connection.isStrongBindingBound()) {
+                    connection.detachAsActive();
                 }
             }
         };
@@ -223,19 +216,6 @@ class BindingManager {
             doUnbind.run();
         } else {
             ThreadUtils.postOnUiThreadDelayed(doUnbind, mRemoveStrongBindingDelay);
-        }
-    }
-
-    /**
-     * @return True iff the given service process is protected from the out-of-memory killing,
-     * or it was protected when it died (either crashed or was closed). This can be used to
-     * decide if a disconnection of a renderer was a crash or a probable out-of-memory kill. In
-     * the unlikely event of the OS reusing renderer pid, the call will refer to the most recent
-     * renderer of the given pid. The binding count is being reset in addNewConnection().
-     */
-    boolean isOomProtected(int pid) {
-        synchronized (mCountLock) {
-            return mOomBindingCount.get(pid) > 0;
         }
     }
 
@@ -272,11 +252,31 @@ class BindingManager {
     }
 
     /**
+     * @return True iff the given service process is protected from the out-of-memory killing, or it
+     * was protected when it died unexpectedly. This can be used to decide if a disconnection of a
+     * renderer was a crash or a probable out-of-memory kill. This can be called on any thread.
+     */
+    boolean isOomProtected(int pid) {
+        // In the unlikely event of the OS reusing renderer pid, the call will refer to the most
+        // recent renderer of the given pid. The binding state for a pid is being reset in
+        // addNewConnection().
+        ManagedConnection managedConnection;
+        synchronized (mManagedConnections) {
+            managedConnection = mManagedConnections.get(pid);
+        }
+        return managedConnection != null ? managedConnection.isOomProtected() : false;
+    }
+
+    /**
      * Should be called when the connection to the child process goes away (either after a clean
      * exit or an unexpected crash). At this point we let go of the reference to the
-     * ChildProcessConnection.
+     * ChildProcessConnection. This can be called on any thread.
      */
     void clearConnection(int pid) {
-        mManagedConnections.remove(pid);
+        ManagedConnection managedConnection;
+        synchronized (mManagedConnections) {
+            managedConnection = mManagedConnections.get(pid);
+        }
+        if (managedConnection != null) managedConnection.clearConnection();
     }
 }

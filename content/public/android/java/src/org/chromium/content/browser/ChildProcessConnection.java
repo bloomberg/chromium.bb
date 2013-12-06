@@ -106,6 +106,14 @@ public interface ChildProcessConnection {
     void removeInitialBinding();
 
     /**
+     * For live connections, this returns true iff either the initial or the strong binding is
+     * bound, i.e. the connection has at least one oom binding. For connections that disconnected
+     * (did not exit properly), this returns true iff the connection had at least one oom binding
+     * when it disconnected.
+     */
+    boolean isOomProtectedOrWasWhenDied();
+
+    /**
      * Unbinds the bindings that protect the process from oom killing. It is safe to call this
      * multiple times, before as well as after stop().
      */
