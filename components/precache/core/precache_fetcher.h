@@ -91,10 +91,9 @@ class PrecacheFetcher {
   void StartNextFetch();
 
   // Called when the precache configuration settings have been fetched.
-  // Determines the list of manifest URLs to fetch according to the URLs that
-  // are present in both the list of |starting_urls_| and the whitelist
-  // contained in the precache configuration settings. If the fetch of the
-  // configuration settings fails, then precaching ends.
+  // Determines the list of manifest URLs to fetch according to the list of
+  // |starting_urls_| and information from the precache configuration settings.
+  // If the fetch of the configuration settings fails, then precaching ends.
   void OnConfigFetchComplete(const net::URLFetcher& source);
 
   // Called when a precache manifest has been fetched. Builds the list of

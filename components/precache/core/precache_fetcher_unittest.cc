@@ -107,19 +107,13 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
       switches::kPrecacheManifestURLPrefix, kManfiestURLPrefix);
 
   std::list<GURL> starting_urls;
-  starting_urls.push_back(GURL("http://not-whitelisted.com"));
   starting_urls.push_back(GURL("http://manifest-fetch-failure.com"));
   starting_urls.push_back(GURL("http://bad-manifest.com"));
   starting_urls.push_back(GURL("http://good-manifest.com"));
-  starting_urls.push_back(GURL("http://not-in-top-4.com"));
+  starting_urls.push_back(GURL("http://not-in-top-3.com"));
 
   PrecacheConfigurationSettings config;
-  config.add_whitelisted_starting_url("http://whitelisted-unused.com");
-  config.add_whitelisted_starting_url("http://manifest-fetch-failure.com");
-  config.add_whitelisted_starting_url("http://bad-manifest.com");
-  config.add_whitelisted_starting_url("http://good-manifest.com");
-  config.add_whitelisted_starting_url("http://not-in-top-4.com");
-  config.set_maximum_rank_starting_url(4);
+  config.set_top_sites_count(3);
 
   PrecacheManifest good_manifest;
   good_manifest.add_resource()->set_url(kResourceFetchFailureURL);
@@ -213,8 +207,7 @@ TEST_F(PrecacheFetcherTest, Cancel) {
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
 
   PrecacheConfigurationSettings config;
-  config.add_whitelisted_starting_url("http://starting-url.com");
-  config.set_maximum_rank_starting_url(1);
+  config.set_top_sites_count(1);
 
   factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -243,9 +236,12 @@ TEST_F(PrecacheFetcherTest, Cancel) {
 TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultConfigSettingsURL) {
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
 
+  PrecacheConfigurationSettings config;
+  config.set_top_sites_count(0);
+
   factory_.SetFakeResponse(GURL(PRECACHE_CONFIG_SETTINGS_URL),
-                           PrecacheConfigurationSettings().SerializeAsString(),
-                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+                           config.SerializeAsString(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
 
   PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
                                    &precache_delegate_);
@@ -273,8 +269,7 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultManifestURLPrefix) {
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
 
   PrecacheConfigurationSettings config;
-  config.add_whitelisted_starting_url("http://starting-url.com");
-  config.set_maximum_rank_starting_url(1);
+  config.set_top_sites_count(1);
 
   GURL manifest_url(PRECACHE_MANIFEST_URL_PREFIX
                     "http%253A%252F%252Fstarting-url.com%252F");

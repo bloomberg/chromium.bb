@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
 #include "net/base/escape.h"
@@ -193,25 +192,14 @@ void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
   PrecacheConfigurationSettings config;
 
   if (ParseProtoFromFetchResponse(source, &config)) {
-    // A hash set of strings is used instead of GURLs because there is no
-    // standard hash function defined for GURLs.
-    base::hash_set<std::string> whitelisted_urls;
-    for (int i = 0; i < config.whitelisted_starting_url_size(); ++i) {
-      // Instead of using the raw URL string, construct a GURL and take the spec
-      // of it so that the URL string is canonicalized.
-      whitelisted_urls.insert(GURL(config.whitelisted_starting_url(i)).spec());
-    }
-
-    // Only fetch manifests for starting URLs up to the maximum rank that are in
-    // the whitelist.
+    // Attempt to fetch manifests for starting URLs up to the maximum top sites
+    // count. If a manifest does not exist for a particular starting URL, then
+    // the fetch will fail, and that starting URL will be ignored.
     int64 rank = 0;
     for (std::list<GURL>::const_iterator it = starting_urls_.begin();
-         it != starting_urls_.end() &&
-             rank < config.maximum_rank_starting_url();
+         it != starting_urls_.end() && rank < config.top_sites_count();
          ++it, ++rank) {
-      if (whitelisted_urls.find(it->spec()) != whitelisted_urls.end()) {
-        manifest_urls_to_fetch_.push_back(ConstructManifestURL(*it));
-      }
+      manifest_urls_to_fetch_.push_back(ConstructManifestURL(*it));
     }
   }
 

@@ -24,15 +24,13 @@ message PrecacheManifest {
 };
 
 message PrecacheConfigurationSettings {
-  // The whitelist of starting URLs that are currently supported. Precaching
-  // should only be attempted for starting URLs that are in this list.
-  repeated string whitelisted_starting_url = 1;
-
   // The maximum rank of the user's most visited URLs to consider precaching
   // resources for, starting from 1. For example, a value of 10 means that only
-  // URLs that are both in the user's top 10 most visited URLs and in the
-  // whitelist will be considered as starting URLs for resource precaching.
-  // This is specified by the server for testing purposes, so that we can
-  // easily adjust how aggressively we precache resources.
-  optional int64 maximum_rank_starting_url = 2 [default = 10];
+  // URLs that are in the user's top 10 most visited URLs will be considered as
+  // starting URLs for resource precaching. This is specified by the server for
+  // testing purposes, so that it's easy to adjust how aggressively resources
+  // are precached.
+  // Values that are zero or lower indicate that none of the user's top sites
+  // will be used for precaching.
+  optional int64 top_sites_count = 1 [default = 10];
 };
