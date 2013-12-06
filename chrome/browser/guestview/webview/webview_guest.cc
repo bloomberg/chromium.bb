@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -120,7 +121,8 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
       next_permission_request_id_(0),
-      is_overriding_user_agent_(false) {
+      is_overriding_user_agent_(false),
+      pending_reload_on_attachment_(false) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::Source<WebContents>(guest_web_contents));
@@ -283,6 +285,13 @@ void WebViewGuest::AddMessageToConsole(int32 level,
 void WebViewGuest::Close() {
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventClose, args.Pass()));
+}
+
+void WebViewGuest::DidAttach() {
+  if (pending_reload_on_attachment_) {
+    pending_reload_on_attachment_ = false;
+    guest_web_contents()->GetController().Reload(false);
+  }
 }
 
 void WebViewGuest::EmbedderDestroyed() {
@@ -608,6 +617,22 @@ void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
 
 void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
   RemoveWebViewFromExtensionRendererState(web_contents);
+}
+
+void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
+  content::NavigationController& controller =
+      guest_web_contents()->GetController();
+  content::NavigationEntry* entry = controller.GetVisibleEntry();
+  if (!entry)
+    return;
+  entry->SetIsOverridingUserAgent(!user_agent.empty());
+  if (!attached()) {
+    // We cannot reload now because all resource loads are suspended until
+    // attachment.
+    pending_reload_on_attachment_ = true;
+    return;
+  }
+  guest_web_contents()->GetController().Reload(false);
 }
 
 void WebViewGuest::LoadHandlerCalled() {

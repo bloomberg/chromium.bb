@@ -1749,9 +1749,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognitionAPI_NoPermission) {
 
 // Tests overriding user agent.
 IN_PROC_BROWSER_TEST_F(WebViewTest, UserAgent) {
-  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
               "platform_apps/web_view/common", "useragent")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, UserAgent_NewWindow) {
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+              "platform_apps/web_view/common",
+              "useragent_newwindow")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, NoPermission) {

@@ -54,35 +54,41 @@ utils.injectCss = function(cssScriptPath) {
   LOG('END utils.injectCss');
 };
 
-embedder.loadGuest = function(
-    connectedCallback, postMessageCallback, opt_partitionName,
-    opt_preLoadHooks) {
-  LOG('embedder.loadGuest begin');
-  document.querySelector('#webview-tag-container').innerHTML =
-      '<webview style="width: 100px; height: 100px;"></webview>';
-  embedder.webview = document.querySelector('webview');
+var channelId = 0;
+embedder.createWebView = function(opt_partitionName) {
+  var container = document.querySelector('#webview-tag-container');
+  var webview = new WebView();
+  webview.style.width = '100px';
+  webview.style.height = '100px';
+  webview.channelId = ++channelId;
   if (opt_partitionName) {
-    embedder.webview.partition = opt_partitionName;
+    webview.partition = opt_partitionName;
   }
-  if (!embedder.webview) {
-    utils.test.fail('No <webview> element created');
+  container.appendChild(webview);
+  return webview;
+};
+
+embedder.setupWebView = function(
+    webview, connectedCallback, postMessageCallback, opt_preLoadHooks) {
+  if (!webview) {
+    utils.test.fail('No <webview> element to set up.');
     return;
   }
 
-  embedder.webview.addEventListener('consolemessage', function(e) {
+  webview.addEventListener('consolemessage', function(e) {
     LOG('FROM GUEST: ' + e.message);
   });
 
   // Step 1. loadstop.
-  embedder.webview.addEventListener('loadstop', function(e) {
-    LOG('embedder.webview.loadstop');
+  webview.addEventListener('loadstop', function(e) {
+    LOG('webview.loadstop');
 
     LOG('IS_JS_ONLY_GUEST: ' + config.IS_JS_ONLY_GUEST);
     if (config.IS_JS_ONLY_GUEST) {
       // We do not have a TestServer, we load a guest pointing to
       // about:blank and inject script to it.
-      LOG('embedder.webview.inject');
-      embedder.webview.executeScript(
+      LOG('webview.inject');
+      webview.executeScript(
           {file: config.TEST_DIR + '/guest.js'},
           function(results) {
             if (!results || !results.length) {
@@ -90,22 +96,27 @@ embedder.loadGuest = function(
               utils.test.fail();
               return;
             }
-            embedder.webview.contentWindow.postMessage(
-                JSON.stringify(['create-channel']), '*');
+            webview.contentWindow.postMessage(
+                JSON.stringify(['create-channel', webview.channelId]), '*');
           });
     } else {
-      embedder.webview.contentWindow.postMessage(
-          JSON.stringify(['create-channel']), '*');
+      webview.contentWindow.postMessage(
+          JSON.stringify(['create-channel', webview.channelId]), '*');
     }
   });
 
   // Step 2. Receive postMessage.
   var onPostMessageReceived = function(e) {
-    LOG('embedder.webview.onPostMessageReceived');
     var data = JSON.parse(e.data);
     var response = data[0];
+    var channelId = data[data.length - 1];
+    // If this message wasn't meant for this webview then return early.
+    if (channelId != webview.channelId) {
+      return;
+    }
+    LOG('webview.onPostMessageReceived');
     if (response == 'channel-created') {
-      connectedCallback(embedder.webview);
+      connectedCallback(webview);
     } else {
       if (!postMessageCallback(data)) {
         chrome.test.log('Unexpected response from guest');
@@ -115,10 +126,19 @@ embedder.loadGuest = function(
   };
 
   if (opt_preLoadHooks) {
-    opt_preLoadHooks(embedder.webview);
+    opt_preLoadHooks(webview);
   }
 
   window.addEventListener('message', onPostMessageReceived);
-  embedder.webview.setAttribute('src', embedder.guestURL);
+};
+
+embedder.loadGuest = function(
+    connectedCallback, postMessageCallback, opt_partitionName,
+    opt_preLoadHooks) {
+  LOG('embedder.loadGuest begin');
+  embedder.webview = embedder.createWebView(opt_partitionName);
+  embedder.setupWebView(embedder.webview, connectedCallback,
+                        postMessageCallback, opt_preLoadHooks);
+  embedder.webview.src = embedder.guestURL;
 };
 

@@ -625,6 +625,9 @@ void BrowserPluginGuest::Initialize(
   ack_params.name = name_;
   SendMessageToEmbedder(
       new BrowserPluginMsg_Attach_ACK(instance_id_, ack_params));
+
+  if (delegate_)
+    delegate_->DidAttach();
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {

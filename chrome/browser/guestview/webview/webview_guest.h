@@ -46,6 +46,7 @@ class WebViewGuest : public GuestView,
                                    const string16& source_id) OVERRIDE;
   virtual void LoadProgressed(double progress) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void DidAttach() OVERRIDE;
   virtual void EmbedderDestroyed() OVERRIDE;
   virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool HandleKeyboardEvent(
@@ -164,6 +165,7 @@ class WebViewGuest : public GuestView,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
+  virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
 
   // Called after the load handler is called in the guest's main frame.
   void LoadHandlerCalled();
@@ -194,6 +196,10 @@ class WebViewGuest : public GuestView,
 
   // True if the user agent is overridden.
   bool is_overriding_user_agent_;
+
+  // Indicates that the page needs to be reloaded once it has been attached to
+  // an embedder.
+  bool pending_reload_on_attachment_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

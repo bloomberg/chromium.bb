@@ -34,6 +34,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // to do.
   virtual void Close() {}
 
+  // Notification that the embedder has completed attachment.
+  virtual void DidAttach() {}
+
   // Informs the delegate that the guest render process is gone. |status|
   // indicates whether the guest was killed, crashed, or was terminated
   // gracefully.

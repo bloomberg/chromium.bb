@@ -5,8 +5,12 @@
 // The window reference of the embedder to send post message reply.
 var embedderWindowChannel = null;
 
+// A value that uniquely identifies the guest sending the messages to the
+// embedder.
+var channelId = 0;
 var notifyEmbedder = function(msg_array) {
-  embedderWindowChannel.postMessage(JSON.stringify(msg_array), '*');
+  var msg = msg_array.concat([channelId]);
+  embedderWindowChannel.postMessage(JSON.stringify(msg), '*');
 };
 
 // Notifies the embedder about the result of the request (success/fail)
@@ -18,6 +22,7 @@ var onPostMessageReceived = function(e) {
   if (data[0] == 'create-channel') {
     embedderWindowChannel = e.source;
     window.console.log('guest: create-channel');
+    channelId = data[1];
     notifyEmbedder(['channel-created']);
     return;
   } else if (data[0] == 'test1') {
@@ -30,7 +35,7 @@ var onPostMessageReceived = function(e) {
     var responseArray = [];
     responseArray.push(data[0]);
     responseArray.push(screenInfo);
-    e.source.postMessage(JSON.stringify(responseArray), '*');
+    notifyEmbedder(responseArray);
   }
 };
 

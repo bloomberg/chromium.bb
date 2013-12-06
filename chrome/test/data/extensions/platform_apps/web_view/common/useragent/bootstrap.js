@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 config.IS_CHROME_TEST = true;
+// No TestServer.
+config.IS_JS_ONLY_GUEST = true;
 config.TEST_DIR = 'useragent';
 var USER_AGENT_OVERRIDE = 'Mozilla/5.0 (X11; U; Linux x86_64; en-US) ' +
     'AppleWebKit/540.0 (KHTML,like Gecko) Chrome/9.1.0.0 Safari/540.0';
@@ -30,8 +32,6 @@ var run = function() {
           chrome.test.assertEq(USER_AGENT_OVERRIDE,
                                embedder.webview.getUserAgent());
           embedder.webview.setUserAgentOverride('foobar');
-          // Expect guest to reload with new user agent.
-          embedder.webview.reload();
         } else if (step == 2) {
           chrome.test.assertEq('foobar', data[1]);
           chrome.test.assertTrue(embedder.webview.isUserAgentOverridden());
@@ -39,8 +39,6 @@ var run = function() {
 
           // Now remove the UA override.
           embedder.webview.setUserAgentOverride('');
-          // Expect guest to reload with default agent.
-          embedder.webview.reload();
         } else if (step == 3) {
           chrome.test.assertTrue('foobar' != data[1]);
           chrome.test.assertFalse(embedder.webview.isUserAgentOverridden());

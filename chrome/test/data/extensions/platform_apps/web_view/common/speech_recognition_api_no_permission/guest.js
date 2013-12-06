@@ -13,8 +13,12 @@ var LOG = function(msg) {
 
 var embederWindowChannel = null;
 
+// A value that uniquely identifies the guest sending the messages to the
+// embedder.
+var channelId = 0;
 var notifyEmbedder = function(msg_array) {
-  embederWindowChannel.postMessage(JSON.stringify(msg_array), '*');
+  var msg = msg_array.concat([channelId]);
+  embederWindowChannel.postMessage(JSON.stringify(msg), '*');
 };
 
 var runSpeechRecognitionAPI = function() {
@@ -50,6 +54,7 @@ var onPostMessageReceived = function(e) {
   embederWindowChannel = e.source;
   var data = JSON.parse(e.data);
   if (data[0] == 'create-channel') {
+    channelId = data[1];
     notifyEmbedder(['channel-created']);
   } else if (data[0] == 'runSpeechRecognitionAPI') {
     runSpeechRecognitionAPI();
