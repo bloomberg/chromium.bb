@@ -32,14 +32,13 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     std::string username;
   };
 
-  // Creates an autologin infobar delegate and adds it to the infobar service
-  // for |web_contents|.  Returns whether the infobar was successfully created.
+  // Creates an autologin infobar and delegate and adds the infobar to the
+  // infobar service for |web_contents|.  Returns whether the infobar was
+  // successfully added.
   static bool Create(content::WebContents* web_contents, const Params& params);
 
  protected:
-  AutoLoginInfoBarDelegate(InfoBarService* owner,
-                           const Params& params,
-                           Profile* profile);
+  AutoLoginInfoBarDelegate(const Params& params, Profile* profile);
   virtual ~AutoLoginInfoBarDelegate();
 
  private:

@@ -130,16 +130,15 @@ void KillPluginOnIOThread(int child_id) {
 
 class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a hung plugin infobar delegate and adds it to |infobar_service|.
-  // Returns the delegate if it was successfully added.
-  static HungPluginInfoBarDelegate* Create(InfoBarService* infobar_service,
-                                           HungPluginTabHelper* helper,
-                                           int plugin_child_id,
-                                           const string16& plugin_name);
+  // Creates a hung plugin infobar and delegate and adds the infobar to
+  // |infobar_service|.  Returns the infobar if it was successfully added.
+  static InfoBar* Create(InfoBarService* infobar_service,
+                         HungPluginTabHelper* helper,
+                         int plugin_child_id,
+                         const string16& plugin_name);
 
  private:
   HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
-                            InfoBarService* infobar_service,
                             int plugin_child_id,
                             const string16& plugin_name);
   virtual ~HungPluginInfoBarDelegate();
@@ -159,22 +158,20 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 // static
-HungPluginInfoBarDelegate* HungPluginInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
-    HungPluginTabHelper* helper,
-    int plugin_child_id,
-    const string16& plugin_name) {
-  return static_cast<HungPluginInfoBarDelegate*>(infobar_service->AddInfoBar(
-      scoped_ptr<InfoBarDelegate>(new HungPluginInfoBarDelegate(
-          helper, infobar_service, plugin_child_id, plugin_name))));
+InfoBar* HungPluginInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                           HungPluginTabHelper* helper,
+                                           int plugin_child_id,
+                                           const string16& plugin_name) {
+  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new HungPluginInfoBarDelegate(
+          helper, plugin_child_id, plugin_name))));
 }
 
 HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
     HungPluginTabHelper* helper,
-    InfoBarService* infobar_service,
     int plugin_child_id,
     const string16& plugin_name)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       helper_(helper),
       plugin_child_id_(plugin_child_id),
       message_(l10n_util::GetStringFUTF16(
@@ -223,7 +220,7 @@ struct HungPluginTabHelper::PluginState {
   string16 name;
 
   // Possibly-null if we're not showing an infobar right now.
-  InfoBarDelegate* infobar;
+  InfoBar* infobar;
 
   // Time to delay before re-showing the infobar for a hung plugin. This is
   // increased each time the user cancels it.
@@ -327,14 +324,7 @@ void HungPluginTabHelper::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-  // Note: do not dereference. The InfoBarContainer will delete the object when
-  // it gets this notification, we only remove our tracking info, if we have
-  // any.
-  //
-  // TODO(pkasting): This comment will be incorrect and should be removed once
-  // InfoBars own their delegates.
-  InfoBarDelegate* infobar =
-      content::Details<InfoBar::RemovedDetails>(details)->first;
+  InfoBar* infobar = content::Details<InfoBar::RemovedDetails>(details)->first;
   for (PluginStateMap::iterator i = hung_plugins_.begin();
        i != hung_plugins_.end(); ++i) {
     PluginState* state = i->second.get();

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -15,13 +16,13 @@
 
 // static
 void WebsiteSettingsInfoBarDelegate::Create(InfoBarService* infobar_service) {
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new WebsiteSettingsInfoBarDelegate(infobar_service)));
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(
+          new WebsiteSettingsInfoBarDelegate())));
 }
 
-WebsiteSettingsInfoBarDelegate::WebsiteSettingsInfoBarDelegate(
-    InfoBarService* infobar_service)
-    : ConfirmInfoBarDelegate(infobar_service) {
+WebsiteSettingsInfoBarDelegate::WebsiteSettingsInfoBarDelegate()
+    : ConfirmInfoBarDelegate() {
 }
 
 WebsiteSettingsInfoBarDelegate::~WebsiteSettingsInfoBarDelegate() {

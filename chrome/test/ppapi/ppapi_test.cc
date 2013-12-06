@@ -107,8 +107,9 @@ void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {
     return;
   expecting_infobar_ = false;
 
-  InfoBarDelegate* infobar = infobar_service->infobar_at(0);
-  ConfirmInfoBarDelegate* delegate = infobar->AsConfirmInfoBarDelegate();
+  InfoBar* infobar = infobar_service->infobar_at(0);
+  ConfirmInfoBarDelegate* delegate =
+      infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate != NULL);
   if (should_accept_)
     delegate->Accept();

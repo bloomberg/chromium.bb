@@ -16,9 +16,8 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
-    InfoBarService* owner,
-    TranslateInfoBarDelegate* delegate)
-    : TranslateInfoBarBase(owner, delegate),
+    scoped_ptr<TranslateInfoBarDelegate> delegate)
+    : TranslateInfoBarBase(delegate.Pass()),
       label_1_(NULL),
       label_2_(NULL),
       label_3_(NULL),
@@ -28,7 +27,8 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
       options_menu_button_(NULL),
       swapped_language_buttons_(false) {
   autodetermined_source_language_ =
-      delegate->original_language_index() == TranslateInfoBarDelegate::kNoIndex;
+      GetDelegate()->original_language_index() ==
+      TranslateInfoBarDelegate::kNoIndex;
 }
 
 AfterTranslateInfoBar::~AfterTranslateInfoBar() {

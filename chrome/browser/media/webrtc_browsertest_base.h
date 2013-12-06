@@ -9,11 +9,11 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+class InfoBar;
+
 namespace content {
 class WebContents;
 }
-
-class MediaStreamInfoBarDelegate;
 
 // Base class for WebRTC browser tests with useful primitives for interacting
 // getUserMedia. We use inheritance here because it makes the test code look
@@ -51,10 +51,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
 
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
-                         MediaStreamInfoBarDelegate* infobar) const;
-  MediaStreamInfoBarDelegate* GetUserMediaAndWaitForInfoBar(
-      content::WebContents* tab_contents,
-      const std::string& constraints) const;
+                         InfoBar* infobar) const;
+  InfoBar* GetUserMediaAndWaitForInfoBar(content::WebContents* tab_contents,
+                                         const std::string& constraints) const;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcTestBase);
 };

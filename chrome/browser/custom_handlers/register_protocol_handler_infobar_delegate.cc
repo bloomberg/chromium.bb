@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
@@ -21,17 +22,18 @@ void RegisterProtocolHandlerInfoBarDelegate::Create(
   content::RecordAction(
       content::UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
 
-  scoped_ptr<InfoBarDelegate> infobar(
-      new RegisterProtocolHandlerInfoBarDelegate(infobar_service, registry,
-                                                 handler));
+  scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(
+          new RegisterProtocolHandlerInfoBarDelegate(registry, handler))));
 
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    InfoBar* existing_infobar = infobar_service->infobar_at(i);
     RegisterProtocolHandlerInfoBarDelegate* existing_delegate =
-        infobar_service->infobar_at(i)->
+        existing_infobar->delegate()->
             AsRegisterProtocolHandlerInfoBarDelegate();
     if ((existing_delegate != NULL) &&
         existing_delegate->handler_.IsEquivalent(handler)) {
-      infobar_service->ReplaceInfoBar(existing_delegate, infobar.Pass());
+      infobar_service->ReplaceInfoBar(existing_infobar, infobar.Pass());
       return;
     }
   }
@@ -40,10 +42,9 @@ void RegisterProtocolHandlerInfoBarDelegate::Create(
 }
 
 RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
-    InfoBarService* infobar_service,
     ProtocolHandlerRegistry* registry,
     const ProtocolHandler& handler)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       registry_(registry),
       handler_(handler) {
 }

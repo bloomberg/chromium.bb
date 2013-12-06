@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -17,7 +18,8 @@
 
 class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a 3D API infobar delegate and adds it to |infobar_service|.
+  // Creates a 3D API infobar and delegate and adds the infobar to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      const GURL& url,
                      content::ThreeDAPIType requester);
@@ -30,9 +32,7 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
     DISMISSAL_MAX
   };
 
-  ThreeDAPIInfoBarDelegate(InfoBarService* owner,
-                           const GURL& url,
-                           content::ThreeDAPIType requester);
+  ThreeDAPIInfoBarDelegate(const GURL& url, content::ThreeDAPIType requester);
   virtual ~ThreeDAPIInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -61,15 +61,15 @@ void ThreeDAPIInfoBarDelegate::Create(InfoBarService* infobar_service,
                                       content::ThreeDAPIType requester) {
   if (!infobar_service)
     return;  // NULL for apps.
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new ThreeDAPIInfoBarDelegate(infobar_service, url, requester)));
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(
+          new ThreeDAPIInfoBarDelegate(url, requester))));
 }
 
 ThreeDAPIInfoBarDelegate::ThreeDAPIInfoBarDelegate(
-    InfoBarService* owner,
     const GURL& url,
     content::ThreeDAPIType requester)
-    : ConfirmInfoBarDelegate(owner),
+    : ConfirmInfoBarDelegate(),
       url_(url),
       requester_(requester),
       message_text_queried_(false),

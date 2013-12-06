@@ -52,19 +52,13 @@ const CGFloat kToolbarMaxHeightPx = 72.0;
 
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
-class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
+class InfobarBridge {
  public:
   explicit InfobarBridge(ExtensionInfoBarController* owner)
       : owner_(owner),
         delegate_([owner delegate]->AsExtensionInfoBarDelegate()),
         weak_ptr_factory_(this) {
-    delegate_->set_observer(this);
     LoadIcon();
-  }
-
-  virtual ~InfobarBridge() {
-    if (delegate_)
-      delegate_->set_observer(NULL);
   }
 
   // Load the Extension's icon image.
@@ -119,11 +113,6 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
         canvas->ExtractImageRep().sk_bitmap())];
   }
 
-  // Overridden from ExtensionInfoBarDelegate::DelegateObserver:
-  virtual void OnDelegateDeleted() OVERRIDE {
-    delegate_ = NULL;
-  }
-
  private:
   // Weak. Owns us.
   ExtensionInfoBarController* owner_;
@@ -139,21 +128,10 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 
 @implementation ExtensionInfoBarController
 
-- (id)initWithInfoBar:(InfoBarCocoa*)infobar
-               window:(NSWindow*)window {
+- (id)initWithInfoBar:(InfoBarCocoa*)infobar {
   if ((self = [super initWithInfoBar:infobar])) {
-    window_ = window;
     dropdownButton_.reset([[MenuButton alloc] init]);
     [dropdownButton_ setOpenMenuOnClick:YES];
-
-    extensions::ExtensionViewHost* extensionViewHost =
-        [self delegate]->AsExtensionInfoBarDelegate()->extension_view_host();
-    Browser* browser = chrome::FindBrowserWithWebContents(
-        [self infobar]->OwnerCocoa()->web_contents());
-    contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
-        initWithExtension:extensionViewHost->extension()
-                  browser:browser
-          extensionAction:NULL]);
 
     base::scoped_nsobject<NSMenu> contextMenu(
         [[NSMenu alloc] initWithTitle:@""]);
@@ -224,8 +202,13 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(adjustExtensionViewSize)
-             name:NSWindowDidResizeNotification
-           object:window_];
+             name:NSViewFrameDidChangeNotification
+           object:[self view]];
+}
+
+- (void)infobarWillHide {
+  [[dropdownButton_ menu] cancelTracking];
+  [super infobarWillHide];
 }
 
 - (void)infobarWillClose {
@@ -246,7 +229,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 - (void)adjustExtensionViewSize {
   [extensionView_ setPostsFrameChangedNotifications:NO];
   NSSize extensionViewSize = [extensionView_ frame].size;
-  extensionViewSize.width = NSWidth([window_ frame]);
+  extensionViewSize.width = NSWidth([[self view] frame]);
   extensionViewSize.height = [self clampedExtensionViewHeight];
   [extensionView_ setFrameSize:extensionViewSize];
   [extensionView_ setPostsFrameChangedNotifications:YES];
@@ -257,20 +240,32 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 }
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {
+  DCHECK([self isOwned]);
+
+  if (!contextMenuController_) {
+    extensions::ExtensionViewHost* extensionViewHost =
+        [self delegate]->AsExtensionInfoBarDelegate()->extension_view_host();
+    Browser* browser = chrome::FindBrowserWithWebContents(
+        [self infobar]->OwnerCocoa()->web_contents());
+    contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
+        initWithExtension:extensionViewHost->extension()
+                  browser:browser
+          extensionAction:NULL]);
+  }
+
   [menu removeAllItems];
   [contextMenuController_ populateMenu:menu];
 }
 
 @end
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(owner, this));
-  NSWindow* window =
-      [(NSView*)owner->web_contents()->GetView()->GetContentNativeView()
-          window];
+// static
+scoped_ptr<InfoBar> ExtensionInfoBarDelegate::CreateInfoBar(
+    scoped_ptr<ExtensionInfoBarDelegate> delegate) {
+  scoped_ptr<InfoBarCocoa> infobar(
+      new InfoBarCocoa(delegate.PassAs<InfoBarDelegate>()));
   base::scoped_nsobject<ExtensionInfoBarController> controller(
-      [[ExtensionInfoBarController alloc] initWithInfoBar:infobar.get()
-                                                   window:window]);
+      [[ExtensionInfoBarController alloc] initWithInfoBar:infobar.get()]);
   infobar->set_controller(controller);
-  return infobar.release();
+  return infobar.PassAs<InfoBar>();
 }

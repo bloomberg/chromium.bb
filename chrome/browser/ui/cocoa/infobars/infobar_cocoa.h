@@ -15,7 +15,7 @@
 // actually in InfoBarController.
 class InfoBarCocoa : public InfoBar {
  public:
-  InfoBarCocoa(InfoBarService* owner, InfoBarDelegate* delegate);
+  explicit InfoBarCocoa(scoped_ptr<InfoBarDelegate> delegate);
 
   virtual ~InfoBarCocoa();
 
@@ -26,7 +26,6 @@ class InfoBarCocoa : public InfoBar {
   }
 
   // These functions allow access to protected InfoBar functions.
-  void RemoveSelfCocoa();
   InfoBarService* OwnerCocoa();
 
   base::WeakPtr<InfoBarCocoa> GetWeakPtr();

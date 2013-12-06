@@ -15,17 +15,16 @@ class TranslateInfoBarDelegate;
 // use.
 class TranslateInfoBarBase : public InfoBarGtk {
  protected:
-  TranslateInfoBarBase(InfoBarService* owner,
-                       TranslateInfoBarDelegate* delegate);
+  explicit TranslateInfoBarBase(scoped_ptr<TranslateInfoBarDelegate> delegate);
   virtual ~TranslateInfoBarBase();
 
   // InfoBarGtk:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void PlatformSpecificSetOwner() OVERRIDE;
   virtual void GetTopColor(InfoBarDelegate::Type type,
                            double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double* b) OVERRIDE;
-  virtual void InitWidgets() OVERRIDE;
 
   // Sub-classes that want to have the options menu button showing should
   // override and return true.

@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
@@ -320,7 +321,7 @@ void NotificationsTest::VerifyInfoBar(const Browser* browser, int index) {
 
   ASSERT_EQ(1U, infobar_service->infobar_count());
   ConfirmInfoBarDelegate* confirm_infobar =
-      infobar_service->infobar_at(0)->AsConfirmInfoBarDelegate();
+      infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(confirm_infobar);
   int buttons = confirm_infobar->GetButtons();
   EXPECT_TRUE(buttons & ConfirmInfoBarDelegate::BUTTON_OK);
@@ -406,12 +407,12 @@ bool NotificationsTest::PerformActionOnInfoBar(
     return false;
   }
 
-  InfoBarDelegate* infobar_delegate =
-      infobar_service->infobar_at(infobar_index);
+  InfoBar* infobar = infobar_service->infobar_at(infobar_index);
+  InfoBarDelegate* infobar_delegate = infobar->delegate();
   switch (action) {
     case DISMISS:
       infobar_delegate->InfoBarDismissed();
-      infobar_service->RemoveInfoBar(infobar_delegate);
+      infobar_service->RemoveInfoBar(infobar);
       return true;
 
     case ALLOW: {
@@ -420,7 +421,7 @@ bool NotificationsTest::PerformActionOnInfoBar(
       if (!confirm_infobar_delegate) {
         ADD_FAILURE();
       } else if (confirm_infobar_delegate->Accept()) {
-        infobar_service->RemoveInfoBar(infobar_delegate);
+        infobar_service->RemoveInfoBar(infobar);
         return true;
       }
     }
@@ -431,7 +432,7 @@ bool NotificationsTest::PerformActionOnInfoBar(
       if (!confirm_infobar_delegate) {
         ADD_FAILURE();
       } else if (confirm_infobar_delegate->Cancel()) {
-        infobar_service->RemoveInfoBar(infobar_delegate);
+        infobar_service->RemoveInfoBar(infobar);
         return true;
       }
     }

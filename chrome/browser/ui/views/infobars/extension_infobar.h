@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_EXTENSION_INFOBAR_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 
 class Browser;
+class ExtensionInfoBarDelegate;
 
 namespace views {
 class ImageView;
@@ -18,11 +18,9 @@ class MenuButton;
 }
 
 class ExtensionInfoBar : public InfoBarView,
-                         public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::MenuButtonListener {
  public:
-  ExtensionInfoBar(InfoBarService* owner,
-                   ExtensionInfoBarDelegate* delegate,
+  ExtensionInfoBar(scoped_ptr<ExtensionInfoBarDelegate> delegate,
                    Browser* browser);
 
  private:
@@ -34,9 +32,6 @@ class ExtensionInfoBar : public InfoBarView,
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
 
-  // ExtensionInfoBarDelegate::DelegateObserver:
-  virtual void OnDelegateDeleted() OVERRIDE;
-
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
@@ -44,11 +39,6 @@ class ExtensionInfoBar : public InfoBarView,
   void OnImageLoaded(const gfx::Image& image);
 
   ExtensionInfoBarDelegate* GetDelegate();
-
-  // TODO(pkasting): This shadows InfoBarView::delegate_.  Get rid of this once
-  // InfoBars own their delegates (and thus we don't need the DelegateObserver
-  // functionality).  For now, almost everyone should use GetDelegate() instead.
-  InfoBarDelegate* delegate_;
 
   Browser* browser_;
 

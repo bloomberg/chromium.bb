@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -42,7 +43,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
         InfoBarService::FromWebContents(web_contents);
     ASSERT_EQ(1U, infobar_service->infobar_count());
     ConfirmInfoBarDelegate* delegate =
-        infobar_service->infobar_at(0)->AsConfirmInfoBarDelegate();
+        infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
     ASSERT_EQ(0U, infobar_service->infobar_count());

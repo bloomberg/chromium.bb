@@ -9,6 +9,8 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,10 +45,9 @@ void AppMetroInfoBarDelegateWin::Create(
       content::Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false);
   content::WebContents* web_contents = displayer.browser()->OpenURL(params);
-  InfoBarService* info_bar_service =
-      InfoBarService::FromWebContents(web_contents);
-  info_bar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new AppMetroInfoBarDelegateWin(info_bar_service, mode, extension_id)));
+  InfoBarService::FromWebContents(web_contents)->AddInfoBar(
+      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+          new AppMetroInfoBarDelegateWin(mode, extension_id))));
 
   // Use PostTask because we can get here in a COM SendMessage, and
   // ActivateApplication can not be sent nested (returns error
@@ -56,10 +57,9 @@ void AppMetroInfoBarDelegateWin::Create(
 }
 
 AppMetroInfoBarDelegateWin::AppMetroInfoBarDelegateWin(
-    InfoBarService* info_bar_service,
     Mode mode,
     const std::string& extension_id)
-    : ConfirmInfoBarDelegate(info_bar_service),
+    : ConfirmInfoBarDelegate(),
       mode_(mode),
       extension_id_(extension_id) {
   DCHECK_EQ(mode_ == SHOW_APP_LIST, extension_id_.empty());

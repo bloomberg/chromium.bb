@@ -35,7 +35,7 @@ class InfoBarView : public InfoBar,
                     public views::ButtonListener,
                     public views::ExternalFocusTracker {
  public:
-  InfoBarView(InfoBarService* owner, InfoBarDelegate* delegate);
+  explicit InfoBarView(scoped_ptr<InfoBarDelegate> delegate);
 
   const SkPath& fill_path() const { return fill_path_; }
   const SkPath& stroke_path() const { return stroke_path_; }

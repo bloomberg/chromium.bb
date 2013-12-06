@@ -16,12 +16,12 @@ class InfoBarService;
 // the reload right from the infobar.
 class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a collected cookies infobar delegate and adds it to
+  // Creates a collected cookies infobar and delegate and adds the infobar to
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:
-  explicit CollectedCookiesInfoBarDelegate(InfoBarService* infobar_service);
+  CollectedCookiesInfoBarDelegate();
   virtual ~CollectedCookiesInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:

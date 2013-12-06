@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -35,8 +36,9 @@ void DownloadRequestInfoBarDelegate::Create(
     // "downloads" permission) to automatically download >1 files.
     host->Cancel();
   } else {
-    infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-        new DownloadRequestInfoBarDelegate(infobar_service, host)));
+    infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+        scoped_ptr<ConfirmInfoBarDelegate>(
+            new DownloadRequestInfoBarDelegate(host))));
   }
 }
 
@@ -47,9 +49,8 @@ void DownloadRequestInfoBarDelegate::SetCallbackForTesting(
 }
 
 DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
-    InfoBarService* infobar_service,
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       responded_(false),
       host_(host) {
 }

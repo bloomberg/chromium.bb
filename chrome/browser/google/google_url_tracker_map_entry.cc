@@ -32,7 +32,7 @@ void GoogleURLTrackerMapEntry::Observe(
   DCHECK(infobar_delegate_);
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
   DCHECK_EQ(infobar_service_, content::Source<InfoBarService>(source).ptr());
-  if (content::Details<InfoBar::RemovedDetails>(details)->first ==
+  if (content::Details<InfoBar::RemovedDetails>(details)->first->delegate() ==
       infobar_delegate_) {
     google_url_tracker_->DeleteMapEntryForService(infobar_service_);
     // WARNING: At this point |this| has been deleted!

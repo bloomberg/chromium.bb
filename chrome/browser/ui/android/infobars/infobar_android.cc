@@ -28,8 +28,8 @@ const int InfoBar::kDefaultBarTargetHeight = 36;
 
 // InfoBarAndroid -------------------------------------------------------------
 
-InfoBarAndroid::InfoBarAndroid(InfoBarService* owner, InfoBarDelegate* delegate)
-    : InfoBar(owner, delegate) {
+InfoBarAndroid::InfoBarAndroid(scoped_ptr<InfoBarDelegate> delegate)
+    : InfoBar(delegate.Pass()) {
 }
 
 InfoBarAndroid::~InfoBarAndroid() {

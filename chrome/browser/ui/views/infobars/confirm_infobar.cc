@@ -14,16 +14,17 @@
 
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ConfirmInfoBar(owner, this);
+// static
+scoped_ptr<InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
+    scoped_ptr<ConfirmInfoBarDelegate> delegate) {
+  return scoped_ptr<InfoBar>(new ConfirmInfoBar(delegate.Pass()));
 }
 
 
 // ConfirmInfoBar -------------------------------------------------------------
 
-ConfirmInfoBar::ConfirmInfoBar(InfoBarService* owner,
-                               ConfirmInfoBarDelegate* delegate)
-    : InfoBarView(owner, delegate),
+ConfirmInfoBar::ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate)
+    : InfoBarView(delegate.PassAs<InfoBarDelegate>()),
       label_(NULL),
       ok_button_(NULL),
       cancel_button_(NULL),

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -25,13 +26,12 @@ void NaClInfoBarDelegate::Create(int render_process_id, int render_view_id) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   if (infobar_service) {
-    infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-        new NaClInfoBarDelegate(infobar_service)));
+    infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+        scoped_ptr<ConfirmInfoBarDelegate>(new NaClInfoBarDelegate())));
   }
 }
 
-NaClInfoBarDelegate::NaClInfoBarDelegate(InfoBarService* infobar_service)
-    : ConfirmInfoBarDelegate(infobar_service) {
+NaClInfoBarDelegate::NaClInfoBarDelegate() : ConfirmInfoBarDelegate() {
 }
 
 NaClInfoBarDelegate::~NaClInfoBarDelegate() {

@@ -35,15 +35,13 @@ void RecordUmaEvent(GeolocationInfoBarDelegateAndroidEvent event) {
 }  // namespace
 
 GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
-    InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame_url,
     int contents_unique_id,
     const std::string& display_languages)
-    : GeolocationInfoBarDelegate(infobar_service, controller, id,
-                                 requesting_frame_url, contents_unique_id,
-                                 display_languages),
+    : GeolocationInfoBarDelegate(controller, id, requesting_frame_url,
+                                 contents_unique_id, display_languages),
       google_location_settings_helper_(
           GoogleLocationSettingsHelper::Create()) {
 }

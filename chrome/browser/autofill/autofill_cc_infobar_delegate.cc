@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -24,16 +25,15 @@ void AutofillCCInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     const AutofillMetrics* metric_logger,
     const base::Closure& save_card_callback) {
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new AutofillCCInfoBarDelegate(
-          infobar_service, metric_logger, save_card_callback)));
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new AutofillCCInfoBarDelegate(
+          metric_logger, save_card_callback))));
 }
 
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
-    InfoBarService* infobar_service,
     const AutofillMetrics* metric_logger,
     const base::Closure& save_card_callback)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       metric_logger_(metric_logger),
       save_card_callback_(save_card_callback),
       had_user_interaction_(false) {

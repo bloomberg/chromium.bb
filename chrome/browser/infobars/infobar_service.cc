@@ -16,24 +16,22 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);
 
-InfoBarDelegate* InfoBarService::AddInfoBar(
-    scoped_ptr<InfoBarDelegate> infobar) {
+InfoBar* InfoBarService::AddInfoBar(scoped_ptr<InfoBar> infobar) {
   DCHECK(infobar);
   if (!infobars_enabled_)
     return NULL;
 
   for (InfoBars::const_iterator i(infobars_.begin()); i != infobars_.end();
        ++i) {
-    if ((*i)->EqualsDelegate(infobar.get())) {
-      DCHECK_NE(*i, infobar.get());
+    if ((*i)->delegate()->EqualsDelegate(infobar->delegate())) {
+      DCHECK_NE((*i)->delegate(), infobar->delegate());
       return NULL;
     }
   }
 
-  InfoBarDelegate* infobar_ptr = infobar.release();
+  InfoBar* infobar_ptr = infobar.release();
   infobars_.push_back(infobar_ptr);
-  // TODO(pkasting): Remove InfoBarService arg from delegate constructors and
-  // instead use a setter from here.
+  infobar_ptr->SetOwner(this);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
@@ -42,35 +40,36 @@ InfoBarDelegate* InfoBarService::AddInfoBar(
   return infobar_ptr;
 }
 
-void InfoBarService::RemoveInfoBar(InfoBarDelegate* infobar) {
+void InfoBarService::RemoveInfoBar(InfoBar* infobar) {
   RemoveInfoBarInternal(infobar, true);
 }
 
-InfoBarDelegate* InfoBarService::ReplaceInfoBar(
-    InfoBarDelegate* old_infobar,
-    scoped_ptr<InfoBarDelegate> new_infobar) {
+InfoBar* InfoBarService::ReplaceInfoBar(InfoBar* old_infobar,
+                                        scoped_ptr<InfoBar> new_infobar) {
   DCHECK(old_infobar);
   if (!infobars_enabled_)
-    return AddInfoBar(new_infobar.Pass());  // Deletes the delegate.
+    return AddInfoBar(new_infobar.Pass());  // Deletes the infobar.
   DCHECK(new_infobar);
 
   InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(),
                                  old_infobar));
   DCHECK(i != infobars_.end());
 
-  InfoBarDelegate* new_infobar_ptr = new_infobar.release();
+  InfoBar* new_infobar_ptr = new_infobar.release();
   i = infobars_.insert(i, new_infobar_ptr);
+  new_infobar_ptr->SetOwner(this);
   InfoBar::ReplacedDetails replaced_details(old_infobar, new_infobar_ptr);
 
-  // Remove the old infobar before notifying, so that if any observers call
-  // back to AddInfoBar() or similar, we don't dupe-check against this infobar.
+  // Remove the old infobar before notifying, so that if any observers call back
+  // to AddInfoBar() or similar, we don't dupe-check against this infobar.
   infobars_.erase(++i);
 
-  old_infobar->clear_owner();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
       content::Source<InfoBarService>(this),
       content::Details<InfoBar::ReplacedDetails>(&replaced_details));
+
+  old_infobar->CloseSoon();
   return new_infobar_ptr;
 }
 
@@ -83,10 +82,6 @@ InfoBarService::InfoBarService(content::WebContents* web_contents)
 InfoBarService::~InfoBarService() {
   // Destroy all remaining InfoBars.  It's important to not animate here so that
   // we guarantee that we'll delete all delegates before we do anything else.
-  //
-  // TODO(pkasting): If there is no InfoBarContainer, this leaks all the
-  // InfoBarDelegates.  This will be fixed once we call CloseSoon() directly on
-  // Infobars.
   RemoveAllInfoBars(false);
 }
 
@@ -100,8 +95,8 @@ void InfoBarService::NavigationEntryCommitted(
   // use iterators, as the RemoveInfoBar() call synchronously modifies our
   // delegate list.
   for (size_t i = infobars_.size(); i > 0; --i) {
-    InfoBarDelegate* infobar = infobars_[i - 1];
-    if (infobar->ShouldExpire(load_details))
+    InfoBar* infobar = infobars_[i - 1];
+    if (infobar->delegate()->ShouldExpire(load_details))
       RemoveInfoBar(infobar);
   }
 }
@@ -127,8 +122,7 @@ bool InfoBarService::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void InfoBarService::RemoveInfoBarInternal(InfoBarDelegate* infobar,
-                                           bool animate) {
+void InfoBarService::RemoveInfoBarInternal(InfoBar* infobar, bool animate) {
   DCHECK(infobar);
   if (!infobars_enabled_) {
     DCHECK(infobars_.empty());
@@ -138,16 +132,19 @@ void InfoBarService::RemoveInfoBarInternal(InfoBarDelegate* infobar,
   InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), infobar));
   DCHECK(i != infobars_.end());
 
-  infobar->clear_owner();
   // Remove the infobar before notifying, so that if any observers call back to
   // AddInfoBar() or similar, we don't dupe-check against this infobar.
   infobars_.erase(i);
 
+  // This notification must happen before the call to CloseSoon() below, since
+  // observers may want to access |infobar| and that call can delete it.
   InfoBar::RemovedDetails removed_details(infobar, animate);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::Source<InfoBarService>(this),
       content::Details<InfoBar::RemovedDetails>(&removed_details));
+
+  infobar->CloseSoon();
 }
 
 void InfoBarService::RemoveAllInfoBars(bool animate) {

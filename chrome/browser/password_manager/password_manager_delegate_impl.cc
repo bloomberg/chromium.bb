@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -42,11 +43,11 @@
 class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // If we won't be showing the one-click signin infobar, creates a save
-  // password infobar delegate and adds it to the InfoBarService for
-  // |web_contents|. |uma_histogram_suffix| is empty, or one of the "group_X"
-  // suffixes used in the histogram names for infobar usage reporting; if empty,
-  // the usage is not reported, otherwise the suffix is used to choose the right
-  // histogram.
+  // password infobar and delegate and adds the infobar to the InfoBarService
+  // for |web_contents|.  |uma_histogram_suffix| is empty, or one of the
+  // "group_X" suffixes used in the histogram names for infobar usage reporting;
+  // if empty, the usage is not reported, otherwise the suffix is used to choose
+  // the right histogram.
   static void Create(content::WebContents* web_contents,
                      PasswordFormManager* form_to_save,
                      const std::string& uma_histogram_suffix);
@@ -60,8 +61,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
     NUM_RESPONSE_TYPES,
   };
 
-  SavePasswordInfoBarDelegate(InfoBarService* infobar_service,
-                              PasswordFormManager* form_to_save,
+  SavePasswordInfoBarDelegate(PasswordFormManager* form_to_save,
                               const std::string& uma_histogram_suffix);
   virtual ~SavePasswordInfoBarDelegate();
 
@@ -113,18 +113,16 @@ void SavePasswordInfoBarDelegate::Create(
     return;
 #endif
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(
-      scoped_ptr<InfoBarDelegate>(new SavePasswordInfoBarDelegate(
-          infobar_service, form_to_save, uma_histogram_suffix)));
+  InfoBarService::FromWebContents(web_contents)->AddInfoBar(
+      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+          new SavePasswordInfoBarDelegate(form_to_save,
+                                          uma_histogram_suffix))));
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
-    InfoBarService* infobar_service,
     PasswordFormManager* form_to_save,
     const std::string& uma_histogram_suffix)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       form_to_save_(form_to_save),
       infobar_response_(NO_RESPONSE),
       uma_histogram_suffix_(uma_histogram_suffix) {

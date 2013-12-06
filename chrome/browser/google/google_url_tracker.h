@@ -21,6 +21,7 @@
 #include "url/gurl.h"
 
 class GoogleURLTrackerNavigationHelper;
+class InfoBar;
 class PrefService;
 class Profile;
 
@@ -175,13 +176,11 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper_;
 
-  // Creates an infobar delegate and adds it to the provided InfoBarService.
-  // Returns the delegate pointer on success or NULL on failure.  The caller
-  // does not own the returned object, the InfoBarService does.
-  base::Callback<GoogleURLTrackerInfoBarDelegate*(
-      InfoBarService*,
-      GoogleURLTracker*,
-      const GURL&)> infobar_creator_;
+  // Creates an infobar and adds it to the provided InfoBarService.  Returns the
+  // infobar on success or NULL on failure.  The caller does not own the
+  // returned object, the InfoBarService does.
+  base::Callback<InfoBar*(InfoBarService*, GoogleURLTracker*, const GURL&)>
+      infobar_creator_;
 
   GURL google_url_;
   GURL fetched_google_url_;

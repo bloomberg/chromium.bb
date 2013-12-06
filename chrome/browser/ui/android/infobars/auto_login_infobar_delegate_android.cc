@@ -8,6 +8,7 @@
 #include "base/android/jni_helper.h"
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -21,10 +22,9 @@ using base::android::ScopedJavaLocalRef;
 
 
 AutoLoginInfoBarDelegateAndroid::AutoLoginInfoBarDelegateAndroid(
-    InfoBarService* owner,
     const Params& params,
     Profile* profile)
-    : AutoLoginInfoBarDelegate(owner, params, profile),
+    : AutoLoginInfoBarDelegate(params, profile),
       params_(params) {
 }
 
@@ -83,37 +83,36 @@ bool AutoLoginInfoBarDelegateAndroid::Cancel() {
 void AutoLoginInfoBarDelegateAndroid::LoginSuccess(JNIEnv* env,
                                                    jobject obj,
                                                    jstring result) {
-  if (!owner())
+  if (!infobar()->owner())
      return;  // We're closing; don't call anything, it might access the owner.
 
   // TODO(miguelg): Test whether the Stop() and RemoveInfoBar() calls here are
   // necessary, or whether OpenURL() will do this for us.
-  content::WebContents* web_contents = owner()->web_contents();
-  web_contents->Stop();
-  owner()->RemoveInfoBar(this);
+  content::WebContents* contents = web_contents();
+  contents->Stop();
+  infobar()->RemoveSelf();
   // WARNING: |this| may be deleted at this point!  Do not access any members!
-  web_contents->OpenURL(content::OpenURLParams(
+  contents->OpenURL(content::OpenURLParams(
       GURL(base::android::ConvertJavaStringToUTF8(env, result)),
       content::Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
       false));
 }
 
 void AutoLoginInfoBarDelegateAndroid::LoginFailed(JNIEnv* env, jobject obj) {
-  if (!owner())
+  if (!infobar()->owner())
      return;  // We're closing; don't call anything, it might access the owner.
 
   // TODO(miguelg): Using SimpleAlertInfoBarDelegate::Create() animates in a new
   // infobar while we animate the current one closed.  It would be better to use
   // ReplaceInfoBar().
   SimpleAlertInfoBarDelegate::Create(
-      owner(), IDR_INFOBAR_WARNING,
+      infobar()->owner(), IDR_INFOBAR_WARNING,
       l10n_util::GetStringUTF16(IDS_AUTO_LOGIN_FAILED), false);
-  owner()->RemoveInfoBar(this);
+  infobar()->RemoveSelf();
 }
 
 void AutoLoginInfoBarDelegateAndroid::LoginDismiss(JNIEnv* env, jobject obj) {
-  if (owner())
-    owner()->RemoveInfoBar(this);
+  infobar()->RemoveSelf();
 }
 
 bool AutoLoginInfoBarDelegateAndroid::Register(JNIEnv* env) {

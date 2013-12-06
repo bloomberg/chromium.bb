@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class InfoBarDelegate;
+class InfoBar;
 class ManagedModeURLFilter;
 class ManagedUserService;
 
@@ -68,7 +68,7 @@ class ManagedModeNavigationObserver
   const ManagedModeURLFilter* url_filter_;
 
   // Owned by the InfoBarService, which has the same lifetime as this object.
-  InfoBarDelegate* warn_infobar_;
+  InfoBar* warn_infobar_;
 
   ScopedVector<const content::NavigationEntry> blocked_navigations_;
 

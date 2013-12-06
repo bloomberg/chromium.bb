@@ -54,8 +54,8 @@ const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
 const int InfoBarView::kHorizontalPadding = 6;
 
-InfoBarView::InfoBarView(InfoBarService* owner, InfoBarDelegate* delegate)
-    : InfoBar(owner, delegate),
+InfoBarView::InfoBarView(scoped_ptr<InfoBarDelegate> delegate)
+    : InfoBar(delegate.Pass()),
       views::ExternalFocusTracker(this, NULL),
       icon_(NULL),
       close_button_(NULL) {
@@ -376,11 +376,9 @@ void InfoBarView::PlatformSpecificOnHeightsRecalculated() {
 }
 
 void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  if (delegate()) {
-    state->name = l10n_util::GetStringUTF16(
-        (delegate()->GetInfoBarType() == InfoBarDelegate::WARNING_TYPE) ?
-            IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
-  }
+  state->name = l10n_util::GetStringUTF16(
+      (delegate()->GetInfoBarType() == InfoBarDelegate::WARNING_TYPE) ?
+          IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
   state->role = ui::AccessibilityTypes::ROLE_ALERT;
 }
 

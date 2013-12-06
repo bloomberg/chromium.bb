@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -47,16 +48,17 @@ void ThemeInstalledInfoBarDelegate::Create(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
-  scoped_ptr<InfoBarDelegate> new_infobar(new ThemeInstalledInfoBarDelegate(
-      infobar_service, profile->GetExtensionService(), theme_service, new_theme,
-      previous_theme_id, previous_using_native_theme));
+  scoped_ptr<InfoBar> new_infobar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new ThemeInstalledInfoBarDelegate(
+          profile->GetExtensionService(), theme_service, new_theme,
+          previous_theme_id, previous_using_native_theme))));
 
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBarDelegate* old_infobar = infobar_service->infobar_at(i);
+    InfoBar* old_infobar = infobar_service->infobar_at(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
-        old_infobar->AsThemePreviewInfobarDelegate();
+        old_infobar->delegate()->AsThemePreviewInfobarDelegate();
     if (theme_infobar) {
       // If the user installed the same theme twice, ignore the second install
       // and keep the first install info bar, so that they can easily undo to
@@ -75,13 +77,12 @@ void ThemeInstalledInfoBarDelegate::Create(
 }
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
-    InfoBarService* infobar_service,
     ExtensionService* extension_service,
     ThemeService* theme_service,
     const extensions::Extension* new_theme,
     const std::string& previous_theme_id,
     bool previous_using_native_theme)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       extension_service_(extension_service),
       theme_service_(theme_service),
       name_(new_theme->name()),
@@ -154,5 +155,5 @@ void ThemeInstalledInfoBarDelegate::Observe(
   // If the new theme is different from what this info bar is associated with,
   // close this info bar since it is no longer relevant.
   if (theme_id_ != theme_service_->GetThemeID())
-    RemoveSelf();
+    infobar()->RemoveSelf();
 }

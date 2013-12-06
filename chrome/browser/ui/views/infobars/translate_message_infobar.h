@@ -9,8 +9,8 @@
 
 class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
-  TranslateMessageInfoBar(InfoBarService* owner,
-                          TranslateInfoBarDelegate* delegate);
+  explicit TranslateMessageInfoBar(
+      scoped_ptr<TranslateInfoBarDelegate> delegate);
 
  private:
   virtual ~TranslateMessageInfoBar();

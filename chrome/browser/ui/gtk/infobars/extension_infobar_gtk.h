@@ -16,29 +16,23 @@ class ExtensionContextMenuModel;
 class ExtensionViewGtk;
 class MenuGtk;
 
-class ExtensionInfoBarGtk : public InfoBarGtk,
-                            public MenuGtk::Delegate,
-                            public ExtensionInfoBarDelegate::DelegateObserver {
+class ExtensionInfoBarGtk : public InfoBarGtk, public MenuGtk::Delegate {
  public:
-  ExtensionInfoBarGtk(InfoBarService* owner,
-                      ExtensionInfoBarDelegate* delegate);
+  explicit ExtensionInfoBarGtk(scoped_ptr<ExtensionInfoBarDelegate> delegate);
 
  private:
   virtual ~ExtensionInfoBarGtk();
 
   // InfoBarGtk:
+  virtual void PlatformSpecificSetOwner() OVERRIDE;
   virtual void PlatformSpecificHide(bool animate) OVERRIDE;
   virtual void GetTopColor(InfoBarDelegate::Type type,
                            double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double* b) OVERRIDE;
-  virtual void InitWidgets() OVERRIDE;
 
   // MenuGtk::Delegate:
   virtual void StoppedShowing() OVERRIDE;
-
-  // ExtensionInfoBarDelegate::DelegateObserver:
-  virtual void OnDelegateDeleted() OVERRIDE;
 
   void OnImageLoaded(const gfx::Image& image);
 
@@ -60,11 +54,6 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
 
   CHROMEGTK_CALLBACK_1(ExtensionInfoBarGtk, gboolean, OnExpose,
                        GdkEventExpose*);
-
-  // TODO(pkasting): This shadows InfoBarView::delegate_.  Get rid of this once
-  // InfoBars own their delegates (and thus we don't need the DelegateObserver
-  // functionality).  For now, almost everyone should use GetDelegate() instead.
-  InfoBarDelegate* delegate_;
 
   ExtensionViewGtk* view_;
 

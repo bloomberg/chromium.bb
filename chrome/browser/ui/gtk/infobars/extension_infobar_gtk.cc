@@ -31,52 +31,32 @@
 
 // ExtensionInfoBarDelegate ---------------------------------------------------
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ExtensionInfoBarGtk(owner, this);
+// static
+scoped_ptr<InfoBar> ExtensionInfoBarDelegate::CreateInfoBar(
+    scoped_ptr<ExtensionInfoBarDelegate> delegate) {
+  return scoped_ptr<InfoBar>(new ExtensionInfoBarGtk(delegate.Pass()));
 }
 
 
 // ExtensionInfoBarGtk --------------------------------------------------------
 
-ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
-                                         ExtensionInfoBarDelegate* delegate)
-    : InfoBarGtk(owner, delegate),
-      delegate_(delegate),
+ExtensionInfoBarGtk::ExtensionInfoBarGtk(
+    scoped_ptr<ExtensionInfoBarDelegate> delegate)
+    : InfoBarGtk(delegate.PassAs<InfoBarDelegate>()),
       view_(NULL),
       button_(NULL),
       icon_(NULL),
       alignment_(NULL),
       weak_ptr_factory_(this) {
-  GetDelegate()->set_observer(this);
-
   int height = GetDelegate()->height();
   SetBarTargetHeight((height > 0) ? (height + kSeparatorLineHeight) : 0);
 }
 
 ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {
-  if (GetDelegate())
-    GetDelegate()->set_observer(NULL);
 }
 
-void ExtensionInfoBarGtk::PlatformSpecificHide(bool animate) {
-  DCHECK(view_);
-  DCHECK(alignment_);
-  gtk_util::RemoveAllChildren(alignment_);
-}
-
-void ExtensionInfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
-                                      double* r, double* g, double* b) {
-  // Extension infobars are always drawn with chrome-theme colors.
-  *r = *g = *b = 233.0 / 255.0;
-}
-
-void ExtensionInfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
-                                         double* r, double* g, double* b) {
-  *r = *g = *b = 218.0 / 255.0;
-}
-
-void ExtensionInfoBarGtk::InitWidgets() {
-  InfoBarGtk::InitWidgets();
+void ExtensionInfoBarGtk::PlatformSpecificSetOwner() {
+  InfoBarGtk::PlatformSpecificSetOwner();
 
   // Always render the close button as if we were doing chrome style widget
   // rendering. For extension infobars, we force chrome style rendering because
@@ -142,13 +122,26 @@ void ExtensionInfoBarGtk::InitWidgets() {
                      G_CALLBACK(&OnSizeAllocateThunk), this);
 }
 
+void ExtensionInfoBarGtk::PlatformSpecificHide(bool animate) {
+  DCHECK(view_);
+  DCHECK(alignment_);
+  gtk_util::RemoveAllChildren(alignment_);
+}
+
+void ExtensionInfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
+                                      double* r, double* g, double* b) {
+  // Extension infobars are always drawn with chrome-theme colors.
+  *r = *g = *b = 233.0 / 255.0;
+}
+
+void ExtensionInfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
+                                         double* r, double* g, double* b) {
+  *r = *g = *b = 218.0 / 255.0;
+}
+
 void ExtensionInfoBarGtk::StoppedShowing() {
   if (button_)
     gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(button_));
-}
-
-void ExtensionInfoBarGtk::OnDelegateDeleted() {
-  delegate_ = NULL;
 }
 
 void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image) {
@@ -188,7 +181,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image) {
 }
 
 ExtensionInfoBarDelegate* ExtensionInfoBarGtk::GetDelegate() {
-  return delegate_ ? delegate_->AsExtensionInfoBarDelegate() : NULL;
+  return delegate()->AsExtensionInfoBarDelegate();
 }
 
 Browser* ExtensionInfoBarGtk::GetBrowser() {

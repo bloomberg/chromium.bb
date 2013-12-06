@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -32,7 +33,8 @@ namespace {
 
 class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a request quota infobar delegate and adds it to |infobar_service|.
+  // Creates a request quota infobar and delegate and adds the infobar to
+  // |infobar_service|.
   static void Create(
       InfoBarService* infobar_service,
       ChromeQuotaPermissionContext* context,
@@ -43,7 +45,6 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   RequestQuotaInfoBarDelegate(
-      InfoBarService* infobar_service,
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
       int64 requested_quota,
@@ -75,20 +76,18 @@ void RequestQuotaInfoBarDelegate::Create(
     int64 requested_quota,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback) {
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new RequestQuotaInfoBarDelegate(infobar_service, context, origin_url,
-                                      requested_quota, display_languages,
-                                      callback)));
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new RequestQuotaInfoBarDelegate(
+          context, origin_url, requested_quota, display_languages, callback))));
 }
 
 RequestQuotaInfoBarDelegate::RequestQuotaInfoBarDelegate(
-    InfoBarService* infobar_service,
     ChromeQuotaPermissionContext* context,
     const GURL& origin_url,
     int64 requested_quota,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       context_(context),
       origin_url_(origin_url),
       display_languages_(display_languages),

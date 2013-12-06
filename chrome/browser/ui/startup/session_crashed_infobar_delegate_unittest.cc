@@ -7,6 +7,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -61,8 +62,8 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(1U, infobar_service->infobar_count());
-  scoped_ptr<ConfirmInfoBarDelegate> infobar(InfoBarService::FromWebContents(
-      web_contents)->infobar_at(0)->AsConfirmInfoBarDelegate());
+  ConfirmInfoBarDelegate* infobar =
+      infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar);
 
   // Open another browser.

@@ -23,19 +23,10 @@ class ExtensionViewHost;
 class ExtensionInfoBarDelegate : public InfoBarDelegate,
                                  public content::NotificationObserver {
  public:
-  // The observer for when the delegate dies.
-  class DelegateObserver {
-   public:
-    virtual void OnDelegateDeleted() = 0;
-
-   protected:
-    virtual ~DelegateObserver() {}
-  };
-
   virtual ~ExtensionInfoBarDelegate();
 
-  // Creates an extension infobar delegate and adds it to the infobar service
-  // for |web_contents|.
+  // Creates an extension infobar and delegate and adds the infobar to the
+  // infobar service for |web_contents|.
   static void Create(content::WebContents* web_contents,
                      Browser* browser,
                      const extensions::Extension* extension,
@@ -48,20 +39,20 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   }
   int height() { return height_; }
 
-  void set_observer(DelegateObserver* observer) { observer_ = observer; }
-
   bool closing() const { return closing_; }
 
  private:
   ExtensionInfoBarDelegate(Browser* browser,
-                           InfoBarService* infobar_service,
                            const extensions::Extension* extension,
                            const GURL& url,
                            content::WebContents* web_contents,
                            int height);
 
+  // Returns an extension infobar that owns |delegate|.
+  static scoped_ptr<InfoBar> CreateInfoBar(
+      scoped_ptr<ExtensionInfoBarDelegate> delegate);
+
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -76,14 +67,9 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   Browser* browser_;  // We pass this to the ExtensionInfoBar.
 #endif
 
-  // The extension host we are showing the InfoBar for. The delegate needs to
-  // own this since the InfoBar gets deleted and recreated when you switch tabs
-  // and come back (and we don't want the user's interaction with the InfoBar to
-  // get lost at that point).
+  // The extension host we are showing the InfoBar for.
+  // TODO(pkasting): Should this live on the InfoBar instead?
   scoped_ptr<extensions::ExtensionViewHost> extension_view_host_;
-
-  // The observer monitoring when the delegate dies.
-  DelegateObserver* observer_;
 
   const extensions::Extension* extension_;
   content::NotificationRegistrar registrar_;

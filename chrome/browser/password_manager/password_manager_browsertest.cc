@@ -9,6 +9,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store.h"
@@ -64,7 +65,8 @@ class NavigationObserver : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    infobar_service_->infobar_at(0)->AsConfirmInfoBarDelegate()->Accept();
+    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
+        Accept();
     infobar_shown_ = true;
   }
 

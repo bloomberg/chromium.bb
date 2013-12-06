@@ -6,6 +6,7 @@
 
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -17,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-InfoBarDelegate* MIDIPermissionInfoBarDelegate::Create(
+InfoBar* MIDIPermissionInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
@@ -25,21 +26,20 @@ InfoBarDelegate* MIDIPermissionInfoBarDelegate::Create(
     const std::string& display_languages) {
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
-  return infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new MIDIPermissionInfoBarDelegate(
-          infobar_service, controller, id, requesting_frame,
+  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new MIDIPermissionInfoBarDelegate(
+          controller, id, requesting_frame,
           committed_entry ? committed_entry->GetUniqueID() : 0,
-          display_languages)));
+          display_languages))));
 }
 
 MIDIPermissionInfoBarDelegate::MIDIPermissionInfoBarDelegate(
-    InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     int contents_unique_id,
     const std::string& display_languages)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       controller_(controller),
       id_(id),
       requesting_frame_(requesting_frame),

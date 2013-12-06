@@ -236,13 +236,9 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                 std::string()));
 
-  // Removing an |InfoBarDelegate| from the |InfoBarService| does not delete
-  // it. Hence the |delegate| must be cleaned up after it was removed from the
-  // |infobar_service|.
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
-  scoped_ptr<InfoBarDelegate> delegate(infobar_service->infobar_at(0));
-  infobar_service->RemoveInfoBar(delegate.get());
+  infobar_service->RemoveInfoBar(infobar_service->infobar_at(0));
 }
 
 TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {

@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/translate/translate_errors.h"
@@ -180,8 +180,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                                        bool autodetermined_source_language);
 
  protected:
-  TranslateInfoBarDelegate(InfoBarService* infobar_service,
-                           Type infobar_type,
+  TranslateInfoBarDelegate(Type infobar_type,
                            TranslateInfoBarDelegate* old_delegate,
                            const std::string& original_language,
                            const std::string& target_language,
@@ -190,10 +189,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                            ShortcutConfiguration shortcut_config);
 
  private:
+  friend class TranslationInfoBarTest;
   typedef std::pair<std::string, string16> LanguageNamePair;
 
+  // Returns a translate infobar that owns |delegate|.
+  static scoped_ptr<InfoBar> CreateInfoBar(
+      scoped_ptr<TranslateInfoBarDelegate> delegate);
+
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarService* infobar_service) OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
   virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;

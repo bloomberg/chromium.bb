@@ -141,12 +141,12 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
                                       const std::string& iframe_xpath);
 
   bool has_infobar() const { return !!infobar_; }
-  InfoBarDelegate* infobar() { return infobar_; }
+  InfoBar* infobar() { return infobar_; }
 
  private:
   content::NotificationRegistrar registrar_;
   bool wait_for_infobar_;
-  InfoBarDelegate* infobar_;
+  InfoBar* infobar_;
   bool navigation_started_;
   bool navigation_completed_;
   std::string javascript_response_;
@@ -184,8 +184,8 @@ void GeolocationNotificationObserver::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
     infobar_ = content::Details<InfoBar::AddedDetails>(details).ptr();
-    ASSERT_FALSE(infobar_->GetIcon().IsEmpty());
-    ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
+    ASSERT_FALSE(infobar_->delegate()->GetIcon().IsEmpty());
+    ASSERT_TRUE(infobar_->delegate()->AsConfirmInfoBarDelegate());
   } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
     content::Details<DomOperationNotificationDetails> dom_op_details(details);
     javascript_response_ = dom_op_details->json;
@@ -298,7 +298,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void NotifyGeoposition(double latitude, double longitude);
 
  private:
-  InfoBarDelegate* infobar_;
+  InfoBar* infobar_;
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.
   std::string html_for_tests_;
@@ -407,9 +407,9 @@ void GeolocationBrowserTest::SetInfoBarResponse(const GURL& requesting_url,
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&web_contents->GetController()));
     if (allowed)
-      infobar_->AsConfirmInfoBarDelegate()->Accept();
+      infobar_->delegate()->AsConfirmInfoBarDelegate()->Accept();
     else
-      infobar_->AsConfirmInfoBarDelegate()->Cancel();
+      infobar_->delegate()->AsConfirmInfoBarDelegate()->Cancel();
     observer.Wait();
   }
 

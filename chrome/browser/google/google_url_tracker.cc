@@ -13,6 +13,7 @@
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -348,12 +349,13 @@ void GoogleURLTracker::OnNavigationCommitted(InfoBarService* infobar_service,
   if (map_entry->has_infobar_delegate()) {
     map_entry->infobar_delegate()->Update(search_url);
   } else {
-    GoogleURLTrackerInfoBarDelegate* infobar =
-        infobar_creator_.Run(infobar_service, this, search_url);
-    if (infobar)
-      map_entry->SetInfoBarDelegate(infobar);
-    else
+    InfoBar* infobar = infobar_creator_.Run(infobar_service, this, search_url);
+    if (infobar) {
+      map_entry->SetInfoBarDelegate(
+          static_cast<GoogleURLTrackerInfoBarDelegate*>(infobar->delegate()));
+    } else {
       map_entry->Close(false);
+    }
   }
 }
 

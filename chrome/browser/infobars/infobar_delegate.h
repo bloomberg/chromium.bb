@@ -51,18 +51,11 @@ class InfoBarDelegate {
   // Value to use when the InfoBar has no icon to show.
   static const int kNoIconID;
 
+  // Called when the InfoBar that owns this delegate is being destroyed.  At
+  // this point nothing is visible onscreen.
   virtual ~InfoBarDelegate();
 
   virtual InfoBarAutomationType GetInfoBarAutomationType() const;
-
-  // Called to create the InfoBar. Implementation of this method is
-  // platform-specific.
-  virtual InfoBar* CreateInfoBar(InfoBarService* owner) = 0;
-
-  // TODO(pkasting): Move to InfoBar once InfoBars own their delegates.
-  InfoBarService* owner() { return owner_; }
-
-  void clear_owner() { owner_ = NULL; }
 
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
@@ -104,41 +97,38 @@ class InfoBarDelegate {
   virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
-  // Return the icon to be shown for this InfoBar. If the returned Image is
-  // empty, no icon is shown.
-  virtual gfx::Image GetIcon() const;
-
-  content::WebContents* web_contents() {
-    return owner_ ? owner_->web_contents() : NULL;
-  }
-
- protected:
-  // If |contents| is non-NULL, its active entry's unique ID will be stored
-  // using StoreActiveEntryUniqueID automatically.
-  explicit InfoBarDelegate(InfoBarService* owner);
+  void set_infobar(InfoBar* infobar) { infobar_ = infobar; }
 
   // Store the unique id for the active entry in our WebContents, to be used
   // later upon navigation to determine if this InfoBarDelegate should be
   // expired.
   void StoreActiveEntryUniqueID();
 
-  int contents_unique_id() const { return contents_unique_id_; }
+  // Return the icon to be shown for this InfoBar. If the returned Image is
+  // empty, no icon is shown.
+  virtual gfx::Image GetIcon() const;
+
+  // This trivial getter is defined out-of-line in order to avoid needing to
+  // #include infobar.h, which would lead to circular #includes.
+  content::WebContents* web_contents();
+
+ protected:
+  InfoBarDelegate();
 
   // Returns true if the navigation is to a new URL or a reload occured.
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const;
 
-  // Removes ourself from |owner_| if we haven't already been removed.
-  // TODO(pkasting): Move to InfoBar.
-  void RemoveSelf();
+  int contents_unique_id() const { return contents_unique_id_; }
+  InfoBar* infobar() { return infobar_; }
 
  private:
   // The unique id of the active NavigationEntry of the WebContents that we were
   // opened for. Used to help expire on navigations.
   int contents_unique_id_;
 
-  // TODO(pkasting): Remove.
-  InfoBarService* owner_;
+  // The InfoBar associated with us.
+  InfoBar* infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
 };
