@@ -11,6 +11,10 @@
 #include <linux/serial.h>
 #endif
 
+#if defined(OS_MACOSX)
+#include <IOKit/serial/ioss.h>
+#endif
+
 namespace extensions {
 
 namespace {
@@ -101,6 +105,9 @@ bool SetCustomBitrate(base::PlatformFile file,
   cfsetispeed(config, B38400);
   cfsetospeed(config, B38400);
   return ioctl(file, TIOCSSERIAL, &serial) >= 0;
+#elif defined(OS_MACOSX)
+  speed_t speed = static_cast<speed_t>(bitrate);
+  return ioctl(file, IOSSIOSPEED, &speed) != -1;
 #else
   return false;
 #endif
