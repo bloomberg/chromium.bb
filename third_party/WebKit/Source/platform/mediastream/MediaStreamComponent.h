@@ -56,6 +56,10 @@ public:
 
     static PassRefPtr<MediaStreamComponent> create(PassRefPtr<MediaStreamSource>);
     static PassRefPtr<MediaStreamComponent> create(const String& id, PassRefPtr<MediaStreamSource>);
+    static PassRefPtr<MediaStreamComponent> create(MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
+
+    MediaStreamDescriptor* stream() const { return m_stream; }
+    void setStream(MediaStreamDescriptor* stream) { m_stream = stream; }
 
     MediaStreamSource* source() const { return m_source.get(); }
 
@@ -72,7 +76,7 @@ public:
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
-    MediaStreamComponent(const String& id, PassRefPtr<MediaStreamSource>);
+    MediaStreamComponent(const String& id, MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
 
 #if ENABLE(WEB_AUDIO)
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
@@ -101,6 +105,7 @@ private:
     AudioSourceProviderImpl m_sourceProvider;
 #endif // ENABLE(WEB_AUDIO)
 
+    MediaStreamDescriptor* m_stream;
     RefPtr<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;

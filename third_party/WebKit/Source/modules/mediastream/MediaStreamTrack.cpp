@@ -47,7 +47,6 @@ PassRefPtr<MediaStreamTrack> MediaStreamTrack::create(ExecutionContext* context,
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamComponent* component)
     : ActiveDOMObject(context)
-    , m_isIteratingObservers(false)
     , m_stopped(false)
     , m_component(component)
 {
@@ -98,7 +97,10 @@ void MediaStreamTrack::setEnabled(bool enabled)
 
     m_component->setEnabled(enabled);
 
-    MediaStreamCenter::instance().didSetMediaStreamTrackEnabled(m_component.get());
+    if (m_component->stream()->ended())
+        return;
+
+    MediaStreamCenter::instance().didSetMediaStreamTrackEnabled(m_component->stream(), m_component.get());
 }
 
 String MediaStreamTrack::readyState() const
@@ -122,7 +124,8 @@ String MediaStreamTrack::readyState() const
 void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
 {
     RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context->securityOrigin()->toString(), callback);
-    MediaStreamCenter::instance().getMediaStreamTrackSources(request.release());
+    if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
 }
 
 void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
@@ -130,15 +133,8 @@ void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
     if (ended())
         return;
 
-    MediaStreamCenter::instance().didStopMediaStreamTrack(component());
-}
-
-PassRefPtr<MediaStreamTrack> MediaStreamTrack::clone(ExecutionContext* context)
-{
-    RefPtr<MediaStreamComponent> clonedComponent = MediaStreamComponent::create(component()->source());
-    RefPtr<MediaStreamTrack> clonedTrack = MediaStreamTrack::create(context, clonedComponent.get());
-    MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent.get());
-    return clonedTrack.release();
+    if (!MediaStreamCenter::instance().didStopMediaStreamTrack(component()))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("stop", "MediaStreamTrack", "Functionality not implemented yet"));
 }
 
 bool MediaStreamTrack::ended() const
@@ -160,18 +156,22 @@ void MediaStreamTrack::sourceChangedState()
         break;
     case MediaStreamSource::ReadyStateEnded:
         dispatchEvent(Event::create(EventTypeNames::ended));
-        propagateTrackEnded();
+        didEndTrack();
         break;
     }
 }
 
-void MediaStreamTrack::propagateTrackEnded()
+void MediaStreamTrack::didEndTrack()
 {
-    RELEASE_ASSERT(!m_isIteratingObservers);
-    m_isIteratingObservers = true;
-    for (Vector<Observer*>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter)
-        (*iter)->trackEnded();
-    m_isIteratingObservers = false;
+    MediaStreamDescriptor* stream = m_component->stream();
+    if (!stream)
+        return;
+
+    MediaStreamDescriptorClient* client = stream->client();
+    if (!client)
+        return;
+
+    client->trackEnded();
 }
 
 MediaStreamComponent* MediaStreamTrack::component()
@@ -182,20 +182,6 @@ MediaStreamComponent* MediaStreamTrack::component()
 void MediaStreamTrack::stop()
 {
     m_stopped = true;
-}
-
-void MediaStreamTrack::addObserver(MediaStreamTrack::Observer* observer)
-{
-    RELEASE_ASSERT(!m_isIteratingObservers);
-    m_observers.append(observer);
-}
-
-void MediaStreamTrack::removeObserver(MediaStreamTrack::Observer* observer)
-{
-    RELEASE_ASSERT(!m_isIteratingObservers);
-    size_t pos = m_observers.find(observer);
-    if (pos != kNotFound)
-        m_observers.remove(pos);
 }
 
 const AtomicString& MediaStreamTrack::interfaceName() const

@@ -40,7 +40,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver, public MediaStreamTrack::Observer {
+class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
     REFCOUNTED_EVENT_TARGET(MediaStream);
 public:
     static PassRefPtr<MediaStream> create(ExecutionContext*);
@@ -57,7 +57,6 @@ public:
     void addTrack(PassRefPtr<MediaStreamTrack>, ExceptionState&);
     void removeTrack(PassRefPtr<MediaStreamTrack>, ExceptionState&);
     MediaStreamTrack* getTrackById(String);
-    PassRefPtr<MediaStream> clone(ExecutionContext*);
 
     MediaStreamTrackVector getAudioTracks() const { return m_audioTracks; }
     MediaStreamTrackVector getVideoTracks() const { return m_videoTracks; }
@@ -69,10 +68,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
-    // MediaStreamTrack::Observer
-    virtual void trackEnded() OVERRIDE;
-
     // MediaStreamDescriptorClient
+    virtual void trackEnded() OVERRIDE;
     virtual void streamEnded() OVERRIDE;
 
     MediaStreamDescriptor* descriptor() const { return m_descriptor.get(); }
@@ -84,15 +81,13 @@ public:
     // URLRegistrable
     virtual URLRegistry& registry() const OVERRIDE;
 
-private:
+protected:
     MediaStream(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
-    MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
-
-    static PassRefPtr<MediaStream> createFromTracks(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
 
     // ContextLifecycleObserver
     virtual void contextDestroyed();
 
+private:
     // MediaStreamDescriptorClient
     virtual void addRemoteTrack(MediaStreamComponent*) OVERRIDE;
     virtual void removeRemoteTrack(MediaStreamComponent*) OVERRIDE;
