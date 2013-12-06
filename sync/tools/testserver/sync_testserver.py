@@ -155,6 +155,7 @@ class SyncPageHandler(testserver_base.BasePageHandler):
                     self.GaiaOAuth2TokenHandler,
                     self.GaiaSetOAuth2TokenResponseHandler,
                     self.TriggerSyncedNotificationHandler,
+                    self.SyncedNotificationsPageHandler,
                     self.CustomizeClientCommandHandler]
 
     post_handlers = [self.ChromiumSyncCommandHandler,
@@ -508,23 +509,23 @@ class SyncPageHandler(testserver_base.BasePageHandler):
     query = urlparse.urlparse(self.path)[4]
     query_params = urlparse.parse_qs(query)
 
-    heading = 'HEADING'
-    description = 'DESCRIPTION'
-    annotation = 'ANNOTATION'
+    serialized_notification = ''
 
-    if 'heading' in query_params:
-      heading = query_params['heading'][0]
-    if 'description' in query_params:
-      description = query_params['description'][0]
-    if 'annotation' in query_params:
-      annotation = query_params['annotation'][0]
+    if 'serialized_notification' in query_params:
+      serialized_notification = query_params['serialized_notification'][0]
 
-    notification_string = self.server._sync_handler.account \
-        .AddSyncedNotification(heading, description, annotation)
+    try:
+      notification_string = self.server._sync_handler.account \
+          .AddSyncedNotification(serialized_notification)
+      reply = "A synced notification was triggered:\n\n"
+      reply += "<code>{}</code>.".format(notification_string)
+      response_code = 200
+    except chromiumsync.ClientNotConnectedError:
+      reply = ('The client is not connected to the server, so the notification'
+               ' could not be created.')
+      response_code = 400
 
-    reply = "A synced notification was triggered:\n\n"
-    reply += "<code>{}</code>.".format(notification_string)
-    self.send_response(200)
+    self.send_response(response_code)
     self.send_header('Content-Type', 'text/html')
     self.send_header('Content-Length', len(reply))
     self.end_headers()
@@ -559,6 +560,20 @@ class SyncPageHandler(testserver_base.BasePageHandler):
     self.send_header('Content-Length', len(reply))
     self.end_headers()
     self.wfile.write(reply)
+    return True
+
+  def SyncedNotificationsPageHandler(self):
+    test_name = "/syncednotifications"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+
+    html = open('sync/tools/testserver/synced_notifications.html', 'r').read()
+
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/html')
+    self.send_header('Content-Length', len(html))
+    self.end_headers()
+    self.wfile.write(html)
     return True
 
 

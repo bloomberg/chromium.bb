@@ -11,6 +11,7 @@ buffer definition at chrome/browser/sync/protocol/sync.proto.
 import base64
 import cgi
 import copy
+import google.protobuf.text_format
 import hashlib
 import operator
 import pickle
@@ -183,6 +184,10 @@ class SyncInducedError(Error):
 
 class InducedErrorFrequencyNotDefined(Error):
   """The error frequency defined is not handled."""
+
+
+class ClientNotConnectedError(Error):
+  """The client is not connected to the server."""
 
 
 def GetEntryType(entry):
@@ -1144,26 +1149,28 @@ class SyncDataModel(object):
   def GetInducedError(self):
     return self.induced_error
 
-  def AddSyncedNotification(self, heading, description, annotation):
+  def AddSyncedNotification(self, serialized_notification):
     """Adds a synced notification to the server data.
 
     The notification will be delivered to the client on the next GetUpdates
     call.
 
     Args:
-      heading: The notification heading.
-      description: The notification description.
-      annotation: The notification annotation.
+      serialized_notification: A serialized CoalescedSyncedNotification.
 
     Returns:
       The string representation of the added SyncEntity.
+
+    Raises:
+      ClientNotConnectedError: if the client has not yet connected to this
+      server
     """
     # A unique string used wherever a unique ID for this notification is
     # required.
     unique_notification_id = str(uuid.uuid4())
 
     specifics = self._CreateSyncedNotificationEntitySpecifics(
-        unique_notification_id, heading, description, annotation)
+        unique_notification_id, serialized_notification)
 
     # Create the root SyncEntity representing a single notification.
     entity = sync_pb2.SyncEntity()
@@ -1175,6 +1182,8 @@ class SyncDataModel(object):
 
     # Set the version to one more than the greatest version number already seen.
     entries = sorted(self._entries.values(), key=operator.attrgetter('version'))
+    if len(entries) < 1:
+      raise ClientNotConnectedError
     entity.version = entries[-1].version + 1
 
     entity.client_defined_unique_tag = self._CreateSyncedNotificationClientTag(
@@ -1184,37 +1193,16 @@ class SyncDataModel(object):
 
     self._entries[entity.id_string] = copy.deepcopy(entity)
 
-    return entity.SerializeToString()
+    return google.protobuf.text_format.MessageToString(entity)
 
-  def _CreateSyncedNotificationEntitySpecifics(self, unique_id, heading,
-                                               description, annotation):
+  def _CreateSyncedNotificationEntitySpecifics(self, unique_id,
+                                               serialized_notification):
     """Create the EntitySpecifics proto for a synced notification."""
-    layout = synced_notification_render_pb2.SimpleCollapsedLayout()
-    layout.heading = heading
-    layout.description = description
-    layout.annotation = annotation
-
-    collapsed_info = synced_notification_render_pb2.CollapsedInfo()
-    collapsed_info.creation_timestamp_usec = 42
-    collapsed_info.simple_collapsed_layout.CopyFrom(layout)
-
-    render_info = synced_notification_render_pb2.SyncedNotificationRenderInfo()
-    render_info.collapsed_info.CopyFrom(collapsed_info)
-
-    # TODO(pvalenzuela): Transition this function to take a
-    # CoalescedSyncedNotification as an argument instead of
-    # creating it here. This will be possible when there is a proper frontend
-    # with pre-populated notification data.
     coalesced = synced_notification_data_pb2.CoalescedSyncedNotification()
-    coalesced.read_state = synced_notification_data_pb2 \
-        .CoalescedSyncedNotification.UNREAD
-    coalesced.priority = synced_notification_data_pb2 \
-        .CoalescedSyncedNotification.STANDARD
-    coalesced.key = unique_id
-    coalesced.render_info.CopyFrom(render_info)
+    google.protobuf.text_format.Merge(serialized_notification, coalesced)
 
-    notification = coalesced.notification.add()
-    notification.external_id = unique_id
+    # Override the provided key so that we have a unique one.
+    coalesced.key = unique_id
 
     specifics = sync_pb2.EntitySpecifics()
     notification_specifics = \

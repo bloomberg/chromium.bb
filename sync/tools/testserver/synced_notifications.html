@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>Synced notifications</title>
+
+    <script type="text/javascript">
+      // Creates link (appended to the bottom of the page body) to trigger a
+      // synced notifications. The link's title will be |title| and
+      // |serialized_notification| is the ASCII-serialized version of the
+      // CoalescedSyncedNotification to be triggered.
+      function appendNotificationLink(title, serialized_notification) {
+        var link = document.createElement('a');
+        link.innerHTML = title;
+        link.setAttribute('target', '_blank');
+        link.setAttribute('href', 'triggersyncednotification?' +
+            'serialized_notification=' +
+            encodeURIComponent(serialized_notification));
+        document.body.appendChild(link);
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Synced notifications</h1>
+
+    <h2>Step 0: Sign in to the browser and set up Sync</h2>
+
+    <h2>Step 1: Click this link (only required once per server lifetime)</h2>
+
+    <a href="/customizeclientcommand?sessions_commit_delay_seconds=0">
+        Make notifications triggering instant</a>
+
+    <h2>Step 2: Ctrl-Click the links below to trigger synced notifications</h2>
+
+    <script type="text/javascript">
+      appendNotificationLink('Simple notification',
+          'key: \"foo\"\n' +
+          'priority: 2\n' +
+          'read_state: 1\n' +
+          'render_info {\n' +
+          '  collapsed_info {\n' +
+          '    creation_timestamp_usec: 42\n' +
+          '    simple_collapsed_layout {\n' +
+          '        annotation: \"Space Needle, 12:00 pm\"\n' +
+          '        description: \"Space Needle, 12:00 pm\"\n' +
+          '        heading: \"New appointment\"\n' +
+          '    }\n' +
+          '  }\n' +
+          '}');
+    </script>
+  </body>
+</html>
