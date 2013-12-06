@@ -137,6 +137,7 @@ bool WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()
 void WebRuntimeFeatures::enableDirectWrite(bool enable)
 {
     RuntimeEnabledFeatures::setDirectWriteEnabled(enable);
+    RuntimeEnabledFeatures::setSubpixelFontScalingEnabled(enable || RuntimeEnabledFeatures::subpixelFontScalingEnabled());
 }
 
 bool WebRuntimeFeatures::isDirectWriteEnabled()
