@@ -13,6 +13,7 @@ import stat
 import time
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 
@@ -83,7 +84,7 @@ class RemoteAccess(object):
     return cmd
 
   def RemoteSh(self, cmd, connect_settings=None, error_code_ok=False,
-               ssh_error_ok=False, debug_level=None):
+               ssh_error_ok=False, **kwargs):
     """Run a sh command on the remote device through ssh.
 
     Args:
@@ -95,7 +96,7 @@ class RemoteAccess(object):
                      See ssh_error_ok.
       ssh_error_ok: Does not throw an exception when the ssh command itself
                     fails (return code 255).
-      debug_level: See cros_build_lib.RunCommand documentation.
+      **kwargs: See cros_build_lib.RunCommand documentation.
 
     Returns:
       A CommandResult object.  The returncode is the returncode of the command,
@@ -106,8 +107,7 @@ class RemoteAccess(object):
       RunCommandError when error is not ignored through error_code_ok and
       ssh_error_ok flags.
     """
-    if not debug_level:
-      debug_level = self.debug_level
+    kwargs.setdefault('debug_level', self.debug_level)
 
     ssh_cmd = self._GetSSHCmd(connect_settings)
     if isinstance(cmd, basestring):
@@ -117,7 +117,7 @@ class RemoteAccess(object):
 
     try:
       result = cros_build_lib.RunCommandCaptureOutput(
-          ssh_cmd, debug_level=debug_level)
+          ssh_cmd, **kwargs)
     except cros_build_lib.RunCommandError as e:
       if ((e.result.returncode == SSH_ERROR_CODE and ssh_error_ok) or
           (e.result.returncode and e.result.returncode != SSH_ERROR_CODE
@@ -267,3 +267,97 @@ class RemoteAccess(object):
       rc_func = cros_build_lib.SudoRunCommand
 
     return rc_func(scp_cmd, debug_level=debug_level, print_cmd=verbose)
+
+  def PipeToRemoteSh(self, producer_cmd, cmd, **kwargs):
+    """Run a local command and pipe it to a remote sh command over ssh.
+
+    Args:
+      producer_cmd: Command to run locally with its results piped to |cmd|.
+      cmd: Command to run on the remote device.
+      **kwargs: See RemoteSh for documentation.
+    """
+    result = cros_build_lib.RunCommandCaptureOutput(producer_cmd,
+                                                    stdout_to_pipe=True,
+                                                    print_cmd=False)
+    return self.RemoteSh(cmd, input=kwargs.pop('input', result.output),
+                         **kwargs)
+
+
+class RemoteDeviceHandler(object):
+  """A wrapper of RemoteDevice."""
+
+  def __init__(self, *args, **kwargs):
+    """Creates a RemoteDevice object."""
+    self.device = RemoteDevice(*args, **kwargs)
+
+  def __enter__(self):
+    """Return the temporary directory."""
+    return self.device
+
+  def __exit__(self, _type, _value, _traceback):
+    """Cleans up the device."""
+    self.device.Cleanup()
+
+
+class RemoteDevice(object):
+  """Handling basic SSH communication with a remote device."""
+
+  DEFAULT_WORK_DIR = '/tmp/remote-access'
+
+  def __init__(self, hostname, debug_level=logging.DEBUG, work_dir=None):
+    """Initializes a RemoteDevice object.
+
+    Args:
+      hostname: The hostname of the device.
+      debug_level: Setting debug level for logging.
+      work_dir: The default working directory on the device.
+    """
+    self.hostname = hostname
+    # The tempdir is only for storing the rsa key on the host.
+    self.tempdir = osutils.TempDir(prefix='ssh-tmp')
+    self.agent = self._SetupSSH()
+    self.board = self.agent.LearnBoard()
+    self.debug_level = debug_level
+    # Setup a working directory on the device.
+    self.work_dir = self.DEFAULT_WORK_DIR if work_dir is None else work_dir
+    self.RunCommand(['rm', '-r', self.work_dir], error_code_ok=True)
+    self.RunCommand(['mkdir', '-p', self.work_dir])
+
+  def _SetupSSH(self):
+    """Setup the ssh connection with device."""
+    return RemoteAccess(self.hostname, self.tempdir.tempdir)
+
+  def Cleanup(self):
+    """Clean up the working/temp directories."""
+    self.RunCommand(['rm', '-rf', self.work_dir], error_code_ok=True)
+    self.tempdir.Cleanup()
+
+  def CopyToDevice(self, src, dest, **kwargs):
+    """Copy path to device."""
+    self.agent.Rsync(src, dest, **kwargs)
+
+  def CopyFromDevice(self, src, dest, **kwargs):
+    """Copy path from device."""
+    self.agent.RsyncToLocal(src, dest, **kwargs)
+
+  def CopyFromWorkDir(self, src, dest, **kwargs):
+    """Copy path from working directory on the device."""
+    self.CopyFromDevice(os.path.join(self.work_dir, src), dest, **kwargs)
+
+  def CopyToWorkDir(self, src, dest='', **kwargs):
+    """Copy path to working directory on the device."""
+    self.CopyToDevice(src, os.path.join(self.work_dir, dest), **kwargs)
+
+  def PipeOverSSH(self, filepath, cmd, **kwargs):
+    """Cat a file and pipe over SSH."""
+    producer_cmd = ['cat', filepath]
+    return self.agent.PipeToRemoteSh(producer_cmd, cmd, **kwargs)
+
+  def Reboot(self):
+    """Reboot the device."""
+    self.agent.RemoteReboot()
+
+  def RunCommand(self, cmd, **kwargs):
+    """Executes a shell command on the device with output captured."""
+    kwargs.setdefault('debug_level', self.debug_level)
+    return self.agent.RemoteSh(cmd, **kwargs)
