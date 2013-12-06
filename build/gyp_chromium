@@ -221,10 +221,8 @@ if __name__ == '__main__':
 
   supplemental_includes = GetSupplementalFiles()
 
-  # Temporarily disabled, http://crbug.com/326146
-  # TODO(brettw) re-enable this code
-  #if not RunGN(supplemental_includes):
-    #sys.exit(1)
+  if not RunGN(supplemental_includes):
+    sys.exit(1)
 
   args.extend(
       ['-I' + i for i in additional_include_files(supplemental_includes, args)])
