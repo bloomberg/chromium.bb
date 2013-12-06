@@ -22,6 +22,8 @@
 
 #if defined(USE_X11)
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#elif defined(USE_OZONE)
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
 namespace {
@@ -562,8 +564,10 @@ uint16 KeyEvent::GetCharacter() const {
     ch = GetCharacterFromXEvent(native_event());
   return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
 #else
-  NOTIMPLEMENTED();
-  return 0;
+  DCHECK(EventTypeFromNative(native_event()) == ET_KEY_PRESSED ||
+         EventTypeFromNative(native_event()) == ET_KEY_RELEASED);
+
+  return GetCharacterFromKeyCode(key_code_, flags());
 #endif
 }
 
