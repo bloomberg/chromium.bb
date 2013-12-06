@@ -67,6 +67,10 @@
     "message": "Retro '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Photo Lab",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
   "swirlEffect": {
     "message": "Swirl",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
