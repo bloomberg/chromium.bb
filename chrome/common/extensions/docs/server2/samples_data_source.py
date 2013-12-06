@@ -41,11 +41,15 @@ class SamplesDataSource(object):
           self._MakeSamplesList,
           SamplesDataSource,
           category='extensions')
+      self._extensions_text_cache = compiled_fs_factory.ForUnicode(
+          host_file_system)
       self._apps_cache = compiled_fs_factory.Create(
           app_samples_file_system,
           lambda *args: self._MakeSamplesList(*args, is_apps=True),
           SamplesDataSource,
           category='apps')
+      self._apps_text_cache = compiled_fs_factory.ForUnicode(
+          app_samples_file_system)
 
     def Create(self, request):
       '''Returns a new SamplesDataSource bound to |request|.
@@ -71,8 +75,8 @@ class SamplesDataSource(object):
           calls.add('%s.%s' % (api_prefix, api_suffix))
       return calls
 
-    def _GetDataFromManifest(self, path, file_system):
-      manifest = file_system.ReadSingle(path + '/manifest.json').Get()
+    def _GetDataFromManifest(self, path, text_cache, file_system):
+      manifest = text_cache.GetFromFile(path + '/manifest.json').Get()
       try:
         manifest_json = json.loads(json_comment_eater.Nom(manifest))
       except ValueError as e:
@@ -90,12 +94,12 @@ class SamplesDataSource(object):
       locales_path = path + '/_locales/'
       locales_dir = file_system.ReadSingle(locales_path).Get()
       if locales_dir:
-        locales_files = file_system.Read(
-            [locales_path + f + 'messages.json' for f in locales_dir]).Get()
+        def load_locale_json(path):
+          return (path, json.loads(text_cache.GetFromFile(path).Get()))
+
         try:
-          locales_json = [(locale_path, json.loads(contents))
-                          for locale_path, contents in
-                          locales_files.iteritems()]
+          locales_json = [load_locale_json(locales_path + f + 'messages.json')
+                          for f in locales_dir]
         except ValueError as e:
           logging.error('Error parsing locales files for %s: %s' % (path, e))
         else:
@@ -105,7 +109,9 @@ class SamplesDataSource(object):
 
     def _MakeSamplesList(self, base_path, files, is_apps=False):
       file_system = (self._app_samples_file_system if is_apps else
-                     self._host_file_system)
+                              self._host_file_system)
+      text_cache = (self._apps_text_cache if is_apps else
+          self._extensions_text_cache)
       samples_list = []
       for filename in sorted(files):
         if filename.rsplit('/')[-1] != 'manifest.json':
@@ -116,10 +122,11 @@ class SamplesDataSource(object):
         sample_files = [path for path in files
                         if path.startswith(sample_path + '/')]
         js_files = [path for path in sample_files if path.endswith('.js')]
-        js_contents = file_system.Read(
-            [posixpath.join(base_path, js_file) for js_file in js_files]).Get()
+        js_contents = [text_cache.GetFromFile(
+            posixpath.join(base_path, js_file)).Get()
+            for js_file in js_files]
         api_items = set()
-        for js in js_contents.itervalues():
+        for js in js_contents:
           api_items.update(self._GetAPIItems(js))
 
         api_calls = []
@@ -157,7 +164,9 @@ class SamplesDataSource(object):
           download_url = extension_sample_path + '.zip'
 
         manifest_data = self._GetDataFromManifest(
-            posixpath.join(base_path, sample_path), file_system)
+            posixpath.join(base_path, sample_path),
+            text_cache,
+            file_system)
         if manifest_data['icon'] is None:
           icon_path = posixpath.join(
               self._base_path, 'static', _DEFAULT_ICON_PATH)

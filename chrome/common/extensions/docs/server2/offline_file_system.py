@@ -13,7 +13,7 @@ class OfflineFileSystem(FileSystem):
   def __init__(self, fs):
     self._fs = fs
 
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     def raise_file_not_found():
       raise FileNotFoundError('File system is offline, cannot read %s' % paths)
     return Future(delegate=Gettable(raise_file_not_found))

@@ -7,6 +7,7 @@ import logging
 import os
 import re
 
+from compiled_file_system import Unicode
 from data_source import DataSource
 from docs_server_utils import FormatKey
 from extensions_paths import INTROS_TEMPLATES, ARTICLES_TEMPLATES
@@ -31,6 +32,7 @@ class IntroDataSource(DataSource):
         IntroDataSource)
     self._ref_resolver = server_instance.ref_resolver_factory.Create()
 
+  @Unicode
   def _MakeIntro(self, intro_path, intro):
     # Guess the name of the API from the path to the intro.
     api_name = os.path.splitext(intro_path.split('/')[-1])[0]

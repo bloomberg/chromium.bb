@@ -11,7 +11,7 @@ from xml.parsers.expat import ExpatError
 from appengine_url_fetcher import AppEngineUrlFetcher
 from docs_server_utils import StringIdentity
 from file_system import (
-    FileNotFoundError, FileSystem, FileSystemError, StatInfo, ToUnicode)
+    FileNotFoundError, FileSystem, FileSystemError, StatInfo)
 from future import Future
 import url_constants
 
@@ -96,7 +96,7 @@ def _CreateStatInfo(html):
   return StatInfo(parent_version, child_versions)
 
 class _AsyncFetchFuture(object):
-  def __init__(self, paths, fetcher, binary, args=None):
+  def __init__(self, paths, fetcher, args=None):
     def apply_args(path):
       return path if args is None else '%s?%s' % (path, args)
     # A list of tuples of the form (path, Future).
@@ -104,7 +104,6 @@ class _AsyncFetchFuture(object):
                      for path in paths]
     self._value = {}
     self._error = None
-    self._binary = binary
 
   def _ListDir(self, directory):
     dom = xml.parseString(directory)
@@ -130,8 +129,6 @@ class _AsyncFetchFuture(object):
 
       if path.endswith('/'):
         self._value[path] = self._ListDir(result.content)
-      elif not self._binary:
-        self._value[path] = ToUnicode(result.content)
       else:
         self._value[path] = result.content
     if self._error is not None:
@@ -159,14 +156,13 @@ class SubversionFileSystem(FileSystem):
     self._svn_path = svn_path
     self._revision = revision
 
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     args = None
     if self._revision is not None:
       # |fetcher| gets from svn.chromium.org which uses p= for version.
       args = 'p=%s' % self._revision
     return Future(delegate=_AsyncFetchFuture(paths,
                                              self._file_fetcher,
-                                             binary,
                                              args=args))
 
   def Refresh(self):

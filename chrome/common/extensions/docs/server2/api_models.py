@@ -6,7 +6,7 @@ import logging
 import os
 import posixpath
 
-from compiled_file_system import SingleFile
+from compiled_file_system import SingleFile, Unicode
 from extensions_paths import API
 from file_system import FileNotFoundError
 from future import Gettable, Future
@@ -15,6 +15,7 @@ from third_party.json_schema_compiler.model import Namespace, UnixName
 
 
 @SingleFile
+@Unicode
 def _CreateAPIModel(path, data):
   schema = ProcessSchema(path, data)[0]
   if not schema: return None

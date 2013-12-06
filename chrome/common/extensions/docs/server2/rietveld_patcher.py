@@ -6,7 +6,7 @@ import json
 import tarfile
 from StringIO import StringIO
 
-from file_system import FileNotFoundError, ToUnicode
+from file_system import FileNotFoundError
 from future import Future
 from patcher import Patcher
 
@@ -29,12 +29,10 @@ class _AsyncFetchFuture(object):
                issue,
                patchset,
                files,
-               binary,
                fetcher):
     self._issue = issue
     self._patchset = patchset
     self._files = files
-    self._binary = binary
     self._tarball = fetcher.FetchAsync('tarball/%s/%s' % (issue, patchset))
 
   def Get(self):
@@ -73,10 +71,7 @@ class _AsyncFetchFuture(object):
         if patched_file:
           patched_file.close()
 
-      if self._binary:
-        self._value[path] = data
-      else:
-        self._value[path] = ToUnicode(data)
+      self._value[path] = data
 
     return self._value
 
@@ -148,13 +143,12 @@ class RietveldPatcher(Patcher):
 
     return (added, deleted, modified)
 
-  def Apply(self, paths, file_system, binary, version=None):
+  def Apply(self, paths, file_system, version=None):
     if version is None:
       version = self.GetVersion()
     return Future(delegate=_AsyncFetchFuture(self._issue,
                                              version,
                                              paths,
-                                             binary,
                                              self._fetcher))
 
   def GetIdentity(self):

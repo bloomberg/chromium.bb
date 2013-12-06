@@ -35,8 +35,8 @@ class RietveldPatcherTest(unittest.TestCase):
                            filename), 'r') as f:
       return f.read()
 
-  def _ApplySingle(self, path, binary=False):
-    return self._patcher.Apply([path], None, binary).Get()[path]
+  def _ApplySingle(self, path):
+    return self._patcher.Apply([path], None).Get()[path]
 
   def testGetVersion(self):
     self.assertEqual(self._patcher.GetVersion(), '22002')
@@ -58,12 +58,6 @@ class RietveldPatcherTest(unittest.TestCase):
 
   def testApply(self):
     article_path = '%s/test_foo.html' % ARTICLES_TEMPLATES
-
-    # Make sure RietveldPatcher handles |binary| correctly.
-    self.assertTrue(isinstance(self._ApplySingle(article_path, True), str),
-        'Expected result is binary. It was text.')
-    self.assertTrue(isinstance(self._ApplySingle(article_path), unicode),
-        'Expected result is text. It was binary.')
 
     # Apply to an added file.
     self.assertEqual(

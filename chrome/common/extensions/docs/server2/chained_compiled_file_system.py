@@ -40,10 +40,10 @@ class ChainedCompiledFileSystem(object):
     assert len(compiled_fs_chain) > 0
     self._compiled_fs_chain = compiled_fs_chain
 
-  def GetFromFile(self, path, binary=False):
+  def GetFromFile(self, path):
     return self._GetImpl(
         path,
-        lambda compiled_fs: compiled_fs.GetFromFile(path, binary=binary),
+        lambda compiled_fs: compiled_fs.GetFromFile(path),
         lambda compiled_fs: compiled_fs.GetFileVersion(path))
 
   def GetFromFileListing(self, path):

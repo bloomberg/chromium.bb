@@ -9,7 +9,7 @@ class EmptyDirFileSystem(FileSystem):
   '''A FileSystem with empty directories. Useful to inject places to disable
   features such as samples.
   '''
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     result = {}
     for path in paths:
       if not path.endswith('/'):

@@ -150,7 +150,7 @@ class GithubFileSystem(FileSystem):
     # Remove all files not directly in this directory.
     return [f for f in filenames if f[:-1].count('/') == 0]
 
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     version = self.Stat(ZIP_KEY).version
     if version != self._version:
       self._GetZip(version)

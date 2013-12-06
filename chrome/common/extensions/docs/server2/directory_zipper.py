@@ -29,8 +29,7 @@ class DirectoryZipper(object):
     with ZipFile(zip_bytes, mode='w') as zip_file:
       futures_with_name = [
           (file_name,
-           self._file_system.ReadSingle(posixpath.join(base_dir, file_name),
-                                        binary=True))
+           self._file_system.ReadSingle(posixpath.join(base_dir, file_name)))
           for file_name in files]
       for file_name, future in futures_with_name:
         file_contents = future.Get()

@@ -5,7 +5,7 @@
 import copy
 import logging
 
-from compiled_file_system import SingleFile
+from compiled_file_system import SingleFile, Unicode
 from data_source import DataSource
 from extensions_paths import JSON_TEMPLATES
 from future import Gettable, Future
@@ -52,6 +52,7 @@ class SidenavDataSource(DataSource):
     self._request = request
 
   @SingleFile
+  @Unicode
   def _CreateSidenavDict(self, _, content):
     items = Parse(content)
     # Start at level 2, the top <ul> element is level 1.

@@ -6,7 +6,7 @@ import os
 import sys
 
 from docs_server_utils import StringIdentity
-from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
+from file_system import FileSystem, FileNotFoundError, StatInfo
 from future import Future
 
 def _ConvertToFilepath(path):
@@ -15,14 +15,10 @@ def _ConvertToFilepath(path):
 def _ConvertFromFilepath(path):
   return path.replace(os.sep, '/')
 
-def _ReadFile(filename, binary):
+def _ReadFile(filename):
   try:
-    mode = 'rb' if binary else 'r'
-    with open(filename, mode) as f:
-      contents = f.read()
-      if binary:
-        return contents
-      return ToUnicode(contents)
+    with open(filename, 'rb') as f:
+      return f.read()
   except IOError as e:
     raise FileNotFoundError('Read failed for %s: %s' % (filename, e))
 
@@ -72,7 +68,7 @@ class LocalFileSystem(FileSystem):
     return LocalFileSystem(
         os.path.join(sys.path[0], '..', '..', '..', '..', '..'))
 
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     result = {}
     for path in paths:
       full_path = os.path.join(self._base_path,
@@ -80,7 +76,7 @@ class LocalFileSystem(FileSystem):
       if path.endswith('/'):
         result[path] = _ListDir(full_path)
       else:
-        result[path] = _ReadFile(full_path, binary)
+        result[path] = _ReadFile(full_path)
     return Future(value=result)
 
   def Refresh(self):

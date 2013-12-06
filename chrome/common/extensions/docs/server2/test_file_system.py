@@ -46,7 +46,7 @@ class TestFileSystem(FileSystem):
   # FileSystem implementation.
   #
 
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     test_fs = self
     class Delegate(object):
       def Get(self):

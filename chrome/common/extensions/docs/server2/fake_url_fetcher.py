@@ -102,7 +102,7 @@ class FakeURLFSFetcher(object):
 
   def Fetch(self, url, **kwargs):
     return _Response(self._file_system.ReadSingle(
-        self._base_path + '/' + url, binary=True).Get())
+        self._base_path + '/' + url).Get())
 
 
 class MockURLFetcher(object):

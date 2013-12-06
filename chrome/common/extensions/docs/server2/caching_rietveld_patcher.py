@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from datetime import datetime, timedelta
-from file_system import FileNotFoundError, ToUnicode
+from file_system import FileNotFoundError
 from future import Future
 from patcher import Patcher
 
@@ -19,40 +19,33 @@ def _ToObjectStoreValue(raw_value, version):
   return dict((_MakeKey(key, version), raw_value[key])
               for key in raw_value)
 
-def _FromObjectStoreValue(raw_value, binary):
-  return dict((key[0:key.rfind('@')], _HandleBinary(raw_value[key], binary))
-              for key in raw_value)
-
-def _HandleBinary(data, binary):
-  return data if binary else ToUnicode(data)
+def _FromObjectStoreValue(raw_value):
+  return dict((key[0:key.rfind('@')], raw_value[key]) for key in raw_value)
 
 class _AsyncUncachedFuture(object):
   def __init__(self,
                version,
                paths,
-               binary,
                cached_value,
                missing_paths,
                fetch_delegate,
                object_store):
     self._version = version
     self._paths = paths
-    self._binary = binary
     self._cached_value = cached_value
     self._missing_paths = missing_paths
     self._fetch_delegate = fetch_delegate
     self._object_store = object_store
 
   def Get(self):
-    uncached_raw_value = self._fetch_delegate.Get()
-    self._object_store.SetMulti(_ToObjectStoreValue(uncached_raw_value,
+    uncached_value = self._fetch_delegate.Get()
+    self._object_store.SetMulti(_ToObjectStoreValue(uncached_value,
                                                     self._version))
 
     for path in self._missing_paths:
-      if uncached_raw_value.get(path) is None:
+      if uncached_value.get(path) is None:
         raise FileNotFoundError('File %s was not found in the patch.' % path)
-      self._cached_value[path] = _HandleBinary(uncached_raw_value[path],
-                                               self._binary)
+      self._cached_value[path] = uncached_value[path]
 
     return self._cached_value
 
@@ -100,29 +93,22 @@ class CachingRietveldPatcher(Patcher):
     self._list_object_store.Set(version, patched_files)
     return patched_files
 
-  def Apply(self, paths, file_system, binary=False, version=None):
+  def Apply(self, paths, file_system, version=None):
     if version is None:
       version = self.GetVersion()
     added, deleted, modified = self.GetPatchedFiles(version)
     cached_value = _FromObjectStoreValue(self._file_object_store.
-        GetMulti([_MakeKey(path, version) for path in paths]).Get(), binary)
+        GetMulti([_MakeKey(path, version) for path in paths]).Get())
     missing_paths = list(set(paths) - set(cached_value.keys()))
     if len(missing_paths) == 0:
       return Future(value=cached_value)
 
-    # binary is explicitly set to True. Here we are applying the patch to
-    # ALL patched files without a way to know whether individual files are
-    # binary or not. Therefore all data cached must be binary. When reading
-    # from the cache with binary=False, it will be converted to Unicode by
-    # _HandleBinary.
     return _AsyncUncachedFuture(version,
                                 paths,
-                                binary,
                                 cached_value,
                                 missing_paths,
                                 self._patcher.Apply(set(added) | set(modified),
                                                     None,
-                                                    True,
                                                     version),
                                 self._file_object_store)
 

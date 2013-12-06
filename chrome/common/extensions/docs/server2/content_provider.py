@@ -9,7 +9,7 @@ import os
 
 from compiled_file_system import SingleFile
 from directory_zipper import DirectoryZipper
-from file_system import ToUnicode
+from docs_server_utils import ToUnicode
 from future import Gettable, Future
 from third_party.handlebar import Handlebar
 
@@ -81,7 +81,7 @@ class ContentProvider(object):
       return Future(delegate=Gettable(
           lambda: ContentAndType(zip_future.Get(), 'application/zip')))
 
-    return self._content_cache.GetFromFile(path, binary=True)
+    return self._content_cache.GetFromFile(path)
 
   def Cron(self):
     # Running Refresh() on the file system is enough to pull GitHub content,

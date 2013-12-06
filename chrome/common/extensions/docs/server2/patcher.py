@@ -15,7 +15,7 @@ class Patcher(object):
     '''
     raise NotImplementedError(self.__class__)
 
-  def Apply(self, paths, file_system, binary, version=None):
+  def Apply(self, paths, file_system, version=None):
     '''Apply the patch to added/modified files. Returns Future with patched
     data. Throws FileNotFoundError if |paths| contains deleted files.
     '''

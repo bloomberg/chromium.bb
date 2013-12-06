@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from compiled_file_system import Unicode
 from extensions_paths import (
     API_FEATURES, JSON_TEMPLATES, MANIFEST_FEATURES, PERMISSION_FEATURES)
 import features_utility
@@ -36,14 +37,15 @@ def _AddPlatformsFromDependencies(feature,
 
 class _FeaturesCache(object):
   def __init__(self, file_system, compiled_fs_factory, *json_paths):
-    self._file_system = file_system
     self._cache = compiled_fs_factory.Create(
         file_system, self._CreateCache, type(self))
+    self._text_cache = compiled_fs_factory.ForUnicode(file_system)
     self._json_path = json_paths[0]
     self._extra_paths = json_paths[1:]
 
+  @Unicode
   def _CreateCache(self, _, features_json):
-    extra_path_futures = [self._file_system.ReadSingle(path)
+    extra_path_futures = [self._text_cache.GetFromFile(path)
                           for path in self._extra_paths]
     features = features_utility.Parse(Parse(features_json))
     for path_future in extra_path_futures:

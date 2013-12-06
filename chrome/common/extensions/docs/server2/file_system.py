@@ -53,27 +53,15 @@ class StatInfo(object):
     return str(self)
 
 
-def ToUnicode(data):
-  '''Returns the str |data| as a unicode object. It's expected to be utf8, but
-  there are also latin-1 encodings in there for some reason. Fall back to that.
-  '''
-  try:
-    return unicode(data, 'utf-8')
-  except:
-    return unicode(data, 'latin-1')
-
-
 class FileSystem(object):
   '''A FileSystem interface that can read files and directories.
   '''
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     '''Reads each file in paths and returns a dictionary mapping the path to the
     contents. If a path in paths ends with a '/', it is assumed to be a
     directory, and a list of files in the directory is mapped to the path.
 
-    If binary=False, the contents of each file will be unicode parsed as utf-8,
-    and failing that as latin-1 (some extension docs use latin-1). If
-    binary=True then the contents will be a str.
+    The contents will be a str.
 
     If any path cannot be found, raises a FileNotFoundError. This is guaranteed
     to only happen once the Future has been resolved (Get() called).
@@ -82,11 +70,11 @@ class FileSystem(object):
     '''
     raise NotImplementedError(self.__class__)
 
-  def ReadSingle(self, path, binary=False):
+  def ReadSingle(self, path):
     '''Reads a single file from the FileSystem. Returns a Future with the same
     rules as Read().
     '''
-    read_single = self.Read([path], binary=binary)
+    read_single = self.Read([path])
     return Future(delegate=Gettable(lambda: read_single.Get()[path]))
 
   def Refresh(self):

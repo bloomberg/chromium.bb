@@ -51,8 +51,6 @@ class CachingFileSystem(FileSystem):
     # which starting empty is designed for. Without this optimisation, cron
     # runs are extra slow.
     self._read_object_store = create_object_store('read', start_empty=False)
-    self._read_binary_object_store = create_object_store('read-binary',
-                                                         start_empty=False)
 
   def Refresh(self):
     return self._file_system.Refresh()
@@ -85,13 +83,11 @@ class CachingFileSystem(FileSystem):
 
     return stat_info
 
-  def Read(self, paths, binary=False):
+  def Read(self, paths):
     '''Reads a list of files. If a file is in memcache and it is not out of
     date, it is returned. Otherwise, the file is retrieved from the file system.
     '''
-    read_object_store = (self._read_binary_object_store if binary else
-                         self._read_object_store)
-    read_values = read_object_store.GetMulti(paths).Get()
+    read_values = self._read_object_store.GetMulti(paths).Get()
     stat_values = self._stat_object_store.GetMulti(paths).Get()
     results = {}  # maps path to read value
     uncached = {}  # maps path to stat value
@@ -117,11 +113,11 @@ class CachingFileSystem(FileSystem):
       return Future(value=results)
 
     return Future(delegate=_AsyncUncachedFuture(
-        self._file_system.Read(uncached.keys(), binary=binary),
+        self._file_system.Read(uncached.keys()),
         uncached,
         results,
         self,
-        read_object_store))
+        self._read_object_store))
 
   def GetIdentity(self):
     return self._file_system.GetIdentity()
