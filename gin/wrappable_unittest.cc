@@ -5,9 +5,11 @@
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
+#include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
+#include "gin/try_catch.h"
 #include "gin/wrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,41 +50,14 @@ struct Converter<MyObject*> : public WrappableConverter<MyObject> {};
 
 namespace {
 
-// TODO(abarth): This is too much typing.
-
-void MyObjectGetValue(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-
-  MyObject* obj = 0;
-  CHECK(args.Holder(&obj));
-
-  args.Return(obj->value());
-}
-
-void MyObjectSetValue(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-
-  MyObject* obj = 0;
-  CHECK(args.Holder(&obj));
-
-  int val = 0;
-  if (!args.GetNext(&val))
-    return args.ThrowError();
-
-  obj->set_value(val);
-}
-
 void RegisterTemplate(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   DCHECK(data->GetObjectTemplate(&MyObject::kWrapperInfo).IsEmpty());
 
-  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+  v8::Handle<v8::ObjectTemplate> templ = ObjectTemplateBuilder(isolate)
+      .SetProperty("value", &MyObject::value, &MyObject::set_value)
+      .Build();
   templ->SetInternalFieldCount(kNumberOfInternalFields);
-  templ->SetAccessorProperty(
-      StringToSymbol(isolate, "value"),
-      v8::FunctionTemplate::New(isolate, MyObjectGetValue),
-      v8::FunctionTemplate::New(isolate, MyObjectSetValue));
-
   data->SetObjectTemplate(&MyObject::kWrapperInfo, templ);
 }
 
@@ -119,7 +94,7 @@ TEST_F(WrappableTest, GetAndSetProperty) {
       "   else obj.value = 191; })");
   EXPECT_FALSE(source.IsEmpty());
 
-  v8::TryCatch try_catch;
+  gin::TryCatch try_catch;
   v8::Handle<v8::Script> script = v8::Script::New(source);
   EXPECT_FALSE(script.IsEmpty());
   v8::Handle<v8::Value> val = script->Run();
@@ -130,6 +105,8 @@ TEST_F(WrappableTest, GetAndSetProperty) {
     ConvertToV8(isolate, obj.get()),
   };
   func->Call(v8::Undefined(isolate), 1, argv);
+  EXPECT_FALSE(try_catch.HasCaught());
+  EXPECT_EQ("", try_catch.GetStackTrace());
 
   EXPECT_EQ(191, obj->value());
 }

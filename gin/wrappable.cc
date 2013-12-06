@@ -34,7 +34,7 @@ v8::Handle<v8::Object> Wrappable::CreateWrapper(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(info);
   CHECK(!templ.IsEmpty());  // Don't forget to register an object template.
-  CHECK(templ->InternalFieldCount() == kNumberOfInternalFields);
+  CHECK_EQ(kNumberOfInternalFields, templ->InternalFieldCount());
   v8::Handle<v8::Object> wrapper = templ->NewInstance();
   wrapper->SetAlignedPointerInInternalField(kWrapperInfoIndex, info);
   wrapper->SetAlignedPointerInInternalField(kEncodedValueIndex, this);

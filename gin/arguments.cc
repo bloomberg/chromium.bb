@@ -45,10 +45,4 @@ void Arguments::ThrowTypeError(const std::string& message) {
       StringToV8(isolate_, message)));
 }
 
-template<>
-bool Arguments::GetNext<Arguments>(Arguments* out) {
-  *out = *this;
-  return true;
-}
-
 }  // namespace gin

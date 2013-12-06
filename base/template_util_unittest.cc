@@ -76,5 +76,55 @@ COMPILE_ASSERT(!is_class<char*>::value, IsClass);
 COMPILE_ASSERT(!is_class<int&>::value, IsClass);
 COMPILE_ASSERT(!is_class<char[3]>::value, IsClass);
 
+
+COMPILE_ASSERT(!is_member_function_pointer<int>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(!is_member_function_pointer<int*>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(!is_member_function_pointer<void*>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(!is_member_function_pointer<AStruct>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(!is_member_function_pointer<AStruct*>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(!is_member_function_pointer<int(*)(int)>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(!is_member_function_pointer<int(*)(int, int)>::value,
+               IsMemberFunctionPointer);
+
+COMPILE_ASSERT(is_member_function_pointer<void (AStruct::*)()>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<void (AStruct::*)(int)>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<int (AStruct::*)(int)>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<int (AStruct::*)(int) const>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<int (AStruct::*)(int, int)>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<
+                 int (AStruct::*)(int, int) const>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<
+                 int (AStruct::*)(int, int, int)>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<
+                 int (AStruct::*)(int, int, int) const>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<
+                 int (AStruct::*)(int, int, int, int)>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(is_member_function_pointer<
+                 int (AStruct::*)(int, int, int, int) const>::value,
+               IsMemberFunctionPointer);
+
+// False because we don't have a specialization for 5 params yet.
+COMPILE_ASSERT(!is_member_function_pointer<
+                 int (AStruct::*)(int, int, int, int, int)>::value,
+               IsMemberFunctionPointer);
+COMPILE_ASSERT(!is_member_function_pointer<
+                 int (AStruct::*)(int, int, int, int, int) const>::value,
+               IsMemberFunctionPointer);
+
 }  // namespace
 }  // namespace base

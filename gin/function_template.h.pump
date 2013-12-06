@@ -29,15 +29,23 @@ namespace gin {
 
 class PerIsolateData;
 
+enum CreateFunctionTemplateFlags {
+  HolderIsFirstArgument = 1 << 0,
+};
+
 namespace internal {
 
 template<typename T>
-struct RemoveConstRef {
-  typedef T Type;
+struct CallbackParamTraits {
+  typedef T LocalType;
 };
 template<typename T>
-struct RemoveConstRef<const T&> {
-  typedef T Type;
+struct CallbackParamTraits<const T&> {
+  typedef T LocalType;
+};
+template<typename T>
+struct CallbackParamTraits<const T*> {
+  typedef T* LocalType;
 };
 
 
@@ -61,9 +69,10 @@ class CallbackHolderBase : public Wrappable {
 template<typename Sig>
 class CallbackHolder : public CallbackHolderBase {
  public:
-  CallbackHolder(const base::Callback<Sig>& callback)
-      : callback(callback) {}
+  CallbackHolder(const base::Callback<Sig>& callback, int flags)
+      : callback(callback), flags(flags) {}
   base::Callback<Sig> callback;
+  int flags;
  private:
   virtual ~CallbackHolder() {}
 };
@@ -111,39 +120,63 @@ struct Invoker<void$for ARG [[, P$(ARG)]]$for VOID [[, void]]> {
 
 ]]
 
+template<typename T>
+bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
+                     T* result) {
+  if (is_first && (create_flags & HolderIsFirstArgument) != 0) {
+    return args->GetHolder(result);
+  } else {
+    return args->GetNext(result);
+  }
+}
+
+// For advanced use cases, we allow callers to request the unparsed Arguments
+// object and poke around in it directly.
+inline bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
+                            Arguments* result) {
+  *result = *args;
+  return true;
+}
+
+
 // DispatchToCallback converts all the JavaScript arguments to C++ types and
 // invokes the base::Callback.
+template<typename Sig>
+struct Dispatcher {
+};
+
 $range ARITY 0..MAX_ARITY
 $for ARITY [[
 $range ARG 1..ARITY
 
 template<typename R$for ARG [[, typename P$(ARG)]]>
-static void DispatchToCallback(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-  CallbackHolderBase* holder_base = NULL;
-  CHECK(args.GetData(&holder_base));
+struct Dispatcher<R($for ARG , [[P$(ARG)]])> {
+  static void DispatchToCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& info) {
+    Arguments args(info);
+    CallbackHolderBase* holder_base = NULL;
+    CHECK(args.GetData(&holder_base));
 
-  typedef CallbackHolder<R($for ARG , [[P$(ARG)]])> HolderT;
-  HolderT* holder = static_cast<HolderT*>(holder_base);
+    typedef CallbackHolder<R($for ARG , [[P$(ARG)]])> HolderT;
+    HolderT* holder = static_cast<HolderT*>(holder_base);
 
 $if ARITY != 0 [[
 
 
-$for ARG [[  typename RemoveConstRef<P$(ARG)>::Type a$(ARG);
+$for ARG [[    typename CallbackParamTraits<P$(ARG)>::LocalType a$(ARG);
 
 ]]
-  if (
-$for ARG  ||
-      [[!args.GetNext(&a$(ARG))]]) {
-    args.ThrowError();
-    return;
+    if ($for ARG  ||
+        [[!GetNextArgument(&args, holder->flags, $if ARG == 1 [[true]] $else [[false]], &a$(ARG))]]) {
+      args.ThrowError();
+      return;
+    }
+
+]]
+
+    Invoker<R$for ARG [[, P$(ARG)]]>::Go(&args, holder->callback$for ARG [[, a$(ARG)]]);
   }
-
-]]
-
-  Invoker<R$for ARG [[, P$(ARG)]]>::Go(&args, holder->callback$for ARG [[, a$(ARG)]]);
-}
+};
 
 ]]
 
@@ -163,26 +196,21 @@ struct Converter<internal::CallbackHolderBase*>
     : public WrappableConverter<internal::CallbackHolderBase> {};
 
 
-// Creates a v8::FunctionTemplate that will run the provided base::Callback each
-// time it is called. JavaScript arguments and return values are converted via
-// gin::Converter.
-$range ARITY 0..MAX_ARITY
-$for ARITY [[
-$range ARG 1..ARITY
-
-template<typename R$for ARG [[, typename P$(ARG)]]>
+// CreateFunctionTemplate creates a v8::FunctionTemplate that will create
+// JavaScript functions that execute a provided C++ function or base::Callback.
+// JavaScript arguments are automatically converted via gin::Converter, as is
+// the return value of the C++ function, if any.
+template<typename Sig>
 v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
-    v8::Isolate* isolate,
-    const base::Callback<R($for ARG , [[P$(ARG)]])> callback) {
-  typedef internal::CallbackHolder<R($for ARG , [[P$(ARG)]])> HolderT;
-  gin::Handle<HolderT> holder = CreateHandle(isolate, new HolderT(callback));
+    v8::Isolate* isolate, const base::Callback<Sig> callback,
+    int callback_flags = 0) {
+  typedef internal::CallbackHolder<Sig> HolderT;
+  gin::Handle<HolderT> holder = CreateHandle(
+      isolate, new HolderT(callback, callback_flags));
   return v8::FunctionTemplate::New(
-      isolate,
-      &internal::DispatchToCallback<R$for ARG [[, P$(ARG)]]>,
+      &internal::Dispatcher<Sig>::DispatchToCallback,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }
-
-]]
 
 }  // namespace gin
 

@@ -6,7 +6,6 @@
 
 #include <sstream>
 
-#include "base/logging.h"
 #include "gin/converter.h"
 
 namespace gin {
@@ -22,6 +21,10 @@ bool TryCatch::HasCaught() {
 }
 
 std::string TryCatch::GetStackTrace() {
+  if (!HasCaught()) {
+    return "";
+  }
+
   std::stringstream ss;
   v8::Handle<v8::Message> message = try_catch_.Message();
   ss << V8ToString(message->Get()) << std::endl

@@ -20,8 +20,7 @@ class Arguments {
   ~Arguments();
 
   template<typename T>
-  // TODO(aa): Rename GetHolder().
-  bool Holder(T* out) {
+  bool GetHolder(T* out) {
     return ConvertFromV8(isolate_, info_->Holder(), out);
   }
 
@@ -74,9 +73,6 @@ class Arguments {
   int next_;
   bool insufficient_arguments_;
 };
-
-template<>
-bool Arguments::GetNext<Arguments>(Arguments* out);
 
 }  // namespace gin
 

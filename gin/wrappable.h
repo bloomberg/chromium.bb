@@ -78,7 +78,7 @@ struct WrappableConverter {
     return Converter<Wrappable*>::ToV8(isolate, val);
   }
   static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val, T** out) {
-    Wrappable* wrappable = 0;
+    Wrappable* wrappable = NULL;
     if (!Converter<Wrappable*>::FromV8(isolate, val, &wrappable)
         || wrappable->GetWrapperInfo() != &T::kWrapperInfo)
       return false;

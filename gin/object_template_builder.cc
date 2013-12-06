@@ -19,6 +19,14 @@ ObjectTemplateBuilder& ObjectTemplateBuilder::SetImpl(
   return *this;
 }
 
+ObjectTemplateBuilder& ObjectTemplateBuilder::SetPropertyImpl(
+    const base::StringPiece& name, v8::Handle<v8::FunctionTemplate> getter,
+    v8::Handle<v8::FunctionTemplate> setter) {
+  template_->SetAccessorProperty(StringToSymbol(isolate_, name), getter,
+                                 setter);
+  return *this;
+}
+
 v8::Local<v8::ObjectTemplate> ObjectTemplateBuilder::Build() {
   v8::Local<v8::ObjectTemplate> result = template_;
   template_.Clear();
