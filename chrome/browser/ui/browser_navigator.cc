@@ -42,6 +42,9 @@
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/common/extension.h"
 
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#endif
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
@@ -500,6 +503,29 @@ void Navigate(NavigateParams* params) {
   params->browser = GetBrowserForDisposition(params);
   if (!params->browser)
     return;
+
+#if defined(USE_ASH)
+  if (source_browser && source_browser != params->browser) {
+    // When the newly created browser was spawned by a browser which visits
+    // another user's desktop, it should be shown on the same desktop as the
+    // originating one. (This is part of the desktop separation per profile).
+    MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
+    // Some unit tests have no manager instantiated.
+    if (manager) {
+      aura::Window* src_window = source_browser->window()->GetNativeWindow();
+      aura::Window* new_window = params->browser->window()->GetNativeWindow();
+      const std::string& src_user =
+          manager->GetUserPresentingWindow(src_window);
+      if (src_user != manager->GetUserPresentingWindow(new_window)) {
+        // Once the window gets presented, it should be shown on the same
+        // desktop as the desktop of the creating browser. Note that this
+        // command will not show the window if it wasn't shown yet by the
+        // browser creation.
+        manager->ShowWindowForUser(new_window, src_user);
+      }
+    }
+  }
+#endif
 
   // Navigate() must not return early after this point.
 

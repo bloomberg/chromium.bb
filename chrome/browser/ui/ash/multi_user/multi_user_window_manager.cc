@@ -78,6 +78,8 @@ void MultiUserWindowManager::DeleteInstance() {
 void MultiUserWindowManager::SetInstanceForTest(
     MultiUserWindowManager* instance,
     MultiProfileMode mode) {
+  if (g_instance)
+    DeleteInstance();
   g_instance = instance;
   multi_user_mode_ = mode;
 }
