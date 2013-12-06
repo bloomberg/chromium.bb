@@ -355,8 +355,7 @@ TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
 }
 
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_NoType) {
-  // These two should be true. See http://crbug.com/164303.
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       std::string(), no_codecs(), kUsesAes));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       std::string(), no_codecs(), kUsesAesParent));

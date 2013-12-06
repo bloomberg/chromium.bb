@@ -235,8 +235,6 @@ void KeySystems::AddSupportedType(const std::string& mime_type,
   net::ParseCodecString(codecs_list, &mime_type_codecs, false);
 
   CodecSet codecs(mime_type_codecs.begin(), mime_type_codecs.end());
-  // Support the MIME type string alone, without codec(s) specified.
-  codecs.insert(std::string());
 
   MimeTypeMap& mime_types_map = properties->types;
   // mime_types_map must not be repeated for a given key system.
@@ -253,15 +251,23 @@ bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
     const std::string& mime_type,
     const std::string& codec,
     const std::string& key_system) {
+  DCHECK(!mime_type.empty() || codec.empty());
+
   KeySystemPropertiesMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end())
     return false;
 
+  if (mime_type.empty())
+    return true;
+
   const MimeTypeMap& mime_types_map = key_system_iter->second.types;
   MimeTypeMap::const_iterator mime_iter = mime_types_map.find(mime_type);
   if (mime_iter == mime_types_map.end())
     return false;
+
+  if (codec.empty())
+    return true;
 
   const CodecSet& codecs = mime_iter->second;
   return (codecs.find(codec) != codecs.end());
