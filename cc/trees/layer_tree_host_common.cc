@@ -1825,21 +1825,6 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.render_target = layer->parent()->render_target();
   }
 
-  // Mark whether a layer could be drawn directly to the back buffer, for
-  // example when it could use LCD text even though it's in a non-contents
-  // opaque layer.  This means that it can't be drawn to an intermediate
-  // render target and also that no blending is applied to the layer as a whole
-  // (meaning that its contents don't have to be pre-composited into a bitmap or
-  // a render target).
-  //
-  // Ignoring animations is an optimization,
-  // as it means that we're going to need some retained resources for this
-  // layer in the near future even if its opacity is 1 now.
-  layer_draw_properties.can_draw_directly_to_backbuffer =
-      IsRootLayer(layer_draw_properties.render_target) &&
-      layer->draw_properties().opacity == 1.f &&
-      !animating_opacity_to_screen;
-
   if (adjust_text_aa)
     layer_draw_properties.can_use_lcd_text = layer_can_use_lcd_text;
 

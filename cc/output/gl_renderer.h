@@ -47,16 +47,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       OutputSurface* output_surface,
       ResourceProvider* resource_provider,
       TextureMailboxDeleter* texture_mailbox_deleter,
-      int highp_threshold_min,
-      bool use_skia_gpu_backend);
+      int highp_threshold_min);
 
   virtual ~GLRenderer();
 
   virtual const RendererCapabilities& Capabilities() const OVERRIDE;
 
   blink::WebGraphicsContext3D* Context();
-
-  virtual void ViewportChanged() OVERRIDE;
 
   // Waits for rendering to finish.
   virtual void Finish() OVERRIDE;
@@ -78,8 +75,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                           const char* command,
                           const char* file,
                           int line);
-
-  bool CanUseSkiaGPUBackend() const;
 
  protected:
   GLRenderer(RendererClient* client,
@@ -220,7 +215,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                       scoped_ptr<CopyOutputRequest> request,
                       bool success);
 
-  void ReinitializeGrCanvas();
   void ReinitializeGLState();
 
   virtual void DiscardBackbuffer() OVERRIDE;

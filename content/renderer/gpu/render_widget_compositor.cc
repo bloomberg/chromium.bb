@@ -96,8 +96,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kEnablePerTilePainting);
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
-  settings.force_direct_layer_drawing =
-      cmd->HasSwitch(cc::switches::kForceDirectLayerDrawing);
   settings.touch_hit_testing =
       !cmd->HasSwitch(cc::switches::kDisableCompositorTouchHitTesting);
 

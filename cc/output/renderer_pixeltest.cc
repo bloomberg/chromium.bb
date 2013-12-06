@@ -147,16 +147,6 @@ typedef ::testing::Types<GLRenderer,
                          SoftwareRendererWithExpandedViewport> RendererTypes;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
 
-typedef ::testing::Types<GLRenderer,
-                         GLRendererWithSkiaGPUBackend,
-                         SoftwareRenderer> RendererTypesWithSkiaGPUBackend;
-template <typename RendererType>
-class RendererPixelTestWithSkiaGPUBackend
-    : public RendererPixelTest<RendererType> {
-};
-TYPED_TEST_CASE(RendererPixelTestWithSkiaGPUBackend,
-                RendererTypesWithSkiaGPUBackend);
-
 // All pixels can be off by one, but any more than that is an error.
 class FuzzyPixelOffByOneComparator : public FuzzyPixelComparator {
  public:
@@ -1625,10 +1615,9 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
       FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
+TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
-  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
 
@@ -1671,7 +1660,6 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
                     texture_format,
                     viewport,
                     1.f,
-                    use_skia_gpu_backend,
                     blue_pile);
   pass->quad_list.push_back(blue_quad.PassAs<DrawQuad>());
 
@@ -1696,7 +1684,6 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
                      texture_format,
                      viewport,
                      1.f,
-                     use_skia_gpu_backend,
                      green_pile);
   pass->quad_list.push_back(green_quad.PassAs<DrawQuad>());
 
@@ -1714,7 +1701,6 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
 TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
-  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   ResourceFormat texture_format = RGBA_8888;
 
   RenderPass::Id id(1, 1);
@@ -1744,7 +1730,6 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
                      texture_format,
                      viewport,
                      1.f,
-                     use_skia_gpu_backend,
                      green_pile);
   pass->quad_list.push_back(green_quad.PassAs<DrawQuad>());
 
@@ -1769,7 +1754,6 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
                      texture_format,
                      viewport,
                      1.f,
-                     use_skia_gpu_backend,
                      white_pile);
   pass->quad_list.push_back(white_quad.PassAs<DrawQuad>());
 
@@ -1807,7 +1791,6 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
 
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
-  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   ResourceFormat texture_format = RGBA_8888;
 
   RenderPass::Id id(1, 1);
@@ -1847,7 +1830,6 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
                      texture_format,
                      viewport,
                      1.f,
-                     use_skia_gpu_backend,
                      pile);
   pass->quad_list.push_back(quad.PassAs<DrawQuad>());
 
@@ -1863,11 +1845,10 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
       ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
+TYPED_TEST(RendererPixelTest,
            PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
-  bool use_skia_gpu_backend = this->UseSkiaGPUBackend();
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
 
@@ -1906,7 +1887,6 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
                       texture_format,
                       green_rect1,
                       1.f,
-                      use_skia_gpu_backend,
                       green_pile);
   pass->quad_list.push_back(green_quad1.PassAs<DrawQuad>());
 
@@ -1919,7 +1899,6 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
                       texture_format,
                       green_rect2,
                       1.f,
-                      use_skia_gpu_backend,
                       green_pile);
   pass->quad_list.push_back(green_quad2.PassAs<DrawQuad>());
 
@@ -1991,7 +1970,6 @@ TYPED_TEST(RendererPixelTestWithSkiaGPUBackend,
                     texture_format,
                     content_union_rect,
                     contents_scale,
-                    use_skia_gpu_backend,
                     pile);
   pass->quad_list.push_back(blue_quad.PassAs<DrawQuad>());
 

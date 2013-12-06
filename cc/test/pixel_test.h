@@ -83,24 +83,6 @@ class RendererPixelTest : public PixelTest {
   virtual void SetUp() OVERRIDE;
 };
 
-// A simple wrapper to differentiate a renderer that should use ganesh
-// and one that shouldn't in templates.
-class GLRendererWithSkiaGPUBackend : public GLRenderer {
- public:
-  GLRendererWithSkiaGPUBackend(RendererClient* client,
-                               const LayerTreeSettings* settings,
-                               OutputSurface* output_surface,
-                               ResourceProvider* resource_provider,
-                               TextureMailboxDeleter* texture_mailbox_deleter,
-                               int highp_threshold_min)
-      : GLRenderer(client,
-                   settings,
-                   output_surface,
-                   resource_provider,
-                   texture_mailbox_deleter,
-                   highp_threshold_min) {}
-};
-
 // Wrappers to differentiate renderers where the the output surface and viewport
 // have an externally determined size and offset.
 class GLRendererWithExpandedViewport : public GLRenderer {
@@ -131,7 +113,6 @@ class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
 template<>
 inline void RendererPixelTest<GLRenderer>::SetUp() {
   SetUpGLRenderer(false);
-  DCHECK(!renderer()->CanUseSkiaGPUBackend());
 }
 
 template<>
@@ -141,24 +122,6 @@ inline bool RendererPixelTest<GLRenderer>::UseSkiaGPUBackend() const {
 
 template<>
 inline bool RendererPixelTest<GLRenderer>::ExpandedViewport() const {
-  return false;
-}
-
-template<>
-inline void RendererPixelTest<GLRendererWithSkiaGPUBackend>::SetUp() {
-  SetUpGLRenderer(true);
-  DCHECK(renderer()->CanUseSkiaGPUBackend());
-}
-
-template <>
-inline bool
-RendererPixelTest<GLRendererWithSkiaGPUBackend>::UseSkiaGPUBackend() const {
-  return true;
-}
-
-template <>
-inline bool RendererPixelTest<GLRendererWithSkiaGPUBackend>::ExpandedViewport()
-    const {
   return false;
 }
 
@@ -214,8 +177,6 @@ inline bool RendererPixelTest<
 }
 
 typedef RendererPixelTest<GLRenderer> GLRendererPixelTest;
-typedef RendererPixelTest<GLRendererWithSkiaGPUBackend>
-    GLRendererSkiaGPUBackendPixelTest;
 typedef RendererPixelTest<SoftwareRenderer> SoftwareRendererPixelTest;
 
 }  // namespace cc

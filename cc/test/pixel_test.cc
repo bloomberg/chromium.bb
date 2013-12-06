@@ -173,8 +173,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
                                  output_surface_.get(),
                                  resource_provider_.get(),
                                  texture_mailbox_deleter_.get(),
-                                 0,
-                                 use_skia_gpu_backend).PassAs<DirectRenderer>();
+                                 0).PassAs<DirectRenderer>();
 }
 
 void PixelTest::ForceExpandedViewport(gfx::Size surface_expansion,

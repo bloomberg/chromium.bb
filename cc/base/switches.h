@@ -24,7 +24,6 @@ CC_EXPORT extern const char kDisableCompositedAntialiasing[];
 CC_EXPORT extern const char kEnableLCDText[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
-CC_EXPORT extern const char kForceDirectLayerDrawing[];
 CC_EXPORT extern const char kEnableGPURasterization[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 CC_EXPORT extern const char kNumRasterThreads[];

@@ -28,7 +28,6 @@ struct CC_EXPORT DrawProperties {
         contents_scale_y(1.f),
         num_descendants_that_draw_content(0),
         num_unclipped_descendants(0),
-        can_draw_directly_to_backbuffer(false),
         layer_or_descendant_has_copy_request(false),
         has_child_with_a_scroll_parent(false),
         sorted_for_recursion(false),
@@ -97,8 +96,6 @@ struct CC_EXPORT DrawProperties {
   // Number of descendants with a clip parent that is our ancestor. NB - this
   // does not include our clip children because they are clipped by us.
   int num_unclipped_descendants;
-
-  bool can_draw_directly_to_backbuffer;
 
   // If true, the layer or some layer in its sub-tree has a CopyOutputRequest
   // present on it.

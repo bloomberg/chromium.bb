@@ -30,7 +30,6 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               ResourceFormat texture_format,
               gfx::Rect content_rect,
               float contents_scale,
-              bool can_draw_direct_to_backbuffer,
               scoped_refptr<PicturePileImpl> picture_pile);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -43,12 +42,10 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               ResourceFormat texture_format,
               gfx::Rect content_rect,
               float contents_scale,
-              bool can_draw_direct_to_backbuffer,
               scoped_refptr<PicturePileImpl> picture_pile);
 
   gfx::Rect content_rect;
   float contents_scale;
-  bool can_draw_direct_to_backbuffer;
   scoped_refptr<PicturePileImpl> picture_pile;
   ResourceFormat texture_format;
 

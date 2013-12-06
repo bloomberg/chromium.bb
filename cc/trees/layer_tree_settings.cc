@@ -53,7 +53,6 @@ LayerTreeSettings::LayerTreeSettings()
       max_tiles_for_interest_area(128),
       max_unused_resource_memory_percentage(100),
       highp_threshold_min(0),
-      force_direct_layer_drawing(false),
       strict_layer_property_change_checking(false),
       use_map_image(false),
       ignore_root_layer_flings(false),

@@ -125,12 +125,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
 
-  bool draw_direct_to_backbuffer =
-      draw_properties().can_draw_directly_to_backbuffer &&
-      layer_tree_impl()->settings().force_direct_layer_drawing;
-
-  if (draw_direct_to_backbuffer ||
-      current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
+  if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
         quad_sink,
         shared_quad_state,
@@ -154,7 +149,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                  RGBA_8888,
                  quad_content_rect,
                  contents_scale,
-                 draw_direct_to_backbuffer,
                  pile_);
     if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
       append_quads_data->num_missing_tiles++;
@@ -276,7 +270,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      format,
                      iter->content_rect(),
                      iter->contents_scale(),
-                     draw_direct_to_backbuffer,
                      pile_);
         draw_quad = quad.PassAs<DrawQuad>();
         break;
@@ -1159,9 +1152,6 @@ bool PictureLayerImpl::CanHaveTilings() const {
   if (!DrawsContent())
     return false;
   if (pile_->recorded_region().IsEmpty())
-    return false;
-  if (draw_properties().can_draw_directly_to_backbuffer &&
-      layer_tree_impl()->settings().force_direct_layer_drawing)
     return false;
   return true;
 }

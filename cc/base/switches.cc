@@ -36,11 +36,6 @@ const char kEnableImplSidePainting[] = "enable-impl-side-painting";
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 
-// For any layers that can get drawn directly to screen, draw them with the Skia
-// GPU backend.  Only valid with gl rendering + threaded compositing + impl-side
-// painting.
-const char kForceDirectLayerDrawing[] = "force-direct-layer-drawing";
-
 // Allow heuristics to determine when a layer tile should be drawn with
 // the Skia GPU backend.  Only valid with GPU accelerated compositing +
 // impl-side painting.

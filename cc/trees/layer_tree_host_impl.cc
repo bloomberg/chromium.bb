@@ -1669,8 +1669,7 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
                                    output_surface,
                                    resource_provider,
                                    texture_mailbox_deleter_.get(),
-                                   settings_.highp_threshold_min,
-                                   settings_.force_direct_layer_drawing);
+                                   settings_.highp_threshold_min);
   } else if (output_surface->software_device()) {
     renderer_ = SoftwareRenderer::Create(
         this, &settings_, output_surface, resource_provider);

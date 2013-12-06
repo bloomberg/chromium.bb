@@ -148,8 +148,7 @@ scoped_ptr<GLRenderer> GLRenderer::Create(
     OutputSurface* output_surface,
     ResourceProvider* resource_provider,
     TextureMailboxDeleter* texture_mailbox_deleter,
-    int highp_threshold_min,
-    bool use_skia_gpu_backend) {
+    int highp_threshold_min) {
   scoped_ptr<GLRenderer> renderer(new GLRenderer(client,
                                                  settings,
                                                  output_surface,
@@ -158,12 +157,6 @@ scoped_ptr<GLRenderer> GLRenderer::Create(
                                                  highp_threshold_min));
   if (!renderer->Initialize())
     return scoped_ptr<GLRenderer>();
-  if (use_skia_gpu_backend) {
-    renderer->InitializeGrContext();
-    DCHECK(renderer->CanUseSkiaGPUBackend())
-        << "Requested Skia GPU backend, but can't use it.";
-  }
-
   return renderer.Pass();
 }
 
@@ -232,18 +225,6 @@ bool GLRenderer::Initialize() {
   return true;
 }
 
-void GLRenderer::InitializeGrContext() {
-  skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(
-      context_->createGrGLInterface());
-  if (!interface)
-    return;
-
-  gr_context_ = skia::AdoptRef(GrContext::Create(
-      kOpenGL_GrBackend,
-      reinterpret_cast<GrBackendContext>(interface.get())));
-  ReinitializeGrCanvas();
-}
-
 GLRenderer::~GLRenderer() {
   while (!pending_async_read_pixels_.empty()) {
     PendingAsyncReadPixels* pending_read = pending_async_read_pixels_.back();
@@ -297,10 +278,6 @@ void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,
 
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
 
-void GLRenderer::ViewportChanged() {
-  ReinitializeGrCanvas();
-}
-
 void GLRenderer::DiscardPixels(bool has_external_stencil_test,
                                bool draw_rect_covers_full_surface) {
   if (has_external_stencil_test || !draw_rect_covers_full_surface ||
@@ -337,12 +314,8 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame,
 #endif
   if (always_clear || frame->current_render_pass->has_transparent_background) {
     GLbitfield clear_bits = GL_COLOR_BUFFER_BIT;
-    // Only the Skia GPU backend uses the stencil buffer.  No need to clear it
-    // otherwise.
-    if (always_clear || CanUseSkiaGPUBackend()) {
-      GLC(context_, context_->clearStencil(0));
+    if (always_clear)
       clear_bits |= GL_STENCIL_BUFFER_BIT;
-    }
     context_->clear(clear_bits);
   }
 }
@@ -355,6 +328,7 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 
   MakeContextCurrent();
 
+  // TODO(enne): Do we need to reinitialize all of this state per frame?
   ReinitializeGLState();
 }
 
@@ -1776,57 +1750,8 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
                    program->vertex_shader().matrix_location());
 }
 
-void GLRenderer::DrawPictureQuadDirectToBackbuffer(
-    const DrawingFrame* frame,
-    const PictureDrawQuad* quad) {
-  DCHECK(CanUseSkiaGPUBackend());
-  DCHECK_EQ(quad->opacity(), 1.f) << "Need to composite to a bitmap or a "
-                                     "render surface for non-1 opacity quads";
-
-  // TODO(enne): This should be done more lazily / efficiently.
-  gr_context_->resetContext();
-
-  // Reset the canvas matrix to identity because the clip rect is in target
-  // space.
-  SkMatrix sk_identity;
-  sk_identity.setIdentity();
-  sk_canvas_->setMatrix(sk_identity);
-
-  if (is_scissor_enabled_) {
-    sk_canvas_->clipRect(gfx::RectToSkRect(scissor_rect_),
-                         SkRegion::kReplace_Op);
-  } else {
-    sk_canvas_->clipRect(gfx::RectToSkRect(client_->DeviceViewport()),
-                         SkRegion::kReplace_Op);
-  }
-
-  gfx::Transform contents_device_transform = frame->window_matrix *
-    frame->projection_matrix * quad->quadTransform();
-  contents_device_transform.Translate(quad->rect.x(),
-                                      quad->rect.y());
-  contents_device_transform.FlattenTo2d();
-  SkMatrix sk_device_matrix;
-  gfx::TransformToFlattenedSkMatrix(contents_device_transform,
-                                    &sk_device_matrix);
-  sk_canvas_->setMatrix(sk_device_matrix);
-
-  quad->picture_pile->RasterDirect(
-      sk_canvas_.get(), quad->content_rect, quad->contents_scale, NULL);
-
-  // Flush any drawing buffers that have been deferred.
-  sk_canvas_->flush();
-
-  // TODO(enne): This should be done more lazily / efficiently.
-  ReinitializeGLState();
-}
-
 void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
                                  const PictureDrawQuad* quad) {
-  if (quad->can_draw_direct_to_backbuffer && CanUseSkiaGPUBackend()) {
-    DrawPictureQuadDirectToBackbuffer(frame, quad);
-    return;
-  }
-
   if (on_demand_tile_raster_bitmap_.width() != quad->texture_size.width() ||
       on_demand_tile_raster_bitmap_.height() != quad->texture_size.height()) {
     on_demand_tile_raster_bitmap_.setConfig(
@@ -3137,26 +3062,6 @@ void GLRenderer::CleanupSharedObjects() {
   ReleaseRenderPassTextures();
 }
 
-void GLRenderer::ReinitializeGrCanvas() {
-  if (!CanUseSkiaGPUBackend())
-    return;
-
-  GrBackendRenderTargetDesc desc;
-  desc.fWidth = client_->DeviceViewport().width();
-  desc.fHeight = client_->DeviceViewport().height();
-  desc.fConfig = kRGBA_8888_GrPixelConfig;
-  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-  desc.fSampleCnt = 1;
-  desc.fStencilBits = 8;
-  desc.fRenderTargetHandle = 0;
-
-  skia::RefPtr<GrSurface> surface(
-      skia::AdoptRef(gr_context_->wrapBackendRenderTarget(desc)));
-  skia::RefPtr<SkBaseDevice> device(
-      skia::AdoptRef(SkGpuDevice::Create(surface.get())));
-  sk_canvas_ = skia::AdoptRef(new SkCanvas(device.get()));
-}
-
 void GLRenderer::ReinitializeGLState() {
   // Bind the common vertex attributes used for drawing all the layers.
   shared_geometry_->PrepareForDraw();
@@ -3176,12 +3081,6 @@ void GLRenderer::ReinitializeGLState() {
   is_scissor_enabled_ = false;
   GLC(context_, context_->disable(GL_SCISSOR_TEST));
   scissor_rect_needs_reset_ = true;
-}
-
-bool GLRenderer::CanUseSkiaGPUBackend() const {
-  // The Skia GPU backend requires a stencil buffer.  See ReinitializeGrCanvas
-  // implementation.
-  return gr_context_ && context_->getContextAttributes().stencil;
 }
 
 bool GLRenderer::IsContextLost() {

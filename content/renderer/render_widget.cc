@@ -895,11 +895,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   attributes.stencil = false;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(cc::switches::kForceDirectLayerDrawing)) {
-    attributes.stencil = true;
-    attributes.depth = true;
-  }
-
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (!fallback) {
     context_provider = ContextProviderCommandBuffer::Create(
