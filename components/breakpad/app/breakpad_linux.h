@@ -7,19 +7,16 @@
 #ifndef COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_
 #define COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_
 
-#include <string>
-
 #include "build/build_config.h"
 
 namespace breakpad {
 
 // Turns on the crash reporter in any process.
-extern void InitCrashReporter(const std::string& process_type);
+extern void InitCrashReporter();
 
 // Enables the crash reporter in child processes.
 #if defined(OS_ANDROID)
-extern void InitNonBrowserCrashReporterForAndroid(
-    const std::string& process_type);
+extern void InitNonBrowserCrashReporterForAndroid();
 #endif
 
 // Checks if crash reporting is enabled. Note that this is not the same as

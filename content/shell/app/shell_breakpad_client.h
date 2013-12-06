@@ -43,9 +43,6 @@ class ShellBreakpadClient : public breakpad::BreakpadClient {
   virtual int GetAndroidMinidumpDescriptor() OVERRIDE;
 #endif
 
-  virtual bool EnableBreakpadForProcess(
-      const std::string& process_type) OVERRIDE;
-
 private:
   DISALLOW_COPY_AND_ASSIGN(ShellBreakpadClient);
 };

@@ -31,6 +31,7 @@
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "components/breakpad/app/breakpad_client.h"
 #include "components/breakpad/app/hard_error_handler_win.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
@@ -130,7 +131,7 @@ DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
 // of pepper/renderer processes is reduced.
 DWORD WINAPI DumpForHangDebuggingThread(void*) {
   DumpProcessWithoutCrash();
-  VLOG(1) << "dumped for hang debugging";
+  LOG(INFO) << "dumped for hang debugging";
   return 0;
 }
 
@@ -486,6 +487,13 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   if (base::win::IsMetroProcess())
     return false;
 
+  // Only show this for the browser process. See crbug.com/132119.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  if (!process_type.empty())
+    return false;
+
   base::string16 message;
   base::string16 title;
   bool is_rtl_locale;
@@ -657,7 +665,7 @@ void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
   previous_filter = SetUnhandledExceptionFilter(filter);
 }
 
-void InitCrashReporter(const std::string& process_type_switch) {
+void InitCrashReporter() {
   const CommandLine& command = *CommandLine::ForCurrentProcess();
   if (command.HasSwitch(switches::kDisableBreakpad))
     return;
@@ -665,7 +673,8 @@ void InitCrashReporter(const std::string& process_type_switch) {
   // Disable the message box for assertions.
   _CrtSetReportMode(_CRT_ASSERT, 0);
 
-  std::wstring process_type = ASCIIToWide(process_type_switch);
+  std::wstring process_type =
+    command.GetSwitchValueNative(switches::kProcessType);
   if (process_type.empty())
     process_type = L"browser";
 

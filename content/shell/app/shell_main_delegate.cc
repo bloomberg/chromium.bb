@@ -192,23 +192,23 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 void ShellMainDelegate::PreSandboxStartup() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
-    std::string process_type =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kProcessType);
     breakpad::SetBreakpadClient(g_shell_breakpad_client.Pointer());
 #if defined(OS_MACOSX)
     base::mac::DisableOSCrashDumps();
-    breakpad::InitCrashReporter(process_type);
-    breakpad::InitCrashProcessInfo(process_type);
+    breakpad::InitCrashReporter();
+    breakpad::InitCrashProcessInfo();
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
+    std::string process_type =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kProcessType);
     if (process_type != switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
       if (process_type.empty())
-        breakpad::InitCrashReporter(process_type);
+        breakpad::InitCrashReporter();
       else
-        breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+        breakpad::InitNonBrowserCrashReporterForAndroid();
 #else
-      breakpad::InitCrashReporter(process_type);
+      breakpad::InitCrashReporter();
 #endif
     }
 #elif defined(OS_WIN)
@@ -216,7 +216,7 @@ void ShellMainDelegate::PreSandboxStartup() {
         SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX;
     UINT existing_flags = SetErrorMode(new_flags);
     SetErrorMode(existing_flags | new_flags);
-    breakpad::InitCrashReporter(process_type);
+    breakpad::InitCrashReporter();
 #endif
   }
 
@@ -243,10 +243,7 @@ int ShellMainDelegate::RunProcess(
 void ShellMainDelegate::ZygoteForked() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
-    std::string process_type =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kProcessType);
-    breakpad::InitCrashReporter(process_type);
+    breakpad::InitCrashReporter();
   }
 }
 #endif

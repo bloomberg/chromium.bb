@@ -15,10 +15,10 @@ bool IsCrashReporterEnabled() {
   return false;
 }
 
-void InitCrashProcessInfo(const std::string& process_type_switch) {
+void InitCrashProcessInfo() {
 }
 
-void InitCrashReporter(const std::string& process_type) {
+void InitCrashReporter() {
 }
 
 }  // namespace breakpad

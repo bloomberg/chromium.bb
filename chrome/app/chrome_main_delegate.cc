@@ -478,7 +478,7 @@ void ChromeMainDelegate::InitMacCrashReporter(const CommandLine& command_line,
   // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally,
   // Breakpad initialization could occur sooner, preferably even before the
   // framework dylib is even loaded, to catch potential early crashes.
-  breakpad::InitCrashReporter(process_type);
+  breakpad::InitCrashReporter();
 
 #if defined(NDEBUG)
   bool is_debug_build = false;
@@ -555,7 +555,7 @@ void ChromeMainDelegate::InitMacCrashReporter(const CommandLine& command_line,
   }
 
   if (breakpad::IsCrashReporterEnabled())
-    breakpad::InitCrashProcessInfo(process_type);
+    breakpad::InitCrashProcessInfo();
 }
 #endif  // defined(OS_MACOSX)
 
@@ -708,11 +708,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
   if (process_type != switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
     if (process_type.empty())
-      breakpad::InitCrashReporter(process_type);
+      breakpad::InitCrashReporter();
     else
-      breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+      breakpad::InitNonBrowserCrashReporterForAndroid();
 #else  // !defined(OS_ANDROID)
-    breakpad::InitCrashReporter(process_type);
+    breakpad::InitCrashReporter();
 #endif  // defined(OS_ANDROID)
   }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -818,13 +818,10 @@ void ChromeMainDelegate::ZygoteForked() {
 
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
   // this up for the browser process in a different manner.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
-  breakpad::InitCrashReporter(process_type);
+  breakpad::InitCrashReporter();
 
   // Reset the command line for the newly spawned process.
-  crash_keys::SetSwitchesFromCommandLine(command_line);
+  crash_keys::SetSwitchesFromCommandLine(CommandLine::ForCurrentProcess());
 }
 
 #endif  // OS_MACOSX

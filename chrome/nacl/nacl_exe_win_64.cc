@@ -21,7 +21,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   CommandLine::Init(0, NULL);
 
   breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
-  breakpad::InitCrashReporter(std::string());
+  breakpad::InitCrashReporter();
 
   return nacl::NaClWin64Main();
 }

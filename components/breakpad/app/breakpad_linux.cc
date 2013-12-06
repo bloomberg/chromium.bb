@@ -40,6 +40,7 @@
 #include "components/breakpad/app/breakpad_client.h"
 #include "components/breakpad/app/breakpad_linux_impl.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_ANDROID)
 #include <android/log.h>
@@ -704,8 +705,7 @@ bool CrashDoneInProcessNoUpload(
   return FinalizeCrashDoneAndroid();
 }
 
-void EnableNonBrowserCrashDumping(const std::string& process_type,
-                                  int minidump_fd) {
+void EnableNonBrowserCrashDumping(int minidump_fd) {
   // This will guarantee that the BuildInfo has been initialized and subsequent
   // calls will not require memory allocation.
   base::android::BuildInfo::GetInstance();
@@ -729,6 +729,9 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
 
   g_is_crash_reporter_enabled = true;
   // Save the process type (it is leaked).
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const std::string process_type =
+      parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   const size_t process_type_len = process_type.size() + 1;
   g_process_type = new char[process_type_len];
   strncpy(g_process_type, process_type.c_str(), process_type_len);
@@ -1438,7 +1441,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
   (void) HANDLE_EINTR(sys_waitpid(child, NULL, 0));
 }
 
-void InitCrashReporter(const std::string& process_type) {
+void InitCrashReporter() {
 #if defined(OS_ANDROID)
   // This will guarantee that the BuildInfo has been initialized and subsequent
   // calls will not require memory allocation.
@@ -1449,6 +1452,8 @@ void InitCrashReporter(const std::string& process_type) {
   if (parsed_command_line.HasSwitch(switches::kDisableBreakpad))
     return;
 
+  const std::string process_type =
+      parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
     bool enable_breakpad = GetBreakpadClient()->GetCollectStatsConsent() ||
                            GetBreakpadClient()->IsRunningUnattended();
@@ -1464,7 +1469,11 @@ void InitCrashReporter(const std::string& process_type) {
     }
 
     EnableCrashDumping(GetBreakpadClient()->IsRunningUnattended());
-  } else if (GetBreakpadClient()->EnableBreakpadForProcess(process_type)) {
+  } else if (process_type == switches::kRendererProcess ||
+             process_type == switches::kPluginProcess ||
+             process_type == switches::kPpapiPluginProcess ||
+             process_type == switches::kZygoteProcess ||
+             process_type == switches::kGpuProcess) {
 #if defined(OS_ANDROID)
     NOTREACHED() << "Breakpad initialized with InitCrashReporter() instead of "
       "InitNonBrowserCrashReporter in " << process_type << " process.";
@@ -1499,7 +1508,7 @@ void InitCrashReporter(const std::string& process_type) {
 }
 
 #if defined(OS_ANDROID)
-void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
+void InitNonBrowserCrashReporterForAndroid() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableCrashReporter)) {
     // On Android we need to provide a FD to the file where the minidump is
@@ -1510,7 +1519,7 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
     if (minidump_fd == base::kInvalidPlatformFileValue) {
       NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
     } else {
-      EnableNonBrowserCrashDumping(process_type, minidump_fd);
+      EnableNonBrowserCrashDumping(minidump_fd);
     }
   }
 }

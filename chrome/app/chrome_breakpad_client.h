@@ -68,9 +68,6 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
   virtual void InstallAdditionalFilters(BreakpadRef breakpad) OVERRIDE;
 #endif
 
-  virtual bool EnableBreakpadForProcess(
-      const std::string& process_type) OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBreakpadClient);
 };

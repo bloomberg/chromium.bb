@@ -124,8 +124,4 @@ void BreakpadClient::InstallAdditionalFilters(BreakpadRef breakpad) {
 }
 #endif
 
-bool BreakpadClient::EnableBreakpadForProcess(const std::string& process_type) {
-  return false;
-}
-
 }  // namespace breakpad

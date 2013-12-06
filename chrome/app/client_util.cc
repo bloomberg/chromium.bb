@@ -286,10 +286,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   // widely deployed.
   env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);
 
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  std::string process_type =
-      cmd_line.GetSwitchValueASCII(switches::kProcessType);
-  breakpad::InitCrashReporter(process_type);
+  breakpad::InitCrashReporter();
   OnBeforeLaunch(file);
 
   DLL_MAIN entry_point =

@@ -47,15 +47,9 @@ int RunChrome(HINSTANCE instance) {
 
   bool exit_now = true;
   // We restarted because of a previous crash. Ask user if we should relaunch.
-  // Only show this for the browser process. See crbug.com/132119.
-  const std::string process_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType);
-  if (process_type.empty()) {
-    if (breakpad::ShowRestartDialogIfCrashed(&exit_now)) {
-      if (exit_now)
-        return content::RESULT_CODE_NORMAL_EXIT;
-    }
+  if (breakpad::ShowRestartDialogIfCrashed(&exit_now)) {
+    if (exit_now)
+      return content::RESULT_CODE_NORMAL_EXIT;
   }
 
   // Initialize the sandbox services.
