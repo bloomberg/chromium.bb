@@ -41,6 +41,13 @@ camera.views.GalleryBase = function(context, router, rootElement, name) {
    * @protected
    */
   this.pictures = [];
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.forceUpcomingFocusSync_ = false;
+
 };
 
 /**
@@ -188,18 +195,33 @@ camera.views.GalleryBase.prototype.currentPicture = function() {
 /**
  * @override
  */
+camera.views.GalleryBase.prototype.onActivate = function() {
+  // Tab indexes have to be recalculated, since they might have changed while
+  // the view wasn't active. Therefore, the restoring logic in the View class
+  // might have restored old tabIndex values.
+  for (var index = 0; index < this.pictures.length; index++) {
+    this.pictures[index].element.tabIndex =
+        (index == this.model.currentIndex) ? 0 : -1;
+  }
+};
+
+/**
+ * @override
+ */
 camera.views.GalleryBase.prototype.onCurrentIndexChanged = function(
     oldIndex, newIndex) {
   if (oldIndex !== null && oldIndex < this.model.length) {
+    this.pictures[oldIndex].element.tabIndex = -1;
     this.pictures[oldIndex].element.classList.remove('selected');
     this.pictures[oldIndex].element.setAttribute('aria-selected', 'false');
   }
 
   if (newIndex !== null && newIndex < this.model.length) {
+    this.pictures[newIndex].element.tabIndex = this.active ? 0 : -1;
     this.pictures[newIndex].element.classList.add('selected');
     this.pictures[newIndex].element.setAttribute('aria-selected', 'true');
 
-    this.ariaListNode().getAttribute('aria-activedescendant',
+    this.ariaListNode().setAttribute('aria-activedescendant',
         this.pictures[newIndex].element.id);
   }
 };
@@ -208,9 +230,16 @@ camera.views.GalleryBase.prototype.onCurrentIndexChanged = function(
  * @override
  */
 camera.views.GalleryBase.prototype.onPictureDeleting = function(index) {
-  this.pictures[index].element.parentNode.removeChild(
-    this.pictures[index].element);
+  var element = this.pictures[index].element;
   this.pictures.splice(index, 1);
+
+  // Hack to restore focus after removing an element. Note, that we restore
+  // focus only if there was something focused before. However, if the focus
+  // was on the selected element, then after removing it from DOM, there will
+  // be nothing focused, while we still want to restore the focus.
+  this.forceUpcomingFocusSync_ = document.activeElement == element;
+
+  element.parentNode.removeChild(element);
 };
 
 /**
@@ -286,3 +315,21 @@ camera.views.GalleryBase.prototype.ariaListNode = function() {
   throw new Error('Not implemented.');
 };
 
+/**
+ * Synchronizes focus with the selection, if it was previously set on anything
+ * else.
+ * @protected
+ */
+camera.views.GalleryBase.prototype.synchronizeFocus = function() {
+  // Force focusing only once, after deleting a picture. This is because, the
+  // focus might be lost since the deleted picture is removed from DOM.
+  var force = this.forceUpcomingFocusSync_;
+  this.forceUpcomingFocusSync_ = false;
+
+  var currentPicture = this.currentPicture();
+  if (currentPicture && (document.activeElement != document.body || force) &&
+      currentPicture.element.getAttribute('tabindex') !== undefined &&
+      currentPicture.element.getAttribute('tabindex') != -1) {
+    currentPicture.element.focus();
+  }
+};

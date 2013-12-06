@@ -93,6 +93,8 @@ camera.views.Browser.prototype = {
  * @override
  */
 camera.views.Browser.prototype.onEnter = function() {
+  if (this.model.currentIndex === null && this.model.length)
+    this.model.currentIndex = this.model.length - 1;
   this.onResize();
   this.scrollTracker_.start();
   this.updateButtons_();
@@ -102,18 +104,20 @@ camera.views.Browser.prototype.onEnter = function() {
 };
 
 /**
+ * @override
+ */
+camera.views.Browser.prototype.onActivate = function() {
+  camera.views.GalleryBase.prototype.onActivate.apply(this, arguments);
+  if (!this.scroller_.animating)
+    this.synchronizeFocus();
+};
+
+/**
  * Leaves the view.
  * @override
  */
 camera.views.Browser.prototype.onLeave = function() {
   this.scrollTracker_.stop();
-};
-
-/**
- * @override
- */
-camera.views.Browser.prototype.onActivate = function() {
-  document.querySelector('#browser').focus();
 };
 
 /**
@@ -194,8 +198,10 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
   setTimeout(function() {
     // If animating, then onScrollEnded() will be called again after it is
     // finished. Therefore, we can ignore this call.
-    if (!this.scroller_.animating)
+    if (!this.scroller_.animating) {
       this.updatePicturesResolutions_();
+      this.synchronizeFocus();
+    }
   }.bind(this), 0);
 };
 
@@ -271,8 +277,11 @@ camera.views.Browser.prototype.onPictureDeleting = function(index) {
 
   // Update the resolutions, since the current image might have changed
   // without scrolling and without scrolling. Use a timer, to wait until
-  // the picture is deleted from the model.
-  setTimeout(this.updatePicturesResolutions_.bind(this), 0);
+  // the picture is deleted from the model. Same for the focus.
+  setTimeout(function() {
+    this.updatePicturesResolutions_();
+    this.synchronizeFocus();
+  }.bind(this), 0);
 };
 
 /**
@@ -341,6 +350,7 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   var boundsPadder = browser.querySelector('.bounds-padder');
   var img = document.createElement('img');
   img.id = 'browser-picture-' + (this.lastPictureIndex_++);
+  img.tabIndex = -1;
   img.setAttribute('aria-role', 'option');
   img.setAttribute('aria-selected', 'false');
   browser.insertBefore(img, boundsPadder.nextSibling);
@@ -357,6 +367,10 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
     }
 
     this.model.currentIndex = this.model.pictures.indexOf(picture);
+  }.bind(this));
+  img.addEventListener('focus', function() {
+    if (this.model.currentIndex != this.model.pictures.indexOf(picture))
+      this.model.currentIndex = this.model.pictures.indexOf(picture);
   }.bind(this));
 };
 

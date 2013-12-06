@@ -169,8 +169,9 @@ camera.View.prototype.inactivate = function() {
   // Remember tabIndex attribute values, and set them to -1, so the elemenst
   // are not focusable.
   var childElements = this.rootElement_.querySelectorAll('[tabindex]');
-  var elementsArray = Array.prototype.slice.call(childElements).concat(
-      this.rootElement_);
+  var elementsArray = Array.prototype.slice.call(childElements);
+  if (this.rootElement_.getAttribute('tabindex') !== undefined)
+    elementsArray.push(this.rootElement_);
   this.tabIndexes_ = [];
   for (var index = 0; index < elementsArray.length; index++) {
     var element = elementsArray[index];

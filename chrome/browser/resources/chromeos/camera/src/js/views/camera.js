@@ -193,28 +193,37 @@ camera.views.Camera = function(context, router) {
   this.toolbarEffect_ = new camera.util.StyleEffect(
       function(args, callback) {
         var toolbar = document.querySelector('#toolbar');
-        var listWrapper = document.querySelector('#effects-wrapper');
+        var activeEffect = document.querySelector('#effects #effect-' +
+            this.currentEffectIndex_);
         if (args) {
           toolbar.classList.add('expanded');
-          listWrapper.setAttribute('tabIndex', 0);
         } else {
           toolbar.classList.remove('expanded');
-          // Make the list not-focusable if it is out of the screen.
-          listWrapper.removeAttribute('tabIndex');
-          if (document.activeElement == listWrapper)
+          // Make all of the effects non-focusable.
+          var elements = document.querySelectorAll('#effects li');
+          for (var index = 0; index < elements.length; index++) {
+            elements[index].tabIndex = -1;
+          }
+          // If something was focused before, then focus the toggle button.
+          if (document.activeElement != document.body)
             document.querySelector('#filters-toggle').focus();
         }
         camera.util.waitForTransitionCompletion(
             document.querySelector('#toolbar'), 500, function() {
-          // If the filters button was previously selected, then advance to
-          // the ribbon.
-          if (args && document.activeElement ==
-              document.querySelector('#filters-toggle')) {
-            listWrapper.focus();
+          // If the ribbon is opened, then make all of the items focusable.
+          if (args) {
+            activeEffect.tabIndex = 0;  // In the focusing order.
+
+            // If the filters button was previously selected, then advance to
+            // the ribbon.
+            if (document.activeElement ==
+                document.querySelector('#filters-toggle')) {
+              activeEffect.focus();
+            }
           }
           callback();
         });
-      });
+      }.bind(this));
 
   /**
    * Window controls animation effect wrapper.
@@ -295,7 +304,7 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.scrollTracker_ = new camera.util.ScrollTracker(
-      this.scroller_, function() {}, function() {});  // No callbacks.
+      this.scroller_, function() {}, this.onScrollEnded_.bind(this));
 
   /**
    * @type {string}
@@ -490,7 +499,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
 camera.views.Camera.prototype.onEnter = function() {
   if (!this.running_ && this.mainCanvas_ && this.mainFastCanvas_)
     this.start_();
-  this.scrollTracker_.start();
   this.performanceMonitor_.start();
   this.tracker_.start();
   this.onResize();
@@ -501,7 +509,6 @@ camera.views.Camera.prototype.onEnter = function() {
  * @override
  */
 camera.views.Camera.prototype.onLeave = function() {
-  this.scrollTracker_.stop();
   this.performanceMonitor_.stop();
   this.tracker_.stop();
 };
@@ -510,7 +517,16 @@ camera.views.Camera.prototype.onLeave = function() {
  * @override
  */
 camera.views.Camera.prototype.onActivate = function() {
-  window.focus();
+  this.scrollTracker_.start();
+  if (document.activeElement != document.body)
+    document.querySelector('#take-picture').focus();
+};
+
+/**
+ * @override
+ */
+camera.views.Camera.prototype.onInactivate = function() {
+  this.scrollTracker_.stop();
 };
 
 /**
@@ -617,6 +633,18 @@ camera.views.Camera.prototype.onPointerActivity_ = function(event) {
 };
 
 /**
+ * Handles end of scroll on the ribbon with effects.
+ * @private
+ */
+camera.views.Camera.prototype.onScrollEnded_ = function() {
+  if (document.activeElement != document.body && this.expanded_) {
+    var effect = document.querySelector('#effects #effect-' +
+        this.currentEffectIndex_);
+    effect.focus();
+  }
+};
+
+/**
  * Adds an effect to the user interface.
  * @param {camera.Effect} effect Effect to be added.
  * @private
@@ -646,9 +674,15 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
   item.setAttribute('i18n-aria-label', effect.getTitle());
   item.setAttribute('aria-role', 'option');
   item.setAttribute('aria-selected', 'false');
+  item.tabIndex = -1;
 
   // Assign events.
-  item.addEventListener('click',
+  item.addEventListener('click', function() {
+    if (this.currentEffectIndex_ == effectIndex)
+      this.previewProcessors_[effectIndex].effect.randomize();
+    this.setCurrentEffect_(effectIndex);
+  }.bind(this));
+  item.addEventListener('focus',
       this.setCurrentEffect_.bind(this, effectIndex));
 
   // Create the preview processor.
@@ -671,13 +705,24 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
   previousEffect.removeAttribute('selected');
   previousEffect.setAttribute('aria-selected', 'false');
 
+  if (this.expanded_)
+    previousEffect.tabIndex = -1;
+
   var effect = document.querySelector('#effects #effect-' + effectIndex);
   effect.setAttribute('selected', '');
   effect.setAttribute('aria-selected', 'true');
+  if (this.expanded_)
+    effect.tabIndex = 0;
   camera.util.ensureVisible(effect, this.scroller_);
 
-  if (this.currentEffectIndex_ == effectIndex)
-    this.previewProcessors_[effectIndex].effect.randomize();
+  // If there was something focused before, then synchronize the focus.
+  if (this.expanded_ && document.activeElement != document.body) {
+    // If not scrolling, then focus immediately. Otherwise, the element will
+    // be focused, when the scrolling is finished in onScrollEnded.
+    if (!this.scrollTracker_.scrolling && !this.scroller_.animating)
+      effect.focus();
+  }
+
   this.mainProcessor_.effect = this.previewProcessors_[effectIndex].effect;
   this.mainFastProcessor_.effect = this.previewProcessors_[effectIndex].effect;
 
@@ -685,6 +730,9 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
   listWrapper.setAttribute('aria-activedescendant', effect.id);
   listWrapper.setAttribute('aria-labelledby', effect.id);
   this.currentEffectIndex_ = effectIndex;
+
+  // Show the ribbon when switching effects.
+  this.setExpanded_(true);
 
   // TODO(mtomasz): This is a little racy, since setting may be run in parallel,
   // without guarantee which one will be written as the last one.

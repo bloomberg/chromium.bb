@@ -98,15 +98,8 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
  * @override
  */
 camera.views.Dialog.prototype.onActivate = function() {
-  document.querySelector('#dialog-popup').focus();
-};
-
-/**
- * @override
- */
-camera.views.Dialog.prototype.onInactivate = function() {
-  // Remove focus from the buttons (if focused).
-  document.activeElement.blur();
+  if (document.activeElement != document.body)
+    document.querySelector('#dialog-popup').focus();
 };
 
 /**

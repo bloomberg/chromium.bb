@@ -230,11 +230,6 @@ body:not(.controls-visible) .dynamic {
       url(../images/2x/topbar_button_close.png) 2x);
 }
 
-body.album #toolbar,
-body.browser #toolbar {
-  display: none;
-}
-
 #main-canvas-wrapper,
 #main-fast-canvas-wrapper,
 #main-canvas-wrapper canvas,
@@ -422,6 +417,24 @@ canvas {
 #buttons #take-picture:active {
   background-position: 0 -74px;
 }
+
+#buttons #take-picture:focus {
+  outline: none;
+  position: relative;
+}
+
+#buttons #take-picture:focus:after {
+  border: 2px solid rgba(229, 151, 0, 0.5);
+  border-radius: 20px;
+  bottom: -2px;
+  content: '';
+  display: block;
+  left: -2px;
+  position: absolute;
+  right: -2px;
+  top: -2px;
+}
+
 
 body.controls-visible #toolbar,
 body.controls-visible #header {
@@ -681,7 +694,6 @@ body:not(.dialog) #dialog {
   -webkit-box-orient: vertical;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-  outline: none;
   padding: 20px;
   display: -webkit-box;
   transition: -webkit-transform 200ms;

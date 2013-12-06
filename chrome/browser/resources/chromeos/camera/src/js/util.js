@@ -1055,7 +1055,7 @@ camera.util.getShortcutIdentifier = function(event) {
  * Makes all elements with a tabindex attribute unfocusable by mouse.
  */
 camera.util.makeElementsUnfocusableByMouse = function() {
-  var elements = document.querySelectorAll('*[tabindex]');
+  var elements = document.querySelectorAll('[tabindex]');
   for (var index = 0; index < elements.length; index++) {
     elements[index].addEventListener('mousedown', function(event) {
       event.preventDefault();
