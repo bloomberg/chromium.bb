@@ -64,23 +64,24 @@ class OneShotSelfDeletingTimerTester {
 
 class RepeatingTimerTester {
  public:
-  explicit RepeatingTimerTester(bool* did_run)
-      : did_run_(did_run), counter_(10) {
+  explicit RepeatingTimerTester(bool* did_run, const TimeDelta& delay)
+      : did_run_(did_run), counter_(10), delay_(delay) {
   }
 
   void Start() {
-    timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(10), this,
-                 &RepeatingTimerTester::Run);
+    timer_.Start(FROM_HERE, delay_, this, &RepeatingTimerTester::Run);
   }
  private:
   void Run() {
     if (--counter_ == 0) {
       *did_run_ = true;
+      timer_.Stop();
       base::MessageLoop::current()->QuitWhenIdle();
     }
   }
   bool* did_run_;
   int counter_;
+  TimeDelta delay_;
   base::RepeatingTimer<RepeatingTimerTester> timer_;
 };
 
@@ -131,11 +132,12 @@ void RunTest_OneShotSelfDeletingTimer(
   EXPECT_TRUE(did_run);
 }
 
-void RunTest_RepeatingTimer(base::MessageLoop::Type message_loop_type) {
+void RunTest_RepeatingTimer(base::MessageLoop::Type message_loop_type,
+                            const TimeDelta& delay) {
   base::MessageLoop loop(message_loop_type);
 
   bool did_run = false;
-  RepeatingTimerTester f(&did_run);
+  RepeatingTimerTester f(&did_run, delay);
   f.Start();
 
   base::MessageLoop::current()->Run();
@@ -143,11 +145,12 @@ void RunTest_RepeatingTimer(base::MessageLoop::Type message_loop_type) {
   EXPECT_TRUE(did_run);
 }
 
-void RunTest_RepeatingTimer_Cancel(base::MessageLoop::Type message_loop_type) {
+void RunTest_RepeatingTimer_Cancel(base::MessageLoop::Type message_loop_type,
+                                   const TimeDelta& delay) {
   base::MessageLoop loop(message_loop_type);
 
   bool did_run_a = false;
-  RepeatingTimerTester* a = new RepeatingTimerTester(&did_run_a);
+  RepeatingTimerTester* a = new RepeatingTimerTester(&did_run_a, delay);
 
   // This should run before the timer expires.
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
@@ -156,7 +159,7 @@ void RunTest_RepeatingTimer_Cancel(base::MessageLoop::Type message_loop_type) {
   a->Start();
 
   bool did_run_b = false;
-  RepeatingTimerTester b(&did_run_b);
+  RepeatingTimerTester b(&did_run_b, delay);
   b.Start();
 
   base::MessageLoop::current()->Run();
@@ -309,13 +312,29 @@ TEST(TimerTest, OneShotSelfDeletingTimer) {
 
 TEST(TimerTest, RepeatingTimer) {
   for (int i = 0; i < kNumTestingMessageLoops; i++) {
-    RunTest_RepeatingTimer(testing_message_loops[i]);
+    RunTest_RepeatingTimer(testing_message_loops[i],
+                           TimeDelta::FromMilliseconds(10));
   }
 }
 
 TEST(TimerTest, RepeatingTimer_Cancel) {
   for (int i = 0; i < kNumTestingMessageLoops; i++) {
-    RunTest_RepeatingTimer_Cancel(testing_message_loops[i]);
+    RunTest_RepeatingTimer_Cancel(testing_message_loops[i],
+                                  TimeDelta::FromMilliseconds(10));
+  }
+}
+
+TEST(TimerTest, RepeatingTimerZeroDelay) {
+  for (int i = 0; i < kNumTestingMessageLoops; i++) {
+    RunTest_RepeatingTimer(testing_message_loops[i],
+                           TimeDelta::FromMilliseconds(0));
+  }
+}
+
+TEST(TimerTest, RepeatingTimerZeroDelay_Cancel) {
+  for (int i = 0; i < kNumTestingMessageLoops; i++) {
+    RunTest_RepeatingTimer_Cancel(testing_message_loops[i],
+                                  TimeDelta::FromMilliseconds(0));
   }
 }
 
