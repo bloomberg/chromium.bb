@@ -142,11 +142,11 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   field.name = ASCIIToUTF16("area");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("prefix");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("prefix2")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("suffix");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("suffix3")));
 
@@ -179,7 +179,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
   field.max_length = 3;
   list_.push_back(new AutofillField(field, ASCIIToUTF16("phone2")));
 
-  field.label = string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("phone3");
   field.max_length = 4;
   list_.push_back(new AutofillField(field, ASCIIToUTF16("phone3")));

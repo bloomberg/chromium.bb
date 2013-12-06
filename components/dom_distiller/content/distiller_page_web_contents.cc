@@ -52,7 +52,7 @@ void DistillerPageWebContents::ExecuteJavaScriptImpl(
   content::RenderViewHost* host = web_contents_->GetRenderViewHost();
   DCHECK(host);
   host->ExecuteJavascriptInWebFrameCallbackResult(
-      string16(),  // frame_xpath
+      base::string16(),  // frame_xpath
       UTF8ToUTF16(script),
       base::Bind(&DistillerPage::OnExecuteJavaScriptDone,
                  base::Unretained(this)));
@@ -65,12 +65,13 @@ void DistillerPageWebContents::DidFinishLoad(int64 frame_id,
   content::WebContentsObserver::Observe(NULL);
   OnLoadURLDone();
 }
-void DistillerPageWebContents::DidFailLoad(int64 frame_id,
-                                           const GURL& validated_url,
-                                           bool is_main_frame,
-                                           int error_code,
-                                           const string16& error_description,
-                                           RenderViewHost* render_view_host) {
+void DistillerPageWebContents::DidFailLoad(
+    int64 frame_id,
+    const GURL& validated_url,
+    bool is_main_frame,
+    int error_code,
+    const base::string16& error_description,
+    RenderViewHost* render_view_host) {
   content::WebContentsObserver::Observe(NULL);
   OnLoadURLFailed();
 }

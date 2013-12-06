@@ -85,7 +85,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     const base::string16& prefix,
     const std::vector<base::string16>& autofill_values,
     const std::vector<base::string16>& autofill_labels,
-    const std::vector<string16>& autofill_icons,
+    const std::vector<base::string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {
   CancelPendingQuery();
 

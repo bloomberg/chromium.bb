@@ -33,7 +33,7 @@ const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
                       blink::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
-const string16 kTitle = ASCIIToUTF16("title");
+const base::string16 kTitle = ASCIIToUTF16("title");
 const content::PageState kPageState =
     content::PageState::CreateFromEncodedData("page state");
 const content::PageTransition kTransitionType =
@@ -46,7 +46,7 @@ const int64 kPostID = 100;
 const GURL kOriginalRequestURL("http://www.original-request.com");
 const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
-const string16 kSearchTerms = ASCIIToUTF16("my search terms");
+const base::string16 kSearchTerms = ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
 const int kHttpStatusCode = 404;
 
@@ -230,7 +230,7 @@ TEST(SerializedNavigationEntryTest, ToNavigationEntry) {
             new_navigation_entry->GetOriginalRequestURL());
   EXPECT_EQ(kIsOverridingUserAgent,
             new_navigation_entry->GetIsOverridingUserAgent());
-  string16 search_terms;
+  base::string16 search_terms;
   new_navigation_entry->GetExtraData(kSearchTermsKey, &search_terms);
   EXPECT_EQ(kSearchTerms, search_terms);
   EXPECT_EQ(kHttpStatusCode, new_navigation_entry->GetHttpStatusCode());

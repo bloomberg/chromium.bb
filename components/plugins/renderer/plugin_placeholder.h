@@ -49,7 +49,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
 
-  void SetMessage(const string16& message);
+  void SetMessage(const base::string16& message);
   void SetPluginInfo(const content::WebPluginInfo& plugin_info);
   const content::WebPluginInfo& GetPluginInfo() const;
   void SetIdentifier(const std::string& identifier);
@@ -100,7 +100,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
 
   content::WebPluginInfo plugin_info_;
 
-  string16 message_;
+  base::string16 message_;
 
   // True iff the plugin was blocked because the page was being prerendered.
   // Plugin will automatically be loaded when the page is displayed.

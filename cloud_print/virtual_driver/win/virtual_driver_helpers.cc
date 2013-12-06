@@ -17,15 +17,16 @@ namespace cloud_print {
 
 const size_t kMaxMessageLen = 100;
 
-void DisplayWindowsMessage(HWND hwnd, HRESULT hr, const string16 &caption) {
+void DisplayWindowsMessage(HWND hwnd, HRESULT hr,
+                           const base::string16 &caption) {
   ::MessageBox(hwnd, GetErrorMessage(hr).c_str(), caption.c_str(), MB_OK);
 }
 
-string16 GetPortMonitorDllName() {
+base::string16 GetPortMonitorDllName() {
   if (IsSystem64Bit()) {
-    return string16(L"gcp_portmon64.dll");
+    return base::string16(L"gcp_portmon64.dll");
   } else {
-    return string16(L"gcp_portmon.dll");
+    return base::string16(L"gcp_portmon.dll");
   }
 }
 

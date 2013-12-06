@@ -32,13 +32,13 @@ class ServiceController {
   ~ServiceController();
 
   // Installs temporarily service to check pre-requirements.
-  HRESULT InstallCheckService(const string16& user,
-                              const string16& password,
+  HRESULT InstallCheckService(const base::string16& user,
+                              const base::string16& password,
                               const base::FilePath& user_data_dir);
 
   // Installs real service that will run connector.
-  HRESULT InstallConnectorService(const string16& user,
-                                  const string16& password,
+  HRESULT InstallConnectorService(const base::string16& user,
+                                  const base::string16& password,
                                   const base::FilePath& user_data_dir,
                                   bool enable_logging);
 
@@ -52,22 +52,22 @@ class ServiceController {
   // Query service status and options. Results accessible with getters below.
   void UpdateState();
   State state() const { return state_; }
-  const string16& user() const { return user_; }
+  const base::string16& user() const { return user_; }
   bool is_logging_enabled() const;
 
   base::FilePath GetBinary() const;
 
  private:
-  HRESULT InstallService(const string16& user,
-                         const string16& password,
+  HRESULT InstallService(const base::string16& user,
+                         const base::string16& password,
                          bool auto_start,
                          const std::string& run_switch,
                          const base::FilePath& user_data_dir,
                          bool enable_logging);
 
-  const string16 name_;
+  const base::string16 name_;
   State state_;
-  string16 user_;
+  base::string16 user_;
   bool is_logging_enabled_;
   CommandLine command_line_;
 };

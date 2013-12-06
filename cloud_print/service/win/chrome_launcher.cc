@@ -159,7 +159,7 @@ void DeleteAutorunKeys(const base::FilePath& user_data_dir) {
   base::win::RegKey key(HKEY_CURRENT_USER, kAutoRunKeyPath, KEY_SET_VALUE);
   if (!key.Valid())
     return;
-  std::vector<string16> to_delete;
+  std::vector<base::string16> to_delete;
 
   base::FilePath abs_user_data_dir = base::MakeAbsoluteFilePath(user_data_dir);
 

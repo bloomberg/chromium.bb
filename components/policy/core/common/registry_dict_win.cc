@@ -295,7 +295,7 @@ void RegistryDict::Swap(RegistryDict* other) {
   values_.swap(other->values_);
 }
 
-void RegistryDict::ReadRegistry(HKEY hive, const string16& root) {
+void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
   ClearKeys();
   ClearValues();
 

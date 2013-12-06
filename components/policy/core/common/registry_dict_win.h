@@ -67,7 +67,7 @@ class POLICY_EXPORT RegistryDict {
   void Swap(RegistryDict* other);
 
   // Read a Windows registry subtree into this registry dictionary object.
-  void ReadRegistry(HKEY hive, const string16& root);
+  void ReadRegistry(HKEY hive, const base::string16& root);
 
   // Converts the dictionary to base::Value representation. For key/value name
   // collisions, the key wins. |schema| supplies an optional JSON schema that

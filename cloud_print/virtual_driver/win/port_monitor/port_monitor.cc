@@ -135,7 +135,7 @@ void DeleteLeakedFiles(const base::FilePath& dir) {
 // On failure returns FALSE and title is unmodified.
 bool GetJobTitle(HANDLE printer_handle,
                  DWORD job_id,
-                 string16 *title) {
+                 base::string16 *title) {
   DCHECK(printer_handle != NULL);
   DCHECK(title != NULL);
   DWORD bytes_needed = 0;
@@ -163,7 +163,7 @@ bool GetJobTitle(HANDLE printer_handle,
 // Verifies that a valid parent Window exists and then just displays an
 // error message to let the user know that there is no interactive
 // configuration.
-void HandlePortUi(HWND hwnd, const string16& caption) {
+void HandlePortUi(HWND hwnd, const base::string16& caption) {
   if (hwnd != NULL && IsWindow(hwnd)) {
     DisplayWindowsMessage(hwnd, CO_E_NOT_SUPPORTED, cloud_print::kPortName);
   }
@@ -196,7 +196,7 @@ bool GetUserToken(HANDLE* primary_token) {
 // xps_path references a file to print.
 // job_title is the title to be used for the resulting print job.
 bool LaunchPrintDialog(const base::FilePath& xps_path,
-                       const string16& job_title) {
+                       const base::string16& job_title) {
   HANDLE token = NULL;
   if (!GetUserToken(&token)) {
     LOG(ERROR) << "Unable to get user token.";
@@ -286,7 +286,7 @@ bool ValidateCurrentUser() {
 
 base::FilePath ReadPathFromRegistry(HKEY root, const wchar_t* path_name) {
   base::win::RegKey gcp_key(HKEY_CURRENT_USER, kCloudPrintRegKey, KEY_READ);
-  string16 data;
+  base::string16 data;
   if (SUCCEEDED(gcp_key.ReadValue(path_name, &data)) &&
       base::PathExists(base::FilePath(data))) {
     return base::FilePath(data);
@@ -484,7 +484,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
     int64 file_size = 0;
     base::GetFileSize(port_data->file_path, &file_size);
     if (file_size > 0) {
-      string16 job_title;
+      base::string16 job_title;
       if (port_data->printer_handle != NULL) {
         GetJobTitle(port_data->printer_handle,
                     port_data->job_id,

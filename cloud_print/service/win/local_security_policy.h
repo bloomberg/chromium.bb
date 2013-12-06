@@ -21,9 +21,10 @@ class LocalSecurityPolicy {
   bool Open();
   void Close();
 
-  bool IsPrivilegeSet(const string16& username,
-                      const string16& privilage) const;
-  bool SetPrivilege(const string16& username, const string16& privilage);
+  bool IsPrivilegeSet(const base::string16& username,
+                      const base::string16& privilage) const;
+  bool SetPrivilege(const base::string16& username,
+                    const base::string16& privilage);
 
  private:
   LSA_HANDLE policy_;

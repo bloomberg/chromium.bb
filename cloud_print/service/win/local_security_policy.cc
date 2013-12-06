@@ -76,8 +76,9 @@ bool LocalSecurityPolicy::Open() {
                       &policy_);
 }
 
-bool LocalSecurityPolicy::IsPrivilegeSet(const string16& username,
-                                         const string16& privilage) const {
+bool LocalSecurityPolicy::IsPrivilegeSet(
+    const base::string16& username,
+    const base::string16& privilage) const {
   DCHECK(policy_);
   ATL::CSid user_sid;
   if (!user_sid.LoadAccount(username.c_str())) {
@@ -97,8 +98,8 @@ bool LocalSecurityPolicy::IsPrivilegeSet(const string16& username,
   return false;
 }
 
-bool LocalSecurityPolicy::SetPrivilege(const string16& username,
-                                       const string16& privilage) {
+bool LocalSecurityPolicy::SetPrivilege(const base::string16& username,
+                                       const base::string16& privilage) {
   DCHECK(policy_);
   ATL::CSid user_sid;
   if (!user_sid.LoadAccount(username.c_str())) {
@@ -106,7 +107,7 @@ bool LocalSecurityPolicy::SetPrivilege(const string16& username,
     return false;
   }
   LSA_UNICODE_STRING privilege_string;
-  string16 privilage_copy(privilage);
+  base::string16 privilage_copy(privilage);
   privilege_string.Buffer = &privilage_copy[0];
   privilege_string.Length = wcslen(privilege_string.Buffer) *
                             sizeof(privilege_string.Buffer[0]);

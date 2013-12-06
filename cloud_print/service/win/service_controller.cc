@@ -61,7 +61,7 @@ HRESULT OpenServiceManager(ServiceHandle* service_manager) {
   return S_OK;
 }
 
-HRESULT OpenService(const string16& name, DWORD access,
+HRESULT OpenService(const base::string16& name, DWORD access,
                     ServiceHandle* service) {
   if (!service)
     return E_POINTER;
@@ -129,8 +129,8 @@ base::FilePath ServiceController::GetBinary() const {
 }
 
 HRESULT ServiceController::InstallConnectorService(
-    const string16& user,
-    const string16& password,
+    const base::string16& user,
+    const base::string16& password,
     const base::FilePath& user_data_dir,
     bool enable_logging) {
   return InstallService(user, password, true, kServiceSwitch, user_data_dir,
@@ -138,15 +138,15 @@ HRESULT ServiceController::InstallConnectorService(
 }
 
 HRESULT ServiceController::InstallCheckService(
-    const string16& user,
-    const string16& password,
+    const base::string16& user,
+    const base::string16& password,
     const base::FilePath& user_data_dir) {
   return InstallService(user, password, false, kRequirementsSwitch,
                         user_data_dir, true);
 }
 
-HRESULT ServiceController::InstallService(const string16& user,
-                                          const string16& password,
+HRESULT ServiceController::InstallService(const base::string16& user,
+                                          const base::string16& password,
                                           bool auto_start,
                                           const std::string& run_switch,
                                           const base::FilePath& user_data_dir,
@@ -193,7 +193,7 @@ HRESULT ServiceController::InstallService(const string16& user,
   if (FAILED(hr))
     return hr;
 
-  string16 display_name =
+  base::string16 display_name =
       cloud_print::LoadLocalString(IDS_SERVICE_DISPLAY_NAME);
   ServiceHandle service(
       ::CreateService(
@@ -209,7 +209,7 @@ HRESULT ServiceController::InstallService(const string16& user,
     return cloud_print::GetLastHResult();
   }
 
-  string16 description_string =
+  base::string16 description_string =
       cloud_print::LoadLocalString(IDS_SERVICE_DESCRIPTION);
   SERVICE_DESCRIPTION description = {0};
   description.lpDescription = const_cast<wchar_t*>(description_string.c_str());

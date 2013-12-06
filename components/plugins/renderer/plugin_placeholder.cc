@@ -157,7 +157,7 @@ void PluginPlaceholder::HidePlugin() {
 
 void PluginPlaceholder::WillDestroyPlugin() { delete this; }
 
-void PluginPlaceholder::SetMessage(const string16& message) {
+void PluginPlaceholder::SetMessage(const base::string16& message) {
   message_ = message;
   if (finished_loading_)
     UpdateMessage();

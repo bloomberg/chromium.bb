@@ -35,7 +35,7 @@ class SetupListener : public IPC::Listener {
   static const char kUserNameJsonValueName[];
   static const wchar_t kSetupPipeName[];
 
-  explicit SetupListener(const string16& user);
+  explicit SetupListener(const base::string16& user);
   virtual ~SetupListener();
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -51,7 +51,7 @@ class SetupListener : public IPC::Listener {
     return user_data_dir_;
   }
 
-  const string16& user_name() const {
+  const base::string16& user_name() const {
     return user_name_;
   }
 
@@ -65,11 +65,11 @@ class SetupListener : public IPC::Listener {
 
  private:
   void Disconnect();
-  void Connect(const string16& user);
+  void Connect(const base::string16& user);
 
   base::FilePath chrome_path_;
   base::FilePath user_data_dir_;
-  string16 user_name_;
+  base::string16 user_name_;
   std::vector<std::string> printers_;
   bool is_xps_available_;
   bool succeded_;

@@ -95,42 +95,42 @@ struct PasswordForm {
   // possible.
   //
   // When parsing an HTML form, this must always be set.
-  string16 submit_element;
+  base::string16 submit_element;
 
   // The name of the username input element. Optional (improves scoring).
   //
   // When parsing an HTML form, this must always be set.
-  string16 username_element;
+  base::string16 username_element;
 
   // The username. Optional.
   //
   // When parsing an HTML form, this is typically empty unless the site
   // has implemented some form of autofill.
-  string16 username_value;
+  base::string16 username_value;
 
   // This member is populated in cases where we there are multiple input
   // elements that could possibly be the username. Used when our heuristics for
   // determining the username are incorrect. Optional.
   //
   // When parsing an HTML form, this is typically empty.
-  std::vector<string16> other_possible_usernames;
+  std::vector<base::string16> other_possible_usernames;
 
   // The name of the password input element, Optional (improves scoring).
   //
   // When parsing an HTML form, this must always be set.
-  string16 password_element;
+  base::string16 password_element;
 
   // The password. Required.
   //
   // When parsing an HTML form, this is typically empty.
-  string16 password_value;
+  base::string16 password_value;
 
   // If the form was a change password form, the name of the
   // 'old password' input element. Optional.
-  string16 old_password_element;
+  base::string16 old_password_element;
 
   // The old password. Optional.
-  string16 old_password_value;
+  base::string16 old_password_value;
 
   // Whether or not this login was saved under an HTTPS session with a valid
   // SSL cert. We will never match or autofill a PasswordForm where
@@ -196,7 +196,7 @@ struct PasswordForm {
 };
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
-typedef std::map<string16, PasswordForm*> PasswordFormMap;
+typedef std::map<base::string16, PasswordForm*> PasswordFormMap;
 
 // For testing.
 std::ostream& operator<<(std::ostream& os,

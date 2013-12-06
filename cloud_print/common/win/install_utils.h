@@ -14,25 +14,26 @@
 namespace cloud_print {
 
 // Sets Google Update registry keys after install or update.
-void SetGoogleUpdateKeys(const string16& product_id,
-                         const string16& product_name);
+void SetGoogleUpdateKeys(const base::string16& product_id,
+                         const base::string16& product_name);
 
 // Sets custom error message to show by Google Update installer
-void SetGoogleUpdateError(const string16& product_id, const string16& message);
+void SetGoogleUpdateError(const base::string16& product_id,
+                          const base::string16& message);
 
 // Deletes Google Update reg keys on product uninstall.
-void DeleteGoogleUpdateKeys(const string16& product_id);
+void DeleteGoogleUpdateKeys(const base::string16& product_id);
 
 // Creates control panel uninstall item.
-void CreateUninstallKey(const string16& uninstall_id,
-                        const string16& product_name,
+void CreateUninstallKey(const base::string16& uninstall_id,
+                        const base::string16& product_name,
                         const std::string& uninstall_switch);
 
 // Deletes control panel uninstall item.
-void DeleteUninstallKey(const string16& uninstall_id);
+void DeleteUninstallKey(const base::string16& uninstall_id);
 
 // Returns install location retrieved from control panel uninstall key.
-base::FilePath GetInstallLocation(const string16& uninstall_id);
+base::FilePath GetInstallLocation(const base::string16& uninstall_id);
 
 // Returns install location retrieved from control panel uninstall key.
 void DeleteProgramDir(const std::string& delete_switch);

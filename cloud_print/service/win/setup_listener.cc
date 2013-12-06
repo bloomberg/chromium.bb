@@ -26,7 +26,7 @@ const char SetupListener::kUserNameJsonValueName[] = "user_name";
 const wchar_t SetupListener::kSetupPipeName[] =
     L"\\\\.\\pipe\\CloudPrintServiceSetup";
 
-SetupListener::SetupListener(const string16& user)
+SetupListener::SetupListener(const base::string16& user)
     : done_event_(new base::WaitableEvent(true, false)),
       ipc_thread_(new base::Thread("ipc_thread")),
       succeded_(false),
@@ -68,11 +68,11 @@ bool SetupListener::OnMessageReceived(const IPC::Message& msg) {
   dictionary->GetBoolean(kXpsAvailableJsonValueName, &is_xps_available_);
   dictionary->GetString(kUserNameJsonValueName, &user_name_);
 
-  string16 chrome_path;
+  base::string16 chrome_path;
   dictionary->GetString(kChromePathJsonValueName, &chrome_path);
   chrome_path_ = base::FilePath(chrome_path);
 
-  string16 user_data_dir;
+  base::string16 user_data_dir;
   dictionary->GetString(kUserDataDirJsonValueName, &user_data_dir);
   user_data_dir_ = base::FilePath(user_data_dir);
 
@@ -94,7 +94,7 @@ void SetupListener::Disconnect() {
   ipc_thread_->message_loop()->QuitWhenIdle();
 }
 
-void SetupListener::Connect(const string16& user) {
+void SetupListener::Connect(const base::string16& user) {
   ATL::CDacl dacl;
 
   ATL::CSid user_sid;

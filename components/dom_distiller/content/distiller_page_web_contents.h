@@ -52,7 +52,7 @@ class DistillerPageWebContents : public DistillerPage,
                            const GURL& validated_url,
                            bool is_main_frame,
                            int error_code,
-                           const string16& error_description,
+                           const base::string16& error_description,
                            RenderViewHost* render_view_host) OVERRIDE;
 
  protected:

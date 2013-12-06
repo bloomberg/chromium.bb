@@ -46,7 +46,7 @@ bool IsValidState(const base::string16& text);
 bool IsValidZip(const base::string16& text);
 
 // Returns true if |text| looks like an SSN, with or without separators.
-bool IsSSN(const string16& text);
+bool IsSSN(const base::string16& text);
 
 }  // namespace autofill
 

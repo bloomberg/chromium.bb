@@ -838,7 +838,7 @@ DWORD WiFiServiceImpl::ResetDHCP() {
 DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
     const GUID& interface_guid,
     IP_ADAPTER_INDEX_MAP* adapter_index_map) {
-  string16 guid_string;
+  base::string16 guid_string;
   const int kGUIDSize = 39;
   ::StringFromGUID2(
       interface_guid, WriteInto(&guid_string, kGUIDSize), kGUIDSize);

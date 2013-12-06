@@ -63,7 +63,7 @@ const char kRegisterSwitch[] = "register";
 const char kUninstallSwitch[] = "uninstall";
 const char kUnregisterSwitch[] = "unregister";
 
-base::FilePath GetSystemPath(const string16& binary) {
+base::FilePath GetSystemPath(const base::string16& binary) {
   base::FilePath path;
   if (!PathService::Get(base::DIR_SYSTEM, &path)) {
     LOG(ERROR) << "Unable to get system path.";
@@ -72,7 +72,7 @@ base::FilePath GetSystemPath(const string16& binary) {
   return path.Append(binary);
 }
 
-base::FilePath GetNativeSystemPath(const string16& binary) {
+base::FilePath GetNativeSystemPath(const base::string16& binary) {
   if (!IsSystem64Bit())
     return GetSystemPath(binary);
   base::FilePath path;
@@ -254,7 +254,7 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
     return HRESULT_FROM_WIN32(ERROR_CANNOT_MAKE);
   ReadyDriverDependencies(temp_path.path());
 
-  std::vector<string16> dependent_array;
+  std::vector<base::string16> dependent_array;
   // Add all files. AddPrinterDriverEx will removes unnecessary.
   for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
     base::FilePath file_path = temp_path.path().Append(kDependencyList[i]);
@@ -287,18 +287,18 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
   driver_info.pDriverPath = const_cast<LPWSTR>(xps_path.value().c_str());
   driver_info.pConfigFile = const_cast<LPWSTR>(ui_path.value().c_str());
 
-  string16 dependent_files(JoinString(dependent_array, L'\n'));
+  base::string16 dependent_files(JoinString(dependent_array, L'\n'));
   dependent_files.push_back(L'\n');
   std::replace(dependent_files.begin(), dependent_files.end(), L'\n', L'\0');
   driver_info.pDependentFiles = &dependent_files[0];
 
   // Set up user visible strings.
-  string16 manufacturer = LoadLocalString(IDS_GOOGLE);
+  base::string16 manufacturer = LoadLocalString(IDS_GOOGLE);
   driver_info.pszMfgName = const_cast<LPWSTR>(manufacturer.c_str());
   driver_info.pszProvider = const_cast<LPWSTR>(manufacturer.c_str());
   driver_info.pszOEMUrl = const_cast<LPWSTR>(kGcpUrl);
   driver_info.dwlDriverVersion = GetVersionNumber();
-  string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
+  base::string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
   driver_info.pName = const_cast<LPWSTR>(driver_name.c_str());
 
   if (!::AddPrinterDriverEx(NULL, 6, reinterpret_cast<BYTE*>(&driver_info),
@@ -311,7 +311,7 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
 
 HRESULT UninstallDriver() {
   int tries = 3;
-  string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
+  base::string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
   while (!DeletePrinterDriverEx(NULL,
                                 NULL,
                                 const_cast<LPWSTR>(driver_name.c_str()),
@@ -340,12 +340,12 @@ HRESULT InstallPrinter(void) {
 
   // None of the print API structures likes constant strings even though they
   // don't modify the string.  const_casting is the cleanest option.
-  string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
+  base::string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
   printer_info.pDriverName = const_cast<LPWSTR>(driver_name.c_str());
   printer_info.pPrinterName = const_cast<LPWSTR>(driver_name.c_str());
   printer_info.pComment =  const_cast<LPWSTR>(driver_name.c_str());
   printer_info.pLocation = const_cast<LPWSTR>(kGcpUrl);
-  string16 port_name;
+  base::string16 port_name;
   printer_info.pPortName = const_cast<LPWSTR>(kPortName);
   printer_info.Attributes = PRINTER_ATTRIBUTE_DIRECT|PRINTER_ATTRIBUTE_LOCAL;
   printer_info.pPrintProcessor = L"winprint";
@@ -363,7 +363,7 @@ HRESULT UninstallPrinter(void) {
   HANDLE handle = NULL;
   PRINTER_DEFAULTS printer_defaults = {0};
   printer_defaults.DesiredAccess = PRINTER_ALL_ACCESS;
-  string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
+  base::string16 driver_name = LoadLocalString(IDS_DRIVER_NAME);
   if (!OpenPrinter(const_cast<LPWSTR>(driver_name.c_str()),
                    &handle,
                    &printer_defaults)) {

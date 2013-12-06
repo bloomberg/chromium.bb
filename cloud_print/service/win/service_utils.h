@@ -9,8 +9,8 @@ class CommandLine;
 
 #include "base/strings/string16.h"
 
-string16 ReplaceLocalHostInName(const string16& user_name);
-string16 GetCurrentUserName();
+base::string16 ReplaceLocalHostInName(const base::string16& user_name);
+base::string16 GetCurrentUserName();
 void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination);
 
 #endif  // CLOUD_PRINT_SERVICE_SERVICE_UTILS_H_

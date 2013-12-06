@@ -31,26 +31,26 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
     return NULL;
   }
 
-  string16 recipient_name;
+  base::string16 recipient_name;
   if (!dictionary.GetString("postal_address.recipient_name",
                             &recipient_name)) {
     DLOG(ERROR) << "Response from Google Wallet missing recipient name";
     return NULL;
   }
 
-  string16 postal_code_number;
+  base::string16 postal_code_number;
   if (!dictionary.GetString("postal_address.postal_code_number",
                             &postal_code_number)) {
     DLOG(ERROR) << "Response from Google Wallet missing postal code number";
     return NULL;
   }
 
-  string16 phone_number;
+  base::string16 phone_number;
   if (!dictionary.GetString("phone_number", &phone_number))
     DVLOG(1) << "Response from Google Wallet missing phone number";
 
-  string16 address_line_1;
-  string16 address_line_2;
+  base::string16 address_line_1;
+  base::string16 address_line_2;
   const ListValue* address_line_list;
   if (dictionary.GetList("postal_address.address_line", &address_line_list)) {
     if (!address_line_list->GetString(0, &address_line_1))
@@ -61,13 +61,13 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
     DVLOG(1) << "Response from Google Wallet missing address lines";
   }
 
-  string16 locality_name;
+  base::string16 locality_name;
   if (!dictionary.GetString("postal_address.locality_name",
                             &locality_name)) {
     DVLOG(1) << "Response from Google Wallet missing locality name";
   }
 
-  string16 administrative_area_name;
+  base::string16 administrative_area_name;
   if (!dictionary.GetString("postal_address.administrative_area_name",
                             &administrative_area_name)) {
     DVLOG(1) << "Response from Google Wallet missing administrative area name";
@@ -116,13 +116,13 @@ Address::Address(const AutofillProfile& profile)
 }
 
 Address::Address(const std::string& country_name_code,
-                 const string16& recipient_name,
-                 const string16& address_line_1,
-                 const string16& address_line_2,
-                 const string16& locality_name,
-                 const string16& administrative_area_name,
-                 const string16& postal_code_number,
-                 const string16& phone_number,
+                 const base::string16& recipient_name,
+                 const base::string16& address_line_1,
+                 const base::string16& address_line_2,
+                 const base::string16& locality_name,
+                 const base::string16& administrative_area_name,
+                 const base::string16& postal_code_number,
+                 const base::string16& phone_number,
                  const std::string& object_id)
     : country_name_code_(country_name_code),
       recipient_name_(recipient_name),
@@ -166,35 +166,35 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
     return scoped_ptr<Address>();
   }
 
-  string16 name;
+  base::string16 name;
   if (!dictionary.GetString("name", &name)) {
     DLOG(ERROR) << "Reponse from Google Wallet missing name";
     return scoped_ptr<Address>();
   }
 
-  string16 postal_code;
+  base::string16 postal_code;
   if (!dictionary.GetString("postal_code", &postal_code)) {
     DLOG(ERROR) << "Reponse from Google Wallet missing postal code";
     return scoped_ptr<Address>();
   }
 
-  string16 address1;
+  base::string16 address1;
   if (!dictionary.GetString("address1", &address1))
     DVLOG(1) << "Reponse from Google Wallet missing address1";
 
-  string16 address2;
+  base::string16 address2;
   if (!dictionary.GetString("address2", &address2))
     DVLOG(1) << "Reponse from Google Wallet missing address2";
 
-  string16 city;
+  base::string16 city;
   if (!dictionary.GetString("city", &city))
     DVLOG(1) << "Reponse from Google Wallet missing city";
 
-  string16 state;
+  base::string16 state;
   if (!dictionary.GetString("state", &state))
     DVLOG(1) << "Reponse from Google Wallet missing state";
 
-  string16 phone_number;
+  base::string16 phone_number;
   if (!dictionary.GetString("phone_number", &phone_number))
     DVLOG(1) << "Reponse from Google Wallet missing phone number";
 
@@ -247,7 +247,7 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
   return dict.Pass();
 }
 
-string16 Address::DisplayName() const {
+base::string16 Address::DisplayName() const {
 #if defined(OS_ANDROID)
   // TODO(aruslan): improve this stub implementation.
   return recipient_name();
@@ -257,16 +257,16 @@ string16 Address::DisplayName() const {
 #endif
 }
 
-string16 Address::DisplayNameDetail() const {
+base::string16 Address::DisplayNameDetail() const {
 #if defined(OS_ANDROID)
   // TODO(aruslan): improve this stub implementation.
   return address_line_1();
 #else
-  return string16();
+  return base::string16();
 #endif
 }
 
-string16 Address::DisplayPhoneNumber() const {
+base::string16 Address::DisplayPhoneNumber() const {
   // Return a formatted phone number. Wallet doesn't store user formatting, so
   // impose our own. phone_number() always includes a country code, so using
   // PhoneObject to format it would result in an internationalized format. Since
@@ -275,8 +275,8 @@ string16 Address::DisplayPhoneNumber() const {
       GetNationallyFormattedNumber();
 }
 
-string16 Address::GetInfo(const AutofillType& type,
-                          const std::string& app_locale) const {
+base::string16 Address::GetInfo(const AutofillType& type,
+                                const std::string& app_locale) const {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     DCHECK(IsStringASCII(country_name_code()));
     return ASCIIToUTF16(country_name_code());
@@ -326,7 +326,7 @@ string16 Address::GetInfo(const AutofillType& type,
     // TODO(estade): implement more.
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 

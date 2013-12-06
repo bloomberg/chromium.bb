@@ -26,7 +26,7 @@ bool ReadStringVector(PickleIterator* iter,
   if (!iter->ReadInt(&size))
     return false;
 
-  string16 pickle_data;
+  base::string16 pickle_data;
   for (int i = 0; i < size; i++) {
     if (!iter->ReadString16(&pickle_data))
       return false;

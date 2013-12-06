@@ -92,10 +92,10 @@ void PolicyErrorMap::AddError(const std::string& policy,
   AddError(PendingError(policy, std::string(), index, message_id, replacement));
 }
 
-string16 PolicyErrorMap::GetErrors(const std::string& policy) {
+base::string16 PolicyErrorMap::GetErrors(const std::string& policy) {
   CheckReadyAndConvert();
   std::pair<const_iterator, const_iterator> range = map_.equal_range(policy);
-  std::vector<string16> list;
+  std::vector<base::string16> list;
   for (const_iterator it = range.first; it != range.second; ++it)
     list.push_back(it->second);
   return JoinString(list, '\n');
@@ -135,14 +135,14 @@ void PolicyErrorMap::AddError(const PendingError& error) {
 }
 
 void PolicyErrorMap::Convert(const PendingError& error) {
-  string16 submessage;
+  base::string16 submessage;
   if (error.has_replacement) {
     submessage = l10n_util::GetStringFUTF16(error.message_id,
                                             ASCIIToUTF16(error.replacement));
   } else {
     submessage = l10n_util::GetStringUTF16(error.message_id);
   }
-  string16 message;
+  base::string16 message;
   if (!error.subkey.empty()) {
     message = l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
                                          ASCIIToUTF16(error.subkey),

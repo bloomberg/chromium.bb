@@ -12,20 +12,20 @@
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
 
-string16 GetLocalComputerName() {
+base::string16 GetLocalComputerName() {
   DWORD size = 0;
-  string16 result;
+  base::string16 result;
   ::GetComputerName(NULL, &size);
   result.resize(size);
   if (result.empty())
     return result;
   if (!::GetComputerName(&result[0], &size))
-    return string16();
+    return base::string16();
   result.resize(size);
   return result;
 }
 
-string16 ReplaceLocalHostInName(const string16& user_name) {
+base::string16 ReplaceLocalHostInName(const base::string16& user_name) {
   static const wchar_t kLocalDomain[] = L".\\";
   if (StartsWith(user_name, kLocalDomain, true)) {
     return GetLocalComputerName() +
@@ -34,15 +34,15 @@ string16 ReplaceLocalHostInName(const string16& user_name) {
   return user_name;
 }
 
-string16 GetCurrentUserName() {
+base::string16 GetCurrentUserName() {
   ULONG size = 0;
-  string16 result;
+  base::string16 result;
   ::GetUserNameEx(::NameSamCompatible, NULL, &size);
   result.resize(size);
   if (result.empty())
     return result;
   if (!::GetUserNameEx(::NameSamCompatible, &result[0], &size))
-    return string16();
+    return base::string16();
   result.resize(size);
   return result;
 }

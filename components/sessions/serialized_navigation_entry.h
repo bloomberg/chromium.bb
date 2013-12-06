@@ -96,9 +96,9 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   // Accessors for some fields taken from NavigationEntry.
   int unique_id() const { return unique_id_; }
   const GURL& virtual_url() const { return virtual_url_; }
-  const string16& title() const { return title_; }
+  const base::string16& title() const { return title_; }
   const content::PageState& page_state() const { return page_state_; }
-  const string16& search_terms() const { return search_terms_; }
+  const base::string16& search_terms() const { return search_terms_; }
   const GURL& favicon_url() const { return favicon_url_; }
   int http_status_code() const { return http_status_code_; }
   const content::Referrer& referrer() const { return referrer_; }
@@ -140,7 +140,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   int unique_id_;
   content::Referrer referrer_;
   GURL virtual_url_;
-  string16 title_;
+  base::string16 title_;
   content::PageState page_state_;
   content::PageTransition transition_type_;
   bool has_post_data_;
@@ -148,7 +148,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   GURL original_request_url_;
   bool is_overriding_user_agent_;
   base::Time timestamp_;
-  string16 search_terms_;
+  base::string16 search_terms_;
   GURL favicon_url_;
   int http_status_code_;
 

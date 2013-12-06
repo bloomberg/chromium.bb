@@ -77,15 +77,15 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
   // Disables all controls after users actions.
   void DisableControls();
   // Updates state of controls after when we received service status.
-  void SetState(ServiceController::State state, const string16& user,
+  void SetState(ServiceController::State state, const base::string16& user,
                  bool is_logging_enabled);
   // Show message box with error.
-  void ShowErrorMessageBox(const string16& error_message);
+  void ShowErrorMessageBox(const base::string16& error_message);
   // Show use message box instructions how to deal with opened Chrome window.
   void AskToCloseChrome();
-  string16 GetDlgItemText(int id) const;
-  string16 GetUser() const;
-  string16 GetPassword() const;
+  base::string16 GetDlgItemText(int id) const;
+  base::string16 GetUser() const;
+  base::string16 GetPassword() const;
   bool IsLoggingEnabled() const;
   bool IsInstalled() const {
     return state_ > ServiceController::STATE_NOT_FOUND;
@@ -93,7 +93,7 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
 
   // IO Calls.
   // Installs service.
-  void Install(const string16& user, const string16& password,
+  void Install(const base::string16& user, const base::string16& password,
                bool enable_logging);
   // Starts service.
   void Start();
@@ -106,7 +106,7 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
   // Posts task to UI thread to show error using string id.
   void ShowError(int string_id);
   // Posts task to UI thread to show error using string.
-  void ShowError(const string16& error_message);
+  void ShowError(const base::string16& error_message);
   // Posts task to UI thread to show error using error code.
   void ShowError(HRESULT hr);
 
@@ -139,7 +139,7 @@ void SetupDialog::PostIOTask(const base::Closure& task) {
   io_loop_->PostTask(FROM_HERE, task);
 }
 
-void SetupDialog::ShowErrorMessageBox(const string16& error_message) {
+void SetupDialog::ShowErrorMessageBox(const base::string16& error_message) {
   DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
   MessageBox(error_message.c_str(),
              LoadLocalString(IDS_OPERATION_FAILED_TITLE).c_str(),
@@ -154,7 +154,7 @@ void SetupDialog::AskToCloseChrome() {
 }
 
 void SetupDialog::SetState(ServiceController::State status,
-                           const string16& user,
+                           const base::string16& user,
                            bool is_logging_enabled) {
   DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
   state_ = status;
@@ -282,19 +282,19 @@ void SetupDialog::DisableControls() {
   GetDlgItem(IDC_LOGGING).EnableWindow(FALSE);
 }
 
-string16 SetupDialog::GetDlgItemText(int id) const {
+base::string16 SetupDialog::GetDlgItemText(int id) const {
   const ATL::CWindow& item = GetDlgItem(id);
   size_t length = item.GetWindowTextLength();
-  string16 result(length + 1, L'\0');
+  base::string16 result(length + 1, L'\0');
   result.resize(item.GetWindowText(&result[0], result.size()));
   return result;
 }
 
-string16 SetupDialog::GetUser() const {
+base::string16 SetupDialog::GetUser() const {
   return GetDlgItemText(IDC_USER);
 }
 
-string16 SetupDialog::GetPassword() const{
+base::string16 SetupDialog::GetPassword() const {
   return GetDlgItemText(IDC_PASSWORD);
 }
 
@@ -309,7 +309,7 @@ void SetupDialog::UpdateState() {
                         controller_.user(), controller_.is_logging_enabled()));
 }
 
-void SetupDialog::ShowError(const string16& error_message) {
+void SetupDialog::ShowError(const base::string16& error_message) {
   DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
   PostUITask(base::Bind(&SetupDialog::SetState,
                         this,
@@ -329,7 +329,8 @@ void SetupDialog::ShowError(HRESULT hr) {
   ShowError(GetErrorMessage(hr));
 }
 
-void SetupDialog::Install(const string16& user, const string16& password,
+void SetupDialog::Install(const base::string16& user,
+                          const base::string16& password,
                           bool enable_logging) {
   // Don't forget to update state on exit.
   base::ScopedClosureRunner scoped_update_status(
