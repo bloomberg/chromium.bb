@@ -255,7 +255,7 @@ HttpAuth::AuthorizationResult HttpAuthSSPI::ParseChallenge(
 }
 
 int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
-                                    const std::wstring& spn,
+                                    const std::string& spn,
                                     std::string* auth_token) {
   // Initial challenge.
   if (!SecIsValidHandle(&cred_)) {
@@ -312,7 +312,7 @@ int HttpAuthSSPI::OnFirstRound(const AuthCredentials* credentials) {
 }
 
 int HttpAuthSSPI::GetNextSecurityToken(
-    const std::wstring& spn,
+    const std::string& spn,
     const void* in_token,
     int in_token_len,
     void** out_token,
@@ -362,10 +362,11 @@ int HttpAuthSSPI::GetNextSecurityToken(
 
   // This returns a token that is passed to the remote server.
   DWORD context_attribute;
+  std::wstring spn_wide = base::ASCIIToWide(spn);
   SECURITY_STATUS status = library_->InitializeSecurityContext(
       &cred_,  // phCredential
       ctxt_ptr,  // phContext
-      const_cast<wchar_t *>(spn.c_str()),  // pszTargetName
+      const_cast<wchar_t *>(spn_wide.c_str()),  // pszTargetName
       context_flags,  // fContextReq
       0,  // Reserved1 (must be 0)
       SECURITY_NATIVE_DREP,  // TargetDataRep

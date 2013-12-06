@@ -82,7 +82,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
 
   // Generate an auth token and create another thing.
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, L"HTTP/intranet.google.com",
+  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
                                             &auth_token));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
@@ -118,7 +118,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
             auth_sspi.ParseChallenge(&first_challenge));
 
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, L"HTTP/intranet.google.com",
+  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
                                             &auth_token));
   std::string second_challenge_text = "Negotiate";
   HttpAuth::ChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -140,7 +140,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
             auth_sspi.ParseChallenge(&first_challenge));
 
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, L"HTTP/intranet.google.com",
+  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
                                             &auth_token));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuth::ChallengeTokenizer second_challenge(second_challenge_text.begin(),

@@ -715,7 +715,7 @@ HttpAuth::AuthorizationResult HttpAuthGSSAPI::ParseChallenge(
 }
 
 int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
-                                      const std::wstring& spn,
+                                      const std::string& spn,
                                       std::string* auth_token) {
   DCHECK(auth_token);
 
@@ -837,12 +837,12 @@ int MapInitSecContextStatusToError(OM_uint32 major_status) {
 
 }
 
-int HttpAuthGSSAPI::GetNextSecurityToken(const std::wstring& spn,
+int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
                                          gss_buffer_t in_token,
                                          gss_buffer_t out_token) {
   // Create a name for the principal
   // TODO(cbentzel): Just do this on the first pass?
-  std::string spn_principal = WideToASCII(spn);
+  std::string spn_principal = spn;
   gss_buffer_desc spn_buffer = GSS_C_EMPTY_BUFFER;
   spn_buffer.value = const_cast<char*>(spn_principal.c_str());
   spn_buffer.length = spn_principal.size() + 1;

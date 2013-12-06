@@ -144,7 +144,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
   // obtained using |*credentials|. If |credentials| is NULL, the credentials
   // for the currently logged in user are used instead.
   int GenerateAuthToken(const AuthCredentials* credentials,
-                        const std::wstring& spn,
+                        const std::string& spn,
                         std::string* auth_token);
 
   // Delegation is allowed on the Kerberos ticket. This allows certain servers
@@ -156,7 +156,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
   int OnFirstRound(const AuthCredentials* credentials);
 
   int GetNextSecurityToken(
-      const std::wstring& spn,
+      const std::string& spn,
       const void* in_token,
       int in_token_len,
       void** out_token,

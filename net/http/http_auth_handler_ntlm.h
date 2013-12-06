@@ -145,7 +145,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
                    uint32* out_token_len);
 
   // Create an NTLM SPN to identify the |origin| server.
-  static std::wstring CreateSPN(const GURL& origin);
+  static std::string CreateSPN(const GURL& origin);
 
 #if defined(NTLM_SSPI)
   HttpAuthSSPI auth_sspi_;

@@ -102,8 +102,8 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   virtual ~HttpAuthHandlerNegotiate();
 
   // These are public for unit tests
-  std::wstring CreateSPN(const AddressList& address_list, const GURL& orign);
-  const std::wstring& spn() const { return spn_; }
+  std::string CreateSPN(const AddressList& address_list, const GURL& orign);
+  const std::string& spn() const { return spn_; }
 
   // HttpAuthHandler:
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
@@ -152,7 +152,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   bool already_called_;
   bool has_credentials_;
   AuthCredentials credentials_;
-  std::wstring spn_;
+  std::string spn_;
 
   // Things which vary each round.
   CompletionCallback callback_;
