@@ -1,0 +1,103 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script src="resources/log-source.js"></script>
+<script>
+// Create a mix of log messages from different source files
+function onload()
+{
+   console.info("sample info");
+   console.log("sample log");
+   console.warn("sample warning");
+   console.debug("sample debug");
+   console.error("sample error");
+   
+   console.info("abc info");
+   console.info("def info");
+   
+   console.warn("abc warn");
+   console.warn("def warn");
+   
+   runTest();
+}
+
+function test()
+{
+    var messagesElement = WebInspector.consoleView.messagesElement;
+
+    function dumpVisibleMessages()
+    {
+        var children = WebInspector.consoleView.topGroup.element.childNodes[0].childNodes;
+
+        for (var i = 0; i < children.length; i++)
+            InspectorTest.addResult(">" + children[i].textContent);
+    }
+
+    var testSuite = [
+        function beforeFilter(next)
+        {
+            InspectorTest.addResult(arguments.callee.name);
+            dumpVisibleMessages();
+            next();
+        },
+        
+        function onlyWarning(next)
+        {
+            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("warning");
+            dumpVisibleMessages();
+            next();
+        },
+        
+        function onlyLog(next)
+        {
+            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("log");
+            dumpVisibleMessages();
+            next();
+        },
+        
+        function onlyErrorDebug(next)
+        {
+            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("error");
+            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("debug", true);
+            dumpVisibleMessages();
+            next();
+        },
+        
+        function onlyAbcMessagePlain(next)
+        {
+            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES);
+            WebInspector.consoleView._filter._textFilterUI.setValue("abc");
+            dumpVisibleMessages();
+            next();
+        },
+        
+        function onlyAbcMessageRegex(next)
+        {
+            WebInspector.consoleView._filter._textFilterUI._regexCheckBox.checked = "checked";
+            WebInspector.consoleView._filter._textFilterUI.setValue("ab[a-z]");
+            dumpVisibleMessages();
+            next();
+        },
+        
+        function onlyAbcMessageRegexWarning(next)
+        {
+            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("warning", false);
+            dumpVisibleMessages();
+            next();
+        }
+    ]
+
+    InspectorTest.evaluateInConsole("'Should be always visible'", InspectorTest.runTestSuite.bind(InspectorTest, testSuite));
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+    Tests that console can filter messages by source.
+</p>
+
+</body>
+</html>

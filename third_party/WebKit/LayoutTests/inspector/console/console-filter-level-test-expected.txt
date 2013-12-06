@@ -1,0 +1,61 @@
+CONSOLE INFO: line 10: sample info
+CONSOLE MESSAGE: line 11: sample log
+CONSOLE WARNING: line 12: sample warning
+CONSOLE DEBUG: line 13: sample debug
+CONSOLE ERROR: line 14: sample error
+CONSOLE INFO: line 16: abc info
+CONSOLE INFO: line 17: def info
+CONSOLE WARNING: line 19: abc warn
+CONSOLE WARNING: line 20: def warn
+Tests that console can filter messages by source.
+
+
+Running: beforeFilter
+beforeFilter
+>sample info console-filter-level-test.html:10
+>sample log console-filter-level-test.html:11
+>sample warning console-filter-level-test.html:12
+>sample debug console-filter-level-test.html:13
+>sample error console-filter-level-test.html:14
+>abc info console-filter-level-test.html:16
+>def info console-filter-level-test.html:17
+>abc warn console-filter-level-test.html:19
+>def warn console-filter-level-test.html:20
+>'Should be always visible'
+>"Should be always visible"
+
+Running: onlyWarning
+>sample warning console-filter-level-test.html:12
+>abc warn console-filter-level-test.html:19
+>def warn console-filter-level-test.html:20
+>'Should be always visible'
+>"Should be always visible"
+
+Running: onlyLog
+>sample log console-filter-level-test.html:11
+>'Should be always visible'
+>"Should be always visible"
+
+Running: onlyErrorDebug
+>sample debug console-filter-level-test.html:13
+>sample error console-filter-level-test.html:14
+>'Should be always visible'
+>"Should be always visible"
+
+Running: onlyAbcMessagePlain
+>abc info console-filter-level-test.html:16
+>abc warn console-filter-level-test.html:19
+>'Should be always visible'
+>"Should be always visible"
+
+Running: onlyAbcMessageRegex
+>abc info console-filter-level-test.html:16
+>abc warn console-filter-level-test.html:19
+>'Should be always visible'
+>"Should be always visible"
+
+Running: onlyAbcMessageRegexWarning
+>abc warn console-filter-level-test.html:19
+>'Should be always visible'
+>"Should be always visible"
+
