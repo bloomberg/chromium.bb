@@ -343,7 +343,9 @@ bool GpuVideoDecoder::NeedsBitstreamConversion() const {
 
 bool GpuVideoDecoder::CanReadWithoutStalling() const {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
-  return available_pictures_ > 0 || !ready_video_frames_.empty();
+  return
+      next_picture_buffer_id_ == 0 ||  // Decode() will ProvidePictureBuffers().
+      available_pictures_ > 0 || !ready_video_frames_.empty();
 }
 
 void GpuVideoDecoder::NotifyInitializeDone() {
