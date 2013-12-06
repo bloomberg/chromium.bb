@@ -40,7 +40,7 @@ def main():
     print 'chrome executable not found.'
     return 1
 
-  fuzzer_path = os.path.join(build_dir, 'ipc_fuzzer')
+  fuzzer_path = os.path.join(build_dir, 'ipc_fuzzer_replay')
   if not os.path.exists(fuzzer_path):
     print fuzzer_path + ' not found.'
     print ('Please use enable_ipc_fuzzer=1 GYP define and '
@@ -59,6 +59,7 @@ def main():
     chrome_path,
     '--ipc-fuzzer-testcase=' + sys.argv[-1],
     '--no-sandbox',
+    '--disable-kill-after-bad-ipc',
   ]
 
   launchers = {}

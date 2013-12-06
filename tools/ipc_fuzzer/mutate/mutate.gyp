@@ -8,11 +8,15 @@
   },
   'targets': [
     {
-      'target_name': 'ipc_fuzzer',
-      'type': 'none',
+      'target_name': 'ipc_fuzzer_mutate',
+      'type': 'executable',
       'dependencies': [
-        'mutate/mutate.gyp:ipc_fuzzer_mutate',
-        'replay/replay.gyp:ipc_fuzzer_replay',
+      ],
+      'sources': [
+        'mutate.cc',
+      ],
+      'include_dirs': [
+        '../..',
       ],
     },
   ],
