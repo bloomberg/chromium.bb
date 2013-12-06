@@ -29,27 +29,23 @@ callback CustomElementConstructor = Element ();
     readonly attribute DOMImplementation implementation;
     readonly attribute Element documentElement;
 
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElement([TreatNullAs=NullString,Default=Undefined] optional DOMString tagName);
-    DocumentFragment   createDocumentFragment();
-    [PerWorldBindings] Text createTextNode([Default=Undefined] optional DOMString data);
-    Comment createComment([Default=Undefined] optional DOMString data);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElement(DOMString tagName);
+    DocumentFragment createDocumentFragment();
+    [PerWorldBindings] Text createTextNode(DOMString data);
+    Comment createComment(DOMString data);
     [RaisesException, MeasureAs=DocumentCreateCDATASection] CDATASection createCDATASection([Default=Undefined] optional DOMString data); // Removed from DOM4.
-    [RaisesException] ProcessingInstruction createProcessingInstruction([Default=Undefined] optional DOMString target,
-                                                                                 [Default=Undefined] optional DOMString data);
+    [RaisesException] ProcessingInstruction createProcessingInstruction(DOMString target, DOMString data);
     [RaisesException, MeasureAs=DocumentCreateAttribute] Attr createAttribute([Default=Undefined] optional DOMString name); // Removed from DOM4.
-    [PerWorldBindings] NodeList           getElementsByTagName([Default=Undefined] optional DOMString tagname);
+    [PerWorldBindings] NodeList getElementsByTagName(DOMString localName);
 
     // Introduced in DOM Level 2:
 
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Node importNode([Default=Undefined] optional Node importedNode,
-                    optional boolean deep);
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                            [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Node importNode(Node node, optional boolean deep);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName);
     [RaisesException, MeasureAs=DocumentCreateAttributeNS] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                                   [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName); // Removed from DOM4.
-     NodeList getElementsByTagNameNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                                   [Default=Undefined] optional DOMString localName);
-    [PerWorldBindings] Element            getElementById([Default=Undefined] optional DOMString elementId);
+    NodeList getElementsByTagNameNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
+    [PerWorldBindings] Element getElementById(DOMString elementId);
 
     // DOM Level 3 Core
 
@@ -59,17 +55,17 @@ callback CustomElementConstructor = Element ();
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString xmlVersion; // Removed from DOM4.
     [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone; // Removed from DOM4.
 
-    [RaisesException, CustomElementCallbacks] Node               adoptNode([Default=Undefined] optional Node source);
+    [RaisesException, CustomElementCallbacks] Node adoptNode(Node node);
 
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString documentURI;
 
     // DOM Level 2 Events (DocumentEvents interface)
 
-    [RaisesException] Event              createEvent([Default=Undefined] optional DOMString eventType);
+    [RaisesException] Event createEvent(DOMString eventType);
 
     // DOM Level 2 Traversal and Range (DocumentRange interface)
 
-    Range              createRange();
+    Range createRange();
 
     // DOM Level 2 Traversal and Range (DocumentTraversal interface)
 
@@ -150,7 +146,7 @@ callback CustomElementConstructor = Element ();
     CanvasRenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 
     // HTML 5
-    NodeList getElementsByClassName([Default=Undefined] optional DOMString tagname);
+    NodeList getElementsByClassName(DOMString classNames);
 
     readonly attribute DOMString compatMode;
 

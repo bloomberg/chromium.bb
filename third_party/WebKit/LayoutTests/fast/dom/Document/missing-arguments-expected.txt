@@ -1,0 +1,19 @@
+PASS document.adoptNode() threw exception TypeError: Failed to execute 'adoptNode' on 'Document': 1 argument required, but only 0 present..
+PASS document.createComment() threw exception TypeError: Failed to execute 'createComment' on 'Document': 1 argument required, but only 0 present..
+PASS document.createElement() threw exception TypeError: Failed to execute 'createElement' on 'Document': 1 argument required, but only 0 present..
+PASS document.createElementNS('http://www.w3.org/2000/svg') threw exception TypeError: Failed to execute 'createElementNS' on 'Document': 2 arguments required, but only 1 present..
+PASS document.createElementNS() threw exception TypeError: Failed to execute 'createElementNS' on 'Document': 2 arguments required, but only 0 present..
+PASS document.createEvent() threw exception TypeError: Failed to execute 'createEvent' on 'Document': 1 argument required, but only 0 present..
+PASS document.createProcessingInstruction('xml') threw exception TypeError: Failed to execute 'createProcessingInstruction' on 'Document': 2 arguments required, but only 1 present..
+PASS document.createProcessingInstruction() threw exception TypeError: Failed to execute 'createProcessingInstruction' on 'Document': 2 arguments required, but only 0 present..
+PASS document.createTextNode() threw exception TypeError: Failed to execute 'createTextNode' on 'Document': 1 argument required, but only 0 present..
+PASS document.getElementById() threw exception TypeError: Failed to execute 'getElementById' on 'Document': 1 argument required, but only 0 present..
+PASS document.getElementsByClassName() threw exception TypeError: Failed to execute 'getElementsByClassName' on 'Document': 1 argument required, but only 0 present..
+PASS document.getElementsByTagName() threw exception TypeError: Failed to execute 'getElementsByTagName' on 'Document': 1 argument required, but only 0 present..
+PASS document.getElementsByTagNameNS('http://www.w3.org/2000/svg') threw exception TypeError: Failed to execute 'getElementsByTagNameNS' on 'Document': 2 arguments required, but only 1 present..
+PASS document.getElementsByTagNameNS() threw exception TypeError: Failed to execute 'getElementsByTagNameNS' on 'Document': 2 arguments required, but only 0 present..
+PASS document.importNode() threw exception TypeError: Failed to execute 'importNode' on 'Document': 1 argument required, but only 0 present..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

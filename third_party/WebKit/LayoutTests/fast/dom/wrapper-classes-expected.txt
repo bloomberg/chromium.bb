@@ -12,10 +12,10 @@ PASS classString(document.createAttribute()) is "Attr"
 FAIL classString(document.createAttribute().__proto__) should be AttrPrototype. Was Object.
 PASS classString(document.createAttribute().constructor) is "Function"
 PASS document.createAttribute().constructor.name is "Attr"
-PASS classString(document.createComment()) is "Comment"
-FAIL classString(document.createComment().__proto__) should be CommentPrototype. Was Object.
-PASS classString(document.createComment().constructor) is "Function"
-PASS document.createComment().constructor.name is "Comment"
+PASS classString(document.createComment('')) is "Comment"
+FAIL classString(document.createComment('').__proto__) should be CommentPrototype. Was Object.
+PASS classString(document.createComment('').constructor) is "Function"
+PASS document.createComment('').constructor.name is "Comment"
 PASS classString(document.createDocumentFragment()) is "DocumentFragment"
 FAIL classString(document.createDocumentFragment().__proto__) should be DocumentFragmentPrototype. Was Object.
 PASS classString(document.createDocumentFragment().constructor) is "Function"
@@ -40,10 +40,10 @@ PASS classString(document.createRange()) is "Range"
 FAIL classString(document.createRange().__proto__) should be RangePrototype. Was Object.
 PASS classString(document.createRange().constructor) is "Function"
 PASS document.createRange().constructor.name is "Range"
-PASS classString(document.createTextNode()) is "Text"
-FAIL classString(document.createTextNode().__proto__) should be TextPrototype. Was Object.
-PASS classString(document.createTextNode().constructor) is "Function"
-PASS document.createTextNode().constructor.name is "Text"
+PASS classString(document.createTextNode('')) is "Text"
+FAIL classString(document.createTextNode('').__proto__) should be TextPrototype. Was Object.
+PASS classString(document.createTextNode('').constructor) is "Function"
+PASS document.createTextNode('').constructor.name is "Text"
 PASS classString(document.createTreeWalker(root, 0, null, false)) is "TreeWalker"
 FAIL classString(document.createTreeWalker(root, 0, null, false).__proto__) should be TreeWalkerPrototype. Was Object.
 PASS classString(document.createTreeWalker(root, 0, null, false).constructor) is "Function"
@@ -63,10 +63,10 @@ PASS classString(xmlDocument.createElementNS('x', 'x', 'x')) is "Element"
 FAIL classString(xmlDocument.createElementNS('x', 'x', 'x').__proto__) should be ElementPrototype. Was Object.
 PASS classString(xmlDocument.createElementNS('x', 'x', 'x').constructor) is "Function"
 PASS xmlDocument.createElementNS('x', 'x', 'x').constructor.name is "Element"
-PASS classString(xmlDocument.createProcessingInstruction()) is "ProcessingInstruction"
-FAIL classString(xmlDocument.createProcessingInstruction().__proto__) should be ProcessingInstructionPrototype. Was Object.
-PASS classString(xmlDocument.createProcessingInstruction().constructor) is "Function"
-PASS xmlDocument.createProcessingInstruction().constructor.name is "ProcessingInstruction"
+PASS classString(xmlDocument.createProcessingInstruction('x', '')) is "ProcessingInstruction"
+FAIL classString(xmlDocument.createProcessingInstruction('x', '').__proto__) should be ProcessingInstructionPrototype. Was Object.
+PASS classString(xmlDocument.createProcessingInstruction('x', '').constructor) is "Function"
+PASS xmlDocument.createProcessingInstruction('x', '').constructor.name is "ProcessingInstruction"
 
 Events
 

@@ -3,15 +3,13 @@ createElementNS tests from mozilla, attached to webkit bug 16833
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS document.createElementNS().toString() is "[object Element]"
-PASS document.createElementNS("http://www.example.com").toString() is "[object Element]"
 HTML tests:
 PASS createElementNS(, )
 PASS createElementNS(null, )
-PASS createElementNS(, null); threw INVALID_CHARACTER_ERR
-PASS createElementNS(null, null); threw INVALID_CHARACTER_ERR
+PASS createElementNS(, null)
+PASS createElementNS(null, null)
 PASS createElementNS(null, ""); threw INVALID_CHARACTER_ERR
-PASS createElementNS("", null); threw INVALID_CHARACTER_ERR
+PASS createElementNS("", null)
 PASS createElementNS("", ""); threw INVALID_CHARACTER_ERR
 PASS createElementNS(null, "<div>"); threw INVALID_CHARACTER_ERR
 PASS createElementNS(null, "0div"); threw INVALID_CHARACTER_ERR
@@ -47,7 +45,7 @@ PASS createElementNS("http://www.w3.org/2000/xmlns/", "xmlns:test")
 PASS createElementNS("http://www.w3.org/XML/1998/namespace", "xml:test")
 PASS createElementNS("http://www.w3.org/XML/1998/namespace", "x:test")
 PASS createElement()
-PASS createElement(null); threw INVALID_CHARACTER_ERR
+PASS createElement(null)
 PASS createElement(""); threw INVALID_CHARACTER_ERR
 PASS createElement("<div>"); threw INVALID_CHARACTER_ERR
 PASS createElement("0div"); threw INVALID_CHARACTER_ERR
@@ -76,7 +74,7 @@ PASS createElement("xmlns:test")
 PASS createElement("SOAP-ENV:Body")
 XHTML createElement tests:
 PASS createElement()
-PASS createElement(null); threw INVALID_CHARACTER_ERR
+PASS createElement(null)
 PASS createElement(""); threw INVALID_CHARACTER_ERR
 PASS createElement("<div>"); threw INVALID_CHARACTER_ERR
 PASS createElement("0div"); threw INVALID_CHARACTER_ERR
@@ -105,7 +103,7 @@ PASS createElement("xmlns:test")
 PASS createElement("SOAP-ENV:Body")
 XML createElement tests:
 PASS createElement()
-PASS createElement(null); threw INVALID_CHARACTER_ERR
+PASS createElement(null)
 PASS createElement(""); threw INVALID_CHARACTER_ERR
 PASS createElement("<div>"); threw INVALID_CHARACTER_ERR
 PASS createElement("0div"); threw INVALID_CHARACTER_ERR

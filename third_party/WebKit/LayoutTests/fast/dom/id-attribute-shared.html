@@ -37,7 +37,7 @@ function runTest() {
     template2content = template2.content;
     object1.parentNode.removeChild(object1);
     object1 = null;
-    textnode1 = document.createTextNode();
+    textnode1 = document.createTextNode('');
     node3 = document.importNode(textnode1, true);
     object2.appendChild(node3);
     template2content.appendChild(object2);

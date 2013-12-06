@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+[
+    "adoptNode()",
+    "createComment()",
+    "createElement()",
+    "createElementNS('http://www.w3.org/2000/svg')",
+    "createElementNS()",
+    "createEvent()",
+    "createProcessingInstruction('xml')",
+    "createProcessingInstruction()",
+    "createTextNode()",
+    "getElementById()",
+    "getElementsByClassName()",
+    "getElementsByTagName()",
+    "getElementsByTagNameNS('http://www.w3.org/2000/svg')",
+    "getElementsByTagNameNS()",
+    "importNode()"
+].forEach(function(expr)
+{
+    shouldThrow("document." + expr);
+});
+</script>
+</body>
+</html>
