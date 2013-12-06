@@ -120,6 +120,7 @@ public:
 private:
     enum IterationProgress {
         HandledNone,
+        HandledUserAgentShadowRoot,
         HandledNode,
         HandledChildren
     };
@@ -146,6 +147,7 @@ private:
     int m_offset;
     IterationProgress m_iterationProgress;
     BitStack m_fullyClippedStack;
+    int m_shadowDepth;
 
     // The range.
     Node* m_startContainer;

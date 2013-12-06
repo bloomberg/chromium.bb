@@ -205,6 +205,15 @@ static void pushFullyClippedState(BitStack& stack, Node* node)
 {
     ASSERT(stack.size() == depthCrossingShadowBoundaries(node));
 
+    // FIXME: m_fullyClippedStack was added in response to <https://bugs.webkit.org/show_bug.cgi?id=26364>
+    // ("Search can find text that's hidden by overflow:hidden"), but the logic here will not work correctly if
+    // a shadow tree redistributes nodes. m_fullyClippedStack relies on the assumption that DOM node hierarchy matches
+    // the render tree, which is not necessarily true if there happens to be shadow DOM distribution or other mechanics
+    // that shuffle around the render objects regardless of node tree hierarchy (like CSS flexbox).
+    //
+    // A more appropriate way to handle this situation is to detect overflow:hidden blocks by using only rendering
+    // primitives, not with DOM primitives.
+
     // Push true if this node full clips its contents, or if a parent already has fully
     // clipped and this is not a node that ignores its container's clip.
     stack.push(fullyClipsContents(node) || (stack.top() && !ignoresContainerClip(node)));
@@ -229,7 +238,8 @@ static void setUpFullyClippedStack(BitStack& stack, Node* node)
 // --------
 
 TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
-    : m_startContainer(0)
+    : m_shadowDepth(0)
+    , m_startContainer(0)
     , m_startOffset(0)
     , m_endContainer(0)
     , m_endOffset(0)
@@ -333,7 +343,7 @@ void TextIterator::advance()
             return;
     }
 
-    while (m_node && m_node != m_pastEndNode) {
+    while (m_node && (m_node != m_pastEndNode || m_shadowDepth > 0)) {
         if (!m_shouldStop && m_stopsOnFormControls && HTMLFormControlElement::enclosingFormControlElement(m_node))
             m_shouldStop = true;
 
@@ -349,9 +359,29 @@ void TextIterator::advance()
 
         RenderObject* renderer = m_node->renderer();
         if (!renderer) {
-            m_iterationProgress = HandledChildren;
+            if (m_node->isShadowRoot()) {
+                // A shadow root doesn't have a renderer, but we want to visit children anyway.
+                m_iterationProgress = m_iterationProgress < HandledNode ? HandledNode : m_iterationProgress;
+            } else {
+                m_iterationProgress = HandledChildren;
+            }
         } else {
-            // handle current node according to its type
+            // Enter user-agent shadow root, if necessary.
+            if (m_iterationProgress < HandledUserAgentShadowRoot) {
+                if (m_entersTextControls && renderer->isTextControl()) {
+                    m_node = toElement(m_node)->userAgentShadowRoot();
+                    m_iterationProgress = HandledNone;
+                    m_handledFirstLetter = false;
+                    m_firstLetterText = 0;
+                    ++m_shadowDepth;
+                    pushFullyClippedState(m_fullyClippedStack, m_node);
+                    continue;
+                }
+
+                m_iterationProgress = HandledUserAgentShadowRoot;
+            }
+
+            // Handle the current node according to its type.
             if (m_iterationProgress < HandledNode) {
                 bool handledNode = false;
                 if (renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) { // FIXME: What about CDATA_SECTION_NODE?
@@ -373,22 +403,26 @@ void TextIterator::advance()
             }
         }
 
-        // find a new current node to handle in depth-first manner,
-        // calling exitNode() as we come back thru a parent node
+        // Find a new current node to handle in depth-first manner,
+        // calling exitNode() as we come back thru a parent node.
+        //
+        // 1. Iterate over child nodes, if we haven't done yet.
         Node* next = m_iterationProgress < HandledChildren ? m_node->firstChild() : 0;
         m_offset = 0;
         if (!next) {
+            // 2. If we've already iterated children or they are not available, go to the next sibling node.
             next = m_node->nextSibling();
             if (!next) {
+                // 3. If we are at the last child, go up the node tree until we find a next sibling.
                 bool pastEnd = NodeTraversal::next(*m_node) == m_pastEndNode;
-                Node* parentNode = m_node->parentOrShadowHostNode();
+                Node* parentNode = m_node->parentNode();
                 while (!next && parentNode) {
                     if ((pastEnd && parentNode == m_endContainer) || m_endContainer->isDescendantOf(parentNode))
                         return;
                     bool haveRenderer = m_node->renderer();
                     m_node = parentNode;
                     m_fullyClippedStack.pop();
-                    parentNode = m_node->parentOrShadowHostNode();
+                    parentNode = m_node->parentNode();
                     if (haveRenderer)
                         exitNode();
                     if (m_positionNode) {
@@ -396,6 +430,20 @@ void TextIterator::advance()
                         return;
                     }
                     next = m_node->nextSibling();
+                }
+
+                if (!next && !parentNode && m_shadowDepth > 0) {
+                    // 4. Reached the top of a shadow root; go back to where we were.
+                    ShadowRoot* shadowRoot = toShadowRoot(m_node);
+                    // For now, the root can only be a user-agent shadow root.
+                    ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+                    m_node = shadowRoot->host();
+                    m_iterationProgress = HandledUserAgentShadowRoot;
+                    m_handledFirstLetter = false;
+                    m_firstLetterText = 0;
+                    --m_shadowDepth;
+                    m_fullyClippedStack.pop();
+                    continue;
                 }
             }
             m_fullyClippedStack.pop();
@@ -660,12 +708,8 @@ bool TextIterator::handleReplacedElement()
     }
 
     if (m_entersTextControls && renderer->isTextControl()) {
-        if (HTMLElement* innerTextElement = toRenderTextControl(renderer)->textFormControlElement()->innerTextElement()) {
-            m_node = innerTextElement->containingShadowRoot();
-            pushFullyClippedState(m_fullyClippedStack, m_node);
-            m_offset = 0;
-            return false;
-        }
+        // The shadow tree should be already visited.
+        return true;
     }
 
     m_hasEmitted = true;
