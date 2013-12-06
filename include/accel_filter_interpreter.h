@@ -84,6 +84,13 @@ class AccelFilterInterpreter : public FilterInterpreter {
   DoubleProperty min_reasonable_dt_;
   DoubleProperty max_reasonable_dt_;
   stime_t last_reasonable_dt_;
+
+  // If we enable smooth accel, the past few magnitudes are used to compute the
+  // multiplication factor.
+  BoolProperty smooth_accel_;
+  stime_t last_end_time_;
+  float last_mags_[2];
+  size_t last_mags_size_;
 };
 
 }  // namespace gestures

@@ -35,7 +35,10 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
       use_mouse_point_curves_(prop_reg, "Mouse Accel Curves", 0),
       min_reasonable_dt_(prop_reg, "Accel Min dt", 0.003),
       max_reasonable_dt_(prop_reg, "Accel Max dt", 0.050),
-      last_reasonable_dt_(0.05) {
+      last_reasonable_dt_(0.05),
+      smooth_accel_(prop_reg, "Smooth Accel", 0),
+      last_end_time_(0.0),
+      last_mags_size_(0) {
   InitName();
   // Set up default curves.
 
@@ -210,6 +213,27 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
     ProduceGesture(gs);
     return;  // Avoid division by 0
   }
+
+  if (smooth_accel_.val_) {
+    if (last_end_time_ == gs.start_time) {
+      float new_mag = mag;
+      for (size_t i = last_mags_size_ - 1; i > 0; i--) {
+        new_mag += last_mags_[i];
+        last_mags_[i] = last_mags_[i - 1];
+      }
+      new_mag += last_mags_[0];
+      new_mag /= last_mags_size_ + 1;
+
+      last_mags_[0] = mag;
+      last_mags_size_ = std::min(arraysize(last_mags_), last_mags_size_ + 1);
+      mag = new_mag;
+    } else {
+      last_mags_size_ = 1;
+      last_mags_[0] = mag;
+    }
+    last_end_time_ = gs.end_time;
+  }
+
   for (size_t i = 0; i < max_segs; ++i) {
     if (mag > segs[i].x_)
       continue;
