@@ -52,8 +52,8 @@ enum AlgorithmOperation {
     DeriveKey,
     WrapKey,
     UnwrapKey,
-    // <---- End of list
-    NumberOfAlgorithmOperations,
+    // <---- End of list (keep this up-to-date)
+    LastAlgorithmOperation = UnwrapKey,
 };
 
 // Normalizes an algorithm identifier (dictionary) into a WebCryptoAlgorithm. If

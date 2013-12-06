@@ -130,7 +130,7 @@ struct AlgorithmInfo {
 
     blink::WebCryptoAlgorithmId algorithmId;
     const char* algorithmName;
-    AlgorithmParamsForOperation paramsForOperation[NumberOfAlgorithmOperations];
+    AlgorithmParamsForOperation paramsForOperation[LastAlgorithmOperation + 1];
 };
 
 // AlgorithmRegistry enumerates each of the different algorithms and its

@@ -111,7 +111,6 @@ blink::WebCryptoKeyUsageMask toKeyUsage(AlgorithmOperation operation)
     case Digest:
     case GenerateKey:
     case ImportKey:
-    case NumberOfAlgorithmOperations:
         break;
     }
 
