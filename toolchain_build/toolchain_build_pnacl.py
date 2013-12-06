@@ -60,7 +60,7 @@ if platform_tools.IsLinux():
   cxx = 'g++ -m32'
   CONFIGURE_FLAGS += ['--build=i686-linux', 'CC=' + cc, 'CXX=' + cxx]
 elif platform_tools.IsWindows():
-  command.Command.use_cygwin = True
+  command.Runnable.use_cygwin = True
   CONFIGURE_FLAGS += ['--disable-nls']
   MAKE_PARALLEL_CMD += ['HAVE_LIBICONV=no']
   # Windows has issues with the intentionally-racy 'chew' target

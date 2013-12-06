@@ -66,7 +66,7 @@ class ExecutableNotFound(Exception):
   pass
 
 
-def Which(command, paths=None):
+def Which(command, paths=None, require_executable=True):
   """Find the absolute path of a command in the current PATH.
 
   Args:
@@ -85,7 +85,8 @@ def Which(command, paths=None):
     np = os.path.abspath(os.path.join(p, command))
     for suffix in exe_suffixes:
       full_path = np + suffix
-      if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+      if (os.path.isfile(full_path) and
+          (not require_executable or os.access(full_path, os.X_OK))):
         return full_path
   raise ExecutableNotFound('Unable to find: ' + command)
 

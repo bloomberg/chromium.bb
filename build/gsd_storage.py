@@ -16,6 +16,7 @@ import logging
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 import file_tools
@@ -61,7 +62,10 @@ class GSDStorage(object):
     """
     if gsutil is None:
       try:
-        gsutil = [file_tools.Which(os.environ.get('GSUTIL', 'gsutil'))]
+        # Require that gsutil be Python if it is specified in the environment.
+        gsutil = [sys.executable,
+                  file_tools.Which(os.environ.get('GSUTIL', 'gsutil'),
+                                   require_executable=False)]
       except file_tools.ExecutableNotFound:
         gsutil = ['gsutil']
     assert isinstance(gsutil, list)

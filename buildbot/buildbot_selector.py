@@ -305,10 +305,7 @@ def Main():
   if 'BOTO_CONFIG' in env:
     del env['BOTO_CONFIG']
 
-  if sys.platform in ['win32', 'cygwin']:
-    env['GSUTIL'] = r'\b\build\scripts\slave\gsutil.bat'
-  else:
-    env['GSUTIL'] = '/b/build/scripts/slave/gsutil'
+  env['GSUTIL'] = '/b/build/third_party/gsutil/gsutil'
 
   # Run through runtest.py to get upload of perf data.
   build_properties = {
