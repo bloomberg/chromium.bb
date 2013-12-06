@@ -29,7 +29,8 @@ class Mp2tStreamParserTest : public testing::Test {
         video_frame_count_(0),
         video_min_dts_(kNoTimestamp()),
         video_max_dts_(kNoTimestamp()) {
-    parser_.reset(new Mp2tStreamParser());
+    bool has_sbr = false;
+    parser_.reset(new Mp2tStreamParser(has_sbr));
   }
 
  protected:

@@ -30,7 +30,8 @@ class EsParserAdts : public EsParser {
   typedef base::Callback<void(const AudioDecoderConfig&)> NewAudioConfigCB;
 
   EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
-               const EmitBufferCB& emit_buffer_cb);
+               const EmitBufferCB& emit_buffer_cb,
+               bool sbr_in_mimetype);
   virtual ~EsParserAdts();
 
   // EsParser implementation.
@@ -58,6 +59,10 @@ class EsParserAdts : public EsParser {
   // - to send ES buffers.
   NewAudioConfigCB new_audio_config_cb_;
   EmitBufferCB emit_buffer_cb_;
+
+  // True when AAC SBR extension is signalled in the mimetype
+  // (mp4a.40.5 in the codecs parameter).
+  bool sbr_in_mimetype_;
 
   // Bytes of the ES stream that have not been emitted yet.
   ByteQueue es_byte_queue_;

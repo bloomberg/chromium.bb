@@ -211,7 +211,8 @@ static StreamParser* BuildMP3Parser(
 
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
 static const CodecInfo* kVideoMP2TCodecs[] = {
-  &kH264CodecInfo,
+  &kH264AVC1CodecInfo,
+  &kH264AVC3CodecInfo,
   &kMPEG4AACCodecInfo,
   &kMPEG2AACLCCodecInfo,
   NULL
@@ -219,7 +220,16 @@ static const CodecInfo* kVideoMP2TCodecs[] = {
 
 static StreamParser* BuildMP2TParser(
     const std::vector<std::string>& codecs, const media::LogCB& log_cb) {
-  return new media::mp2t::Mp2tStreamParser();
+  bool has_sbr = false;
+  for (size_t i = 0; i < codecs.size(); ++i) {
+    std::string codec_id = codecs[i];
+    if (MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern) &&
+        GetMP4AudioObjectType(codec_id, log_cb) == kAACSBRObjectType) {
+      has_sbr = true;
+    }
+  }
+
+  return new media::mp2t::Mp2tStreamParser(has_sbr);
 }
 #endif
 #endif

@@ -26,7 +26,7 @@ class PidState;
 
 class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
  public:
-  Mp2tStreamParser();
+  explicit Mp2tStreamParser(bool sbr_in_mimetype);
   virtual ~Mp2tStreamParser();
 
   // StreamParser implementation.
@@ -100,6 +100,10 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   NewMediaSegmentCB new_segment_cb_;
   base::Closure end_of_segment_cb_;
   LogCB log_cb_;
+
+  // True when AAC SBR extension is signalled in the mimetype
+  // (mp4a.40.5 in the codecs parameter).
+  bool sbr_in_mimetype_;
 
   // Bytes of the TS stream.
   ByteQueue ts_byte_queue_;

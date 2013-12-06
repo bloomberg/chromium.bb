@@ -135,9 +135,11 @@ namespace mp2t {
 
 EsParserAdts::EsParserAdts(
     const NewAudioConfigCB& new_audio_config_cb,
-    const EmitBufferCB& emit_buffer_cb)
+    const EmitBufferCB& emit_buffer_cb,
+    bool sbr_in_mimetype)
   : new_audio_config_cb_(new_audio_config_cb),
-    emit_buffer_cb_(emit_buffer_cb) {
+    emit_buffer_cb_(emit_buffer_cb),
+    sbr_in_mimetype_(sbr_in_mimetype) {
 }
 
 EsParserAdts::~EsParserAdts() {
@@ -247,16 +249,25 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
   int samples_per_second = adts_frequency_table[frequency_index];
   int adts_profile = (adts_header[2] >> 6) & 0x3;
 
+  // The following code is written according to ISO 14496 Part 3 Table 1.11 and
+  // Table 1.22. (Table 1.11 refers to the capping to 48000, Table 1.22 refers
+  // to SBR doubling the AAC sample rate.)
+  // TODO(damienv) : Extend sample rate cap to 96kHz for Level 5 content.
+  int extended_samples_per_second = sbr_in_mimetype_
+      ? std::min(2 * samples_per_second, 48000)
+      : samples_per_second;
+
   AudioDecoderConfig audio_decoder_config(
       kCodecAAC,
       kSampleFormatS16,
       adts_channel_layout[channel_configuration],
-      samples_per_second,
+      extended_samples_per_second,
       NULL, 0,
       false);
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: " << samples_per_second;
+    DVLOG(1) << "Extended sampling frequency: " << extended_samples_per_second;
     DVLOG(1) << "Channel config: " << channel_configuration;
     DVLOG(1) << "Adts profile: " << adts_profile;
     // Reset the timestamp helper to use a new time scale.

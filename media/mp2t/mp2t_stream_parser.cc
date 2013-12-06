@@ -151,8 +151,9 @@ Mp2tStreamParser::BufferQueueWithConfig::BufferQueueWithConfig(
 Mp2tStreamParser::BufferQueueWithConfig::~BufferQueueWithConfig() {
 }
 
-Mp2tStreamParser::Mp2tStreamParser()
-  : selected_audio_pid_(-1),
+Mp2tStreamParser::Mp2tStreamParser(bool sbr_in_mimetype)
+  : sbr_in_mimetype_(sbr_in_mimetype),
+    selected_audio_pid_(-1),
     selected_video_pid_(-1),
     is_initialized_(false),
     segment_started_(false),
@@ -346,7 +347,8 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
                        pes_pid),
             base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
                        base::Unretained(this),
-                       pes_pid)));
+                       pes_pid),
+            sbr_in_mimetype_));
     is_audio = true;
   } else {
     return;
@@ -391,7 +393,7 @@ void Mp2tStreamParser::UpdatePidFilter() {
     selected_audio_pid_ = lowest_audio_pid->first;
   }
   if (lowest_video_pid != pids_.end()) {
-    DVLOG(1) << "Enable video pid: " << lowest_audio_pid->first;
+    DVLOG(1) << "Enable video pid: " << lowest_video_pid->first;
     lowest_video_pid->second->Enable();
     selected_video_pid_ = lowest_video_pid->first;
   }
