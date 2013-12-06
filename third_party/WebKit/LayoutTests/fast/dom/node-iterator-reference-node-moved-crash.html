@@ -5,7 +5,7 @@
                 testRunner.dumpAsText();
                 testRunner.waitUntilDone();
             }
-            
+
             function gc()
             {
                 if (window.GCController)
@@ -15,19 +15,19 @@
                     var s = new String("abc");
                 }
             }
-            
+
             function runTest()
             {
                 iteratorRoot = document.createElement();
                 element = iteratorRoot.appendChild(document.createElement());
                 element.appendChild(document.createElement());
-  
+
                 iterator = document.createNodeIterator(iteratorRoot, -1);
                 iterator.nextNode(); iterator.nextNode(); iterator.nextNode();
                 iterator.previousNode();
-  
+
                 iteratorRoot.removeChild(element);
-  
+
                 otherDocument = document.implementation.createHTMLDocument();
                 otherDocument.body.appendChild(iteratorRoot);
 
@@ -36,7 +36,7 @@
                 div = document.body.appendChild(document.createElement('div'));
                 document.body.removeChild(div);
                 gc();
-                
+
                 if (window.testRunner)
                     testRunner.notifyDone();
             }
@@ -46,4 +46,3 @@
         Test passes if it does not crash.
     </body>
 </html>
-
