@@ -1492,17 +1492,6 @@
       ],
     }],
     ['OS=="mac"', {
-      'sources': [
-        # Build necessary Mozilla sources
-        '../third_party/mozilla/ComplexTextInputPanel.h',
-        '../third_party/mozilla/ComplexTextInputPanel.mm',
-        '../third_party/mozilla/NSPasteboard+Utils.h',
-        '../third_party/mozilla/NSPasteboard+Utils.mm',
-        '../third_party/mozilla/NSString+Utils.h',
-        '../third_party/mozilla/NSString+Utils.mm',
-        '../third_party/mozilla/NSURL+Utils.h',
-        '../third_party/mozilla/NSURL+Utils.m',
-      ],
       'sources/': [
         ['exclude', '^browser/device_orientation/data_fetcher_shared_memory_default.cc$'],
       ],
@@ -1510,6 +1499,7 @@
         'browser/geolocation/empty_wifi_data_provider.cc',
       ],
       'dependencies': [
+        '../third_party/mozilla/mozilla.gyp:mozilla',
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
       ],
       'link_settings': {

@@ -491,6 +491,9 @@
           ],
         }],
         ['OS=="mac"', {
+          'dependencies': [
+            '../third_party/mozilla/mozilla.gyp:mozilla',
+          ],
           'sources!': [
             'base/dragdrop/drag_utils.cc',
             'base/dragdrop/drag_utils.h',
@@ -659,11 +662,6 @@
             # MolokoCacao additions
             '../third_party/molokocacao/NSBezierPath+MCAdditions.h',
             '../third_party/molokocacao/NSBezierPath+MCAdditions.m',
-            # Build necessary Mozilla sources
-            '../third_party/mozilla/NSScreen+Utils.h',
-            '../third_party/mozilla/NSScreen+Utils.m',
-            '../third_party/mozilla/NSWorkspace+Utils.h',
-            '../third_party/mozilla/NSWorkspace+Utils.m',
           ],
           'include_dirs': [
             '..',

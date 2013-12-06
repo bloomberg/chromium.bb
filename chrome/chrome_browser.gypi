@@ -3364,6 +3364,9 @@
           ],
         }],
         ['OS=="mac"', {
+          'dependencies': [
+            '../third_party/mozilla/mozilla.gyp:mozilla',
+          ],
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
             'browser/first_run/upgrade_util.cc',
