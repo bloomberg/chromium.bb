@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/view_configuration.h"
+#include "ui/gfx/android/view_configuration.h"
 
 #include "base/android/jni_android.h"
 #include "jni/ViewConfiguration_jni.h"
@@ -11,7 +11,7 @@ using namespace JNI_ViewConfiguration;
 using base::android::AttachCurrentThread;
 using base::android::GetApplicationContext;
 
-namespace content {
+namespace gfx {
 
 int ViewConfiguration::GetDoubleTapTimeoutInMs() {
   JNIEnv* env = AttachCurrentThread();
@@ -26,16 +26,6 @@ int ViewConfiguration::GetLongPressTimeoutInMs() {
 int ViewConfiguration::GetTapTimeoutInMs() {
   JNIEnv* env = AttachCurrentThread();
   return Java_ViewConfiguration_getTapTimeout(env);
-}
-
-int ViewConfiguration::GetMaximumFlingVelocityInDipsPerSecond() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_ViewConfiguration_getMaximumFlingVelocity(env);
-}
-
-int ViewConfiguration::GetMinimumFlingVelocityInDipsPerSecond() {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_ViewConfiguration_getMinimumFlingVelocity(env);
 }
 
 int ViewConfiguration::GetMaximumFlingVelocityInPixelsPerSecond() {
@@ -63,4 +53,4 @@ bool ViewConfiguration::RegisterViewConfiguration(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace content
+}  // namespace gfx

@@ -9,7 +9,6 @@
 #include "content/common/android/device_telephony_info.h"
 #include "content/common/android/hash_set.h"
 #include "content/common/android/trace_event_binding.h"
-#include "content/common/android/view_configuration.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
@@ -17,7 +16,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
         content::DeviceTelephonyInfo::RegisterDeviceTelephonyInfo },
   { "HashSet", content::RegisterHashSet },
   { "TraceEvent", RegisterTraceEvent },
-  { "ViewConfiguration", content::ViewConfiguration::RegisterViewConfiguration }
 };
 
 }  // namespace

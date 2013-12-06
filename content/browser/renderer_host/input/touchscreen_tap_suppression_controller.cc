@@ -9,7 +9,7 @@
 #include "ui/events/gestures/gesture_configuration.h"
 
 #if defined(OS_ANDROID)
-#include "content/common/android/view_configuration.h"
+#include "ui/gfx/android/view_configuration.h"
 #endif
 
 namespace content {
@@ -56,11 +56,11 @@ bool TouchscreenTapSuppressionController::ShouldSuppressGestureTapEnd() {
 // TODO(jdduke): Enable ui::GestureConfiguration on Android and initialize
 //               with parameters from ViewConfiguration.
 int TouchscreenTapSuppressionController::MaxCancelToDownTimeInMs() {
-  return ViewConfiguration::GetTapTimeoutInMs();
+  return gfx::ViewConfiguration::GetTapTimeoutInMs();
 }
 
 int TouchscreenTapSuppressionController::MaxTapGapTimeInMs() {
-  return ViewConfiguration::GetLongPressTimeoutInMs();
+  return gfx::ViewConfiguration::GetLongPressTimeoutInMs();
 }
 #else
 int TouchscreenTapSuppressionController::MaxCancelToDownTimeInMs() {

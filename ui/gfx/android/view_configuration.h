@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_VIEW_CONFIGURATION_H_
-#define CONTENT_COMMON_ANDROID_VIEW_CONFIGURATION_H_
+#ifndef UI_GFX_ANDROID_VIEW_CONFIGURATION_H_
+#define UI_GFX_ANDROID_VIEW_CONFIGURATION_H_
 
 #include <jni.h>
 
-namespace content {
+#include "ui/gfx/gfx_export.h"
+
+namespace gfx {
 
 // Provides access to Android's ViewConfiguration for gesture-related constants.
-class ViewConfiguration {
+class GFX_EXPORT ViewConfiguration {
  public:
   static int GetDoubleTapTimeoutInMs();
   static int GetLongPressTimeoutInMs();
   static int GetTapTimeoutInMs();
-
-  static int GetMaximumFlingVelocityInDipsPerSecond();
-  static int GetMinimumFlingVelocityInDipsPerSecond();
 
   static int GetMaximumFlingVelocityInPixelsPerSecond();
   static int GetMinimumFlingVelocityInPixelsPerSecond();
@@ -28,6 +27,6 @@ class ViewConfiguration {
   static bool RegisterViewConfiguration(JNIEnv* env);
 };
 
-}  // namespace content
+}  // namespace gfx
 
-#endif  // CONTENT_COMMON_ANDROID_VIEW_CONFIGURATION_H_
+#endif  // UI_GFX_ANDROID_VIEW_CONFIGURATION_H_

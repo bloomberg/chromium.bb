@@ -41,6 +41,8 @@
         'android/java_bitmap.h',
         'android/shared_device_display_info.cc',
         'android/shared_device_display_info.h',
+        'android/view_configuration.cc',
+        'android/view_configuration.h',
         'animation/animation.cc',
         'animation/animation.h',
         'animation/animation_container.cc',
@@ -403,8 +405,20 @@
     ['OS=="android"' , {
      'targets': [
        {
+         'target_name': 'gfx_view_jni_headers',
+         'type': 'none',
+         'variables': {
+           'jni_gen_package': 'ui/gfx',
+           'input_java_class': 'android/view/ViewConfiguration.class',
+         },
+         'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+       },
+       {
          'target_name': 'gfx_jni_headers',
          'type': 'none',
+         'dependencies': [
+           'gfx_view_jni_headers'
+         ],
          'direct_dependent_settings': {
            'include_dirs': [
              '<(SHARED_INTERMEDIATE_DIR)/ui/gfx',
@@ -416,7 +430,7 @@
          ],
          'variables': {
            'jni_gen_package': 'ui/gfx',
-           'jni_generator_ptr_type': 'long',
+           'jni_generator_ptr_type': 'long'
          },
          'includes': [ '../../build/jni_generator.gypi' ],
        },

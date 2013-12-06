@@ -6,9 +6,9 @@
 
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/android/view_configuration.h"
 #include "jni/TouchEventSynthesizer_jni.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/screen.h"
 
 using blink::WebTouchEvent;
@@ -86,7 +86,7 @@ bool SyntheticGestureTargetAndroid::SupportsSyntheticGestureSourceType(
 int SyntheticGestureTargetAndroid::GetTouchSlopInDips() const {
   float device_scale_factor =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
-  return ViewConfiguration::GetTouchSlopInPixels() / device_scale_factor;
+  return gfx::ViewConfiguration::GetTouchSlopInPixels() / device_scale_factor;
 }
 
 }  // namespace content
