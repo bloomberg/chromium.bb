@@ -38,7 +38,7 @@
           '../content/content.gyp:content_gpu',
           '../content/content.gyp:content_ppapi_plugin',
           '../content/content.gyp:content_worker',
-          '../third_party/WebKit/Source/devtools/devtools.gyp:devtools_frontend_resources',
+          '../third_party/WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources',
         ],
       }],
       ['enable_printing!=0', {

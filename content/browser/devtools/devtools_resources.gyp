@@ -8,7 +8,7 @@
       'target_name': 'devtools_resources',
       'type': 'none',
       'dependencies': [
-        '../../../third_party/WebKit/Source/devtools/devtools.gyp:generate_devtools_grd',
+        '../../../third_party/WebKit/public/blink_devtools.gyp:blink_generate_devtools_grd',
       ],
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
