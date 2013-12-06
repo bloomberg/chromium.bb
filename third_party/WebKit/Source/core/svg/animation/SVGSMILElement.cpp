@@ -239,7 +239,7 @@ void SVGSMILElement::buildPendingResource()
     }
 }
 
-static inline QualifiedName constructQualifiedName(const SVGElement* svgElement, const String& attributeName)
+static inline QualifiedName constructQualifiedName(const SVGElement* svgElement, const AtomicString& attributeName)
 {
     ASSERT(svgElement);
     if (attributeName.isEmpty())
@@ -247,8 +247,8 @@ static inline QualifiedName constructQualifiedName(const SVGElement* svgElement,
     if (!attributeName.contains(':'))
         return QualifiedName(nullAtom, attributeName, nullAtom);
 
-    String prefix;
-    String localName;
+    AtomicString prefix;
+    AtomicString localName;
     if (!Document::parseQualifiedName(attributeName, prefix, localName, ASSERT_NO_EXCEPTION))
         return anyQName();
 

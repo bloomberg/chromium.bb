@@ -436,8 +436,8 @@ static bool executeFormatBlock(Frame& frame, Event*, EditorCommandSource, const 
     if (tagName[0] == '<' && tagName[tagName.length() - 1] == '>')
         tagName = tagName.substring(1, tagName.length() - 2);
 
-    String localName, prefix;
-    if (!Document::parseQualifiedName(tagName, prefix, localName, IGNORE_EXCEPTION))
+    AtomicString localName, prefix;
+    if (!Document::parseQualifiedName(AtomicString(tagName), prefix, localName, IGNORE_EXCEPTION))
         return false;
     QualifiedName qualifiedTagName(prefix, localName, xhtmlNamespaceURI);
 

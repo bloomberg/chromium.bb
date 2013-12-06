@@ -709,9 +709,9 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     return element;
 }
 
-PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
+PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
 {
-    String prefix, localName;
+    AtomicString prefix, localName;
     if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
         return 0;
 
@@ -1019,9 +1019,9 @@ NamedFlowCollection* Document::namedFlows()
     return m_namedFlows.get();
 }
 
-PassRefPtr<Element> Document::createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionState& exceptionState)
+PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
 {
-    String prefix, localName;
+    AtomicString prefix, localName;
     if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
         return 0;
 
@@ -3878,7 +3878,7 @@ bool Document::isValidName(const String& name)
 }
 
 template<typename CharType>
-static bool parseQualifiedNameInternal(const String& qualifiedName, const CharType* characters, unsigned length, String& prefix, String& localName, ExceptionState& exceptionState)
+static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const CharType* characters, unsigned length, AtomicString& prefix, AtomicString& localName, ExceptionState& exceptionState)
 {
     bool nameStart = true;
     bool sawColon = false;
@@ -3910,15 +3910,16 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
     }
 
     if (!sawColon) {
-        prefix = String();
+        prefix = nullAtom;
         localName = qualifiedName;
     } else {
-        prefix = qualifiedName.substring(0, colonPos);
+        prefix = AtomicString(characters, colonPos);
         if (prefix.isEmpty()) {
             exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
             return false;
         }
-        localName = qualifiedName.substring(colonPos + 1);
+        int prefixStart = colonPos + 1;
+        localName = AtomicString(characters + prefixStart, length - prefixStart);
     }
 
     if (localName.isEmpty()) {
@@ -3929,7 +3930,7 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
     return true;
 }
 
-bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, String& localName, ExceptionState& exceptionState)
+bool Document::parseQualifiedName(const AtomicString& qualifiedName, AtomicString& prefix, AtomicString& localName, ExceptionState& exceptionState)
 {
     unsigned length = qualifiedName.length();
 
@@ -4146,14 +4147,14 @@ WeakPtr<Document> Document::contextDocument()
     return WeakPtr<Document>(0);
 }
 
-PassRefPtr<Attr> Document::createAttribute(const String& name, ExceptionState& exceptionState)
+PassRefPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
 {
-    return createAttributeNS(String(), name, exceptionState, true);
+    return createAttributeNS(nullAtom, name, exceptionState, true);
 }
 
-PassRefPtr<Attr> Document::createAttributeNS(const String& namespaceURI, const String& qualifiedName, ExceptionState& exceptionState, bool shouldIgnoreNamespaceChecks)
+PassRefPtr<Attr> Document::createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState, bool shouldIgnoreNamespaceChecks)
 {
-    String prefix, localName;
+    AtomicString prefix, localName;
     if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
         return 0;
 
