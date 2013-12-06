@@ -394,7 +394,11 @@ void Pipeline::SetTotalBytes(int64 total_bytes) {
 
 TimeDelta Pipeline::TimeForByteOffset_Locked(int64 byte_offset) const {
   lock_.AssertAcquired();
-  TimeDelta time_offset = byte_offset * clock_->Duration() / total_bytes_;
+  // Use floating point to avoid potential overflow when using 64 bit integers.
+  double time_offset_in_ms = clock_->Duration().InMilliseconds() *
+      (static_cast<double>(byte_offset) / total_bytes_);
+  TimeDelta time_offset(TimeDelta::FromMilliseconds(
+      static_cast<int64>(time_offset_in_ms)));
   // Since the byte->time calculation is approximate, fudge the beginning &
   // ending areas to look better.
   TimeDelta epsilon = clock_->Duration() / 100;
