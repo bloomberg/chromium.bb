@@ -1298,16 +1298,7 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         // While SSL 3.0 fallback should be eliminated because of security
         // reasons, there is a high risk of breaking the servers if this is
         // done in general.
-        // For now SSL 3.0 fallback is disabled for Google servers first,
-        // and will be expanded to other servers after enough experiences
-        // have been gained showing that this experiment works well with
-        // today's Internet.
-        if (version_max > SSL_PROTOCOL_VERSION_SSL3 ||
-            (server_ssl_config_.unrestricted_ssl3_fallback_enabled ||
-             !TransportSecurityState::IsGooglePinnedProperty(
-                 request_->url.host(), true /* include SNI */))) {
-          should_fallback = true;
-        }
+        should_fallback = true;
       }
       break;
     case ERR_SSL_BAD_RECORD_MAC_ALERT:

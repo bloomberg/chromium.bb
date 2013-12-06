@@ -103,148 +103,6 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
   ScopedVector<HttpRequestInfo> request_info_vector_;
 };
 
-// Tests that HttpNetworkTransaction does not attempt to
-// fallback to SSL 3.0 when a TLS 1.0 handshake fails and:
-// * the site is pinned to the Google pin list (indicating that
-//   it is a Google site);
-// * unrestricted SSL 3.0 fallback is disabled.
-TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Google) {
-  // |ssl_data1| is for the first handshake (TLS 1.0), which will fail for
-  // protocol reasons (e.g., simulating a version rollback attack).
-  // Because unrestricted SSL 3.0 fallback is disabled, only this simulated
-  // SSL handshake is consumed.
-  SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data1);
-
-  // This extra handshake, which should be unconsumed, is provided to ensure
-  // that even if the behaviour being tested here ever breaks (and Google
-  // properties begin SSL 3.0 fallbacks), this test will not crash (and bring
-  // down all of net_unittests), but it will fail gracefully.
-  SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
-  StaticSocketDataProvider data2(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data2);
-
-  scoped_refptr<HttpNetworkSession> session(
-      new HttpNetworkSession(session_params_));
-  scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  ssl_config.unrestricted_ssl3_fallback_enabled = false;
-
-  TestCompletionCallback callback;
-  // This will consume only |ssl_data1|. |ssl_data2| will not be consumed.
-  int rv = callback.GetResult(
-      trans->Start(GetRequestInfo("https://www.google.com/"),
-                   callback.callback(), BoundNetLog()));
-  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
-
-  SocketDataProviderArray<SocketDataProvider>& mock_data =
-      mock_socket_factory_.mock_data();
-  // Confirms that only |ssl_data1| is consumed.
-  EXPECT_EQ(1u, mock_data.next_index());
-
-  // |version_max| never fallbacks to SSLv3 for Google properties.
-  EXPECT_EQ(SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_max);
-  EXPECT_FALSE(ssl_config.version_fallback);
-}
-
-// Tests that HttpNetworkTransaction attempts to fallback to SSL 3.0
-// when a TLS 1.0 handshake fails and:
-// * the site is pinned to the Google pin list (indicating that
-//   it is a Google site);
-// * unrestricted SSL 3.0 fallback is enabled.
-TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackEnabled_Google) {
-  // |ssl_data1| is for the first handshake (TLS 1.0), which will fail
-  // for protocol reasons (e.g., simulating a version rollback attack).
-  SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data1);
-
-  // |ssl_data2| contains the handshake result for a SSL 3.0
-  // handshake which will be attempted after the TLS 1.0
-  // handshake fails.
-  SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
-  StaticSocketDataProvider data2(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data2);
-
-  scoped_refptr<HttpNetworkSession> session(
-      new HttpNetworkSession(session_params_));
-  scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  ssl_config.unrestricted_ssl3_fallback_enabled = true;
-
-  TestCompletionCallback callback;
-  // This will consume |ssl_data1| and |ssl_data2|.
-  int rv = callback.GetResult(
-      trans->Start(GetRequestInfo("https://www.google.com/"),
-                   callback.callback(), BoundNetLog()));
-  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
-
-  SocketDataProviderArray<SocketDataProvider>& mock_data =
-      mock_socket_factory_.mock_data();
-  // Confirms that both |ssl_data1| and |ssl_data2| are consumed.
-  EXPECT_EQ(2u, mock_data.next_index());
-
-  // |version_max| fallbacks to SSL 3.0 for Google properties when
-  // |unrestricted_ssl3_fallback_enabled| is true.
-  EXPECT_EQ(SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
-  EXPECT_TRUE(ssl_config.version_fallback);
-}
-
-// Tests that HttpNetworkTransaction attempts to fallback to SSL 3.0
-// when a TLS 1.0 handshake fails and the site is not a Google domain,
-// even if unrestricted SSL 3.0 fallback is disabled.
-// TODO(thaidn): revise the above comment and this test when the
-// SSL 3.0 fallback experiment is applied for non-Google domains.
-TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Paypal) {
-  // |ssl_data1| is for the first handshake (TLS 1.0), which will fail
-  // for protocol reasons (e.g., simulating a version rollback attack).
-  SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data1);
-  StaticSocketDataProvider data1(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data1);
-
-  // |ssl_data2| contains the handshake result for a SSL 3.0
-  // handshake which will be attempted after the TLS 1.0
-  // handshake fails.
-  SSLSocketDataProvider ssl_data2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
-  StaticSocketDataProvider data2(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data2);
-
-  scoped_refptr<HttpNetworkSession> session(
-      new HttpNetworkSession(session_params_));
-  scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  ssl_config.unrestricted_ssl3_fallback_enabled = false;
-
-  TestCompletionCallback callback;
-  // This will consume |ssl_data1| and |ssl_data2|.
-  int rv = callback.GetResult(
-      trans->Start(GetRequestInfo("https://www.paypal.com/"),
-                   callback.callback(), BoundNetLog()));
-  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
-
-  SocketDataProviderArray<SocketDataProvider>& mock_data =
-      mock_socket_factory_.mock_data();
-  // Confirms that both |ssl_data1| and |ssl_data2| are consumed.
-  EXPECT_EQ(2u, mock_data.next_index());
-
-  // |version_max| fallbacks to SSL 3.0.
-  EXPECT_EQ(SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
-  EXPECT_TRUE(ssl_config.version_fallback);
-}
-
 // Tests that HttpNetworkTransaction attempts to fallback from
 // TLS 1.1 to TLS 1.0, then from TLS 1.0 to SSL 3.0.
 TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
@@ -278,9 +136,6 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   scoped_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
-  ssl_config.unrestricted_ssl3_fallback_enabled = true;
-
   TestCompletionCallback callback;
   // This will consume |ssl_data1|, |ssl_data2| and |ssl_data3|.
   int rv = callback.GetResult(
@@ -293,6 +148,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   // Confirms that |ssl_data1|, |ssl_data2| and |ssl_data3| are consumed.
   EXPECT_EQ(3u, mock_data.next_index());
 
+  SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   // |version_max| fallbacks to SSL 3.0.
   EXPECT_EQ(SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
   EXPECT_TRUE(ssl_config.version_fallback);

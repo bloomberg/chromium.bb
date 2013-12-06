@@ -784,8 +784,6 @@ const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";
 // With this switch, SSL 3.0 fallback will be enabled for all sites.
 // Without this switch, SSL 3.0 fallback will be disabled for a site
 // pinned to the Google pin list (indicating that it is a Google site).
-// Note: until http://crbug/237055 is resolved, unrestricted SSL 3.0
-// fallback is always enabled, with or without this switch.
 const char kEnableUnrestrictedSSL3Fallback[] =
     "enable-unrestricted-ssl3-fallback";
 
