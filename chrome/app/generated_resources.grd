@@ -6576,6 +6576,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_VENTI" desc="">
         1024
       </message>
+      <message name="IDS_FLAGS_NUM_RASTER_THREADS_NAME" desc="Name of about:flags option for number of raster threads.">
+        Number of raster threads
+      </message>
+      <message name="IDS_FLAGS_NUM_RASTER_THREADS_DESCRIPTION" desc="Description of about:flags option for number of raster threads.">
+        Specify the number of raster threads.
+      </message>
+      <message name="IDS_FLAGS_NUM_RASTER_THREADS_DEFAULT" desc="">
+        Default
+      </message>
+      <message name="IDS_FLAGS_NUM_RASTER_THREADS_ONE" desc="">
+        1
+      </message>
+      <message name="IDS_FLAGS_NUM_RASTER_THREADS_TWO" desc="">
+        2
+      </message>
+      <message name="IDS_FLAGS_NUM_RASTER_THREADS_THREE" desc="">
+        3
+      </message>
+      <message name="IDS_FLAGS_NUM_RASTER_THREADS_FOUR" desc="">
+        4
+      </message>
       <message name="IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_NAME" desc="Name of the flag to enable syncfs direcory support.">
         Enable Syncfs directory operation.
       </message>

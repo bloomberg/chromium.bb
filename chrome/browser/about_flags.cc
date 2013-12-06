@@ -333,6 +333,14 @@ const Experiment::Choice kZeroSuggestExperimentsChoices[] = {
 };
 #endif
 
+const Experiment::Choice kNumRasterThreadsChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_NUM_RASTER_THREADS_ONE, cc::switches::kNumRasterThreads, "1" },
+  { IDS_FLAGS_NUM_RASTER_THREADS_TWO, cc::switches::kNumRasterThreads, "2" },
+  { IDS_FLAGS_NUM_RASTER_THREADS_THREE, cc::switches::kNumRasterThreads, "3" },
+  { IDS_FLAGS_NUM_RASTER_THREADS_FOUR, cc::switches::kNumRasterThreads, "4" }
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1405,7 +1413,7 @@ const Experiment kExperiments[] = {
     "impl-side-painting",
     IDS_FLAGS_IMPL_SIDE_PAINTING_NAME,
     IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION,
-    kOsLinux | kOsCrOS,
+    kOsAll,
     MULTI_VALUE_TYPE(kImplSidePaintingChoices)
   },
   {
@@ -1453,7 +1461,7 @@ const Experiment kExperiments[] = {
     "max-tiles-for-interest-area",
     IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_NAME,
     IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_DESCRIPTION,
-    kOsAndroid | kOsLinux | kOsCrOS,
+    kOsAll,
     MULTI_VALUE_TYPE(kMaxTilesForInterestAreaChoices)
   },
   {
@@ -1877,8 +1885,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION,
     kOsAndroid,
     MULTI_VALUE_TYPE(kZeroSuggestExperimentsChoices)
-  }
+  },
 #endif
+  {
+    "num-raster-threads",
+    IDS_FLAGS_NUM_RASTER_THREADS_NAME,
+    IDS_FLAGS_NUM_RASTER_THREADS_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kNumRasterThreadsChoices)
+  }
 };
 
 const Experiment* experiments = kExperiments;
