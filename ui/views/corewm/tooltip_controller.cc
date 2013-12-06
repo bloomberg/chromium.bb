@@ -227,7 +227,6 @@ void TooltipController::OnWindowDestroyed(aura::Window* window) {
   if (tooltip_window_ == window) {
     tooltip_->Hide();
     tooltip_shown_timeout_map_.erase(tooltip_window_);
-    tooltip_window_->RemoveObserver(this);
     tooltip_window_ = NULL;
   }
 }
