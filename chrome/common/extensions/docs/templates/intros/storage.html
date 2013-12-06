@@ -11,7 +11,7 @@ with the following key differences:
 <ul>
   <li>User data can be automatically synced with Chrome sync
   (using <code>storage.sync</code>).</li>
-  <li>Your extension's content scripts can directly access user data
+  <li>Your {{platform}}'s content scripts can directly access user data
   without the need for a background page.</li>
   <li>A user's extension settings can be persisted
   even when using
@@ -20,6 +20,9 @@ with the following key differences:
   faster than the blocking and serial <code>localStorage API</code>.
   <li>User data can be stored as objects
   (the <code>localStorage API</code> stores data in strings).</li>
+  <li>Enterprise policies configured by the administrator for the extension
+  can be read (using <code>storage.managed</code> with a
+  <a href="manifest/storage.html">schema</a>).</li>
 </ul>
 
 <h2 id="manifest">Manifest</h2>
@@ -41,7 +44,7 @@ with the following key differences:
 <h2 id="using-sync">Usage</h2>
 
 <p>
-To store user data for your extension,
+To store user data for your {{platform}},
 you can use either
 <code>storage.sync</code> or
 <code>storage.local</code>.
@@ -65,6 +68,10 @@ to <code>storage.local</code>.
 <p class="warning">
 Confidential user information should not be stored!
 The storage area isn't encrypted.
+</p>
+
+<p>
+The <code>storage.managed</code> storage is read-only.
 </p>
 
 <h2 id="limits">Storage and throttling limits</h2>

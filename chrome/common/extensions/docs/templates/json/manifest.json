@@ -139,6 +139,12 @@
     "documentation": "manifest/name.html#short_name",
     "example": "Short Name"
   },
+  "storage": {
+    "documentation": "manifest/storage.html",
+    "example": {
+      "managed_schema": "schema.json"
+    }
+  },
   "theme": {
     "documentation": "themes.html",
     "example": {},

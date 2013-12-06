@@ -165,7 +165,7 @@
           {
             "name": "areaName",
             "type": "string",
-            "description": "The name of the storage area (<code>sync</code> or <code>local</code>) the changes are for."
+            "description": "The name of the storage area (<code>\"sync\"</code>, <code>\"local\"</code> or <code>\"managed\"</code>) the changes are for."
           }
         ]
       }
@@ -211,9 +211,8 @@
       },
       "managed": {
         "$ref": "StorageArea",
-        "description": "Items in the <code>managed</code> storage area are set by the domain administrator, and are read-only by the extension; trying to modify this namespace results in an error.",
-        "value": [ "managed" ],
-        "nodoc": true
+        "description": "Items in the <code>managed</code> storage area are set by the domain administrator, and are read-only for the extension; trying to modify this namespace results in an error.",
+        "value": [ "managed" ]
       }
     }
   }
