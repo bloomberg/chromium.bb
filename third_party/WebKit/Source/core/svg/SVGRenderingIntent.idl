@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    DoNotGenerateToV8
-] interface SVGRenderingIntent {
+interface SVGRenderingIntent {
     // Rendering Intent Types
     const unsigned short RENDERING_INTENT_UNKNOWN               = 0;
     const unsigned short RENDERING_INTENT_AUTO                  = 1;
@@ -34,4 +32,3 @@
     const unsigned short RENDERING_INTENT_SATURATION            = 4;
     const unsigned short RENDERING_INTENT_ABSOLUTE_COLORIMETRIC = 5;
 };
-

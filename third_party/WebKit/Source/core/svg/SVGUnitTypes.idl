@@ -23,12 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    DoNotGenerateToV8
-] interface SVGUnitTypes {
+interface SVGUnitTypes {
     // Unit Types
     const unsigned short SVG_UNIT_TYPE_UNKNOWN           = 0;
     const unsigned short SVG_UNIT_TYPE_USERSPACEONUSE    = 1;
     const unsigned short SVG_UNIT_TYPE_OBJECTBOUNDINGBOX = 2;
 };
-

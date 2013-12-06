@@ -883,9 +883,8 @@ END
     }
     $header{classPublic}->add("\n");  # blank line to separate classPrivate
 
-    my $noToV8 = $interface->extendedAttributes->{"DoNotGenerateToV8"};
-    my $noWrap = $interface->extendedAttributes->{"CustomToV8"} || $noToV8;
-    if (!$noWrap) {
+    my $customToV8 = $interface->extendedAttributes->{"CustomToV8"};
+    if (!$customToV8) {
         my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
         $header{classPrivate}->add(<<END);
     friend v8::Handle<v8::Object> wrap(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -903,9 +902,7 @@ public:
 END
 
     my $customWrap = NeedsSpecialWrap($interface);
-    if ($noToV8) {
-        die "Can't suppress toV8 for subclass\n" if $interface->parent;
-    } elsif ($noWrap) {
+    if ($customToV8) {
         $header{nameSpaceWebCore}->add(<<END);
 
 class ${nativeType};
@@ -4803,6 +4800,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
 END
     }
 
+    GenerateSpecialWrap($interface, $v8ClassName, $nativeType);
     GenerateToV8Converters($interface, $v8ClassName, $nativeType);
 
     $implementation{nameSpaceWebCore}->add(<<END);
@@ -4811,9 +4809,6 @@ void ${v8ClassName}::derefObject(void* object)
     fromInternalPointer(object)->deref();
 }
 
-END
-    if (!$interface->extendedAttributes->{"DoNotGenerateToV8"}) {
-        $implementation{nameSpaceWebCore}->add(<<END);
 template<>
 v8::Handle<v8::Value> toV8NoInline(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -4821,7 +4816,6 @@ v8::Handle<v8::Value> toV8NoInline(${nativeType}* impl, v8::Handle<v8::Object> c
 }
 
 END
-    }
 }
 
 sub GenerateHeaderContentHeader
@@ -5083,11 +5077,9 @@ sub GenerateToV8Converters
     my $nativeType = shift;
     my $interfaceName = $interface->name;
 
-    if ($interface->extendedAttributes->{"CustomToV8"} || $interface->extendedAttributes->{"DoNotGenerateToV8"}) {
+    if ($interface->extendedAttributes->{"CustomToV8"}) {
         return;
     }
-
-    GenerateSpecialWrap($interface, $v8ClassName, $nativeType);
 
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
     my $baseType = BaseInterfaceName($interface);
