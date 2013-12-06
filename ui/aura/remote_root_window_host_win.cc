@@ -680,8 +680,14 @@ void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,
                                                       bool is_character) {
   SetEventFlags(flags | mouse_event_flags());
   if (base::MessageLoop::current()->IsNested()) {
-    uint32 message = is_character ? WM_CHAR :
-        (type == ui::ET_KEY_PRESSED ? WM_KEYDOWN : WM_KEYUP);
+    int index = (flags & ui::EF_ALT_DOWN) ? 1 : 0;
+    const int char_message[] = {WM_CHAR, WM_SYSCHAR};
+    const int keydown_message[] = {WM_KEYDOWN, WM_SYSKEYDOWN};
+    const int keyup_message[] = {WM_KEYUP, WM_SYSKEYUP};
+    uint32 message = is_character
+                         ? char_message[index]
+                         : (type == ui::ET_KEY_PRESSED ? keydown_message[index]
+                                                       : keyup_message[index]);
     ::PostThreadMessage(::GetCurrentThreadId(),
                         message,
                         vkey,
