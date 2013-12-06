@@ -156,6 +156,24 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterPurgeAndCannotReallocate) {
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
+TEST_F(DiscardableMemoryProviderTest, Overflow) {
+  {
+    size_t size = 1024;
+    const scoped_ptr<DiscardableMemory> discardable(
+        DiscardableMemory::CreateLockedMemory(size));
+    EXPECT_TRUE(IsRegistered(discardable.get()));
+    EXPECT_NE(static_cast<void*>(NULL), Memory(discardable.get()));
+    EXPECT_EQ(1024u, BytesAllocated());
+
+    size_t massive_size = std::numeric_limits<size_t>::max();
+    const scoped_ptr<DiscardableMemory> massive_discardable(
+        DiscardableMemory::CreateLockedMemory(massive_size));
+    EXPECT_FALSE(massive_discardable);
+    EXPECT_EQ(1024u, BytesAllocated());
+  }
+  EXPECT_EQ(0u, BytesAllocated());
+}
+
 class PermutationTestData {
  public:
   PermutationTestData(unsigned d0, unsigned d1, unsigned d2) {

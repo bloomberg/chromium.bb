@@ -139,9 +139,17 @@ scoped_ptr<uint8, FreeDeleter> DiscardableMemoryProvider::Acquire(
     PurgeLRUWithLockAcquiredUntilUsageIsWithin(limit);
   }
 
+  // Check for overflow.
+  if (std::numeric_limits<size_t>::max() - bytes < bytes_allocated_)
+    return scoped_ptr<uint8, FreeDeleter>();
+
+  scoped_ptr<uint8, FreeDeleter> memory(static_cast<uint8*>(malloc(bytes)));
+  if (!memory)
+    return scoped_ptr<uint8, FreeDeleter>();
+
   bytes_allocated_ += bytes;
   *purged = true;
-  return scoped_ptr<uint8, FreeDeleter>(static_cast<uint8*>(malloc(bytes)));
+  return memory.Pass();
 }
 
 void DiscardableMemoryProvider::Release(
