@@ -42,7 +42,7 @@ def main():
           'check',
           '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
-          '--variable', 'OS', common.OSES[options.os],
+          '--config-variable', 'OS', common.OSES[options.os],
         ], options.verbose)
 
     common.note(

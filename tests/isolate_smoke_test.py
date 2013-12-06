@@ -250,7 +250,7 @@ class IsolateModeBase(IsolateBase):
       u'files': self._gen_files(read_only, empty_file, False),
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'version': u'1.0',
+      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     if read_only is not None:
       expected[u'read_only'] = read_only
@@ -265,21 +265,24 @@ class IsolateModeBase(IsolateBase):
       u'algo': u'sha-1',
       u'child_isolated_files': [],
       u'command': [],
+      u'command_variables': {},
+      u'config_variables': {
+        u'OS': unicode(flavor),
+        u'chromeos': chromeos_value,
+      },
       u'files': self._gen_files(read_only, empty_file, True),
       u'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(unicode(self.filename())),
           unicode(os.path.dirname(self.isolated))),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'variables': {
+      u'path_variables': {
         u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',
-        u'OS': unicode(flavor),
-        u'chromeos': chromeos_value,
       },
-      u'version': u'1.0',
+      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-    expected['variables'].update(extra_vars or {})
+    expected['command_variables'].update(extra_vars or {})
     self.assertEqual(expected, json.load(open(self.saved_state(), 'r')))
 
   def _expect_results(self, args, read_only, extra_vars, empty_file):
@@ -306,7 +309,7 @@ class IsolateModeBase(IsolateBase):
       '--isolated', self.isolated,
       '--outdir', self.outdir,
       '--isolate', self.filename(),
-      '-V', 'chromeos', str(chromeos_value),
+      '--config-variable', 'chromeos', str(chromeos_value),
     ]
     cmd.extend(args)
 
@@ -478,7 +481,9 @@ class Isolate_check(IsolateModeBase):
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
-    self._execute('check', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
+    self._execute(
+        'check', 'touch_only.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        False)
     self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
@@ -489,7 +494,9 @@ class Isolate_check(IsolateModeBase):
     self._expect_results(['touch_root.py'], None, None, None)
 
   def test_with_flag(self):
-    self._execute('check', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
+    self._execute(
+        'check', 'with_flag.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        False)
     self._expect_no_tree()
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
@@ -555,7 +562,10 @@ class Isolate_archive(IsolateModeBase):
     self._execute(
         'archive',
         'split.isolate',
-        ['-V', 'DEPTH', '.', '-V', 'PRODUCT_DIR', 'files1'],
+        [
+          '--path-variable', 'DEPTH', '.',
+          '--path-variable', 'PRODUCT_DIR', 'files1',
+        ],
         False,
         cwd=os.path.join(ROOT_DIR, 'tests', 'isolate'))
     # Reimplement _expected_hash_tree():
@@ -577,7 +587,7 @@ class Isolate_archive(IsolateModeBase):
       u'includes': isolated_hashes,
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'version': u'1.0',
+      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(expected, json.load(open(self.isolated, 'r')))
 
@@ -586,7 +596,7 @@ class Isolate_archive(IsolateModeBase):
       u'algo': u'sha-1',
       u'files': {key: files[key]},
       u'os': unicode(isolate.get_flavor()),
-      u'version': u'1.0',
+      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(
         expected, json.load(open(isolated_base + '.0.isolated', 'r')))
@@ -596,16 +606,16 @@ class Isolate_archive(IsolateModeBase):
       u'algo': u'sha-1',
       u'files': {key: files[key]},
       u'os': unicode(isolate.get_flavor()),
-      u'version': u'1.0',
+      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(
         expected, json.load(open(isolated_base + '.1.isolated', 'r')))
 
-
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'archive', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
+        'archive', 'touch_only.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        False)
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_hash_tree(empty)
     self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
@@ -617,7 +627,8 @@ class Isolate_archive(IsolateModeBase):
 
   def test_with_flag(self):
     self._execute(
-        'archive', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
+        'archive', 'with_flag.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        False)
     self._expected_hash_tree(None)
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
@@ -682,7 +693,9 @@ class Isolate_remap(IsolateModeBase):
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
-    self._execute('remap', 'touch_only.isolate', ['-V', 'FLAG', 'gyp'], False)
+    self._execute(
+        'remap', 'touch_only.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        False)
     self._expected_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expect_results(
@@ -694,7 +707,9 @@ class Isolate_remap(IsolateModeBase):
     self._expect_results(['touch_root.py'], None, None, None)
 
   def test_with_flag(self):
-    self._execute('remap', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
+    self._execute(
+        'remap', 'with_flag.isolate', ['--command-variable', 'FLAG', 'gyp'],
+        False)
     self._expected_tree()
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
@@ -751,7 +766,9 @@ class Isolate_run(IsolateModeBase):
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
-    self._execute('run', 'touch_only.isolate', ['-V', 'FLAG', 'run'], False)
+    self._execute(
+        'run', 'touch_only.isolate', ['--command-variable', 'FLAG', 'run'],
+        False)
     self._expect_empty_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expect_results(
@@ -763,7 +780,9 @@ class Isolate_run(IsolateModeBase):
     self._expect_results(['touch_root.py'], None, None, None)
 
   def test_with_flag(self):
-    self._execute('run', 'with_flag.isolate', ['-V', 'FLAG', 'run'], False)
+    self._execute(
+        'run', 'with_flag.isolate', ['--command-variable', 'FLAG', 'run'],
+        False)
     # Not sure about the empty tree, should be deleted.
     self._expect_empty_tree()
     self._expect_results(
@@ -850,7 +869,8 @@ class Isolate_trace_read_merge(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     out = self._execute(
-        'trace', 'touch_only.isolate', ['-V', 'FLAG', 'trace'], True)
+        'trace', 'touch_only.isolate', ['--command-variable', 'FLAG', 'trace'],
+        True)
     self.assertEqual('', out)
     self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
@@ -893,7 +913,8 @@ class Isolate_trace_read_merge(IsolateModeBase):
   @trace_test_util.check_can_trace
   def test_with_flag(self):
     out = self._execute(
-        'trace', 'with_flag.isolate', ['-V', 'FLAG', 'trace'], True)
+        'trace', 'with_flag.isolate', ['--command-variable', 'FLAG', 'trace'],
+        True)
     self.assertEqual('', out)
     self._expect_no_tree()
     self._expect_results(
@@ -992,7 +1013,7 @@ class IsolateNoOutdir(IsolateBase):
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       mode,
       '--isolated', self.isolated,
-      '-V', 'chromeos', str(chromeos_value),
+      '--config-variable', 'chromeos', str(chromeos_value),
     ]
     cmd.extend(args)
 

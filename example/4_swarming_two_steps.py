@@ -41,7 +41,7 @@ def main():
             '--isolate', os.path.join('payload', 'hello_world.isolate'),
             '--isolated', isolated,
             '--outdir', options.isolate_server,
-            '--variable', 'OS', common.OSES[options.os],
+            '--config-variable', 'OS', common.OSES[options.os],
           ], options.verbose)
       with open(isolated, 'rb') as f:
         hashval = hashlib.sha1(f.read()).hexdigest()

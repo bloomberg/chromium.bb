@@ -1043,7 +1043,7 @@ class TestArchive(TestCase):
       # of the files in this directory.
       # Fix is to copy the files in a temporary directory with known file modes.
       self.checkOutput(
-          '4af1176e75f910520c9e9185e140642fe1648177 %s\n' % p,
+          '0e74bdc7dd57ca7694f2d68f1b38c007a2311209 %s\n' % p,
           '')
     finally:
       os.chdir(old_cwd)

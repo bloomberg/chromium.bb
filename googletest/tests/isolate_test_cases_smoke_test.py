@@ -96,7 +96,7 @@ class IsolateTestCases(unittest.TestCase):
     cmd = [
       sys.executable, 'isolate.py',
       'check',
-      '--variable', 'FLAG', 'run',
+      '--command-variable', 'FLAG', 'run',
       '--isolate', os.path.join(self.tempdir, gtest_fake_pass_isolate),
       '--isolated', isolated,
     ]
@@ -123,7 +123,7 @@ class IsolateTestCases(unittest.TestCase):
       },
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'isolate_test_cases',
-      u'version': u'1.0',
+      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     if sys.platform == 'win32':
       expected_isolated['files'][rel_gtest_fake_pass_py].pop('m')

@@ -96,7 +96,7 @@ class FixTestCases(unittest.TestCase):
         [
           os.path.join(ROOT_DIR, 'isolate.py'),
           'check', '-i', isolate, '-s', isolated,
-          '-V', 'chromeos', str(chromeos_value),
+          '--config-variable', 'chromeos', str(chromeos_value),
         ])
     if not VERBOSE:
       self.assertEqual('', out)
@@ -145,7 +145,7 @@ class FixTestCases(unittest.TestCase):
       },
       u'os': unicode(run_isolated.get_flavor()),
       u'relative_cwd': u'.',
-      u'version': u'1.0',
+      u'version': unicode(isolateserver.ISOLATED_FILE_VERSION),
     }
     if sys.platform == 'win32':
       for value in expected_isolated['files'].itervalues():

@@ -31,7 +31,7 @@ from utils import tools
 
 def isolate_test_cases(
     cmd, test_cases, jobs, isolated_file, isolate_file,
-    root_dir, reldir, variables, trace_blacklist):
+    root_dir, reldir, path_variables, config_variables, trace_blacklist):
   assert os.path.isabs(root_dir) and os.path.isdir(root_dir), root_dir
 
   logname = isolated_file + '.log'
@@ -63,7 +63,8 @@ def isolate_test_cases(
           [],
           touched,
           root_dir,
-          variables,
+          path_variables,
+          config_variables,
           reldir,
           blacklist)
       # item['test_case'] could be an invalid file name.
@@ -155,7 +156,9 @@ def main():
     if not test_cases:
       parser.error('No test case to run with command: %s' % ' '.join(command))
 
-    config.saved_state.variables.update(options.variables)
+    config.saved_state.command_variables.update(options.command_variables)
+    config.saved_state.config_variables.update(options.config_variables)
+    config.saved_state.path_variables.update(options.path_variables)
     return isolate_test_cases(
         command,
         test_cases,
@@ -164,7 +167,8 @@ def main():
         config.saved_state.isolate_filepath,
         config.root_dir,
         config.saved_state.relative_cwd,
-        config.saved_state.variables,
+        config.saved_state.path_variables,
+        config.saved_state.config_variables,
         options.trace_blacklist)
   except isolate.ExecutionError, e:
     print >> sys.stderr, str(e)

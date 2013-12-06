@@ -34,6 +34,8 @@ from utils import tools
 
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
+# Version stored and expected in .isolated files.
+ISOLATED_FILE_VERSION = '1.1'
 
 
 # The number of files to check the isolate server per /pre-upload query.
@@ -1497,13 +1499,15 @@ def load_isolated(content, os_flavor, algo):
 
   # Check 'version' first, since it could modify the parsing after.
   # TODO(maruel): Drop support for unversioned .isolated file around Jan 2014.
-  value = data.get('version', '1.0')
+  value = data.get('version', ISOLATED_FILE_VERSION)
   if not isinstance(value, basestring):
     raise ConfigError('Expected string, got %r' % value)
   if not re.match(r'^(\d+)\.(\d+)$', value):
     raise ConfigError('Expected a compatible version, got %r' % value)
-  if value.split('.', 1)[0] != '1':
-    raise ConfigError('Expected compatible \'1.x\' version, got %r' % value)
+  if value.split('.', 1)[0] != ISOLATED_FILE_VERSION.split('.', 1)[0]:
+    raise ConfigError(
+        'Expected compatible \'%s\' version, got %r' %
+        (ISOLATED_FILE_VERSION, value))
 
   if algo is None:
     # TODO(maruel): Remove the default around Jan 2014.
@@ -1904,7 +1908,7 @@ def archive(storage, algo, files, blacklist):
           data = {
               'algo': SUPPORTED_ALGOS_REVERSE[algo],
               'files': metadata,
-              'version': '1.0',
+              'version': ISOLATED_FILE_VERSION,
           }
           save_isolated(isolated, data)
           h = hash_file(isolated, algo)
