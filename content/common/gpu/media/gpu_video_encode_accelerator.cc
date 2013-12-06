@@ -167,13 +167,14 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
     return;
   }
 
+  uint8* shm_memory = reinterpret_cast<uint8*>(shm->memory());
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalPackedMemory(
           input_format_,
           input_coded_size_,
           gfx::Rect(input_visible_size_),
           input_visible_size_,
-          reinterpret_cast<uint8*>(shm->memory()),
+          shm_memory,
           buffer_size,
           buffer_handle,
           base::TimeDelta(),
