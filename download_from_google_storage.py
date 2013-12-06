@@ -333,7 +333,7 @@ def main(args):
 
   # Make sure we should run at all based on platform matching.
   if options.platform:
-    if not re.match(options.platform, sys.platform):
+    if not re.match(options.platform, GetNormalizedPlatform()):
       if options.verbose:
         print('The current platform doesn\'t match "%s", skipping.' %
               options.platform)
