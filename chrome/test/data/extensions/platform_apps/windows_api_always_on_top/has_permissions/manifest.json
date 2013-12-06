@@ -6,5 +6,6 @@
     "background": {
       "scripts": ["background.js"]
     }
-  }
+  },
+  "permissions": ["alwaysOnTopWindows"]
 }

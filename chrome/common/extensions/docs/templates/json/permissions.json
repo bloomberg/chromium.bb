@@ -9,6 +9,9 @@
   "activeTab": {
     "partial": "permissions/active_tab.html"
   },
+  "alwaysOnTopWindows": {
+    "partial": "permissions/always_on_top_windows.html"
+  },
   "audioCapture": {
     "partial": "permissions/audio_capture.html"
   },

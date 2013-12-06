@@ -38,6 +38,20 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
+  "alwaysOnTopWindows": [
+    {
+      "channel": "dev",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "whitelist": [
+        "0F42756099D914A026DADFA182871C015735DD95",
+        "2D22CDB6583FD0A13758AEBE8B15E45208B4E9A7"
+      ]
+    }
+  ],
   "app.runtime": {
     "channel": "stable",
     "extension_types": ["platform_app"]

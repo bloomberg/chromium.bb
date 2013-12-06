@@ -13,8 +13,6 @@ class AppWindowCreateFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)
 
-  static bool AllowAlwaysOnTopWindows(const std::string& extension_id);
-
   void SendDelayedResponse();
 
  protected:

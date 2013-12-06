@@ -304,6 +304,12 @@ bool ExtensionApiTest::RunPlatformAppTestWithArg(
       extension_name, std::string(), custom_arg, kFlagLaunchPlatformApp);
 }
 
+bool ExtensionApiTest::RunPlatformAppTestWithFlags(
+    const std::string& extension_name, int flags) {
+  return RunExtensionTestImpl(
+      extension_name, std::string(), NULL, flags | kFlagLaunchPlatformApp);
+}
+
 // Load |extension_name| extension and/or |page_url| and wait for
 // PASSED or FAILED notification.
 bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,

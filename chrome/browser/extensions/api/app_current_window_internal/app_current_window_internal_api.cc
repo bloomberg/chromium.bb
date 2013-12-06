@@ -8,7 +8,6 @@
 #include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
-#include "chrome/browser/extensions/api/app_window/app_window_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
@@ -47,6 +46,9 @@ const char kDevChannelOnly[] =
 
 const char kRequiresFramelessWindow[] =
     "This function requires a frameless window (frame:none).";
+
+const char kAlwaysOnTopPermission[] =
+    "The \"alwaysOnTopWindows\" permission is required.";
 
 const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
 
@@ -288,8 +290,9 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
     ShellWindow* window) {
-  if (!AppWindowCreateFunction::AllowAlwaysOnTopWindows(GetExtension()->id())) {
-    error_ = kDevChannelOnly;
+  if (!GetExtension()->HasAPIPermission(
+          extensions::APIPermission::kAlwaysOnTopWindows)) {
+    error_ = kAlwaysOnTopPermission;
     return false;
   }
 

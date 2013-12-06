@@ -138,16 +138,24 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
 
 #endif  // defined(TOOLKIT_VIEWS)
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlwaysOnTopDev) {
-  EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_always_on_top"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiAlwaysOnTopWithPermissions) {
+  EXPECT_TRUE(RunPlatformAppTest(
+      "platform_apps/windows_api_always_on_top/has_permissions")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlwaysOnTopStable) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiAlwaysOnTopWithPermissionsStable) {
   ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
-  EXPECT_TRUE(
-      RunPlatformAppTest("platform_apps/windows_api_always_on_top_stable"))
-          << message_;
+  EXPECT_TRUE(RunPlatformAppTestWithFlags(
+      "platform_apps/windows_api_always_on_top/has_permissions_stable",
+      ExtensionApiTest::kFlagIgnoreManifestWarnings)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiAlwaysOnTopNoPermissions) {
+  EXPECT_TRUE(RunPlatformAppTest(
+      "platform_apps/windows_api_always_on_top/no_permissions")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiGet) {
