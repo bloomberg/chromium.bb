@@ -226,7 +226,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     virtual Cursor* Clone() = 0;
     virtual const IndexedDBKey& primary_key() const;
-    virtual std::string* Value() = 0;
+    virtual std::string* value() = 0;
     virtual const RecordIdentifier& record_identifier() const;
     virtual bool LoadCurrentRow() = 0;
 

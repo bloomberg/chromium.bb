@@ -2023,7 +2023,7 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* Value() OVERRIDE {
+  virtual std::string* value() OVERRIDE {
     NOTREACHED();
     return NULL;
   }
@@ -2080,7 +2080,7 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
   virtual Cursor* Clone() OVERRIDE { return new ObjectStoreCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* Value() OVERRIDE { return &current_value_; }
+  virtual std::string* value() OVERRIDE { return &current_value_; }
   virtual bool LoadCurrentRow() OVERRIDE;
 
  protected:
@@ -2138,15 +2138,15 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   virtual Cursor* Clone() OVERRIDE { return new IndexKeyCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* Value() OVERRIDE {
+  virtual std::string* value() OVERRIDE {
     NOTREACHED();
     return NULL;
   }
   virtual const IndexedDBKey& primary_key() const OVERRIDE {
     return *primary_key_;
   }
-  virtual const IndexedDBBackingStore::RecordIdentifier& RecordIdentifier()
-      const {
+  virtual const IndexedDBBackingStore::RecordIdentifier& record_identifier()
+      const OVERRIDE {
     NOTREACHED();
     return record_identifier_;
   }
@@ -2245,12 +2245,12 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
   virtual Cursor* Clone() OVERRIDE { return new IndexCursorImpl(this); }
 
   // IndexedDBBackingStore::Cursor
-  virtual std::string* Value() OVERRIDE { return &current_value_; }
+  virtual std::string* value() OVERRIDE { return &current_value_; }
   virtual const IndexedDBKey& primary_key() const OVERRIDE {
     return *primary_key_;
   }
-  virtual const IndexedDBBackingStore::RecordIdentifier& RecordIdentifier()
-      const {
+  virtual const IndexedDBBackingStore::RecordIdentifier& record_identifier()
+      const OVERRIDE {
     NOTREACHED();
     return record_identifier_;
   }

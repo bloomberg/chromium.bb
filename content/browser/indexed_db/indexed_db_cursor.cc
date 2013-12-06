@@ -128,7 +128,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
         break;
       case indexed_db::CURSOR_KEY_AND_VALUE: {
         std::string value;
-        value.swap(*cursor_->Value());
+        value.swap(*cursor_->value());
         size_estimate += value.size();
         found_values.push_back(value);
         break;

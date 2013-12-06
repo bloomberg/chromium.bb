@@ -38,7 +38,7 @@ class CONTENT_EXPORT IndexedDBCursor
   const IndexedDBKey& primary_key() const { return cursor_->primary_key(); }
   std::string* Value() const {
     return (cursor_type_ == indexed_db::CURSOR_KEY_ONLY) ? NULL
-                                                         : cursor_->Value();
+                                                         : cursor_->value();
   }
   void Close();
 
