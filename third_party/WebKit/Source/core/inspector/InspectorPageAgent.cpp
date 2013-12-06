@@ -1266,6 +1266,11 @@ void InspectorPageAgent::handleJavaScriptDialog(ErrorString* errorString, bool a
     // Handled on the browser level.
 }
 
+void InspectorPageAgent::queryUsageAndQuota(WebCore::ErrorString*, const WTF::String&, WTF::RefPtr<WebCore::TypeBuilder::Page::Quota>&, WTF::RefPtr<WebCore::TypeBuilder::Page::Usage>&)
+{
+    // Handled on the browser level.
+}
+
 void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid)
 {
     m_state->setBoolean(PageAgentState::showSizeOnResize, show);
