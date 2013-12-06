@@ -6,19 +6,23 @@
 
 #include <set>
 
+#include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+
+namespace views {
 
 namespace {
 
 // A wrapper of Combobox to intercept the result of OnKeyPressed() and
 // OnKeyReleased() methods.
-class TestCombobox : public views::Combobox {
+class TestCombobox : public Combobox {
  public:
   explicit TestCombobox(ui::ComboboxModel* model)
       : Combobox(model),
@@ -28,13 +32,13 @@ class TestCombobox : public views::Combobox {
 
   virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
-    key_handled_ = views::Combobox::OnKeyPressed(e);
+    key_handled_ = Combobox::OnKeyPressed(e);
     return key_handled_;
   }
 
   virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
-    key_handled_ = views::Combobox::OnKeyReleased(e);
+    key_handled_ = Combobox::OnKeyReleased(e);
     return key_handled_;
   }
 
@@ -83,9 +87,26 @@ class TestComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(TestComboboxModel);
 };
 
-}  // namespace
+class EvilListener : public ComboboxListener {
+ public:
+  EvilListener() : deleted_(false) {};
+  virtual ~EvilListener() {};
 
-namespace views {
+  // ComboboxListener:
+  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE {
+    delete combobox;
+    deleted_ = true;
+  }
+
+  bool deleted() const { return deleted_; }
+
+ private:
+  bool deleted_;
+
+  DISALLOW_COPY_AND_ASSIGN(EvilListener);
+};
+
+}  // namespace
 
 class ComboboxTest : public ViewsTestBase {
  public:
@@ -338,6 +359,15 @@ TEST_F(ComboboxTest, SelectValue) {
   EXPECT_EQ(1, combobox_->selected_index());
   EXPECT_FALSE(combobox_->SelectValue(ASCIIToUTF16("BANANAS")));
   EXPECT_EQ(1, combobox_->selected_index());
+}
+
+TEST_F(ComboboxTest, ListenerHandlesDelete) {
+  TestComboboxModel model;
+  TestCombobox* combobox = new TestCombobox(&model);  // Deleted on change.
+  EvilListener evil_listener;
+  combobox->set_listener(&evil_listener);
+  ASSERT_NO_FATAL_FAILURE(combobox->ExecuteCommand(2));
+  EXPECT_TRUE(evil_listener.deleted());
 }
 
 }  // namespace views

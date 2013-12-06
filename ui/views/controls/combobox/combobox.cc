@@ -466,10 +466,11 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
 }
 
 void Combobox::OnSelectionChanged() {
-  if (listener_)
-    listener_->OnSelectedIndexChanged(this);
   NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_VALUE_CHANGED, false);
   SchedulePaint();
+  if (listener_)
+    listener_->OnSelectedIndexChanged(this);
+  // |this| may now be deleted.
 }
 
 int Combobox::MenuCommandToIndex(int menu_command_id) const {
