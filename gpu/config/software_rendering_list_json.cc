@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.16",
+  "version": "6.17",
   "entries": [
     {
       "id": 1,
@@ -974,12 +974,33 @@ LONG_STRING_CONST(
     },
     {
       "id": 82,
-      "description": "MediaCodec is still too buggy to use for encoding (b/11536167).",
+      "description": "MediaCodec is still too buggy to use for encoding (b/11536167)",
       "os": {
         "type": "android"
       },
       "features": [
         "accelerated_video_encode"
+      ]
+    },
+    {
+      "id": 83,
+      "description": "Samsung Gaxlaxy NOTE II is too buggy to use for video decoding",
+      "cr_bugs": [308721],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.1.2"
+        }
+      },
+      "machine_model": {
+        "name": {
+          "op": "=",
+          "value": "GT-N7100"
+        }
+      },
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]
