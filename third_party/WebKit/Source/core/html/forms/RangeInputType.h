@@ -69,6 +69,7 @@ private:
     virtual bool shouldRespectListAttribute() OVERRIDE;
     SliderThumbElement* sliderThumbElement() const;
     Element* sliderTrackElement() const;
+    virtual void disabledAttributeChanged() OVERRIDE;
     virtual void listAttributeTargetChanged() OVERRIDE;
     void updateTickMarkValues();
     virtual Decimal findClosestTickMarkValue(const Decimal&) OVERRIDE;

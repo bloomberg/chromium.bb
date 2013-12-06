@@ -309,6 +309,12 @@ String RangeInputType::sanitizeValue(const String& proposedValue) const
     return serializeForNumberType(stepRange.clampValue(proposedNumericValue));
 }
 
+void RangeInputType::disabledAttributeChanged()
+{
+    if (element().isDisabledFormControl())
+        sliderThumbElement()->stopDragging();
+}
+
 bool RangeInputType::shouldRespectListAttribute()
 {
     return InputType::themeSupportsDataListUI(this);

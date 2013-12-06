@@ -58,6 +58,7 @@ public:
     virtual const AtomicString& pseudo() const OVERRIDE;
     HTMLInputElement* hostInput() const;
     void setPositionFromPoint(const LayoutPoint&);
+    void stopDragging();
 
 private:
     SliderThumbElement(Document&);
@@ -68,7 +69,6 @@ private:
     virtual bool matchesReadWritePseudoClass() const OVERRIDE;
     virtual Node* focusDelegate();
     void startDragging();
-    void stopDragging();
 
     bool m_inDragMode;
 };

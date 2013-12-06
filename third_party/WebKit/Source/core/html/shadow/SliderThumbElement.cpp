@@ -245,8 +245,8 @@ Node* SliderThumbElement::focusDelegate()
 void SliderThumbElement::dragFrom(const LayoutPoint& point)
 {
     RefPtr<SliderThumbElement> protector(this);
-    setPositionFromPoint(point);
     startDragging();
+    setPositionFromPoint(point);
 }
 
 void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
