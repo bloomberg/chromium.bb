@@ -20,4 +20,10 @@ test(function() {
     assert_equals(url.href, 'invalid');
 }, 'setting href to an invalid URL');
 
+test(function() {
+    var url = new URL('http://domain.com/');
+    url.href = null;
+    assert_equals(url.href, 'null');
+}, 'setting href to null');
+
 </script>

@@ -27,9 +27,7 @@
     NoInterfaceObject,
     ImplementedAs=DOMURLUtils
 ] interface URLUtils {
-    // Special case null for backwards compat with HTMLAnchorElement href.
-    // https://code.google.com/p/chromium/issues/detail?id=304959
-    [TreatNullAs=NullString] attribute DOMString href;
+    attribute DOMString href;
 
     [NotEnumerable, ImplementedAs=href] DOMString toString();
 
