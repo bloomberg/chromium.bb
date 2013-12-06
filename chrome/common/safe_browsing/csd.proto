@@ -92,26 +92,28 @@ message ClientMalwareRequest {
   // client.
   required string url = 1;
 
-  message Feature {
-    // Feature name.  E.g., 'BadIpFetch='.
-    required string name = 1;
-
-    // Feature value is always in the range [0.0, 1.0].  Boolean features
-    // have value 1.0.
-    required double value = 2;
-
-    // Optional meta information about this feature
-    repeated string metainfo = 3;
-  }
-
-  // List of features that were extracted.
-  repeated Feature feature_map = 2;
+  // Field 2 is deleted and no longer in use.
 
   // Field 3 is only used on the server.
 
   // The referrer URL.  This field might not be set, for example, in the case
   // where the referrer uses HTTPS.
   optional string referrer_url = 4;
+
+  // Field 5 and 6 are only used on the server.
+
+  message UrlInfo {
+    required string ip = 1;
+    required string url = 2;
+    optional string method = 3;
+    optional string referrer = 4;
+    // Resource type, the int value is a direct cast from the Type enum 
+    // of ResourceType class defined in //src/webkit/commom/resource_type.h
+    optional int32 resource_type = 5;
+  }
+
+  // List of resource urls that match the malware IP list.
+  repeated UrlInfo bad_ip_url_info = 7;
 }
 
 message ClientMalwareResponse {

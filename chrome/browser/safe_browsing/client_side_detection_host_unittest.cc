@@ -66,8 +66,17 @@ MATCHER_P(PartiallyEqualVerdict, other, "") {
 }
 
 MATCHER_P(PartiallyEqualMalwareVerdict, other, "") {
-  return (other.url() == arg.url() &&
-          other.feature_map_size() == arg.feature_map_size());
+  if (other.url() != arg.url() ||
+      other.referrer_url() != arg.referrer_url() ||
+      other.bad_ip_url_info_size() != arg.bad_ip_url_info_size())
+    return false;
+
+  for (int i = 0; i < other.bad_ip_url_info_size(); ++i) {
+    if (other.bad_ip_url_info(i).ip() != arg.bad_ip_url_info(i).ip() ||
+        other.bad_ip_url_info(i).url() != arg.bad_ip_url_info(i).url())
+    return false;
+  }
+  return true;
 }
 
 // Test that the callback is NULL when the verdict is not phishing.
@@ -238,7 +247,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
   }
 
   void UpdateIPUrlMap(const std::string& ip, const std::string& host) {
-    csd_host_->UpdateIPUrlMap(ip, host);
+    csd_host_->UpdateIPUrlMap(ip, host, "", "", ResourceType::OBJECT);
   }
 
   BrowseInfo* GetBrowseInfo() {
@@ -368,6 +377,18 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
     TestUnsafeResourceCopied(resource);
+  }
+
+  void CheckIPUrlEqual(const std::vector<IPUrlInfo>& expect,
+                       const std::vector<IPUrlInfo>& result) {
+    ASSERT_EQ(expect.size(), result.size());
+
+    for (unsigned int i = 0; i < expect.size(); ++i) {
+      EXPECT_EQ(expect[i].url, result[i].url);
+      EXPECT_EQ(expect[i].method, result[i].method);
+      EXPECT_EQ(expect[i].referrer, result[i].referrer);
+      EXPECT_EQ(expect[i].resource_type, result[i].resource_type);
+    }
   }
 
  protected:
@@ -723,30 +744,34 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   UpdateIPUrlMap(std::string(), std::string());
   ASSERT_EQ(0U, browse_info->ips.size());
 
-  std::set<std::string> expected_urls;
+  std::vector<IPUrlInfo> expected_urls;
   for (int i = 0; i < 20; i++) {
     std::string url = base::StringPrintf("http://%d.com/", i);
-    expected_urls.insert(url);
+    expected_urls.push_back(IPUrlInfo(url, "", "", ResourceType::OBJECT));
     UpdateIPUrlMap("250.10.10.10", url);
   }
   ASSERT_EQ(1U, browse_info->ips.size());
   ASSERT_EQ(20U, browse_info->ips["250.10.10.10"].size());
-  EXPECT_EQ(expected_urls, browse_info->ips["250.10.10.10"]);
+  CheckIPUrlEqual(expected_urls,
+                  browse_info->ips["250.10.10.10"]);
 
   // Add more urls for this ip, it exceeds max limit and won't be added
   UpdateIPUrlMap("250.10.10.10", "http://21.com/");
   ASSERT_EQ(1U, browse_info->ips.size());
   ASSERT_EQ(20U, browse_info->ips["250.10.10.10"].size());
-  EXPECT_EQ(expected_urls, browse_info->ips["250.10.10.10"]);
+  CheckIPUrlEqual(expected_urls,
+                  browse_info->ips["250.10.10.10"]);
 
   // Add 199 more IPs
   for (int i = 0; i < 199; i++) {
     std::string ip = base::StringPrintf("%d.%d.%d.256", i, i, i);
     expected_urls.clear();
-    expected_urls.insert("test.com/");
+    expected_urls.push_back(IPUrlInfo("test.com/", "", "",
+                            ResourceType::OBJECT));
     UpdateIPUrlMap(ip, "test.com/");
     ASSERT_EQ(1U, browse_info->ips[ip].size());
-    EXPECT_EQ(expected_urls, browse_info->ips[ip]);
+    CheckIPUrlEqual(expected_urls,
+                    browse_info->ips[ip]);
   }
   ASSERT_EQ(200U, browse_info->ips.size());
 
@@ -760,9 +785,10 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   UpdateIPUrlMap("100.100.100.256", "more.com/");
   ASSERT_EQ(2U, browse_info->ips["100.100.100.256"].size());
   expected_urls.clear();
-  expected_urls.insert("test.com/");
-  expected_urls.insert("more.com/");
-  EXPECT_EQ(expected_urls, browse_info->ips["100.100.100.256"]);
+  expected_urls.push_back(IPUrlInfo("test.com/", "", "", ResourceType::OBJECT));
+  expected_urls.push_back(IPUrlInfo("more.com/", "", "", ResourceType::OBJECT));
+  CheckIPUrlEqual(expected_urls,
+                  browse_info->ips["100.100.100.256"]);
 }
 
 TEST_F(ClientSideDetectionHostTest,
@@ -813,10 +839,10 @@ TEST_F(ClientSideDetectionHostTest,
   ClientMalwareRequest malware_verdict;
   malware_verdict.set_url(verdict.url());
   malware_verdict.set_referrer_url("http://referrer.com/");
-  ClientMalwareRequest::Feature* feature = malware_verdict.add_feature_map();
-  feature->set_name("malwareip1.2.3.4");
-  feature->set_value(1.0);
-  feature->add_metainfo("badip.com");
+  ClientMalwareRequest::UrlInfo* badipurl =
+      malware_verdict.add_bad_ip_url_info();
+  badipurl->set_ip("1.2.3.4");
+  badipurl->set_url("badip.com");
 
   EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
       .WillOnce(InvokeMalwareCallback(&malware_verdict));
@@ -849,10 +875,10 @@ TEST_F(ClientSideDetectionHostTest,
 
   ClientMalwareRequest malware_verdict;
   malware_verdict.set_url(verdict.url());
-  ClientMalwareRequest::Feature* feature = malware_verdict.add_feature_map();
-  feature->set_name("malwareip1.2.3.4");
-  feature->set_value(1.0);
-  feature->add_metainfo("badip.com");
+  ClientMalwareRequest::UrlInfo* badipurl =
+      malware_verdict.add_bad_ip_url_info();
+  badipurl->set_ip("1.2.3.4");
+  badipurl->set_url("badip.com");
 
   EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
       .WillOnce(InvokeMalwareCallback(&malware_verdict));
@@ -899,10 +925,10 @@ TEST_F(ClientSideDetectionHostTest,
   GURL malware_ip_url("http://badip.com");
   ClientMalwareRequest malware_verdict;
   malware_verdict.set_url("http://malware.com/");
-  ClientMalwareRequest::Feature* feature = malware_verdict.add_feature_map();
-  feature->set_name("malwareip1.2.3.4");
-  feature->set_value(1.0);
-  feature->add_metainfo("http://badip.com");
+  ClientMalwareRequest::UrlInfo* badipurl =
+      malware_verdict.add_bad_ip_url_info();
+  badipurl->set_ip("1.2.3.4");
+  badipurl->set_url("http://badip.com");
 
   EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
       .WillOnce(InvokeMalwareCallback(&malware_verdict));

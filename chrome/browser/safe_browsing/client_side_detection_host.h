@@ -104,7 +104,11 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
                                     scoped_ptr<ClientMalwareRequest> request);
 
   // Update the entries in browse_info_->ips map.
-  void UpdateIPUrlMap(const std::string& ip, const std::string& url);
+  void UpdateIPUrlMap(const std::string& ip,
+                      const std::string& url,
+                      const std::string& method,
+                      const std::string& referrer,
+                      const ResourceType::Type resource_type);
 
   // From NotificationObserver.  Called when a notification comes in.  This
   // method is called in the UI thread.

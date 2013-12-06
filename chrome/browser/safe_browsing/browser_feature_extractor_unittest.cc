@@ -192,18 +192,13 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
                    base::Unretained(this)));
   }
 
-  void GetMalwareFeatureMap(
+  void GetMalwareUrls(
       const ClientMalwareRequest& request,
-      std::map<std::string, std::set<std::string> >* features) {
-    for (int i = 0; i < request.feature_map_size(); ++i) {
-      const ClientMalwareRequest::Feature& feature =
-          request.feature_map(i);
-      EXPECT_EQ(0U, features->count(feature.name()));
-      std::set<std::string> meta_infos;
-      for (int j = 0; j < feature.metainfo_size(); ++j) {
-        meta_infos.insert(feature.metainfo(j));
-      }
-      (*features)[feature.name()] = meta_infos;
+      std::map<std::string, std::set<std::string> >* urls) {
+    for (int i = 0; i < request.bad_ip_url_info_size(); ++i) {
+      const ClientMalwareRequest::UrlInfo& urlinfo =
+          request.bad_ip_url_info(i);
+      (*urls)[urlinfo.ip()].insert(urlinfo.url());
     }
   }
 
@@ -598,13 +593,16 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures) {
   ClientMalwareRequest request;
   request.set_url("http://www.foo.com/");
 
-  std::set<std::string> bad_urls;
-  bad_urls.insert("http://bad.com");
-  bad_urls.insert("http://evil.com");
+  std::vector<IPUrlInfo> bad_urls;
+  bad_urls.push_back(IPUrlInfo("http://bad.com", "GET", "",
+                               ResourceType::SCRIPT));
+  bad_urls.push_back(IPUrlInfo("http://evil.com", "GET", "",
+                               ResourceType::SCRIPT));
   browse_info_->ips.insert(std::make_pair("193.5.163.8", bad_urls));
   browse_info_->ips.insert(std::make_pair("92.92.92.92", bad_urls));
-  std::set<std::string> good_urls;
-  good_urls.insert("http://ok.com");
+  std::vector<IPUrlInfo> good_urls;
+  good_urls.push_back(IPUrlInfo("http://ok.com", "GET", "",
+                                ResourceType::SCRIPT));
   browse_info_->ips.insert(std::make_pair("23.94.78.1", good_urls));
   EXPECT_CALL(*db_manager_, MatchMalwareIP("193.5.163.8"))
       .WillOnce(Return(true));
@@ -614,21 +612,18 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures) {
       .WillOnce(Return(false));
 
   ExtractMalwareFeatures(&request);
-  std::map<std::string, std::set<std::string> > features;
-  GetMalwareFeatureMap(request, &features);
+  EXPECT_EQ(4, request.bad_ip_url_info_size());
+  std::map<std::string, std::set<std::string> > result_urls;
+  GetMalwareUrls(request, &result_urls);
 
-  EXPECT_EQ(2U, features.size());
-  std::string feature_name = base::StringPrintf("%s%s", features::kBadIpFetch,
-                                                "193.5.163.8");
-  EXPECT_TRUE(features.count(feature_name));
-  std::set<std::string> urls = features[feature_name];
+  EXPECT_EQ(2U, result_urls.size());
+  EXPECT_TRUE(result_urls.count("193.5.163.8"));
+  std::set<std::string> urls = result_urls["193.5.163.8"];
   EXPECT_EQ(2U, urls.size());
   EXPECT_TRUE(urls.find("http://bad.com") != urls.end());
   EXPECT_TRUE(urls.find("http://evil.com") != urls.end());
-  feature_name = base::StringPrintf("%s%s", features::kBadIpFetch,
-                                    "92.92.92.92");
-  EXPECT_TRUE(features.count(feature_name));
-  urls = features[feature_name];
+  EXPECT_TRUE(result_urls.count("92.92.92.92"));
+  urls = result_urls["92.92.92.92"];
   EXPECT_EQ(2U, urls.size());
   EXPECT_TRUE(urls.find("http://bad.com") != urls.end());
   EXPECT_TRUE(urls.find("http://evil.com") != urls.end());
@@ -638,8 +633,9 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures_ExceedLimit) {
   ClientMalwareRequest request;
   request.set_url("http://www.foo.com/");
 
-  std::set<std::string> bad_urls;
-  bad_urls.insert("http://bad.com");
+  std::vector<IPUrlInfo> bad_urls;
+  bad_urls.push_back(IPUrlInfo("http://bad.com", "GET", "",
+                               ResourceType::SCRIPT));
   std::vector<std::string> ips;
   for (int i = 0; i < 7; ++i) {  // Add 7 ips
     std::string ip = base::StringPrintf("%d.%d.%d.%d", i, i, i, i);
@@ -651,11 +647,8 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures_ExceedLimit) {
   }
 
   ExtractMalwareFeatures(&request);
-  std::map<std::string, std::set<std::string> > features;
-  GetMalwareFeatureMap(request, &features);
-
-  // The number of IP match features we store is capped at 5 IPs per request.
-  EXPECT_EQ(5U, features.size());
+  // The number of IP matched url we store is capped at 5 IPs per request.
+  EXPECT_EQ(5, request.bad_ip_url_info_size());
 }
 
 }  // namespace safe_browsing

@@ -531,10 +531,10 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
     scoped_ptr<ClientMalwareRequest> request) {
   DCHECK(request.get());
   VLOG(2) << "Malware Feature extraction done for URL: " << request->url()
-          << ", with features count:" << request->feature_map_size();
+          << ", with badip url count:" << request->bad_ip_url_info_size();
 
   // Send ping if there is matching features.
-  if (feature_extraction_success && request->feature_map_size() > 0) {
+  if (feature_extraction_success && request->bad_ip_url_info_size() > 0) {
     VLOG(1) << "Start sending client malware request.";
     ClientSideDetectionService::ClientReportMalwareRequestCallback callback;
     callback = base::Bind(&ClientSideDetectionHost::MaybeShowMalwareWarning,
@@ -543,20 +543,24 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
   }
 }
 
-void ClientSideDetectionHost::UpdateIPUrlMap(const std::string& ip,
-                                             const std::string& url) {
+void ClientSideDetectionHost::UpdateIPUrlMap(
+    const std::string& ip,
+    const std::string& url,
+    const std::string& method,
+    const std::string& referrer,
+    const ResourceType::Type resource_type) {
   if (ip.empty() || url.empty())
     return;
 
   IPUrlMap::iterator it = browse_info_->ips.find(ip);
   if (it == browse_info_->ips.end()) {
     if (int(browse_info_->ips.size()) < kMaxIPsPerBrowse) {
-      std::set<std::string> urls;
-      urls.insert(url);
-      browse_info_->ips.insert(make_pair(ip, urls));
+      std::vector<IPUrlInfo> url_infos;
+      url_infos.push_back(IPUrlInfo(url, method, referrer, resource_type));
+      browse_info_->ips.insert(make_pair(ip, url_infos));
     }
   } else if (int(it->second.size()) < kMaxUrlsPerIP) {
-    it->second.insert(url);
+    it->second.push_back(IPUrlInfo(url, method, referrer, resource_type));
   }
 }
 
@@ -572,7 +576,10 @@ void ClientSideDetectionHost::Observe(
       !MalwareKillSwitchIsOn()) {
     if (req->url.is_valid()) {
       UpdateIPUrlMap(req->socket_address.host() /* ip */,
-                     req->url.spec()  /* url */);
+                     req->url.spec()  /* url */,
+                     req->method,
+                     req->referrer,
+                     req->resource_type);
     }
   }
 }

@@ -56,6 +56,18 @@ void FilterBenignIpsOnIOThread(
 }
 }  // namespace
 
+IPUrlInfo::IPUrlInfo(const std::string& url,
+                     const std::string& method,
+                     const std::string& referrer,
+                     const ResourceType::Type& resource_type)
+      : url(url),
+        method(method),
+        referrer(referrer),
+        resource_type(resource_type) {
+}
+
+IPUrlInfo::~IPUrlInfo() {}
+
 BrowseInfo::BrowseInfo() : http_status_code(0) {}
 
 BrowseInfo::~BrowseInfo() {}
@@ -71,20 +83,22 @@ static void AddFeature(const std::string& feature_name,
   VLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
 }
 
-static void AddMalwareFeature(const std::string& feature_name,
-                              const std::set<std::string>& meta_infos,
-                              double feature_value,
-                              ClientMalwareRequest* request) {
+static void AddMalwareIpUrlInfo(const std::string& ip,
+                                const std::vector<IPUrlInfo>& meta_infos,
+                                ClientMalwareRequest* request) {
   DCHECK(request);
-  ClientMalwareRequest::Feature* feature =
-      request->add_feature_map();
-  feature->set_name(feature_name);
-  feature->set_value(feature_value);
-  for (std::set<std::string>::const_iterator it = meta_infos.begin();
+  for (std::vector<IPUrlInfo>::const_iterator it = meta_infos.begin();
        it != meta_infos.end(); ++it) {
-    feature->add_metainfo(*it);
+    ClientMalwareRequest::UrlInfo* urlinfo =
+        request->add_bad_ip_url_info();
+    // We add the information about url on the bad ip.
+    urlinfo->set_ip(ip);
+    urlinfo->set_url(it->url);
+    urlinfo->set_method(it->method);
+    urlinfo->set_referrer(it->referrer);
+    urlinfo->set_resource_type(static_cast<int>(it->resource_type));
   }
-  VLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
+  DVLOG(2) << "Added url info for bad ip: " << ip;
 }
 
 static void AddNavigationFeatures(
@@ -514,8 +528,7 @@ void BrowserFeatureExtractor::FinishExtractMalwareFeatures(
   int matched_bad_ips = 0;
   for (IPUrlMap::const_iterator it = bad_ips->begin();
        it != bad_ips->end(); ++it) {
-    AddMalwareFeature(features::kBadIpFetch + it->first,
-                      it->second, 1.0, request.get());
+    AddMalwareIpUrlInfo(it->first, it->second, request.get());
     ++matched_bad_ips;
     // Limit the number of matched bad IPs in one request to control
     // the request's size

@@ -27,6 +27,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "url/gurl.h"
+#include "webkit/common/resource_type.h"
+
 
 class HistoryService;
 
@@ -39,7 +41,21 @@ class ClientMalwareRequest;
 class ClientPhishingRequest;
 class ClientSideDetectionHost;
 
-typedef std::map<std::string, std::set<std::string> > IPUrlMap;
+struct IPUrlInfo {
+  // The url on the bad IP address.
+  std::string url;
+  std::string method;
+  std::string referrer;
+  ResourceType::Type resource_type;
+
+  IPUrlInfo(const std::string& url,
+            const std::string& method,
+            const std::string& referrer,
+            const ResourceType::Type& resource_type);
+  ~IPUrlInfo();
+};
+
+typedef std::map<std::string, std::vector<IPUrlInfo> > IPUrlMap;
 
 struct BrowseInfo {
   // List of IPv4 and IPv6 addresses from which content was requested
