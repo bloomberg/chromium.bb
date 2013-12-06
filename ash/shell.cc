@@ -44,6 +44,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -517,6 +518,8 @@ LauncherDelegate* Shell::GetLauncherDelegate() {
     DCHECK(app_list_id);
     shelf_item_delegate_manager_->SetShelfItemDelegate(app_list_id,
                                                        controller.Pass());
+    shelf_window_watcher_.reset(
+        new internal::ShelfWindowWatcher(shelf_model_.get()));
   }
   return launcher_delegate_.get();
 }
@@ -659,6 +662,8 @@ Shell::~Shell() {
   // |shelf_item_delegate_manager_| observes |shelf_model_|. It must be
   // destroyed before |shelf_model_| is destroyed.
   shelf_item_delegate_manager_.reset();
+  // |shelf_window_watcher_| has a weak pointer to |shelf_Model_|.
+  shelf_window_watcher_.reset();
   shelf_model_.reset();
   video_detector_.reset();
 

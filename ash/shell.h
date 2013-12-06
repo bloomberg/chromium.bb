@@ -136,6 +136,7 @@ class ResolutionNotificationController;
 class RootWindowController;
 class ScopedTargetRootWindow;
 class ScreenPositionController;
+class ShelfWindowWatcher;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
 class SystemGestureEventFilter;
@@ -601,6 +602,7 @@ class ASH_EXPORT Shell
   scoped_ptr<MediaDelegate> media_delegate_;
   scoped_ptr<LauncherDelegate> launcher_delegate_;
   scoped_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
+  scoped_ptr<internal::ShelfWindowWatcher> shelf_window_watcher_;
 
   scoped_ptr<ShelfModel> shelf_model_;
   scoped_ptr<WindowPositioner> window_positioner_;

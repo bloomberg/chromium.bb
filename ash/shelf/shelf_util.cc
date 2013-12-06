@@ -4,14 +4,20 @@
 
 #include "ash/shelf/shelf_util.h"
 
-#include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::LauncherID);
+DECLARE_WINDOW_PROPERTY_TYPE(ash::LauncherItemDetails*);
 
 namespace ash {
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(LauncherID, kLauncherID, 0);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(LauncherID, kLauncherID, kInvalidLauncherID);
+
+// ash::LauncherItemDetails for kLauncherItemDetaildKey is owned by the window
+// and will be freed automatically.
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(LauncherItemDetails,
+                                 kLauncherItemDetailsKey,
+                                 NULL);
 
 void SetLauncherIDForWindow(LauncherID id, aura::Window* window) {
   if (!window)
@@ -23,6 +29,22 @@ void SetLauncherIDForWindow(LauncherID id, aura::Window* window) {
 LauncherID GetLauncherIDForWindow(aura::Window* window) {
   DCHECK(window);
   return window->GetProperty(kLauncherID);
+}
+
+void SetLauncherItemDetailsForWindow(aura::Window* window,
+                                     const LauncherItemDetails& details) {
+  // |item_details| is owned by |window|.
+  LauncherItemDetails* item_details = new LauncherItemDetails(details);
+  window->SetProperty(kLauncherItemDetailsKey, item_details);
+}
+
+void ClearLauncherItemDetailsForWindow(aura::Window* window) {
+  window->ClearProperty(kLauncherItemDetailsKey);
+}
+
+const LauncherItemDetails* GetLauncherItemDetailsForWindow(
+    aura::Window* window) {
+  return window->GetProperty(kLauncherItemDetailsKey);
 }
 
 }  // namespace ash

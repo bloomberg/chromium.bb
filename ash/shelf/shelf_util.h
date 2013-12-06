@@ -7,12 +7,16 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"
+#include "ui/aura/window.h"
 
 namespace aura {
 class Window;
 }
 
 namespace ash {
+
+extern const aura::WindowProperty<ash::LauncherItemDetails*>* const
+    kLauncherItemDetailsKey;
 
 // Associates LauncherItem of |id| with specified |window|.
 ASH_EXPORT void SetLauncherIDForWindow(LauncherID id, aura::Window* window);
@@ -22,6 +26,21 @@ ASH_EXPORT void SetLauncherIDForWindow(LauncherID id, aura::Window* window);
 // Note: Window of a tabbed browser will return the |LauncherID| of the
 // currently active tab.
 ASH_EXPORT LauncherID GetLauncherIDForWindow(aura::Window* window);
+
+// Sets LauncherItemDetails for |window|.
+ASH_EXPORT void SetLauncherItemDetailsForWindow(
+    aura::Window* window,
+    const LauncherItemDetails& details);
+
+// Clears LauncherItemDetails for |window|.
+// If |window| has a LauncherItem by SetLauncherItemDetailsForWindow(), it will
+// be removed.
+ASH_EXPORT void ClearLauncherItemDetailsForWindow(aura::Window* window);
+
+// Returns LauncherItemDetails for |window| or NULL if it doesn't have.
+// Returned LauncherItemDetails object is owned by the |window|.
+ASH_EXPORT const LauncherItemDetails* GetLauncherItemDetailsForWindow(
+    aura::Window* window);
 
 }  // namespace ash
 
