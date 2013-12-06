@@ -9,16 +9,18 @@
 <template>
   <kb-keyset id="dvorak-upper">
     <kb-row>
-      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
+      <kb-key class="dark" char="&#x0009;" align="left"
+          weight="1.3">tab</kb-key>
       <kb-key-sequence keys="&quot;,.PYFGCRL" hintTexts="1234567890">
        </kb-key-sequence>
-      <kb-key class="backspace dark" char="&#x0008;" repeat
-          align="right">backspace</kb-key>
+      <kb-key class="dark" char="&#x0008;" repeat align="right"
+          weight="1.7">backspace</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="microphone dark" char="Microphone"></kb-key>
+      <kb-key class="microphone dark" char="Microphone" weight="1.5"></kb-key>
       <kb-key-sequence keys="AOEUIDHTNS"></kb-key-sequence>
-      <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
+      <kb-key class="dark" char="&#x000A;" align="right"
+          weight="2.1">enter</kb-key>
     </kb-row>
     <kb-row>
       <kb-shift-key weight="1.8" align="left">shift</kb-shift-key>
@@ -26,8 +28,8 @@
       <kb-shift-key weight="1.8" align="right">shift</kb-shift-key>
     </kb-row>
     <kb-row>
-      <kb-key class="symbol dark" toKeyset="down:symbol" char="Invalid"
-          align="left">#123</kb-key>
+      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
+          align="left" weight="1.25">#123</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="down:symbol" char="Invalid"
           align="right">#123</kb-key>
@@ -39,16 +41,18 @@
 
   <kb-keyset id="dvorak-lower" isDefault=true>
     <kb-row>
-      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
+      <kb-key class="dark" char="&#x0009;" align="left"
+          weight="1.3">tab</kb-key>
       <kb-key-sequence keys="&quot;,.pyfgcrl" hintTexts="1234567890">
       </kb-key-sequence>
-      <kb-key class="backspace dark" char="&#x0008;" repeat
-          align="right">backspace</kb-key>
+      <kb-key class="dark" char="&#x0008;" repeat align="right"
+          weight="1.7">backspace</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="microphone dark" char="Microphone"></kb-key>
+      <kb-key class="microphone dark" char="Microphone" weight="1.5"></kb-key>
       <kb-key-sequence keys="aoeuidhtns"></kb-key-sequence>
-      <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
+      <kb-key class="dark" char="&#x000A;" align="right"
+          weight="2.1">enter</kb-key>
     </kb-row>
     <kb-row>
       <kb-shift-key weight="1.8" align="left">shift</kb-shift-key>
@@ -56,8 +60,8 @@
       <kb-shift-key weight="1.8" align="right">shift</kb-shift-key>
     </kb-row>
     <kb-row>
-      <kb-key class="symbol dark" toKeyset="down:symbol" char="Invalid"
-          align="left">#123</kb-key>
+      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
+          align="left" weight="1.25">#123</kb-key>
       <kb-key-import importId="spacebar-row"></kb-key-import>
       <kb-key class="symbol dark" toKeyset="down:symbol" char="Invalid"
           align="right">#123</kb-key>
@@ -69,22 +73,24 @@
 
   <kb-keyset id="dvorak-symbol">
     <kb-row>
-      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
+      <kb-key class="dark" char="&#x0009;" align="left"
+          weight="1.3">tab</kb-key>
       <kb-key-sequence keys="1234567890"></kb-key-sequence>
-      <kb-key class="backspace dark" char="&#x0008;" repeat
-          align="right">backspace</kb-key>
+      <kb-key class="dark" char="&#x0008;" repeat align="right"
+          weight="1.7">backspace</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="microphone dark" char="Microphone"></kb-key>
+      <kb-key class="microphone dark" char="Microphone" weight="1.5"></kb-key>
       <kb-key-sequence keys="@#$%&amp;*-=()"></kb-key-sequence>
-      <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
+      <kb-key class="dark" char="&#x000A;" align="right"
+          weight="2.1">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-more dark" toKeyset="down:more" char="Invalid"
-          align="left">more</kb-key>
+      <kb-key class="dark" toKeyset="down:more" char="Invalid"
+          align="left" weight="1.25">more</kb-key>
       <kb-key-sequence keys="!&quot;':;/?"></kb-key-sequence>
-      <kb-key class="right-more dark" toKeyset="down:more" char="Invalid"
-          align="right">more</kb-key>
+      <kb-key class="dark" toKeyset="down:more" char="Invalid"
+          align="right" weight="1.25">more</kb-key>
     </kb-row>
     <kb-row>
       <kb-abc-key align="left">abc</kb-abc-key>
@@ -98,28 +104,30 @@
 
 <kb-keyset id="dvorak-more">
     <kb-row>
-    <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
+      <kb-key class="dark" char="&#x0009;" align="left"
+          weight="1.3">tab</kb-key>
       <kb-key>~</kb-key><kb-key>`</kb-key><kb-key>|</kb-key><kb-key>^</kb-key>
       <kb-key>+</kb-key><kb-key>=</kb-key><kb-key>{</kb-key><kb-key>}</kb-key>
       <kb-key>&#x003C;</kb-key><kb-key>&#x003E;</kb-key>
-      <kb-key class="backspace dark" char="&#x0008;" repeat
-          align="right">backspace</kb-key>
+      <kb-key class="dark" char="&#x0008;" repeat align="right"
+          weight="1.7">backspace</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="microphone dark" char="Microphone"></kb-key>
+      <kb-key class="microphone dark" char="Microphone" weight="1.5"></kb-key>
       <kb-key>&#x00A3</kb-key><kb-key>&#x00A2</kb-key><kb-key>&#x20AC</kb-key>
       <kb-key>&#x2122</kb-key><kb-key>&#x00A9</kb-key><kb-key>&#x00AE</kb-key>
       <kb-key>\</kb-key><kb-key>[</kb-key><kb-key>]</kb-key>
-      <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
+      <kb-key class="dark" char="&#x000A;" align="right"
+          weight="2.1">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-more dark" toKeyset="down:symbol" char="Invalid"
-          align="left">#123</kb-key>
+      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
+          align="left" weight="1.25">#123</kb-key>
       <kb-key>&#x00D7</kb-key><kb-key>&#x00F7</kb-key><kb-key>_</kb-key>
       <kb-key>&#x00A7</kb-key><kb-key>&#x00B6</kb-key><kb-key>&#x00A1</kb-key>
       <kb-key>&#x00BF</kb-key><kb-key>&#x2022</kb-key><kb-key>&#x0394</kb-key>
-      <kb-key class="right-more dark" toKeyset="down:symbol" char="Invalid"
-          align="right">#123</kb-key>
+      <kb-key class="dark" toKeyset="down:symbol" char="Invalid"
+          align="left" weight="1.25">#123</kb-key>
     </kb-row>
     <kb-row>
       <kb-abc-key align="left">abc</kb-abc-key>
