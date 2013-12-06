@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/proto/cloud_policy.pb.h"
@@ -118,6 +119,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     std::string url = test_server_.GetServiceURL().spec();
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(::switches::kDeviceManagementUrl, url);
+    command_line->AppendSwitch(switches::kEnableComponentCloudPolicy);
 
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }
