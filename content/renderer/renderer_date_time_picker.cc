@@ -16,20 +16,31 @@ using blink::WebString;
 
 namespace content {
 
-COMPILE_ASSERT(int(blink::WebTextInputTypeDate) == \
-               int(ui::TEXT_INPUT_TYPE_DATE), mismatching_enum);
-COMPILE_ASSERT(int(blink::WebTextInputTypeDateTime) == \
-               int(ui::TEXT_INPUT_TYPE_DATE_TIME), mismatching_enum);
-COMPILE_ASSERT(int(blink::WebTextInputTypeDateTimeLocal) == \
-               int(ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL), mismatching_enum);
-COMPILE_ASSERT(int(blink::WebTextInputTypeMonth) == \
-               int(ui::TEXT_INPUT_TYPE_MONTH), mismatching_enum);
-COMPILE_ASSERT(int(blink::WebTextInputTypeTime) == \
-               int(ui::TEXT_INPUT_TYPE_TIME), mismatching_enum);
-COMPILE_ASSERT(int(blink::WebTextInputTypeWeek) == \
-               int(ui::TEXT_INPUT_TYPE_WEEK), mismatching_enum);
-COMPILE_ASSERT(int(blink::WebTextInputTypeDateTimeField) == \
-               int(ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD), mismatching_enums);
+static ui::TextInputType ToTextInputType(int type) {
+  switch (type) {
+    case blink::WebDateTimeInputTypeDate:
+      return ui::TEXT_INPUT_TYPE_DATE;
+      break;
+    case blink::WebDateTimeInputTypeDateTime:
+      return ui::TEXT_INPUT_TYPE_DATE_TIME;
+      break;
+    case blink::WebDateTimeInputTypeDateTimeLocal:
+      return ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
+      break;
+    case blink::WebDateTimeInputTypeMonth:
+      return ui::TEXT_INPUT_TYPE_MONTH;
+      break;
+    case blink::WebDateTimeInputTypeTime:
+      return ui::TEXT_INPUT_TYPE_TIME;
+      break;
+    case blink::WebDateTimeInputTypeWeek:
+      return ui::TEXT_INPUT_TYPE_WEEK;
+      break;
+    case blink::WebDateTimeInputTypeNone:
+    default:
+      return ui::TEXT_INPUT_TYPE_NONE;
+  }
+}
 
 RendererDateTimePicker::RendererDateTimePicker(
     RenderViewImpl* sender,
@@ -45,7 +56,7 @@ RendererDateTimePicker::~RendererDateTimePicker() {
 
 bool RendererDateTimePicker::Open() {
   ViewHostMsg_DateTimeDialogValue_Params message;
-  message.dialog_type = static_cast<ui::TextInputType>(chooser_params_.type);
+  message.dialog_type = ToTextInputType(chooser_params_.type);
   message.dialog_value = chooser_params_.doubleValue;
   message.minimum = chooser_params_.minimum;
   message.maximum = chooser_params_.maximum;
