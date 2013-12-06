@@ -78,49 +78,44 @@ def ReadJson(path):
     return json.load(jsonfile)
 
 
-# This can be used in most cases like subprocess.check_call. The output,
+class CalledProcessError(Exception):
+  """This exception is raised when the process run by CheckOutput
+  exits with a non-zero exit code."""
+
+  def __init__(self, cwd, args, output):
+    self.cwd = cwd
+    self.args = args
+    self.output = output
+
+  def __str__(self):
+    # A user should be able to simply copy and paste the command that failed
+    # into their shell.
+    copyable_command = '( cd {}; {} )'.format(os.path.abspath(self.cwd),
+        ' '.join(map(pipes.quote, self.args)))
+    return 'Command failed: {}\n{}'.format(copyable_command, self.output)
+
+
+# This can be used in most cases like subprocess.check_output(). The output,
 # particularly when the command fails, better highlights the command's failure.
-# This call will directly exit on a failure in the subprocess so that no python
-# stacktrace is printed after the output of the failed command (and will
-# instead print a python stack trace before the output of the failed command)
-def CheckCallDie(args, suppress_output=False, cwd=None, fail_if_stderr=False):
+# If the command fails, raises a build_utils.CalledProcessError.
+def CheckOutput(args, cwd=None, print_stdout=False, print_stderr=True,
+                fail_if_stderr=False):
   if not cwd:
     cwd = os.getcwd()
 
   child = subprocess.Popen(args,
       stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-
   stdout, stderr = child.communicate()
 
-  returncode = child.returncode
-  if fail_if_stderr and stderr and returncode == 0:
-    returncode = 1
+  if child.returncode or (stderr and fail_if_stderr):
+    raise CalledProcessError(cwd, args, stdout + stderr)
 
-  if returncode:
-    stacktrace = traceback.extract_stack()
-    print >> sys.stderr, ''.join(traceback.format_list(stacktrace))
-    # A user should be able to simply copy and paste the command that failed
-    # into their shell.
-    copyable_command = ' '.join(map(pipes.quote, args))
-    copyable_command = ('( cd ' + os.path.abspath(cwd) + '; '
-        + copyable_command + ' )')
-    print >> sys.stderr, 'Command failed:', copyable_command, '\n'
+  if print_stdout:
+    sys.stdout.write(stdout)
+  if print_stderr:
+    sys.stderr.write(stderr)
 
-    if stdout:
-      print stdout,
-    if stderr:
-      print >> sys.stderr, stderr,
-
-    # Directly exit to avoid printing stacktrace.
-    sys.exit(returncode)
-
-  else:
-    if not suppress_output:
-      if stdout:
-        print stdout,
-      if stderr:
-        print >> sys.stderr, stderr,
-    return stdout + stderr
+  return stdout
 
 
 def GetModifiedTime(path):
@@ -141,7 +136,7 @@ def IsTimeStale(output, inputs):
 
 
 def IsDeviceReady():
-  device_state = CheckCallDie(['adb', 'get-state'], suppress_output=True)
+  device_state = CheckOutput(['adb', 'get-state'])
   return device_state.strip() == 'device'
 
 

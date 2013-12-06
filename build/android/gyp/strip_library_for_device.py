@@ -17,7 +17,7 @@ def StripLibrary(android_strip, android_strip_args, library_path, output_path):
     strip_cmd = ([android_strip] +
                  android_strip_args +
                  ['-o', output_path, library_path])
-    build_utils.CheckCallDie(strip_cmd)
+    build_utils.CheckOutput(strip_cmd)
 
 
 

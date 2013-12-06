@@ -161,7 +161,7 @@ def _RunInstrumentCommand(command, options, args, option_parser):
            '-d', temp_dir,
            '-out', coverage_file,
            '-m', 'fullcopy']
-    build_utils.CheckCallDie(cmd, suppress_output=True)
+    build_utils.CheckOutput(cmd)
 
     if command == 'instrument_jar':
       for jar in os.listdir(os.path.join(temp_dir, 'lib')):

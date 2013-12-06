@@ -27,7 +27,7 @@ def DoGcc(options):
       options.template
       ])
 
-  build_utils.CheckCallDie(gcc_cmd)
+  build_utils.CheckOutput(gcc_cmd)
 
 
 def main(argv):

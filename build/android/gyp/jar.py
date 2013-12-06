@@ -30,7 +30,7 @@ def DoJar(options):
 
   record_path = '%s.md5.stamp' % options.jar_path
   md5_check.CallAndRecordIfStale(
-      lambda: build_utils.CheckCallDie(jar_cmd, cwd=jar_cwd),
+      lambda: build_utils.CheckOutput(jar_cmd, cwd=jar_cwd),
       record_path=record_path,
       input_paths=class_files,
       input_strings=jar_cmd)

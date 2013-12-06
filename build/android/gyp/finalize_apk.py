@@ -26,7 +26,7 @@ def SignApk(keystore_path, unsigned_path, signed_path):
       signed_path,
       'chromiumdebugkey',
     ]
-  build_utils.CheckCallDie(sign_cmd)
+  build_utils.CheckOutput(sign_cmd)
 
 
 def AlignApk(android_sdk_root, unaligned_path, final_path):
@@ -36,7 +36,7 @@ def AlignApk(android_sdk_root, unaligned_path, final_path):
       unaligned_path,
       final_path,
       ]
-  build_utils.CheckCallDie(align_cmd)
+  build_utils.CheckOutput(align_cmd)
 
 
 def main(argv):

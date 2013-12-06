@@ -47,7 +47,7 @@ def CallReadElf(library_or_executable):
   readelf_cmd = [_options.readelf,
                  '-d',
                  library_or_executable]
-  return build_utils.CheckCallDie(readelf_cmd, suppress_output=True)
+  return build_utils.CheckOutput(readelf_cmd)
 
 
 def GetDependencies(library_or_executable):

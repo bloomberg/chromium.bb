@@ -26,7 +26,8 @@ def DoProguard(options):
                   '-outjars', outjars,
                   '-libraryjars', libraryjars,
                   '@' + options.proguard_config]
-  build_utils.CheckCallDie(proguard_cmd)
+  build_utils.CheckOutput(proguard_cmd, print_stdout=True)
+
 
 def main(argv):
   parser = optparse.OptionParser()

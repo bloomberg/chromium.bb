@@ -22,7 +22,7 @@ def DoDex(options, paths):
 
   record_path = '%s.md5.stamp' % options.dex_path
   md5_check.CallAndRecordIfStale(
-      lambda: build_utils.CheckCallDie(dex_cmd, suppress_output=True),
+      lambda: build_utils.CheckOutput(dex_cmd, print_stderr=False),
       record_path=record_path,
       input_paths=paths,
       input_strings=dex_cmd)

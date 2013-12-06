@@ -13,12 +13,20 @@ output up until the BUILD SUCCESSFUL line.
 """
 
 import sys
+import traceback
 
 from util import build_utils
 
 
 def main(argv):
-  stdout = build_utils.CheckCallDie(['ant'] + argv[1:], suppress_output=True)
+  try:
+    stdout = build_utils.CheckOutput(['ant'] + argv[1:])
+  except build_utils.CalledProcessError as e:
+    traceback.print_exc()
+    if '-quiet' in e.args:
+      sys.stderr.write('Tip: run the ant command above without the -quiet flag '
+          'to see more details on the error\n')
+    sys.exit(1)
   stdout = stdout.strip().split('\n')
   for line in stdout:
     if line.strip() == 'BUILD SUCCESSFUL':

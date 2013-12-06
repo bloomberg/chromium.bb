@@ -44,7 +44,7 @@ def CallJavap(classpath, classes):
       '-verbose',
       '-classpath', classpath
       ] + classes
-  return build_utils.CheckCallDie(javap_cmd, suppress_output=True)
+  return build_utils.CheckOutput(javap_cmd)
 
 
 def ExtractToc(disassembled_classes):

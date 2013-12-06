@@ -59,8 +59,7 @@ def DoJavac(options):
     # not contain the corresponding old .class file after running this action.
     build_utils.DeleteDirectory(output_dir)
     build_utils.MakeDirectory(output_dir)
-    suppress_output = not options.chromium_code
-    build_utils.CheckCallDie(javac_cmd, suppress_output=suppress_output)
+    build_utils.CheckOutput(javac_cmd, print_stdout=options.chromium_code)
 
   record_path = '%s/javac.md5.stamp' % options.output_dir
   md5_check.CallAndRecordIfStale(
