@@ -51,19 +51,6 @@ CALLBACK_INTERFACE_CPP_INCLUDES = set([
     'wtf/Assertions.h',
 ])
 
-# FIXME: eliminate, per http://crbug.com/323681
-LEGACY_REF_COUNTED_CALLBACK_INTERFACES = set([
-    # Filesystem
-    'EntryCallback',
-    'EntriesCallback',
-    'ErrorCallback',
-    'FileCallback',
-    'FileSystemCallback',
-    'FileSystemVoidCallback',
-    'FileWriterCallback',
-    'MetadataCallback',
-])
-
 
 def cpp_to_v8_conversion(idl_type, name):
     # FIXME: setting creation_context=v8::Handle<v8::Object>() is wrong,
@@ -100,7 +87,6 @@ def generate_callback_interface(callback_interface):
         'v8_class': v8_utilities.v8_class_name(callback_interface),
         'header_includes': CALLBACK_INTERFACE_H_INCLUDES,
         'methods': methods,
-        'ref_counted': name in LEGACY_REF_COUNTED_CALLBACK_INTERFACES,
     }
     return template_contents
 

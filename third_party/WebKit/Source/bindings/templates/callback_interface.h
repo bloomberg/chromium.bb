@@ -46,13 +46,11 @@ class ExecutionContext;
 
 class {{v8_class}} : public {{cpp_class}}, public ActiveDOMCallback {
 public:
-    {% set ptr_type = 'PassRefPtr' if ref_counted else 'PassOwnPtr' %}
-    {% set adopt_type = 'adoptRef' if ref_counted else 'adoptPtr' %}
-    static {{ptr_type}}<{{v8_class}}> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
+    static PassOwnPtr<{{v8_class}}> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
     {
         ASSERT(jsValue->IsObject());
         ASSERT(context);
-        return {{adopt_type}}(new {{v8_class}}(v8::Handle<v8::Object>::Cast(jsValue), context));
+        return adoptPtr(new {{v8_class}}(v8::Handle<v8::Object>::Cast(jsValue), context));
     }
 
     virtual ~{{v8_class}}();
