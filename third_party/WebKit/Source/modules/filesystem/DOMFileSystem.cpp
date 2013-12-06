@@ -156,7 +156,6 @@ public:
 
     virtual void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot)
     {
-        ASSERT(!metadata.platformPath.isEmpty());
         if (!m_successCallback)
             return;
 
