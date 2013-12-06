@@ -26,10 +26,10 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   DefaultValue<ValidityMessages>::Set(ValidityMessages());
   DefaultValue<gfx::Image>::Set(gfx::Image());
   DefaultValue<SuggestionState>::Set(SuggestionState(false,
-                                                     string16(),
-                                                     string16(),
+                                                     base::string16(),
+                                                     base::string16(),
                                                      gfx::Image(),
-                                                     string16(),
+                                                     base::string16(),
                                                      gfx::Image()));
   DefaultValue<FieldIconMap>::Set(FieldIconMap());
   DefaultValue<std::vector<DialogNotification> >::Set(

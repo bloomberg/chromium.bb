@@ -406,7 +406,7 @@ class Tile {
   NSRect title_rect() const { return NSIntegralRect(title_rect_); }
 
   // Returns an unelided title. The view logic is responsible for eliding.
-  const string16& title() const {
+  const base::string16& title() const {
     return contents_->GetTitle();
   }
 

@@ -37,7 +37,7 @@ class RecentTabsBuilderTestHelper {
   void AddTabWithInfo(int session_index,
                       int window_index,
                       base::Time timestamp,
-                      const string16& title);
+                      const base::string16& title);
   int GetTabCount(int session_index, int window_index);
   SessionID::id_type GetTabID(int session_index,
                               int window_index,
@@ -45,7 +45,7 @@ class RecentTabsBuilderTestHelper {
   base::Time GetTabTimestamp(int session_index,
                              int window_index,
                              int tab_index);
-  string16 GetTabTitle(int session_index,
+  base::string16 GetTabTitle(int session_index,
                        int window_index,
                        int tab_index);
 

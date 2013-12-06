@@ -179,7 +179,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   base::scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (it->GetRenderProcessHost() == hungContents_->GetRenderProcessHost()) {
-      string16 title = it->GetTitle();
+      base::string16 title = it->GetTitle();
       if (title.empty())
         title = CoreTabHelper::GetDefaultTitle();
       [titles addObject:base::SysUTF16ToNSString(title)];

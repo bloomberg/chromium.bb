@@ -265,7 +265,7 @@ void RenderViewContextMenuMac::StopSpeaking() {
 void RenderViewContextMenuMac::UpdateMenuItem(int command_id,
                                               bool enabled,
                                               bool hidden,
-                                              const string16& title) {
+                                              const base::string16& title) {
   NSMenuItem* item = GetMenuItemByID(&menu_model_, [menu_controller_ menu],
                                      command_id);
   if (!item)

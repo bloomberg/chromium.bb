@@ -122,7 +122,7 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
 
   // If we will not be replacing search terms from this URL, don't send to
   // InstantController.
-  const string16& search_terms =
+  const base::string16& search_terms =
       chrome::GetSearchTermsFromURL(browser_->profile(), url);
   if (search_terms.empty())
     return false;

@@ -37,14 +37,14 @@ class ToolbarModel {
   //   - The scheme and/or trailing slash may be dropped.
   //   - If the current page's URL is a search URL for the user's default search
   //     engine, the query will be extracted and returned.
-  virtual string16 GetText() const = 0;
+  virtual base::string16 GetText() const = 0;
 
   // Some search URLs bundle a special "corpus" param that we can extract and
   // display next to users' search terms in cases where we'd show the search
   // terms instead of the URL anyway.  For example, a Google image search might
   // show the corpus "Images:" plus a search string.  This is only used on
   // mobile.
-  virtual string16 GetCorpusNameForMobile() const = 0;
+  virtual base::string16 GetCorpusNameForMobile() const = 0;
 
   // Returns the URL of the current navigation entry.
   virtual GURL GetURL() const = 0;
@@ -68,7 +68,7 @@ class ToolbarModel {
 
   // Returns the name of the EV cert holder.  Only call this when the security
   // level is EV_SECURE.
-  virtual string16 GetEVCertName() const = 0;
+  virtual base::string16 GetEVCertName() const = 0;
 
   // Returns whether the URL for the current navigation entry should be
   // in the location bar.

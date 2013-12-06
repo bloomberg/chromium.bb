@@ -114,7 +114,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     // renderer code will think the second message is to go to next result, but
     // there are none so the plugin will assert.
 
-    string16 query = UTF8ToUTF16(
+    base::string16 query = UTF8ToUTF16(
         std::string("xyzxyz" + base::IntToString(next_dummy_search_value_++)));
     ASSERT_EQ(0, ui_test_utils::FindInPage(
         browser()->tab_strip_model()->GetActiveWebContents(),

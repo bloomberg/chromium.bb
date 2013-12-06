@@ -22,7 +22,7 @@ class ChromeLauncherAppMenuItemTab
     : public ChromeLauncherAppMenuItem,
       public content::WebContentsObserver {
  public:
-  ChromeLauncherAppMenuItemTab(const string16 title,
+  ChromeLauncherAppMenuItemTab(const base::string16 title,
                                const gfx::Image* icon,
                                content::WebContents* content,
                                bool has_leading_separator);

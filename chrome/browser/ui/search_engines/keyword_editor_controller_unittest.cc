@@ -19,10 +19,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model_observer.h"
 
-static const string16 kA(ASCIIToUTF16("a"));
-static const string16 kA1(ASCIIToUTF16("a1"));
-static const string16 kB(ASCIIToUTF16("b"));
-static const string16 kB1(ASCIIToUTF16("b1"));
+static const base::string16 kA(ASCIIToUTF16("a"));
+static const base::string16 kA1(ASCIIToUTF16("a1"));
+static const base::string16 kB(ASCIIToUTF16("b"));
+static const base::string16 kB1(ASCIIToUTF16("b1"));
 
 // Base class for keyword editor tests. Creates a profile containing an
 // empty TemplateURLService.

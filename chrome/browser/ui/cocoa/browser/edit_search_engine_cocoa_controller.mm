@@ -120,8 +120,9 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 - (IBAction)save:(id)sender {
   DCHECK([self validateFields]);
-  string16 title = base::SysNSStringToUTF16([nameField_ stringValue]);
-  string16 keyword = base::SysNSStringToUTF16([keywordField_ stringValue]);
+  base::string16 title = base::SysNSStringToUTF16([nameField_ stringValue]);
+  base::string16 keyword =
+      base::SysNSStringToUTF16([keywordField_ stringValue]);
   std::string url = base::SysNSStringToUTF8([urlField_ stringValue]);
   controller_->AcceptAddOrEdit(title, keyword, url);
   [self doClose];
@@ -159,14 +160,15 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 // This sets the image state for all the controls and enables or disables the
 // done button. Returns YES if all the fields are valid.
 - (BOOL)validateFields {
-  string16 title = base::SysNSStringToUTF16([nameField_ stringValue]);
+  base::string16 title = base::SysNSStringToUTF16([nameField_ stringValue]);
   BOOL titleValid = controller_->IsTitleValid(title);
   [self setIsValid:titleValid
            toolTip:IDS_SEARCH_ENGINES_INVALID_TITLE_TT
       forImageView:nameImage_
          textField:nameField_];
 
-  string16 keyword = base::SysNSStringToUTF16([keywordField_ stringValue]);
+  base::string16 keyword =
+      base::SysNSStringToUTF16([keywordField_ stringValue]);
   BOOL keywordValid = controller_->IsKeywordValid(keyword);
   [self setIsValid:keywordValid
            toolTip:IDS_SEARCH_ENGINES_INVALID_KEYWORD_TT

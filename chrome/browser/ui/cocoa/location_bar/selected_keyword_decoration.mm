@@ -53,9 +53,10 @@ ui::NinePartImageIds SelectedKeywordDecoration::GetBubbleImageIds() {
   };
 }
 
-void SelectedKeywordDecoration::SetKeyword(const string16& short_name,
+void SelectedKeywordDecoration::SetKeyword(const base::string16& short_name,
                                            bool is_extension_keyword) {
-  const string16 min_name(location_bar_util::CalculateMinString(short_name));
+  const base::string16 min_name(
+      location_bar_util::CalculateMinString(short_name));
   NSString* full_string = is_extension_keyword ?
       base::SysUTF16ToNSString(short_name) :
       l10n_util::GetNSStringF(IDS_OMNIBOX_KEYWORD_TEXT, short_name);

@@ -38,7 +38,7 @@ enum GTalkPluginLogVersion {
 // version format is "major(1 digit).minor(1 digit).sub(1 or 2 digits)",
 // for example, "2.7.10" and "2.8.1". Converts the string to a number as
 // 10 * major + minor - kGTalkPluginLogMinVersion.
-GTalkPluginLogVersion GetGTalkPluginVersion(const string16& version) {
+GTalkPluginLogVersion GetGTalkPluginVersion(const base::string16& version) {
   int gtalk_plugin_version = GTALK_PLUGIN_VERSION_MIN;
   Version plugin_version;
   content::WebPluginInfo::CreateVersionFromString(version, &plugin_version);
@@ -81,8 +81,8 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
 
   *action = HungWindowNotification::HUNG_WINDOW_IGNORE;
   if (top_level_window_process_id != hung_window_process_id) {
-    string16 plugin_name;
-    string16 plugin_version;
+    base::string16 plugin_name;
+    base::string16 plugin_version;
     GetPluginNameAndVersion(hung_window,
                             top_level_window_process_id,
                             &plugin_name,
@@ -99,9 +99,9 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
       NOTREACHED() << "Terminated a hung plugin process.";
       *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
     } else {
-      const string16 title = l10n_util::GetStringUTF16(
+      const base::string16 title = l10n_util::GetStringUTF16(
           IDS_BROWSER_HANGMONITOR_TITLE);
-      const string16 message = l10n_util::GetStringFUTF16(
+      const base::string16 message = l10n_util::GetStringFUTF16(
           IDS_BROWSER_HANGMONITOR, plugin_name);
       // Before displaying the message box, invoke SendMessageCallback on the
       // hung window. If the callback ever hits, the window is not hung anymore
@@ -162,8 +162,8 @@ void HungPluginAction::OnWindowResponsive(HWND window) {
 
 bool HungPluginAction::GetPluginNameAndVersion(HWND plugin_window,
                                                DWORD browser_process_id,
-                                               string16* plugin_name,
-                                               string16* plugin_version) {
+                                               base::string16* plugin_name,
+                                               base::string16* plugin_version) {
   DCHECK(plugin_name);
   DCHECK(plugin_version);
   HWND window_to_check = plugin_window;
@@ -186,7 +186,7 @@ bool HungPluginAction::GetPluginNameAndVersion(HWND plugin_window,
 
 // static
 BOOL CALLBACK HungPluginAction::DismissMessageBox(HWND window, LPARAM ignore) {
-  string16 class_name = gfx::GetClassName(window);
+  base::string16 class_name = gfx::GetClassName(window);
   // #32770 is the dialog window class which is the window class of
   // the message box being displayed.
   if (class_name == L"#32770") {

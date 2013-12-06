@@ -35,7 +35,7 @@ class MenuError : public GlobalError {
 
   virtual bool HasMenuItem() OVERRIDE { return true; }
   virtual int MenuItemCommandID() OVERRIDE { return command_id_; }
-  virtual string16 MenuItemLabel() OVERRIDE { return string16(); }
+  virtual base::string16 MenuItemLabel() OVERRIDE { return base::string16(); }
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { execute_count_++; }
 
   virtual bool HasBubbleView() OVERRIDE { return false; }

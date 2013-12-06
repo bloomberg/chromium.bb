@@ -14,7 +14,7 @@
 #include "ui/events/event_constants.h"
 
 ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
-    const string16 title,
+    const base::string16 title,
     const gfx::Image* icon,
     Browser* browser,
     bool has_leading_separator)

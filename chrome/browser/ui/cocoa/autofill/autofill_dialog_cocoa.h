@@ -50,7 +50,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
                            const DetailInput& originating_input) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             FieldValueMap* output) OVERRIDE;
-  virtual string16 GetCvc() OVERRIDE;
+  virtual base::string16 GetCvc() OVERRIDE;
   virtual bool HitTestInput(const DetailInput& input,
                             const gfx::Point& screen_point) OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
@@ -65,9 +65,10 @@ class AutofillDialogCocoa : public AutofillDialogView,
   // http://crbug.com/256864
   virtual void SubmitForTesting() OVERRIDE;
   virtual void CancelForTesting() OVERRIDE;
-  virtual string16 GetTextContentsOfInput(const DetailInput& input) OVERRIDE;
+  virtual base::string16 GetTextContentsOfInput(
+      const DetailInput& input) OVERRIDE;
   virtual void SetTextContentsOfInput(const DetailInput& input,
-                                      const string16& contents) OVERRIDE;
+                                      const base::string16& contents) OVERRIDE;
   virtual void SetTextContentsOfSuggestionInput(
       DialogSection section,
       const base::string16& text) OVERRIDE;

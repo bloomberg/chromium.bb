@@ -513,12 +513,12 @@ Notification* ScreenshotTaker::CreateNotification(
   // We cancel a previous screenshot notification, if any, to ensure we get
   // a fresh notification pop-up.
   g_browser_process->notification_ui_manager()->CancelById(notification_id);
-  const string16 replace_id(UTF8ToUTF16(notification_id));
+  const base::string16 replace_id(UTF8ToUTF16(notification_id));
   bool success =
       (screenshot_result == ScreenshotTakerObserver::SCREENSHOT_SUCCESS);
   message_center::RichNotificationData optional_field;
   if (success) {
-    const string16 label = l10n_util::GetStringUTF16(
+    const base::string16 label = l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD);
     optional_field.buttons.push_back(message_center::ButtonInfo(label));
   }

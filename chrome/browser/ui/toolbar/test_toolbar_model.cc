@@ -20,7 +20,7 @@ string16 TestToolbarModel::GetText() const {
 }
 
 string16 TestToolbarModel::GetCorpusNameForMobile() const {
-  return string16();
+  return base::string16();
 }
 
 GURL TestToolbarModel::GetURL() const {

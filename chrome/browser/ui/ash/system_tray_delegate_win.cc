@@ -72,20 +72,21 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
     return std::string();
   }
 
-  virtual const string16 GetEnterpriseMessage() const OVERRIDE {
-    return string16();
+  virtual const base::string16 GetEnterpriseMessage() const OVERRIDE {
+    return base::string16();
   }
 
   virtual const std::string GetLocallyManagedUserManager() const OVERRIDE {
     return std::string();
   }
 
-  virtual const string16 GetLocallyManagedUserManagerName() const OVERRIDE {
-    return string16();
+  virtual const base::string16 GetLocallyManagedUserManagerName() const
+        OVERRIDE {
+    return base::string16();
   }
 
-  virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {
-    return string16();
+  virtual const base::string16 GetLocallyManagedUserMessage() const OVERRIDE {
+    return base::string16();
   }
 
   virtual bool SystemShouldUpgrade() const OVERRIDE {

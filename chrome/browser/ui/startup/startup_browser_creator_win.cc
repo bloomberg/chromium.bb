@@ -16,7 +16,7 @@
 namespace chrome {
 
 GURL GetURLToOpen(Profile* profile) {
-  string16 params;
+  base::string16 params;
   base::win::MetroLaunchType launch_type =
       base::win::GetMetroLaunchParams(&params);
   if ((launch_type == base::win::METRO_PROTOCOL) ||

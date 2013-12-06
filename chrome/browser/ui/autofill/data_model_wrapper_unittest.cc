@@ -91,7 +91,7 @@ TEST(DataModelWrapperTest, GetDisplayTextEmptyWithoutPhone) {
   EXPECT_TRUE(address_wrapper.GetDisplayText(&unused, &unused2));
 
   const_cast<wallet::Address*>(&instrument->address())->SetPhoneNumber(
-      string16());
+      base::string16());
 
   EXPECT_EQ(base::string16(),
             instrument_wrapper.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)));

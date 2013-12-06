@@ -41,7 +41,7 @@
 
 // Updates the UI with data related to the given display mode.
 - (void)updateLayout:(SpeechRecognitionBubbleBase::DisplayMode)mode
-         messageText:(const string16&)messageText
+         messageText:(const base::string16&)messageText
            iconImage:(NSImage*)iconImage;
 
 // Makes the speech recognition bubble visible on screen.

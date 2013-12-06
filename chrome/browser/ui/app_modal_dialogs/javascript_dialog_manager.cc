@@ -47,21 +47,21 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
       const GURL& origin_url,
       const std::string& accept_lang,
       content::JavaScriptMessageType message_type,
-      const string16& message_text,
-      const string16& default_prompt_text,
+      const base::string16& message_text,
+      const base::string16& default_prompt_text,
       const DialogClosedCallback& callback,
       bool* did_suppress_message) OVERRIDE;
 
   virtual void RunBeforeUnloadDialog(
       WebContents* web_contents,
-      const string16& message_text,
+      const base::string16& message_text,
       bool is_reload,
       const DialogClosedCallback& callback) OVERRIDE;
 
   virtual bool HandleJavaScriptDialog(
       WebContents* web_contents,
       bool accept,
-      const string16* prompt_override) OVERRIDE;
+      const base::string16* prompt_override) OVERRIDE;
 
   virtual void CancelActiveAndPendingDialogs(
       WebContents* web_contents) OVERRIDE;
@@ -78,7 +78,7 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  string16 GetTitle(const GURL& origin_url,
+  base::string16 GetTitle(const GURL& origin_url,
                     const std::string& accept_lang,
                     bool is_alert);
 
@@ -86,7 +86,7 @@ class ChromeJavaScriptDialogManager : public JavaScriptDialogManager,
   // passing it onto the original callback.
   void OnDialogClosed(DialogClosedCallback callback,
                       bool success,
-                      const string16& user_input);
+                      const base::string16& user_input);
 
   // Mapping between the WebContents and their extra data. The key
   // is a void* because the pointer is just a cookie and is never dereferenced.
@@ -132,8 +132,8 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
     const GURL& origin_url,
     const std::string& accept_lang,
     content::JavaScriptMessageType message_type,
-    const string16& message_text,
-    const string16& default_prompt_text,
+    const base::string16& message_text,
+    const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message)  {
   *did_suppress_message = false;
@@ -160,7 +160,7 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
   }
 
   bool is_alert = message_type == content::JAVASCRIPT_MESSAGE_TYPE_ALERT;
-  string16 dialog_title = GetTitle(origin_url, accept_lang, is_alert);
+  base::string16 dialog_title = GetTitle(origin_url, accept_lang, is_alert);
 
   if (extension_host_)
     extension_host_->WillRunJavaScriptDialog();
@@ -181,15 +181,15 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
 
 void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
-    const string16& message_text,
+    const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
-  const string16 title = l10n_util::GetStringUTF16(is_reload ?
+  const base::string16 title = l10n_util::GetStringUTF16(is_reload ?
       IDS_BEFORERELOAD_MESSAGEBOX_TITLE : IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE);
-  const string16 footer = l10n_util::GetStringUTF16(is_reload ?
+  const base::string16 footer = l10n_util::GetStringUTF16(is_reload ?
       IDS_BEFORERELOAD_MESSAGEBOX_FOOTER : IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
 
-  string16 full_message = message_text + ASCIIToUTF16("\n\n") + footer;
+  base::string16 full_message = message_text + ASCIIToUTF16("\n\n") + footer;
 
   if (extension_host_)
     extension_host_->WillRunJavaScriptDialog();
@@ -200,7 +200,7 @@ void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
       title,
       content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
       full_message,
-      string16(),  // default_prompt_text
+      base::string16(),  // default_prompt_text
       false,       // display_suppress_checkbox
       true,        // is_before_unload_dialog
       is_reload,
@@ -211,7 +211,7 @@ void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
 bool ChromeJavaScriptDialogManager::HandleJavaScriptDialog(
     WebContents* web_contents,
     bool accept,
-    const string16* prompt_override) {
+    const base::string16* prompt_override) {
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
   if (!dialog_queue->HasActiveDialog() ||
       !dialog_queue->active_dialog()->IsJavaScriptModalDialog() ||
@@ -268,7 +268,7 @@ string16 ChromeJavaScriptDialogManager::GetTitle(const GURL& origin_url,
 
   // Otherwise, return the formatted URL.
   // In this case, force URL to have LTR directionality.
-  string16 url_string = net::FormatUrl(origin_url, accept_lang);
+  base::string16 url_string = net::FormatUrl(origin_url, accept_lang);
   return l10n_util::GetStringFUTF16(
       is_alert ? IDS_JAVASCRIPT_ALERT_TITLE
       : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
@@ -291,7 +291,7 @@ void ChromeJavaScriptDialogManager::CancelActiveAndPendingDialogs(
 void ChromeJavaScriptDialogManager::OnDialogClosed(
     DialogClosedCallback callback,
     bool success,
-    const string16& user_input) {
+    const base::string16& user_input) {
   if (extension_host_)
     extension_host_->DidCloseJavaScriptDialog();
   callback.Run(success, user_input);

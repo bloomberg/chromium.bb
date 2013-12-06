@@ -213,7 +213,7 @@ string16 GetHardcodedValueForType(ServerFieldType type) {
     return country.name();
   }
 
-  return string16();
+  return base::string16();
 }
 
 }  // namespace common

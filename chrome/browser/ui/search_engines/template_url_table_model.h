@@ -47,7 +47,7 @@ class TemplateURLTableModel : public ui::TableModel,
 
   // ui::TableModel overrides.
   virtual int RowCount() OVERRIDE;
-  virtual string16 GetText(int row, int column) OVERRIDE;
+  virtual base::string16 GetText(int row, int column) OVERRIDE;
   virtual gfx::ImageSkia GetIcon(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual bool HasGroups() OVERRIDE;
@@ -59,14 +59,14 @@ class TemplateURLTableModel : public ui::TableModel,
 
   // Adds a new entry at the specified index.
   void Add(int index,
-           const string16& short_name,
-           const string16& keyword,
+           const base::string16& short_name,
+           const base::string16& keyword,
            const std::string& url);
 
   // Update the entry at the specified index.
   void ModifyTemplateURL(int index,
-                         const string16& title,
-                         const string16& keyword,
+                         const base::string16& title,
+                         const base::string16& keyword,
                          const std::string& url);
 
   // Reloads the icon at the specified index.

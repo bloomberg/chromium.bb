@@ -247,8 +247,8 @@ class BrowserWindow : public ui::BaseWindow {
   // of the account that has signed in.
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,
-      const string16& email,
-      const string16& error_message,
+      const base::string16& email,
+      const base::string16& error_message,
       const StartSyncCallback& start_sync_callback) = 0;
 #endif
 

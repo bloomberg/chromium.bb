@@ -18,7 +18,7 @@ class Browser;
 class ChromeLauncherAppMenuItemBrowser : public content::NotificationObserver,
                                          public ChromeLauncherAppMenuItem {
  public:
-  ChromeLauncherAppMenuItemBrowser(const string16 title,
+  ChromeLauncherAppMenuItemBrowser(const base::string16 title,
                                    const gfx::Image* icon,
                                    Browser* browser,
                                    bool has_leading_separator);

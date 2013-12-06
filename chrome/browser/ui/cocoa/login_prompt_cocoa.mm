@@ -43,8 +43,9 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   // LoginModelObserver implementation.
-  virtual void OnAutofillDataAvailable(const string16& username,
-                                       const string16& password) OVERRIDE {
+  virtual void OnAutofillDataAvailable(
+      const base::string16& username,
+      const base::string16& password) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     [sheet_controller_ autofillLogin:base::SysUTF16ToNSString(username)
@@ -55,7 +56,7 @@ class LoginHandlerMac : public LoginHandler,
   // LoginHandler:
   virtual void BuildViewForPasswordManager(
       PasswordManager* manager,
-      const string16& explanation) OVERRIDE {
+      const base::string16& explanation) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     sheet_controller_.reset(
@@ -99,8 +100,8 @@ class LoginHandlerMac : public LoginHandler,
     sheet_controller_.reset();
   }
 
-  void OnLoginPressed(const string16& username,
-                      const string16& password) {
+  void OnLoginPressed(const base::string16& username,
+                      const base::string16& password) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     SetAuth(username, password);
   }

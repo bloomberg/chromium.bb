@@ -31,8 +31,8 @@ enum MessageBoxType {
 // We have a variety of other surfaces such as wrench menu notifications and
 // infobars; consult the UI leads for a recommendation.
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const string16& title,
-                                const string16& message,
+                                const base::string16& title,
+                                const base::string16& message,
                                 MessageBoxType type);
 
 // Shows a dialog box with the given |title| and |message|, and with two buttons
@@ -43,10 +43,10 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
 // We have a variety of other surfaces such as wrench menu notifications and
 // infobars; consult the UI leads for a recommendation.
 MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,
-                                              const string16& title,
-                                              const string16& message,
-                                              const string16& yes_text,
-                                              const string16& no_text);
+                                              const base::string16& title,
+                                              const base::string16& message,
+                                              const base::string16& yes_text,
+                                              const base::string16& no_text);
 
 }  // namespace chrome
 

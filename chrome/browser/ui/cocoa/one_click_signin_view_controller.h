@@ -32,7 +32,7 @@ class WebContents;
   BOOL clickedLearnMore_;
 
   // The user's email address to be used for sync.
-  string16 email_;
+  base::string16 email_;
 
   // Alternate error message to be displayed.
   base::scoped_nsobject<NSString> errorMessage_;
@@ -57,7 +57,7 @@ class WebContents;
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
         closeCallback:(const base::Closure&)callback
          isSyncDialog:(BOOL)isSyncDialog
-                email:(const string16&)email
+                email:(const base::string16&)email
          errorMessage:(NSString*)errorMessage;
 
 // Called before the view is closed.

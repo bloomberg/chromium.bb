@@ -100,7 +100,7 @@ void MessageCenterTrayBridge::UpdateStatusItem() {
   [status_item_view_ setUnreadCount:unread_count withQuietMode:quiet_mode];
 
   if (unread_count > 0) {
-    string16 unread_count_string = base::FormatNumber(unread_count);
+    base::string16 unread_count_string = base::FormatNumber(unread_count);
     [status_item_view_ setToolTip:
         l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
             unread_count_string)];

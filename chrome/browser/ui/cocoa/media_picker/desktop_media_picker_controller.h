@@ -55,7 +55,7 @@
 // |appName| will be used to format the dialog's title and the label.
 - (id)initWithMediaList:(scoped_ptr<DesktopMediaList>)media_list
                callback:(const DesktopMediaPicker::DoneCallback&)callback
-                appName:(const string16&)appName;
+                appName:(const base::string16&)appName;
 
 @end
 

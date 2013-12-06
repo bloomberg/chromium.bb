@@ -79,7 +79,7 @@ class ZoomLevelObserver {
   void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
     WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
     wrenchMenuModel->UpdateZoomControls();
-    const string16 level =
+    const base::string16 level =
         wrenchMenuModel->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY);
     [[controller_ zoomDisplay] setTitle:SysUTF16ToNSString(level)];
   }
@@ -170,7 +170,7 @@ class ZoomLevelObserver {
     } else {
       // Not a section header. Add a tooltip with the title and the URL.
       std::string url;
-      string16 title;
+      base::string16 title;
       if ([self recentTabsMenuModel]->GetURLAndTitleForItemAtIndex(
               [item tag], &url, &title)) {
         [menuItem setToolTip:

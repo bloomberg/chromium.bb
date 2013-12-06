@@ -123,12 +123,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     AutofillDialogControllerImpl::ViewClosed();
   }
 
-  virtual string16 InputValidityMessage(
+  virtual base::string16 InputValidityMessage(
       DialogSection section,
       ServerFieldType type,
-      const string16& value) OVERRIDE {
+      const base::string16& value) OVERRIDE {
     if (!use_validation_)
-      return string16();
+      return base::string16();
     return AutofillDialogControllerImpl::InputValidityMessage(
         section, type, value);
   }
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const DetailInput& triggering_input = inputs[0];
-  string16 value = full_profile.GetRawInfo(triggering_input.type);
+  base::string16 value = full_profile.GetRawInfo(triggering_input.type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));
@@ -524,10 +524,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   // Now simulate some user edits and try again.
   std::vector<string16> expectations;
   for (size_t i = 0; i < inputs.size(); ++i) {
-    string16 users_input = i % 2 == 0 ? string16() : ASCIIToUTF16("dummy");
+    base::string16 users_input = i % 2 == 0 ? base::string16()
+                                            : ASCIIToUTF16("dummy");
     view->SetTextContentsOfInput(inputs[i], users_input);
     // Empty inputs should be filled, others should be left alone.
-    string16 expectation =
+    base::string16 expectation =
         &inputs[i] == &triggering_input || users_input.empty() ?
         wrapper.GetInfo(AutofillType(inputs[i].type)) :
         users_input;
@@ -557,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const DetailInput& triggering_input = inputs[0];
-  string16 value = full_profile.GetRawInfo(triggering_input.type);
+  base::string16 value = full_profile.GetRawInfo(triggering_input.type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));
@@ -569,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // All inputs should be filled.
   AutofillProfileWrapper wrapper(&full_profile);
   for (size_t i = 0; i < inputs.size(); ++i) {
-    string16 expectation =
+    base::string16 expectation =
         AutofillType(inputs[i].type).GetStorableType() == ADDRESS_HOME_COUNTRY ?
         ASCIIToUTF16("United States") :
         wrapper.GetInfo(AutofillType(inputs[i].type));
@@ -579,10 +580,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Now simulate some user edits and try again.
   std::vector<string16> expectations;
   for (size_t i = 0; i < inputs.size(); ++i) {
-    string16 users_input = i % 2 == 0 ? string16() : ASCIIToUTF16("dummy");
+    base::string16 users_input = i % 2 == 0 ? base::string16()
+                                            : ASCIIToUTF16("dummy");
     view->SetTextContentsOfInput(inputs[i], users_input);
     // Empty inputs should be filled, others should be left alone.
-    string16 expectation =
+    base::string16 expectation =
         &inputs[i] == &triggering_input || users_input.empty() ?
         wrapper.GetInfo(AutofillType(inputs[i].type)) :
         users_input;
@@ -669,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_CC);
   const DetailInput& triggering_input = inputs[0];
-  string16 value = card1.GetRawInfo(triggering_input.type);
+  base::string16 value = card1.GetRawInfo(triggering_input.type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));

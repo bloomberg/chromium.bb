@@ -13,12 +13,12 @@
 
 - (id)init:(NSWindow*)parentWindow
 anchoredAt:(NSPoint)anchorPoint
-  mainText:(const string16&)mainText
-   subText:(const string16&)subText;
+  mainText:(const base::string16&)mainText
+   subText:(const base::string16&)subText;
 
 // This is exposed for testing.
-+ (NSView*)constructContentView:(const string16&)mainText
-                        subText:(const string16&)subText;
++ (NSView*)constructContentView:(const base::string16&)mainText
+                        subText:(const base::string16&)subText;
 
 @end
 

@@ -177,8 +177,8 @@ enum CocoaCookieDetailsType {
 
 // Used for database details in the cookie prompt dialog.
 - (id)initWithDatabase:(const std::string&)domain
-          databaseName:(const string16&)databaseName
-   databaseDescription:(const string16&)databaseDescription
+          databaseName:(const base::string16&)databaseName
+   databaseDescription:(const base::string16&)databaseDescription
               fileSize:(unsigned long)fileSize;
 
 // -initWithAppCacheInfo: creates a cookie details with the manifest URL plus
@@ -188,8 +188,8 @@ enum CocoaCookieDetailsType {
 
 // Used for local storage details in the cookie prompt dialog.
 - (id)initWithLocalStorage:(const std::string&)domain
-                       key:(const string16&)key
-                     value:(const string16&)value;
+                       key:(const base::string16&)key
+                     value:(const base::string16&)value;
 
 // -initWithAppCacheManifestURL: is called when the cookie prompt is displayed
 // for an appcache, at that time only the manifest URL of the appcache is known.

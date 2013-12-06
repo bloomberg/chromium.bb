@@ -52,9 +52,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
       base::i18n::TextDirection text_direction);
 
   // Shows the popup, or updates the existing popup with the given values.
-  void Show(const std::vector<string16>& names,
-            const std::vector<string16>& subtexts,
-            const std::vector<string16>& icons,
+  void Show(const std::vector<base::string16>& names,
+            const std::vector<base::string16>& subtexts,
+            const std::vector<base::string16>& icons,
             const std::vector<int>& identifiers);
 
   // Updates the data list values currently shown with the popup.
@@ -93,7 +93,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual void SelectionCleared() OVERRIDE;
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
-  virtual int GetIconResourceID(const string16& resource_name) const OVERRIDE;
+  virtual int GetIconResourceID(
+      const base::string16& resource_name) const OVERRIDE;
   virtual bool CanDelete(size_t index) const OVERRIDE;
   virtual bool IsWarning(size_t index) const OVERRIDE;
   virtual gfx::Rect GetRowBounds(size_t index) OVERRIDE;
@@ -103,9 +104,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual const gfx::RectF& element_bounds() const OVERRIDE;
   virtual bool IsRTL() const OVERRIDE;
 
-  virtual const std::vector<string16>& names() const OVERRIDE;
-  virtual const std::vector<string16>& subtexts() const OVERRIDE;
-  virtual const std::vector<string16>& icons() const OVERRIDE;
+  virtual const std::vector<base::string16>& names() const OVERRIDE;
+  virtual const std::vector<base::string16>& subtexts() const OVERRIDE;
+  virtual const std::vector<base::string16>& icons() const OVERRIDE;
   virtual const std::vector<int>& identifiers() const OVERRIDE;
 #if !defined(OS_ANDROID)
   virtual const gfx::Font& GetNameFontForRow(size_t index) const OVERRIDE;
@@ -143,9 +144,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Set the Autofill entry values. Exposed to allow tests to set these values
   // without showing the popup.
-  void SetValues(const std::vector<string16>& names,
-                 const std::vector<string16>& subtexts,
-                 const std::vector<string16>& icons,
+  void SetValues(const std::vector<base::string16>& names,
+                 const std::vector<base::string16>& subtexts,
+                 const std::vector<base::string16>& icons,
                  const std::vector<int>& identifier);
 
   AutofillPopupView* view() { return view_; }
@@ -225,14 +226,14 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   content::RenderViewHost* registered_key_press_event_callback_with_;
 
   // The current Autofill query values.
-  std::vector<string16> names_;
-  std::vector<string16> subtexts_;
-  std::vector<string16> icons_;
+  std::vector<base::string16> names_;
+  std::vector<base::string16> subtexts_;
+  std::vector<base::string16> icons_;
   std::vector<int> identifiers_;
 
   // Since names_ can be elided to ensure that it fits on the screen, we need to
   // keep an unelided copy of the names to be able to pass to the delegate.
-  std::vector<string16> full_names_;
+  std::vector<base::string16> full_names_;
 
 #if !defined(OS_ANDROID)
   // The fonts for the popup text.

@@ -107,7 +107,7 @@
 
   // Set the text and link.
   NSString* message = base::SysUTF16ToNSString(delegate->GetMessageText());
-  string16 link = delegate->GetLinkText();
+  base::string16 link = delegate->GetLinkText();
   if (!link.empty()) {
     // Add spacing between the label and the link.
     message = [message stringByAppendingString:@"   "];

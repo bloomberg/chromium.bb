@@ -71,7 +71,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
     ~HistoryItem();
 
     // The title for the menu item.
-    string16 title;
+    base::string16 title;
     // The URL that will be navigated to if the user selects this item.
     GURL url;
     // Favicon for the URL.

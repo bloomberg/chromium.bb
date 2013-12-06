@@ -41,8 +41,8 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void DidSelectSuggestion(int identifier) OVERRIDE {}
-  virtual void RemoveSuggestion(const string16& value, int identifier) OVERRIDE
-      {}
+  virtual void RemoveSuggestion(const base::string16& value,
+                                int identifier) OVERRIDE {}
   virtual void ClearPreviewedForm() OVERRIDE {}
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr() {
     return AutofillExternalDelegate::GetWeakPtr();
@@ -185,7 +185,7 @@ TEST_F(AutofillPopupControllerUnitTest, SetBounds) {
 
 TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
   // Set up the popup.
-  std::vector<string16> names(2, string16());
+  std::vector<base::string16> names(2, base::string16());
   std::vector<int> autofill_ids(2, 0);
   autofill_popup_controller_->Show(names, names, names, autofill_ids);
 
@@ -208,7 +208,7 @@ TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
 
 TEST_F(AutofillPopupControllerUnitTest, RedrawSelectedLine) {
   // Set up the popup.
-  std::vector<string16> names(2, string16());
+  std::vector<base::string16> names(2, base::string16());
   std::vector<int> autofill_ids(2, 0);
   autofill_popup_controller_->Show(names, names, names, autofill_ids);
 
@@ -230,7 +230,7 @@ TEST_F(AutofillPopupControllerUnitTest, RedrawSelectedLine) {
 
 TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
   // Set up the popup.
-  std::vector<string16> names(3, string16());
+  std::vector<base::string16> names(3, base::string16());
   std::vector<int> autofill_ids;
   autofill_ids.push_back(1);
   autofill_ids.push_back(1);
@@ -266,7 +266,7 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
 
 TEST_F(AutofillPopupControllerUnitTest, RemoveOnlyLine) {
   // Set up the popup.
-  std::vector<string16> names(1, string16());
+  std::vector<base::string16> names(1, base::string16());
   std::vector<int> autofill_ids;
   autofill_ids.push_back(1);
   autofill_popup_controller_->Show(names, names, names, autofill_ids);
@@ -286,7 +286,7 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveOnlyLine) {
 
 TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
   // Set up the popup.
-  std::vector<string16> names(3, string16());
+  std::vector<base::string16> names(3, base::string16());
   std::vector<int> autofill_ids;
   autofill_ids.push_back(1);
   autofill_ids.push_back(WebAutofillClient::MenuItemIDSeparator);
@@ -305,9 +305,9 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
-  std::vector<string16> names(4);
-  std::vector<string16> subtexts(4);
-  std::vector<string16> icons(4);
+  std::vector<base::string16> names(4);
+  std::vector<base::string16> subtexts(4);
+  std::vector<base::string16> icons(4);
   std::vector<int> ids(4);
 
   // Set up some visible display so the text values are kept.
@@ -341,7 +341,7 @@ TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
-  std::vector<string16> items;
+  std::vector<base::string16> items;
   items.push_back(string16());
   std::vector<int> ids;
   ids.push_back(1);
@@ -352,7 +352,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
 
   // Add one data list entry.
-  std::vector<string16> data_list_values;
+  std::vector<base::string16> data_list_values;
   data_list_values.push_back(ASCIIToUTF16("data list value 1"));
 
   autofill_popup_controller_->UpdateDataListValues(data_list_values,
@@ -360,7 +360,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
   // Update the expected values.
   items.insert(items.begin(), data_list_values[0]);
-  items.insert(items.begin() + 1, string16());
+  items.insert(items.begin() + 1, base::string16());
   ids.insert(ids.begin(), WebAutofillClient::MenuItemIDDataListEntry);
   ids.insert(ids.begin() + 1, WebAutofillClient::MenuItemIDSeparator);
 
@@ -397,7 +397,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
 TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
   // Create the popup with a single datalist element.
-  std::vector<string16> items;
+  std::vector<base::string16> items;
   items.push_back(string16());
   std::vector<int> ids;
   ids.push_back(WebAutofillClient::MenuItemIDDataListEntry);
@@ -408,7 +408,7 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
   EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
 
   // Replace the datalist element with a new one.
-  std::vector<string16> data_list_values;
+  std::vector<base::string16> data_list_values;
   data_list_values.push_back(ASCIIToUTF16("data list value 1"));
 
   autofill_popup_controller_->UpdateDataListValues(data_list_values,
@@ -478,7 +478,7 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
-  std::vector<string16> names(2);
+  std::vector<base::string16> names(2);
   std::vector<int> ids(2);
   popup_controller()->SetValues(names, names, names, ids);
   popup_controller()->SetSelectedLine(0);
@@ -498,15 +498,15 @@ TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
 
 #if !defined(OS_ANDROID)
 TEST_F(AutofillPopupControllerUnitTest, ElideText) {
-  std::vector<string16> names;
+  std::vector<base::string16> names;
   names.push_back(ASCIIToUTF16("Text that will need to be trimmed"));
   names.push_back(ASCIIToUTF16("Untrimmed"));
 
-  std::vector<string16> subtexts;
+  std::vector<base::string16> subtexts;
   subtexts.push_back(ASCIIToUTF16("Label that will be trimmed"));
   subtexts.push_back(ASCIIToUTF16("Untrimmed"));
 
-  std::vector<string16> icons(2, ASCIIToUTF16("genericCC"));
+  std::vector<base::string16> icons(2, ASCIIToUTF16("genericCC"));
   std::vector<int> autofill_ids(2, 0);
 
   // Show the popup once so we can easily generate the size it needs.
@@ -534,7 +534,7 @@ TEST_F(AutofillPopupControllerUnitTest, ElideText) {
 #endif
 
 TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
-  std::vector<string16> names(1);
+  std::vector<base::string16> names(1);
   std::vector<int> autofill_ids(1, 1);
 
   // Call Show so that GetDesired...() will be able to provide valid values.

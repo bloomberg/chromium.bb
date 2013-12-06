@@ -179,7 +179,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   }
 
   inputs_.reset([[self makeInputControls] retain]);
-  string16 labelText = delegate_->LabelForSection(section_);
+  base::string16 labelText = delegate_->LabelForSection(section_);
   label_.reset(
       [[self makeDetailSectionLabel:base::SysUTF16ToNSString(labelText)]
           retain]);
@@ -405,7 +405,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     return;
 
   autofill::ServerFieldType type = [self fieldTypeForControl:field];
-  string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
+  base::string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
 
   // Get the frame rectangle for the designated field, in screen coordinates.
   NSRect textFrameInScreen = [field convertRect:[field bounds] toView:nil];
@@ -431,7 +431,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   // correcting a minor mistake (i.e. a wrong CC digit) should immediately
   // result in validation - positive user feedback.
   if ([textfield invalid] && edited) {
-    string16 message = delegate_->InputValidityMessage(section_,
+    base::string16 message = delegate_->InputValidityMessage(section_,
                                                        type,
                                                        fieldValue);
     [textfield setValidityMessage:base::SysUTF16ToNSString(message)];

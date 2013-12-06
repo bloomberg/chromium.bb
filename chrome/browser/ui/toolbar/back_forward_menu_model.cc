@@ -97,20 +97,20 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
 
   // Return an empty string for a separator.
   if (IsSeparator(index))
-    return string16();
+    return base::string16();
 
   // Return the entry title, escaping any '&' characters and eliding it if it's
   // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
   Profile* profile =
       Profile::FromBrowserContext(GetWebContents()->GetBrowserContext());
-  string16 menu_text(entry->GetTitleForDisplay(
+  base::string16 menu_text(entry->GetTitleForDisplay(
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
   menu_text =
       gfx::ElideText(menu_text, gfx::Font(), kMaxWidth, gfx::ELIDE_AT_END);
 
 #if !defined(OS_MACOSX)
-  for (size_t i = menu_text.find('&'); i != string16::npos;
+  for (size_t i = menu_text.find('&'); i != base::string16::npos;
        i = menu_text.find('&', i + 2)) {
     menu_text.insert(i, 1, '&');
   }

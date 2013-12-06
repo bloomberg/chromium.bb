@@ -175,7 +175,7 @@ const int kInstructionLabelMaxWidth = 150;
 }
 
 - (void)updateLayout:(SpeechRecognitionBubbleBase::DisplayMode)mode
-         messageText:(const string16&)messageText
+         messageText:(const base::string16&)messageText
            iconImage:(NSImage*)iconImage {
   // The very first time this method is called, the child views would still be
   // uninitialized and null. So we invoke [self window] first and that sets up

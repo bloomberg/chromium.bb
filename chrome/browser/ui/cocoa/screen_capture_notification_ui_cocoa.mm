@@ -34,7 +34,7 @@ const CGFloat kWindowCornerRadius = 2;
 
 @interface ScreenCaptureNotificationController()
 - (void)hide;
-- (void)populateWithText:(const string16&)text;
+- (void)populateWithText:(const base::string16&)text;
 @end
 
 @interface ScreenCaptureNotificationView : NSView
@@ -46,7 +46,7 @@ const CGFloat kWindowCornerRadius = 2;
 
 
 ScreenCaptureNotificationUICocoa::ScreenCaptureNotificationUICocoa(
-    const string16& text)
+    const base::string16& text)
     : text_(text) {
 }
 
@@ -64,14 +64,14 @@ void ScreenCaptureNotificationUICocoa::OnStarted(
 }
 
 scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
-    const string16& text) {
+    const base::string16& text) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUICocoa(text));
 }
 
 @implementation ScreenCaptureNotificationController
 - (id)initWithCallback:(const base::Closure&)stop_callback
-                  text:(const string16&)text {
+                  text:(const base::string16&)text {
   base::scoped_nsobject<NSWindow> window(
       [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                   styleMask:NSBorderlessWindowMask
@@ -117,7 +117,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   [self close];
 }
 
-- (void)populateWithText:(const string16&)text {
+- (void)populateWithText:(const base::string16&)text {
   base::scoped_nsobject<ScreenCaptureNotificationView> content(
       [[ScreenCaptureNotificationView alloc]
           initWithFrame:ui::kWindowSizeDeterminedLater]);
@@ -151,7 +151,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   gfx::Font font(ui::ResourceBundle::GetSharedInstance()
                      .GetFont(ui::ResourceBundle::BaseFont)
                      .GetNativeFont());
-  string16 elidedText =
+  base::string16 elidedText =
       ElideText(text, font, maxLabelWidth, gfx::ELIDE_IN_MIDDLE);
   NSString* statusText = base::SysUTF16ToNSString(elidedText);
   base::scoped_nsobject<NSTextField> statusTextField(

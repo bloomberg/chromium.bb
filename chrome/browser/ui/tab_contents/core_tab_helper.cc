@@ -51,7 +51,7 @@ string16 CoreTabHelper::GetDefaultTitle() {
 string16 CoreTabHelper::GetStatusText() const {
   if (!web_contents()->IsLoading() ||
       web_contents()->GetLoadState().state == net::LOAD_STATE_IDLE) {
-    return string16();
+    return base::string16();
   }
 
   switch (web_contents()->GetLoadState().state) {
@@ -104,7 +104,7 @@ string16 CoreTabHelper::GetStatusText() const {
       break;
   }
 
-  return string16();
+  return base::string16();
 }
 
 void CoreTabHelper::OnCloseStarted() {

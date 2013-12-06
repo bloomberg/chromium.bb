@@ -19,9 +19,12 @@ namespace {
 
 class TestResource : public task_manager::Resource {
  public:
-  TestResource(const string16& title, pid_t pid) : title_(title), pid_(pid) {}
-  virtual string16 GetTitle() const OVERRIDE { return title_; }
-  virtual string16 GetProfileName() const OVERRIDE { return string16(); }
+  TestResource(const base::string16& title, pid_t pid)
+      : title_(title), pid_(pid) {}
+  virtual base::string16 GetTitle() const OVERRIDE { return title_; }
+  virtual base::string16 GetProfileName() const OVERRIDE {
+    return base::string16();
+  }
   virtual gfx::ImageSkia GetIcon() const OVERRIDE { return gfx::ImageSkia(); }
   virtual base::ProcessHandle GetProcess() const OVERRIDE { return pid_; }
   virtual int GetUniqueChildProcessId() const OVERRIDE {
@@ -33,8 +36,8 @@ class TestResource : public task_manager::Resource {
   virtual bool SupportNetworkUsage() const OVERRIDE { return false; }
   virtual void SetSupportNetworkUsage() OVERRIDE { NOTREACHED(); }
   virtual void Refresh() OVERRIDE {}
-  string16 title_;
-  string16 profile_name_;
+  base::string16 title_;
+  base::string16 profile_name_;
   pid_t pid_;
 };
 

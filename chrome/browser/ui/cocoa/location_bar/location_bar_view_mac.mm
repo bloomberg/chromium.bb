@@ -384,8 +384,8 @@ void LocationBarViewMac::Layout() {
   keyword_hint_decoration_->SetVisible(false);
 
   // Get the keyword to use for keyword-search and hinting.
-  const string16 keyword = omnibox_view_->model()->keyword();
-  string16 short_name;
+  const base::string16 keyword = omnibox_view_->model()->keyword();
+  base::string16 short_name;
   bool is_extension_keyword = false;
   if (!keyword.empty()) {
     short_name = TemplateURLServiceFactory::GetForProfile(profile_)->
@@ -405,7 +405,7 @@ void LocationBarViewMac::Layout() {
     location_icon_decoration_->SetVisible(false);
     ev_bubble_decoration_->SetVisible(true);
 
-    string16 label(GetToolbarModel()->GetEVCertName());
+    base::string16 label(GetToolbarModel()->GetEVCertName());
     ev_bubble_decoration_->SetFullLabel(base::SysUTF16ToNSString(label));
   } else if (!keyword.empty() && is_keyword_hint) {
     keyword_hint_decoration_->SetKeyword(short_name,
@@ -544,7 +544,7 @@ const ToolbarModel* LocationBarViewMac::GetToolbarModel() const {
   return browser_->toolbar_model();
 }
 
-NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
+NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
       profile_)->GetTemplateURLForKeyword(keyword);
   if (template_url &&

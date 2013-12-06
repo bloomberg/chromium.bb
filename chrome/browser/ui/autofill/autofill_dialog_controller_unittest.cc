@@ -180,7 +180,7 @@ class TestAutofillDialogView : public AutofillDialogView {
     return NULL;
   }
 
-  virtual string16 GetCvc() OVERRIDE { return string16(); }
+  virtual base::string16 GetCvc() OVERRIDE { return base::string16(); }
   virtual bool HitTestInput(const DetailInput& input,
                             const gfx::Point& screen_point) OVERRIDE {
     return false;
@@ -623,7 +623,7 @@ TEST_F(AutofillDialogControllerTest, ValidityCheck) {
         controller()->RequestedFieldsForSection(section);
     for (DetailInputs::const_iterator iter = shipping_inputs.begin();
          iter != shipping_inputs.end(); ++iter) {
-      controller()->InputValidityMessage(section, iter->type, string16());
+      controller()->InputValidityMessage(section, iter->type, base::string16());
     }
   }
 }
@@ -849,7 +849,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   // An otherwise full but unverified profile should be ignored.
   AutofillProfile full_profile(test::GetFullProfile());
   full_profile.set_origin("https://www.example.com");
-  full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
+  full_profile.SetRawInfo(ADDRESS_HOME_LINE2, base::string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   ASSERT_TRUE(shipping_model);
@@ -857,7 +857,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
 
   // A full, verified profile should be picked up.
   AutofillProfile verified_profile(test::GetVerifiedProfile());
-  verified_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
+  verified_profile.SetRawInfo(ADDRESS_HOME_LINE2, base::string16());
   controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   ASSERT_TRUE(shipping_model);
@@ -973,7 +973,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
 TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
   SwitchToAutofill();
   AutofillProfile profile(test::GetVerifiedProfile());
-  const string16 kValidEmail = ASCIIToUTF16(kFakeEmail);
+  const base::string16 kValidEmail = ASCIIToUTF16(kFakeEmail);
   profile.SetRawInfo(EMAIL_ADDRESS, kValidEmail);
   controller()->GetTestingManager()->AddTestingProfile(&profile);
 
@@ -1077,21 +1077,21 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
   EXPECT_EQ(ADDRESS_HOME_STATE,
             form_structure()->field(16)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME, form_structure()->field(16)->Type().group());
-  string16 billing_state = form_structure()->field(9)->value;
-  string16 shipping_state = form_structure()->field(16)->value;
+  base::string16 billing_state = form_structure()->field(9)->value;
+  base::string16 shipping_state = form_structure()->field(16)->value;
   EXPECT_FALSE(billing_state.empty());
   EXPECT_FALSE(shipping_state.empty());
   EXPECT_NE(billing_state, shipping_state);
 
   EXPECT_EQ(CREDIT_CARD_NAME,
             form_structure()->field(1)->Type().GetStorableType());
-  string16 cc_name = form_structure()->field(1)->value;
+  base::string16 cc_name = form_structure()->field(1)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
   EXPECT_EQ(NAME_BILLING, form_structure()->field(6)->Type().group());
-  string16 billing_name = form_structure()->field(6)->value;
+  base::string16 billing_name = form_structure()->field(6)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().GetStorableType());
   EXPECT_EQ(NAME, form_structure()->field(13)->Type().group());
-  string16 shipping_name = form_structure()->field(13)->value;
+  base::string16 shipping_name = form_structure()->field(13)->value;
 
   EXPECT_FALSE(cc_name.empty());
   EXPECT_FALSE(billing_name.empty());
@@ -1122,21 +1122,21 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
   EXPECT_EQ(ADDRESS_HOME_STATE,
             form_structure()->field(16)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME, form_structure()->field(16)->Type().group());
-  string16 billing_state = form_structure()->field(9)->value;
-  string16 shipping_state = form_structure()->field(16)->value;
+  base::string16 billing_state = form_structure()->field(9)->value;
+  base::string16 shipping_state = form_structure()->field(16)->value;
   EXPECT_FALSE(billing_state.empty());
   EXPECT_FALSE(shipping_state.empty());
   EXPECT_EQ(billing_state, shipping_state);
 
   EXPECT_EQ(CREDIT_CARD_NAME,
             form_structure()->field(1)->Type().GetStorableType());
-  string16 cc_name = form_structure()->field(1)->value;
+  base::string16 cc_name = form_structure()->field(1)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
   EXPECT_EQ(NAME_BILLING, form_structure()->field(6)->Type().group());
-  string16 billing_name = form_structure()->field(6)->value;
+  base::string16 billing_name = form_structure()->field(6)->value;
   EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().GetStorableType());
   EXPECT_EQ(NAME, form_structure()->field(13)->Type().group());
-  string16 shipping_name = form_structure()->field(13)->value;
+  base::string16 shipping_name = form_structure()->field(13)->value;
 
   EXPECT_FALSE(cc_name.empty());
   EXPECT_FALSE(billing_name.empty());
@@ -1589,7 +1589,7 @@ TEST_F(AutofillDialogControllerTest, CancelNoSave) {
 TEST_F(AutofillDialogControllerTest, ManageItem) {
   AutofillProfile full_profile(test::GetVerifiedProfile());
   full_profile.set_origin(kSettingsOrigin);
-  full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
+  full_profile.SetRawInfo(ADDRESS_HOME_LINE2, base::string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   SwitchToAutofill();
 

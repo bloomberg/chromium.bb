@@ -133,8 +133,8 @@ class TestRLZTracker : public RLZTracker {
 #endif
 
   virtual bool SendFinancialPing(const std::string& brand,
-                                 const string16& lang,
-                                 const string16& referral) OVERRIDE {
+                                 const base::string16& lang,
+                                 const base::string16& referral) OVERRIDE {
     // Don't ping the server during tests, just pretend as if we did.
     EXPECT_FALSE(brand.empty());
     pinged_brands_.insert(brand);
@@ -212,13 +212,13 @@ void RlzLibTest::SetReactivationBrand(const char* brand) {
 void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
                                        const char* brand) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  string16 reg_path = dist->GetStateKey();
+  base::string16 reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_SET_VALUE);
   if (*brand == 0) {
     LONG result = key.DeleteValue(name);
     ASSERT_TRUE(ERROR_SUCCESS == result || ERROR_FILE_NOT_FOUND == result);
   } else {
-    string16 brand16 = ASCIIToUTF16(brand);
+    base::string16 brand16 = ASCIIToUTF16(brand);
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name, brand16.c_str()));
   }
 }
@@ -583,7 +583,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzOnIoThread) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
 
-  string16 rlz;
+  base::string16 rlz;
 
   tracker_.set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
@@ -594,7 +594,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzNotOnIoThread) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
 
-  string16 rlz;
+  base::string16 rlz;
 
   tracker_.set_assume_not_ui_thread(false);
   EXPECT_FALSE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
@@ -604,7 +604,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
 
-  string16 rlz;
+  base::string16 rlz;
 
   tracker_.set_assume_not_ui_thread(false);
   EXPECT_FALSE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
@@ -623,7 +623,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, kHomepageRlzString);
 
-  string16 rlz;
+  base::string16 rlz;
 
   // Prime the cache.
   tracker_.set_assume_not_ui_thread(true);

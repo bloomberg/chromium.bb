@@ -32,16 +32,17 @@ class OmniboxViewMac : public OmniboxView,
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void OnTabChanged(const content::WebContents* web_contents) OVERRIDE;
   virtual void Update() OVERRIDE;
-  virtual string16 GetText() const OVERRIDE;
-  virtual void SetWindowTextAndCaretPos(const string16& text,
+  virtual base::string16 GetText() const OVERRIDE;
+  virtual void SetWindowTextAndCaretPos(const base::string16& text,
                                         size_t caret_pos,
                                         bool update_popup,
                                         bool notify_text_changed) OVERRIDE;
   virtual void SetForcedQuery() OVERRIDE;
   virtual bool IsSelectAll() const OVERRIDE;
   virtual bool DeleteAtEndPressed() OVERRIDE;
-  virtual void GetSelectionBounds(string16::size_type* start,
-                                  string16::size_type* end) const OVERRIDE;
+  virtual void GetSelectionBounds(
+      base::string16::size_type* start,
+      base::string16::size_type* end) const OVERRIDE;
   virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void RevertAll() OVERRIDE;
   virtual void UpdatePopup() OVERRIDE;
@@ -49,19 +50,19 @@ class OmniboxViewMac : public OmniboxView,
   virtual void SetFocus() OVERRIDE;
   virtual void ApplyCaretVisibility() OVERRIDE;
   virtual void OnTemporaryTextMaybeChanged(
-      const string16& display_text,
+      const base::string16& display_text,
       bool save_original_selection,
       bool notify_text_changed) OVERRIDE;
   virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const string16& display_text, size_t user_text_length) OVERRIDE;
+      const base::string16& display_text, size_t user_text_length) OVERRIDE;
   virtual void OnInlineAutocompleteTextCleared() OVERRIDE;
   virtual void OnRevertTemporaryText() OVERRIDE;
   virtual void OnBeforePossibleChange() OVERRIDE;
   virtual bool OnAfterPossibleChange() OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetRelativeWindowForPopup() const OVERRIDE;
-  virtual void SetGrayTextAutocompletion(const string16& input) OVERRIDE;
-  virtual string16 GetGrayTextAutocompletion() const OVERRIDE;
+  virtual void SetGrayTextAutocompletion(const base::string16& input) OVERRIDE;
+  virtual base::string16 GetGrayTextAutocompletion() const OVERRIDE;
   virtual int TextWidth() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
 
@@ -131,14 +132,14 @@ class OmniboxViewMac : public OmniboxView,
 
   // Update the field with |display_text| and highlight the host and scheme (if
   // it's an URL or URL-fragment).  Resets any suggest text that may be present.
-  void SetText(const string16& display_text);
+  void SetText(const base::string16& display_text);
 
   // Internal implementation of SetText.  Does not reset the suggest text before
   // setting the display text.  Most callers should use |SetText()| instead.
-  void SetTextInternal(const string16& display_text);
+  void SetTextInternal(const base::string16& display_text);
 
   // Update the field with |display_text| and set the selection.
-  void SetTextAndSelectedRange(const string16& display_text,
+  void SetTextAndSelectedRange(const base::string16& display_text,
                                const NSRange range);
 
   // Pass the current content of |field_| to SetText(), maintaining
@@ -148,7 +149,7 @@ class OmniboxViewMac : public OmniboxView,
 
   // Calculates text attributes according to |display_text| and applies them
   // to the given |as| object.
-  void ApplyTextAttributes(const string16& display_text,
+  void ApplyTextAttributes(const base::string16& display_text,
                            NSMutableAttributedString* as);
 
   // Return the number of UTF-16 units in the current buffer, excluding the
@@ -170,7 +171,7 @@ class OmniboxViewMac : public OmniboxView,
   // Tracking state before and after a possible change for reporting
   // to model_.
   NSRange selection_before_change_;
-  string16 text_before_change_;
+  base::string16 text_before_change_;
   NSRange marked_range_before_change_;
 
   // Was delete pressed?
@@ -179,7 +180,7 @@ class OmniboxViewMac : public OmniboxView,
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
 
-  string16 suggest_text_;
+  base::string16 suggest_text_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewMac);
 };

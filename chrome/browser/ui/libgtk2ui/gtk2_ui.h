@@ -72,7 +72,7 @@ class Gtk2UI : public views::LinuxUI {
   virtual bool IsStatusIconSupported() const OVERRIDE;
   virtual scoped_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
-      const string16& tool_tip) const OVERRIDE;
+      const base::string16& tool_tip) const OVERRIDE;
   virtual gfx::Image GetIconForContentType(
       const std::string& content_type, int size) const OVERRIDE;
   virtual void AddWindowButtonOrderObserver(

@@ -20,11 +20,11 @@ class TestableAutofillDialogView {
   virtual void CancelForTesting() = 0;
 
   // Returns the actual contents of the input which is modelled by |input|.
-  virtual string16 GetTextContentsOfInput(const DetailInput& input) = 0;
+  virtual base::string16 GetTextContentsOfInput(const DetailInput& input) = 0;
 
   // Sets the actual contents of the input which is modelled by |input|.
   virtual void SetTextContentsOfInput(const DetailInput& input,
-                                      const string16& contents) = 0;
+                                      const base::string16& contents) = 0;
 
   // Sets the content of the extra field for a section.
   virtual void SetTextContentsOfSuggestionInput(DialogSection section,

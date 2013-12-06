@@ -18,10 +18,10 @@ class CoreTabHelper : public content::WebContentsObserver,
   virtual ~CoreTabHelper();
 
   // Initial title assigned to NavigationEntries from Navigate.
-  static string16 GetDefaultTitle();
+  static base::string16 GetDefaultTitle();
 
   // Returns a human-readable description the tab's loading state.
-  string16 GetStatusText() const;
+  base::string16 GetStatusText() const;
 
   // Notification that tab closing has started.  This can be called multiple
   // times, subsequent calls are ignored.

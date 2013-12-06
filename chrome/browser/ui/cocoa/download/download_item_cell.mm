@@ -185,7 +185,7 @@ using content::DownloadItem;
   // Set the name of the download.
   downloadPath_ = downloadModel->download()->GetFileNameToReportUser();
 
-  string16 statusText = downloadModel->GetStatusText();
+  base::string16 statusText = downloadModel->GetStatusText();
   if (statusText.empty()) {
     // Remove the status text label.
     [self hideSecondaryTitle];

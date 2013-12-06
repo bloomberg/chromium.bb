@@ -171,7 +171,7 @@ void ShowCertSelectFileDialog(ui::SelectFileDialog* select_file_dialog,
       l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_PKCS7_CHAIN));
   file_type_info.include_all_files = true;
   select_file_dialog->SelectFile(
-      type, string16(),
+      type, base::string16(),
       suggested_path, &file_type_info,
       1,  // 1-based index for |file_type_info.extensions| to specify default.
       FILE_PATH_LITERAL("crt"),

@@ -29,7 +29,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   // icons.
   AppIndicatorIcon(std::string id,
                    const gfx::ImageSkia& image,
-                   const string16& tool_tip);
+                   const base::string16& tool_tip);
   virtual ~AppIndicatorIcon();
 
   // Indicates whether libappindicator so could be opened.
@@ -38,7 +38,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   // Overridden from views::StatusIconLinux:
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;
-  virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
+  virtual void SetToolTip(const base::string16& tool_tip) OVERRIDE;
   virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
   virtual void RefreshPlatformContextMenu() OVERRIDE;
 

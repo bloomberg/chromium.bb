@@ -140,9 +140,9 @@ LaunchMode GetLaunchShortcutKind() {
   if (si.dwFlags & 0x800) {
     if (!si.lpTitle)
       return LM_SHORTCUT_NONAME;
-    string16 shortcut(si.lpTitle);
+    base::string16 shortcut(si.lpTitle);
     // The windows quick launch path is not localized.
-    if (shortcut.find(L"\\Quick Launch\\") != string16::npos) {
+    if (shortcut.find(L"\\Quick Launch\\") != base::string16::npos) {
       if (base::win::GetVersion() >= base::win::VERSION_WIN7)
         return LM_SHORTCUT_TASKBAR;
       else

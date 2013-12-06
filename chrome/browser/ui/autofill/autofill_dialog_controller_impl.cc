@@ -319,7 +319,7 @@ const wallet::Address* FindDuplicateAddress(
   return NULL;
 }
 
-bool IsCardHolderNameValidForWallet(const string16& name) {
+bool IsCardHolderNameValidForWallet(const base::string16& name) {
   base::string16 whitespace_collapsed_name = CollapseWhitespace(name, true);
   std::vector<base::string16> split_name;
   base::SplitString(whitespace_collapsed_name, ' ', &split_name);
@@ -660,14 +660,14 @@ TestableAutofillDialogView* AutofillDialogControllerImpl::GetTestableView() {
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillDialogViewDelegate implementation.
 
-string16 AutofillDialogControllerImpl::DialogTitle() const {
+base::string16 AutofillDialogControllerImpl::DialogTitle() const {
   if (ShouldShowSpinner())
-    return string16();
+    return base::string16();
 
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
-string16 AutofillDialogControllerImpl::AccountChooserText() const {
+base::string16 AutofillDialogControllerImpl::AccountChooserText() const {
   if (!account_chooser_model_.WalletIsSelected())
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET);
 
@@ -675,10 +675,10 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
     return account_chooser_model_.GetActiveWalletAccountName();
 
   // In this case, the account chooser should be showing the signin link.
-  return string16();
+  return base::string16();
 }
 
-string16 AutofillDialogControllerImpl::SignInLinkText() const {
+base::string16 AutofillDialogControllerImpl::SignInLinkText() const {
   int ids = SignedInState() == NOT_CHECKED ?
       IDS_AUTOFILL_DIALOG_USE_WALLET_LINK :
       ShouldShowSignInWebView() ? IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN :
@@ -687,34 +687,34 @@ string16 AutofillDialogControllerImpl::SignInLinkText() const {
   return l10n_util::GetStringUTF16(ids);
 }
 
-string16 AutofillDialogControllerImpl::SpinnerText() const {
+base::string16 AutofillDialogControllerImpl::SpinnerText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_LOADING);
 }
 
-string16 AutofillDialogControllerImpl::EditSuggestionText() const {
+base::string16 AutofillDialogControllerImpl::EditSuggestionText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EDIT);
 }
 
-string16 AutofillDialogControllerImpl::CancelButtonText() const {
+base::string16 AutofillDialogControllerImpl::CancelButtonText() const {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
-string16 AutofillDialogControllerImpl::ConfirmButtonText() const {
+base::string16 AutofillDialogControllerImpl::ConfirmButtonText() const {
   return l10n_util::GetStringUTF16(IsSubmitPausedOn(wallet::VERIFY_CVV) ?
       IDS_AUTOFILL_DIALOG_VERIFY_BUTTON : IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON);
 }
 
-string16 AutofillDialogControllerImpl::SaveLocallyText() const {
+base::string16 AutofillDialogControllerImpl::SaveLocallyText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX);
 }
 
-string16 AutofillDialogControllerImpl::SaveLocallyTooltip() const {
+base::string16 AutofillDialogControllerImpl::SaveLocallyTooltip() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_TOOLTIP);
 }
 
-string16 AutofillDialogControllerImpl::LegalDocumentsText() {
+base::string16 AutofillDialogControllerImpl::LegalDocumentsText() {
   if (!IsPayingWithWallet() || ShouldShowSignInWebView())
-    return string16();
+    return base::string16();
 
   return legal_documents_text_;
 }
@@ -795,7 +795,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
     card_scrambling_delay_.Stop();
     card_scrambling_refresher_.Stop();
 
-    string16 cc_number =
+    base::string16 cc_number =
         full_wallet_->GetInfo(AutofillType(CREDIT_CARD_NUMBER));
     DCHECK_GE(cc_number.size(), 4U);
     state.image = GetGeneratedCardImage(
@@ -1070,7 +1070,8 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
   }
 
   std::vector<size_t> offsets;
-  string16 text = l10n_util::GetStringFUTF16(resource_id, link_names, &offsets);
+  base::string16 text =
+      l10n_util::GetStringFUTF16(resource_id, link_names,&offsets);
 
   // Tack on the location string if need be.
   size_t base_offset = 0;
@@ -1107,7 +1108,7 @@ void AutofillDialogControllerImpl::ShowEditUiIfBadSuggestion(
   // If the chosen item in |model| yields an empty suggestion text, it is
   // invalid. In this case, show the edit UI and highlight invalid fields.
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-  string16 unused, unused2;
+  base::string16 unused, unused2;
   if (IsASuggestionItemKey(model->GetItemKeyForCheckedItem()) &&
       !SuggestionTextForSection(section, &unused, &unused2)) {
     SetEditingExistingData(section, true);
@@ -1355,8 +1356,8 @@ gfx::Image AutofillDialogControllerImpl::ButtonStripImage() const {
   return gfx::Image();
 }
 
-string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
-    const {
+base::string16 AutofillDialogControllerImpl::LabelForSection(
+    DialogSection section) const {
   switch (section) {
     case SECTION_CC:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC);
@@ -1367,12 +1368,12 @@ string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_SHIPPING);
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 SuggestionState AutofillDialogControllerImpl::SuggestionStateForSection(
     DialogSection section) {
-  string16 vertically_compact, horizontally_compact;
+  base::string16 vertically_compact, horizontally_compact;
   bool show_suggestion = SuggestionTextForSection(section,
                                                   &vertically_compact,
                                                   &horizontally_compact);
@@ -1415,7 +1416,7 @@ bool AutofillDialogControllerImpl::SuggestionTextForSection(
   return wrapper->GetDisplayText(vertically_compact, horizontally_compact);
 }
 
-string16 AutofillDialogControllerImpl::RequiredActionTextForSection(
+base::string16 AutofillDialogControllerImpl::RequiredActionTextForSection(
     DialogSection section) const {
   if (section == SECTION_CC_BILLING && IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     const wallet::WalletItems::MaskedInstrument* current_instrument =
@@ -1430,17 +1431,17 @@ string16 AutofillDialogControllerImpl::RequiredActionTextForSection(
     return card.TypeAndLastFourDigits();
   }
 
-  return string16();
+  return base::string16();
 }
 
-string16 AutofillDialogControllerImpl::ExtraSuggestionTextForSection(
+base::string16 AutofillDialogControllerImpl::ExtraSuggestionTextForSection(
     DialogSection section) const {
   if (section == SECTION_CC ||
       (section == SECTION_CC_BILLING && IsSubmitPausedOn(wallet::VERIFY_CVV))) {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC);
   }
 
-  return string16();
+  return base::string16();
 }
 
 const wallet::WalletItems::MaskedInstrument* AutofillDialogControllerImpl::
@@ -1565,7 +1566,7 @@ FieldIconMap AutofillDialogControllerImpl::IconsForFields(
   FieldValueMap::const_iterator credit_card_iter =
       user_inputs.find(CREDIT_CARD_NUMBER);
   if (credit_card_iter != user_inputs.end()) {
-    const string16& number = credit_card_iter->second;
+    const base::string16& number = credit_card_iter->second;
     const std::string type = CreditCard::GetCreditCardType(number);
     credit_card_type = CreditCard::TypeForDisplay(type);
     result[CREDIT_CARD_NUMBER] = CreditCardIconForType(type);
@@ -1585,12 +1586,12 @@ bool AutofillDialogControllerImpl::FieldControlsIcons(
   return type == CREDIT_CARD_NUMBER;
 }
 
-string16 AutofillDialogControllerImpl::TooltipForField(ServerFieldType type)
-    const {
+base::string16 AutofillDialogControllerImpl::TooltipForField(
+    ServerFieldType type) const {
   if (type == PHONE_HOME_WHOLE_NUMBER || type == PHONE_BILLING_WHOLE_NUMBER)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TOOLTIP_PHONE_NUMBER);
 
-  return string16();
+  return base::string16();
 }
 
 bool AutofillDialogControllerImpl::InputIsEditable(
@@ -1629,10 +1630,10 @@ bool AutofillDialogControllerImpl::InputIsEditable(
 }
 
 // TODO(groby): Add more tests.
-string16 AutofillDialogControllerImpl::InputValidityMessage(
+base::string16 AutofillDialogControllerImpl::InputValidityMessage(
     DialogSection section,
     ServerFieldType type,
-    const string16& value) {
+    const base::string16& value) {
   // If the field is edited, clear any Wallet errors.
   if (IsPayingWithWallet()) {
     WalletValidationErrors::iterator it = wallet_errors_.find(section);
@@ -1739,7 +1740,7 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     DialogSection section,
     const FieldValueMap& inputs) {
   ValidityMessages messages;
-  std::map<ServerFieldType, string16> field_values;
+  std::map<ServerFieldType, base::string16> field_values;
   for (FieldValueMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
     const ServerFieldType type = iter->first;
@@ -1843,7 +1844,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     ServerFieldType type,
     gfx::NativeView parent_view,
     const gfx::Rect& content_bounds,
-    const string16& field_contents,
+    const base::string16& field_contents,
     bool was_edit) {
   // If the field is edited down to empty, don't show a popup.
   if (was_edit && field_contents.empty()) {
@@ -2146,8 +2147,9 @@ void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
   // TODO(estade): implement.
 }
 
-void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
-                                                       int identifier) {
+void AutofillDialogControllerImpl::DidAcceptSuggestion(
+    const base::string16& value,
+    int identifier) {
   ScopedViewUpdates updates(view_.get());
   const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
 
@@ -2175,8 +2177,9 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
   HidePopup();
 }
 
-void AutofillDialogControllerImpl::RemoveSuggestion(const string16& value,
-                                                    int identifier) {
+void AutofillDialogControllerImpl::RemoveSuggestion(
+    const base::string16& value,
+    int identifier) {
   // TODO(estade): implement.
 }
 
@@ -2943,7 +2946,7 @@ void AutofillDialogControllerImpl::SetOutputForFieldsOfType(
   }
 }
 
-string16 AutofillDialogControllerImpl::GetValueFromSection(
+base::string16 AutofillDialogControllerImpl::GetValueFromSection(
     DialogSection section,
     ServerFieldType type) {
   DCHECK(SectionIsActive(section));
@@ -3218,7 +3221,7 @@ scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::
 
   CreditCard card;
   AutofillProfile profile;
-  string16 cvc;
+  base::string16 cvc;
   GetBillingInfoFromOutputs(output, &card, &cvc, &profile);
 
   return scoped_ptr<wallet::Instrument>(

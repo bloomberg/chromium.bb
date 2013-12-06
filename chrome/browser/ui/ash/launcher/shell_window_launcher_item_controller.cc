@@ -214,7 +214,7 @@ base::string16 ShellWindowLauncherItemController::GetTitle() {
   if (type() == TYPE_APP_PANEL && !shell_windows_.empty()) {
     ShellWindow* shell_window = shell_windows_.front();
     if (shell_window->web_contents()) {
-      string16 title = shell_window->web_contents()->GetTitle();
+      base::string16 title = shell_window->web_contents()->GetTitle();
       if (!title.empty())
         return title;
     }

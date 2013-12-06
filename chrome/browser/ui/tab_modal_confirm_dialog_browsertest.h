@@ -26,8 +26,8 @@ class MockTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
                                     Delegate* delegate);
   virtual ~MockTabModalConfirmDialogDelegate();
 
-  virtual string16 GetTitle() OVERRIDE;
-  virtual string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetTitle() OVERRIDE;
+  virtual base::string16 GetMessage() OVERRIDE;
 
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;

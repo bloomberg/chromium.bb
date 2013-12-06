@@ -246,7 +246,7 @@ NSAttributedString* OmniboxPopupViewMac::MatchText(
 
 // static
 NSMutableAttributedString* OmniboxPopupViewMac::DecorateMatchedString(
-    const string16& match_string,
+    const base::string16& match_string,
     const AutocompleteMatch::ACMatchClassifications& classifications,
     NSColor* text_color,
     NSColor* dim_text_color,
@@ -311,7 +311,7 @@ NSMutableAttributedString* OmniboxPopupViewMac::DecorateMatchedString(
 
 NSMutableAttributedString* OmniboxPopupViewMac::ElideString(
     NSMutableAttributedString* a_string,
-    const string16& original_string,
+    const base::string16& original_string,
     const gfx::Font& font,
     const float width) {
   // If it already fits, nothing to be done.
@@ -320,7 +320,7 @@ NSMutableAttributedString* OmniboxPopupViewMac::ElideString(
   }
 
   // If ElideText() decides to do nothing, nothing to be done.
-  const string16 elided =
+  const base::string16 elided =
       gfx::ElideText(original_string, font, width, gfx::ELIDE_AT_END);
   if (0 == elided.compare(original_string)) {
     return a_string;

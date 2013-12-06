@@ -104,7 +104,7 @@ void AutofillDialogCocoa::GetUserInput(DialogSection section,
   [sheet_delegate_ getInputs:output forSection:section];
 }
 
-string16 AutofillDialogCocoa::GetCvc() {
+base::string16 AutofillDialogCocoa::GetCvc() {
   return base::SysNSStringToUTF16([sheet_delegate_ getCvc]);
 }
 
@@ -151,7 +151,8 @@ void AutofillDialogCocoa::CancelForTesting() {
   [sheet_delegate_ cancel:nil];
 }
 
-string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
+base::string16 AutofillDialogCocoa::GetTextContentsOfInput(
+    const DetailInput& input) {
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
     FieldValueMap contents;
@@ -162,11 +163,12 @@ string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
   }
 
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-void AutofillDialogCocoa::SetTextContentsOfInput(const DetailInput& input,
-                                                 const string16& contents) {
+void AutofillDialogCocoa::SetTextContentsOfInput(
+    const DetailInput& input,
+    const base::string16& contents) {
   [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(contents)
                           forInput:input];
 }

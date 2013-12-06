@@ -60,7 +60,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   virtual ItemType GetTypeAt(int index) const OVERRIDE;
   virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
   virtual int GetCommandIdAt(int index) const OVERRIDE;
-  virtual string16 GetLabelAt(int index) const OVERRIDE;
+  virtual base::string16 GetLabelAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;
   virtual bool GetAcceleratorAt(int index,
                                 ui::Accelerator* accelerator) const OVERRIDE;
@@ -173,7 +173,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   bool ItemHasIcon(int index) const;
 
   // Allow the unit test to use the "Show Full History" label.
-  string16 GetShowFullHistoryLabel() const;
+  base::string16 GetShowFullHistoryLabel() const;
 
   // Looks up a NavigationEntry by menu id.
   content::NavigationEntry* GetNavigationEntry(int index) const;

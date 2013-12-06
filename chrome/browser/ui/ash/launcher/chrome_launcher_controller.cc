@@ -1350,7 +1350,7 @@ gfx::Image ChromeLauncherController::GetAppListIcon(
 
 string16 ChromeLauncherController::GetAppListTitle(
     content::WebContents* web_contents) const {
-  string16 title = web_contents->GetTitle();
+  base::string16 title = web_contents->GetTitle();
   if (!title.empty())
     return title;
   WebContentsToAppIDMap::const_iterator iter =

@@ -783,7 +783,7 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
   if (!profile) {
     profile_manager->CreateProfileAsync(profile_path,
         base::Bind(&StartupBrowserCreator::ProcessCommandLineOnProfileCreated,
-                   command_line, cur_dir), string16(), string16(),
+                   command_line, cur_dir), base::string16(), base::string16(),
                    std::string());
     return;
   }

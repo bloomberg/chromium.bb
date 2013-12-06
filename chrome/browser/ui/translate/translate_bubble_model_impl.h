@@ -27,7 +27,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   virtual void SetErrorType(TranslateErrors::Type error_type) OVERRIDE;
   virtual void GoBackFromAdvanced() OVERRIDE;
   virtual int GetNumberOfLanguages() const OVERRIDE;
-  virtual string16 GetLanguageNameAt(int index) const OVERRIDE;
+  virtual base::string16 GetLanguageNameAt(int index) const OVERRIDE;
   virtual int GetOriginalLanguageIndex() const OVERRIDE;
   virtual void UpdateOriginalLanguageIndex(int index) OVERRIDE;
   virtual int GetTargetLanguageIndex() const OVERRIDE;

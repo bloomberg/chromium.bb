@@ -70,9 +70,9 @@ class PDFEnableAdobeReaderPromptDelegate
   virtual ~PDFEnableAdobeReaderPromptDelegate();
 
   // OpenPDFInReaderPromptDelegate
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetAcceptButtonText() const OVERRIDE;
-  virtual string16 GetCancelButtonText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetAcceptButtonText() const OVERRIDE;
+  virtual base::string16 GetCancelButtonText() const OVERRIDE;
   virtual bool ShouldExpire(
       const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual void Accept() OVERRIDE;
@@ -251,9 +251,9 @@ class PDFUnsupportedFeaturePromptDelegate
   virtual ~PDFUnsupportedFeaturePromptDelegate();
 
   // OpenPDFInReaderPromptDelegate:
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetAcceptButtonText() const OVERRIDE;
-  virtual string16 GetCancelButtonText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetAcceptButtonText() const OVERRIDE;
+  virtual base::string16 GetCancelButtonText() const OVERRIDE;
   virtual bool ShouldExpire(
       const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual void Accept() OVERRIDE;

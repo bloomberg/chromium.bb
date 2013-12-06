@@ -44,7 +44,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
         closeCallback:(const base::Closure&)closeCallback
          isSyncDialog:(BOOL)isSyncDialog
-                email:(const string16&)email
+                email:(const base::string16&)email
          errorMessage:(NSString*)errorMessage {
   if ((self = [super initWithNibName:nibName
                               bundle:base::mac::FrameworkBundle()])) {

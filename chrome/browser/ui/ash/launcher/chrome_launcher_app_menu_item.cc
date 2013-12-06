@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 
 ChromeLauncherAppMenuItem::ChromeLauncherAppMenuItem(
-    const string16 title,
+    const base::string16 title,
     const gfx::Image* icon,
     bool has_leading_separator)
     : title_(title),

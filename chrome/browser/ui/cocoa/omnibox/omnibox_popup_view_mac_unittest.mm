@@ -76,8 +76,8 @@ bool RunHasFontTrait(NSAttributedString* string,
 
 // AutocompleteMatch doesn't really have the right constructor for our
 // needs.  Fake one for us to use.
-AutocompleteMatch MakeMatch(const string16& contents,
-                            const string16& description) {
+AutocompleteMatch MakeMatch(const base::string16& contents,
+                            const base::string16& description) {
   AutocompleteMatch m(NULL, 1, true, AutocompleteMatchType::URL_WHAT_YOU_TYPED);
   m.contents = contents;
   m.description = description;
@@ -373,7 +373,7 @@ TEST_F(OmniboxPopupViewMacTest, MatchTextContentsMatch) {
   EXPECT_EQ(run_length_1 + run_length_2 + run_length_3, [contents length]);
 
   AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
-                                  string16());
+                                  base::string16());
 
   // Push each run onto contents classifications.
   m.contents_class.push_back(
@@ -467,7 +467,7 @@ TEST_F(OmniboxPopupViewMacTest, MatchTextDescriptionMatch) {
 
 TEST_F(OmniboxPopupViewMacTest, ElideString) {
   NSString* const contents = @"This is a test with long contents";
-  const string16 contents16(base::SysNSStringToUTF16(contents));
+  const base::string16 contents16(base::SysNSStringToUTF16(contents));
 
   const float kWide = 1000.0;
   const float kNarrow = 20.0;
@@ -487,7 +487,7 @@ TEST_F(OmniboxPopupViewMacTest, ElideString) {
 
   // When elided, result is the same as ElideText().
   ret = OmniboxPopupViewMac::ElideString(as, contents16, font_, kNarrow);
-  string16 elided =
+  base::string16 elided =
       gfx::ElideText(contents16, font_, kNarrow, gfx::ELIDE_AT_END);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);

@@ -17,7 +17,7 @@ using InfoBarUtilities::MoveControl;
       label1_, translateMessageButton_, spaceBetweenControls_ * 2, true);
   TranslateInfoBarDelegate* delegate = [self delegate];
   if ([self delegate]->ShouldShowMessageInfoBarButton()) {
-    string16 buttonText = delegate->GetMessageInfoBarButtonText();
+    base::string16 buttonText = delegate->GetMessageInfoBarButtonText();
     [translateMessageButton_ setTitle:base::SysUTF16ToNSString(buttonText)];
     [translateMessageButton_ sizeToFit];
   }
@@ -37,7 +37,7 @@ using InfoBarUtilities::MoveControl;
 
 - (void)loadLabelText {
   TranslateInfoBarDelegate* delegate = [self delegate];
-  string16 messageText = delegate->GetMessageInfoBarText();
+  base::string16 messageText = delegate->GetMessageInfoBarText();
   NSString* string1 = base::SysUTF16ToNSString(messageText);
   [label1_ setStringValue:string1];
 }

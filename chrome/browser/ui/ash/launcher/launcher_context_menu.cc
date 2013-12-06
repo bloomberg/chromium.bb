@@ -73,7 +73,7 @@ void LauncherContextMenu::Init() {
         item_.type == ash::TYPE_WINDOWED_APP) {
       // V1 apps can be started from the menu - but V2 apps should not.
       if  (!controller_->IsPlatformApp(item_.id)) {
-        AddItem(MENU_OPEN_NEW, string16());
+        AddItem(MENU_OPEN_NEW, base::string16());
         AddSeparator(ui::NORMAL_SEPARATOR);
       }
       AddItem(
@@ -129,7 +129,7 @@ void LauncherContextMenu::Init() {
       if (!app_id.empty()) {
         int index = 0;
         extension_items_->AppendExtensionItems(
-            app_id, string16(), &index);
+            app_id, base::string16(), &index);
         AddSeparator(ui::NORMAL_SEPARATOR);
       }
     }
@@ -175,7 +175,7 @@ string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
     }
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {

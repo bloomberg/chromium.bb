@@ -21,7 +21,7 @@ class KeywordHintDecoration : public LocationBarDecoration {
 
   // Calculates the message to display and where to place the [tab]
   // image.
-  void SetKeyword(const string16& keyword, bool is_extension_keyword);
+  void SetKeyword(const base::string16& keyword, bool is_extension_keyword);
 
   // Implement |LocationBarDecoration|.
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;

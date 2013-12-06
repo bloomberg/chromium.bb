@@ -96,16 +96,16 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   TestableAutofillDialogView* GetTestableView();
 
   // AutofillDialogViewDelegate implementation.
-  virtual string16 DialogTitle() const OVERRIDE;
-  virtual string16 AccountChooserText() const OVERRIDE;
-  virtual string16 SignInLinkText() const OVERRIDE;
-  virtual string16 SpinnerText() const OVERRIDE;
-  virtual string16 EditSuggestionText() const OVERRIDE;
-  virtual string16 CancelButtonText() const OVERRIDE;
-  virtual string16 ConfirmButtonText() const OVERRIDE;
-  virtual string16 SaveLocallyText() const OVERRIDE;
-  virtual string16 SaveLocallyTooltip() const OVERRIDE;
-  virtual string16 LegalDocumentsText() OVERRIDE;
+  virtual base::string16 DialogTitle() const OVERRIDE;
+  virtual base::string16 AccountChooserText() const OVERRIDE;
+  virtual base::string16 SignInLinkText() const OVERRIDE;
+  virtual base::string16 SpinnerText() const OVERRIDE;
+  virtual base::string16 EditSuggestionText() const OVERRIDE;
+  virtual base::string16 CancelButtonText() const OVERRIDE;
+  virtual base::string16 ConfirmButtonText() const OVERRIDE;
+  virtual base::string16 SaveLocallyText() const OVERRIDE;
+  virtual base::string16 SaveLocallyTooltip() const OVERRIDE;
+  virtual base::string16 LegalDocumentsText() OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
   virtual bool ShouldShowSignInWebView() const OVERRIDE;
   virtual GURL SignInUrl() const OVERRIDE;
@@ -124,25 +124,25 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
       ServerFieldType type) OVERRIDE;
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
-  virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
+  virtual base::string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
       DialogSection section) OVERRIDE;
   virtual FieldIconMap IconsForFields(const FieldValueMap& user_inputs)
       const OVERRIDE;
   virtual bool FieldControlsIcons(ServerFieldType type) const OVERRIDE;
-  virtual string16 TooltipForField(ServerFieldType type) const OVERRIDE;
+  virtual base::string16 TooltipForField(ServerFieldType type) const OVERRIDE;
   virtual bool InputIsEditable(const DetailInput& input, DialogSection section)
       OVERRIDE;
-  virtual string16 InputValidityMessage(DialogSection section,
+  virtual base::string16 InputValidityMessage(DialogSection section,
                                         ServerFieldType type,
-                                        const string16& value) OVERRIDE;
+                                        const base::string16& value) OVERRIDE;
   virtual ValidityMessages InputsAreValid(
       DialogSection section, const FieldValueMap& inputs) OVERRIDE;
   virtual void UserEditedOrActivatedInput(DialogSection section,
                                           ServerFieldType type,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
-                                          const string16& field_contents,
+                                          const base::string16& field_contents,
                                           bool was_edit) OVERRIDE;
   virtual bool HandleKeyPressEventInInput(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
@@ -165,9 +165,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void OnPopupHidden() OVERRIDE;
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void DidSelectSuggestion(int identifier) OVERRIDE;
-  virtual void DidAcceptSuggestion(const string16& value,
+  virtual void DidAcceptSuggestion(const base::string16& value,
                                    int identifier) OVERRIDE;
-  virtual void RemoveSuggestion(const string16& value,
+  virtual void RemoveSuggestion(const base::string16& value,
                                 int identifier) OVERRIDE;
   virtual void ClearPreviewedForm() OVERRIDE;
 
@@ -412,11 +412,12 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Finds all fields of the given |type| in |form_structure_|, if any, and sets
   // each field's value to |output|.
-  void SetOutputForFieldsOfType(ServerFieldType type, const string16& output);
+  void SetOutputForFieldsOfType(ServerFieldType type,
+                                const base::string16& output);
 
   // Gets the value for |type| in |section|, whether it comes from manual user
   // input or the active suggestion.
-  string16 GetValueFromSection(DialogSection section,
+  base::string16 GetValueFromSection(DialogSection section,
                                ServerFieldType type);
 
   // Gets the SuggestionsMenuModel for |section|.
@@ -434,9 +435,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   bool SuggestionTextForSection(DialogSection section,
                                 base::string16* vertically_compact,
                                 base::string16* horizontally_compact);
-  string16 RequiredActionTextForSection(DialogSection section) const;
+  base::string16 RequiredActionTextForSection(DialogSection section) const;
   gfx::Image SuggestionIconForSection(DialogSection section);
-  string16 ExtraSuggestionTextForSection(DialogSection section) const;
+  base::string16 ExtraSuggestionTextForSection(DialogSection section) const;
   gfx::Image ExtraSuggestionIconForSection(DialogSection section);
 
   // Loads profiles that can suggest data for |type|. |field_contents| is the
@@ -445,7 +446,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // |popup_guids_|.
   void GetProfileSuggestions(
       ServerFieldType type,
-      const string16& field_contents,
+      const base::string16& field_contents,
       const DetailInputs& inputs,
       std::vector<string16>* popup_values,
       std::vector<string16>* popup_labels,
@@ -635,7 +636,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   std::string risk_data_;
 
   // The text to display when the user is accepting new terms of service, etc.
-  string16 legal_documents_text_;
+  base::string16 legal_documents_text_;
   // The ranges within |legal_documents_text_| to linkify.
   std::vector<gfx::Range> legal_document_link_ranges_;
 

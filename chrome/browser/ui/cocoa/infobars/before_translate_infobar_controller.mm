@@ -15,8 +15,8 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 namespace {
 
 NSButton* CreateNSButtonWithResourceIDAndParameter(
-    int resourceId, const string16& param) {
-  string16 title = l10n_util::GetStringFUTF16(resourceId, param);
+    int resourceId, const base::string16& param) {
+  base::string16 title = l10n_util::GetStringFUTF16(resourceId, param);
   NSButton* button = [[NSButton alloc] init];
   [button setTitle:base::SysUTF16ToNSString(title)];
   [button setBezelStyle:NSTexturedRoundedBezelStyle];
@@ -46,7 +46,7 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 
 - (void)initializeExtraControls {
   TranslateInfoBarDelegate* delegate = [self delegate];
-  const string16& language =
+  const base::string16& language =
       delegate->language_name_at(delegate->original_language_index());
   neverTranslateButton_.reset(
       CreateNSButtonWithResourceIDAndParameter(
@@ -80,9 +80,9 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 
 - (void)loadLabelText {
   size_t offset = 0;
-  string16 text =
+  base::string16 text =
       l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE,
-                                 string16(), &offset);
+                                 base::string16(), &offset);
   NSString* string1 = base::SysUTF16ToNSString(text.substr(0, offset));
   NSString* string2 = base::SysUTF16ToNSString(text.substr(offset));
   [label1_ setStringValue:string1];

@@ -40,26 +40,28 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   virtual ~SuggestionsMenuModel();
 
   // Adds an item and its identifying key to the model. Keys needn't be unique.
-  void AddKeyedItem(const std::string& key, const string16& display_label);
+  void AddKeyedItem(const std::string& key,
+                    const base::string16& display_label);
 
   // As above, but also accepts an image which will be displayed alongside the
   // text.
   void AddKeyedItemWithIcon(const std::string& key,
-                            const string16& display_label,
+                            const base::string16& display_label,
                             const gfx::Image& icon);
 
   // Adds a label with a minor text and its identifying key to the model.
   // Keys needn't be unique.
   void AddKeyedItemWithMinorText(const std::string& key,
-                                const string16& display_label,
-                                const string16& display_minor_text);
+                                const base::string16& display_label,
+                                const base::string16& display_minor_text);
 
   // As above, but also accepts an image which will be displayed alongside the
   // text.
-  void AddKeyedItemWithMinorTextAndIcon(const std::string& key,
-                                        const string16& display_label,
-                                        const string16& display_minor_text,
-                                        const gfx::Image& icon);
+  void AddKeyedItemWithMinorTextAndIcon(
+      const std::string& key,
+      const base::string16& display_label,
+      const base::string16& display_minor_text,
+      const gfx::Image& icon);
 
   // Resets the model to empty.
   void Reset();
@@ -120,11 +122,11 @@ class MonthComboboxModel : public ui::ComboboxModel {
   MonthComboboxModel();
   virtual ~MonthComboboxModel();
 
-  static string16 FormatMonth(int index);
+  static base::string16 FormatMonth(int index);
 
   // ui::Combobox implementation:
   virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MonthComboboxModel);
@@ -138,7 +140,7 @@ class YearComboboxModel : public ui::ComboboxModel {
 
   // ui::Combobox implementation:
   virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
 
  private:
   // The current year (e.g., 2012).

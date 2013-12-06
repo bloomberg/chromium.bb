@@ -60,7 +60,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   // Applies the given font and colors to the match string based on
   // classifications.
   static NSMutableAttributedString* DecorateMatchedString(
-      const string16& match_string,
+      const base::string16& match_string,
       const AutocompleteMatch::ACMatchClassifications& classifications,
       NSColor* text_color,
       NSColor* dim_text_color,
@@ -74,7 +74,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   // cleaner.
   static NSMutableAttributedString* ElideString(
       NSMutableAttributedString* a_string,
-      const string16& original_string,
+      const base::string16& original_string,
       const gfx::Font& font,
       const float cell_width);
 

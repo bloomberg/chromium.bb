@@ -28,15 +28,15 @@ string16 ExternalProtocolDialogDelegate::GetMessageText() const {
   // TODO(calamity): Look up the command in ExternalProtocolHandler and pass it
   // into the constructor. Will require simultaneous change of
   // ExternalProtocolHandler::RunExternalProtocolDialog across all platforms.
-  string16 command =
+  base::string16 command =
     UTF8ToUTF16(ShellIntegration::GetApplicationForProtocol(url()));
-  string16 elided_url_without_scheme;
-  string16 elided_command;
+  base::string16 elided_url_without_scheme;
+  base::string16 elided_command;
   gfx::ElideString(ASCIIToUTF16(url().possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
   gfx::ElideString(command, kMaxCommandSize, &elided_command);
 
-  string16 message_text = l10n_util::GetStringFUTF16(
+  base::string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToUTF16(url().scheme() + ":"),
       elided_url_without_scheme) + ASCIIToUTF16("\n\n");

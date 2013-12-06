@@ -100,7 +100,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   // Overridden for both ButtonMenuItemModel::Delegate and SimpleMenuModel:
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual bool GetIconForCommandId(int command_id,
                                    gfx::Image* icon) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
@@ -167,7 +167,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   scoped_ptr<ui::ButtonMenuItemModel> zoom_menu_item_model_;
 
   // Label of the zoom label in the zoom menu item.
-  string16 zoom_label_;
+  base::string16 zoom_label_;
 
   // Tools menu.
   scoped_ptr<ToolsMenuModel> tools_menu_model_;

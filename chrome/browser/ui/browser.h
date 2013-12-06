@@ -285,7 +285,7 @@ class Browser : public TabStripModelObserver,
   gfx::Image GetCurrentPageIcon() const;
 
   // Gets the title of the window based on the selected tab's title.
-  string16 GetWindowTitleForCurrentTab() const;
+  base::string16 GetWindowTitleForCurrentTab() const;
 
   // Prepares a title string for display (removes embedded newlines, etc).
   static void FormatTitleForDisplay(string16* title);
@@ -407,7 +407,7 @@ class Browser : public TabStripModelObserver,
   static void RegisterProtocolHandlerHelper(content::WebContents* web_contents,
                                             const std::string& protocol,
                                             const GURL& url,
-                                            const string16& title,
+                                            const base::string16& title,
                                             bool user_gesture,
                                             BrowserWindow* window);
 
@@ -596,13 +596,13 @@ class Browser : public TabStripModelObserver,
       content::WebContents* web_contents,
       int route_id,
       WindowContainerType window_container_type,
-      const string16& frame_name,
+      const base::string16& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) OVERRIDE;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int64 source_frame_id,
-                                  const string16& frame_name,
+                                  const base::string16& frame_name,
                                   const GURL& target_url,
                                   content::WebContents* new_contents) OVERRIDE;
   virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;
@@ -633,7 +633,7 @@ class Browser : public TabStripModelObserver,
   virtual void RegisterProtocolHandler(content::WebContents* web_contents,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const string16& title,
+                                       const base::string16& title,
                                        bool user_gesture) OVERRIDE;
   virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
@@ -804,7 +804,7 @@ class Browser : public TabStripModelObserver,
   bool MaybeCreateBackgroundContents(
       int route_id,
       content::WebContents* opener_web_contents,
-      const string16& frame_name,
+      const base::string16& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);

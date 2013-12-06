@@ -87,7 +87,7 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // Overridden from ProfileInfoCacheObserver:
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const string16& profile_name) OVERRIDE;
+                                   const base::string16& profile_name) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(content::WebContents* contents,

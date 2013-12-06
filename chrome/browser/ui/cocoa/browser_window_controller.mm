@@ -234,7 +234,7 @@ enum {
     }
   }
 
-  string16 label = signin_ui_util::GetSigninMenuLabel(profile);
+  base::string16 label = signin_ui_util::GetSigninMenuLabel(profile);
   [signinMenuItem setTitle:l10n_util::FixUpWindowsStyleLabel(label)];
   [signinMenuItem setHidden:!showSigninMenuItem];
   [followingSeparator setHidden:!showSigninMenuItem];

@@ -115,7 +115,7 @@ void EncodingMenuModel::Build() {
       encoding_menu_items.begin();
   for (; it != encoding_menu_items.end(); ++it) {
     int id = it->first;
-    string16& label = it->second;
+    base::string16& label = it->second;
     if (id == 0) {
       AddSeparator(ui::NORMAL_SEPARATOR);
     } else {
@@ -315,7 +315,7 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
           browser_->profile()->GetOriginalProfile());
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
@@ -611,7 +611,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       browser_->profile()->GetOriginalProfile());
   if (signin && signin->IsSigninAllowed()) {
-    const string16 short_product_name =
+    const base::string16 short_product_name =
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
     AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
         IDS_SYNC_MENU_PRE_SYNCED_LABEL, short_product_name));

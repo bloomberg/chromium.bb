@@ -31,7 +31,7 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const string16& title) OVERRIDE;
+                              const base::string16& title) OVERRIDE;
 
  protected:
   // RenderViewContextMenu implementation.

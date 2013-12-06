@@ -180,7 +180,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
       content::WebContents* web_contents =
           tab_strip->GetWebContentsAt(tab_strip->active_index());
       gfx::Image app_icon = GetBrowserListIcon(web_contents);
-      string16 title = GetBrowserListTitle(web_contents);
+      base::string16 title = GetBrowserListTitle(web_contents);
       items.push_back(new ChromeLauncherAppMenuItemBrowser(
           title, &app_icon, browser, items.size() == 1));
     } else {
@@ -189,7 +189,8 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
             tab_strip->GetWebContentsAt(index);
         gfx::Image app_icon =
             launcher_controller()->GetAppListIcon(web_contents);
-        string16 title = launcher_controller()->GetAppListTitle(web_contents);
+        base::string16 title =
+            launcher_controller()->GetAppListTitle(web_contents);
         // Check if we need to insert a separator in front.
         bool leading_separator = !index;
         items.push_back(new ChromeLauncherAppMenuItemTab(
@@ -260,7 +261,7 @@ gfx::Image BrowserShortcutLauncherItemController::GetBrowserListIcon(
 
 string16 BrowserShortcutLauncherItemController::GetBrowserListTitle(
     content::WebContents* web_contents) const {
-  string16 title = web_contents->GetTitle();
+  base::string16 title = web_contents->GetTitle();
   if (!title.empty())
     return title;
   return l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);

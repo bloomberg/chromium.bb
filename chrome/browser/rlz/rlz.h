@@ -73,7 +73,8 @@ class RLZTracker : public content::NotificationObserver {
   // Gets the RLZ value of the access point.
   // Returns false if the rlz string could not be obtained. In some cases
   // an empty string can be returned which is not an error.
-  static bool GetAccessPointRlz(rlz_lib::AccessPoint point, string16* rlz);
+  static bool GetAccessPointRlz(rlz_lib::AccessPoint point,
+                                base::string16* rlz);
 
   // Invoked during shutdown to clean up any state created by RLZTracker.
   static void CleanupRlz();
@@ -145,7 +146,7 @@ class RLZTracker : public content::NotificationObserver {
   void RecordFirstSearch(rlz_lib::AccessPoint point);
 
   // Implementation called from GetAccessPointRlz() static method.
-  bool GetAccessPointRlzImpl(rlz_lib::AccessPoint point, string16* rlz);
+  bool GetAccessPointRlzImpl(rlz_lib::AccessPoint point, base::string16* rlz);
 
   // Schedules the delayed initialization. This method is virtual to allow
   // tests to override how the scheduling is done.
@@ -174,8 +175,8 @@ class RLZTracker : public content::NotificationObserver {
   // Sends the financial ping to the RLZ servers. This method is virtual to
   // allow tests to override.
   virtual bool SendFinancialPing(const std::string& brand,
-                                 const string16& lang,
-                                 const string16& referral);
+                                 const base::string16& lang,
+                                 const base::string16& referral);
 
 #if defined(OS_CHROMEOS)
   // Implementation called from ClearRlzState static method.
@@ -209,7 +210,7 @@ class RLZTracker : public content::NotificationObserver {
   // The cache must be protected by a lock since it may be accessed from
   // the UI thread for reading and the IO thread for reading and/or writing.
   base::Lock cache_lock_;
-  std::map<rlz_lib::AccessPoint, string16> rlz_cache_;
+  std::map<rlz_lib::AccessPoint, base::string16> rlz_cache_;
 
   // Keeps track of whether the omnibox or host page have been used.
   bool omnibox_used_;

@@ -773,7 +773,7 @@ void BrowserCommandController::OnProfileAdded(
 
 void BrowserCommandController::OnProfileWasRemoved(
     const base::FilePath& profile_path,
-    const string16& profile_name) {
+    const base::string16& profile_name) {
   UpdateCommandsForMultipleProfiles();
 }
 

@@ -25,8 +25,8 @@ class ValidationMessageBubble {
   static scoped_ptr<ValidationMessageBubble> CreateAndShow(
       content::RenderWidgetHost* widget_host,
       const gfx::Rect& anchor_in_root_view,
-      const string16& main_text,
-      const string16& sub_text);
+      const base::string16& main_text,
+      const base::string16& sub_text);
 
   // Close the window and destruct the object.
   virtual ~ValidationMessageBubble() {}

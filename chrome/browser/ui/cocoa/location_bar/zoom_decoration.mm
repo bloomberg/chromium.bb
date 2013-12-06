@@ -34,7 +34,8 @@ void ZoomDecoration::Update(ZoomController* zoom_controller) {
   SetImage(OmniboxViewMac::ImageForResource(
       zoom_controller->GetResourceForZoomLevel()));
 
-  string16 zoom_percent = base::IntToString16(zoom_controller->zoom_percent());
+  base::string16 zoom_percent =
+      base::IntToString16(zoom_controller->zoom_percent());
   NSString* zoom_string =
       l10n_util::GetNSStringFWithFixup(IDS_TOOLTIP_ZOOM, zoom_percent);
   tooltip_.reset([zoom_string retain]);

@@ -226,9 +226,9 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   // Add a separator if there are any other values.
   if (!identifiers_.empty() &&
       identifiers_[0] != WebAutofillClient::MenuItemIDSeparator) {
-    names_.insert(names_.begin(), string16());
-    subtexts_.insert(subtexts_.begin(), string16());
-    icons_.insert(icons_.begin(), string16());
+    names_.insert(names_.begin(), base::string16());
+    subtexts_.insert(subtexts_.begin(), base::string16());
+    icons_.insert(icons_.begin(), base::string16());
     identifiers_.insert(identifiers_.begin(),
                         WebAutofillClient::MenuItemIDSeparator);
   }
@@ -340,7 +340,7 @@ void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
 }
 
 int AutofillPopupControllerImpl::GetIconResourceID(
-    const string16& resource_name) const {
+    const base::string16& resource_name) const {
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (resource_name == ASCIIToUTF16(kDataResources[i].name))
       return kDataResources[i].id;

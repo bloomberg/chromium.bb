@@ -90,7 +90,7 @@ class LauncherItemController : public ash::ShelfItemDelegate {
  protected:
   // Helper function to return the title associated with |app_id_|.
   // Returns an empty title if no matching extension can be found.
-  string16 GetAppTitle() const;
+  base::string16 GetAppTitle() const;
 
  private:
   const Type type_;

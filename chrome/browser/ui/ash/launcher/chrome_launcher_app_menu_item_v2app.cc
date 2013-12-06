@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 ChromeLauncherAppMenuItemV2App::ChromeLauncherAppMenuItemV2App(
-    const string16 title,
+    const base::string16 title,
     const gfx::Image* icon,
     const std::string& app_id,
     ChromeLauncherController* launcher_controller,

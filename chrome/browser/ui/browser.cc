@@ -546,9 +546,9 @@ gfx::Image Browser::GetCurrentPageIcon() const {
   return favicon_tab_helper ? favicon_tab_helper->GetFavicon() : gfx::Image();
 }
 
-string16 Browser::GetWindowTitleForCurrentTab() const {
+base::string16 Browser::GetWindowTitleForCurrentTab() const {
   WebContents* contents = tab_strip_model_->GetActiveWebContents();
-  string16 title;
+  base::string16 title;
 
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
   // window during the window's creation (before tabs have been added).
@@ -577,11 +577,12 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
 }
 
 // static
-void Browser::FormatTitleForDisplay(string16* title) {
+void Browser::FormatTitleForDisplay(base::string16* title) {
   size_t current_index = 0;
   size_t match_index;
-  while ((match_index = title->find(L'\n', current_index)) != string16::npos) {
-    title->replace(match_index, 1, string16());
+  while ((match_index = title->find(L'\n', current_index)) !=
+         base::string16::npos) {
+    title->replace(match_index, 1, base::string16());
     current_index = match_index;
   }
 }
@@ -829,7 +830,7 @@ void Browser::OpenFile() {
   ui::SelectFileDialog::FileTypeInfo file_types;
   file_types.support_drive = true;
   select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
-                                  string16(),
+                                  base::string16(),
                                   directory,
                                   &file_types,
                                   0,
@@ -874,7 +875,7 @@ void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
 void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
                                             const std::string& protocol,
                                             const GURL& url,
-                                            const string16& title,
+                                            const base::string16& title,
                                             bool user_gesture,
                                             BrowserWindow* window) {
   Profile* profile =
@@ -1521,7 +1522,7 @@ bool Browser::ShouldCreateWebContents(
     WebContents* web_contents,
     int route_id,
     WindowContainerType window_container_type,
-    const string16& frame_name,
+    const base::string16& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
@@ -1540,7 +1541,7 @@ bool Browser::ShouldCreateWebContents(
 
 void Browser::WebContentsCreated(WebContents* source_contents,
                                  int64 source_frame_id,
-                                 const string16& frame_name,
+                                 const base::string16& frame_name,
                                  const GURL& target_url,
                                  WebContents* new_contents) {
   // Adopt the WebContents now, so all observers are in place, as the network
@@ -1638,7 +1639,7 @@ void Browser::JSOutOfMemory(WebContents* web_contents) {
 void Browser::RegisterProtocolHandler(WebContents* web_contents,
                                       const std::string& protocol,
                                       const GURL& url,
-                                      const string16& title,
+                                      const base::string16& title,
                                       bool user_gesture) {
   RegisterProtocolHandlerHelper(
       web_contents, protocol, url, title, user_gesture, window());
@@ -2223,7 +2224,7 @@ bool Browser::ShouldHideUIForFullscreen() const {
 bool Browser::MaybeCreateBackgroundContents(
     int route_id,
     WebContents* opener_web_contents,
-    const string16& frame_name,
+    const base::string16& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {

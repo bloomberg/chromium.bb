@@ -23,9 +23,9 @@ class GoogleApiKeysInfoBarDelegate : public ConfirmInfoBarDelegate {
   GoogleApiKeysInfoBarDelegate();
   virtual ~GoogleApiKeysInfoBarDelegate();
 
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleApiKeysInfoBarDelegate);

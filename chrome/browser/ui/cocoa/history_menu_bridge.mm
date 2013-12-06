@@ -349,7 +349,7 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
     title = base::SysUTF8ToNSString(url_string);
   NSString* full_title = title;
   if ([title length] > kMaximumMenuWidthInChars) {
-    // TODO(rsesek): use app/text_elider.h once it uses string16 and can
+    // TODO(rsesek): use app/text_elider.h once it uses base::string16 and can
     // take out the middle of strings.
     title = [NSString stringWithFormat:@"%@…%@",
                [title substringToIndex:kMenuTrimSizeInChars],
@@ -402,7 +402,7 @@ void HistoryMenuBridge::CreateMenu() {
   options.SetRecentDayRange(kVisitedScope);
 
   history_service_->QueryHistory(
-      string16(),
+      base::string16(),
       options,
       &cancelable_request_consumer_,
       base::Bind(&HistoryMenuBridge::OnVisitedHistoryResults,

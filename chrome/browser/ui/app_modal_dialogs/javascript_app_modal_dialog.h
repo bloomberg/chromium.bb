@@ -34,10 +34,10 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   JavaScriptAppModalDialog(
       content::WebContents* web_contents,
       ExtraDataMap* extra_data_map,
-      const string16& title,
+      const base::string16& title,
       content::JavaScriptMessageType javascript_message_type,
-      const string16& message_text,
-      const string16& default_prompt_text,
+      const base::string16& message_text,
+      const base::string16& default_prompt_text,
       bool display_suppress_checkbox,
       bool is_before_unload_dialog,
       bool is_reload,
@@ -51,7 +51,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
 
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel(bool suppress_js_messages);
-  void OnAccept(const string16& prompt_text, bool suppress_js_messages);
+  void OnAccept(const base::string16& prompt_text, bool suppress_js_messages);
 
   // NOTE: This is only called under Views, and should be removed. Any critical
   // work should be done in OnCancel or OnAccept. See crbug.com/63732 for more.
@@ -59,21 +59,21 @@ class JavaScriptAppModalDialog : public AppModalDialog {
 
   // Used only for testing. The dialog will use the given text when notifying
   // its delegate instead of whatever the UI reports.
-  void SetOverridePromptText(const string16& prompt_text);
+  void SetOverridePromptText(const base::string16& prompt_text);
 
   // Accessors
   content::JavaScriptMessageType javascript_message_type() const {
     return javascript_message_type_;
   }
-  string16 message_text() const { return message_text_; }
-  string16 default_prompt_text() const { return default_prompt_text_; }
+  base::string16 message_text() const { return message_text_; }
+  base::string16 default_prompt_text() const { return default_prompt_text_; }
   bool display_suppress_checkbox() const { return display_suppress_checkbox_; }
   bool is_before_unload_dialog() const { return is_before_unload_dialog_; }
   bool is_reload() const { return is_reload_; }
 
  private:
   // Notifies the delegate with the result of the dialog.
-  void NotifyDelegate(bool success, const string16& prompt_text,
+  void NotifyDelegate(bool success, const base::string16& prompt_text,
                       bool suppress_js_messages);
 
   // A map of extra Chrome-only data associated with the delegate_.
@@ -82,8 +82,8 @@ class JavaScriptAppModalDialog : public AppModalDialog {
 
   // Information about the message box is held in the following variables.
   const content::JavaScriptMessageType javascript_message_type_;
-  string16 message_text_;
-  string16 default_prompt_text_;
+  base::string16 message_text_;
+  base::string16 default_prompt_text_;
   bool display_suppress_checkbox_;
   bool is_before_unload_dialog_;
   bool is_reload_;
@@ -92,7 +92,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
 
   // Used only for testing. Specifies alternative prompt text that should be
   // used when notifying the delegate, if |use_override_prompt_text_| is true.
-  string16 override_prompt_text_;
+  base::string16 override_prompt_text_;
   bool use_override_prompt_text_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialog);

@@ -32,7 +32,7 @@ SuggestionsMenuModel::SuggestionsMenuModel(
 SuggestionsMenuModel::~SuggestionsMenuModel() {}
 
 void SuggestionsMenuModel::AddKeyedItem(
-    const std::string& key, const string16& display_label) {
+    const std::string& key, const base::string16& display_label) {
   Item item = { key, true };
   items_.push_back(item);
   AddCheckItem(items_.size() - 1, display_label);
@@ -40,7 +40,7 @@ void SuggestionsMenuModel::AddKeyedItem(
 
 void SuggestionsMenuModel::AddKeyedItemWithIcon(
     const std::string& key,
-    const string16& display_label,
+    const base::string16& display_label,
     const gfx::Image& icon) {
   AddKeyedItem(key, display_label);
   SetIcon(items_.size() - 1, icon);
@@ -48,16 +48,16 @@ void SuggestionsMenuModel::AddKeyedItemWithIcon(
 
 void SuggestionsMenuModel::AddKeyedItemWithMinorText(
     const std::string& key,
-    const string16& display_label,
-    const string16& display_minor_text) {
+    const base::string16& display_label,
+    const base::string16& display_minor_text) {
   AddKeyedItem(key, display_label);
   SetMinorText(items_.size() - 1, display_minor_text);
 }
 
 void SuggestionsMenuModel::AddKeyedItemWithMinorTextAndIcon(
     const std::string& key,
-    const string16& display_label,
-    const string16& display_minor_text,
+    const base::string16& display_label,
+    const base::string16& display_minor_text,
     const gfx::Image& icon) {
   AddKeyedItemWithIcon(key, display_label, icon);
   SetMinorText(items_.size() - 1, display_minor_text);

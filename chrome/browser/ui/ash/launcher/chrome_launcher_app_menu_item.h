@@ -13,14 +13,14 @@
 class ChromeLauncherAppMenuItem {
  public:
   // To insert a separator before this item set |has_leading_separator|.
-  ChromeLauncherAppMenuItem(const string16 title,
+  ChromeLauncherAppMenuItem(const base::string16 title,
                             const gfx::Image* icon,
                             bool has_leading_separator);
 
   virtual ~ChromeLauncherAppMenuItem();
 
   // Retrieves the title for this menu option.
-  const string16& title() const { return title_; }
+  const base::string16& title() const { return title_; }
 
   // Retrieves the icon for this menu option.
   const gfx::Image& icon() const { return icon_; }
@@ -40,7 +40,7 @@ class ChromeLauncherAppMenuItem {
   virtual void Execute(int event_flags);
 
  private:
-  const string16 title_;
+  const base::string16 title_;
   const gfx::Image icon_;
 
   // True if the item has a separator in front of it.

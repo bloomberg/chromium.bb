@@ -260,7 +260,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)updateToolTip {
-  string16 tooltip_text =
+  base::string16 tooltip_text =
       bridge_->download_model()->GetTooltipText(*font_list_, kToolTipMaxWidth);
   [progressView_ setToolTip:base::SysUTF16ToNSString(tooltip_text)];
 }

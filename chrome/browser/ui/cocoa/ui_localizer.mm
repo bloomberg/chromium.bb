@@ -78,9 +78,9 @@ int ResourceMapCompare(const void* utf8Void,
     if (val) {
       // Do we need to build the string, or just fetch it?
       if (val->label_arg_id != 0) {
-        const string16 label_arg(l10n_util::GetStringUTF16(val->label_arg_id));
-        return l10n_util::GetNSStringFWithFixup(val->label_id,
-                                                label_arg);
+        const base::string16 label_arg(
+            l10n_util::GetStringUTF16(val->label_arg_id));
+        return l10n_util::GetNSStringFWithFixup(val->label_id, label_arg);
       }
 
       return l10n_util::GetNSStringWithFixup(val->label_id);

@@ -21,9 +21,9 @@ class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate {
   virtual void DoAccept(const GURL& url, bool dont_block) const OVERRIDE;
   virtual void DoCancel(const GURL& url, bool dont_block) const OVERRIDE;
 
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetCheckboxText() const OVERRIDE;
-  virtual string16 GetTitleText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetCheckboxText() const OVERRIDE;
+  virtual base::string16 GetTitleText() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_UI_EXTERNAL_PROTOCOL_DIALOG_DELEGATE_H_

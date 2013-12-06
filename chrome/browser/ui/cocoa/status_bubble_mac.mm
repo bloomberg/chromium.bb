@@ -124,7 +124,7 @@ StatusBubbleMac::~StatusBubbleMac() {
   window_ = nil;
 }
 
-void StatusBubbleMac::SetStatus(const string16& status) {
+void StatusBubbleMac::SetStatus(const base::string16& status) {
   SetText(status, false);
 }
 
@@ -153,8 +153,9 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   gfx::FontList font_list_chr(
       gfx::Font(base::SysNSStringToUTF8([font fontName]), [font pointSize]));
 
-  string16 original_url_text = net::FormatUrl(url, languages);
-  string16 status = gfx::ElideUrl(url, font_list_chr, text_width, languages);
+  base::string16 original_url_text = net::FormatUrl(url, languages);
+  base::string16 status =
+      gfx::ElideUrl(url, font_list_chr, text_width, languages);
 
   SetText(status, true);
 
@@ -178,7 +179,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   }
 }
 
-void StatusBubbleMac::SetText(const string16& text, bool is_url) {
+void StatusBubbleMac::SetText(const base::string16& text, bool is_url) {
   // The status bubble allows the status and URL strings to be set
   // independently.  Whichever was set non-empty most recently will be the
   // value displayed.  When both are empty, the status bubble hides.
@@ -623,7 +624,7 @@ void StatusBubbleMac::ExpandBubble() {
   NSFont* font = [[window_ contentView] font];
   gfx::FontList font_list_chr(
       gfx::Font(base::SysNSStringToUTF8([font fontName]), [font pointSize]));
-  string16 expanded_url = gfx::ElideUrl(
+  base::string16 expanded_url = gfx::ElideUrl(
       url_, font_list_chr, max_bubble_width, languages_);
 
   // Scale width from gfx::Font in view coordinates to window coordinates.

@@ -154,7 +154,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   if (!entry)
     return nil;
 
-  string16 title = entry ? entry->GetTitle() : string16();
+  base::string16 title = entry ? entry->GetTitle() : base::string16();
   return base::SysUTF16ToNSString(title);
 }
 
@@ -327,7 +327,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   content::RenderViewHost::JavascriptResultCallback callback =
       base::Bind(&ResumeAppleEventAndSendReply, suspensionID);
 
-  string16 script = base::SysNSStringToUTF16(
+  base::string16 script = base::SysNSStringToUTF16(
       [[command evaluatedArguments] objectForKey:@"javascript"]);
   view->ExecuteJavascriptInWebFrameCallbackResult(string16(),  // frame_xpath
                                                   script,

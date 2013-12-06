@@ -35,7 +35,7 @@ class StatusBubbleMac : public StatusBubble {
   virtual ~StatusBubbleMac();
 
   // StatusBubble implementation.
-  virtual void SetStatus(const string16& status) OVERRIDE;
+  virtual void SetStatus(const base::string16& status) OVERRIDE;
   virtual void SetURL(const GURL& url, const std::string& languages) OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void MouseMoved(const gfx::Point& location,
@@ -72,7 +72,7 @@ class StatusBubbleMac : public StatusBubble {
   void SetState(StatusBubbleState state);
 
   // Sets the bubble text for SetStatus and SetURL.
-  void SetText(const string16& text, bool is_url);
+  void SetText(const base::string16& text, bool is_url);
 
   // Construct the window/widget if it does not already exist. (Safe to call if
   // it does.)

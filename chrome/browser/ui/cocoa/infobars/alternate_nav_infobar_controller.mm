@@ -27,9 +27,9 @@
   AlternateNavInfoBarDelegate* delegate =
       static_cast<AlternateNavInfoBarDelegate*>([self delegate]);
   DCHECK(delegate);
-  size_t offset = string16::npos;
-  string16 message = delegate->GetMessageTextWithOffset(&offset);
-  string16 link = delegate->GetLinkText();
+  size_t offset = base::string16::npos;
+  base::string16 message = delegate->GetMessageTextWithOffset(&offset);
+  base::string16 link = delegate->GetLinkText();
   NSFont* font = [NSFont labelFontOfSize:
                   [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
   HyperlinkTextView* view = (HyperlinkTextView*)label_.get();

@@ -201,8 +201,8 @@
 }
 
 - (id)initWithDatabase:(const std::string&)domain
-          databaseName:(const string16&)databaseName
-   databaseDescription:(const string16&)databaseDescription
+          databaseName:(const base::string16&)databaseName
+   databaseDescription:(const base::string16&)databaseDescription
               fileSize:(unsigned long)fileSize {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypePromptDatabase;
@@ -218,8 +218,8 @@
 }
 
 - (id)initWithLocalStorage:(const std::string&)domain
-                       key:(const string16&)key
-                     value:(const string16&)value {
+                       key:(const base::string16&)key
+                     value:(const base::string16&)value {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypePromptLocalStorage;
     canEditExpiration_ = NO;

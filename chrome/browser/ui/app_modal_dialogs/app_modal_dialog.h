@@ -22,7 +22,8 @@ class AppModalDialog {
  public:
   // A union of data necessary to determine the type of message box to
   // show.
-  AppModalDialog(content::WebContents* web_contents, const string16& title);
+  AppModalDialog(content::WebContents* web_contents,
+                 const base::string16& title);
   virtual ~AppModalDialog();
 
   // Called by the AppModalDialogQueue to show this dialog.
@@ -38,7 +39,7 @@ class AppModalDialog {
   // TODO(beng): Get rid of this method.
   void CompleteDialog();
 
-  string16 title() const { return title_; }
+  base::string16 title() const { return title_; }
   NativeAppModalDialog* native_dialog() const { return native_dialog_; }
   content::WebContents* web_contents() const { return web_contents_; }
 
@@ -71,7 +72,7 @@ class AppModalDialog {
 
  private:
   // Information about the message box is held in the following variables.
-  string16 title_;
+  base::string16 title_;
 
   // True if CompleteDialog was called.
   bool completed_;

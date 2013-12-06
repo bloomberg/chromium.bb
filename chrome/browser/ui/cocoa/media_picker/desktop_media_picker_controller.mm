@@ -32,7 +32,7 @@ const int kExcessButtonPadding = 6;
 @interface DesktopMediaPickerController (Private)
 
 // Populate the window with controls and views.
-- (void)initializeContentsWithAppName:(const string16&)appName;
+- (void)initializeContentsWithAppName:(const base::string16&)appName;
 
 // Create a |NSTextField| with label traits given |width|. Frame height is
 // automatically adjusted to fit.
@@ -56,7 +56,7 @@ const int kExcessButtonPadding = 6;
 
 - (id)initWithMediaList:(scoped_ptr<DesktopMediaList>)media_list
                callback:(const DesktopMediaPicker::DoneCallback&)callback
-                appName:(const string16&)appName {
+                appName:(const base::string16&)appName {
   const NSUInteger kStyleMask =
       NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask;
   base::scoped_nsobject<NSWindow> window(
@@ -83,7 +83,7 @@ const int kExcessButtonPadding = 6;
   [super dealloc];
 }
 
-- (void)initializeContentsWithAppName:(const string16&)appName {
+- (void)initializeContentsWithAppName:(const base::string16&)appName {
   // Use flipped coordinates to facilitate manual layout.
   const CGFloat kPaddedWidth = kInitialContentWidth - (kFramePadding * 2);
   base::scoped_nsobject<FlippedView> content(

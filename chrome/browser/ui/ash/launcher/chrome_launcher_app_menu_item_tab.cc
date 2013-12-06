@@ -12,7 +12,7 @@
 #include "ui/events/event_constants.h"
 
 ChromeLauncherAppMenuItemTab::ChromeLauncherAppMenuItemTab(
-    const string16 title,
+    const base::string16 title,
     const gfx::Image* icon,
     content::WebContents* content,
     bool has_leading_separator)

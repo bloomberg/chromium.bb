@@ -25,7 +25,8 @@ static const base::char16 kRangeSeparator = '|';
 
 DialogNotification::DialogNotification() : type_(NONE) {}
 
-DialogNotification::DialogNotification(Type type, const string16& display_text)
+DialogNotification::DialogNotification(Type type,
+                                       const base::string16& display_text)
     : type_(type),
       display_text_(display_text),
       checked_(false) {
@@ -36,7 +37,7 @@ DialogNotification::DialogNotification(Type type, const string16& display_text)
     size_t start = pieces[0].size();
     size_t end = start + pieces[1].size();
     link_range_ = gfx::Range(start, end);
-    display_text_ = JoinString(pieces, string16());
+    display_text_ = JoinString(pieces, base::string16());
   }
 }
 
@@ -106,12 +107,13 @@ SkColor const kWarningColor = SkColorSetRGB(0xde, 0x49, 0x32);
 
 SuggestionState::SuggestionState()
     : visible(false) {}
-SuggestionState::SuggestionState(bool visible,
-                                 const string16& vertically_compact_text,
-                                 const string16& horizontally_compact_text,
-                                 const gfx::Image& icon,
-                                 const string16& extra_text,
-                                 const gfx::Image& extra_icon)
+SuggestionState::SuggestionState(
+    bool visible,
+    const base::string16& vertically_compact_text,
+    const base::string16& horizontally_compact_text,
+    const gfx::Image& icon,
+    const base::string16& extra_text,
+    const gfx::Image& extra_icon)
     : visible(visible),
       vertically_compact_text(vertically_compact_text),
       horizontally_compact_text(horizontally_compact_text),

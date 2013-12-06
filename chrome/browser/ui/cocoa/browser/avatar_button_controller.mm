@@ -311,7 +311,7 @@ class Observer : public content::NotificationObserver {
       profiles::kAvatarIconWidth, profiles::kAvatarIconHeight);
   [self setImage:icon.ToNSImage()];
 
-  const string16& name = cache.GetNameOfProfileAtIndex(index);
+  const base::string16& name = cache.GetNameOfProfileAtIndex(index);
   NSString* nsName = base::SysUTF16ToNSString(name);
   [button_ setToolTip:nsName];
   [[button_ cell]

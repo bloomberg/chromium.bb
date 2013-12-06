@@ -14,7 +14,8 @@
 
 using content::WebContents;
 
-AppModalDialog::AppModalDialog(WebContents* web_contents, const string16& title)
+AppModalDialog::AppModalDialog(WebContents* web_contents,
+                               const base::string16& title)
     : title_(title),
       completed_(false),
       valid_(true),

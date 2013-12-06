@@ -45,7 +45,7 @@ class PDFTabHelper : public content::WebContentsObserver,
   void UpdateLocationBar();
   void OnModalPromptForPasswordClosed(IPC::Message* reply_message,
                                       bool success,
-                                      const string16& actual_value);
+                                      const base::string16& actual_value);
 
   // Message handlers.
   void OnHasUnsupportedFeature();

@@ -45,7 +45,7 @@
 
   const BookmarkNode* node = model->AddFolder(bookmarkNode_,
                                               bookmarkNode_->child_count(),
-                                              string16());
+                                              base::string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
     return;
@@ -67,7 +67,7 @@
 
   const BookmarkNode* node = model->AddFolder(bookmarkNode_,
                                               position,
-                                              string16());
+                                              base::string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
     return;
@@ -123,7 +123,7 @@
 
   const BookmarkNode* node = model->AddURL(bookmarkNode_,
                                            bookmarkNode_->child_count(),
-                                           string16(),
+                                           base::string16(),
                                            url);
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkItem);
@@ -153,7 +153,7 @@
 
   const BookmarkNode* node = model->AddURL(bookmarkNode_,
                                            position,
-                                           string16(),
+                                           base::string16(),
                                            url);
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkItem);

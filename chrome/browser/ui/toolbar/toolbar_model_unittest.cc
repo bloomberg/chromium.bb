@@ -34,9 +34,9 @@ namespace {
 struct TestItem {
   GURL url;
   // The expected text to display when query extraction is inactive.
-  string16 expected_replace_text_inactive;
+  base::string16 expected_replace_text_inactive;
   // The expected text to display when query extraction is active.
-  string16 expected_replace_text_active;
+  base::string16 expected_replace_text_active;
   bool would_perform_search_term_replacement;
   bool should_display_url;
 } test_items[] = {
@@ -63,8 +63,8 @@ struct TestItem {
   },
   {
     GURL("chrome-internal://newtab/"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     false
   },
@@ -141,7 +141,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
 
  protected:
   void NavigateAndCheckText(const GURL& url,
-                            const string16& expected_text,
+                            const base::string16& expected_text,
                             bool would_perform_search_term_replacement,
                             bool should_display_url);
 
@@ -166,7 +166,7 @@ void ToolbarModelTest::SetUp() {
 
 void ToolbarModelTest::NavigateAndCheckText(
     const GURL& url,
-    const string16& expected_text,
+    const base::string16& expected_text,
     bool would_perform_search_term_replacement,
     bool should_display_url) {
   // Check while loading.

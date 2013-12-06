@@ -143,7 +143,7 @@ class LocationBarViewMac : public LocationBar,
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
 
-  NSImage* GetKeywordImage(const string16& keyword);
+  NSImage* GetKeywordImage(const base::string16& keyword);
 
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 

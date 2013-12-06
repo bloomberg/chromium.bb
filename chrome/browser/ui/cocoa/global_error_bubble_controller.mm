@@ -88,7 +88,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 
   [title_ setStringValue:SysUTF16ToNSString(error_->GetBubbleViewTitle())];
   std::vector<string16> messages = error_->GetBubbleViewMessages();
-  string16 message = JoinString(messages, '\n');
+  base::string16 message = JoinString(messages, '\n');
 
   base::scoped_nsobject<NSMutableAttributedString> messageValue(
       [[NSMutableAttributedString alloc]
@@ -104,7 +104,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 
   [acceptButton_ setTitle:
       SysUTF16ToNSString(error_->GetBubbleViewAcceptButtonLabel())];
-  string16 cancelLabel = error_->GetBubbleViewCancelButtonLabel();
+  base::string16 cancelLabel = error_->GetBubbleViewCancelButtonLabel();
   if (cancelLabel.empty())
     [cancelButton_ setHidden:YES];
   else

@@ -488,8 +488,8 @@ void BrowserWindowCocoa::ShowTranslateBubble(
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserWindowCocoa::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,
-    const string16& email,
-    const string16& error_message,
+    const base::string16& email,
+    const base::string16& error_message,
     const StartSyncCallback& start_sync_callback) {
   WebContents* web_contents =
         browser_->tab_strip_model()->GetActiveWebContents();

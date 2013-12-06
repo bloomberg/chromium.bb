@@ -105,7 +105,7 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
     EncodingMenuItemList* menu_items) {
 
   DCHECK(menu_items);
-  EncodingMenuItem separator(0, string16());
+  EncodingMenuItem separator(0, base::string16());
 
   menu_items->clear();
   menu_items->push_back(
@@ -130,7 +130,7 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
   std::vector<CharacterEncoding::EncodingInfo>::const_iterator it;
   for (it = encodings->begin(); it != encodings->end(); ++it) {
     if (it->encoding_id) {
-      string16 encoding = it->encoding_display_name;
+      base::string16 encoding = it->encoding_display_name;
       base::i18n::AdjustStringForLocaleDirection(&encoding);
       menu_items->push_back(EncodingMenuItem(it->encoding_id, encoding));
     } else {

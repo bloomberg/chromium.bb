@@ -27,7 +27,7 @@ EditSearchEngineController::EditSearchEngineController(
 }
 
 bool EditSearchEngineController::IsTitleValid(
-    const string16& title_input) const {
+    const base::string16& title_input) const {
   return !CollapseWhitespace(title_input, true).empty();
 }
 
@@ -62,8 +62,8 @@ bool EditSearchEngineController::IsURLValid(
 }
 
 bool EditSearchEngineController::IsKeywordValid(
-    const string16& keyword_input) const {
-  string16 keyword_input_trimmed(CollapseWhitespace(keyword_input, true));
+    const base::string16& keyword_input) const {
+  base::string16 keyword_input_trimmed(CollapseWhitespace(keyword_input, true));
   if (keyword_input_trimmed.empty())
     return false;  // Do not allow empty keyword.
   const TemplateURL* turl_with_keyword =
@@ -73,8 +73,8 @@ bool EditSearchEngineController::IsKeywordValid(
 }
 
 void EditSearchEngineController::AcceptAddOrEdit(
-    const string16& title_input,
-    const string16& keyword_input,
+    const base::string16& title_input,
+    const base::string16& keyword_input,
     const std::string& url_input) {
   DCHECK(!keyword_input.empty());
   std::string url_string = GetFixedUpURL(url_input);

@@ -115,7 +115,7 @@ void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
     return;  // Ignore requests until bookmarks are loaded.
 
   GURL url;
-  string16 title;
+  base::string16 title;
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   GetURLAndTitleToBookmark(web_contents, &url, &title);
@@ -855,7 +855,7 @@ void FindPrevious(Browser* browser) {
 void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
   ShowFindBar(browser);
   if (find_next) {
-    string16 find_text;
+    base::string16 find_text;
     FindTabHelper* find_helper = FindTabHelper::FromWebContents(
         browser->tab_strip_model()->GetActiveWebContents());
 #if defined(OS_MACOSX)

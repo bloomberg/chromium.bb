@@ -17,16 +17,16 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MockAutofillDialogViewDelegate();
   virtual ~MockAutofillDialogViewDelegate();
 
-  MOCK_CONST_METHOD0(DialogTitle, string16());
-  MOCK_CONST_METHOD0(AccountChooserText, string16());
-  MOCK_CONST_METHOD0(SignInLinkText, string16());
-  MOCK_CONST_METHOD0(SpinnerText, string16());
-  MOCK_CONST_METHOD0(EditSuggestionText, string16());
-  MOCK_CONST_METHOD0(CancelButtonText, string16());
-  MOCK_CONST_METHOD0(ConfirmButtonText, string16());
-  MOCK_CONST_METHOD0(SaveLocallyText, string16());
-  MOCK_CONST_METHOD0(SaveLocallyTooltip, string16());
-  MOCK_METHOD0(LegalDocumentsText, string16());
+  MOCK_CONST_METHOD0(DialogTitle, base::string16());
+  MOCK_CONST_METHOD0(AccountChooserText, base::string16());
+  MOCK_CONST_METHOD0(SignInLinkText, base::string16());
+  MOCK_CONST_METHOD0(SpinnerText, base::string16());
+  MOCK_CONST_METHOD0(EditSuggestionText, base::string16());
+  MOCK_CONST_METHOD0(CancelButtonText, base::string16());
+  MOCK_CONST_METHOD0(ConfirmButtonText, base::string16());
+  MOCK_CONST_METHOD0(SaveLocallyText, base::string16());
+  MOCK_CONST_METHOD0(SaveLocallyTooltip, base::string16());
+  MOCK_METHOD0(LegalDocumentsText, base::string16());
   MOCK_CONST_METHOD0(ShouldShowSpinner, bool());
   MOCK_CONST_METHOD0(ShouldShowSignInWebView, bool());
   MOCK_CONST_METHOD0(SignInUrl, GURL());
@@ -46,7 +46,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD1(ComboboxModelForAutofillType,
                ui::ComboboxModel*(ServerFieldType));
   MOCK_METHOD1(MenuModelForSection, ui::MenuModel*(DialogSection));
-  MOCK_CONST_METHOD1(LabelForSection, string16(DialogSection section));
+  MOCK_CONST_METHOD1(LabelForSection, base::string16(DialogSection section));
   MOCK_METHOD1(SuggestionStateForSection, SuggestionState(DialogSection));
   MOCK_METHOD1(EditClickedForSection, void(DialogSection section));
   MOCK_METHOD1(EditCancelledForSection, void(DialogSection section));
@@ -56,14 +56,14 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD2(InputIsEditable, bool(const DetailInput& input,
                                      DialogSection section));
   MOCK_METHOD3(InputValidityMessage,
-      string16(DialogSection, ServerFieldType, const string16&));
+      base::string16(DialogSection, ServerFieldType, const base::string16&));
   MOCK_METHOD2(InputsAreValid, ValidityMessages(DialogSection,
                                                 const FieldValueMap&));
   MOCK_METHOD6(UserEditedOrActivatedInput, void(DialogSection,
                                                 ServerFieldType,
                                                 gfx::NativeView,
                                                 const gfx::Rect&,
-                                                const string16&,
+                                                const base::string16&,
                                                 bool was_edit));
   MOCK_METHOD1(HandleKeyPressEventInInput,
                bool(const content::NativeWebKeyboardEvent& event));

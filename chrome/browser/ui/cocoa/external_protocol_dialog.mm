@@ -44,7 +44,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   url_ = *url;
   creation_time_ = base::Time::Now();
 
-  string16 appName = [self appNameForProtocol];
+  base::string16 appName = [self appNameForProtocol];
   if (appName.length() == 0) {
     // No registered apps for this protocol; give up and go home.
     [self autorelease];
@@ -64,7 +64,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
         IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT)];
 
   const int kMaxUrlWithoutSchemeSize = 256;
-  string16 elided_url_without_scheme;
+  base::string16 elided_url_without_scheme;
   gfx::ElideString(ASCIIToUTF16(url_.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
@@ -143,7 +143,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
                                            &openingApp);
   if (status != noErr) {
     // likely kLSApplicationNotFoundErr
-    return string16();
+    return base::string16();
   }
   NSString* appPath = [(NSURL*)openingApp path];
   CFRelease(openingApp);  // NOT A BUG; LSGetApplicationForURL retains for us

@@ -165,7 +165,7 @@ namespace libgtk2ui {
 
 AppIndicatorIcon::AppIndicatorIcon(std::string id,
                                    const gfx::ImageSkia& image,
-                                   const string16& tool_tip)
+                                   const base::string16& tool_tip)
     : id_(id),
       icon_(NULL),
       gtk_menu_(NULL),
@@ -222,7 +222,7 @@ void AppIndicatorIcon::SetPressedImage(const gfx::ImageSkia& image) {
   // pressed status icons.
 }
 
-void AppIndicatorIcon::SetToolTip(const string16& tool_tip) {
+void AppIndicatorIcon::SetToolTip(const base::string16& tool_tip) {
   DCHECK(!tool_tip_.empty());
   tool_tip_ = UTF16ToUTF8(tool_tip);
 

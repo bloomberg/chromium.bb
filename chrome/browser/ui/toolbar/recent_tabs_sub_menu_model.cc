@@ -142,7 +142,7 @@ struct RecentTabsSubMenuModel::TabNavigationItem {
 
   TabNavigationItem(const std::string& session_tag,
                     const SessionID::id_type& tab_id,
-                    const string16& title,
+                    const base::string16& title,
                     const GURL& url)
       : session_tag(session_tag),
         tab_id(tab_id),
@@ -157,7 +157,7 @@ struct RecentTabsSubMenuModel::TabNavigationItem {
   // Empty for local tabs, non-empty for other devices' tabs.
   std::string session_tag;
   SessionID::id_type tab_id;  // -1 for invalid, >= 0 otherwise.
-  string16 title;
+  base::string16 title;
   GURL url;
 };
 
@@ -333,9 +333,10 @@ int RecentTabsSubMenuModel::GetMaxWidthForItemAtIndex(int item_index) const {
   return 320;
 }
 
-bool RecentTabsSubMenuModel::GetURLAndTitleForItemAtIndex(int index,
-                                                          std::string* url,
-                                                          string16* title) {
+bool RecentTabsSubMenuModel::GetURLAndTitleForItemAtIndex(
+    int index,
+    std::string* url,
+    base::string16* title) {
   int command_id = GetCommandIdAt(index);
   if (IsTabModelCommandId(command_id)) {
     TabNavigationItems* tab_items = NULL;
@@ -498,7 +499,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
 }
 
 void RecentTabsSubMenuModel::BuildLocalTabItem(int session_id,
-                                               const string16& title,
+                                               const base::string16& title,
                                                const GURL& url,
                                                int curr_model_index) {
   TabNavigationItem item(std::string(), session_id, title, url);

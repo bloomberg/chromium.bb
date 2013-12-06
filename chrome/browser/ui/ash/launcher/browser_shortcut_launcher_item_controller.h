@@ -52,7 +52,7 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
 
   // Get the title for the browser list entry for |web_contents|.
   // If |web_contents| has not loaded, returns "Net Tab".
-  string16 GetBrowserListTitle(content::WebContents* web_contents) const;
+  base::string16 GetBrowserListTitle(content::WebContents* web_contents) const;
 
   // Check if the given |web_contents| is in incognito mode.
   bool IsIncognito(content::WebContents* web_contents) const;

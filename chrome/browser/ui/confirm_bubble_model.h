@@ -29,8 +29,8 @@ class ConfirmBubbleModel {
 
   // Returns the title string and the message string to be displayed for this
   // bubble menu. These must not be empty strings.
-  virtual string16 GetTitle() const = 0;
-  virtual string16 GetMessageText() const = 0;
+  virtual base::string16 GetTitle() const = 0;
+  virtual base::string16 GetMessageText() const = 0;
 
   // Returns an icon for the bubble. This image should be owned by the
   // ResourceBundle and callers should not take ownership of it. Must not return
@@ -45,7 +45,7 @@ class ConfirmBubbleModel {
 
   // Return the label for the specified button. The default implementation
   // returns "OK" for the OK button and "Cancel" for the Cancel button.
-  virtual string16 GetButtonLabel(BubbleButton button) const;
+  virtual base::string16 GetButtonLabel(BubbleButton button) const;
 
   // Called when the OK button is pressed.
   virtual void Accept();
@@ -55,7 +55,7 @@ class ConfirmBubbleModel {
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // and empty string.
-  virtual string16 GetLinkText() const;
+  virtual base::string16 GetLinkText() const;
 
   // Called when the Link is clicked.
   virtual void LinkClicked();

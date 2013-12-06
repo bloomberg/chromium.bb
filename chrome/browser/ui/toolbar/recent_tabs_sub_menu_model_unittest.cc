@@ -146,7 +146,7 @@ TEST_F(RecentTabsSubMenuModelTest, NoTabs) {
   EXPECT_EQ(NULL, model.GetLabelFontAt(2));
 
   std::string url;
-  string16 title;
+  base::string16 title;
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));
@@ -189,7 +189,7 @@ TEST_F(RecentTabsSubMenuModelTest, RecentlyClosedTabsFromCurrentSession) {
   EXPECT_EQ(NULL, model.GetLabelFontAt(4));
 
   std::string url;
-  string16 title;
+  base::string16 title;
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
   EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
   EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));
@@ -300,7 +300,7 @@ TEST_F(RecentTabsSubMenuModelTest,
   EXPECT_EQ(NULL, model.GetLabelFontAt(5));
 
   std::string url;
-  string16 title;
+  base::string16 title;
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
   EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));
@@ -323,7 +323,7 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   recent_tabs_builder.AddWindow(0);
   for (int i = 0; i < 3; ++i) {
     timestamp -= time_delta;
-    recent_tabs_builder.AddTabWithInfo(0, 0, timestamp, string16());
+    recent_tabs_builder.AddTabWithInfo(0, 0, timestamp, base::string16());
   }
 
   // Create 2nd session : 2 windows, 1 tab in 1st window, 2 tabs in 2nd window
@@ -331,11 +331,11 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   recent_tabs_builder.AddWindow(1);
   recent_tabs_builder.AddWindow(1);
   timestamp -= time_delta;
-  recent_tabs_builder.AddTabWithInfo(1, 0, timestamp, string16());
+  recent_tabs_builder.AddTabWithInfo(1, 0, timestamp, base::string16());
   timestamp -= time_delta;
-  recent_tabs_builder.AddTabWithInfo(1, 1, timestamp, string16());
+  recent_tabs_builder.AddTabWithInfo(1, 1, timestamp, base::string16());
   timestamp -= time_delta;
-  recent_tabs_builder.AddTabWithInfo(1, 1, timestamp, string16());
+  recent_tabs_builder.AddTabWithInfo(1, 1, timestamp, base::string16());
 
   recent_tabs_builder.RegisterRecentTabs(&associator_);
 
@@ -391,7 +391,7 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   EXPECT_EQ(NULL, model.GetLabelFontAt(12));
 
   std::string url;
-  string16 title;
+  base::string16 title;
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
   EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));

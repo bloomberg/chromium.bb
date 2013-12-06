@@ -475,7 +475,7 @@ bool Gtk2UI::IsStatusIconSupported() const {
 
 scoped_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
-    const string16& tool_tip) const {
+    const base::string16& tool_tip) const {
   if (AppIndicatorIcon::CouldOpen()) {
     ++indicators_count;
     return scoped_ptr<views::StatusIconLinux>(new AppIndicatorIcon(

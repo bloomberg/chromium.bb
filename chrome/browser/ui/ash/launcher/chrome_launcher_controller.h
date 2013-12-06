@@ -375,7 +375,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Get the title for the applicatoin list entry for |web_contents|.
   // If |web_contents| has not loaded, returns "Net Tab".
-  string16 GetAppListTitle(content::WebContents* web_contents) const;
+  base::string16 GetAppListTitle(content::WebContents* web_contents) const;
 
   // Returns the LauncherItemController of BrowserShortcut.
   BrowserShortcutLauncherItemController*

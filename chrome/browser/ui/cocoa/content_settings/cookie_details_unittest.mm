@@ -165,8 +165,8 @@ TEST_F(CookiesDetailsTest, CreateForTreeIndexedDB) {
 TEST_F(CookiesDetailsTest, CreateForPromptDatabase) {
   base::scoped_nsobject<CocoaCookieDetails> details;
   std::string domain("chromium.org");
-  string16 name(base::SysNSStringToUTF16(@"wicked_name"));
-  string16 desc(base::SysNSStringToUTF16(@"desc"));
+  base::string16 name(base::SysNSStringToUTF16(@"wicked_name"));
+  base::string16 desc(base::SysNSStringToUTF16(@"desc"));
   details.reset([[CocoaCookieDetails alloc] initWithDatabase:domain
                                                 databaseName:name
                                          databaseDescription:desc
@@ -191,8 +191,8 @@ TEST_F(CookiesDetailsTest, CreateForPromptDatabase) {
 TEST_F(CookiesDetailsTest, CreateForPromptLocalStorage) {
   base::scoped_nsobject<CocoaCookieDetails> details;
   std::string domain("chromium.org");
-  string16 key(base::SysNSStringToUTF16(@"testKey"));
-  string16 value(base::SysNSStringToUTF16(@"testValue"));
+  base::string16 key(base::SysNSStringToUTF16(@"testKey"));
+  base::string16 value(base::SysNSStringToUTF16(@"testValue"));
   details.reset([[CocoaCookieDetails alloc] initWithLocalStorage:domain
                                                              key:key
                                                            value:value]);

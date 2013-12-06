@@ -111,7 +111,7 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 #pragma mark Window Controller
 
 @interface CollectedCookiesWindowController(Private)
--(void)showInfoBarForDomain:(const string16&)domain
+-(void)showInfoBarForDomain:(const base::string16&)domain
                     setting:(ContentSetting)setting;
 -(void)showInfoBarForMultipleDomainsAndSetting:(ContentSetting)setting;
 -(void)animateInfoBar;
@@ -230,7 +230,7 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
    forTreeController:(NSTreeController*)controller {
   NSArray* nodes = [controller selectedNodes];
   BOOL multipleDomainsChanged = NO;
-  string16 lastDomain;
+  base::string16 lastDomain;
   for (NSTreeNode* treeNode in nodes) {
     CocoaCookieTreeNode* node = [treeNode representedObject];
     CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
@@ -417,7 +417,7 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   [self animateInfoBar];
 }
 
--(void)showInfoBarForDomain:(const string16&)domain
+-(void)showInfoBarForDomain:(const base::string16&)domain
                     setting:(ContentSetting)setting {
   NSString* label;
   switch (setting) {

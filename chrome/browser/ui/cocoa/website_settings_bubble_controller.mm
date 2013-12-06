@@ -359,7 +359,7 @@ NSColor* IdentityVerifiedTextColor() {
   [imageView setImage:rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_26).ToNSImage()];
 
   controlOrigin.x += NSWidth([imageView frame]) + kInternalPageImageSpacing;
-  string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
+  base::string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
   NSTextField* textField = [self addText:text
                                 withSize:[NSFont smallSystemFontSize]
                                     bold:NO
@@ -768,7 +768,7 @@ NSColor* IdentityVerifiedTextColor() {
 
 // Create a new text field and add it to the given array of subviews.
 // The array will retain a reference to the object.
-- (NSTextField*)addText:(const string16&)text
+- (NSTextField*)addText:(const base::string16&)text
                withSize:(CGFloat)fontSize
                    bold:(BOOL)bold
                  toView:(NSView*)view
@@ -893,7 +893,7 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Set the button title.
   base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
-  string16 buttonTitle = WebsiteSettingsUI::PermissionActionToUIString(
+  base::string16 buttonTitle = WebsiteSettingsUI::PermissionActionToUIString(
       permissionInfo.setting,
       permissionInfo.default_setting,
       permissionInfo.source);
@@ -905,7 +905,7 @@ NSColor* IdentityVerifiedTextColor() {
   // Determine the largest possible size for this button.
   CGFloat maxTitleWidth = 0;
   for (NSInteger i = 0; i < [button numberOfItems]; ++i) {
-    string16 title = WebsiteSettingsUI::PermissionActionToUIString(
+    base::string16 title = WebsiteSettingsUI::PermissionActionToUIString(
         static_cast<ContentSetting>([[button itemAtIndex:i] tag]),
         permissionInfo.default_setting,
         content_settings::SETTING_SOURCE_USER);
@@ -962,7 +962,7 @@ NSColor* IdentityVerifiedTextColor() {
   [imageView setImage:image];
   point.x += kPermissionImageSize + kPermissionImageSpacing;
 
-  string16 labelText =
+  base::string16 labelText =
       WebsiteSettingsUI::PermissionTypeToUIString(permissionInfo.type) +
       ASCIIToUTF16(":");
 
@@ -1027,7 +1027,7 @@ NSColor* IdentityVerifiedTextColor() {
   [imageView setImage:image];
   point.x += kPermissionImageSize + kPermissionImageSpacing;
 
-  string16 labelText = l10n_util::GetStringFUTF16(
+  base::string16 labelText = l10n_util::GetStringFUTF16(
       IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
       UTF8ToUTF16(cookieInfo.cookie_source),
       base::IntToString16(cookieInfo.allowed),
@@ -1094,7 +1094,7 @@ NSColor* IdentityVerifiedTextColor() {
   [cookiesView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
 
-  string16 sectionTitle = l10n_util::GetStringUTF16(
+  base::string16 sectionTitle = l10n_util::GetStringUTF16(
       IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA);
   NSTextField* header = [self addText:sectionTitle
                              withSize:[NSFont smallSystemFontSize]
@@ -1124,7 +1124,7 @@ NSColor* IdentityVerifiedTextColor() {
   [permissionsView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
 
-  string16 sectionTitle = l10n_util::GetStringUTF16(
+  base::string16 sectionTitle = l10n_util::GetStringUTF16(
       IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
   NSTextField* header = [self addText:sectionTitle
                              withSize:[NSFont smallSystemFontSize]
@@ -1150,7 +1150,7 @@ NSColor* IdentityVerifiedTextColor() {
   [self performLayout];
 }
 
-- (void)setFirstVisit:(const string16&)firstVisit {
+- (void)setFirstVisit:(const base::string16&)firstVisit {
   [firstVisitIcon_ setImage:
       WebsiteSettingsUI::GetFirstVisitIcon(firstVisit).ToNSImage()];
   [firstVisitDescriptionField_ setStringValue:
@@ -1228,7 +1228,7 @@ void WebsiteSettingsUIBridge::SetPermissionInfo(
   [bubble_controller_ setPermissionInfo:permission_info_list];
 }
 
-void WebsiteSettingsUIBridge::SetFirstVisit(const string16& first_visit) {
+void WebsiteSettingsUIBridge::SetFirstVisit(const base::string16& first_visit) {
   [bubble_controller_ setFirstVisit:first_visit];
 }
 

@@ -57,7 +57,7 @@ class ProfileSigninConfirmationViewControllerTest
   std::string username() {
     return "foo@bar.com";
   }
-  string16 learn_more() {
+  base::string16 learn_more() {
     return l10n_util::GetStringUTF16(
         IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
   }

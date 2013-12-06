@@ -85,7 +85,7 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     return item;
   }
 
-  HistoryMenuBridge::HistoryItem* CreateItem(const string16& title) {
+  HistoryMenuBridge::HistoryItem* CreateItem(const base::string16& title) {
     HistoryMenuBridge::HistoryItem* item =
         new HistoryMenuBridge::HistoryItem();
     item->title = title;
@@ -175,8 +175,8 @@ TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuEmpty) {
 TEST_F(HistoryMenuBridgeTest, AddItemToMenu) {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"history foo"] autorelease];
 
-  const string16 short_url = ASCIIToUTF16("http://foo/");
-  const string16 long_url = ASCIIToUTF16("http://super-duper-long-url--."
+  const base::string16 short_url = ASCIIToUTF16("http://foo/");
+  const base::string16 long_url = ASCIIToUTF16("http://super-duper-long-url--."
       "that.cannot.possibly.fit.even-in-80-columns"
       "or.be.reasonably-displayed-in-a-menu"
       "without.looking-ridiculous.com/"); // 140 chars total

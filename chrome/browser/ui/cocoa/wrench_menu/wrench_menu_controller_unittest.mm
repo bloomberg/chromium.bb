@@ -134,9 +134,9 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
   RecentTabsBuilderTestHelper recent_tabs_builder;
   recent_tabs_builder.AddSession();
   recent_tabs_builder.AddWindow(0);
-  string16 tab1_short_title = ASCIIToUTF16("Short");
+  base::string16 tab1_short_title = ASCIIToUTF16("Short");
   recent_tabs_builder.AddTabWithInfo(0, 0, base::Time::Now(), tab1_short_title);
-  string16 tab2_long_title = ASCIIToUTF16("Very very very very very very "
+  base::string16 tab2_long_title = ASCIIToUTF16("Very very very very very very "
                                           "very very very very very very long");
   recent_tabs_builder.AddTabWithInfo(0, 0,
       base::Time::Now() - base::TimeDelta::FromMinutes(10), tab2_long_title);
