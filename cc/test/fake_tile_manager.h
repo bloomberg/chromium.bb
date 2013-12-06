@@ -30,9 +30,13 @@ class FakeTileManager : public TileManager {
   virtual ~FakeTileManager();
 
   virtual void Release(Tile* tile) OVERRIDE;
+  virtual void Release(TileBundle* bundle) OVERRIDE;
 
   std::vector<Tile*> tiles_for_raster;
   PrioritizedTileSet all_tiles;
+
+ private:
+  bool in_bundle_cleanup_;
 };
 
 }  // namespace cc

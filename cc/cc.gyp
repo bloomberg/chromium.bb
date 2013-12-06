@@ -378,6 +378,8 @@
         'resources/texture_mailbox_deleter.h',
         'resources/tile.cc',
         'resources/tile.h',
+        'resources/tile_bundle.cc',
+        'resources/tile_bundle.h',
         'resources/tile_manager.cc',
         'resources/tile_manager.h',
         'resources/tile_priority.cc',

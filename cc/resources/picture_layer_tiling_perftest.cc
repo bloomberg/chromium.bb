@@ -4,6 +4,8 @@
 
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/fake_tile_manager.h"
+#include "cc/test/fake_tile_manager_client.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -18,13 +20,17 @@ static const int kTimeCheckInterval = 10;
 
 class PictureLayerTilingPerfTest : public testing::Test {
  public:
-  PictureLayerTilingPerfTest() : num_runs_(0) {}
+  PictureLayerTilingPerfTest() : num_runs_(0) {
+    tile_manager_ = make_scoped_ptr(new FakeTileManager(&tile_manager_client_));
+    picture_layer_tiling_client_ =
+        make_scoped_ptr(new FakePictureLayerTilingClient(tile_manager_.get()));
+  }
 
   virtual void SetUp() OVERRIDE {
-    picture_layer_tiling_client_.SetTileSize(gfx::Size(256, 256));
+    picture_layer_tiling_client_->SetTileSize(gfx::Size(256, 256));
     picture_layer_tiling_ = PictureLayerTiling::Create(
-        1, gfx::Size(256 * 50, 256 * 50), &picture_layer_tiling_client_);
-    picture_layer_tiling_->CreateAllTilesForTesting();
+        1, gfx::Size(256 * 50, 256 * 50), picture_layer_tiling_client_.get());
+    picture_layer_tiling_->CreateTilesForTesting(PENDING_TREE);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -70,7 +76,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     gfx::Size layer_bounds(50 * 256, 50 * 256);
     do {
       picture_layer_tiling_->UpdateTilePriorities(
-        ACTIVE_TREE,
+        PENDING_TREE,
         layer_bounds,
         gfx::Rect(layer_bounds),
         gfx::Rect(layer_bounds),
@@ -104,7 +110,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     const int maxOffsetCount = 1000;
     do {
       picture_layer_tiling_->UpdateTilePriorities(
-        ACTIVE_TREE,
+        PENDING_TREE,
         viewport_size,
         viewport_rect,
         gfx::Rect(layer_bounds),
@@ -134,7 +140,9 @@ class PictureLayerTilingPerfTest : public testing::Test {
   }
 
  private:
-  FakePictureLayerTilingClient picture_layer_tiling_client_;
+  FakeTileManagerClient tile_manager_client_;
+  scoped_ptr<FakeTileManager> tile_manager_;
+  scoped_ptr<FakePictureLayerTilingClient> picture_layer_tiling_client_;
   scoped_ptr<PictureLayerTiling> picture_layer_tiling_;
 
   base::TimeTicks start_time_;

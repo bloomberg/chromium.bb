@@ -11,7 +11,7 @@
 #include "cc/base/ref_counted_managed.h"
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/raster_mode.h"
-#include "cc/resources/tile_priority.h"
+#include "cc/resources/tile_bundle.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -40,21 +40,10 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return picture_pile_.get();
   }
 
-  const TilePriority& priority(WhichTree tree) const {
-    return priority_[tree];
-  }
-
-  TilePriority combined_priority() const {
-    return TilePriority(priority_[ACTIVE_TREE],
-                        priority_[PENDING_TREE]);
-  }
-
-  void SetPriority(WhichTree tree, const TilePriority& priority);
-
   void MarkRequiredForActivation();
 
   bool required_for_activation() const {
-    return priority_[PENDING_TREE].required_for_activation;
+    return required_for_activation_;
   }
 
   void set_can_use_lcd_text(bool can_use_lcd_text) {
@@ -77,6 +66,14 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   bool use_gpu_rasterization() const {
     return !!(flags_ & USE_GPU_RASTERIZATION);
+  }
+
+  bool is_visible() const {
+    return is_visible_;
+  }
+
+  void set_is_visible(bool is_visible) {
+    is_visible_ = is_visible;
   }
 
   scoped_ptr<base::Value> AsValue() const;
@@ -154,11 +151,12 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   float contents_scale_;
   gfx::Rect opaque_rect_;
 
-  TilePriority priority_[NUM_TREES];
   ManagedTileState managed_state_;
   int layer_id_;
   int source_frame_number_;
   int flags_;
+  bool required_for_activation_;
+  bool is_visible_;
 
   Id id_;
   static Id s_next_id_;

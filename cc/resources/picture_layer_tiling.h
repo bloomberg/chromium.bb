@@ -15,6 +15,7 @@
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
 #include "cc/resources/tile.h"
+#include "cc/resources/tile_bundle.h"
 #include "cc/resources/tile_priority.h"
 #include "ui/gfx/rect.h"
 
@@ -29,6 +30,10 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual scoped_refptr<Tile> CreateTile(
     PictureLayerTiling* tiling,
     gfx::Rect content_rect) = 0;
+  virtual scoped_refptr<TileBundle> CreateTileBundle(int offset_x,
+                                                     int offset_y,
+                                                     int width,
+                                                     int height) = 0;
   virtual void UpdatePile(Tile* tile) = 0;
   virtual gfx::Size CalculateTileSize(
     gfx::Size content_bounds) const = 0;
@@ -66,15 +71,49 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
   float contents_scale() const { return contents_scale_; }
 
+  Tile* TileAt(WhichTree tree, int, int) const;
+
+  void SetTreeForTesting(WhichTree tree) {
+    current_tree_ = tree;
+  }
   void CreateAllTilesForTesting() {
+    current_tree_ = ACTIVE_TREE;
+    SetLiveTilesRect(gfx::Rect(tiling_data_.total_size()));
+    live_tiles_rect_ = gfx::Rect();
+    current_tree_ = PENDING_TREE;
     SetLiveTilesRect(gfx::Rect(tiling_data_.total_size()));
   }
-
+  void CreateTilesForTesting(WhichTree tree) {
+    current_tree_ = tree;
+    SetLiveTilesRect(gfx::Rect(tiling_data_.total_size()));
+  }
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> all_tiles;
-    for (TileMap::const_iterator it = tiles_.begin();
-         it != tiles_.end(); ++it)
-      all_tiles.push_back(it->second.get());
+    for (TileBundleMap::const_iterator it = tile_bundles_.begin();
+         it != tile_bundles_.end(); ++it) {
+      for (TileBundle::Iterator tile_it(it->second.get()); tile_it; ++tile_it)
+        all_tiles.push_back(*tile_it);
+    }
+    return all_tiles;
+  }
+  std::vector<TileBundle*> AllTileBundlesForTesting() const {
+    std::vector<TileBundle*> all_bundles;
+    for (TileBundleMap::const_iterator it = tile_bundles_.begin();
+         it != tile_bundles_.end(); ++it) {
+      all_bundles.push_back(it->second.get());
+    }
+    return all_bundles;
+  }
+  std::vector<Tile*> TilesForTesting(WhichTree tree) const {
+    std::vector<Tile*> all_tiles;
+    for (TileBundleMap::const_iterator it = tile_bundles_.begin();
+         it != tile_bundles_.end(); ++it) {
+      for (TileBundle::Iterator tile_it(it->second.get(), tree);
+           tile_it;
+           ++tile_it) {
+        all_tiles.push_back(*tile_it);
+      }
+    }
     return all_tiles;
   }
 
@@ -106,6 +145,9 @@ class CC_EXPORT PictureLayerTiling {
     Tile* operator->() const { return current_tile_; }
     Tile* operator*() const { return current_tile_; }
 
+    TilePriority priority();
+    void SetPriorityForTesting(const TilePriority& priority);
+
     CoverageIterator& operator++();
     operator bool() const { return tile_j_ <= bottom_; }
 
@@ -125,6 +167,7 @@ class CC_EXPORT PictureLayerTiling {
     int top_;
     int right_;
     int bottom_;
+    WhichTree tree_;
 
     friend class PictureLayerTiling;
   };
@@ -189,14 +232,28 @@ class CC_EXPORT PictureLayerTiling {
   }
 
  protected:
-  typedef std::pair<int, int> TileMapKey;
-  typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
+  friend class CoverageIterator;
+  friend class TileBundle;
+
+  typedef std::pair<int, int> TileBundleMapKey;
+  typedef base::hash_map<TileBundleMapKey, scoped_refptr<TileBundle> >
+      TileBundleMap;
 
   PictureLayerTiling(float contents_scale,
                      gfx::Size layer_bounds,
                      PictureLayerTilingClient* client);
   void SetLiveTilesRect(gfx::Rect live_tiles_rect);
-  void CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
+  void CreateTile(WhichTree tree,
+                  int i,
+                  int j,
+                  const PictureLayerTiling* twin_tiling);
+  bool RemoveTile(WhichTree tree, int i, int j);
+  void RemoveBundleContainingTileAtIfEmpty(int i, int j);
+  TileBundle* TileBundleContainingTileAt(int, int) const;
+  TileBundle* CreateBundleForTileAt(int,
+                                    int,
+                                    const PictureLayerTiling* twin_tiling);
+  TileBundle* TileBundleAt(int, int) const;
 
   // Given properties.
   float contents_scale_;
@@ -206,13 +263,14 @@ class CC_EXPORT PictureLayerTiling {
 
   // Internal data.
   TilingData tiling_data_;
-  TileMap tiles_;  // It is not legal to have a NULL tile in the tiles_ map.
+  TilingData bundle_tiling_data_;
+  // It is not legal to have a NULL tile bundle in the tile_bundles_ map.
+  TileBundleMap tile_bundles_;
   gfx::Rect live_tiles_rect_;
+  WhichTree current_tree_;
 
   // State saved for computing velocities based upon finite differences.
   double last_impl_frame_time_in_seconds_;
-
-  friend class CoverageIterator;
 
  private:
   DISALLOW_ASSIGN(PictureLayerTiling);

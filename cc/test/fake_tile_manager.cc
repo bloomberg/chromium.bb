@@ -55,7 +55,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
                   std::numeric_limits<unsigned>::max(),
-                  NULL) {}
+                  NULL),
+      in_bundle_cleanup_(false) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider)
@@ -64,7 +65,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
                   std::numeric_limits<unsigned>::max(),
-                  NULL) {}
+                  NULL),
+      in_bundle_cleanup_(false) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider,
@@ -74,7 +76,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
                   raster_task_limit_bytes,
-                  NULL) {}
+                  NULL),
+      in_bundle_cleanup_(false) {}
 
 FakeTileManager::~FakeTileManager() {}
 
@@ -100,7 +103,15 @@ void FakeTileManager::CheckForCompletedTasks() {
 
 void FakeTileManager::Release(Tile* tile) {
   TileManager::Release(tile);
+  if (!in_bundle_cleanup_)
+    CleanUpReleasedTiles();
+}
+
+void FakeTileManager::Release(TileBundle* bundle) {
+  TileManager::Release(bundle);
+  in_bundle_cleanup_ = true;
   CleanUpReleasedTiles();
+  in_bundle_cleanup_ = false;
 }
 
 }  // namespace cc

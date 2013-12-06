@@ -5,16 +5,25 @@
 #include "cc/resources/picture_layer_tiling.h"
 
 #include <limits>
+#include <set>
 
 #include "cc/base/math_util.h"
 #include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/fake_tile_manager.h"
+#include "cc/test/fake_tile_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace cc {
 namespace {
+
+const int kTileBundleWidth = 2;
+const int kTileBundleHeight = 2;
+std::pair<int, int> ComputeTileBundleIndex(int i, int j) {
+  return std::make_pair(i / kTileBundleWidth, j / kTileBundleHeight);
+}
 
 static gfx::Rect ViewportInLayerSpace(
     const gfx::Transform& transform,
@@ -34,6 +43,7 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
  public:
   using PictureLayerTiling::SetLiveTilesRect;
   using PictureLayerTiling::TileAt;
+  using PictureLayerTiling::TileBundleAt;
 
   static scoped_ptr<TestablePictureLayerTiling> Create(
       float contents_scale,
@@ -45,6 +55,9 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
         client));
   }
 
+  TilingData tiling_data() const { return tiling_data_; }
+  TilingData bundle_tiling_data() const { return bundle_tiling_data_; }
+
  protected:
   TestablePictureLayerTiling(float contents_scale,
                              gfx::Size layer_bounds,
@@ -54,7 +67,9 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
 
 class PictureLayerTilingIteratorTest : public testing::Test {
  public:
-  PictureLayerTilingIteratorTest() {}
+  PictureLayerTilingIteratorTest()
+      : tile_manager_(&tile_manager_client_), client_(&tile_manager_) {}
+
   virtual ~PictureLayerTilingIteratorTest() {}
 
   void Initialize(gfx::Size tile_size,
@@ -67,6 +82,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
   }
 
   void SetLiveRectAndVerifyTiles(gfx::Rect live_tiles_rect) {
+    tiling_->SetTreeForTesting(ACTIVE_TREE);
     tiling_->SetLiveTilesRect(live_tiles_rect);
 
     std::vector<Tile*> tiles = tiling_->AllTilesForTesting();
@@ -153,6 +169,8 @@ class PictureLayerTilingIteratorTest : public testing::Test {
   }
 
  protected:
+  FakeTileManagerClient tile_manager_client_;
+  FakeTileManager tile_manager_;
   FakePictureLayerTilingClient client_;
   scoped_ptr<TestablePictureLayerTiling> tiling_;
 
@@ -259,6 +277,67 @@ TEST_F(PictureLayerTilingIteratorTest, NonContainedDestRect) {
   VerifyTilesCoverNonContainedRect(1.0f, gfx::Rect(-1000, 100, 2000, 100));
   VerifyTilesCoverNonContainedRect(1.5f, gfx::Rect(-1000, 100, 2000, 100));
   VerifyTilesCoverNonContainedRect(0.5f, gfx::Rect(-1000, 100, 2000, 100));
+}
+
+TEST(PictureLayerTilingTest, BundleAtContainsTileAt) {
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
+
+  gfx::Size current_layer_bounds(400, 400);
+  client.SetTileSize(gfx::Size(100, 100));
+  scoped_ptr<TestablePictureLayerTiling> tiling =
+      TestablePictureLayerTiling::Create(1.0f, current_layer_bounds, &client);
+
+  tiling->CreateTilesForTesting(ACTIVE_TREE);
+  for (int bundle_y = 0;
+       bundle_y < (current_layer_bounds.height() / (kTileBundleHeight * 100));
+       ++bundle_y) {
+    for (int bundle_x = 0;
+         bundle_x < (current_layer_bounds.width() / (kTileBundleWidth * 100));
+         ++bundle_x) {
+      EXPECT_TRUE(tiling->TileBundleAt(bundle_x, bundle_y))
+          << "bundle_x " << bundle_x << " bundle_y " << bundle_y;
+
+      TileBundle* bundle = tiling->TileBundleAt(bundle_x, bundle_y);
+      for (int tile_y = 0; tile_y < kTileBundleWidth; ++tile_y) {
+        for (int tile_x = 0; tile_x < kTileBundleHeight; ++tile_x) {
+          int global_tile_x = bundle_x * kTileBundleWidth + tile_x;
+          int global_tile_y = bundle_y * kTileBundleHeight + tile_y;
+
+          EXPECT_TRUE(tiling->TileAt(ACTIVE_TREE, global_tile_x, global_tile_y))
+              << "x " << global_tile_x << " y " << global_tile_y;
+          EXPECT_EQ(tiling->TileAt(ACTIVE_TREE, global_tile_x, global_tile_y),
+                    bundle->TileAt(ACTIVE_TREE, global_tile_x, global_tile_y))
+              << "x " << global_tile_x << " y " << global_tile_y;
+        }
+      }
+    }
+  }
+}
+
+TEST(PictureLayerTilingTest, DidBecomeActiveSwapsTiles) {
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
+
+  gfx::Size current_layer_bounds(400, 400);
+  client.SetTileSize(gfx::Size(100, 100));
+  scoped_ptr<TestablePictureLayerTiling> tiling =
+      TestablePictureLayerTiling::Create(1.0f, current_layer_bounds, &client);
+
+  tiling->CreateTilesForTesting(ACTIVE_TREE);
+  std::vector<Tile*> old_active_tiles = tiling->TilesForTesting(ACTIVE_TREE);
+  tiling->DidBecomeActive();
+  std::vector<Tile*> pending_tiles = tiling->TilesForTesting(PENDING_TREE);
+  EXPECT_EQ(old_active_tiles.size(), pending_tiles.size());
+  std::vector<Tile*>::const_iterator old_it = old_active_tiles.begin();
+  for (std::vector<Tile*>::const_iterator it = pending_tiles.begin();
+       it != pending_tiles.end();
+       ++it) {
+    EXPECT_EQ(*it, *old_it);
+    ++old_it;
+  }
 }
 
 TEST(PictureLayerTilingTest, ExpandRectEqual) {
@@ -732,11 +811,64 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
               base::Bind(&TileExists, true));
 }
 
+TEST_F(PictureLayerTilingIteratorTest, BundlesAndTilesAlign) {
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(850, 850));
+  for (int y = -20; y <= 102; ++y) {
+    for (int x = 0; x <= 103; ++x) {
+      for (int size = 1; size <= 201; size += 50) {
+        gfx::Rect rect(x, y, size, size);
+
+        TilingData tiling_data = tiling_->tiling_data();
+
+        std::set<std::pair<int, int> > tile_positions;
+        std::set<std::pair<int, int> > predicted_bundle_positions;
+        size_t iteration_count = 0;
+        for (TilingData::Iterator iter(&tiling_data, rect); iter; ++iter) {
+          ++iteration_count;
+          tile_positions.insert(std::make_pair(iter.index_x(), iter.index_y()));
+          predicted_bundle_positions.insert(
+              ComputeTileBundleIndex(iter.index_x(), iter.index_y()));
+        }
+
+        ASSERT_EQ(tile_positions.size(), iteration_count) << rect.ToString();
+
+        TilingData bundle_tiling_data = tiling_->bundle_tiling_data();
+        std::set<std::pair<int, int> > bundle_positions;
+        iteration_count = 0;
+        for (TilingData::Iterator iter(&bundle_tiling_data, rect);
+             iter;
+             ++iter) {
+          ++iteration_count;
+          bundle_positions.insert(
+              std::make_pair(iter.index_x(), iter.index_y()));
+        }
+
+        ASSERT_EQ(bundle_positions.size(), iteration_count) << rect.ToString();
+        ASSERT_EQ(predicted_bundle_positions.size(), iteration_count)
+            << rect.ToString();
+
+        std::set<std::pair<int, int> >::const_iterator predicted_iterator =
+            predicted_bundle_positions.begin();
+        for (std::set<std::pair<int, int> >::const_iterator actual_iterator =
+                 bundle_positions.begin();
+             actual_iterator != bundle_positions.end();
+             ++actual_iterator) {
+          ASSERT_EQ(*actual_iterator, *predicted_iterator) << rect.ToString();
+          ++predicted_iterator;
+        }
+      }
+    }
+  }
+}
+
+
 TEST(UpdateTilePrioritiesTest, VisibleTiles) {
   // The TilePriority of visible tiles should have zero distance_to_visible
   // and time_to_visible.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
@@ -772,24 +904,13 @@ TEST(UpdateTilePrioritiesTest, VisibleTiles) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 0, 0));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 0, 1));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 1, 0));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
 
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
-  EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
-  EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
-
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
-  EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
-  EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
-
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
-  EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
-  EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
-
-  priority = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
   EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
 }
@@ -798,13 +919,15 @@ TEST(UpdateTilePrioritiesTest, OffscreenTiles) {
   // The TilePriority of offscreen tiles (without movement) should have nonzero
   // distance_to_visible and infinite time_to_visible.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
   gfx::Rect visible_layer_rect(0, 0, 0, 0);  // offscreen; nothing is visible.
-  gfx::Size last_layer_bounds(200, 200);
-  gfx::Size current_layer_bounds(200, 200);
+  gfx::Size last_layer_bounds(400, 400);
+  gfx::Size current_layer_bounds(400, 400);
   float last_layer_contents_scale = 1.f;
   float current_layer_contents_scale = 1.f;
   gfx::Transform last_screen_transform;
@@ -837,40 +960,34 @@ TEST(UpdateTilePrioritiesTest, OffscreenTiles) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 0, 0));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 0, 1));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 1, 0));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
 
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
-  EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
-  EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
-                  priority.time_to_visible_in_seconds);
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 2, 2));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 2, 3));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 3, 2));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 3, 3));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 1));
 
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
-  EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
-  EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
-                  priority.time_to_visible_in_seconds);
-
-  priority = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
-  EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
-  EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
-                  priority.time_to_visible_in_seconds);
-
-  // Furthermore, in this scenario tiles on the right hand side should have a
+  // Furthermore, in this scenario bundles on the right hand side should have a
   // larger distance to visible.
-  TilePriority left = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
-  TilePriority right = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
+  TilePriority left = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
+  TilePriority right = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(right.distance_to_visible_in_pixels,
             left.distance_to_visible_in_pixels);
 
-  left = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
-  right = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  left = tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
+  right = tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(right.distance_to_visible_in_pixels,
             left.distance_to_visible_in_pixels);
 }
@@ -879,13 +996,15 @@ TEST(UpdateTilePrioritiesTest, PartiallyOffscreenLayer) {
   // Sanity check that a layer with some tiles visible and others offscreen has
   // correct TilePriorities for each tile.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
   gfx::Rect visible_layer_rect(0, 0, 100, 100);  // only top quarter.
-  gfx::Size last_layer_bounds(200, 200);
-  gfx::Size current_layer_bounds(200, 200);
+  gfx::Size last_layer_bounds(400, 400);
+  gfx::Size current_layer_bounds(400, 400);
   float last_layer_contents_scale = 1.f;
   float current_layer_contents_scale = 1.f;
   gfx::Transform last_screen_transform;
@@ -918,26 +1037,30 @@ TEST(UpdateTilePrioritiesTest, PartiallyOffscreenLayer) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 0, 0));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 0, 1));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 1, 0));
+  ASSERT_TRUE(tiling->TileAt(ACTIVE_TREE, 1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 1));
 
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
   EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
@@ -948,13 +1071,15 @@ TEST(UpdateTilePrioritiesTest, PartiallyOffscreenRotatedLayer) {
   // that UpdateTilePriorities correctly accounts for the transform between
   // layer space and screen space.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
   gfx::Rect visible_layer_rect(0, 0, 100, 100);  // only top-left quarter.
-  gfx::Size last_layer_bounds(200, 200);
-  gfx::Size current_layer_bounds(200, 200);
+  gfx::Size last_layer_bounds(400, 400);
+  gfx::Size current_layer_bounds(400, 400);
   float last_layer_contents_scale = 1.f;
   float current_layer_contents_scale = 1.f;
   gfx::Transform last_screen_transform;
@@ -990,36 +1115,38 @@ TEST(UpdateTilePrioritiesTest, PartiallyOffscreenRotatedLayer) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 1));
 
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
   EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
   // Furthermore, in this scenario the bottom-right tile should have the larger
   // distance to visible.
-  TilePriority top_left = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
-  TilePriority top_right = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
-  TilePriority bottom_left = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
-  TilePriority bottom_right = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  TilePriority top_left = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
+  TilePriority top_right = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
+  TilePriority bottom_left =
+      tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
+  TilePriority bottom_right =
+      tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(top_right.distance_to_visible_in_pixels,
             top_left.distance_to_visible_in_pixels);
   EXPECT_GT(bottom_left.distance_to_visible_in_pixels,
@@ -1035,13 +1162,15 @@ TEST(UpdateTilePrioritiesTest, PerspectiveLayer) {
   // Perspective transforms need to take a different code path.
   // This test checks tile priorities of a perspective layer.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
   gfx::Rect visible_layer_rect(0, 0, 0, 0);  // offscreen.
-  gfx::Size last_layer_bounds(200, 200);
-  gfx::Size current_layer_bounds(200, 200);
+  gfx::Size last_layer_bounds(400, 400);
+  gfx::Size current_layer_bounds(400, 400);
   float last_layer_contents_scale = 1.f;
   float current_layer_contents_scale = 1.f;
   gfx::Transform last_screen_transform;
@@ -1092,29 +1221,29 @@ TEST(UpdateTilePrioritiesTest, PerspectiveLayer) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 1));
 
   // All tiles will have a positive distance_to_visible
   // and an infinite time_to_visible.
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
@@ -1122,10 +1251,12 @@ TEST(UpdateTilePrioritiesTest, PerspectiveLayer) {
   // Furthermore, in this scenario the top-left distance_to_visible
   // will be smallest, followed by top-right. The bottom layers
   // will of course be further than the top layers.
-  TilePriority top_left = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
-  TilePriority top_right = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
-  TilePriority bottom_left = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
-  TilePriority bottom_right = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  TilePriority top_left = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
+  TilePriority top_right = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
+  TilePriority bottom_left =
+      tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
+  TilePriority bottom_right =
+      tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(top_right.distance_to_visible_in_pixels,
             top_left.distance_to_visible_in_pixels);
 
@@ -1140,13 +1271,15 @@ TEST(UpdateTilePrioritiesTest, PerspectiveLayerClippedByW) {
   // Perspective transforms need to take a different code path.
   // This test checks tile priorities of a perspective layer.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
   gfx::Rect visible_layer_rect(0, 0, 0, 0);  // offscreen.
-  gfx::Size last_layer_bounds(200, 200);
-  gfx::Size current_layer_bounds(200, 200);
+  gfx::Size last_layer_bounds(400, 400);
+  gfx::Size current_layer_bounds(400, 400);
   float last_layer_contents_scale = 1.f;
   float current_layer_contents_scale = 1.f;
   gfx::Transform last_screen_transform;
@@ -1162,22 +1295,22 @@ TEST(UpdateTilePrioritiesTest, PerspectiveLayerClippedByW) {
   // Translate layer to offscreen
   current_screen_transform.Translate(400.0, 970.0);
   // Apply perspective and rotation about the center of the layer
-  current_screen_transform.Translate(100.0, 100.0);
+  current_screen_transform.Translate(200.0, 200.0);
   current_screen_transform.ApplyPerspectiveDepth(10.0);
   current_screen_transform.RotateAboutYAxis(10.0);
-  current_screen_transform.Translate(-100.0, -100.0);
+  current_screen_transform.Translate(-200.0, -200.0);
   last_screen_transform = current_screen_transform;
 
   // Sanity check that this transform does cause w<0 clipping for the left side
   // of the layer, but not the right side.
   bool clipped;
   MathUtil::MapQuad(current_screen_transform,
-                    gfx::QuadF(gfx::RectF(0, 0, 100, 200)),
+                    gfx::QuadF(gfx::RectF(0, 0, 200, 400)),
                     &clipped);
   ASSERT_TRUE(clipped);
 
   MathUtil::MapQuad(current_screen_transform,
-                    gfx::QuadF(gfx::RectF(100, 0, 100, 200)),
+                    gfx::QuadF(gfx::RectF(200, 0, 200, 400)),
                     &clipped);
   ASSERT_FALSE(clipped);
 
@@ -1203,29 +1336,29 @@ TEST(UpdateTilePrioritiesTest, PerspectiveLayerClippedByW) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 1));
 
   // Left-side tiles will be clipped by the transform, so we have to assume
   // they are visible just in case.
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
   EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
   EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
 
   // Right-side tiles will have a positive distance_to_visible
   // and an infinite time_to_visible.
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);
@@ -1235,7 +1368,9 @@ TEST(UpdateTilePrioritiesTest, BasicMotion) {
   // Test that time_to_visible is computed correctly when
   // there is some motion.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
@@ -1257,7 +1392,7 @@ TEST(UpdateTilePrioritiesTest, BasicMotion) {
   gfx::Rect viewport_in_layer_space = ViewportInLayerSpace(
       current_screen_transform, device_viewport);
 
-  client.SetTileSize(gfx::Size(100, 100));
+  client.SetTileSize(gfx::Size(50, 50));
   tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
                                               current_layer_bounds,
                                               &client);
@@ -1292,31 +1427,32 @@ TEST(UpdateTilePrioritiesTest, BasicMotion) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 1));
 
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(1.f,
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(1.f,
                   priority.time_to_visible_in_seconds);
 
-  // time_to_visible for the right hand side layers needs an extra 0.099
-  // seconds because this tile is 99 pixels further away.
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
+  // time_to_visible for the right hand side layers needs an extra 0.097
+  // seconds because this bundle is
+  // |(50 - 2 * border_texels) * 2 + border_texels| = 97 pixels further away.
+  priority = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
-  EXPECT_FLOAT_EQ(1.099f,
+  EXPECT_FLOAT_EQ(1.097f,
                   priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(1, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
-  EXPECT_FLOAT_EQ(1.099f,
+  EXPECT_FLOAT_EQ(1.097f,
                   priority.time_to_visible_in_seconds);
 }
 
@@ -1325,7 +1461,9 @@ TEST(UpdateTilePrioritiesTest, RotationMotion) {
   // that UpdateTilePriorities correctly accounts for the transform between
   // layer space and screen space.
 
-  FakePictureLayerTilingClient client;
+  FakeTileManagerClient tile_manager_client;
+  FakeTileManager tile_manager(&tile_manager_client);
+  FakePictureLayerTilingClient client(&tile_manager);
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Size device_viewport(800, 600);
@@ -1355,7 +1493,7 @@ TEST(UpdateTilePrioritiesTest, RotationMotion) {
   gfx::Rect viewport_in_layer_space = ViewportInLayerSpace(
       current_screen_transform, device_viewport);
 
-  client.SetTileSize(gfx::Size(100, 100));
+  client.SetTileSize(gfx::Size(50, 50));
   tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
                                               current_layer_bounds,
                                               &client);
@@ -1390,20 +1528,20 @@ TEST(UpdateTilePrioritiesTest, RotationMotion) {
       current_frame_time_in_seconds,
       max_tiles_for_interest_area);
 
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_TRUE(tiling->TileAt(0, 1));
-  ASSERT_TRUE(tiling->TileAt(1, 0));
-  ASSERT_TRUE(tiling->TileAt(1, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(0, 1));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 0));
+  ASSERT_TRUE(tiling->TileBundleAt(1, 1));
 
-  TilePriority priority = tiling->TileAt(0, 0)->priority(ACTIVE_TREE);
+  TilePriority priority = tiling->TileBundleAt(0, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible_in_pixels);
   EXPECT_FLOAT_EQ(0.f, priority.time_to_visible_in_seconds);
 
-  priority = tiling->TileAt(0, 1)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(0, 1)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_GT(priority.time_to_visible_in_seconds, 0.f);
 
-  priority = tiling->TileAt(1, 0)->priority(ACTIVE_TREE);
+  priority = tiling->TileBundleAt(1, 0)->GetPriority(ACTIVE_TREE);
   EXPECT_GT(priority.distance_to_visible_in_pixels, 0.f);
   EXPECT_FLOAT_EQ(std::numeric_limits<float>::infinity(),
                   priority.time_to_visible_in_seconds);

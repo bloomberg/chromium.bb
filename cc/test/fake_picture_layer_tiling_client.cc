@@ -23,19 +23,14 @@ class FakeInfinitePicturePileImpl : public PicturePileImpl {
   virtual ~FakeInfinitePicturePileImpl() {}
 };
 
-FakePictureLayerTilingClient::FakePictureLayerTilingClient()
-    : tile_manager_(new FakeTileManager(&tile_manager_client_)),
-      pile_(new FakeInfinitePicturePileImpl()),
-      twin_tiling_(NULL),
-      allow_create_tile_(true) {}
-
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
-    ResourceProvider* resource_provider)
-    : tile_manager_(
-          new FakeTileManager(&tile_manager_client_, resource_provider)),
+    TileManager* tile_manager)
+    : tile_manager_(tile_manager),
       pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),
-      allow_create_tile_(true) {}
+      allow_create_tile_(true),
+      is_active_(false),
+      is_pending_(false) {}
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
@@ -45,8 +40,16 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
     gfx::Rect rect) {
   if (!allow_create_tile_)
     return scoped_refptr<Tile>();
-  return tile_manager_->CreateTile(
+  return tile_manager()->CreateTile(
       pile_.get(), tile_size_, rect, gfx::Rect(), 1, 0, 0, Tile::USE_LCD_TEXT);
+}
+
+scoped_refptr<TileBundle> FakePictureLayerTilingClient::CreateTileBundle(
+    int offset_x,
+    int offset_y,
+    int width,
+    int height) {
+  return tile_manager()->CreateTileBundle(offset_x, offset_y, width, height);
 }
 
 void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {

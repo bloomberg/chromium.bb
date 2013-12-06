@@ -77,14 +77,14 @@ void FakePictureLayerImpl::SetAllTilesVisible() {
   for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
        ++tiling_idx) {
     PictureLayerTiling* tiling = tilings_->tiling_at(tiling_idx);
-    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
-    for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
-      Tile* tile = tiles[tile_idx];
+    std::vector<TileBundle*> bundles = tiling->AllTileBundlesForTesting();
+    for (size_t bundle_idx = 0; bundle_idx < bundles.size(); ++bundle_idx) {
+      TileBundle* bundle = bundles[bundle_idx];
       TilePriority priority;
       priority.resolution = HIGH_RESOLUTION;
       priority.time_to_visible_in_seconds = 0.f;
       priority.distance_to_visible_in_pixels = 0.f;
-      tile->SetPriority(tree, priority);
+      bundle->SetPriority(tree, priority);
     }
   }
 }
@@ -109,15 +109,22 @@ void FakePictureLayerImpl::SetAllTilesReadyInTiling(
   }
 }
 
-void FakePictureLayerImpl::CreateDefaultTilingsAndTiles() {
+void FakePictureLayerImpl::CreateDefaultTilingsAndTiles(WhichTree tree) {
   layer_tree_impl()->UpdateDrawProperties();
 
   if (CanHaveTilings()) {
     DCHECK_EQ(tilings()->num_tilings(), 2u);
     DCHECK_EQ(tilings()->tiling_at(0)->resolution(), HIGH_RESOLUTION);
     DCHECK_EQ(tilings()->tiling_at(1)->resolution(), LOW_RESOLUTION);
-    HighResTiling()->CreateAllTilesForTesting();
-    LowResTiling()->CreateAllTilesForTesting();
+    if (tree == ACTIVE_TREE) {
+      DCHECK(layer_tree_impl()->IsActiveTree());
+      HighResTiling()->CreateTilesForTesting(ACTIVE_TREE);
+      LowResTiling()->CreateTilesForTesting(ACTIVE_TREE);
+    } else {
+      DCHECK(layer_tree_impl()->IsPendingTree());
+      HighResTiling()->CreateTilesForTesting(PENDING_TREE);
+      LowResTiling()->CreateTilesForTesting(PENDING_TREE);
+    }
   } else {
     DCHECK_EQ(tilings()->num_tilings(), 0u);
   }

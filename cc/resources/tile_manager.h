@@ -21,6 +21,7 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
+#include "cc/resources/tile_bundle.h"
 
 namespace cc {
 class ResourceProvider;
@@ -47,7 +48,8 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
 class CC_EXPORT TileManager : public RasterWorkerPoolClient,
-                              public RefCountedManager<Tile> {
+                              public RefCountedManager<Tile>,
+                              public RefCountedManager<TileBundle> {
  public:
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
@@ -73,6 +75,11 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
                                  int layer_id,
                                  int source_frame_number,
                                  int flags);
+
+  scoped_refptr<TileBundle> CreateTileBundle(int offset_x,
+                                             int offset_y,
+                                             int width,
+                                             int height);
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
@@ -124,16 +131,22 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
               size_t max_raster_usage_bytes,
               RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
-  // Methods called by Tile
+  // Methods called by Tile and TileBundle
+  friend class TileBundle;
   friend class Tile;
+
   void DidChangeTilePriority(Tile* tile);
+  void DidChangeTileBundlePriority(TileBundle* bundle);
 
   void CleanUpReleasedTiles();
 
-  // Overriden from RefCountedManager<Tile>:
+  // Overridden from RefCountedManager<Tile>:
   virtual void Release(Tile* tile) OVERRIDE;
 
-  // Overriden from RasterWorkerPoolClient:
+  // Overridden from RefCountedManager<TileBundle>:
+  virtual void Release(TileBundle* bundle) OVERRIDE;
+
+  // Overridden from RasterWorkerPoolClient:
   virtual bool ShouldForceTasksRequiredForActivationToComplete() const
       OVERRIDE;
   virtual void DidFinishRunningTasks() OVERRIDE;
@@ -186,6 +199,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
   TileMap tiles_;
 
+  typedef base::hash_map<TileBundle::Id, TileBundle*> TileBundleMap;
+  TileBundleMap bundles_;
+
   PrioritizedTileSet prioritized_tiles_;
   bool prioritized_tiles_dirty_;
 
@@ -217,6 +233,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   RasterTaskCompletionStats update_visible_tiles_stats_;
 
   std::vector<Tile*> released_tiles_;
+  std::vector<TileBundle*> released_tile_bundles_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
