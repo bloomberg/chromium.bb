@@ -142,12 +142,12 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are to be sent,
     // even with Access-Control-Allow-Credentials set to true.
     const AtomicString& accessControlOriginString = response.httpHeaderField(accessControlAllowOrigin);
-    if (accessControlOriginString == "*" && includeCredentials == DoNotAllowStoredCredentials)
+    if (accessControlOriginString == starAtom && includeCredentials == DoNotAllowStoredCredentials)
         return true;
 
     // FIXME: Access-Control-Allow-Origin can contain a list of origins.
     if (accessControlOriginString != securityOrigin->toString()) {
-        if (accessControlOriginString == "*") {
+        if (accessControlOriginString == starAtom) {
             errorDescription = "Wildcards cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
         } else if (accessControlOriginString.isEmpty()) {
             errorDescription = "No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";

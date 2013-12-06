@@ -67,15 +67,13 @@ bool SVGLangSpace::isKnownAttribute(const QualifiedName& attrName)
 
 void SVGLangSpace::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, xmlPrefix, ("xml", AtomicString::ConstructFromLiteral));
-
     QualifiedName langWithPrefix = XMLNames::langAttr;
-    langWithPrefix.setPrefix(xmlPrefix);
+    langWithPrefix.setPrefix(xmlAtom);
     supportedAttributes.add(langWithPrefix);
     supportedAttributes.add(XMLNames::langAttr);
 
     QualifiedName spaceWithPrefix = XMLNames::spaceAttr;
-    spaceWithPrefix.setPrefix(xmlPrefix);
+    spaceWithPrefix.setPrefix(xmlAtom);
     supportedAttributes.add(spaceWithPrefix);
     supportedAttributes.add(XMLNames::spaceAttr);
 }

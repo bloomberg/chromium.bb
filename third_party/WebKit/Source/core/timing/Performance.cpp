@@ -171,7 +171,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
     if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
         return false;
 
-    if (timingAllowOriginString == "*")
+    if (timingAllowOriginString == starAtom)
         return true;
 
     const String& securityOrigin = requestingDocument->securityOrigin()->toString();
