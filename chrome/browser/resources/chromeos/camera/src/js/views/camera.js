@@ -320,6 +320,14 @@ camera.views.Camera = function(context, router) {
       document.querySelector('#toolbar-stripe'),
       this.onRibbonPullReleased_.bind(this));
 
+  /**
+   * Counter used to refresh periodically invisible images on the ribbons, to
+   * avoid displaying stale ones.
+   * @type {number}
+   * @private
+   */
+  this.staleEffectsRefreshIndex_ = 0;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -372,13 +380,6 @@ camera.views.Camera.DrawMode = Object.freeze({
  * @const
  */
 camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES = 3;
-
-/**
- * Number of frames to be skipped between effects' ribbon full refreshes.
- * @type {number}
- * @const
- */
-camera.views.Camera.EFFECTS_RIBBON_FULL_REFRESH_SKIP_FRAMES = 30;
 
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
@@ -1096,26 +1097,29 @@ camera.views.Camera.prototype.start_ = function() {
 
 /**
  * Draws the effects' ribbon.
- * @param {camera.views.Camera.DrawMode} mode Drawing mode.
  * @private
  */
-camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
+camera.views.Camera.prototype.drawEffectsRibbon_ = function() {
+  var notDrawn = [];
+
+  // Draw visible frames only.
   for (var index = 0; index < this.previewProcessors_.length; index++) {
     var processor = this.previewProcessors_[index];
     var effectRect = processor.output.getBoundingClientRect();
-    switch (mode) {
-      case camera.views.Camera.DrawMode.OPTIMIZED:
-        if (effectRect.right >= 0 &&
-            effectRect.left < document.body.offsetWidth) {
-          processor.processFrame();
-        }
-        break;
-      case camera.views.Camera.DrawMode.FULL:
-        processor.processFrame();
-        break;
+    if (effectRect.right >= 0 &&
+        effectRect.left < document.body.offsetWidth) {
+      processor.processFrame();
+    } else {
+      notDrawn.push(processor);
     }
   }
- };
+
+  // Additionally, draw one frame which is not visible. This is to avoid stale
+  // images when scrolling.
+  this.staleEffectsRefreshIndex_++;
+  if (notDrawn.length)
+    notDrawn[this.staleEffectsRefreshIndex_ % notDrawn.length].processFrame();
+};
 
 /**
  * Draws a single frame for the main canvas and effects.
@@ -1214,15 +1218,10 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
       !this.context.isUIAnimating() && !this.scrollTracker_.scrolling ||
       this.ribbonInitialization_) {
 
-    // Every third frame draw only the visible effects. Every 30-th frame, draw
-    // all of them, to avoid displaying old effects when scrolling.
-    if (this.frame_ %
-        camera.views.Camera.EFFECTS_RIBBON_FULL_REFRESH_SKIP_FRAMES == 0) {
-      this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FULL);
-    } else if (this.frame_ %
-        camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
-      this.drawEffectsRibbon_(camera.views.Camera.DrawMode.OPTIMIZED);
-    }
+    // Every third frame draw only the visible effects. Also, other frames
+    // are periodically refreshed, to avoid stale pictures.
+    if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0)
+      this.drawEffectsRibbon_();
   }
 
   this.frame_++;
