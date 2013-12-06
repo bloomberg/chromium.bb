@@ -111,7 +111,9 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
     LOG(WARNING) << "Logged in as managed user, skip token validation.";
     return;
   }
-  RestoreSessionCookies();
+  // Do only restore session cookies if called for the primary user.
+  if (GetTokenService()->GetPrimaryAccountId() == account_id)
+    RestoreSessionCookies();
 }
 
 ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
