@@ -93,6 +93,7 @@ SRC_RESOURCES= \
 	src/js/effects/grayscale.js \
 	src/js/effects/newspaper.js \
 	src/js/effects/normal.js \
+	src/js/effects/photo_lab.js \
 	src/js/effects/pinch.js \
 	src/js/effects/retro.js \
 	src/js/effects/sepia.js \
@@ -156,6 +157,7 @@ GLFX_RESOURCES= \
 	third_party/glfx/src/filters/fun/edgework.js \
 	third_party/glfx/src/filters/fun/hexagonalpixelate.js \
 	third_party/glfx/src/filters/fun/ink.js \
+	third_party/glfx/src/filters/fun/photolab.js \
 	third_party/glfx/src/filters/warp/bulgepinch.js \
 	third_party/glfx/src/filters/warp/matrixwarp.js \
 	third_party/glfx/src/filters/warp/perspective.js \

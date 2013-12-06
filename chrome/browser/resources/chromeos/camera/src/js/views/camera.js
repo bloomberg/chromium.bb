@@ -445,6 +445,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.addEffect_(new camera.effects.Retro30(this.tracker_));
     this.addEffect_(new camera.effects.Retro50(this.tracker_));
     this.addEffect_(new camera.effects.Retro60(this.tracker_));
+    this.addEffect_(new camera.effects.PhotoLab(this.tracker_));
     this.addEffect_(new camera.effects.BigHead(this.tracker_));
     this.addEffect_(new camera.effects.BigJaw(this.tracker_));
     this.addEffect_(new camera.effects.BigEyes(this.tracker_));
