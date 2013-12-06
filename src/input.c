@@ -620,8 +620,6 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 					      pointer->focus->surface->resource);
 		}
 
-		wl_list_remove(&pointer->focus_resource_listener.link);
-		wl_list_init(&pointer->focus_resource_listener.link);
 		move_resources(&pointer->resource_list, focus_resource_list);
 	}
 
@@ -650,18 +648,20 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 		}
 
 		pointer->focus_serial = serial;
-		wl_resource_add_destroy_listener(view->surface->resource,
-						 &pointer->focus_resource_listener);
 	}
 
-	if (!wl_list_empty(&pointer->focus_view_listener.link)) {
-		wl_list_remove(&pointer->focus_view_listener.link);
-		wl_list_init(&pointer->focus_view_listener.link);
-	}
-	pointer->focus = view;
-	pointer->focus_view_listener.notify = pointer_focus_view_destroyed;
+	wl_list_remove(&pointer->focus_view_listener.link);
+	wl_list_init(&pointer->focus_view_listener.link);
+	wl_list_remove(&pointer->focus_resource_listener.link);
+	wl_list_init(&pointer->focus_resource_listener.link);
 	if (view)
 		wl_signal_add(&view->destroy_signal, &pointer->focus_view_listener);
+	if (view && view->surface->resource)
+		wl_resource_add_destroy_listener(view->surface->resource,
+						 &pointer->focus_resource_listener);
+
+	pointer->focus = view;
+	pointer->focus_view_listener.notify = pointer_focus_view_destroyed;
 	wl_signal_emit(&pointer->focus_signal, pointer);
 }
 
@@ -698,8 +698,6 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 			wl_keyboard_send_leave(resource, serial,
 					keyboard->focus->resource);
 		}
-		wl_list_remove(&keyboard->focus_resource_listener.link);
-		wl_list_init(&keyboard->focus_resource_listener.link);
 		move_resources(&keyboard->resource_list, focus_resource_list);
 	}
 
@@ -718,9 +716,13 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 					    surface,
 					    serial);
 		keyboard->focus_serial = serial;
+	}
+
+	wl_list_remove(&keyboard->focus_resource_listener.link);
+	wl_list_init(&keyboard->focus_resource_listener.link);
+	if (surface && surface->resource)
 		wl_resource_add_destroy_listener(surface->resource,
 						 &keyboard->focus_resource_listener);
-	}
 
 	keyboard->focus = surface;
 	wl_signal_emit(&keyboard->focus_signal, keyboard);
