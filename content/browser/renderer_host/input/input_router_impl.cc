@@ -63,10 +63,9 @@ const char* GetEventAckName(InputEventAckState ack_result) {
     case INPUT_EVENT_ACK_STATE_CONSUMED: return "CONSUMED";
     case INPUT_EVENT_ACK_STATE_NOT_CONSUMED: return "NOT_CONSUMED";
     case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS: return "NO_CONSUMER_EXISTS";
-  default:
-    DLOG(WARNING) << "Unhandled InputEventAckState in GetEventAckName.\n";
-    break;
+    case INPUT_EVENT_ACK_STATE_IGNORED: return "IGNORED";
   }
+  DLOG(WARNING) << "Unhandled InputEventAckState in GetEventAckName.";
   return "";
 }
 
