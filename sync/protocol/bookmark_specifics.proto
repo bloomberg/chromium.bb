@@ -14,6 +14,12 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+// Corresponds to a single meta info key/value pair for a bookmark node.
+message MetaInfo {
+  optional string key = 1;
+  optional string value = 2;
+}
+
 // Properties of bookmark sync objects.
 message BookmarkSpecifics {
   optional string url = 1;
@@ -23,5 +29,6 @@ message BookmarkSpecifics {
   // base::Time.
   optional int64 creation_time_us = 4;
   optional string icon_url = 5;
+  repeated MetaInfo meta_info = 6;
 }
 

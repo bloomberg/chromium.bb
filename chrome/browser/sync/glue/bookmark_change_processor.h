@@ -55,6 +55,8 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
+                                       const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
                                           const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
@@ -138,6 +140,15 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
     MOVE,
     CREATE,
   };
+
+  // Sets the meta info of the given bookmark node from the given sync node.
+  static void SetBookmarkMetaInfo(const syncer::BaseNode* sync_node,
+                                  const BookmarkNode* bookmark_node,
+                                  BookmarkModel* bookmark_model);
+
+  // Sets the meta info of the given sync node from the given bookmark node.
+  static void SetSyncNodeMetaInfo(const BookmarkNode* node,
+                                  syncer::WriteNode* sync_node);
 
   // Helper function used to fix the position of a sync node so that it matches
   // the position of a corresponding bookmark model node. |parent| and

@@ -413,6 +413,14 @@ base::DictionaryValue* AutofillProfileSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* MetaInfoToValue(
+    const sync_pb::MetaInfo& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(key);
+  SET_STR(value);
+  return value;
+}
+
 base::DictionaryValue* BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -421,6 +429,7 @@ base::DictionaryValue* BookmarkSpecificsToValue(
   SET_STR(title);
   SET_INT64(creation_time_us);
   SET_STR(icon_url);
+  SET_REP(meta_info, &MetaInfoToValue);
   return value;
 }
 

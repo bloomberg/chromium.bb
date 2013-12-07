@@ -82,6 +82,7 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
   bookmark_specifics.set_creation_time_us(src->date_added().ToInternalValue());
   dst->SetBookmarkSpecifics(bookmark_specifics);
   SetSyncNodeFavicon(src, model, dst);
+  SetSyncNodeMetaInfo(src, dst);
 }
 
 // static
@@ -355,6 +356,11 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
 
   UpdateTransactionVersion(new_version, model,
                            std::vector<const BookmarkNode*>(1, node));
+}
+
+void BookmarkChangeProcessor::BookmarkMetaInfoChanged(
+    BookmarkModel* model, const BookmarkNode* node) {
+  BookmarkNodeChanged(model, node);
 }
 
 void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
@@ -705,6 +711,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
         base::Time::FromInternalValue(specifics.creation_time_us()));
   }
   SetBookmarkFavicon(&sync_node, node, model, profile);
+  SetBookmarkMetaInfo(&sync_node, node, model);
 }
 
 // static
@@ -747,6 +754,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     if (node)
       SetBookmarkFavicon(sync_node, node, model, profile);
   }
+  if (node)
+    SetBookmarkMetaInfo(sync_node, node, model);
   return node;
 }
 
@@ -777,6 +786,39 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
   ApplyBookmarkFavicon(bookmark_node, profile, icon_url, icon_bytes);
 
   return true;
+}
+
+// static
+void BookmarkChangeProcessor::SetBookmarkMetaInfo(
+    const syncer::BaseNode* sync_node,
+    const BookmarkNode* bookmark_node,
+    BookmarkModel* bookmark_model) {
+  const sync_pb::BookmarkSpecifics& specifics =
+      sync_node->GetBookmarkSpecifics();
+  BookmarkNode::MetaInfoMap meta_info_map;
+  for (int i = 0; i < specifics.meta_info_size(); ++i) {
+    meta_info_map[specifics.meta_info(i).key()] =
+        specifics.meta_info(i).value();
+  }
+  bookmark_model->SetNodeMetaInfoMap(bookmark_node, meta_info_map);
+}
+
+// static
+void BookmarkChangeProcessor::SetSyncNodeMetaInfo(
+    const BookmarkNode* node,
+    syncer::WriteNode* sync_node) {
+  sync_pb::BookmarkSpecifics specifics = sync_node->GetBookmarkSpecifics();
+  specifics.clear_meta_info();
+  const BookmarkNode::MetaInfoMap* meta_info_map = node->GetMetaInfoMap();
+  if (meta_info_map) {
+    for (BookmarkNode::MetaInfoMap::const_iterator it = meta_info_map->begin();
+        it != meta_info_map->end(); ++it) {
+      sync_pb::MetaInfo* meta_info = specifics.add_meta_info();
+      meta_info->set_key(it->first);
+      meta_info->set_value(it->second);
+    }
+  }
+  sync_node->SetBookmarkSpecifics(specifics);
 }
 
 // static
