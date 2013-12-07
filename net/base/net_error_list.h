@@ -303,6 +303,10 @@ NET_ERROR(TOO_MANY_SOCKET_STREAMS, -155)
 // The SSL server certificate changed in a renegotiation.
 NET_ERROR(SSL_SERVER_CERT_CHANGED, -156)
 
+// The SSL server indicated that an unnecessary TLS version fallback was
+// performed.
+NET_ERROR(SSL_INAPPROPRIATE_FALLBACK, -157)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

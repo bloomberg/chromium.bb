@@ -126,6 +126,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       priority_(priority),
       headers_valid_(false),
       logged_response_time_(false),
+      fallback_error_code_(ERR_SSL_INAPPROPRIATE_FALLBACK),
       request_headers_(),
       read_buf_len_(0),
       next_state_(STATE_NONE),
@@ -1312,6 +1313,13 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         should_fallback = true;
       }
       break;
+    case ERR_SSL_INAPPROPRIATE_FALLBACK:
+      // The server told us that we should not have fallen back. A buggy server
+      // could trigger ERR_SSL_INAPPROPRIATE_FALLBACK with the initial
+      // connection. |fallback_error_code_| is initialised to
+      // ERR_SSL_INAPPROPRIATE_FALLBACK to catch this case.
+      error = fallback_error_code_;
+      break;
   }
 
   if (should_fallback) {
@@ -1320,6 +1328,7 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         base::Bind(&NetLogSSLVersionFallbackCallback,
                    &request_->url, error, server_ssl_config_.version_max,
                    version_max));
+    fallback_error_code_ = error;
     server_ssl_config_.version_max = version_max;
     server_ssl_config_.version_fallback = true;
     ResetConnectionAndRequestForResend();

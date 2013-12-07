@@ -156,6 +156,9 @@ Patches:
   * Add a function to allow the cipher suites preference order to be set.
     patches/cipherorder.patch
 
+  * Add TLS_FALLBACK_SCSV cipher suite to version fallback connections.
+    patches/fallbackscsv.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

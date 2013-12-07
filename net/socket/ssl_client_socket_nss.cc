@@ -3155,6 +3155,14 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     return ERR_NO_SSL_VERSIONS_ENABLED;
   }
 
+  if (ssl_config_.version_fallback) {
+    rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_FALLBACK_SCSV, PR_TRUE);
+    if (rv != SECSuccess) {
+      LogFailedNSSFunction(
+          net_log_, "SSL_OptionSet", "SSL_ENABLE_FALLBACK_SCSV");
+    }
+  }
+
   for (std::vector<uint16>::const_iterator it =
            ssl_config_.disabled_cipher_suites.begin();
        it != ssl_config_.disabled_cipher_suites.end(); ++it) {

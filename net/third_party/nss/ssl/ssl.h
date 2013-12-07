@@ -163,6 +163,8 @@ SSL_IMPORT PRFileDesc *DTLS_ImportFD(PRFileDesc *model, PRFileDesc *fd);
 #define SSL_ENABLE_OCSP_STAPLING       24 /* Request OCSP stapling (client) */
 /* Request Signed Certificate Timestamps via TLS extension (client) */
 #define SSL_ENABLE_SIGNED_CERT_TIMESTAMPS 25
+#define SSL_ENABLE_FALLBACK_SCSV       26 /* Send fallback SCSV in
+                                           * handshakes. */
 
 #ifdef SSL_DEPRECATED_FUNCTION 
 /* Old deprecated function names */

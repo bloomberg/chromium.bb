@@ -421,3 +421,8 @@ ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 130),
 
 ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 131),
 "The application could not get a TLS Channel ID.")
+
+ER3(SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT, (SSL_ERROR_BASE + 132),
+"The connection was using a lesser TLS version as a result of a previous"
+" handshake failure, but the server indicated that it should not have been"
+" needed.")

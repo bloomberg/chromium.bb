@@ -344,6 +344,8 @@ int MapNSSError(PRErrorCode err) {
     // was used earlier.
     case SSL_ERROR_WRONG_CERTIFICATE:
       return ERR_SSL_SERVER_CERT_CHANGED;
+    case SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT:
+      return ERR_SSL_INAPPROPRIATE_FALLBACK;
 
     default: {
       if (IS_SSL_ERROR(err)) {

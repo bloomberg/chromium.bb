@@ -285,6 +285,12 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
+  // fallback_error_code contains the error code that caused the last TLS
+  // fallback. If the fallback connection results in
+  // ERR_SSL_INAPPROPRIATE_FALLBACK (i.e. the server indicated that the
+  // fallback should not have been needed) then we use this value to return the
+  // original error that triggered the fallback.
+  int fallback_error_code_;
 
   HttpRequestHeaders request_headers_;
 
