@@ -47,7 +47,25 @@
   width: 100%;
 }
 
-.destination-settings-name {
+.throbber-container {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.throbber-container .throbber {
+   -webkit-margin-end: 8px;
+}
+
+.destination-throbber-name-container {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 29px;
+}
+
+.destination-settings-name,
+.destination-throbber-name {
   font-size: 110%;
   overflow: hidden;
   text-overflow: ellipsis;

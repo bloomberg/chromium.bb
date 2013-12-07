@@ -37,6 +37,7 @@ cr.define('print_preview', function() {
     SELECTED_DESTINATION_ID: 'selectedDestinationId',
     SELECTED_DESTINATION_ORIGIN: 'selectedDestinationOrigin',
     SELECTED_DESTINATION_CAPABILITIES: 'selectedDestinationCapabilities',
+    SELECTED_DESTINATION_NAME: 'selectedDestinationName',
     IS_SELECTED_DESTINATION_LOCAL: 'isSelectedDestinationLocal',  // Deprecated
     IS_GCP_PROMO_DISMISSED: 'isGcpPromoDismissed',
     MARGINS_TYPE: 'marginsType',
@@ -80,6 +81,11 @@ cr.define('print_preview', function() {
     /** @return {?print_preview.Cdd} CDD of the selected destination. */
     get selectedDestinationCapabilities() {
       return this.state_[AppState.Field.SELECTED_DESTINATION_CAPBILITIES];
+    },
+
+    /** @return {?string} Name of the selected destination. */
+    get selectedDestinationName() {
+      return this.state_[AppState.Field.SELECTED_DESTINATION_NAME];
     },
 
     /** @return {boolean} Whether the GCP promotion has been dismissed. */
@@ -169,6 +175,7 @@ cr.define('print_preview', function() {
       this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] = dest.origin;
       this.state_[AppState.Field.SELECTED_DESTINATION_CAPBILITIES] =
           dest.capabilities;
+      this.state_[AppState.Field.SELECTED_DESTINATION_NAME] = dest.displayName;
       this.persist_();
     },
 

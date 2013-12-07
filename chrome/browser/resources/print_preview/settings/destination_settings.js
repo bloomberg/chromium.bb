@@ -58,7 +58,8 @@ cr.define('print_preview', function() {
     ICON_MOBILE: 'destination-settings-icon-mobile',
     ICON_MOBILE_SHARED: 'destination-settings-icon-mobile-shared',
     LOCATION: 'destination-settings-location',
-    NAME: 'destination-settings-name'
+    NAME: 'destination-settings-name',
+    THOBBER_NAME: 'destination-throbber-name'
   };
 
   DestinationSettings.prototype = {
@@ -82,6 +83,11 @@ cr.define('print_preview', function() {
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationSelect_.bind(this));
+      this.tracker_.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.
+              CACHED_SELECTED_DESTINATION_INFO_READY,
+          this.onSelectedDestinationNameSet_.bind(this));
     },
 
     /**
@@ -114,9 +120,19 @@ cr.define('print_preview', function() {
       locationEl.textContent = destination.location;
       locationEl.title = destination.location;
 
-      setIsVisible(this.getElement().querySelector('.throbber'), false);
+      setIsVisible(this.getElement().querySelector('.throbber-container'),
+                   false);
       setIsVisible(
           this.getElement().querySelector('.destination-settings-box'), true);
+    },
+
+    onSelectedDestinationNameSet_: function() {
+      var destinationName =
+          this.destinationStore_.selectedDestination.displayName;
+      var nameEl = this.getElement().getElementsByClassName(
+          DestinationSettings.Classes_.THOBBER_NAME)[0];
+      nameEl.textContent = destinationName;
+      nameEl.title = destinationName;
     }
   };
 

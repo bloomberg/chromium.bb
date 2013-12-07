@@ -279,6 +279,8 @@ cr.define('print_preview', function() {
           // privet printers in this case.
           this.nativeLayer_.startGetPrivetDestinations();
 
+          var destinationName = this.appState_.selectedDestinationName || '';
+
           // Create a fake selectedDestination_ that is not actually in the
           // destination store. When the real destination is created, this
           // destination will be overwritten.
@@ -286,7 +288,7 @@ cr.define('print_preview', function() {
               this.initialDestinationId_,
               print_preview.Destination.Type.LOCAL,
               print_preview.Destination.Origin.PRIVET,
-              '',
+              destinationName,
               false /*isRecent*/,
               print_preview.Destination.ConnectionStatus.ONLINE);
           this.selectedDestination_.capabilities =
