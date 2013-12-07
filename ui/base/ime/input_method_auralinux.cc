@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/input_method_linux_x11.h"
+#include "ui/base/ime/input_method_auralinux.h"
 
 #include "base/environment.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
@@ -11,15 +11,16 @@
 
 namespace ui {
 
-InputMethodLinuxX11::InputMethodLinuxX11(
+InputMethodAuraLinux::InputMethodAuraLinux(
     internal::InputMethodDelegate* delegate) {
   SetDelegate(delegate);
 }
 
-InputMethodLinuxX11::~InputMethodLinuxX11() {}
+InputMethodAuraLinux::~InputMethodAuraLinux() {}
 
 // static
-void InputMethodLinuxX11::Initialize() {
+void InputMethodAuraLinux::Initialize() {
+#if (USE_X11)
   // Force a IBus IM context to run in synchronous mode.
   //
   // Background: IBus IM context runs by default in asynchronous mode.  In
@@ -44,11 +45,12 @@ void InputMethodLinuxX11::Initialize() {
   // ui::InitializeInputMethod().
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar("IBUS_ENABLE_SYNC_MODE", "1");
+#endif
 }
 
 // Overriden from InputMethod.
 
-void InputMethodLinuxX11::Init(bool focused) {
+void InputMethodAuraLinux::Init(bool focused) {
   CHECK(LinuxInputMethodContextFactory::instance());
   input_method_context_ =
       LinuxInputMethodContextFactory::instance()->CreateInputMethodContext(
@@ -65,13 +67,13 @@ void InputMethodLinuxX11::Init(bool focused) {
   }
 }
 
-bool InputMethodLinuxX11::OnUntranslatedIMEMessage(
+bool InputMethodAuraLinux::OnUntranslatedIMEMessage(
     const base::NativeEvent& event,
     NativeEventResult* result) {
   return false;
 }
 
-bool InputMethodLinuxX11::DispatchKeyEvent(const ui::KeyEvent& event) {
+bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
   DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
 
@@ -103,7 +105,7 @@ bool InputMethodLinuxX11::DispatchKeyEvent(const ui::KeyEvent& event) {
   return handled;
 }
 
-void InputMethodLinuxX11::OnTextInputTypeChanged(
+void InputMethodAuraLinux::OnTextInputTypeChanged(
     const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
@@ -112,67 +114,67 @@ void InputMethodLinuxX11::OnTextInputTypeChanged(
   input_method_context_->OnTextInputTypeChanged(client->GetTextInputType());
 }
 
-void InputMethodLinuxX11::OnCaretBoundsChanged(const TextInputClient* client) {
+void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
   input_method_context_->OnCaretBoundsChanged(
       GetTextInputClient()->GetCaretBounds());
 }
 
-void InputMethodLinuxX11::CancelComposition(const TextInputClient* client) {
+void InputMethodAuraLinux::CancelComposition(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
   input_method_context_->Reset();
   input_method_context_->OnTextInputTypeChanged(client->GetTextInputType());
 }
 
-void InputMethodLinuxX11::OnInputLocaleChanged() {
+void InputMethodAuraLinux::OnInputLocaleChanged() {
 }
 
-std::string InputMethodLinuxX11::GetInputLocale() {
+std::string InputMethodAuraLinux::GetInputLocale() {
   return "";
 }
 
-base::i18n::TextDirection InputMethodLinuxX11::GetInputTextDirection() {
+base::i18n::TextDirection InputMethodAuraLinux::GetInputTextDirection() {
   return input_method_context_->GetInputTextDirection();
 }
 
-bool InputMethodLinuxX11::IsActive() {
-  // InputMethodLinuxX11 is always ready and up.
+bool InputMethodAuraLinux::IsActive() {
+  // InputMethodAuraLinux is always ready and up.
   return true;
 }
 
-bool InputMethodLinuxX11::IsCandidatePopupOpen() const {
+bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
   // There seems no way to detect candidate windows or any popups.
   return false;
 }
 
 // Overriden from ui::LinuxInputMethodContextDelegate
 
-void InputMethodLinuxX11::OnCommit(const base::string16& text) {
+void InputMethodAuraLinux::OnCommit(const base::string16& text) {
   TextInputClient* text_input_client = GetTextInputClient();
   if (text_input_client)
     text_input_client->InsertText(text);
 }
 
-void InputMethodLinuxX11::OnPreeditChanged(
+void InputMethodAuraLinux::OnPreeditChanged(
     const CompositionText& composition_text) {
   TextInputClient* text_input_client = GetTextInputClient();
   if (text_input_client)
     text_input_client->SetCompositionText(composition_text);
 }
 
-void InputMethodLinuxX11::OnPreeditEnd() {
+void InputMethodAuraLinux::OnPreeditEnd() {
   TextInputClient* text_input_client = GetTextInputClient();
   if (text_input_client && text_input_client->HasCompositionText())
     text_input_client->ClearCompositionText();
 }
 
-void InputMethodLinuxX11::OnPreeditStart() {}
+void InputMethodAuraLinux::OnPreeditStart() {}
 
 // Overridden from InputMethodBase.
 
-void InputMethodLinuxX11::OnDidChangeFocusedClient(
+void InputMethodAuraLinux::OnDidChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   input_method_context_->Reset();

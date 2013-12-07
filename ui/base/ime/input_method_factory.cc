@@ -15,7 +15,7 @@
 #include "ui/base/ime/input_method_tsf.h"
 #include "ui/base/ime/remote_input_method_win.h"
 #elif defined(USE_AURA) && defined(USE_X11)
-#include "ui/base/ime/input_method_linux_x11.h"
+#include "ui/base/ime/input_method_auralinux.h"
 #else
 #include "ui/base/ime/input_method_minimal.h"
 #endif
@@ -64,7 +64,7 @@ scoped_ptr<InputMethod> DefaultInputMethodFactory::CreateInputMethod(
     return CreateRemoteInputMethodWin(delegate);
   return scoped_ptr<InputMethod>(new InputMethodIMM32(delegate, widget));
 #elif defined(USE_AURA) && defined(USE_X11)
-  return scoped_ptr<InputMethod>(new InputMethodLinuxX11(delegate));
+  return scoped_ptr<InputMethod>(new InputMethodAuraLinux(delegate));
 #else
   return scoped_ptr<InputMethod>(new InputMethodMinimal(delegate));
 #endif

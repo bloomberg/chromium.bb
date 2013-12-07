@@ -12,7 +12,7 @@
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #elif defined(USE_AURA) && defined(USE_X11)
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/ime/input_method_linux_x11.h"
+#include "ui/base/ime/input_method_auralinux.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #elif defined(OS_WIN)
 #include "base/win/metro.h"
@@ -35,7 +35,7 @@ void InitializeInputMethod() {
 #if defined(OS_CHROMEOS)
   chromeos::IBusBridge::Initialize();
 #elif defined(USE_AURA) && defined(USE_X11)
-  InputMethodLinuxX11::Initialize();
+  InputMethodAuraLinux::Initialize();
 #elif defined(OS_WIN)
   if (base::win::IsTSFAwareRequired())
     TSFBridge::Initialize();

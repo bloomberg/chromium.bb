@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_INPUT_METHOD_LINUX_X11_H_
-#define UI_BASE_IME_INPUT_METHOD_LINUX_X11_H_
+#ifndef UI_BASE_IME_INPUT_METHOD_AURALINUX_H_
+#define UI_BASE_IME_INPUT_METHOD_AURALINUX_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/input_method_base.h"
@@ -11,14 +11,14 @@
 
 namespace ui {
 
-// A ui::InputMethod implementation for a X11 event loop on GNU/Linux.
-// This class is not designed for supporting CrOS.  The implementation details
-// are separated to ui::LinuxInputMethodContext interface.
-class InputMethodLinuxX11 : public InputMethodBase,
-                            public LinuxInputMethodContextDelegate {
+// A ui::InputMethod implementation for Aura on Linux platforms. The
+// implementation details are separated to ui::LinuxInputMethodContext
+// interface.
+class InputMethodAuraLinux : public InputMethodBase,
+                             public LinuxInputMethodContextDelegate {
  public:
-  explicit InputMethodLinuxX11(internal::InputMethodDelegate* delegate);
-  virtual ~InputMethodLinuxX11();
+  explicit InputMethodAuraLinux(internal::InputMethodDelegate* delegate);
+  virtual ~InputMethodAuraLinux();
 
   // Initializes input methods.  This function must be called once prior to
   // any use of this instance.  This function is supposed to be called from
@@ -53,9 +53,9 @@ class InputMethodLinuxX11 : public InputMethodBase,
 
   scoped_ptr<LinuxInputMethodContext> input_method_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodLinuxX11);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodAuraLinux);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_INPUT_METHOD_LINUX_X11_H_
+#endif  // UI_BASE_IME_INPUT_METHOD_AURALINUX_H_

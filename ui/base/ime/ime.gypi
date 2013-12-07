@@ -36,8 +36,8 @@
     'input_method_imm32.h',
     'input_method_initializer.cc',
     'input_method_initializer.h',
-    'input_method_linux_x11.cc',
-    'input_method_linux_x11.h',
+    'input_method_auralinux.cc',
+    'input_method_auralinux.h',
     'input_method_minimal.cc',
     'input_method_minimal.h',
     'input_method_observer.h',
@@ -109,10 +109,10 @@
         'input_method_tsf.h',
       ],
     }],
-    ['use_aura==0 or use_x11==0 or desktop_linux==0', {
+    ['use_aura==0 or desktop_linux==0', {
       'sources!': [
-        'input_method_linux_x11.cc',
-        'input_method_linux_x11.h',
+        'input_method_auralinux.cc',
+        'input_method_auralinux.h',
       ],
     }],
     ['use_aura==0 or desktop_linux==0', {
