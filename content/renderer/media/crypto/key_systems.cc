@@ -13,6 +13,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/key_system_info.h"
+#include "content/renderer/media/crypto/key_systems_support_uma.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -135,10 +136,9 @@ class KeySystems {
                         const std::string& codecs_list,
                         KeySystemProperties* properties);
 
-  bool IsSupportedKeySystemWithContainerAndCodec(
-      const std::string& mime_type,
-      const std::string& codec,
-      const std::string& key_system);
+  bool IsSupportedKeySystemWithContainerAndCodec(const std::string& mime_type,
+                                                 const std::string& codec,
+                                                 const std::string& key_system);
 
   // Map from key system string to capabilities.
   KeySystemPropertiesMap concrete_key_system_map_;
@@ -146,6 +146,8 @@ class KeySystems {
   // Map from parent key system to the concrete key system that should be used
   // to represent its capabilities.
   ParentKeySystemMap parent_key_system_map_;
+
+  KeySystemsSupportUMA key_systems_support_uma_;
 
   DISALLOW_COPY_AND_ASSIGN(KeySystems);
 };
@@ -164,6 +166,9 @@ KeySystems::KeySystems() {
   // Clear Key is always supported.
   AddClearKey(&key_systems_info);
   AddConcreteSupportedKeySystems(key_systems_info);
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  key_systems_support_uma_.AddKeySystemToReport(kWidevineKeySystem);
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 }
 
 void KeySystems::AddConcreteSupportedKeySystems(
@@ -251,12 +256,17 @@ bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
     const std::string& mime_type,
     const std::string& codec,
     const std::string& key_system) {
-  DCHECK(!mime_type.empty() || codec.empty());
+  bool has_type = !mime_type.empty();
+  DCHECK(has_type || codec.empty());
+
+  key_systems_support_uma_.ReportKeySystemQuery(key_system, has_type);
 
   KeySystemPropertiesMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end())
     return false;
+
+  key_systems_support_uma_.ReportKeySystemSupport(key_system, false);
 
   if (mime_type.empty())
     return true;
@@ -266,11 +276,17 @@ bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
   if (mime_iter == mime_types_map.end())
     return false;
 
-  if (codec.empty())
+  if (codec.empty()) {
+    key_systems_support_uma_.ReportKeySystemSupport(key_system, true);
     return true;
+  }
 
   const CodecSet& codecs = mime_iter->second;
-  return (codecs.find(codec) != codecs.end());
+  if (codecs.find(codec) == codecs.end())
+    return false;
+
+  key_systems_support_uma_.ReportKeySystemSupport(key_system, true);
+  return true;
 }
 
 bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
@@ -294,7 +310,7 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
 
   for (size_t i = 0; i < codecs.size(); ++i) {
     if (!IsSupportedKeySystemWithContainerAndCodec(
-            mime_type, codecs[i], concrete_key_system)) {
+             mime_type, codecs[i], concrete_key_system)) {
       return false;
     }
   }
@@ -356,6 +372,10 @@ bool IsSupportedKeySystemWithMediaMimeType(
 
 std::string KeySystemNameForUMA(const blink::WebString& key_system) {
   return KeySystemNameForUMAInternal(key_system);
+}
+
+std::string KeySystemNameForUMA(const std::string& key_system) {
+  return KeySystemNameForUMAInternal(blink::WebString::fromUTF8(key_system));
 }
 
 bool CanUseAesDecryptor(const std::string& concrete_key_system) {

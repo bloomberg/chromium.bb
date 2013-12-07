@@ -676,6 +676,10 @@
 0x5569092107ae9fb0	JustifyCenter
 0xb2e54b8c7671e92e	JustifyLeft
 0xcd362d0d3c2a301a	JustifyRight
+0xbcdd33480e8d115d	KeySystemSupport.Widevine.Queried
+0x9768048447968d10	KeySystemSupport.Widevine.Supported
+0x2bde1e6310d1cd7d	KeySystemSupport.WidevineWithType.Queried
+0xc15bca86fafab1d5	KeySystemSupport.WidevineWithType.Supported
 0x54eeedf1d26e7698	KeywordEditor_AddKeyword
 0x204aad0f4a1f0f22	KeywordEditor_AddKeywordJS
 0x37ac83353fd9be1f	KeywordEditor_ModifiedKeyword

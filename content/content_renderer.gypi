@@ -227,6 +227,8 @@
     'renderer/media/crypto/content_decryption_module_factory.h',
     'renderer/media/crypto/key_systems.cc',
     'renderer/media/crypto/key_systems.h',
+    'renderer/media/crypto/key_systems_support_uma.cc',
+    'renderer/media/crypto/key_systems_support_uma.h',
     'renderer/media/crypto/ppapi_decryptor.cc',
     'renderer/media/crypto/ppapi_decryptor.h',
     'renderer/media/crypto/proxy_decryptor.cc',

@@ -54,6 +54,7 @@ KNOWN_COMPUTED_USERS = (
   'mock_render_thread.cc',  # mock of RenderThread::RecordComputedAction()
   'ppb_pdf_impl.cc',  # see AddClosedSourceActions()
   'pepper_pdf_host.cc',  # see AddClosedSourceActions()
+  'key_systems_support_uma.cc',  # See AddKeySystemSupportActions()
 )
 
 # Language codes used in Chrome. The list should be updated when a new
@@ -549,6 +550,17 @@ def AddHistoryPageActions(actions):
   actions.add('HistoryPage_ConfirmRemoveSelected')
   actions.add('HistoryPage_CancelRemoveSelected')
 
+def AddKeySystemSupportActions(actions):
+  """Add actions that are used for key system support metrics.
+
+  Arguments
+    actions: set of actions to add to.
+  """
+  actions.add('KeySystemSupport.Widevine.Queried')
+  actions.add('KeySystemSupport.WidevineWithType.Queried')
+  actions.add('KeySystemSupport.Widevine.Supported')
+  actions.add('KeySystemSupport.WidevineWithType.Supported')
+
 def main(argv):
   if '--hash' in argv:
     hash_output = True
@@ -588,6 +600,7 @@ def main(argv):
   AddClosedSourceActions(actions)
   AddExtensionActions(actions)
   AddHistoryPageActions(actions)
+  AddKeySystemSupportActions(actions)
 
   if hash_output:
     f = open(chromeactions_path, "wb")

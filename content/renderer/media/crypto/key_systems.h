@@ -35,6 +35,7 @@ CONTENT_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
 // Returns a name for |key_system| suitable to UMA logging.
 CONTENT_EXPORT std::string KeySystemNameForUMA(
     const blink::WebString& key_system);
+CONTENT_EXPORT std::string KeySystemNameForUMA(const std::string& key_system);
 
 // Returns whether AesDecryptor can be used for the given |concrete_key_system|.
 CONTENT_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
