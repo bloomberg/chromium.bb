@@ -23,6 +23,7 @@ class Array {
  public:
   typedef internal::ArrayTraits<T, internal::TypeTraits<T>::kIsObject> Traits_;
   typedef typename Traits_::DataType Data;
+  typedef typename Traits_::ConstRef ConstRef;
 
   Array() : data_(NULL) {
   }
@@ -52,16 +53,17 @@ class Array {
 
   size_t size() const { return data_->size(); }
 
-  const T& at(size_t offset) const {
+  ConstRef at(size_t offset) const {
     return Traits_::ToConstRef(data_->at(offset));
   }
-  const T& operator[](size_t offset) const { return at(offset); }
+  ConstRef operator[](size_t offset) const { return at(offset); }
 
   // Provides a way to initialize an array element-by-element.
   class Builder {
    public:
     typedef typename Array<T>::Data Data;
     typedef typename Array<T>::Traits_ Traits_;
+    typedef typename Traits_::Ref Ref;
 
     explicit Builder(size_t num_elements, Buffer* buf = mojo::Buffer::current())
         : data_(Data::New(num_elements, buf)) {
@@ -69,10 +71,10 @@ class Array {
 
     size_t size() const { return data_->size(); }
 
-    T& at(size_t offset) {
+    Ref at(size_t offset) {
       return Traits_::ToRef(data_->at(offset));
     }
-    T& operator[](size_t offset) { return at(offset); }
+    Ref operator[](size_t offset) { return at(offset); }
 
     Array<T> Finish() {
       Data* data = NULL;
