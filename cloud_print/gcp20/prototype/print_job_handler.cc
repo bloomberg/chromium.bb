@@ -251,7 +251,7 @@ bool PrintJobHandler::SavePrintJob(const std::string& content,
     return false;
   }
 
-  LOG(INFO) << "Job saved at " << directory.value();
+  VLOG(0) << "Job saved at " << directory.value();
   return true;
 }
 

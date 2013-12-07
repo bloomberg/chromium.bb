@@ -60,7 +60,7 @@ bool DnsSdServer::Start(const ServiceParameters& serv_params, uint32 full_ttl,
   full_ttl_ = full_ttl;
   metadata_ = metadata;
 
-  LOG(INFO) << "DNS server started";
+  VLOG(0) << "DNS server started";
   LOG(WARNING) << "DNS server does not support probing";
 
   SendAnnouncement(full_ttl_);
@@ -85,7 +85,7 @@ void DnsSdServer::Shutdown() {
   SendAnnouncement(0);  // TTL is 0
   socket_->Close();
   socket_.reset(NULL);
-  LOG(INFO) << "DNS server stopped";
+  VLOG(0) << "DNS server stopped";
 }
 
 void DnsSdServer::UpdateMetadata(const std::vector<std::string>& metadata) {
@@ -172,7 +172,7 @@ void DnsSdServer::ProcessMessage(int len, net::IOBufferWithSize* buf) {
     if (success) {
       ProccessQuery(current_ttl, query, &builder);
     } else {  // if (success)
-      LOG(INFO) << "Broken package";
+      VLOG(0) << "Broken package";
       break;
     }
   }

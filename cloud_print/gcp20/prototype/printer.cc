@@ -261,9 +261,9 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
 
   if (CommandLine::ForCurrentProcess()->HasSwitch("disable-confirmation")) {
     state_.confirmation_state = PrinterState::CONFIRMATION_CONFIRMED;
-    LOG(INFO) << "Registration confirmed by default.";
+    VLOG(0) << "Registration confirmed by default.";
   } else {
-    printf("%s", kUserConfirmationTitle);
+    LOG(WARNING) << kUserConfirmationTitle;
     base::Time valid_until = base::Time::Now() +
         base::TimeDelta::FromSeconds(kUserConfirmationTimeout);
     base::MessageLoop::current()->PostTask(
@@ -517,14 +517,14 @@ void Printer::OnServerError(const std::string& description) {
 void Printer::OnPrintJobsAvailable(const std::vector<Job>& jobs) {
   VLOG(3) << "Function: " << __FUNCTION__;
 
-  LOG(INFO) << "Available printjobs: " << jobs.size();
+  VLOG(0) << "Available printjobs: " << jobs.size();
   if (jobs.empty()) {
     pending_print_jobs_check_ = false;
     PostOnIdle();
     return;
   }
 
-  LOG(INFO) << "Downloading printjob.";
+  VLOG(0) << "Downloading printjob.";
   requester_->RequestPrintJob(jobs[0]);
   return;
 }
@@ -546,11 +546,11 @@ void Printer::OnLocalSettingsReceived(LocalSettings::State state,
   pending_local_settings_check_ = false;
   switch (state) {
     case LocalSettings::CURRENT:
-      LOG(INFO) << "No new local settings";
+      VLOG(0) << "No new local settings";
       PostOnIdle();
       break;
     case LocalSettings::PENDING:
-      LOG(INFO) << "New local settings were received";
+      VLOG(0) << "New local settings were received";
       ApplyLocalSettings(settings);
       break;
     case LocalSettings::PRINTER_DELETED:
@@ -710,7 +710,7 @@ void Printer::RememberAccessToken(const std::string& access_token,
                                             kTimeToNextAccessTokenUpdate);
   state_.access_token_update =
       Time::Now() + TimeDelta::FromSeconds(time_to_update);
-  VLOG(1) << "Current access_token: " << access_token;
+  VLOG(0) << "Current access_token: " << access_token;
   SaveToFile();
 }
 
@@ -745,7 +745,7 @@ void Printer::WaitUserConfirmation(base::Time valid_until) {
 
   if (base::Time::Now() > valid_until) {
     state_.confirmation_state = PrinterState::CONFIRMATION_TIMEOUT;
-    LOG(INFO) << "Confirmation timeout reached.";
+    VLOG(0) << "Confirmation timeout reached.";
     return;
   }
 
@@ -753,10 +753,10 @@ void Printer::WaitUserConfirmation(base::Time valid_until) {
     int c = _getche();
     if (c == 'y' || c == 'Y') {
       state_.confirmation_state = PrinterState::CONFIRMATION_CONFIRMED;
-      LOG(INFO) << "Registration confirmed by user.";
+      VLOG(0) << "Registration confirmed by user.";
     } else {
       state_.confirmation_state = PrinterState::CONFIRMATION_DISCARDED;
-      LOG(INFO) << "Registration discarded by user.";
+      VLOG(0) << "Registration discarded by user.";
     }
     return;
   }
@@ -791,9 +791,9 @@ void Printer::SaveToFile() {
       command_line_reader::ReadStatePath(kPrinterStatePathDefault));
 
   if (printer_state::SaveToFile(file_path, state_)) {
-    LOG(INFO) << "Printer state written to file";
+    VLOG(0) << "Printer state written to file";
   } else {
-    LOG(INFO) << "Cannot write printer state to file";
+    VLOG(0) << "Cannot write printer state to file";
   }
 }
 
@@ -805,15 +805,15 @@ bool Printer::LoadFromFile() {
       command_line_reader::ReadStatePath(kPrinterStatePathDefault));
 
   if (!base::PathExists(file_path)) {
-    LOG(INFO) << "Printer state file not found";
+    VLOG(0) << "Printer state file not found";
     return false;
   }
 
   if (printer_state::LoadFromFile(file_path, &state_)) {
-    LOG(INFO) << "Printer state loaded from file";
+    VLOG(0) << "Printer state loaded from file";
     SaveToFile();
   } else {
-    LOG(INFO) << "Reading/parsing printer state from file failed";
+    VLOG(0) << "Reading/parsing printer state from file failed";
   }
 
   return true;
@@ -865,7 +865,7 @@ bool Printer::StartDnsServer() {
     LOG(ERROR) << "No local IP found. Cannot start printer.";
     return false;
   }
-  VLOG(1) << "Local address: " << net::IPAddressToString(ip);
+  VLOG(0) << "Local address: " << net::IPAddressToString(ip);
 
   uint16 port = command_line_reader::ReadHttpPort(kHttpPortDefault);
 
@@ -948,7 +948,7 @@ bool Printer::ChangeState(ConnectionState new_state) {
     return false;
 
   connection_state_ = new_state;
-  LOG(INFO) << base::StringPrintf(
+  VLOG(0) << base::StringPrintf(
       "Printer is now %s (%s)",
       ConnectionStateToString(connection_state_).c_str(),
       IsRegistered() ? "registered" : "unregistered");
