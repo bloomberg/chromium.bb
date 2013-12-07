@@ -21,19 +21,21 @@ import os
 import urllib
 import urlparse
 
+# Dummy module for DAVclient.
+davclient = None
+
+
 # Link to file containing the 'davclient' WebDAV client library.
-_DAVCLIENT_URL = ('https://src.chromium.org/chrome/trunk/src/tools/' +
+_DAVCLIENT_URL = ('https://src.chromium.org/chrome/trunk/src/tools/'
                   'telemetry/third_party/davclient/davclient.py')
 
-# Dummy module for Davclient.
-_davclient = None
 
-def _download_and_import_davclient_module():
+def _DownloadAndImportDAVClientModule():
   """Dynamically import davclient helper library."""
-  global _davclient
+  global davclient
   davclient_src = urllib.urlopen(_DAVCLIENT_URL).read()
-  _davclient = imp.new_module('davclient')
-  exec davclient_src in _davclient.__dict__
+  davclient = imp.new_module('davclient')
+  exec davclient_src in davclient.__dict__
 
 
 class DAVClientWrapper():
@@ -46,7 +48,7 @@ class DAVClientWrapper():
       root_url: string url of SVN/WebDAV server
     """
     self.root_url = root_url
-    self.client = _davclient.DAVClient(root_url)
+    self.client = davclient.DAVClient(root_url)
 
   @staticmethod
   def __norm_path_keys(dict_with_path_keys):
@@ -78,10 +80,13 @@ class DAVClientWrapper():
     """
     if self.IsFile(src_path):
       if not os.path.exists(os.path.dirname(dst_path)):
-        logging.info("creating %s", os.path.dirname(dst_path))
+        logging.info('Creating %s', os.path.dirname(dst_path))
         os.makedirs(os.path.dirname(dst_path))
-      logging.info("Saving %s to %s", self.root_url + src_path, dst_path)
-      urllib.urlretrieve(self.root_url + src_path, dst_path)
+      if os.path.isfile(dst_path):
+        logging.info('Skipping %s', dst_path)
+      else:
+        logging.info('Saving %s to %s', self.root_url + src_path, dst_path)
+        urllib.urlretrieve(self.root_url + src_path, dst_path)
       return
     else:
       for subdir in self.GetDirList(src_path):
@@ -89,7 +94,7 @@ class DAVClientWrapper():
                       os.path.join(dst_path, subdir))
 
 
-def ListAllDepsPaths(deps_content):
+def ListAllDepsPaths(deps_file):
   """Recursively returns a list of all paths indicated in this deps file.
 
   Note that this discards information about where path dependencies come from,
@@ -97,58 +102,53 @@ def ListAllDepsPaths(deps_content):
   already fetched all dependencies.
 
   Args:
-    deps_content: String containing deps information to be evaluated, in the
-                  format given in the header of this file.
-  Returns: A list of string paths starting under src that are required by the
-           given deps file, and all of its sub-dependencies. This amounts to
-           the keys of the 'deps' dictionary.
+    deps_file: File containing deps information to be evaluated, in the
+               format given in the header of this file.
+  Returns:
+    A list of string paths starting under src that are required by the
+    given deps file, and all of its sub-dependencies. This amounts to
+    the keys of the 'deps' dictionary.
   """
+  deps = {}
+  deps_includes = {}
+
   chrome_root = os.path.dirname(__file__)
   while os.path.basename(chrome_root) != 'src':
-    chrome_root = os.path.abspath(os.path.join(chrome_root, '..'))
-  deps = imp.new_module('deps')
-  exec deps_content in deps.__dict__
+    chrome_root = os.path.abspath(os.path.join(chrome_root, os.pardir))
 
-  deps_paths = deps.deps.keys()
+  exec open(deps_file).read()
 
-  if hasattr(deps, 'deps_includes'):
-    for path in deps.deps_includes.keys():
-      # Need to localize the paths.
-      path = os.path.join(chrome_root, '..', path)
-      deps_paths = deps_paths + ListAllDepsPaths(open(path).read())
+  deps_paths = deps.keys()
+
+  for path in deps_includes.keys():
+    # Need to localize the paths.
+    path = os.path.join(chrome_root, os.pardir, path)
+    deps_paths += ListAllDepsPaths(path)
 
   return deps_paths
 
 
-def DownloadDepsURL(destination_dir, url):
-  """Wrapper around DownloadDeps that takes a string URL to the deps file.
-
-  Args:
-    destination_dir: String path to local directory to download files into.
-    url: URL of deps file (see DownloadDeps for format).
-  """
-  logging.warning('Downloading deps from %s...', url)
-  DownloadDeps(destination_dir, urllib.urlopen(url).read())
-
-
-def DownloadDeps(destination_dir, deps_content):
+def DownloadDeps(destination_dir, url):
   """Saves all the dependencies in deps_path.
 
-  Reads deps_content, assuming the contents are in the simple DEPS-like file
+  Opens and reads url, assuming the contents are in the simple DEPS-like file
   format specified in the header of this file, then download all
   files/directories listed to the destination_dir.
 
   Args:
     destination_dir: String path to directory to download files into.
-    deps_content: String containing deps information to be evaluated.
+    url: URL containing deps information to be evaluated.
   """
+  logging.warning('Downloading deps from %s...', url)
   # TODO(wiltzius): Add a parameter for which revision to pull.
-  _download_and_import_davclient_module()
+  _DownloadAndImportDAVClientModule()
 
-  deps = imp.new_module('deps')
-  exec deps_content in deps.__dict__
+  deps = {}
+  deps_includes = {}
 
-  for dst_path, src_path in deps.deps.iteritems():
+  exec urllib.urlopen(url).read()
+
+  for dst_path, src_path in deps.iteritems():
     full_dst_path = os.path.join(destination_dir, dst_path)
     parsed_url = urlparse.urlparse(src_path)
     root_url = parsed_url.scheme + '://' + parsed_url.netloc
@@ -156,7 +156,5 @@ def DownloadDeps(destination_dir, deps_content):
     dav_client = DAVClientWrapper(root_url)
     dav_client.Traverse(parsed_url.path, full_dst_path)
 
-  if hasattr(deps, 'deps_includes'):
-    for url in deps.deps_includes.values():
-      DownloadDepsURL(destination_dir, url)
-
+  for url in deps_includes.values():
+    DownloadDeps(destination_dir, url)
