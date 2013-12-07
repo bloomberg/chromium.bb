@@ -124,6 +124,7 @@ void LayerAnimationController::PushAnimationUpdatesTo(
 }
 
 void LayerAnimationController::Animate(double monotonic_time) {
+  DCHECK(monotonic_time);
   if (!HasValueObserver())
     return;
 
@@ -143,6 +144,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
     if (!animation->is_impl_only())
       continue;
 
+    double trimmed = animation->TrimTimeToCurrentIteration(monotonic_time);
     switch (animation->target_property()) {
       case Animation::Opacity: {
         AnimationEvent event(AnimationEvent::PropertyUpdate,
@@ -151,7 +153,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
                              Animation::Opacity,
                              monotonic_time);
         event.opacity = animation->curve()->ToFloatAnimationCurve()->GetValue(
-            monotonic_time);
+            trimmed);
         event.is_impl_only = true;
         events->push_back(event);
         break;
@@ -164,8 +166,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
                              Animation::Transform,
                              monotonic_time);
         event.transform =
-            animation->curve()->ToTransformAnimationCurve()->GetValue(
-                monotonic_time);
+            animation->curve()->ToTransformAnimationCurve()->GetValue(trimmed);
         event.is_impl_only = true;
         events->push_back(event);
         break;
@@ -178,7 +179,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
                              Animation::Filter,
                              monotonic_time);
         event.filters = animation->curve()->ToFilterAnimationCurve()->GetValue(
-            monotonic_time);
+            trimmed);
         event.is_impl_only = true;
         events->push_back(event);
         break;
