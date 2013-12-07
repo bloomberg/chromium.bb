@@ -64,51 +64,32 @@ const uint8 ihfo_hash[] = {0x87, 0x5e, 0xa1, 0xa6, 0x9f, 0x85, 0xd1, 0x1e,
 
 class TestConfigurator : public ComponentUpdateService::Configurator {
  public:
-  explicit TestConfigurator();
-
+  TestConfigurator();
   virtual ~TestConfigurator();
 
+  // Overrrides for ComponentUpdateService::Configurator.
   virtual int InitialDelay() OVERRIDE;
+  virtual int NextCheckDelay() OVERRIDE;
+  virtual int StepDelay() OVERRIDE;
+  virtual int StepDelayMedium() OVERRIDE;
+  virtual int MinimumReCheckWait() OVERRIDE;
+  virtual int OnDemandDelay() OVERRIDE;
+  virtual GURL UpdateUrl() OVERRIDE;
+  virtual GURL PingUrl() OVERRIDE;
+  virtual const char* ExtraRequestParams() OVERRIDE;
+  virtual size_t UrlSizeLimit() OVERRIDE;
+  virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
+  virtual bool InProcess() OVERRIDE;
+  virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
+  virtual bool DeltasEnabled() const OVERRIDE;
+  virtual bool UseBackgroundDownloader() const OVERRIDE;
 
   typedef std::pair<CrxComponent*, int> CheckAtLoopCount;
-
-  virtual int NextCheckDelay() OVERRIDE;
-
-  virtual int StepDelay() OVERRIDE;
-
-  virtual int StepDelayMedium() OVERRIDE;
-
-  virtual int MinimumReCheckWait() OVERRIDE;
-
-  virtual int OnDemandDelay() OVERRIDE;
-
-  virtual GURL UpdateUrl() OVERRIDE;
-
-  virtual GURL PingUrl() OVERRIDE;
-
-  virtual const char* ExtraRequestParams() OVERRIDE;
-
-  virtual size_t UrlSizeLimit() OVERRIDE;
-
-  virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
-
-  // Don't use the utility process to run component updater code.
-  virtual bool InProcess() OVERRIDE;
-
-  virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
-
-  virtual bool DeltasEnabled() const OVERRIDE;
-
   void SetLoopCount(int times);
-
   void SetRecheckTime(int seconds);
-
   void SetOnDemandTime(int seconds);
-
   void SetComponentUpdateService(ComponentUpdateService* cus);
-
   void SetQuitClosure(const base::Closure& quit_closure);
-
   void SetInitialDelay(int seconds);
 
  private:

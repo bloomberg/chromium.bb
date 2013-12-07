@@ -102,5 +102,10 @@ int GetFetchError(const net::URLFetcher& fetcher) {
   }
 }
 
+
+bool IsHttpServerError(int status_code) {
+  return 500 <= status_code && status_code < 600;
+}
+
 }  // namespace component_updater
 

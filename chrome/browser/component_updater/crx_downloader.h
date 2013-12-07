@@ -31,39 +31,58 @@ namespace component_updater {
 // that, the download request is routed to the next downloader in the chain.
 // The members of this class expect to be called from the UI thread only.
 class CrxDownloader {
-  // |error| contains the download error: 0 indicates success. |response|
-  // contains the file path of the downloaded file, if the download was
-  // successful.
+ public:
+  // Contains the outcome of the download.
+  struct Result {
+    Result() : error(0), is_background_download(0) {}
+
+    // Download error: 0 indicates success.
+    int error;
+
+    // True if the download has been completed using the background downloader.
+    int is_background_download;
+
+    // Path of the downloaded file if the download was successful.
+    base::FilePath response;
+  };
+
   // The callback fires only once, regardless of how many urls are tried, and
   // how many successors in the chain of downloaders have handled the
   // download. The callback interface can be extended if needed to provide
   // more visibility into how the download has been handled, including
   // specific error codes and download metrics.
-  typedef base::Callback<void(int error,
-                              const base::FilePath& response)> DownloadCallback;
+  typedef base::Callback<void (const Result& result)> DownloadCallback;
 
- public:
   // Factory method to create an instance of this class and build the
-  // chain of responsibility.
+  // chain of responsibility. |is_background_download| specifies that a
+  // background downloader be used, if the platform supports it.
   static CrxDownloader* Create(
+      bool is_background_download,
       net::URLRequestContextGetter* context_getter,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const DownloadCallback& download_callback);
   virtual ~CrxDownloader();
 
   // Starts the download. One instance of the class handles one download only.
-  void StartDownloadFromUrl(const GURL& url);
-  void StartDownload(const std::vector<GURL>& urls);
-
+  // Returns true if success or false in case of errors. One instance of
+  // CrxDownloader can only be started once, otherwise the behavior is
+  // undefined.
+  bool StartDownloadFromUrl(const GURL& url);
+  bool StartDownload(const std::vector<GURL>& urls);
 
  protected:
-  CrxDownloader();
+  CrxDownloader(scoped_ptr<CrxDownloader> successor,
+                const DownloadCallback& download_callback);
 
-  // Derived class must call this function after each attempt at downloading
-  // from the urls provided in the StartDownload function.
-  void OnDownloadComplete(bool is_handled,
-                          int error,
-                          const base::FilePath& response);
+  // Handles the fallback in the case of multiple urls and routing of the
+  // download to the following successor in the chain. Derived classes must call
+  // this function after each attempt at downloading the urls provided
+  // in the StartDownload function.
+  // In case of errors, |is_handled| indicates that a server side error has
+  // occured for the current url and the url should not be retried down
+  // the chain to avoid DDOS of the server. This url will be removed from the
+  // list of url and never tried again.
+  void OnDownloadComplete(bool is_handled, const Result& result);
 
  private:
   virtual void DoStartDownload(const GURL& url) = 0;
@@ -72,7 +91,7 @@ class CrxDownloader {
   scoped_ptr<CrxDownloader> successor_;
   DownloadCallback download_callback_;
 
-  size_t current_url_;
+  std::vector<GURL>::iterator current_url_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxDownloader);
 };

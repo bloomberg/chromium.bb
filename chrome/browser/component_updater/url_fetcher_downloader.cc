@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/url_fetcher_downloader.h"
+
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -14,9 +15,12 @@ using content::BrowserThread;
 namespace component_updater {
 
 UrlFetcherDownloader::UrlFetcherDownloader(
+    scoped_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : context_getter_(context_getter),
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const DownloadCallback& download_callback)
+    : CrxDownloader(successor.Pass(), download_callback),
+      context_getter_(context_getter),
       task_runner_(task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -43,17 +47,20 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
 void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Consider a 5xx response from the server as an indication to terminate
+  // the request and avoid overloading the server in this case.
+  // is not accepting requests for the moment.
   const int fetch_error(GetFetchError(*url_fetcher_));
-  base::FilePath response;
+  const bool is_handled = fetch_error == 0 || IsHttpServerError(fetch_error);
+
+  Result result;
+  result.error = fetch_error;
+  result.is_background_download = false;
   if (!fetch_error) {
-    source->GetResponseAsFilePath(true, &response);
+    source->GetResponseAsFilePath(true, &result.response);
   }
 
-  // Consider a "503 Service Unavailable" response from the server as an
-  // indication to terminate the request and avoid overloading a server which
-  // is not accepting requests for the moment.
-  const bool is_handled = fetch_error == 0 || fetch_error == 503;
-  OnDownloadComplete(is_handled, fetch_error, response);
+  CrxDownloader::OnDownloadComplete(is_handled, result);
 }
 
 }  // namespace component_updater

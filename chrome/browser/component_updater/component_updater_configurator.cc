@@ -53,6 +53,8 @@ const char kPingUrl[] = "http:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 #if defined(OS_WIN)
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
+// Enables background downloads.
+const char kSwitchEnableBackgroundDownloads[] = "enable-background-downloads";
 #endif  // defined(OS_WIN)
 
 // Returns true if and only if |test| is contained in |vec|.
@@ -106,6 +108,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual bool InProcess() OVERRIDE;
   virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
   virtual bool DeltasEnabled() const OVERRIDE;
+  virtual bool UseBackgroundDownloader() const OVERRIDE;
 
  private:
   net::URLRequestContextGetter* url_request_getter_;
@@ -114,6 +117,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   bool fast_update_;
   bool pings_enabled_;
   bool deltas_enabled_;
+  bool background_downloads_enabled_;
 };
 
 ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
@@ -123,7 +127,8 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
             chrome::OmahaQueryParams::CHROME)),
         fast_update_(false),
         pings_enabled_(false),
-        deltas_enabled_(false) {
+        deltas_enabled_(false),
+        background_downloads_enabled_(false) {
   // Parse comma-delimited debug flags.
   std::vector<std::string> switch_values;
   Tokenize(cmdline->GetSwitchValueASCII(switches::kComponentUpdater),
@@ -132,6 +137,8 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
   pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
 #if defined(OS_WIN)
   deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
+  background_downloads_enabled_ =
+      HasSwitchValue(switch_values, kSwitchEnableBackgroundDownloads);
 #else
   deltas_enabled_ = false;
 #endif
@@ -210,6 +217,10 @@ ComponentPatcher* ChromeConfigurator::CreateComponentPatcher() {
 
 bool ChromeConfigurator::DeltasEnabled() const {
   return deltas_enabled_;
+}
+
+bool ChromeConfigurator::UseBackgroundDownloader() const {
+  return background_downloads_enabled_;
 }
 
 ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(

@@ -52,6 +52,9 @@ bool FetchSuccess(const net::URLFetcher& fetcher);
 // fetch is pending or canceled.
 int GetFetchError(const net::URLFetcher& fetcher);
 
+// Returns true if the |status_code| represents a server error 5xx.
+bool IsHttpServerError(int status_code);
+
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_UTILS_H_

@@ -180,6 +180,9 @@ class ComponentUpdateService {
     virtual ComponentPatcher* CreateComponentPatcher() = 0;
     // True means that this client can handle delta updates.
     virtual bool DeltasEnabled() const = 0;
+    // True means that the background downloader can be used for downloading
+    // non on-demand components.
+    virtual bool UseBackgroundDownloader() const = 0;
   };
 
   // Start doing update checks and installing new versions of registered

@@ -110,6 +110,10 @@ bool TestConfigurator::DeltasEnabled() const {
   return true;
 }
 
+bool TestConfigurator::UseBackgroundDownloader() const {
+  return false;
+}
+
 // Set how many update checks are called, the default value is just once.
 void TestConfigurator::SetLoopCount(int times) { times_ = times; }
 

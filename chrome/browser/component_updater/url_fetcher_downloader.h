@@ -19,8 +19,10 @@ class UrlFetcherDownloader : public CrxDownloader,
                              public net::URLFetcherDelegate {
  protected:
   friend class CrxDownloader;
-  UrlFetcherDownloader(net::URLRequestContextGetter* context_getter,
-                       scoped_refptr<base::SequencedTaskRunner> task_runner);
+  UrlFetcherDownloader(scoped_ptr<CrxDownloader> successor,
+                       net::URLRequestContextGetter* context_getter,
+                       scoped_refptr<base::SequencedTaskRunner> task_runner,
+                       const DownloadCallback& download_callback);
   virtual ~UrlFetcherDownloader();
 
  private:

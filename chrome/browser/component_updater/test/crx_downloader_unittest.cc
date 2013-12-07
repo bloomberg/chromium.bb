@@ -49,15 +49,14 @@ class CrxDownloaderTest : public testing::Test {
   void RunThreads();
   void RunThreadsUntilIdle();
 
-  void DownloadComplete(int crx_context,
-                        int error,
-                        const base::FilePath& response);
+  void DownloadComplete(int crx_context, const CrxDownloader::Result& result);
 
  protected:
   scoped_ptr<CrxDownloader> crx_downloader_;
 
   int crx_context_;
   int error_;
+  base::FilePath response_;
 
   int num_calls_;
 
@@ -93,6 +92,7 @@ CrxDownloaderTest::~CrxDownloaderTest() {
 void CrxDownloaderTest::SetUp() {
   num_calls_ = 0;
   crx_downloader_.reset(CrxDownloader::Create(
+      false,    // Do not use the background downloader in these tests.
       context_.get(),
       blocking_task_runner_,
       base::Bind(&CrxDownloaderTest::DownloadComplete,
@@ -107,12 +107,13 @@ void CrxDownloaderTest::Quit() {
   quit_closure_.Run();
 }
 
-void CrxDownloaderTest::DownloadComplete(int crx_context,
-                                         int error,
-                                         const base::FilePath& response) {
+void CrxDownloaderTest::DownloadComplete(
+    int crx_context,
+    const CrxDownloader::Result& result) {
   ++num_calls_;
   crx_context_ = crx_context;
-  error_ = error;
+  error_ = result.error;
+  response_ = result.response;
   Quit();
 }
 

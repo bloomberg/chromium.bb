@@ -263,9 +263,9 @@ class CrxUpdateService : public ComponentUpdateService {
       const component_updater::UpdateResponse::Results& results);
   void OnParseUpdateResponseFailed(const std::string& error_message);
 
-  void DownloadComplete(scoped_ptr<CRXContext> crx_context,
-                        int error,
-                        const base::FilePath& response);
+  void DownloadComplete(
+      scoped_ptr<CRXContext> crx_context,
+      const component_updater::CrxDownloader::Result& download_result);
 
   Status OnDemandUpdateInternal(CrxUpdateItem* item);
 
@@ -673,7 +673,13 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
     package_url = workitem->crx_url;
     ChangeItemState(workitem, CrxUpdateItem::kDownloading);
   }
+
+  // On demand component updates are always downloaded in foreground.
+  const bool is_background_download = !workitem->on_demand &&
+                                       config_->UseBackgroundDownloader();
+
   crx_downloader_.reset(component_updater::CrxDownloader::Create(
+      is_background_download,
       config_->RequestContext(),
       blocking_task_runner_,
       base::Bind(&CrxUpdateService::DownloadComplete,
@@ -907,19 +913,19 @@ void CrxUpdateService::OnParseUpdateResponseFailed(
 // Called when the CRX package has been downloaded to a temporary location.
 // Here we fire the notifications and schedule the component-specific installer
 // to be called in the file thread.
-void CrxUpdateService::DownloadComplete(scoped_ptr<CRXContext> crx_context,
-                                        int error,
-                                        const base::FilePath& temp_crx_path) {
+void CrxUpdateService::DownloadComplete(
+    scoped_ptr<CRXContext> crx_context,
+    const component_updater::CrxDownloader::Result& download_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   CrxUpdateItem* crx = FindUpdateItemById(crx_context->id);
   DCHECK(crx->status == CrxUpdateItem::kDownloadingDiff ||
          crx->status == CrxUpdateItem::kDownloading);
 
-  if (error) {
+  if (download_result.error) {
     if (crx->status == CrxUpdateItem::kDownloadingDiff) {
       crx->diff_error_category = kNetworkError;
-      crx->diff_error_code = error;
+      crx->diff_error_code = download_result.error;
       crx->diff_update_failed = true;
       size_t count = ChangeItemStatus(CrxUpdateItem::kDownloadingDiff,
                                       CrxUpdateItem::kCanUpdate);
@@ -930,7 +936,7 @@ void CrxUpdateService::DownloadComplete(scoped_ptr<CRXContext> crx_context,
       return;
     }
     crx->error_category = kNetworkError;
-    crx->error_code = error;
+    crx->error_code = download_result.error;
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,
                                     CrxUpdateItem::kNoUpdate);
     DCHECK_EQ(count, 1ul);
@@ -961,7 +967,7 @@ void CrxUpdateService::DownloadComplete(scoped_ptr<CRXContext> crx_context,
         base::Bind(&CrxUpdateService::Install,
                    base::Unretained(this),
                    base::Passed(&crx_context),
-                   temp_crx_path),
+                   download_result.response),
         base::TimeDelta::FromMilliseconds(config_->StepDelay()));
   }
 }
