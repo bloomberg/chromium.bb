@@ -45,9 +45,21 @@ enum {
     }                                                         \
   } while (0)
 
+// Because MediaCodec is thread-hostile (must be poked on a single thread) and
+// has no callback mechanism (b/11990118), we must drive it by polling for
+// complete frames (and available input buffers, when the codec is fully
+// saturated).  This function defines the polling delay.  The value used is an
+// arbitrary choice that trades off CPU utilization (spinning) against latency.
+// Mirrors android_video_decode_accelerator.cc::DecodePollDelay().
 static inline const base::TimeDelta EncodePollDelay() {
-  // Arbitrary choice that trades off outgoing latency against CPU utilization.
-  // Mirrors android_video_decode_accelerator.cc::DecodePollDelay().
+  // An alternative to this polling scheme could be to dedicate a new thread
+  // (instead of using the ChildThread) to run the MediaCodec, and make that
+  // thread use the timeout-based flavor of MediaCodec's dequeue methods when it
+  // believes the codec should complete "soon" (e.g. waiting for an input
+  // buffer, or waiting for a picture when it knows enough complete input
+  // pictures have been fed to saturate any internal buffering).  This is
+  // speculative and it's unclear that this would be a win (nor that there's a
+  // reasonably device-agnostic way to fill in the "believes" above).
   return base::TimeDelta::FromMilliseconds(10);
 }
 

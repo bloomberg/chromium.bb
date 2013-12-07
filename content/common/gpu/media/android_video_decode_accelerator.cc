@@ -41,8 +41,21 @@ enum { kNumPictureBuffers = media::limits::kMaxVideoFrames + 1 };
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
 enum { kMaxBitstreamsNotifiedInAdvance = 32 };
 
-// static
+// Because MediaCodec is thread-hostile (must be poked on a single thread) and
+// has no callback mechanism (b/11990118), we must drive it by polling for
+// complete frames (and available input buffers, when the codec is fully
+// saturated).  This function defines the polling delay.  The value used is an
+// arbitrary choice that trades off CPU utilization (spinning) against latency.
+// Mirrors android_video_encode_accelerator.cc:EncodePollDelay().
 static inline const base::TimeDelta DecodePollDelay() {
+  // An alternative to this polling scheme could be to dedicate a new thread
+  // (instead of using the ChildThread) to run the MediaCodec, and make that
+  // thread use the timeout-based flavor of MediaCodec's dequeue methods when it
+  // believes the codec should complete "soon" (e.g. waiting for an input
+  // buffer, or waiting for a picture when it knows enough complete input
+  // pictures have been fed to saturate any internal buffering).  This is
+  // speculative and it's unclear that this would be a win (nor that there's a
+  // reasonably device-agnostic way to fill in the "believes" above).
   return base::TimeDelta::FromMilliseconds(10);
 }
 
@@ -257,6 +270,20 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
     }
   } while (buf_index < 0);
 
+  // This ignores the emitted ByteBuffer and instead relies on rendering to the
+  // codec's SurfaceTexture and then copying from that texture to the client's
+  // PictureBuffer's texture.  This means that each picture's data is written
+  // three times: once to the ByteBuffer, once to the SurfaceTexture, and once
+  // to the client's texture.  It would be nicer to either:
+  // 1) Render directly to the client's texture from MediaCodec (one write); or
+  // 2) Upload the ByteBuffer to the client's texture (two writes).
+  // Unfortunately neither is possible:
+  // 1) MediaCodec's use of SurfaceTexture is a singleton, and the texture
+  //    written to can't change during the codec's lifetime.  b/11990461
+  // 2) The ByteBuffer is likely to contain the pixels in a vendor-specific,
+  //    opaque/non-standard format.  It's not possible to negotiate the decoder
+  //    to emit a specific colorspace, even using HW CSC.  b/10706245
+  // So, we live with these two extra copies per picture :(
   media_codec_->ReleaseOutputBuffer(buf_index, true);
 
   if (eos) {
