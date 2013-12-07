@@ -47,7 +47,7 @@ except ImportError:
 
 PRE_CQ = 'pre-cq'
 CQ = 'cq'
-
+SUBMITTED_WAIT_TIMEOUT = 30 # Time in seconds.
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -1844,10 +1844,27 @@ class ValidationPool(object):
     helper = self._helper_pool.ForChange(change)
     helper.SubmitChange(change, dryrun=self.dryrun)
     updated_change = helper.QuerySingleRecord(change.gerrit_number)
-    was_change_submitted = (updated_change.status == 'MERGED')
+
+    # If change is 'SUBMITTED' give gerrit a few seconds to resolve that
+    # to 'MERGED', if it can, otherwise consider it to be not merged.
+    if updated_change.status == 'SUBMITTED':
+      def _Query():
+        return helper.QuerySingleRecord(change.gerrit_number)
+      def _Retry(value):
+        return value and value.status == 'SUBMITTED'
+
+      try:
+        updated_change = timeout_util.WaitForSuccess(
+            _Retry, _Query, timeout=SUBMITTED_WAIT_TIMEOUT, period=1)
+      except timeout_util.TimeoutError:
+        # The change really is stuck on submitted, not merged, then.
+        pass
+
+    was_change_submitted = updated_change.status == 'MERGED'
     if not was_change_submitted:
       logging.warning(
-          'Change %s was successfully submitted, but has status "%s"',
+          'Change %s was submitted without errors, but gerrit is still'
+          ' reporting it with status "%s".  This is odd!',
           change.gerrit_number_str, updated_change.status)
     return was_change_submitted
 
