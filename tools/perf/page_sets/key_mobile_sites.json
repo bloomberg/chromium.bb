@@ -257,6 +257,25 @@
       "disabled": "Doesn't scroll; crbug.com/249736",
       "url": "http://forecast.io",
       "why": "crbug.com/231413"
+    },
+    {
+      "url": "http://mobile-news.sandbox.google.com/news/pt1",
+      "why": "Google News: accelerated scrolling version"
+    },
+    {
+      "url": "http://mobile-news.sandbox.google.com/news/pt0",
+      "why": "Google News: this iOS version is slower than accelerated scrolling",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById(':h') != null" },
+        { "action": "wait", "seconds": 1 }
+      ],
+      "smoothness": {
+        "action": "scroll",
+        "scroll_requires_touch": true,
+        "scrollable_element_function": "function(callback) { callback(document.getElementById(':5')); }",
+        "remaining_scroll_distance_function": "function() { return Math.max(0, 2500 + document.getElementById(':h').getBoundingClientRect().top); }"
+      }
     }
   ]
 }
