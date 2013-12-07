@@ -32,6 +32,7 @@
 #define ResourceLoaderOptions_h
 
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -148,6 +149,7 @@ struct ResourceLoaderOptions {
     RequestInitiatorContext requestInitiatorContext;
     MixedContentBlockingTreatment mixedContentBlockingTreatment;
     SynchronousPolicy synchronousPolicy;
+    RefPtr<SecurityOrigin> securityOrigin;
 };
 
 } // namespace WebCore

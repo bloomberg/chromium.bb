@@ -423,7 +423,11 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
 
 bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction)
 {
-    if (document() && !document()->securityOrigin()->canDisplay(url)) {
+    SecurityOrigin* securityOrigin = options.securityOrigin.get();
+    if (!securityOrigin && document())
+        securityOrigin = document()->securityOrigin();
+
+    if (securityOrigin && !securityOrigin->canDisplay(url)) {
         if (!forPreload)
             context().reportLocalLoadFailed(url);
         WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");
@@ -450,7 +454,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::ImportResource:
         // By default these types of resources can be loaded from any origin.
         // FIXME: Are we sure about Resource::Font?
-        if (originRestriction == FetchRequest::RestrictToSameOrigin && !m_document->securityOrigin()->canRequest(url)) {
+        if (originRestriction == FetchRequest::RestrictToSameOrigin && !securityOrigin->canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
         }
@@ -458,7 +462,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     case Resource::SVGDocument:
-        if (!m_document->securityOrigin()->canRequest(url)) {
+        if (!securityOrigin->canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
         }

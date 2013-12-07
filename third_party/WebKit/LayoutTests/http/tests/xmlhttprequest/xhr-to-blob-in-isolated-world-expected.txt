@@ -1,0 +1,2 @@
+This tests an isolated script's ability to XHR a blob that is in its security origin, which is not the same as the document's security origin.
+We pass if there are no console errors.
