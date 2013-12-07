@@ -231,7 +231,7 @@ FakeURLLoaderEntity* FakeURLLoaderServer::GetEntity(const std::string& url) {
 
 int FakeURLLoaderServer::GetError(const std::string& url) {
   ErrorMap::iterator iter = error_map_.find(url);
-  if (iter != error_map_.end())
+  if (iter == error_map_.end())
     return 0;
   return iter->second;
 }

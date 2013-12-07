@@ -18,7 +18,7 @@
       'overrides/include/json/value.h',
       'source/include/json/writer.h',
       'source/src/lib_json/json_batchallocator.h',
-      'source/src/lib_json/json_reader.cpp',
+      'overrides/src/lib_json/json_reader.cpp',
       'source/src/lib_json/json_tool.h',
       'overrides/src/lib_json/json_value.cpp',
       'source/src/lib_json/json_writer.cpp',

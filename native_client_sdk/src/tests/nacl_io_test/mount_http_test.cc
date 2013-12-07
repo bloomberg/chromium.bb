@@ -86,7 +86,7 @@ TEST_P(MountHttpTest, OpenAndCloseServerError) {
   EXPECT_TRUE(ppapi_.server_template()->AddError("file", 500));
 
   ScopedMountNode node;
-  ASSERT_EQ(ENOENT, mnt_.Open(Path("/file"), O_RDONLY, &node));
+  ASSERT_EQ(EIO, mnt_.Open(Path("/file"), O_RDONLY, &node));
 }
 
 TEST_P(MountHttpTest, ReadPartial) {
