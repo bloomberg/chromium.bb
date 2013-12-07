@@ -92,15 +92,9 @@ class MediaStreamManager::DeviceRequest {
       state_[stream_type] = new_state;
     }
 
-    if (request.video_type != MEDIA_TAB_VIDEO_CAPTURE &&
-        request.audio_type != MEDIA_TAB_AUDIO_CAPTURE &&
-        new_state != MEDIA_REQUEST_STATE_CLOSING) {
-      return;
-    }
-
     MediaObserver* media_observer =
         GetContentClient()->browser()->GetMediaObserver();
-    if (media_observer == NULL)
+    if (!media_observer)
       return;
 
     // If we appended a device_id scheme, we want to remove it when notifying

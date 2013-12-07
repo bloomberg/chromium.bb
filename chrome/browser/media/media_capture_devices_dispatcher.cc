@@ -681,6 +681,29 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
     int page_request_id,
     const content::MediaStreamDevice& device,
     content::MediaRequestState state) {
+  // Track desktop capture sessions.  Tracking is necessary to avoid unbalanced
+  // session counts since not all requests will reach MEDIA_REQUEST_STATE_DONE,
+  // but they will all reach MEDIA_REQUEST_STATE_CLOSING.
+  if (device.type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
+    if (state == content::MEDIA_REQUEST_STATE_DONE) {
+      DesktopCaptureSession session = { render_process_id, render_view_id,
+                                        page_request_id };
+      desktop_capture_sessions_.push_back(session);
+    } else if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
+      for (DesktopCaptureSessions::iterator it =
+               desktop_capture_sessions_.begin();
+           it != desktop_capture_sessions_.end();
+           ++it) {
+        if (it->render_process_id == render_process_id &&
+            it->render_view_id == render_view_id &&
+            it->page_request_id == page_request_id) {
+          desktop_capture_sessions_.erase(it);
+          break;
+        }
+      }
+    }
+  }
+
   // Cancel the request.
   if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
     bool found = false;
@@ -715,4 +738,9 @@ void MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnCreatingAudioStream(render_process_id, render_view_id));
+}
+
+bool MediaCaptureDevicesDispatcher::IsDesktopCaptureInProgress() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return desktop_capture_sessions_.size() > 0;
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/pepper/pepper_output_protection_message_filter.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -188,7 +189,13 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
 
   // If we successfully retrieved the device level status, check for capturers.
   if (result) {
-    if (content::WebContents::FromRenderViewHost(rvh)->GetCapturerCount() > 0)
+    const bool capture_detected =
+        // Check for tab capture on the current tab.
+        content::WebContents::FromRenderViewHost(rvh)->GetCapturerCount() > 0 ||
+        // Check for desktop capture.
+        MediaCaptureDevicesDispatcher::GetInstance()
+            ->IsDesktopCaptureInProgress();
+    if (capture_detected)
       *link_mask |= chromeos::OUTPUT_TYPE_NETWORK;
   }
 

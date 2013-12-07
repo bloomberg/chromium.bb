@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_MEDIA_CAPTURE_DEVICES_DISPATCHER_H_
 
 #include <deque>
+#include <list>
 #include <map>
 
 #include "base/callback.h"
@@ -138,6 +139,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   DesktopStreamsRegistry* GetDesktopStreamsRegistry();
 
+  bool IsDesktopCaptureInProgress();
+
  private:
   friend struct DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
@@ -227,6 +230,17 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   scoped_ptr<DesktopStreamsRegistry> desktop_streams_registry_;
 
   content::NotificationRegistrar notifications_registrar_;
+
+  // Tracks MEDIA_DESKTOP_VIDEO_CAPTURE sessions which reach the
+  // MEDIA_REQUEST_STATE_DONE state.  Sessions are remove when
+  // MEDIA_REQUEST_STATE_CLOSING is encountered.
+  struct DesktopCaptureSession {
+    int render_process_id;
+    int render_view_id;
+    int page_request_id;
+  };
+  typedef std::list<DesktopCaptureSession> DesktopCaptureSessions;
+  DesktopCaptureSessions desktop_capture_sessions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
