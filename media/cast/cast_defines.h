@@ -139,8 +139,8 @@ class FrameIdWrapHelper {
  public:
   FrameIdWrapHelper()
       : first_(true),
-        can_we_wrap_(false),
-        frame_id_wrap_count_(0) {}
+        frame_id_wrap_count_(0),
+        range_(kLowRange) {}
 
   uint32 MapTo32bitsFrameId(const uint8 over_the_wire_frame_id) {
     if (first_) {
@@ -150,24 +150,52 @@ class FrameIdWrapHelper {
         return kStartFrameId;
       }
     }
-    if (can_we_wrap_) {
-      if (over_the_wire_frame_id < 0x0f) {
-        // Disable wrap check until we are closer to the max of uint8.
-        can_we_wrap_ = false;
-      }
-    } else {
-      if (over_the_wire_frame_id > 0xf0) {
-        // Enable wrap check until we have wrapped.
-        can_we_wrap_ = true;
-      }
+
+    uint32 wrap_count = frame_id_wrap_count_;
+    switch (range_) {
+      case kLowRange:
+        if (over_the_wire_frame_id > kLowRangeThreshold &&
+            over_the_wire_frame_id < kHighRangeThreshold) {
+          range_ = kMiddleRange;
+        }
+        if (over_the_wire_frame_id > kHighRangeThreshold) {
+          // Wrap count was incremented in High->Low transition, but this frame
+          // is 'old', actually from before the wrap count got incremented.
+          --wrap_count;
+        }
+        break;
+      case kMiddleRange:
+        if (over_the_wire_frame_id > kHighRangeThreshold) {
+          range_ = kHighRange;
+        }
+        break;
+      case kHighRange:
+        if (over_the_wire_frame_id < kLowRangeThreshold) {
+          // Wrap-around detected.
+          range_ = kLowRange;
+          ++frame_id_wrap_count_;
+          // Frame triggering wrap-around so wrap count should be incremented as
+          // as well to match |frame_id_wrap_count_|.
+          ++wrap_count;
+        }
+        break;
     }
-    return (frame_id_wrap_count_ << 8) + over_the_wire_frame_id;
+    return (wrap_count << 8) + over_the_wire_frame_id;
   }
 
  private:
+  enum Range {
+    kLowRange,
+    kMiddleRange,
+    kHighRange,
+  };
+
+  static const uint8 kLowRangeThreshold = 0x0f;
+  static const uint8 kHighRangeThreshold = 0xf0;
+
   bool first_;
-  bool can_we_wrap_;
   uint32 frame_id_wrap_count_;
+  Range range_;
 };
 
 inline std::string GetAesNonce(uint32 frame_id, const std::string& iv_mask) {

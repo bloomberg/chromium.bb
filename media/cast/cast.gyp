@@ -20,6 +20,7 @@
       'sources': [
         'cast_config.cc',
         'cast_config.h',
+        'cast_defines.h',
         'cast_environment.cc',
         'cast_environment.h',
         'logging/logging_defines.cc',
@@ -88,14 +89,11 @@
             'test/crypto_utility.h',
             'test/encode_decode_test.cc',
             'test/end2end_unittest.cc',
+            'test/frame_id_wrap_helper_test.cc',
             'video_receiver/video_decoder_unittest.cc',
             'video_receiver/video_receiver_unittest.cc',
             'video_sender/mock_video_encoder_controller.cc',
             'video_sender/mock_video_encoder_controller.h',
-            'pacing/paced_sender_unittest.cc',
-            'rtcp/rtcp_receiver_unittest.cc',
-            'rtcp/rtcp_sender_unittest.cc',
-            'rtcp/rtcp_unittest.cc',
             'video_sender/video_encoder_unittest.cc',
             'video_sender/video_sender_unittest.cc',
           ], # source
