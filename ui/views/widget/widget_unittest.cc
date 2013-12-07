@@ -2112,6 +2112,39 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   top_level_widget.CloseNow();
 }
 
+#if defined(USE_AURA)
+// Verifies nativeview visbility matches that of Widget visibility when
+// SetFullscreen is invoked.
+TEST_F(WidgetTest, FullscreenStatePropagated) {
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  init_params.bounds = gfx::Rect(0, 0, 500, 500);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+
+  {
+    Widget top_level_widget;
+    top_level_widget.Init(init_params);
+    top_level_widget.SetFullscreen(true);
+    EXPECT_EQ(top_level_widget.IsVisible(),
+              top_level_widget.GetNativeView()->IsVisible());
+    top_level_widget.CloseNow();
+  }
+
+#if !defined(OS_CHROMEOS)
+  {
+    Widget top_level_widget;
+    init_params.native_widget = new DesktopNativeWidgetAura(&top_level_widget);
+    top_level_widget.Init(init_params);
+    top_level_widget.SetFullscreen(true);
+    EXPECT_EQ(top_level_widget.IsVisible(),
+              top_level_widget.GetNativeView()->IsVisible());
+    top_level_widget.CloseNow();
+  }
+#endif
+}
+#endif
+
 #if defined(OS_WIN)
 
 // Provides functionality to test widget activation via an activation flag

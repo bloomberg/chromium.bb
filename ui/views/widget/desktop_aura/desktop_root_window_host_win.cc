@@ -369,6 +369,11 @@ NonClientFrameView* DesktopRootWindowHostWin::CreateNonClientFrameView() {
 
 void DesktopRootWindowHostWin::SetFullscreen(bool fullscreen) {
   message_handler_->fullscreen_handler()->SetFullscreen(fullscreen);
+  // TODO(sky): workaround for ScopedFullscreenVisibility showing window
+  // directly. Instead of this should listen for visibility changes and then
+  // update window.
+  if (message_handler_->IsVisible() && !content_window_->TargetVisibility())
+    content_window_->Show();
   SetWindowTransparency();
 }
 
