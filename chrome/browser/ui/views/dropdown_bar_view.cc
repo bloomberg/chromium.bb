@@ -58,7 +58,7 @@ void DropdownBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   // First, get the origin with respect to the screen.
   gfx::Point origin = view->GetWidget()->GetWindowBoundsInScreen().origin();
   // Now convert from screen to parent coordinates.
-  views::View::ConvertPointToTarget(NULL, browser_view_, &origin);
+  views::View::ConvertPointFromScreen(browser_view_, &origin);
   // Finally, calculate the background image tiling offset.
   origin = browser_view_->OffsetPointForToolbarBackgroundImage(origin);
 

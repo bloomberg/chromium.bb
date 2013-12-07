@@ -663,52 +663,38 @@ View* View::GetSelectedViewForGroup(int group) {
 void View::ConvertPointToTarget(const View* source,
                                 const View* target,
                                 gfx::Point* point) {
+  DCHECK(source);
+  DCHECK(target);
   if (source == target)
     return;
 
-  // |source| can be NULL.
   const View* root = GetHierarchyRoot(target);
-  if (source) {
-    CHECK_EQ(GetHierarchyRoot(source), root);
+  CHECK_EQ(GetHierarchyRoot(source), root);
 
-    if (source != root)
-      source->ConvertPointForAncestor(root, point);
-  }
+  if (source != root)
+    source->ConvertPointForAncestor(root, point);
 
   if (target != root)
     target->ConvertPointFromAncestor(root, point);
-
-  // API defines NULL |source| as returning the point in screen coordinates.
-  if (!source) {
-    *point -=
-        root->GetWidget()->GetClientAreaBoundsInScreen().OffsetFromOrigin();
-  }
 }
 
 // static
 void View::ConvertRectToTarget(const View* source,
                                const View* target,
                                gfx::RectF* rect) {
+  DCHECK(source);
+  DCHECK(target);
   if (source == target)
     return;
 
-  // |source| can be NULL.
   const View* root = GetHierarchyRoot(target);
-  if (source) {
-    CHECK_EQ(GetHierarchyRoot(source), root);
+  CHECK_EQ(GetHierarchyRoot(source), root);
 
-    if (source != root)
-      source->ConvertRectForAncestor(root, rect);
-  }
+  if (source != root)
+    source->ConvertRectForAncestor(root, rect);
 
   if (target != root)
     target->ConvertRectFromAncestor(root, rect);
-
-  // API defines NULL |source| as returning the point in screen coordinates.
-  if (!source) {
-    rect->set_origin(rect->origin() -
-        root->GetWidget()->GetClientAreaBoundsInScreen().OffsetFromOrigin());
-  }
 }
 
 // static
@@ -993,7 +979,7 @@ bool View::IsMouseHovered() {
 
   gfx::Point cursor_pos(gfx::Screen::GetScreenFor(
       GetWidget()->GetNativeView())->GetCursorScreenPoint());
-  ConvertPointToTarget(NULL, this, &cursor_pos);
+  ConvertPointFromScreen(this, &cursor_pos);
   return HitTestPoint(cursor_pos);
 }
 

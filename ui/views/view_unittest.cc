@@ -2420,6 +2420,32 @@ TEST_F(ViewTest, ConversionsWithTransform) {
   }
 }
 
+// Tests conversion methods to and from screen coordinates.
+TEST_F(ViewTest, ConversionsToFromScreen) {
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
+
+  View* child = new View;
+  widget->GetRootView()->AddChildView(child);
+  child->SetBounds(10, 10, 100, 200);
+  gfx::Transform t;
+  t.Scale(0.5, 0.5);
+  child->SetTransform(t);
+
+  gfx::Point point_in_screen(100, 90);
+  gfx::Point point_in_child(80,60);
+
+  gfx::Point point = point_in_screen;
+  View::ConvertPointFromScreen(child, &point);
+  EXPECT_EQ(point_in_child.ToString(), point.ToString());
+
+  View::ConvertPointToScreen(child, &point);
+  EXPECT_EQ(point_in_screen.ToString(), point.ToString());
+}
+
 // Tests conversion methods for rectangles.
 TEST_F(ViewTest, ConvertRectWithTransform) {
   scoped_ptr<Widget> widget(new Widget);

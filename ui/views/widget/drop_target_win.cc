@@ -33,7 +33,7 @@ DWORD DropTargetWin::OnDragOver(IDataObject* data_object,
                                 POINT cursor_position,
                                 DWORD effect) {
   gfx::Point root_view_location(cursor_position.x, cursor_position.y);
-  View::ConvertPointToTarget(NULL, helper_.root_view(), &root_view_location);
+  View::ConvertPointFromScreen(helper_.root_view(), &root_view_location);
   OSExchangeData data(new OSExchangeDataProviderWin(data_object));
   int drop_operation =
       helper_.OnDragOver(data, root_view_location,
@@ -50,7 +50,7 @@ DWORD DropTargetWin::OnDrop(IDataObject* data_object,
                             POINT cursor_position,
                             DWORD effect) {
   gfx::Point root_view_location(cursor_position.x, cursor_position.y);
-  View::ConvertPointToTarget(NULL, helper_.root_view(), &root_view_location);
+  View::ConvertPointFromScreen(helper_.root_view(), &root_view_location);
 
   OSExchangeData data(new OSExchangeDataProviderWin(data_object));
   int drop_operation = ui::DragDropTypes::DropEffectToDragOperation(effect);

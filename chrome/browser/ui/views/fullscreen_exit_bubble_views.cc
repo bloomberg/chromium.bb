@@ -470,7 +470,7 @@ gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
 gfx::Point FullscreenExitBubbleViews::GetCursorScreenPoint() {
   gfx::Point cursor_pos = gfx::Screen::GetScreenFor(
       browser_view_->GetWidget()->GetNativeView())->GetCursorScreenPoint();
-  views::View::ConvertPointToTarget(NULL, GetBrowserRootView(), &cursor_pos);
+  views::View::ConvertPointFromScreen(GetBrowserRootView(), &cursor_pos);
   return cursor_pos;
 }
 

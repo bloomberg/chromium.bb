@@ -452,7 +452,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   //
   // |source| and |target| must be in the same widget, but doesn't need to be in
   // the same view hierarchy.
-  // |source| can be NULL in which case it means the screen coordinate system.
+  // Neither |source| nor |target| can be NULL.
   static void ConvertPointToTarget(const View* source,
                                    const View* target,
                                    gfx::Point* point);
@@ -462,7 +462,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   //
   // |source| and |target| must be in the same widget, but doesn't need to be in
   // the same view hierarchy.
-  // |source| can be NULL in which case it means the screen coordinate system.
+  // Neither |source| nor |target| can be NULL.
   static void ConvertRectToTarget(const View* source,
                                   const View* target,
                                   gfx::RectF* rect);

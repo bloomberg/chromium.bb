@@ -951,7 +951,7 @@ void MenuController::StartDrag(SubmenuView* source,
   // the selected item, so need to map to screen first then to item.
   gfx::Point press_loc(location);
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &press_loc);
-  View::ConvertPointToTarget(NULL, item, &press_loc);
+  View::ConvertPointFromScreen(item, &press_loc);
   gfx::Point widget_loc(press_loc);
   View::ConvertPointToWidget(item, &widget_loc);
   scoped_ptr<gfx::Canvas> canvas(GetCanvasForDragImage(
@@ -1422,7 +1422,7 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
   // Is the mouse over the scroll buttons?
   gfx::Point scroll_view_loc = screen_loc;
   View* scroll_view_container = menu->GetScrollViewContainer();
-  View::ConvertPointToTarget(NULL, scroll_view_container, &scroll_view_loc);
+  View::ConvertPointFromScreen(scroll_view_container, &scroll_view_loc);
   if (scroll_view_loc.x() < 0 ||
       scroll_view_loc.x() >= scroll_view_container->width() ||
       scroll_view_loc.y() < 0 ||
@@ -1439,7 +1439,7 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
   // Not over the scroll button. Check the actual menu.
   if (DoesSubmenuContainLocation(menu, screen_loc)) {
     gfx::Point menu_loc = screen_loc;
-    View::ConvertPointToTarget(NULL, menu, &menu_loc);
+    View::ConvertPointFromScreen(menu, &menu_loc);
     part->menu = GetMenuItemAt(menu, menu_loc.x(), menu_loc.y());
     part->type = MenuPart::MENU_ITEM;
     part->submenu = menu;
@@ -1457,7 +1457,7 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
 bool MenuController::DoesSubmenuContainLocation(SubmenuView* submenu,
                                                 const gfx::Point& screen_loc) {
   gfx::Point view_loc = screen_loc;
-  View::ConvertPointToTarget(NULL, submenu, &view_loc);
+  View::ConvertPointFromScreen(submenu, &view_loc);
   gfx::Rect vis_rect = submenu->GetVisibleBounds();
   return vis_rect.Contains(view_loc.x(), view_loc.y());
 }
@@ -2191,7 +2191,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     // more complex hierarchies it'll need to change.
     View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
                                &target_menu_loc);
-    View::ConvertPointToTarget(NULL, target_menu, &target_menu_loc);
+    View::ConvertPointFromScreen(target_menu, &target_menu_loc);
     target = target_menu->GetEventHandlerForPoint(target_menu_loc);
     if (target == target_menu || !target->enabled())
       target = NULL;
@@ -2236,7 +2236,7 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
   gfx::Point target_loc(event.location());
   View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
                              &target_loc);
-  View::ConvertPointToTarget(NULL, active_mouse_view, &target_loc);
+  View::ConvertPointFromScreen(active_mouse_view, &target_loc);
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, target_loc, target_loc,
                                event.flags());
   // Reset active mouse view before sending mouse released. That way if it calls

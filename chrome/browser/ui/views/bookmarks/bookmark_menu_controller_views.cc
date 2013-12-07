@@ -169,7 +169,7 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
   if (!bookmark_bar_ || for_drop_)
     return NULL;
   gfx::Point bookmark_bar_loc(screen_point);
-  views::View::ConvertPointToTarget(NULL, bookmark_bar_, &bookmark_bar_loc);
+  views::View::ConvertPointFromScreen(bookmark_bar_, &bookmark_bar_loc);
   int start_index;
   const BookmarkNode* node = bookmark_bar_->GetNodeForButtonAtModelIndex(
       bookmark_bar_loc, &start_index);

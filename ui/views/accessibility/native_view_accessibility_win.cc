@@ -272,7 +272,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
   }
 
   gfx::Point point(x_left, y_top);
-  View::ConvertPointToTarget(NULL, view_, &point);
+  View::ConvertPointFromScreen(view_, &point);
 
   // If the point is not inside this view, return false.
   if (!view_->HitTestPoint(point)) {
