@@ -76,6 +76,7 @@ bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
   if (// Google Hangouts.
       (origin.SchemeIs("https") &&
        EndsWith(origin.spec(), ".talkgadget.google.com/", true)) ||
+      origin.spec() == "https://talkgadget.google.com/" ||
       origin.spec() == "https://plus.google.com/" ||
       origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
       origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
