@@ -5,20 +5,25 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_LINUX_APP_LIST_LINUX_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_LINUX_APP_LIST_LINUX_H_
 
+#include "base/callback.h"
 #include "chrome/browser/ui/app_list/app_list.h"
-#include "ui/app_list/views/app_list_view.h"
+#include "ui/app_list/views/app_list_view_observer.h"
+
+namespace app_list {
+class AppListView;
+}
 
 // Responsible for positioning, hiding and showing an AppListView on Linux.
 // This includes watching window activation/deactivation messages to determine
 // if the user has clicked away from it.
 class AppListLinux : public AppList,
-                     public app_list::AppListView::Observer {
+                     public app_list::AppListViewObserver {
  public:
   AppListLinux(app_list::AppListView* view,
                const base::Closure& on_should_dismiss);
   virtual ~AppListLinux();
 
-  // AppList overrides.
+  // AppList:
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void MoveNearCursor() OVERRIDE;
@@ -28,7 +33,7 @@ class AppListLinux : public AppList,
   virtual gfx::NativeWindow GetWindow() OVERRIDE;
   virtual void SetProfile(Profile* profile) OVERRIDE;
 
-  // app_list::AppListView::Observer overrides.
+  // app_list::AppListViewObserver:
   virtual void OnActivationChanged(views::Widget* widget, bool active) OVERRIDE;
 
  private:

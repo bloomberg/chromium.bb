@@ -13,6 +13,7 @@
 #include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/views/app_list_background.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view_observer.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/signin_view.h"
 #include "ui/base/ui_base_switches.h"
@@ -171,11 +172,11 @@ void AppListView::SetProfileByPath(const base::FilePath& profile_path) {
   delegate_->SetProfileByPath(profile_path);
 }
 
-void AppListView::AddObserver(Observer* observer) {
+void AppListView::AddObserver(AppListViewObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void AppListView::RemoveObserver(Observer* observer) {
+void AppListView::RemoveObserver(AppListViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -320,7 +321,7 @@ void AppListView::OnWidgetActivationChanged(views::Widget* widget,
   // Do not called inherited function as the bubble delegate auto close
   // functionality is not used.
   if (widget == GetWidget())
-    FOR_EACH_OBSERVER(Observer, observers_,
+    FOR_EACH_OBSERVER(AppListViewObserver, observers_,
                       OnActivationChanged(widget, active));
 }
 

@@ -10,13 +10,10 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/widget/widget.h"
 
 namespace base {
 class FilePath;
-}
-
-namespace views {
-class Widget;
 }
 
 namespace app_list {
@@ -24,6 +21,7 @@ class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
+class AppListViewObserver;
 class PaginationModel;
 class SigninDelegate;
 class SigninView;
@@ -33,10 +31,6 @@ class SigninView;
 class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                                     public AppListViewDelegateObserver {
  public:
-  class Observer {
-  public:
-    virtual void OnActivationChanged(views::Widget* widget, bool active) = 0;
-  };
 
   // Takes ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
@@ -92,8 +86,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   void SetProfileByPath(const base::FilePath& profile_path);
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(AppListViewObserver* observer);
+  void RemoveObserver(AppListViewObserver* observer);
 
   // Set a callback to be called the next time any app list paints.
   static void SetNextPaintCallback(void (*callback)());
@@ -140,7 +134,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   AppListMainView* app_list_main_view_;
   SigninView* signin_view_;
 
-  ObserverList<Observer> observers_;
+  ObserverList<AppListViewObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

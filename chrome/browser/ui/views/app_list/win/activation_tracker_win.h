@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_ACTIVATION_TRACKER_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_ACTIVATION_TRACKER_WIN_H_
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/timer/timer.h"
-#include "ui/app_list/views/app_list_view.h"
-#include "ui/views/widget/widget.h"
+#include "ui/app_list/views/app_list_view_observer.h"
+
+namespace app_list {
+class AppListView;
+}
 
 // Periodically checks to see if an AppListView has lost focus using a timer.
-class ActivationTrackerWin : public app_list::AppListView::Observer {
+class ActivationTrackerWin : public app_list::AppListViewObserver {
  public:
   ActivationTrackerWin(app_list::AppListView* view,
                        const base::Closure& on_should_dismiss);
@@ -21,7 +25,7 @@ class ActivationTrackerWin : public app_list::AppListView::Observer {
     reactivate_on_next_focus_loss_ = true;
   }
 
-  // app_list::AppListView::Observer overrides.
+  // app_list::AppListViewObserver:
   virtual void OnActivationChanged(views::Widget* widget, bool active) OVERRIDE;
 
   void OnViewHidden();
@@ -61,6 +65,8 @@ class ActivationTrackerWin : public app_list::AppListView::Observer {
   // means we don't need to hook Windows, which is apparently not possible
   // since Vista (and is not nice at any time).
   base::RepeatingTimer<ActivationTrackerWin> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActivationTrackerWin);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_ACTIVATION_TRACKER_WIN_H_

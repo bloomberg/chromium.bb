@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 
 #include "base/time/time.h"
+#include "ui/app_list/views/app_list_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
-static const wchar_t kJumpListClassName[] = L"DV2ControlHost";
-static const wchar_t kTrayClassName[] = L"Shell_TrayWnd";
-static const int kFocusCheckIntervalMS = 250;
+const wchar_t kJumpListClassName[] = L"DV2ControlHost";
+const wchar_t kTrayClassName[] = L"Shell_TrayWnd";
+const int kFocusCheckIntervalMS = 250;
 
 }  // namespace
 
@@ -29,8 +31,8 @@ ActivationTrackerWin::~ActivationTrackerWin() {
   timer_.Stop();
 }
 
-void ActivationTrackerWin::OnActivationChanged(
-    views::Widget* /*widget*/, bool active) {
+void ActivationTrackerWin::OnActivationChanged(views::Widget* /*widget*/,
+                                               bool active) {
   if (active) {
     timer_.Stop();
     return;

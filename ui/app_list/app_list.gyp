@@ -95,6 +95,7 @@
         'views/app_list_menu_views.h',
         'views/app_list_view.cc',
         'views/app_list_view.h',
+        'views/app_list_view_observer.h',
         'views/apps_grid_view.cc',
         'views/apps_grid_view.h',
         'views/apps_grid_view_delegate.h',
