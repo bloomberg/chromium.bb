@@ -26,37 +26,34 @@ namespace content {
  */
 class OverscrollGlow {
  public:
-  // Create and initialize a new effect with the necessary resources.
-  // If |enabled| is false, the effect will be be deactivated until
-  // SetEnabled(true) is called.
-  // The caller should attach |root_layer| to the desired layer tree.
-  static scoped_ptr<OverscrollGlow> Create(bool enabled, gfx::SizeF size);
-
-  // Force loading of any necessary resources.  This function is thread-safe.
-  static void EnsureResources();
+  // Create a new effect. If |enabled| is false, the effect will remain
+  // deactivated until explicitly enabled.
+  // Note: No resources will be allocated until the effect is both
+  //       enabled and an overscroll event has occurred.
+  static scoped_ptr<OverscrollGlow> Create(bool enabled);
 
   ~OverscrollGlow();
 
-  // If false, the glow will be deactivated, and subsequent calls to
-  // OnOverscrolled or Animate will have no effect.
-  void SetEnabled(bool enabled);
+  // Enable the effect. If the effect was previously disabled, it will remain
+  // dormant until subsequent calls to |OnOverscrolled()|.
+  void Enable();
 
+  // Deactivate and detach the effect. Subsequent calls to |OnOverscrolled()| or
+  // |Animate()| will have no effect.
+  void Disable();
+
+  // Effect layers will be attached to |overscrolling_layer| if necessary.
   // |overscroll| is the accumulated overscroll for the current gesture.
   // |velocity| is the instantaneous velocity for the overscroll.
-  void OnOverscrolled(base::TimeTicks current_time,
+  // Returns true if the effect still needs animation ticks.
+  bool OnOverscrolled(cc::Layer* overscrolling_layer,
+                      base::TimeTicks current_time,
                       gfx::Vector2dF overscroll,
                       gfx::Vector2dF velocity);
 
   // Returns true if the effect still needs animation ticks.
+  // Note: The effect will detach itself when no further animation is required.
   bool Animate(base::TimeTicks current_time);
-
-  // Returns true if the effect needs animation ticks.
-  bool NeedsAnimate() const;
-
-  // The root layer of the effect (not necessarily of the tree).
-  scoped_refptr<cc::Layer> root_layer() const {
-    return root_layer_;
-  }
 
   // Horizontal overscroll will be ignored when false.
   void set_horizontal_overscroll_enabled(bool enabled) {
@@ -74,11 +71,13 @@ class OverscrollGlow {
  private:
   enum Axis { AXIS_X, AXIS_Y };
 
-  OverscrollGlow(bool enabled,
-                 gfx::SizeF size,
-                 const SkBitmap& edge,
-                 const SkBitmap& glow);
+  OverscrollGlow(bool enabled);
 
+  // Returns whether the effect is initialized.
+  bool InitializeIfNecessary();
+  bool NeedsAnimate() const;
+  void UpdateLayerAttachment(cc::Layer* parent);
+  void Detach();
   void Pull(base::TimeTicks current_time,
             gfx::Vector2dF added_overscroll);
   void Absorb(base::TimeTicks current_time,
@@ -93,6 +92,7 @@ class OverscrollGlow {
   scoped_ptr<EdgeEffect> edge_effects_[EdgeEffect::EDGE_COUNT];
 
   bool enabled_;
+  bool initialized_;
   gfx::SizeF size_;
   gfx::Vector2dF old_overscroll_;
   gfx::Vector2dF old_velocity_;

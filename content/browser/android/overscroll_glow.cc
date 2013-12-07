@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "base/threading/worker_pool.h"
 #include "cc/layers/image_layer.h"
 #include "content/browser/android/edge_effect.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -63,54 +64,61 @@ gfx::Vector2dF ZeroSmallComponents(gfx::Vector2dF vector) {
   return vector;
 }
 
-} // namespace
-
-scoped_ptr<OverscrollGlow> OverscrollGlow::Create(bool enabled,
-                                                  gfx::SizeF size) {
-  const SkBitmap& edge = g_overscroll_resources.Get().edge_bitmap();
-  const SkBitmap& glow = g_overscroll_resources.Get().glow_bitmap();
-  if (edge.isNull() || glow.isNull())
-    return scoped_ptr<OverscrollGlow>();
-
-  return make_scoped_ptr(new OverscrollGlow(enabled, size, edge, glow));
-}
-
-void OverscrollGlow::EnsureResources() {
+// Force loading of any necessary resources.  This function is thread-safe.
+void EnsureResources() {
   g_overscroll_resources.Get();
 }
 
-OverscrollGlow::OverscrollGlow(bool enabled,
-                               gfx::SizeF size,
-                               const SkBitmap& edge,
-                               const SkBitmap& glow)
+} // namespace
+
+scoped_ptr<OverscrollGlow> OverscrollGlow::Create(bool enabled) {
+  // Don't block the main thread with effect resource loading during creation.
+  // Effect instantiation is deferred until the effect overscrolls, in which
+  // case the main thread may block until the resource has loaded.
+  if (enabled && g_overscroll_resources == NULL)
+    base::WorkerPool::PostTask(FROM_HERE, base::Bind(EnsureResources), true);
+
+  return make_scoped_ptr(new OverscrollGlow(enabled));
+}
+
+OverscrollGlow::OverscrollGlow(bool enabled)
   : enabled_(enabled),
-    size_(size),
+    initialized_(false),
     horizontal_overscroll_enabled_(true),
-    vertical_overscroll_enabled_(true),
-    root_layer_(cc::Layer::Create()) {
-  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
-    scoped_refptr<cc::Layer> edge_layer = CreateImageLayer(edge);
-    scoped_refptr<cc::Layer> glow_layer = CreateImageLayer(glow);
-    root_layer_->AddChild(edge_layer);
-    root_layer_->AddChild(glow_layer);
-    edge_effects_[i] = make_scoped_ptr(new EdgeEffect(edge_layer, glow_layer));
+    vertical_overscroll_enabled_(true) {}
+
+OverscrollGlow::~OverscrollGlow() {
+  Detach();
+}
+
+void OverscrollGlow::Enable() {
+  enabled_ = true;
+}
+
+void OverscrollGlow::Disable() {
+  if (!enabled_)
+    return;
+  enabled_ = false;
+  if (!enabled_ && initialized_) {
+    Detach();
+    for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i)
+      edge_effects_[i]->Finish();
   }
 }
 
-OverscrollGlow::~OverscrollGlow() {
-  root_layer_->RemoveFromParent();
-}
-
-void OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
+bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
+                                    base::TimeTicks current_time,
                                     gfx::Vector2dF overscroll,
                                     gfx::Vector2dF velocity) {
+  DCHECK(overscrolling_layer);
+
   if (!enabled_)
-    return;
+    return false;
 
   // The size of the glow determines the relative effect of the inputs; an
   // empty-sized effect is effectively disabled.
   if (size_.IsEmpty())
-    return;
+    return false;
 
   if (!horizontal_overscroll_enabled_) {
     overscroll.set_x(0);
@@ -126,9 +134,15 @@ void OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
   velocity = ZeroSmallComponents(velocity);
 
   if (overscroll.IsZero()) {
-    Release(current_time);
-    return;
+    if (initialized_) {
+      Release(current_time);
+      UpdateLayerAttachment(overscrolling_layer);
+    }
+    return NeedsAnimate();
   }
+
+  if (!InitializeIfNecessary())
+    return false;
 
   if (!velocity.IsZero()) {
     // Release effects if scrolling has changed directions.
@@ -152,11 +166,16 @@ void OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
 
   old_velocity_ = velocity;
   old_overscroll_ = overscroll;
+
+  UpdateLayerAttachment(overscrolling_layer);
+  return NeedsAnimate();
 }
 
 bool OverscrollGlow::Animate(base::TimeTicks current_time) {
-  if (!NeedsAnimate())
+  if (!NeedsAnimate()) {
+    Detach();
     return false;
+  }
 
   const gfx::SizeF sizes[EdgeEffect::EDGE_COUNT] = {
     size_, gfx::SizeF(size_.height(), size_.width()),
@@ -170,21 +189,16 @@ bool OverscrollGlow::Animate(base::TimeTicks current_time) {
     }
   }
 
-  return NeedsAnimate();
-}
-
-void OverscrollGlow::SetEnabled(bool enabled) {
-  if (enabled_ == enabled)
-    return;
-  enabled_ = enabled;
-  if (!enabled_) {
-    for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i)
-      edge_effects_[i]->Finish();
+  if (!NeedsAnimate()) {
+    Detach();
+    return false;
   }
+
+  return true;
 }
 
 bool OverscrollGlow::NeedsAnimate() const {
-  if (!enabled_)
+  if (!enabled_ || !initialized_)
     return false;
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
     if (!edge_effects_[i]->IsFinished())
@@ -193,8 +207,54 @@ bool OverscrollGlow::NeedsAnimate() const {
   return false;
 }
 
+void OverscrollGlow::UpdateLayerAttachment(cc::Layer* parent) {
+  DCHECK(parent);
+  if (!root_layer_)
+    return;
+
+  if (!NeedsAnimate()) {
+    Detach();
+    return;
+  }
+
+  if (root_layer_->parent() != parent)
+    parent->AddChild(root_layer_);
+}
+
+void OverscrollGlow::Detach() {
+  if (root_layer_)
+    root_layer_->RemoveFromParent();
+}
+
+bool OverscrollGlow::InitializeIfNecessary() {
+  DCHECK(enabled_);
+  if (initialized_)
+    return true;
+
+  const SkBitmap& edge = g_overscroll_resources.Get().edge_bitmap();
+  const SkBitmap& glow = g_overscroll_resources.Get().glow_bitmap();
+  if (edge.isNull() || glow.isNull()) {
+    Disable();
+    return false;
+  }
+
+  DCHECK(!root_layer_);
+  root_layer_ = cc::Layer::Create();
+  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
+    scoped_refptr<cc::Layer> edge_layer = CreateImageLayer(edge);
+    scoped_refptr<cc::Layer> glow_layer = CreateImageLayer(glow);
+    root_layer_->AddChild(edge_layer);
+    root_layer_->AddChild(glow_layer);
+    edge_effects_[i] = make_scoped_ptr(new EdgeEffect(edge_layer, glow_layer));
+  }
+
+  initialized_ = true;
+  return true;
+}
+
 void OverscrollGlow::Pull(base::TimeTicks current_time,
                           gfx::Vector2dF overscroll_delta) {
+  DCHECK(enabled_ && initialized_);
   overscroll_delta = ZeroSmallComponents(overscroll_delta);
   if (overscroll_delta.IsZero())
     return;
@@ -222,6 +282,7 @@ void OverscrollGlow::Absorb(base::TimeTicks current_time,
                             gfx::Vector2dF velocity,
                             gfx::Vector2dF overscroll,
                             gfx::Vector2dF old_overscroll) {
+  DCHECK(enabled_ && initialized_);
   if (overscroll.IsZero() || velocity.IsZero())
     return;
 
@@ -243,6 +304,7 @@ void OverscrollGlow::Absorb(base::TimeTicks current_time,
 }
 
 void OverscrollGlow::Release(base::TimeTicks current_time) {
+  DCHECK(initialized_);
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
     edge_effects_[i]->Release(current_time);
   }
@@ -250,6 +312,7 @@ void OverscrollGlow::Release(base::TimeTicks current_time) {
 }
 
 void OverscrollGlow::ReleaseAxis(Axis axis, base::TimeTicks current_time) {
+  DCHECK(initialized_);
   switch (axis) {
     case AXIS_X:
       edge_effects_[EdgeEffect::EDGE_LEFT]->Release(current_time);
@@ -267,6 +330,7 @@ void OverscrollGlow::ReleaseAxis(Axis axis, base::TimeTicks current_time) {
 }
 
 EdgeEffect* OverscrollGlow::GetOppositeEdge(int edge_index) {
+  DCHECK(initialized_);
   return edge_effects_[(edge_index + 2) % EdgeEffect::EDGE_COUNT].get();
 }
 

@@ -116,7 +116,10 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       texture_id_in_layer_(0),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
       weak_ptr_factory_(this),
-      overscroll_effect_enabled_(true),
+      overscroll_effect_enabled_(
+          !CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kDisableOverscrollEdgeEffect)),
+      overscroll_effect_(OverscrollGlow::Create(overscroll_effect_enabled_)),
       flush_input_requested_(false),
       accelerated_surface_route_id_(0),
       using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
@@ -125,16 +128,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (!UsingDelegatedRenderer()) {
     texture_layer_ = cc::TextureLayer::Create(NULL);
     layer_ = texture_layer_;
-  }
-
-  overscroll_effect_enabled_ = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableOverscrollEdgeEffect);
-  // Don't block the main thread with effect resource loading.
-  // Actual effect creation is deferred until an overscroll event is received.
-  if (overscroll_effect_enabled_) {
-    base::WorkerPool::PostTask(FROM_HERE,
-                               base::Bind(&OverscrollGlow::EnsureResources),
-                               true);
   }
 
   host_->SetView(this);
@@ -337,16 +330,15 @@ void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   host_->SetInputMethodActive(true);
   ResetClipping();
-  if (overscroll_effect_)
-    overscroll_effect_->SetEnabled(true);
+  if (overscroll_effect_enabled_)
+    overscroll_effect_->Enable();
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
   host_->ExecuteEditCommand("Unselect", "");
   host_->SetInputMethodActive(false);
   host_->Blur();
-  if (overscroll_effect_)
-    overscroll_effect_->SetEnabled(false);
+  overscroll_effect_->Disable();
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {
@@ -907,6 +899,8 @@ void RenderWidgetHostViewAndroid::AttachLayers() {
     return;
 
   content_view_core_->AttachLayer(layer_);
+  if (overscroll_effect_enabled_)
+    overscroll_effect_->Enable();
 }
 
 void RenderWidgetHostViewAndroid::RemoveLayers() {
@@ -915,38 +909,16 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
   if (!layer_.get())
     return;
 
-  if (overscroll_effect_)
-    content_view_core_->RemoveLayer(overscroll_effect_->root_layer());
-
   content_view_core_->RemoveLayer(layer_);
+  overscroll_effect_->Disable();
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
-  if (!overscroll_effect_)
-    return false;
-
-  bool overscroll_running = overscroll_effect_->Animate(frame_time);
-  if (!overscroll_running)
-    content_view_core_->RemoveLayer(overscroll_effect_->root_layer());
-
-  return overscroll_running;
-}
-
-void RenderWidgetHostViewAndroid::CreateOverscrollEffectIfNecessary() {
-  if (!overscroll_effect_enabled_ || overscroll_effect_)
-    return;
-
-  overscroll_effect_ = OverscrollGlow::Create(true, content_size_in_layer_);
-
-  // Prevent future creation attempts on failure.
-  if (!overscroll_effect_)
-    overscroll_effect_enabled_ = false;
+  return overscroll_effect_->Animate(frame_time);
 }
 
 void RenderWidgetHostViewAndroid::UpdateAnimationSize(
     const cc::CompositorFrameMetadata& frame_metadata) {
-  if (!overscroll_effect_)
-    return;
   // Disable edge effects for axes on which scrolling is impossible.
   gfx::SizeF ceiled_viewport_size =
       gfx::ToCeiledSize(frame_metadata.viewport_size);
@@ -955,19 +927,6 @@ void RenderWidgetHostViewAndroid::UpdateAnimationSize(
   overscroll_effect_->set_vertical_overscroll_enabled(
       ceiled_viewport_size.height() < frame_metadata.root_layer_size.height());
   overscroll_effect_->set_size(content_size_in_layer_);
-}
-
-void RenderWidgetHostViewAndroid::ScheduleAnimationIfNecessary() {
-  if (!content_view_core_ || !overscroll_effect_)
-    return;
-
-  if (overscroll_effect_->NeedsAnimate() && are_layers_attached_) {
-    if (!overscroll_effect_->root_layer()->parent())
-      content_view_core_->AttachLayer(overscroll_effect_->root_layer());
-    content_view_core_->SetNeedsAnimate();
-  } else {
-    content_view_core_->RemoveLayer(overscroll_effect_->root_layer());
-  }
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
@@ -1194,8 +1153,8 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
 void RenderWidgetHostViewAndroid::SendGestureEvent(
     const blink::WebGestureEvent& event) {
   // Sending a gesture that may trigger overscroll should resume the effect.
-  if (overscroll_effect_)
-    overscroll_effect_->SetEnabled(true);
+  if (overscroll_effect_enabled_)
+   overscroll_effect_->Enable();
 
   if (host_)
     host_->ForwardGestureEvent(event);
@@ -1263,14 +1222,15 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 void RenderWidgetHostViewAndroid::OnOverscrolled(
     gfx::Vector2dF accumulated_overscroll,
     gfx::Vector2dF current_fling_velocity) {
-  CreateOverscrollEffectIfNecessary();
-  if (!overscroll_effect_)
+  if (!content_view_core_ || !are_layers_attached_)
     return;
 
-  overscroll_effect_->OnOverscrolled(base::TimeTicks::Now(),
-                                     accumulated_overscroll,
-                                     current_fling_velocity);
-  ScheduleAnimationIfNecessary();
+  if (overscroll_effect_->OnOverscrolled(content_view_core_->GetLayer(),
+                                         base::TimeTicks::Now(),
+                                         accumulated_overscroll,
+                                         current_fling_velocity)) {
+    content_view_core_->SetNeedsAnimate();
+  }
 }
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
