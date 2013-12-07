@@ -118,6 +118,9 @@ class ASH_EXPORT WindowSelector
   base::DelayTimer<WindowSelector> start_overview_timer_;
   scoped_ptr<WindowOverview> window_overview_;
 
+  // The time when window cycling was started.
+  base::Time cycle_start_time_;
+
   // Weak pointer to the selector delegate which will be called when a
   // selection is made.
   WindowSelectorDelegate* delegate_;

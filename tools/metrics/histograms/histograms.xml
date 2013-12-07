@@ -343,6 +343,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowSelector.CycleTime" units="milliseconds">
+  <summary>
+    The amount of time the Alt key is held after pressing Alt+Tab to begin
+    cycling through windows.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowSelector.Items">
   <summary>
     The number of items (single windows or groups of windows such as panels) in

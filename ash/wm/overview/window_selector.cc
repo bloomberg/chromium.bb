@@ -300,6 +300,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
   }
 
   if (mode == WindowSelector::CYCLE) {
+    cycle_start_time_ = base::Time::Now();
     event_handler_.reset(new WindowSelectorEventFilter(this));
     if (timer_enabled_)
       start_overview_timer_.Reset();
@@ -327,6 +328,11 @@ WindowSelector::~WindowSelector() {
   // Clearing the window list resets the ignored_by_shelf flag on the windows.
   windows_.clear();
   UpdateShelfVisibility();
+
+  if (!cycle_start_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowSelector.CycleTime",
+        base::Time::Now() - cycle_start_time_);
+  }
 }
 
 void WindowSelector::Step(WindowSelector::Direction direction) {
