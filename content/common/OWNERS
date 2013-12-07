@@ -28,6 +28,7 @@ per-file sandbox_seccomp_bpf_linux.*=jorgelo@chromium.org
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=cdn@chromium.org
 per-file *_messages*.h=cevans@chromium.org
+per-file *_messages*.h=dcheng@chromium.org
 per-file *_messages*.h=jln@chromium.org
 per-file *_messages*.h=jschuh@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
