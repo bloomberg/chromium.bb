@@ -7,6 +7,8 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/caption_buttons/alternate_frame_size_button.h"
+#include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "ash/wm/caption_buttons/frame_maximize_button.h"
 #include "grit/ash_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
@@ -15,7 +17,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/border.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/point.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -53,7 +56,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   bool alternate_style = switches::UseAlternateFrameCaptionButtonStyle();
 
   // Insert the buttons left to right.
-  minimize_button_ = new views::ImageButton(this);
+  minimize_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE);
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
   // Hide |minimize_button_| when using the non-alternate button style because
@@ -64,7 +67,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   AddChildView(minimize_button_);
 
   if (alternate_style)
-    size_button_ = new views::ImageButton(this);
+    size_button_ = new AlternateFrameSizeButton(this, frame, this);
   else
     size_button_ = new FrameMaximizeButton(this, frame);
   size_button_->SetAccessibleName(
@@ -72,7 +75,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   size_button_->SetVisible(frame_->widget_delegate()->CanMaximize());
   AddChildView(size_button_);
 
-  close_button_ = new views::ImageButton(this);
+  close_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_CLOSE);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   AddChildView(close_button_);
@@ -91,8 +94,7 @@ FrameCaptionButtonContainerView::GetOldStyleSizeButton() {
 }
 
 void FrameCaptionButtonContainerView::ResetWindowControls() {
-  minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
-  size_button_->SetState(views::CustomButton::STATE_NORMAL);
+  SetButtonsToNormal(ANIMATE_NO);
 }
 
 int FrameCaptionButtonContainerView::NonClientHitTest(
@@ -127,42 +129,18 @@ gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() {
 }
 
 void FrameCaptionButtonContainerView::Layout() {
-  SetButtonImages(minimize_button_,
-                  IDR_AURA_WINDOW_MINIMIZE_SHORT,
-                  IDR_AURA_WINDOW_MINIMIZE_SHORT_H,
-                  IDR_AURA_WINDOW_MINIMIZE_SHORT_P);
+  FrameCaptionButton::Style style = FrameCaptionButton::STYLE_SHORT_RESTORED;
   if (header_style_ == HEADER_STYLE_SHORT) {
-    // The new assets only make sense if the window is maximized or fullscreen
-    // because we usually use a black header in this case.
-    if (frame_->IsMaximized() || frame_->IsFullscreen()) {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
-      SetButtonImages(close_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P);
-    } else {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
-      SetButtonImages(close_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
-    }
+    if (frame_->IsMaximized() || frame_->IsFullscreen())
+      style = FrameCaptionButton::STYLE_SHORT_MAXIMIZED_OR_FULLSCREEN;
+    // Else: FrameCaptionButton::STYLE_SHORT_RESTORED;
   } else {
-    SetButtonImages(size_button_,
-                    IDR_AURA_WINDOW_MAXIMIZE,
-                    IDR_AURA_WINDOW_MAXIMIZE_H,
-                    IDR_AURA_WINDOW_MAXIMIZE_P);
-    SetButtonImages(close_button_,
-                    IDR_AURA_WINDOW_CLOSE,
-                    IDR_AURA_WINDOW_CLOSE_H,
-                    IDR_AURA_WINDOW_CLOSE_P);
+    style = FrameCaptionButton::STYLE_TALL_RESTORED;
   }
+
+  minimize_button_->SetStyle(style);
+  size_button_->SetStyle(style);
+  close_button_->SetStyle(style);
 
   int x = 0;
   for (int i = 0; i < child_count(); ++i) {
@@ -207,15 +185,14 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
         ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   }
 
+  // Abort any animations of the button icons.
+  SetButtonsToNormal(ANIMATE_NO);
+
   ash::UserMetricsAction action =
       ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE;
   if (sender == minimize_button_) {
-    // The minimize button may move out from under the cursor.
-    ResetWindowControls();
     frame_->Minimize();
   } else if (sender == size_button_) {
-    // The size button may move out from under the cursor.
-    ResetWindowControls();
     if (frame_->IsFullscreen()) { // Can be clicked in immersive fullscreen.
       frame_->SetFullscreen(false);
       action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN;
@@ -235,18 +212,65 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
   ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(action);
 }
 
-void FrameCaptionButtonContainerView::SetButtonImages(
-    views::ImageButton* button,
-    int normal_image_id,
-    int hot_image_id,
-    int pushed_image_id) {
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  button->SetImage(views::CustomButton::STATE_NORMAL,
-                   resource_bundle.GetImageSkiaNamed(normal_image_id));
-  button->SetImage(views::CustomButton::STATE_HOVERED,
-                   resource_bundle.GetImageSkiaNamed(hot_image_id));
-  button->SetImage(views::CustomButton::STATE_PRESSED,
-                   resource_bundle.GetImageSkiaNamed(pushed_image_id));
+bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {
+  return minimize_button_->visible();
+}
+
+void FrameCaptionButtonContainerView::SetButtonsToNormal(Animate animate) {
+  SetButtonIcons(CAPTION_BUTTON_ICON_MINIMIZE, CAPTION_BUTTON_ICON_CLOSE,
+      animate);
+  minimize_button_->SetState(views::Button::STATE_NORMAL);
+  size_button_->SetState(views::Button::STATE_NORMAL);
+  close_button_->SetState(views::Button::STATE_NORMAL);
+}
+
+void FrameCaptionButtonContainerView::SetButtonIcons(
+    CaptionButtonIcon minimize_button_icon,
+    CaptionButtonIcon close_button_icon,
+    Animate animate) {
+  FrameCaptionButton::Animate fcb_animate = (animate == ANIMATE_YES) ?
+      FrameCaptionButton::ANIMATE_YES : FrameCaptionButton::ANIMATE_NO;
+  minimize_button_->SetIcon(minimize_button_icon, fcb_animate);
+  close_button_->SetIcon(close_button_icon, fcb_animate);
+}
+
+const FrameCaptionButton*
+FrameCaptionButtonContainerView::PressButtonAt(
+    const gfx::Point& position_in_screen,
+    const gfx::Insets& pressed_hittest_outer_insets) const {
+  DCHECK(switches::UseAlternateFrameCaptionButtonStyle());
+  gfx::Point position(position_in_screen);
+  views::View::ConvertPointFromScreen(this, &position);
+
+  FrameCaptionButton* buttons[] = {
+    close_button_, size_button_, minimize_button_
+  };
+  FrameCaptionButton* pressed_button = NULL;
+  for (size_t i = 0; i < arraysize(buttons); ++i) {
+    FrameCaptionButton* button = buttons[i];
+    if (!button->visible())
+      continue;
+
+    if (button->state() == views::Button::STATE_PRESSED) {
+      gfx::Rect expanded_bounds = button->bounds();
+      expanded_bounds.Inset(pressed_hittest_outer_insets);
+      if (expanded_bounds.Contains(position)) {
+        pressed_button = button;
+        // Do not break in order to give preference to buttons which are
+        // closer to |position_in_screen| than the currently pressed button.
+        // TODO(pkotwicz): Make the caption buttons not overlap.
+      }
+    } else if (ConvertPointToViewAndHitTest(this, button, position)) {
+      pressed_button = button;
+      break;
+    }
+  }
+
+  for (size_t i = 0; i < arraysize(buttons); ++i) {
+    buttons[i]->SetState(buttons[i] == pressed_button ?
+        views::Button::STATE_PRESSED : views::Button::STATE_NORMAL);
+  }
+  return pressed_button;
 }
 
 }  // namespace ash

@@ -6,13 +6,13 @@
 #define ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/caption_buttons/maximize_bubble_frame_state.h"
+#include "ash/wm/caption_buttons/caption_button_types.h"
+#include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
@@ -30,7 +30,7 @@ class SnapSizer;
 class MaximizeBubbleController;
 
 // Button used for the maximize control on the frame. Handles snapping logic.
-class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
+class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
                                        public views::WidgetObserver,
                                        public aura::WindowObserver {
  public:

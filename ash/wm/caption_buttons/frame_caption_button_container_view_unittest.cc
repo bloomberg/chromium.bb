@@ -6,13 +6,12 @@
 
 #include "ash/ash_switches.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/custom_button.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -68,8 +67,8 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
 
   // Tests that |leftmost| and |rightmost| are at |container|'s edges.
   bool CheckButtonsAtEdges(FrameCaptionButtonContainerView* container,
-                           const views::CustomButton& leftmost,
-                           const views::CustomButton& rightmost) {
+                           const ash::FrameCaptionButton& leftmost,
+                           const ash::FrameCaptionButton& rightmost) {
     gfx::Rect expected(container->GetPreferredSize());
 
     gfx::Rect container_size(container->GetPreferredSize());
@@ -89,7 +88,7 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
   }
 
   // Returns true if the images for |button|'s states match the passed in ids.
-  bool ImagesMatch(views::ImageButton* button,
+  bool ImagesMatch(ash::FrameCaptionButton* button,
                    int normal_image_id,
                    int hovered_image_id,
                    int pressed_image_id) {
@@ -244,7 +243,6 @@ class FrameCaptionButtonContainerViewTestAlternateStyle
     FrameCaptionButtonContainerViewTest::SetUp();
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableAlternateFrameCaptionButtonStyle);
-    ASSERT_TRUE(switches::UseAlternateFrameCaptionButtonStyle());
   }
 
  private:
@@ -254,6 +252,11 @@ class FrameCaptionButtonContainerViewTestAlternateStyle
 // Test how the alternate button style affects which buttons are visible in the
 // default case.
 TEST_F(FrameCaptionButtonContainerViewTestAlternateStyle, ButtonVisibility) {
+  // Using the alternate caption button style is dependant on all snapped
+  // windows being 50% of the screen's width.
+  if (!switches::UseAlternateFrameCaptionButtonStyle())
+    return;
+
   // Both the minimize button and the maximize button should be visible when
   // both minimizing and maximizing are allowed when using the alternate
   // button style.

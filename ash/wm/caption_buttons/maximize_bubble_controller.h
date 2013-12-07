@@ -6,7 +6,7 @@
 #define ASH_WM_CAPTION_BUTTONS_MAXIMIZE_BUBBLE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/caption_buttons/maximize_bubble_frame_state.h"
+#include "ash/wm/caption_buttons/caption_button_types.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 

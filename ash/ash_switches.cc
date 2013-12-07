@@ -83,9 +83,7 @@ const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 // Use alternate visual style for the caption buttons (minimize, maximize,
 // restore, close). The alternate style:
 // - Adds a dedicated button for minimize.
-// - Increases the height of the maximized header.
 // - Removes the maximize button's help bubble.
-// - Switches snapping a window left/right to be always 50%.
 const char kAshEnableAlternateFrameCaptionButtonStyle[] =
     "ash-enable-alternate-caption-button";
 
@@ -206,8 +204,11 @@ const char kAshDisableDragAndDropAppListToLauncher[] =
     "ash-disable-drag-and-drop-applist-to-launcher";
 
 bool UseAlternateFrameCaptionButtonStyle() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshEnableAlternateFrameCaptionButtonStyle);
+  // For the sake of simplicity, the alternate caption button style is only
+  // used if snapped windows are always 50% of the screen's width.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(kAshEnableAlternateFrameCaptionButtonStyle) &&
+      !command_line->HasSwitch(kAshMultipleSnapWindowWidths);
 }
 
 bool UseAlternateShelfLayout() {

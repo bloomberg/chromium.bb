@@ -4,7 +4,6 @@
 
 #include "ash/wm/caption_buttons/frame_maximize_button.h"
 
-#include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -82,7 +81,7 @@ void FrameMaximizeButton::EscapeEventFilter::OnKeyEvent(
 
 FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
                                          views::Widget* frame)
-    : ImageButton(listener),
+    : FrameCaptionButton(listener, CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
       frame_(frame),
       observing_frame_(false),
       is_snap_enabled_(false),

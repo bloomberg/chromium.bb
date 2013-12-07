@@ -6,23 +6,25 @@
 #define ASH_WM_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/caption_buttons/alternate_frame_size_button_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace views {
-class ImageButton;
 class Widget;
 }
 
 namespace ash {
+class FrameCaptionButton;
 class FrameMaximizeButton;
 
 // Container view for the frame caption buttons. It performs the appropriate
 // action when a caption button is clicked.
 class ASH_EXPORT FrameCaptionButtonContainerView
     : public views::View,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public AlternateFrameSizeButtonDelegate {
  public:
   static const char kViewClassName[];
 
@@ -54,15 +56,15 @@ class ASH_EXPORT FrameCaptionButtonContainerView
         : container_view_(container_view) {
     }
 
-    views::ImageButton* minimize_button() const {
+    FrameCaptionButton* minimize_button() const {
       return container_view_->minimize_button_;
     }
 
-    views::ImageButton* size_button() const {
+    FrameCaptionButton* size_button() const {
       return container_view_->size_button_;
     }
 
-    views::ImageButton* close_button() const {
+    FrameCaptionButton* close_button() const {
       return container_view_->close_button_;
     }
 
@@ -102,11 +104,15 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Sets the images for a button based on the given ids.
-  void SetButtonImages(views::ImageButton* button,
-                       int normal_image_id,
-                       int hot_image_id,
-                       int pushed_image_id);
+  // AlternateFrameSizeButton::Delegate overrides:
+  virtual bool IsMinimizeButtonVisible() const OVERRIDE;
+  virtual void SetButtonsToNormal(Animate animate) OVERRIDE;
+  virtual void SetButtonIcons(CaptionButtonIcon minimize_button_icon,
+                              CaptionButtonIcon close_button_icon,
+                              Animate animate) OVERRIDE;
+  virtual const FrameCaptionButton* PressButtonAt(
+      const gfx::Point& position_in_screen,
+      const gfx::Insets& pressed_hittest_outer_insets) const OVERRIDE;
 
   // The widget that the buttons act on.
   views::Widget* frame_;
@@ -118,9 +124,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
-  views::ImageButton* minimize_button_;
-  views::ImageButton* size_button_;
-  views::ImageButton* close_button_;
+  FrameCaptionButton* minimize_button_;
+  FrameCaptionButton* size_button_;
+  FrameCaptionButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };
