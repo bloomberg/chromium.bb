@@ -2843,10 +2843,10 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
 // }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
-  if (!context_.get() || !context_->MakeCurrent(surface_.get()))
+  if (!context_.get())
     return false;
 
-  if (WasContextLost()) {
+  if (!context_->MakeCurrent(surface_.get()) || WasContextLost()) {
     LOG(ERROR) << "  GLES2DecoderImpl: Context lost during MakeCurrent.";
 
     // Some D3D drivers cannot recover from device lost in the GPU process
