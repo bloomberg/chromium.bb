@@ -11,14 +11,17 @@
       <message desc="Content description for the content view that holds the web contents [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_CONTENT_VIEW">
         Web View
       </message>
+      <message desc="Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32]" name="IDS_DATE_PICKER_DIALOG_TITLE">
+        Set date
+      </message>
       <message desc="Label for 'set' button in date picker dialog and time picker dialog, used to replace the contents of a field with the chosen date or time [CHAR-LIMIT=12]" name="IDS_DATE_PICKER_DIALOG_SET">
         Set
       </message>
       <message desc="Label for 'clear' button in date picker dialog and time picker dialog, used to replace the contents of a field with the empty string [CHAR-LIMIT=12]" name="IDS_DATE_PICKER_DIALOG_CLEAR">
         Clear
       </message>
-      <message desc="Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32]" name="IDS_DATE_PICKER_DIALOG_TITLE">
-        Set date
+      <message desc="Label for 'other' button in date picker dialog and time picker dialog, used to close the list of suggestions and open the the full date/time picker [CHAR-LIMIT=32]" name="IDS_DATE_PICKER_DIALOG_OTHER_BUTTON_LABEL">
+        Other
       </message>
       <message desc="Title for the date/time picker dialog, which can be used to choose a date and time. [CHAR-LIMIT=32]" name="IDS_DATE_TIME_PICKER_DIALOG_TITLE">
         Set date and time

@@ -152,6 +152,7 @@
     'common/cookie_data.cc',
     'common/cookie_data.h',
     'common/database_messages.h',
+    'common/date_time_suggestion.h',
     'common/desktop_notification_messages.h',
     'common/device_orientation/device_motion_hardware_buffer.h',
     'common/device_orientation/device_motion_messages.h',

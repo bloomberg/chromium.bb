@@ -102,6 +102,8 @@
     'renderer/context_menu_params_builder.h',
     'renderer/cursor_utils.cc',
     'renderer/cursor_utils.h',
+    'renderer/date_time_suggestion_builder.cc',
+    'renderer/date_time_suggestion_builder.h',
     'renderer/device_orientation/device_motion_event_pump.cc',
     'renderer/device_orientation/device_motion_event_pump.h',
     'renderer/device_orientation/device_orientation_event_pump.cc',

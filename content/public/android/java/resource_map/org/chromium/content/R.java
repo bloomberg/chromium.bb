@@ -29,6 +29,8 @@ public final class R {
     public static final class id {
         public static int ampm;
         public static int date_picker;
+        public static int date_time_suggestion_value;
+        public static int date_time_suggestion_label;
         public static int hour;
         public static int milli;
         public static int minute;
@@ -48,6 +50,7 @@ public final class R {
     }
     public static final class layout {
         public static int date_time_picker_dialog;
+        public static int date_time_suggestion;
         public static int two_field_date_picker;
         public static int multi_field_time_picker_dialog;
     }
@@ -66,6 +69,7 @@ public final class R {
         public static int date_picker_dialog_clear;
         public static int date_picker_dialog_set;
         public static int date_picker_dialog_title;
+        public static int date_picker_dialog_other_button_label;
         public static int date_time_picker_dialog_title;
         public static int media_player_error_button;
         public static int media_player_error_text_invalid_progressive_playback;
@@ -82,6 +86,7 @@ public final class R {
         public static int time_picker_dialog_minute_second_separator;
         public static int time_picker_dialog_second_subsecond_separator;
         public static int time_picker_dialog_pm;
+        public static int time_picker_dialog_title;
         public static int week_picker_dialog_title;
     }
     public static final class style {

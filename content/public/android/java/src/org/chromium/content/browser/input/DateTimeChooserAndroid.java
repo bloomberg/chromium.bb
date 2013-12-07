@@ -38,8 +38,9 @@ class DateTimeChooserAndroid {
     }
 
     private void showDialog(int dialogType, double dialogValue,
-                            double min, double max, double step) {
-        mInputDialogContainer.showDialog(dialogType, dialogValue, min, max, step);
+                            double min, double max, double step,
+                            DateTimeSuggestion[] suggestions) {
+        mInputDialogContainer.showDialog(dialogType, dialogValue, min, max, step, suggestions);
     }
 
     @CalledByNative
@@ -47,13 +48,32 @@ class DateTimeChooserAndroid {
             ContentViewCore contentViewCore,
             long nativeDateTimeChooserAndroid,
             int dialogType, double dialogValue,
-            double min, double max, double step) {
+            double min, double max, double step,
+            DateTimeSuggestion[] suggestions) {
         DateTimeChooserAndroid chooser =
                 new DateTimeChooserAndroid(
                         contentViewCore.getContext(),
                         nativeDateTimeChooserAndroid);
-        chooser.showDialog(dialogType, dialogValue, min, max, step);
+        chooser.showDialog(dialogType, dialogValue, min, max, step, suggestions);
         return chooser;
+    }
+
+    @CalledByNative
+    private static DateTimeSuggestion[] createSuggestionsArray(int size) {
+        return new DateTimeSuggestion[size];
+    }
+
+    /**
+     * @param array DateTimeSuggestion array that should get a new suggestion set.
+     * @param index Index in the array where to place a new suggestion.
+     * @param value Value of the suggestion.
+     * @param localizedValue Localized value of the suggestion.
+     * @param label Label of the suggestion.
+     */
+    @CalledByNative
+    private static void setDateTimeSuggestionAt(DateTimeSuggestion[] array, int index,
+            double value, String localizedValue, String label) {
+        array[index] = new DateTimeSuggestion(value, localizedValue, label);
     }
 
     @CalledByNative
@@ -61,7 +81,8 @@ class DateTimeChooserAndroid {
             int textInputTypeDate, int textInputTypeDateTime,
             int textInputTypeDateTimeLocal, int textInputTypeMonth,
             int textInputTypeTime, int textInputTypeWeek) {
-        InputDialogContainer.initializeInputTypes(textInputTypeDate,
+        InputDialogContainer.initializeInputTypes(
+                textInputTypeDate,
                 textInputTypeDateTime, textInputTypeDateTimeLocal,
                 textInputTypeMonth, textInputTypeTime, textInputTypeWeek);
     }

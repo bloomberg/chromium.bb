@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ANDROID_DATE_TIME_CHOOSER_ANDROID_H_
 
 #include <string>
+#include <vector>
 
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,6 +16,7 @@ namespace content {
 
 class ContentViewCore;
 class RenderViewHost;
+struct DateTimeSuggestion;
 
 // Android implementation for DateTimeChooser dialogs.
 class DateTimeChooserAndroid {
@@ -31,7 +33,8 @@ class DateTimeChooserAndroid {
                   double dialog_value,
                   double min,
                   double max,
-                  double step);
+                  double step,
+                  const std::vector<DateTimeSuggestion>& suggestions);
 
   // Replaces the current value
   void ReplaceDateTime(JNIEnv* env, jobject, jdouble value);

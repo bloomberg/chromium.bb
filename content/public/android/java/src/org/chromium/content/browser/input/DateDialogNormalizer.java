@@ -15,15 +15,15 @@ import java.util.TimeZone;
  */
 class DateDialogNormalizer {
 
-    private static void setLimits(DatePicker picker, long min, long max) {
+    private static void setLimits(DatePicker picker, long minMillis, long maxMillis) {
         // DatePicker intervals are non inclusive, the DatePicker will throw an
         // exception when setting the min/max attribute to the current date
         // so make sure this never happens
-        if (max <= min) {
+        if (maxMillis <= minMillis) {
             return;
         }
-        Calendar minCal = trimToDate(min);
-        Calendar maxCal = trimToDate(max);
+        Calendar minCal = trimToDate(minMillis);
+        Calendar maxCal = trimToDate(maxMillis);
         int currentYear = picker.getYear();
         int currentMonth = picker.getMonth();
         int currentDayOfMonth = picker.getDayOfMonth();
@@ -57,21 +57,21 @@ class DateDialogNormalizer {
      * needed to comply with the {@code min} and {@code max} attributes.
      */
     static void normalize(DatePicker picker, OnDateChangedListener listener,
-            int year, int month, int day, int hour, int minute, long min, long max) {
+            int year, int month, int day, int hour, int minute, long minMillis, long maxMillis) {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
         calendar.clear();
         calendar.set(year, month, day, hour, minute, 0);
-        if (calendar.getTimeInMillis() < min) {
+        if (calendar.getTimeInMillis() < minMillis) {
             calendar.clear();
-            calendar.setTimeInMillis(min);
-        } else if (calendar.getTimeInMillis() > max) {
+            calendar.setTimeInMillis(minMillis);
+        } else if (calendar.getTimeInMillis() > maxMillis) {
             calendar.clear();
-            calendar.setTimeInMillis(max);
+            calendar.setTimeInMillis(maxMillis);
         }
         picker.init(
                 calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH), listener);
 
-        setLimits(picker, min, max);
+        setLimits(picker, minMillis, maxMillis);
     }
 }

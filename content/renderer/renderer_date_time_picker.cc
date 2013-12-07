@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/date_time_suggestion_builder.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserCompletion.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
@@ -61,6 +62,10 @@ bool RendererDateTimePicker::Open() {
   message.minimum = chooser_params_.minimum;
   message.maximum = chooser_params_.maximum;
   message.step = chooser_params_.step;
+  for (size_t i = 0; i < chooser_params_.suggestions.size(); i++) {
+    message.suggestions.push_back(
+        DateTimeSuggestionBuilder::Build(chooser_params_.suggestions[i]));
+  }
   Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
   return true;
 }

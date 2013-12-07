@@ -54,28 +54,28 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 1970, 0, 1,
                 0, 0, 0, 0, 0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATE, 0.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATE, 0.0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_DATE,
                 1, 0, 1,
                 0, 0, 0, 0, 0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATE, -62135596800000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATE, -62135596800000.0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_DATE,
                 275760, 8, 13,
                 0, 0, 0, 0, 0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATE, 8640000000000000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATE, 8640000000000000.0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_DATE,
                 2013, 10, 7,
                 0, 0, 0, 0, 0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATE, 1383782400000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATE, 1383782400000.0,
                 DATE_DIALOG_DEFAULT_MIN, DATE_DIALOG_DEFAULT_MAX, 1.0);
     }
 
@@ -86,28 +86,28 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 1970, 0, 1,
                 0, 0, 0, 0, 0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, 0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, 0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_DATETIMELOCAL,
                 1, 0, 1,
                 0, 0, 0, 0, 0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, -62135596800000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, -62135596800000.0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_DATETIMELOCAL,
                 275760, 8, 13,
                 0, 0, 0, 0, 0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, 8640000000000000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, 8640000000000000.0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_DATETIMELOCAL,
                 2013, 10, 8,
                 1, 1, 2, 196, 0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 0.001);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, 1383872462196.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_DATETIMELOCAL, 1383872462196.0,
                 DATETIMELOCAL_DIALOG_DEFAULT_MIN, DATETIMELOCAL_DIALOG_DEFAULT_MAX, 0.001);
     }
 
@@ -118,28 +118,28 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 1970, 0, 0,
                 0, 0, 0, 0, 0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_MONTH, 0.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_MONTH, 0.0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_MONTH,
                 1, 0, 0,
                 0, 0, 0, 0, 0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_MONTH, -23628.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_MONTH, -23628.0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_MONTH,
                 275760, 8, 0,
                 0, 0, 0, 0, 0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_MONTH, 3285488.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_MONTH, 3285488.0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_MONTH,
                 2013, 10, 0,
                 0, 0, 0, 0, 0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_MONTH, 526.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_MONTH, 526.0,
                 MONTH_DIALOG_DEFAULT_MIN, MONTH_DIALOG_DEFAULT_MAX, 1.0);
     }
 
@@ -150,7 +150,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 0, 0, 0,
                 0, 0, 0, 0, 0,
                 TIME_DIALOG_DEFAULT_MIN, TIME_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_TIME, 0.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_TIME, 0.0,
                 TIME_DIALOG_DEFAULT_MIN, TIME_DIALOG_DEFAULT_MAX, 1.0);
 
         // Time dialog only shows the hour and minute fields.
@@ -158,14 +158,14 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 0, 0, 0,
                 23, 59, 0, 0, 0,
                 TIME_DIALOG_DEFAULT_MIN, TIME_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_TIME, 86399999.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_TIME, 86399999.0,
                 TIME_DIALOG_DEFAULT_MIN, TIME_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_TIME,
                 0, 0, 0,
                 15, 23, 0, 0, 0,
                 TIME_DIALOG_DEFAULT_MIN, TIME_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_TIME, 55425678.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_TIME, 55425678.0,
                 TIME_DIALOG_DEFAULT_MIN, TIME_DIALOG_DEFAULT_MAX, 1.0);
     }
 
@@ -176,28 +176,28 @@ public class InputDialogContainerTest extends AndroidTestCase {
                 1970, 0, 0,
                 0, 0, 0, 0, 1,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_WEEK, -259200000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_WEEK, -259200000.0,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_WEEK,
                 1, 0, 0,
                 0, 0, 0, 0, 1,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_WEEK, -62135596800000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_WEEK, -62135596800000.0,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_WEEK,
                 275760, 0, 0,
                 0, 0, 0, 0, 37,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_WEEK, 8639999568000000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_WEEK, 8639999568000000.0,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
 
         mInputDialogContainer.setShowDialogExpectation(TEXT_INPUT_TYPE_WEEK,
                 2013, 0, 0,
                 0, 0, 0, 0, 44,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
-        mInputDialogContainer.showDialog(TEXT_INPUT_TYPE_WEEK, 1382918400000.0,
+        mInputDialogContainer.showPickerDialog(TEXT_INPUT_TYPE_WEEK, 1382918400000.0,
                 WEEK_DIALOG_DEFAULT_MIN, WEEK_DIALOG_DEFAULT_MAX, 1.0);
     }
 
@@ -373,7 +373,7 @@ public class InputDialogContainerTest extends AndroidTestCase {
         }
 
         @Override
-        void showDialog(final int dialogType,
+        void showPickerDialog(final int dialogType,
                 int year, int month, int monthDay,
                 int hourOfDay, int minute, int second, int millis, int week,
                 double min, double max, double step) {

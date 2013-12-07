@@ -2376,7 +2376,8 @@ void WebContentsImpl::OnOpenDateTimeDialog(
                                  value.dialog_value,
                                  value.minimum,
                                  value.maximum,
-                                 value.step);
+                                 value.step,
+                                 value.suggestions);
 }
 
 void WebContentsImpl::OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg) {
