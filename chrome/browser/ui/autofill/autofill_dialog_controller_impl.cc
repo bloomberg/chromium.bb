@@ -1037,30 +1037,22 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
     link_names.push_back(documents[i]->display_name());
   }
 
-  // TODO(estade): Replace this with a more permanent solution. See
-  // http://crbug.com/319049 and http://crbug.com/316045
-  const bool new_user = true;
   int resource_id = 0;
   switch (documents.size()) {
     case 2U:
-      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_2 :
-                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_2;
+      resource_id = IDS_AUTOFILL_DIALOG_LEGAL_LINKS_2;
       break;
     case 3U:
-      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_3 :
-                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_3;
+      resource_id = IDS_AUTOFILL_DIALOG_LEGAL_LINKS_3;
       break;
     case 4U:
-      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_4 :
-                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_4;
+      resource_id = IDS_AUTOFILL_DIALOG_LEGAL_LINKS_4;
       break;
     case 5U:
-      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_5 :
-                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_5;
+      resource_id = IDS_AUTOFILL_DIALOG_LEGAL_LINKS_5;
       break;
     case 6U:
-      resource_id = new_user ? IDS_AUTOFILL_DIALOG_LEGAL_LINKS_NEW_6 :
-                               IDS_AUTOFILL_DIALOG_LEGAL_LINKS_UPDATED_6;
+      resource_id = IDS_AUTOFILL_DIALOG_LEGAL_LINKS_6;
       break;
     default:
       // We can only handle so many documents. For lack of a better way of
