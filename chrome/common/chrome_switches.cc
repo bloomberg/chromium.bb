@@ -693,6 +693,10 @@ const char kDisablePnacl[]                  = "disable-pnacl";
 // are likely to be needed in future page fetches.
 const char kEnablePrecache[]                = "enable-precache";
 
+// Enables showing unregistered printers in print preview
+const char kEnablePrintPreviewRegisterPromos[] =
+    "enable-print-preview-register-promos";
+
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
 // --enable-profiling=0

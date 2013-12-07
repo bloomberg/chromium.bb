@@ -5434,6 +5434,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_PRIVET_LOCAL_PRINTING_DESCRIPTION">
         Disable printing to printers on the local network using the Privet protocol.
       </message>
+      <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
+        Enable Print Preview Registration Promos
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION">
+        Enable registering unregistered cloud printers from print preview.
+      </message>
       <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME" desc="Title of the touch-optimized UI flag." >
         Touch Optimized UI
       </message>
