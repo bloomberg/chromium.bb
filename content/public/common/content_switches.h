@@ -139,6 +139,7 @@ extern const char kEnableGpuBenchmarking[];
 extern const char kEnableGpuClientTracing[];
 CONTENT_EXPORT extern const char kEnableHighDpiCompositingForFixedPosition[];
 #if defined(OS_WIN)
+CONTENT_EXPORT extern const char kEnableDirectWrite[];
 CONTENT_EXPORT extern const char kEnableHighResolutionTime[];
 #endif
 CONTENT_EXPORT extern const char kEnableHTMLImports[];

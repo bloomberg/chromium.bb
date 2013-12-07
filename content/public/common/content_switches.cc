@@ -458,6 +458,9 @@ const char kEnableHighDpiCompositingForFixedPosition[] =
      "enable-high-dpi-fixed-position-compositing";
 
 #if defined(OS_WIN)
+// Enables the DirectWrite font rendering system on windows.
+const char kEnableDirectWrite[]             = "enable-direct-write";
+
 // Use high resolution timers for TimeTicks.
 const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
 #endif

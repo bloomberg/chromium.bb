@@ -451,6 +451,15 @@ const Experiment kExperiments[] = {
     kOsWin,
     MULTI_VALUE_TYPE(kGDIPresentChoices)
   },
+#if defined(OS_WIN)
+  {
+    "enable-direct-write",
+    IDS_FLAGS_ENABLE_DIRECT_WRITE_NAME,
+    IDS_FLAGS_ENABLE_DIRECT_WRITE_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kEnableDirectWrite)
+  },
+#endif
   {
     "enable-experimental-canvas-features",
     IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME,

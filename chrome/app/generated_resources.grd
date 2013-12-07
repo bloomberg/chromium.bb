@@ -5582,6 +5582,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Layers that overlap other composited content need to be composited as well, to ensure correct paint order. This feature enables Blink to paint multiple RenderLayer
         subtrees into one composited layer so that we may be able to avoid unnecessarily large number of composited layers.
       </message>
+      <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_NAME" desc="Name of the 'Enable DirectWrite' lab.">
+        Enable DirectWrite
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_DESCRIPTION" desc="Description of the 'Enable DirectWrite' lab.">
+        Enables the use of experimental DirectWrite font rendering system.
+      </message>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
         Enable experimental canvas features
       </message>
