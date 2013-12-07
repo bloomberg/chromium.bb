@@ -87,6 +87,7 @@ struct window {
 		GLuint col;
 	} gl;
 
+	uint32_t benchmark_time, frames;
 	struct wl_egl_window *native;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
@@ -412,11 +413,11 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		{ 0, 0, 1, 0 },
 		{ 0, 0, 0, 1 }
 	};
-	static const int32_t speed_div = 5;
-	static uint32_t start_time = 0;
+	static const int32_t speed_div = 5, benchmark_interval = 5;
 	struct wl_region *region;
 	EGLint rect[4];
 	EGLint buffer_age = 0;
+	struct timeval tv;
 
 	assert(window->callback == callback);
 	window->callback = NULL;
@@ -427,10 +428,20 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	if (!window->configured)
 		return;
 
-	if (start_time == 0)
-		start_time = time;
+	gettimeofday(&tv, NULL);
+	time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	if (window->frames == 0)
+		window->benchmark_time = time;
+	if (time - window->benchmark_time > (benchmark_interval * 1000)) {
+		printf("%d frames in %d seconds: %f fps\n",
+		       window->frames,
+		       benchmark_interval,
+		       (float) window->frames / benchmark_interval);
+		window->benchmark_time = time;
+		window->frames = 0;
+	}
 
-	angle = ((time-start_time) / speed_div) % 360 * M_PI / 180.0;
+	angle = (time / speed_div) % 360 * M_PI / 180.0;
 	rotation[0][0] =  cos(angle);
 	rotation[0][2] =  sin(angle);
 	rotation[2][0] = -sin(angle);
@@ -483,6 +494,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	} else {
 		eglSwapBuffers(display->egl.dpy, window->egl_surface);
 	}
+	window->frames++;
 }
 
 static const struct wl_callback_listener frame_listener = {
