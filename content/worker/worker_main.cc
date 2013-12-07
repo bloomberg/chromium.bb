@@ -29,6 +29,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
   // The main message loop of the worker process.
   base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrWorkerMain");
+  base::debug::TraceLog::GetInstance()->SetProcessName("Shared Web Worker");
 
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
