@@ -6,19 +6,20 @@
 # libraries and describes standard build action for most of the libraries.
 
 {
+  'target_name': '<(_sanitizer_type)-<(_library_name)',
   'type': 'none',
   'actions': [
     {
-      'action_name': '<(_target_name)',
+      'action_name': '<(_library_name)',
       'inputs': [
         'download_build_install.py',
       ],
       'outputs': [
-        '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/<(_target_name).txt',
+        '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/<(_library_name).txt',
       ],
       'action': ['<(DEPTH)/third_party/instrumented_libraries/download_build_install.py',
         '--product-directory=<(PRODUCT_DIR)',
-        '--library=<(_target_name)',
+        '--library=<(_library_name)',
         '--intermediate-directory=<(INTERMEDIATE_DIR)',
         '--sanitizer-type=<(_sanitizer_type)',
         '<(_verbose_libraries_build_flag)',

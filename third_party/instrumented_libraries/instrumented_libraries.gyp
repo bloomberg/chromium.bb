@@ -27,9 +27,15 @@
          'prune_self_dependency': 1,
       },
       'dependencies': [
-        'libpng12-0',
-        'libxau6',
-        'libglib2.0-0',
+        '<(_sanitizer_type)-libpng12-0',
+        '<(_sanitizer_type)-libxau6',
+      ],
+      'conditions': [
+        ['asan==1', {
+          'dependencies': [
+            '<(_sanitizer_type)-libglib2.0-0',
+          ],
+        }],
       ],
       'actions': [
         {
@@ -48,17 +54,17 @@
       ],
     },
     {
-      'target_name': 'libpng12-0',
+      'library_name': 'libpng12-0',
       'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
-      'target_name': 'libxau6',
+      'library_name': 'libxau6',
       'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
-      'target_name': 'libglib2.0-0',
+      'library_name': 'libglib2.0-0',
       'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
