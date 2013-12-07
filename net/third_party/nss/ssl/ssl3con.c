@@ -12494,14 +12494,16 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
 SECStatus
 ssl3_CipherOrderSet(sslSocket *ss, const ssl3CipherSuite *ciphers, unsigned int len)
 {
-    unsigned int i;
+    /* |i| iterates over |ciphers| while |done| and |j| iterate over
+     * |ss->cipherSuites|. */
+    unsigned int i, done;
 
-    for (i = 0; i < len; i++) {
+    for (i = done = 0; i < len; i++) {
 	PRUint16 id = ciphers[i];
 	unsigned int existingIndex, j;
 	PRBool found = PR_FALSE;
 
-	for (j = i; j < ssl_V3_SUITES_IMPLEMENTED; j++) {
+	for (j = done; j < ssl_V3_SUITES_IMPLEMENTED; j++) {
 	    if (ss->cipherSuites[j].cipher_suite == id) {
 		existingIndex = j;
 		found = PR_TRUE;
@@ -12510,20 +12512,20 @@ ssl3_CipherOrderSet(sslSocket *ss, const ssl3CipherSuite *ciphers, unsigned int 
 	}
 
 	if (!found) {
-	    PORT_SetError(SSL_ERROR_UNKNOWN_CIPHER_SUITE);
-	    return SECFailure;
+	    continue;
 	}
 
-	if (existingIndex != i) {
-	    const ssl3CipherSuiteCfg temp = ss->cipherSuites[i];
-	    ss->cipherSuites[i] = ss->cipherSuites[existingIndex];
+	if (existingIndex != done) {
+	    const ssl3CipherSuiteCfg temp = ss->cipherSuites[done];
+	    ss->cipherSuites[done] = ss->cipherSuites[existingIndex];
 	    ss->cipherSuites[existingIndex] = temp;
 	}
+	done++;
     }
 
     /* Disable all cipher suites that weren't included. */
-    for (; i < ssl_V3_SUITES_IMPLEMENTED; i++) {
-	ss->cipherSuites[i].enabled = 0;
+    for (; done < ssl_V3_SUITES_IMPLEMENTED; done++) {
+	ss->cipherSuites[done].enabled = 0;
     }
 
     return SECSuccess;

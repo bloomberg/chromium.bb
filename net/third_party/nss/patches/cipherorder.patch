@@ -1,8 +1,8 @@
 diff --git a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
-index 67cc3a7..9899e0a 100644
+index 4cf02aa..24627ed 100644
 --- a/nss/lib/ssl/ssl.h
 +++ b/nss/lib/ssl/ssl.h
-@@ -263,6 +263,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
+@@ -265,6 +265,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
  SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
  SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
  
@@ -17,24 +17,26 @@ index 67cc3a7..9899e0a 100644
   * values. See RFC 5929. */
  typedef enum SSLChannelBindingType {
 diff --git a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
-index 0f1eea4..20dd5677 100644
+index c2d9eeb..350d09c 100644
 --- a/nss/lib/ssl/ssl3con.c
 +++ b/nss/lib/ssl/ssl3con.c
-@@ -12408,6 +12408,44 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
+@@ -12423,6 +12423,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
      return rv;
  }
  
 +SECStatus
 +ssl3_CipherOrderSet(sslSocket *ss, const ssl3CipherSuite *ciphers, unsigned int len)
 +{
-+    unsigned int i;
++    /* |i| iterates over |ciphers| while |done| and |j| iterate over
++     * |ss->cipherSuites|. */
++    unsigned int i, done;
 +
-+    for (i = 0; i < len; i++) {
++    for (i = done = 0; i < len; i++) {
 +	PRUint16 id = ciphers[i];
 +	unsigned int existingIndex, j;
 +	PRBool found = PR_FALSE;
 +
-+	for (j = i; j < ssl_V3_SUITES_IMPLEMENTED; j++) {
++	for (j = done; j < ssl_V3_SUITES_IMPLEMENTED; j++) {
 +	    if (ss->cipherSuites[j].cipher_suite == id) {
 +		existingIndex = j;
 +		found = PR_TRUE;
@@ -43,20 +45,20 @@ index 0f1eea4..20dd5677 100644
 +	}
 +
 +	if (!found) {
-+	    PORT_SetError(SSL_ERROR_UNKNOWN_CIPHER_SUITE);
-+	    return SECFailure;
++	    continue;
 +	}
 +
-+	if (existingIndex != i) {
-+	    const ssl3CipherSuiteCfg temp = ss->cipherSuites[i];
-+	    ss->cipherSuites[i] = ss->cipherSuites[existingIndex];
++	if (existingIndex != done) {
++	    const ssl3CipherSuiteCfg temp = ss->cipherSuites[done];
++	    ss->cipherSuites[done] = ss->cipherSuites[existingIndex];
 +	    ss->cipherSuites[existingIndex] = temp;
 +	}
++	done++;
 +    }
 +
 +    /* Disable all cipher suites that weren't included. */
-+    for (; i < ssl_V3_SUITES_IMPLEMENTED; i++) {
-+	ss->cipherSuites[i].enabled = 0;
++    for (; done < ssl_V3_SUITES_IMPLEMENTED; done++) {
++	ss->cipherSuites[done].enabled = 0;
 +    }
 +
 +    return SECSuccess;
@@ -66,10 +68,10 @@ index 0f1eea4..20dd5677 100644
  void
  ssl3_InitSocketPolicy(sslSocket *ss)
 diff --git a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
-index 79aca60..2c4b632 100644
+index 1e4655f..7521dba 100644
 --- a/nss/lib/ssl/sslimpl.h
 +++ b/nss/lib/ssl/sslimpl.h
-@@ -1693,6 +1693,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
+@@ -1711,6 +1711,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
  extern SECStatus ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *on);
  extern SECStatus ssl2_CipherPrefSet(sslSocket *ss, PRInt32 which, PRBool enabled);
  extern SECStatus ssl2_CipherPrefGet(sslSocket *ss, PRInt32 which, PRBool *enabled);
@@ -79,10 +81,10 @@ index 79aca60..2c4b632 100644
  extern SECStatus ssl3_SetPolicy(ssl3CipherSuite which, PRInt32 policy);
  extern SECStatus ssl3_GetPolicy(ssl3CipherSuite which, PRInt32 *policy);
 diff --git a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
-index b5c17f0..23a1b6b 100644
+index 965215d..9f8286c 100644
 --- a/nss/lib/ssl/sslsock.c
 +++ b/nss/lib/ssl/sslsock.c
-@@ -1329,6 +1329,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)
+@@ -1344,6 +1344,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)
      return rv;
  }
  

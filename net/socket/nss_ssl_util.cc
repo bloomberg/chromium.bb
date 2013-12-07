@@ -23,6 +23,7 @@
 #include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/base/nss_memio.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -82,7 +83,7 @@ namespace net {
 
 class NSSSSLInitSingleton {
  public:
-  NSSSSLInitSingleton() : num_ciphers_(0) {
+  NSSSSLInitSingleton() : model_fd_(NULL) {
     crypto::EnsureNSSInit();
 
     NSS_SetDomesticPolicy();
@@ -151,14 +152,12 @@ class NSSSSLInitSingleton {
       TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
       0,
     };
-    const PRUint16* all_ciphers = SSL_GetImplementedCiphers();
-    num_ciphers_ = SSL_GetNumImplementedCiphers();
-    ciphers_.reset(new uint16[num_ciphers_]);
-    memcpy(ciphers_.get(), all_ciphers, sizeof(uint16)*num_ciphers_);
+    scoped_ptr<uint16[]> ciphers(new uint16[num_ciphers]);
+    memcpy(ciphers.get(), ssl_ciphers, sizeof(uint16)*num_ciphers);
 
-    if (CiphersRemove(chacha_ciphers, ciphers_.get(), num_ciphers_) &&
-        CiphersRemove(aes_gcm_ciphers, ciphers_.get(), num_ciphers_)) {
-      CiphersCompact(ciphers_.get(), num_ciphers_);
+    if (CiphersRemove(chacha_ciphers, ciphers.get(), num_ciphers) &&
+        CiphersRemove(aes_gcm_ciphers, ciphers.get(), num_ciphers)) {
+      CiphersCompact(ciphers.get(), num_ciphers);
 
       const uint16* preference_ciphers = chacha_ciphers;
       const uint16* other_ciphers = aes_gcm_ciphers;
@@ -168,30 +167,38 @@ class NSSSSLInitSingleton {
         preference_ciphers = aes_gcm_ciphers;
         other_ciphers = chacha_ciphers;
       }
-      unsigned i = CiphersCopy(preference_ciphers, ciphers_.get());
-      CiphersCopy(other_ciphers, &ciphers_[i]);
-    } else {
-      ciphers_.reset();
-      num_ciphers_ = 0;
+      unsigned i = CiphersCopy(preference_ciphers, ciphers.get());
+      CiphersCopy(other_ciphers, &ciphers[i]);
+
+      if ((model_fd_ = memio_CreateIOLayer(1, 1)) == NULL ||
+          SSL_ImportFD(NULL, model_fd_) == NULL ||
+          SECSuccess !=
+              SSL_CipherOrderSet(model_fd_, ciphers.get(), num_ciphers)) {
+        NOTREACHED();
+        if (model_fd_) {
+          PR_Close(model_fd_);
+          model_fd_ = NULL;
+        }
+      }
     }
 
     // All other SSL options are set per-session by SSLClientSocket and
     // SSLServerSocket.
   }
 
-  const uint16* GetNSSCipherOrder(size_t* out_length) {
-    *out_length = num_ciphers_;
-    return ciphers_.get();
+  PRFileDesc* GetModelSocket() {
+    return model_fd_;
   }
 
   ~NSSSSLInitSingleton() {
     // Have to clear the cache, or NSS_Shutdown fails with SEC_ERROR_BUSY.
     SSL_ClearSessionCache();
+    if (model_fd_)
+      PR_Close(model_fd_);
   }
 
  private:
-  scoped_ptr<uint16[]> ciphers_;
-  size_t num_ciphers_;
+  PRFileDesc* model_fd_;
 };
 
 static base::LazyInstance<NSSSSLInitSingleton> g_nss_ssl_init_singleton =
@@ -210,8 +217,8 @@ void EnsureNSSSSLInit() {
   g_nss_ssl_init_singleton.Get();
 }
 
-const uint16* GetNSSCipherOrder(size_t* out_length) {
-  return g_nss_ssl_init_singleton.Get().GetNSSCipherOrder(out_length);
+PRFileDesc* GetNSSModelSocket() {
+  return g_nss_ssl_init_singleton.Get().GetModelSocket();
 }
 
 // Map a Chromium net error code to an NSS error code.

@@ -3118,9 +3118,10 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
 
   /* Create SSL state machine */
   /* Push SSL onto our fake I/O socket */
-  nss_fd_ = SSL_ImportFD(NULL, nss_fd_);
-  if (nss_fd_ == NULL) {
+  if (SSL_ImportFD(GetNSSModelSocket(), nss_fd_) == NULL) {
     LogFailedNSSFunction(net_log_, "SSL_ImportFD", "");
+    PR_Close(nss_fd_);
+    nss_fd_ = NULL;
     return ERR_OUT_OF_MEMORY;  // TODO(port): map NSPR/NSS error code.
   }
   // TODO(port): set more ssl options!  Check errors!
@@ -3169,14 +3170,6 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     // This will fail if the specified cipher is not implemented by NSS, but
     // the failure is harmless.
     SSL_CipherPrefSet(nss_fd_, *it, PR_FALSE);
-  }
-
-  size_t cipher_order_len;
-  const uint16* cipher_order = GetNSSCipherOrder(&cipher_order_len);
-  if (cipher_order) {
-    rv = SSL_CipherOrderSet(nss_fd_, cipher_order, cipher_order_len);
-    if (rv != SECSuccess)
-      LogFailedNSSFunction(net_log_, "SSL_CipherOrderSet", "");
   }
 
   // Support RFC 5077
