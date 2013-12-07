@@ -14,19 +14,13 @@
 #include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
 
 using extension_test_util::LoadManifestUnchecked;
 
@@ -44,7 +38,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
  public:
   RulesRegistryWithCacheTest()
       : cache_delegate_(/*log_storage_init_delay=*/false ),
-        registry_(new TestRulesRegistry(&profile_,
+        registry_(new TestRulesRegistry(profile(),
                                         /*event_name=*/"",
                                         content::BrowserThread::UI,
                                         &cache_delegate_,
@@ -84,18 +78,12 @@ class RulesRegistryWithCacheTest : public testing::Test {
     return GetNumberOfRules(extension_id, registry_.get());
   }
 
+  TestingProfile* profile() const { return env_.profile(); }
+
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  TestExtensionEnvironment env_;
   RulesCacheDelegate cache_delegate_;
-  // |registry_| needs to be defined after |thread_bundle_| to ensure that it
-  // is released before the final spinning of threads.
   scoped_refptr<TestRulesRegistry> registry_;
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 };
 
 TEST_F(RulesRegistryWithCacheTest, AddRules) {
@@ -212,25 +200,18 @@ TEST_F(RulesRegistryWithCacheTest, OnExtensionUninstalled) {
 }
 
 TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
-  // TestingProfile::Init makes sure that the factory method for a corresponding
-  // extension system creates a TestExtensionSystem.
-  extensions::TestExtensionSystem* system =
-      static_cast<extensions::TestExtensionSystem*>(
-          extensions::ExtensionSystem::Get(&profile_));
-  ExtensionPrefs* extension_prefs = system->CreateExtensionPrefs(
-      CommandLine::ForCurrentProcess(), base::FilePath());
-  system->CreateExtensionService(
-      CommandLine::ForCurrentProcess(), base::FilePath(), false);
-  // The value store is first created during CreateExtensionService.
-  TestingValueStore* store = system->value_store();
+  ExtensionPrefs* extension_prefs = env_.GetExtensionPrefs();
+  env_.GetExtensionService();
+  // The value store is first created during GetExtensionService.
+  TestingValueStore* store = env_.GetExtensionSystem()->value_store();
 
   const std::string event_name("testEvent");
   const std::string rules_stored_key(
       RulesCacheDelegate::GetRulesStoredKey(
-          event_name, profile_.IsOffTheRecord()));
+          event_name, profile()->IsOffTheRecord()));
   scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry(new TestRulesRegistry(
-      &profile_, event_name, content::BrowserThread::UI,
+      profile(), event_name, content::BrowserThread::UI,
       cache_delegate.get(),
       RulesRegistry::WebViewKey(0, 0)));
 
@@ -288,31 +269,25 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
 
 // Test that each registry has its own "are some rules stored" flag.
 TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
-  // TestingProfile::Init makes sure that the factory method for a corresponding
-  // extension system creates a TestExtensionSystem.
-  extensions::TestExtensionSystem* system =
-      static_cast<extensions::TestExtensionSystem*>(
-          extensions::ExtensionSystem::Get(&profile_));
-  ExtensionPrefs* extension_prefs = system->CreateExtensionPrefs(
-      CommandLine::ForCurrentProcess(), base::FilePath());
+  ExtensionPrefs* extension_prefs = env_.GetExtensionPrefs();
 
   const std::string event_name1("testEvent1");
   const std::string event_name2("testEvent2");
   const std::string rules_stored_key1(
       RulesCacheDelegate::GetRulesStoredKey(
-          event_name1, profile_.IsOffTheRecord()));
+          event_name1, profile()->IsOffTheRecord()));
   const std::string rules_stored_key2(
       RulesCacheDelegate::GetRulesStoredKey(
-          event_name2, profile_.IsOffTheRecord()));
+          event_name2, profile()->IsOffTheRecord()));
   scoped_ptr<RulesCacheDelegate> cache_delegate1(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry1(new TestRulesRegistry(
-      &profile_, event_name1, content::BrowserThread::UI,
+      profile(), event_name1, content::BrowserThread::UI,
       cache_delegate1.get(),
       RulesRegistry::WebViewKey(0, 0)));
 
   scoped_ptr<RulesCacheDelegate> cache_delegate2(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry2(new TestRulesRegistry(
-      &profile_, event_name2, content::BrowserThread::UI,
+      profile(), event_name2, content::BrowserThread::UI,
       cache_delegate2.get(),
       RulesRegistry::WebViewKey(0, 0)));
 
@@ -330,11 +305,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
 TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   // This test makes sure that rules are restored from the rule store
   // on registry (in particular, browser) restart.
-  extensions::TestExtensionSystem* system =
-      static_cast<extensions::TestExtensionSystem*>(
-          extensions::ExtensionSystem::Get(&profile_));
-  ExtensionService* extension_service = system->CreateExtensionService(
-      CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  ExtensionService* extension_service = env_.GetExtensionService();
 
   // 1. Add an extension, before rules registry gets created.
   std::string error;
@@ -347,12 +318,12 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
                             &error));
   ASSERT_TRUE(error.empty());
   extension_service->AddExtension(extension.get());
-  system->SetReady();
+  env_.GetExtensionSystem()->SetReady();
 
   // 2. First run, adding a rule for the extension.
   scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
   scoped_refptr<TestRulesRegistry> registry(new TestRulesRegistry(
-      &profile_,
+      profile(),
       "testEvent",
       content::BrowserThread::UI,
       cache_delegate.get(),
@@ -365,7 +336,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   // 3. Restart the TestRulesRegistry and see the rule still there.
   cache_delegate.reset(new RulesCacheDelegate(false));
   registry = new TestRulesRegistry(
-      &profile_,
+      profile(),
       "testEvent",
       content::BrowserThread::UI,
       cache_delegate.get(),
@@ -381,13 +352,9 @@ TEST_F(RulesRegistryWithCacheTest, ConcurrentStoringOfRules) {
   // single extension to only write the last one, we should never forget to
   // write a rules update for extension A, just because it is immediately
   // followed by a rules update for extension B.
-  extensions::TestExtensionSystem* system =
-      static_cast<extensions::TestExtensionSystem*>(
-          extensions::ExtensionSystem::Get(&profile_));
-  system->CreateExtensionPrefs(CommandLine::ForCurrentProcess(),
-                               base::FilePath());
-  system->CreateExtensionService(
-      CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  extensions::TestExtensionSystem* system = env_.GetExtensionSystem();
+  env_.GetExtensionPrefs();
+  env_.GetExtensionService();  // Force creation.
   TestingValueStore* store = system->value_store();
 
   int write_count = store->write_count();

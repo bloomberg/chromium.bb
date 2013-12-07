@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -33,6 +33,8 @@ class WebContents;
 namespace extensions {
 
 class Extension;
+class ExtensionPrefs;
+class TestExtensionSystem;
 
 // This class provides a minimal environment in which to create
 // extensions and tabs for extension-related unittests.
@@ -43,9 +45,16 @@ class TestExtensionEnvironment {
 
   TestingProfile* profile() const;
 
+  // Returns the TestExtensionSystem created by the TestingProfile.
+  TestExtensionSystem* GetExtensionSystem();
+
   // Returns an ExtensionService created (and owned) by the
   // TestExtensionSystem created by the TestingProfile.
   ExtensionService* GetExtensionService();
+
+  // Returns ExtensionPrefs created (and owned) by the
+  // TestExtensionSystem created by the TestingProfile.
+  ExtensionPrefs* GetExtensionPrefs();
 
   // Creates an Extension and registers it with the ExtensionService.
   // The Extension has a default manifest of {name: "Extension",
@@ -57,14 +66,7 @@ class TestExtensionEnvironment {
   scoped_ptr<content::WebContents> MakeTab() const;
 
  private:
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread file_blocking_thread_;
-  content::TestBrowserThread io_thread_;
-  // We may need to add the rest of the browser threads here.  This is
-  // likely to be indicated by memory leaks in which the object was
-  // expected to be freed by a DeleteSoon() call.
+  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -77,6 +79,7 @@ class TestExtensionEnvironment {
 #endif
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
+  ExtensionPrefs* extension_prefs_;
 };
 
 }  // namespace extensions
