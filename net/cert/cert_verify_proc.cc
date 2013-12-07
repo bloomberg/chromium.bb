@@ -339,7 +339,7 @@ bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
 // NOTE: This implementation assumes and enforces that the hashes are SHA1.
 bool CertVerifyProc::IsPublicKeyBlacklisted(
     const HashValueVector& public_key_hashes) {
-  static const unsigned kNumHashes = 10;
+  static const unsigned kNumHashes = 11;
   static const uint8 kHashes[kNumHashes][base::kSHA1Length] = {
     // Subject: CN=DigiNotar Root CA
     // Issuer: CN=Entrust.net x2 and self-signed
@@ -384,6 +384,10 @@ bool CertVerifyProc::IsPublicKeyBlacklisted(
     // Win32/Sirefef.gen!C generates fake certificates with this public key.
     {0xa4, 0xf5, 0x6e, 0x9e, 0x1d, 0x9a, 0x3b, 0x7b, 0x1a, 0xc3,
      0x31, 0xcf, 0x64, 0xfc, 0x76, 0x2c, 0xd0, 0x51, 0xfb, 0xa4},
+    // ANSSI certificate under which a MITM proxy was mistakenly operated.
+    // Expires: Jul 18 10:05:28 2014 GMT
+    {0x3e, 0xcf, 0x4b, 0xbb, 0xe4, 0x60, 0x96, 0xd5, 0x14, 0xbb,
+     0x53, 0x9b, 0xb9, 0x13, 0xd7, 0x7a, 0xa4, 0xef, 0x31, 0xbf},
   };
 
   for (unsigned i = 0; i < kNumHashes; i++) {
