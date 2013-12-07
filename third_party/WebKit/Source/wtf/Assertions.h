@@ -329,14 +329,6 @@ while (0)
 #define JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel) prefix ## channel
 #endif
 
-/* WTF_LOG_VERBOSE */
-
-#if LOG_DISABLED
-#define WTF_LOG_VERBOSE(channel, ...) ((void)0)
-#else
-#define WTF_LOG_VERBOSE(channel, ...) WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, &JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
-#endif
-
 /* UNREACHABLE_FOR_PLATFORM */
 
 #if COMPILER(CLANG)
