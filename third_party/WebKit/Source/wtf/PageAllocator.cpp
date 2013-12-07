@@ -208,7 +208,7 @@ void* allocPages(void* addr, size_t len, size_t align)
     // second, slower attempt.
     freePages(ret, len);
 
-    size_t tryLen = len + align;
+    size_t tryLen = len + (align - kPageAllocationGranularity);
 
     // We loop to cater for the unlikely case where another thread maps on top
     // of the aligned location we choose.
