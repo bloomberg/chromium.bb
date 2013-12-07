@@ -232,7 +232,7 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(
 bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
     ShellWindow* window) {
 
-  if (window->GetBaseWindow()->IsFrameless()) {
+  if (!window->GetBaseWindow()->IsFrameless()) {
     error_ = kRequiresFramelessWindow;
     return false;
   }
