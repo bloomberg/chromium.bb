@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/common/pref_names.h"

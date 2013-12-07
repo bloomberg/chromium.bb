@@ -64,7 +64,7 @@ jobject AndroidProfileOAuth2TokenService::GetForProfile(
     JNIEnv* env, jclass clazz, jobject j_profile_android) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
   AndroidProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+      ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(profile);
   return service->java_ref_.obj();
 }
 
