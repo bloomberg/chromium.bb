@@ -54,7 +54,6 @@ public:
     {
         return RenderThemeChromiumAndroid::defaultActiveSelectionBackgroundColor;
     }
-    virtual bool supportsDataListUI(const AtomicString&) const;
 
 protected:
     virtual int menuListArrowPadding() const OVERRIDE;
