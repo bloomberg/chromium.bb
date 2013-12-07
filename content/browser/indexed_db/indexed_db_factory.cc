@@ -132,6 +132,7 @@ void IndexedDBFactory::GetDatabaseNames(
   }
 
   callbacks->OnSuccess(backing_store->GetDatabaseNames());
+  ReleaseBackingStore(origin_url, false /* immediate */);
 }
 
 void IndexedDBFactory::DeleteDatabase(
@@ -182,6 +183,7 @@ void IndexedDBFactory::DeleteDatabase(
   database_map_[unique_identifier] = database;
   database->DeleteDatabase(callbacks);
   database_map_.erase(unique_identifier);
+  ReleaseBackingStore(origin_url, false /* immediate */);
 }
 
 void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {

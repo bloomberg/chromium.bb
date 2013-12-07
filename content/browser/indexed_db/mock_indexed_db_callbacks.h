@@ -13,7 +13,10 @@ namespace content {
 class MockIndexedDBCallbacks : public IndexedDBCallbacks {
  public:
   MockIndexedDBCallbacks();
+  MockIndexedDBCallbacks(bool expect_connection);
 
+  virtual void OnSuccess() OVERRIDE;
+  virtual void OnSuccess(const std::vector<base::string16>&) OVERRIDE;
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const IndexedDBDatabaseMetadata& metadata) OVERRIDE;
 
@@ -22,6 +25,7 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
  private:
   virtual ~MockIndexedDBCallbacks();
   scoped_ptr<IndexedDBConnection> connection_;
+  bool expect_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MockIndexedDBCallbacks);
 };

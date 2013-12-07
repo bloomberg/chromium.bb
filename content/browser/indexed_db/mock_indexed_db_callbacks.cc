@@ -9,9 +9,17 @@
 namespace content {
 
 MockIndexedDBCallbacks::MockIndexedDBCallbacks()
-    : IndexedDBCallbacks(NULL, 0, 0) {}
+    : IndexedDBCallbacks(NULL, 0, 0), expect_connection_(true) {}
+MockIndexedDBCallbacks::MockIndexedDBCallbacks(bool expect_connection)
+    : IndexedDBCallbacks(NULL, 0, 0), expect_connection_(expect_connection) {}
 
-MockIndexedDBCallbacks::~MockIndexedDBCallbacks() { EXPECT_TRUE(connection_); }
+MockIndexedDBCallbacks::~MockIndexedDBCallbacks() {
+  EXPECT_EQ(expect_connection_, !!connection_);
+}
+
+void MockIndexedDBCallbacks::OnSuccess() {}
+
+void MockIndexedDBCallbacks::OnSuccess(const std::vector<base::string16>&) {}
 
 void MockIndexedDBCallbacks::OnSuccess(
     scoped_ptr<IndexedDBConnection> connection,
