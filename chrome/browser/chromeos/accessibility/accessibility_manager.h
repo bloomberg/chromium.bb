@@ -124,6 +124,8 @@ class AccessibilityManager : public content::NotificationObserver,
   void LoadChromeVoxToLockScreen();
   void UnloadChromeVox();
   void UnloadChromeVoxFromLockScreen();
+  void SetUpPreLoadChromeVox(Profile* profile);
+  void TearDownPostUnloadChromeVox(Profile* profile);
 
   void UpdateLargeCursorFromPref();
   void UpdateStickyKeysFromPref();
