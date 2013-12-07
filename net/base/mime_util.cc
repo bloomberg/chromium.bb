@@ -124,7 +124,7 @@ struct MimeInfo {
 };
 
 static const MimeInfo primary_mappings[] = {
-  { "text/html", "html,htm" },
+  { "text/html", "html,htm,shtml,shtm" },
   { "text/css", "css" },
   { "text/xml", "xml" },
   { "image/gif", "gif" },
@@ -160,10 +160,10 @@ static const MimeInfo secondary_mappings[] = {
   { "image/svg+xml", "svg,svgz" },
   { "message/rfc822", "eml" },
   { "text/plain", "txt,text" },
-  { "text/html", "shtml,ehtml" },
+  { "text/html", "ehtml" },
   { "application/rss+xml", "rss" },
   { "application/rdf+xml", "rdf" },
-  { "text/xml", "xsl,xbl" },
+  { "text/xml", "xsl,xbl,xslt" },
   { "application/vnd.mozilla.xul+xml", "xul" },
   { "application/x-shockwave-flash", "swf,swl" },
   { "application/pkcs7-mime", "p7m,p7c,p7z" },

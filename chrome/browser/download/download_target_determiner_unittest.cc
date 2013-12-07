@@ -536,11 +536,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_Basic) {
       // 2: Automatic Dangerous
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-      "http://example.com/foo.xml", "",
+      "http://example.com/foo.crx", "",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("foo.xml"),
+      FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -561,11 +561,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_Basic) {
     },
   };
 
-  // The test assumes that .xml files have a danger level of
+  // The test assumes that .crx files have a danger level of
   // ALLOW_ON_USER_GESTURE.
   ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
-                base::FilePath(FILE_PATH_LITERAL("foo.xml"))));
+                base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
   RunTestCasesWithActiveItem(kBasicTestCases, arraysize(kBasicTestCases));
 }
 
@@ -1060,11 +1060,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
       // 0: Safe download due to visiting referrer before.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://visited.example.com/foo.xml", "application/xml",
+      "http://visited.example.com/foo.crx", "application/xml",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("foo.xml"),
+      FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_CRDOWNLOAD
@@ -1074,11 +1074,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
       // 1: Dangerous due to not having visited referrer before.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-      "http://not-visited.example.com/foo.xml", "application/xml",
+      "http://not-visited.example.com/foo.crx", "application/xml",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("foo.xml"),
+      FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -1088,11 +1088,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
       // 2: Safe because the user is being prompted.
       SAVE_AS,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://not-visited.example.com/foo.xml", "application/xml",
+      "http://not-visited.example.com/foo.crx", "application/xml",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("foo.xml"),
+      FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
       EXPECT_CRDOWNLOAD
@@ -1102,22 +1102,22 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
       // 3: Safe because of forced path.
       FORCED,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://not-visited.example.com/foo.xml", "application/xml",
-      FILE_PATH_LITERAL("foo.xml"),
+      "http://not-visited.example.com/foo.crx", "application/xml",
+      FILE_PATH_LITERAL("foo.crx"),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("foo.xml"),
+      FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_LOCAL_PATH
     },
   };
 
-  // This test assumes that the danger level of .xml files is
+  // This test assumes that the danger level of .crx files is
   // ALLOW_ON_USER_GESTURE.
   ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
-                base::FilePath(FILE_PATH_LITERAL("foo.xml"))));
+                base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
 
   // First the history service must exist.
   ASSERT_TRUE(profile()->CreateHistoryService(false, false));
@@ -1329,11 +1329,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_NotifyExtensionsSafe) {
       // 2: Automatic Dangerous
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-      "http://example.com/foo.xml", "",
+      "http://example.com/foo.crx", "",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("overridden/foo.xml"),
+      FILE_PATH_LITERAL("overridden/foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -1368,11 +1368,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_NotifyExtensionsUnsafe) {
       // 0: Automatic Safe : Later overridden by a dangerous filetype.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-      "http://example.com/foo.xml.remove", "text/plain",
+      "http://example.com/foo.crx.remove", "text/plain",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("overridden/foo.xml"),
+      FILE_PATH_LITERAL("overridden/foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -1566,11 +1566,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedNoPrompt) {
       // been prompted before.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-      "http://example.com/foo.xml", "",
+      "http://example.com/foo.crx", "",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("foo.xml"),
+      FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
       EXPECT_UNCONFIRMED
@@ -1591,11 +1591,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedNoPrompt) {
     },
   };
 
-  // The test assumes that .xml files have a danger level of
+  // The test assumes that .crx files have a danger level of
   // ALLOW_ON_USER_GESTURE.
   ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
-                base::FilePath(FILE_PATH_LITERAL("foo.xml"))));
+                base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
   for (size_t i = 0; i < arraysize(kResumedTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     const DownloadTestCase& test_case = kResumedTestCases[i];
@@ -1701,11 +1701,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
       // 2: Automatic Dangerous
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/foo.xml", "",
+      "http://example.com/foo.crx", "",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL(""),
-      FILE_PATH_LITERAL("foo.xml"),
+      FILE_PATH_LITERAL("foo.crx"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
       EXPECT_CRDOWNLOAD
@@ -1716,7 +1716,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
   // ALLOW_ON_USER_GESTURE.
   ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
-                base::FilePath(FILE_PATH_LITERAL("foo.xml"))));
+                base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
   for (size_t i = 0; i < arraysize(kResumedTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     download_prefs()->SetSaveFilePath(test_download_dir());
@@ -1799,11 +1799,11 @@ TEST_F(DownloadTargetDeterminerTest,
         // 2: Automatic Dangerous
         AUTOMATIC,
         content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-        "http://example.com/foo.xml", "",
+        "http://example.com/foo.crx", "",
         FILE_PATH_LITERAL(""),
 
         FILE_PATH_LITERAL(""),
-        FILE_PATH_LITERAL("foo.xml"),
+        FILE_PATH_LITERAL("foo.crx"),
         DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
         EXPECT_UNCONFIRMED
@@ -1817,11 +1817,11 @@ TEST_F(DownloadTargetDeterminerTest,
         // 3: Automatic Dangerous
         AUTOMATIC,
         content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-        "http://example.com/foo.xml", "",
+        "http://example.com/foo.crx", "",
         FILE_PATH_LITERAL(""),
 
         FILE_PATH_LITERAL(""),
-        FILE_PATH_LITERAL("foo.xml"),
+        FILE_PATH_LITERAL("foo.crx"),
         DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
         EXPECT_UNCONFIRMED
@@ -1853,11 +1853,11 @@ TEST_F(DownloadTargetDeterminerTest,
     },
   };
 
-  // The test assumes that .xml files have a danger level of
+  // The test assumes that .crx files have a danger level of
   // ALLOW_ON_USER_GESTURE.
   ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
-                base::FilePath(FILE_PATH_LITERAL("foo.xml"))));
+                base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kIntermediateNameTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);

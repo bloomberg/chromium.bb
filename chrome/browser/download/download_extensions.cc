@@ -60,35 +60,15 @@ static const struct Executables {
     const char* extension;
     DownloadDangerLevel level;
 } g_executables[] = {
-// Chrome OS does not suffer from some of the problems of older OS'es.
-#if !defined(OS_CHROMEOS)
-  // Relating to Java.
-  { "class", DANGEROUS },
-  { "jar", DANGEROUS },
-  { "jnlp", DANGEROUS },
-#endif
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Relating to scripting languages.
-  { "pl", ALLOW_ON_USER_GESTURE },
-  { "py", ALLOW_ON_USER_GESTURE },
-  { "pyc", ALLOW_ON_USER_GESTURE },
-  { "pyw", ALLOW_ON_USER_GESTURE },
-  { "rb", ALLOW_ON_USER_GESTURE },
-#endif
   // Some files are dangerous on all platforms.
+  //
   // Flash files downloaded locally can sometimes access the local filesystem.
-  { "swf", ALLOW_ON_USER_GESTURE },
+  { "swf", DANGEROUS },
+  { "spl", DANGEROUS },
   // Chrome extensions should be obtained through the web store.
   { "crx", ALLOW_ON_USER_GESTURE },
-  // These types can run JavaScript (e.g. HTML and HTML-like).
-  // TODO(cevans): work out whether our restrictions on file:/// are strong
-  // enough to mark these types as no longer dangerous.
-  { "shtm", ALLOW_ON_USER_GESTURE },
-  { "shtml", ALLOW_ON_USER_GESTURE },
-  { "svg", ALLOW_ON_USER_GESTURE },
-  { "xml", ALLOW_ON_USER_GESTURE },
-  { "xsl", ALLOW_ON_USER_GESTURE },
-  { "xslt", ALLOW_ON_USER_GESTURE },
+
+  // Windows, all file categories.
 #if defined(OS_WIN)
   { "ad", ALLOW_ON_USER_GESTURE },
   { "ade", ALLOW_ON_USER_GESTURE },
@@ -182,31 +162,48 @@ static const struct Executables {
   { "wsf", ALLOW_ON_USER_GESTURE },
   { "wsh", ALLOW_ON_USER_GESTURE },
   { "xbap", DANGEROUS },
-#elif defined(OS_MACOSX)
+#endif  // OS_WIN
+
+  // Java.
+#if !defined(OS_CHROMEOS)
+  { "class", DANGEROUS },
+  { "jar", DANGEROUS },
+  { "jnlp", DANGEROUS },
+#endif
+
+  // Scripting languages. (Shells are handled below.)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  { "pl", ALLOW_ON_USER_GESTURE },
+  { "py", ALLOW_ON_USER_GESTURE },
+  { "pyc", ALLOW_ON_USER_GESTURE },
+  { "pyw", ALLOW_ON_USER_GESTURE },
+  { "rb", ALLOW_ON_USER_GESTURE },
+#endif
+
+  // Shell languages. (OS_ANDROID is OS_POSIX.) OS_WIN shells are handled above.
+#if defined(OS_POSIX)
   { "bash", ALLOW_ON_USER_GESTURE },
+  { "csh", ALLOW_ON_USER_GESTURE },
+  { "ksh", ALLOW_ON_USER_GESTURE },
+  { "sh", ALLOW_ON_USER_GESTURE },
+  { "shar", ALLOW_ON_USER_GESTURE },
+  { "tcsh", ALLOW_ON_USER_GESTURE },
+#endif
+#if defined(OS_MACOSX)
   { "command", ALLOW_ON_USER_GESTURE },
-  { "csh", ALLOW_ON_USER_GESTURE },
-  { "ksh", ALLOW_ON_USER_GESTURE },
+#endif
+
+  // Package management formats. OS_WIN package formats are handled above.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
   { "pkg", ALLOW_ON_USER_GESTURE },
-  { "sh", ALLOW_ON_USER_GESTURE },
-  { "shar", ALLOW_ON_USER_GESTURE },
-  { "tcsh", ALLOW_ON_USER_GESTURE },
-#elif defined(OS_ANDROID)
-  { "apk", ALLOW_ON_USER_GESTURE },
-  { "sh", ALLOW_ON_USER_GESTURE },
-  { "shar", ALLOW_ON_USER_GESTURE },
-  { "dex", ALLOW_ON_USER_GESTURE },
-#elif defined(OS_POSIX)
-  // TODO(estade): lengthen this list.
-  { "bash", ALLOW_ON_USER_GESTURE },
-  { "csh", ALLOW_ON_USER_GESTURE },
+#endif
+#if defined(OS_LINUX)
   { "deb", ALLOW_ON_USER_GESTURE },
-  { "exe", ALLOW_ON_USER_GESTURE },
-  { "ksh", ALLOW_ON_USER_GESTURE },
   { "rpm", ALLOW_ON_USER_GESTURE },
-  { "sh", ALLOW_ON_USER_GESTURE },
-  { "shar", ALLOW_ON_USER_GESTURE },
-  { "tcsh", ALLOW_ON_USER_GESTURE },
+#endif
+#if defined(OS_ANDROID)
+  { "apk", ALLOW_ON_USER_GESTURE },
+  { "dex", ALLOW_ON_USER_GESTURE },  // Really an executable format.
 #endif
 };
 
