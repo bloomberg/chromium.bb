@@ -57,7 +57,7 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
 #endif
 
 #if defined(OS_CHROMEOS)
-  tty_file_ = file_util::OpenFile(base::FilePath(kTtyFilePath), "r");
+  tty_file_ = base::OpenFile(base::FilePath(kTtyFilePath), "r");
 #endif
   watched_message_loop_->AddTaskObserver(&task_observer_);
 }

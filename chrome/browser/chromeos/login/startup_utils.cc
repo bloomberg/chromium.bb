@@ -95,11 +95,11 @@ static void CreateOobeCompleteFlagFile() {
   // Create flag file for boot-time init scripts.
   base::FilePath oobe_complete_path = GetOobeCompleteFlagPath();
   if (!base::PathExists(oobe_complete_path)) {
-    FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
+    FILE* oobe_flag_file = base::OpenFile(oobe_complete_path, "w+b");
     if (oobe_flag_file == NULL)
       DLOG(WARNING) << oobe_complete_path.value() << " doesn't exist.";
     else
-      file_util::CloseFile(oobe_flag_file);
+      base::CloseFile(oobe_flag_file);
   }
 }
 

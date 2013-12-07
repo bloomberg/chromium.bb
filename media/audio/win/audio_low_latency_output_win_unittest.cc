@@ -97,7 +97,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
     file_name = file_name.AppendASCII(kDeltaTimeMsFileName);
 
     EXPECT_TRUE(!text_file_);
-    text_file_ = file_util::OpenFile(file_name, "wt");
+    text_file_ = base::OpenFile(file_name, "wt");
     DLOG_IF(ERROR, !text_file_) << "Failed to open log file.";
 
     // Write the array which contains delta times to a text file.
@@ -107,7 +107,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
       ++elements_written;
     }
 
-    file_util::CloseFile(text_file_);
+    base::CloseFile(text_file_);
   }
 
   // AudioOutputStream::AudioSourceCallback implementation.

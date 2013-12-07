@@ -90,7 +90,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   EXPECT_FALSE(corruption_detected_);
 
   // Corrupt the store.
-  file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb+"));
+  file_util::ScopedFILE file(base::OpenFile(filename_, "rb+"));
   const long kOffset = 60;
   EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
   const int32 kZero = 0;
@@ -114,7 +114,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   // Make it look like there is a lot of add-chunks-seen data.
   const long kAddChunkCountOffset = 2 * sizeof(int32);
   const int32 kLargeCount = 1000 * 1000 * 1000;
-  file.reset(file_util::OpenFile(filename_, "rb+"));
+  file.reset(base::OpenFile(filename_, "rb+"));
   EXPECT_EQ(fseek(file.get(), kAddChunkCountOffset, SEEK_SET), 0);
   EXPECT_EQ(fwrite(&kLargeCount, sizeof(kLargeCount), 1, file.get()), 1U);
   file.reset();
@@ -156,7 +156,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityPayload) {
   const size_t kOffset = 37;
 
   {
-    file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb+"));
+    file_util::ScopedFILE file(base::OpenFile(filename_, "rb+"));
     EXPECT_EQ(0, fseek(file.get(), kOffset, SEEK_SET));
     EXPECT_GE(fputs("hello", file.get()), 0);
   }
@@ -176,7 +176,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityChecksum) {
   const int kOffset = -static_cast<int>(sizeof(base::MD5Digest));
 
   {
-    file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb+"));
+    file_util::ScopedFILE file(base::OpenFile(filename_, "rb+"));
     EXPECT_EQ(0, fseek(file.get(), kOffset, SEEK_END));
     EXPECT_GE(fputs("hello", file.get()), 0);
   }

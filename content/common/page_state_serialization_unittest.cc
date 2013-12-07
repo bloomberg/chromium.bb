@@ -379,7 +379,7 @@ TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
   PathService::Get(base::DIR_TEMP, &path);
   path = path.AppendASCII("expected.dat");
 
-  FILE* fp = file_util::OpenFile(path, "wb");
+  FILE* fp = base::OpenFile(path, "wb");
   ASSERT_TRUE(fp);
 
   const size_t kRowSize = 76;

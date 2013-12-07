@@ -49,7 +49,7 @@ bool EventRecorder::StartRecording(const FilePath& filename) {
 
   // Open the recording file.
   DCHECK(!file_);
-  file_ = file_util::OpenFile(filename, "wb+");
+  file_ = OpenFile(filename, "wb+");
   if (!file_) {
     DLOG(ERROR) << "EventRecorder could not open log file";
     return false;
@@ -63,7 +63,7 @@ bool EventRecorder::StartRecording(const FilePath& filename) {
                                      GetModuleHandle(NULL), 0);
   if (!journal_hook_) {
     DLOG(ERROR) << "EventRecorder Record Hook failed";
-    file_util::CloseFile(file_);
+    CloseFile(file_);
     return false;
   }
 
@@ -84,7 +84,7 @@ void EventRecorder::StopRecording() {
     ::timeEndPeriod(1);
 
     DCHECK(file_ != NULL);
-    file_util::CloseFile(file_);
+    CloseFile(file_);
     file_ = NULL;
 
     journal_hook_ = NULL;
@@ -100,7 +100,7 @@ bool EventRecorder::StartPlayback(const FilePath& filename) {
 
   // Open the recording file.
   DCHECK(!file_);
-  file_ = file_util::OpenFile(filename, "rb");
+  file_ = OpenFile(filename, "rb");
   if (!file_) {
     DLOG(ERROR) << "EventRecorder Playback could not open log file";
     return false;
@@ -108,7 +108,7 @@ bool EventRecorder::StartPlayback(const FilePath& filename) {
   // Read the first event from the record.
   if (fread(&playback_msg_, sizeof(EVENTMSG), 1, file_) != 1) {
     DLOG(ERROR) << "EventRecorder Playback has no records!";
-    file_util::CloseFile(file_);
+    CloseFile(file_);
     return false;
   }
 
@@ -150,7 +150,7 @@ void EventRecorder::StopPlayback() {
     }
 
     DCHECK(file_ != NULL);
-    file_util::CloseFile(file_);
+    CloseFile(file_);
     file_ = NULL;
 
     ::timeEndPeriod(1);

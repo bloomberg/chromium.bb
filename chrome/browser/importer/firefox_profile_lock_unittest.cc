@@ -70,9 +70,9 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
       test_path.Append(FirefoxProfileLock::kLockFileName);
 
   // Create the orphaned lock file.
-  FILE* lock_file = file_util::OpenFile(lock_file_path, "w");
+  FILE* lock_file = base::OpenFile(lock_file_path, "w");
   ASSERT_TRUE(lock_file);
-  file_util::CloseFile(lock_file);
+  base::CloseFile(lock_file);
   EXPECT_TRUE(base::PathExists(lock_file_path));
 
   scoped_ptr<FirefoxProfileLock> lock;

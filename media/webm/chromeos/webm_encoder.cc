@@ -157,7 +157,7 @@ bool WebmEncoder::EncodeFromSprite(const SkBitmap& sprite,
 }
 
 bool WebmEncoder::WriteWebmHeader() {
-  output_ = file_util::OpenFile(output_path_, "wb");
+  output_ = base::OpenFile(output_path_, "wb");
   if (!output_)
     return false;
 
@@ -251,7 +251,7 @@ bool WebmEncoder::WriteWebmFooter() {
   EndSubElement();  // Cluster
   EndSubElement();  // Segment
   DCHECK(ebml_sub_elements_.empty());
-  return file_util::CloseFile(output_) && !has_errors_;
+  return base::CloseFile(output_) && !has_errors_;
 }
 
 void WebmEncoder::StartSubElement(unsigned long class_id) {

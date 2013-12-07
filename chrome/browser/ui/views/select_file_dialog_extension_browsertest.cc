@@ -272,9 +272,9 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
       downloads_dir_.AppendASCII("file_manager_test.html");
 
   // Create an empty file to give us something to select.
-  FILE* fp = file_util::OpenFile(test_file, "w");
+  FILE* fp = base::OpenFile(test_file, "w");
   ASSERT_TRUE(fp != NULL);
-  ASSERT_TRUE(file_util::CloseFile(fp));
+  ASSERT_TRUE(base::CloseFile(fp));
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 

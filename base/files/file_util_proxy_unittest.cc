@@ -320,7 +320,7 @@ TEST_F(FileUtilProxyTest, WriteAndFlush) {
 
   // Verify the written data.
   char buffer[10];
-  EXPECT_EQ(data_bytes, file_util::ReadFile(test_path(), buffer, data_bytes));
+  EXPECT_EQ(data_bytes, base::ReadFile(test_path(), buffer, data_bytes));
   for (int i = 0; i < data_bytes; ++i) {
     EXPECT_EQ(data[i], buffer[i]);
   }
@@ -373,7 +373,7 @@ TEST_F(FileUtilProxyTest, Truncate_Shrink) {
   ASSERT_EQ(7, info.size);
 
   char buffer[7];
-  EXPECT_EQ(7, file_util::ReadFile(test_path(), buffer, 7));
+  EXPECT_EQ(7, base::ReadFile(test_path(), buffer, 7));
   int i = 0;
   for (; i < 7; ++i)
     EXPECT_EQ(kTestData[i], buffer[i]);
@@ -400,7 +400,7 @@ TEST_F(FileUtilProxyTest, Truncate_Expand) {
   ASSERT_EQ(53, info.size);
 
   char buffer[53];
-  EXPECT_EQ(53, file_util::ReadFile(test_path(), buffer, 53));
+  EXPECT_EQ(53, base::ReadFile(test_path(), buffer, 53));
   int i = 0;
   for (; i < 10; ++i)
     EXPECT_EQ(kTestData[i], buffer[i]);

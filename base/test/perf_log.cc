@@ -18,7 +18,7 @@ bool InitPerfLog(const FilePath& log_file) {
     return false;
   }
 
-  perf_log_file = file_util::OpenFile(log_file, "w");
+  perf_log_file = OpenFile(log_file, "w");
   return perf_log_file != NULL;
 }
 
@@ -28,7 +28,7 @@ void FinalizePerfLog() {
     NOTREACHED();
     return;
   }
-  file_util::CloseFile(perf_log_file);
+  base::CloseFile(perf_log_file);
 }
 
 void LogPerfResult(const char* test_name, double value, const char* units) {

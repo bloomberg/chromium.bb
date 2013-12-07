@@ -391,8 +391,8 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   EXPECT_EQ(kTestFileName, listener_.downloads()[1]);
   ASSERT_EQ(base::PLATFORM_FILE_OK, listener_.last_error());
   char file_contents[5];
-  ASSERT_EQ(4, file_util::ReadFile(temp_file, file_contents,
-                                   strlen(kTestFileContents)));
+  ASSERT_EQ(4, base::ReadFile(temp_file, file_contents,
+                              strlen(kTestFileContents)));
   EXPECT_EQ(kTestFileContents,
             std::string(file_contents, strlen(kTestFileContents)));
 
@@ -425,8 +425,8 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
   base::RunLoop().RunUntilIdle();
 
   char file_contents[5];
-  ASSERT_EQ(4, file_util::ReadFile(temp_file, file_contents,
-                                   strlen(kTestFileContents)));
+  ASSERT_EQ(4, base::ReadFile(temp_file, file_contents,
+                              strlen(kTestFileContents)));
   EXPECT_EQ(kTestFileContents,
             std::string(file_contents, strlen(kTestFileContents)));
 

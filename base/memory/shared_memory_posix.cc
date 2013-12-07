@@ -264,7 +264,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   read_only_ = read_only;
 
   const char *mode = read_only ? "r" : "r+";
-  ScopedFILE fp(file_util::OpenFile(path, mode));
+  ScopedFILE fp(base::OpenFile(path, mode));
   int readonly_fd_storage = -1;
   ScopedFD readonly_fd(&readonly_fd_storage);
   *readonly_fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY));

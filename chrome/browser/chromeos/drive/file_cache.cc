@@ -429,7 +429,7 @@ bool FileCache::RecoverFilesFromCacheDirectory(
     // Read file contents to sniff mime type.
     std::vector<char> content(net::kMaxBytesToSniff);
     const int read_result =
-        file_util::ReadFile(current, &content[0], content.size());
+        base::ReadFile(current, &content[0], content.size());
     if (read_result < 0) {
       LOG(WARNING) << "Cannot read: " << current.value();
       return false;

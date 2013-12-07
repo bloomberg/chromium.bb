@@ -77,7 +77,7 @@ int GetRootPage(sql::Connection* db, const char* name) {
 // per SQLite usage.
 bool ReadPage(const base::FilePath& path, size_t page_no,
               char* buf, size_t page_size) {
-  file_util::ScopedFILE file(file_util::OpenFile(path, "rb"));
+  file_util::ScopedFILE file(base::OpenFile(path, "rb"));
   if (!file.get())
     return false;
   if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
@@ -91,7 +91,7 @@ bool ReadPage(const base::FilePath& path, size_t page_no,
 // per SQLite usage.
 bool WritePage(const base::FilePath& path, size_t page_no,
                const char* buf, size_t page_size) {
-  file_util::ScopedFILE file(file_util::OpenFile(path, "rb+"));
+  file_util::ScopedFILE file(base::OpenFile(path, "rb+"));
   if (!file.get())
     return false;
   if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
