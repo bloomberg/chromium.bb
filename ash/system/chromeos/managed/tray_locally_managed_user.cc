@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/user/login_status.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -77,18 +78,14 @@ void TrayLocallyManagedUser::UpdateAfterLoginStatusChange(
 void TrayLocallyManagedUser::CreateOrUpdateNotification(
     const base::string16& new_message) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  scoped_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      kNotificationId,
-      string16() /* no title */,
-      new_message,
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
-      base::string16() /* display_source */,
-      message_center::NotifierId(
-          system_notifier::NOTIFIER_LOCALLY_MANAGED_USER),
-      message_center::RichNotificationData(),
-      NULL /* no delegate */));
-  notification->SetSystemPriority();
+  scoped_ptr<Notification> notification(
+      message_center::Notification::CreateSystemNotification(
+          kNotificationId,
+          string16() /* no title */,
+          new_message,
+          bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
+          system_notifier::kNotifierLocallyManagedUser,
+          base::Closure() /* null callback */));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 

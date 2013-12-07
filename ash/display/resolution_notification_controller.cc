@@ -229,7 +229,8 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16() /* display_source */,
       message_center::NotifierId(
-          system_notifier::NOTIFIER_DISPLAY_RESOLUTION_CHANGE),
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          system_notifier::kNotifierDisplayResolutionChange),
       data,
       new ResolutionChangeNotificationDelegate(
           this, change_info_->timeout_count > 0)));

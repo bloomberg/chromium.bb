@@ -13,32 +13,29 @@
 namespace ash {
 namespace system_notifier {
 
-enum AshSystemComponentNotifierType {
-  NOTIFIER_NO_SYSTEM_COMPONENT = -1,
-
-  // Alphabetical order.
-  NOTIFIER_DISPLAY,
-  NOTIFIER_DISPLAY_RESOLUTION_CHANGE,
-  NOTIFIER_DISPLAY_ERROR,
-  NOTIFIER_INPUT_METHOD,
-  NOTIFIER_LOCALE,
-  NOTIFIER_LOCALLY_MANAGED_USER,
-  NOTIFIER_NETWORK,
-  NOTIFIER_NETWORK_ERROR,
-  NOTIFIER_SCREENSHOT,
-  NOTIFIER_SCREEN_CAPTURE,
-  NOTIFIER_SCREEN_SHARE,
-  NOTIFIER_SESSION_LENGTH_TIMEOUT,
-  NOTIFIER_POWER,
-};
-
-ASH_EXPORT std::string SystemComponentTypeToString(
-    AshSystemComponentNotifierType type);
+// The list of ash system notifier IDs. Alphabetical order.
+ASH_EXPORT extern const char kNotifierDisplay[];
+ASH_EXPORT extern const char kNotifierDisplayResolutionChange[];
+ASH_EXPORT extern const char kNotifierDisplayError[];
+ASH_EXPORT extern const char kNotifierInputMethod[];
+ASH_EXPORT extern const char kNotifierLocale[];
+ASH_EXPORT extern const char kNotifierLocallyManagedUser[];
+ASH_EXPORT extern const char kNotifierNetwork[];
+ASH_EXPORT extern const char kNotifierNetworkError[];
+ASH_EXPORT extern const char kNotifierScreenshot[];
+ASH_EXPORT extern const char kNotifierScreenCapture[];
+ASH_EXPORT extern const char kNotifierScreenShare[];
+ASH_EXPORT extern const char kNotifierSessionLengthTimeout[];
+ASH_EXPORT extern const char kNotifierPower[];
 
 // Returns true if notifications from |notifier_id| should always appear as
 // popups. "Always appear" means the popups should appear even in login screen,
 // lock screen, or fullscreen state.
 ASH_EXPORT bool ShouldAlwaysShowPopups(
+    const message_center::NotifierId& notifier_id);
+
+// Returns true if |notifier_id| is the system notifier from Ash.
+ASH_EXPORT bool IsAshSystemNotifier(
     const message_center::NotifierId& notifier_id);
 
 }  // namespace system_notifier

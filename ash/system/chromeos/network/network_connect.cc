@@ -439,7 +439,7 @@ void ShowMobileSetup(const std::string& service_path) {
                                        UTF8ToUTF16(cellular->name())),
             ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED),
-            ash::system_notifier::NOTIFIER_NETWORK,
+            ash::system_notifier::kNotifierNetwork,
             base::Bind(&ash::network_connect::ShowNetworkSettings,
                        service_path)));
     return;

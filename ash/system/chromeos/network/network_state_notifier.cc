@@ -67,7 +67,7 @@ void ShowErrorNotification(const std::string& notification_id,
           title,
           message,
           icon,
-          ash::system_notifier::NOTIFIER_NETWORK_ERROR,
+          ash::system_notifier::kNotifierNetworkError,
           callback));
 }
 
@@ -184,7 +184,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
           l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
                                      UTF8ToUTF16((cellular->name()))),
           icon,
-          system_notifier::NOTIFIER_NETWORK,
+          system_notifier::kNotifierNetwork,
           base::Bind(&ash::network_connect::ShowNetworkSettings,
                      cellular->path())));
 }

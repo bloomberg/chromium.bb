@@ -123,7 +123,8 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
   // NOTIFIER_DISPLAY is allowed to shown in the login screen.
   message_center::NotifierId notifier_id(
-      ash::system_notifier::NOTIFIER_DISPLAY);
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      ash::system_notifier::kNotifierDisplay);
 
   // Logged in as a normal user.
   EXPECT_CALL(login_utils(), DoBrowserLaunch(_, _)).Times(1);

@@ -51,10 +51,6 @@
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notifier_settings.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/system/system_notifier.h"
-#endif
-
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
@@ -555,13 +551,11 @@ bool DesktopNotificationService::IsNotifierEnabled(
       return GetContentSetting(notifier_id.url) == CONTENT_SETTING_ALLOW;
     case NotifierId::SYSTEM_COMPONENT:
 #if defined(OS_CHROMEOS)
-      return disabled_system_component_ids_.find(
-          ash::system_notifier::SystemComponentTypeToString(
-              static_cast<ash::system_notifier::AshSystemComponentNotifierType>(
-                  notifier_id.system_component_type)))
-          == disabled_system_component_ids_.end();
+      return disabled_system_component_ids_.find(notifier_id.id) ==
+          disabled_system_component_ids_.end();
 #else
-      return false;
+      // We do not disable system component notifications.
+      return true;
 #endif
     case NotifierId::SYNCED_NOTIFICATION_SERVICE:
       return enabled_sync_notifier_ids_.find(notifier_id.id) !=
@@ -591,10 +585,7 @@ void DesktopNotificationService::SetNotifierEnabled(
 #if defined(OS_CHROMEOS)
       pref_name = prefs::kMessageCenterDisabledSystemComponentIds;
       add_new_item = !enabled;
-      id.reset(new base::StringValue(
-          ash::system_notifier::SystemComponentTypeToString(
-              static_cast<ash::system_notifier::AshSystemComponentNotifierType>(
-                  notifier_id.system_component_type))));
+      id.reset(new base::StringValue(notifier_id.id));
 #else
       return;
 #endif

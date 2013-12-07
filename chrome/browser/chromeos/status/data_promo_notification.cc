@@ -217,7 +217,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
           base::string16() /* title */,
           message,
           icon,
-          ash::system_notifier::NOTIFIER_NETWORK,
+          ash::system_notifier::kNotifierNetwork,
           base::Bind(&NotificationClicked,
                      default_network->path(), info_url)));
 

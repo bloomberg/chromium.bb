@@ -93,7 +93,8 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, BaseTest) {
 TEST_F(LoginStateNotificationBlockerChromeOSTest, AlwaysAllowedNotifier) {
   // NOTIFIER_DISPLAY is allowed to shown in the login screen.
   message_center::NotifierId notifier_id(
-      ash::system_notifier::NOTIFIER_DISPLAY);
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      ash::system_notifier::kNotifierDisplay);
 
   // Default status: OOBE.
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));

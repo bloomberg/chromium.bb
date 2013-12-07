@@ -532,7 +532,9 @@ Notification* ScreenshotTaker::CreateNotification(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_SCREENSHOT_NOTIFICATION_ICON),
       blink::WebTextDirectionDefault,
-      message_center::NotifierId(ash::system_notifier::NOTIFIER_SCREENSHOT),
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          ash::system_notifier::kNotifierScreenshot),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
       replace_id,
       optional_field,
@@ -555,7 +557,8 @@ void ScreenshotTaker::ShowNotification(
   DesktopNotificationService* const service =
       DesktopNotificationServiceFactory::GetForProfile(GetProfile());
   if (service->IsNotifierEnabled(message_center::NotifierId(
-          ash::system_notifier::NOTIFIER_SCREENSHOT))) {
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          ash::system_notifier::kNotifierScreenshot))) {
     scoped_ptr<Notification> notification(
         CreateNotification(screenshot_result, screenshot_path));
     g_browser_process->notification_ui_manager()->Add(*notification,

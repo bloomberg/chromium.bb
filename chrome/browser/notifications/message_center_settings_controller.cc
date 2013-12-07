@@ -275,7 +275,8 @@ void MessageCenterSettingsController::GetNotifierList(
 #if defined(OS_CHROMEOS)
   const string16 screenshot_name =
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME);
-  NotifierId screenshot_notifier_id(ash::system_notifier::NOTIFIER_SCREENSHOT);
+  NotifierId screenshot_notifier_id(
+      NotifierId::SYSTEM_COMPONENT, ash::system_notifier::kNotifierScreenshot);
   Notifier* const screenshot_notifier = new Notifier(
       screenshot_notifier_id,
       screenshot_name,

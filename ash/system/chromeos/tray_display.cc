@@ -373,7 +373,9 @@ void TrayDisplay::CreateOrUpdateNotification(
       additional_message,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16(),  // display_source
-      message_center::NotifierId(system_notifier::NOTIFIER_DISPLAY),
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          system_notifier::kNotifierDisplay),
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickedDelegate(
           base::Bind(&OpenSettings))));

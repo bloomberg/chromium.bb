@@ -206,7 +206,7 @@ TEST_F(NotificationListTest, GetNotificationsByNotifierId) {
   NotifierId id0(NotifierId::APPLICATION, "ext0");
   NotifierId id1(NotifierId::APPLICATION, "ext1");
   NotifierId id2(GURL("http://example.com"));
-  NotifierId id3(0);
+  NotifierId id3(NotifierId::SYSTEM_COMPONENT, "system-notifier");
   scoped_ptr<Notification> notification(
       new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                        "id0",

@@ -33,14 +33,11 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
     SYNCED_NOTIFICATION_SERVICE,
   };
 
-  // Constructor for APPLICATION and SYNCED_NOTIFICATION_SERVICE type.
+  // Constructor for non WEB_PAGE type.
   NotifierId(NotifierType type, const std::string& id);
 
   // Constructor for WEB_PAGE type.
   explicit NotifierId(const GURL& url);
-
-  // Constructor for system component types. The type should be positive.
-  explicit NotifierId(int type);
 
   // The default constructor which doesn't specify the notifier. Used for tests.
   NotifierId();
@@ -49,16 +46,11 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
 
   NotifierType type;
 
-  // The identifier of the app notifier. Empty if it's not APPLICATION or
-  // SYNCED_NOTIFICATION_SERVICE.
+  // The identifier of the app notifier. Empty if it's WEB_PAGE.
   std::string id;
 
   // The URL pattern of the notifer.
   GURL url;
-
-  // The type of system component notifier, usually used in ash. -1 if it's not
-  // the system component. See also: ash/system/system_notifier.h
-  int system_component_type;
 
   // The identifier of the profile where the notification is created. This is
   // used for ChromeOS multi-profile support and can be empty.

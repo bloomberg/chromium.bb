@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
@@ -125,53 +126,95 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, Basic) {
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-app");
-  message_center::NotifierId system_notifier(0);
+  // Only allowed the system notifier.
+  message_center::NotifierId ash_system_notifier(
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      ash::system_notifier::kNotifierDisplay);
+  // Other system notifiers should be treated as same as a normal notifier.
+  message_center::NotifierId random_system_notifier(
+      message_center::NotifierId::SYSTEM_COMPONENT, "random_system_component");
 
   // Nothing is created, active_user_id_ should be empty.
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier, ""));
 
   CreateProfile("test@example.com");
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
+                                     "test@example.com"));
 
   CreateProfile("test2@example.com");
   EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, "test2@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
+                                            "test@example.com"));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier,
+                                             "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, "test2@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
+                                     "test@example.com"));
+  EXPECT_FALSE(ShouldShowNotification(random_system_notifier,
+                                      "test2@example.com"));
 
   SwitchActiveUser("test2@example.com");
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test2@example.com"));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier,
+                                             "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
+                                            "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, "test@example.com"));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, "test2@example.com"));
+  EXPECT_FALSE(ShouldShowNotification(random_system_notifier,
+                                      "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
+                                     "test2@example.com"));
 
   SwitchActiveUser("test@example.com");
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, "test2@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
+                                            "test@example.com"));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(random_system_notifier,
+                                             "test2@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
+  EXPECT_FALSE(ShouldShowNotification(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
   EXPECT_FALSE(ShouldShowNotification(notifier_id, "test2@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
+                                     "test@example.com"));
+  EXPECT_FALSE(ShouldShowNotification(random_system_notifier,
+                                      "test2@example.com"));
 }
 
 TEST_F(MultiUserNotificationBlockerChromeOSTest, SingleUser) {
@@ -181,20 +224,34 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, SingleUser) {
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-app");
-  message_center::NotifierId system_notifier(0);
+  // Only allowed the system notifier.
+  message_center::NotifierId ash_system_notifier(
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      ash::system_notifier::kNotifierDisplay);
+  // Other system notifiers should be treated as same as a normal notifier.
+  message_center::NotifierId random_system_notifier(
+      message_center::NotifierId::SYSTEM_COMPONENT, "random_system_component");
 
   // Nothing is created, active_user_id_ should be empty.
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier, ""));
 
   CreateProfile("test@example.com");
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
+                                            "test@example.com"));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier, ""));
   EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
+                                     "test@example.com"));
 }

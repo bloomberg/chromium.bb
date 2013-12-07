@@ -117,7 +117,9 @@ void LocaleNotificationController::OnLocaleChanged(
           IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE, from, to),
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_LOCALE),
       base::string16()  /* display_source */,
-      message_center::NotifierId(system_notifier::NOTIFIER_LOCALE),
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          system_notifier::kNotifierLocale),
       optional,
       new LocaleNotificationDelegate(delegate)));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());

@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/multi_user_notification_blocker_chromeos.h"
 
 #include "ash/shell.h"
+#include "ash/system/system_notifier.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "ui/message_center/message_center.h"
@@ -38,7 +39,7 @@ bool MultiUserNotificationBlockerChromeOS::ShouldShowNotification(
   if (!IsActive())
     return true;
 
-  if (notifier_id.type == message_center::NotifierId::SYSTEM_COMPONENT)
+  if (ash::system_notifier::IsAshSystemNotifier(notifier_id))
     return true;
 
   return notifier_id.profile_id == active_user_id_;
