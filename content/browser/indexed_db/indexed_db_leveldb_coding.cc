@@ -825,17 +825,6 @@ int CompareEncodedIDBKeys(StringPiece* slice_a,
   return 0;
 }
 
-int CompareEncodedIDBKeys(const std::string& key_a,
-                          const std::string& key_b,
-                          bool* ok) {
-  DCHECK(!key_a.empty());
-  DCHECK(!key_b.empty());
-
-  StringPiece slice_a(key_a);
-  StringPiece slice_b(key_b);
-  return CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
-}
-
 namespace {
 
 template <typename KeyType>
@@ -1693,10 +1682,6 @@ std::string ObjectStoreDataKey::Encode(int64 database_id,
   return Encode(database_id, object_store_id, encoded_key);
 }
 
-int ObjectStoreDataKey::Compare(const ObjectStoreDataKey& other, bool* ok) {
-  return CompareEncodedIDBKeys(encoded_user_key_, other.encoded_user_key_, ok);
-}
-
 scoped_ptr<IndexedDBKey> ObjectStoreDataKey::user_key() const {
   scoped_ptr<IndexedDBKey> key;
   StringPiece slice(encoded_user_key_);
@@ -1739,10 +1724,6 @@ std::string ExistsEntryKey::Encode(int64 database_id,
   std::string encoded_key;
   EncodeIDBKey(user_key, &encoded_key);
   return Encode(database_id, object_store_id, encoded_key);
-}
-
-int ExistsEntryKey::Compare(const ExistsEntryKey& other, bool* ok) {
-  return CompareEncodedIDBKeys(encoded_user_key_, other.encoded_user_key_, ok);
 }
 
 scoped_ptr<IndexedDBKey> ExistsEntryKey::user_key() const {
@@ -1851,25 +1832,6 @@ std::string IndexDataKey::EncodeMaxKey(int64 database_id,
                 MaxIDBKey(),
                 MaxIDBKey(),
                 std::numeric_limits<int64>::max());
-}
-
-int IndexDataKey::Compare(const IndexDataKey& other,
-                          bool only_compare_index_keys,
-                          bool* ok) {
-  DCHECK_GE(database_id_, 0);
-  DCHECK_GE(object_store_id_, 0);
-  DCHECK_GE(index_id_, 0);
-  int result =
-      CompareEncodedIDBKeys(encoded_user_key_, other.encoded_user_key_, ok);
-  if (!*ok || result)
-    return result;
-  if (only_compare_index_keys)
-    return 0;
-  result = CompareEncodedIDBKeys(
-      encoded_primary_key_, other.encoded_primary_key_, ok);
-  if (!*ok || result)
-    return result;
-  return CompareInts(sequence_number_, other.sequence_number_);
 }
 
 int64 IndexDataKey::DatabaseId() const {

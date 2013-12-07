@@ -111,8 +111,13 @@ TEST(IndexedDBLevelDBCodingTest, EncodeBool) {
 }
 
 static int CompareKeys(const std::string& a, const std::string& b) {
+  DCHECK(!a.empty());
+  DCHECK(!b.empty());
+
+  StringPiece slice_a(a);
+  StringPiece slice_b(b);
   bool ok;
-  int result = CompareEncodedIDBKeys(a, b, &ok);
+  int result = CompareEncodedIDBKeys(&slice_a, &slice_b, &ok);
   EXPECT_TRUE(ok);
   return result;
 }

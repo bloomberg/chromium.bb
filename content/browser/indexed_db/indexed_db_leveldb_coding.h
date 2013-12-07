@@ -69,8 +69,8 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool ExtractEncodedIDBKey(
     base::StringPiece* slice,
     std::string* result);
 
-CONTENT_EXPORT int CompareEncodedIDBKeys(const std::string& a,
-                                         const std::string& b,
+CONTENT_EXPORT int CompareEncodedIDBKeys(base::StringPiece* slice1,
+                                         base::StringPiece* slice2,
                                          bool* ok);
 
 CONTENT_EXPORT int Compare(const base::StringPiece& a,
@@ -354,7 +354,6 @@ class ObjectStoreDataKey {
   static std::string Encode(int64 database_id,
                             int64 object_store_id,
                             const IndexedDBKey& user_key);
-  int Compare(const ObjectStoreDataKey& other, bool* ok);
   scoped_ptr<IndexedDBKey> user_key() const;
   static const int64 kSpecialIndexNumber;
   ObjectStoreDataKey();
@@ -376,7 +375,6 @@ class ExistsEntryKey {
   static std::string Encode(int64 database_id,
                             int64 object_store_id,
                             const IndexedDBKey& user_key);
-  int Compare(const ExistsEntryKey& other, bool* ok);
   scoped_ptr<IndexedDBKey> user_key() const;
 
   static const int64 kSpecialIndexNumber;
@@ -413,9 +411,6 @@ class IndexDataKey {
   CONTENT_EXPORT static std::string EncodeMaxKey(int64 database_id,
                                                  int64 object_store_id,
                                                  int64 index_id);
-  int Compare(const IndexDataKey& other,
-              bool only_compare_index_keys,
-              bool* ok);
   int64 DatabaseId() const;
   int64 ObjectStoreId() const;
   int64 IndexId() const;
