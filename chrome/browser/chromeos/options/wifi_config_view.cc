@@ -647,12 +647,17 @@ void WifiConfigView::OnCertificatesLoaded(bool initial_load) {
 }
 
 bool WifiConfigView::Login() {
-  const bool share_default = true;
+  const NetworkState* wifi = !service_path_.empty() ?
+      NetworkHandler::Get()->network_state_handler()->
+          GetNetworkState(service_path_) :
+      NULL;
 
   // Set configuration properties.
   base::DictionaryValue properties;
-  bool share_network = GetShareNetwork(share_default);
 
+  // Default shared state for non-private networks is true.
+  const bool share_default = !wifi || !wifi->IsPrivate();
+  bool share_network = GetShareNetwork(share_default);
   bool only_policy_autoconnect =
       onc::PolicyAllowsOnlyPolicyNetworksToAutoconnect(!share_network);
   if (only_policy_autoconnect) {
@@ -699,8 +704,6 @@ bool WifiConfigView::Login() {
     ash::network_connect::CreateConfigurationAndConnect(&properties,
                                                         share_network);
   } else {
-    const NetworkState* wifi = NetworkHandler::Get()->network_state_handler()->
-        GetNetworkState(service_path_);
     if (!wifi) {
       // Shill no longer knows about this wifi network (edge case).
       // TODO(stevenjb): Add notification for this.
