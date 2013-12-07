@@ -33,7 +33,7 @@ import org.chromium.chromoting.jni.JniInterface;
  * multitouch pan and zoom gestures, and collects and forwards input events.
  */
 /** GUI element that holds the drawing canvas. */
-public class DesktopView extends SurfaceView implements DesktopViewInterface, Runnable,
+public class DesktopView extends SurfaceView implements DesktopViewInterface,
         SurfaceHolder.Callback {
     private RenderData mRenderData;
     private TouchInputHandler mInputHandler;
@@ -43,6 +43,11 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
     // be dropped if this is already set to true. This is used by the main thread and the painting
     // thread, so the access should be synchronized on |mRenderData|.
     private boolean mRepaintPending;
+
+    // Flag used to ensure that the SurfaceView is only painted between calls to surfaceCreated()
+    // and surfaceDestroyed(). Accessed on main thread and display thread, so this should be
+    // synchronized on |mRenderData|.
+    private boolean mSurfaceCreated = false;
 
     /** Helper class for displaying the long-press feedback animation. This class is thread-safe. */
     private static class FeedbackAnimator {
@@ -149,8 +154,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
      * cause the UI to lag. Specifically, it is currently invoked on the native
      * graphics thread using a JNI.
      */
-    @Override
-    public void run() {
+    public void paint() {
         long startTimeMs = SystemClock.uptimeMillis();
 
         if (Looper.myLooper() == Looper.getMainLooper()) {
@@ -181,10 +185,21 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
             mInputHandler.onHostSizeChanged(width, height);
         }
 
-        Canvas canvas = getHolder().lockCanvas();
+        Canvas canvas;
         int x, y;
         synchronized (mRenderData) {
             mRepaintPending = false;
+            // Don't try to lock the canvas before it is ready, as the implementation of
+            // lockCanvas() may throttle these calls to a slow rate in order to avoid consuming CPU.
+            // Note that a successful call to lockCanvas() will prevent the framework from
+            // destroying the Surface until it is unlocked.
+            if (!mSurfaceCreated) {
+                return;
+            }
+            canvas = getHolder().lockCanvas();
+            if (canvas == null) {
+                return;
+            }
             canvas.setMatrix(mRenderData.transform);
             x = mRenderData.cursorPosition.x;
             y = mRenderData.cursorPosition.y;
@@ -249,15 +264,22 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
             mRenderData.screenHeight = height;
         }
 
+        JniInterface.provideRedrawCallback(new Runnable() {
+            @Override
+            public void run() {
+                paint();
+            }
+        });
         mInputHandler.onClientSizeChanged(width, height);
-
-        JniInterface.provideRedrawCallback(this);
+        requestRepaint();
     }
 
     /** Called when the canvas is first created. */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.i("deskview", "DesktopView.surfaceCreated(...)");
+        synchronized (mRenderData) {
+            mSurfaceCreated = true;
+        }
     }
 
     /**
@@ -266,10 +288,12 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.i("deskview", "DesktopView.surfaceDestroyed(...)");
-
         // Stop this canvas from being redrawn.
         JniInterface.provideRedrawCallback(null);
+
+        synchronized (mRenderData) {
+            mSurfaceCreated = false;
+        }
     }
 
     /** Called when a software keyboard is requested, and specifies its options. */
