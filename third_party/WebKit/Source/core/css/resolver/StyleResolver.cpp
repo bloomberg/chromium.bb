@@ -131,15 +131,12 @@ static void addFontFaceRule(Document* document, CSSFontSelector* cssFontSelector
 
 StyleResolver::StyleResolver(Document& document)
     : m_document(document)
-    , m_fontSelector(CSSFontSelector::create(&document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
     , m_needCollectFeatures(false)
     , m_styleResourceLoader(document.fetcher())
     , m_styleResolverStatsSequence(0)
     , m_accessCount(0)
 {
-    m_fontSelector->registerForInvalidationCallbacks(this);
-
     // FIXME: Why do this here instead of as part of resolving style on the root?
     CSSDefaultStyleSheets::loadDefaultStylesheetIfNecessary();
 
@@ -171,7 +168,7 @@ StyleResolver::StyleResolver(Document& document)
         const HashSet<SVGFontFaceElement*>& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
         HashSet<SVGFontFaceElement*>::const_iterator end = svgFontFaceElements.end();
         for (HashSet<SVGFontFaceElement*>::const_iterator it = svgFontFaceElements.begin(); it != end; ++it)
-            addFontFaceRule(&document, fontSelector(), (*it)->fontFaceRule());
+            addFontFaceRule(&document, document.styleEngine()->fontSelector(), (*it)->fontFaceRule());
     }
 #endif
 }
@@ -240,7 +237,7 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     collectFeatures();
 
     if (document().renderer() && document().renderer()->style())
-        document().renderer()->style()->font().update(fontSelector());
+        document().renderer()->style()->font().update(document().styleEngine()->fontSelector());
 
     collectViewportRules();
 
@@ -276,23 +273,12 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& s
     if (!scope || scope->isDocumentNode()) {
         const Vector<StyleRuleFontFace*> fontFaceRules = authorRules.fontFaceRules();
         for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-            addFontFaceRule(&m_document, fontSelector(), fontFaceRules[i]);
+            addFontFaceRule(&m_document, document().styleEngine()->fontSelector(), fontFaceRules[i]);
         if (fontFaceRules.size())
             invalidateMatchedPropertiesCache();
     } else {
         addTreeBoundaryCrossingRules(authorRules.shadowDistributedRules(), scope);
     }
-}
-
-void StyleResolver::resetFontSelector()
-{
-    ASSERT(m_fontSelector);
-    m_fontSelector->unregisterForInvalidationCallbacks(this);
-    m_fontSelector->clearDocument();
-    invalidateMatchedPropertiesCache();
-
-    m_fontSelector = CSSFontSelector::create(&m_document);
-    m_fontSelector->registerForInvalidationCallbacks(this);
 }
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
@@ -417,8 +403,6 @@ void StyleResolver::popParentShadowRoot(const ShadowRoot& shadowRoot)
 
 StyleResolver::~StyleResolver()
 {
-    m_fontSelector->unregisterForInvalidationCallbacks(this);
-    m_fontSelector->clearDocument();
     m_viewportStyleResolver->clearDocument();
 }
 
@@ -664,7 +648,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         if (!s_styleNotYetAvailable) {
             s_styleNotYetAvailable = RenderStyle::create().leakRef();
             s_styleNotYetAvailable->setDisplay(NONE);
-            s_styleNotYetAvailable->font().update(m_fontSelector);
+            s_styleNotYetAvailable->font().update(document().styleEngine()->fontSelector());
         }
         element->document().setHasNodesWithPlaceholderStyle();
         return s_styleNotYetAvailable;
@@ -806,7 +790,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
-    m_fontSelector->loadPendingFonts();
+    document().styleEngine()->fontSelector()->loadPendingFonts();
 
     didAccess();
 
@@ -970,7 +954,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
-    m_fontSelector->loadPendingFonts();
+    document().styleEngine()->fontSelector()->loadPendingFonts();
 
     didAccess();
 
@@ -1002,7 +986,7 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
     state.style()->setLineHeight(RenderStyle::initialLineHeight());
     state.setLineHeightValue(0);
     state.fontBuilder().setInitial(state.style()->effectiveZoom());
-    state.style()->font().update(fontSelector());
+    state.style()->font().update(document().styleEngine()->fontSelector());
     return state.takeStyle();
 }
 
@@ -1030,7 +1014,7 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
 
 void StyleResolver::updateFont(StyleResolverState& state)
 {
-    state.fontBuilder().createFont(m_fontSelector, state.parentStyle(), state.style());
+    state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.parentStyle(), state.style());
 }
 
 PassRefPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
@@ -1363,7 +1347,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
-    m_fontSelector->loadPendingFonts();
+    document().styleEngine()->fontSelector()->loadPendingFonts();
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);

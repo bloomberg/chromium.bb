@@ -27,7 +27,6 @@
 
 #include "core/css/CSSFontSelector.h"
 #include "core/css/FontSize.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
@@ -237,7 +236,7 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(RenderObject* renderer, c
     fontDescription.setComputedSize(FontSize::getComputedSizeFromSpecifiedSize(&document, scalingFactor, fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), DoNotUseSmartMinimumForFontSize));
 
     scaledFont = Font(fontDescription, 0, 0);
-    scaledFont.update(document.ensureStyleResolver().fontSelector());
+    scaledFont.update(document.styleEngine()->fontSelector());
 }
 
 }

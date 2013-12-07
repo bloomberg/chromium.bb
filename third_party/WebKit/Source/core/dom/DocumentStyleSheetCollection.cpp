@@ -164,6 +164,7 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
 
     if (change.styleResolverUpdateType == Reconstruct) {
         engine->clearMasterResolver();
+        engine->resetFontSelector();
     } else if (StyleResolver* styleResolver = engine->resolver()) {
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
@@ -172,12 +173,14 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
             ASSERT(change.styleResolverUpdateType == Reset || change.styleResolverUpdateType == ResetStyleResolverAndFontSelector);
             resetAllRuleSetsInTreeScope(styleResolver);
             if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector)
-                styleResolver->resetFontSelector();
+                engine->resetFontSelector();
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
             styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
         } else {
             styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
         }
+    } else if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector) {
+        engine->resetFontSelector();
     }
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     collection.swap(*this);

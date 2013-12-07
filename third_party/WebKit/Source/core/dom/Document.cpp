@@ -165,6 +165,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGStyleElement.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
@@ -392,7 +393,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
-    , m_styleEngine(StyleEngine::create(*this))
     , m_visitedLinkState(VisitedLinkState::create(*this))
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
@@ -480,6 +480,11 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     InspectorCounters::incrementCounter(InspectorCounters::DocumentCounter);
 
     m_lifecyle.advanceTo(DocumentLifecycle::Inactive);
+
+    // Since CSSFontSelector requires Document::m_fetcher and StyleEngine owns
+    // CSSFontSelector, need to initialize m_styleEngine after initializing
+    // m_fetcher.
+    m_styleEngine = StyleEngine::create(*this);
 }
 
 Document::~Document()

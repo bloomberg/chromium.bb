@@ -142,7 +142,6 @@ public:
     void appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&);
     void resetAuthorStyle(const ContainerNode*);
     void finishAppendAuthorStyleSheets();
-    void resetFontSelector();
 
     TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
     void processScopedRules(const RuleSet& authorRules, const KURL&, ContainerNode* scope = 0);
@@ -186,7 +185,6 @@ public:
     // |properties| is an array with |count| elements.
     void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
 
-    CSSFontSelector* fontSelector() const { return m_fontSelector.get(); }
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
     void addMediaQueryResults(const MediaQueryResultList&);
@@ -302,8 +300,6 @@ private:
 
     Document& m_document;
     SelectorFilter m_selectorFilter;
-
-    RefPtr<CSSFontSelector> m_fontSelector;
 
     RefPtr<ViewportStyleResolver> m_viewportStyleResolver;
 

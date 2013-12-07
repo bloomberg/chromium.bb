@@ -163,7 +163,9 @@ public:
     void clearResolver();
     void clearMasterResolver();
 
-    CSSFontSelector* fontSelector();
+    CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
+    void resetFontSelector();
+
     void didAttach();
     void didDetach();
     bool shouldClearResolver() const;
@@ -231,6 +233,8 @@ private:
     unsigned m_lastResolverAccessCount;
     Timer<StyleEngine> m_resolverThrowawayTimer;
     OwnPtr<StyleResolver> m_resolver;
+
+    RefPtr<CSSFontSelector> m_fontSelector;
 };
 
 }

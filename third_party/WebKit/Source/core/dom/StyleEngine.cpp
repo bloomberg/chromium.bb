@@ -30,6 +30,7 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleSheetContents.h"
@@ -70,6 +71,9 @@ StyleEngine::StyleEngine(Document& document)
     , m_didCalculateResolver(false)
     , m_lastResolverAccessCount(0)
     , m_resolverThrowawayTimer(this, &StyleEngine::resolverThrowawayTimerFired)
+    // We don't need to create CSSFontSelector for imported document or
+    // HTMLTemplateElement's document, because those documents have no frame.
+    , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : 0)
 {
 }
 
@@ -467,9 +471,11 @@ void StyleEngine::createResolver()
     // Document::isActive() before calling into code which could get here.
 
     ASSERT(m_document.frame());
+    ASSERT(m_fontSelector);
 
     m_resolver = adoptPtr(new StyleResolver(m_document));
     appendActiveAuthorStyleSheets();
+    m_fontSelector->registerForInvalidationCallbacks(m_resolver.get());
     combineCSSFeatureFlags(m_resolver->ensureRuleFeatureSet());
 }
 
@@ -477,6 +483,9 @@ void StyleEngine::clearResolver()
 {
     ASSERT(!m_document.inStyleRecalc());
     ASSERT(isMaster() || !m_resolver);
+    ASSERT(m_fontSelector || !m_resolver);
+    if (m_resolver)
+        m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
     m_resolver.clear();
 }
 
@@ -496,11 +505,6 @@ void StyleEngine::resolverThrowawayTimerFired(Timer<StyleEngine>*)
     if (resolverAccessCount() == m_lastResolverAccessCount)
         clearResolver();
     m_lastResolverAccessCount = resolverAccessCount();
-}
-
-CSSFontSelector* StyleEngine::fontSelector()
-{
-    return m_resolver ? m_resolver->fontSelector() : 0;
 }
 
 void StyleEngine::didAttach()
@@ -544,6 +548,28 @@ StyleResolverChange StyleEngine::resolverChanged(RecalcStyleTime time, StyleReso
         change.setNeedsStyleRecalc();
 
     return change;
+}
+
+void StyleEngine::resetFontSelector()
+{
+    if (!m_fontSelector)
+        return;
+
+    m_fontSelector->clearDocument();
+    if (m_resolver) {
+        m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
+        m_resolver->invalidateMatchedPropertiesCache();
+    }
+
+    // If the document has been already detached, we don't need to recreate
+    // CSSFontSelector.
+    if (m_document.isActive()) {
+        m_fontSelector = CSSFontSelector::create(&m_document);
+        if (m_resolver)
+            m_fontSelector->registerForInvalidationCallbacks(m_resolver.get());
+    } else {
+        m_fontSelector = 0;
+    }
 }
 
 }

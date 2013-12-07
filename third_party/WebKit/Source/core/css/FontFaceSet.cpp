@@ -310,7 +310,7 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
     }
 
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = document()->ensureStyleResolver().fontSelector()->getFontFace(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = document()->styleEngine()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (face)
             matchedFonts.append(face->fontFaces(nullToSpace(text)));
     }
@@ -329,7 +329,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
     ScriptPromise promise = ScriptPromise::createPending(executionContext());
     RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.family(), promise, executionContext());
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = d->ensureStyleResolver().fontSelector()->getFontFace(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = d->styleEngine()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face) {
             resolver->error(d);
             continue;
@@ -348,7 +348,7 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
     }
 
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = document()->ensureStyleResolver().fontSelector()->getFontFace(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = document()->styleEngine()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face || !face->checkFont(nullToSpace(text)))
             return false;
     }
@@ -397,7 +397,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
     styleResolver.applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), style.get());
 
     font = style->font();
-    font.update(styleResolver.fontSelector());
+    font.update(document()->styleEngine()->fontSelector());
     return true;
 }
 

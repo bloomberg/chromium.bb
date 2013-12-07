@@ -64,6 +64,7 @@ class AXObjectCache;
 class AnimationClock;
 class Attr;
 class CDATASection;
+class CSSFontSelector;
 class CSSStyleDeclaration;
 class CSSStyleSheet;
 class CSSStyleSheetResource;
