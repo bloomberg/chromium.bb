@@ -22,6 +22,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/controls/blue_label_button.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/range/range.h"
@@ -228,7 +229,7 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   [buttonContainer_ addSubview:button];
 
   CGFloat nextX = NSMaxX([button frame]) + autofill::kButtonGap;
-  button.reset([[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
+  button.reset([[BlueLabelButton alloc] initWithFrame:NSZeroRect]);
   [button setFrameOrigin:NSMakePoint(nextX, 0)];
   [button setKeyEquivalent:kKeyEquivalentReturn];
   [button setTarget:target_];
@@ -246,6 +247,21 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   base::scoped_nsobject<GTMUILocalizerAndLayoutTweaker> layoutTweaker(
       [[GTMUILocalizerAndLayoutTweaker alloc] init]);
   [layoutTweaker tweakUI:buttonContainer_];
+
+  // Now ensure both buttons have the same height. The second button is
+  // known to be the larger one.
+  CGFloat buttonHeight =
+      NSHeight([[[buttonContainer_ subviews] objectAtIndex:1] frame]);
+
+  // Account for a rendering issue in BlueLabelButton.
+  // TODO(groby): Fix that rendering instead.
+  buttonHeight -= 1.0;
+
+  // Force first button to be the same height.
+  NSView* button = [[buttonContainer_ subviews] objectAtIndex:0];
+  NSSize buttonSize = [button frame].size;
+  buttonSize.height = buttonHeight;
+  [button setFrameSize:buttonSize];
 }
 
 - (void)updateButtons {
