@@ -790,7 +790,7 @@ void LayerTreeImpl::RemoveLayerWithCopyOutputRequest(LayerImpl* layer) {
   layers_with_copy_output_request_.erase(it);
 }
 
-const std::vector<LayerImpl*> LayerTreeImpl::LayersWithCopyOutputRequest()
+const std::vector<LayerImpl*>& LayerTreeImpl::LayersWithCopyOutputRequest()
     const {
   // Only the active tree needs to know about layers with copy requests, as
   // they are aborted if not serviced during draw.

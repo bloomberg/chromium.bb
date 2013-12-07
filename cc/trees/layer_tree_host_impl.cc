@@ -900,13 +900,21 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   // Any copy requests left in the tree are not going to get serviced, and
   // should be aborted.
-  ScopedPtrVector<CopyOutputRequest> requests_to_abort;
-  while (!active_tree_->LayersWithCopyOutputRequest().empty()) {
-    LayerImpl* layer = active_tree_->LayersWithCopyOutputRequest().back();
-    layer->TakeCopyRequestsAndTransformToTarget(&requests_to_abort);
+  if (!active_tree_->LayersWithCopyOutputRequest().empty()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Renderer4.UnservicedCopyOutputRequestCount",
+        active_tree_->LayersWithCopyOutputRequest().size(),
+        0,
+        1000,
+        10);
+    ScopedPtrVector<CopyOutputRequest> requests_to_abort;
+    while (!active_tree_->LayersWithCopyOutputRequest().empty()) {
+      LayerImpl* layer = active_tree_->LayersWithCopyOutputRequest().back();
+      layer->TakeCopyRequestsAndTransformToTarget(&requests_to_abort);
+    }
+    for (size_t i = 0; i < requests_to_abort.size(); ++i)
+      requests_to_abort[i]->SendEmptyResult();
   }
-  for (size_t i = 0; i < requests_to_abort.size(); ++i)
-    requests_to_abort[i]->SendEmptyResult();
 
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());

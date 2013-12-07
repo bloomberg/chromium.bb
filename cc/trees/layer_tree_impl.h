@@ -225,7 +225,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void AddLayerWithCopyOutputRequest(LayerImpl* layer);
   void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
-  const std::vector<LayerImpl*> LayersWithCopyOutputRequest() const;
+  const std::vector<LayerImpl*>& LayersWithCopyOutputRequest() const;
 
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
