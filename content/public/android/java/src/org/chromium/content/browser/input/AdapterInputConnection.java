@@ -76,8 +76,8 @@ public class AdapterInputConnection extends BaseInputConnection {
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_SEARCH;
         } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeUrl) {
             // Url
-            // TYPE_TEXT_VARIATION_URI prevents Tab key from showing, so
-            // exclude it for now.
+            outAttrs.inputType = InputType.TYPE_CLASS_TEXT
+                    | InputType.TYPE_TEXT_VARIATION_URI;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
         } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeEmail) {
             // Email
