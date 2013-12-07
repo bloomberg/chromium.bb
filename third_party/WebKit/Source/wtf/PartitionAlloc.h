@@ -83,7 +83,7 @@
 // - Per-object bucketing (instead of per-size) is mostly available at the API,
 // but not used yet.
 // - No randomness of freelist entries or bucket position.
-// - Check alignment of pointers in free in Release builds.
+// - Better checking for wild pointers in free().
 // - Better freelist masking function to guarantee fault on 32-bit.
 
 #include "wtf/Assertions.h"
@@ -142,7 +142,7 @@ static const size_t kSuperPageOffsetMask = kSuperPageSize - 1;
 static const size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
 static const size_t kNumPartitionPagesPerSuperPage = kSuperPageSize / kPartitionPageSize;
 
-static const size_t kPageMetadataShift = 6; // 64 bytes per partition page.
+static const size_t kPageMetadataShift = 5; // 32 bytes per partition page.
 static const size_t kPageMetadataSize = 1 << kPageMetadataShift;
 
 #ifndef NDEBUG
@@ -163,19 +163,41 @@ struct PartitionFreelistEntry {
     PartitionFreelistEntry* next;
 };
 
+// Some notes on page states. A page can be in one of three major states:
+// 1) Active.
+// 2) Full.
+// 3) Free.
+// An active page has available free slots. A full page has no free slots. A
+// free page has had its backing memory released back to the system.
+// There are two linked lists tracking the pages. The "active page" list is an
+// approximation of a list of active pages. It is an approximation because both
+// free and full pages may briefly be present in the list until we next do a
+// scan over it. The "free page" list is an accurate list of pages which have
+// been returned back to the system.
+// The significant page transitions are:
+// - free() will detect when a full page has a slot free()'d and immediately
+// return the page to the head of the active list.
+// - free() will detect when a page is fully emptied. It _may_ add it to the
+// free list and it _may_ leave it on the active list until a future list scan.
+// - malloc() _may_ scan the active page list in order to fulfil the request.
+// If it does this, full and free pages encountered will be booted out of the
+// active list. If there are no suitable active pages found, a free page (if one
+// exists) will be pulled from the free list on to the active list.
 struct PartitionPage {
-    PartitionFreelistEntry* freelistHead;
-    int numAllocatedSlots; // Deliberately signed.
-    unsigned numUnprovisionedSlots;
+    union { // Accessed most in hot path => goes first.
+        PartitionFreelistEntry* freelistHead; // If the page is active.
+        PartitionPage* freePageNext; // If the page is free.
+    } u;
+    PartitionPage* activePageNext;
     PartitionBucket* bucket;
-    PartitionPage* next;
-    PartitionPage* prev;
+    int numAllocatedSlots; // Deliberately signed, -1 for free page, -n for full pages.
+    unsigned numUnprovisionedSlots;
 };
 
 struct PartitionBucket {
-    PartitionRoot* root;
-    PartitionPage* activePagesHead;
+    PartitionPage* activePagesHead; // Accessed most in hot path => goes first.
     PartitionPage* freePagesHead;
+    PartitionRoot* root;
     unsigned numFullPages;
     unsigned pageSize;
 };
@@ -389,17 +411,36 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
     return false;
 }
 
+ALWAYS_INLINE bool partitionPageIsFree(PartitionPage* page)
+{
+    return (page->numAllocatedSlots == -1);
+}
+
+ALWAYS_INLINE PartitionFreelistEntry* partitionPageFreelistHead(PartitionPage* page)
+{
+    ASSERT((page == &page->bucket->root->seedPage && !page->u.freelistHead) || !partitionPageIsFree(page));
+    return page->u.freelistHead;
+}
+
+ALWAYS_INLINE void partitionPageSetFreelistHead(PartitionPage* page, PartitionFreelistEntry* newHead)
+{
+    ASSERT(!partitionPageIsFree(page));
+    page->u.freelistHead = newHead;
+}
+
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 {
     PartitionPage* page = bucket->activePagesHead;
-    void* ret = page->freelistHead;
+    ASSERT(page == &bucket->root->seedPage || page->numAllocatedSlots >= 0);
+    void* ret = partitionPageFreelistHead(page);
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
         ASSERT(partitionPointerIsValid(bucket->root, ret));
         ASSERT(partitionPointerToPage(ret));
-        page->freelistHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
-        ASSERT(!page->freelistHead || partitionPointerIsValid(bucket->root, page->freelistHead));
-        ASSERT(!page->freelistHead || partitionPointerToPage(page->freelistHead));
+        PartitionFreelistEntry* newHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
+        partitionPageSetFreelistHead(page, newHead);
+        ASSERT(!partitionPageFreelistHead(page) || partitionPointerIsValid(bucket->root, partitionPageFreelistHead(page)));
+        ASSERT(!partitionPageFreelistHead(page) || partitionPointerToPage(partitionPageFreelistHead(page)));
         page->numAllocatedSlots++;
     } else {
         ret = partitionAllocSlowPath(bucket);
@@ -444,13 +485,13 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
     ASSERT(*(static_cast<uintptr_t*>(ptrEnd) - 1) == kCookieValue);
     memset(ptr, kFreedByte, bucketSize);
 #endif
-    ASSERT(!page->freelistHead || partitionPointerIsValid(page->bucket->root, page->freelistHead));
-    ASSERT(!page->freelistHead || partitionPointerToPage(page->freelistHead));
-    RELEASE_ASSERT(ptr != page->freelistHead); // Catches an immediate double free.
-    ASSERT(!page->freelistHead || ptr != partitionFreelistMask(page->freelistHead->next)); // Look for double free one level deeper in debug.
+    ASSERT(!partitionPageFreelistHead(page) || partitionPointerIsValid(page->bucket->root, partitionPageFreelistHead(page)));
+    ASSERT(!partitionPageFreelistHead(page) || partitionPointerToPage(partitionPageFreelistHead(page)));
+    RELEASE_ASSERT(ptr != partitionPageFreelistHead(page)); // Catches an immediate double free.
+    ASSERT(!partitionPageFreelistHead(page) || ptr != partitionFreelistMask(partitionPageFreelistHead(page)->next)); // Look for double free one level deeper in debug.
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
-    entry->next = partitionFreelistMask(page->freelistHead);
-    page->freelistHead = entry;
+    entry->next = partitionFreelistMask(partitionPageFreelistHead(page));
+    partitionPageSetFreelistHead(page, entry);
     --page->numAllocatedSlots;
     if (UNLIKELY(page->numAllocatedSlots <= 0))
         partitionFreeSlowPath(page);
