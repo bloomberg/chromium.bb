@@ -66,7 +66,7 @@ class LoadTimesTimelineMetric(TimelineMetric):
     renderer_process = self.GetRendererProcess(tab)
     events_by_name = collections.defaultdict(list)
 
-    for thread in self.renderer_process.threads.itervalues():
+    for thread in renderer_process.threads.itervalues():
 
       if self._thread_filter and not thread.name in self._thread_filter:
         continue
