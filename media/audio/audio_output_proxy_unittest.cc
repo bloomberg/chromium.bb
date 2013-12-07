@@ -771,6 +771,7 @@ TEST_F(AudioOutputResamplerTest, WedgeFix) {
   EXPECT_CALL(stream1, SetVolume(_));
   EXPECT_CALL(stream2, Open())
       .WillOnce(Return(true));
+  EXPECT_CALL(stream2, SetVolume(_));
   EXPECT_CALL(stream2, Close());
 
   // Open and start the first proxy and stream.
@@ -783,12 +784,20 @@ TEST_F(AudioOutputResamplerTest, WedgeFix) {
   AudioOutputProxy* proxy2 = new AudioOutputProxy(resampler_.get());
   EXPECT_TRUE(proxy2->Open());
 
+  // Open, start and then stop the third proxy.
+  AudioOutputProxy* proxy3 = new AudioOutputProxy(resampler_.get());
+  EXPECT_TRUE(proxy3->Open());
+  proxy3->Start(&callback_);
+  OnStart();
+  proxy3->Stop();
+
   // Wait for stream to timeout and shutdown.
   WaitForCloseTimer(kTestCloseDelayMs);
 
   resampler_->CloseStreamsForWedgeFix();
 
-  // Stream3 should take Stream1's place after RestartStreamsForWedgeFix().
+  // Stream3 should take Stream1's place after RestartStreamsForWedgeFix().  No
+  // additional streams should be opened for proxy2 and proxy3.
   EXPECT_CALL(stream3, Open())
       .WillOnce(Return(true));
   EXPECT_CALL(stream3, Close());
@@ -798,6 +807,7 @@ TEST_F(AudioOutputResamplerTest, WedgeFix) {
   OnStart();
 
   // Perform the required Stop()/Close() shutdown dance for each proxy.
+  proxy3->Close();
   proxy2->Close();
   proxy1->Stop();
   proxy1->Close();
@@ -806,8 +816,8 @@ TEST_F(AudioOutputResamplerTest, WedgeFix) {
   WaitForCloseTimer(kTestCloseDelayMs);
   EXPECT_TRUE(stream1.stop_called());
   EXPECT_TRUE(stream1.start_called());
-  EXPECT_FALSE(stream2.stop_called());
-  EXPECT_FALSE(stream2.start_called());
+  EXPECT_TRUE(stream2.stop_called());
+  EXPECT_TRUE(stream2.start_called());
   EXPECT_TRUE(stream3.stop_called());
   EXPECT_TRUE(stream3.start_called());
 }
