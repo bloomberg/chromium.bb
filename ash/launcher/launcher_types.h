@@ -27,6 +27,9 @@ extern const int kInvalidImageResourceID;
 
 extern const int kInvalidLauncherID;
 
+// Animation duration for switching black shelf and dock background on and off.
+ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
+
 // Type the LauncherItem represents.
 enum LauncherItemType {
   // Represents a running app panel.

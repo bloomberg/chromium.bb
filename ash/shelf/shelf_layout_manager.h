@@ -122,6 +122,9 @@ class ASH_EXPORT ShelfLayoutManager :
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds();
 
+  // Returns the docked area bounds.
+  const gfx::Rect& dock_bounds() const { return dock_bounds_; }
+
   // Stops any animations and sets the bounds of the launcher and status
   // widgets.
   void LayoutShelf();
@@ -292,7 +295,7 @@ class ASH_EXPORT ShelfLayoutManager :
   void UpdateTargetBoundsForGesture(TargetBounds* target_bounds) const;
 
   // Updates the background of the shelf.
-  void UpdateShelfBackground(BackgroundAnimator::ChangeType type);
+  void UpdateShelfBackground(BackgroundAnimatorChangeType type);
 
   // Returns how the shelf background is painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
@@ -331,7 +334,7 @@ class ASH_EXPORT ShelfLayoutManager :
   virtual void OnKeyboardBoundsChanging(
       const gfx::Rect& keyboard_bounds) OVERRIDE;
 
-  // Overridden from dock::DockObserver:
+  // Overridden from DockedWindowLayoutManagerObserver:
   virtual void OnDockBoundsChanging(
       const gfx::Rect& dock_bounds,
       DockedWindowLayoutManagerObserver::Reason reason) OVERRIDE;

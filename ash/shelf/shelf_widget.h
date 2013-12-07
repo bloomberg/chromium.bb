@@ -43,12 +43,11 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   ShelfAlignment GetAlignment() const;
 
   // Sets the shelf's background type.
-  void SetPaintsBackground(
-      ShelfBackgroundType background_type,
-      internal::BackgroundAnimator::ChangeType change_type);
+  void SetPaintsBackground(ShelfBackgroundType background_type,
+                           BackgroundAnimatorChangeType change_type);
   ShelfBackgroundType GetBackgroundType() const;
 
-  // Causes shelf items to be slightly dimmed (eg when a window is maximized).
+  // Causes shelf items to be slightly dimmed (e.g. when a window is maximized).
   void SetDimsShelf(bool dimming);
   bool GetDimsShelf() const;
 

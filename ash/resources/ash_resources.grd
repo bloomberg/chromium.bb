@@ -20,6 +20,7 @@
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND" file="common/launcher/launcher_background.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_CORNER" file="common/launcher/launcher_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_DIMMING" file="common/launcher/launcher_dimming.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="common/launcher/launcher_appmenu.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_ALTERNATE" file="common/alt_launcher/status_app_menu_icon.png" />

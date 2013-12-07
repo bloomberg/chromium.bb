@@ -21,14 +21,19 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
 
 namespace ash {
@@ -48,22 +53,87 @@ const int kSlideDurationMs = 120;
 const int kFadeDurationMs = 60;
 const int kMinimizeDurationMs = 720;
 
-namespace {
-
-const SkColor kDockBackgroundColor = SkColorSetARGB(0xff, 0x10, 0x10, 0x10);
-const float kDockBackgroundOpacity = 0.5f;
-
-class DockedBackgroundWidget : public views::Widget {
+class DockedBackgroundWidget : public views::Widget,
+                               public internal::BackgroundAnimatorDelegate {
  public:
-  explicit DockedBackgroundWidget(aura::Window* container) {
+  explicit DockedBackgroundWidget(aura::Window* container)
+      : alignment_(DOCKED_ALIGNMENT_NONE),
+        background_animator_(this, 0, kLauncherBackgroundAlpha),
+        alpha_(0),
+        opaque_background_(ui::LAYER_SOLID_COLOR) {
     InitWidget(container);
+  }
+
+  // Sets widget bounds and sizes opaque background layer to fill the widget.
+  void SetBackgroundBounds(const gfx::Rect bounds, DockedAlignment alignment) {
+    SetBounds(bounds);
+    opaque_background_.SetBounds(gfx::Rect(bounds.size()));
+    alignment_ = alignment;
+  }
+
+  // Sets the docked area background type and starts transition animation.
+  void SetPaintsBackground(
+      ShelfBackgroundType background_type,
+      BackgroundAnimatorChangeType change_type) {
+    float target_opacity =
+        (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
+    scoped_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
+    if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
+      opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
+          opaque_background_.GetAnimator()));
+      opaque_background_animation->SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
+    }
+    opaque_background_.SetOpacity(target_opacity);
+
+    // TODO(varkha): use ui::Layer on both opaque_background and normal
+    // background retire background_animator_ at all. It would be simpler.
+    // See also ShelfWidget::SetPaintsBackground.
+    background_animator_.SetPaintsBackground(
+        background_type != SHELF_BACKGROUND_DEFAULT,
+        change_type);
+    SchedulePaintInRect(gfx::Rect(GetWindowBoundsInScreen().size()));
+  }
+
+  // views::Widget:
+  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE {
+    const gfx::ImageSkia& launcher_background(
+        alignment_ == DOCKED_ALIGNMENT_LEFT ?
+            launcher_background_left_ : launcher_background_right_);
+    gfx::Rect rect = gfx::Rect(GetWindowBoundsInScreen().size());
+    SkPaint paint;
+    paint.setAlpha(alpha_);
+    canvas->DrawImageInt(
+        launcher_background,
+        0, 0, launcher_background.width(), launcher_background.height(),
+        alignment_ == DOCKED_ALIGNMENT_LEFT ?
+            rect.width() - launcher_background.width() : 0, 0,
+        launcher_background.width(), rect.height(),
+        false,
+        paint);
+    canvas->DrawImageInt(
+        launcher_background,
+        alignment_ == DOCKED_ALIGNMENT_LEFT ?
+            0 : launcher_background.width() - 1, 0,
+        1, launcher_background.height(),
+        alignment_ == DOCKED_ALIGNMENT_LEFT ?
+            0 : launcher_background.width(), 0,
+        rect.width() - launcher_background.width(), rect.height(),
+        false,
+        paint);
+  }
+
+  // BackgroundAnimatorDelegate:
+  virtual void UpdateBackground(int alpha) OVERRIDE {
+    alpha_ = alpha;
+    SchedulePaintInRect(gfx::Rect(GetWindowBoundsInScreen().size()));
   }
 
  private:
   void InitWidget(aura::Window* parent) {
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_POPUP;
-    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.can_activate = false;
     params.keep_on_top = false;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -72,16 +142,40 @@ class DockedBackgroundWidget : public views::Widget {
     set_focus_on_creation(false);
     Init(params);
     GetNativeWindow()->SetProperty(internal::kStayInSameRootWindowKey, true);
-    DCHECK_EQ(GetNativeView()->GetRootWindow(), parent->GetRootWindow());
-    views::View* content_view = new views::View;
-    content_view->set_background(
-        views::Background::CreateSolidBackground(kDockBackgroundColor));
-    SetContentsView(content_view);
+    opaque_background_.SetColor(SK_ColorBLACK);
+    opaque_background_.SetBounds(gfx::Rect(GetWindowBoundsInScreen().size()));
+    opaque_background_.SetOpacity(0.0f);
+    GetNativeWindow()->layer()->Add(&opaque_background_);
     Hide();
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    gfx::ImageSkia launcher_background =
+        *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_BACKGROUND);
+    launcher_background_left_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+        launcher_background, SkBitmapOperations::ROTATION_90_CW);
+    launcher_background_right_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+        launcher_background, SkBitmapOperations::ROTATION_270_CW);
   }
+
+  DockedAlignment alignment_;
+
+  // The animator for the background transitions.
+  internal::BackgroundAnimator background_animator_;
+
+  // The alpha to use for drawing image assets covering the docked background.
+  int alpha_;
+
+  // Solid black background that can be made fully opaque.
+  ui::Layer opaque_background_;
+
+  // Backgrounds created from shelf background by 90 or 270 degree rotation.
+  gfx::ImageSkia launcher_background_left_;
+  gfx::ImageSkia launcher_background_right_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedBackgroundWidget);
 };
+
+namespace {
 
 // Returns true if a window is a popup or a transient child.
 bool IsPopupOrTransient(const aura::Window* window) {
@@ -225,7 +319,7 @@ struct CompareWindowPos {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager public implementation:
+// DockedWindowLayoutManager public implementation:
 DockedWindowLayoutManager::DockedWindowLayoutManager(
     aura::Window* dock_container, WorkspaceController* workspace_controller)
     : dock_container_(dock_container),
@@ -253,6 +347,11 @@ DockedWindowLayoutManager::~DockedWindowLayoutManager() {
 }
 
 void DockedWindowLayoutManager::Shutdown() {
+  if (launcher_ && launcher_->shelf_widget()) {
+    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForLauncher(
+        launcher_->shelf_widget()->GetNativeWindow());
+    shelf_layout_manager->RemoveObserver(this);
+  }
   launcher_ = NULL;
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
     aura::Window* child = dock_container_->children()[i];
@@ -333,6 +432,11 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
 void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
   DCHECK(!launcher_);
   launcher_ = launcher;
+  if (launcher_->shelf_widget()) {
+    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForLauncher(
+        launcher_->shelf_widget()->GetNativeWindow());
+    shelf_layout_manager->AddObserver(this);
+  }
 }
 
 DockedAlignment DockedWindowLayoutManager::GetAlignmentOfWindow(
@@ -418,7 +522,7 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager, aura::LayoutManager implementation:
+// DockedWindowLayoutManager, aura::LayoutManager implementation:
 void DockedWindowLayoutManager::OnWindowResized() {
   MaybeMinimizeChildrenExcept(dragged_window_);
   Relayout();
@@ -492,7 +596,7 @@ void DockedWindowLayoutManager::SetChildBounds(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager, ash::ShellObserver implementation:
+// DockedWindowLayoutManager, ash::ShellObserver implementation:
 
 void DockedWindowLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   Relayout();
@@ -558,7 +662,15 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager, WindowStateObserver implementation:
+// DockedWindowLayoutManager, ShelfLayoutManagerObserver implementation:
+void DockedWindowLayoutManager::OnBackgroundUpdated(
+    ShelfBackgroundType background_type,
+    BackgroundAnimatorChangeType change_type) {
+  background_widget_->SetPaintsBackground(background_type, change_type);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// DockedWindowLayoutManager, WindowStateObserver implementation:
 
 void DockedWindowLayoutManager::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
@@ -584,7 +696,7 @@ void DockedWindowLayoutManager::OnWindowShowTypeChanged(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager, WindowObserver implementation:
+// DockedWindowLayoutManager, WindowObserver implementation:
 
 void DockedWindowLayoutManager::OnWindowBoundsChanged(
     aura::Window* window,
@@ -623,7 +735,8 @@ void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager, aura::client::ActivationChangeObserver implementation:
+// DockedWindowLayoutManager, aura::client::ActivationChangeObserver
+// implementation:
 
 void DockedWindowLayoutManager::OnWindowActivated(aura::Window* gained_active,
                                                   aura::Window* lost_active) {
@@ -643,7 +756,7 @@ void DockedWindowLayoutManager::OnWindowActivated(aura::Window* gained_active,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager private implementation:
+// DockedWindowLayoutManager private implementation:
 
 void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
     aura::Window* child) {
@@ -998,14 +1111,11 @@ void DockedWindowLayoutManager::UpdateDockBounds(
       observer_list_,
       OnDockBoundsChanging(bounds, reason));
   // Show or hide background for docked area.
-  background_widget_->SetBounds(docked_bounds_);
-  if (docked_width_ > 0) {
+  background_widget_->SetBackgroundBounds(docked_bounds_, alignment_);
+  if (docked_width_ > 0)
     background_widget_->Show();
-    background_widget_->GetNativeWindow()->layer()->SetOpacity(
-        kDockBackgroundOpacity);
-  } else {
+  else
     background_widget_->Hide();
-  }
 }
 
 void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {

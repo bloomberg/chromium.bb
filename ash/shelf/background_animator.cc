@@ -34,11 +34,12 @@ void BackgroundAnimator::SetDuration(int time_in_ms) {
   animation_.SetSlideDuration(time_in_ms);
 }
 
-void BackgroundAnimator::SetPaintsBackground(bool value, ChangeType type) {
+void BackgroundAnimator::SetPaintsBackground(
+    bool value, BackgroundAnimatorChangeType type) {
   if (paints_background_ == value)
     return;
   paints_background_ = value;
-  if (type == CHANGE_IMMEDIATE && !animation_.is_animating()) {
+  if (type == BACKGROUND_CHANGE_IMMEDIATE && !animation_.is_animating()) {
     animation_.Reset(value ? 1.0f : 0.0f);
     AnimationProgressed(&animation_);
     return;

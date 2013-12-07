@@ -11,6 +11,13 @@
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace ash {
+
+// How the background can be changed.
+enum BackgroundAnimatorChangeType {
+  BACKGROUND_CHANGE_ANIMATE,
+  BACKGROUND_CHANGE_IMMEDIATE
+};
+
 namespace internal {
 
 // Delegate is notified any time the background changes.
@@ -25,12 +32,6 @@ class ASH_EXPORT BackgroundAnimatorDelegate {
 // BackgroundAnimator is used by the shelf to animate the background (alpha).
 class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
  public:
-  // How the background can be changed.
-  enum ChangeType {
-    CHANGE_ANIMATE,
-    CHANGE_IMMEDIATE
-  };
-
   BackgroundAnimator(BackgroundAnimatorDelegate* delegate,
                      int min_alpha,
                      int max_alpha);
@@ -42,7 +43,7 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
   // Sets whether a background is rendered. Initial value is false. If |type|
   // is |CHANGE_IMMEDIATE| and an animation is not in progress this notifies
   // the delegate immediately (synchronously from this method).
-  void SetPaintsBackground(bool value, ChangeType type);
+  void SetPaintsBackground(bool value, BackgroundAnimatorChangeType type);
   bool paints_background() const { return paints_background_; }
 
   // Current alpha.

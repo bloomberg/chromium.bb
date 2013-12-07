@@ -108,9 +108,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Sets whether the tray paints a background. Default is true, but is set to
   // false if a window overlaps the shelf.
-  void SetPaintsBackground(
-      bool value,
-      internal::BackgroundAnimator::ChangeType change_type);
+  void SetPaintsBackground(bool value,
+                           BackgroundAnimatorChangeType change_type);
 
   // Initializes animations for the bubble.
   void InitializeBubbleAnimations(views::Widget* bubble_widget);

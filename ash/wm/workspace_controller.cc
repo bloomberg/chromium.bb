@@ -30,6 +30,15 @@ namespace {
 // animation (when logging in).
 const int kInitialPauseTimeMS = 750;
 
+// Returns true if the |window| is docked and visible.
+bool IsDockedAndVisible(const aura::Window* window) {
+  return (window->parent()->id() == kShellWindowId_DockedContainer &&
+          window->IsVisible() &&
+          !wm::GetWindowState(window)->IsMinimized() &&
+          window->type() != aura::client::WINDOW_TYPE_POPUP &&
+          !window->transient_parent());
+}
+
 }  // namespace
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
@@ -86,8 +95,11 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
       } else if (window_state->IsFullscreen()) {
         return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
       }
-      if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))
+      if (!window_overlaps_launcher &&
+          ((*i)->bounds().Intersects(shelf_bounds) ||
+           IsDockedAndVisible(*i))) {
         window_overlaps_launcher = true;
+      }
     }
   }
   if (has_maximized_window)
