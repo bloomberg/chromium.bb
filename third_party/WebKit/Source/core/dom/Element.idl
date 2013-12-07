@@ -97,8 +97,8 @@
     [RaisesException] Element querySelector(DOMString selectors);
     [RaisesException] NodeList querySelectorAll(DOMString selectors);
 
-    // WebKit extension, pending specification.
-    [RaisesException] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
+    // WebKit extension
+    [RaisesException, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
 
     // Shadow DOM API
     [RuntimeEnabled=ShadowDOM, Reflect, TreatNullAs=NullString, PerWorldBindings] attribute DOMString pseudo;
