@@ -55,6 +55,7 @@ void BookmarkUndoServiceTest::TearDown() {
 TEST_F(BookmarkUndoServiceTest, AddBookmark) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   const BookmarkNode* parent = model->other_node();
   model->AddURL(parent, 0, ASCIIToUTF16("foo"), GURL("http://www.bar.com"));
@@ -74,6 +75,7 @@ TEST_F(BookmarkUndoServiceTest, AddBookmark) {
 TEST_F(BookmarkUndoServiceTest, UndoBookmarkRemove) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   const BookmarkNode* parent = model->other_node();
   model->AddURL(parent, 0, ASCIIToUTF16("foo"), GURL("http://www.bar.com"));
@@ -105,6 +107,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkRemove) {
 TEST_F(BookmarkUndoServiceTest, UndoBookmarkGroupedAction) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   const BookmarkNode* n1 = model->AddURL(model->other_node(),
                                         0,
@@ -140,6 +143,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkGroupedAction) {
 TEST_F(BookmarkUndoServiceTest, UndoBookmarkMoveWithinFolder) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   const BookmarkNode* n1 = model->AddURL(model->other_node(),
                                         0,
@@ -172,6 +176,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkMoveWithinFolder) {
 TEST_F(BookmarkUndoServiceTest, UndoBookmarkMoveToOtherFolder) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   const BookmarkNode* n1 = model->AddURL(model->other_node(),
                                         0,
@@ -213,6 +218,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkMoveToOtherFolder) {
 TEST_F(BookmarkUndoServiceTest, UndoBookmarkRenameDelete) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   const BookmarkNode* f1 = model->AddFolder(model->other_node(),
                                            0,
@@ -266,6 +272,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkRenameDelete) {
 TEST_F(BookmarkUndoServiceTest, UndoBookmarkReorder) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   const BookmarkNode* parent = model->other_node();
   model->AddURL(parent, 0, ASCIIToUTF16("foo"), GURL("http://www.foo.com"));
@@ -306,6 +313,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkReorder) {
 TEST_F(BookmarkUndoServiceTest, UndoBookmarkRemoveAll) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   // Setup bookmarks in the Other Bookmarks and the Bookmark Bar.
   const BookmarkNode* new_folder;
@@ -345,6 +353,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkRemoveAll) {
 TEST_F(BookmarkUndoServiceTest, TestUpperLimit) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
+  model->AddObserver(undo_service);
 
   // This maximum is set in undo_manager.cc
   const size_t kMaxUndoGroups = 100;

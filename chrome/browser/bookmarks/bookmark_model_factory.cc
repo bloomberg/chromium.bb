@@ -4,6 +4,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 
+#include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
@@ -12,6 +13,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/startup_task_runner_service.h"
 #include "chrome/browser/profiles/startup_task_runner_service_factory.h"
+#include "chrome/browser/undo/bookmark_undo_service.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -46,6 +50,13 @@ BrowserContextKeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
   bookmark_model->Load(StartupTaskRunnerServiceFactory::GetForProfile(profile)->
       GetBookmarkTaskRunner());
+#if !defined(OS_ANDROID)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+     switches::kEnableBookmarkUndo)) {
+    bookmark_model->AddObserver(
+        BookmarkUndoServiceFactory::GetForProfile(profile));
+  }
+#endif  // !defined(OS_ANDROID)
   return bookmark_model;
 }
 

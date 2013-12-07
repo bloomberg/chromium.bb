@@ -18,6 +18,9 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/browser/undo/bookmark_undo_service.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "chrome/browser/undo/undo_manager_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/delete_journal.h"
@@ -363,6 +366,12 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
 syncer::SyncError BookmarkModelAssociator::AssociateModels(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result) {
+  // Since any changes to the bookmark model made here are not user initiated,
+  // these change should not be undoable and so suspend the undo tracking.
+#if !defined(OS_ANDROID)
+  ScopedSuspendUndoTracking suspend_undo(
+      BookmarkUndoServiceFactory::GetForProfile(profile_)->undo_manager());
+#endif
   syncer::SyncError error = CheckModelSyncState(local_merge_result,
                                                 syncer_merge_result);
   if (error.IsSet())

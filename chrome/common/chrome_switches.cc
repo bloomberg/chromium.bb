@@ -579,6 +579,9 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // Enables client hints, which adds hints about browser state to HTTP requests.
 const char kEnableClientHints[]             = "enable-client-hints";
 
+// Enables the multi-level undo system for bookmarks.
+const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
+
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";

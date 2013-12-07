@@ -23,8 +23,8 @@ BookmarkUndoServiceFactory* BookmarkUndoServiceFactory::GetInstance() {
 
 BookmarkUndoServiceFactory::BookmarkUndoServiceFactory()
     : BrowserContextKeyedServiceFactory(
-          "BookmarkUndoService",
-          BrowserContextDependencyManager::GetInstance()) {
+        "BookmarkUndoService",
+        BrowserContextDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
 }
 

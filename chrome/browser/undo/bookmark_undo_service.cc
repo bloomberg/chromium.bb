@@ -333,7 +333,6 @@ void BookmarkReorderOperation::OnBookmarkRenumbered(int64 old_id,
 // BookmarkUndoService --------------------------------------------------------
 
 BookmarkUndoService::BookmarkUndoService(Profile* profile) : profile_(profile) {
-  BookmarkModelFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 BookmarkUndoService::~BookmarkUndoService() {

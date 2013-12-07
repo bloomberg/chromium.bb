@@ -22,6 +22,9 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/undo/bookmark_undo_service.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "chrome/browser/undo/undo_manager_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
@@ -503,6 +506,12 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   // up in a feedback loop, so remove ourselves as an observer while applying
   // changes.
   model->RemoveObserver(this);
+
+  // Changes made to the bookmark model due to sync should not be undoable.
+#if !defined(OS_ANDROID)
+  ScopedSuspendUndoTracking suspend_undo(
+      BookmarkUndoServiceFactory::GetForProfile(profile_)->undo_manager());
+#endif
 
   // Notify UI intensive observers of BookmarkModel that we are about to make
   // potentially significant changes to it, so the updates may be batched. For

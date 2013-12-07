@@ -104,6 +104,12 @@
     <message name="IDS_BOOKMARK_BAR_RENAME_FOLDER" desc="Title of the bookmark context menu item that brings up a dialog to rename a folder">
       &amp;Rename...
     </message>
+    <message name="IDS_BOOKMARK_BAR_UNDO" desc="Menu title for undoing a bookmark operation">
+      &amp;Undo
+    </message>
+    <message name="IDS_BOOKMARK_BAR_REDO" desc="Menu title for redoing a bookmark operation">
+      &amp;Redo
+    </message>
     <message name="IDS_BOOKMARK_BAR_REMOVE" desc="Menu title for removing/unstarring a bookmark">
       &amp;Delete
     </message>
@@ -143,6 +149,12 @@
     </message>
     <message name="IDS_BOOKMARK_BAR_RENAME_FOLDER" desc="In Title Case: Title of the bookmark context menu item that brings up a dialog to rename a folder">
       &amp;Rename...
+    </message>
+    <message name="IDS_BOOKMARK_BAR_UNDO" desc="Menu title for undoing a bookmark operation">
+       &amp;Undo
+    </message>
+    <message name="IDS_BOOKMARK_BAR_REDO" desc="Menu title for redoing a bookmark operation">
+       &amp;Redo
     </message>
     <message name="IDS_BOOKMARK_BAR_REMOVE" desc="In Title Case: Menu title for removing/unstarring a bookmark">
       &amp;Delete
