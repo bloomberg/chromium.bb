@@ -19,11 +19,11 @@ static const int kExtendedSar = 255;
 // ISO 14496 part 10
 // VUI parameters: Table E-1 "Meaning of sample aspect ratio indicator"
 static const int kTableSarWidth[14] = {
-  1, 1, 12, 10, 16, 40, 24, 20, 32, 80, 18, 15, 64, 160
+  0, 1, 12, 10, 16, 40, 24, 20, 32, 80, 18, 15, 64, 160
 };
 
 static const int kTableSarHeight[14] = {
-  1, 1, 11, 11, 11, 33, 11, 11, 11, 33, 11, 11, 33, 99
+  0, 1, 11, 11, 11, 33, 11, 11, 11, 33, 11, 11, 33, 99
 };
 
 // Remove the start code emulation prevention ( 0x000003 )
@@ -449,12 +449,8 @@ bool EsParserH264::ProcessSPS(const uint8* buf, int size) {
     }
   }
 
-  if (sar_width != sar_height) {
-    // TODO(damienv): Support non square pixels.
-    DVLOG(1)
-      << "Non square pixel not supported yet:"
-      << " sar_width=" << sar_width
-      << " sar_height=" << sar_height;
+  if (sar_width == 0 || sar_height == 0) {
+    DVLOG(1) << "Unspecified SAR not supported";
     return false;
   }
 
@@ -467,11 +463,12 @@ bool EsParserH264::ProcessSPS(const uint8* buf, int size) {
       frame_crop_top_offset,
       (coded_size.width() - frame_crop_right_offset) - frame_crop_left_offset,
       (coded_size.height() - frame_crop_bottom_offset) - frame_crop_top_offset);
-
-  // TODO(damienv): calculate the natural size based
-  // on the possible aspect ratio coded in the VUI parameters.
-  gfx::Size natural_size(visible_rect.width(),
+  if (visible_rect.width() <= 0 || visible_rect.height() <= 0)
+    return false;
+  gfx::Size natural_size((visible_rect.width() * sar_width) / sar_height,
                          visible_rect.height());
+  if (natural_size.width() == 0)
+    return false;
 
   // TODO(damienv):
   // Assuming the SPS is used right away by the PPS
@@ -495,6 +492,7 @@ bool EsParserH264::ProcessSPS(const uint8* buf, int size) {
     DVLOG(1) << "Pic width: " << (pic_width_in_mbs_minus1 + 1) * 16;
     DVLOG(1) << "Pic height: " << (pic_height_in_map_units_minus1 + 1) * 16;
     DVLOG(1) << "log2_max_frame_num_minus4: " << log2_max_frame_num_minus4;
+    DVLOG(1) << "SAR: width=" << sar_width << " height=" << sar_height;
     last_video_decoder_config_ = video_decoder_config;
     new_video_config_cb_.Run(video_decoder_config);
   }
