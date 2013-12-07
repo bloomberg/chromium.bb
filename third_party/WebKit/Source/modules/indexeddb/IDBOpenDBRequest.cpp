@@ -87,10 +87,8 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
 
     ASSERT(m_databaseCallbacks);
 
-    RefPtr<IDBDatabase> idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks);
+    RefPtr<IDBDatabase> idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
     idbDatabase->setMetadata(metadata);
-    m_databaseCallbacks->connect(idbDatabase.get());
-    m_databaseCallbacks = 0;
 
     if (oldVersion == IDBDatabaseMetadata::NoIntVersion) {
         // This database hasn't had an integer version before.
@@ -129,9 +127,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
     } else {
         ASSERT(backend.get());
         ASSERT(m_databaseCallbacks);
-        idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks);
-        m_databaseCallbacks->connect(idbDatabase.get());
-        m_databaseCallbacks = 0;
+        idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
         setResult(IDBAny::create(idbDatabase.get()));
     }
     idbDatabase->setMetadata(metadata);

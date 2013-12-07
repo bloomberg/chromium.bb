@@ -80,6 +80,7 @@ IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> b
     // We pass a reference of this object before it can be adopted.
     relaxAdoptionRequirement();
     ScriptWrappable::init(this);
+    m_databaseCallbacks->connect(this);
 }
 
 IDBDatabase::~IDBDatabase()
