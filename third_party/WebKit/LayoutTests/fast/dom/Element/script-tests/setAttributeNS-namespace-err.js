@@ -124,10 +124,4 @@ function runNSTests()
     }
 }
 
-// Moz throws a "Not enough arguments" exception in these, we don't:
-var element = document.createElement("div");
-shouldBeUndefined("element.setAttributeNS()");
-shouldBeUndefined("element.setAttributeNS(\"http://www.example.com\")");
-shouldBeUndefined("element.setAttributeNS(\"http://www.example.com\", \"foo\")");
-
 runNSTests();

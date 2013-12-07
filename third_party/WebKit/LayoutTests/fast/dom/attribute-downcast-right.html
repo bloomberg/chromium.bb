@@ -4,8 +4,8 @@ if (window.testRunner)
 
 var oElement = document.createElement("s")
 var oElementNS = document.createElementNS("http://example.com/", "example");
-oElementNS.setAttributeNS();
-var oAttributeNS = oElementNS.getAttributeNodeNS();
+oElementNS.setAttributeNS("http://example.com/", "example", "");
+var oAttributeNS = oElementNS.getAttributeNodeNS("http://example.com/", "example");
 var oAttributeNSClone = oAttributeNS.cloneNode();
 oElement.setAttributeNode(oAttributeNSClone);
 </SCRIPT>
