@@ -139,6 +139,7 @@ public:
     virtual void setCursor(const WebCore::Cursor&);
     virtual void formStateDidChange(const WebCore::Node*);
     virtual void needTouchEvents(bool needTouchEvents) OVERRIDE;
+    virtual void setTouchAction(WebCore::TouchAction) OVERRIDE;
 
     virtual WebCore::GraphicsLayerFactory* graphicsLayerFactory() const OVERRIDE;
 

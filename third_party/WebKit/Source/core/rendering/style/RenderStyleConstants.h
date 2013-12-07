@@ -514,7 +514,7 @@ enum GridAutoFlow { AutoFlowNone, AutoFlowColumn, AutoFlowRow };
 
 enum DraggableRegionMode { DraggableRegionNone, DraggableRegionDrag, DraggableRegionNoDrag };
 
-enum TouchAction { TouchActionAuto, TouchActionNone };
+enum TouchAction { TouchActionNone, TouchActionAuto };
 
 enum EIsolation { IsolationAuto, IsolationIsolate };
 

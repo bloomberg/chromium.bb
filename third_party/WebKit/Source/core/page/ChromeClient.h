@@ -31,6 +31,7 @@
 #include "core/platform/Cursor.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include "modules/webdatabase/DatabaseDetails.h"
 #include "platform/HostWindow.h"
 #include "platform/PopupMenu.h"
@@ -220,6 +221,8 @@ public:
     virtual void exitFullScreenForElement(Element*) { }
 
     virtual void needTouchEvents(bool) = 0;
+
+    virtual void setTouchAction(TouchAction) = 0;
 
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;

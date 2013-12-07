@@ -304,6 +304,7 @@
       'tests/RenderTableRowTest.cpp',
       'tests/ScrollingCoordinatorChromiumTest.cpp',
       'tests/SpinLockTest.cpp',
+      'tests/TouchActionTest.cpp',
       'tests/URLTestHelpers.cpp',
       'tests/URLTestHelpers.h',
       'tests/ViewportTest.cpp',

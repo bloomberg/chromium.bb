@@ -162,6 +162,7 @@ public:
     virtual void scheduleCompositingLayerFlush() OVERRIDE { }
 
     virtual void needTouchEvents(bool) OVERRIDE { }
+    virtual void setTouchAction(TouchAction touchAction) OVERRIDE { };
 
     virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE { }
 

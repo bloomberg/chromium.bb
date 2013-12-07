@@ -525,6 +525,7 @@ public:
     // Integration with rendering tree
 
     // As renderer() includes a branch you should avoid calling it repeatedly in hot code paths.
+    // Note that if a Node has a renderer, it's parentNode is guaranteed to have one as well.
     RenderObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
     void setRenderer(RenderObject* renderer)
     {

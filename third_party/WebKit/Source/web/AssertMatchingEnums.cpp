@@ -74,6 +74,7 @@
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/rendering/CompositingReasons.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -125,6 +126,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebSerializedScriptValueVersion.h"
+#include "public/web/WebTouchAction.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
 
@@ -645,6 +647,9 @@ COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelLog, LogMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelWarning, WarningMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelError, ErrorMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelInfo, InfoMessageLevel);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionNone, TouchActionNone);
+COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionAuto, TouchActionAuto);
 
 COMPILE_ASSERT_MATCHING_UINT64(CompositingReasonUnknown, CompositingReasonNone);
 COMPILE_ASSERT_MATCHING_UINT64(CompositingReason3DTransform, CompositingReason3DTransform);

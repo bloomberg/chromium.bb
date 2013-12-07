@@ -32,6 +32,7 @@
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
 #include "core/rendering/HitTestRequest.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
@@ -232,6 +233,8 @@ private:
     ScrollableArea* associatedScrollableArea(const RenderLayer*) const;
 
     bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
+    TouchAction computeEffectiveTouchAction(const Node&);
+
     bool handleMouseEventAsEmulatedGesture(const PlatformMouseEvent&);
     bool handleWheelEventAsEmulatedGesture(const PlatformWheelEvent&);
     HitTestResult hitTestResultInFrame(Frame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);

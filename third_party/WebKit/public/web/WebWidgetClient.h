@@ -36,6 +36,7 @@
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScreenInfo.h"
+#include "public/web/WebTouchAction.h"
 
 namespace blink {
 
@@ -171,6 +172,10 @@ public:
 
     // Called to update if touch events should be sent.
     virtual void hasTouchEventHandlers(bool) { }
+
+    // Called during WebWidget::HandleInputEvent for a TouchStart event to inform the embedder
+    // of the touch actions that are permitted for this touch.
+    virtual void setTouchAction(WebTouchAction touchAction) { }
 
 protected:
     ~WebWidgetClient() { }

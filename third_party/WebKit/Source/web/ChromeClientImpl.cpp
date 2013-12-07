@@ -101,6 +101,7 @@
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebTouchAction.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringConcatenate.h"
@@ -949,6 +950,14 @@ void ChromeClientImpl::numWheelEventHandlersChanged(unsigned numberOfWheelHandle
 void ChromeClientImpl::needTouchEvents(bool needsTouchEvents)
 {
     m_webView->hasTouchEventHandlers(needsTouchEvents);
+}
+
+void ChromeClientImpl::setTouchAction(TouchAction touchAction)
+{
+    if (WebViewClient* client = m_webView->client()) {
+        WebTouchAction webTouchAction = static_cast<WebTouchAction>(touchAction);
+        client->setTouchAction(webTouchAction);
+    }
 }
 
 bool ChromeClientImpl::requestPointerLock()

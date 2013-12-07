@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/FullscreenElementStack.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
@@ -60,6 +61,7 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/BackForwardClient.h"
 #include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/DragController.h"
 #include "core/page/DragState.h"
 #include "core/page/EditorClient.h"
@@ -81,6 +83,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
@@ -3691,6 +3694,12 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
                 continue;
             m_originatingTouchPointTargets.set(touchPointTargetKey, node);
             touchTarget = node;
+
+            // FIXME(rbyers): Should really be doing a second hit test that ignores inline elements - crbug.com/319479.
+            TouchAction effectiveTouchAction = computeEffectiveTouchAction(*node);
+            if (effectiveTouchAction != TouchActionAuto)
+                m_frame->page()->chrome().client().setTouchAction(effectiveTouchAction);
+
         } else if (pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled) {
             // The target should be the original target for this touch, so get it from the hashmap. As it's a release or cancel
             // we also remove it from the map.
@@ -3900,6 +3909,34 @@ bool EventHandler::handleWheelEventAsEmulatedGesture(const PlatformWheelEvent& e
     anchorAfterCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
     page->inspectorController().requestPageScaleFactor(newPageScaleFactor, anchorBeforeCss - toIntSize(anchorAfterCss));
     return true;
+}
+
+TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
+{
+    // Optimization to minimize risk of this new feature (behavior should be identical
+    // since there's no way to get non-default touch-action values).
+    if (!RuntimeEnabledFeatures::cssTouchActionEnabled())
+        return TouchActionAuto;
+
+    // Start by permitting all actions, then walk the block level elements from
+    // the target node up to the nearest scrollable ancestor and exclude any
+    // prohibited actions. For now this is trivial, but when we add more types
+    // of actions it'll get a little more complex.
+    for (const Node* curNode = &node; curNode; curNode = NodeRenderingTraversal::parent(curNode)) {
+        // The spec says only block and SVG elements get touch-action.
+        // FIXME(rbyers): Add correct support for SVG, crbug.com/247396.
+        if (RenderObject* renderer = curNode->renderer()) {
+            if (renderer->isRenderBlockFlow()) {
+                if (renderer->style()->touchAction() == TouchActionNone)
+                    return TouchActionNone;
+            }
+
+            // If we've reached an ancestor that supports a touch action, search no further.
+            if (renderer->isBox() && toRenderBox(renderer)->scrollsOverflow())
+                break;
+        }
+    }
+    return TouchActionAuto;
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
