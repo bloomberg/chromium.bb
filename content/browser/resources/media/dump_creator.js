@@ -55,12 +55,12 @@ var DumpCreator = (function() {
     this.root_.appendChild(content);
 
     content.innerHTML = '<button disabled></button> Status: <span></span>' +
-        '<div><form><button>' +
+        '<div><a><button>' +
         'Download the PeerConnection updates and stats data' +
-        '</button></form></div>';
+        '</button></a></div>';
     content.getElementsByTagName('button')[0].addEventListener(
         'click', this.onRtpToggled_.bind(this));
-    content.getElementsByTagName('button')[1].addEventListener(
+    content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
 
     this.updateDisplay_();
@@ -77,8 +77,8 @@ var DumpCreator = (function() {
           new Blob([JSON.stringify(peerConnectionDataStore, null, ' ')],
                                    {type: 'octet/stream'});
       var URL = window.webkitURL.createObjectURL(textBlob);
-      this.root_.getElementsByTagName('form')[0].action = URL;
-      // The default action of the button will submit the form.
+      this.root_.getElementsByTagName('a')[0].href = URL;
+      // The default action of the anchor will download the URL.
     },
 
     /**
