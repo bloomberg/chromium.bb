@@ -36,11 +36,13 @@ TranslateInfoBarDelegate::Type kTranslateToolbarStates[] = {
 
 class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
-  MockTranslateInfoBarDelegate(TranslateInfoBarDelegate::Type type,
+  MockTranslateInfoBarDelegate(content::WebContents* web_contents,
+                               TranslateInfoBarDelegate::Type type,
                                TranslateErrors::Type error,
                                PrefService* prefs,
                                ShortcutConfiguration config)
-      : TranslateInfoBarDelegate(type, NULL, "en", "es", error, prefs, config) {
+      : TranslateInfoBarDelegate(web_contents, type, NULL, "en", "es", error,
+                                 prefs, config) {
   }
 
   MOCK_METHOD0(Translate, void());
@@ -93,8 +95,8 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     [[infobar_controller_ view] removeFromSuperview];
 
     scoped_ptr<TranslateInfoBarDelegate> delegate(
-        new MockTranslateInfoBarDelegate(type, error, profile->GetPrefs(),
-                                         config));
+        new MockTranslateInfoBarDelegate(web_contents_.get(), type, error,
+                                         profile->GetPrefs(), config));
     scoped_ptr<InfoBar> infobar(
         TranslateInfoBarDelegate::CreateInfoBar(delegate.Pass()));
     if (infobar_)

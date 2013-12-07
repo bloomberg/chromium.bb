@@ -14,10 +14,8 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages.h"
-#include "chrome/browser/translate/translate_browser_metrics.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "components/translate/common/translate_constants.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -83,8 +81,8 @@ void TranslateInfoBarDelegate::Create(
   // Add the new delegate.
   scoped_ptr<InfoBar> infobar(CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
-          infobar_type, old_delegate, original_language, target_language,
-          error_type, prefs, shortcut_config))));
+          web_contents, infobar_type, old_delegate, original_language,
+          target_language, error_type, prefs, shortcut_config))));
   if (old_delegate)
     infobar_service->ReplaceInfoBar(old_infobar, infobar.Pass());
   else
@@ -94,42 +92,20 @@ void TranslateInfoBarDelegate::Create(
 
 void TranslateInfoBarDelegate::UpdateOriginalLanguageIndex(
     size_t language_index) {
-  if (original_language_index_ == language_index)
-    return;
-
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_MODIFY_ORIGINAL_LANG), true);
-  original_language_index_ = language_index;
+  ui_delegate_.UpdateOriginalLanguageIndex(language_index);
 }
 
 void TranslateInfoBarDelegate::UpdateTargetLanguageIndex(
     size_t language_index) {
-  if (target_language_index_ == language_index)
-    return;
-
-  DCHECK_LT(language_index, num_languages());
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_MODIFY_TARGET_LANG), true);
-  target_language_index_ = language_index;
+  ui_delegate_.UpdateTargetLanguageIndex(language_index);
 }
 
 void TranslateInfoBarDelegate::Translate() {
-  if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
-    prefs_.ResetTranslationDeniedCount(original_language_code());
-    prefs_.IncrementTranslationAcceptedCount(original_language_code());
-  }
-  TranslateManager::GetInstance()->TranslatePage(web_contents(),
-                                                 original_language_code(),
-                                                 target_language_code());
-
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_PERFORM_TRANSLATE), true);
+  ui_delegate_.Translate();
 }
 
 void TranslateInfoBarDelegate::RevertTranslation() {
-  TranslateManager::GetInstance()->RevertTranslation(web_contents());
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_REVERT_TRANSLATION), true);
+  ui_delegate_.RevertTranslation();
   infobar()->RemoveSelf();
 }
 
@@ -139,21 +115,7 @@ void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
-  if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
-    prefs_.ResetTranslationAcceptedCount(original_language_code());
-    prefs_.IncrementTranslationDeniedCount(original_language_code());
-  }
-
-  // Remember that the user declined the translation so as to prevent showing a
-  // translate infobar for that page again.  (TranslateManager initiates
-  // translations when getting a LANGUAGE_DETERMINED from the page, which
-  // happens when a load stops. That could happen multiple times, including
-  // after the user already declined the translation.)
-  TranslateTabHelper::FromWebContents(web_contents())->
-      language_state().set_translation_declined(true);
-
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_DECLINE_TRANSLATE), true);
+  ui_delegate_.TranslationDeclined();
 }
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
@@ -165,83 +127,44 @@ bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
 }
 
 void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
-  if (prefs_.IsBlockedLanguage(original_language_code())) {
-    prefs_.UnblockLanguage(original_language_code());
+  if (ui_delegate_.IsLanguageBlocked()) {
+    ui_delegate_.SetLanguageBlocked(false);
   } else {
-    prefs_.BlockLanguage(original_language_code());
-    TranslateTabHelper* translate_tab_helper =
-        TranslateTabHelper::FromWebContents(web_contents());
-    DCHECK(translate_tab_helper);
-    translate_tab_helper->language_state().SetTranslateEnabled(false);
+    ui_delegate_.SetLanguageBlocked(true);
     infobar()->RemoveSelf();
   }
-
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_NEVER_TRANSLATE_LANG), true);
 }
 
 bool TranslateInfoBarDelegate::IsSiteBlacklisted() {
-  std::string host = TranslateUIDelegate::GetPageHost(web_contents());
-  return !host.empty() && prefs_.IsSiteBlacklisted(host);
+  return ui_delegate_.IsSiteBlacklisted();
 }
 
 void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  std::string host = TranslateUIDelegate::GetPageHost(web_contents());
-  if (host.empty())
-    return;
-
-  if (prefs_.IsSiteBlacklisted(host)) {
-    prefs_.RemoveSiteFromBlacklist(host);
+  if (ui_delegate_.IsSiteBlacklisted()) {
+    ui_delegate_.SetSiteBlacklist(false);
   } else {
-    prefs_.BlacklistSite(host);
-    TranslateTabHelper* translate_tab_helper =
-        TranslateTabHelper::FromWebContents(web_contents());
-    DCHECK(translate_tab_helper);
-    translate_tab_helper->language_state().SetTranslateEnabled(false);
+    ui_delegate_.SetSiteBlacklist(true);
     infobar()->RemoveSelf();
   }
-
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_NEVER_TRANSLATE_SITE), true);
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() {
-  return prefs_.IsLanguagePairWhitelisted(original_language_code(),
-                                          target_language_code());
+  return ui_delegate_.ShouldAlwaysTranslate();
 }
 
 void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
-  const std::string& original_lang = original_language_code();
-  const std::string& target_lang = target_language_code();
-  if (prefs_.IsLanguagePairWhitelisted(original_lang, target_lang))
-    prefs_.RemoveLanguagePairFromWhitelist(original_lang, target_lang);
-  else
-    prefs_.WhitelistLanguagePair(original_lang, target_lang);
-
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_ALWAYS_TRANSLATE_LANG), true);
+  ui_delegate_.SetAlwaysTranslate(!ui_delegate_.ShouldAlwaysTranslate());
 }
 
 void TranslateInfoBarDelegate::AlwaysTranslatePageLanguage() {
-  const std::string& original_lang = original_language_code();
-  const std::string& target_lang = target_language_code();
-  DCHECK(!prefs_.IsLanguagePairWhitelisted(original_lang, target_lang));
-  prefs_.WhitelistLanguagePair(original_lang, target_lang);
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_ALWAYS_TRANSLATE_LANG), true);
-
+  DCHECK(!ui_delegate_.ShouldAlwaysTranslate());
+  ui_delegate_.SetAlwaysTranslate(true);
   Translate();
 }
 
 void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
-  prefs_.BlockLanguage(original_language_code());
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(web_contents());
-  DCHECK(translate_tab_helper);
-  translate_tab_helper->language_state().SetTranslateEnabled(false);
-  UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
-      TranslateBrowserMetrics::UMA_NEVER_TRANSLATE_LANG), true);
-
+  DCHECK(!ui_delegate_.IsLanguageBlocked());
+  ui_delegate_.SetLanguageBlocked(true);
     infobar()->RemoveSelf();
 }
 
@@ -366,6 +289,7 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
 }
 
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(
+    content::WebContents* web_contents,
     Type infobar_type,
     TranslateInfoBarDelegate* old_delegate,
     const std::string& original_language,
@@ -376,8 +300,8 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     : InfoBarDelegate(),
       infobar_type_(infobar_type),
       background_animation_(NONE),
-      original_language_index_(kNoIndex),
-      target_language_index_(kNoIndex),
+      ui_delegate_(web_contents, original_language, target_language,
+                   error_type),
       error_type_(error_type),
       prefs_(prefs),
       shortcut_config_(shortcut_config) {
@@ -386,18 +310,6 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
 
   if (old_delegate && (old_delegate->is_error() != is_error()))
     background_animation_ = is_error() ? NORMAL_TO_ERROR : ERROR_TO_NORMAL;
-
-  languages_ = TranslateUIDelegate::GetSortedLanguageNames(
-      g_browser_process->GetApplicationLocale());
-
-  for (std::vector<LanguageNamePair>::const_iterator iter = languages_.begin();
-       iter != languages_.end(); ++iter) {
-    std::string language_code = iter->first;
-    if (language_code == original_language)
-      original_language_index_ = iter - languages_.begin();
-    if (language_code == target_language)
-      target_language_index_ = iter - languages_.begin();
-  }
 }
 
 // TranslateInfoBarDelegate::CreateInfoBar() is implemented in platform-specific
