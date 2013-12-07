@@ -78,22 +78,6 @@ struct CC_EXPORT TilePriority {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  static inline float manhattanDistance(const gfx::RectF& a,
-                                        const gfx::RectF& b) {
-    // Compute the union explicitly.
-    gfx::RectF c = gfx::RectF(
-        std::min(a.x(), b.x()),
-        std::min(a.y(), b.y()),
-        std::max(a.right(), b.right()) - std::min(a.x(), b.x()),
-        std::max(a.bottom(), b.bottom()) - std::min(a.y(), b.y()));
-
-    // Rects touching the edge of the screen should not be considered visible.
-    // So we add 1 pixel here to avoid that situation.
-    float x = std::max(0.0f, c.width() - a.width() - b.width() + 1.0f);
-    float y = std::max(0.0f, c.height() - a.height() - b.height() + 1.0f);
-    return (x + y);
-  }
-
   // Calculate the time for the |current_bounds| to intersect with the
   // |target_bounds| given its previous location and time delta.
   // This function should work for both scaling and scrolling case.

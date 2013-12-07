@@ -49,19 +49,5 @@ TEST(TilePriorityTest, TimeForBoundsToIntersectWithScale) {
       gfx::Rect(-450, -450, 50, 50), current, 1, target));
 }
 
-TEST(TilePriorityTest, ManhattanDistanceBetweenRects) {
-  EXPECT_EQ(0, TilePriority::manhattanDistance(
-      gfx::RectF(0, 0, 400, 400), gfx::RectF(0, 0, 100, 100)));
-
-  EXPECT_EQ(2, TilePriority::manhattanDistance(
-      gfx::Rect(0, 0, 400, 400), gfx::Rect(-100, -100, 100, 100)));
-
-  EXPECT_EQ(1, TilePriority::manhattanDistance(
-      gfx::Rect(0, 0, 400, 400), gfx::Rect(0, -100, 100, 100)));
-
-  EXPECT_EQ(202, TilePriority::manhattanDistance(
-      gfx::Rect(0, 0, 100, 100), gfx::Rect(200, 200, 100, 100)));
-}
-
 }  // namespace
 }  // namespace cc

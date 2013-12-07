@@ -78,6 +78,12 @@ class GFX_EXPORT Rect
     return RectF(origin().x(), origin().y(), size().width(), size().height());
   }
 
+  // Returns the manhattan distance between the integer contents of this rect
+  // and the contents of the given rect. That is, if the intersection of the two
+  // rects is non-empty then the function returns 0. If the rects share a side,
+  // however, it returns 1.
+  int ManhattanInternalDistance(const Rect& rect) const;
+
   std::string ToString() const;
 };
 

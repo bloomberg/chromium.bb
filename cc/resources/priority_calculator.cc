@@ -68,20 +68,11 @@ int PriorityCalculator::LingeringPriority(int previous_priority) {
                   std::max(kLingeringBasePriority, previous_priority + 1));
 }
 
-namespace {
-int ManhattanDistance(gfx::Rect a, gfx::Rect b) {
-  gfx::Rect c = gfx::UnionRects(a, b);
-  int x = std::max(0, c.width() - a.width() - b.width() + 1);
-  int y = std::max(0, c.height() - a.height() - b.height() + 1);
-  return (x + y);
-}
-}
-
 // static
 int PriorityCalculator::PriorityFromDistance(gfx::Rect visible_rect,
                                              gfx::Rect texture_rect,
                                              bool draws_to_root_surface) {
-  int distance = ManhattanDistance(visible_rect, texture_rect);
+  int distance = visible_rect.ManhattanInternalDistance(texture_rect);
   if (!distance)
     return VisiblePriority(draws_to_root_surface);
   return std::min(kNotVisibleLimitPriority, kNotVisibleBasePriority + distance);
