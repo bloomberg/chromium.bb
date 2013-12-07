@@ -29,13 +29,6 @@ import java.util.Set;
 public class InvalidationController implements ActivityStatus.StateListener {
     private static final Object LOCK = new Object();
 
-    // TODO: These constants are defined here only to maintain compatibility with downstream.  They
-    // should be removed eventually.
-    // Key to use when initializing the UniqueIdentificationGeneratorFactory's entry for this class.
-    public static final String ID_GENERATOR = "INVALIDATION_CONTROLLER_ID_GENERATOR";
-    // Pref key to use for UUID-based generator.
-    public static final String INVALIDATIONS_UUID_PREF_KEY = "chromium.invalidations.uuid";
-
     private static InvalidationController sInstance;
 
     private final Context mContext;
