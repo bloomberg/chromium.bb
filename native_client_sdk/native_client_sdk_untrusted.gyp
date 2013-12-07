@@ -16,6 +16,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libnacl_io.a',
             'build_newlib': 1,
+            'build_pnacl_newlib': 1,
           },
           'include_dirs': [
             '../native_client/src/untrusted/irt',

@@ -395,6 +395,68 @@ TEST(SocketUtilityFunctions, Inet_ntop_failure) {
   EXPECT_EQ(errno, ENOSPC);
 }
 
+TEST(SocketUtilityFunctions, Inet_ptoa) {
+  struct {
+    int family;
+    const char* input;
+    const char* output;
+  } tests[] = {
+    { AF_INET, "127.127.12.0", NULL },
+    { AF_INET, "0.0.0.0", NULL },
+
+    { AF_INET6, "0:0:0:0:0:0:0:0", NULL },
+    { AF_INET6, "1234:5678:9abc:def0:1234:5678:9abc:def0", NULL },
+    { AF_INET6, "1:2:3:4:5:6:7:8", NULL },
+    { AF_INET6, "a:b:c:d:e:f:1:2", NULL },
+    { AF_INET6, "A:B:C:D:E:F:1:2", "a:b:c:d:e:f:1:2" },
+    { AF_INET6, "::", "0:0:0:0:0:0:0:0" },
+    { AF_INET6, "::12", "0:0:0:0:0:0:0:12" },
+    { AF_INET6, "::1:2:3", "0:0:0:0:0:1:2:3" },
+    { AF_INET6, "12::", "12:0:0:0:0:0:0:0" },
+    { AF_INET6, "1:2::", "1:2:0:0:0:0:0:0" },
+    { AF_INET6, "::12:0:0:0:0:0:0:0", "12:0:0:0:0:0:0:0" },
+    { AF_INET6, "1:2:3::4:5", "1:2:3:0:0:0:4:5" },
+    { AF_INET6, "::1.1.1.1", "0:0:0:0:0:0:101:101" },
+    { AF_INET6, "::ffff:1.1.1.1", "0:0:0:0:0:ffff:101:101" },
+    { AF_INET6, "ffff::1.1.1.1", "ffff:0:0:0:0:0:101:101" },
+    { AF_INET6, "::1.1.1.1", "0:0:0:0:0:0:101:101" },
+  };
+
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {
+    uint8_t addr[16];
+    EXPECT_TRUE(inet_pton(tests[i].family, tests[i].input, addr));
+    const char* expected = tests[i].output ? tests[i].output : tests[i].input;
+    char out_buffer[256];
+    EXPECT_TRUE(
+        inet_ntop(tests[i].family, addr, out_buffer, sizeof(out_buffer)));
+    EXPECT_EQ(std::string(expected), std::string(out_buffer));
+  }
+}
+
+TEST(SocketUtilityFunctions, Inet_ptoa_failure) {
+  uint8_t addr[16];
+  EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.24312", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.24 ", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.0.1", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12. 0", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET, " 127.127.12.0", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.0.", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET, ".127.127.12.0", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.0x0", &addr));
+
+  EXPECT_EQ(0, inet_pton(AF_INET6, ":::", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "0:::0", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "0::0:0::1", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "0:0:0:0:0:0:1: 2", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, " 0:0:0:0:0:0:1:2", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "0:0:0:0:0:0:1:2 ", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, ":0:0:0:0:0:0:1:2", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "0:0:0:0:0:0:1:2:4", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "0:0:0:0:0:0:1:0.0.0.0", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "::0.0.0.0:1", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "::0.0.0.0.0", &addr));
+}
+
 TEST(SocketUtilityFunctions, Ntohs) {
   uint8_t network_bytes[2] = { 0x22, 0x11 };
   uint16_t network_short;

@@ -215,11 +215,16 @@ extern const struct in6_addr in6mask128;
 	{{{ 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
 	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02 }}}
 
+
+__BEGIN_DECLS
+
 extern const struct in6_addr in6addr_any;
 extern const struct in6_addr in6addr_loopback;
 extern const struct in6_addr in6addr_nodelocal_allnodes;
 extern const struct in6_addr in6addr_linklocal_allnodes;
 extern const struct in6_addr in6addr_linklocal_allrouters;
+
+__END_DECLS
 
 /*
  * Equality
