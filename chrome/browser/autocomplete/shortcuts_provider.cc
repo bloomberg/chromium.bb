@@ -21,6 +21,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -66,10 +67,6 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
 
   if ((input.type() == AutocompleteInput::INVALID) ||
       (input.type() == AutocompleteInput::FORCED_QUERY))
-    return;
-
-  // None of our results are applicable for best match.
-  if (input.matches_requested() == AutocompleteInput::BEST_MATCH)
     return;
 
   if (input.text().empty())
@@ -148,8 +145,11 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
            StartsWith(it->first, term_string, true); ++it) {
     // Don't return shortcuts with zero relevance.
     int relevance = CalculateScore(term_string, it->second, max_relevance);
-    if (relevance)
-      matches_.push_back(ShortcutToACMatch(relevance, term_string, it->second));
+    if (relevance) {
+      matches_.push_back(ShortcutToACMatch(
+          it->second, relevance, term_string,
+          input.prevent_inline_autocomplete()));
+    }
   }
   std::partial_sort(matches_.begin(),
       matches_.begin() +
@@ -161,30 +161,29 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   }
   // Reset relevance scores to guarantee no match is given a score that may
   // allow it to become the highest ranked match (i.e., the default match)
-  // unless the omnibox will reorder matches as necessary to correct the
-  // problem.  (Shortcuts matches are sometimes not inline-autocompletable
-  // and, even when they are, the ShortcutsProvider does not bother to set
-  // |inline_autocompletion|.  Hence these matches can never be displayed
-  // corectly in the omnibox as the default match.)  In the process of
-  // resetting scores, guarantee that all scores are decreasing (but do
-  // not assign any scores below 1).
+  // unless either it is a legal default match (i.e., inlineable) or the
+  // omnibox will reorder matches as necessary to correct the problem.  In
+  // the process of resetting scores, guarantee that all scores are decreasing
+  // (but do not assign any scores below 1).
   if (!OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-      input.current_page_classification())) {
-    int max_relevance = AutocompleteResult::kLowestDefaultScore - 1;
-    for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
-        ++it) {
-      max_relevance = std::min(max_relevance, it->relevance);
-      it->relevance = max_relevance;
-      if (max_relevance > 1)
-        --max_relevance;
-    }
+          input.current_page_classification()) &&
+      (matches_.empty() || !matches_.front().allowed_to_be_default_match)) {
+    max_relevance = std::min(max_relevance,
+                             AutocompleteResult::kLowestDefaultScore - 1);
+  }
+  for (ACMatches::iterator it = matches_.begin(); it != matches_.end(); ++it) {
+    max_relevance = std::min(max_relevance, it->relevance);
+    it->relevance = max_relevance;
+    if (max_relevance > 1)
+      --max_relevance;
   }
 }
 
 AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
+    const history::ShortcutsBackend::Shortcut& shortcut,
     int relevance,
     const base::string16& term_string,
-    const history::ShortcutsBackend::Shortcut& shortcut) {
+    bool prevent_inline_autocomplete) {
   DCHECK(!term_string.empty());
   AutocompleteMatch match(shortcut.match_core.ToMatch());
   match.provider = this;
@@ -194,6 +193,43 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   match.RecordAdditionalInfo("number of hits", shortcut.number_of_hits);
   match.RecordAdditionalInfo("last access time", shortcut.last_access_time);
   match.RecordAdditionalInfo("original input text", UTF16ToUTF8(shortcut.text));
+
+  // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
+  // If the match is a search query this is easy: simply check whether the
+  // user text is a prefix of the query.  If the match is a navigation, we
+  // assume the fill_into_edit looks something like a URL, so we use
+  // BestURLPrefix() to try and strip off any prefixes that the user might
+  // not think would change the meaning, but would otherwise prevent inline
+  // autocompletion.  This allows, for example, the input of "foo.c" to
+  // autocomplete to "foo.com" for a fill_into_edit of "http://foo.com".
+  if (AutocompleteMatch::IsSearchType(match.type)) {
+    if (StartsWith(match.fill_into_edit, term_string, false)) {
+      match.inline_autocompletion =
+          match.fill_into_edit.substr(term_string.length());
+      match.allowed_to_be_default_match =
+          !prevent_inline_autocomplete || match.inline_autocompletion.empty();
+    }
+  } else {
+    const URLPrefix* best_prefix =
+        URLPrefix::BestURLPrefix(match.fill_into_edit, term_string);
+    URLPrefix www_prefix(ASCIIToUTF16("www."), 1);
+    if ((best_prefix == NULL) ||
+        (best_prefix->num_components < www_prefix.num_components)) {
+      // Sometimes |fill_into_edit| can start with "www." without having a
+      // protocol at the beginning.  Because "www." is not on the default
+      // prefix list, we test for it explicitly here and use that match if
+      // the default list didn't have a match or the default list's match
+      // was shorter than it could've been.
+      if (URLPrefix::PrefixMatch(www_prefix, match.fill_into_edit, term_string))
+        best_prefix = &www_prefix;
+    }
+    if (best_prefix != NULL) {
+      match.inline_autocompletion = match.fill_into_edit.substr(
+          best_prefix->prefix.length() + term_string.length());
+      match.allowed_to_be_default_match =
+          !prevent_inline_autocomplete || match.inline_autocompletion.empty();
+    }
+  }
 
   // Try to mark pieces of the contents and description as matches if they
   // appear in |term_string|.

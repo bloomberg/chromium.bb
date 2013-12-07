@@ -43,7 +43,14 @@ const URLPrefix* URLPrefix::BestURLPrefix(const base::string16& text,
                                           const base::string16& prefix_suffix) {
   const URLPrefixes& list = GetURLPrefixes();
   for (URLPrefixes::const_iterator i = list.begin(); i != list.end(); ++i)
-    if (StartsWith(text, i->prefix + prefix_suffix, false))
+    if (PrefixMatch(*i, text, prefix_suffix))
       return &(*i);
   return NULL;
+}
+
+// static
+bool URLPrefix::PrefixMatch(const URLPrefix& prefix,
+                            const string16& text,
+                            const string16& prefix_suffix) {
+  return StartsWith(text, prefix.prefix + prefix_suffix, false);
 }

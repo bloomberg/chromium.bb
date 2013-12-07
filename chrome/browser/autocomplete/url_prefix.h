@@ -30,6 +30,13 @@ struct URLPrefix {
   static const URLPrefix* BestURLPrefix(const base::string16& text,
                                         const base::string16& prefix_suffix);
 
+  // A helper function for BestURLPrefix().  Returns true if |text| starts
+  // with |prefix| which is then followed by |prefix_suffix|.
+  // Performs case insensitive string comparison.
+  static bool PrefixMatch(const URLPrefix& prefix,
+                          const base::string16& text,
+                          const base::string16& prefix_suffix);
+
   base::string16 prefix;
 
   // The number of URL components (scheme, domain label, etc.) in the prefix.

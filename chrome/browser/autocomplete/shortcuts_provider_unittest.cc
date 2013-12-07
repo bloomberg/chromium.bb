@@ -144,6 +144,18 @@ struct TestShortcutInfo {
     "Run Echo command: echo", "0,0", "Echo", "0,4",
     content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::EXTENSION_APP,
     "echo", 1, 1 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F2", "abcdef.com", "http://abcdef.com",
+    "http://abcdef.com/", "Abcdef", "0,1,4,0", "Abcdef", "0,3,4,1",
+    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 1,
+    100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F3", "query", "query",
+    "https://www.google.com/search?q=query", "query", "0,0",
+    "Google Search", "0,4", content::PAGE_TRANSITION_GENERATED,
+    AutocompleteMatchType::SEARCH_HISTORY, "", 1, 100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F4", "word", "www.word",
+    "https://www.google.com/search?q=www.word", "www.word", "0,0",
+    "Google Search", "0,4", content::PAGE_TRANSITION_GENERATED,
+    AutocompleteMatchType::SEARCH_HISTORY, "", 1, 100 },
 };
 
 }  // namespace
@@ -192,19 +204,23 @@ class ShortcutsProviderTest : public testing::Test,
   virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
  protected:
+  typedef std::pair<std::string, bool> ExpectedURLAndAllowedToBeDefault;
+  typedef std::vector<ExpectedURLAndAllowedToBeDefault> ExpectedURLs;
+
   class SetShouldContain
-      : public std::unary_function<const std::string&, std::set<std::string> > {
+      : public std::unary_function<const ExpectedURLAndAllowedToBeDefault&,
+                                   std::set<std::string> > {
    public:
     explicit SetShouldContain(const ACMatches& matched_urls);
 
-    void operator()(const std::string& expected);
-    std::set<std::string> Leftovers() const { return matches_; }
+    void operator()(const ExpectedURLAndAllowedToBeDefault& expected);
+    std::set<ExpectedURLAndAllowedToBeDefault> Leftovers() const {
+        return matches_;
+    }
 
    private:
-    std::set<std::string> matches_;
+    std::set<ExpectedURLAndAllowedToBeDefault> matches_;
   };
-
-  typedef std::vector<std::string> URLs;
 
   virtual void SetUp();
   virtual void TearDown();
@@ -212,12 +228,17 @@ class ShortcutsProviderTest : public testing::Test,
   // Fills test data into the provider.
   void FillData(TestShortcutInfo* db, size_t db_size);
 
-  // Runs an autocomplete query on |text| and checks to see that the returned
+  // Runs an autocomplete query on |text| with the provided
+  // |prevent_inline_autocomplete| setting and checks to see that the returned
   // results' destination URLs match those provided. |expected_urls| does not
-  // need to be in sorted order.
+  // need to be in sorted order, but |expected_top_result| should be the top
+  // match, and it should have inline autocompletion
+  // |top_result_inline_autocompletion|.
   void RunTest(const base::string16 text,
-               const URLs& expected_urls,
-               std::string expected_top_result);
+               bool prevent_inline_autocomplete,
+               const ExpectedURLs& expected_urls,
+               std::string expected_top_result,
+               string16 top_result_inline_autocompletion);
 
   // Passthrough to the private function in provider_.
   int CalculateScore(const std::string& terms,
@@ -285,20 +306,24 @@ ShortcutsProviderTest::SetShouldContain::SetShouldContain(
     const ACMatches& matched_urls) {
   for (ACMatches::const_iterator iter = matched_urls.begin();
        iter != matched_urls.end(); ++iter)
-    matches_.insert(iter->destination_url.spec());
+    matches_.insert(ExpectedURLAndAllowedToBeDefault(
+        iter->destination_url.spec(), iter->allowed_to_be_default_match));
 }
 
 void ShortcutsProviderTest::SetShouldContain::operator()(
-    const std::string& expected) {
+    const ExpectedURLAndAllowedToBeDefault& expected) {
   EXPECT_EQ(1U, matches_.erase(expected));
 }
 
 void ShortcutsProviderTest::RunTest(const base::string16 text,
-                                    const URLs& expected_urls,
-                                    std::string expected_top_result) {
+                                    bool prevent_inline_autocomplete,
+                                    const ExpectedURLs& expected_urls,
+                                    std::string expected_top_result,
+                                    string16 top_result_inline_autocompletion) {
   base::MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, true,
+                          AutocompleteInput::INVALID_SPEC,
+                          prevent_inline_autocomplete, false, true,
                           AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
@@ -314,7 +339,7 @@ void ShortcutsProviderTest::RunTest(const base::string16 text,
 
   // Verify that all expected URLs were found and that all found URLs
   // were expected.
-  std::set<std::string> Leftovers =
+  std::set<ExpectedURLAndAllowedToBeDefault> Leftovers =
       for_each(expected_urls.begin(), expected_urls.end(),
                SetShouldContain(ac_matches_)).Leftovers();
   EXPECT_EQ(0U, Leftovers.size());
@@ -324,13 +349,9 @@ void ShortcutsProviderTest::RunTest(const base::string16 text,
     std::partial_sort(ac_matches_.begin(), ac_matches_.begin() + 1,
                       ac_matches_.end(), AutocompleteMatch::MoreRelevant);
     EXPECT_EQ(expected_top_result, ac_matches_[0].destination_url.spec());
+    EXPECT_EQ(top_result_inline_autocompletion,
+              ac_matches_[0].inline_autocompletion);
   }
-
-  // No shortcuts matches are allowed to be inlined no matter how highly
-  // they score.
-  for (ACMatches::const_iterator it = ac_matches_.begin();
-       it != ac_matches_.end(); ++it)
-    EXPECT_FALSE(it->allowed_to_be_default_match);
 }
 
 int ShortcutsProviderTest::CalculateScore(
@@ -347,49 +368,121 @@ int ShortcutsProviderTest::CalculateScore(
 TEST_F(ShortcutsProviderTest, SimpleSingleMatch) {
   base::string16 text(ASCIIToUTF16("go"));
   std::string expected_url("http://www.google.com/");
-  URLs expected_urls;
-  expected_urls.push_back(expected_url);
-  RunTest(text, expected_urls, expected_url);
+  ExpectedURLs expected_urls;
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16("ogle.com"));
+
+  // Same test with prevent inline autocomplete.
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, false));
+  // The match will have an |inline_autocompletion| set, but the value will not
+  // be used because |allowed_to_be_default_match| will be false.
+  RunTest(text, true, expected_urls, expected_url, ASCIIToUTF16("ogle.com"));
+
+  // A pair of analogous tests where the shortcut ends at the end of
+  // |fill_into_edit|.  This exercises the inline autocompletion and default
+  // match code.
+  text = ASCIIToUTF16("abcdef.com");
+  expected_url = "http://abcdef.com/";
+  expected_urls.clear();
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, false, expected_urls, expected_url, string16());
+  // With prevent inline autocomplete, the suggestion should be the same
+  // (because there is no completion).
+  RunTest(text, true, expected_urls, expected_url, string16());
+
+  // Another test, simply for a query match type, not a navigation URL match
+  // type.
+  text = ASCIIToUTF16("que");
+  expected_url = "https://www.google.com/search?q=query";
+  expected_urls.clear();
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16("ry"));
+
+  // Same test with prevent inline autocomplete.
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, false));
+  // The match will have an |inline_autocompletion| set, but the value will not
+  // be used because |allowed_to_be_default_match| will be false.
+  RunTest(text, true, expected_urls, expected_url, ASCIIToUTF16("ry"));
+
+  // A pair of analogous tests where the shortcut ends at the end of
+  // |fill_into_edit|.  This exercises the inline autocompletion and default
+  // match code.
+  text = ASCIIToUTF16("query");
+  expected_urls.clear();
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, false, expected_urls, expected_url, string16());
+  // With prevent inline autocomplete, the suggestion should be the same
+  // (because there is no completion).
+  RunTest(text, true, expected_urls, expected_url, string16());
+
+  // Now the shortcut ends at the end of |fill_into_edit| but has a
+  // non-droppable prefix.  ("www.", for instance, is not droppable for
+  // queries.)
+  text = ASCIIToUTF16("word");
+  expected_url = "https://www.google.com/search?q=www.word";
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, false));
+  RunTest(text, false, expected_urls, expected_url, string16());
 }
 
 TEST_F(ShortcutsProviderTest, MultiMatch) {
   base::string16 text(ASCIIToUTF16("NEWS"));
-  URLs expected_urls;
+  ExpectedURLs expected_urls;
   // Scores high because of completion length.
-  expected_urls.push_back("http://slashdot.org/");
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://slashdot.org/", false));
   // Scores high because of visit count.
-  expected_urls.push_back("http://sports.yahoo.com/");
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://sports.yahoo.com/", false));
   // Scores high because of visit count but less match span,
   // which is more important.
-  expected_urls.push_back("http://www.cnn.com/index.html");
-  RunTest(text, expected_urls, "http://slashdot.org/");
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.cnn.com/index.html", false));
+  RunTest(text, false, expected_urls, "http://slashdot.org/", string16());
 }
 
 TEST_F(ShortcutsProviderTest, TypedCountMatches) {
   base::string16 text(ASCIIToUTF16("just"));
-  URLs expected_urls;
-  expected_urls.push_back("http://www.testsite.com/b.html");
-  expected_urls.push_back("http://www.testsite.com/a.html");
-  expected_urls.push_back("http://www.testsite.com/c.html");
-  RunTest(text, expected_urls, "http://www.testsite.com/b.html");
+  ExpectedURLs expected_urls;
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.testsite.com/b.html", false));
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.testsite.com/a.html", false));
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.testsite.com/c.html", false));
+  RunTest(text, false, expected_urls, "http://www.testsite.com/b.html",
+          string16());
 }
 
 TEST_F(ShortcutsProviderTest, FragmentLengthMatches) {
   base::string16 text(ASCIIToUTF16("just a"));
-  URLs expected_urls;
-  expected_urls.push_back("http://www.testsite.com/d.html");
-  expected_urls.push_back("http://www.testsite.com/e.html");
-  expected_urls.push_back("http://www.testsite.com/f.html");
-  RunTest(text, expected_urls, "http://www.testsite.com/d.html");
+  ExpectedURLs expected_urls;
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.testsite.com/d.html", false));
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.testsite.com/e.html", false));
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.testsite.com/f.html", false));
+  RunTest(text, false, expected_urls, "http://www.testsite.com/d.html",
+          string16());
 }
 
 TEST_F(ShortcutsProviderTest, DaysAgoMatches) {
   base::string16 text(ASCIIToUTF16("ago"));
-  URLs expected_urls;
-  expected_urls.push_back("http://www.daysagotest.com/a.html");
-  expected_urls.push_back("http://www.daysagotest.com/b.html");
-  expected_urls.push_back("http://www.daysagotest.com/c.html");
-  RunTest(text, expected_urls, "http://www.daysagotest.com/a.html");
+  ExpectedURLs expected_urls;
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.daysagotest.com/a.html", false));
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.daysagotest.com/b.html", false));
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      "http://www.daysagotest.com/c.html", false));
+  RunTest(text, false, expected_urls, "http://www.daysagotest.com/a.html",
+          string16());
 }
 
 TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
@@ -604,9 +697,10 @@ TEST_F(ShortcutsProviderTest, Extension) {
   base::string16 text(ASCIIToUTF16("echo"));
   std::string expected_url(
       "chrome-extension://cedabbhfglmiikkmdgcpjdkocfcmbkee/?q=echo");
-  URLs expected_urls;
-  expected_urls.push_back(expected_url);
-  RunTest(text, expected_urls, expected_url);
+  ExpectedURLs expected_urls;
+  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(
+      expected_url, true));
+  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16(" echo"));
 
   // Claim the extension has been unloaded.
   scoped_refptr<const extensions::Extension> extension =
@@ -624,7 +718,7 @@ TEST_F(ShortcutsProviderTest, Extension) {
       content::Details<extensions::UnloadedExtensionInfo>(&details));
 
   // Now the URL should have disappeared.
-  RunTest(text, URLs(), std::string());
+  RunTest(text, false, ExpectedURLs(), std::string(), string16());
 }
 
 }  // namespace history
