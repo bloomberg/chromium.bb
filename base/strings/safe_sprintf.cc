@@ -107,12 +107,13 @@ class Buffer {
       : buffer_(buffer),
         size_(size - 1),  // Account for trailing NUL byte
         count_(0) {
-// This test should work on all C++11 compilers, but apparently something is
-// not working on all versions of clang just yet (e.g. on Mac, IOS, and
-// Android). We are conservative and exclude all of clang for the time being.
-// TODO(markus): Check if this restriction can be lifted.
-#if __cplusplus >= 201103 && !defined(__clang__)
-    COMPILE_ASSERT(kSSizeMaxConst == std::numeric_limits<ssize_t>::max(),
+// The following assertion does not build on Mac and Android. This is because
+// static_assert only works with compile-time constants, but mac uses
+// libstdc++4.2 and android uses stlport, which both don't mark
+// numeric_limits::max() as constexp.
+#if __cplusplus >= 201103 && !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_IOS)
+    COMPILE_ASSERT(kSSizeMaxConst == \
+                   static_cast<size_t>(std::numeric_limits<ssize_t>::max()),
                    kSSizeMax_is_the_max_value_of_an_ssize_t);
 #endif
     DEBUG_CHECK(size > 0);
