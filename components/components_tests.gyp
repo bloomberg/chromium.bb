@@ -18,6 +18,7 @@
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
             'autofill/core/browser/webdata/autofill_entry_unittest.cc',
+            'autofill/core/browser/webdata/web_data_service_unittest.cc',
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
@@ -150,6 +151,13 @@
                 'nacl.gyp:nacl_browser',
                 'nacl.gyp:nacl_common',
               ],
+            }],
+            ['OS == "mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',
+                ],
+              },
             }],
             ['OS == "android"', {
               'sources!': [
