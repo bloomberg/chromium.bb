@@ -60,16 +60,22 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
     tab.ExecuteJavaScript("""
         window.benchmark_results = {};
         window.benchmark_results.done = false;
-        chrome.gpuBenchmarking.runMicroBenchmark(
-            "rasterize_and_record_benchmark",
-            function(value) {
-              window.benchmark_results.done = true;
-              window.benchmark_results.results = value;
-            }, {
-              "record_repeat_count": """ + str(record_repeat) + """,
-              "rasterize_repeat_count": """ + str(rasterize_repeat) + """
-            });
+        window.benchmark_results.scheduled =
+            chrome.gpuBenchmarking.runMicroBenchmark(
+                "rasterize_and_record_benchmark",
+                function(value) {
+                  window.benchmark_results.done = true;
+                  window.benchmark_results.results = value;
+                }, {
+                  "record_repeat_count": """ + str(record_repeat) + """,
+                  "rasterize_repeat_count": """ + str(rasterize_repeat) + """
+                });
     """)
+
+    scheduled = tab.EvaluateJavaScript('window.benchmark_results.scheduled')
+    if (not scheduled):
+      raise page_measurement.MeasurementFailure(
+          'Failed to schedule rasterize_and_record_micro')
 
     tab.WaitForJavaScriptExpression(
         'window.benchmark_results.done', self.options.timeout)
