@@ -59,10 +59,9 @@ void PrivetLocalPrinterLister::DeviceChanged(
   DeviceContextMap::iterator i = device_contexts_.find(name);
 
   if (i != device_contexts_.end()) {
-    if (i->second->has_local_printing) {
-      i->second->description = description;
-      delegate_->LocalPrinterChanged(added, name, description);
-    }
+    i->second->description = description;
+    delegate_->LocalPrinterChanged(added, name, i->second->has_local_printing,
+                                   description);
   } else {
     linked_ptr<DeviceContext> context(new DeviceContext);
     context->has_local_printing = false;
@@ -113,19 +112,15 @@ void PrivetLocalPrinterLister::OnPrivetInfoDone(
   DeviceContextMap::iterator i = device_contexts_.find(name);
   DCHECK(i != device_contexts_.end());
   i->second->has_local_printing = has_local_printing;
-  if (has_local_printing) {
-    delegate_->LocalPrinterChanged(true, name, i->second->description);
-  }
+  delegate_->LocalPrinterChanged(true, name, has_local_printing,
+                                 i->second->description);
 }
 
 void PrivetLocalPrinterLister::DeviceRemoved(const std::string& device_name) {
   DeviceContextMap::iterator i = device_contexts_.find(device_name);
   if (i != device_contexts_.end()) {
-    bool has_local_printing = i->second->has_local_printing;
     device_contexts_.erase(i);
-    if (has_local_printing) {
-      delegate_->LocalPrinterRemoved(device_name);
-    }
+    delegate_->LocalPrinterRemoved(device_name);
   }
 }
 

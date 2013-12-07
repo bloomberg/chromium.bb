@@ -1366,11 +1366,14 @@ void PrintPreviewHandler::ConvertColorSettingToCUPSColorModel(
 void PrintPreviewHandler::LocalPrinterChanged(
     bool added,
     const std::string& name,
+    bool has_local_printing,
     const local_discovery::DeviceDescription& description) {
-  base::DictionaryValue info;
-  FillPrinterDescription(name, description, &info);
+  if (has_local_printing) {
+    base::DictionaryValue info;
+    FillPrinterDescription(name, description, &info);
 
-  web_ui()->CallJavascriptFunction("onPrivetPrinterChanged", info);
+    web_ui()->CallJavascriptFunction("onPrivetPrinterChanged", info);
+  }
 }
 
 void PrintPreviewHandler::LocalPrinterRemoved(const std::string& name) {

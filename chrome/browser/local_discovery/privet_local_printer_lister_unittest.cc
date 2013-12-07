@@ -103,6 +103,9 @@ const char kInfoIsNotLocalPrinter[] = "{"
     "\"x-privet-token\" : \"sample\""
     "}";
 
+const char kServiceName[] = "myService._printer._sub._privet._tcp.local";
+
+const char kPrivetInfoURL[] = "http://1.2.3.4:8888/privet/info";
 
 class MockLocalPrinterListerDelegate
     : public PrivetLocalPrinterLister::Delegate {
@@ -113,8 +116,9 @@ class MockLocalPrinterListerDelegate
   virtual ~MockLocalPrinterListerDelegate() {
   }
 
-  MOCK_METHOD3(LocalPrinterChanged, void(bool added,
+  MOCK_METHOD4(LocalPrinterChanged, void(bool added,
                                          const std::string& name,
+                                         bool has_local_printing,
                                          const DeviceDescription& description));
 
   MOCK_METHOD1(LocalPrinterRemoved, void(const std::string& name));
@@ -181,13 +185,10 @@ TEST_F(PrivetLocalPrinterListerTest, PrinterAddedTest) {
 
   SimulateReceive(kAnnouncePacket, sizeof(kAnnouncePacket));
 
-  EXPECT_CALL(delegate_, LocalPrinterChanged(
-      true,
-      "myService._printer._sub._privet._tcp.local",
-      _));
+  EXPECT_CALL(delegate_, LocalPrinterChanged(true, kServiceName, true, _));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://1.2.3.4:8888/privet/info"),
+      GURL(kPrivetInfoURL),
       std::string(kInfoIsLocalPrinter)));
 };
 
@@ -198,8 +199,10 @@ TEST_F(PrivetLocalPrinterListerTest, NonPrinterAddedTest) {
 
   SimulateReceive(kAnnouncePacket, sizeof(kAnnouncePacket));
 
+  EXPECT_CALL(delegate_, LocalPrinterChanged(true, kServiceName, false, _));
+
   EXPECT_TRUE(SuccessfulResponseToURL(
-      GURL("http://1.2.3.4:8888/privet/info"),
+      GURL(kPrivetInfoURL),
       std::string(kInfoIsNotLocalPrinter)));
 };
 

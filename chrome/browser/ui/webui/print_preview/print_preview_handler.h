@@ -86,6 +86,7 @@ class PrintPreviewHandler
   virtual void LocalPrinterChanged(
       bool added,
       const std::string& name,
+      bool has_local_printing,
       const local_discovery::DeviceDescription& description) OVERRIDE;
   virtual void LocalPrinterRemoved(const std::string& name) OVERRIDE;
   virtual void LocalPrinterCacheFlushed() OVERRIDE;

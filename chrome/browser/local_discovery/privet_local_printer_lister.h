@@ -27,6 +27,7 @@ class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate,
     virtual ~Delegate() {}
     virtual void LocalPrinterChanged(bool added,
                                      const std::string& name,
+                                     bool has_local_printing,
                                      const DeviceDescription& description) = 0;
     virtual void LocalPrinterRemoved(const std::string& name) = 0;
     virtual void LocalPrinterCacheFlushed() = 0;
