@@ -12,6 +12,8 @@ namespace test {
 
 class MathCalculatorImpl : public math::CalculatorStub {
  public:
+  virtual ~MathCalculatorImpl() {}
+
   explicit MathCalculatorImpl(ScopedMessagePipeHandle pipe)
       : ui_(pipe.Pass()),
         total_(0.0) {
@@ -43,6 +45,10 @@ class MathCalculatorUIImpl : public math::CalculatorUIStub {
       : calculator_(pipe.Pass()),
         output_(0.0) {
     calculator_.SetPeer(this);
+  }
+
+  bool encountered_error() const {
+    return calculator_.encountered_error();
   }
 
   void Add(double value) {
@@ -115,32 +121,57 @@ TEST_F(BindingsRemotePtrTest, Movable) {
   RemotePtr<math::Calculator> a;
   RemotePtr<math::Calculator> b(pipe0_.Pass());
 
-  EXPECT_FALSE(a.is_valid());
-  EXPECT_TRUE(b.is_valid());
+  EXPECT_TRUE(a.is_null());
+  EXPECT_FALSE(b.is_null());
 
   a = b.Pass();
 
-  EXPECT_TRUE(a.is_valid());
-  EXPECT_FALSE(b.is_valid());
+  EXPECT_FALSE(a.is_null());
+  EXPECT_TRUE(b.is_null());
 }
 
 TEST_F(BindingsRemotePtrTest, Resettable) {
   RemotePtr<math::Calculator> a;
 
-  EXPECT_FALSE(a.is_valid());
+  EXPECT_TRUE(a.is_null());
 
   MessagePipeHandle handle = pipe0_.get();
 
   a.reset(pipe0_.Pass());
 
-  EXPECT_TRUE(a.is_valid());
+  EXPECT_FALSE(a.is_null());
 
   a.reset();
 
-  EXPECT_FALSE(a.is_valid());
+  EXPECT_TRUE(a.is_null());
 
   // Test that handle was closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, CloseRaw(handle));
+}
+
+TEST_F(BindingsRemotePtrTest, EncounteredError) {
+  MathCalculatorImpl* calculator = new MathCalculatorImpl(pipe0_.Pass());
+
+  MathCalculatorUIImpl calculator_ui(pipe1_.Pass());
+
+  calculator_ui.Add(2.0);
+  PumpMessages();
+  EXPECT_EQ(2.0, calculator_ui.GetOutput());
+  EXPECT_FALSE(calculator_ui.encountered_error());
+
+  calculator_ui.Multiply(5.0);
+  EXPECT_FALSE(calculator_ui.encountered_error());
+
+  // Close the other side of the pipe.
+  delete calculator;
+
+  // The state change isn't picked up locally yet.
+  EXPECT_FALSE(calculator_ui.encountered_error());
+
+  PumpMessages();
+
+  // OK, now we see the error.
+  EXPECT_TRUE(calculator_ui.encountered_error());
 }
 
 }  // namespace test

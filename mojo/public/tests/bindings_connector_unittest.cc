@@ -168,7 +168,7 @@ TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
   bool ok = connector0->Accept(&message);
   EXPECT_FALSE(ok);
 
-  EXPECT_TRUE(connector0->EncounteredError());
+  EXPECT_TRUE(connector0->encountered_error());
 }
 
 // Enable this test once MojoWriteMessage supports passing handles.

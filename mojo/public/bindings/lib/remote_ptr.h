@@ -69,8 +69,8 @@ class RemotePtr {
     delete state_;
   }
 
-  bool is_valid() const {
-    return !!state_;
+  bool is_null() const {
+    return !state_;
   }
 
   S* get() {
@@ -90,6 +90,11 @@ class RemotePtr {
   void reset(ScopedMessagePipeHandle message_pipe) {
     delete state_;
     state_ = new State(message_pipe.Pass());
+  }
+
+  bool encountered_error() const {
+    assert(state_);
+    return state_->connector.encountered_error();
   }
 
   void SetPeer(typename S::_Peer::_Stub* peer) {

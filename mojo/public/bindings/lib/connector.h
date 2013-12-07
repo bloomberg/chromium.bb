@@ -33,7 +33,7 @@ class Connector : public MessageReceiver {
 
   // Returns true if an error was encountered while reading from or writing to
   // the message pipe.
-  bool EncounteredError() const { return error_; }
+  bool encountered_error() const { return error_; }
 
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
