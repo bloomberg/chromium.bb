@@ -470,6 +470,10 @@ void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
   const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
   chromeos::UserList::const_iterator user;
   for (user = users.begin(); user != users.end(); ++user) {
+    // Only regular users are reported.
+    if ((*user)->GetType() != chromeos::User::USER_TYPE_REGULAR)
+      continue;
+
     em::DeviceUser* device_user = request->add_user();
     const std::string& email = (*user)->email();
     if (connector->GetUserAffiliation(email) == USER_AFFILIATION_MANAGED) {

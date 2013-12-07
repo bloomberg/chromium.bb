@@ -602,6 +602,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportUsers) {
+  user_manager_->CreatePublicAccountUser("public@localhost");
   user_manager_->AddUser("user0@managed.com");
   user_manager_->AddUser("user1@managed.com");
   user_manager_->AddUser("user2@managed.com");
