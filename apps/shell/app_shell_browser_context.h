@@ -8,8 +8,6 @@
 #include "base/compiler_specific.h"
 #include "content/shell/browser/shell_browser_context.h"
 
-class PrefService;
-
 namespace apps {
 
 // The BrowserContext used by the content, apps and extensions systems in
@@ -32,8 +30,6 @@ class AppShellBrowserContext : public content::ShellBrowserContext {
   virtual void ProfileFunctionCallOnNonProfileBrowserContext9();
 
  private:
-  scoped_ptr<PrefService> prefs_;
-
   DISALLOW_COPY_AND_ASSIGN(AppShellBrowserContext);
 };
 

@@ -122,6 +122,8 @@
             '..',
           ],
           'sources': [
+            'shell/app_shell_app_sorting.cc',
+            'shell/app_shell_app_sorting.h',
             'shell/app_shell_browser_context.cc',
             'shell_app_shell_browser_context.h',
             'shell/app_shell_browser_main_parts.cc',
@@ -130,6 +132,8 @@
             'shell/app_shell_content_browser_client.h',
             'shell/app_shell_content_client.cc',
             'shell/app_shell_content_client.h',
+            'shell/app_shell_extensions_browser_client.cc',
+            'shell/app_shell_extensions_browser_client.h',
             'shell/app_shell_main_delegate.cc',
             'shell/app_shell_main_delegate.h',
             'shell/app_shell_main.cc',

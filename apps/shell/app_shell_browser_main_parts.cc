@@ -6,6 +6,7 @@
 
 #include "apps/app_load_service.h"
 #include "apps/shell/app_shell_browser_context.h"
+#include "apps/shell/app_shell_extensions_browser_client.h"
 #include "apps/shell/web_view_window.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -93,10 +94,13 @@ void AppShellBrowserMainParts::PreMainMessageLoopRun() {
 
   // TODO(jamescook): Initialize chromeos::UserManager.
 
-  // TODO(jamescook): Initialize ExtensionsClient and ExtensionsBrowserClient.
-
   // Initialize our "profile" equivalent.
   browser_context_.reset(new AppShellBrowserContext);
+
+  // TODO(jamescook): Initialize ExtensionsClient.
+  extensions_browser_client_.reset(
+      new AppShellExtensionsBrowserClient(browser_context_.get()));
+  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   // TODO(jamescook): Initialize policy::ProfilePolicyConnector.
   // TODO(jamescook): Initialize ExtensionSystem and InitForRegularProfile.
@@ -127,6 +131,8 @@ bool AppShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void AppShellBrowserMainParts::PostMainMessageLoopRun() {
+  extensions::ExtensionsBrowserClient::Set(NULL);
+  extensions_browser_client_.reset();
   browser_context_.reset();
   wm_test_helper_.reset();
   aura::Env::DeleteInstance();

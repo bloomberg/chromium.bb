@@ -8,9 +8,9 @@
 #include "apps/shell_window_registry.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace apps {
 
@@ -51,7 +51,9 @@ bool AppLoadServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 
 content::BrowserContext* AppLoadServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  // Redirected in incognito.
+  return extensions::ExtensionsBrowserClient::Get()->
+      GetOriginalContext(context);
 }
 
 }  // namespace apps

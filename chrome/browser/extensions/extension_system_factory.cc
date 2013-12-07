@@ -7,10 +7,10 @@
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
@@ -48,7 +48,9 @@ ExtensionSystemSharedFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* ExtensionSystemSharedFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  // Redirected in incognito.
+  return extensions::ExtensionsBrowserClient::Get()->
+      GetOriginalContext(context);
 }
 
 // ExtensionSystemFactory
@@ -81,7 +83,8 @@ BrowserContextKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* ExtensionSystemFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+  // Separate instance in incognito.
+  return context;
 }
 
 bool ExtensionSystemFactory::ServiceIsCreatedWithBrowserContext() const {

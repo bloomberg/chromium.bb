@@ -8,14 +8,14 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 
-class ExtensionScopedPrefs;
 class ExtensionSyncService;
 
 namespace extensions {
+
+class ExtensionScopedPrefs;
 
 // An interface that provides a fixed ordering for a set of apps.
 class AppSorting {

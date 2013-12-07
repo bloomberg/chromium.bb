@@ -30,6 +30,7 @@ class WMTestHelper;
 namespace apps {
 
 class AppShellBrowserContext;
+class AppShellExtensionsBrowserClient;
 
 // Handles initialization of AppShell.
 class AppShellBrowserMainParts : public content::BrowserMainParts {
@@ -59,6 +60,7 @@ class AppShellBrowserMainParts : public content::BrowserMainParts {
 
  private:
   scoped_ptr<AppShellBrowserContext> browser_context_;
+  scoped_ptr<AppShellExtensionsBrowserClient> extensions_browser_client_;
 
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
