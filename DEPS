@@ -29,7 +29,7 @@ vars = {
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "12289",  # native_client/DEPS: tools_rev
   "gtm_revision": "616",
-  "libaddressinput_revision": "167",
+  "libaddressinput_revision": "176",
   "libphonenumber_revision": "621",
   "libvpx_revision": "237125",
   "lss_revision": "24",
