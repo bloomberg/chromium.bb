@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/OverscrollTheme.h"
+#include "platform/OverscrollTheme.h"
 
 namespace WebCore {
 

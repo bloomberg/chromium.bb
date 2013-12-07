@@ -2681,8 +2681,6 @@
         'webcore_platform_files': [
             'platform/Cursor.cpp',
             'platform/DragImage.cpp',
-            'platform/OverscrollTheme.cpp',
-            'platform/OverscrollTheme.h',
             'platform/Pasteboard.cpp',
             'platform/Pasteboard.h',
             'platform/PlatformSpeechSynthesisUtterance.cpp',
