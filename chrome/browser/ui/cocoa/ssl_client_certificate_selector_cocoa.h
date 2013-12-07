@@ -45,6 +45,7 @@ class SSLClientAuthObserverCocoaBridge;
              certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
                     callback:(const chrome::SelectCertificateCallback&)callback;
 - (void)displayForWebContents:(content::WebContents*)webContents;
+- (void)closeWebContentsModalDialog;
 
 - (NSWindow*)overlayWindow;
 

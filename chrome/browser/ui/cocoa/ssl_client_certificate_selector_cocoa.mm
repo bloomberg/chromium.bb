@@ -51,7 +51,7 @@ class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
 
   // SSLClientAuthObserver implementation:
   virtual void OnCertSelectedByNotification() OVERRIDE {
-    [controller_ closeSheetWithAnimation:NO];
+    [controller_ closeWebContentsModalDialog];
   }
 
   // ConstrainedWindowMacDelegate implementation:
@@ -158,6 +158,12 @@ void ShowSSLClientCertificateSelector(
 
   constrainedWindow_.reset(
       new ConstrainedWindowMac(observer_.get(), webContents, self));
+  observer_->StartObserving();
+}
+
+- (void)closeWebContentsModalDialog {
+  DCHECK(constrainedWindow_);
+  constrainedWindow_->CloseWebContentsModalDialog();
 }
 
 - (NSWindow*)overlayWindow {
@@ -177,7 +183,6 @@ void ShowSSLClientCertificateSelector(
                   contextInfo:NULL
                    identities:base::mac::CFToNSCast(identities_)
                       message:title];
-  observer_->StartObserving();
 }
 
 - (void)closeSheetWithAnimation:(BOOL)withAnimation {
@@ -225,6 +230,7 @@ void ShowSSLClientCertificateSelector(
 }
 
 - (void)onConstrainedWindowClosed {
+  observer_->StopObserving();
   panel_.reset();
   constrainedWindow_.reset();
   [self release];
