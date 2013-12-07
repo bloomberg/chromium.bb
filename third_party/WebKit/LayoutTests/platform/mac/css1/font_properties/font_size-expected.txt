@@ -120,11 +120,11 @@ layer at (0,0) size 785x2811
           text run at (0,0) width 695: "This sentence should be half an inch"
           text run at (0,55) width 72: "tall."
       RenderBlock {P} at (0,1014.70) size 769x43
-        RenderText {#text} at (0,0) size 668x43
-          text run at (0,0) width 668: "This sentence should be one centimeter tall."
+        RenderText {#text} at (0,0) size 659x43
+          text run at (0,0) width 659: "This sentence should be one centimeter tall."
       RenderBlock {P} at (0,1095.48) size 769x43
-        RenderText {#text} at (0,0) size 673x43
-          text run at (0,0) width 673: "This sentence should be ten millimeters tall."
+        RenderText {#text} at (0,0) size 661x43
+          text run at (0,0) width 661: "This sentence should be ten millimeters tall."
       RenderBlock {P} at (0,1176.27) size 769x28
         RenderText {#text} at (0,0) size 430x28
           text run at (0,0) width 430: "This sentence should be eighteen points tall."
@@ -230,11 +230,11 @@ layer at (0,0) size 785x2811
                   text run at (0,0) width 695: "This sentence should be half an inch"
                   text run at (0,55) width 72: "tall."
               RenderBlock {P} at (4,653.70) size 747x43
-                RenderText {#text} at (0,0) size 668x43
-                  text run at (0,0) width 668: "This sentence should be one centimeter tall."
+                RenderText {#text} at (0,0) size 659x43
+                  text run at (0,0) width 659: "This sentence should be one centimeter tall."
               RenderBlock {P} at (4,734.48) size 747x43
-                RenderText {#text} at (0,0) size 673x43
-                  text run at (0,0) width 673: "This sentence should be ten millimeters tall."
+                RenderText {#text} at (0,0) size 661x43
+                  text run at (0,0) width 661: "This sentence should be ten millimeters tall."
               RenderBlock {P} at (4,815.27) size 747x28
                 RenderText {#text} at (0,0) size 430x28
                   text run at (0,0) width 430: "This sentence should be eighteen points tall."

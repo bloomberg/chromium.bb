@@ -9,21 +9,21 @@ layer at (8,8) size 512x842
       RenderText {#text} at (0,-4) size 88x36
         text run at (0,-4) width 88: "Bug 1"
     RenderBlock {P} at (0,55.55) size 512x232
-      RenderText {#text} at (0,2) size 505x141
-        text run at (0,2) width 454: "Safari public beta does not support CSS absolute"
-        text run at (0,31) width 505: "positioning correctly (if at all). Immediately following"
-        text run at (0,60) width 454: "the text position marked by the dagger, there is a"
-        text run at (0,89) width 485: "<span> element that is positioned to the right of the"
-        text run at (0,118) width 393: "<div> block that contains this paragraph\x{2020}"
-      RenderText {#text} at (393,118) size 498x112
-        text run at (393,118) width 98: ". In IE 5.x,"
-        text run at (0,147) width 469: "Mozilla 1.2, and Chimera 0.6+, the contents of the"
-        text run at (0,176) width 498: "<span> element appears in the margin directly to the"
-        text run at (0,205) width 178: "right of the dagger."
+      RenderText {#text} at (0,2) size 498x141
+        text run at (0,2) width 450: "Safari public beta does not support CSS absolute"
+        text run at (0,31) width 498: "positioning correctly (if at all). Immediately following"
+        text run at (0,60) width 451: "the text position marked by the dagger, there is a"
+        text run at (0,89) width 481: "<span> element that is positioned to the right of the"
+        text run at (0,118) width 391: "<div> block that contains this paragraph\x{2020}"
+      RenderText {#text} at (391,118) size 496x112
+        text run at (391,118) width 98: ". In IE 5.x,"
+        text run at (0,147) width 466: "Mozilla 1.2, and Chimera 0.6+, the contents of the"
+        text run at (0,176) width 496: "<span> element appears in the margin directly to the"
+        text run at (0,205) width 177: "right of the dagger."
     RenderBlock {P} at (0,308.88) size 512x87
-      RenderText {#text} at (0,2) size 500x83
-        text run at (0,2) width 500: "I should note that Chimera 0.6 rendered this test with"
-        text run at (0,31) width 484: "the marginal note shifted down by one line; this has"
+      RenderText {#text} at (0,2) size 498x83
+        text run at (0,2) width 498: "I should note that Chimera 0.6 rendered this test with"
+        text run at (0,31) width 480: "the marginal note shifted down by one line; this has"
         text run at (0,60) width 299: "been fixed in subsequent builds."
     RenderBlock {H2} at (0,422.42) size 512x29
       RenderText {#text} at (0,-4) size 92x36
@@ -33,24 +33,24 @@ layer at (8,8) size 512x842
         text run at (0,7) width 506: "Fonts also render substantially smaller than other browsers, which is not a good thing"
         text run at (0,36) width 487: "when you consider that most sites specify fonts that are too small in the first place."
     RenderBlock {P} at (0,557.30) size 512x87
-      RenderText {#text} at (0,2) size 505x83
-        text run at (0,2) width 505: "At the very least, the preferences panel needs a default"
-        text run at (0,31) width 485: "text-zoom setting to enable compatibility with other"
-        text run at (0,60) width 92: "browsers."
+      RenderText {#text} at (0,2) size 504x83
+        text run at (0,2) width 504: "At the very least, the preferences panel needs a default"
+        text run at (0,31) width 479: "text-zoom setting to enable compatibility with other"
+        text run at (0,60) width 91: "browsers."
     RenderBlock {H2} at (0,670.84) size 512x29
       RenderText {#text} at (0,-4) size 92x36
         text run at (0,-4) width 92: "Bug 3"
     RenderBlock {P} at (0,726.39) size 512x116
-      RenderText {#text} at (0,2) size 72x25
-        text run at (0,2) width 72: "Worse, "
-      RenderInline {I} at (0,0) size 485x54
-        RenderText {#text} at (72,2) size 485x54
-          text run at (72,2) width 413: "the \"make text bigger\" button does not scale"
+      RenderText {#text} at (0,2) size 71x25
+        text run at (0,2) width 71: "Worse, "
+      RenderInline {I} at (0,0) size 484x54
+        RenderText {#text} at (71,2) size 484x54
+          text run at (71,2) width 413: "the \"make text bigger\" button does not scale"
           text run at (0,31) width 324: "line-height when it scales font-size"
       RenderText {#text} at (324,31) size 490x83
         text run at (324,31) width 166: " (hit it a few times"
-        text run at (0,60) width 488: "on this page). This is a crippling flaw for people who"
-        text run at (0,89) width 429: "need to enlarge the fonts to read comfortably."
+        text run at (0,60) width 484: "on this page). This is a crippling flaw for people who"
+        text run at (0,89) width 423: "need to enlarge the fonts to read comfortably."
 layer at (547,180) size 200x48
   RenderBlock (positioned) {SPAN} at (538.66,171.55) size 200x48
     RenderText {#text} at (0,-2) size 199x51
