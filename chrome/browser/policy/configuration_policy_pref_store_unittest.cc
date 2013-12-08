@@ -2,73 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/configuration_policy_pref_store_unittest.h"
-
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_store_observer_mock.h"
 #include "base/run_loop.h"
-#include "chrome/browser/policy/configuration_policy_handler.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/policy_service_impl.h"
+#include "chrome/browser/policy/configuration_policy_pref_store_test.h"
+#include "components/policy/core/browser/configuration_policy_handler.h"
+#include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/core/common/policy_service_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+// Note: this file should move to components/policy/core/browser, but the
+// components_unittests runner does not load the ResourceBundle as
+// ChromeTestSuite::Initialize does, which leads to failures using
+// PolicyErrorMap.
 
 using testing::Mock;
 using testing::Return;
 using testing::_;
 
 namespace {
+
 const char kTestPolicy[] = "test.policy";
 const char kTestPref[] = "test.pref";
+
 }  // namespace
 
 namespace policy {
-
-// Holds a set of test parameters, consisting of pref name and policy name.
-class PolicyAndPref {
- public:
-  PolicyAndPref(const char* policy_name, const char* pref_name)
-      : policy_name_(policy_name),
-        pref_name_(pref_name) {}
-
-  const char* policy_name() const { return policy_name_; }
-  const char* pref_name() const { return pref_name_; }
-
- private:
-  const char* policy_name_;
-  const char* pref_name_;
-};
-
-ConfigurationPolicyPrefStoreTest::ConfigurationPolicyPrefStoreTest()
-    : handler_list_(GetChromePolicyDetailsCallback()) {
-  EXPECT_CALL(provider_, IsInitializationComplete(_))
-      .WillRepeatedly(Return(false));
-  provider_.Init();
-  providers_.push_back(&provider_);
-  policy_service_.reset(new PolicyServiceImpl(
-      providers_, PolicyServiceImpl::PreprocessCallback()));
-  store_ = new ConfigurationPolicyPrefStore(
-      policy_service_.get(), &handler_list_, POLICY_LEVEL_MANDATORY);
-}
-
-ConfigurationPolicyPrefStoreTest::~ConfigurationPolicyPrefStoreTest() {}
-
-void ConfigurationPolicyPrefStoreTest::TearDown() {
-  provider_.Shutdown();
-}
-
-void ConfigurationPolicyPrefStoreTest::UpdateProviderPolicy(
-    const PolicyMap& policy) {
-  provider_.UpdateChromePolicy(policy);
-  base::RunLoop loop;
-  loop.RunUntilIdle();
-}
 
 // Test cases for list-valued policy settings.
 class ConfigurationPolicyPrefStoreListTest

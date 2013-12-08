@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_VALIDATOR_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_VALIDATOR_H_
 
-#include "chrome/browser/policy/cloud/cloud_policy_validator.h"
+#include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/test/test_simple_task_runner.h"
-#include "chrome/browser/policy/cloud/resource_cache.h"
+#include "components/policy/core/common/cloud/resource_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 

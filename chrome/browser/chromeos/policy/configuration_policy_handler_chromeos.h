@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/policy_handlers.h"
-#include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "components/onc/onc_constants.h"
+#include "components/policy/core/browser/configuration_policy_handler.h"
 
 namespace base {
 class DictionaryValue;

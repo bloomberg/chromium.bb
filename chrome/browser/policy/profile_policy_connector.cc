@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud/cloud_policy_manager.h"
-#include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/policy_transformations.h"
+#include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/forwarding_policy_provider.h"
+#include "components/policy/core/common/policy_service_impl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"

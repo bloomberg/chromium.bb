@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
-#include "chrome/browser/policy/cloud/cloud_policy_store.h"
-#include "chrome/browser/policy/cloud/resource_cache.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/resource_cache.h"
 
 namespace policy {
 

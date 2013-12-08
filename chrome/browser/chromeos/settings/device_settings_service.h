@@ -15,9 +15,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
 namespace crypto {
 class RSAPrivateKey;

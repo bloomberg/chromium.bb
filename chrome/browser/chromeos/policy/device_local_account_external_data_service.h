@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/policy/cloud/resource_cache.h"
+#include "components/policy/core/common/cloud/resource_cache.h"
 
 namespace base {
 class SequencedTaskRunner;

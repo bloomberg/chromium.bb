@@ -25,22 +25,22 @@
 #include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/cloud/cloud_policy_client.h"
-#include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
-#include "chrome/browser/policy/cloud/cloud_policy_service.h"
-#include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
-#include "chrome/browser/policy/policy_service_impl.h"
-#include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/policy_transformations.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/async_policy_provider.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
+#include "components/policy/core/common/cloud/cloud_policy_service.h"
+#include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/core/common/policy_service_impl.h"
+#include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/policy/core/common/schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
@@ -53,13 +53,13 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/policy/policy_loader_win.h"
+#include "components/policy/core/common/policy_loader_win.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <CoreFoundation/CoreFoundation.h>
-#include "chrome/browser/policy/policy_loader_mac.h"
+#include "components/policy/core/common/policy_loader_mac.h"
 #include "components/policy/core/common/preferences_mac.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-#include "chrome/browser/policy/config_dir_policy_loader.h"
+#include "components/policy/core/common/config_dir_policy_loader.h"
 #endif
 
 #if defined(OS_CHROMEOS)

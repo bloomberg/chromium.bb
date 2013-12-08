@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/policy/configuration_policy_handler.h"
+#include "components/policy/core/browser/configuration_policy_handler.h"
 
 namespace policy {
 

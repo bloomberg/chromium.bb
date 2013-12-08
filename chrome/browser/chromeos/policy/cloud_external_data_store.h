@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 
 namespace base {
 class SequencedTaskRunner;

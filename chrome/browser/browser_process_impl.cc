@@ -53,7 +53,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -79,6 +78,7 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
@@ -94,7 +94,7 @@
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
 #else
-#include "chrome/browser/policy/policy_service_stub.h"
+#include "components/policy/core/common/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(OS_WIN)

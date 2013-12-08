@@ -152,7 +152,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/policy_service.h"
+#include "components/policy/core/common/policy_service.h"
 #endif
 
 #if defined(OS_CHROMEOS)

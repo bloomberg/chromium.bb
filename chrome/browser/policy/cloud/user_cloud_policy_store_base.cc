@@ -4,8 +4,8 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_store_base.h"
 
-#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
-#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "policy/proto/cloud_policy.pb.h"
 

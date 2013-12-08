@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/cloud/cloud_policy_core.h"
-#include "chrome/browser/policy/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace base {
 class SequencedTaskRunner;

@@ -14,7 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/extensions/external_loader.h"
-#include "chrome/browser/policy/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace chromeos {
 

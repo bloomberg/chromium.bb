@@ -37,7 +37,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -48,6 +47,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -257,7 +257,7 @@ void ExistingUserController::Observe(
     // just after the UI is closed but before the new credentials were stored
     // in the profile. Therefore we have to give it some time to make sure it
     // has been updated before we copy it.
-    LOG(INFO) << "Authentication was entered manually, possibly for proxyauth.";
+    VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
     scoped_refptr<net::URLRequestContextGetter> browser_process_context_getter =
         g_browser_process->system_request_context();
     Profile* signin_profile = ProfileHelper::GetSigninProfile();

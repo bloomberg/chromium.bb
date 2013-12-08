@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
-#include "chrome/browser/policy/cloud/cloud_policy_core.h"
-#include "chrome/browser/policy/cloud/cloud_policy_service.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
 

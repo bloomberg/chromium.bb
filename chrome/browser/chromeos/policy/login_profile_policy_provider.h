@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/policy_service.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/policy_service.h"
 
 namespace policy {
 

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_USER_CLOUD_POLICY_TOKEN_FORWARDER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class ProfileOAuth2TokenService;

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_POLICY_BUILDER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_POLICY_BUILDER_H_
 
-#include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
+#include "components/policy/core/common/cloud/policy_builder.h"
 
 namespace policy {
 

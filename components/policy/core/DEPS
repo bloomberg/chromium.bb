@@ -1,3 +1,12 @@
 include_rules = [
   "+components/json_schema",
+  "+crypto",
+  "+google_apis",
+  "+net",
+
+  # TODO(joaodasilva): remove these exceptions.
+  "+chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h",
+  "+chrome/browser/policy/proto/cloud/device_management_backend.pb.h",
+  "+chrome/browser/policy/proto/cloud/device_management_local.pb.h",
+  "+policy/proto/cloud_policy.pb.h",
 ]

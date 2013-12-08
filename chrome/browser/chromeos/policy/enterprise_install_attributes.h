@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace policy {
 

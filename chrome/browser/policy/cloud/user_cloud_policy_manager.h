@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/policy/core/common/cloud/cloud_policy_manager.h"
 
 class PrefService;
 

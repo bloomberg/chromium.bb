@@ -1,56 +1,8 @@
-# The //chrome/browser/policy code is being converted into a component at
-# //components/policy. This DEPS file is temporarily restricting the include
-# rules for this code; once all the exceptions are fixed then the code will
-# be moved, and this file will be removed.
-# http://crbug.com/271392
-
 include_rules = [
-  "-chrome",
-  "-chromeos",
-  "-content",
-  "+chrome/browser/policy",
-  "+components/json_schema",
+  "+chrome",
+  "+chromeos",
+  "+content/public/browser",
+  "+content/public/common",
+  "+content/public/test",
+  "+content/test/net",
 ]
-
-specific_include_rules = {
-  # These files will stay.
-  r"(browser_policy_connector|"
-  r"configuration_policy_handler_android|"
-  r"configuration_policy_handler_list_factory|"
-  r"file_selection_dialogs_policy_handler|"
-  r"file_selection_dialogs_policy_handler_unittest|"
-  r"generate_policy_source_unittest|"
-  r"javascript_policy_handler|"
-  r"javascript_policy_handler_unittest|"
-  r"managed_mode_policy_provider|"
-  r"policy_browsertest|"
-  r"policy_path_parser|"
-  r"policy_path_parser_linux|"
-  r"policy_path_parser_mac|"
-  r"policy_path_parser_unittest|"
-  r"policy_path_parser_win|"
-  r"policy_prefs_browsertest|"
-  r"policy_transformations|"
-  r"policy_transformations_unittest|"
-  r"profile_policy_connector|"
-  r"profile_policy_connector_factory|"
-  r"url_blacklist_manager|"
-  r"url_blacklist_manager_unittest|"
-  r"url_blacklist_policy_handler|"
-  r"url_blacklist_policy_handler_unittest)"
-  r"\.(cc|h)": [
-    "+chrome",
-    "+chromeos",
-    "+content/public/browser",
-    "+content/public/common",
-    "+content/public/test",
-    "+content/test/net",
-  ],
-
-  # These will go in the component but can use the public content API.
-  r"(schema_registry_service_factory)"
-  r"\.(cc|h)": [
-    "+content/public/browser",
-    "+content/public/common",
-  ],
-}

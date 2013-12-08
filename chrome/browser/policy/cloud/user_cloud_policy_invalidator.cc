@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
-#include "chrome/browser/policy/cloud/cloud_policy_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "content/public/browser/notification_source.h"
 
 namespace policy {

@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chromeos/chromeos_paths.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

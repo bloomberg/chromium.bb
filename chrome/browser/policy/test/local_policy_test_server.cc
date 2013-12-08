@@ -15,7 +15,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/python_utils.h"
 #include "net/test/spawned_test_server/base_test_server.h"

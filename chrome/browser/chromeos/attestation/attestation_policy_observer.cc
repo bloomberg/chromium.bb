@@ -14,13 +14,13 @@
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/cloud/cloud_policy_client.h"
-#include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "net/cert/x509_certificate.h"
@@ -269,7 +269,7 @@ void AttestationPolicyObserver::GetKeyPayload(
 void AttestationPolicyObserver::OnUploadComplete(bool status) {
   if (!status)
     return;
-  LOG(INFO) << "Enterprise Machine Certificate uploaded to DMServer.";
+  VLOG(1) << "Enterprise Machine Certificate uploaded to DMServer.";
   GetKeyPayload(base::Bind(&AttestationPolicyObserver::MarkAsUploaded,
                            weak_factory_.GetWeakPtr()));
 }

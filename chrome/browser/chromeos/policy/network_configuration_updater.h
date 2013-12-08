@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/policy_service.h"
 #include "components/onc/onc_constants.h"
+#include "components/policy/core/common/policy_service.h"
 
 namespace base {
 class DictionaryValue;

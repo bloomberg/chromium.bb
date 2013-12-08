@@ -4,7 +4,7 @@
 
 #include "chrome/browser/policy/profile_policy_connector.h"
 
-#include "chrome/browser/policy/policy_service_stub.h"
+#include "components/policy/core/common/policy_service_stub.h"
 
 namespace policy {
 

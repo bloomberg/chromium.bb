@@ -5,10 +5,15 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
-#include "chrome/browser/policy/configuration_policy_handler.h"
+#include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// Note: this file should move to components/policy/core/browser, but the
+// components_unittests runner does not load the ResourceBundle as
+// ChromeTestSuite::Initialize does, which leads to failures using
+// PolicyErrorMap.
 
 namespace policy {
 

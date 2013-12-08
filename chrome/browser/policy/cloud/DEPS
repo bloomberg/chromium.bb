@@ -19,6 +19,9 @@ specific_include_rules = {
   r"component_cloud_policy_browsertest|"
   r"device_management_service_browsertest|"
   r"test_request_interceptor|"
+  r"user_cloud_policy_invalidator|"
+  r"user_cloud_policy_invalidator_factory|"
+  r"user_cloud_policy_manager_factory|"
   r"user_policy_signin_service_android|"
   r"user_policy_signin_service_base|"
   r"user_policy_signin_service|"
@@ -48,31 +51,5 @@ specific_include_rules = {
 
   r"cloud_policy_invalidator_unittest\.cc": [
     "+chrome/browser/invalidation/fake_invalidation_service.h",
-  ],
-
-  r"cloud_policy_manager_unittest\.cc": [
-    "+chrome/browser/invalidation/fake_invalidation_service.h",
-  ],
-
-  r"user_cloud_policy_invalidator\.cc": [
-    "+chrome/browser/chrome_notification_types.h",
-    "+chrome/browser/invalidation/invalidation_service_factory.h",
-    "+content/public/browser/notification_source.h",
-  ],
-
-  r"user_cloud_policy_invalidator_factory\.cc": [
-    "+chrome/browser/invalidation/invalidation_service_factory.h",
-    "+chrome/browser/profiles/profile.h",
-    "+chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h",
-    "+chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h",
-  ],
-
-  r"user_cloud_policy_invalidator\.h": [
-    "+content/public/browser/notification_observer.h",
-    "+content/public/browser/notification_registrar.h",
-  ],
-
-  r"user_cloud_policy_manager_factory\.cc": [
-    "+content/public/browser/browser_context.h",
   ],
 }

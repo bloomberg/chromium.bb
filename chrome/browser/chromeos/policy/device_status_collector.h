@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
-#include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/common/cancelable_task_tracker.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/common/geoposition.h"
 

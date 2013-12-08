@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/policy/configuration_policy_handler.h"
+#include "components/policy/core/browser/configuration_policy_handler.h"
 
 namespace base {
 class Value;

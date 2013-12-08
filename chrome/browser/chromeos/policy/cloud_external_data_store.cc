@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/policy/cloud/resource_cache.h"
+#include "components/policy/core/common/cloud/resource_cache.h"
 
 namespace policy {
 

@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
 #include "chrome/browser/extensions/api/storage/value_store_cache.h"
-#include "chrome/browser/policy/policy_service.h"
+#include "components/policy/core/common/policy_service.h"
 
 class Profile;
 

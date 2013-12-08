@@ -31,7 +31,6 @@
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
-        'cloud_policy_proto',
         'common',
         'common/extensions/api/api.gyp:api',
         'common_net',
@@ -51,6 +50,7 @@
         # browser_chromeos #includes power_supply_properties.pb.h directly.
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
+        '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:onc_component',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to

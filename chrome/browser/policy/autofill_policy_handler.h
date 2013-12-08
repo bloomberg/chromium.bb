@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_AUTOFILL_POLICY_HANDLER_H_
 #define CHROME_BROWSER_POLICY_AUTOFILL_POLICY_HANDLER_H_
 
-#include "chrome/browser/policy/configuration_policy_handler.h"
+#include "components/policy/core/browser/configuration_policy_handler.h"
 
 class PrefValueMap;
 
