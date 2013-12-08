@@ -3344,24 +3344,29 @@ TEST_F(WindowTest, NestedLayerlessWindowsBoundsOnSetBounds) {
 
   w111->SetBounds(gfx::Rect(7, 8, 11, 12));
   EXPECT_EQ("7,8 11x12", w111->bounds().ToString());
+  EXPECT_EQ("7,8 11x12", w111->GetTargetBounds().ToString());
   EXPECT_EQ("11,14 11x12", w111->layer()->bounds().ToString());
 
   // Set back.
   w111->SetBounds(gfx::Rect(5, 6, 100, 100));
   EXPECT_EQ("5,6 100x100", w111->bounds().ToString());
+  EXPECT_EQ("5,6 100x100", w111->GetTargetBounds().ToString());
   EXPECT_EQ("9,12 100x100", w111->layer()->bounds().ToString());
 
   // Setting the bounds of a layerless window needs to adjust the bounds of
   // layered children.
   w11ll->SetBounds(gfx::Rect(5, 6, 100, 100));
   EXPECT_EQ("5,6 100x100", w11ll->bounds().ToString());
+  EXPECT_EQ("5,6 100x100", w11ll->GetTargetBounds().ToString());
   EXPECT_EQ("5,6 100x100", w111->bounds().ToString());
+  EXPECT_EQ("5,6 100x100", w111->GetTargetBounds().ToString());
   EXPECT_EQ("11,14 100x100", w111->layer()->bounds().ToString());
 
   root.RemoveChild(w1ll);
 
   w111->SetBounds(gfx::Rect(7, 8, 11, 12));
   EXPECT_EQ("7,8 11x12", w111->bounds().ToString());
+  EXPECT_EQ("7,8 11x12", w111->GetTargetBounds().ToString());
   EXPECT_EQ("7,8 11x12", w111->layer()->bounds().ToString());
 
   delete w1ll;

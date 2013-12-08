@@ -130,8 +130,7 @@ Window::Window(WindowDelegate* delegate)
 }
 
 Window::~Window() {
-  // layer_ can be NULL if Init() wasn't invoked, which can happen
-  // only in tests.
+  // |layer_| can be NULL during tests, or if this Window is layerless.
   if (layer_)
     layer_->SuppressPaint();
 
@@ -184,12 +183,13 @@ Window::~Window() {
   }
   prop_map_.clear();
 
-  // If we have layer it will either be destroyed by layer_owner_'s dtor, or by
-  // whoever acquired it. We don't have a layer if Init() wasn't invoked, which
-  // can happen in tests.
-  if (layer_)
+  // If we have layer it will either be destroyed by |layer_owner_|'s dtor, or
+  // by whoever acquired it. We don't have a layer if Init() wasn't invoked or
+  // we are layerless.
+  if (layer_) {
     layer_->set_delegate(NULL);
-  layer_ = NULL;
+    layer_ = NULL;
+  }
 }
 
 void Window::Init(ui::LayerType layer_type) {
@@ -386,8 +386,24 @@ void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
 }
 
 gfx::Rect Window::GetTargetBounds() const {
-  // TODO(sky): this needs to be updated when there is a layerless ancestor.
-  return !layer_ ? bounds() : layer_->GetTargetBounds();
+  if (!layer_)
+    return bounds();
+
+  if (!parent_ || parent_->layer_)
+    return layer_->GetTargetBounds();
+
+  // We have a layer but our parent (who is valid) doesn't. This means the
+  // coordinates of the layer are relative to the first ancestor with a layer;
+  // convert to be relative to parent.
+  gfx::Vector2d offset;
+  const aura::Window* ancestor_with_layer =
+      parent_->GetAncestorWithLayer(&offset);
+  if (!ancestor_with_layer)
+    return layer_->GetTargetBounds();
+
+  gfx::Rect layer_target_bounds = layer_->GetTargetBounds();
+  layer_target_bounds -= offset;
+  return layer_target_bounds;
 }
 
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
