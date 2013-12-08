@@ -52,6 +52,9 @@ const CGFloat kMinimumContentsHeight = 101;
 
 - (void)requestRelayout {
   needsLayout_ = YES;
+
+  // Ensure displayIfNeeded: is sent on the next pass through the event loop.
+  [self setViewsNeedDisplay:YES];
 }
 
 - (void)performLayout {
