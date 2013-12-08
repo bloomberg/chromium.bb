@@ -21,6 +21,7 @@ to print |any_variable| without using any printers.
 
 import datetime
 import gdb
+import gdb.printing
 import webkit
 
 # When debugging this module, set the below variable to True, and then use
