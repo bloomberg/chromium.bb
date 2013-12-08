@@ -11,7 +11,11 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/shader.h"
 
-namespace blink { class WebGraphicsContext3D; }
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
 
 namespace cc {
 
@@ -20,23 +24,23 @@ class ProgramBindingBase {
   ProgramBindingBase();
   ~ProgramBindingBase();
 
-  bool Init(blink::WebGraphicsContext3D* context,
+  bool Init(gpu::gles2::GLES2Interface* context,
             const std::string& vertex_shader,
             const std::string& fragment_shader);
-  bool Link(blink::WebGraphicsContext3D* context);
-  void Cleanup(blink::WebGraphicsContext3D* context);
+  bool Link(gpu::gles2::GLES2Interface* context);
+  void Cleanup(gpu::gles2::GLES2Interface* context);
 
   unsigned program() const { return program_; }
   bool initialized() const { return initialized_; }
 
  protected:
-  unsigned LoadShader(blink::WebGraphicsContext3D* context,
+  unsigned LoadShader(gpu::gles2::GLES2Interface* context,
                       unsigned type,
                       const std::string& shader_source);
-  unsigned CreateShaderProgram(blink::WebGraphicsContext3D* context,
+  unsigned CreateShaderProgram(gpu::gles2::GLES2Interface* context,
                                unsigned vertex_shader,
                                unsigned fragment_shader);
-  void CleanupShaders(blink::WebGraphicsContext3D* context);
+  void CleanupShaders(gpu::gles2::GLES2Interface* context);
 
   unsigned program_;
   unsigned vertex_shader_id_;
@@ -62,7 +66,7 @@ class ProgramBinding : public ProgramBindingBase {
       return;
 
     if (!ProgramBindingBase::Init(
-            context_provider->Context3d(),
+            context_provider->ContextGL(),
             vertex_shader_.GetShaderString(),
             fragment_shader_.GetShaderString(precision, sampler))) {
       DCHECK(context_provider->IsContextLost());
@@ -70,13 +74,13 @@ class ProgramBinding : public ProgramBindingBase {
     }
 
     int base_uniform_index = 0;
-    vertex_shader_.Init(context_provider->Context3d(),
+    vertex_shader_.Init(context_provider->ContextGL(),
                         program_, &base_uniform_index);
-    fragment_shader_.Init(context_provider->Context3d(),
+    fragment_shader_.Init(context_provider->ContextGL(),
                           program_, &base_uniform_index);
 
     // Link after binding uniforms
-    if (!Link(context_provider->Context3d())) {
+    if (!Link(context_provider->ContextGL())) {
       DCHECK(context_provider->IsContextLost());
       return;
     }

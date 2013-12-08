@@ -199,6 +199,8 @@
       'test/test_context_provider.h',
       'test/test_context_support.cc',
       'test/test_context_support.h',
+      'test/test_gles2_interface.cc',
+      'test/test_gles2_interface.h',
       'test/test_texture.cc',
       'test/test_texture.h',
       'test/test_tile_priorities.cc',
@@ -216,6 +218,7 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../gpu/gpu.gyp:gpu',
+        '../gpu/gpu.gyp:gpu_unittest_utils',
         '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
@@ -266,6 +269,7 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../gpu/gpu.gyp:gpu',
+        '../gpu/gpu.gyp:gpu_unittest_utils',
         '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',

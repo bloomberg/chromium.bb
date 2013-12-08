@@ -38,6 +38,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -170,6 +171,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       offscreen_framebuffer_id_(0),
       shared_geometry_quad_(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f)),
       context_(output_surface->context_provider()->Context3d()),
+      gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
       is_backbuffer_discarded_(false),
@@ -956,7 +958,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   }
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, &highp_threshold_cache_, highp_threshold_min_,
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   int shader_quad_location = -1;
@@ -1462,7 +1464,7 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   float vertex_tex_scale_y = tile_rect.height() / clamp_geom_rect.height();
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, &highp_threshold_cache_, highp_threshold_min_,
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
       quad->texture_size);
 
   gfx::Transform device_transform =
@@ -1605,7 +1607,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, &highp_threshold_cache_, highp_threshold_min_,
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   bool use_alpha_plane = quad->a_plane_resource_id != 0;
@@ -1718,7 +1720,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   DCHECK(capabilities_.using_egl_image);
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, &highp_threshold_cache_, highp_threshold_min_,
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   const VideoStreamTextureProgram* program =
@@ -1900,7 +1902,7 @@ void GLRenderer::FlushTextureQuadCache() {
 void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
                                     const TextureDrawQuad* quad) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, &highp_threshold_cache_, highp_threshold_min_,
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   // Choose the correct texture program binding
@@ -1965,7 +1967,7 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_,  &highp_threshold_cache_, highp_threshold_min_,
+      gl_,  &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
@@ -2097,7 +2099,7 @@ void GLRenderer::SetBlendEnabled(bool enabled) {
 void GLRenderer::SetUseProgram(unsigned program) {
   if (program == program_shadow_)
     return;
-  GLC(context_, context_->useProgram(program));
+  gl_->UseProgram(program);
   program_shadow_ = program;
 }
 
@@ -2121,7 +2123,7 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
                                           const gfx::Transform& draw_matrix,
                                           bool flip_vertically) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      context_, &highp_threshold_cache_, highp_threshold_min_,
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
       rect.bottom_right());
 
   const RenderPassProgram* program = GetRenderPassProgram(tex_coord_precision);
@@ -3016,39 +3018,39 @@ void GLRenderer::CleanupSharedObjects() {
 
   for (int i = 0; i < NumTexCoordPrecisions; ++i) {
     for (int j = 0; j < NumSamplerTypes; ++j) {
-      tile_program_[i][j].Cleanup(context_);
-      tile_program_opaque_[i][j].Cleanup(context_);
-      tile_program_swizzle_[i][j].Cleanup(context_);
-      tile_program_swizzle_opaque_[i][j].Cleanup(context_);
-      tile_program_aa_[i][j].Cleanup(context_);
-      tile_program_swizzle_aa_[i][j].Cleanup(context_);
+      tile_program_[i][j].Cleanup(gl_);
+      tile_program_opaque_[i][j].Cleanup(gl_);
+      tile_program_swizzle_[i][j].Cleanup(gl_);
+      tile_program_swizzle_opaque_[i][j].Cleanup(gl_);
+      tile_program_aa_[i][j].Cleanup(gl_);
+      tile_program_swizzle_aa_[i][j].Cleanup(gl_);
     }
 
-    render_pass_mask_program_[i].Cleanup(context_);
-    render_pass_program_[i].Cleanup(context_);
-    render_pass_mask_program_aa_[i].Cleanup(context_);
-    render_pass_program_aa_[i].Cleanup(context_);
-    render_pass_color_matrix_program_[i].Cleanup(context_);
-    render_pass_mask_color_matrix_program_aa_[i].Cleanup(context_);
-    render_pass_color_matrix_program_aa_[i].Cleanup(context_);
-    render_pass_mask_color_matrix_program_[i].Cleanup(context_);
+    render_pass_mask_program_[i].Cleanup(gl_);
+    render_pass_program_[i].Cleanup(gl_);
+    render_pass_mask_program_aa_[i].Cleanup(gl_);
+    render_pass_program_aa_[i].Cleanup(gl_);
+    render_pass_color_matrix_program_[i].Cleanup(gl_);
+    render_pass_mask_color_matrix_program_aa_[i].Cleanup(gl_);
+    render_pass_color_matrix_program_aa_[i].Cleanup(gl_);
+    render_pass_mask_color_matrix_program_[i].Cleanup(gl_);
 
-    texture_program_[i].Cleanup(context_);
-    nonpremultiplied_texture_program_[i].Cleanup(context_);
-    texture_background_program_[i].Cleanup(context_);
-    nonpremultiplied_texture_background_program_[i].Cleanup(context_);
-    texture_io_surface_program_[i].Cleanup(context_);
+    texture_program_[i].Cleanup(gl_);
+    nonpremultiplied_texture_program_[i].Cleanup(gl_);
+    texture_background_program_[i].Cleanup(gl_);
+    nonpremultiplied_texture_background_program_[i].Cleanup(gl_);
+    texture_io_surface_program_[i].Cleanup(gl_);
 
-    video_yuv_program_[i].Cleanup(context_);
-    video_yuva_program_[i].Cleanup(context_);
-    video_stream_texture_program_[i].Cleanup(context_);
+    video_yuv_program_[i].Cleanup(gl_);
+    video_yuva_program_[i].Cleanup(gl_);
+    video_stream_texture_program_[i].Cleanup(gl_);
   }
 
-  tile_checkerboard_program_.Cleanup(context_);
+  tile_checkerboard_program_.Cleanup(gl_);
 
-  debug_border_program_.Cleanup(context_);
-  solid_color_program_.Cleanup(context_);
-  solid_color_program_aa_.Cleanup(context_);
+  debug_border_program_.Cleanup(gl_);
+  solid_color_program_.Cleanup(gl_);
+  solid_color_program_aa_.Cleanup(gl_);
 
   if (offscreen_framebuffer_id_)
     GLC(context_, context_->deleteFramebuffer(offscreen_framebuffer_id_));

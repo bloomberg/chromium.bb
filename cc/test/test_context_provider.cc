@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 
 namespace cc {
@@ -72,6 +73,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
 TestContextProvider::TestContextProvider(
     scoped_ptr<TestWebGraphicsContext3D> context)
     : context3d_(context.Pass()),
+      context_gl_(new TestGLES2Interface(context3d_.get())),
       bound_(false),
       destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -125,7 +127,7 @@ gpu::gles2::GLES2Interface* TestContextProvider::ContextGL() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  return &context_gl_stub_;
+  return context_gl_.get();
 }
 
 gpu::ContextSupport* TestContextProvider::ContextSupport() {

@@ -25,9 +25,14 @@ class SkBitmap;
 
 namespace blink { class WebGraphicsContext3D; }
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace cc {
 
-class ContextProvider;
 class GLRendererShaderTest;
 class OutputSurface;
 class PictureDrawQuad;
@@ -398,6 +403,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   SolidColorProgramAA solid_color_program_aa_;
 
   blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
 
   skia::RefPtr<GrContext> gr_context_;

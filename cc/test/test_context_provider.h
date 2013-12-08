@@ -17,6 +17,7 @@ namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 class TestWebGraphicsContext3D;
+class TestGLES2Interface;
 
 class TestContextProvider : public cc::ContextProvider {
  public:
@@ -66,7 +67,7 @@ class TestContextProvider : public cc::ContextProvider {
   TestContextSupport support_;
 
   scoped_ptr<TestWebGraphicsContext3D> context3d_;
-  gpu::gles2::GLES2InterfaceStub context_gl_stub_;
+  scoped_ptr<TestGLES2Interface> context_gl_;
   bool bound_;
 
   base::ThreadChecker main_thread_checker_;

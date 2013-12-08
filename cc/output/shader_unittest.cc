@@ -4,7 +4,8 @@
 
 #include "cc/output/shader.h"
 
-#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/test_gles2_interface.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -12,9 +13,11 @@
 namespace cc {
 
 TEST(ShaderTest, HighpThresholds) {
-  // The FakeWebGraphicsContext3D always uses a mediump precision of 10 bits
-  // which corresponds to a native highp threshold of 2^10 = 1024
-  FakeWebGraphicsContext3D context;
+  // The test context always uses a mediump precision of 10 bits which
+  // corresponds to a native highp threshold of 2^10 = 1024
+  scoped_ptr<TestWebGraphicsContext3D> stub_context =
+    TestWebGraphicsContext3D::Create();
+  TestGLES2Interface stub_gl(stub_context.get());
 
   int threshold_cache = 0;
   int threshold_min;
@@ -25,23 +28,23 @@ TEST(ShaderTest, HighpThresholds) {
 
   threshold_min = 0;
   EXPECT_EQ(TexCoordPrecisionMedium, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, closePoint));
+      &stub_gl, &threshold_cache, threshold_min, closePoint));
   EXPECT_EQ(TexCoordPrecisionMedium, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, smallSize));
+      &stub_gl, &threshold_cache, threshold_min, smallSize));
   EXPECT_EQ(TexCoordPrecisionHigh, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, farPoint));
+      &stub_gl, &threshold_cache, threshold_min, farPoint));
   EXPECT_EQ(TexCoordPrecisionHigh, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, bigSize));
+      &stub_gl, &threshold_cache, threshold_min, bigSize));
 
   threshold_min = 3000;
   EXPECT_EQ(TexCoordPrecisionMedium, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, closePoint));
+      &stub_gl, &threshold_cache, threshold_min, closePoint));
   EXPECT_EQ(TexCoordPrecisionMedium, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, smallSize));
+      &stub_gl, &threshold_cache, threshold_min, smallSize));
   EXPECT_EQ(TexCoordPrecisionMedium, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, farPoint));
+      &stub_gl, &threshold_cache, threshold_min, farPoint));
   EXPECT_EQ(TexCoordPrecisionMedium, TexCoordPrecisionRequired(
-      &context, &threshold_cache, threshold_min, bigSize));
+      &stub_gl, &threshold_cache, threshold_min, bigSize));
 }
 
 }  // namespace cc

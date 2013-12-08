@@ -1,6 +1,8 @@
 include_rules = [
   "+gpu/GLES2",
   "+gpu/command_buffer/client/context_support.h",
+  "+gpu/command_buffer/client/gles2_interface.h",
+  "+gpu/command_buffer/client/gles2_interface_stub.h", # for tests
   "+gpu/command_buffer/common/gpu_memory_allocation.h",
   "+gpu/command_buffer/common/capabilities.h",
   "+gpu/command_buffer/common/mailbox.h",

@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 #define SHADER0(Src) #Src
@@ -17,13 +17,13 @@
 #define FRAGMENT_SHADER(Src) SetFragmentTexCoordPrecision( \
     precision, SetFragmentSamplerType(sampler, SHADER0(Src)))
 
-using blink::WebGraphicsContext3D;
+using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
 namespace {
 
-static void GetProgramUniformLocations(WebGraphicsContext3D* context,
+static void GetProgramUniformLocations(GLES2Interface* context,
                                        unsigned program,
                                        size_t count,
                                        const char** uniforms,
@@ -31,7 +31,7 @@ static void GetProgramUniformLocations(WebGraphicsContext3D* context,
                                        int* base_uniform_index) {
   for (size_t i = 0; i < count; i++) {
     locations[i] = (*base_uniform_index)++;
-    context->bindUniformLocationCHROMIUM(program, locations[i], uniforms[i]);
+    context->BindUniformLocationCHROMIUM(program, locations[i], uniforms[i]);
   }
 }
 
@@ -72,7 +72,7 @@ static std::string SetVertexTexCoordPrecision(const char* shader_string) {
       std::string(shader_string);
 }
 
-TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
+TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int *highp_threshold_cache,
                                             int highp_threshold_min,
                                             int x, int y) {
@@ -83,7 +83,7 @@ TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
     // everywhere.
     GLint range[2] = { 14, 14 };
     GLint precision = 10;
-    GLC(context, context->getShaderPrecisionFormat(GL_FRAGMENT_SHADER,
+    GLC(context, context->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER,
                                                    GL_MEDIUM_FLOAT,
                                                    range, &precision));
     *highp_threshold_cache = 1 << precision;
@@ -134,7 +134,7 @@ static std::string SetFragmentSamplerType(
 
 }  // namespace
 
-TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
+TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int *highp_threshold_cache,
                                             int highp_threshold_min,
                                             gfx::Point max_coordinate) {
@@ -143,7 +143,7 @@ TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
                                    max_coordinate.x(), max_coordinate.y());
 }
 
-TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
+TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int *highp_threshold_cache,
                                             int highp_threshold_min,
                                             gfx::Size max_size) {
@@ -155,7 +155,7 @@ TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
 VertexShaderPosTex::VertexShaderPosTex()
       : matrix_location_(-1) {}
 
-void VertexShaderPosTex::Init(WebGraphicsContext3D* context,
+void VertexShaderPosTex::Init(GLES2Interface* context,
                               unsigned program,
                               int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -189,7 +189,7 @@ VertexShaderPosTexYUVStretch::VertexShaderPosTexYUVStretch()
     : matrix_location_(-1),
       tex_scale_location_(-1) {}
 
-void VertexShaderPosTexYUVStretch::Init(WebGraphicsContext3D* context,
+void VertexShaderPosTexYUVStretch::Init(GLES2Interface* context,
                                         unsigned program,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -226,7 +226,7 @@ std::string VertexShaderPosTexYUVStretch::GetShaderString() const {
 VertexShaderPos::VertexShaderPos()
     : matrix_location_(-1) {}
 
-void VertexShaderPos::Init(WebGraphicsContext3D* context,
+void VertexShaderPos::Init(GLES2Interface* context,
                            unsigned program,
                            int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -258,7 +258,7 @@ VertexShaderPosTexTransform::VertexShaderPosTexTransform()
       tex_transform_location_(-1),
       vertex_opacity_location_(-1) {}
 
-void VertexShaderPosTexTransform::Init(WebGraphicsContext3D* context,
+void VertexShaderPosTexTransform::Init(GLES2Interface* context,
                                        unsigned program,
                                        int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -314,7 +314,7 @@ VertexShaderQuad::VertexShaderQuad()
     : matrix_location_(-1),
       quad_location_(-1) {}
 
-void VertexShaderQuad::Init(WebGraphicsContext3D* context,
+void VertexShaderQuad::Init(GLES2Interface* context,
                             unsigned program,
                             int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -371,7 +371,7 @@ VertexShaderQuadAA::VertexShaderQuadAA()
       quad_location_(-1),
       edge_location_(-1) {}
 
-void VertexShaderQuadAA::Init(WebGraphicsContext3D* context,
+void VertexShaderQuadAA::Init(GLES2Interface* context,
                             unsigned program,
                             int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -428,7 +428,7 @@ VertexShaderQuadTexTransformAA::VertexShaderQuadTexTransformAA()
       edge_location_(-1),
       tex_transform_location_(-1) {}
 
-void VertexShaderQuadTexTransformAA::Init(WebGraphicsContext3D* context,
+void VertexShaderQuadTexTransformAA::Init(GLES2Interface* context,
                                         unsigned program,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -488,7 +488,7 @@ VertexShaderTile::VertexShaderTile()
       quad_location_(-1),
       vertex_tex_transform_location_(-1) {}
 
-void VertexShaderTile::Init(WebGraphicsContext3D* context,
+void VertexShaderTile::Init(GLES2Interface* context,
                             unsigned program,
                             int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -532,7 +532,7 @@ VertexShaderTileAA::VertexShaderTileAA()
       edge_location_(-1),
       vertex_tex_transform_location_(-1) {}
 
-void VertexShaderTileAA::Init(WebGraphicsContext3D* context,
+void VertexShaderTileAA::Init(GLES2Interface* context,
                               unsigned program,
                               int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -591,7 +591,7 @@ VertexShaderVideoTransform::VertexShaderVideoTransform()
     : matrix_location_(-1),
       tex_matrix_location_(-1) {}
 
-void VertexShaderVideoTransform::Init(WebGraphicsContext3D* context,
+void VertexShaderVideoTransform::Init(GLES2Interface* context,
                                       unsigned program,
                                       int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -629,7 +629,7 @@ FragmentTexAlphaBinding::FragmentTexAlphaBinding()
     : sampler_location_(-1),
       alpha_location_(-1) {}
 
-void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
+void FragmentTexAlphaBinding::Init(GLES2Interface* context,
                                    unsigned program,
                                    int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -654,7 +654,7 @@ FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
       color_matrix_location_(-1),
       color_offset_location_(-1) {}
 
-void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
+void FragmentTexColorMatrixAlphaBinding::Init(GLES2Interface* context,
                                               unsigned program,
                                               int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -680,7 +680,7 @@ void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
 FragmentTexOpaqueBinding::FragmentTexOpaqueBinding()
     : sampler_location_(-1) {}
 
-void FragmentTexOpaqueBinding::Init(WebGraphicsContext3D* context,
+void FragmentTexOpaqueBinding::Init(GLES2Interface* context,
                                     unsigned program,
                                     int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -766,7 +766,7 @@ FragmentTexBackgroundBinding::FragmentTexBackgroundBinding()
       sampler_location_(-1) {
 }
 
-void FragmentTexBackgroundBinding::Init(WebGraphicsContext3D* context,
+void FragmentTexBackgroundBinding::Init(GLES2Interface* context,
                                         unsigned program,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -879,7 +879,7 @@ FragmentShaderRGBATexAlphaAA::FragmentShaderRGBATexAlphaAA()
     : sampler_location_(-1),
       alpha_location_(-1) {}
 
-void FragmentShaderRGBATexAlphaAA::Init(WebGraphicsContext3D* context,
+void FragmentShaderRGBATexAlphaAA::Init(GLES2Interface* context,
                                         unsigned program,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -922,7 +922,7 @@ FragmentTexClampAlphaAABinding::FragmentTexClampAlphaAABinding()
       alpha_location_(-1),
       fragment_tex_transform_location_(-1) {}
 
-void FragmentTexClampAlphaAABinding::Init(WebGraphicsContext3D* context,
+void FragmentTexClampAlphaAABinding::Init(GLES2Interface* context,
                                           unsigned program,
                                           int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -996,7 +996,7 @@ FragmentShaderRGBATexAlphaMask::FragmentShaderRGBATexAlphaMask()
       alpha_location_(-1),
       mask_tex_coord_scale_location_(-1) {}
 
-void FragmentShaderRGBATexAlphaMask::Init(WebGraphicsContext3D* context,
+void FragmentShaderRGBATexAlphaMask::Init(GLES2Interface* context,
                                           unsigned program,
                                           int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1049,7 +1049,7 @@ FragmentShaderRGBATexAlphaMaskAA::FragmentShaderRGBATexAlphaMaskAA()
       mask_tex_coord_scale_location_(-1),
       mask_tex_coord_offset_location_(-1) {}
 
-void FragmentShaderRGBATexAlphaMaskAA::Init(WebGraphicsContext3D* context,
+void FragmentShaderRGBATexAlphaMaskAA::Init(GLES2Interface* context,
                                             unsigned program,
                                             int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1110,7 +1110,7 @@ FragmentShaderRGBATexAlphaMaskColorMatrixAA::
           color_offset_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
-    WebGraphicsContext3D* context,
+    GLES2Interface* context,
     unsigned program,
     int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1180,7 +1180,7 @@ FragmentShaderRGBATexAlphaColorMatrixAA::
           color_offset_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
-      WebGraphicsContext3D* context,
+      GLES2Interface* context,
       unsigned program,
       int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1237,7 +1237,7 @@ FragmentShaderRGBATexAlphaMaskColorMatrix::
           mask_tex_coord_scale_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
-    WebGraphicsContext3D* context,
+    GLES2Interface* context,
     unsigned program,
     int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1302,7 +1302,7 @@ FragmentShaderYUVVideo::FragmentShaderYUVVideo()
       yuv_matrix_location_(-1),
       yuv_adj_location_(-1) {}
 
-void FragmentShaderYUVVideo::Init(WebGraphicsContext3D* context,
+void FragmentShaderYUVVideo::Init(GLES2Interface* context,
                                   unsigned program,
                                   int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1362,7 +1362,7 @@ FragmentShaderYUVAVideo::FragmentShaderYUVAVideo()
       yuv_adj_location_(-1) {
 }
 
-void FragmentShaderYUVAVideo::Init(WebGraphicsContext3D* context,
+void FragmentShaderYUVAVideo::Init(GLES2Interface* context,
                                    unsigned program,
                                    int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1419,7 +1419,7 @@ std::string FragmentShaderYUVAVideo::GetShaderString(
 FragmentShaderColor::FragmentShaderColor()
     : color_location_(-1) {}
 
-void FragmentShaderColor::Init(WebGraphicsContext3D* context,
+void FragmentShaderColor::Init(GLES2Interface* context,
                                unsigned program,
                                int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1450,7 +1450,7 @@ std::string FragmentShaderColor::GetShaderString(
 FragmentShaderColorAA::FragmentShaderColorAA()
     : color_location_(-1) {}
 
-void FragmentShaderColorAA::Init(WebGraphicsContext3D* context,
+void FragmentShaderColorAA::Init(GLES2Interface* context,
                                  unsigned program,
                                  int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -1488,7 +1488,7 @@ FragmentShaderCheckerboard::FragmentShaderCheckerboard()
       tex_transform_location_(-1),
       frequency_location_(-1) {}
 
-void FragmentShaderCheckerboard::Init(WebGraphicsContext3D* context,
+void FragmentShaderCheckerboard::Init(GLES2Interface* context,
                                       unsigned program,
                                       int* base_uniform_index) {
   static const char* uniforms[] = {

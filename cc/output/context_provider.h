@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/capabilities.h"
 
 class GrContext;
+
 namespace blink { class WebGraphicsContext3D; }
 namespace gpu {
 class ContextSupport;
