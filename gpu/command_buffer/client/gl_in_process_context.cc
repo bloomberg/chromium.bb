@@ -232,12 +232,16 @@ bool GLInProcessContextImpl::Initialize(
   // Create a transfer buffer.
   transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
 
+  bool bind_generates_resources = false;
+  bool free_everything_when_invisible = false;
+
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(new gles2::GLES2Implementation(
       gles2_helper_.get(),
       share_group,
       transfer_buffer_.get(),
-      false,
+      bind_generates_resources,
+      free_everything_when_invisible,
       command_buffer_.get()));
 
   if (share_resources) {

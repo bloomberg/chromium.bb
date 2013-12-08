@@ -729,6 +729,8 @@ void InProcessCommandBuffer::SignalQuery(unsigned query,
                        WrapCallback(callback)));
 }
 
+void InProcessCommandBuffer::SetSurfaceVisible(bool visible) {}
+
 void InProcessCommandBuffer::SendManagedMemoryStats(
     const gpu::ManagedMemoryStats& stats) {
 }

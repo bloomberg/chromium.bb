@@ -696,7 +696,6 @@ class WebGraphicsContext3DCommandBufferImpl
   bool initialize_failed_;
 
   bool visible_;
-  bool free_command_buffer_when_invisible_;
 
   // State needed by MaybeInitializeGL.
   scoped_refptr<GpuChannelHost> host_;

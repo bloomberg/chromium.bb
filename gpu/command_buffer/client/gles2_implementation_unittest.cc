@@ -405,6 +405,7 @@ class GLES2ImplementationTest : public testing::Test {
           NULL,
           transfer_buffer_.get(),
           bind_generates_resource,
+          false /* free_everything_when_invisible */,
           gpu_control_.get()));
       ASSERT_TRUE(gl_->Initialize(
           kTransferBufferSize,

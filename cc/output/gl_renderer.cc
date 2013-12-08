@@ -259,10 +259,7 @@ void GLRenderer::SetVisible(bool visible) {
 
   EnforceMemoryPolicy();
 
-  // TODO(jamesr): Replace setVisibilityCHROMIUM() with an extension to
-  // explicitly manage front/backbuffers
-  // crbug.com/116049
-  context_->setVisibilityCHROMIUM(visible);
+  context_support_->SetSurfaceVisible(visible);
 }
 
 void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,

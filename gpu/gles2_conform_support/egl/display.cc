@@ -227,11 +227,16 @@ EGLContext Display::CreateContext(EGLConfig config,
 
   DCHECK(command_buffer_ != NULL);
   DCHECK(transfer_buffer_.get());
+
+  bool bind_generates_resources = true;
+  bool free_everything_when_invisible = false;
+
   context_.reset(new gpu::gles2::GLES2Implementation(
       gles2_cmd_helper_.get(),
       NULL,
       transfer_buffer_.get(),
-      true,
+      bind_generates_resources,
+      free_everything_when_invisible,
       gpu_control_.get()));
 
   if (!context_->Initialize(

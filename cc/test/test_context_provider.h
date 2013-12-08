@@ -50,6 +50,8 @@ class TestContextProvider : public cc::ContextProvider {
   // makeContextCurrent on the context returned from this method.
   TestWebGraphicsContext3D* UnboundTestContext3d();
 
+  TestContextSupport* support() { return &support_; }
+
   void SetMemoryAllocation(const ManagedMemoryPolicy& policy);
 
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);

@@ -738,10 +738,6 @@ class VisibilityChangeIsLastCallTrackingContext
       : last_call_was_set_visibility_(false) {}
 
   // WebGraphicsContext3D methods.
-  virtual void setVisibilityCHROMIUM(bool visible) {
-    DCHECK(last_call_was_set_visibility_ == false);
-    last_call_was_set_visibility_ = true;
-  }
   virtual void flush() {
     last_call_was_set_visibility_ = false;
   }
@@ -765,6 +761,10 @@ class VisibilityChangeIsLastCallTrackingContext
   }
 
   // Methods added for test.
+  void set_last_call_was_visibility(bool visible) {
+    DCHECK(last_call_was_set_visibility_ == false);
+    last_call_was_set_visibility_ = true;
+  }
   bool last_call_was_set_visibility() const {
     return last_call_was_set_visibility_;
   }
@@ -778,9 +778,16 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
       new VisibilityChangeIsLastCallTrackingContext);
   VisibilityChangeIsLastCallTrackingContext* context = context_owned.get();
 
+  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create(
+      context_owned.PassAs<TestWebGraphicsContext3D>());
+
+  provider->support()->SetSurfaceVisibleCallback(base::Bind(
+      &VisibilityChangeIsLastCallTrackingContext::set_last_call_was_visibility,
+      base::Unretained(context)));
+
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
+        provider));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -795,7 +802,7 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
 
   EXPECT_TRUE(renderer.Initialize());
 
-  // Ensure that the call to setVisibilityCHROMIUM is the last call issue to the
+  // Ensure that the call to SetSurfaceVisible is the last call issue to the
   // GPU process, after glFlush is called, and after the RendererClient's
   // SetManagedMemoryPolicy is called. Plumb this tracking between both the
   // RenderClient and the Context by giving them both a pointer to a variable on

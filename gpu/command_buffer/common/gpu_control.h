@@ -56,6 +56,8 @@ class GPU_EXPORT GpuControl {
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32 query, const base::Closure& callback) = 0;
 
+  virtual void SetSurfaceVisible(bool visible) = 0;
+
   virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
 
  private:

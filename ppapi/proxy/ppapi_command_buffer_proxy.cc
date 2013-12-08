@@ -213,6 +213,10 @@ void PpapiCommandBufferProxy::SignalQuery(uint32 query,
   NOTREACHED();
 }
 
+void PpapiCommandBufferProxy::SetSurfaceVisible(bool visible) {
+  NOTREACHED();
+}
+
 void PpapiCommandBufferProxy::SendManagedMemoryStats(
     const gpu::ManagedMemoryStats& stats) {
   NOTREACHED();

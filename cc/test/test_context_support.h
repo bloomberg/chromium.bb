@@ -21,13 +21,19 @@ class TestContextSupport : public gpu::ContextSupport {
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(uint32 query,
                            const base::Closure& callback) OVERRIDE;
+  virtual void SetSurfaceVisible(bool visible) OVERRIDE;
   virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
     OVERRIDE;
 
   void CallAllSyncPointCallbacks();
 
+  typedef base::Callback<void(bool visible)> SurfaceVisibleCallback;
+  void SetSurfaceVisibleCallback(
+      const SurfaceVisibleCallback& set_visible_callback);
+
  private:
   std::vector<base::Closure> sync_point_callbacks_;
+  SurfaceVisibleCallback set_visible_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextSupport);
 };

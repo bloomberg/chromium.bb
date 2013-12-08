@@ -21,9 +21,14 @@ void TestContextSupport::SignalQuery(uint32 query,
   sync_point_callbacks_.push_back(callback);
 }
 
-void TestContextSupport::SendManagedMemoryStats(
-    const gpu::ManagedMemoryStats& stats) {
+void TestContextSupport::SetSurfaceVisible(bool visible) {
+  if (!set_visible_callback_.is_null()) {
+    set_visible_callback_.Run(visible);
+  }
 }
+
+void TestContextSupport::SendManagedMemoryStats(
+    const gpu::ManagedMemoryStats& stats) {}
 
 void TestContextSupport::CallAllSyncPointCallbacks() {
   for (size_t i = 0; i < sync_point_callbacks_.size(); ++i) {
@@ -31,6 +36,11 @@ void TestContextSupport::CallAllSyncPointCallbacks() {
         FROM_HERE, sync_point_callbacks_[i]);
   }
   sync_point_callbacks_.clear();
+}
+
+void TestContextSupport::SetSurfaceVisibleCallback(
+    const SurfaceVisibleCallback& set_visible_callback) {
+  set_visible_callback_ = set_visible_callback;
 }
 
 }  // namespace cc

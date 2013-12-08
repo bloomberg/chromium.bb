@@ -212,7 +212,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     const SharedMemoryLimits& limits)
     : initialize_failed_(false),
       visible_(false),
-      free_command_buffer_when_invisible_(false),
       host_(host),
       surface_id_(surface_id),
       active_url_(active_url),
@@ -273,10 +272,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   client_error_message_callback_.reset(
       new WebGraphicsContext3DErrorMessageCallback(this));
   real_gl_->SetErrorMessageCallback(client_error_message_callback_.get());
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  free_command_buffer_when_invisible_ =
-      command_line.HasSwitch(switches::kEnablePruneGpuCommandBuffers);
 
   // Set attributes_ from created offscreen context.
   {
@@ -395,12 +390,17 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
     }
   }
 
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool free_command_buffer_when_invisible =
+      command_line.HasSwitch(switches::kEnablePruneGpuCommandBuffers);
+
   // Create the object exposing the OpenGL API.
   real_gl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(),
       share_group,
       transfer_buffer_.get(),
       bind_generates_resources_,
+      free_command_buffer_when_invisible,
       command_buffer_.get()));
   gl_ = real_gl_.get();
 
@@ -559,11 +559,7 @@ DELEGATE_TO_GL_1(unmapTexSubImage2DCHROMIUM, UnmapTexSubImage2DCHROMIUM,
 
 void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
     bool visible) {
-  gl_->Flush();
-  visible_ = visible;
-  command_buffer_->SetSurfaceVisible(visible);
-  if (!visible)
-    real_gl_->FreeEverything();
+  NOTREACHED();
 }
 
 DELEGATE_TO_GL_3(discardFramebufferEXT, DiscardFramebufferEXT, WGC3Denum,
@@ -717,15 +713,11 @@ DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
 void WebGraphicsContext3DCommandBufferImpl::finish() {
   flush_id_ = GenFlushID();
   gl_->Finish();
-  if (!visible_ && free_command_buffer_when_invisible_)
-    real_gl_->FreeEverything();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::flush() {
   flush_id_ = GenFlushID();
   gl_->Flush();
-  if (!visible_ && free_command_buffer_when_invisible_)
-    real_gl_->FreeEverything();
 }
 
 DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,

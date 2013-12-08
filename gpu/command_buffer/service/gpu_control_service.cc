@@ -92,6 +92,10 @@ void GpuControlService::SignalQuery(uint32 query_id,
     query->AddCallback(callback);
 }
 
+void GpuControlService::SetSurfaceVisible(bool visible) {
+  NOTREACHED();
+}
+
 void GpuControlService::SendManagedMemoryStats(
     const ManagedMemoryStats& stats) {
   NOTREACHED();

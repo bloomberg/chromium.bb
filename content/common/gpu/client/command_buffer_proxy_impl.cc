@@ -450,13 +450,6 @@ bool CommandBufferProxyImpl::Echo(const base::Closure& callback) {
   return true;
 }
 
-bool CommandBufferProxyImpl::SetSurfaceVisible(bool visible) {
-  if (last_state_.error != gpu::error::kNoError)
-    return false;
-
-  return Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
-}
-
 bool CommandBufferProxyImpl::DiscardBackbuffer() {
   if (last_state_.error != gpu::error::kNoError)
     return false;
@@ -516,6 +509,13 @@ void CommandBufferProxyImpl::SignalQuery(uint32 query,
   }
 
   signal_tasks_.insert(std::make_pair(signal_id, callback));
+}
+
+void CommandBufferProxyImpl::SetSurfaceVisible(bool visible) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
 }
 
 void CommandBufferProxyImpl::SendManagedMemoryStats(

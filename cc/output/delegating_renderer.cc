@@ -165,7 +165,7 @@ void DelegatingRenderer::SetVisible(bool visible) {
   // That will allow it to feed us with memory allocations that we can act
   // upon.
   DCHECK(context_provider);
-  context_provider->Context3d()->setVisibilityCHROMIUM(visible);
+  context_provider->ContextSupport()->SetSurfaceVisible(visible);
 }
 
 void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,

@@ -86,6 +86,7 @@ GLES2Implementation::GLES2Implementation(
       ShareGroup* share_group,
       TransferBufferInterface* transfer_buffer,
       bool bind_generates_resource,
+      bool free_everything_when_invisible,
       GpuControl* gpu_control)
     : helper_(helper),
       transfer_buffer_(transfer_buffer),
@@ -112,6 +113,8 @@ GLES2Implementation::GLES2Implementation(
       current_query_(NULL),
       error_message_callback_(NULL),
       gpu_control_(gpu_control),
+      surface_visible_(true),
+      free_everything_when_invisible_(free_everything_when_invisible),
       capabilities_(gpu_control->GetCapabilities()),
       weak_ptr_factory_(this) {
   DCHECK(helper);
@@ -335,6 +338,15 @@ void GLES2Implementation::SignalQuery(uint32 query,
       base::Bind(&GLES2Implementation::RunIfContextNotLost,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
+}
+
+void GLES2Implementation::SetSurfaceVisible(bool visible) {
+  // TODO(piman): This probably should be ShallowFlushCHROMIUM().
+  Flush();
+  surface_visible_ = visible;
+  gpu_control_->SetSurfaceVisible(visible);
+  if (!visible)
+    FreeEverything();
 }
 
 void GLES2Implementation::SendManagedMemoryStats(
@@ -835,6 +847,8 @@ void GLES2Implementation::Flush() {
   // Flush our command buffer
   // (tell the service to execute up to the flush cmd.)
   helper_->CommandBufferHelper::Flush();
+  if (!surface_visible_ && free_everything_when_invisible_)
+    FreeEverything();
 }
 
 void GLES2Implementation::ShallowFlushCHROMIUM() {
@@ -843,11 +857,14 @@ void GLES2Implementation::ShallowFlushCHROMIUM() {
   // Flush our command buffer
   // (tell the service to execute up to the flush cmd.)
   helper_->CommandBufferHelper::Flush();
+  // TODO(piman): Add the FreeEverything() logic here.
 }
 
 void GLES2Implementation::Finish() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   FinishHelper();
+  if (!surface_visible_ && free_everything_when_invisible_)
+    FreeEverything();
 }
 
 void GLES2Implementation::ShallowFinishCHROMIUM() {
