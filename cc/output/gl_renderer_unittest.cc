@@ -579,7 +579,7 @@ TEST(GLRendererTest2, InitializationDoesNotMakeSynchronousCalls) {
                           output_surface.get(),
                           resource_provider.get());
 
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
 }
 
 class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
@@ -652,7 +652,7 @@ TEST(GLRendererTest2, OpaqueBackground) {
 
   renderer_client.root_render_pass()->has_transparent_background = false;
 
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
 
   // On DEBUG builds, render passes with opaque background clear to blue to
   // easily see regions that were not drawn on the screen.
@@ -690,7 +690,7 @@ TEST(GLRendererTest2, TransparentBackground) {
 
   renderer_client.root_render_pass()->has_transparent_background = true;
 
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
 
   EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _))
       .Times(1);
@@ -720,7 +720,7 @@ TEST(GLRendererTest2, OffscreenOutputSurface) {
                           output_surface.get(),
                           resource_provider.get());
 
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
 
   EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, _, _))
       .With(Args<2, 1>(ElementsAre(GL_COLOR_ATTACHMENT0)))
@@ -800,7 +800,7 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
                           output_surface.get(),
                           resource_provider.get());
 
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
 
   // Ensure that the call to SetSurfaceVisible is the last call issue to the
   // GPU process, after glFlush is called, and after the RendererClient's
@@ -862,7 +862,7 @@ TEST(GLRendererTest2, ActiveTextureState) {
 
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
 
   cc::RenderPass::Id id(1, 1);
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
@@ -948,7 +948,7 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport());
   ScopedPtrVector<RenderPass>& render_passes =
@@ -1034,7 +1034,7 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport());
@@ -1123,7 +1123,7 @@ TEST(GLRendererTest2, NoDiscardOnPartialUpdates) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
   EXPECT_TRUE(renderer.Capabilities().using_partial_swap);
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport());
@@ -1301,7 +1301,7 @@ TEST(GLRendererTest2, ScissorAndViewportWithinNonreshapableSurface) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  EXPECT_TRUE(renderer.Initialize());
+  renderer.Initialize();
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport().size());
@@ -1648,7 +1648,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
     renderer_.reset(new FakeRendererGL(
         this, &settings_, &output_surface_, resource_provider_.get()));
-    EXPECT_TRUE(renderer_->Initialize());
+    renderer_->Initialize();
   }
 
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }

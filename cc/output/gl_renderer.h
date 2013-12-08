@@ -90,7 +90,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
              int highp_threshold_min);
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
-  bool Initialize();
+  void Initialize();
   void InitializeGrContext();
 
   const gfx::QuadF& SharedGeometryQuad() const { return shared_geometry_quad_; }
@@ -199,7 +199,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   bool MakeContextCurrent();
 
-  bool InitializeSharedObjects();
+  void InitializeSharedObjects();
   void CleanupSharedObjects();
 
   typedef base::Callback<void(scoped_ptr<CopyOutputRequest> copy_request,

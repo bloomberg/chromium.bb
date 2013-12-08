@@ -61,7 +61,6 @@ scoped_ptr<TestWebGraphicsContext3D> TestWebGraphicsContext3D::Create() {
 TestWebGraphicsContext3D::TestWebGraphicsContext3D()
     : FakeWebGraphicsContext3D(),
       context_id_(s_context_id++),
-      times_make_current_succeeds_(-1),
       times_bind_texture_succeeds_(-1),
       times_end_query_succeeds_(-1),
       times_gen_mailbox_succeeds_(-1),
@@ -105,17 +104,6 @@ void TestWebGraphicsContext3D::CreateNamespace() {
   } else {
     namespace_ = new Namespace;
   }
-}
-
-bool TestWebGraphicsContext3D::makeContextCurrent() {
-  if (times_make_current_succeeds_ >= 0) {
-    if (!times_make_current_succeeds_) {
-      loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                          GL_INNOCENT_CONTEXT_RESET_ARB);
-    }
-    --times_make_current_succeeds_;
-  }
-  return !context_lost_;
 }
 
 void TestWebGraphicsContext3D::reshapeWithScaleFactor(

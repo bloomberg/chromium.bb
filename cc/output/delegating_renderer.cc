@@ -67,12 +67,6 @@ bool DelegatingRenderer::Initialize() {
     return true;
   }
 
-  WebGraphicsContext3D* context3d =
-      output_surface_->context_provider()->Context3d();
-
-  if (!context3d->makeContextCurrent())
-    return false;
-
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 

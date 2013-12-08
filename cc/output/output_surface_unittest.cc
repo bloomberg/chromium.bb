@@ -153,7 +153,7 @@ TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientFailure) {
       TestContextProvider::Create();
 
   // Lose the context so BindToClient fails.
-  context_provider->UnboundTestContext3d()->set_times_make_current_succeeds(0);
+  context_provider->UnboundTestContext3d()->set_context_lost(true);
 
   TestOutputSurface output_surface(context_provider);
   EXPECT_FALSE(output_surface.HasClient());
@@ -209,8 +209,7 @@ TEST_F(OutputSurfaceTestInitializeNewContext3d, Success) {
 TEST_F(OutputSurfaceTestInitializeNewContext3d, Context3dMakeCurrentFails) {
   BindOutputSurface();
 
-  context_provider_->UnboundTestContext3d()
-      ->set_times_make_current_succeeds(0);
+  context_provider_->UnboundTestContext3d()->set_context_lost(true);
   InitializeNewContextExpectFail();
 }
 

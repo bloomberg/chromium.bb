@@ -36,6 +36,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual ::gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
   virtual ::gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
+  virtual void MakeGrContextCurrent() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;

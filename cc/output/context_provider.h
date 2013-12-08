@@ -33,6 +33,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual gpu::ContextSupport* ContextSupport() = 0;
   virtual class GrContext* GrContext() = 0;
+  virtual void MakeGrContextCurrent() = 0;
 
   struct Capabilities {
     bool egl_image_external : 1;

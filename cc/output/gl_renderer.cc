@@ -156,8 +156,7 @@ scoped_ptr<GLRenderer> GLRenderer::Create(
                                                  resource_provider,
                                                  texture_mailbox_deleter,
                                                  highp_threshold_min));
-  if (!renderer->Initialize())
-    return scoped_ptr<GLRenderer>();
+  renderer->Initialize();
   return renderer.Pass();
 }
 
@@ -187,10 +186,7 @@ GLRenderer::GLRenderer(RendererClient* client,
   DCHECK(context_support_);
 }
 
-bool GLRenderer::Initialize() {
-  if (!context_->makeContextCurrent())
-    return false;
-
+void GLRenderer::Initialize() {
   ContextProvider::Capabilities context_caps =
     output_surface_->context_provider()->ContextCapabilities();
 
@@ -219,12 +215,10 @@ bool GLRenderer::Initialize() {
   capabilities_.using_discard_framebuffer =
       context_caps.discard_framebuffer;
 
-  if (!InitializeSharedObjects())
-    return false;
+  InitializeSharedObjects();
 
   // Make sure the viewport and context gets initialized, even if it is to zero.
   ViewportChanged();
-  return true;
 }
 
 GLRenderer::~GLRenderer() {
@@ -325,9 +319,6 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 
   TRACE_EVENT0("cc", "GLRenderer::DrawLayers");
 
-  MakeContextCurrent();
-
-  // TODO(enne): Do we need to reinitialize all of this state per frame?
   ReinitializeGLState();
 }
 
@@ -482,7 +473,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   renderer->resource_provider()->Flush();
 
   // Make sure skia uses the correct GL context.
-  offscreen_contexts->Context3d()->makeContextCurrent();
+  offscreen_contexts->MakeGrContextCurrent();
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
@@ -541,9 +532,6 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   // visible in the compositor's context.
   offscreen_contexts->Context3d()->flush();
 
-  // Use the compositor's GL context again.
-  renderer->Context()->makeContextCurrent();
-
   return device.accessBitmap(false);
 }
 
@@ -589,7 +577,7 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   renderer->resource_provider()->Flush();
 
   // Make sure skia uses the correct GL context.
-  offscreen_contexts->Context3d()->makeContextCurrent();
+  offscreen_contexts->MakeGrContextCurrent();
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
@@ -657,9 +645,6 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   // Flush the GL context so rendering results from this context are
   // visible in the compositor's context.
   offscreen_contexts->Context3d()->flush();
-
-  // Use the compositor's GL context again.
-  renderer->Context()->makeContextCurrent();
 
   return device.accessBitmap(false);
 }
@@ -2360,8 +2345,6 @@ void GLRenderer::DoGetFramebufferPixels(
 
   bool is_async = !cleanup_callback.is_null();
 
-  MakeContextCurrent();
-
   bool do_workaround = NeedsIOSurfaceReadbackWorkaround();
 
   unsigned temporary_texture = 0;
@@ -2633,19 +2616,14 @@ void GLRenderer::SetDrawViewport(gfx::Rect window_space_viewport) {
                                    window_space_viewport.height()));
 }
 
-bool GLRenderer::MakeContextCurrent() { return context_->makeContextCurrent(); }
-
-bool GLRenderer::InitializeSharedObjects() {
+void GLRenderer::InitializeSharedObjects() {
   TRACE_EVENT0("cc", "GLRenderer::InitializeSharedObjects");
-  MakeContextCurrent();
 
   // Create an FBO for doing offscreen rendering.
   GLC(context_, offscreen_framebuffer_id_ = context_->createFramebuffer());
 
   shared_geometry_ = make_scoped_ptr(
       new GeometryBinding(context_, QuadVertexRect()));
-
-  return true;
 }
 
 const GLRenderer::TileCheckerboardProgram*
@@ -3012,8 +2990,6 @@ GLRenderer::GetVideoStreamTextureProgram(TexCoordPrecision precision) {
 }
 
 void GLRenderer::CleanupSharedObjects() {
-  MakeContextCurrent();
-
   shared_geometry_.reset();
 
   for (int i = 0; i < NumTexCoordPrecisions; ++i) {

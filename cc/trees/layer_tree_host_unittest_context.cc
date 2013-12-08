@@ -53,13 +53,9 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       : LayerTreeTest(),
         context3d_(NULL),
         times_to_fail_create_(0),
-        times_to_fail_initialize_(0),
-        times_to_lose_on_create_(0),
         times_to_lose_during_commit_(0),
         times_to_lose_during_draw_(0),
         times_to_fail_recreate_(0),
-        times_to_fail_reinitialize_(0),
-        times_to_lose_on_recreate_(0),
         times_to_fail_create_offscreen_(0),
         times_to_fail_recreate_offscreen_(0),
         times_to_expect_create_failed_(0),
@@ -95,19 +91,6 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     if (context_should_support_io_surface_) {
       context3d_->set_have_extension_io_surface(true);
       context3d_->set_have_extension_egl_image(true);
-    }
-
-    if (times_to_fail_initialize_ && !(fallback && fallback_context_works_)) {
-      --times_to_fail_initialize_;
-      // Make the context get lost during reinitialization.
-      // The number of times MakeCurrent succeeds is not important, and
-      // can be changed if needed to make this pass with future changes.
-      context3d_->set_times_make_current_succeeds(2);
-      ExpectCreateToFail();
-    } else if (times_to_lose_on_create_) {
-      --times_to_lose_on_create_;
-      LoseContext();
-      ExpectCreateToFail();
     }
 
     if (delegating_renderer()) {
@@ -155,14 +138,10 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       return result;
 
     --times_to_lose_during_draw_;
-    context3d_->set_times_make_current_succeeds(0);
+    LoseContext();
 
     times_to_fail_create_ = times_to_fail_recreate_;
     times_to_fail_recreate_ = 0;
-    times_to_fail_initialize_ = times_to_fail_reinitialize_;
-    times_to_fail_reinitialize_ = 0;
-    times_to_lose_on_create_ = times_to_lose_on_recreate_;
-    times_to_lose_on_recreate_ = 0;
     times_to_fail_create_offscreen_ = times_to_fail_recreate_offscreen_;
     times_to_fail_recreate_offscreen_ = 0;
 
@@ -179,10 +158,6 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     times_to_fail_create_ = times_to_fail_recreate_;
     times_to_fail_recreate_ = 0;
-    times_to_fail_initialize_ = times_to_fail_reinitialize_;
-    times_to_fail_reinitialize_ = 0;
-    times_to_lose_on_create_ = times_to_lose_on_recreate_;
-    times_to_lose_on_recreate_ = 0;
     times_to_fail_create_offscreen_ = times_to_fail_recreate_offscreen_;
     times_to_fail_recreate_offscreen_ = 0;
   }
@@ -203,13 +178,9 @@ class LayerTreeHostContextTest : public LayerTreeTest {
  protected:
   TestWebGraphicsContext3D* context3d_;
   int times_to_fail_create_;
-  int times_to_fail_initialize_;
-  int times_to_lose_on_create_;
   int times_to_lose_during_commit_;
   int times_to_lose_during_draw_;
   int times_to_fail_recreate_;
-  int times_to_fail_reinitialize_;
-  int times_to_lose_on_recreate_;
   int times_to_fail_create_offscreen_;
   int times_to_fail_recreate_offscreen_;
   int times_to_expect_create_failed_;
@@ -229,6 +200,7 @@ class LayerTreeHostContextTestLostContextSucceeds
       : LayerTreeHostContextTest(),
         test_case_(0),
         num_losses_(0),
+        num_losses_last_test_case_(-1),
         recovered_context_(true),
         first_initialized_(false) {}
 
@@ -248,8 +220,7 @@ class LayerTreeHostContextTestLostContextSucceeds
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(11u, test_case_);
-    EXPECT_EQ(8 + 10 + 10 + 1, num_losses_);
+    EXPECT_EQ(9u, test_case_);
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
@@ -281,65 +252,37 @@ class LayerTreeHostContextTestLostContextSucceeds
       // immediately) a small number of times should succeed.
       { 1,      // times_to_lose_during_commit
         0,      // times_to_lose_during_draw
-        3,      // times_to_fail_reinitialize
         0,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         0,      // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
       { 0,      // times_to_lose_during_commit
         1,      // times_to_lose_during_draw
-        3,      // times_to_fail_reinitialize
         0,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         0,      // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
       { 1,      // times_to_lose_during_commit
         0,      // times_to_lose_during_draw
-        0,      // times_to_fail_reinitialize
         3,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         0,      // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
       { 0,      // times_to_lose_during_commit
         1,      // times_to_lose_during_draw
-        0,      // times_to_fail_reinitialize
         3,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         0,      // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
       { 1,      // times_to_lose_during_commit
         0,      // times_to_lose_during_draw
-        0,      // times_to_fail_reinitialize
         0,      // times_to_fail_recreate
-        3,      // times_to_lose_on_recreate
-        0,      // times_to_fail_recreate_offscreen
-        false,  // fallback_context_works
-    },
-      { 0,      // times_to_lose_during_commit
-        1,      // times_to_lose_during_draw
-        0,      // times_to_fail_reinitialize
-        0,      // times_to_fail_recreate
-        3,      // times_to_lose_on_recreate
-        0,      // times_to_fail_recreate_offscreen
-        false,  // fallback_context_works
-    },
-      { 1,      // times_to_lose_during_commit
-        0,      // times_to_lose_during_draw
-        0,      // times_to_fail_reinitialize
-        0,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         3,      // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
       { 0,      // times_to_lose_during_commit
         1,      // times_to_lose_during_draw
-        0,      // times_to_fail_reinitialize
         0,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         3,      // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
@@ -347,17 +290,13 @@ class LayerTreeHostContextTestLostContextSucceeds
       // succeed.
       { 10,  // times_to_lose_during_commit
         0,   // times_to_lose_during_draw
-        0,   // times_to_fail_reinitialize
         0,   // times_to_fail_recreate
-        0,   // times_to_lose_on_recreate
         0,   // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
       { 0,      // times_to_lose_during_commit
         10,     // times_to_lose_during_draw
-        0,      // times_to_fail_reinitialize
         0,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         0,      // times_to_fail_recreate_offscreen
         false,  // fallback_context_works
     },
@@ -365,9 +304,7 @@ class LayerTreeHostContextTestLostContextSucceeds
       // context should work.
       { 0,      // times_to_lose_during_commit
         1,      // times_to_lose_during_draw
-        10,     // times_to_fail_reinitialize
         0,      // times_to_fail_recreate
-        0,      // times_to_lose_on_recreate
         0,      // times_to_fail_recreate_offscreen
         true,   // fallback_context_works
     },
@@ -375,14 +312,16 @@ class LayerTreeHostContextTestLostContextSucceeds
 
     if (test_case_ >= arraysize(kTests))
       return false;
+    // Make sure that we lost our context at least once in the last test run so
+    // the test did something.
+    EXPECT_GT(num_losses_, num_losses_last_test_case_);
+    num_losses_last_test_case_ = num_losses_;
 
     times_to_lose_during_commit_ =
         kTests[test_case_].times_to_lose_during_commit;
     times_to_lose_during_draw_ =
         kTests[test_case_].times_to_lose_during_draw;
-    times_to_fail_reinitialize_ = kTests[test_case_].times_to_fail_reinitialize;
     times_to_fail_recreate_ = kTests[test_case_].times_to_fail_recreate;
-    times_to_lose_on_recreate_ = kTests[test_case_].times_to_lose_on_recreate;
     times_to_fail_recreate_offscreen_ =
         kTests[test_case_].times_to_fail_recreate_offscreen;
     fallback_context_works_ = kTests[test_case_].fallback_context_works;
@@ -393,9 +332,7 @@ class LayerTreeHostContextTestLostContextSucceeds
   struct TestCase {
     int times_to_lose_during_commit;
     int times_to_lose_during_draw;
-    int times_to_fail_reinitialize;
     int times_to_fail_recreate;
-    int times_to_lose_on_recreate;
     int times_to_fail_recreate_offscreen;
     bool fallback_context_works;
   };
@@ -403,6 +340,7 @@ class LayerTreeHostContextTestLostContextSucceeds
  protected:
   size_t test_case_;
   int num_losses_;
+  int num_losses_last_test_case_;
   bool recovered_context_;
   bool first_initialized_;
 };
@@ -471,13 +409,11 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     LayerTreeHostContextTestLostContextSucceeds::AfterTest();
     if (use_surface_) {
       // 1 create to start with +
-      // 6 from test cases that fail on initializing the renderer (after the
-      // offscreen context is created) +
-      // 6 from test cases that lose the offscreen context directly +
-      // 4 from test cases that create a fallback +
+      // 4 from test cases that lose the offscreen context directly +
+      // 2 from test cases that create a fallback +
       // All the test cases that recreate both contexts only once
       // per time it is lost.
-      EXPECT_EQ(6 + 6 + 1 + 4 + num_losses_, times_offscreen_created_);
+      EXPECT_EQ(4 + 1 + 2 + num_losses_, times_offscreen_created_);
     } else {
       EXPECT_EQ(0, times_offscreen_created_);
     }
@@ -624,180 +560,6 @@ class LayerTreeHostContextTestLostContextFails
   int num_commits_;
   bool first_initialized_;
 };
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_SingleThread_DirectRenderer) {
-  times_to_fail_reinitialize_ = 100;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(false, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_SingleThread_DelegatingRenderer) {
-  times_to_fail_reinitialize_ = 100;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(false, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_MultiThread_DirectRenderer_MainThreadPaint) {
-  times_to_fail_reinitialize_ = 100;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_MultiThread_DirectRenderer_ImplSidePaint) {
-  times_to_fail_reinitialize_ = 100;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, false, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_MultiThread_DelegatingRenderer_MainThreadPaint) {
-  times_to_fail_reinitialize_ = 100;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailReinitialize100_MultiThread_DelegatingRenderer_ImplSidePaint) {
-  times_to_fail_reinitialize_ = 100;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, true, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_SingleThread_DirectRenderer) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 100;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(false, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_SingleThread_DelegatingRenderer) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 100;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(false, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_MultiThread_DirectRenderer_MainThreadPaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 100;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_MultiThread_DirectRenderer_ImplSidePaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 100;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, false, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_MultiThread_DelegatingRenderer_MainThreadPaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 100;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       FailRecreate100_MultiThread_DelegatingRenderer_ImplSidePaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 100;
-  times_to_lose_on_recreate_ = 0;
-  RunTest(true, true, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_SingleThread_DirectRenderer) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 100;
-  RunTest(false, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_SingleThread_DelegatingRenderer) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 100;
-  RunTest(false, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_MultiThread_DirectRenderer_MainThreadPaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 100;
-  RunTest(true, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_MultiThread_DirectRenderer_ImplSidePaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 100;
-  RunTest(true, false, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_MultiThread_DelegatingRenderer_MainThreadPaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 100;
-  RunTest(true, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextFails,
-       LoseOnRecreate100_MultiThread_DelegatingRenderer_ImplSidePaint) {
-  times_to_fail_reinitialize_ = 0;
-  times_to_fail_recreate_ = 0;
-  times_to_lose_on_recreate_ = 100;
-  RunTest(true, true, true);
-}
-
-class LayerTreeHostContextTestFinishAllRenderingAfterLoss
-    : public LayerTreeHostContextTest {
- public:
-  virtual void BeginTest() OVERRIDE {
-    // Lose the context until the compositor gives up on it.
-    first_initialized_ = false;
-    times_to_lose_during_commit_ = 1;
-    times_to_fail_reinitialize_ = 10;
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
-    if (first_initialized_) {
-      EXPECT_FALSE(succeeded);
-      layer_tree_host()->FinishAllRendering();
-      EndTest();
-    } else {
-      first_initialized_ = true;
-    }
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  bool first_initialized_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestFinishAllRenderingAfterLoss);
 
 class LayerTreeHostContextTestLostContextAndEvictTextures
     : public LayerTreeHostContextTest {
@@ -1041,25 +803,9 @@ class LayerTreeHostContextTestLayersNotified
         times_to_fail_create_ = 1;
         break;
       case 2:
-        EXPECT_EQ(1u, root->lost_output_surface_count());
-        EXPECT_EQ(1u, child->lost_output_surface_count());
-        EXPECT_EQ(1u, grandchild->lost_output_surface_count());
-        // Lose the context and again during recreate.
-        LoseContext();
-        times_to_lose_on_create_ = 1;
-        break;
-      case 3:
-        EXPECT_EQ(3u, root->lost_output_surface_count());
-        EXPECT_EQ(3u, child->lost_output_surface_count());
-        EXPECT_EQ(3u, grandchild->lost_output_surface_count());
-        // Lose the context and again during reinitialization.
-        LoseContext();
-        times_to_fail_initialize_ = 1;
-        break;
-      case 4:
-        EXPECT_EQ(5u, root->lost_output_surface_count());
-        EXPECT_EQ(5u, child->lost_output_surface_count());
-        EXPECT_EQ(5u, grandchild->lost_output_surface_count());
+        EXPECT_GE(1u, root->lost_output_surface_count());
+        EXPECT_GE(1u, child->lost_output_surface_count());
+        EXPECT_GE(1u, grandchild->lost_output_surface_count());
         EndTest();
         break;
       default:
@@ -1332,73 +1078,6 @@ class LayerTreeHostContextTestDontUseLostResources
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestDontUseLostResources);
-
-class LayerTreeHostContextTestLosesFirstOutputSurface
-    : public LayerTreeHostContextTest {
- public:
-  LayerTreeHostContextTestLosesFirstOutputSurface() {
-    // Always fail. This needs to be set before LayerTreeHost is created.
-    times_to_lose_on_create_ = 1000;
-  }
-
-  virtual void BeginTest() OVERRIDE {
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
-  virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
-    EXPECT_FALSE(succeeded);
-
-    // If we make it this far without crashing, we pass!
-    EndTest();
-  }
-
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
-    EXPECT_TRUE(false);
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestLosesFirstOutputSurface);
-
-class LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds
-    : public LayerTreeHostContextTest {
- public:
-  virtual void AfterTest() OVERRIDE {}
-
-  virtual void BeginTest() OVERRIDE {
-    times_to_fail_initialize_ = 2;
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
-    EndTest();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds);
-
-class LayerTreeHostContextTestRetryWorksWithForcedInit
-    : public LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds {
- public:
-  virtual void DidFailToInitializeOutputSurface() OVERRIDE {
-    LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds
-        ::DidFailToInitializeOutputSurface();
-
-    if (times_create_failed_ == 1) {
-      // CompositeAndReadback force recreates the output surface, which should
-      // fail.
-      char pixels[4];
-      EXPECT_FALSE(layer_tree_host()->CompositeAndReadback(
-            &pixels, gfx::Rect(1, 1)));
-    }
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestRetryWorksWithForcedInit);
 
 class LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit
     : public LayerTreeHostContextTest {
@@ -1727,42 +1406,6 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext);
-
-class LayerTreeHostContextTestFailsToCreateSurface
-    : public LayerTreeHostContextTest {
- public:
-  LayerTreeHostContextTestFailsToCreateSurface()
-      : LayerTreeHostContextTest(),
-        failure_count_(0) {
-    times_to_lose_on_create_ = 10;
-  }
-
-  virtual void BeginTest() OVERRIDE {
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
-  virtual void DidInitializeOutputSurface(bool success) OVERRIDE {
-    EXPECT_FALSE(success);
-    EXPECT_EQ(0, failure_count_);
-    times_to_lose_on_create_ = 0;
-    failure_count_++;
-    // Normally, the embedder should stop trying to use the compositor at
-    // this point, but let's force it back into action when we shouldn't.
-    char pixels[4];
-    EXPECT_FALSE(
-        layer_tree_host()->CompositeAndReadback(pixels, gfx::Rect(1, 1)));
-    // If we've made it this far without crashing, we've succeeded.
-    EndTest();
-  }
-
- private:
-  int failure_count_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestFailsToCreateSurface);
 
 // Not reusing LayerTreeTest because it expects creating LTH to always succeed.
 class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface

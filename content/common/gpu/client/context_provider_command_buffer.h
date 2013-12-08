@@ -35,6 +35,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
   virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
+  virtual void MakeGrContextCurrent() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;

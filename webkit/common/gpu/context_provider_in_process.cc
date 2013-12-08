@@ -167,6 +167,14 @@ class GrContext* ContextProviderInProcess::GrContext() {
   return gr_context_->get();
 }
 
+void ContextProviderInProcess::MakeGrContextCurrent() {
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  DCHECK(gr_context_);
+
+  context3d_->makeContextCurrent();
+}
+
 bool ContextProviderInProcess::IsContextLost() {
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());

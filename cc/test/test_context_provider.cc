@@ -94,12 +94,12 @@ bool TestContextProvider::BindToCurrentThread() {
   if (bound_)
     return true;
 
-  bound_ = true;
-  if (!context3d_->makeContextCurrent()) {
+  if (context3d_->isContextLost()) {
     base::AutoLock lock(destroyed_lock_);
     destroyed_ = true;
     return false;
   }
+  bound_ = true;
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
   swap_buffers_complete_callback_proxy_.reset(
@@ -144,6 +144,8 @@ class GrContext* TestContextProvider::GrContext() {
   // TODO(danakj): Make a test GrContext that works with a test Context3d.
   return NULL;
 }
+
+void TestContextProvider::MakeGrContextCurrent() {}
 
 bool TestContextProvider::IsContextLost() {
   DCHECK(bound_);

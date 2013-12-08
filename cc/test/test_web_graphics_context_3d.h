@@ -31,8 +31,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual ~TestWebGraphicsContext3D();
 
-  virtual bool makeContextCurrent();
-
   virtual void reshapeWithScaleFactor(
       int width, int height, float scale_factor);
 
@@ -167,9 +165,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     return test_capabilities_;
   }
 
-  // When set, MakeCurrent() will fail after this many times.
-  void set_times_make_current_succeeds(int times) {
-    times_make_current_succeeds_ = times;
+  void set_context_lost(bool context_lost) {
+    context_lost_ = context_lost;
   }
   void set_times_bind_texture_succeeds(int times) {
     times_bind_texture_succeeds_ = times;
@@ -334,7 +331,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   unsigned context_id_;
   Attributes attributes_;
   ContextProvider::Capabilities test_capabilities_;
-  int times_make_current_succeeds_;
   int times_bind_texture_succeeds_;
   int times_end_query_succeeds_;
   int times_gen_mailbox_succeeds_;

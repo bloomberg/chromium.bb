@@ -926,12 +926,6 @@ bool ResourceProvider::InitializeGL() {
   DCHECK(!texture_id_allocator_);
   DCHECK(!buffer_id_allocator_);
 
-  WebGraphicsContext3D* context3d = Context3d();
-  DCHECK(context3d);
-
-  if (!context3d->makeContextCurrent())
-    return false;
-
   default_resource_type_ = GLTexture;
 
   const ContextProvider::Capabilities& caps =
@@ -942,8 +936,12 @@ bool ResourceProvider::InitializeGL() {
   use_texture_usage_hint_ = caps.texture_usage;
   use_compressed_texture_etc1_ = caps.texture_format_etc1;
 
+  WebGraphicsContext3D* context3d = Context3d();
+  DCHECK(context3d);
+
   texture_uploader_ = TextureUploader::Create(context3d);
   max_texture_size_ = 0;  // Context expects cleared value.
+
   GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE,
                                         &max_texture_size_));
   best_texture_format_ = PlatformColor::BestTextureFormat(use_bgra);
@@ -966,7 +964,6 @@ void ResourceProvider::CleanUpGLIfNeeded() {
   }
 
   DCHECK(context3d);
-  context3d->makeContextCurrent();
   texture_uploader_.reset();
   texture_id_allocator_.reset();
   buffer_id_allocator_.reset();
@@ -1026,8 +1023,6 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
                                            TransferableResourceArray* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
-  if (context3d)
-    context3d->makeContextCurrent();
   bool need_sync_point = false;
   for (ResourceIdArray::const_iterator it = resources.begin();
        it != resources.end();
@@ -1054,8 +1049,6 @@ void ResourceProvider::ReceiveFromChild(
     int child, const TransferableResourceArray& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
-  if (context3d)
-    context3d->makeContextCurrent();
   Child& child_info = children_.find(child)->second;
   DCHECK(!child_info.marked_for_deletion);
   for (TransferableResourceArray::const_iterator it = resources.begin();
@@ -1170,9 +1163,6 @@ bool ResourceProvider::CompareResourceMapIteratorsByChildId(
 void ResourceProvider::ReceiveReturnsFromParent(
     const ReturnedResourceArray& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  WebGraphicsContext3D* context3d = Context3d();
-  if (context3d)
-    context3d->makeContextCurrent();
 
   int child_id = 0;
   ResourceIdArray resources_for_child;
@@ -1199,6 +1189,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
             sorted_resources.end(),
             CompareResourceMapIteratorsByChildId);
 
+  WebGraphicsContext3D* context3d = Context3d();
   ChildMap::iterator child_it = children_.end();
   for (size_t i = 0; i < sorted_resources.size(); ++i) {
     ReturnedResource& returned = sorted_resources[i].first;
@@ -1303,12 +1294,10 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   if (unused.empty() && !child_info->marked_for_deletion)
     return;
 
-  WebGraphicsContext3D* context3d = Context3d();
-  if (context3d)
-    context3d->makeContextCurrent();
 
   ReturnedResourceArray to_return;
 
+  WebGraphicsContext3D* context3d = Context3d();
   bool need_sync_point = false;
   for (size_t i = 0; i < unused.size(); ++i) {
     ResourceId local_id = unused[i];
