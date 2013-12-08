@@ -93,7 +93,7 @@ struct window {
 	struct wl_shell_surface *shell_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
-	int fullscreen, configured, opaque, buffer_size;
+	int fullscreen, configured, opaque, buffer_size, frame_sync;
 };
 
 static const char *vert_shader_text =
@@ -297,9 +297,6 @@ static const struct wl_shell_surface_listener shell_surface_listener = {
 };
 
 static void
-redraw(void *data, struct wl_callback *callback, uint32_t time);
-
-static void
 configure_callback(void *data, struct wl_callback *callback, uint32_t  time)
 {
 	struct window *window = data;
@@ -307,9 +304,6 @@ configure_callback(void *data, struct wl_callback *callback, uint32_t  time)
 	wl_callback_destroy(callback);
 
 	window->configured = 1;
-
-	if (window->callback == NULL)
-		redraw(data, NULL, time);
 }
 
 static struct wl_callback_listener configure_callback_listener = {
@@ -317,7 +311,7 @@ static struct wl_callback_listener configure_callback_listener = {
 };
 
 static void
-toggle_fullscreen(struct window *window, int fullscreen)
+set_fullscreen(struct window *window, int fullscreen)
 {
 	struct wl_callback *callback;
 
@@ -328,16 +322,18 @@ toggle_fullscreen(struct window *window, int fullscreen)
 		wl_shell_surface_set_fullscreen(window->shell_surface,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, NULL);
+		callback = wl_display_sync(window->display->display);
+		wl_callback_add_listener(callback,
+					 &configure_callback_listener,
+					 window);
+
 	} else {
 		wl_shell_surface_set_toplevel(window->shell_surface);
 		handle_configure(window, window->shell_surface, 0,
 				 window->window_size.width,
 				 window->window_size.height);
+		window->configured = 1;
 	}
-
-	callback = wl_display_sync(window->display->display);
-	wl_callback_add_listener(callback, &configure_callback_listener,
-				 window);
 }
 
 static void
@@ -368,7 +364,10 @@ create_surface(struct window *window)
 			     window->egl_surface, window->display->egl.ctx);
 	assert(ret == EGL_TRUE);
 
-	toggle_fullscreen(window, window->fullscreen);
+	if (!window->frame_sync)
+		eglSwapInterval(display->egl.dpy, 0);
+
+	set_fullscreen(window, window->fullscreen);
 }
 
 static void
@@ -479,9 +478,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	} else {
 		wl_surface_set_opaque_region(window->surface, NULL);
 	}
-
-	window->callback = wl_surface_frame(window->surface);
-	wl_callback_add_listener(window->callback, &frame_listener, window);
 
 	if (display->swap_buffers_with_damage && buffer_age > 0) {
 		rect[0] = window->geometry.width / 4 - 1;
@@ -632,7 +628,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	struct display *d = data;
 
 	if (key == KEY_F11 && state)
-		toggle_fullscreen(d->window, d->window->fullscreen ^ 1);
+		set_fullscreen(d->window, d->window->fullscreen ^ 1);
 	else if (key == KEY_ESC && state)
 		running = 0;
 }
@@ -739,6 +735,7 @@ usage(int error_code)
 		"  -f\tRun in fullscreen mode\n"
 		"  -o\tCreate an opaque surface\n"
 		"  -s\tUse a 16 bpp EGL config\n"
+		"  -b\tDon't sync to compositor redraw (eglSwapInterval 0)\n"
 		"  -h\tThis help text\n\n");
 
 	exit(error_code);
@@ -757,6 +754,7 @@ main(int argc, char **argv)
 	window.window_size.width  = 250;
 	window.window_size.height = 250;
 	window.buffer_size = 32;
+	window.frame_sync = 1;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp("-f", argv[i]) == 0)
@@ -765,6 +763,8 @@ main(int argc, char **argv)
 			window.opaque = 1;
 		else if (strcmp("-s", argv[i]) == 0)
 			window.buffer_size = 16;
+		else if (strcmp("-b", argv[i]) == 0)
+			window.frame_sync = 0;
 		else if (strcmp("-h", argv[i]) == 0)
 			usage(EXIT_SUCCESS);
 		else
@@ -792,8 +792,16 @@ main(int argc, char **argv)
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
-	while (running && ret != -1)
-		ret = wl_display_dispatch(display.display);
+	/* The mainloop here is a little subtle.  Redrawing will cause
+	 * EGL to read events so we can just call
+	 * wl_display_dispatch_pending() to handle any events that got
+	 * queued up as a side effect. */
+	while (running && ret != -1) {
+		wl_display_dispatch_pending(display.display);
+		while (!window.configured)
+			wl_display_dispatch(display.display);
+		redraw(&window, NULL, 0);
+	}
 
 	fprintf(stderr, "simple-egl exiting\n");
 
