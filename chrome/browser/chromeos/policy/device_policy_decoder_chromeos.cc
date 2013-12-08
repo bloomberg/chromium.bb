@@ -709,6 +709,9 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
                         PolicyMap* policies,
                         EnterpriseInstallAttributes* install_attributes) {
+  // TODO(achuith): Remove this once crbug.com/263527 is resolved.
+  VLOG(2) << "DecodeDevicePolicy " << policy.SerializeAsString();
+
   // Decode the various groups of policies.
   DecodeLoginPolicies(policy, policies);
   DecodeKioskPolicies(policy, policies, install_attributes);
