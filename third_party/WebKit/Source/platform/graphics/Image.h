@@ -139,6 +139,9 @@ private:
     ImageObserver* m_imageObserver;
 };
 
+#define DEFINE_IMAGE_TYPE_CASTS(typeName) \
+    DEFINE_TYPE_CASTS(typeName, Image, image, image->is##typeName(), image.is##typeName())
+
 }
 
 #endif

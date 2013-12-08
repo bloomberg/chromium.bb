@@ -101,11 +101,7 @@ private:
     IntSize m_intrinsicSize;
 };
 
-inline SVGImage* toSVGImage(Image* image)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!image || image->isSVGImage());
-    return static_cast<SVGImage*>(image);
-}
+DEFINE_IMAGE_TYPE_CASTS(SVGImage);
 
 class ImageObserverDisabler {
     WTF_MAKE_NONCOPYABLE(ImageObserverDisabler);

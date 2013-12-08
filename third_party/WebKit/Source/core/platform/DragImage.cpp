@@ -76,7 +76,7 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
 
     if (image->isBitmapImage()) {
         ImageOrientation orientation = DefaultImageOrientation;
-        BitmapImage* bitmapImage = static_cast<BitmapImage*>(image);
+        BitmapImage* bitmapImage = toBitmapImage(image);
         IntSize sizeRespectingOrientation = bitmapImage->sizeRespectingOrientation();
 
         if (shouldRespectImageOrientation == RespectImageOrientation)

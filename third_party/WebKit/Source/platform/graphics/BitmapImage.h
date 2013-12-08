@@ -185,6 +185,8 @@ protected:
     mutable bool m_haveFrameCount : 1;
 };
 
+DEFINE_IMAGE_TYPE_CASTS(BitmapImage);
+
 }
 
 #endif
