@@ -53,9 +53,15 @@ MOJO_COMPILE_ASSERT(sizeof(StringPointer) == 8, bad_sizeof_StringPointer);
 #pragma pack(pop)
 
 template <typename T>
-T FetchAndReset(T* value) {
-  T temp = *value;
-  *value = T();
+void ResetIfNonNull(T* ptr) {
+  if (ptr)
+    *ptr = T();
+}
+
+template <typename T>
+T FetchAndReset(T* ptr) {
+  T temp = *ptr;
+  *ptr = T();
   return temp;
 }
 

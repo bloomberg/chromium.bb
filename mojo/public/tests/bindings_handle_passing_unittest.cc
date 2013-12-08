@@ -30,6 +30,9 @@ class SampleFactoryImpl : public sample::FactoryStub {
     std::string text2;
     EXPECT_TRUE(ReadTextMessage(request.pipe().get(), &text2));
 
+    // Ensure that simply accessing request.pipe() does not close it.
+    EXPECT_TRUE(request.pipe().is_valid());
+
     ScopedMessagePipeHandle pipe0;
     CreateMessagePipe(&pipe0, &pipe1_);
 
@@ -83,7 +86,16 @@ class SampleFactoryClientImpl : public sample::FactoryClientStub {
 
     std::string text2;
     EXPECT_TRUE(ReadTextMessage(response.pipe().get(), &text2));
+
+    // Ensure that simply accessing response.pipe() does not close it.
+    EXPECT_TRUE(response.pipe().is_valid());
+
     EXPECT_EQ(std::string(kText2), text2);
+
+    // Do some more tests of handle passing:
+    ScopedMessagePipeHandle p = response.pipe().Pass();
+    EXPECT_TRUE(p.is_valid());
+    EXPECT_FALSE(response.pipe().is_valid());
 
     got_response_ = true;
   }

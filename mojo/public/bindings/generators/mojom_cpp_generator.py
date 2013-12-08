@@ -47,7 +47,7 @@ class CPPGenerator(mojom_generator.Generator):
   struct_serialization_clone_template = Template(
       "  clone->set_$FIELD(mojo::internal::Clone($NAME->$FIELD(), buf));")
   struct_serialization_handle_release_template = Template(
-      "  (void) $NAME->$FIELD();")
+      "  mojo::internal::ResetIfNonNull($NAME->$FIELD());")
   struct_serialization_encode_template = Template(
       "  Encode(&$NAME->${FIELD}_, handles);")
   struct_serialization_encode_handle_template = Template(
@@ -59,7 +59,7 @@ class CPPGenerator(mojom_generator.Generator):
       "  if (!DecodeHandle(&$NAME->${FIELD}_, &message->handles))\n"
       "    return false;")
   struct_destructor_body_template = Template(
-      "mojo::MakeScopedHandle(data->$FIELD());")
+      "(void) mojo::MakePassable(data->$FIELD()).Pass();")
   close_handles_template = Template(
       "  mojo::internal::CloseHandles($NAME->${FIELD}_.ptr);")
   param_set_template = Template(
@@ -85,8 +85,7 @@ class CPPGenerator(mojom_generator.Generator):
   ptr_getter_template = \
       Template("  const $TYPE $FIELD() const { return ${FIELD}_.ptr; }")
   handle_getter_template = \
-      Template("  $TYPE $FIELD() const { " \
-               "return mojo::internal::FetchAndReset(&${FIELD}_); }")
+      Template("  $TYPE* $FIELD() const { return &${FIELD}_; }")
   wrapper_setter_template = \
       Template("    void set_$FIELD($TYPE $FIELD) { " \
                "data_->set_$FIELD($FIELD); }")
@@ -103,7 +102,7 @@ class CPPGenerator(mojom_generator.Generator):
                "return mojo::internal::Wrap(data_->$FIELD()); }")
   wrapper_handle_getter_template = \
       Template("  $TYPE $FIELD() const { " \
-               "return mojo::MakeScopedHandle(data_->$FIELD()); }")
+               "return mojo::MakePassable(data_->$FIELD()); }")
   pad_template = Template("  uint8_t _pad${COUNT}_[$PAD];")
   templates  = {}
   HEADER_SIZE = 8
@@ -184,9 +183,9 @@ class CPPGenerator(mojom_generator.Generator):
     if kind.spec == 's':
       return "mojo::String"
     if kind.spec == 'h':
-      return "mojo::ScopedHandle"
+      return "mojo::Passable<mojo::Handle>"
     if kind.spec == 'h:m':
-      return "mojo::ScopedMessagePipeHandle"
+      return "mojo::Passable<mojo::MessagePipeHandle>"
     return cls.kind_to_type[kind]
 
   @classmethod
@@ -248,7 +247,7 @@ class CPPGenerator(mojom_generator.Generator):
     if mojom_generator.IsObjectKind(kind):
       line = "mojo::internal::Wrap(params->%s())" % (name)
     elif mojom_generator.IsHandleKind(kind):
-      line = "mojo::MakeScopedHandle(params->%s())" % (name)
+      line = "mojo::MakePassable(params->%s()).Pass()" % (name)
     else:
       line = "params->%s()" % name
     return line

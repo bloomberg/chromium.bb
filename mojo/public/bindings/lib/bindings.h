@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "mojo/public/bindings/lib/bindings_internal.h"
+#include "mojo/public/bindings/lib/passable.h"
 
 namespace mojo {
 
