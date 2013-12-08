@@ -221,6 +221,7 @@ class LocationBarView : public LocationBar,
 
   // Layout and Painting functions
   virtual void Layout() OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Set if we should show a focus rect while the location entry field is
@@ -256,8 +257,8 @@ class LocationBarView : public LocationBar,
 
   // views::View:
   virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool HasFocus() const OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // views::ButtonListener:

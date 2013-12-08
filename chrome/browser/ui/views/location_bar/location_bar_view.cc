@@ -854,6 +854,17 @@ void LocationBarView::Layout() {
   omnibox_view_->SetBoundsRect(location_bounds);
 }
 
+void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
+  View::PaintChildren(canvas);
+
+  // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
+  // the focus rect to appear on top of children we paint here rather than
+  // OnPaint().
+  // Note: |Canvas::DrawFocusRect| paints a dashed rect with gray color.
+  if (show_focus_rect_ && HasFocus())
+    canvas->DrawFocusRect(omnibox_view_->bounds());
+}
+
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
@@ -888,18 +899,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 
   if (!is_popup_mode_)
     PaintPageActionBackgrounds(canvas);
-
-  // For non-InstantExtendedAPI cases, if necessary, show focus rect.
-  // Note: |Canvas::DrawFocusRect| paints a dashed rect with gray color.
-  if (show_focus_rect_ && HasFocus()) {
-    gfx::Rect r = omnibox_view_->bounds();
-    // TODO(jamescook): Is this still needed?
-    r.Inset(-1, 0);
-#if defined(OS_WIN)
-    r.Inset(0, -1);
-#endif
-    canvas->DrawFocusRect(r);
-  }
 }
 
 void LocationBarView::SetShowFocusRect(bool show) {
@@ -1003,6 +1002,10 @@ const char* LocationBarView::GetClassName() const {
   return kViewClassName;
 }
 
+bool LocationBarView::HasFocus() const {
+  return omnibox_view_->model()->has_focus();
+}
+
 void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   if (!omnibox_view_)
     return;
@@ -1024,10 +1027,6 @@ void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
         base::Bind(&LocationBarView::AccessibilitySetValue,
                    weak_ptr_factory_.GetWeakPtr());
   }
-}
-
-bool LocationBarView::HasFocus() const {
-  return omnibox_view_->model()->has_focus();
 }
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
