@@ -133,7 +133,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     ASSERT_TRUE(base::GetFileInfo(reference, &info));
     int size = static_cast<size_t>(info.size);
     scoped_ptr<char[]> data(new char[size]);
-    ASSERT_EQ(size, file_util::ReadFile(reference, data.get(), size));
+    ASSERT_EQ(size, base::ReadFile(reference, data.get(), size));
 
     int w, h;
     std::vector<unsigned char> decoded;

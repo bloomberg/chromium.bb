@@ -140,9 +140,9 @@ void FontLoader::LoadFont(const FontDescriptor& font,
     return;
   }
 
-  int32 amt_read = file_util::ReadFile(font_path,
-                       reinterpret_cast<char*>(result->font_data.memory()),
-                       font_file_size_32);
+  int32 amt_read = base::ReadFile(font_path,
+      reinterpret_cast<char*>(result->font_data.memory()),
+      font_file_size_32);
   if (amt_read != font_file_size_32) {
     DLOG(ERROR) << "Failed to read font data for " << font_path.value();
     return;

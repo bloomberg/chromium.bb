@@ -75,7 +75,7 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
 
   unsigned char header[kHeaderSize];
 
-  file_util::ScopedFILE file(file_util::OpenFile(db_path, "rb+"));
+  file_util::ScopedFILE file(base::OpenFile(db_path, "rb+"));
   if (!file.get())
     return false;
 

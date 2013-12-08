@@ -129,11 +129,11 @@ bool PopulateWordSet(WordSet* word_set, FILE* file, AffReader* aff_reader,
 }  // namespace
 
 DicReader::DicReader(const base::FilePath& path) {
-  file_ = file_util::OpenFile(path, "r");
+  file_ = base::OpenFile(path, "r");
 
   base::FilePath additional_path =
       path.ReplaceExtension(FILE_PATH_LITERAL("dic_delta"));
-  additional_words_file_ = file_util::OpenFile(additional_path, "r");
+  additional_words_file_ = base::OpenFile(additional_path, "r");
 
   if (additional_words_file_)
     printf("Reading %" PRFilePath " ...\n", additional_path.value().c_str());
@@ -143,9 +143,9 @@ DicReader::DicReader(const base::FilePath& path) {
 
 DicReader::~DicReader() {
   if (file_)
-    file_util::CloseFile(file_);
+    base::CloseFile(file_);
   if (additional_words_file_)
-    file_util::CloseFile(additional_words_file_);
+    base::CloseFile(additional_words_file_);
 }
 
 bool DicReader::Read(AffReader* aff_reader) {

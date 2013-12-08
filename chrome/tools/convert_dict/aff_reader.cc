@@ -60,7 +60,7 @@ void Panic(const char* fmt, ...) {
 
 AffReader::AffReader(const base::FilePath& path)
     : has_indexed_affixes_(false) {
-  file_ = file_util::OpenFile(path, "r");
+  file_ = base::OpenFile(path, "r");
 
   // Default to Latin1 in case the file doesn't specify it.
   encoding_ = "ISO8859-1";
@@ -68,7 +68,7 @@ AffReader::AffReader(const base::FilePath& path)
 
 AffReader::~AffReader() {
   if (file_)
-    file_util::CloseFile(file_);
+    base::CloseFile(file_);
 }
 
 bool AffReader::Read() {

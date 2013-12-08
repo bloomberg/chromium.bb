@@ -100,7 +100,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     base::FilePath file_path;
     EXPECT_TRUE(PathService::Get(base::DIR_EXE, &file_path));
     file_path = file_path.AppendASCII(file_name);
-    binary_file_ = file_util::OpenFile(file_path, "wb");
+    binary_file_ = base::OpenFile(file_path, "wb");
     DLOG_IF(ERROR, !binary_file_) << "Failed to open binary PCM data file.";
     VLOG(0) << ">> Output file: " << file_path.value() << " has been created.";
   }
@@ -120,7 +120,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
       buffer_.Seek(chunk_size);
       bytes_written += chunk_size;
     }
-    file_util::CloseFile(binary_file_);
+    base::CloseFile(binary_file_);
   }
 
   // AudioInputStream::AudioInputCallback implementation.

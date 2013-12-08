@@ -55,7 +55,7 @@ static void ReadData(const base::FilePath::CharType* filename,
   CHECK_EQ(actual_size, expected_size);
 
   // Verify bytes read are correct.
-  int bytes_read = file_util::ReadFile(
+  int bytes_read = base::ReadFile(
       path, reinterpret_cast<char*>(data->get()), expected_size);
   CHECK_EQ(bytes_read, expected_size);
 }
@@ -371,9 +371,9 @@ TEST(YUVConvertTest, RGB32ToYUV) {
                    .Append(FILE_PATH_LITERAL("data"))
                    .Append(FILE_PATH_LITERAL("bali_640x360_P420.yuv"));
   EXPECT_EQ(static_cast<int>(kYUV12Size),
-            file_util::ReadFile(yuv_url,
-                                reinterpret_cast<char*>(yuv_bytes.get()),
-                                static_cast<int>(kYUV12Size)));
+            base::ReadFile(yuv_url,
+                           reinterpret_cast<char*>(yuv_bytes.get()),
+                           static_cast<int>(kYUV12Size)));
 
   // Convert a frame of YUV to 32 bit ARGB.
   media::ConvertYUVToRGB32(yuv_bytes.get(),
@@ -451,9 +451,9 @@ TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
   const size_t size_of_yuv = kSourceYSize * 12 / 8;  // 12 bpp.
   scoped_ptr<uint8[]> yuv_bytes(new uint8[size_of_yuv]);
   EXPECT_EQ(static_cast<int>(size_of_yuv),
-            file_util::ReadFile(yuv_url,
-                                reinterpret_cast<char*>(yuv_bytes.get()),
-                                static_cast<int>(size_of_yuv)));
+            base::ReadFile(yuv_url,
+                           reinterpret_cast<char*>(yuv_bytes.get()),
+                           static_cast<int>(size_of_yuv)));
 
   // Scale the full frame of YUV to 32 bit ARGB.
   // The API currently only supports down-scaling, so we don't test up-scaling.

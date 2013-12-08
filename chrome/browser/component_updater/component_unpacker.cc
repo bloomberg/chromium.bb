@@ -122,7 +122,7 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
   }
   // First, validate the CRX header and signature. As of today
   // this is SHA1 with RSA 1024.
-  ScopedStdioHandle file(file_util::OpenFile(path, "rb"));
+  ScopedStdioHandle file(base::OpenFile(path, "rb"));
   if (!file.get()) {
     error_ = kInvalidFile;
     return;

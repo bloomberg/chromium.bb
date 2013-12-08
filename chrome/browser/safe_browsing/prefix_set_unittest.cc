@@ -151,7 +151,7 @@ class PrefixSetTest : public PlatformTest {
     int64 size_64;
     ASSERT_TRUE(base::GetFileSize(filename, &size_64));
 
-    file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
+    file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
     IncrementIntAt(file.get(), offset, inc);
     CleanChecksum(file.get());
     file.reset();
@@ -373,7 +373,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // This will modify data in |index_|, which will fail the digest check.
-  file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
+  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
   IncrementIntAt(file.get(), kPayloadOffset, 1);
   file.reset();
   scoped_ptr<safe_browsing::PrefixSet>
@@ -382,7 +382,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
 
   // Fix up the checksum and it will read successfully (though the
   // data will be wrong).
-  file.reset(file_util::OpenFile(filename, "r+b"));
+  file.reset(base::OpenFile(filename, "r+b"));
   CleanChecksum(file.get());
   file.reset();
   prefix_set.reset(safe_browsing::PrefixSet::LoadFile(filename));
@@ -443,7 +443,7 @@ TEST_F(PrefixSetTest, CorruptionPayload) {
   base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
-  file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
+  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), 666, 1));
   file.reset();
   scoped_ptr<safe_browsing::PrefixSet>
@@ -458,7 +458,7 @@ TEST_F(PrefixSetTest, CorruptionDigest) {
 
   int64 size_64;
   ASSERT_TRUE(base::GetFileSize(filename, &size_64));
-  file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
+  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
   long digest_offset = static_cast<long>(size_64 - sizeof(base::MD5Digest));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), digest_offset, 1));
   file.reset();
@@ -473,7 +473,7 @@ TEST_F(PrefixSetTest, CorruptionExcess) {
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // Add some junk to the trunk.
-  file_util::ScopedFILE file(file_util::OpenFile(filename, "ab"));
+  file_util::ScopedFILE file(base::OpenFile(filename, "ab"));
   const char buf[] = "im in ur base, killing ur d00dz.";
   ASSERT_EQ(strlen(buf), fwrite(buf, 1, strlen(buf), file.get()));
   file.reset();

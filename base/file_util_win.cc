@@ -264,7 +264,7 @@ FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
   // Open file in binary mode, to avoid problems with fwrite. On Windows
   // it replaces \n's with \r\n's, which may surprise you.
   // Reference: http://msdn.microsoft.com/en-us/library/h9t88zwz(VS.71).aspx
-  return file_util::OpenFile(*path, "wb+");
+  return OpenFile(*path, "wb+");
 }
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
@@ -530,29 +530,14 @@ bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* results) {
   return true;
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::DirectoryExists;
-using base::FilePath;
-using base::kFileShareAll;
-
 FILE* OpenFile(const FilePath& filename, const char* mode) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   std::wstring w_mode = ASCIIToWide(std::string(mode));
   return _wfsopen(filename.value().c_str(), w_mode.c_str(), _SH_DENYNO);
 }
 
-FILE* OpenFile(const std::string& filename, const char* mode) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return _fsopen(filename.c_str(), mode, _SH_DENYNO);
-}
-
 int ReadFile(const FilePath& filename, char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   base::win::ScopedHandle file(CreateFile(filename.value().c_str(),
                                           GENERIC_READ,
                                           FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -568,6 +553,21 @@ int ReadFile(const FilePath& filename, char* data, int size) {
       static_cast<int>(read) == size)
     return read;
   return -1;
+}
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::DirectoryExists;
+using base::FilePath;
+using base::kFileShareAll;
+
+FILE* OpenFile(const std::string& filename, const char* mode) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return _fsopen(filename.c_str(), mode, _SH_DENYNO);
 }
 
 int WriteFile(const FilePath& filename, const char* data, int size) {

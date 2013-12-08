@@ -31,8 +31,6 @@
 
 using content::BrowserThread;
 using file_util::ScopedFILE;
-using file_util::OpenFile;
-using file_util::TruncateFile;
 
 namespace visitedlink {
 
@@ -68,7 +66,7 @@ void GenerateSalt(uint8 salt[LINK_SALT_LENGTH]) {
 
 // Opens file on a background thread to not block UI thread.
 void AsyncOpen(FILE** file, const base::FilePath& filename) {
-  *file = OpenFile(filename, "wb+");
+  *file = base::OpenFile(filename, "wb+");
   DLOG_IF(ERROR, !(*file)) << "Failed to open file " << filename.value();
 }
 
@@ -105,7 +103,7 @@ void AsyncWrite(FILE** file, int32 offset, const std::string& data) {
 // by the time of scheduling the task for execution.
 void AsyncTruncate(FILE** file) {
   if (*file)
-    base::IgnoreResult(TruncateFile(*file));
+    base::IgnoreResult(base::TruncateFile(*file));
 }
 
 // Closes the file on a background thread and releases memory used for storage
@@ -542,7 +540,7 @@ bool VisitedLinkMaster::InitFromFile() {
 
   base::FilePath filename;
   GetDatabaseFileName(&filename);
-  ScopedFILE file_closer(OpenFile(filename, "rb+"));
+  ScopedFILE file_closer(base::OpenFile(filename, "rb+"));
   if (!file_closer.get())
     return false;
 

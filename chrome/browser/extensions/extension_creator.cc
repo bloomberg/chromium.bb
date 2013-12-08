@@ -213,7 +213,7 @@ bool ExtensionCreator::SignZip(const base::FilePath& zip_path,
                                std::vector<uint8>* signature) {
   scoped_ptr<crypto::SignatureCreator> signature_creator(
       crypto::SignatureCreator::Create(private_key));
-  ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
+  ScopedStdioHandle zip_handle(base::OpenFile(zip_path, "rb"));
   size_t buffer_size = 1 << 16;
   scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
   int bytes_read = -1;
@@ -241,7 +241,7 @@ bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
                                 const base::FilePath& crx_path) {
   if (base::PathExists(crx_path))
     base::DeleteFile(crx_path, false);
-  ScopedStdioHandle crx_handle(file_util::OpenFile(crx_path, "wb"));
+  ScopedStdioHandle crx_handle(base::OpenFile(crx_path, "wb"));
   if (!crx_handle.get()) {
     error_message_ = l10n_util::GetStringUTF8(IDS_EXTENSION_SHARING_VIOLATION);
     return false;
@@ -273,7 +273,7 @@ bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
   size_t buffer_size = 1 << 16;
   scoped_ptr<uint8[]> buffer(new uint8[buffer_size]);
   size_t bytes_read = 0;
-  ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
+  ScopedStdioHandle zip_handle(base::OpenFile(zip_path, "rb"));
   while ((bytes_read = fread(buffer.get(), 1, buffer_size,
                              zip_handle.get())) > 0) {
     if (fwrite(buffer.get(), sizeof(char), bytes_read, crx_handle.get()) !=

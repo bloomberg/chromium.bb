@@ -505,7 +505,7 @@ void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
     LOG(ERROR) << "Key at " << path.value() << " has bad size " << size;
   } else {
     key->resize(size);
-    int read_size = file_util::ReadFile(
+    int read_size = base::ReadFile(
         path, reinterpret_cast<char*>(vector_as_array(key)), size);
     if (read_size != size) {
       LOG(ERROR) << "Failed to read key at " << path.value();

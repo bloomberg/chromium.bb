@@ -68,7 +68,7 @@ TracingControllerImpl::ResultFile::ResultFile(const base::FilePath& path)
 void TracingControllerImpl::ResultFile::OpenTask() {
   if (path_.empty())
     base::CreateTemporaryFile(&path_);
-  file_ = file_util::OpenFile(path_, "w");
+  file_ = base::OpenFile(path_, "w");
   if (!file_) {
     LOG(ERROR) << "Failed to open " << path_.value();
     return;
@@ -104,7 +104,7 @@ void TracingControllerImpl::ResultFile::CloseTask(
   const char* trailout = "]}";
   size_t written = fwrite(trailout, strlen(trailout), 1, file_);
   DCHECK(written == 1);
-  file_util::CloseFile(file_);
+  base::CloseFile(file_);
   file_ = NULL;
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);

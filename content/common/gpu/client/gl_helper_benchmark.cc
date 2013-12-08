@@ -102,11 +102,11 @@ class GLHelperTest : public testing::Test {
         std::vector<gfx::PNGCodec::Comment>(),
         &compressed));
     ASSERT_TRUE(compressed.size());
-    FILE* f = file_util::OpenFile(filename, "wb");
+    FILE* f = base::OpenFile(filename, "wb");
     ASSERT_TRUE(f);
     ASSERT_EQ(fwrite(&*compressed.begin(), 1, compressed.size(), f),
               compressed.size());
-    file_util::CloseFile(f);
+    base::CloseFile(f);
   }
 
   scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>

@@ -62,7 +62,7 @@ struct PortData {
       printer_handle = NULL;
     }
     if (file) {
-      file_util::CloseFile(file);
+      base::CloseFile(file);
       file = NULL;
     }
   }
@@ -433,7 +433,7 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
     LOG(ERROR) << "Can't create temporary file in " << app_data_dir.value();
     return FALSE;
   }
-  port_data->file = file_util::OpenFile(file_path, "wb+");
+  port_data->file = base::OpenFile(file_path, "wb+");
   if (port_data->file == NULL) {
     LOG(ERROR) << "Error opening file " << file_path.value() << ".";
     return FALSE;
@@ -478,7 +478,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
   }
 
   if (port_data->file != NULL) {
-    file_util::CloseFile(port_data->file);
+    base::CloseFile(port_data->file);
     port_data->file = NULL;
     bool delete_file = true;
     int64 file_size = 0;

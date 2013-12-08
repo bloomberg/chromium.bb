@@ -39,7 +39,7 @@ MetadataParser* MetadataParserManager::GetParserForFile(
   char buffer[kAmountToRead];
   int amount_read = 0;
   DLOG(ERROR) << path.value();
-  amount_read = file_util::ReadFile(path, buffer, sizeof(buffer));
+  amount_read = base::ReadFile(path, buffer, sizeof(buffer));
   if (amount_read <= 0) {
     DLOG(ERROR) << "Unable to read file";
     return NULL;

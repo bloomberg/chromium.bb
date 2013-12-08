@@ -216,13 +216,13 @@ ui::ScaleFactor DataPack::GetScaleFactor() const {
 bool DataPack::WritePack(const base::FilePath& path,
                          const std::map<uint16, base::StringPiece>& resources,
                          TextEncodingType textEncodingType) {
-  FILE* file = file_util::OpenFile(path, "wb");
+  FILE* file = base::OpenFile(path, "wb");
   if (!file)
     return false;
 
   if (fwrite(&kFileFormatVersion, sizeof(kFileFormatVersion), 1, file) != 1) {
     LOG(ERROR) << "Failed to write file version";
-    file_util::CloseFile(file);
+    base::CloseFile(file);
     return false;
   }
 
@@ -231,7 +231,7 @@ bool DataPack::WritePack(const base::FilePath& path,
   uint32 entry_count = resources.size();
   if (fwrite(&entry_count, sizeof(entry_count), 1, file) != 1) {
     LOG(ERROR) << "Failed to write entry count";
-    file_util::CloseFile(file);
+    base::CloseFile(file);
     return false;
   }
 
@@ -239,14 +239,14 @@ bool DataPack::WritePack(const base::FilePath& path,
       textEncodingType != BINARY) {
     LOG(ERROR) << "Invalid text encoding type, got " << textEncodingType
                << ", expected between " << BINARY << " and " << UTF16;
-    file_util::CloseFile(file);
+    base::CloseFile(file);
     return false;
   }
 
   uint8 write_buffer = textEncodingType;
   if (fwrite(&write_buffer, sizeof(uint8), 1, file) != 1) {
     LOG(ERROR) << "Failed to write file text resources encoding";
-    file_util::CloseFile(file);
+    base::CloseFile(file);
     return false;
   }
 
@@ -260,13 +260,13 @@ bool DataPack::WritePack(const base::FilePath& path,
     uint16 resource_id = it->first;
     if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
       LOG(ERROR) << "Failed to write id for " << resource_id;
-      file_util::CloseFile(file);
+      base::CloseFile(file);
       return false;
     }
 
     if (fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
       LOG(ERROR) << "Failed to write offset for " << resource_id;
-      file_util::CloseFile(file);
+      base::CloseFile(file);
       return false;
     }
 
@@ -278,13 +278,13 @@ bool DataPack::WritePack(const base::FilePath& path,
   uint16 resource_id = 0;
   if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
     LOG(ERROR) << "Failed to write extra resource id.";
-    file_util::CloseFile(file);
+    base::CloseFile(file);
     return false;
   }
 
   if (fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
     LOG(ERROR) << "Failed to write extra offset.";
-    file_util::CloseFile(file);
+    base::CloseFile(file);
     return false;
   }
 
@@ -293,12 +293,12 @@ bool DataPack::WritePack(const base::FilePath& path,
        it != resources.end(); ++it) {
     if (fwrite(it->second.data(), it->second.length(), 1, file) != 1) {
       LOG(ERROR) << "Failed to write data for " << it->first;
-      file_util::CloseFile(file);
+      base::CloseFile(file);
       return false;
     }
   }
 
-  file_util::CloseFile(file);
+  base::CloseFile(file);
 
   return true;
 }

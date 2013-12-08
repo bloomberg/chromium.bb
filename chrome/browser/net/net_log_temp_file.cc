@@ -96,7 +96,7 @@ void NetLogTempFile::StartNetLog() {
   // Try to make sure we can create the file.
   // TODO(rtenneti): Find a better for doing the following. Surface some error
   // to the user if we couldn't create the file.
-  FILE* file = file_util::OpenFile(log_path_, "w");
+  FILE* file = base::OpenFile(log_path_, "w");
   if (file == NULL)
     return;
 

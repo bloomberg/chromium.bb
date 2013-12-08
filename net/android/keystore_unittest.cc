@@ -117,8 +117,7 @@ EVP_PKEY* ImportPrivateKeyFile(const char* filename) {
   // Load file in memory.
   base::FilePath certs_dir = GetTestCertsDirectory();
   base::FilePath file_path = certs_dir.AppendASCII(filename);
-  ScopedStdioHandle handle(
-      file_util::OpenFile(file_path, "rb"));
+  ScopedStdioHandle handle(base::OpenFile(file_path, "rb"));
   if (!handle.get()) {
     LOG(ERROR) << "Could not open private key file: " << filename;
     return NULL;
@@ -167,7 +166,7 @@ EVP_PKEY* ImportPublicKeyFile(const char* filename) {
   // Load file as PEM data.
   base::FilePath certs_dir = GetTestCertsDirectory();
   base::FilePath file_path = certs_dir.AppendASCII(filename);
-  ScopedStdioHandle handle(file_util::OpenFile(file_path, "rb"));
+  ScopedStdioHandle handle(base::OpenFile(file_path, "rb"));
   if (!handle.get()) {
     LOG(ERROR) << "Could not open public key file: " << filename;
     return NULL;

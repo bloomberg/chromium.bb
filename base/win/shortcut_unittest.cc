@@ -91,7 +91,7 @@ TEST_F(ShortcutTest, CreateAndResolveShortcut) {
   EXPECT_TRUE(ResolveShortcut(link_file_, &resolved_name, NULL));
 
   char read_contents[arraysize(kFileContents)];
-  file_util::ReadFile(resolved_name, read_contents, arraysize(read_contents));
+  base::ReadFile(resolved_name, read_contents, arraysize(read_contents));
   EXPECT_STREQ(kFileContents, read_contents);
 }
 
@@ -104,7 +104,7 @@ TEST_F(ShortcutTest, ResolveShortcutWithArgs) {
   EXPECT_TRUE(ResolveShortcut(link_file_, &resolved_name, &args));
 
   char read_contents[arraysize(kFileContents)];
-  file_util::ReadFile(resolved_name, read_contents, arraysize(read_contents));
+  base::ReadFile(resolved_name, read_contents, arraysize(read_contents));
   EXPECT_STREQ(kFileContents, read_contents);
   EXPECT_EQ(link_properties_.arguments, args);
 }
@@ -157,7 +157,7 @@ TEST_F(ShortcutTest, UpdateShortcutUpdateOnlyTargetAndResolve) {
   EXPECT_TRUE(ResolveShortcut(link_file_, &resolved_name, NULL));
 
   char read_contents[arraysize(kFileContents2)];
-  file_util::ReadFile(resolved_name, read_contents, arraysize(read_contents));
+  base::ReadFile(resolved_name, read_contents, arraysize(read_contents));
   EXPECT_STREQ(kFileContents2, read_contents);
 }
 

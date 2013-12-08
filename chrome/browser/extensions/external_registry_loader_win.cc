@@ -33,7 +33,7 @@ const wchar_t kRegistryExtensionPath[] = L"path";
 const wchar_t kRegistryExtensionVersion[] = L"version";
 
 bool CanOpenFileForReading(const base::FilePath& path) {
-  ScopedStdioHandle file_handle(file_util::OpenFile(path, "rb"));
+  ScopedStdioHandle file_handle(base::OpenFile(path, "rb"));
   return file_handle.get() != NULL;
 }
 
