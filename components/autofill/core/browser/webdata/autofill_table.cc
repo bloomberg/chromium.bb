@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/tuple.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -40,14 +41,16 @@ namespace {
 typedef std::vector<Tuple3<int64, base::string16, base::string16> >
     AutofillElementList;
 
-// TODO(dhollowa): Find a common place for this.  It is duplicated in
-// personal_data_manager.cc.
 template<typename T>
 T* address_of(T& v) {
   return &v;
 }
 
-base::string16 LimitDataSize(const base::string16& data) {
+// Returns the |data_model|'s value corresponding to the |type|, trimmed to the
+// maximum length that can be stored in a column of the Autofill database.
+base::string16 GetInfo(const AutofillDataModel& data_model,
+                       ServerFieldType type) {
+  base::string16 data = data_model.GetRawInfo(type);
   if (data.size() > AutofillTable::kMaxDataLength)
     return data.substr(0, AutofillTable::kMaxDataLength);
 
@@ -55,93 +58,93 @@ base::string16 LimitDataSize(const base::string16& data) {
 }
 
 void BindAutofillProfileToStatement(const AutofillProfile& profile,
-                                    sql::Statement* s,
-                                    const std::string& app_locale) {
+                                    sql::Statement* s) {
   DCHECK(base::IsValidGUID(profile.guid()));
-  s->BindString(0, profile.guid());
+  int index = 0;
+  s->BindString(index++, profile.guid());
 
-  base::string16 text = profile.GetRawInfo(COMPANY_NAME);
-  s->BindString16(1, LimitDataSize(text));
-  text = profile.GetRawInfo(ADDRESS_HOME_LINE1);
-  s->BindString16(2, LimitDataSize(text));
-  text = profile.GetRawInfo(ADDRESS_HOME_LINE2);
-  s->BindString16(3, LimitDataSize(text));
-  text = profile.GetRawInfo(ADDRESS_HOME_CITY);
-  s->BindString16(4, LimitDataSize(text));
-  text = profile.GetRawInfo(ADDRESS_HOME_STATE);
-  s->BindString16(5, LimitDataSize(text));
-  text = profile.GetRawInfo(ADDRESS_HOME_ZIP);
-  s->BindString16(6, LimitDataSize(text));
-  text = profile.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), app_locale);
-  s->BindString16(7, LimitDataSize(text));
-  text = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
-  s->BindString16(8, LimitDataSize(text));
-  s->BindInt64(9, Time::Now().ToTimeT());
-  s->BindString(10, profile.origin());
+  s->BindString16(index++, GetInfo(profile, COMPANY_NAME));
+  s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_STREET_ADDRESS));
+  s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_DEPENDENT_LOCALITY));
+  s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_CITY));
+  s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_STATE));
+  s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_ZIP));
+  s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_SORTING_CODE));
+  s->BindString16(index++, GetInfo(profile, ADDRESS_HOME_COUNTRY));
+  s->BindInt64(index++, Time::Now().ToTimeT());
+  s->BindString(index++, profile.origin());
 }
 
-AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s,
-                                              const std::string& app_locale) {
-  AutofillProfile* profile = new AutofillProfile;
-  profile->set_guid(s.ColumnString(0));
+scoped_ptr<AutofillProfile> AutofillProfileFromStatement(
+    const sql::Statement& s) {
+  scoped_ptr<AutofillProfile> profile(new AutofillProfile);
+  int index = 0;
+  profile->set_guid(s.ColumnString(index++));
   DCHECK(base::IsValidGUID(profile->guid()));
 
-  profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(1));
-  profile->SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
-  profile->SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(3));
-  profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(4));
-  profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
-  profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
-  // Intentionally skip column 7, which stores the localized country name.
-  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(8));
+  profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
+  profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, s.ColumnString16(index++));
+  profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                      s.ColumnString16(index++));
+  profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(index++));
+  profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(index++));
+  profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(index++));
+  profile->SetRawInfo(ADDRESS_HOME_SORTING_CODE, s.ColumnString16(index++));
+  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
   // Intentionally skip column 9, which stores the profile's modification date.
-  profile->set_origin(s.ColumnString(10));
+  index++;
+  profile->set_origin(s.ColumnString(index++));
 
-  return profile;
+  return profile.Pass();
 }
 
 void BindCreditCardToStatement(const CreditCard& credit_card,
                                sql::Statement* s) {
   DCHECK(base::IsValidGUID(credit_card.guid()));
-  s->BindString(0, credit_card.guid());
+  int index = 0;
+  s->BindString(index++, credit_card.guid());
 
-  base::string16 text = credit_card.GetRawInfo(CREDIT_CARD_NAME);
-  s->BindString16(1, LimitDataSize(text));
-  text = credit_card.GetRawInfo(CREDIT_CARD_EXP_MONTH);
-  s->BindString16(2, LimitDataSize(text));
-  text = credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  s->BindString16(3, LimitDataSize(text));
-  text = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
+  s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_NAME));
+  s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_MONTH));
+  s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
   std::string encrypted_data;
-  Encryptor::EncryptString16(text, &encrypted_data);
-  s->BindBlob(4, encrypted_data.data(),
+  Encryptor::EncryptString16(credit_card.GetRawInfo(CREDIT_CARD_NUMBER),
+                             &encrypted_data);
+  s->BindBlob(index++, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
-  s->BindInt64(5, Time::Now().ToTimeT());
-  s->BindString(6, credit_card.origin());
+
+  s->BindInt64(index++, Time::Now().ToTimeT());
+  s->BindString(index++, credit_card.origin());
 }
 
-CreditCard* CreditCardFromStatement(const sql::Statement& s) {
-  CreditCard* credit_card = new CreditCard;
+scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
+  scoped_ptr<CreditCard> credit_card(new CreditCard);
 
-  credit_card->set_guid(s.ColumnString(0));
+  int index = 0;
+  credit_card->set_guid(s.ColumnString(index++));
   DCHECK(base::IsValidGUID(credit_card->guid()));
 
-  credit_card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
-  credit_card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
-  credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(3));
-  int encrypted_number_len = s.ColumnByteLength(4);
+  credit_card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(index++));
+  credit_card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
+  credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                          s.ColumnString16(index++));
+  int encrypted_number_len = s.ColumnByteLength(index);
   base::string16 credit_card_number;
   if (encrypted_number_len) {
     std::string encrypted_number;
     encrypted_number.resize(encrypted_number_len);
-    memcpy(&encrypted_number[0], s.ColumnBlob(4), encrypted_number_len);
+    memcpy(&encrypted_number[0], s.ColumnBlob(index++), encrypted_number_len);
     Encryptor::DecryptString16(encrypted_number, &credit_card_number);
+  } else {
+    index++;
   }
   credit_card->SetRawInfo(CREDIT_CARD_NUMBER, credit_card_number);
   // Intentionally skip column 5, which stores the modification date.
-  credit_card->set_origin(s.ColumnString(6));
+  index++;
+  credit_card->set_origin(s.ColumnString(index++));
 
-  return credit_card;
+  return credit_card.Pass();
 }
 
 bool AddAutofillProfileNamesToProfile(sql::Connection* db,
@@ -199,13 +202,10 @@ bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
 bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
                                        AutofillProfile* profile) {
   sql::Statement s(db->GetUniqueStatement(
-      "SELECT guid, type, number "
+      "SELECT guid, number "
       "FROM autofill_profile_phones "
-      "WHERE guid=? AND type=?"));
-
-  // Value used to be either [(0, phone), (1, fax)] but fax has been removed.
+      "WHERE guid=?"));
   s.BindString(0, profile->guid());
-  s.BindInt(1, 0);
 
   if (!s.is_valid())
     return false;
@@ -213,7 +213,7 @@ bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
   std::vector<base::string16> numbers;
   while (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
-    numbers.push_back(s.ColumnString16(2));
+    numbers.push_back(s.ColumnString16(1));
   }
   if (!s.Succeeded())
     return false;
@@ -280,12 +280,10 @@ bool AddAutofillProfilePhones(const AutofillProfile& profile,
     // Add the new number.
     sql::Statement s(db->GetUniqueStatement(
       "INSERT INTO autofill_profile_phones"
-      " (guid, type, number) "
-      "VALUES (?,?,?)"));
+      " (guid, number) "
+      "VALUES (?,?)"));
     s.BindString(0, profile.guid());
-    // Value used to be either [(0, phone), (1, fax)] but fax has been removed.
-    s.BindInt(1, 0);
-    s.BindString16(2, numbers[i]);
+    s.BindString16(1, numbers[i]);
 
     if (!s.Run())
       return false;
@@ -422,6 +420,9 @@ bool AutofillTable::MigrateToVersion(int version,
       // worked correctly for users with existing 'origin' columns, but failed
       // to create these columns for new users.
       return MigrateToVersion51AddOriginColumn();
+    case 54:
+      *update_compatible_version = true;
+      return MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
   }
   return true;
 }
@@ -964,10 +965,10 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
 
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO autofill_profiles"
-      "(guid, company_name, address_line_1, address_line_2, city, state,"
-      " zipcode, country, country_code, date_modified, origin)"
+      "(guid, company_name, street_address, dependent_locality, city, state,"
+      " zipcode, sorting_code, country_code, date_modified, origin)"
       "VALUES (?,?,?,?,?,?,?,?,?,?,?)"));
-  BindAutofillProfileToStatement(profile, &s, app_locale_);
+  BindAutofillProfileToStatement(profile, &s);
 
   if (!s.Run())
     return false;
@@ -980,8 +981,8 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
   DCHECK(base::IsValidGUID(guid));
   DCHECK(profile);
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT guid, company_name, address_line_1, address_line_2, city, state,"
-      " zipcode, country, country_code, date_modified, origin "
+      "SELECT guid, company_name, street_address, dependent_locality, city,"
+      " state, zipcode, sorting_code, country_code, date_modified, origin "
       "FROM autofill_profiles "
       "WHERE guid=?"));
   s.BindString(0, guid);
@@ -989,7 +990,7 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
   if (!s.Step())
     return false;
 
-  scoped_ptr<AutofillProfile> p(AutofillProfileFromStatement(s, app_locale_));
+  scoped_ptr<AutofillProfile> p = AutofillProfileFromStatement(s);
 
   // Get associated name info.
   AddAutofillProfileNamesToProfile(db_, p.get());
@@ -1044,11 +1045,11 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
 
   sql::Statement s(db_->GetUniqueStatement(
       "UPDATE autofill_profiles "
-      "SET guid=?, company_name=?, address_line_1=?, address_line_2=?, "
-      "    city=?, state=?, zipcode=?, country=?, country_code=?, "
+      "SET guid=?, company_name=?, street_address=?, dependent_locality=?, "
+      "    city=?, state=?, zipcode=?, sorting_code=?, country_code=?, "
       "    date_modified=?, origin=? "
       "WHERE guid=?"));
-  BindAutofillProfileToStatement(profile, &s, app_locale_);
+  BindAutofillProfileToStatement(profile, &s);
   s.BindString(11, profile.guid());
 
   bool result = s.Run();
@@ -1139,7 +1140,7 @@ bool AutofillTable::GetCreditCard(const std::string& guid,
   if (!s.Step())
     return false;
 
-  *credit_card = CreditCardFromStatement(s);
+  *credit_card = CreditCardFromStatement(s).release();
   return true;
 }
 
@@ -1457,12 +1458,12 @@ bool AutofillTable::InitProfilesTable() {
     if (!db_->Execute("CREATE TABLE autofill_profiles ( "
                       "guid VARCHAR PRIMARY KEY, "
                       "company_name VARCHAR, "
-                      "address_line_1 VARCHAR, "
-                      "address_line_2 VARCHAR, "
+                      "street_address VARCHAR, "
+                      "dependent_locality VARCHAR, "
                       "city VARCHAR, "
                       "state VARCHAR, "
                       "zipcode VARCHAR, "
-                      "country VARCHAR, "
+                      "sorting_code VARCHAR, "
                       "country_code VARCHAR, "
                       "date_modified INTEGER NOT NULL DEFAULT 0, "
                       "origin VARCHAR DEFAULT '')")) {
@@ -1503,7 +1504,6 @@ bool AutofillTable::InitProfilePhonesTable() {
   if (!db_->DoesTableExist("autofill_profile_phones")) {
     if (!db_->Execute("CREATE TABLE autofill_profile_phones ( "
                       "guid VARCHAR, "
-                      "type INTEGER DEFAULT 0, "
                       "number VARCHAR)")) {
       NOTREACHED();
       return false;
@@ -1915,38 +1915,40 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
 
     while (s.Step()) {
       AutofillProfile profile;
-      profile.set_guid(s.ColumnString(0));
+      int index = 0;
+      profile.set_guid(s.ColumnString(index++));
       DCHECK(base::IsValidGUID(profile.guid()));
 
-      profile.SetRawInfo(NAME_FIRST, s.ColumnString16(1));
-      profile.SetRawInfo(NAME_MIDDLE, s.ColumnString16(2));
-      profile.SetRawInfo(NAME_LAST, s.ColumnString16(3));
-      profile.SetRawInfo(EMAIL_ADDRESS, s.ColumnString16(4));
-      profile.SetRawInfo(COMPANY_NAME, s.ColumnString16(5));
-      profile.SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(6));
-      profile.SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(7));
-      profile.SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(8));
-      profile.SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(9));
-      profile.SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(10));
-      profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(11),
-                      app_locale_);
-      profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(12));
-      int64 date_modified = s.ColumnInt64(13);
+      profile.SetRawInfo(NAME_FIRST, s.ColumnString16(index++));
+      profile.SetRawInfo(NAME_MIDDLE, s.ColumnString16(index++));
+      profile.SetRawInfo(NAME_LAST, s.ColumnString16(index++));
+      profile.SetRawInfo(EMAIL_ADDRESS, s.ColumnString16(index++));
+      profile.SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
+      profile.SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(index++));
+      profile.SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(index++));
+      profile.SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(index++));
+      profile.SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(index++));
+      profile.SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(index++));
+      profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
+                      s.ColumnString16(index++), app_locale_);
+      profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(index++));
+      int64 date_modified = s.ColumnInt64(index++);
 
       sql::Statement s_insert(db_->GetUniqueStatement(
           "INSERT INTO autofill_profiles_temp"
           "(guid, company_name, address_line_1, address_line_2, city,"
           " state, zipcode, country, date_modified)"
           "VALUES (?,?,?,?,?,?,?,?,?)"));
-      s_insert.BindString(0, profile.guid());
-      s_insert.BindString16(1, profile.GetRawInfo(COMPANY_NAME));
-      s_insert.BindString16(2, profile.GetRawInfo(ADDRESS_HOME_LINE1));
-      s_insert.BindString16(3, profile.GetRawInfo(ADDRESS_HOME_LINE2));
-      s_insert.BindString16(4, profile.GetRawInfo(ADDRESS_HOME_CITY));
-      s_insert.BindString16(5, profile.GetRawInfo(ADDRESS_HOME_STATE));
-      s_insert.BindString16(6, profile.GetRawInfo(ADDRESS_HOME_ZIP));
-      s_insert.BindString16(7, profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
-      s_insert.BindInt64(8, date_modified);
+      index = 0;
+      s_insert.BindString(index++, profile.guid());
+      s_insert.BindString16(index++, profile.GetRawInfo(COMPANY_NAME));
+      s_insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_LINE1));
+      s_insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_LINE2));
+      s_insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_CITY));
+      s_insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_STATE));
+      s_insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_ZIP));
+      s_insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+      s_insert.BindInt64(index++, date_modified);
 
       if (!s_insert.Run())
         return false;
@@ -2069,20 +2071,23 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
       return false;
 
     scoped_ptr<AutofillProfile> profile(new AutofillProfile);
-    profile->set_guid(s.ColumnString(0));
+    int index = 0;
+    profile->set_guid(s.ColumnString(index++));
     DCHECK(base::IsValidGUID(profile->guid()));
 
-    profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(1));
-    profile->SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
-    profile->SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(3));
-    profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(4));
-    profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
-    profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
+    profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(index++));
+    profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(index++));
     // Intentionally skip column 7, which stores the localized country name.
-    profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(8));
+    index++;
+    profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
     // Intentionally skip column 9, which stores the profile's modification
     // date.
-    profile->set_origin(s.ColumnString(10));
+    index++;
+    profile->set_origin(s.ColumnString(index++));
 
     // Get associated name info.
     AddAutofillProfileNamesToProfile(db_, profile.get());
@@ -2138,24 +2143,17 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
         "(guid, company_name, address_line_1, address_line_2, city, state,"
         " zipcode, country, country_code, date_modified)"
         "VALUES (?,?,?,?,?,?,?,?,?,?)"));
-    s.BindString(0, iter->guid());
-    base::string16 text = iter->GetRawInfo(COMPANY_NAME);
-    s.BindString16(1, LimitDataSize(text));
-    text = iter->GetRawInfo(ADDRESS_HOME_LINE1);
-    s.BindString16(2, LimitDataSize(text));
-    text = iter->GetRawInfo(ADDRESS_HOME_LINE2);
-    s.BindString16(3, LimitDataSize(text));
-    text = iter->GetRawInfo(ADDRESS_HOME_CITY);
-    s.BindString16(4, LimitDataSize(text));
-    text = iter->GetRawInfo(ADDRESS_HOME_STATE);
-    s.BindString16(5, LimitDataSize(text));
-    text = iter->GetRawInfo(ADDRESS_HOME_ZIP);
-    s.BindString16(6, LimitDataSize(text));
-    text = iter->GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), app_locale_);
-    s.BindString16(7, LimitDataSize(text));
-    text = iter->GetRawInfo(ADDRESS_HOME_COUNTRY);
-    s.BindString16(8, LimitDataSize(text));
-    s.BindInt64(9, date_item->second);
+    int index = 0;
+    s.BindString(index++, iter->guid());
+    s.BindString16(index++, GetInfo(*iter, COMPANY_NAME));
+    s.BindString16(index++, GetInfo(*iter, ADDRESS_HOME_LINE1));
+    s.BindString16(index++, GetInfo(*iter, ADDRESS_HOME_LINE2));
+    s.BindString16(index++, GetInfo(*iter, ADDRESS_HOME_CITY));
+    s.BindString16(index++, GetInfo(*iter, ADDRESS_HOME_STATE));
+    s.BindString16(index++, GetInfo(*iter, ADDRESS_HOME_ZIP));
+    s.BindString16(index++, base::string16());  // This column is deprecated.
+    s.BindString16(index++, GetInfo(*iter, ADDRESS_HOME_COUNTRY));
+    s.BindInt64(index++, date_item->second);
 
     if (!s.Run())
       return false;
@@ -2184,6 +2182,110 @@ bool AutofillTable::MigrateToVersion51AddOriginColumn() {
       !db_->Execute("ALTER TABLE credit_cards "
                     "ADD COLUMN origin VARCHAR DEFAULT ''")) {
       return false;
+  }
+
+  return transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields() {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
+  // Test the existence of the |address_line_1| column as an indication that a
+  // migration is needed.  It is possible that the new |autofill_profile_phones|
+  // schema is in place because the table was newly created when migrating from
+  // a pre-version-23 database.
+  if (db_->DoesColumnExist("autofill_profiles", "address_line_1")) {
+    // Create a temporary copy of the autofill_profiles table in the (newer)
+    // version 54 format.  This table
+    //   (a) adds columns for street_address, dependent_locality, and
+    //       sorting_code,
+    //   (b) removes the address_line_1 and address_line_2 columns, which are
+    //       replaced by the street_address column, and
+    //   (c) removes the country column, which was long deprecated.
+    if (db_->DoesTableExist("autofill_profiles_temp") ||
+        !db_->Execute("CREATE TABLE autofill_profiles_temp ( "
+                      "guid VARCHAR PRIMARY KEY, "
+                      "company_name VARCHAR, "
+                      "street_address VARCHAR, "
+                      "dependent_locality VARCHAR, "
+                      "city VARCHAR, "
+                      "state VARCHAR, "
+                      "zipcode VARCHAR, "
+                      "sorting_code VARCHAR, "
+                      "country_code VARCHAR, "
+                      "date_modified INTEGER NOT NULL DEFAULT 0, "
+                      "origin VARCHAR DEFAULT '')")) {
+      return false;
+    }
+
+    // Copy over the data from the autofill_profiles table, taking care to merge
+    // the address lines 1 and 2 into the new street_address column.
+    if (!db_->Execute("INSERT INTO autofill_profiles_temp "
+                      "SELECT guid, company_name, '', '', city, state, zipcode,"
+                      " '', country_code, date_modified, origin "
+                      "FROM autofill_profiles")) {
+      return false;
+    }
+    sql::Statement s(db_->GetUniqueStatement(
+        "SELECT guid, address_line_1, address_line_2 FROM autofill_profiles"));
+    while (s.Step()) {
+      std::string guid = s.ColumnString(0);
+      base::string16 line1 = s.ColumnString16(1);
+      base::string16 line2 = s.ColumnString16(2);
+      base::string16 street_address = line1;
+      if (!line2.empty())
+        street_address += ASCIIToUTF16("\n") + line2;
+
+      sql::Statement s_update(db_->GetUniqueStatement(
+          "UPDATE autofill_profiles_temp SET street_address=? WHERE guid=?"));
+      s_update.BindString16(0, street_address);
+      s_update.BindString(1, guid);
+      if (!s_update.Run())
+        return false;
+    }
+    if (!s.Succeeded())
+      return false;
+
+    // Delete the existing (version 53) table and replace it with the contents
+    // of the temporary table.
+    if (!db_->Execute("DROP TABLE autofill_profiles") ||
+        !db_->Execute("ALTER TABLE autofill_profiles_temp "
+                      "RENAME TO autofill_profiles")) {
+      return false;
+    }
+  }
+
+  // Test the existence of the |type| column as an indication that a migration
+  // is needed.  It is possible that the new |autofill_profile_phones| schema is
+  // in place because the table was newly created when migrating from a
+  // pre-version-23 database.
+  if (db_->DoesColumnExist("autofill_profile_phones", "type")) {
+    // Create a temporary copy of the autofill_profile_phones table in the
+    // (newer) version 54 format.  This table removes the deprecated |type|
+    // column.
+    if (db_->DoesTableExist("autofill_profile_phones_temp") ||
+        !db_->Execute("CREATE TABLE autofill_profile_phones_temp ( "
+                      "guid VARCHAR, "
+                      "number VARCHAR)")) {
+      return false;
+    }
+
+    // Copy over the data from the autofill_profile_phones table.
+    if (!db_->Execute("INSERT INTO autofill_profile_phones_temp "
+                      "SELECT guid, number FROM autofill_profile_phones")) {
+      return false;
+    }
+
+    // Delete the existing (version 53) table and replace it with the contents
+    // of the temporary table.
+    if (!db_->Execute("DROP TABLE autofill_profile_phones"))
+      return false;
+    if (!db_->Execute("ALTER TABLE autofill_profile_phones_temp "
+                      "RENAME TO autofill_profile_phones")) {
+      return false;
+    }
   }
 
   return transaction.Commit();

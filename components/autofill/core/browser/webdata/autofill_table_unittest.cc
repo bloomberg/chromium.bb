@@ -524,9 +524,12 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
   home_profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
   home_profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
+  home_profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                          ASCIIToUTF16("Beverly Hills"));
   home_profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
   home_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   home_profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
+  home_profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("MAGIC ###"));
   home_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
 
@@ -602,9 +605,12 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Indy"));
   billing_profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("Open Road"));
   billing_profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Route 66"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                             ASCIIToUTF16("District 9"));
   billing_profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("NFA"));
   billing_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("NY"));
   billing_profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("10011"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("123456"));
   billing_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                              ASCIIToUTF16("18181230000"));

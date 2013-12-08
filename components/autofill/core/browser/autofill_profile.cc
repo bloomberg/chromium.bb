@@ -135,8 +135,7 @@ void CopyValuesToItems(ServerFieldType type,
                        const T& prototype) {
   form_group_items->resize(values.size(), prototype);
   for (size_t i = 0; i < form_group_items->size(); ++i) {
-    (*form_group_items)[i].SetRawInfo(type,
-                                      CollapseWhitespace(values[i], false));
+    (*form_group_items)[i].SetRawInfo(type, values[i]);
   }
   // Must have at least one (possibly empty) element.
   if (form_group_items->empty())
@@ -285,7 +284,7 @@ void AutofillProfile::SetRawInfo(ServerFieldType type,
                                  const base::string16& value) {
   FormGroup* form_group = MutableFormGroupForType(AutofillType(type));
   if (form_group)
-    form_group->SetRawInfo(type, CollapseWhitespace(value, false));
+    form_group->SetRawInfo(type, value);
 }
 
 base::string16 AutofillProfile::GetInfo(const AutofillType& type,
@@ -304,8 +303,9 @@ bool AutofillProfile::SetInfo(const AutofillType& type,
   if (!form_group)
     return false;
 
-  return
-      form_group->SetInfo(type, CollapseWhitespace(value, false), app_locale);
+  base::string16 trimmed_value;
+  TrimWhitespace(value, TRIM_ALL, &trimmed_value);
+  return form_group->SetInfo(type, trimmed_value, app_locale);
 }
 
 base::string16 AutofillProfile::GetInfoForVariant(
@@ -400,13 +400,17 @@ bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
 
 
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
-  const ServerFieldType single_value_types[] = { COMPANY_NAME,
-                                                 ADDRESS_HOME_LINE1,
-                                                 ADDRESS_HOME_LINE2,
-                                                 ADDRESS_HOME_CITY,
-                                                 ADDRESS_HOME_STATE,
-                                                 ADDRESS_HOME_ZIP,
-                                                 ADDRESS_HOME_COUNTRY };
+  const ServerFieldType single_value_types[] = {
+    COMPANY_NAME,
+    ADDRESS_HOME_LINE1,
+    ADDRESS_HOME_LINE2,
+    ADDRESS_HOME_DEPENDENT_LOCALITY,
+    ADDRESS_HOME_CITY,
+    ADDRESS_HOME_STATE,
+    ADDRESS_HOME_ZIP,
+    ADDRESS_HOME_SORTING_CODE,
+    ADDRESS_HOME_COUNTRY,
+  };
 
   for (size_t i = 0; i < arraysize(single_value_types); ++i) {
     int comparison = GetRawInfo(single_value_types[i]).compare(
@@ -461,11 +465,12 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
 
   for (ServerFieldTypeSet::const_iterator it = types.begin(); it != types.end();
        ++it) {
-    if (*it == NAME_FULL) {
+    if (*it == NAME_FULL || *it == ADDRESS_HOME_STREET_ADDRESS) {
       // Ignore the compound "full name" field type.  We are only interested in
       // comparing the constituent parts.  For example, if |this| has a middle
       // name saved, but |profile| lacks one, |profile| could still be a subset
-      // of |this|.
+      // of |this|.  Likewise, ignore the compound "street address" type, as we
+      // are only interested in matching line-by-line.
       continue;
     } else if (AutofillType(*it).group() == PHONE_HOME) {
       // Phone numbers should be canonicalized prior to being compared.
@@ -499,6 +504,12 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
   // Only transfer "full" types (e.g. full name) and not fragments (e.g.
   // first name, last name).
   CollapseCompoundFieldTypes(&field_types);
+
+  // TODO(isherman): Revisit this decision in the context of i18n and storing
+  // full addresses rather than storing 1-to-2 lines of an address.
+  // For addresses, do the opposite: transfer individual address lines, rather
+  // than full addresses.
+  field_types.erase(ADDRESS_HOME_STREET_ADDRESS);
 
   for (ServerFieldTypeSet::const_iterator iter = field_types.begin();
        iter != field_types.end(); ++iter) {
@@ -818,11 +829,15 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
       << " "
       << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2))
       << " "
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))
+      << " "
       << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY))
       << " "
       << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE))
       << " "
       << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP))
+      << " "
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE))
       << " "
       << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))
       << " "

@@ -31,10 +31,12 @@ Address& Address::operator=(const Address& address) {
 
   line1_ = address.line1_;
   line2_ = address.line2_;
+  dependent_locality_ = address.dependent_locality_;
   city_ = address.city_;
   state_ = address.state_;
   country_code_ = address.country_code_;
   zip_code_ = address.zip_code_;
+  sorting_code_ = address.sorting_code_;
   return *this;
 }
 
@@ -47,6 +49,9 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
     case ADDRESS_HOME_LINE2:
       return line2_;
 
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return dependent_locality_;
+
     case ADDRESS_HOME_CITY:
       return city_;
 
@@ -55,6 +60,9 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
 
     case ADDRESS_HOME_ZIP:
       return zip_code_;
+
+    case ADDRESS_HOME_SORTING_CODE:
+      return sorting_code_;
 
     case ADDRESS_HOME_COUNTRY:
       return ASCIIToUTF16(country_code_);
@@ -65,11 +73,6 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
         address += ASCIIToUTF16("\n") + line2_;
       return address;
     }
-
-    // TODO(isherman): Add support for these field types in support of i18n.
-    case ADDRESS_HOME_SORTING_CODE:
-    case ADDRESS_HOME_DEPENDENT_LOCALITY:
-      return base::string16();
 
     default:
       NOTREACHED();
@@ -86,6 +89,10 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
 
     case ADDRESS_HOME_LINE2:
       line2_ = value;
+      break;
+
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      dependent_locality_ = value;
       break;
 
     case ADDRESS_HOME_CITY:
@@ -106,6 +113,10 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
       zip_code_ = value;
       break;
 
+    case ADDRESS_HOME_SORTING_CODE:
+      sorting_code_ = value;
+      break;
+
     case ADDRESS_HOME_STREET_ADDRESS: {
       // Clear any stale values, which might or might not get overwritten below.
       line1_.clear();
@@ -121,11 +132,6 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
       // TODO(isherman): Add support for additional address lines.
       break;
     }
-
-    // TODO(isherman): Add support for these field types in support of i18n.
-    case ADDRESS_HOME_SORTING_CODE:
-    case ADDRESS_HOME_DEPENDENT_LOCALITY:
-      break;
 
     default:
       NOTREACHED();
@@ -191,9 +197,12 @@ void Address::GetMatchingTypes(const base::string16& text,
 void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(ADDRESS_HOME_LINE1);
   supported_types->insert(ADDRESS_HOME_LINE2);
+  supported_types->insert(ADDRESS_HOME_STREET_ADDRESS);
+  supported_types->insert(ADDRESS_HOME_DEPENDENT_LOCALITY);
   supported_types->insert(ADDRESS_HOME_CITY);
   supported_types->insert(ADDRESS_HOME_STATE);
   supported_types->insert(ADDRESS_HOME_ZIP);
+  supported_types->insert(ADDRESS_HOME_SORTING_CODE);
   supported_types->insert(ADDRESS_HOME_COUNTRY);
 }
 

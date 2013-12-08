@@ -76,15 +76,15 @@ void AutofillProfile33FromStatement(const sql::Statement& s,
   profile->set_guid(s.ColumnString(0));
   EXPECT_TRUE(base::IsValidGUID(profile->guid()));
   profile->SetRawInfo(autofill::COMPANY_NAME, s.ColumnString16(1));
-  profile->SetRawInfo(autofill::ADDRESS_HOME_LINE1, s.ColumnString16(2));
-  profile->SetRawInfo(autofill::ADDRESS_HOME_LINE2, s.ColumnString16(3));
-  profile->SetRawInfo(autofill::ADDRESS_HOME_CITY, s.ColumnString16(4));
-  profile->SetRawInfo(autofill::ADDRESS_HOME_STATE, s.ColumnString16(5));
-  profile->SetRawInfo(autofill::ADDRESS_HOME_ZIP, s.ColumnString16(6));
+  profile->SetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS,
+                      s.ColumnString16(2));
+  profile->SetRawInfo(autofill::ADDRESS_HOME_CITY, s.ColumnString16(3));
+  profile->SetRawInfo(autofill::ADDRESS_HOME_STATE, s.ColumnString16(4));
+  profile->SetRawInfo(autofill::ADDRESS_HOME_ZIP, s.ColumnString16(5));
   profile->SetInfo(
       autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-      s.ColumnString16(7), "en-US");
-  *date_modified = s.ColumnInt64(8);
+      s.ColumnString16(6), "en-US");
+  *date_modified = s.ColumnInt64(7);
 }
 
 void CreditCard31FromStatement(const sql::Statement& s,
@@ -247,7 +247,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 53;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 54;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -805,8 +805,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
     // Verify data in the database after the migration.
     sql::Statement s1(
         connection.GetUniqueStatement(
-            "SELECT guid, company_name, address_line_1, address_line_2, "
-            "city, state, zipcode, country, date_modified "
+            "SELECT guid, company_name, street_address, city, state, zipcode,"
+            " country_code, date_modified "
             "FROM autofill_profiles"));
     ASSERT_TRUE(s1.Step());
 
@@ -916,13 +916,12 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles",
                                            "company_name"));
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles",
-                                           "address_line_1"));
-    EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles",
-                                           "address_line_2"));
+                                           "street_address"));
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles", "city"));
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles", "state"));
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles", "zipcode"));
-    EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles", "country"));
+    EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles",
+                                           "country_code"));
     EXPECT_FALSE(connection.DoesColumnExist("autofill_profiles", "phone"));
     EXPECT_FALSE(connection.DoesColumnExist("autofill_profiles", "fax"));
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles",
@@ -943,7 +942,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
 
     // New "phones" table.
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profile_phones", "guid"));
-    EXPECT_TRUE(connection.DoesColumnExist("autofill_profile_phones", "type"));
     EXPECT_TRUE(connection.DoesColumnExist("autofill_profile_phones",
                                            "number"));
 
@@ -952,21 +950,22 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // Verify data in the database after the migration.
     sql::Statement s1(
         connection.GetUniqueStatement(
-            "SELECT guid, company_name, address_line_1, address_line_2, "
-            "city, state, zipcode, country, date_modified "
+            "SELECT guid, company_name, street_address, city, state, zipcode, "
+            " country_code, date_modified "
             "FROM autofill_profiles"));
 
     // John Doe.
     ASSERT_TRUE(s1.Step());
     EXPECT_EQ("00580526-FF81-EE2A-0546-1AC593A32E2F", s1.ColumnString(0));
     EXPECT_EQ(ASCIIToUTF16("Doe Enterprises"), s1.ColumnString16(1));
-    EXPECT_EQ(ASCIIToUTF16("1 Main St"), s1.ColumnString16(2));
-    EXPECT_EQ(ASCIIToUTF16("Apt 1"), s1.ColumnString16(3));
-    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
-    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
-    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
-    EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
+    EXPECT_EQ(ASCIIToUTF16("1 Main St\n"
+                           "Apt 1"),
+              s1.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("US"), s1.ColumnString16(6));
+    EXPECT_EQ(1297882100L, s1.ColumnInt64(7));
 
     // John P. Doe.
     // Gets merged during migration from 35 to 37 due to multi-valued fields.
@@ -976,24 +975,22 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s1.ColumnString(0));
     EXPECT_EQ(base::string16(), s1.ColumnString16(1));
     EXPECT_EQ(ASCIIToUTF16("2 Main Street"), s1.ColumnString16(2));
-    EXPECT_EQ(base::string16(), s1.ColumnString16(3));
-    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
-    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
-    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
-    EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
+    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("US"), s1.ColumnString16(6));
+    EXPECT_EQ(1297882100L, s1.ColumnInt64(7));
 
     // Dave Smith (Part 2).
     ASSERT_TRUE(s1.Step());
     EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s1.ColumnString(0));
     EXPECT_EQ(base::string16(), s1.ColumnString16(1));
     EXPECT_EQ(ASCIIToUTF16("2 Main St"), s1.ColumnString16(2));
-    EXPECT_EQ(base::string16(), s1.ColumnString16(3));
-    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
-    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
-    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
-    EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
+    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("US"), s1.ColumnString16(6));
+    EXPECT_EQ(1297882100L, s1.ColumnInt64(7));
 
     // Alfred E Newman.
     // Gets culled during migration from 35 to 36 due to incomplete address.
@@ -1003,12 +1000,11 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s1.ColumnString(0));
     EXPECT_EQ(base::string16(), s1.ColumnString16(1));
     EXPECT_EQ(ASCIIToUTF16("3 Main St"), s1.ColumnString16(2));
-    EXPECT_EQ(base::string16(), s1.ColumnString16(3));
-    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
-    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
-    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
-    EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
+    EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("US"), s1.ColumnString16(6));
+    EXPECT_EQ(1297882100L, s1.ColumnInt64(7));
 
     // That should be all.
     EXPECT_FALSE(s1.Step());
@@ -1097,14 +1093,13 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
 
     sql::Statement s4(
         connection.GetUniqueStatement(
-            "SELECT guid, type, number "
+            "SELECT guid, number "
             "FROM autofill_profile_phones"));
 
     // John Doe phone.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("00580526-FF81-EE2A-0546-1AC593A32E2F", s4.ColumnString(0));
-    EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
-    EXPECT_EQ(ASCIIToUTF16("4151112222"), s4.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16("4151112222"), s4.ColumnString16(1));
 
     // John Doe fax.
     // Gets culled after fax type removed.
@@ -1120,8 +1115,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 2 Main Street phone.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s4.ColumnString(0));
-    EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
-    EXPECT_EQ(base::string16(), s4.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s4.ColumnString16(1));
 
     // 2 Main Street fax.
     // Gets culled after fax type removed.
@@ -1140,8 +1134,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 3 Main St phone.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s4.ColumnString(0));
-    EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
-    EXPECT_EQ(base::string16(), s4.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s4.ColumnString16(1));
 
     // 2 Main St fax.
     // Gets culled after fax type removed.
@@ -1295,21 +1288,22 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion35ToCurrent) {
     // Verify data in the database after the migration.
     sql::Statement s1(
         connection.GetUniqueStatement(
-            "SELECT guid, company_name, address_line_1, address_line_2, "
-            "city, state, zipcode, country, date_modified "
+            "SELECT guid, company_name, street_address, city, state, zipcode,"
+            " country_code, date_modified "
             "FROM autofill_profiles"));
 
     // John Doe.
     ASSERT_TRUE(s1.Step());
     EXPECT_EQ("00000000-0000-0000-0000-000000000001", s1.ColumnString(0));
     EXPECT_EQ(ASCIIToUTF16("Acme Inc."), s1.ColumnString16(1));
-    EXPECT_EQ(ASCIIToUTF16("1 Main Street"), s1.ColumnString16(2));
-    EXPECT_EQ(ASCIIToUTF16("Apt 2"), s1.ColumnString16(3));
-    EXPECT_EQ(ASCIIToUTF16("San Francisco"), s1.ColumnString16(4));
-    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
-    EXPECT_EQ(ASCIIToUTF16("94102"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
-    EXPECT_EQ(1300131704, s1.ColumnInt64(8));
+    EXPECT_EQ(ASCIIToUTF16("1 Main Street\n"
+                           "Apt 2"),
+              s1.ColumnString16(2));
+    EXPECT_EQ(ASCIIToUTF16("San Francisco"), s1.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("94102"), s1.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("US"), s1.ColumnString16(6));
+    EXPECT_EQ(1300131704, s1.ColumnInt64(7));
 
     // That should be it.
     ASSERT_FALSE(s1.Step());
@@ -2115,5 +2109,163 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion52ToCurrent) {
 
     // New columns should have been created.
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "new_tab_url"));
+  }
+}
+
+// Tests that for a version 54 database,
+//   (a) The street_address, dependent_locality, and sorting_code columns are
+//       added to the autofill_profiles table schema.
+//   (b) The address_line1, address_line2, and country columns are dropped from
+//       the autofill_profiles table schema.
+//   (c) The type column is dropped from the autofill_profile_phones schema.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion53ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_53.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 53 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profiles", "address_line_1"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profiles", "address_line_2"));
+    EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles", "country"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profiles", "street_address"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profiles", "dependent_locality"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profiles", "sorting_code"));
+    EXPECT_TRUE(connection.DoesColumnExist("autofill_profile_phones", "type"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // Columns should have been added and removed appropriately.
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profiles", "address_line1"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profiles", "address_line2"));
+    EXPECT_FALSE(connection.DoesColumnExist("autofill_profiles", "country"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profiles", "street_address"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profiles", "dependent_locality"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profiles", "sorting_code"));
+    EXPECT_FALSE(connection.DoesColumnExist("autofill_profile_phones", "type"));
+
+    // Data should have been preserved.
+    sql::Statement s_profiles(
+        connection.GetUniqueStatement(
+            "SELECT guid, company_name, street_address, dependent_locality,"
+            " city, state, zipcode, sorting_code, country_code, date_modified,"
+            " origin "
+            "FROM autofill_profiles"));
+
+    // Address lines 1 and 2.
+    ASSERT_TRUE(s_profiles.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000001",
+              s_profiles.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Google, Inc."), s_profiles.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16("1950 Charleston Rd.\n"
+                           "(2nd floor)"),
+              s_profiles.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("Mountain View"), s_profiles.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s_profiles.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("94043"), s_profiles.ColumnString16(6));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("US"), s_profiles.ColumnString16(8));
+    EXPECT_EQ(1386046731, s_profiles.ColumnInt(9));
+    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+
+    // Only address line 1.
+    ASSERT_TRUE(s_profiles.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000002",
+              s_profiles.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Google!"), s_profiles.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16("1600 Amphitheatre Pkwy."),
+              s_profiles.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("Mtn. View"), s_profiles.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("California"), s_profiles.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("94043-1234"), s_profiles.ColumnString16(6));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("US"), s_profiles.ColumnString16(8));
+    EXPECT_EQ(1386046800, s_profiles.ColumnInt(9));
+    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+
+    // Only address line 2.
+    ASSERT_TRUE(s_profiles.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000003",
+              s_profiles.ColumnString(0));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16("\nOnly line 2???"), s_profiles.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(3));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(4));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(5));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(6));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(8));
+    EXPECT_EQ(1386046834, s_profiles.ColumnInt(9));
+    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+
+    // No address lines.
+    ASSERT_TRUE(s_profiles.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000004",
+              s_profiles.ColumnString(0));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(1));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(3));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("Texas"), s_profiles.ColumnString16(5));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(6));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(8));
+    EXPECT_EQ(1386046847, s_profiles.ColumnInt(9));
+    EXPECT_EQ(ASCIIToUTF16("Chrome settings"), s_profiles.ColumnString16(10));
+
+    // That should be it.
+    EXPECT_FALSE(s_profiles.Step());
+
+    // Verify the phone number data as well.
+    sql::Statement s_phones(
+        connection.GetUniqueStatement(
+            "SELECT guid, number FROM autofill_profile_phones"));
+
+    ASSERT_TRUE(s_phones.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000001", s_phones.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("1.800.555.1234"), s_phones.ColumnString16(1));
+
+    ASSERT_TRUE(s_phones.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000001", s_phones.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("+1 (800) 555-4321"), s_phones.ColumnString16(1));
+
+    ASSERT_TRUE(s_phones.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000002", s_phones.ColumnString(0));
+    EXPECT_EQ(base::string16(), s_phones.ColumnString16(1));
+
+    ASSERT_TRUE(s_phones.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000003", s_phones.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("6505557890"), s_phones.ColumnString16(1));
+
+    ASSERT_TRUE(s_phones.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000004", s_phones.ColumnString(0));
+    EXPECT_EQ(base::string16(), s_phones.ColumnString16(1));
+
+    EXPECT_FALSE(s_phones.Step());
   }
 }

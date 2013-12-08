@@ -807,4 +807,45 @@ TEST(AutofillProfileTest, IsPresentButInvalid) {
   EXPECT_FALSE(profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER));
 }
 
+TEST(AutofillProfileTest, SetRawInfoPreservesLineBreaks) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+
+  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     ASCIIToUTF16("123 Super St.\n"
+                                  "Apt. #42"));
+  EXPECT_EQ(ASCIIToUTF16("123 Super St.\n"
+                         "Apt. #42"),
+            profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+}
+
+TEST(AutofillProfileTest, SetInfoPreservesLineBreaks) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+
+  profile.SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS),
+                  ASCIIToUTF16("123 Super St.\n"
+                               "Apt. #42"),
+                  "en-US");
+  EXPECT_EQ(ASCIIToUTF16("123 Super St.\n"
+                         "Apt. #42"),
+            profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+}
+
+TEST(AutofillProfileTest, SetRawInfoDoesntTrimWhitespace) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("\tuser@example.com    "));
+  EXPECT_EQ(ASCIIToUTF16("\tuser@example.com    "),
+            profile.GetRawInfo(EMAIL_ADDRESS));
+}
+
+TEST(AutofillProfileTest, SetInfoTrimsWhitespace) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+
+  profile.SetInfo(AutofillType(EMAIL_ADDRESS),
+                  ASCIIToUTF16("\tuser@example.com    "),
+                  "en-US");
+  EXPECT_EQ(ASCIIToUTF16("user@example.com"),
+            profile.GetRawInfo(EMAIL_ADDRESS));
+}
+
 }  // namespace autofill

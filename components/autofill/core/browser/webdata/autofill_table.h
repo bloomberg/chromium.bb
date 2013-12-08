@@ -35,17 +35,17 @@ struct FormFieldData;
 // Note: The database stores time in seconds, UTC.
 //
 // autofill
-//   name                The name of the input as specified in the html.
-//   value               The literal contents of the text field.
-//   value_lower         The contents of the text field made lower_case.
-//   pair_id             An ID number unique to the row in the table.
-//   count               How many times the user has entered the string |value|
-//                       in a field of name |name|.
+//   name               The name of the input as specified in the html.
+//   value              The literal contents of the text field.
+//   value_lower        The contents of the text field made lower_case.
+//   pair_id            An ID number unique to the row in the table.
+//   count              How many times the user has entered the string |value|
+//                      in a field of name |name|.
 //
-// autofill_dates        This table associates a row to each separate time the
-//                       user submits a form containing a certain name/value
-//                       pair.  The |pair_id| should match the |pair_id| field
-//                       in the appropriate row of the autofill table.
+// autofill_dates       This table associates a row to each separate time the
+//                      user submits a form containing a certain name/value
+//                      pair.  The |pair_id| should match the |pair_id| field
+//                      in the appropriate row of the autofill table.
 //   pair_id
 //   date_created
 //
@@ -56,13 +56,18 @@ struct FormFieldData;
 //   guid               A guid string to uniquely identify the profile.
 //                      Added in version 31.
 //   company_name
-//   address_line_1
-//   address_line_2
+//   street_address     The combined lines of the street address.
+//                      Added in version 54.
+//   dependent_locality
+//                      A sub-classification beneath the city, e.g. an
+//                      inner-city district or suburb.  Added in version 54.
 //   city
 //   state
 //   zipcode
-//   country            The country name.  Deprecated, should be removed once
-//                      the stable channel reaches version 11.
+//   sorting_code       Similar to the zipcode column, but used for businesses
+//                      or organizations that might not be geographically
+//                      contiguous.  The canonical example is CEDEX in France.
+//                      Added in version 54.
 //   country_code
 //   date_modified      The date on which this profile was last modified.
 //                      Added in version 30.
@@ -91,12 +96,8 @@ struct FormFieldData;
 //                      This table contains the multi-valued phone fields
 //                      associated with a profile.
 //
-//   guid               The guid string that identifies the profile to which
-//                      the phone number belongs.
-//   type               An integer constant designating either phone type of the
-//                      number.
-//                      TODO(jhawkins): Remove the type column and migrate the
-//                      database.
+//   guid               The guid string that identifies the profile to which the
+//                      phone number belongs.
 //   number
 //
 // autofill_profiles_trash
@@ -115,7 +116,8 @@ struct FormFieldData;
 //   name_on_card
 //   expiration_month
 //   expiration_year
-//   card_number_encrypted Stores encrypted credit card number.
+//   card_number_encrypted
+//                      Stores encrypted credit card number.
 //   date_modified      The date on which this entry was last modified.
 //                      Added in version 30.
 //   origin             The domain of origin for this profile.
@@ -320,6 +322,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion35GreatBritainCountryCodes();
   bool MigrateToVersion37MergeAndCullOlderProfiles();
   bool MigrateToVersion51AddOriginColumn();
+  bool MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;
