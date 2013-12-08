@@ -317,6 +317,8 @@
             'autofill/content/browser/wallet/form_field_error.h',
             'autofill/content/browser/wallet/full_wallet.cc',
             'autofill/content/browser/wallet/full_wallet.h',
+            'autofill/content/browser/wallet/gaia_account.cc',
+            'autofill/content/browser/wallet/gaia_account.h',
             'autofill/content/browser/wallet/instrument.cc',
             'autofill/content/browser/wallet/instrument.h',
             'autofill/content/browser/wallet/required_action.cc',

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
+#include "components/autofill/content/browser/wallet/gaia_account.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
@@ -62,6 +63,11 @@ GetTestMaskedInstrumentWithIdAndAddress(
       address.Pass(),
       WalletItems::MaskedInstrument::VISA,
       WalletItems::MaskedInstrument::VALID);
+}
+
+scoped_ptr<GaiaAccount> GetTestGaiaAccount() {
+  return scoped_ptr<GaiaAccount>(GaiaAccount::CreateForTesting(
+      "user@chromium.org", "obfuscated_id", 0, true));
 }
 
 scoped_ptr<Address> GetTestAddress() {
@@ -235,33 +241,28 @@ scoped_ptr<WalletItems> GetTestWalletItems(
     const std::vector<RequiredAction>& required_actions,
     const std::string& default_instrument_id,
     const std::string& default_address_id,
-    AmexPermission amex_permission,
-    const std::vector<std::string>& users,
-    size_t user_index) {
+    AmexPermission amex_permission) {
   return scoped_ptr<WalletItems>(
       new wallet::WalletItems(required_actions,
                               "google_transaction_id",
                               default_instrument_id,
                               default_address_id,
-                              "obfuscated_gaia_id",
-                              user_index,
-                              amex_permission,
-                              users));
+                              amex_permission));
 }
 
 scoped_ptr<WalletItems> GetTestWalletItemsWithRequiredAction(
     RequiredAction action) {
   std::vector<RequiredAction> required_actions(1, action);
-  std::vector<std::string> users;
-  if (action != GAIA_AUTH)
-    users.push_back("user@example.com");
+  scoped_ptr<WalletItems> items =
+      GetTestWalletItems(required_actions,
+                         "default_instrument_id",
+                         "default_address_id",
+                         AMEX_ALLOWED);
 
-  return GetTestWalletItems(required_actions,
-                            "default_instrument_id",
-                            "default_address_id",
-                            AMEX_ALLOWED,
-                            users,
-                            0);
+  if (action != GAIA_AUTH)
+    items->AddAccount(GetTestGaiaAccount());
+
+  return items.Pass();
 }
 
 scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission) {
@@ -270,28 +271,32 @@ scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission) {
                                           amex_permission);
 }
 
-
 scoped_ptr<WalletItems> GetTestWalletItemsWithUsers(
-    const std::vector<std::string>& users, size_t user_index) {
-  return GetTestWalletItems(std::vector<RequiredAction>(),
-                            "default_instrument_id",
-                            "default_address_id",
-                            AMEX_ALLOWED,
-                            users,
-                            user_index);
+    const std::vector<std::string>& users, size_t active_index) {
+  scoped_ptr<WalletItems> items =
+      GetTestWalletItems(std::vector<RequiredAction>(),
+                         "default_instrument_id",
+                         "default_address_id",
+                         AMEX_ALLOWED);
+  for (size_t i = 0; i < users.size(); ++i) {
+    scoped_ptr<GaiaAccount> account(GaiaAccount::CreateForTesting(
+        users[i], "obfuscated_id", i, i == active_index));
+    items->AddAccount(account.Pass());
+  }
+  return items.Pass();
 }
 
 scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
     const std::string& default_instrument_id,
     const std::string& default_address_id,
     AmexPermission amex_permission) {
-  std::vector<std::string> users(1, "user@example.com");
-  return GetTestWalletItems(std::vector<RequiredAction>(),
-                            default_instrument_id,
-                            default_address_id,
-                            amex_permission,
-                            users,
-                            0);
+  scoped_ptr<WalletItems> items =
+      GetTestWalletItems(std::vector<RequiredAction>(),
+                         default_instrument_id,
+                         default_address_id,
+                         amex_permission);
+  items->AddAccount(GetTestGaiaAccount());
+  return items.Pass();
 }
 
 }  // namespace wallet

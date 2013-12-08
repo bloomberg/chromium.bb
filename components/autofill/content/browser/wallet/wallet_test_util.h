@@ -15,8 +15,10 @@ namespace wallet {
 
 class Address;
 class FullWallet;
+class GaiaAccount;
 class Instrument;
 
+scoped_ptr<GaiaAccount> GetTestGaiaAccount();
 scoped_ptr<Address> GetTestAddress();
 scoped_ptr<Address> GetTestMinimalAddress();
 scoped_ptr<FullWallet> GetTestFullWallet();

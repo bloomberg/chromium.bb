@@ -29,6 +29,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
+#include "components/autofill/content/browser/wallet/gaia_account.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/mock_wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
@@ -57,7 +58,7 @@ namespace {
 
 using testing::_;
 
-const char kFakeEmail[] = "user@example.com";
+const char kFakeEmail[] = "user@chromium.org";
 const char kFakeFingerprintEncoded[] = "CgVaAwiACA==";
 const char kEditedBillingAddress[] = "123 edited billing address";
 const char* kFieldsFromPage[] =
@@ -102,6 +103,7 @@ void CopyInitialValues(const DetailInputs& inputs, FieldValueMap* outputs) {
 scoped_ptr<wallet::WalletItems> CompleteAndValidWalletItems() {
   scoped_ptr<wallet::WalletItems> items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  items->AddAccount(wallet::GetTestGaiaAccount());
   items->AddInstrument(wallet::GetTestMaskedInstrument());
   items->AddAddress(wallet::GetTestShippingAddress());
   return items.Pass();

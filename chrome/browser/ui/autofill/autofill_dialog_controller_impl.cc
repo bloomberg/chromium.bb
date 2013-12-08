@@ -47,6 +47,7 @@
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/content/browser/wallet/form_field_error.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
+#include "components/autofill/content/browser/wallet/gaia_account.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
@@ -2353,16 +2354,18 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
 
   wallet_items_ = wallet_items.Pass();
 
-  if (wallet_items_) {
+  if (wallet_items_ && !wallet_items_->ObfuscatedGaiaId().empty()) {
     // Making sure the user index is in sync shouldn't be necessary, but is an
     // extra precaution. But if there is no active account (such as in the
     // PASSIVE_AUTH case), stick with the old active account.
-    if (!wallet_items_->obfuscated_gaia_id().empty())
-      GetWalletClient()->set_user_index(wallet_items_->active_account_index());
+    GetWalletClient()->set_user_index(wallet_items_->active_account_index());
 
+    std::vector<std::string> usernames;
+    for (size_t i = 0; i < wallet_items_->gaia_accounts().size(); ++i) {
+      usernames.push_back(wallet_items_->gaia_accounts()[i]->email_address());
+    }
     account_chooser_model_.SetWalletAccounts(
-        wallet_items_->gaia_accounts(),
-        wallet_items_->active_account_index());
+        usernames, wallet_items_->active_account_index());
   }
 
   ConstructLegalDocumentsText();
@@ -2580,7 +2583,7 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   risk_data_.clear();
 
   uint64 obfuscated_gaia_id = 0;
-  bool success = base::StringToUint64(wallet_items_->obfuscated_gaia_id(),
+  bool success = base::StringToUint64(wallet_items_->ObfuscatedGaiaId(),
                                       &obfuscated_gaia_id);
   DCHECK(success);
 

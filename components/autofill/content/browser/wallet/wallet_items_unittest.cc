@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/content/browser/wallet/gaia_account.h"
 #include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -199,7 +200,6 @@ const char kLegalDocumentMissingDisplayName[] =
 
 const char kWalletItemsWithRequiredActions[] =
     "{"
-    "  \"obfuscated_gaia_id\":\"\","
     "  \"required_action\":"
     "  ["
     "    \"  setup_wallet\","
@@ -215,7 +215,6 @@ const char kWalletItemsWithRequiredActions[] =
 
 const char kWalletItemsWithInvalidRequiredActions[] =
     "{"
-    "  \"obfuscated_gaia_id\":\"\","
     "  \"required_action\":"
     "  ["
     "    \"verify_CVV\","
@@ -278,7 +277,6 @@ const char kWalletItemsMissingGoogleTransactionId[] =
     "    }"
     "  ],"
     "  \"default_address_id\":\"default_address_id\","
-    "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\","
     "  \"amex_disallowed\":true,"
     "  \"required_legal_document\":"
     "  ["
@@ -345,7 +343,7 @@ const char kWalletItems[] =
     "    }"
     "  ],"
     "  \"default_address_id\":\"default_address_id\","
-    "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\","
+    "  \"obfuscated_gaia_id\":\"ignore_this_value\","
     "  \"amex_disallowed\":true,"
     "  \"gaia_profile\":"
     "  ["
@@ -512,10 +510,7 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                        std::string(),
                        std::string(),
                        std::string(),
-                       std::string(),
-                       0,
-                       AMEX_DISALLOWED,
-                       std::vector<std::string>());
+                       AMEX_DISALLOWED);
   EXPECT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
 
   ASSERT_FALSE(required_actions.empty());
@@ -524,10 +519,7 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                                          std::string(),
                                          std::string(),
                                          std::string(),
-                                         std::string(),
-                                         0,
-                                         AMEX_DISALLOWED,
-                                         std::vector<std::string>());
+                                         AMEX_DISALLOWED);
   EXPECT_NE(expected, different_required_actions);
 }
 
@@ -554,17 +546,25 @@ TEST_F(WalletItemsTest, CreateWalletItemsMissingAmexDisallowed) {
 TEST_F(WalletItemsTest, CreateWalletItems) {
   SetUpDictionary(std::string(kWalletItems) + std::string(kCloseJson));
   std::vector<RequiredAction> required_actions;
-  std::vector<std::string> users;
-  users.push_back("user@chromium.org");
-  users.push_back("user2@chromium.org");
   WalletItems expected(required_actions,
                        "google_transaction_id",
                        "default_instrument_id",
                        "default_address_id",
-                       "obfuscated_gaia_id",
-                       1,
-                       AMEX_DISALLOWED,
-                       users);
+                       AMEX_DISALLOWED);
+
+  scoped_ptr<GaiaAccount> user1(GaiaAccount::CreateForTesting(
+      "user@chromium.org",
+      "123456789",
+      0,
+      true));
+  expected.AddAccount(user1.Pass());
+  scoped_ptr<GaiaAccount> user2(GaiaAccount::CreateForTesting(
+      "user2@chromium.org",
+      "obfuscated_gaia_id",
+      1,
+      false));
+  expected.AddAccount(user2.Pass());
+  EXPECT_EQ("123456789", expected.ObfuscatedGaiaId());
 
   scoped_ptr<Address> billing_address(new Address("US",
                                                   ASCIIToUTF16("name"),
