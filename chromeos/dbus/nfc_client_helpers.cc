@@ -201,6 +201,16 @@ void DBusObjectMap::RefreshAllProperties() {
   }
 }
 
+ObjectPathVector DBusObjectMap::GetObjectPaths() {
+  std::vector<dbus::ObjectPath> object_paths;
+  for (ObjectMap::const_iterator iter = object_map_.begin();
+       iter != object_map_.end(); ++iter) {
+    const dbus::ObjectPath& object_path = iter->first;
+    object_paths.push_back(object_path);
+  }
+  return object_paths;
+}
+
 DBusObjectMap::ObjectPropertyPair DBusObjectMap::GetObjectPropertyPair(
     const dbus::ObjectPath& object_path) {
   ObjectMap::iterator iter = object_map_.find(object_path);

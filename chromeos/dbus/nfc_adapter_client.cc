@@ -65,6 +65,11 @@ class NfcAdapterClientImpl
   }
 
   // NfcAdapterClient override.
+  virtual std::vector<dbus::ObjectPath> GetAdapters() OVERRIDE {
+    return object_map_->GetObjectPaths();
+  }
+
+  // NfcAdapterClient override.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
       OVERRIDE {
     return static_cast<Properties*>(
@@ -170,6 +175,7 @@ class NfcAdapterClientImpl
                       AdapterAdded(object_path));
   }
 
+  // nfc_client_helpers::DBusObjectMap::Delegate override.
   virtual void ObjectRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
     FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
                       AdapterRemoved(object_path));

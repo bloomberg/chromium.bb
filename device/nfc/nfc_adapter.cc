@@ -4,8 +4,6 @@
 
 #include "device/nfc/nfc_adapter.h"
 
-#include "base/lazy_instance.h"
-#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "device/nfc/nfc_peer.h"
 #include "device/nfc/nfc_tag.h"

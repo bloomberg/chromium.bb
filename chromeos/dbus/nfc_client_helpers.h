@@ -129,6 +129,10 @@ class CHROMEOS_EXPORT DBusObjectMap {
   // that are managed by this instance.
   void RefreshAllProperties();
 
+  // Returns a list containing the object paths of all remote objects that are
+  // managed by this instance.
+  ObjectPathVector GetObjectPaths();
+
  private:
   typedef std::pair<dbus::ObjectProxy*, NfcPropertySet*> ObjectPropertyPair;
   typedef std::map<dbus::ObjectPath, ObjectPropertyPair> ObjectMap;

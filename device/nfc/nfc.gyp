@@ -16,6 +16,8 @@
       'sources': [
         'nfc_adapter.cc',
         'nfc_adapter.h',
+        'nfc_adapter_chromeos.cc',
+        'nfc_adapter_chromeos.h',
         'nfc_adapter_factory.cc',
         'nfc_adapter_factory.h',
         'nfc_ndef_record.cc',

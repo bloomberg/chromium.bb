@@ -85,6 +85,9 @@ class CHROMEOS_EXPORT NfcAdapterClient : public DBusClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Returns the list of adapter object paths known to the system.
+  virtual std::vector<dbus::ObjectPath> GetAdapters() = 0;
+
   // Obtains the properties for the adapter with object path |object_path|, any
   // values should be copied if needed. A NULL pointer will be returned, if no
   // adapter with the given object path is known to exist.
