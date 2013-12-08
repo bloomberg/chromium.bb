@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -30,7 +31,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/schema.h"
 #include "content/public/browser/web_contents.h"
@@ -126,10 +130,12 @@ class PolicyTestCase {
  public:
   PolicyTestCase(const std::string& name,
                  bool is_official_only,
-                 bool can_be_recommended)
+                 bool can_be_recommended,
+                 const std::string& indicator_selector)
       : name_(name),
         is_official_only_(is_official_only),
-        can_be_recommended_(can_be_recommended) {}
+        can_be_recommended_(can_be_recommended),
+        indicator_selector_(indicator_selector) {}
   ~PolicyTestCase() {}
 
   const std::string& name() const { return name_; }
@@ -163,9 +169,10 @@ class PolicyTestCase {
     return IsOsSupported();
   }
 
-  const PolicyMap& test_policy() const { return test_policy_; }
-  void SetTestPolicy(const PolicyMap& policy) {
-    test_policy_.CopyFrom(policy);
+  const base::DictionaryValue& test_policy() const { return test_policy_; }
+  void SetTestPolicy(const base::DictionaryValue& policy) {
+    test_policy_.Clear();
+    test_policy_.MergeDictionary(&policy);
   }
 
   const ScopedVector<PrefMapping>& pref_mappings() const {
@@ -175,13 +182,16 @@ class PolicyTestCase {
     pref_mappings_.push_back(pref_mapping);
   }
 
+  const std::string& indicator_selector() const { return indicator_selector_; }
+
  private:
   std::string name_;
   bool is_official_only_;
   bool can_be_recommended_;
   std::vector<std::string> supported_os_;
-  PolicyMap test_policy_;
+  base::DictionaryValue test_policy_;
   ScopedVector<PrefMapping> pref_mappings_;
+  std::string indicator_selector_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCase);
 };
@@ -246,8 +256,12 @@ class PolicyTestCases {
     policy_test_dict->GetBoolean("official_only", &is_official_only);
     bool can_be_recommended = false;
     policy_test_dict->GetBoolean("can_be_recommended", &can_be_recommended);
-    PolicyTestCase* policy_test_case =
-        new PolicyTestCase(name, is_official_only, can_be_recommended);
+    std::string indicator_selector;
+    policy_test_dict->GetString("indicator_selector", &indicator_selector);
+    PolicyTestCase* policy_test_case = new PolicyTestCase(name,
+                                                          is_official_only,
+                                                          can_be_recommended,
+                                                          indicator_selector);
     const base::ListValue* os_list = NULL;
     if (policy_test_dict->GetList("os", &os_list)) {
       for (size_t i = 0; i < os_list->GetSize(); ++i) {
@@ -256,12 +270,9 @@ class PolicyTestCases {
           policy_test_case->AddSupportedOs(os);
       }
     }
-    const base::DictionaryValue* policy_dict = NULL;
-    if (policy_test_dict->GetDictionary("test_policy", &policy_dict)) {
-      PolicyMap policy;
-      policy.LoadFrom(policy_dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
-      policy_test_case->SetTestPolicy(policy);
-    }
+    const base::DictionaryValue* policy = NULL;
+    if (policy_test_dict->GetDictionary("test_policy", &policy))
+      policy_test_case->SetTestPolicy(*policy);
     const base::ListValue* pref_mappings = NULL;
     if (policy_test_dict->GetList("pref_mappings", &pref_mappings)) {
       for (size_t i = 0; i < pref_mappings->GetSize(); ++i) {
@@ -449,8 +460,28 @@ class PolicyPrefsTest : public InProcessBrowserTest {
         TemplateURLServiceFactory::GetForProfile(browser()->profile()));
   }
 
-  void UpdateProviderPolicy(const PolicyMap& policy) {
-    provider_.UpdateChromePolicy(policy);
+  void ClearProviderPolicy() {
+    provider_.UpdateChromePolicy(PolicyMap());
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetProviderPolicy(const base::DictionaryValue& policies,
+                         PolicyLevel level) {
+    PolicyMap policy_map;
+    for (DictionaryValue::Iterator it(policies); !it.IsAtEnd(); it.Advance()) {
+      const PolicyDetails* policy_details = GetChromePolicyDetails(it.key());
+      ASSERT_TRUE(policy_details);
+      policy_map.Set(
+          it.key(),
+          level,
+          POLICY_SCOPE_USER,
+          it.value().DeepCopy(),
+          policy_details->max_external_data_size ?
+              new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(),
+                                      it.key()) :
+              NULL);
+    }
+    provider_.UpdateChromePolicy(policy_map);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -490,14 +521,14 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
       ASSERT_TRUE(pref);
 
       // Verify that setting the policy overrides the pref.
-      UpdateProviderPolicy(PolicyMap());
+      ClearProviderPolicy();
       prefs->ClearPref((*pref_mapping)->pref().c_str());
       EXPECT_TRUE(pref->IsDefaultValue());
       EXPECT_TRUE(pref->IsUserModifiable());
       EXPECT_FALSE(pref->IsUserControlled());
       EXPECT_FALSE(pref->IsManaged());
 
-      UpdateProviderPolicy(it->second->test_policy());
+      SetProviderPolicy(it->second->test_policy(), POLICY_LEVEL_MANDATORY);
       EXPECT_FALSE(pref->IsDefaultValue());
       EXPECT_FALSE(pref->IsUserModifiable());
       EXPECT_FALSE(pref->IsUserControlled());
@@ -524,24 +555,46 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
        it != GetParam().end(); ++it) {
     const PolicyTestCase* policy_test_case = test_cases.Get(*it);
     ASSERT_TRUE(policy_test_case) << "PolicyTestCase not found for " << *it;
+    if (!policy_test_case->IsSupported())
+      continue;
     const ScopedVector<PrefMapping>& pref_mappings =
         policy_test_case->pref_mappings();
-    if (!policy_test_case->IsSupported() || pref_mappings.empty())
-      continue;
-    bool has_indicator_tests = false;
-    for (ScopedVector<PrefMapping>::const_iterator
-             pref_mapping = pref_mappings.begin();
-         pref_mapping != pref_mappings.end();
-         ++pref_mapping) {
-      if (!(*pref_mapping)->indicator_test_cases().empty()) {
-        has_indicator_tests = true;
-        break;
+    if (policy_test_case->indicator_selector().empty()) {
+      bool has_pref_indicator_tests = false;
+      for (ScopedVector<PrefMapping>::const_iterator
+               pref_mapping = pref_mappings.begin();
+           pref_mapping != pref_mappings.end();
+           ++pref_mapping) {
+        if (!(*pref_mapping)->indicator_test_cases().empty()) {
+          has_pref_indicator_tests = true;
+          break;
+        }
       }
+      if (!has_pref_indicator_tests)
+        continue;
     }
-    if (!has_indicator_tests)
-      continue;
 
     LOG(INFO) << "Testing policy: " << *it;
+
+    if (!policy_test_case->indicator_selector().empty()) {
+      // Check that no controlled setting indicator is visible when no value is
+      // set by policy.
+      ClearProviderPolicy();
+      VerifyControlledSettingIndicators(browser(),
+                                        policy_test_case->indicator_selector(),
+                                        std::string(),
+                                        std::string(),
+                                        false);
+      // Check that the appropriate controlled setting indicator is shown when a
+      // value is enforced by policy.
+      SetProviderPolicy(policy_test_case->test_policy(),
+                        POLICY_LEVEL_MANDATORY);
+      VerifyControlledSettingIndicators(browser(),
+                                        policy_test_case->indicator_selector(),
+                                        std::string(),
+                                        "policy",
+                                        false);
+    }
 
     for (ScopedVector<PrefMapping>::const_iterator
              pref_mapping = pref_mappings.begin();
@@ -567,15 +620,13 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
            ++indicator_test_case) {
         // Check that no controlled setting indicator is visible when no value
         // is set by policy.
-        UpdateProviderPolicy(PolicyMap());
+        ClearProviderPolicy();
         VerifyControlledSettingIndicators(
             browser(), indicator_selector, std::string(), std::string(), false);
         // Check that the appropriate controlled setting indicator is shown when
         // a value is enforced by policy.
-        PolicyMap policies;
-        policies.LoadFrom(&(*indicator_test_case)->policy(),
-                          POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
-        UpdateProviderPolicy(policies);
+        SetProviderPolicy((*indicator_test_case)->policy(),
+                          POLICY_LEVEL_MANDATORY);
         VerifyControlledSettingIndicators(browser(), indicator_selector,
                                           (*indicator_test_case)->value(),
                                           "policy",
@@ -594,9 +645,8 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
         // Check that the appropriate controlled setting indicator is shown when
         // a value is recommended by policy and the user has not overridden the
         // recommendation.
-        policies.LoadFrom(&(*indicator_test_case)->policy(),
-                          POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER);
-        UpdateProviderPolicy(policies);
+        SetProviderPolicy((*indicator_test_case)->policy(),
+                          POLICY_LEVEL_RECOMMENDED);
         VerifyControlledSettingIndicators(browser(), indicator_selector,
                                           (*indicator_test_case)->value(),
                                           "recommended",

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
+#include "chrome/browser/chromeos/policy/cloud_external_data_policy_observer.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -32,15 +34,17 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
+
+class CrosSettings;
 class UserImageSyncObserver;
-}
+class UserManager;
 
-namespace chromeos {
-
-class UserImageManagerImpl : public UserImageManager,
-                             public ProfileDownloaderDelegate {
+class UserImageManagerImpl
+    : public UserImageManager,
+      public ProfileDownloaderDelegate,
+      public policy::CloudExternalDataPolicyObserver::Delegate {
  public:
-  UserImageManagerImpl();
+  UserImageManagerImpl(CrosSettings* cros_settings, UserManager* user_manager);
 
   // UserImageManager:
   virtual ~UserImageManagerImpl();
@@ -62,7 +66,17 @@ class UserImageManagerImpl : public UserImageManager,
   virtual UserImageSyncObserver* GetSyncObserver() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
+  // policy::CloudExternalDataPolicyObserver::Delegate:
+  virtual void OnExternalDataSet(const std::string& policy,
+                                 const std::string& user_id) OVERRIDE;
+  virtual void OnExternalDataCleared(const std::string& policy,
+                                     const std::string& user_id) OVERRIDE;
+  virtual void OnExternalDataFetched(const std::string& policy,
+                                     const std::string& user_id,
+                                     scoped_ptr<std::string> data) OVERRIDE;
+
   static void IgnoreProfileDataDownloadDelayForTesting();
+  void StopPolicyObserverForTesting();
 
  private:
   friend class UserImageManagerTest;
@@ -89,6 +103,10 @@ class UserImageManagerImpl : public UserImageManager,
   virtual void OnProfileDownloadFailure(
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
+
+  // Returns true if the user image for |user_id| is managed by policy and the
+  // user is not allowed to change it.
+  bool IsUserImageManaged(const std::string& user_id) const;
 
   // Randomly chooses one of the default images for the specified user, sends a
   // LOGIN_USER_IMAGE_CHANGED notification and updates local state.
@@ -129,6 +147,13 @@ class UserImageManagerImpl : public UserImageManager,
 
   // Completes migration by removing |user_id| from the old prefs dictionary.
   void UpdateLocalStateAfterMigration(const std::string& user_id);
+
+  // Create a sync observer if a user is logged in, the user's user image is
+  // allowed to be synced and no sync observer exists yet.
+  void TryToCreateImageSyncObserver();
+
+  // The user manager.
+  UserManager* user_manager_;
 
   // Loader for JPEG user images.
   scoped_refptr<UserImageLoader> image_loader_;
@@ -186,12 +211,18 @@ class UserImageManagerImpl : public UserImageManager,
   // Sync observer for the currently logged-in user.
   scoped_ptr<UserImageSyncObserver> user_image_sync_observer_;
 
+  // Observer for the policy that can be used to manage user images.
+  scoped_ptr<policy::CloudExternalDataPolicyObserver> policy_observer_;
+
   // Background task runner on which Jobs perform file I/O and the image
   // decoders run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // The currently running jobs.
   std::map<std::string, linked_ptr<Job> > jobs_;
+
+  // List of user_ids whose user image is managed by policy.
+  std::set<std::string> users_with_managed_images_;
 
   base::WeakPtrFactory<UserImageManagerImpl> weak_factory_;
 

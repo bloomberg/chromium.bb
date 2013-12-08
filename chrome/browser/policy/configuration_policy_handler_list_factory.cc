@@ -643,6 +643,8 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
           0,
           ash::MAGNIFIER_FULL,
           false)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new ExternalDataPolicyHandler(key::kUserAvatarImage)));
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

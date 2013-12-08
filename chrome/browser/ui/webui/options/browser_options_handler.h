@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -30,6 +32,14 @@ class AutocompleteController;
 class CloudPrintSetupHandler;
 class CustomHomePagesTableModel;
 class TemplateURLService;
+
+namespace base {
+class Value;
+}
+
+namespace policy {
+class PolicyChangeRegistrar;
+}
 
 namespace options {
 
@@ -85,6 +95,10 @@ class BrowserOptionsHandler
   // PointerDeviceObserver::Observer implementation.
   virtual void TouchpadExists(bool exists) OVERRIDE;
   virtual void MouseExists(bool exists) OVERRIDE;
+
+  // Will be called when the policy::key::kUserAvatarImage policy changes.
+  void OnUserImagePolicyChanged(const base::Value* previous_policy,
+                                const base::Value* current_policy);
 #endif
 
   void UpdateSyncState();
@@ -152,6 +166,11 @@ class BrowserOptionsHandler
 
 #if defined(OS_CHROMEOS)
   void UpdateAccountPicture();
+
+  // Updates the UI, allowing the user to change the avatar image if |managed|
+  // is |false| and preventing the user from changing the avatar image if
+  // |managed| is |true|.
+  void OnAccountPictureManagedChanged(bool managed);
 #endif
 
   // Callback for the "selectDownloadLocation" message. This will prompt the
@@ -302,6 +321,9 @@ class BrowserOptionsHandler
   DoublePrefMember default_zoom_level_;
 
   PrefChangeRegistrar profile_pref_registrar_;
+#if defined(OS_CHROMEOS)
+  scoped_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
+#endif
 
   // Used to get WeakPtr to self for use on the UI thread.
   base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_;

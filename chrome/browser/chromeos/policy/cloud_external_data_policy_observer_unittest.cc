@@ -15,11 +15,10 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
+#include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
@@ -80,12 +79,9 @@ void ConstructAvatarPolicy(const std::string& file_name,
   ASSERT_TRUE(base::ReadFileToString(
       test_data_dir.Append("chromeos").Append(file_name),
       policy_data));
-  const std::string sha1 = base::SHA1HashString(*policy_data);
-
-  base::DictionaryValue dict;
-  dict.SetString("url", url);
-  dict.SetString("hash", base::HexEncode(sha1.data(), sha1.size()));
-  base::JSONWriter::Write(&dict, policy);
+  base::JSONWriter::Write(
+      test::ConstructExternalDataReference(url, *policy_data).get(),
+      policy);
 }
 
 }  // namespace

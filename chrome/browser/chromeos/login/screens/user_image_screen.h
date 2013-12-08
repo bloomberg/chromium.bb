@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_USER_IMAGE_SCREEN_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
@@ -17,7 +18,12 @@
 
 namespace base {
 class Timer;
+class Value;
 };
+
+namespace policy {
+class PolicyChangeRegistrar;
+}
 
 namespace chromeos {
 
@@ -77,6 +83,12 @@ class UserImageScreen: public WizardScreen,
 
   bool IsWaitingForSync() const;
 
+  // Called when the policy::key::kUserAvatarImage policy changes while the
+  // screen is being shown. If the policy is set, closes the screen because the
+  // user is not allowed to override a policy-set image.
+  void OnUserImagePolicyChanged(const base::Value* previous,
+                                const base::Value* current);
+
   const User* GetUser();
 
   // Called when the camera presence check has been completed.
@@ -85,7 +97,12 @@ class UserImageScreen: public WizardScreen,
   // Called when it's decided not to skip the screen.
   void HideCurtain();
 
-  content::NotificationRegistrar registrar_;
+  // Closes the screen.
+  void ExitScreen();
+
+  content::NotificationRegistrar notification_registrar_;
+
+  scoped_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 
   UserImageScreenActor* actor_;
 

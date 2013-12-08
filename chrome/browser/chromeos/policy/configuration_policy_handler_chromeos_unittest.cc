@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -69,6 +70,104 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
   EXPECT_TRUE(prefs_.GetValue(prefs::kScreenMagnifierType, &type));
   ASSERT_TRUE(type);
   EXPECT_TRUE(base::FundamentalValue(1).Equals(type));
+}
+
+TEST(ExternalDataPolicyHandlerTest, Empty) {
+  PolicyErrorMap errors;
+  EXPECT_TRUE(ExternalDataPolicyHandler(key::kUserAvatarImage)
+                  .CheckPolicySettings(PolicyMap(), &errors));
+  EXPECT_TRUE(errors.GetErrors(key::kUserAvatarImage).empty());
+}
+
+TEST(ExternalDataPolicyHandlerTest, WrongType) {
+  PolicyMap policy_map;
+  policy_map.Set(key::kUserAvatarImage,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 new base::FundamentalValue(false),
+                 NULL);
+  PolicyErrorMap errors;
+  EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
+                   .CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.GetErrors(key::kUserAvatarImage).empty());
+}
+
+TEST(ExternalDataPolicyHandlerTest, MissingURL) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("hash", "1234567890123456789012345678901234567890");
+  PolicyMap policy_map;
+  policy_map.Set(key::kUserAvatarImage,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 dict.release(),
+                 NULL);
+  PolicyErrorMap errors;
+  EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
+                   .CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.GetErrors(key::kUserAvatarImage).empty());
+}
+
+TEST(ExternalDataPolicyHandlerTest, InvalidURL) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("url", "http://");
+  dict->SetString("hash", "1234567890123456789012345678901234567890");
+  PolicyMap policy_map;
+  policy_map.Set(key::kUserAvatarImage,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 dict.release(),
+                 NULL);
+  PolicyErrorMap errors;
+  EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
+                   .CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.GetErrors(key::kUserAvatarImage).empty());
+}
+
+TEST(ExternalDataPolicyHandlerTest, MissingHash) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("url", "http://localhost/");
+  PolicyMap policy_map;
+  policy_map.Set(key::kUserAvatarImage,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 dict.release(),
+                 NULL);
+  PolicyErrorMap errors;
+  EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
+                   .CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.GetErrors(key::kUserAvatarImage).empty());
+}
+
+TEST(ExternalDataPolicyHandlerTest, InvalidHash) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("url", "http://localhost/");
+  dict->SetString("hash", "1234");
+  PolicyMap policy_map;
+  policy_map.Set(key::kUserAvatarImage,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 dict.release(),
+                 NULL);
+  PolicyErrorMap errors;
+  EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
+                   .CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.GetErrors(key::kUserAvatarImage).empty());
+}
+
+TEST(ExternalDataPolicyHandlerTest, Valid) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("url", "http://localhost/");
+  dict->SetString("hash", "1234567890123456789012345678901234567890");
+  PolicyMap policy_map;
+  policy_map.Set(key::kUserAvatarImage,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 dict.release(),
+                 NULL);
+  PolicyErrorMap errors;
+  EXPECT_TRUE(ExternalDataPolicyHandler(key::kUserAvatarImage)
+                  .CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.GetErrors(key::kUserAvatarImage).empty());
 }
 
 const char kLoginScreenPowerManagementPolicy[] =

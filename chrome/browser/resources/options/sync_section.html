@@ -14,9 +14,13 @@
 
 <if expr="pp_ifdef('chromeos')">
   <div id="account-picture-wrapper">
-    <input type="image" id="account-picture" tabindex="0"
-        alt="" i18n-values="aria-label:changePicture">
-    <div id="change-picture-caption" i18n-content="changePictureCaption"></div>
+    <div id="account-picture-control">
+      <input type="image" id="account-picture" tabindex="0"
+          alt="" i18n-values="aria-label:changePicture">
+      <div id="change-picture-caption" i18n-content="changePicture"></div>
+    </div>
+    <span id="account-picture-indicator" class="controlled-setting-indicator">
+    </span>
   </div>
   <div id="sync-general">
 </if>  <!-- pp_ifdef('chromeos') -->

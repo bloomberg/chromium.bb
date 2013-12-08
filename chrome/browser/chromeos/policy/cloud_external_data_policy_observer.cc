@@ -206,7 +206,12 @@ void CloudExternalDataPolicyObserver::OnPolicyUpdated(
   DeviceLocalAccountPolicyBroker* broker =
       device_local_account_policy_service_->GetBrokerForUser(user_id);
   if (!broker) {
-    NOTREACHED();
+    // The order in which |this| and the |device_local_account_policy_service_|
+    // find out that a new device-local account has been added is undefined. If
+    // no |broker| exists yet, the |device_local_account_policy_service_| must
+    // not have seen the new |user_id| yet. OnPolicyUpdated() will be invoked
+    // again by the |device_local_account_policy_service_| in this case when it
+    // finds out about |user_id| and creates a |broker| for it.
     return;
   }
 
@@ -306,7 +311,6 @@ void CloudExternalDataPolicyObserver::OnExternalDataFetched(
   FetchWeakPtrMap::iterator it = fetch_weak_ptrs_.find(user_id);
   DCHECK(it != fetch_weak_ptrs_.end());
   fetch_weak_ptrs_.erase(it);
-  DCHECK(data);
   delegate_->OnExternalDataFetched(policy_, user_id, data.Pass());
 }
 

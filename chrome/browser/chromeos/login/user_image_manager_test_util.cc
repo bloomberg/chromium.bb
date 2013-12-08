@@ -16,6 +16,9 @@
 namespace chromeos {
 namespace test {
 
+const char kUserAvatarImage1RelativePath[] = "chromeos/avatar1.jpg";
+const char kUserAvatarImage2RelativePath[] = "chromeos/avatar2.jpg";
+
 bool AreImagesEqual(const gfx::ImageSkia& first, const gfx::ImageSkia& second) {
   if (first.width() != second.width() || first.height() != second.height())
     return false;

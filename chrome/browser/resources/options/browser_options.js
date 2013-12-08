@@ -220,13 +220,8 @@ cr.define('options', function() {
 
         this.updateAccountPicture_();
 
-        $('account-picture-wrapper').oncontextmenu = function(e) {
-          e.preventDefault();
-        };
-
-        $('account-picture').onclick = function() {
-          OptionsPage.navigateToPage('changePicture');
-        };
+        $('account-picture').onclick = this.showImagerPickerOverlay_;
+        $('change-picture-caption').onclick = this.showImagerPickerOverlay_;
 
         $('manage-accounts-button').onclick = function(event) {
           OptionsPage.navigateToPage('accounts');
@@ -1179,6 +1174,25 @@ cr.define('options', function() {
       $('themes-reset').disabled = !enabled;
     },
 
+    setAccountPictureManaged_: function(managed) {
+      var picture = $('account-picture');
+      if (managed || UIAccountTweaks.loggedInAsGuest()) {
+        picture.disabled = true;
+        ChangePictureOptions.closeOverlay();
+      } else {
+        picture.disabled = false;
+      }
+
+      // Create a synthetic pref change event decorated as
+      // CoreOptionsHandler::CreateValueForPref() does.
+      var event = new Event('account-picture');
+      if (managed)
+        event.value = { controlledBy: 'policy' };
+      else
+        event.value = {};
+      $('account-picture-indicator').handlePrefChange(event);
+    },
+
     /**
      * (Re)loads IMG element with current user account picture.
      * @private
@@ -1512,6 +1526,14 @@ cr.define('options', function() {
         if (index != undefined)
           $('bluetooth-paired-devices-list').deleteItemAtIndex(index);
       }
+    },
+
+    /**
+     * Shows the overlay dialog for changing the user avatar image.
+     * @private
+     */
+    showImagerPickerOverlay_: function() {
+      OptionsPage.navigateToPage('changePicture');
     }
   };
 
@@ -1527,6 +1549,7 @@ cr.define('options', function() {
     'removeBluetoothDevice',
     'removeCloudPrintConnectorSection',
     'scrollToSection',
+    'setAccountPictureManaged',
     'setAutoOpenFileTypesDisplayed',
     'setBluetoothState',
     'setFontSize',

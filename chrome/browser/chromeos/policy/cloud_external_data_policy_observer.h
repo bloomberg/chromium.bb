@@ -76,7 +76,7 @@ class CloudExternalDataPolicyObserver
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // DeviceLocalAccountPolicyService:
+  // DeviceLocalAccountPolicyService::Observer:
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
 

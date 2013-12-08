@@ -37,7 +37,6 @@ void LoginManagerTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   command_line->AppendSwitch(::switches::kMultiProfiles);
-  InProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
 void LoginManagerTest::SetUpInProcessBrowserTestFixture() {
@@ -78,7 +77,10 @@ bool LoginManagerTest::AddUserTosession(const std::string& username,
                                         const std::string& password) {
   ExistingUserController* controller =
       ExistingUserController::current_controller();
-  EXPECT_TRUE(controller != NULL);
+  if (!controller) {
+    ADD_FAILURE();
+    return false;
+  }
   controller->Login(UserContext(username, password, std::string()));
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,

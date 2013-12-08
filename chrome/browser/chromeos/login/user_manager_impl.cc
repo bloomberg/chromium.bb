@@ -191,7 +191,7 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_new_(false),
       is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
-      user_image_manager_(new UserImageManagerImpl),
+      user_image_manager_(new UserImageManagerImpl(cros_settings_, this)),
       supervised_user_manager_(new SupervisedUserManagerImpl(this)),
       manager_creation_time_(base::TimeTicks::Now()),
       multi_profile_first_run_notification_(

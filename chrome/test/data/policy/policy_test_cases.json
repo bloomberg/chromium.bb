@@ -10,7 +10,7 @@
     "pref_mappings": [
       { "pref": "The affected preference's name.",
         "local_state": "Whether |pref| is registered in local state's PrefService instead of the profile's PrefService. Defaults to |false| if not specified.",
-        "note": "The following entries should be specified if controlled setting indicators exist for |pref| in the settings UI",
+        "note": "The following entries should be specified if controlled setting indicators exist for |pref| in the settings UI.",
         "indicator_test_setup_js": "Any JavaScript that should be executed before testing the indicators. This should be specified only if an explicit user action must be simulated (e.g. clicking a button).",
         "indicator_selector": "A CSS selector that locates all controlled setting indicators for |pref|. This is appended to the selector 'span.controlled-setting-indicator' and if not specified, defaults to '[pref=(the value of |pref|)', e.g. '[pref=homepage]'.",
         "note 2": "Any number of test cases may be specified in the following array.",
@@ -21,7 +21,9 @@
           }
         ]
       }
-    ]
+    ],
+    "note 2": "The following entry should be specified if there is a controlled setting indicator that reacts to the policy directly, without a preference serving as an intermediary.",
+    "indicator_selector": "A CSS selector that locates the controlled setting indicator directly affected by the policy. This is appended to the selector 'span.controlled-setting-indicator'."
   },
 
   "HomepageLocation": {
@@ -1549,7 +1551,14 @@
   },
 
   "UserAvatarImage": {
-    "os": ["chromeos"]
+    "os": ["chromeos"],
+    "test_policy": {
+      "UserAvatarImage": {
+        "url": "http://localhost/",
+        "hash": "01234567890012345678900123456789001234567890"
+      }
+    },
+    "indicator_selector": "#account-picture-indicator"
   },
 
   "----- Chrome OS policies ------------------------------------------------": {},

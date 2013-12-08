@@ -9,7 +9,6 @@
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -103,9 +102,15 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "policy/policy_constants.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -777,7 +782,18 @@ void BrowserOptionsHandler::InitializeHandler() {
       base::Bind(&BrowserOptionsHandler::OnSigninAllowedPrefChange,
                  base::Unretained(this)));
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  if (!policy_registrar_) {
+    policy_registrar_.reset(new policy::PolicyChangeRegistrar(
+        policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
+            policy_service(),
+        policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())));
+    policy_registrar_->Observe(
+        policy::key::kUserAvatarImage,
+        base::Bind(&BrowserOptionsHandler::OnUserImagePolicyChanged,
+                   base::Unretained(this)));
+  }
+#else  // !defined(OS_CHROMEOS)
   profile_pref_registrar_.Add(
       prefs::kProxy,
       base::Bind(&BrowserOptionsHandler::SetupProxySettingsSection,
@@ -822,6 +838,14 @@ void BrowserOptionsHandler::InitializePage() {
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.enableFactoryResetSection");
   }
+
+  OnAccountPictureManagedChanged(
+      policy::ProfilePolicyConnectorFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()))->
+          policy_service()->GetPolicies(
+              policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                      std::string()))
+             .Get(policy::key::kUserAvatarImage));
 #endif
 }
 
@@ -1176,6 +1200,11 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
                                      email_value);
   }
 }
+
+void BrowserOptionsHandler::OnAccountPictureManagedChanged(bool managed) {
+  web_ui()->CallJavascriptFunction("BrowserOptions.setAccountPictureManaged",
+                                   base::FundamentalValue(managed));
+}
 #endif
 
 scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
@@ -1272,7 +1301,17 @@ void BrowserOptionsHandler::MouseExists(bool exists) {
   base::FundamentalValue val(exists);
   web_ui()->CallJavascriptFunction("BrowserOptions.showMouseControls", val);
 }
-#endif
+
+void BrowserOptionsHandler::OnUserImagePolicyChanged(
+    const base::Value* previous_policy,
+    const base::Value* current_policy) {
+  const bool had_policy = !!previous_policy;
+  const bool has_policy = !!current_policy;
+  if (had_policy != has_policy)
+    OnAccountPictureManagedChanged(has_policy);
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 void BrowserOptionsHandler::UpdateSyncState() {
   web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState",

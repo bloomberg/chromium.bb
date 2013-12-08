@@ -25,6 +25,9 @@ class ImageSkia;
 namespace chromeos {
 namespace test {
 
+extern const char kUserAvatarImage1RelativePath[];
+extern const char kUserAvatarImage2RelativePath[];
+
 // Returns |true| if the two given images are pixel-for-pixel identical.
 bool AreImagesEqual(const gfx::ImageSkia& first, const gfx::ImageSkia& second);
 

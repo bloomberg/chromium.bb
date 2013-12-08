@@ -5,13 +5,17 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
 #include <string>
+#include <vector>
 
 #include "ash/magnifier/magnifier_constants.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
+#include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/login_screen_power_management_policy.h"
@@ -27,8 +31,89 @@
 #include "components/policy/core/common/policy_map.h"
 #include "grit/component_strings.h"
 #include "policy/policy_constants.h"
+#include "url/gurl.h"
 
 namespace policy {
+
+namespace {
+
+const char kSubkeyURL[] = "url";
+const char kSubkeyHash[] = "hash";
+
+bool GetSubkeyString(const base::DictionaryValue& dict,
+                     policy::PolicyErrorMap* errors,
+                     const std::string& policy,
+                     const std::string& subkey,
+                     std::string* value) {
+  const base::Value* raw_value = NULL;
+  if (!dict.GetWithoutPathExpansion(subkey, &raw_value)) {
+    errors->AddError(policy, subkey, IDS_POLICY_NOT_SPECIFIED_ERROR);
+    return false;
+  }
+  std::string string_value;
+  if (!raw_value->GetAsString(&string_value)) {
+    errors->AddError(policy, subkey, IDS_POLICY_TYPE_ERROR, "string");
+    return false;
+  }
+  if (string_value.empty()) {
+    errors->AddError(policy, subkey, IDS_POLICY_NOT_SPECIFIED_ERROR);
+    return false;
+  }
+  *value = string_value;
+  return true;
+}
+
+}  // namespace
+
+ExternalDataPolicyHandler::ExternalDataPolicyHandler(const char* policy_name)
+    : TypeCheckingPolicyHandler(policy_name, Value::TYPE_DICTIONARY) {
+}
+
+ExternalDataPolicyHandler::~ExternalDataPolicyHandler() {
+}
+
+bool ExternalDataPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
+                                                    PolicyErrorMap* errors) {
+  if (!TypeCheckingPolicyHandler::CheckPolicySettings(policies, errors))
+    return false;
+
+  const std::string policy = policy_name();
+  const base::Value* value = policies.GetValue(policy);
+  if (!value)
+    return true;
+
+  const DictionaryValue* dict = NULL;
+  value->GetAsDictionary(&dict);
+  if (!dict) {
+    NOTREACHED();
+    return false;
+  }
+  std::string url_string;
+  std::string hash_string;
+  if (!GetSubkeyString(*dict, errors, policy, kSubkeyURL, &url_string) ||
+      !GetSubkeyString(*dict, errors, policy, kSubkeyHash, &hash_string)) {
+    return false;
+  }
+
+  const GURL url(url_string);
+  if (!url.is_valid()) {
+    errors->AddError(policy, kSubkeyURL, IDS_POLICY_VALUE_FORMAT_ERROR);
+    return false;
+  }
+
+  std::vector<uint8> hash;
+  if (!base::HexStringToBytes(hash_string, &hash) ||
+      hash.size() != base::kSHA1Length) {
+    errors->AddError(policy, kSubkeyHash, IDS_POLICY_VALUE_FORMAT_ERROR);
+    return false;
+  }
+
+  return true;
+}
+
+void ExternalDataPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
+                                                    PrefValueMap* prefs) {
+}
 
 // static
 NetworkConfigurationPolicyHandler*

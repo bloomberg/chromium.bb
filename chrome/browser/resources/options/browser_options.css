@@ -24,18 +24,20 @@
 }
 
 #account-picture-wrapper {
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  cursor: pointer;
-  display: inline-block;
   float: left;
   margin: 0 2px 10px 0;
-  padding: 3px;
-  position: relative;
 }
 
 html[dir=rtl] #account-picture-wrapper {
   float: right;
+}
+
+#account-picture-control {
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  display: inline-block;
+  padding: 3px;
+  position: relative;
 }
 
 #account-picture {
@@ -44,20 +46,31 @@ html[dir=rtl] #account-picture-wrapper {
   width: 56px;
 }
 
+#account-picture:disabled {
+  cursor: default;
+}
+
 #change-picture-caption {
   background: rgba(0, 0, 0, 0.5);
   bottom: 0;
   color: white;
+  cursor: pointer;
   font-size: small;
   margin: 3px 0;
   position: absolute;
   text-align: center;
+  visibility: hidden;
   /* Width of #account-picture. */
   width: 56px;
 }
 
-#account-picture-wrapper:not(:hover) #change-picture-caption {
-  visibility: hidden;
+#account-picture:not(:disabled):hover + #change-picture-caption,
+#account-picture:not(:disabled) + #change-picture-caption:hover {
+  visibility: visible;
+}
+
+#account-picture-indicator {
+  -webkit-margin-end: 3px;
 }
 
 #sync-general {
