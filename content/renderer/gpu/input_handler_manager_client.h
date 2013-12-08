@@ -36,7 +36,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   typedef base::Callback<
       InputEventAckState(int /*routing_id*/,
                          const blink::WebInputEvent*,
-                         const ui::LatencyInfo& latency_info)> Handler;
+                         ui::LatencyInfo* latency_info)> Handler;
 
   // Called from the main thread.
   virtual void SetBoundHandler(const Handler& handler) = 0;

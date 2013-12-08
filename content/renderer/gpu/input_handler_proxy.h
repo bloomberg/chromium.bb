@@ -39,7 +39,7 @@ class CONTENT_EXPORT InputHandlerProxy
   };
   EventDisposition HandleInputEventWithLatencyInfo(
       const blink::WebInputEvent& event,
-      const ui::LatencyInfo& latency_info);
+      ui::LatencyInfo* latency_info);
   EventDisposition HandleInputEvent(const blink::WebInputEvent& event);
 
   // cc::InputHandlerClient implementation.

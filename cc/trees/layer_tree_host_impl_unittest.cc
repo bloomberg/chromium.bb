@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
+#include "cc/base/latency_info_swap_promise.h"
 #include "cc/base/math_util.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/delegated_renderer_layer_impl.h"
@@ -5360,7 +5361,10 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, 0);
-  host_impl_->SetLatencyInfoForInputEvent(latency_info);
+  scoped_ptr<SwapPromise> swap_promise(
+      new LatencyInfoSwapPromise(latency_info));
+  host_impl_->active_tree()->QueueSwapPromise(swap_promise.Pass());
+  host_impl_->SetNeedsRedraw();
 
   gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
   LayerTreeHostImpl::FrameData frame;
@@ -5373,6 +5377,76 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
       fake_output_surface->last_sent_frame().metadata.latency_info;
   EXPECT_TRUE(metadata_latency_after.FindLatency(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
+}
+
+class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
+ public:
+  SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,
+                           LayerTreeHostImpl* layer_tree_host_impl,
+                           int* set_needs_commit_count,
+                           int* set_needs_redraw_count)
+      : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
+        set_needs_commit_count_(set_needs_commit_count),
+        set_needs_redraw_count_(set_needs_redraw_count) {}
+
+  virtual ~SimpleSwapPromiseMonitor() {}
+
+  virtual void OnSetNeedsCommitOnMain() OVERRIDE {
+    (*set_needs_commit_count_)++;
+  }
+
+  virtual void OnSetNeedsRedrawOnImpl() OVERRIDE {
+    (*set_needs_redraw_count_)++;
+  }
+
+ private:
+  int* set_needs_commit_count_;
+  int* set_needs_redraw_count_;
+};
+
+TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
+  int set_needs_commit_count = 0;
+  int set_needs_redraw_count = 0;
+
+  {
+    scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+        new SimpleSwapPromiseMonitor(NULL,
+                                     host_impl_.get(),
+                                     &set_needs_commit_count,
+                                     &set_needs_redraw_count));
+    host_impl_->SetNeedsRedraw();
+    EXPECT_EQ(0, set_needs_commit_count);
+    EXPECT_EQ(1, set_needs_redraw_count);
+  }
+
+  // Now the monitor is destroyed, SetNeedsRedraw() is no longer being
+  // monitored.
+  host_impl_->SetNeedsRedraw();
+  EXPECT_EQ(0, set_needs_commit_count);
+  EXPECT_EQ(1, set_needs_redraw_count);
+
+  {
+    scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+        new SimpleSwapPromiseMonitor(NULL,
+                                     host_impl_.get(),
+                                     &set_needs_commit_count,
+                                     &set_needs_redraw_count));
+    host_impl_->SetNeedsRedrawRect(gfx::Rect(10, 10));
+    EXPECT_EQ(0, set_needs_commit_count);
+    EXPECT_EQ(2, set_needs_redraw_count);
+  }
+
+  {
+    scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+        new SimpleSwapPromiseMonitor(NULL,
+                                     host_impl_.get(),
+                                     &set_needs_commit_count,
+                                     &set_needs_redraw_count));
+    // Empty damage rect won't signal the monitor.
+    host_impl_->SetNeedsRedrawRect(gfx::Rect());
+    EXPECT_EQ(0, set_needs_commit_count);
+    EXPECT_EQ(2, set_needs_redraw_count);
+  }
 }
 
 }  // namespace

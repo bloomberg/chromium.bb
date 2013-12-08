@@ -2183,8 +2183,10 @@ void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
   latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
                                 GetLatencyComponentId(),
                                 id);
+  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   if (RenderWidgetCompositor* rwc = compositor()) {
-    rwc->SetLatencyInfo(latency_info);
+    latency_info_swap_promise_monitor =
+        rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
   } else {
     latency_info_.MergeWith(latency_info);
   }

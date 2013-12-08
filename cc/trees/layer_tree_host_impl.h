@@ -134,8 +134,8 @@ class CC_EXPORT LayerTreeHostImpl
                                        base::TimeDelta duration) OVERRIDE;
   virtual void ScheduleAnimation() OVERRIDE;
   virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_port) OVERRIDE;
-  virtual void SetLatencyInfoForInputEvent(const ui::LatencyInfo& latency_info)
-      OVERRIDE;
+  virtual scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
+      ui::LatencyInfo* latency) OVERRIDE;
 
   // TopControlsManagerClient implementation.
   virtual void DidChangeTopControlsPosition() OVERRIDE;
@@ -294,7 +294,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool visible() const { return visible_; }
 
   void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
-  void SetNeedsRedraw() { client_->SetNeedsRedrawOnImplThread(); }
+  void SetNeedsRedraw();
 
   ManagedMemoryPolicy ActualManagedMemoryPolicy() const;
 
@@ -419,6 +419,13 @@ class CC_EXPORT LayerTreeHostImpl
 
   CompositorFrameMetadata MakeCompositorFrameMetadata() const;
 
+  // When a SwapPromiseMonitor is created on the impl thread, it calls
+  // InsertSwapPromiseMonitor() to register itself with LayerTreeHostImpl.
+  // When the monitor is destroyed, it calls RemoveSwapPromiseMonitor()
+  // to unregister itself.
+  void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor);
+  void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -505,6 +512,8 @@ class CC_EXPORT LayerTreeHostImpl
   void DidInitializeVisibleTile();
 
   void MarkUIResourceNotEvicted(UIResourceId uid);
+
+  void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
 
   typedef base::hash_map<UIResourceId, UIResourceData>
       UIResourceMap;
@@ -641,6 +650,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   SharedBitmapManager* shared_bitmap_manager_;
   int id_;
+
+  std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

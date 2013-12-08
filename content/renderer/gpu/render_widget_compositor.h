@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "cc/base/swap_promise_monitor.h"
 #include "cc/debug/rendering_stats.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -58,7 +59,13 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   // Like setNeedsRedraw but forces the frame to be drawn, without early-outs.
   // Redraw will be forced after the next commit
   void SetNeedsForcedRedraw();
-  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
+  // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped
+  // LatencyInfoSwapPromiseMonitor. During the life time of the
+  // LatencyInfoSwapPromiseMonitor, if SetNeedsCommit() or SetNeedsUpdateLayer()
+  // is called on LayerTreeHost, the original latency info will be turned
+  // into a LatencyInfoSwapPromise.
+  scoped_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
+      ui::LatencyInfo* latency);
   int GetLayerTreeId() const;
   void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;

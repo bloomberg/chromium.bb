@@ -28,8 +28,8 @@ InputEventAckState SynchronousInputEventFilter::HandleInputEvent(
   // state. While not good, it should also not be fatal.
   if (handler_.is_null())
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
-
-  return handler_.Run(routing_id, &input_event, ui::LatencyInfo());
+  ui::LatencyInfo latency;
+  return handler_.Run(routing_id, &input_event, &latency);
 }
 
 void SynchronousInputEventFilter::SetBoundHandler(const Handler& handler) {

@@ -521,9 +521,13 @@ const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
 
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
+  NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
-void LayerTreeHost::SetNeedsUpdateLayers() { proxy_->SetNeedsUpdateLayers(); }
+void LayerTreeHost::SetNeedsUpdateLayers() {
+  proxy_->SetNeedsUpdateLayers();
+  NotifySwapPromiseMonitorsOfSetNeedsCommit();
+}
 
 void LayerTreeHost::SetNeedsCommit() {
   if (!prepaint_callback_.IsCancelled()) {
@@ -533,6 +537,7 @@ void LayerTreeHost::SetNeedsCommit() {
     prepaint_callback_.Cancel();
   }
   proxy_->SetNeedsCommit();
+  NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
 void LayerTreeHost::SetNeedsFullTreeSync() {
@@ -1245,6 +1250,20 @@ bool LayerTreeHost::ScheduleMicroBenchmark(
     const MicroBenchmark::DoneCallback& callback) {
   return micro_benchmark_controller_.ScheduleRun(
       benchmark_name, value.Pass(), callback);
+}
+
+void LayerTreeHost::InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
+  swap_promise_monitor_.insert(monitor);
+}
+
+void LayerTreeHost::RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
+  swap_promise_monitor_.erase(monitor);
+}
+
+void LayerTreeHost::NotifySwapPromiseMonitorsOfSetNeedsCommit() {
+  std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
+  for (; it != swap_promise_monitor_.end(); it++)
+    (*it)->OnSetNeedsCommitOnMain();
 }
 
 void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {

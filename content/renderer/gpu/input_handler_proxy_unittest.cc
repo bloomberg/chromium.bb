@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/base/swap_promise_monitor.h"
 #include "content/renderer/gpu/input_handler_proxy_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,8 +54,10 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD0(ScrollEnd, void());
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 
-  MOCK_METHOD1(SetLatencyInfoForInputEvent,
-               void(const ui::LatencyInfo& latency_info));
+  virtual scoped_ptr<cc::SwapPromiseMonitor>
+    CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) OVERRIDE {
+      return scoped_ptr<cc::SwapPromiseMonitor>();
+  }
 
   virtual void BindToClient(cc::InputHandlerClient* client) OVERRIDE {}
 

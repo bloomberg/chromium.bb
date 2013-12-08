@@ -105,7 +105,7 @@ void InputHandlerManager::RemoveInputHandler(int routing_id) {
 InputEventAckState InputHandlerManager::HandleInputEvent(
     int routing_id,
     const WebInputEvent* input_event,
-    const ui::LatencyInfo& latency_info) {
+    ui::LatencyInfo* latency_info) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   InputHandlerMap::iterator it = input_handlers_.find(routing_id);

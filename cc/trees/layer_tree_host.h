@@ -7,6 +7,7 @@
 
 #include <limits>
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/base/swap_promise.h"
+#include "cc/base/swap_promise_monitor.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/input/input_handler.h"
@@ -284,6 +286,13 @@ class CC_EXPORT LayerTreeHost {
                               scoped_ptr<base::Value> value,
                               const MicroBenchmark::DoneCallback& callback);
 
+  // When a SwapPromiseMonitor is created on the main thread, it calls
+  // InsertSwapPromiseMonitor() to register itself with LayerTreeHost.
+  // When the monitor is destroyed, it calls RemoveSwapPromiseMonitor()
+  // to unregister itself.
+  void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor);
+  void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor);
+
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
   void QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise);
@@ -347,6 +356,8 @@ class CC_EXPORT LayerTreeHost {
   UIResourceRequestQueue ui_resource_request_queue_;
 
   void CalculateLCDTextMetricsCallback(Layer* layer);
+
+  void NotifySwapPromiseMonitorsOfSetNeedsCommit();
 
   bool animating_;
   bool needs_full_tree_sync_;
@@ -436,6 +447,7 @@ class CC_EXPORT LayerTreeHost {
   SharedBitmapManager* shared_bitmap_manager_;
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
+  std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

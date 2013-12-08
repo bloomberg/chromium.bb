@@ -47,7 +47,7 @@ class InputEventRecorder {
 
   InputEventAckState HandleInputEvent(int routing_id,
                                       const WebInputEvent* event,
-                                      const ui::LatencyInfo& latency_info) {
+                                      ui::LatencyInfo* latency_info) {
     DCHECK_EQ(kTestRoutingID, routing_id);
 
     records_.push_back(Record(event));

@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/timing_function.h"
-#include "cc/base/latency_info_swap_promise.h"
+#include "cc/base/latency_info_swap_promise_monitor.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -477,11 +477,11 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
   return layer_impl != NULL;
 }
 
-void LayerTreeHostImpl::SetLatencyInfoForInputEvent(
-    const ui::LatencyInfo& latency_info) {
-  scoped_ptr<SwapPromise> swap_promise(
-      new LatencyInfoSwapPromise(latency_info));
-  active_tree()->QueueSwapPromise(swap_promise.Pass());
+scoped_ptr<SwapPromiseMonitor>
+LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
+    ui::LatencyInfo* latency) {
+  return scoped_ptr<SwapPromiseMonitor>(
+      new LatencyInfoSwapPromiseMonitor(latency, NULL, this));
 }
 
 void LayerTreeHostImpl::TrackDamageForAllSurfaces(
@@ -1255,6 +1255,9 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
 }
 
 void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
+  if (damage_rect.IsEmpty())
+    return;
+  NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
@@ -1627,6 +1630,11 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     return;
 
   renderer_->SetVisible(visible);
+}
+
+void LayerTreeHostImpl::SetNeedsRedraw() {
+  NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+  client_->SetNeedsRedrawOnImplThread();
 }
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
@@ -2898,6 +2906,20 @@ void LayerTreeHostImpl::MarkUIResourceNotEvicted(UIResourceId uid) {
 void LayerTreeHostImpl::ScheduleMicroBenchmark(
     scoped_ptr<MicroBenchmarkImpl> benchmark) {
   micro_benchmark_controller_.ScheduleRun(benchmark.Pass());
+}
+
+void LayerTreeHostImpl::InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
+  swap_promise_monitor_.insert(monitor);
+}
+
+void LayerTreeHostImpl::RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor) {
+  swap_promise_monitor_.erase(monitor);
+}
+
+void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfSetNeedsRedraw() {
+  std::set<SwapPromiseMonitor*>::iterator it = swap_promise_monitor_.begin();
+  for (; it != swap_promise_monitor_.end(); it++)
+    (*it)->OnSetNeedsRedrawOnImpl();
 }
 
 }  // namespace cc

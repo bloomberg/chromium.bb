@@ -92,14 +92,14 @@ void InputHandlerProxy::SetClient(InputHandlerProxyClient* client) {
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::HandleInputEventWithLatencyInfo(
     const WebInputEvent& event,
-    const ui::LatencyInfo& latency_info) {
+    ui::LatencyInfo* latency_info) {
   DCHECK(input_handler_);
 
-  SendScrollLatencyUma(event, latency_info);
+  SendScrollLatencyUma(event, *latency_info);
 
+  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
+      input_handler_->CreateLatencyInfoSwapPromiseMonitor(latency_info);
   InputHandlerProxy::EventDisposition disposition = HandleInputEvent(event);
-  if (disposition != DID_NOT_HANDLE)
-    input_handler_->SetLatencyInfoForInputEvent(latency_info);
   return disposition;
 }
 

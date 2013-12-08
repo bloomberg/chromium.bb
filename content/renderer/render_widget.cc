@@ -1037,7 +1037,7 @@ void RenderWidget::OnSwapBuffersComplete() {
 }
 
 void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
-                                      const ui::LatencyInfo& latency_info,
+                                      ui::LatencyInfo latency_info,
                                       bool is_keyboard_shortcut) {
   handling_input_event_ = true;
   if (!input_event) {
@@ -1054,10 +1054,14 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
                "event", event_name);
 
-  if (compositor_)
-    compositor_->SetLatencyInfo(latency_info);
-  else
+  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
+
+  if (compositor_) {
+    latency_info_swap_promise_monitor =
+        compositor_->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
+  } else {
     latency_info_.MergeWith(latency_info);
+  }
 
   base::TimeDelta now = base::TimeDelta::FromInternalValue(
       base::TimeTicks::Now().ToInternalValue());

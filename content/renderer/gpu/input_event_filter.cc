@@ -131,8 +131,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   DCHECK(event);
 
-  InputEventAckState ack =
-      handler_.Run(routing_id, event, latency_info);
+  InputEventAckState ack = handler_.Run(routing_id, event, &latency_info);
 
   if (ack == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
     TRACE_EVENT0("input", "InputEventFilter::ForwardToHandler");

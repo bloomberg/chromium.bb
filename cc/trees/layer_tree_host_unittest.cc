@@ -4682,4 +4682,86 @@ class LayerTreeHostTestBreakSwapPromise
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 
+
+class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
+ public:
+  SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,
+                           LayerTreeHostImpl* layer_tree_host_impl,
+                           int* set_needs_commit_count,
+                           int* set_needs_redraw_count)
+      : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
+        set_needs_commit_count_(set_needs_commit_count),
+        set_needs_redraw_count_(set_needs_redraw_count) {}
+
+  virtual ~SimpleSwapPromiseMonitor() {}
+
+  virtual void OnSetNeedsCommitOnMain() OVERRIDE {
+    (*set_needs_commit_count_)++;
+  }
+
+  virtual void OnSetNeedsRedrawOnImpl() OVERRIDE {
+    (*set_needs_redraw_count_)++;
+  }
+
+ private:
+  int* set_needs_commit_count_;
+  int* set_needs_redraw_count_;
+};
+
+class LayerTreeHostTestSimpleSwapPromiseMonitor
+    : public LayerTreeHostTest {
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void WillBeginMainFrame() OVERRIDE {
+    int set_needs_commit_count = 0;
+    int set_needs_redraw_count = 0;
+
+    {
+      scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
+                                       NULL,
+                                       &set_needs_commit_count,
+                                       &set_needs_redraw_count));
+      layer_tree_host()->SetNeedsCommit();
+      EXPECT_EQ(1, set_needs_commit_count);
+      EXPECT_EQ(0, set_needs_redraw_count);
+    }
+
+    // Now the monitor is destroyed, SetNeedsCommit() is no longer being
+    // monitored.
+    layer_tree_host()->SetNeedsCommit();
+    EXPECT_EQ(1, set_needs_commit_count);
+    EXPECT_EQ(0, set_needs_redraw_count);
+
+    {
+      scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
+                                       NULL,
+                                       &set_needs_commit_count,
+                                       &set_needs_redraw_count));
+      layer_tree_host()->SetNeedsUpdateLayers();
+      EXPECT_EQ(2, set_needs_commit_count);
+      EXPECT_EQ(0, set_needs_redraw_count);
+    }
+
+    {
+      scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(),
+                                       NULL,
+                                       &set_needs_commit_count,
+                                       &set_needs_redraw_count));
+      layer_tree_host()->SetNeedsAnimate();
+      EXPECT_EQ(3, set_needs_commit_count);
+      EXPECT_EQ(0, set_needs_redraw_count);
+    }
+
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
+
 }  // namespace cc

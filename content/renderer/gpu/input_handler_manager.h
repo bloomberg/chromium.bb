@@ -53,7 +53,7 @@ class InputHandlerManager {
   // Called from the compositor's thread.
   InputEventAckState HandleInputEvent(int routing_id,
                                       const blink::WebInputEvent* input_event,
-                                      const ui::LatencyInfo& latency_info);
+                                      ui::LatencyInfo* latency_info);
 
   // Called from the compositor's thread.
   void DidOverscroll(int routing_id, const cc::DidOverscrollParams& params);
