@@ -182,10 +182,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   void FrameTypeChanged();
 
-  // Disable Layered Window updates by setting to false.
-  void set_can_update_layered_window(bool can_update_layered_window) {
-    can_update_layered_window_ = can_update_layered_window;
-  }
   void SchedulePaintInRect(const gfx::Rect& rect);
   void SetOpacity(BYTE opacity);
 
@@ -513,10 +509,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Set to true when waiting for RedrawLayeredWindowContents().
   bool waiting_for_redraw_layered_window_contents_;
-
-  // True if we are allowed to update the layered window from the DIB backing
-  // store if necessary.
-  bool can_update_layered_window_;
 
   // True the first time nccalc is called on a sizable widget
   bool is_first_nccalc_;

@@ -387,7 +387,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       use_layered_buffer_(false),
       layered_alpha_(255),
       waiting_for_redraw_layered_window_contents_(false),
-      can_update_layered_window_(true),
       is_first_nccalc_(true),
       autohide_factory_(this),
       id_generator_(0) {
