@@ -19,13 +19,11 @@
       <canvas id="canvas2"></canvas>
     </div>
     This test should show an SVG image drawn into a canvas. The canvas and image should look the same and both should be 100x50.<br/>
-    <code class="stats" id="code12"></code>
     <br clear="all"/>
   </div>
   <script>
     window.addEventListener('load', function(){
         drawCanvas('svg8', 'canvas2', 100, 50);
-        printSizes('svg8', 'code12');
         if (window.testRunner)
             testRunner.notifyDone();
     });
