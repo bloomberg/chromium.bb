@@ -132,8 +132,7 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   return YES;
 }
 
-- (NSSize)preferredSize {
-  // Overall width is determined by |detailsContainer_|.
+- (NSSize)decorationSizeForWidth:(CGFloat)width {
   NSSize buttonSize = [buttonContainer_ frame].size;
   NSSize buttonStripImageSize = [buttonStripImage_ frame].size;
   NSSize buttonStripSize =
@@ -143,21 +142,31 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
                           buttonStripImageSize.height) +
                      chrome_style::kClientBottomPadding);
 
-  NSSize detailsSize = [detailsContainer_ preferredSize];
-
-  NSSize size = NSMakeSize(std::max(buttonStripSize.width, detailsSize.width),
-                           buttonStripSize.height + detailsSize.height);
-  size.height += 2 * autofill::kDetailVerticalPadding;
-
+  NSSize size = NSMakeSize(std::max(buttonStripSize.width, width),
+                           buttonStripSize.height);
   if (![legalDocumentsView_ isHidden]) {
     NSSize legalDocumentSize =
-        [self preferredLegalDocumentSizeForWidth:detailsSize.width];
+        [self preferredLegalDocumentSizeForWidth:width];
     size.height += legalDocumentSize.height + autofill::kVerticalSpacing;
   }
 
+  // TODO(isherman): Move notifications into the AutofillHeader class, and
+  // rename this method to -footerSizeForWidth:.
   NSSize notificationSize =
-      [notificationContainer_ preferredSizeForWidth:detailsSize.width];
+      [notificationContainer_ preferredSizeForWidth:width];
   size.height += notificationSize.height;
+
+  return size;
+}
+
+- (NSSize)preferredSize {
+  NSSize detailsSize = [detailsContainer_ preferredSize];
+  NSSize decorationSize = [self decorationSizeForWidth:detailsSize.width];
+
+  NSSize size = NSMakeSize(std::max(decorationSize.width, detailsSize.width),
+                           decorationSize.height + detailsSize.height);
+  size.height += 2 * autofill::kDetailVerticalPadding;
+
   return size;
 }
 

@@ -26,6 +26,7 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// The minimum useful height of the contents area of the dialog.
 const CGFloat kMinimumContentsHeight = 101;
 
 #pragma mark AutofillDialogWindow
@@ -221,11 +222,17 @@ const CGFloat kMinimumContentsHeight = 101;
 }
 
 - (void)updateSignInSizeConstraints {
-  // Adjust for the size of the header.
-  CGFloat headerHeight = [[header_ view] frame].size.height;
-  CGFloat minHeight = kMinimumContentsHeight - headerHeight;
-  CGFloat maxHeight = std::max([self maxHeight] - headerHeight, minHeight);
+  // For the minimum height, account for the size of the footer. Even though the
+  // footer will not be visible when the sign-in view is showing, this prevents
+  // the dialog's size from bouncing around.
   CGFloat width = NSWidth([[[self window] contentView] frame]);
+  CGFloat minHeight =
+      kMinimumContentsHeight +
+      [mainContainer_ decorationSizeForWidth:width].height;
+
+  // For the maximum size, factor in the size of the header.
+  CGFloat headerHeight = [[header_ view] frame].size.height;
+  CGFloat maxHeight = std::max([self maxHeight] - headerHeight, minHeight);
 
   [signInContainer_ constrainSizeToMinimum:NSMakeSize(width, minHeight)
                                    maximum:NSMakeSize(width, maxHeight)];
@@ -268,12 +275,22 @@ const CGFloat kMinimumContentsHeight = 101;
       size = [signInContainer_ preferredSize];
 
     // Always make room for the header.
-    size.height += [header_ heightForWidth:size.width];
-  }
+    CGFloat headerHeight = [header_ heightForWidth:size.width];
+    size.height += headerHeight;
 
-  // Show as much of the main view as is possible without going past the
-  // bottom of the browser window.
-  size.height = std::min(size.height, [self maxHeight]);
+    // For the minimum height, account for both the header and the footer. Even
+    // though the footer will not be visible when the sign-in view is showing,
+    // this prevents the dialog's size from bouncing around.
+    CGFloat minHeight = kMinimumContentsHeight;
+    minHeight += [mainContainer_ decorationSizeForWidth:size.width].height;
+    minHeight += headerHeight;
+
+    // Show as much of the main view as is possible without going past the
+    // bottom of the browser window, unless this would cause the dialog to be
+    // less tall than the minimum height.
+    size.height = std::min(size.height, [self maxHeight]);
+    size.height = std::max(size.height, minHeight);
+  }
 
   return size;
 }

@@ -53,6 +53,9 @@ namespace autofill {
 // Designated initializer.
 - (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate;
 
+// Returns the preferred size for the footer at the specfied |width|.
+- (NSSize)decorationSizeForWidth:(CGFloat)width;
+
 // Sets the anchor point for the notificationView_.
 - (void)setAnchorView:(NSView*)anchorView;
 
