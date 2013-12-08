@@ -102,19 +102,26 @@ var ON_PUSH_MESSAGE_START_TASK_NAME = 'on-push-message';
 var LOCATION_WATCH_NAME = 'location-watch';
 
 /**
- * Notification as it's sent by the server.
+ * Group as received from the server.
  *
  * @typedef {{
- *   notificationId: string,
- *   chromeNotificationId: string,
- *   trigger: Object=,
- *   version: number,
- *   chromeNotificationOptions: Object,
- *   actionUrls: Object=,
- *   dismissal: Object
+ *   nextPollSeconds: (string|undefined),
+ *   rank: (number|undefined),
+ *   requested: (boolean|undefined)
  * }}
  */
-var UnmergedNotification;
+var ReceivedGroup;
+
+/**
+ * Server response with notifications and groups.
+ *
+ * @typedef {{
+ *   googleNowDisabled: (boolean|undefined),
+ *   groups: Object.<string, ReceivedGroup>,
+ *   notifications: Array.<ReceivedNotification>
+ * }}
+ */
+var ServerResponse;
 
 /**
  * Notification group as the client stores it. |cardsTimestamp| and |rank| are
@@ -124,13 +131,25 @@ var UnmergedNotification;
  *     cards update and all the times after that.
  *
  * @typedef {{
- *   cards: Array.<UnmergedNotification>,
- *   cardsTimestamp: number=,
- *   nextPollTime: number=,
- *   rank: number=
+ *   cards: Array.<ReceivedNotification>,
+ *   cardsTimestamp: (number|undefined),
+ *   nextPollTime: (number|undefined),
+ *   rank: (number|undefined)
  * }}
  */
-var StorageGroup;
+var StoredNotificationGroup;
+
+/**
+ * Pending (not yet successfully sent) dismissal for a received notification.
+ * |time| is the moment when the user requested dismissal.
+ *
+ * @typedef {{
+ *   chromeNotificationId: ChromeNotificationId,
+ *   time: number,
+ *   dismissalData: DismissalData
+ * }}
+ */
+var PendingDismissal;
 
 /**
  * Checks if a new task can't be scheduled when another task is already
@@ -273,74 +292,38 @@ function setAuthorization(request, callbackBoolean) {
 }
 
 /**
- * Shows parsed and merged cards as notifications.
- * @param {Object.<string, MergedCard>} cards Map from chromeNotificationId to
- *     the merged card, containing cards to show.
- * @param {function(CardCreateInfo)=} onCardShown Optional parameter called when
- *     each card is shown.
+ * Shows parsed and combined cards as notifications.
+ * @param {Object.<ChromeNotificationId, CombinedCard>} cards Map from
+ *     chromeNotificationId to the combined card, containing cards to show.
+ * @param {function(ReceivedNotification)=} onCardShown Optional parameter
+ *     called when each card is shown.
  */
 function showNotificationCards(cards, onCardShown) {
   console.log('showNotificationCards ' + JSON.stringify(cards));
 
-  instrumented.storage.local.get(['notificationsData', 'recentDismissals'],
-      function(items) {
-        console.log('showNotificationCards-get ' +
-            JSON.stringify(items));
-        items = items || {};
-        items.notificationsData = items.notificationsData || {};
-        items.recentDismissals = items.recentDismissals || {};
+  instrumented.notifications.getAll(function(notifications) {
+    console.log('showNotificationCards-getAll ' +
+        JSON.stringify(notifications));
+    notifications = notifications || {};
 
-        instrumented.notifications.getAll(function(notifications) {
-          console.log('showNotificationCards-getAll ' +
-              JSON.stringify(notifications));
-          notifications = notifications || {};
+    // Mark notifications that didn't receive an update as having received
+    // an empty update.
+    for (var chromeNotificationId in notifications) {
+      cards[chromeNotificationId] = cards[chromeNotificationId] || [];
+    }
 
-          // Build a set of non-expired recent dismissals. It will be used for
-          // client-side filtering of cards.
-          var updatedRecentDismissals = {};
-          var currentTimeMs = Date.now();
-          for (var chromeNotificationId in items.recentDismissals) {
-            if (currentTimeMs - items.recentDismissals[chromeNotificationId] <
-                DISMISS_RETENTION_TIME_MS) {
-              updatedRecentDismissals[chromeNotificationId] =
-                  items.recentDismissals[chromeNotificationId];
-              delete cards[chromeNotificationId];
-            }
-          }
+    /** @type {Object.<string, NotificationDataEntry>} */
+    var notificationsData = {};
 
-          // Delete notifications that didn't receive an update.
-          for (var chromeNotificationId in notifications) {
-            console.log('showNotificationCards-delete-check ' +
-                        chromeNotificationId);
-            if (!(chromeNotificationId in cards)) {
-              console.log(
-                  'showNotificationCards-delete ' + chromeNotificationId);
-              cardSet.clear(chromeNotificationId, false);
-            }
-          }
-
-          // Create/update notifications and store their new properties.
-          var newNotificationsData = {};
-          for (var chromeNotificationId in cards) {
-            var notificationData =
-                items.notificationsData[chromeNotificationId];
-            var previousVersion = notifications[chromeNotificationId] &&
-                                  notificationData &&
-                                  notificationData.cardCreateInfo &&
-                                  notificationData.cardCreateInfo.version;
-            newNotificationsData[chromeNotificationId] = cardSet.update(
-                chromeNotificationId,
-                cards[chromeNotificationId],
-                previousVersion,
-                onCardShown);
-          }
-
-          chrome.storage.local.set({
-            notificationsData: newNotificationsData,
-            recentDismissals: updatedRecentDismissals
-          });
-        });
-      });
+    // Create/update/delete notifications.
+    for (var chromeNotificationId in cards) {
+      notificationsData[chromeNotificationId] = cardSet.update(
+          chromeNotificationId,
+          cards[chromeNotificationId],
+          onCardShown);
+    }
+    chrome.storage.local.set({notificationsData: notificationsData});
+  });
 }
 
 /**
@@ -364,89 +347,39 @@ function removeAllCards() {
 }
 
 /**
- * Merges an unmerged notification into a merged card with same ID.
- * @param {MergedCard=} mergedCard Existing merged card or undefined if a merged
- *     card doesn't exist (i.e. we see this ID for the first time while
- *     merging).
- * @param {UnmergedNotification} unmergedNotification Notification as it was
- *     received from the server.
- * @param {number} notificationTimestamp The moment the unmerged card was
- *     received.
- * @param {number} notificationGroupRank Rank of the group of the unmerged card.
- * @return {MergedCard} Result of merging |unmergedNotification| into
- *     |mergedCard|.
- */
-function mergeCards(
-    mergedCard,
-    unmergedNotification,
-    notificationTimestamp,
-    notificationGroupRank) {
-  var result = mergedCard || {dismissals: []};
-
-  var priority = mergedCard ?
-      Math.max(
-          mergedCard.notification.priority,
-          unmergedNotification.chromeNotificationOptions.priority) :
-      unmergedNotification.chromeNotificationOptions.priority;
-
-  if (!mergedCard || notificationGroupRank > mergedCard.groupRank) {
-    result.groupRank = notificationGroupRank;
-    var showTime = unmergedNotification.trigger &&
-        unmergedNotification.trigger.showTimeSec &&
-        (notificationTimestamp +
-         unmergedNotification.trigger.showTimeSec * MS_IN_SECOND);
-    var hideTime = unmergedNotification.trigger &&
-        unmergedNotification.trigger.hideTimeSec &&
-        (notificationTimestamp +
-         unmergedNotification.trigger.hideTimeSec * MS_IN_SECOND);
-    result.trigger = {
-      showTime: showTime,
-      hideTime: hideTime
-    };
-  }
-
-  if (!mergedCard || notificationTimestamp > mergedCard.timestamp) {
-    result.timestamp = notificationTimestamp;
-    result.notification = unmergedNotification.chromeNotificationOptions;
-    result.actionUrls = unmergedNotification.actionUrls;
-    result.version = unmergedNotification.version;
-  }
-
-  result.locationBased =
-      result.locationBased || unmergedNotification.locationBased;
-
-  result.notification.priority = priority;
-  var dismissalData = {
-    notificationId: unmergedNotification.notificationId,
-    parameters: unmergedNotification.dismissal
-  };
-  result.dismissals.push(dismissalData);
-
-  return result;
-}
-
-/**
- * Merges a card group into a set of merged cards.
- * @param {Object.<string, MergedCard>} mergedCards Map from
- *     chromeNotificationId to a merged card.
+ * Adds a card group into a set of combined cards.
+ * @param {Object.<ChromeNotificationId, CombinedCard>} combinedCards Map from
+ *     chromeNotificationId to a combined card.
  *     This is an input/output parameter.
- * @param {StorageGroup} storageGroup Group to merge into the merged card set.
+ * @param {StoredNotificationGroup} storedGroup Group to combine into the
+ *     combined card set.
  */
-function mergeGroup(mergedCards, storageGroup) {
-  for (var i = 0; i < storageGroup.cards.length; i++) {
-    var card = storageGroup.cards[i];
-    mergedCards[card.chromeNotificationId] = mergeCards(
-        mergedCards[card.chromeNotificationId],
-        card,
-        storageGroup.cardsTimestamp,
-        storageGroup.rank);
+function combineGroup(combinedCards, storedGroup) {
+  for (var i = 0; i < storedGroup.cards.length; i++) {
+    /** @type {ReceivedNotification} */
+    var receivedNotification = storedGroup.cards[i];
+
+    /** @type {UncombinedNotification} */
+    var uncombinedNotification = {
+      receivedNotification: receivedNotification,
+      showTime: receivedNotification.trigger.showTimeSec &&
+                (storedGroup.cardsTimestamp +
+                 receivedNotification.trigger.showTimeSec * MS_IN_SECOND),
+      hideTime: storedGroup.cardsTimestamp +
+                receivedNotification.trigger.hideTimeSec * MS_IN_SECOND
+    };
+
+    var combinedCard =
+        combinedCards[receivedNotification.chromeNotificationId] || [];
+    combinedCard.push(uncombinedNotification);
+    combinedCards[receivedNotification.chromeNotificationId] = combinedCard;
   }
 }
 
 /**
  * Schedules next cards poll.
- * @param {Object.<string, StorageGroup>} groups Map from group name to group
- *     information.
+ * @param {Object.<string, StoredNotificationGroup>} groups Map from group name
+ *     to group information.
  * @param {boolean} isOptedIn True if the user is opted in to Google Now.
  */
 function scheduleNextPoll(groups, isOptedIn) {
@@ -480,30 +413,35 @@ function scheduleNextPoll(groups, isOptedIn) {
 }
 
 /**
- * Merges notification groups into a set of Chrome notifications and shows them.
- * @param {Object.<string, StorageGroup>} notificationGroups Map from group name
- *     to group information.
- * @param {function(CardCreateInfo)=} onCardShown Optional parameter called when
- *     each card is shown.
+ * Combines notification groups into a set of Chrome notifications and shows
+ * them.
+ * @param {Object.<string, StoredNotificationGroup>} notificationGroups Map from
+ *     group name to group information.
+ * @param {function(ReceivedNotification)=} onCardShown Optional parameter
+ *     called when each card is shown.
  */
-function mergeAndShowNotificationCards(notificationGroups, onCardShown) {
-  var mergedCards = {};
+function combineAndShowNotificationCards(notificationGroups, onCardShown) {
+  console.log('combineAndShowNotificationCards ' +
+      JSON.stringify(notificationGroups));
+  /** @type {Object.<ChromeNotificationId, CombinedCard>} */
+  var combinedCards = {};
 
   for (var groupName in notificationGroups)
-    mergeGroup(mergedCards, notificationGroups[groupName]);
+    combineGroup(combinedCards, notificationGroups[groupName]);
 
-  showNotificationCards(mergedCards, onCardShown);
+  showNotificationCards(combinedCards, onCardShown);
 }
 
 /**
  * Parses JSON response from the notification server, shows notifications and
  * schedules next update.
  * @param {string} response Server response.
- * @param {function(CardCreateInfo)=} onCardShown Optional parameter called when
- *     each card is shown.
+ * @param {function(ReceivedNotification)=} onCardShown Optional parameter
+ *     called when each card is shown.
  */
 function parseAndShowNotificationCards(response, onCardShown) {
   console.log('parseAndShowNotificationCards ' + response);
+  /** @type {ServerResponse} */
   var parsedResponse = JSON.parse(response);
 
   if (parsedResponse.googleNowDisabled) {
@@ -517,74 +455,98 @@ function parseAndShowNotificationCards(response, onCardShown) {
 
   var receivedGroups = parsedResponse.groups;
 
-  // Populate groups with corresponding cards.
-  if (parsedResponse.notifications) {
-    for (var i = 0; i != parsedResponse.notifications.length; ++i) {
-      var card = parsedResponse.notifications[i];
-      var group = receivedGroups[card.groupName];
-      group.cards = group.cards || [];
-      group.cards.push(card);
-    }
-  }
+  instrumented.storage.local.get(
+      ['notificationGroups', 'recentDismissals'],
+      function(items) {
+        console.log(
+            'parseAndShowNotificationCards-get ' + JSON.stringify(items));
+        items = items || {};
+        /** @type {Object.<string, StoredNotificationGroup>} */
+        items.notificationGroups = items.notificationGroups || {};
+        /** @type {Object.<NotificationId, number>} */
+        items.recentDismissals = items.recentDismissals || {};
 
-  instrumented.storage.local.get('notificationGroups', function(items) {
-    console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
-    items = items || {};
-    items.notificationGroups = items.notificationGroups || {};
+        // Build a set of non-expired recent dismissals. It will be used for
+        // client-side filtering of cards.
+        /** @type {Object.<NotificationId, number>} */
+        var updatedRecentDismissals = {};
+        var now = Date.now();
+        for (var notificationId in items.recentDismissals) {
+          var dismissalAge = now - items.recentDismissals[notificationId];
+          if (dismissalAge < DISMISS_RETENTION_TIME_MS) {
+            updatedRecentDismissals[notificationId] =
+                items.recentDismissals[notificationId];
+          }
+        }
 
-    var now = Date.now();
+        // Populate groups with corresponding cards.
+        if (parsedResponse.notifications) {
+          for (var i = 0; i < parsedResponse.notifications.length; ++i) {
+            /** @type {ReceivedNotification} */
+            var card = parsedResponse.notifications[i];
+            if (!(card.notificationId in updatedRecentDismissals)) {
+              var group = receivedGroups[card.groupName];
+              group.cards = group.cards || [];
+              group.cards.push(card);
+            }
+          }
+        }
 
-    // Build updated set of groups.
-    var updatedGroups = {};
+        // Build updated set of groups.
+        var updatedGroups = {};
 
-    for (var groupName in receivedGroups) {
-      var receivedGroup = receivedGroups[groupName];
-      var storageGroup = items.notificationGroups[groupName] || {
-        cards: [],
-        cardsTimestamp: undefined,
-        nextPollTime: undefined,
-        rank: undefined
-      };
+        for (var groupName in receivedGroups) {
+          var receivedGroup = receivedGroups[groupName];
+          var storedGroup = items.notificationGroups[groupName] || {
+            cards: [],
+            cardsTimestamp: undefined,
+            nextPollTime: undefined,
+            rank: undefined
+          };
 
-      if (receivedGroup.requested)
-        receivedGroup.cards = receivedGroup.cards || [];
+          if (receivedGroup.requested)
+            receivedGroup.cards = receivedGroup.cards || [];
 
-      if (receivedGroup.cards) {
-        // If the group contains a cards update, all its fields will get new
-        // values.
-        storageGroup.cards = receivedGroup.cards;
-        storageGroup.cardsTimestamp = now;
-        storageGroup.rank = receivedGroup.rank;
-        storageGroup.nextPollTime = undefined;
-        // The code below assigns nextPollTime a defined value if
-        // nextPollSeconds is specified in the received group.
-        // If the group's cards are not updated, and nextPollSeconds is
-        // unspecified, this method doesn't change group's nextPollTime.
-      }
+          if (receivedGroup.cards) {
+            // If the group contains a cards update, all its fields will get new
+            // values.
+            storedGroup.cards = receivedGroup.cards;
+            storedGroup.cardsTimestamp = now;
+            storedGroup.rank = receivedGroup.rank;
+            storedGroup.nextPollTime = undefined;
+            // The code below assigns nextPollTime a defined value if
+            // nextPollSeconds is specified in the received group.
+            // If the group's cards are not updated, and nextPollSeconds is
+            // unspecified, this method doesn't change group's nextPollTime.
+          }
 
-      // 'nextPollSeconds' may be sent even for groups that don't contain cards
-      // updates.
-      if (receivedGroup.nextPollSeconds !== undefined) {
-        storageGroup.nextPollTime =
-            now + receivedGroup.nextPollSeconds * MS_IN_SECOND;
-      }
+          // 'nextPollSeconds' may be sent even for groups that don't contain
+          // cards updates.
+          if (receivedGroup.nextPollSeconds !== undefined) {
+            storedGroup.nextPollTime =
+                now + receivedGroup.nextPollSeconds * MS_IN_SECOND;
+          }
 
-      updatedGroups[groupName] = storageGroup;
-    }
+          updatedGroups[groupName] = storedGroup;
+        }
 
-    scheduleNextPoll(updatedGroups, !parsedResponse.googleNowDisabled);
-    chrome.storage.local.set({notificationGroups: updatedGroups});
-    mergeAndShowNotificationCards(updatedGroups, onCardShown);
-    recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
-  });
+        scheduleNextPoll(updatedGroups, !parsedResponse.googleNowDisabled);
+        chrome.storage.local.set({
+          notificationGroups: updatedGroups,
+          recentDismissals: updatedRecentDismissals
+        });
+        combineAndShowNotificationCards(updatedGroups, onCardShown);
+        recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
+      });
 }
 
 /**
  * Update Location Cards Shown Count.
- * @param {Object} cardCreateInfo Card Create Info
+ * @param {ReceivedNotification} receivedNotification Notification as it was
+ *     received from the server.
  */
-function countLocationCard(cardCreateInfo) {
-  if (cardCreateInfo.locationBased) {
+function countLocationCard(receivedNotification) {
+  if (receivedNotification.locationBased) {
     localStorage['locationCardsShown']++;
   }
 }
@@ -620,7 +582,7 @@ function requestNotificationGroups(groupNames) {
     console.log('requestNotificationGroups-onloadend ' + request.status);
     if (request.status == HTTP_OK) {
       recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
-      parseAndShowNotificationCards(request.response, cardShownCallback);
+      parseAndShowNotificationCards(request.responseText, cardShownCallback);
     }
   };
 
@@ -644,7 +606,7 @@ function requestOptedIn(optedInCallback) {
     console.log(
         'requestOptedIn-onloadend ' + request.status + ' ' + request.response);
     if (request.status == HTTP_OK) {
-      var parsedResponse = JSON.parse(request.response);
+      var parsedResponse = JSON.parse(request.responseText);
       if (parsedResponse.value) {
         chrome.storage.local.set({googleNowEnabled: true});
         optedInCallback();
@@ -664,7 +626,7 @@ function requestOptedIn(optedInCallback) {
 
 /**
  * Requests notification cards from the server.
- * @param {Location} position Location of this computer.
+ * @param {Location=} position Location of this computer.
  */
 function requestNotificationCards(position) {
   console.log('requestNotificationCards ' + JSON.stringify(position));
@@ -674,17 +636,17 @@ function requestNotificationCards(position) {
     console.log('requestNotificationCards-storage-get ' +
                 JSON.stringify(items));
     items = items || {};
+    /** @type {Object.<string, StoredNotificationGroup>} */
+    items.notificationGroups = items.notificationGroups || {};
 
     var groupsToRequest = [];
 
-    if (items.notificationGroups) {
-      var now = Date.now();
+    var now = Date.now();
 
-      for (var groupName in items.notificationGroups) {
-        var group = items.notificationGroups[groupName];
-        if (group.nextPollTime !== undefined && group.nextPollTime <= now)
-          groupsToRequest.push(groupName);
-      }
+    for (var groupName in items.notificationGroups) {
+      var group = items.notificationGroups[groupName];
+      if (group.nextPollTime !== undefined && group.nextPollTime <= now)
+        groupsToRequest.push(groupName);
     }
 
     if (items.googleNowEnabled) {
@@ -736,7 +698,7 @@ function stopRequestLocation() {
 /**
  * Obtains new location; requests and shows notification cards based on this
  * location.
- * @param {Location} position Location of this computer.
+ * @param {Location=} position Location of this computer.
  */
 function updateNotificationsCards(position) {
   console.log('updateNotificationsCards ' + JSON.stringify(position) +
@@ -760,7 +722,8 @@ function updateNotificationsCards(position) {
 
 /**
  * Sends a server request to dismiss a card.
- * @param {string} chromeNotificationId chrome.notifications ID of the card.
+ * @param {ChromeNotificationId} chromeNotificationId chrome.notifications ID of
+ *     the card.
  * @param {number} dismissalTimeMs Time of the user's dismissal of the card in
  *     milliseconds since epoch.
  * @param {DismissalData} dismissalData Data to build a dismissal request.
@@ -769,8 +732,9 @@ function updateNotificationsCards(position) {
  */
 function requestCardDismissal(
     chromeNotificationId, dismissalTimeMs, dismissalData, callbackBoolean) {
-  console.log('requestDismissingCard ' + chromeNotificationId + ' from ' +
-      NOTIFICATION_CARDS_URL);
+  console.log('requestDismissingCard ' + chromeNotificationId +
+      ' from ' + NOTIFICATION_CARDS_URL +
+      ', dismissalData=' + JSON.stringify(dismissalData));
 
   var dismissalAge = Date.now() - dismissalTimeMs;
 
@@ -781,16 +745,17 @@ function requestCardDismissal(
 
   recordEvent(GoogleNowEvent.DISMISS_REQUEST_TOTAL);
 
-  var request = 'notifications/' + dismissalData.notificationId +
+  var requestParameters = 'notifications/' + dismissalData.notificationId +
       '?age=' + dismissalAge +
       '&chromeNotificationId=' + chromeNotificationId;
 
   for (var paramField in dismissalData.parameters)
-    request += ('&' + paramField + '=' + dismissalData.parameters[paramField]);
+    requestParameters += ('&' + paramField +
+    '=' + dismissalData.parameters[paramField]);
 
-  console.log('requestCardDismissal: request=' + request);
+  console.log('requestCardDismissal: requestParameters=' + requestParameters);
 
-  var request = buildServerRequest('DELETE', request);
+  var request = buildServerRequest('DELETE', requestParameters);
   request.onloadend = function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_NOCONTENT)
@@ -823,7 +788,9 @@ function processPendingDismissals(callbackBoolean) {
         console.log('processPendingDismissals-storage-get ' +
                     JSON.stringify(items));
         items = items || {};
+        /** @type {Array.<PendingDismissal>} */
         items.pendingDismissals = items.pendingDismissals || [];
+        /** @type {Object.<NotificationId, number>} */
         items.recentDismissals = items.recentDismissals || {};
 
         var dismissalsChanged = false;
@@ -847,6 +814,7 @@ function processPendingDismissals(callbackBoolean) {
 
           // Send dismissal for the first card, and if successful, repeat
           // recursively with the rest.
+          /** @type {PendingDismissal} */
           var dismissal = items.pendingDismissals[0];
           requestCardDismissal(
               dismissal.chromeNotificationId,
@@ -856,7 +824,8 @@ function processPendingDismissals(callbackBoolean) {
                 if (done) {
                   dismissalsChanged = true;
                   items.pendingDismissals.splice(0, 1);
-                  items.recentDismissals[dismissal.chromeNotificationId] =
+                  items.recentDismissals[
+                      dismissal.dismissalData.notificationId] =
                       Date.now();
                   doProcessDismissals();
                 } else {
@@ -895,12 +864,15 @@ function openUrl(url) {
 
 /**
  * Opens URL corresponding to the clicked part of the notification.
- * @param {string} chromeNotificationId chrome.notifications ID of the card.
- * @param {function(Object): string} selector Function that extracts the url for
- *     the clicked area from the button action URLs info.
+ * @param {ChromeNotificationId} chromeNotificationId chrome.notifications ID of
+ *     the card.
+ * @param {function((ActionUrls|undefined)): (string|undefined)} selector
+ *     Function that extracts the url for the clicked area from the button
+ *     action URLs info.
  */
 function onNotificationClicked(chromeNotificationId, selector) {
   instrumented.storage.local.get('notificationsData', function(items) {
+    /** @type {(NotificationDataEntry|undefined)} */
     var notificationData = items &&
         items.notificationsData &&
         items.notificationsData[chromeNotificationId];
@@ -918,7 +890,8 @@ function onNotificationClicked(chromeNotificationId, selector) {
 
 /**
  * Callback for chrome.notifications.onClosed event.
- * @param {string} chromeNotificationId chrome.notifications ID of the card.
+ * @param {ChromeNotificationId} chromeNotificationId chrome.notifications ID of
+ *     the card.
  * @param {boolean} byUser Whether the notification was closed by the user.
  */
 function onNotificationClosed(chromeNotificationId, byUser) {
@@ -934,28 +907,37 @@ function onNotificationClosed(chromeNotificationId, byUser) {
     instrumented.storage.local.get(
         ['pendingDismissals', 'notificationsData'], function(items) {
       items = items || {};
+      /** @type {Array.<PendingDismissal>} */
       items.pendingDismissals = items.pendingDismissals || [];
+      /** @type {Object.<string, NotificationDataEntry>} */
       items.notificationsData = items.notificationsData || {};
 
-      // Deleting the notification in case it was re-added while this task was
-      // scheduled, waiting for execution; also cleaning notification's data
-      // from storage.
-      cardSet.clear(chromeNotificationId, true);
+      /** @type {NotificationDataEntry} */
+      var notificationData = items.notificationsData[chromeNotificationId] || {
+        timestamp: Date.now(),
+        combinedCard: []
+      };
 
-      var notificationData = items.notificationsData[chromeNotificationId];
+      var dismissalResult =
+          cardSet.onDismissal(chromeNotificationId, notificationData);
 
-      if (notificationData && notificationData.dismissals) {
-        for (var i = 0; i < notificationData.dismissals.length; i++) {
-          var dismissal = {
-            chromeNotificationId: chromeNotificationId,
-            time: Date.now(),
-            dismissalData: notificationData.dismissals[i]
-          };
-          items.pendingDismissals.push(dismissal);
-        }
-
-        chrome.storage.local.set({pendingDismissals: items.pendingDismissals});
+      for (var i = 0; i < dismissalResult.dismissals.length; i++) {
+        /** @type {PendingDismissal} */
+        var dismissal = {
+          chromeNotificationId: chromeNotificationId,
+          time: Date.now(),
+          dismissalData: dismissalResult.dismissals[i]
+        };
+        items.pendingDismissals.push(dismissal);
       }
+
+      items.notificationsData[chromeNotificationId] =
+          dismissalResult.notificationData;
+
+      chrome.storage.local.set({
+        pendingDismissals: items.pendingDismissals,
+        notificationsData: items.notificationsData
+      });
 
       processPendingDismissals(function(success) {});
     });
@@ -1140,9 +1122,10 @@ instrumented.runtime.onStartup.addListener(function() {
     instrumented.storage.local.get('notificationGroups', function(items) {
       console.log('onStartup-get ' + JSON.stringify(items));
       items = items || {};
+      /** @type {Object.<string, StoredNotificationGroup>} */
       items.notificationGroups = items.notificationGroups || {};
 
-      mergeAndShowNotificationCards(items.notificationGroups);
+      combineAndShowNotificationCards(items.notificationGroups);
     });
   });
 
@@ -1178,7 +1161,7 @@ instrumented.notifications.onButtonClicked.addListener(
           'GoogleNow.ButtonClicked' + buttonIndex);
       onNotificationClicked(chromeNotificationId, function(actionUrls) {
         var url = actionUrls.buttonUrls[buttonIndex];
-        verify(url, 'onButtonClicked: no url for a button');
+        verify(url !== undefined, 'onButtonClicked: no url for a button');
         return url;
       });
     });
@@ -1222,6 +1205,7 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
             message.payload) {
           items.lastPollNowPayloads[message.subchannelId] = message.payload;
 
+          /** @type {Object.<string, StoredNotificationGroup>} */
           items.notificationGroups = items.notificationGroups || {};
           items.notificationGroups['PUSH' + message.subchannelId] = {
             cards: [],
