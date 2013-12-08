@@ -156,7 +156,7 @@ ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
  */
 ImageEditor.Mode.Autofix = function() {
   ImageEditor.Mode.ColorFilter.call(this, 'autofix', 'GALLERY_AUTOFIX');
-  this.doneMessage_ = 'fixed';
+  this.doneMessage_ = 'GALLERY_FIXED';
 };
 
 ImageEditor.Mode.Autofix.prototype =

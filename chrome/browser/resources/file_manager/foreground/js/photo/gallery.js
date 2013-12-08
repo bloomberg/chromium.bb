@@ -695,7 +695,7 @@ Gallery.prototype.onFilenameFocus_ = function() {
  */
 Gallery.prototype.onFilenameEditBlur_ = function(event) {
   if (this.filenameEdit_.value && this.filenameEdit_.value[0] == '.') {
-    this.prompt_.show('file_hidden_name', 5000);
+    this.prompt_.show('GALLERY_FILE_HIDDEN_NAME', 5000);
     this.filenameEdit_.focus();
     event.stopPropagation();
     event.preventDefault();
@@ -706,7 +706,7 @@ Gallery.prototype.onFilenameEditBlur_ = function(event) {
   var oldUrl = item.getUrl();
 
   var onFileExists = function() {
-    this.prompt_.show('file_exists', 3000);
+    this.prompt_.show('GALLERY_FILE_EXISTS', 3000);
     this.filenameEdit_.value = name;
     this.filenameEdit_.focus();
   }.bind(this);

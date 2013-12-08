@@ -668,7 +668,7 @@ SlideMode.prototype.loadItem_ = function(
     if (loadType == ImageView.LOAD_TYPE_ERROR) {
       // if we have a specific error, then display it
       if (error) {
-        this.showErrorBanner_('GALLERY_' + error);
+        this.showErrorBanner_(error);
       } else {
         // otherwise try to infer general error
         this.showErrorBanner_(
@@ -1252,7 +1252,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
     if (this.context_.readonlyDirName) {
       this.editor_.getPrompt().showAt(
-          'top', 'readonly_warning', 0, this.context_.readonlyDirName);
+          'top', 'GALLERY_READONLY_WARNING', 0, this.context_.readonlyDirName);
     }
   } else {
     this.editor_.getPrompt().hide();

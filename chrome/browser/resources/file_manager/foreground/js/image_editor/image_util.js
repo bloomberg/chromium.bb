@@ -479,7 +479,7 @@ ImageUtil.ImageLoader.prototype.load = function(
       this.image_.onload = null;
       if (ImageUtil.ImageLoader.isTooLarge(this.image_.width,
                                            this.image_.height)) {
-        onError('IMAGE_TOO_BIG_ERROR');
+        onError('GALLERY_IMAGE_TOO_BIG_ERROR');
         return;
       }
       transformFetcher(url, onTransform.bind(this, e.target));
@@ -487,7 +487,7 @@ ImageUtil.ImageLoader.prototype.load = function(
 
     // The error callback has an optional error argument, which in case of a
     // general error should not be specified
-    this.image_.onerror = onError.bind(this, 'IMAGE_ERROR');
+    this.image_.onerror = onError.bind(this, 'GALLERY_IMAGE_ERROR');
 
     // Extract the last modification date to determine if the cached image
     // is outdated.
@@ -537,7 +537,7 @@ ImageUtil.ImageLoader.prototype.resetImage_ = function(onSuccess, onError) {
   if (this.image_.src != emptyImage) {
     // Load an empty image, then clear src.
     this.image_.onload = clearSrc;
-    this.image_.onerror = onError.bind(this, 'IMAGE_ERROR');
+    this.image_.onerror = onError.bind(this, 'GALLERY_IMAGE_ERROR');
     this.image_.src = emptyImage;
   } else {
     // Empty image already loaded, so clear src immediately.
