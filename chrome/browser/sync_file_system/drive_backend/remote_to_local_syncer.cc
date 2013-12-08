@@ -668,6 +668,8 @@ void RemoteToLocalSyncer::DidCalculateMD5ForDownload(
 void RemoteToLocalSyncer::DidApplyDownload(const SyncStatusCallback& callback,
                                            webkit_blob::ScopedFile,
                                            SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK)
+    metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
   callback.Run(status);
 }
 

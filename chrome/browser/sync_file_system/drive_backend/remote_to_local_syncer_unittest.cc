@@ -462,5 +462,41 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFile) {
   EXPECT_TRUE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
 }
 
+TEST_F(RemoteToLocalSyncerTest, Conflict_CreateNestedFolderOnFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+
+  const std::string folder = CreateRemoteFolder(app_root, "folder");
+
+  AppendExpectedChange(URL(kOrigin, "/folder"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  ListChanges();
+  RunSyncerUntilIdle();
+
+  CreateLocalFile(URL(kOrigin, "/folder"));
+  CreateRemoteFile(folder, "file", "data");
+
+  // File-Folder conflict happens. Folder should override the existing file.
+  AppendExpectedChange(URL(kOrigin, "/folder"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  ListChanges();
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system

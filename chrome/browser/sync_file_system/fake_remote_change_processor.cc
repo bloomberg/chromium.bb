@@ -10,7 +10,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
 
@@ -58,9 +60,36 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
     const base::FilePath& local_path,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  applied_changes_[url].push_back(change);
+  SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+  base::FilePath ancestor = fileapi::VirtualPath::DirName(url.path());
+  while (true) {
+    fileapi::FileSystemURL ancestor_url =
+        CreateSyncableFileSystemURL(url.origin(), ancestor);
+    if (!ancestor_url.is_valid())
+      break;
+
+    URLToFileChangeList::iterator found_list =
+        local_changes_.find(ancestor_url);
+    if (found_list != local_changes_.end()) {
+      const FileChange& local_change = found_list->second.back();
+      if (local_change.IsAddOrUpdate() &&
+          local_change.file_type() != SYNC_FILE_TYPE_DIRECTORY) {
+        status = SYNC_FILE_ERROR_NOT_A_DIRECTORY;
+        break;
+      }
+    }
+
+    base::FilePath ancestor_parent = fileapi::VirtualPath::DirName(ancestor);
+    if (ancestor == ancestor_parent)
+      break;
+    ancestor = ancestor_parent;
+  }
+  if (status == SYNC_STATUS_UNKNOWN) {
+    applied_changes_[url].push_back(change);
+    status = SYNC_STATUS_OK;
+  }
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+      FROM_HERE, base::Bind(callback, status));
 }
 
 void FakeRemoteChangeProcessor::FinalizeRemoteSync(
