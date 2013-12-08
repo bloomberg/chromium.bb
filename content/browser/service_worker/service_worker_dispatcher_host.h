@@ -38,11 +38,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   // IPC Message handlers
   void OnRegisterServiceWorker(int32 thread_id,
                                int32 request_id,
-                               const GURL& scope,
+                               const GURL& pattern,
                                const GURL& script_url);
   void OnUnregisterServiceWorker(int32 thread_id,
                                  int32 request_id,
-                                 const GURL& scope);
+                                 const GURL& pattern);
   void OnProviderCreated(int provider_id);
   void OnProviderDestroyed(int provider_id);
 

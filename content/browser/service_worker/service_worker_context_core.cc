@@ -6,29 +6,23 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_register_job.h"
+#include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_storage.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "url/gurl.h"
 
 namespace content {
 
-namespace {
-
-const base::FilePath::CharType kServiceWorkerDirectory[] =
-    FILE_PATH_LITERAL("ServiceWorker");
-
-}  // namespace
-
 ServiceWorkerContextCore::ServiceWorkerContextCore(
-    const base::FilePath& user_data_directory,
+    const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy)
-    : quota_manager_proxy_(quota_manager_proxy) {
-  if (!user_data_directory.empty())
-    path_ = user_data_directory.Append(kServiceWorkerDirectory);
-}
+    : storage_(new ServiceWorkerStorage(path, quota_manager_proxy)) {}
 
-ServiceWorkerContextCore::~ServiceWorkerContextCore() {
-}
+ServiceWorkerContextCore::~ServiceWorkerContextCore() {}
 
 ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
     int process_id, int provider_id) {
@@ -65,6 +59,53 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
 bool ServiceWorkerContextCore::IsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableServiceWorker);
+}
+
+void ServiceWorkerContextCore::RegisterServiceWorker(
+    const GURL& pattern,
+    const GURL& script_url,
+    const RegistrationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  storage_->Register(pattern,
+                     script_url,
+                     base::Bind(&ServiceWorkerContextCore::RegistrationComplete,
+                                AsWeakPtr(),
+                                callback));
+}
+
+void ServiceWorkerContextCore::UnregisterServiceWorker(
+    const GURL& pattern,
+    const UnregistrationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  storage_->Unregister(
+      pattern,
+      base::Bind(&ServiceWorkerContextCore::UnregistrationComplete,
+                 AsWeakPtr(),
+                 callback));
+}
+
+void ServiceWorkerContextCore::RegistrationComplete(
+    const ServiceWorkerContextCore::RegistrationCallback& callback,
+    ServiceWorkerRegistrationStatus status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  if (status != REGISTRATION_OK) {
+    DCHECK(!registration);
+    callback.Run(status, -1L);
+  }
+
+  callback.Run(status, registration->id());
+}
+
+void ServiceWorkerContextCore::UnregistrationComplete(
+    const UnregistrationCallback& callback,
+    ServiceWorkerRegistrationStatus status) {
+  // Unregistering a non-existent registration is a no-op.
+  if (status == REGISTRATION_OK || status == REGISTRATION_NOT_FOUND)
+    callback.Run(REGISTRATION_OK);
+  else
+    callback.Run(status);
 }
 
 }  // namespace content

@@ -83,7 +83,7 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     int32 thread_id,
     int32 request_id,
-    const GURL& scope,
+    const GURL& pattern,
     const GURL& script_url) {
   if (!context_ || !context_->IsEnabled()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
@@ -97,7 +97,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   // TODO(alecflett): This check is insufficient for release. Add a
   // ServiceWorker-specific policy query in
   // ChildProcessSecurityImpl. See http://crbug.com/311631.
-  if (scope.GetOrigin() != script_url.GetOrigin()) {
+  if (pattern.GetOrigin() != script_url.GetOrigin()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
@@ -110,9 +110,10 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
       thread_id, request_id, NextWorkerId()));
 }
 
-void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(int32 thread_id,
-                                                            int32 request_id,
-                                                            const GURL& scope) {
+void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
+    int32 thread_id,
+    int32 request_id,
+    const GURL& pattern) {
   // TODO(alecflett): This check is insufficient for release. Add a
   // ServiceWorker-specific policy query in
   // ChildProcessSecurityImpl. See http://crbug.com/311631.
