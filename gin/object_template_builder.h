@@ -43,7 +43,7 @@ struct CallbackTraits<base::Callback<T> > {
 // from the first normal parameter.
 template<typename T>
 struct CallbackTraits<T, typename base::enable_if<
-                           base::is_member_function_pointer<T>::value >::type> {
+                           base::is_member_function_pointer<T>::value>::type> {
   static v8::Handle<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
                                                          T callback) {
     return CreateFunctionTemplate(isolate, base::Bind(callback),

@@ -13,14 +13,12 @@
 namespace mojo {
 namespace js {
 
-class WaitingCallback : public gin::Wrappable,
+class WaitingCallback : public gin::Wrappable<WaitingCallback>,
                         public BindingsSupport::AsyncWaitCallback {
  public:
   static gin::Handle<WaitingCallback> Create(
       v8::Isolate* isolate, v8::Handle<v8::Function> callback);
 
-  static gin::WrapperInfo kWrapperInfo;
-  virtual gin::WrapperInfo* GetWrapperInfo() OVERRIDE;
   static void EnsureRegistered(v8::Isolate* isolate);
 
   BindingsSupport::AsyncWaitID wait_id() const {

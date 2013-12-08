@@ -14,65 +14,32 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gin {
-namespace {
 
-class MyObject : public Wrappable {
+class MyObject : public Wrappable<MyObject> {
  public:
-  static gin::Handle<MyObject> Create(v8::Isolate* isolate);
+  static gin::Handle<MyObject> Create(v8::Isolate* isolate) {
+    return CreateHandle(isolate, new MyObject());
+  }
 
   int value() const { return value_; }
   void set_value(int value) { value_ = value; }
 
-  static WrapperInfo kWrapperInfo;
-  virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
-
  private:
   MyObject() : value_(0) {}
-  virtual ~MyObject() {}
+  ~MyObject() {}
 
   int value_;
 };
 
-WrapperInfo MyObject::kWrapperInfo = { kEmbedderNativeGin };
-
-gin::Handle<MyObject> MyObject::Create(v8::Isolate* isolate) {
-  return CreateHandle(isolate, new MyObject());
-}
-
-WrapperInfo* MyObject::GetWrapperInfo() {
-  return &kWrapperInfo;
-}
-
-
-class MyObject2 : public Wrappable {
- public:
-  MyObject2() {
-  }
-  static WrapperInfo kWrapperInfo;
-  virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
+class MyObject2 : public Wrappable<MyObject2> {
 };
 
-WrapperInfo MyObject2::kWrapperInfo = { kEmbedderNativeGin };
-
-WrapperInfo* MyObject2::GetWrapperInfo() {
-  return &kWrapperInfo;
-}
-
-
-class MyObjectBlink : public Wrappable {
- public:
-  MyObjectBlink() {
-  }
-  static WrapperInfo kWrapperInfo;
-  virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
+class MyObjectBlink : public Wrappable<MyObjectBlink> {
 };
 
-WrapperInfo MyObjectBlink::kWrapperInfo = { kEmbedderBlink };
-
-WrapperInfo* MyObjectBlink::GetWrapperInfo() {
-  return &kWrapperInfo;
-}
-
+INIT_WRAPPABLE(gin::MyObject);
+INIT_WRAPPABLE(gin::MyObject2);
+INIT_WRAPPABLE(gin::MyObjectBlink);
 
 void RegisterTemplates(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
@@ -173,5 +140,4 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   EXPECT_EQ(191, obj->value());
 }
 
-}  // namespace
 }  // namespace gin

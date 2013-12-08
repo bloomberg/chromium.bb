@@ -7,6 +7,8 @@
 #include "gin/per_context_data.h"
 #include "gin/per_isolate_data.h"
 
+INIT_WRAPPABLE(mojo::js::WaitingCallback);
+
 namespace mojo {
 namespace js {
 
@@ -35,19 +37,14 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
   return gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
 }
 
-gin::WrapperInfo WaitingCallback::kWrapperInfo = { gin::kEmbedderNativeGin };
-
-gin::WrapperInfo* WaitingCallback::GetWrapperInfo() {
-  return &kWrapperInfo;
-}
-
 void WaitingCallback::EnsureRegistered(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
-  if (!data->GetObjectTemplate(&kWrapperInfo).IsEmpty())
+  if (!data->GetObjectTemplate(&WaitingCallback::kWrapperInfo).IsEmpty()) {
     return;
+  }
   v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
   templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
-  data->SetObjectTemplate(&kWrapperInfo, templ);
+  data->SetObjectTemplate(&WaitingCallback::kWrapperInfo, templ);
 }
 
 void WaitingCallback::OnHandleReady(MojoResult result) {

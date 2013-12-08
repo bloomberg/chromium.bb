@@ -32,7 +32,6 @@ enum CreateFunctionTemplateFlags {
 
 namespace internal {
 
-// TODO(aa): Move this to base/template_util.h as remove_const.
 template<typename T>
 struct CallbackParamTraits {
   typedef T LocalType;
@@ -56,12 +55,12 @@ struct CallbackParamTraits<const T*> {
 // It inherits from Wrappable, which delete itself when both (a) the refcount
 // via base::RefCounted has dropped to zero, and (b) there are no more
 // JavaScript references in V8.
-class CallbackHolderBase : public Wrappable {
- public:
-  virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
-  static WrapperInfo kWrapperInfo;
+
+// This simple base class is used so that we can share a single object template
+// among every CallbackHolder instance.
+class CallbackHolderBase : public Wrappable<CallbackHolderBase> {
  protected:
-  virtual ~CallbackHolderBase() {}
+  ~CallbackHolderBase() {}
 };
 
 template<typename Sig>
@@ -72,7 +71,7 @@ class CallbackHolder : public CallbackHolderBase {
   base::Callback<Sig> callback;
   int flags;
  private:
-  virtual ~CallbackHolder() {}
+  ~CallbackHolder() {}
 };
 
 
