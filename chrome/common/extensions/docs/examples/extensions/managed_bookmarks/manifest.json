@@ -1,0 +1,18 @@
+{
+  "name": "__MSG_extName__",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
+  "version": "1.0",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "bookmarks",
+    "storage"
+  ],
+  "storage": {
+    "managed_schema": "schema.json"
+  }
+}

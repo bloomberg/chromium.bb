@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "Bookmarks Bar": {
+      "title": "Bookmarks in the Bookmarks Bar",
+      "description": "Configures bookmarks that will appear in the Bookmarks Bar and can't be removed by the user.",
+      "type": "array",
+      "id": "ListOfBookmarks",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "url": { "type": "string" },
+          "children": { "$ref": "ListOfBookmarks" }
+        }
+      }
+    },
+    "Other Bookmarks": {
+      "title": "Bookmarks in the Other Bookmarks folder",
+      "description": "Configures bookmarks that will appear in the Other Bookmarks folder and can't be removed by the user.",
+      "$ref": "ListOfBookmarks"
+    }
+  }
+}
