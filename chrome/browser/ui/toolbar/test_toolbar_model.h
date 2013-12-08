@@ -23,6 +23,7 @@ class TestToolbarModel : public ToolbarModel {
       bool ignore_editing) const OVERRIDE;
   virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;
+  virtual int GetIconForSecurityLevel(SecurityLevel level) const OVERRIDE;
   virtual base::string16 GetEVCertName() const OVERRIDE;
   virtual bool ShouldDisplayURL() const OVERRIDE;
 

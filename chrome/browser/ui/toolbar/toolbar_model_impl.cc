@@ -198,7 +198,10 @@ int ToolbarModelImpl::GetIcon() const {
         chrome::DISPLAY_SEARCH_BUTTON_NEVER) ?
             IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
   }
+  return GetIconForSecurityLevel(GetSecurityLevel(false));
+}
 
+int ToolbarModelImpl::GetIconForSecurityLevel(SecurityLevel level) const {
   static int icon_ids[NUM_SECURITY_LEVELS] = {
     IDR_LOCATION_BAR_HTTP,
     IDR_OMNIBOX_HTTPS_VALID,
@@ -208,7 +211,7 @@ int ToolbarModelImpl::GetIcon() const {
     IDR_OMNIBOX_HTTPS_INVALID,
   };
   DCHECK(arraysize(icon_ids) == NUM_SECURITY_LEVELS);
-  return icon_ids[GetSecurityLevel(false)];
+  return icon_ids[level];
 }
 
 base::string16 ToolbarModelImpl::GetEVCertName() const {

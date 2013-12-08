@@ -41,6 +41,10 @@ int TestToolbarModel::GetIcon() const {
   return icon_;
 }
 
+int TestToolbarModel::GetIconForSecurityLevel(SecurityLevel level) const {
+  return icon_;
+}
+
 string16 TestToolbarModel::GetEVCertName() const {
   return ev_cert_name_;
 }

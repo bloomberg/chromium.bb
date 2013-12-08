@@ -62,9 +62,14 @@ class ToolbarModel {
   virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const = 0;
 
   // Returns the resource_id of the icon to show to the left of the address,
-  // based on the current URL.  This doesn't cover specialized icons while the
+  // based on the current URL.  When search term replacement is active, this
+  // returns a search icon.  This doesn't cover specialized icons while the
   // user is editing; see OmniboxView::GetIcon().
   virtual int GetIcon() const = 0;
+
+  // As |GetIcon()|, but returns the icon only taking into account the security
+  // |level| given, ignoring search term replacement state.
+  virtual int GetIconForSecurityLevel(SecurityLevel level) const = 0;
 
   // Returns the name of the EV cert holder.  Only call this when the security
   // level is EV_SECURE.
