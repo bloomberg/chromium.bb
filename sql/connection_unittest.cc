@@ -423,10 +423,10 @@ TEST_F(SQLConnectionTest, RazeEmptyDB) {
   db().Close();
 
   {
-    file_util::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "rb+"));
     ASSERT_TRUE(file.get() != NULL);
     ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
-    ASSERT_TRUE(base::TruncateFile(file.get()));
+    ASSERT_TRUE(file_util::TruncateFile(file.get()));
   }
 
   ASSERT_TRUE(db().Open(db_path()));
@@ -441,7 +441,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
   ASSERT_FALSE(base::PathExists(db_path()));
 
   {
-    file_util::ScopedFILE file(base::OpenFile(db_path(), "wb"));
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "wb"));
     ASSERT_TRUE(file.get() != NULL);
 
     const char* kJunk = "This is the hour of our discontent.";
@@ -474,7 +474,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
   db().Close();
 
   {
-    file_util::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "rb+"));
     ASSERT_TRUE(file.get() != NULL);
     ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
 

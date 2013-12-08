@@ -161,7 +161,7 @@ WASAPIUnifiedStream::~WASAPIUnifiedStream() {
   base::FilePath data_file_name;
   PathService::Get(base::DIR_EXE, &data_file_name);
   data_file_name = data_file_name.AppendASCII(kUnifiedAudioDebugFileName);
-  data_file_ = base::OpenFile(data_file_name, "wt");
+  data_file_ = file_util::OpenFile(data_file_name, "wt");
   DVLOG(1) << ">> Output file " << data_file_name.value() << " is created.";
 
   size_t n = 0;
@@ -175,16 +175,16 @@ WASAPIUnifiedStream::~WASAPIUnifiedStream() {
         fifo_rate_comps_[n]);
     ++n;
   }
-  base::CloseFile(data_file_);
+  file_util::CloseFile(data_file_);
 
   base::FilePath param_file_name;
   PathService::Get(base::DIR_EXE, &param_file_name);
   param_file_name = param_file_name.AppendASCII(kUnifiedAudioParamsFileName);
-  param_file_ = base::OpenFile(param_file_name, "wt");
+  param_file_ = file_util::OpenFile(param_file_name, "wt");
   DVLOG(1) << ">> Output file " << param_file_name.value() << " is created.";
   fprintf(param_file_, "%d %d\n", input_params_[0], input_params_[1]);
   fprintf(param_file_, "%d %d\n", output_params_[0], output_params_[1]);
-  base::CloseFile(param_file_);
+  file_util::CloseFile(param_file_);
 #endif
 }
 

@@ -81,7 +81,7 @@ bool ShouldUpdateIcon(const base::FilePath& icon_file,
     return true;
 
   base::MD5Digest persisted_image_checksum;
-  if (sizeof(persisted_image_checksum) != base::ReadFile(checksum_file,
+  if (sizeof(persisted_image_checksum) != file_util::ReadFile(checksum_file,
                       reinterpret_cast<char*>(&persisted_image_checksum),
                       sizeof(persisted_image_checksum)))
     return true;

@@ -292,7 +292,7 @@ bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
 bool SafeBrowsingStoreFile::GetAddPrefixes(SBAddPrefixes* add_prefixes) {
   add_prefixes->clear();
 
-  file_util::ScopedFILE file(base::OpenFile(filename_, "rb"));
+  file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb"));
   if (file.get() == NULL) return false;
 
   FileHeader header;
@@ -314,7 +314,7 @@ bool SafeBrowsingStoreFile::GetAddFullHashes(
     std::vector<SBAddFullHash>* add_full_hashes) {
   add_full_hashes->clear();
 
-  file_util::ScopedFILE file(base::OpenFile(filename_, "rb"));
+  file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb"));
   if (file.get() == NULL) return false;
 
   FileHeader header;
@@ -397,11 +397,11 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   corruption_seen_ = false;
 
   const base::FilePath new_filename = TemporaryFileForFilename(filename_);
-  file_util::ScopedFILE new_file(base::OpenFile(new_filename, "wb+"));
+  file_util::ScopedFILE new_file(file_util::OpenFile(new_filename, "wb+"));
   if (new_file.get() == NULL)
     return false;
 
-  file_util::ScopedFILE file(base::OpenFile(filename_, "rb"));
+  file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb"));
   empty_ = (file.get() == NULL);
   if (empty_) {
     // If the file exists but cannot be opened, try to delete it (not
@@ -644,7 +644,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
     return false;
 
   // Trim any excess left over from the temporary chunk data.
-  if (!base::TruncateFile(new_file_.get()))
+  if (!file_util::TruncateFile(new_file_.get()))
     return false;
 
   // Close the file handle and swizzle the file into place.

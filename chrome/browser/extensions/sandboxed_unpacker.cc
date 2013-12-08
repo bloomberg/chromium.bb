@@ -415,7 +415,7 @@ void SandboxedUnpacker::OnUnpackExtensionFailed(const string16& error) {
 }
 
 bool SandboxedUnpacker::ValidateSignature() {
-  ScopedStdioHandle file(base::OpenFile(crx_path_, "rb"));
+  ScopedStdioHandle file(file_util::OpenFile(crx_path_, "rb"));
 
   if (!file.get()) {
     // Could not open crx file for reading.

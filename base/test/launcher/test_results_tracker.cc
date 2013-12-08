@@ -135,7 +135,7 @@ bool TestResultsTracker::Init(const CommandLine& command_line) {
       return false;
     }
   }
-  out_ = OpenFile(path, "w");
+  out_ = file_util::OpenFile(path, "w");
   if (!out_) {
     LOG(ERROR) << "Cannot open output file: "
                << path.value() << ".";

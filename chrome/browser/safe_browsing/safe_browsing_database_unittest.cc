@@ -1152,7 +1152,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
 
   // Corrupt the file by corrupting the checksum, which is not checked
   // until the entire table is read in |UpdateFinished()|.
-  FILE* fp = base::OpenFile(database_filename_, "r+");
+  FILE* fp = file_util::OpenFile(database_filename_, "r+");
   ASSERT_TRUE(fp);
   ASSERT_NE(-1, fseek(fp, -8, SEEK_END));
   for (size_t i = 0; i < 8; ++i) {

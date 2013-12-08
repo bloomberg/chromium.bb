@@ -96,7 +96,7 @@ class Image {
   // Creates the image from the given filename on disk, and returns true on
   // success.
   bool CreateFromFilename(const base::FilePath& path) {
-    FILE* f = base::OpenFile(path, "rb");
+    FILE* f = file_util::OpenFile(path, "rb");
     if (!f)
       return false;
 
@@ -108,7 +108,7 @@ class Image {
       compressed.insert(compressed.end(), buf, buf + num_read);
     }
 
-    base::CloseFile(f);
+    file_util::CloseFile(f);
 
     if (!image_diff_png::DecodePNG(&compressed[0], compressed.size(),
                                    &data_, &w_, &h_)) {

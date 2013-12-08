@@ -58,7 +58,7 @@ bool OwnerKeyUtilImpl::ImportPublicKey(std::vector<uint8>* output) {
   }
 
   // Get the key data off of disk
-  int data_read = base::ReadFile(
+  int data_read = file_util::ReadFile(
       key_file_,
       reinterpret_cast<char*>(vector_as_array(output)),
       safe_file_size);

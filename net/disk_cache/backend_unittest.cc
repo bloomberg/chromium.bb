@@ -489,7 +489,7 @@ TEST_F(DiskCacheBackendTest, ExternalFiles) {
 
   // And verify that the first file is still there.
   scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize));
-  ASSERT_EQ(kSize, base::ReadFile(filename, buffer2->data(), kSize));
+  ASSERT_EQ(kSize, file_util::ReadFile(filename, buffer2->data(), kSize));
   EXPECT_EQ(0, memcmp(buffer1->data(), buffer2->data(), kSize));
 }
 

@@ -34,7 +34,7 @@ bool PluginStream::OpenTempFile() {
   DCHECK_EQ(static_cast<FILE*>(NULL), temp_file_);
 
   if (base::CreateTemporaryFile(&temp_file_path_))
-    temp_file_ = base::OpenFile(temp_file_path_, "a");
+    temp_file_ = file_util::OpenFile(temp_file_path_, "a");
 
   if (!temp_file_) {
     base::DeleteFile(temp_file_path_, false);
@@ -48,7 +48,7 @@ void PluginStream::CloseTempFile() {
   if (!TempFileIsValid())
     return;
 
-  base::CloseFile(temp_file_);
+  file_util::CloseFile(temp_file_);
   ResetTempFileHandle();
 }
 

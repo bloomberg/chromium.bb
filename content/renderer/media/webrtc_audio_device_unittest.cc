@@ -296,7 +296,7 @@ void ReadDataFromSpeechFile(char* data, int length) {
   DCHECK(base::PathExists(data_file));
   int64 data_file_size64 = 0;
   DCHECK(base::GetFileSize(data_file, &data_file_size64));
-  EXPECT_EQ(length, base::ReadFile(data_file, data, length));
+  EXPECT_EQ(length, file_util::ReadFile(data_file, data, length));
   DCHECK(data_file_size64 > length);
 }
 

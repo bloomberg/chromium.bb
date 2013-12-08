@@ -129,7 +129,7 @@ bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 bool ReadFileToString(const FilePath& path, std::string* contents) {
   if (path.ReferencesParent())
     return false;
-  FILE* file = OpenFile(path, "rb");
+  FILE* file = file_util::OpenFile(path, "rb");
   if (!file) {
     return false;
   }
@@ -140,7 +140,7 @@ bool ReadFileToString(const FilePath& path, std::string* contents) {
     if (contents)
       contents->append(buf, len);
   }
-  CloseFile(file);
+  file_util::CloseFile(file);
 
   return true;
 }
@@ -194,6 +194,16 @@ bool TouchFile(const FilePath& path,
   return false;
 }
 
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::FileEnumerator;
+using base::FilePath;
+using base::kMaxUniqueFiles;
+
 bool CloseFile(FILE* file) {
   if (file == NULL)
     return true;
@@ -217,15 +227,6 @@ bool TruncateFile(FILE* file) {
 #endif
   return true;
 }
-
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::FilePath;
-using base::kMaxUniqueFiles;
 
 int GetUniquePathNumber(
     const FilePath& path,

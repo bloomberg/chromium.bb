@@ -342,7 +342,7 @@ void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
   base::FilePath temp_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
                                              &temp_file));
-  FILE* temp_file_handle = base::OpenFile(temp_file, "w");
+  FILE* temp_file_handle = file_util::OpenFile(temp_file, "w");
   ASSERT_TRUE(temp_file_handle);
 
   scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());

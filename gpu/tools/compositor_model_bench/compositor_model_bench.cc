@@ -38,7 +38,9 @@
 
 
 using base::TimeTicks;
+using file_util::CloseFile;
 using base::DirectoryExists;
+using file_util::OpenFile;
 using base::PathExists;
 using std::queue;
 using std::string;
@@ -273,7 +275,7 @@ class Simulator {
   void DumpOutput() {
     LOG(INFO) << "Successfully ran " << sims_completed_.size() << " tests";
 
-    FILE* f = base::OpenFile(output_path_, "w");
+    FILE* f = OpenFile(output_path_, "w");
 
     if (!f) {
       LOG(ERROR) << "Failed to open output file " <<
@@ -299,7 +301,7 @@ class Simulator {
     }
 
     fputs("\t]\n}", f);
-    base::CloseFile(f);
+    CloseFile(f);
   }
 
   bool UpdateTestStatus() {

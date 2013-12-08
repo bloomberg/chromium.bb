@@ -212,7 +212,7 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
         base::FilePath path = base::FilePath(filename);
 #endif
 
-        test_file_ = base::OpenFile(path, "r");
+        test_file_ = file_util::OpenFile(path, "r");
         if (!test_file_) {
           SetError("Could not open source file");
         }
@@ -356,7 +356,7 @@ NPError PluginGetURLTest::DestroyStream(NPStream *stream, NPError reason) {
         size_t bytes = fread(read_buffer, 1, sizeof(read_buffer), test_file_);
         if (bytes != 0)
           SetError("Data and source mismatch on length");
-        base::CloseFile(test_file_);
+        file_util::CloseFile(test_file_);
       }
       break;
     default:

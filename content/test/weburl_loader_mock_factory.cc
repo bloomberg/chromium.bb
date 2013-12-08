@@ -182,7 +182,7 @@ bool WebURLLoaderMockFactory::ReadFile(const base::FilePath& file_path,
   int size = static_cast<int>(file_size);
   scoped_ptr<char[]> buffer(new char[size]);
   data->reset();
-  int read_count = base::ReadFile(file_path, buffer.get(), size);
+  int read_count = file_util::ReadFile(file_path, buffer.get(), size);
   if (read_count == -1)
     return false;
   DCHECK(read_count == size);

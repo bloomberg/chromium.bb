@@ -162,7 +162,7 @@ class FullDuplexAudioSinkSource
     EXPECT_TRUE(PathService::Get(base::DIR_EXE, &file_name));
     file_name = file_name.AppendASCII(kDelayValuesFileName);
 
-    FILE* text_file = base::OpenFile(file_name, "wt");
+    FILE* text_file = file_util::OpenFile(file_name, "wt");
     DLOG_IF(ERROR, !text_file) << "Failed to open log file.";
     VLOG(0) << ">> Output file " << file_name.value() << " has been created.";
 
@@ -180,7 +180,7 @@ class FullDuplexAudioSinkSource
       ++elements_written;
     }
 
-    base::CloseFile(text_file);
+    file_util::CloseFile(text_file);
   }
 
   // AudioInputStream::AudioInputCallback.

@@ -180,7 +180,7 @@ bool ELFMatchesCurrentArchitecture(const base::FilePath& filename) {
 
   const size_t kELFBufferSize = 5;
   char buffer[kELFBufferSize];
-  if (!base::ReadFile(filename, buffer, kELFBufferSize))
+  if (!file_util::ReadFile(filename, buffer, kELFBufferSize))
     return false;
 
   if (buffer[0] != ELFMAG0 ||

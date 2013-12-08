@@ -689,8 +689,8 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileSuccess) {
 
   // Compare contents of src and copied file.
   char buffer[100];
-  EXPECT_EQ(data_size, base::ReadFile(PlatformPath("dest/file"),
-                                      buffer, data_size));
+  EXPECT_EQ(data_size, file_util::ReadFile(PlatformPath("dest/file"),
+                                           buffer, data_size));
   for (int i = 0; i < data_size; ++i)
     EXPECT_EQ(test_data[i], buffer[i]);
 }
@@ -1009,7 +1009,7 @@ TEST_F(FileSystemOperationImplTest, TestTruncate) {
   // data.
   EXPECT_EQ(length, GetFileSize("file"));
   char data[100];
-  EXPECT_EQ(length, base::ReadFile(platform_path, data, length));
+  EXPECT_EQ(length, file_util::ReadFile(platform_path, data, length));
   for (int i = 0; i < length; ++i) {
     if (i < static_cast<int>(sizeof(test_data)))
       EXPECT_EQ(test_data[i], data[i]);
@@ -1028,7 +1028,7 @@ TEST_F(FileSystemOperationImplTest, TestTruncate) {
 
   // Check that its length is now 3 and that it contains only bits of test data.
   EXPECT_EQ(length, GetFileSize("file"));
-  EXPECT_EQ(length, base::ReadFile(platform_path, data, length));
+  EXPECT_EQ(length, file_util::ReadFile(platform_path, data, length));
   for (int i = 0; i < length; ++i)
     EXPECT_EQ(test_data[i], data[i]);
 

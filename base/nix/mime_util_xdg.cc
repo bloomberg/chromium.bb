@@ -255,7 +255,7 @@ FilePath IconTheme::GetIconPathUnderSubdir(const std::string& icon_name,
 }
 
 bool IconTheme::LoadIndexTheme(const FilePath& file) {
-  FILE* fp = base::OpenFile(file, "r");
+  FILE* fp = file_util::OpenFile(file, "r");
   SubDirInfo* current_info = NULL;
   if (!fp)
     return false;
@@ -316,7 +316,7 @@ bool IconTheme::LoadIndexTheme(const FilePath& file) {
     }
   }
 
-  base::CloseFile(fp);
+  file_util::CloseFile(fp);
   return info_array_.get() != NULL;
 }
 

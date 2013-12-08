@@ -135,11 +135,11 @@ class Image {
                                       std::vector<gfx::PNGCodec::Comment>(),
                                       &compressed));
     ASSERT_TRUE(compressed.size());
-    FILE* f = base::OpenFile(filename, "wb");
+    FILE* f = file_util::OpenFile(filename, "wb");
     ASSERT_TRUE(f);
     ASSERT_EQ(fwrite(&*compressed.begin(), 1, compressed.size(), f),
               compressed.size());
-    base::CloseFile(f);
+    file_util::CloseFile(f);
   }
 
   // Returns the percentage of the image that is different from the other,

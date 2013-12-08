@@ -4726,7 +4726,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     ASSERT_EQ(true, base::GetFileSize(path, &size));
     scoped_ptr<char[]> buf(new char[size]);
 
-    ASSERT_EQ(size, base::ReadFile(path, buf.get(), size));
+    ASSERT_EQ(size, file_util::ReadFile(path, buf.get(), size));
 
     ASSERT_EQ(1, d.response_started_count())
         << "request failed: " << r.status().status()

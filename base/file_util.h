@@ -299,8 +299,19 @@ BASE_EXPORT bool TouchFile(const FilePath& path,
                            const Time& last_accessed,
                            const Time& last_modified);
 
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+#if defined(OS_POSIX)
+// Store inode number of |path| in |inode|. Return true on success.
+BASE_EXPORT bool GetInode(const base::FilePath& path, ino_t* inode);
+#endif
+
 // Wrapper for fopen-like calls. Returns non-NULL FILE* on success.
-BASE_EXPORT FILE* OpenFile(const FilePath& filename, const char* mode);
+BASE_EXPORT FILE* OpenFile(const base::FilePath& filename, const char* mode);
 
 // Closes file opened by OpenFile. Returns true on success.
 BASE_EXPORT bool CloseFile(FILE* file);
@@ -312,12 +323,6 @@ BASE_EXPORT bool TruncateFile(FILE* file);
 // Reads the given number of bytes from the file into the buffer.  Returns
 // the number of read bytes, or -1 on error.
 BASE_EXPORT int ReadFile(const base::FilePath& filename, char* data, int size);
-
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
 
 // Writes the given buffer into the file, overwriting any data that was
 // previously there.  Returns the number of bytes written, or -1 on error.

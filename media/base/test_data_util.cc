@@ -37,7 +37,7 @@ scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(file_size));
   CHECK_EQ(file_size,
-           base::ReadFile(
+           file_util::ReadFile(
                file_path, reinterpret_cast<char*>(buffer->writable_data()),
                file_size)) << "Failed to read '" << name << "'";
 

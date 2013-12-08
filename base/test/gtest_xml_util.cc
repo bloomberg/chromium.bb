@@ -33,13 +33,13 @@ XmlUnitTestResultPrinter::~XmlUnitTestResultPrinter() {
   if (output_file_) {
     fprintf(output_file_, "</testsuites>\n");
     fflush(output_file_);
-    base::CloseFile(output_file_);
+    file_util::CloseFile(output_file_);
   }
 }
 
 bool XmlUnitTestResultPrinter::Initialize(const FilePath& output_file_path) {
   DCHECK(!output_file_);
-  output_file_ = OpenFile(output_file_path, "w");
+  output_file_ = file_util::OpenFile(output_file_path, "w");
   if (!output_file_)
     return false;
 

@@ -129,12 +129,12 @@ BootTimesLoader* BootTimesLoader::Get() {
 static int AppendFile(const base::FilePath& file_path,
                       const char* data,
                       int size) {
-  FILE* file = base::OpenFile(file_path, "a");
+  FILE* file = file_util::OpenFile(file_path, "a");
   if (!file) {
     return -1;
   }
   const int num_bytes_written = fwrite(data, 1, size, file);
-  base::CloseFile(file);
+  file_util::CloseFile(file);
   return num_bytes_written;
 }
 

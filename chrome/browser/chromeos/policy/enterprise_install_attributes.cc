@@ -107,7 +107,7 @@ void EnterpriseInstallAttributes::ReadCacheFile(
   device_locked_ = true;
 
   char buf[16384];
-  int len = base::ReadFile(cache_file, buf, sizeof(buf));
+  int len = file_util::ReadFile(cache_file, buf, sizeof(buf));
   if (len == -1 || len >= static_cast<int>(sizeof(buf))) {
     PLOG(ERROR) << "Failed to read " << cache_file.value();
     return;

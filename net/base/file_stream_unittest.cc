@@ -200,7 +200,7 @@ TEST_F(FileStreamTest, UseFileHandle) {
 
   // Read into buffer and compare to make sure the handle worked fine.
   ASSERT_EQ(kTestDataSize,
-            base::ReadFile(temp_file_path(), buffer, kTestDataSize));
+      file_util::ReadFile(temp_file_path(), buffer, kTestDataSize));
   ASSERT_EQ(0, memcmp(kTestData, buffer, kTestDataSize));
 }
 

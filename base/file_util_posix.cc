@@ -689,27 +689,6 @@ bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* results) {
   return true;
 }
 
-FILE* OpenFile(const FilePath& filename, const char* mode) {
-  ThreadRestrictions::AssertIOAllowed();
-  FILE* result = NULL;
-  do {
-    result = fopen(filename.value().c_str(), mode);
-  } while (!result && errno == EINTR);
-  return result;
-}
-
-int ReadFile(const FilePath& filename, char* data, int size) {
-  ThreadRestrictions::AssertIOAllowed();
-  int fd = HANDLE_EINTR(open(filename.value().c_str(), O_RDONLY));
-  if (fd < 0)
-    return -1;
-
-  ssize_t bytes_read = HANDLE_EINTR(read(fd, data, size));
-  if (int ret = IGNORE_EINTR(close(fd)) < 0)
-    return ret;
-  return bytes_read;
-}
-
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -744,8 +723,40 @@ base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
   return base::FilePath();
 }
 
+bool GetInode(const FilePath& path, ino_t* inode) {
+  base::ThreadRestrictions::AssertIOAllowed();  // For call to stat().
+  struct stat buffer;
+  int result = stat(path.value().c_str(), &buffer);
+  if (result < 0)
+    return false;
+
+  *inode = buffer.st_ino;
+  return true;
+}
+
 FILE* OpenFile(const std::string& filename, const char* mode) {
   return OpenFile(FilePath(filename), mode);
+}
+
+FILE* OpenFile(const FilePath& filename, const char* mode) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  FILE* result = NULL;
+  do {
+    result = fopen(filename.value().c_str(), mode);
+  } while (!result && errno == EINTR);
+  return result;
+}
+
+int ReadFile(const FilePath& filename, char* data, int size) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  int fd = HANDLE_EINTR(open(filename.value().c_str(), O_RDONLY));
+  if (fd < 0)
+    return -1;
+
+  ssize_t bytes_read = HANDLE_EINTR(read(fd, data, size));
+  if (int ret = IGNORE_EINTR(close(fd)) < 0)
+    return ret;
+  return bytes_read;
 }
 
 int WriteFile(const FilePath& filename, const char* data, int size) {

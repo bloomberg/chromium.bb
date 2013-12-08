@@ -108,7 +108,7 @@ int DiskDumper::CreateEntry(const std::string& key,
     wprintf(L"CreateFileW (%s) failed: %d\n", file.c_str(), GetLastError());
   return (entry_ != INVALID_HANDLE_VALUE) ? net::OK : net::ERR_FAILED;
 #else
-  entry_ = base::OpenFile(entry_path_, "w+");
+  entry_ = file_util::OpenFile(entry_path_, "w+");
   return (entry_ != NULL) ? net::OK : net::ERR_FAILED;
 #endif
 }
@@ -218,6 +218,6 @@ void DiskDumper::CloseEntry(disk_cache::Entry* entry, base::Time last_used,
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   CloseHandle(entry_);
 #else
-  base::CloseFile(entry_);
+  file_util::CloseFile(entry_);
 #endif
 }

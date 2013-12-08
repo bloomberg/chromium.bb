@@ -1171,7 +1171,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   // each relevant name-value pair to the appropriate value table.
   void UpdateCachedSettings() {
     base::FilePath kioslaverc = kde_config_dir_.Append("kioslaverc");
-    file_util::ScopedFILE input(base::OpenFile(kioslaverc, "r"));
+    file_util::ScopedFILE input(file_util::OpenFile(kioslaverc, "r"));
     if (!input.get())
       return;
     ResetCachedSettings();
