@@ -78,6 +78,13 @@ void TooltipIcon::OnMouseExited(const ui::MouseEvent& event) {
   show_timer_.Stop();
 }
 
+void TooltipIcon::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    ShowBubble();
+    event->SetHandled();
+  }
+}
+
 void TooltipIcon::OnBoundsChanged(const gfx::Rect& prev_bounds) {
   SetFocusPainter(views::Painter::CreateDashedFocusPainterWithInsets(
                       GetPreferredInsets(this)));
@@ -107,14 +114,16 @@ void TooltipIcon::ChangeImageTo(int idr) {
 }
 
 void TooltipIcon::ShowBubble() {
-  DCHECK(mouse_inside_ || HasFocus());
-
   if (bubble_)
     return;
 
   ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON_H);
 
   bubble_ = new TooltipBubble(this, tooltip_);
+  // When shown due to a gesture event, close on deactivate (i.e. don't use
+  // "focusless").
+  bubble_->set_use_focusless(mouse_inside_ || HasFocus());
+
   bubble_->Show();
 
   if (mouse_inside_) {

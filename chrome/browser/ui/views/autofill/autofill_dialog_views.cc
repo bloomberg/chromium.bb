@@ -882,6 +882,14 @@ void AutofillDialogViews::SectionContainer::OnMouseReleased(
   proxy_button_->OnMouseReleased(ProxyEvent(event));
 }
 
+void AutofillDialogViews::SectionContainer::OnGestureEvent(
+    ui::GestureEvent* event) {
+  if (!ShouldForwardEvent(*event))
+    return;
+
+  proxy_button_->OnGestureEvent(event);
+}
+
 views::View* AutofillDialogViews::SectionContainer::GetEventHandlerForRect(
     const gfx::Rect& rect) {
   // TODO(tdanderson): Modify this function to support rect-based event
@@ -917,7 +925,7 @@ ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
 }
 
 bool AutofillDialogViews::SectionContainer::ShouldForwardEvent(
-    const ui::MouseEvent& event) {
+    const ui::LocatedEvent& event) {
   // Always forward events on the label bar.
   return forward_mouse_events_ || event.y() <= child_at(0)->bounds().bottom();
 }

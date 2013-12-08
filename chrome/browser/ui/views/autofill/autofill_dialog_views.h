@@ -329,6 +329,7 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
     virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+    virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
     // This is needed because not all events percolate up the views hierarchy.
     virtual View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
 
@@ -337,7 +338,7 @@ class AutofillDialogViews : public AutofillDialogView,
     static ui::MouseEvent ProxyEvent(const ui::MouseEvent& event);
 
     // Returns true if the given event should be forwarded to |proxy_button_|.
-    bool ShouldForwardEvent(const ui::MouseEvent& event);
+    bool ShouldForwardEvent(const ui::LocatedEvent& event);
 
     // Mouse events on |this| are sent to this button.
     views::Button* proxy_button_;  // Weak reference.

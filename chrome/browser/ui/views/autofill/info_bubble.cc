@@ -30,7 +30,8 @@ const int kInfoBubbleVerticalMargin = 12;
 
 }  // namespace
 
-InfoBubble::InfoBubble(views::View* anchor, const base::string16& message)
+InfoBubble::InfoBubble(views::View* anchor,
+                       const base::string16& message)
     : anchor_(anchor),
       align_to_anchor_edge_(false),
       preferred_width_(233),
