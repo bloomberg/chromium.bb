@@ -187,6 +187,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Called to handle a client certificate request.
   int HandleCertificateRequest(int error);
 
+  // Called to possibly handle a client authentication error.
+  void HandleClientAuthError(int error);
+
   // Called to possibly recover from an SSL handshake error.  Sets next_state_
   // and returns OK if recovering from the error.  Otherwise, the same error
   // code is returned.
