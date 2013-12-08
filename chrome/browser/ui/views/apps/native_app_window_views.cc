@@ -235,14 +235,6 @@ NativeAppWindowViews::NativeAppWindowViews(
 
   OnViewWasResized();
   window_->AddObserver(this);
-#if defined(USE_ASH)
-  if (chrome::GetHostDesktopTypeForNativeView(GetNativeWindow()) ==
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    ash::wm::GetWindowState(GetNativeWindow())->SetDelegate(
-        scoped_ptr<ash::wm::WindowStateDelegate>(
-            new NativeAppWindowStateDelegate(shell_window, this)).Pass());
-  }
-#endif
 }
 
 NativeAppWindowViews::~NativeAppWindowViews() {
@@ -756,6 +748,12 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
 #if defined(USE_ASH)
   if (chrome::IsNativeViewInAsh(widget->GetNativeView())) {
+    // Set the delegate now because CustomFrameViewAsh sets the
+    // WindowStateDelegate if one is not already set.
+    ash::wm::GetWindowState(GetNativeWindow())->SetDelegate(
+        scoped_ptr<ash::wm::WindowStateDelegate>(
+            new NativeAppWindowStateDelegate(shell_window_, this)).Pass());
+
     if (shell_window_->window_type_is_panel()) {
       ash::PanelFrameView::FrameType frame_type = frameless_ ?
           ash::PanelFrameView::FRAME_NONE : ash::PanelFrameView::FRAME_ASH;

@@ -49,6 +49,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   aura::Window* window() { return window_; }
   const aura::Window* window() const { return window_; }
 
+  bool HasDelegate() const;
   void SetDelegate(scoped_ptr<WindowStateDelegate> delegate);
 
   // Returns the window's current show state.

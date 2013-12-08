@@ -61,6 +61,10 @@ WindowState::WindowState(aura::Window* window)
 WindowState::~WindowState() {
 }
 
+bool WindowState::HasDelegate() const {
+  return delegate_;
+}
+
 void WindowState::SetDelegate(scoped_ptr<WindowStateDelegate> delegate) {
   DCHECK(!delegate_.get());
   delegate_ = delegate.Pass();
