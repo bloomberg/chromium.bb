@@ -32,6 +32,7 @@ class AppListModel;
 class AppListViewDelegateObserver;
 class SearchResult;
 class SigninDelegate;
+class SpeechUIModel;
 
 class APP_LIST_EXPORT AppListViewDelegate {
  public:
@@ -71,6 +72,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Gets the SigninDelegate for the app list. Owned by the AppListViewDelegate.
   virtual SigninDelegate* GetSigninDelegate() = 0;
+
+  // Gets the SpeechUIModel for the app list. Owned by the AppListViewDelegate.
+  virtual SpeechUIModel* GetSpeechUI() = 0;
 
   // Gets a path to a shortcut for the given app. Returns asynchronously as the
   // shortcut may not exist yet.

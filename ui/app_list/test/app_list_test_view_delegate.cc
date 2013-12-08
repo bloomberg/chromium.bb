@@ -77,6 +77,10 @@ SigninDelegate* AppListTestViewDelegate::GetSigninDelegate() {
   return test_signin_delegate_.get();
 }
 
+SpeechUIModel* AppListTestViewDelegate::GetSpeechUI() {
+  return &speech_ui_;
+}
+
 void AppListTestViewDelegate::GetShortcutPathForApp(
     const std::string& app_id,
     const base::Callback<void(const base::FilePath&)>& callback) {

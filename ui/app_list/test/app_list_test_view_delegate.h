@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/speech_ui_model.h"
 
 namespace app_list {
 namespace test {
@@ -40,6 +41,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {}
   virtual AppListModel* GetModel() OVERRIDE;
   virtual SigninDelegate* GetSigninDelegate() OVERRIDE;
+  virtual SpeechUIModel* GetSpeechUI() OVERRIDE;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
@@ -78,6 +80,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   scoped_ptr<TestSigninDelegate> test_signin_delegate_;
   scoped_ptr<AppListTestModel> model_;
   ObserverList<app_list::AppListViewDelegateObserver> observers_;
+  SpeechUIModel speech_ui_;
 };
 
 }  // namespace test

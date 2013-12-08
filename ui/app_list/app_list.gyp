@@ -80,6 +80,9 @@
         'search_result.h',
         'signin_delegate.cc',
         'signin_delegate.h',
+        'speech_ui_model.cc',
+        'speech_ui_model.h',
+        'speech_ui_model_observer.h',
         'views/apps_container_view.cc',
         'views/apps_container_view.h',
         'views/app_list_background.cc',
@@ -125,6 +128,8 @@
         'views/search_result_view_delegate.h',
         'views/signin_view.cc',
         'views/signin_view.h',
+        'views/speech_view.cc',
+        'views/speech_view.h',
       ],
       'conditions': [
         ['use_aura==1', {

@@ -18,9 +18,6 @@ class APP_LIST_EXPORT SearchBoxModelObserver {
   // changed.
   virtual void SpeechRecognitionButtonPropChanged() = 0;
 
-  // Invoked when the speech recognition button state is changed.
-  virtual void SetSpeechRecognitionButtonState(bool toggled) = 0;
-
   // Invoked when hint text is changed.
   virtual void HintTextChanged() = 0;
 

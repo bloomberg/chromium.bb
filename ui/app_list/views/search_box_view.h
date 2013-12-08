@@ -81,7 +81,6 @@ class SearchBoxView : public views::View,
   // Overridden from SearchBoxModelObserver:
   virtual void IconChanged() OVERRIDE;
   virtual void SpeechRecognitionButtonPropChanged() OVERRIDE;
-  virtual void SetSpeechRecognitionButtonState(bool toggled) OVERRIDE;
   virtual void HintTextChanged() OVERRIDE;
   virtual void SelectionModelChanged() OVERRIDE;
   virtual void TextChanged() OVERRIDE;
@@ -93,7 +92,7 @@ class SearchBoxView : public views::View,
   scoped_ptr<AppListMenuViews> menu_;
 
   views::ImageView* icon_view_;  // Owned by views hierarchy.
-  views::ToggleImageButton* speech_button_;  // Owned by views hierarchy.
+  views::ImageButton* speech_button_;  // Owned by views hierarchy.
   views::MenuButton* menu_button_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
   views::View* contents_view_;  // Owned by views hierarchy.

@@ -157,14 +157,24 @@ void StartPageService::ToggleSpeechRecognition() {
       "appList.startPage.toggleSpeechRecognition");
 }
 
-void StartPageService::OnSearch(const base::string16& query) {
-  FOR_EACH_OBSERVER(StartPageObserver, observers_, OnSearch(query));
-}
-
-void StartPageService::OnSpeechRecognitionStateChanged(bool recognizing) {
+void StartPageService::OnSpeechResult(
+    const base::string16& query, bool is_final) {
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
-                    OnSpeechRecognitionStateChanged(recognizing));
+                    OnSpeechResult(query, is_final));
+}
+
+void StartPageService::OnSpeechSoundLevelChanged(int16 level) {
+  FOR_EACH_OBSERVER(StartPageObserver,
+                    observers_,
+                    OnSpeechSoundLevelChanged(level));
+}
+
+void StartPageService::OnSpeechRecognitionStateChanged(
+    SpeechRecognitionState new_state) {
+  FOR_EACH_OBSERVER(StartPageObserver,
+                    observers_,
+                    OnSpeechRecognitionStateChanged(new_state));
 }
 
 void StartPageService::Shutdown() {

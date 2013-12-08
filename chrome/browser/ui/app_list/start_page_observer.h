@@ -6,17 +6,21 @@
 #define CHROME_BROWSER_UI_APP_LIST_START_PAGE_OBSERVER_H_
 
 #include "base/strings/string16.h"
+#include "ui/app_list/speech_ui_model_observer.h"
 
 namespace app_list {
 
 class StartPageObserver {
  public:
   // Invoked when a search query happens from the start page.
-  virtual void OnSearch(const base::string16& query) = 0;
+  virtual void OnSpeechResult(const base::string16& query, bool is_final) = 0;
 
-  // Invoked when the online speech recognition state is changed. |recognizing|
-  // is the new state and true when the speech recognition is running currently.
-  virtual void OnSpeechRecognitionStateChanged(bool recognizing) = 0;
+  // Invoked when a sound level of speech recognition is changed.
+  virtual void OnSpeechSoundLevelChanged(int16 level) = 0;
+
+  // Invoked when the online speech recognition state is changed.
+  virtual void OnSpeechRecognitionStateChanged(
+      SpeechRecognitionState new_state) = 0;
 
  protected:
   virtual ~StartPageObserver() {}

@@ -27,6 +27,10 @@ cr.define('speech', function() {
           this.delegate_.onSpeechRecognitionStarted.bind(this.delegate_);
       this.recognizer_.onend =
           this.delegate_.onSpeechRecognitionEnded.bind(this.delegate_);
+      this.recognizer_.onspeechstart =
+          this.delegate_.onSpeechStarted.bind(this.delegate_);
+      this.recognizer_.onspeechend =
+          this.delegate_.onSpeechEnded.bind(this.delegate_);
       this.recognizer_.onerror = this.onRecognizerError_.bind(this);
     }
   }

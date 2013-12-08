@@ -23,6 +23,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_result.h"
+#include "ui/app_list/speech_ui_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
@@ -251,6 +252,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return NULL;
   }
 
+  virtual app_list::SpeechUIModel* GetSpeechUI() OVERRIDE {
+    return &speech_ui_;
+  }
+
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE {
@@ -338,6 +343,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   scoped_ptr<app_list::AppListModel> model_;
+  app_list::SpeechUIModel speech_ui_;
   Users users_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);

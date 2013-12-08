@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/common/extension.h"
+#include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/events/event_constants.h"
 
 namespace app_list {
@@ -65,8 +66,13 @@ void StartPageHandler::RegisterMessages() {
       "launchApp",
       base::Bind(&StartPageHandler::HandleLaunchApp, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "search",
-      base::Bind(&StartPageHandler::HandleSearch, base::Unretained(this)));
+      "speechResult",
+      base::Bind(&StartPageHandler::HandleSpeechResult,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "speechSoundLevel",
+      base::Bind(&StartPageHandler::HandleSpeechSoundLevel,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setSpeechRecognitionState",
       base::Bind(&StartPageHandler::HandleSpeechRecognition,
@@ -124,20 +130,38 @@ void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
                           ui::EF_NONE);
 }
 
-void StartPageHandler::HandleSearch(const base::ListValue* args) {
+void StartPageHandler::HandleSpeechResult(const base::ListValue* args) {
   base::string16 query;
+  bool is_final = false;
   CHECK(args->GetString(0, &query));
+  CHECK(args->GetBoolean(1, &is_final));
 
-  StartPageService::Get(Profile::FromWebUI(web_ui()))->OnSearch(query);
+  StartPageService::Get(Profile::FromWebUI(web_ui()))->OnSpeechResult(
+      query, is_final);
 }
 
-void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
-  bool recognizing;
-  CHECK(args->GetBoolean(0, &recognizing));
+void StartPageHandler::HandleSpeechSoundLevel(const base::ListValue* args) {
+  double level;
+  CHECK(args->GetDouble(0, &level));
 
   StartPageService* service =
       StartPageService::Get(Profile::FromWebUI(web_ui()));
-  service->OnSpeechRecognitionStateChanged(recognizing);
+  service->OnSpeechSoundLevelChanged(static_cast<int16>(level));
+}
+
+void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
+  std::string state_string;
+  CHECK(args->GetString(0, &state_string));
+
+  SpeechRecognitionState new_state = SPEECH_RECOGNITION_NOT_STARTED;
+  if (state_string == "on")
+    new_state = SPEECH_RECOGNITION_ON;
+  else if (state_string == "in-speech")
+    new_state = SPEECH_RECOGNITION_IN_SPEECH;
+
+  StartPageService* service =
+      StartPageService::Get(Profile::FromWebUI(web_ui()));
+  service->OnSpeechRecognitionStateChanged(new_state);
 }
 
 }  // namespace app_list

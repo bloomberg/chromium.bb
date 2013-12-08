@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
+#include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -22,14 +23,17 @@ class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
 class AppListViewObserver;
+class HideViewAnimationObserver;
 class PaginationModel;
 class SigninDelegate;
 class SigninView;
+class SpeechView;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
-                                    public AppListViewDelegateObserver {
+                                    public AppListViewDelegateObserver,
+                                    public SpeechUIModelObserver {
  public:
 
   // Takes ownership of |delegate|.
@@ -127,14 +131,20 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual void OnWidgetActivationChanged(
       views::Widget* widget, bool active) OVERRIDE;
 
+  // Overridden from SpeechUIModelObserver:
+  virtual void OnSpeechRecognitionStateChanged(
+      SpeechRecognitionState new_state) OVERRIDE;
+
   SigninDelegate* GetSigninDelegate();
 
   scoped_ptr<AppListViewDelegate> delegate_;
 
   AppListMainView* app_list_main_view_;
   SigninView* signin_view_;
+  SpeechView* speech_view_;
 
   ObserverList<AppListViewObserver> observers_;
+  scoped_ptr<HideViewAnimationObserver> animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

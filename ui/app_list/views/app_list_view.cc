@@ -11,12 +11,16 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/signin_delegate.h"
+#include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_background.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view_observer.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/signin_view.h"
+#include "ui/app_list/views/speech_view.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
@@ -42,6 +46,12 @@ namespace app_list {
 namespace {
 
 void (*g_next_paint_callback)();
+
+// The margin from the edge to the speech UI.
+const int kSpeechUIMargin = 12;
+
+// The vertical position for the appearing animation of the speech UI.
+const float kSpeechUIApearingPosition =12;
 
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
@@ -69,19 +79,56 @@ bool SupportsShadow() {
 
 }  // namespace
 
+// An animation observer to hide the view at the end of the animation.
+class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  HideViewAnimationObserver() : target_(NULL) {
+  }
+
+  virtual ~HideViewAnimationObserver() {
+    if (target_)
+      StopObservingImplicitAnimations();
+  }
+
+  void SetTarget(views::View* target) {
+    if (!target_)
+      StopObservingImplicitAnimations();
+    target_ = target;
+  }
+
+ private:
+  // Overridden from ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    if (target_) {
+      target_->SetVisible(false);
+      target_ = NULL;
+    }
+  }
+
+  views::View* target_;
+
+  DISALLOW_COPY_AND_ASSIGN(HideViewAnimationObserver);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView:
 
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       app_list_main_view_(NULL),
-      signin_view_(NULL) {
+      signin_view_(NULL),
+      speech_view_(NULL),
+      animation_observer_(new HideViewAnimationObserver()) {
   CHECK(delegate);
+
   delegate_->AddObserver(this);
+  delegate_->GetSpeechUI()->AddObserver(this);
 }
 
 AppListView::~AppListView() {
+  delegate_->GetSpeechUI()->RemoveObserver(this);
   delegate_->RemoveObserver(this);
+  animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
 }
@@ -217,6 +264,18 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                      app_list_main_view_->GetPreferredSize().width());
   AddChildView(signin_view_);
 
+  // Speech recognition is available only when the start page exists.
+  if (delegate_ && delegate_->GetStartPageContents()) {
+    speech_view_ = new SpeechView(delegate_.get());
+    speech_view_->SetVisible(false);
+#if defined(USE_AURA)
+    speech_view_->SetPaintToLayer(true);
+    speech_view_->SetFillsBoundsOpaquely(false);
+    speech_view_->layer()->SetOpacity(0.0f);
+#endif
+    AddChildView(speech_view_);
+  }
+
   OnProfilesChanged();
   set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
@@ -308,6 +367,16 @@ void AppListView::Layout() {
   const gfx::Rect contents_bounds = GetContentsBounds();
   app_list_main_view_->SetBoundsRect(contents_bounds);
   signin_view_->SetBoundsRect(contents_bounds);
+
+  if (speech_view_) {
+    gfx::Rect speech_bounds = contents_bounds;
+    int preferred_height = speech_view_->GetPreferredSize().height();
+    speech_bounds.Inset(kSpeechUIMargin, kSpeechUIMargin);
+    speech_bounds.set_height(std::min(speech_bounds.height(),
+                                      preferred_height));
+    speech_bounds.Inset(-speech_view_->GetInsets());
+    speech_view_->SetBoundsRect(speech_bounds);
+  }
 }
 
 void AppListView::OnWidgetDestroying(views::Widget* widget) {
@@ -340,6 +409,63 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
   // Whether we need to signin or not may have changed since last time we were
   // shown.
   Layout();
+}
+
+void AppListView::OnSpeechRecognitionStateChanged(
+    SpeechRecognitionState new_state) {
+  DCHECK(!signin_view_->visible());
+
+  bool recognizing = new_state != SPEECH_RECOGNITION_NOT_STARTED;
+  // No change for this class.
+  if (speech_view_->visible() == recognizing)
+    return;
+
+  if (recognizing)
+    speech_view_->Reset();
+
+#if defined(USE_AURA)
+  gfx::Transform speech_transform;
+  speech_transform.Translate(
+      0, SkFloatToMScalar(kSpeechUIApearingPosition));
+  if (recognizing)
+    speech_view_->layer()->SetTransform(speech_transform);
+
+  {
+    ui::ScopedLayerAnimationSettings main_settings(
+        app_list_main_view_->layer()->GetAnimator());
+    if (recognizing) {
+      animation_observer_->SetTarget(app_list_main_view_);
+      main_settings.AddObserver(animation_observer_.get());
+    }
+    app_list_main_view_->layer()->SetOpacity(recognizing ? 0.0f : 1.0f);
+  }
+
+  {
+    ui::ScopedLayerAnimationSettings speech_settings(
+        speech_view_->layer()->GetAnimator());
+    if (!recognizing) {
+      animation_observer_->SetTarget(speech_view_);
+      speech_settings.AddObserver(animation_observer_.get());
+    }
+
+    speech_view_->layer()->SetOpacity(recognizing ? 1.0f : 0.0f);
+    if (recognizing)
+      speech_view_->layer()->SetTransform(gfx::Transform());
+    else
+      speech_view_->layer()->SetTransform(speech_transform);
+  }
+
+  if (recognizing)
+    speech_view_->SetVisible(true);
+  else
+    app_list_main_view_->SetVisible(true);
+#else
+  speech_view_->SetVisible(recognizing);
+  app_list_main_view_->SetVisible(!recognizing);
+#endif
+
+  // Needs to schedule paint of AppListView itself, to repaint the background.
+  SchedulePaint();
 }
 
 }  // namespace app_list

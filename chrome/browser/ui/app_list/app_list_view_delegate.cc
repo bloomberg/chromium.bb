@@ -36,6 +36,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/app_list/speech_ui_model.h"
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
@@ -173,6 +174,10 @@ app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {
   return &signin_delegate_;
 }
 
+app_list::SpeechUIModel* AppListViewDelegate::GetSpeechUI() {
+  return &speech_ui_;
+}
+
 void AppListViewDelegate::GetShortcutPathForApp(
     const std::string& app_id,
     const base::Callback<void(const base::FilePath&)>& callback) {
@@ -279,12 +284,20 @@ void AppListViewDelegate::ShowForProfileByPath(
   controller_->ShowForProfileByPath(profile_path);
 }
 
-void AppListViewDelegate::OnSearch(const base::string16& query) {
-  model_->search_box()->SetText(query);
+void AppListViewDelegate::OnSpeechResult(const base::string16& result,
+                                         bool is_final) {
+  speech_ui_.SetSpeechResult(result, is_final);
+  if (is_final)
+    model_->search_box()->SetText(result);
 }
 
-void AppListViewDelegate::OnSpeechRecognitionStateChanged(bool recognizing) {
-  model_->search_box()->SetSpeechRecognitionButtonState(recognizing);
+void AppListViewDelegate::OnSpeechSoundLevelChanged(int16 level) {
+  speech_ui_.UpdateSoundLevel(level);
+}
+
+void AppListViewDelegate::OnSpeechRecognitionStateChanged(
+    app_list::SpeechRecognitionState new_state) {
+  speech_ui_.SetSpeechRecognitionState(new_state);
 }
 
 void AppListViewDelegate::Observe(

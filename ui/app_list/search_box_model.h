@@ -23,18 +23,13 @@ class SearchBoxModelObserver;
 // text, cursor position and selected text in edit control.
 class APP_LIST_EXPORT SearchBoxModel {
  public:
-  // The properties of the button with toggled status.
-  struct APP_LIST_EXPORT ToggleButtonProperty {
-    ToggleButtonProperty(const gfx::ImageSkia& icon,
-                         const gfx::ImageSkia& toggled_icon,
-                         const base::string16& tooltip,
-                         const base::string16& toggled_tooltip);
-    ~ToggleButtonProperty();
+  // The properties of the button.
+  struct APP_LIST_EXPORT ButtonProperty {
+    ButtonProperty(const gfx::ImageSkia& icon, const base::string16& tooltip);
+    ~ButtonProperty();
 
     gfx::ImageSkia icon;
-    gfx::ImageSkia toggled_icon;
     base::string16 tooltip;
-    base::string16 toggled_tooltip;
   };
 
   SearchBoxModel();
@@ -45,14 +40,8 @@ class APP_LIST_EXPORT SearchBoxModel {
   const gfx::ImageSkia& icon() const { return icon_; }
 
   // Sets/gets the properties for the button of speech recognition.
-  void SetSpeechRecognitionButton(
-      scoped_ptr<ToggleButtonProperty> speech_button);
-  const ToggleButtonProperty* speech_button() const {
-    return speech_button_.get();
-  }
-
-  // Sets the speech recognition button state.
-  void SetSpeechRecognitionButtonState(bool toggled);
+  void SetSpeechRecognitionButton(scoped_ptr<ButtonProperty> speech_button);
+  const ButtonProperty* speech_button() const { return speech_button_.get(); }
 
   // Sets/gets the hint text to display when there is in input.
   void SetHintText(const base::string16& hint_text);
@@ -73,7 +62,7 @@ class APP_LIST_EXPORT SearchBoxModel {
 
  private:
   gfx::ImageSkia icon_;
-  scoped_ptr<ToggleButtonProperty> speech_button_;
+  scoped_ptr<ButtonProperty> speech_button_;
   base::string16 hint_text_;
   gfx::SelectionModel selection_model_;
   base::string16 text_;

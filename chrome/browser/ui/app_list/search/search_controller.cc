@@ -60,16 +60,11 @@ void SearchController::Init() {
   search_box_->SetIcon(*bundle.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
   if (StartPageService::Get(profile_)) {
     search_box_->SetSpeechRecognitionButton(
-        scoped_ptr<SearchBoxModel::ToggleButtonProperty>(
-            new SearchBoxModel::ToggleButtonProperty(
-                // Right now provides the same image for both state.
-                // TODO(mukai, jennschen): Replace them by the real images.
-                *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
+        scoped_ptr<SearchBoxModel::ButtonProperty>(
+            new SearchBoxModel::ButtonProperty(
                 *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
                 l10n_util::GetStringUTF16(
-                    IDS_APP_LIST_START_SPEECH_RECOGNITION),
-                l10n_util::GetStringUTF16(
-                    IDS_APP_LIST_STOP_SPEECH_RECOGNITION))));
+                    IDS_APP_LIST_START_SPEECH_RECOGNITION))));
   }
 
   mixer_->Init();

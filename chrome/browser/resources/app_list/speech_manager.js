@@ -51,7 +51,6 @@ cr.define('speech', function() {
    */
   SpeechManager.prototype.setState_ = function(newState) {
     this.state = newState;
-    console.log('speech state: ' + newState);
   };
 
   /**
@@ -66,8 +65,7 @@ cr.define('speech', function() {
     for (var i = 0; i < data.length; ++i)
       level += Math.abs(data[i]);
     level /= data.length;
-    // TODO(mukai): use the result to make the audio feedback during the speech
-    // recognition.
+    chrome.send('speechSoundLevel', [level]);
   };
 
   /**
@@ -105,12 +103,9 @@ cr.define('speech', function() {
    * @param {boolean} isFinal Whether the result is final or not.
    */
   SpeechManager.prototype.onSpeechRecognized = function(result, isFinal) {
-    console.log('speech result: ' + result + ' ' +
-        (isFinal ? 'final' : 'interim'));
-    if (isFinal) {
-      chrome.send('search', [result]);
+    chrome.send('speechResult', [result, isFinal]);
+    if (isFinal)
       this.speechRecognitionManager_.stop();
-    }
   };
 
   /**
@@ -118,7 +113,7 @@ cr.define('speech', function() {
    */
   SpeechManager.prototype.onSpeechRecognitionStarted = function() {
     this.setState_(SpeechState.RECOGNIZING);
-    chrome.send('setSpeechRecognitionState', [true]);
+    chrome.send('setSpeechRecognitionState', ['on']);
   };
 
   /**
@@ -133,7 +128,23 @@ cr.define('speech', function() {
     } else {
       this.audioManager_.stop();
     }
-    chrome.send('setSpeechRecognitionState', [false]);
+    chrome.send('setSpeechRecognitionState', ['off']);
+  };
+
+  /**
+   * Called when a speech has started.
+   */
+  SpeechManager.prototype.onSpeechStarted = function() {
+    if (this.state == SpeechState.RECOGNIZING)
+      chrome.send('setSpeechRecognitionState', ['in-speech']);
+  };
+
+  /**
+   * Called when a speech has ended.
+   */
+  SpeechManager.prototype.onSpeechEnded = function() {
+    if (this.state == SpeechState.RECOGNIZING)
+      chrome.send('setSpeechRecognitionState', ['on']);
   };
 
   /**

@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/app_list/speech_ui_model_observer.h"
 
 namespace extensions {
 class Extension;
@@ -43,8 +44,9 @@ class StartPageService : public BrowserContextKeyedService {
   content::WebContents* contents() { return contents_.get(); }
   RecommendedApps* recommended_apps() { return recommended_apps_.get(); }
   Profile* profile() { return profile_; }
-  void OnSearch(const base::string16& query);
-  void OnSpeechRecognitionStateChanged(bool recognizing);
+  void OnSpeechResult(const base::string16& query, bool is_final);
+  void OnSpeechSoundLevelChanged(int16 level);
+  void OnSpeechRecognitionStateChanged(SpeechRecognitionState new_state);
 
  private:
   // A BrowserContextKeyedServiceFactory for this service.

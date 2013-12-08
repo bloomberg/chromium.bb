@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/speech_ui_model.h"
 
 class AppListControllerDelegate;
 class Profile;
@@ -63,6 +64,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;
   virtual app_list::AppListModel* GetModel() OVERRIDE;
   virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE;
+  virtual app_list::SpeechUIModel* GetSpeechUI() OVERRIDE;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
@@ -90,8 +92,11 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       app_list::AppListViewDelegateObserver* observer) OVERRIDE;
 
   // Overridden from app_list::StartPageObserver:
-  virtual void OnSearch(const base::string16& query) OVERRIDE;
-  virtual void OnSpeechRecognitionStateChanged(bool recognizing) OVERRIDE;
+  virtual void OnSpeechResult(const base::string16& result,
+                              bool is_final) OVERRIDE;
+  virtual void OnSpeechSoundLevelChanged(int16 level) OVERRIDE;
+  virtual void OnSpeechRecognitionStateChanged(
+      app_list::SpeechRecognitionState new_state) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -115,6 +120,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Unowned pointer to the model owned by AppListSyncableService. Will change
   // if |profile_| changes.
   app_list::AppListModel* model_;
+
+  app_list::SpeechUIModel speech_ui_;
 
   Users users_;
 
