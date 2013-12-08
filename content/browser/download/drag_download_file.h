@@ -17,7 +17,6 @@
 #include "content/public/common/referrer.h"
 #include "net/base/file_stream.h"
 #include "ui/base/dragdrop/download_file_interface.h"
-#include "ui/base/ui_export.h"
 #include "url/gurl.h"
 
 namespace net {
