@@ -4,11 +4,11 @@
 
 #include "google_apis/gaia/gaia_auth_util.h"
 
-#include <vector>
-
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
 
@@ -70,6 +70,38 @@ bool IsGaiaSignonRealm(const GURL& url) {
     return false;
 
   return url == GaiaUrls::GetInstance()->gaia_url();
+}
+
+
+std::vector<std::string> ParseListAccountsData(const std::string& data) {
+  std::vector<std::string> account_ids;
+
+  // Parse returned data and make sure we have data.
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  if (!value)
+    return account_ids;
+
+  base::ListValue* list;
+  if (!value->GetAsList(&list) || list->GetSize() < 2)
+    return account_ids;
+
+  // Get list of account info.
+  base::ListValue* accounts;
+  if (!list->GetList(1, &accounts) || accounts == NULL)
+    return account_ids;
+
+  // Build a vector of accounts from the cookie.  Order is important: the first
+  // account in the list is the primary account.
+  for (size_t i = 0; i < accounts->GetSize(); ++i) {
+    base::ListValue* account;
+    if (accounts->GetList(i, &account) && account != NULL) {
+      std::string email;
+      if (account->GetString(3, &email) && !email.empty())
+        account_ids.push_back(email);
+    }
+  }
+
+  return account_ids;
 }
 
 }  // namespace gaia

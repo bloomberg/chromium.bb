@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_GAIA_GAIA_AUTH_UTIL_H_
 
 #include <string>
+#include <vector>
 
 class GURL;
 
@@ -33,6 +34,10 @@ bool AreEmailsSame(const std::string& email1, const std::string& email2);
 std::string ExtractDomainName(const std::string& email);
 
 bool IsGaiaSignonRealm(const GURL& url);
+
+// Parses JSON data returned by /ListAccounts call, returns vector of
+// accounts (email addresses).
+std::vector<std::string> ParseListAccountsData(const std::string& data);
 
 }  // namespace gaia
 

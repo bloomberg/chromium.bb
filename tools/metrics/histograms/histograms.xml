@@ -11550,6 +11550,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="OAuth2Login.ListAccountsFailure" enum="GoogleServiceAuthError">
+  <summary>
+    Failure reason of final ListAccounts call failure during ChromeOS login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.ListAccountsRetry" enum="GoogleServiceAuthError">
+  <summary>
+    Retry reason of failed ListAccounts call during ChromeOS login.
+  </summary>
+</histogram>
+
 <histogram name="OAuth2Login.MergeSessionFailure" enum="GoogleServiceAuthError">
   <summary>
     Failure reason of final MergeSession call during ChromeOS login.
@@ -11591,6 +11603,15 @@ other types of suffix sets.
   <summary>
     Retry reason of failed OAuthLogin (with uber token) call during ChromeOS
     login.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.PostMergeVerification"
+    enum="PostMergeVerificationOutcome">
+  <summary>
+    Outcome of ChromeOS GAIA cookie post merge session verification process. It
+    measures how often /MergeSession request collided with browser session
+    restore process resulting in partially authenticated primary GAIA session.
   </summary>
 </histogram>
 
@@ -27847,6 +27868,17 @@ other types of suffix sets.
   <int value="3" label="3"/>
   <int value="4" label="4"/>
   <int value="5" label="5"/>
+</enum>
+
+<enum name="PostMergeVerificationOutcome" type="int">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Succeeded"/>
+  <int value="2" label="No accounts found"/>
+  <int value="3" label="Missing primary account"/>
+  <int value="4" label="Primary account is not the first"/>
+  <int value="5" label="Verification failed"/>
+  <int value="6" label="Connection failed"/>
+  <int value="7" label="Overflow"/>
 </enum>
 
 <enum name="PowerBrightnessAdjust" type="int">

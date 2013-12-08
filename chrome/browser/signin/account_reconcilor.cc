@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 AccountReconcilor::AccountReconcilor(Profile* profile)
@@ -196,7 +196,7 @@ void AccountReconcilor::OnListAccountsSuccess(const std::string& data) {
   gaia_fetcher_.reset();
 
   // Get account information from response data.
-  gaia_accounts_ = ParseListAccountsData(data);
+  gaia_accounts_ = gaia::ParseListAccountsData(data);
   if (gaia_accounts_.size() > 0) {
     DVLOG(1) << "AccountReconcilor::OnListAccountsSuccess: "
              << "Gaia " << gaia_accounts_.size() << " accounts, "
@@ -207,39 +207,6 @@ void AccountReconcilor::OnListAccountsSuccess(const std::string& data) {
 
   are_gaia_accounts_set_ = true;
   FinishReconcileAction();
-}
-
-// static
-std::vector<std::string> AccountReconcilor::ParseListAccountsData(
-    const std::string& data) {
-  std::vector<std::string> account_ids;
-
-  // Parse returned data and make sure we have data.
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
-  if (!value)
-    return account_ids;
-
-  base::ListValue* list;
-  if (!value->GetAsList(&list) || list->GetSize() < 2)
-    return account_ids;
-
-  // Get list of account info.
-  base::ListValue* accounts;
-  if (!list->GetList(1, &accounts) || accounts == NULL)
-    return account_ids;
-
-  // Build a vector of accounts from the cookie.  Order is important: the first
-  // account in the list is the primary account.
-  for (size_t i = 0; i < accounts->GetSize(); ++i) {
-    base::ListValue* account;
-    if (accounts->GetList(i, &account) && account != NULL) {
-      std::string email;
-      if (account->GetString(3, &email) && !email.empty())
-        account_ids.push_back(email);
-    }
-  }
-
-  return account_ids;
 }
 
 void AccountReconcilor::OnListAccountsFailure(

@@ -37,7 +37,6 @@ class AccountReconcilor : public BrowserContextKeyedService,
 
  private:
   class AccountReconcilorTest;
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, ParseListAccountsData);
 
   // Register and unregister with dependent services.
   void RegisterWithCookieMonster();
@@ -50,9 +49,6 @@ class AccountReconcilor : public BrowserContextKeyedService,
   bool IsProfileConnected();
 
   void DeleteAccessTokenRequests();
-
-  static std::vector<std::string> ParseListAccountsData(
-      const std::string& data);
 
   // Start and stop the periodic reconciliation.
   void StartPeriodicReconciliation();

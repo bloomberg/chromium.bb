@@ -124,6 +124,20 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
     SESSION_RESTORE_COUNT = SESSION_RESTORE_MERGE_SESSION_FAILED,
   };
 
+  // Outcomes of post-merge session verification.
+  // This enum is used for an UMA histogram, and hence new items should only be
+  // appended at the end.
+  enum PostMergeVerificationOutcome {
+    POST_MERGE_UNDEFINED  = 0,
+    POST_MERGE_SUCCESS = 1,
+    POST_MERGE_NO_ACCOUNTS = 2,
+    POST_MERGE_MISSING_PRIMARY_ACCOUNT = 3,
+    POST_MERGE_PRIMARY_NOT_FIRST_ACCOUNT = 4,
+    POST_MERGE_VERIFICATION_FAILED = 5,
+    POST_MERGE_CONNECTION_FAILED = 6,
+    POST_MERGE_COUNT = 7,
+  };
+
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -140,6 +154,8 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   virtual void OnOAuthLoginFailure(bool connection_error) OVERRIDE;
   virtual void OnSessionMergeSuccess() OVERRIDE;
   virtual void OnSessionMergeFailure(bool connection_error) OVERRIDE;
+  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+  virtual void OnListAccountsFailure(bool connection_error) OVERRIDE;
 
   // OAuth2TokenFetcher::Delegate overrides.
   virtual void OnOAuth2TokensAvailable(
@@ -184,6 +200,9 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
 
   // Testing helper.
   void SetSessionRestoreStartForTesting(const base::Time& time);
+
+  // Records |outcome| of post merge verification check.
+  static void RecordPostMergeOutcome(PostMergeVerificationOutcome outcome);
 
   // Keeps the track if we have already reported OAuth2 token being loaded
   // by OAuth2TokenService.

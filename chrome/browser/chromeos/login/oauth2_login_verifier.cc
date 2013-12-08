@@ -28,8 +28,16 @@ namespace {
 
 // OAuth token request max retry count.
 const int kMaxRequestAttemptCount = 5;
+
 // OAuth token request retry delay in milliseconds.
 const int kRequestRestartDelay = 3000;
+
+// Post merge session verification delay.
+#ifndef NDEBUG
+const int kPostResoreVerificationDelay = 1000;
+#else
+const int kPostResoreVerificationDelay = 1000*60*3;
+#endif
 
 bool IsConnectionOrServiceError(const GoogleServiceAuthError& error) {
   return error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
@@ -168,6 +176,27 @@ void OAuth2LoginVerifier::OnMergeSessionSuccess(const std::string& data) {
   delegate_->OnSessionMergeSuccess();
   // Get GAIA credentials needed to kick off OAuth2TokenService and friends.
   StartOAuthLoginForGaiaCredentials();
+
+  // Schedule post-merge verification to analyze how many LSID/SID overruns
+  // were created by the session restore.
+  SchedulePostMergeVerification();
+}
+
+void OAuth2LoginVerifier::SchedulePostMergeVerification() {
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &OAuth2LoginVerifier::StartPostRestoreVerification, AsWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kPostResoreVerificationDelay));
+}
+
+void OAuth2LoginVerifier::StartPostRestoreVerification() {
+  gaia_fetcher_.reset(
+      new GaiaAuthFetcher(this,
+                          std::string(GaiaConstants::kChromeOSSource),
+                          user_request_context_.get()));
+  gaia_fetcher_->StartListAccounts();
 }
 
 void OAuth2LoginVerifier::OnMergeSessionFailure(
@@ -211,6 +240,27 @@ void OAuth2LoginVerifier::OnGetTokenFailure(
       error.state(),
       GoogleServiceAuthError::NUM_STATES);
   delegate_->OnOAuthLoginFailure(IsConnectionOrServiceError(error));
+}
+
+void OAuth2LoginVerifier::OnListAccountsSuccess(
+    const std::string& data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(1) << "ListAccounts successful.";
+  delegate_->OnListAccountsSuccess(data);
+}
+
+void OAuth2LoginVerifier::OnListAccountsFailure(
+    const GoogleServiceAuthError& error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  LOG(WARNING) << "Failed to get list of session accounts, "
+               << " error: " << error.state();
+  RetryOnError(
+      "ListAccounts",
+      error,
+      base::Bind(&OAuth2LoginVerifier::StartPostRestoreVerification,
+                 AsWeakPtr()),
+      base::Bind(&Delegate::OnListAccountsFailure,
+                 base::Unretained(delegate_)));
 }
 
 void OAuth2LoginVerifier::RetryOnError(const char* operation_id,

@@ -108,4 +108,38 @@ TEST(GaiaAuthUtilTest, IsGaiaSignonRealm) {
   EXPECT_FALSE(IsGaiaSignonRealm(GURL("https://www.example.com/")));
 }
 
+TEST(GaiaAuthUtilTest, ParseListAccountsData) {
+  std::vector<std::string> accounts;
+  accounts = ParseListAccountsData("");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = ParseListAccountsData("1");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = ParseListAccountsData("[]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = ParseListAccountsData("[\"foo\", \"bar\"]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = ParseListAccountsData("[\"foo\", []]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = ParseListAccountsData(
+      "[\"foo\", [[\"bar\", 0, \"name\", 0, \"photo\", 0, 0, 0]]]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = ParseListAccountsData(
+      "[\"foo\", [[\"bar\", 0, \"name\", \"email\", \"photo\", 0, 0, 0]]]");
+  ASSERT_EQ(1u, accounts.size());
+  ASSERT_EQ("email", accounts[0]);
+
+  accounts = ParseListAccountsData(
+      "[\"foo\", [[\"bar1\", 0, \"name1\", \"email1\", \"photo1\", 0, 0, 0], "
+                 "[\"bar2\", 0, \"name2\", \"email2\", \"photo2\", 0, 0, 0]]]");
+  ASSERT_EQ(2u, accounts.size());
+  ASSERT_EQ("email1", accounts[0]);
+  ASSERT_EQ("email2", accounts[1]);
+}
+
 }  // namespace gaia

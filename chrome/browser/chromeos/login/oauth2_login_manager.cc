@@ -24,9 +24,13 @@
 
 namespace chromeos {
 
+namespace {
+
 static const char kServiceScopeGetUserInfo[] =
     "https://www.googleapis.com/auth/userinfo.email";
 static const int kMaxRetries = 5;
+
+}  // namespace
 
 OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
     : user_profile_(user_profile),
@@ -265,6 +269,51 @@ void OAuth2LoginManager::OnSessionMergeFailure(bool connection_error) {
       OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED :
       OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
+
+void OAuth2LoginManager::OnListAccountsSuccess(const std::string& data) {
+  PostMergeVerificationOutcome outcome = POST_MERGE_SUCCESS;
+  // Let's analyze which accounts we see logged in here:
+  std::vector<std::string> accounts = gaia::ParseListAccountsData(data);
+  std::string user_email = gaia::CanonicalizeEmail(
+      GetTokenService()->GetPrimaryAccountId());
+  if (!accounts.empty()) {
+    bool found = false;
+    bool first = true;
+    for (std::vector<std::string>::const_iterator iter = accounts.begin();
+         iter != accounts.end(); ++iter) {
+      if (gaia::CanonicalizeEmail(*iter) == user_email) {
+        found = true;
+        break;
+      }
+
+      first = false;
+    }
+
+    if (!found)
+      outcome = POST_MERGE_MISSING_PRIMARY_ACCOUNT;
+    else if (!first)
+      outcome = POST_MERGE_PRIMARY_NOT_FIRST_ACCOUNT;
+
+  } else {
+    outcome = POST_MERGE_NO_ACCOUNTS;
+  }
+
+  RecordPostMergeOutcome(outcome);
+}
+
+void OAuth2LoginManager::OnListAccountsFailure(bool connection_error) {
+  RecordPostMergeOutcome(connection_error ? POST_MERGE_CONNECTION_FAILED :
+                                            POST_MERGE_VERIFICATION_FAILED);
+}
+
+// static
+void OAuth2LoginManager::RecordPostMergeOutcome(
+    PostMergeVerificationOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.PostMergeVerification",
+                            outcome,
+                            POST_MERGE_COUNT);
+}
+
 
 void OAuth2LoginManager::SetSessionRestoreState(
     OAuth2LoginManager::SessionRestoreState state) {

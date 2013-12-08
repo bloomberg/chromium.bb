@@ -33,15 +33,26 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   class Delegate {
    public:
     virtual ~Delegate() {}
+
     // Invoked during exchange of OAuth2 refresh token for GAIA service token.
     virtual void OnOAuthLoginSuccess(
         const ClientLoginResult& gaia_credentials) = 0;
+
     // Invoked when provided OAuth2 refresh token is invalid.
     virtual void OnOAuthLoginFailure(bool connection_error) = 0;
+
     // Invoked when cookie session is successfully merged.
     virtual void OnSessionMergeSuccess() = 0;
+
     // Invoked when cookie session can not be merged.
     virtual void OnSessionMergeFailure(bool connection_error) = 0;
+
+    // Invoked when account list is retrieved during post-merge session
+    // verification.
+    virtual void OnListAccountsSuccess(const std::string& data) = 0;
+
+    // Invoked when post-merge session verification fails.
+    virtual void OnListAccountsFailure(bool connection_error) = 0;
   };
 
   OAuth2LoginVerifier(OAuth2LoginVerifier::Delegate* delegate,
@@ -69,6 +80,9 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE;
   virtual void OnMergeSessionFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+  virtual void OnListAccountsFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // OAuth2TokenService::Consumer overrides.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -88,6 +102,13 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
 
   // Attempts to merge session from present |gaia_token_|.
   void StartMergeSession();
+
+  // Schedules post merge verification to ensure that browser session restore
+  // hasn't stumped over SID/LSID.
+  void SchedulePostMergeVerification();
+
+  // Starts post merge request verification.
+  void StartPostRestoreVerification();
 
   // Decides how to proceed on GAIA |error|. If the error looks temporary,
   // retries |task| after certain delay until max retry count is reached.
