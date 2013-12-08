@@ -86,13 +86,22 @@ void GeneratedCreditCardBubbleController::Show(
 void GeneratedCreditCardBubbleController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (details.entry &&
-      !content::PageTransitionIsRedirect(details.entry->GetTransitionType())) {
-    should_show_anchor_ = false;
-    UpdateAnchor();
-    web_contents()->RemoveUserData(UserDataKey());
-    // |this| is now deleted.
+  if (!details.entry)
+    return;
+
+  // Don't destory the bubble due to reloads, form submits, or redirects right
+  // after the dialog succeeds. Merchants often navigate to a confirmation page.
+  content::PageTransition transition = details.entry->GetTransitionType();
+  if (transition == content::PAGE_TRANSITION_FORM_SUBMIT ||
+      transition == content::PAGE_TRANSITION_RELOAD ||
+      content::PageTransitionIsRedirect(transition)) {
+    return;
   }
+
+  should_show_anchor_ = false;
+  UpdateAnchor();
+  web_contents()->RemoveUserData(UserDataKey());
+  // |this| is now deleted.
 }
 
 bool GeneratedCreditCardBubbleController::IsHiding() const {
