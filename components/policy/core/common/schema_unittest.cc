@@ -111,6 +111,12 @@ TEST(SchemaTest, InvalidSchemas) {
       "  \"type\": \"object\","
       "  \"properties\": { \"Policy\": 123 }"
       "}"));
+
+  EXPECT_FALSE(ParseFails(
+      "{"
+      "  \"type\": \"object\","
+      "  \"unknown attribute\": \"is ignored\""
+      "}"));
 }
 
 TEST(SchemaTest, Ownership) {

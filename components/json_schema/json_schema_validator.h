@@ -70,6 +70,12 @@ class JSONSchemaValidator {
     std::string message;
   };
 
+  enum Options {
+    // Ignore unknown attributes. If this option is not set then unknown
+    // attributes will make the schema validation fail.
+    OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES = 1 << 0,
+  };
+
   // Error messages.
   static const char kUnknownTypeReference[];
   static const char kInvalidChoice[];
@@ -106,6 +112,13 @@ class JSONSchemaValidator {
   // returns NULL. In that case, |error| contains an error description.
   static scoped_ptr<base::DictionaryValue> IsValidSchema(
       const std::string& schema,
+      std::string* error);
+
+  // Same as above but with |options|, which is a bitwise-OR combination of the
+  // Options above.
+  static scoped_ptr<base::DictionaryValue> IsValidSchema(
+      const std::string& schema,
+      int options,
       std::string* error);
 
   // Creates a validator for the specified schema.

@@ -65,7 +65,9 @@ const base::Value* ExtractNameFromDictionary(const base::Value* value) {
   return value;
 }
 
-bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
+bool IsValidSchema(const base::DictionaryValue* dict,
+                   int options,
+                   std::string* error) {
   // This array must be sorted, so that std::lower_bound can perform a
   // binary search.
   static const ExpectedType kExpectedTypes[] = {
@@ -126,7 +128,7 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
     // Validate the "items" attribute, which is a schema or a list of schemas.
     if (it.key() == schema::kItems) {
       if (it.value().GetAsDictionary(&dictionary_value)) {
-        if (!IsValidSchema(dictionary_value, error)) {
+        if (!IsValidSchema(dictionary_value, options, error)) {
           DCHECK(!error->empty());
           return false;
         }
@@ -138,7 +140,7 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
                 static_cast<int>(i));
             return false;
           }
-          if (!IsValidSchema(dictionary_value, error)) {
+          if (!IsValidSchema(dictionary_value, options, error)) {
             DCHECK(!error->empty());
             return false;
           }
@@ -155,9 +157,12 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
     const ExpectedType* entry = std::lower_bound(
         kExpectedTypes, end, it.key(), CompareToString);
     if (entry == end || entry->key != it.key()) {
+      if (options & JSONSchemaValidator::OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES)
+        continue;
       *error = base::StringPrintf("Invalid attribute %s", it.key().c_str());
       return false;
     }
+
     if (!it.value().IsType(entry->type)) {
       *error = base::StringPrintf("Invalid value for %s attribute",
                                   it.key().c_str());
@@ -185,7 +190,7 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
           *error = "Invalid value for properties attribute";
           return false;
         }
-        if (!IsValidSchema(dictionary_value, error)) {
+        if (!IsValidSchema(dictionary_value, options, error)) {
           DCHECK(!error->empty());
           return false;
         }
@@ -195,7 +200,7 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
     // Validate "additionalProperties" attribute, which is a schema.
     if (it.key() == schema::kAdditionalProperties) {
       it.value().GetAsDictionary(&dictionary_value);
-      if (!IsValidSchema(dictionary_value, error)) {
+      if (!IsValidSchema(dictionary_value, options, error)) {
         DCHECK(!error->empty());
         return false;
       }
@@ -236,7 +241,7 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
           *error = "Invalid choices attribute";
           return false;
         }
-        if (!IsValidSchema(dictionary_value, error)) {
+        if (!IsValidSchema(dictionary_value, options, error)) {
           DCHECK(!error->empty());
           return false;
         }
@@ -356,9 +361,17 @@ std::string JSONSchemaValidator::FormatErrorMessage(const std::string& format,
 scoped_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
     const std::string& schema,
     std::string* error) {
-  base::JSONParserOptions options = base::JSON_PARSE_RFC;
+  return JSONSchemaValidator::IsValidSchema(schema, 0, error);
+}
+
+// static
+scoped_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
+    const std::string& schema,
+    int validator_options,
+    std::string* error) {
+  base::JSONParserOptions json_options = base::JSON_PARSE_RFC;
   scoped_ptr<base::Value> json(
-      base::JSONReader::ReadAndReturnError(schema, options, NULL, error));
+      base::JSONReader::ReadAndReturnError(schema, json_options, NULL, error));
   if (!json)
     return scoped_ptr<base::DictionaryValue>();
   base::DictionaryValue* dict = NULL;
@@ -366,7 +379,7 @@ scoped_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
     *error = "Schema must be a JSON object";
     return scoped_ptr<base::DictionaryValue>();
   }
-  if (!::IsValidSchema(dict, error))
+  if (!::IsValidSchema(dict, validator_options, error))
     return scoped_ptr<base::DictionaryValue>();
   ignore_result(json.release());
   return make_scoped_ptr(dict);

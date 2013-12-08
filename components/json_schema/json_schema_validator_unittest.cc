@@ -83,8 +83,7 @@ TEST(JSONSchemaValidator, IsValidSchema) {
       "{"
       "  \"type\": \"string\","
       "  \"enum\": [ { \"name\": {} } ]"  // "enum" name must be a simple value.
-      "}",
-      &error));
+      "}", &error));
   EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(
       "{"
       "  \"type\": \"array\","
@@ -132,4 +131,16 @@ TEST(JSONSchemaValidator, IsValidSchema) {
       "    \"type\": \"any\""
       "  }"
       "}", &error)) << error;
+  EXPECT_TRUE(JSONSchemaValidator::IsValidSchema(
+      "{"
+      "  \"type\": \"object\","
+      "  \"unknown attribute\": \"that should just be ignored\""
+      "}",
+      JSONSchemaValidator::OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES,
+      &error)) << error;
+  EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(
+      "{"
+      "  \"type\": \"object\","
+      "  \"unknown attribute\": \"that will cause a failure\""
+      "}", 0, &error)) << error;
 }

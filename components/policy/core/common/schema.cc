@@ -500,9 +500,10 @@ bool Schema::Validate(const base::Value& value) const {
 
 // static
 Schema Schema::Parse(const std::string& content, std::string* error) {
-  // Validate as a generic JSON schema.
-  scoped_ptr<base::DictionaryValue> dict =
-      JSONSchemaValidator::IsValidSchema(content, error);
+  // Validate as a generic JSON schema, and ignore unknown attributes; they
+  // may become used in a future version of the schema format.
+  scoped_ptr<base::DictionaryValue> dict = JSONSchemaValidator::IsValidSchema(
+      content, JSONSchemaValidator::OPTIONS_IGNORE_UNKNOWN_ATTRIBUTES, error);
   if (!dict)
     return Schema();
 
