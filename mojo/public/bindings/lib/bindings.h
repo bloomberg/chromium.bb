@@ -15,7 +15,7 @@
 
 namespace mojo {
 
-template <typename T, typename U> class SimilarityTraits {};
+template <typename T, typename U> class TypeConverter {};
 
 // Provides read-only access to array data.
 template <typename T>
@@ -30,12 +30,12 @@ class Array {
 
   template <typename U>
   Array(const U& u, Buffer* buf = Buffer::current()) {
-    *this = SimilarityTraits<Array<T>,U>::CopyFrom(u, buf);
+    *this = TypeConverter<Array<T>,U>::ConvertFrom(u, buf);
   }
 
   template <typename U>
   Array& operator=(const U& u) {
-    *this = SimilarityTraits<Array<T>,U>::CopyFrom(u, Buffer::current());
+    *this = TypeConverter<Array<T>,U>::ConvertFrom(u, Buffer::current());
     return *this;
   }
 
@@ -46,7 +46,7 @@ class Array {
 
   template <typename U>
   U To() const {
-    return SimilarityTraits<Array<T>,U>::CopyTo(*this);
+    return TypeConverter<Array<T>,U>::ConvertTo(*this);
   }
 
   bool is_null() const { return !data_; }
@@ -100,16 +100,16 @@ class Array {
 typedef Array<char> String;
 
 template <>
-class SimilarityTraits<String, std::string> {
+class TypeConverter<String, std::string> {
  public:
-  static String CopyFrom(const std::string& input, Buffer* buf);
-  static std::string CopyTo(const String& input);
+  static String ConvertFrom(const std::string& input, Buffer* buf);
+  static std::string ConvertTo(const String& input);
 };
 
 template <size_t N>
-class SimilarityTraits<String, char[N]> {
+class TypeConverter<String, char[N]> {
  public:
-  static String CopyFrom(const char input[N], Buffer* buf) {
+  static String ConvertFrom(const char input[N], Buffer* buf) {
     String::Builder result(N - 1, buf);
     memcpy(&result[0], input, N - 1);
     return result.Finish();
@@ -118,36 +118,36 @@ class SimilarityTraits<String, char[N]> {
 
 // Appease MSVC.
 template <size_t N>
-class SimilarityTraits<String, const char[N]> {
+class TypeConverter<String, const char[N]> {
  public:
-  static String CopyFrom(const char input[N], Buffer* buf) {
-    return SimilarityTraits<String, char[N]>::CopyFrom(input, buf);
+  static String ConvertFrom(const char input[N], Buffer* buf) {
+    return TypeConverter<String, char[N]>::ConvertFrom(input, buf);
   }
 };
 
 template <>
-class SimilarityTraits<String, const char*> {
+class TypeConverter<String, const char*> {
  public:
-  static String CopyFrom(const char* input, Buffer* buf);
-  // NOTE: |CopyTo| explicitly not implemented since String is not null
+  static String ConvertFrom(const char* input, Buffer* buf);
+  // NOTE: |ConvertTo| explicitly not implemented since String is not null
   // terminated (and may have embedded null bytes).
 };
 
 template <typename T, typename E>
-class SimilarityTraits<Array<T>, std::vector<E> > {
+class TypeConverter<Array<T>, std::vector<E> > {
  public:
-  static Array<T> CopyFrom(const std::vector<E>& input, Buffer* buf) {
+  static Array<T> ConvertFrom(const std::vector<E>& input, Buffer* buf) {
     typename Array<T>::Builder result(input.size(), buf);
     for (size_t i = 0; i < input.size(); ++i)
-      result[i] = SimilarityTraits<T, E>::CopyFrom(input[i], buf);
+      result[i] = TypeConverter<T, E>::ConvertFrom(input[i], buf);
     return result.Finish();
   }
-  static std::vector<E> CopyTo(const Array<T>& input) {
+  static std::vector<E> ConvertTo(const Array<T>& input) {
     std::vector<E> result;
     if (!input.is_null()) {
       result.resize(input.size());
       for (size_t i = 0; i < input.size(); ++i)
-        result[i] = SimilarityTraits<T, E>::CopyTo(input[i]);
+        result[i] = TypeConverter<T, E>::ConvertTo(input[i]);
     }
     return result;
   }

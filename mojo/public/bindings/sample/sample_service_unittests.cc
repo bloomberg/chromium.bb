@@ -15,9 +15,9 @@
 namespace mojo {
 
 template <>
-class SimilarityTraits<sample::Bar, int32_t> {
+class TypeConverter<sample::Bar, int32_t> {
  public:
-  static int32_t CopyTo(const sample::Bar& bar) {
+  static int32_t ConvertTo(const sample::Bar& bar) {
     return static_cast<int32_t>(bar.alpha()) << 16 |
            static_cast<int32_t>(bar.beta()) << 8 |
            static_cast<int32_t>(bar.gamma());

@@ -7,13 +7,13 @@ class $CLASS {
 
   template <typename U>
   $CLASS(const U& u, mojo::Buffer* buf = mojo::Buffer::current()) {
-    *this = mojo::SimilarityTraits<$CLASS,U>::CopyFrom(u, buf);
+    *this = mojo::TypeConverter<$CLASS,U>::ConvertFrom(u, buf);
   }
 
   template <typename U>
   $CLASS& operator=(const U& u) {
     *this =
-        mojo::SimilarityTraits<$CLASS,U>::CopyFrom(u, mojo::Buffer::current());
+        mojo::TypeConverter<$CLASS,U>::ConvertFrom(u, mojo::Buffer::current());
     return *this;
   }
 
@@ -24,7 +24,7 @@ class $CLASS {
 
   template <typename U>
   U To() const {
-    return mojo::SimilarityTraits<$CLASS,U>::CopyTo(*this);
+    return mojo::TypeConverter<$CLASS,U>::ConvertTo(*this);
   }
 
   bool is_null() const { return !data_; }

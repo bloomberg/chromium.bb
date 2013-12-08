@@ -166,8 +166,8 @@
       'sources': [
         'common/bindings_support_impl.cc',
         'common/bindings_support_impl.h',
-        'common/common_similarity_traits.cc',
-        'common/common_similarity_traits.h',
+        'common/common_type_converters.cc',
+        'common/common_type_converters.h',
         'common/handle_watcher.cc',
         'common/handle_watcher.h',
         'common/message_pump_mojo.cc',
@@ -197,7 +197,7 @@
         'mojo_system',
       ],
       'sources': [
-        'common/common_similarity_traits_unittest.cc',
+        'common/common_type_converters_unittest.cc',
         'common/handle_watcher_unittest.cc',
         'common/message_pump_mojo_unittest.cc',
         'common/test/multiprocess_test_base_unittest.cc',

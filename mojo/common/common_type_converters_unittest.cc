@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/common_similarity_traits.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/public/tests/simple_bindings_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,12 +22,12 @@ void ExpectEqualsMojoString(const std::string& expected,
 
 }  // namespace
 
-class CommonSimilarityTraitsTest : public testing::Test {
+class CommonTypeConvertersTest : public testing::Test {
  private:
   SimpleBindingsSupport bindings_support_;
 };
 
-TEST_F(CommonSimilarityTraitsTest, StringPiece) {
+TEST_F(CommonTypeConvertersTest, StringPiece) {
   AllocationScope scope;
 
   std::string kText("hello world");

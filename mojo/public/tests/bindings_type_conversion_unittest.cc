@@ -24,9 +24,9 @@ struct RedmondNamedRegion {
 }  // namespace
 
 template <>
-class SimilarityTraits<test_structs::Rect, RedmondRect> {
+class TypeConverter<test_structs::Rect, RedmondRect> {
  public:
-  static test_structs::Rect CopyFrom(const RedmondRect& input, Buffer* buf) {
+  static test_structs::Rect ConvertFrom(const RedmondRect& input, Buffer* buf) {
     test_structs::Rect::Builder rect(buf);
     rect.set_x(input.left);
     rect.set_y(input.top);
@@ -34,7 +34,7 @@ class SimilarityTraits<test_structs::Rect, RedmondRect> {
     rect.set_height(input.bottom - input.top);
     return rect.Finish();
   }
-  static RedmondRect CopyTo(const test_structs::Rect& input) {
+  static RedmondRect ConvertTo(const test_structs::Rect& input) {
     RedmondRect rect;
     rect.left = input.x();
     rect.top = input.y();
@@ -45,16 +45,16 @@ class SimilarityTraits<test_structs::Rect, RedmondRect> {
 };
 
 template <>
-class SimilarityTraits<test_structs::NamedRegion, RedmondNamedRegion> {
+class TypeConverter<test_structs::NamedRegion, RedmondNamedRegion> {
  public:
-  static test_structs::NamedRegion CopyFrom(const RedmondNamedRegion& input,
-                                            Buffer* buf) {
+  static test_structs::NamedRegion ConvertFrom(const RedmondNamedRegion& input,
+                                               Buffer* buf) {
     test_structs::NamedRegion::Builder region(buf);
     region.set_name(String(input.name, buf));
     region.set_rects(mojo::Array<test_structs::Rect>(input.rects, buf));
     return region.Finish();
   }
-  static RedmondNamedRegion CopyTo(const test_structs::NamedRegion& input) {
+  static RedmondNamedRegion ConvertTo(const test_structs::NamedRegion& input) {
     RedmondNamedRegion region;
     region.name = input.name().To<std::string>();
     region.rects = input.rects().To<std::vector<RedmondRect> >();
@@ -125,7 +125,7 @@ TEST_F(BindingsTypeConversionTest, StringWithEmbeddedNull) {
   EXPECT_EQ(std::string("hel"), b.To<std::string>());
 }
 
-TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits) {
+TEST_F(BindingsTypeConversionTest, CustomTypeConverter) {
   AllocationScope scope;
 
   test_structs::Rect::Builder rect_builder;
@@ -148,7 +148,7 @@ TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits) {
   EXPECT_EQ(rect.height(), rect2.height());
 }
 
-TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array_Null) {
+TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Array_Null) {
   Array<test_structs::Rect> rects;
 
   std::vector<RedmondRect> redmond_rects =
@@ -157,7 +157,7 @@ TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array_Null) {
   EXPECT_TRUE(redmond_rects.empty());
 }
 
-TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array) {
+TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Array) {
   AllocationScope scope;
 
   const RedmondRect kBase = { 10, 20, 30, 40 };
@@ -199,7 +199,7 @@ TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array) {
   }
 }
 
-TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Nested) {
+TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Nested) {
   AllocationScope scope;
 
   RedmondNamedRegion redmond_region;
@@ -214,7 +214,7 @@ TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Nested) {
     redmond_region.rects.push_back(rect);
   }
 
-  // Round-trip through generated struct and SimilarityTraits.
+  // Round-trip through generated struct and TypeConverter.
 
   test_structs::NamedRegion copy = redmond_region;
   RedmondNamedRegion redmond_region2 = copy.To<RedmondNamedRegion>();
