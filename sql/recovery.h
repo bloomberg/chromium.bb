@@ -27,10 +27,28 @@ namespace sql {
 //   scoped_ptr<sql::Recovery> r =
 //       sql::Recovery::Begin(orig_db, orig_db_path);
 //   if (r) {
-//     if (r.db()->Execute(kCreateSchemaSql) &&
-//         r.db()->Execute(kCopyDataFromOrigSql)) {
-//       sql::Recovery::Recovered(r.Pass());
+//     // Create the schema to recover to.  On failure, clear the
+//     // database.
+//     if (!r.db()->Execute(kCreateSchemaSql)) {
+//       sql::Recovery::Unrecoverable(r.Pass());
+//       return;
 //     }
+//
+//     // Recover data in "mytable".
+//     size_t rows_recovered = 0;
+//     if (!r.AutoRecoverTable("mytable", 0, &rows_recovered)) {
+//       sql::Recovery::Unrecoverable(r.Pass());
+//       return;
+//     }
+//
+//     // Manually cleanup additional constraints.
+//     if (!r.db()->Execute(kCleanupSql)) {
+//       sql::Recovery::Unrecoverable(r.Pass());
+//       return;
+//     }
+//
+//     // Commit the recovered data to the original database file.
+//     sql::Recovery::Recovered(r.Pass());
 //   }
 // }
 //

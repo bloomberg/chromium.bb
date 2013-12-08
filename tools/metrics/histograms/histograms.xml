@@ -5424,6 +5424,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="History.TopSitesRecoveredPercentage" units="%">
+  <summary>
+    Size of the recovered TopSites database relative to the original corrupt
+    database.  Recovery is VACUUM-like, so the resulting database should always
+    be smaller.  Substantial 100% results would indicate empty databases being
+    recovered, substantial low% results would indicate very little data being
+    recovered.
+  </summary>
+</histogram>
+
+<histogram name="History.TopSitesRecoveredRowsThumbnails">
+  <summary>
+    Rows recovered from [thumbnails] table in TopSites recovery.
+  </summary>
+</histogram>
+
+<histogram name="History.TopSitesRecovery" enum="HistoryTopSitesRecoveryEnum">
+  <summary>
+    The TopSites recovery code is written conservatively, with successful
+    recovery committed and any failure leading to rollback. This tracks the
+    outcomes to determine which cases are high-frequency enough to warrant
+    adding additional code to handle them (versus simply deleting the data).
+  </summary>
+</histogram>
+
 <histogram name="History.TopSitesVisitsByRank" units="rank">
   <summary>
     Page visits to each of a user's top 50 sites. Visits to all other sites go
@@ -24818,6 +24843,46 @@ other types of suffix sets.
   </int>
   <int value="27" label="RECOVERY_EVENT_FAILED_COMMIT">
     Failed sql::Recovery::Recovered().
+  </int>
+</enum>
+
+<enum name="HistoryTopSitesRecoveryEnum" type="int">
+  <summary>Error states noted in top_sites_database.cc recovery code.</summary>
+  <int value="0" label="RECOVERY_EVENT_RECOVERED">Successful recovery.</int>
+  <int value="1" label="RECOVERY_EVENT_DEPRECATED">
+    Recovery found deprecated version and razed.
+  </int>
+  <int value="2" label="RECOVERY_EVENT_FAILED_SCOPER">
+    sql::Recovery failed init.
+  </int>
+  <int value="3" label="RECOVERY_EVENT_FAILED_META_VERSION">
+    Failed sql::Recovery::SetupMeta() or GetMetaVersionNumber().
+  </int>
+  <int value="4" label="RECOVERY_EVENT_FAILED_META_WRONG_VERSION">
+    Recovery meta table has an unexpected version.
+  </int>
+  <int value="5" label="RECOVERY_EVENT_FAILED_META_INIT">
+    Failed sql::MetaTable::Init().
+  </int>
+  <int value="6" label="RECOVERY_EVENT_FAILED_SCHEMA_INIT">
+    Failed to init target schema.
+  </int>
+  <int value="7" label="RECOVERY_EVENT_FAILED_AUTORECOVER_THUMBNAILS">
+    Failed recovery on thumbnails table.
+  </int>
+  <int value="8" label="RECOVERY_EVENT_FAILED_COMMIT">
+    Failure from sql::Recovery::Recovered().
+  </int>
+  <int value="9" label="RECOVERY_EVENT_INVARIANT_RANK">
+    Rows were deleted because |url_rank| and |last_forced| didn't agree.  Does
+    not prevent recovery.
+  </int>
+  <int value="10" label="RECOVERY_EVENT_INVARIANT_REDIRECT">
+    Rows were deleted because |redirects| did not contain |url|.  Does not
+    prevent recovery.
+  </int>
+  <int value="11" label="RECOVERY_EVENT_INVARIANT_CONTIGUOUS">
+    |url_rank| was renumbered due to missing rows.  Does not prevent recovery.
   </int>
 </enum>
 

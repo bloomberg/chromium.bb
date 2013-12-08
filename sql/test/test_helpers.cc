@@ -21,6 +21,26 @@ size_t CountSQLItemsOfType(sql::Connection* db, const char* type) {
   return s.ColumnInt(0);
 }
 
+// Get page size for the database.
+bool GetPageSize(sql::Connection* db, int* page_size) {
+  sql::Statement s(db->GetUniqueStatement("PRAGMA page_size"));
+  if (!s.Step())
+    return false;
+  *page_size = s.ColumnInt(0);
+  return true;
+}
+
+// Get |name|'s root page number in the database.
+bool GetRootPage(sql::Connection* db, const char* name, int* page_number) {
+  const char kPageSql[] = "SELECT rootpage FROM sqlite_master WHERE name = ?";
+  sql::Statement s(db->GetUniqueStatement(kPageSql));
+  s.BindString(0, name);
+  if (!s.Step())
+    return false;
+  *page_number = s.ColumnInt(0);
+  return true;
+}
+
 // Helper for reading a number from the SQLite header.
 // See net/base/big_endian.h.
 unsigned ReadBigEndian(unsigned char* buf, size_t bytes) {
@@ -83,6 +103,70 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
   if (0 != fseek(file.get(), 0, SEEK_SET))
     return false;
   if (1u != fwrite(header, sizeof(header), 1, file.get()))
+    return false;
+
+  return true;
+}
+
+bool CorruptTableOrIndex(const base::FilePath& db_path,
+                         const char* tree_name,
+                         const char* update_sql) {
+  sql::Connection db;
+  if (!db.Open(db_path))
+    return false;
+
+  int page_size = 0;
+  if (!GetPageSize(&db, &page_size))
+    return false;
+
+  int page_number = 0;
+  if (!GetRootPage(&db, tree_name, &page_number))
+    return false;
+
+  // SQLite uses 1-based page numbering.
+  const long int page_ofs = (page_number - 1) * page_size;
+  scoped_ptr<char[]> page_buf(new char[page_size]);
+
+  // Get the page into page_buf.
+  file_util::ScopedFILE file(base::OpenFile(db_path, "rb+"));
+  if (!file.get())
+    return false;
+  if (0 != fseek(file.get(), page_ofs, SEEK_SET))
+    return false;
+  if (1u != fread(page_buf.get(), page_size, 1, file.get()))
+    return false;
+
+  // Require the page to be a leaf node.  A multilevel tree would be
+  // very hard to restore correctly.
+  if (page_buf[0] != 0xD && page_buf[0] != 0xA)
+    return false;
+
+  // The update has to work, and make changes.
+  if (!db.Execute(update_sql))
+    return false;
+  if (db.GetLastChangeCount() == 0)
+    return false;
+
+  // Ensure that the database is fully flushed.
+  db.Close();
+
+  // Check that the stored page actually changed.  This catches usage
+  // errors where |update_sql| is not related to |tree_name|.
+  scoped_ptr<char[]> check_page_buf(new char[page_size]);
+  // The on-disk data should have changed.
+  if (0 != fflush(file.get()))
+    return false;
+  if (0 != fseek(file.get(), page_ofs, SEEK_SET))
+    return false;
+  if (1u != fread(check_page_buf.get(), page_size, 1, file.get()))
+    return false;
+  if (!memcmp(check_page_buf.get(), page_buf.get(), page_size))
+    return false;
+
+  // Put the original page back.
+  if (0 != fseek(file.get(), page_ofs, SEEK_SET))
+    return false;
+  if (1u != fwrite(page_buf.get(), page_size, 1, file.get()))
     return false;
 
   return true;

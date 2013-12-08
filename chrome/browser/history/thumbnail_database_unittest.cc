@@ -6,20 +6,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/thumbnail_database.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_profile.h"
 #include "sql/connection.h"
-#include "sql/recovery.h"  // For FullRecoverySupported().
-#include "sql/statement.h"
+#include "sql/recovery.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,49 +57,6 @@ WARN_UNUSED_RESULT bool CreateDatabaseFromSQL(const base::FilePath &db_path,
     return false;
   sql_path = sql_path.AppendASCII("History").AppendASCII(ascii_path);
   return sql::test::CreateDatabaseFromSQL(db_path, sql_path);
-}
-
-int GetPageSize(sql::Connection* db) {
-  sql::Statement s(db->GetUniqueStatement("PRAGMA page_size"));
-  EXPECT_TRUE(s.Step());
-  return s.ColumnInt(0);
-}
-
-// Get |name|'s root page number in the database.
-int GetRootPage(sql::Connection* db, const char* name) {
-  const char kPageSql[] = "SELECT rootpage FROM sqlite_master WHERE name = ?";
-  sql::Statement s(db->GetUniqueStatement(kPageSql));
-  s.BindString(0, name);
-  EXPECT_TRUE(s.Step());
-  return s.ColumnInt(0);
-}
-
-// Helper to read a SQLite page into a buffer.  |page_no| is 1-based
-// per SQLite usage.
-bool ReadPage(const base::FilePath& path, size_t page_no,
-              char* buf, size_t page_size) {
-  file_util::ScopedFILE file(base::OpenFile(path, "rb"));
-  if (!file.get())
-    return false;
-  if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
-    return false;
-  if (1u != fread(buf, page_size, 1, file.get()))
-    return false;
-  return true;
-}
-
-// Helper to write a SQLite page into a buffer.  |page_no| is 1-based
-// per SQLite usage.
-bool WritePage(const base::FilePath& path, size_t page_no,
-               const char* buf, size_t page_size) {
-  file_util::ScopedFILE file(base::OpenFile(path, "rb+"));
-  if (!file.get())
-    return false;
-  if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
-    return false;
-  if (1u != fwrite(buf, page_size, 1, file.get()))
-    return false;
-  return true;
 }
 
 // Verify that the up-to-date database has the expected tables and
@@ -791,23 +743,12 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     sql::Connection raw_db;
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
-
-    const char kIndexName[] = "icon_mapping_page_url_idx";
-    const int idx_root_page = GetRootPage(&raw_db, kIndexName);
-    const int page_size = GetPageSize(&raw_db);
-    scoped_ptr<char[]> buf(new char[page_size]);
-    EXPECT_TRUE(ReadPage(file_name_, idx_root_page, buf.get(), page_size));
-
-    {
-      const char kDeleteSql[] = "DELETE FROM icon_mapping WHERE page_url = ?";
-      sql::Statement statement(raw_db.GetUniqueStatement(kDeleteSql));
-      statement.BindString(0, URLDatabase::GURLToDatabaseURL(kPageUrl2));
-      EXPECT_TRUE(statement.Run());
-    }
-    raw_db.Close();
-
-    EXPECT_TRUE(WritePage(file_name_, idx_root_page, buf.get(), page_size));
   }
+  const char kIndexName[] = "icon_mapping_page_url_idx";
+  const char kDeleteSql[] =
+      "DELETE FROM icon_mapping WHERE page_url = 'http://yahoo.com/'";
+  EXPECT_TRUE(
+      sql::test::CorruptTableOrIndex(file_name_, kIndexName, kDeleteSql));
 
   // Database should be corrupt at the SQLite level.
   {

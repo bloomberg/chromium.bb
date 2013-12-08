@@ -61,6 +61,9 @@ class TopSitesDatabase {
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version1);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version2);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Version3);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Recovery1);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Recovery2);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, Recovery3);
   FRIEND_TEST_ALL_PREFIXES(TopSitesDatabaseTest, AddRemoveEditThumbnails);
 
   // Rank of all URLs that are forced and therefore cannot be automatically
@@ -89,6 +92,11 @@ class TopSitesDatabase {
 
   // Returns |url|'s current rank or kRankOfNonExistingURL if not present.
   int GetURLRank(const MostVisitedURL& url);
+
+  // Helper function to implement internals of Init().  This allows
+  // Init() to retry in case of failure, since some failures will
+  // invoke recovery code.
+  bool InitImpl(const base::FilePath& db_name);
 
   sql::Connection* CreateDB(const base::FilePath& db_name);
 

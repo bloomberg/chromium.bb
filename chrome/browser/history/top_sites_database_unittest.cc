@@ -2,22 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "sql/connection.h"
-#include "sql/statement.h"
+#include "sql/recovery.h"
+#include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/sqlite/sqlite3.h"
+#include "url/gurl.h"
 
 namespace {
 
 // URL with url_rank 0 in golden files.
 const GURL kUrl0 = GURL("http://www.google.com/");
+
+// URL with url_rank 1 in golden files.
+const GURL kUrl1 = GURL("http://www.google.com/chrome/intl/en/welcome.html");
+
+// URL with url_rank 2 in golden files.
+const GURL kUrl2 = GURL("https://chrome.google.com/webstore?hl=en");
 
 // Create the test database at |db_path| from the golden file at
 // |ascii_path| in the "History/" subdir of the test data dir.
@@ -136,6 +148,208 @@ TEST_F(TopSitesDatabaseTest, Version3) {
   db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(2u, urls.size());
   ASSERT_EQ(2u, thumbnails.size());
+}
+
+// Version 1 is deprecated, the resulting schema should be current,
+// with no data.
+TEST_F(TopSitesDatabaseTest, Recovery1) {
+  // Recovery module only supports some platforms at this time.
+  if (!sql::Recovery::FullRecoverySupported())
+    return;
+
+  // Create an example database.
+  EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v1.sql"));
+
+  // Corrupt the database by adjusting the header size.
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
+
+  // Database is unusable at the SQLite level.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Corruption should be detected and recovered during Init().
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+    VerifyTablesAndColumns(db.db_.get());
+    VerifyDatabaseEmpty(db.db_.get());
+
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+}
+
+TEST_F(TopSitesDatabaseTest, Recovery2) {
+  // Recovery module only supports some platforms at this time.
+  if (!sql::Recovery::FullRecoverySupported())
+    return;
+
+  // Create an example database.
+  EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v2.sql"));
+
+  // Corrupt the database by adjusting the header.
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
+
+  // Database is unusable at the SQLite level.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Corruption should be detected and recovered during Init().  After recovery,
+  // the Version2 checks should work.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+
+    VerifyTablesAndColumns(db.db_.get());
+
+    // Basic operational check.
+    MostVisitedURLList urls;
+    std::map<GURL, Images> thumbnails;
+    db.GetPageThumbnails(&urls, &thumbnails);
+    ASSERT_EQ(3u, urls.size());
+    ASSERT_EQ(3u, thumbnails.size());
+    EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
+    // kGoogleThumbnail includes nul terminator.
+    ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
+              thumbnails[urls[0].url].thumbnail->size());
+    EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
+                        kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
+
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+}
+
+TEST_F(TopSitesDatabaseTest, Recovery3) {
+  // Recovery module only supports some platforms at this time.
+  if (!sql::Recovery::FullRecoverySupported())
+    return;
+
+  // Create an example database.
+  EXPECT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v3.sql"));
+
+  // Corrupt the database by adjusting the header.
+  EXPECT_TRUE(sql::test::CorruptSizeInHeader(file_name_));
+
+  // Database is unusable at the SQLite level.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Corruption should be detected and recovered during Init().
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+
+    MostVisitedURLList urls;
+    std::map<GURL, Images> thumbnails;
+    db.GetPageThumbnails(&urls, &thumbnails);
+    ASSERT_EQ(3u, urls.size());
+    ASSERT_EQ(3u, thumbnails.size());
+    EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
+    // kGoogleThumbnail includes nul terminator.
+    ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
+              thumbnails[urls[0].url].thumbnail->size());
+    EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
+                        kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
+
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Double-check database integrity.
+  {
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
+  }
+
+  // Corrupt the thumnails.url auto-index by deleting an element from the table
+  // but leaving it in the index.
+  const char kIndexName[] = "sqlite_autoindex_thumbnails_1";
+  // TODO(shess): Refactor CorruptTableOrIndex() to make parameterized
+  // statements easy.
+  const char kDeleteSql[] =
+      "DELETE FROM thumbnails WHERE url = "
+      "'http://www.google.com/chrome/intl/en/welcome.html'";
+  EXPECT_TRUE(
+      sql::test::CorruptTableOrIndex(file_name_, kIndexName, kDeleteSql));
+
+  // SQLite can operate on the database, but notices the corruption in integrity
+  // check.
+  {
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    ASSERT_NE("ok", sql::test::IntegrityCheck(&raw_db));
+  }
+
+  // Open the database and access the corrupt index.
+  {
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+
+    {
+      sql::ScopedErrorIgnorer ignore_errors;
+      ignore_errors.IgnoreError(SQLITE_CORRUPT);
+
+      // Data for kUrl1 was deleted, but the index entry remains, this will
+      // throw SQLITE_CORRUPT.  The corruption handler will recover the database
+      // and poison the handle, so the outer call fails.
+      EXPECT_EQ(TopSitesDatabase::kRankOfNonExistingURL,
+                db.GetURLRank(MostVisitedURL(kUrl1, string16())));
+
+      ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+    }
+  }
+
+  // Check that the database is recovered at the SQLite level.
+  {
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
+  }
+
+  // After recovery, the database accesses won't throw errors.  The top-ranked
+  // item is removed, but the ranking was revised in post-processing.
+  {
+    TopSitesDatabase db;
+    ASSERT_TRUE(db.Init(file_name_));
+    VerifyTablesAndColumns(db.db_.get());
+
+    EXPECT_EQ(TopSitesDatabase::kRankOfNonExistingURL,
+              db.GetURLRank(MostVisitedURL(kUrl1, string16())));
+
+    MostVisitedURLList urls;
+    std::map<GURL, Images> thumbnails;
+    db.GetPageThumbnails(&urls, &thumbnails);
+    ASSERT_EQ(2u, urls.size());
+    ASSERT_EQ(2u, thumbnails.size());
+    EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
+    EXPECT_EQ(kUrl2, urls[1].url);  // [1] because of url_rank.
+  }
 }
 
 TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {

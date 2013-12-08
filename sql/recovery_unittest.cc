@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -56,51 +57,6 @@ std::string GetSchema(sql::Connection* db) {
       "SELECT COALESCE(sql, name) FROM sqlite_master ORDER BY 1";
   return ExecuteWithResults(db, kSql, "|", "\n");
 }
-
-#if !defined(USE_SYSTEM_SQLITE)
-int GetPageSize(sql::Connection* db) {
-  sql::Statement s(db->GetUniqueStatement("PRAGMA page_size"));
-  EXPECT_TRUE(s.Step());
-  return s.ColumnInt(0);
-}
-
-// Get |name|'s root page number in the database.
-int GetRootPage(sql::Connection* db, const char* name) {
-  const char kPageSql[] = "SELECT rootpage FROM sqlite_master WHERE name = ?";
-  sql::Statement s(db->GetUniqueStatement(kPageSql));
-  s.BindString(0, name);
-  EXPECT_TRUE(s.Step());
-  return s.ColumnInt(0);
-}
-
-// Helper to read a SQLite page into a buffer.  |page_no| is 1-based
-// per SQLite usage.
-bool ReadPage(const base::FilePath& path, size_t page_no,
-              char* buf, size_t page_size) {
-  file_util::ScopedFILE file(base::OpenFile(path, "rb"));
-  if (!file.get())
-    return false;
-  if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
-    return false;
-  if (1u != fread(buf, page_size, 1, file.get()))
-    return false;
-  return true;
-}
-
-// Helper to write a SQLite page into a buffer.  |page_no| is 1-based
-// per SQLite usage.
-bool WritePage(const base::FilePath& path, size_t page_no,
-               const char* buf, size_t page_size) {
-  file_util::ScopedFILE file(base::OpenFile(path, "rb+"));
-  if (!file.get())
-    return false;
-  if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
-    return false;
-  if (1u != fwrite(buf, page_size, 1, file.get()))
-    return false;
-  return true;
-}
-#endif  // !defined(USE_SYSTEM_SQLITE)
 
 class SQLRecoveryTest : public testing::Test {
  public:
@@ -296,24 +252,12 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
 
     ASSERT_TRUE(db().CommitTransaction());
   }
-
-
-  // Capture the index's root page into |buf|.
-  int index_page = GetRootPage(&db(), "x_id");
-  int page_size = GetPageSize(&db());
-  scoped_ptr<char[]> buf(new char[page_size]);
-  ASSERT_TRUE(ReadPage(db_path(), index_page, buf.get(), page_size));
-
-  // Delete the row from the table and index.
-  ASSERT_TRUE(db().Execute("DELETE FROM x WHERE id = 0"));
-
-  // Close to clear any cached data.
   db().Close();
 
-  // Put the stale index page back.
-  ASSERT_TRUE(WritePage(db_path(), index_page, buf.get(), page_size));
-
-  // At this point, the index references a value not in the table.
+  // Delete a row from the table, while leaving the index entry which
+  // references it.
+  const char kDeleteSql[] = "DELETE FROM x WHERE id = 0";
+  ASSERT_TRUE(sql::test::CorruptTableOrIndex(db_path(), "x_id", kDeleteSql));
 
   ASSERT_TRUE(Reopen());
 
@@ -368,25 +312,12 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
 
     ASSERT_TRUE(db().CommitTransaction());
   }
-
-  // Capture the table's root page into |buf|.
-  // Find the page the table is stored on.
-  const int table_page = GetRootPage(&db(), "x");
-  const int page_size = GetPageSize(&db());
-  scoped_ptr<char[]> buf(new char[page_size]);
-  ASSERT_TRUE(ReadPage(db_path(), table_page, buf.get(), page_size));
-
-  // Delete the row from the table and index.
-  ASSERT_TRUE(db().Execute("DELETE FROM x WHERE id = 0"));
-
-  // Close to clear any cached data.
   db().Close();
 
-  // Put the stale table page back.
-  ASSERT_TRUE(WritePage(db_path(), table_page, buf.get(), page_size));
+  // Delete a row from the index while leaving a table entry.
+  const char kDeleteSql[] = "DELETE FROM x WHERE id = 0";
+  ASSERT_TRUE(sql::test::CorruptTableOrIndex(db_path(), "x", kDeleteSql));
 
-  // At this point, the table contains a value not referenced by the
-  // index.
   // TODO(shess): Figure out a query which causes SQLite to notice
   // this organically.  Meanwhile, just handle it manually.
 

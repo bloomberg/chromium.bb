@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 
 // Collection of test-only convenience functions.
 
@@ -32,6 +33,26 @@ namespace test {
 //
 // Returns false if any error occurs accessing the file.
 bool CorruptSizeInHeader(const base::FilePath& db_path) WARN_UNUSED_RESULT;
+
+// Frequently corruption is a result of failure to atomically update
+// pages in different structures.  For instance, if an index update
+// takes effect but the corresponding table update does not.  This
+// helper restores the prior version of a b-tree root after running an
+// update which changed that b-tree.  The named b-tree must exist and
+// must be a leaf node (either index or table).  Returns true if the
+// on-disk file is successfully modified, and the restored page
+// differs from the updated page.
+//
+// The resulting database should be possible to open, and many
+// statements should work.  SQLITE_CORRUPT will be thrown if a query
+// through the index finds the row missing in the table.
+//
+// TODO(shess): It would be very helpful to allow a parameter to the
+// sql statement.  Perhaps a version with a string parameter would be
+// sufficient, given affinity rules?
+bool CorruptTableOrIndex(const base::FilePath& db_path,
+                         const char* tree_name,
+                         const char* update_sql) WARN_UNUSED_RESULT;
 
 // Return the number of tables in sqlite_master.
 size_t CountSQLTables(sql::Connection* db) WARN_UNUSED_RESULT;

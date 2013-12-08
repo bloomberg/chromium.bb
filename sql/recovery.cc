@@ -382,6 +382,12 @@ bool Recovery::AutoRecoverTable(const char* table_name,
     // SQLite's affinity detection is documented at:
     // http://www.sqlite.org/datatype3.html#affname
     // The gist of it is that CHAR, TEXT, and INT use substring matches.
+    // TODO(shess): It would be nice to unit test the type handling,
+    // but it is not obvious to me how to write a test which would
+    // fail appropriately when something was broken.  It would have to
+    // somehow use data which would allow detecting the various type
+    // coercions which happen.  If STRICT could be enabled, type
+    // mismatches could be detected by which rows are filtered.
     if (column_type.find("INT") != std::string::npos) {
       if (pk_column == 1) {
         rowid_ofs = create_column_decls.size();
@@ -393,12 +399,13 @@ bool Recovery::AutoRecoverTable(const char* table_name,
       column_decl += " TEXT";
     } else if (column_type == "BLOB") {
       column_decl += " BLOB";
+    } else if (column_type.find("DOUB") != std::string::npos) {
+      column_decl += " FLOAT";
     } else {
       // TODO(shess): AFAICT, there remain:
       // - contains("CLOB") -> TEXT
-      // - contains("REAL") -> REAL
-      // - contains("FLOA") -> REAL
-      // - contains("DOUB") -> REAL
+      // - contains("REAL") -> FLOAT
+      // - contains("FLOA") -> FLOAT
       // - other -> "NUMERIC"
       // Just code those in as they come up.
       NOTREACHED() << " Unsupported type " << column_type;
