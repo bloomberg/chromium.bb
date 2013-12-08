@@ -33,12 +33,10 @@
 
 #include "WebMIDIClient.h"
 #include "WebMIDIPermissionRequest.h"
-#include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "wtf/RefPtr.h"
 
-using namespace WebCore;
+using WebCore::MIDIAccess;
 
 namespace blink {
 

@@ -41,7 +41,6 @@ class MIDIAccess;
 namespace blink {
 
 class WebMIDIClient;
-class WebViewImpl;
 
 class MIDIClientProxy : public WebCore::MIDIClient {
 public:
