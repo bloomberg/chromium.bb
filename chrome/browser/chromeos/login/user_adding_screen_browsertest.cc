@@ -92,7 +92,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
+// Does not correctly enable multi-users. See http://crbug.com/326832.
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, DISABLED_AddingSeveralUsers) {
   EXPECT_CALL(login_utils(), DoBrowserLaunch(_, _)).Times(3);
   LoginUser(kTestUsers[0]);
   for (int i = 1; i < 3; ++i) {
