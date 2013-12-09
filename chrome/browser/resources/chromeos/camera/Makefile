@@ -98,7 +98,7 @@ SRC_RESOURCES= \
 	src/js/effects/retro.js \
 	src/js/effects/sepia.js \
 	src/js/effects/swirl.js \
-	src/js/effects/tilt-shift.js \
+	src/js/effects/tilt_shift.js \
 	src/js/effects/vintage.js \
 	src/js/main.js \
 	src/js/models/gallery.js \
