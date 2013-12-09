@@ -40,6 +40,7 @@
 
 #include <asm/ptrace.h>
 #include <assert.h>
+#include <cpuid.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -191,8 +192,16 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
   }
 
 #if defined(__i386)
-  if (sys_ptrace(PTRACE_GETFPXREGS, tid, NULL, &info->fpxregs) == -1)
-    return false;
+  // Detect if the CPU supports the MMX instructions
+  int eax,ebx,ecx,edx;
+  __cpuid(1,eax,ebx,ecx,edx);
+  if (edx & bit_MMX) {
+    if (sys_ptrace(PTRACE_GETFPXREGS, tid, NULL, &info->fpxregs) == -1) {
+      return false;
+    }
+  } else {
+    memset( &info->fpxregs, 0, sizeof(info->fpxregs) );
+  }
 #endif
 
 #if defined(__i386) || defined(__x86_64)
