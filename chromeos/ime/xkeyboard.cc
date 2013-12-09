@@ -112,13 +112,20 @@ class XKeyboardImpl : public XKeyboard {
 
 XKeyboardImpl::XKeyboardImpl()
     : is_running_on_chrome_os_(base::SysInfo::IsRunningOnChromeOS()) {
+  // X must be already initialized.
+  CHECK(GetXDisplay());
+
   num_lock_mask_ = GetNumLockMask();
 
-  // web_input_event_aurax11.cc seems to assume that Mod2Mask is always assigned
-  // to Num Lock.
-  // TODO(yusukes): Check the assumption is really okay. If not, modify the Aura
-  // code, and then remove the CHECK below.
-  CHECK(!is_running_on_chrome_os_ || (num_lock_mask_ == Mod2Mask));
+  if (is_running_on_chrome_os_) {
+    // Some code seems to assume that Mod2Mask is always assigned to
+    // Num Lock.
+    //
+    // TODO(yusukes): Check the assumption is really okay. If not,
+    // modify the Aura code, and then remove the CHECK below.
+    LOG_IF(ERROR, num_lock_mask_ != Mod2Mask)
+        << "NumLock is not assigned to Mod2Mask.  : " << num_lock_mask_;
+  }
   GetLockedModifiers(&current_caps_lock_status_, &current_num_lock_status_);
 }
 
