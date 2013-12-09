@@ -465,7 +465,13 @@ TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithDifferentSenderIDs) {
   EXPECT_EQ(GCMClient::SUCCESS, result_);
 }
 
-TEST_F(GCMProfileServiceRegisterTest, RegisterFromStateStore) {
+// http://crbug.com/326321
+#if defined(OS_WIN)
+#define MAYBE_RegisterFromStateStore DISABLED_RegisterFromStateStore
+#else
+#define MAYBE_RegisterFromStateStore RegisterFromStateStore
+#endif
+TEST_F(GCMProfileServiceRegisterTest, MAYBE_RegisterFromStateStore) {
   scoped_refptr<Extension> extension(CreateExtension());
 
   std::vector<std::string> sender_ids;
