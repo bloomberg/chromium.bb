@@ -45,15 +45,13 @@ from v8_utilities import conditional_string, cpp_name, has_extended_attribute, h
 
 INTERFACE_H_INCLUDES = set([
     'bindings/v8/V8Binding.h',
-    'bindings/v8/V8DOMWrapper.h',  # FIXME: necessary?
-    'bindings/v8/WrapperTypeInfo.h',  # FIXME: necessary?
+    'bindings/v8/V8DOMWrapper.h',
+    'bindings/v8/WrapperTypeInfo.h',
 ])
 INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
     'bindings/v8/ExceptionMessages.h',
-    'bindings/v8/V8Binding.h',
-    'bindings/v8/V8DOMConfiguration.h',  # FIXME: necessary?
-    'bindings/v8/V8DOMWrapper.h',  # FIXME: necessary?
+    'bindings/v8/V8DOMConfiguration.h',
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'platform/TraceEvent.h',
@@ -68,9 +66,7 @@ def generate_interface(interface):
 
     parent_interface = interface.parent
     if parent_interface:
-        parent_includes = v8_types.includes_for_type(parent_interface)
-        includes.update(parent_includes)
-        header_includes.update(parent_includes)
+        header_includes.update(v8_types.includes_for_type(parent_interface))
     extended_attributes = interface.extended_attributes
 
     # [CheckSecurity]

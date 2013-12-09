@@ -4172,8 +4172,6 @@ sub GenerateImplementation
 
     AddToImplIncludes("RuntimeEnabledFeatures.h");
     AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-    AddToImplIncludes("bindings/v8/V8Binding.h");
-    AddToImplIncludes("bindings/v8/V8DOMWrapper.h");
     AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("core/dom/Document.h");
     AddToImplIncludes("platform/TraceEvent.h");
@@ -4193,7 +4191,6 @@ sub GenerateImplementation
     my $parentClassTemplate = "";
     if ($interface->parent) {
         my $parent = $interface->parent;
-        AddToImplIncludes("V8${parent}.h");
         $parentClass = "V8" . $parent;
         $parentClassTemplate = $parentClass . "::domTemplate(isolate, currentWorldType)";
     }

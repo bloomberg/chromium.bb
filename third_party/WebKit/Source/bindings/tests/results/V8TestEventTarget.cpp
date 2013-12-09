@@ -34,13 +34,10 @@
 #include "V8TestEventTarget.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8EventTarget.h"
 #include "V8Node.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
-#include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/TraceEvent.h"

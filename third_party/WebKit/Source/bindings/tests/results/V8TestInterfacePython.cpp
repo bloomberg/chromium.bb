@@ -35,11 +35,8 @@
 #include "V8TestInterfacePython.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
-#include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8GCController.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
