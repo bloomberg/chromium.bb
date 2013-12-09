@@ -39,23 +39,48 @@
 
 #if defined(SECCOMP_BPF_SANDBOX)
 #include "base/posix/eintr_wrapper.h"
+#include "content/common/sandbox_bpf_base_policy_linux.h"
+#include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using playground2::arch_seccomp_data;
 using playground2::ErrorCode;
 using playground2::Sandbox;
 using sandbox::BrokerProcess;
-// TODO(jln): remove once the cleanup in crbug.com/325535 is done.
-using namespace sandbox;
+using sandbox::BaselinePolicy;
+using sandbox::SyscallSets;
+
+namespace content {
 
 namespace {
 
-void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
-                            BrokerProcess* broker_process);
+void StartSandboxWithPolicy(SandboxBpfBasePolicy* policy);
+
+// This class allows compatibility with the old, deprecated SetSandboxPolicy.
+// TODO(jln): move NaCl to new policy system and remove.
+class CompatibilityPolicy : public SandboxBpfBasePolicy {
+ public:
+  CompatibilityPolicy(Sandbox::EvaluateSyscall syscall_evaluator, void* aux)
+      : syscall_evaluator_(syscall_evaluator), aux_(aux) {
+    DCHECK(syscall_evaluator_);
+  }
+  virtual ~CompatibilityPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE {
+    return syscall_evaluator_(sandbox_compiler, system_call_number, aux_);
+  }
+
+ private:
+  Sandbox::EvaluateSyscall syscall_evaluator_;
+  void* aux_;
+  DISALLOW_COPY_AND_ASSIGN(CompatibilityPolicy);
+};
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -97,6 +122,9 @@ inline bool IsUsingToolKitGtk() {
 #endif
 }
 
+// Policies for the GPU process.
+// TODO(jln): move to gpu/
+
 bool IsAcceleratedVideoDecodeEnabled() {
   // Accelerated video decode is currently enabled on Chrome OS,
   // but not on Linux: crbug.com/137247.
@@ -136,153 +164,22 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
   }
 }
 
-bool IsBaselinePolicyAllowed(int sysno) {
-  if (IsAllowedAddressSpaceAccess(sysno) ||
-      IsAllowedBasicScheduler(sysno) ||
-      IsAllowedEpoll(sysno) ||
-      IsAllowedFileSystemAccessViaFd(sysno) ||
-      IsAllowedGeneralIo(sysno) ||
-      IsAllowedGetOrModifySocket(sysno) ||
-      IsAllowedGettime(sysno) ||
-      IsAllowedPrctl(sysno) ||
-      IsAllowedProcessStartOrDeath(sysno) ||
-      IsAllowedSignalHandling(sysno) ||
-      IsFutex(sysno) ||
-      IsGetSimpleId(sysno) ||
-      IsKernelInternalApi(sysno) ||
-#if defined(__arm__)
-      IsArmPrivate(sysno) ||
-#endif
-      IsKill(sysno) ||
-      IsAllowedOperationOnFd(sysno)) {
-    return true;
-  } else {
-    return false;
-  }
-}
+class GpuProcessPolicy : public SandboxBpfBasePolicy {
+ public:
+  explicit GpuProcessPolicy(void* broker_process)
+      : broker_process_(broker_process) {}
+  virtual ~GpuProcessPolicy() {}
 
-// System calls that will trigger the crashing SIGSYS handler.
-bool IsBaselinePolicyWatched(int sysno) {
-  if (IsAdminOperation(sysno) ||
-      IsAdvancedScheduler(sysno) ||
-      IsAdvancedTimer(sysno) ||
-      IsAsyncIo(sysno) ||
-      IsDebug(sysno) ||
-      IsEventFd(sysno) ||
-      IsExtendedAttributes(sysno) ||
-      IsFaNotify(sysno) ||
-      IsFsControl(sysno) ||
-      IsGlobalFSViewChange(sysno) ||
-      IsGlobalProcessEnvironment(sysno) ||
-      IsGlobalSystemStatus(sysno) ||
-      IsInotify(sysno) ||
-      IsKernelModule(sysno) ||
-      IsKeyManagement(sysno) ||
-      IsMessageQueue(sysno) ||
-      IsMisc(sysno) ||
-#if defined(__x86_64__)
-      IsNetworkSocketInformation(sysno) ||
-#endif
-      IsNuma(sysno) ||
-      IsProcessGroupOrSession(sysno) ||
-      IsProcessPrivilegeChange(sysno) ||
-#if defined(__i386__)
-      IsSocketCall(sysno) ||  // We'll need to handle this properly to build
-                              // a x86_32 policy.
-#endif
-#if defined(__arm__)
-      IsArmPciConfig(sysno) ||
-#endif
-      IsTimer(sysno)) {
-    return true;
-  } else {
-    return false;
-  }
-}
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
 
-const int kFSDeniedErrno = EPERM;
-
-ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
-  if (IsBaselinePolicyAllowed(sysno)) {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-
-#if defined(__x86_64__) || defined(__arm__)
-  if (sysno == __NR_socketpair) {
-    // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
-    COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, AF_UNIX,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-                         sandbox->Trap(CrashSIGSYS_Handler, NULL));
-  }
-#endif
-
-  if (sysno == __NR_madvise) {
-    // Only allow MADV_DONTNEED (aka MADV_FREE).
-    return sandbox->Cond(2, ErrorCode::TP_32BIT,
-                         ErrorCode::OP_EQUAL, MADV_DONTNEED,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-                         ErrorCode(EPERM));
-  }
-
-#if defined(__i386__) || defined(__x86_64__)
-  if (sysno == __NR_mmap)
-    return RestrictMmapFlags(sandbox);
-#endif
-
-#if defined(__i386__) || defined(__arm__)
-  if (sysno == __NR_mmap2)
-    return RestrictMmapFlags(sandbox);
-#endif
-
-  if (sysno == __NR_mprotect)
-    return RestrictMprotectFlags(sandbox);
-
-  if (sysno == __NR_fcntl)
-    return RestrictFcntlCommands(sandbox);
-
-#if defined(__i386__) || defined(__arm__)
-  if (sysno == __NR_fcntl64)
-    return RestrictFcntlCommands(sandbox);
-#endif
-
-  if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
-    return ErrorCode(kFSDeniedErrno);
-  }
-
-  if (IsAnySystemV(sysno)) {
-    return ErrorCode(EPERM);
-  }
-
-  if (IsUmask(sysno) || IsDeniedFileSystemAccessViaFd(sysno) ||
-      IsDeniedGetOrModifySocket(sysno)) {
-    return ErrorCode(EPERM);
-  }
-
-#if defined(__i386__)
-  if (IsSocketCall(sysno))
-    return RestrictSocketcallCommand(sandbox);
-#endif
-
-  if (IsBaselinePolicyWatched(sysno)) {
-    // Previously unseen syscalls. TODO(jln): some of these should
-    // be denied gracefully right away.
-    return sandbox->Trap(CrashSIGSYS_Handler, NULL);
-  }
-  // In any other case crash the program with our SIGSYS handler.
-  return sandbox->Trap(CrashSIGSYS_Handler, NULL);
-}
-
-// The BaselinePolicy only takes two arguments. BaselinePolicyWithAux
-// allows us to conform to the BPF compiler's policy type.
-ErrorCode BaselinePolicyWithAux(Sandbox* sandbox, int sysno, void* aux) {
-  CHECK(!aux);
-  return BaselinePolicy(sandbox, sysno);
-}
+ private:
+  const void* broker_process_;  // Non-owning pointer.
+  DISALLOW_COPY_AND_ASSIGN(GpuProcessPolicy);
+};
 
 // Main policy for x86_64/i386. Extended by ArmGpuProcessPolicy.
-ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
-                           void* broker_process) {
+ErrorCode GpuProcessPolicy::EvaluateSyscall(Sandbox* sandbox, int sysno) const {
   switch (sysno) {
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
@@ -300,35 +197,65 @@ ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
     case __NR_access:
     case __NR_open:
     case __NR_openat:
-      return sandbox->Trap(GpuSIGSYS_Handler, broker_process);
+      return sandbox->Trap(GpuSIGSYS_Handler, broker_process_);
     default:
-      if (IsEventFd(sysno))
+      if (SyscallSets::IsEventFd(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
       // Default on the baseline policy.
-      return BaselinePolicy(sandbox, sysno);
+      return SandboxBpfBasePolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
+
+class GpuBrokerProcessPolicy : public GpuProcessPolicy {
+ public:
+  GpuBrokerProcessPolicy() : GpuProcessPolicy(NULL) {}
+  virtual ~GpuBrokerProcessPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GpuBrokerProcessPolicy);
+};
 
 // x86_64/i386.
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode GpuBrokerProcessPolicy(Sandbox* sandbox, int sysno, void* aux) {
-  // "aux" would typically be NULL, when called from
-  // "EnableGpuBrokerPolicyCallBack"
+ErrorCode GpuBrokerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+                                                  int sysno) const {
   switch (sysno) {
     case __NR_access:
     case __NR_open:
     case __NR_openat:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     default:
-      return GpuProcessPolicy(sandbox, sysno, aux);
+      return GpuProcessPolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
+class ArmGpuProcessPolicy : public GpuProcessPolicy {
+ public:
+  explicit ArmGpuProcessPolicy(void* broker_process, bool allow_shmat)
+      : GpuProcessPolicy(broker_process), allow_shmat_(allow_shmat) {}
+  virtual ~ArmGpuProcessPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
+
+ private:
+  const bool allow_shmat_;  // Allow shmat(2).
+  DISALLOW_COPY_AND_ASSIGN(ArmGpuProcessPolicy);
+};
+
 // Generic ARM GPU process sandbox, inheriting from GpuProcessPolicy.
-ErrorCode ArmGpuProcessPolicy(Sandbox* sandbox, int sysno,
-                              void* broker_process) {
+ErrorCode ArmGpuProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+                                               int sysno) const {
+#if defined(__arm__)
+  if (allow_shmat_ && sysno == __NR_shmat)
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+#endif  // defined(__arm__)
+
   switch (sysno) {
 #if defined(__arm__)
     // ARM GPU sandbox is started earlier so we need to allow networking
@@ -348,49 +275,64 @@ ErrorCode ArmGpuProcessPolicy(Sandbox* sandbox, int sysno,
                            ErrorCode(EPERM));
 #endif  // defined(__arm__)
     default:
-      if (IsAdvancedScheduler(sysno))
+      if (SyscallSets::IsAdvancedScheduler(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
       // Default to the generic GPU policy.
-      return GpuProcessPolicy(sandbox, sysno, broker_process);
+      return GpuProcessPolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
-// Same as above but with shmat allowed, inheriting from GpuProcessPolicy.
-ErrorCode ArmGpuProcessPolicyWithShmat(Sandbox* sandbox, int sysno,
-                                       void* broker_process) {
-#if defined(__arm__)
-  if (sysno == __NR_shmat)
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-#endif  // defined(__arm__)
+class ArmGpuBrokerProcessPolicy : public ArmGpuProcessPolicy {
+ public:
+  ArmGpuBrokerProcessPolicy() : ArmGpuProcessPolicy(NULL, false) {}
+  virtual ~ArmGpuBrokerProcessPolicy() {}
 
-  return ArmGpuProcessPolicy(sandbox, sysno, broker_process);
-}
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArmGpuBrokerProcessPolicy);
+};
 
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode ArmGpuBrokerProcessPolicy(Sandbox* sandbox,
-                                    int sysno, void* aux) {
-  // "aux" would typically be NULL, when called from
-  // "EnableGpuBrokerPolicyCallBack"
+ErrorCode ArmGpuBrokerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+                                                     int sysno) const {
   switch (sysno) {
     case __NR_access:
     case __NR_open:
     case __NR_openat:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     default:
-      return ArmGpuProcessPolicy(sandbox, sysno, aux);
+      return ArmGpuProcessPolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
-ErrorCode RendererOrWorkerProcessPolicy(Sandbox* sandbox, int sysno, void*) {
+// Policy for renderer and worker processes.
+// TODO(jln): move to renderer/
+
+class RendererOrWorkerProcessPolicy : public SandboxBpfBasePolicy {
+ public:
+  RendererOrWorkerProcessPolicy() {}
+  virtual ~RendererOrWorkerProcessPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RendererOrWorkerProcessPolicy);
+};
+
+ErrorCode RendererOrWorkerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+                                                         int sysno) const {
   switch (sysno) {
     case __NR_clone:
-      return RestrictCloneToThreadsAndEPERMFork(sandbox);
+      return sandbox::RestrictCloneToThreadsAndEPERMFork(sandbox);
     case __NR_ioctl:
-      return RestrictIoctl(sandbox);
+      return sandbox::RestrictIoctl(sandbox);
     case __NR_prctl:
-      return RestrictPrctl(sandbox);
+      return sandbox::RestrictPrctl(sandbox);
     // Allow the system calls below.
     case __NR_fdatasync:
     case __NR_fsync:
@@ -420,24 +362,39 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox* sandbox, int sysno, void*) {
     default:
       if (IsUsingToolKitGtk()) {
 #if defined(__x86_64__) || defined(__arm__)
-        if (IsSystemVSharedMemory(sysno))
+        if (SyscallSets::IsSystemVSharedMemory(sysno))
           return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 #if defined(__i386__)
-        if (IsSystemVIpc(sysno))
+        if (SyscallSets::IsSystemVIpc(sysno))
           return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
       }
 
-      // Default on the baseline policy.
-      return BaselinePolicy(sandbox, sysno);
+      // Default on the content baseline policy.
+      return SandboxBpfBasePolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
-ErrorCode FlashProcessPolicy(Sandbox* sandbox, int sysno, void*) {
+// Policy for PPAPI plugins.
+// TODO(jln): move to ppapi_plugin/.
+class FlashProcessPolicy : public SandboxBpfBasePolicy {
+ public:
+  FlashProcessPolicy() {}
+  virtual ~FlashProcessPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FlashProcessPolicy);
+};
+
+ErrorCode FlashProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+                                              int sysno) const {
   switch (sysno) {
     case __NR_clone:
-      return RestrictCloneToThreadsAndEPERMFork(sandbox);
+      return sandbox::RestrictCloneToThreadsAndEPERMFork(sandbox);
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sched_get_priority_max:
@@ -453,36 +410,60 @@ ErrorCode FlashProcessPolicy(Sandbox* sandbox, int sysno, void*) {
     default:
       if (IsUsingToolKitGtk()) {
 #if defined(__x86_64__) || defined(__arm__)
-        if (IsSystemVSharedMemory(sysno))
+        if (SyscallSets::IsSystemVSharedMemory(sysno))
           return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 #if defined(__i386__)
-        if (IsSystemVIpc(sysno))
+        if (SyscallSets::IsSystemVIpc(sysno))
           return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
       }
 
       // Default on the baseline policy.
-      return BaselinePolicy(sandbox, sysno);
+      return SandboxBpfBasePolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
-ErrorCode BlacklistDebugAndNumaPolicy(Sandbox* sandbox, int sysno, void*) {
+class BlacklistDebugAndNumaPolicy : public SandboxBpfBasePolicy {
+ public:
+  BlacklistDebugAndNumaPolicy() {}
+  virtual ~BlacklistDebugAndNumaPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlacklistDebugAndNumaPolicy);
+};
+
+ErrorCode BlacklistDebugAndNumaPolicy::EvaluateSyscall(Sandbox* sandbox,
+                                                       int sysno) const {
   if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   }
-
-  if (IsDebug(sysno) || IsNuma(sysno))
-    return sandbox->Trap(CrashSIGSYS_Handler, NULL);
+  if (SyscallSets::IsDebug(sysno) || SyscallSets::IsNuma(sysno))
+    return sandbox->Trap(sandbox::CrashSIGSYS_Handler, NULL);
 
   return ErrorCode(ErrorCode::ERR_ALLOWED);
 }
 
+class AllowAllPolicy : public SandboxBpfBasePolicy {
+ public:
+  AllowAllPolicy() {}
+  virtual ~AllowAllPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);
+};
+
 // Allow all syscalls.
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
-ErrorCode AllowAllPolicy(Sandbox*, int sysno, void*) {
+ErrorCode AllowAllPolicy::EvaluateSyscall(Sandbox*, int sysno) const {
   if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
@@ -511,7 +492,7 @@ void RunSandboxSanityChecks(const std::string& process_type) {
     // open() must be restricted.
     syscall_ret = open("/etc/passwd", O_RDONLY);
     CHECK_EQ(-1, syscall_ret);
-    CHECK_EQ(kFSDeniedErrno, errno);
+    CHECK_EQ(SandboxBpfBasePolicy::GetFSDeniedErrno(), errno);
 
     // We should never allow the creation of netlink sockets.
     syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
@@ -522,12 +503,12 @@ void RunSandboxSanityChecks(const std::string& process_type) {
 }
 
 bool EnableGpuBrokerPolicyCallback() {
-  StartSandboxWithPolicy(GpuBrokerProcessPolicy, NULL);
+  StartSandboxWithPolicy(new GpuBrokerProcessPolicy);
   return true;
 }
 
 bool EnableArmGpuBrokerPolicyCallback() {
-  StartSandboxWithPolicy(ArmGpuBrokerProcessPolicy, NULL);
+  StartSandboxWithPolicy(new ArmGpuBrokerProcessPolicy);
   return true;
 }
 
@@ -603,7 +584,7 @@ void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
 }
 
 // Start a broker process to handle open() inside the sandbox.
-void InitGpuBrokerProcess(Sandbox::EvaluateSyscall gpu_policy,
+void InitGpuBrokerProcess(bool for_chromeos_arm,
                           BrokerProcess** broker_process) {
   static const char kDriRcPath[] = "/etc/drirc";
   static const char kDriCard0Path[] = "/dev/dri/card0";
@@ -621,33 +602,29 @@ void InitGpuBrokerProcess(Sandbox::EvaluateSyscall gpu_policy,
   std::vector<std::string> write_whitelist;
   write_whitelist.push_back(kDriCard0Path);
 
-  if (gpu_policy == ArmGpuProcessPolicy ||
-      gpu_policy == ArmGpuProcessPolicyWithShmat) {
+  if (for_chromeos_arm) {
     // We shouldn't be using this policy on non-ARM architectures.
-    CHECK(IsArchitectureArm());
+    DCHECK(IsArchitectureArm());
     AddArmGpuWhitelist(&read_whitelist, &write_whitelist);
     sandbox_callback = EnableArmGpuBrokerPolicyCallback;
-  } else if (gpu_policy == GpuProcessPolicy) {
-    sandbox_callback = EnableGpuBrokerPolicyCallback;
   } else {
-    // We shouldn't be initializing a GPU broker process without a GPU process
-    // policy.
-    NOTREACHED();
+    sandbox_callback = EnableGpuBrokerPolicyCallback;
   }
 
-  *broker_process = new BrokerProcess(kFSDeniedErrno,
-                                      read_whitelist, write_whitelist);
+  *broker_process = new BrokerProcess(SandboxBpfBasePolicy::GetFSDeniedErrno(),
+                                      read_whitelist,
+                                      write_whitelist);
   // Initialize the broker process and give it a sandbox callback.
   CHECK((*broker_process)->Init(sandbox_callback));
 }
 
 // Warms up/preloads resources needed by the policies.
 // Eventually start a broker process and return it in broker_process.
-void WarmupPolicy(Sandbox::EvaluateSyscall policy,
+void WarmupPolicy(bool chromeos_arm_gpu,
                   BrokerProcess** broker_process) {
-  if (policy == GpuProcessPolicy) {
+  if (!chromeos_arm_gpu) {
     // Create a new broker process.
-    InitGpuBrokerProcess(policy, broker_process);
+    InitGpuBrokerProcess(false /* not for ChromeOS ARM */, broker_process);
 
     if (IsArchitectureX86_64() || IsArchitectureI386()) {
       // Accelerated video decode dlopen()'s some shared objects
@@ -666,10 +643,10 @@ void WarmupPolicy(Sandbox::EvaluateSyscall policy,
         dlopen("libva-x11.so.1", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
       }
     }
-  } else if (policy == ArmGpuProcessPolicy ||
-             policy == ArmGpuProcessPolicyWithShmat) {
+  } else {
+    // ChromeOS ARM GPU policy.
     // Create a new broker process.
-    InitGpuBrokerProcess(policy, broker_process);
+    InitGpuBrokerProcess(true /* for ChromeOS ARM */, broker_process);
 
     // Preload the Mali library.
     dlopen("/usr/lib/libmali.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
@@ -686,79 +663,86 @@ void WarmupPolicy(Sandbox::EvaluateSyscall policy,
   }
 }
 
-Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
-    const CommandLine& command_line,
-    const std::string& process_type) {
+void StartGpuProcessSandbox(const CommandLine& command_line,
+                            const std::string& process_type) {
+  bool chromeos_arm_gpu = false;
+  bool allow_sysv_shm = false;
+
   if (process_type == switches::kGpuProcess) {
     // On Chrome OS ARM, we need a specific GPU process policy.
     if (IsChromeOS() && IsArchitectureArm()) {
-      if (command_line.HasSwitch(switches::kGpuSandboxAllowSysVShm))
-        return ArmGpuProcessPolicyWithShmat;
-      else
-        return ArmGpuProcessPolicy;
+      chromeos_arm_gpu = true;
+      if (command_line.HasSwitch(switches::kGpuSandboxAllowSysVShm)) {
+        allow_sysv_shm = true;
+      }
     }
-    else
-      return GpuProcessPolicy;
   }
 
-  if (process_type == switches::kPpapiPluginProcess) {
-    // TODO(jln): figure out what to do with non-Flash PPAPI
-    // out-of-process plug-ins.
-    return FlashProcessPolicy;
-  }
+  // This should never be destroyed, as after the sandbox is started it is
+  // vital to the process. Ownership is transfered to the policies and then to
+  // the BPF sandbox which will keep it around to service SIGSYS traps from the
+  // kernel.
+  BrokerProcess* broker_process = NULL;
+  // Warm up resources needed by the policy we're about to enable and
+  // eventually start a broker process.
+  WarmupPolicy(chromeos_arm_gpu, &broker_process);
 
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kWorkerProcess) {
-    return RendererOrWorkerProcessPolicy;
+  scoped_ptr<SandboxBpfBasePolicy> gpu_policy;
+  if (chromeos_arm_gpu) {
+    gpu_policy.reset(new ArmGpuProcessPolicy(broker_process, allow_sysv_shm));
+  } else {
+    gpu_policy.reset(new GpuProcessPolicy(broker_process));
   }
-
-  if (process_type == switches::kUtilityProcess) {
-    // TODO(jorgelo): review sandbox initialization in utility_main.cc if we
-    // change this policy.
-    return BlacklistDebugAndNumaPolicy;
-  }
-
-  NOTREACHED();
-  // This will be our default if we need one.
-  return AllowAllPolicy;
+  StartSandboxWithPolicy(gpu_policy.release());
 }
 
-// broker_process can be NULL if there is no need for one.
-void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
-                            BrokerProcess* broker_process) {
+// This function takes ownership of |policy|.
+void StartSandboxWithPolicy(SandboxBpfBasePolicy* policy) {
   // Starting the sandbox is a one-way operation. The kernel doesn't allow
   // us to unload a sandbox policy after it has been started. Nonetheless,
   // in order to make the use of the "Sandbox" object easier, we allow for
   // the object to be destroyed after the sandbox has been started. Note that
   // doing so does not stop the sandbox.
   Sandbox sandbox;
-  sandbox.SetSandboxPolicyDeprecated(syscall_policy, broker_process);
+  sandbox.SetSandboxPolicy(policy);
   sandbox.StartSandbox();
+}
+
+void StartNonGpuSandbox(const std::string& process_type) {
+  scoped_ptr<SandboxBpfBasePolicy> policy;
+
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kWorkerProcess) {
+    policy.reset(new RendererOrWorkerProcessPolicy);
+  } else if (process_type == switches::kPpapiPluginProcess) {
+    policy.reset(new FlashProcessPolicy);
+  } else if (process_type == switches::kUtilityProcess) {
+    policy.reset(new BlacklistDebugAndNumaPolicy);
+  } else {
+    NOTREACHED();
+    policy.reset(new AllowAllPolicy);
+  }
+
+  StartSandboxWithPolicy(policy.release());
 }
 
 // Initialize the seccomp-bpf sandbox.
 bool StartBpfSandbox(const CommandLine& command_line,
                      const std::string& process_type) {
-  Sandbox::EvaluateSyscall syscall_policy =
-      GetProcessSyscallPolicy(command_line, process_type);
 
-  BrokerProcess* broker_process = NULL;
-  // Warm up resources needed by the policy we're about to enable and
-  // eventually start a broker process.
-  WarmupPolicy(syscall_policy, &broker_process);
-
-  StartSandboxWithPolicy(syscall_policy, broker_process);
+  if (process_type == switches::kGpuProcess) {
+    StartGpuProcessSandbox(command_line, process_type);
+  } else {
+    StartNonGpuSandbox(process_type);
+  }
 
   RunSandboxSanityChecks(process_type);
-
   return true;
 }
 
 }  // namespace
 
 #endif  // SECCOMP_BPF_SANDBOX
-
-namespace content {
 
 // Is seccomp BPF globally enabled?
 bool SandboxSeccompBpf::IsSeccompBpfDesired() {
@@ -822,7 +806,7 @@ bool SandboxSeccompBpf::StartSandboxWithExternalPolicy(
 #if defined(SECCOMP_BPF_SANDBOX)
   if (IsSeccompBpfDesired() && SupportsSandbox()) {
     CHECK(policy);
-    StartSandboxWithPolicy(policy, NULL);
+    StartSandboxWithPolicy(new CompatibilityPolicy(policy, NULL));
     return true;
   }
 #endif  // defined(SECCOMP_BPF_SANDBOX)
@@ -831,7 +815,7 @@ bool SandboxSeccompBpf::StartSandboxWithExternalPolicy(
 
 #if defined(SECCOMP_BPF_SANDBOX)
 playground2::BpfSandboxPolicyCallback SandboxSeccompBpf::GetBaselinePolicy() {
-  return base::Bind(&BaselinePolicyWithAux);
+  return base::Bind(&BaselinePolicy::BaselinePolicyDeprecated);
 }
 #endif  // defined(SECCOMP_BPF_SANDBOX)
 

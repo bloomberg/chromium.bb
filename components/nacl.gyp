@@ -188,6 +188,7 @@
                 'nacl/loader/nacl_helper_linux.h',
                 '../base/posix/unix_domain_socket_linux.cc',
                 '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
+                '../content/common/sandbox_bpf_base_policy_linux.cc',
                 '../content/common/sandbox_init_linux.cc',
                 '../content/common/sandbox_seccomp_bpf_linux.cc',
                 '../content/public/common/content_switches.cc',

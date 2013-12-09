@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_SETS_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_SETS_H_
 
+#include "base/basictypes.h"
 #include "build/build_config.h"
 
 // These are helpers to build seccomp-bpf policies, i.e. policies for a
@@ -14,84 +15,90 @@
 
 namespace sandbox {
 
-bool IsKill(int sysno);
-bool IsAllowedGettime(int sysno);
-bool IsCurrentDirectory(int sysno);
-bool IsUmask(int sysno);
-// System calls that directly access the file system. They might acquire
-// a new file descriptor or otherwise perform an operation directly
-// via a path.
-bool IsFileSystem(int sysno);
-bool IsAllowedFileSystemAccessViaFd(int sysno);
-bool IsDeniedFileSystemAccessViaFd(int sysno);
-bool IsGetSimpleId(int sysno);
-bool IsProcessPrivilegeChange(int sysno);
-bool IsProcessGroupOrSession(int sysno);
-bool IsAllowedSignalHandling(int sysno);
-bool IsAllowedOperationOnFd(int sysno);
-bool IsKernelInternalApi(int sysno);
-// This should be thought through in conjunction with IsFutex().
-bool IsAllowedProcessStartOrDeath(int sysno);
-// It's difficult to restrict those, but there is attack surface here.
-bool IsFutex(int sysno);
-bool IsAllowedEpoll(int sysno);
-bool IsAllowedGetOrModifySocket(int sysno);
-bool IsDeniedGetOrModifySocket(int sysno);
+class SyscallSets {
+ public:
+  static bool IsKill(int sysno);
+  static bool IsAllowedGettime(int sysno);
+  static bool IsCurrentDirectory(int sysno);
+  static bool IsUmask(int sysno);
+  // System calls that directly access the file system. They might acquire
+  // a new file descriptor or otherwise perform an operation directly
+  // via a path.
+  static bool IsFileSystem(int sysno);
+  static bool IsAllowedFileSystemAccessViaFd(int sysno);
+  static bool IsDeniedFileSystemAccessViaFd(int sysno);
+  static bool IsGetSimpleId(int sysno);
+  static bool IsProcessPrivilegeChange(int sysno);
+  static bool IsProcessGroupOrSession(int sysno);
+  static bool IsAllowedSignalHandling(int sysno);
+  static bool IsAllowedOperationOnFd(int sysno);
+  static bool IsKernelInternalApi(int sysno);
+  // This should be thought through in conjunction with IsFutex().
+  static bool IsAllowedProcessStartOrDeath(int sysno);
+  // It's difficult to restrict those, but there is attack surface here.
+  static bool IsFutex(int sysno);
+  static bool IsAllowedEpoll(int sysno);
+  static bool IsAllowedGetOrModifySocket(int sysno);
+  static bool IsDeniedGetOrModifySocket(int sysno);
 
 #if defined(__i386__)
-// Big multiplexing system call for sockets.
-bool IsSocketCall(int sysno);
+  // Big multiplexing system call for sockets.
+  static bool IsSocketCall(int sysno);
 #endif
 
 #if defined(__x86_64__) || defined(__arm__)
-bool IsNetworkSocketInformation(int sysno);
+  static bool IsNetworkSocketInformation(int sysno);
 #endif
 
-bool IsAllowedAddressSpaceAccess(int sysno);
-bool IsAllowedGeneralIo(int sysno);
-bool IsAllowedPrctl(int sysno);
-bool IsAllowedBasicScheduler(int sysno);
-bool IsAdminOperation(int sysno);
-bool IsKernelModule(int sysno);
-bool IsGlobalFSViewChange(int sysno);
-bool IsFsControl(int sysno);
-bool IsNuma(int sysno);
-bool IsMessageQueue(int sysno);
-bool IsGlobalProcessEnvironment(int sysno);
-bool IsDebug(int sysno);
-bool IsGlobalSystemStatus(int sysno);
-bool IsEventFd(int sysno);
-// Asynchronous I/O API.
-bool IsAsyncIo(int sysno);
-bool IsKeyManagement(int sysno);
+  static bool IsAllowedAddressSpaceAccess(int sysno);
+  static bool IsAllowedGeneralIo(int sysno);
+  static bool IsAllowedPrctl(int sysno);
+  static bool IsAllowedBasicScheduler(int sysno);
+  static bool IsAdminOperation(int sysno);
+  static bool IsKernelModule(int sysno);
+  static bool IsGlobalFSViewChange(int sysno);
+  static bool IsFsControl(int sysno);
+  static bool IsNuma(int sysno);
+  static bool IsMessageQueue(int sysno);
+  static bool IsGlobalProcessEnvironment(int sysno);
+  static bool IsDebug(int sysno);
+  static bool IsGlobalSystemStatus(int sysno);
+  static bool IsEventFd(int sysno);
+  // Asynchronous I/O API.
+  static bool IsAsyncIo(int sysno);
+  static bool IsKeyManagement(int sysno);
 #if defined(__x86_64__) || defined(__arm__)
-bool IsSystemVSemaphores(int sysno);
+  static bool IsSystemVSemaphores(int sysno);
 #endif
 #if defined(__x86_64__) || defined(__arm__)
-// These give a lot of ambient authority and bypass the setuid sandbox.
-bool IsSystemVSharedMemory(int sysno);
+  // These give a lot of ambient authority and bypass the setuid sandbox.
+  static bool IsSystemVSharedMemory(int sysno);
 #endif
 
 #if defined(__x86_64__) || defined(__arm__)
+  static bool IsSystemVMessageQueue(int sysno);
 #endif
 
 #if defined(__i386__)
-// Big system V multiplexing system call.
-bool IsSystemVIpc(int sysno);
+  // Big system V multiplexing system call.
+  static bool IsSystemVIpc(int sysno);
 #endif
 
-bool IsAnySystemV(int sysno);
-bool IsAdvancedScheduler(int sysno);
-bool IsInotify(int sysno);
-bool IsFaNotify(int sysno);
-bool IsTimer(int sysno);
-bool IsAdvancedTimer(int sysno);
-bool IsExtendedAttributes(int sysno);
-bool IsMisc(int sysno);
+  static bool IsAnySystemV(int sysno);
+  static bool IsAdvancedScheduler(int sysno);
+  static bool IsInotify(int sysno);
+  static bool IsFaNotify(int sysno);
+  static bool IsTimer(int sysno);
+  static bool IsAdvancedTimer(int sysno);
+  static bool IsExtendedAttributes(int sysno);
+  static bool IsMisc(int sysno);
 #if defined(__arm__)
-bool IsArmPciConfig(int sysno);
-bool IsArmPrivate(int sysno);
+  static bool IsArmPciConfig(int sysno);
+  static bool IsArmPrivate(int sysno);
 #endif  // defined(__arm__)
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SyscallSets);
+};
 
 }  // namespace sandbox.
 

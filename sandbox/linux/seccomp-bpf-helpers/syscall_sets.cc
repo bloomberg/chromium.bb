@@ -15,7 +15,7 @@ namespace sandbox {
 // system calls.
 
 // TODO(jln) we need to restrict the first parameter!
-bool IsKill(int sysno) {
+bool SyscallSets::IsKill(int sysno) {
   switch (sysno) {
     case __NR_kill:
     case __NR_tkill:
@@ -26,7 +26,7 @@ bool IsKill(int sysno) {
   }
 }
 
-bool IsAllowedGettime(int sysno) {
+bool SyscallSets::IsAllowedGettime(int sysno) {
   switch (sysno) {
     case __NR_clock_gettime:
     case __NR_gettimeofday:
@@ -40,9 +40,9 @@ bool IsAllowedGettime(int sysno) {
     case __NR_clock_nanosleep:  // Could be allowed.
     case __NR_clock_settime:    // Privileged.
 #if defined(__i386__)
-    case __NR_ftime:            // Obsolete.
+    case __NR_ftime:  // Obsolete.
 #endif
-    case __NR_settimeofday:     // Privileged.
+    case __NR_settimeofday:  // Privileged.
 #if defined(__i386__)
     case __NR_stime:
 #endif
@@ -51,8 +51,8 @@ bool IsAllowedGettime(int sysno) {
   }
 }
 
-bool IsCurrentDirectory(int sysno) {
-  switch (sysno)  {
+bool SyscallSets::IsCurrentDirectory(int sysno) {
+  switch (sysno) {
     case __NR_getcwd:
     case __NR_chdir:
     case __NR_fchdir:
@@ -62,7 +62,7 @@ bool IsCurrentDirectory(int sysno) {
   }
 }
 
-bool IsUmask(int sysno) {
+bool SyscallSets::IsUmask(int sysno) {
   switch (sysno) {
     case __NR_umask:
       return true;
@@ -75,9 +75,9 @@ bool IsUmask(int sysno) {
 // a new file descriptor or otherwise perform an operation directly
 // via a path.
 // Both EPERM and ENOENT are valid errno unless otherwise noted in comment.
-bool IsFileSystem(int sysno) {
+bool SyscallSets::IsFileSystem(int sysno) {
   switch (sysno) {
-    case __NR_access:          // EPERM not a valid errno.
+    case __NR_access:  // EPERM not a valid errno.
     case __NR_chmod:
     case __NR_chown:
 #if defined(__i386__) || defined(__arm__)
@@ -85,15 +85,15 @@ bool IsFileSystem(int sysno) {
 #endif
     case __NR_creat:
     case __NR_execve:
-    case __NR_faccessat:       // EPERM not a valid errno.
+    case __NR_faccessat:  // EPERM not a valid errno.
     case __NR_fchmodat:
-    case __NR_fchownat:        // Should be called chownat ?
+    case __NR_fchownat:  // Should be called chownat ?
 #if defined(__x86_64__)
-    case __NR_newfstatat:      // fstatat(). EPERM not a valid errno.
+    case __NR_newfstatat:  // fstatat(). EPERM not a valid errno.
 #elif defined(__i386__) || defined(__arm__)
     case __NR_fstatat64:
 #endif
-    case __NR_futimesat:       // Should be called utimesat ?
+    case __NR_futimesat:  // Should be called utimesat ?
     case __NR_lchown:
 #if defined(__i386__) || defined(__arm__)
     case __NR_lchown32:
@@ -114,19 +114,19 @@ bool IsFileSystem(int sysno) {
     case __NR_mknodat:
     case __NR_open:
     case __NR_openat:
-    case __NR_readlink:        // EPERM not a valid errno.
+    case __NR_readlink:  // EPERM not a valid errno.
     case __NR_readlinkat:
     case __NR_rename:
     case __NR_renameat:
     case __NR_rmdir:
-    case __NR_stat:            // EPERM not a valid errno.
+    case __NR_stat:  // EPERM not a valid errno.
 #if defined(__i386__)
     case __NR_oldstat:
 #endif
 #if defined(__i386__) || defined(__arm__)
     case __NR_stat64:
 #endif
-    case __NR_statfs:          // EPERM not a valid errno.
+    case __NR_statfs:  // EPERM not a valid errno.
 #if defined(__i386__) || defined(__arm__)
     case __NR_statfs64:
 #endif
@@ -138,12 +138,12 @@ bool IsFileSystem(int sysno) {
 #endif
     case __NR_unlink:
     case __NR_unlinkat:
-    case __NR_uselib:          // Neither EPERM, nor ENOENT are valid errno.
-    case __NR_ustat:           // Same as above. Deprecated.
+    case __NR_uselib:  // Neither EPERM, nor ENOENT are valid errno.
+    case __NR_ustat:   // Same as above. Deprecated.
 #if defined(__i386__) || defined(__x86_64__)
     case __NR_utime:
 #endif
-    case __NR_utimensat:       // New.
+    case __NR_utimensat:  // New.
     case __NR_utimes:
       return true;
     default:
@@ -151,16 +151,16 @@ bool IsFileSystem(int sysno) {
   }
 }
 
-bool IsAllowedFileSystemAccessViaFd(int sysno) {
+bool SyscallSets::IsAllowedFileSystemAccessViaFd(int sysno) {
   switch (sysno) {
     case __NR_fstat:
 #if defined(__i386__) || defined(__arm__)
     case __NR_fstat64:
 #endif
       return true;
-    // TODO(jln): these should be denied gracefully as well (moved below).
+// TODO(jln): these should be denied gracefully as well (moved below).
 #if defined(__i386__) || defined(__x86_64__)
-    case __NR_fadvise64:        // EPERM not a valid errno.
+    case __NR_fadvise64:  // EPERM not a valid errno.
 #endif
 #if defined(__i386__)
     case __NR_fadvise64_64:
@@ -168,18 +168,18 @@ bool IsAllowedFileSystemAccessViaFd(int sysno) {
 #if defined(__arm__)
     case __NR_arm_fadvise64_64:
 #endif
-    case __NR_fdatasync:        // EPERM not a valid errno.
-    case __NR_flock:            // EPERM not a valid errno.
-    case __NR_fstatfs:          // Give information about the whole filesystem.
+    case __NR_fdatasync:  // EPERM not a valid errno.
+    case __NR_flock:      // EPERM not a valid errno.
+    case __NR_fstatfs:    // Give information about the whole filesystem.
 #if defined(__i386__) || defined(__arm__)
     case __NR_fstatfs64:
 #endif
-    case __NR_fsync:            // EPERM not a valid errno.
+    case __NR_fsync:  // EPERM not a valid errno.
 #if defined(__i386__)
     case __NR_oldfstat:
 #endif
 #if defined(__i386__) || defined(__x86_64__)
-    case __NR_sync_file_range:      // EPERM not a valid errno.
+    case __NR_sync_file_range:  // EPERM not a valid errno.
 #elif defined(__arm__)
     case __NR_arm_sync_file_range:  // EPERM not a valid errno.
 #endif
@@ -189,7 +189,7 @@ bool IsAllowedFileSystemAccessViaFd(int sysno) {
 }
 
 // EPERM is a good errno for any of these.
-bool IsDeniedFileSystemAccessViaFd(int sysno) {
+bool SyscallSets::IsDeniedFileSystemAccessViaFd(int sysno) {
   switch (sysno) {
     case __NR_fallocate:
     case __NR_fchmod:
@@ -199,8 +199,8 @@ bool IsDeniedFileSystemAccessViaFd(int sysno) {
     case __NR_fchown32:
     case __NR_ftruncate64:
 #endif
-    case __NR_getdents:         // EPERM not a valid errno.
-    case __NR_getdents64:       // EPERM not a valid errno.
+    case __NR_getdents:    // EPERM not a valid errno.
+    case __NR_getdents64:  // EPERM not a valid errno.
 #if defined(__i386__)
     case __NR_readdir:
 #endif
@@ -210,7 +210,7 @@ bool IsDeniedFileSystemAccessViaFd(int sysno) {
   }
 }
 
-bool IsGetSimpleId(int sysno) {
+bool SyscallSets::IsGetSimpleId(int sysno) {
   switch (sysno) {
     case __NR_capget:
     case __NR_getegid:
@@ -239,7 +239,7 @@ bool IsGetSimpleId(int sysno) {
   }
 }
 
-bool IsProcessPrivilegeChange(int sysno) {
+bool SyscallSets::IsProcessPrivilegeChange(int sysno) {
   switch (sysno) {
     case __NR_capset:
 #if defined(__i386__) || defined(__x86_64__)
@@ -272,7 +272,7 @@ bool IsProcessPrivilegeChange(int sysno) {
   }
 }
 
-bool IsProcessGroupOrSession(int sysno) {
+bool SyscallSets::IsProcessGroupOrSession(int sysno) {
   switch (sysno) {
     case __NR_setpgid:
     case __NR_getpgrp:
@@ -284,7 +284,7 @@ bool IsProcessGroupOrSession(int sysno) {
   }
 }
 
-bool IsAllowedSignalHandling(int sysno) {
+bool SyscallSets::IsAllowedSignalHandling(int sysno) {
   switch (sysno) {
     case __NR_rt_sigaction:
     case __NR_rt_sigprocmask:
@@ -317,7 +317,7 @@ bool IsAllowedSignalHandling(int sysno) {
   }
 }
 
-bool IsAllowedOperationOnFd(int sysno) {
+bool SyscallSets::IsAllowedOperationOnFd(int sysno) {
   switch (sysno) {
     case __NR_close:
     case __NR_dup:
@@ -336,7 +336,7 @@ bool IsAllowedOperationOnFd(int sysno) {
   }
 }
 
-bool IsKernelInternalApi(int sysno) {
+bool SyscallSets::IsKernelInternalApi(int sysno) {
   switch (sysno) {
     case __NR_restart_syscall:
 #if defined(__arm__)
@@ -349,7 +349,7 @@ bool IsKernelInternalApi(int sysno) {
 }
 
 // This should be thought through in conjunction with IsFutex().
-bool IsAllowedProcessStartOrDeath(int sysno) {
+bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
   switch (sysno) {
     case __NR_clone:  // TODO(jln): restrict flags.
     case __NR_exit:
@@ -375,7 +375,7 @@ bool IsAllowedProcessStartOrDeath(int sysno) {
 }
 
 // It's difficult to restrict those, but there is attack surface here.
-bool IsFutex(int sysno) {
+bool SyscallSets::IsFutex(int sysno) {
   switch (sysno) {
     case __NR_futex:
     case __NR_get_robust_list:
@@ -386,7 +386,7 @@ bool IsFutex(int sysno) {
   }
 }
 
-bool IsAllowedEpoll(int sysno) {
+bool SyscallSets::IsAllowedEpoll(int sysno) {
   switch (sysno) {
     case __NR_epoll_create:
     case __NR_epoll_create1:
@@ -405,7 +405,7 @@ bool IsAllowedEpoll(int sysno) {
   }
 }
 
-bool IsAllowedGetOrModifySocket(int sysno) {
+bool SyscallSets::IsAllowedGetOrModifySocket(int sysno) {
   switch (sysno) {
     case __NR_pipe:
     case __NR_pipe2:
@@ -418,7 +418,7 @@ bool IsAllowedGetOrModifySocket(int sysno) {
   }
 }
 
-bool IsDeniedGetOrModifySocket(int sysno) {
+bool SyscallSets::IsDeniedGetOrModifySocket(int sysno) {
   switch (sysno) {
 #if defined(__x86_64__) || defined(__arm__)
     case __NR_accept:
@@ -436,7 +436,7 @@ bool IsDeniedGetOrModifySocket(int sysno) {
 
 #if defined(__i386__)
 // Big multiplexing system call for sockets.
-bool IsSocketCall(int sysno) {
+bool SyscallSets::IsSocketCall(int sysno) {
   switch (sysno) {
     case __NR_socketcall:
       return true;
@@ -447,7 +447,7 @@ bool IsSocketCall(int sysno) {
 #endif
 
 #if defined(__x86_64__) || defined(__arm__)
-bool IsNetworkSocketInformation(int sysno) {
+bool SyscallSets::IsNetworkSocketInformation(int sysno) {
   switch (sysno) {
     case __NR_getpeername:
     case __NR_getsockname:
@@ -460,7 +460,7 @@ bool IsNetworkSocketInformation(int sysno) {
 }
 #endif
 
-bool IsAllowedAddressSpaceAccess(int sysno) {
+bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
   switch (sysno) {
     case __NR_brk:
     case __NR_mlock:
@@ -494,7 +494,7 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
   }
 }
 
-bool IsAllowedGeneralIo(int sysno) {
+bool SyscallSets::IsAllowedGeneralIo(int sysno) {
   switch (sysno) {
     case __NR_lseek:
 #if defined(__i386__) || defined(__arm__)
@@ -522,13 +522,13 @@ bool IsAllowedGeneralIo(int sysno) {
     case __NR_send:
 #endif
 #if defined(__x86_64__) || defined(__arm__)
-    case __NR_sendmsg:   // Could specify destination.
-    case __NR_sendto:    // Could specify destination.
+    case __NR_sendmsg:  // Could specify destination.
+    case __NR_sendto:   // Could specify destination.
 #endif
     case __NR_write:
     case __NR_writev:
       return true;
-    case __NR_ioctl:     // Can be very powerful.
+    case __NR_ioctl:  // Can be very powerful.
     case __NR_pread64:
     case __NR_preadv:
     case __NR_pwrite64:
@@ -547,7 +547,7 @@ bool IsAllowedGeneralIo(int sysno) {
   }
 }
 
-bool IsAllowedPrctl(int sysno) {
+bool SyscallSets::IsAllowedPrctl(int sysno) {
   switch (sysno) {
     case __NR_prctl:
       return true;
@@ -559,7 +559,7 @@ bool IsAllowedPrctl(int sysno) {
   }
 }
 
-bool IsAllowedBasicScheduler(int sysno) {
+bool SyscallSets::IsAllowedBasicScheduler(int sysno) {
   switch (sysno) {
     case __NR_sched_yield:
     case __NR_pause:
@@ -575,7 +575,7 @@ bool IsAllowedBasicScheduler(int sysno) {
   }
 }
 
-bool IsAdminOperation(int sysno) {
+bool SyscallSets::IsAdminOperation(int sysno) {
   switch (sysno) {
 #if defined(__i386__) || defined(__arm__)
     case __NR_bdflush:
@@ -591,7 +591,7 @@ bool IsAdminOperation(int sysno) {
   }
 }
 
-bool IsKernelModule(int sysno) {
+bool SyscallSets::IsKernelModule(int sysno) {
   switch (sysno) {
 #if defined(__i386__) || defined(__x86_64__)
     case __NR_create_module:
@@ -606,7 +606,7 @@ bool IsKernelModule(int sysno) {
   }
 }
 
-bool IsGlobalFSViewChange(int sysno) {
+bool SyscallSets::IsGlobalFSViewChange(int sysno) {
   switch (sysno) {
     case __NR_pivot_root:
     case __NR_chroot:
@@ -617,7 +617,7 @@ bool IsGlobalFSViewChange(int sysno) {
   }
 }
 
-bool IsFsControl(int sysno) {
+bool SyscallSets::IsFsControl(int sysno) {
   switch (sysno) {
     case __NR_mount:
     case __NR_nfsservctl:
@@ -634,7 +634,7 @@ bool IsFsControl(int sysno) {
   }
 }
 
-bool IsNuma(int sysno) {
+bool SyscallSets::IsNuma(int sysno) {
   switch (sysno) {
     case __NR_get_mempolicy:
     case __NR_getcpu:
@@ -650,7 +650,7 @@ bool IsNuma(int sysno) {
   }
 }
 
-bool IsMessageQueue(int sysno) {
+bool SyscallSets::IsMessageQueue(int sysno) {
   switch (sysno) {
     case __NR_mq_getsetattr:
     case __NR_mq_notify:
@@ -664,9 +664,9 @@ bool IsMessageQueue(int sysno) {
   }
 }
 
-bool IsGlobalProcessEnvironment(int sysno) {
+bool SyscallSets::IsGlobalProcessEnvironment(int sysno) {
   switch (sysno) {
-    case __NR_acct:         // Privileged.
+    case __NR_acct:  // Privileged.
 #if defined(__i386__) || defined(__x86_64__)
     case __NR_getrlimit:
 #endif
@@ -687,7 +687,7 @@ bool IsGlobalProcessEnvironment(int sysno) {
   }
 }
 
-bool IsDebug(int sysno) {
+bool SyscallSets::IsDebug(int sysno) {
   switch (sysno) {
     case __NR_ptrace:
     case __NR_process_vm_readv:
@@ -701,7 +701,7 @@ bool IsDebug(int sysno) {
   }
 }
 
-bool IsGlobalSystemStatus(int sysno) {
+bool SyscallSets::IsGlobalSystemStatus(int sysno) {
   switch (sysno) {
     case __NR__sysctl:
     case __NR_sysfs:
@@ -717,7 +717,7 @@ bool IsGlobalSystemStatus(int sysno) {
   }
 }
 
-bool IsEventFd(int sysno) {
+bool SyscallSets::IsEventFd(int sysno) {
   switch (sysno) {
     case __NR_eventfd:
     case __NR_eventfd2:
@@ -728,7 +728,7 @@ bool IsEventFd(int sysno) {
 }
 
 // Asynchronous I/O API.
-bool IsAsyncIo(int sysno) {
+bool SyscallSets::IsAsyncIo(int sysno) {
   switch (sysno) {
     case __NR_io_cancel:
     case __NR_io_destroy:
@@ -741,7 +741,7 @@ bool IsAsyncIo(int sysno) {
   }
 }
 
-bool IsKeyManagement(int sysno) {
+bool SyscallSets::IsKeyManagement(int sysno) {
   switch (sysno) {
     case __NR_add_key:
     case __NR_keyctl:
@@ -753,7 +753,7 @@ bool IsKeyManagement(int sysno) {
 }
 
 #if defined(__x86_64__) || defined(__arm__)
-bool IsSystemVSemaphores(int sysno) {
+bool SyscallSets::IsSystemVSemaphores(int sysno) {
   switch (sysno) {
     case __NR_semctl:
     case __NR_semget:
@@ -768,7 +768,7 @@ bool IsSystemVSemaphores(int sysno) {
 
 #if defined(__x86_64__) || defined(__arm__)
 // These give a lot of ambient authority and bypass the setuid sandbox.
-bool IsSystemVSharedMemory(int sysno) {
+bool SyscallSets::IsSystemVSharedMemory(int sysno) {
   switch (sysno) {
     case __NR_shmat:
     case __NR_shmctl:
@@ -782,7 +782,7 @@ bool IsSystemVSharedMemory(int sysno) {
 #endif
 
 #if defined(__x86_64__) || defined(__arm__)
-bool IsSystemVMessageQueue(int sysno) {
+bool SyscallSets::IsSystemVMessageQueue(int sysno) {
   switch (sysno) {
     case __NR_msgctl:
     case __NR_msgget:
@@ -797,7 +797,7 @@ bool IsSystemVMessageQueue(int sysno) {
 
 #if defined(__i386__)
 // Big system V multiplexing system call.
-bool IsSystemVIpc(int sysno) {
+bool SyscallSets::IsSystemVIpc(int sysno) {
   switch (sysno) {
     case __NR_ipc:
       return true;
@@ -807,17 +807,16 @@ bool IsSystemVIpc(int sysno) {
 }
 #endif
 
-bool IsAnySystemV(int sysno) {
+bool SyscallSets::IsAnySystemV(int sysno) {
 #if defined(__x86_64__) || defined(__arm__)
-  return IsSystemVMessageQueue(sysno) ||
-         IsSystemVSemaphores(sysno) ||
+  return IsSystemVMessageQueue(sysno) || IsSystemVSemaphores(sysno) ||
          IsSystemVSharedMemory(sysno);
 #elif defined(__i386__)
   return IsSystemVIpc(sysno);
 #endif
 }
 
-bool IsAdvancedScheduler(int sysno) {
+bool SyscallSets::IsAdvancedScheduler(int sysno) {
   switch (sysno) {
     case __NR_ioprio_get:  // IO scheduler.
     case __NR_ioprio_set:
@@ -836,7 +835,7 @@ bool IsAdvancedScheduler(int sysno) {
   }
 }
 
-bool IsInotify(int sysno) {
+bool SyscallSets::IsInotify(int sysno) {
   switch (sysno) {
     case __NR_inotify_add_watch:
     case __NR_inotify_init:
@@ -848,7 +847,7 @@ bool IsInotify(int sysno) {
   }
 }
 
-bool IsFaNotify(int sysno) {
+bool SyscallSets::IsFaNotify(int sysno) {
   switch (sysno) {
     case __NR_fanotify_init:
     case __NR_fanotify_mark:
@@ -858,7 +857,7 @@ bool IsFaNotify(int sysno) {
   }
 }
 
-bool IsTimer(int sysno) {
+bool SyscallSets::IsTimer(int sysno) {
   switch (sysno) {
     case __NR_getitimer:
 #if defined(__i386__) || defined(__x86_64__)
@@ -871,7 +870,7 @@ bool IsTimer(int sysno) {
   }
 }
 
-bool IsAdvancedTimer(int sysno) {
+bool SyscallSets::IsAdvancedTimer(int sysno) {
   switch (sysno) {
     case __NR_timer_create:
     case __NR_timer_delete:
@@ -887,7 +886,7 @@ bool IsAdvancedTimer(int sysno) {
   }
 }
 
-bool IsExtendedAttributes(int sysno) {
+bool SyscallSets::IsExtendedAttributes(int sysno) {
   switch (sysno) {
     case __NR_fgetxattr:
     case __NR_flistxattr:
@@ -909,14 +908,14 @@ bool IsExtendedAttributes(int sysno) {
 
 // Various system calls that need to be researched.
 // TODO(jln): classify this better.
-bool IsMisc(int sysno) {
+bool SyscallSets::IsMisc(int sysno) {
   switch (sysno) {
     case __NR_name_to_handle_at:
     case __NR_open_by_handle_at:
     case __NR_perf_event_open:
     case __NR_syncfs:
     case __NR_vhangup:
-    // The system calls below are not implemented.
+// The system calls below are not implemented.
 #if defined(__i386__) || defined(__x86_64__)
     case __NR_afs_syscall:
 #endif
@@ -954,7 +953,7 @@ bool IsMisc(int sysno) {
 }
 
 #if defined(__arm__)
-bool IsArmPciConfig(int sysno) {
+bool SyscallSets::IsArmPciConfig(int sysno) {
   switch (sysno) {
     case __NR_pciconfig_iobase:
     case __NR_pciconfig_read:
@@ -965,7 +964,7 @@ bool IsArmPciConfig(int sysno) {
   }
 }
 
-bool IsArmPrivate(int sysno) {
+bool SyscallSets::IsArmPrivate(int sysno) {
   switch (sysno) {
     case __ARM_NR_breakpoint:
     case __ARM_NR_cacheflush:
