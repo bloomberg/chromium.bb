@@ -63,10 +63,8 @@ class AppListTestViewDelegate : public AppListViewDelegate {
       const base::FilePath& profile_path) OVERRIDE {}
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
-  virtual void AddObserver(
-      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      app_list::AppListViewDelegateObserver* observer) OVERRIDE;
+  virtual void AddObserver(AppListViewDelegateObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(AppListViewDelegateObserver* observer) OVERRIDE;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
@@ -79,7 +77,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   Users users_;
   scoped_ptr<TestSigninDelegate> test_signin_delegate_;
   scoped_ptr<AppListTestModel> model_;
-  ObserverList<app_list::AppListViewDelegateObserver> observers_;
+  ObserverList<AppListViewDelegateObserver> observers_;
   SpeechUIModel speech_ui_;
 };
 

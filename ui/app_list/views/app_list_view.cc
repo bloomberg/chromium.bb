@@ -206,7 +206,7 @@ void AppListView::Prerender() {
 }
 
 void AppListView::OnProfilesChanged() {
-  app_list::SigninDelegate* signin_delegate =
+  SigninDelegate* signin_delegate =
       delegate_ ? delegate_->GetSigninDelegate() : NULL;
   bool show_signin_view = signin_delegate && signin_delegate->NeedSignin();
 

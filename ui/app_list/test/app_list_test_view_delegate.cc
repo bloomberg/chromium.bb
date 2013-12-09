@@ -60,7 +60,7 @@ AppListTestViewDelegate::~AppListTestViewDelegate() {}
 
 void AppListTestViewDelegate::SetSignedIn(bool signed_in) {
   test_signin_delegate_->set_signed_in(signed_in);
-  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver,
+  FOR_EACH_OBSERVER(AppListViewDelegateObserver,
                     observers_,
                     OnProfilesChanged());
 }
@@ -114,12 +114,12 @@ void AppListTestViewDelegate::ReplaceTestModel(int item_count) {
 }
 
 void AppListTestViewDelegate::AddObserver(
-    app_list::AppListViewDelegateObserver* observer) {
+    AppListViewDelegateObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void AppListTestViewDelegate::RemoveObserver(
-    app_list::AppListViewDelegateObserver* observer) {
+    AppListViewDelegateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
