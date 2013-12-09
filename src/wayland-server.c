@@ -592,17 +592,6 @@ wl_resource_find_for_client(struct wl_list *list, struct wl_client *client)
         return NULL;
 }
 
-/** Look up an object in the client name space
- *
- * \param client The client object
- * \param id The object id
- * \return The object or NULL if there is not object for the given ID
- *
- * This looks up an object in the client object name space by its
- * object ID.  
- * 
- * \memberof wl_client
- */
 WL_EXPORT struct wl_client *
 wl_resource_get_client(struct wl_resource *resource)
 {
