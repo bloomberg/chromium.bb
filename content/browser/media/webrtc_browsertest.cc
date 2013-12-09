@@ -14,11 +14,20 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "media/audio/audio_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#endif
+
+const char kForceIsac16K[] =
+#ifdef OS_ANDROID
+  // The default audio codec, Opus, doesn't work on Android.
+  "true";
+#else
+  "false";
 #endif
 
 namespace {
@@ -555,6 +564,57 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {
 
   EXPECT_TRUE(
       ExecuteJavascript("addTwoMediaStreamsToOneConnection();"));
+  ExpectTitle("OK");
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       EstablishAudioVideoCallAndMeasureOutputLevel) {
+  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+    // Bots with no output devices will force the audio code into a different
+    // path where it doesn't manage to set either the low or high latency path.
+    // This test will compute useless values in that case, so skip running on
+    // such bots (see crbug.com/326338).
+    LOG(INFO) << "Missing output devices: skipping test...";
+    return;
+  }
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeDeviceForMediaStream))
+          << "Must run with fake devices since the test will explicitly look "
+          << "for the fake device signal.";
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript(
+      base::StringPrintf("callAndEnsureAudioIsPlaying(%s);", kForceIsac16K)));
+  ExpectTitle("OK");
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       EstablishAudioVideoCallAndVerifyMutingWorks) {
+  if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
+    // Bots with no output devices will force the audio code into a different
+    // path where it doesn't manage to set either the low or high latency path.
+    // This test will compute useless values in that case, so skip running on
+    // such bots (see crbug.com/326338).
+    LOG(INFO) << "Missing output devices: skipping test...";
+    return;
+  }
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeDeviceForMediaStream))
+          << "Must run with fake devices since the test will explicitly look "
+          << "for the fake device signal.";
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript(
+        base::StringPrintf("callAndEnsureAudioMutingWorks(%s);",
+                           kForceIsac16K)));
   ExpectTitle("OK");
 }
 
