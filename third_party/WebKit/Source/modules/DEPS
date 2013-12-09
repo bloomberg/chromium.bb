@@ -4,5 +4,4 @@ include_rules = [
     "+modules",
     "+platform",
     "+public/platform",
-    "+weborigin",
 ]
