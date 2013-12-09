@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/css/CSSVariablesMap.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSStyleDeclaration.h"
 
 namespace WebCore {

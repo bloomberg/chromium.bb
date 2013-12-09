@@ -34,6 +34,10 @@
 
 #include "core/dom/IconURL.h"
 
+namespace WTF {
+class String;
+}
+
 namespace WebCore {
 
 class LinkRelAttribute {

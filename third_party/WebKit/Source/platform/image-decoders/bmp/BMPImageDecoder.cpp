@@ -32,7 +32,6 @@
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
-#include "platform/image-decoders/bmp/BMPImageReader.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

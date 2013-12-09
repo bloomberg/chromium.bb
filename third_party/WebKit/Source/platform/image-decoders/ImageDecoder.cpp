@@ -27,7 +27,6 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
-#include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

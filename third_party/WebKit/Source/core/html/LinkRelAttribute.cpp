@@ -32,6 +32,8 @@
 #include "config.h"
 #include "core/html/LinkRelAttribute.h"
 
+#include "wtf/text/WTFString.h"
+
 namespace WebCore {
 
 LinkRelAttribute::LinkRelAttribute()

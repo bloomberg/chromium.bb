@@ -28,14 +28,15 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
-#include "wtf/HashMap.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 #include <url/third_party/mozilla/url_parse.h>
 #include <url/url_canon.h>
+
+namespace WTF {
+class TextEncoding;
+}
 
 namespace WebCore {
 

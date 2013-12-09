@@ -30,6 +30,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSVariablesMapForEachCallback.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

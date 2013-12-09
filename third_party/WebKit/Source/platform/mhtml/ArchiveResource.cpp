@@ -29,8 +29,6 @@
 #include "config.h"
 #include "platform/mhtml/ArchiveResource.h"
 
-#include "platform/SharedBuffer.h"
-
 namespace WebCore {
 
 inline ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data, const KURL& url, const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName, const ResourceResponse& response)

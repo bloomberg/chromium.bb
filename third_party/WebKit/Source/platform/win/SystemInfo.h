@@ -27,7 +27,6 @@
 #define SystemInfo_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

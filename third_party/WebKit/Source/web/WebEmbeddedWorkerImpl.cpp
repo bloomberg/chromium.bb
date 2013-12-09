@@ -38,7 +38,6 @@
 #include "WebWorkerPermissionClientProxy.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
-#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/SubstituteData.h"
 #include "core/workers/WorkerClients.h"

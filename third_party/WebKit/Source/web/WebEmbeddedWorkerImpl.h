@@ -35,10 +35,8 @@
 #include "WebEmbeddedWorker.h"
 #include "WebEmbeddedWorkerStartData.h"
 #include "WebFrameClient.h"
-#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 
 namespace WebCore {
-class ContentSecurityPolicyResponseHeaders;
 class WorkerScriptLoader;
 class WorkerThread;
 }

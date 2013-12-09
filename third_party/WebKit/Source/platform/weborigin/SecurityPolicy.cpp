@@ -32,6 +32,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/HashMap.h"
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

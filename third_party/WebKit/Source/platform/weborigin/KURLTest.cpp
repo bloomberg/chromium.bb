@@ -35,6 +35,8 @@
 #include "platform/weborigin/KURL.h"
 
 #include "wtf/testing/WTFTestHelpers.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
 namespace {

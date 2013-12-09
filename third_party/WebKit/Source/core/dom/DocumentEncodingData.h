@@ -31,6 +31,8 @@
 #ifndef DocumentEncodingData_h
 #define DocumentEncodingData_h
 
+#include "wtf/text/TextEncoding.h"
+
 namespace WebCore {
 
 struct DocumentEncodingData {

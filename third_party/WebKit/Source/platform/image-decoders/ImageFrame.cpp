@@ -27,9 +27,6 @@
 #include "config.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
-#include "platform/graphics/skia/NativeImageSkia.h"
-#include "wtf/PassRefPtr.h"
-
 namespace WebCore {
 
 ImageFrame::ImageFrame()

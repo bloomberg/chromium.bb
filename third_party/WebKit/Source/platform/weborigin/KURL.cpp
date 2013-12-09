@@ -29,7 +29,6 @@
 #include "platform/weborigin/KURL.h"
 
 #include "platform/weborigin/KnownPorts.h"
-#include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"

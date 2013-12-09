@@ -23,7 +23,6 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/skia/GaneshUtils.h"
-#include "platform/weborigin/KURL.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebCanvas.h"

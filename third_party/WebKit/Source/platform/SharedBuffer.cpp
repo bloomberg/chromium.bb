@@ -28,7 +28,6 @@
 #include "platform/SharedBuffer.h"
 
 #include "platform/PurgeableBuffer.h"
-#include "third_party/skia/include/core/SkData.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/unicode/Unicode.h"
 #include "wtf/unicode/UTF8.h"

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/html/LinkRelAttribute.h"
 
+#include "wtf/text/CString.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
