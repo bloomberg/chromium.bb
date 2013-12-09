@@ -153,29 +153,34 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 
 {##############################################################################}
-{% block constructor_callback %}
-{% if has_constructor %}
-void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{% block event_constructor %}
+{% if has_event_constructor %}
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
-    {% if measure_as %}
-    UseCounter::count(activeDOMWindow(), UseCounter::{{measure_as}});
-    {% endif %}
-    if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+    if (info.Length() < 1) {
+        throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "An event name must be provided."), info.GetIsolate());
         return;
     }
 
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
+    {{cpp_class}}Init eventInit;
+    if (info.Length() >= 2) {
+        V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+        if (!fill{{cpp_class}}Init(eventInit, options, exceptionState)) {
+            exceptionState.throwIfNeeded();
+            return;
+        }
     }
-
-    {{cpp_class}}V8Internal::constructor(info);
+    RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(event.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(info, wrapper);
 }
 
 {% endif %}
 {% endblock %}
+
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
@@ -245,6 +250,46 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 
 
 {##############################################################################}
+{% block initialize_event %}
+{% if has_event_constructor %}
+bool fill{{cpp_class}}Init({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
+{
+    Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("{{interface_name}}") : forEventName, "", exceptionState);
+    {# FIXME: implement [InitializedByEventConstructor] #}
+    return true;
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block constructor_callback %}
+{% if has_constructor or has_event_constructor %}
+void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    {% if measure_as %}
+    UseCounter::count(activeDOMWindow(), UseCounter::{{measure_as}});
+    {% endif %}
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
+        return;
+    }
+
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+
+    {{cpp_class}}V8Internal::constructor(info);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block configure_class_template %}
 {# FIXME: rename to install_dom_template and Install{{v8_class}}DOMTemplate #}
 static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -283,10 +328,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
     {% endfilter %}
 
     UNUSED_PARAM(defaultSignature);
-    {% if has_constructor %}
+    {% if has_constructor or has_event_constructor %}
     functionTemplate->SetCallHandler({{v8_class}}::constructorCallback);
-    {# FIXME: compute length #}
-    functionTemplate->SetLength(0);
+    functionTemplate->SetLength({{length}});
     {% endif %}
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();

@@ -125,6 +125,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8DOMWrapper::associateObjectWithWrapper<V8TestExtendedEvent>(event.release(), &V8TestExtendedEvent::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
 }
+
 } // namespace EventV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestExtendedEventAttributes[] = {

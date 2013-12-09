@@ -42,6 +42,9 @@
 
 namespace WebCore {
 
+{% if has_event_constructor %}
+class Dictionary;
+{% endif %}
 class {{v8_class}} {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
@@ -64,7 +67,7 @@ public:
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endfilter %}
     {% endfor %}
-    {% if has_constructor %}
+    {% if has_constructor or has_event_constructor %}
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}
     {% for attribute in attributes %}
@@ -227,6 +230,10 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<{{
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
+{% if has_event_constructor %}
+bool fill{{cpp_class}}Init({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const String& = "");
+
+{% endif %}
 }
 {% endfilter %}
 #endif // {{v8_class}}_h

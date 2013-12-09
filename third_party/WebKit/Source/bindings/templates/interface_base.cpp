@@ -118,13 +118,15 @@ template <typename T> void V8_USE(T) { }
 {% block origin_safe_method_setter %}{% endblock %}
 {# Constructors #}
 {% block constructor %}{% endblock %}
+{% block event_constructor %}{% endblock %}
 } // namespace {{cpp_class}}V8Internal
 
-{% block constructor_callback %}{% endblock %}
 {% block visit_dom_wrapper %}{% endblock %}
 {% block class_attributes %}{% endblock %}
 {% block class_accessors %}{% endblock %}
 {% block class_methods %}{% endblock %}
+{% block initialize_event %}{% endblock %}
+{% block constructor_callback %}{% endblock %}
 {% block configure_class_template %}{% endblock %}
 {% block get_template %}{% endblock %}
 {% block has_instance_and_has_instance_in_any_world %}{% endblock %}

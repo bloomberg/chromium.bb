@@ -79,11 +79,6 @@ def generate_interface(interface):
         includes.update(['bindings/v8/BindingSecurity.h',
                          'bindings/v8/ExceptionState.h'])
 
-    # [Constructor]
-    has_constructor = 'Constructor' in extended_attributes
-    if has_constructor:
-        includes.add('bindings/v8/V8ObjectConstructor.h')
-
     # [GenerateVisitDOMWrapper]
     generate_visit_dom_wrapper_function = extended_attributes.get('GenerateVisitDOMWrapper')
     if generate_visit_dom_wrapper_function:
@@ -108,6 +103,18 @@ def generate_interface(interface):
     for special_wrap_interface in special_wrap_for:
         v8_types.add_includes_for_type(special_wrap_interface)
 
+    # Constructors
+    # [Constructor]
+    has_constructor = 'Constructor' in extended_attributes
+    if has_constructor:
+        includes.add('bindings/v8/V8ObjectConstructor.h')
+
+    # [EventConstructor]
+    has_event_constructor = 'EventConstructor' in extended_attributes
+    if has_event_constructor:
+        includes.update(['bindings/v8/Dictionary.h',
+                         'bindings/v8/V8ObjectConstructor.h'])
+
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'constructor_arguments': ['exceptionState'] if is_constructor_raises_exception else [],  # FIXME: arguments are a complex function in general
@@ -117,6 +124,7 @@ def generate_interface(interface):
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
+        'has_event_constructor': has_event_constructor,
         'has_visit_dom_wrapper': (
             # [Custom=Wrap], [GenerateVisitDOMWrapper]
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
@@ -127,6 +135,7 @@ def generate_interface(interface):
         'is_check_security': is_check_security,
         'is_constructor_raises_exception': is_constructor_raises_exception,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
+        'length': 1 if has_event_constructor else 0,  # FIXME: more complex in general, see discussion of length in http://heycam.github.io/webidl/#es-interface-call
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]

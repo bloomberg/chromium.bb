@@ -2959,6 +2959,7 @@ END
     V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(event.release(), &${v8ClassName}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
 }
+
 END
 
     my $code = "";
