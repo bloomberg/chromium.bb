@@ -321,6 +321,12 @@ int InfoBarView::EndX() const {
   return close_button_->x() - kCloseButtonSpacing;
 }
 
+int InfoBarView::OffsetY(const gfx::Size& prefsize) const {
+  return arrow_height() +
+      std::max((bar_target_height() - prefsize.height()) / 2, 0) -
+      (bar_target_height() - bar_height());
+}
+
 const InfoBarContainer::Delegate* InfoBarView::container_delegate() const {
   const InfoBarContainer* infobar_container = container();
   return infobar_container ? infobar_container->delegate() : NULL;

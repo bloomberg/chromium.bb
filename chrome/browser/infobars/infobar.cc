@@ -114,12 +114,6 @@ void InfoBar::AnimationProgressed(const gfx::Animation* animation) {
   RecalculateHeights(false);
 }
 
-int InfoBar::OffsetY(const gfx::Size& prefsize) const {
-  return arrow_height_ +
-      std::max((bar_target_height_ - prefsize.height()) / 2, 0) -
-      (bar_target_height_ - bar_height_);
-}
-
 void InfoBar::AnimationEnded(const gfx::Animation* animation) {
   // When the animation ends, we must ensure the container is notified even if
   // the heights haven't changed, lest it never get an "animation finished"

@@ -100,11 +100,6 @@ class InfoBar : public gfx::AnimationDelegate {
   // gfx::AnimationDelegate:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
-  // Given a control with size |prefsize|, returns the centered y position
-  // within us, taking into account animation so the control "slides in" (or
-  // out) as we animate open and closed.
-  int OffsetY(const gfx::Size& prefsize) const;
-
   const InfoBarContainer* container() const { return container_; }
   InfoBarContainer* container() { return container_; }
   gfx::SlideAnimation* animation() { return &animation_; }

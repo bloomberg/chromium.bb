@@ -87,6 +87,11 @@ class InfoBarView : public InfoBar,
   int StartX() const;
   int EndX() const;
 
+  // Given a control with size |prefsize|, returns the centered y position
+  // within us, taking into account animation so the control "slides in" (or
+  // out) as we animate open and closed.
+  int OffsetY(const gfx::Size& prefsize) const;
+
   // Convenience getter.
   const InfoBarContainer::Delegate* container_delegate() const;
 
