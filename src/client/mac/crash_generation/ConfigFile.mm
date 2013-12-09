@@ -36,7 +36,17 @@
 #include <sys/time.h>
 
 #import "client/apple/Framework/BreakpadDefines.h"
-#import "client/mac/crash_generation/Inspector.h"
+#import "GTMDefines.h"
+
+#define VERBOSE 0
+
+#if VERBOSE
+  bool gDebugLog = true;
+#else
+  bool gDebugLog = false;
+#endif
+
+#define DEBUGLOG if (gDebugLog) fprintf
 
 namespace google_breakpad {
 
