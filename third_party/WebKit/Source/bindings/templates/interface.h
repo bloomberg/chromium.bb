@@ -85,12 +85,20 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer({{cpp_class}}* impl)
     {
+        {% if parent_interface %}
+        return V8{{parent_interface}}::toInternalPointer(impl);
+        {% else %}
         return impl;
+        {% endif %}
     }
 
     static inline {{cpp_class}}* fromInternalPointer(void* object)
     {
+        {% if parent_interface %}
+        return static_cast<{{cpp_class}}*>(V8{{parent_interface}}::fromInternalPointer(object));
+        {% else %}
         return static_cast<{{cpp_class}}*>(object);
+        {% endif %}
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, {{cpp_class}}*, v8::Isolate*){% if has_per_context_enabled_attributes %};
     {% else %} { }

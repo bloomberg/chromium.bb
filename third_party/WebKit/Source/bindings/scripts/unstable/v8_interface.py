@@ -64,6 +64,13 @@ INTERFACE_CPP_INCLUDES = set([
 def generate_interface(interface):
     includes.clear()
     includes.update(INTERFACE_CPP_INCLUDES)
+    header_includes = INTERFACE_H_INCLUDES
+
+    parent_interface = interface.parent
+    if parent_interface:
+        parent_includes = v8_types.includes_for_type(parent_interface)
+        includes.update(parent_includes)
+        header_includes.update(parent_includes)
     extended_attributes = interface.extended_attributes
 
     # [CheckSecurity]
@@ -114,13 +121,14 @@ def generate_interface(interface):
             # [Custom=Wrap], [GenerateVisitDOMWrapper]
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
             'GenerateVisitDOMWrapper' in extended_attributes),
-        'header_includes': INTERFACE_H_INCLUDES,
+        'header_includes': header_includes,
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
         'is_constructor_raises_exception': is_constructor_raises_exception,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
+        'parent_interface': parent_interface,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),

@@ -35,5 +35,5 @@
     GenerateVisitDOMWrapper=ownerNode,
     ImplementedAs=TestInterfacePythonImplementation,
     RuntimeEnabled=FeatureName,
-] interface TestInterfacePython {
+] interface TestInterfacePython : TestInterfaceEmpty {
 };

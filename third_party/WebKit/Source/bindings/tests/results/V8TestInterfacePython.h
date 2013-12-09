@@ -34,6 +34,7 @@
 #define V8TestInterfacePython_h
 
 #if ENABLE(CONDITION)
+#include "V8TestInterfaceEmpty.h"
 #include "bindings/tests/idls/TestInterfacePythonImplementation.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -58,12 +59,12 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestInterfacePythonImplementation* impl)
     {
-        return impl;
+        return V8TestInterfaceEmpty::toInternalPointer(impl);
     }
 
     static inline TestInterfacePythonImplementation* fromInternalPointer(void* object)
     {
-        return static_cast<TestInterfacePythonImplementation*>(object);
+        return static_cast<TestInterfacePythonImplementation*>(V8TestInterfaceEmpty::fromInternalPointer(object));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfacePythonImplementation*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
