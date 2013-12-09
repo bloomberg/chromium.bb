@@ -41,6 +41,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_integration.h"
+#include "ui/base/win/shell.h"
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
@@ -260,6 +267,15 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
         views::Widget::GetWidgetForNativeView(frame_view);
     if (insert_after)
       GetWidget()->StackAboveWidget(insert_after);
+
+#if defined(OS_WIN)
+    // Group the hung renderer dialog with the browsers with the same profile.
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    ui::win::SetAppIdForWindow(
+        ShellIntegration::GetChromiumModelIdForProfile(profile->GetPath()),
+        views::HWNDForWidget(GetWidget()));
+#endif
 
     // We only do this if the window isn't active (i.e. hasn't been shown yet,
     // or is currently shown but deactivated for another WebContents). This is
