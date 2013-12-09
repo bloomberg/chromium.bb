@@ -195,6 +195,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)setTitle:(NSString*)title {
+  if ([[self title] isEqualToString:title])
+    return;
+
   [titleView_ setStringValue:title];
   base::string16 title16 = base::SysNSStringToUTF16(title);
   bool isRTL = base::i18n::GetFirstStrongCharacterDirection(title16) ==
