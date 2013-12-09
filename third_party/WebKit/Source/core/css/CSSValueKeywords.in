@@ -808,6 +808,7 @@ visibleStroke
 painted
 fill
 stroke
+bounding-box
 //all
 //none
 

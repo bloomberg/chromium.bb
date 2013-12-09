@@ -443,11 +443,14 @@ bool RenderSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResul
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, request, style()->pointerEvents());
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
-        if ((hitRules.canHitStroke && (style()->svgStyle()->hasStroke() || !hitRules.requireStroke))
+        if ((hitRules.canHitBoundingBox && !objectBoundingBox().isEmpty())
+            || (hitRules.canHitStroke && (style()->svgStyle()->hasStroke() || !hitRules.requireStroke))
             || (hitRules.canHitFill && (style()->svgStyle()->hasFill() || !hitRules.requireFill))) {
             FloatPoint localPoint = localToParentTransform().inverse().mapPoint(pointInParent);
 
             if (!SVGRenderSupport::pointInClippingArea(this, localPoint))
+                return false;
+            if (hitRules.canHitBoundingBox && !objectBoundingBox().contains(localPoint))
                 return false;
 
             HitTestLocation hitTestLocation(LayoutPoint(flooredIntPoint(localPoint)));

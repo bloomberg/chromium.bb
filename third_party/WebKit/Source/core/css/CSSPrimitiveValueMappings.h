@@ -3336,6 +3336,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EPointerEvents e)
     case PE_ALL:
         m_value.valueID = CSSValueAll;
         break;
+    case PE_BOUNDINGBOX:
+        m_value.valueID = CSSValueBoundingBox;
+        break;
     }
 }
 
@@ -3363,6 +3366,8 @@ template<> inline CSSPrimitiveValue::operator EPointerEvents() const
         return PE_FILL;
     case CSSValueStroke:
         return PE_STROKE;
+    case CSSValueBoundingBox:
+        return PE_BOUNDINGBOX;
     default:
         break;
     }

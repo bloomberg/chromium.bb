@@ -338,7 +338,8 @@ bool RenderSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, con
         WindRule fillRule = svgStyle->fillRule();
         if (request.svgClipContent())
             fillRule = svgStyle->clipRule();
-        if ((hitRules.canHitStroke && (svgStyle->hasStroke() || !hitRules.requireStroke) && strokeContains(localPoint, hitRules.requireStroke))
+        if ((hitRules.canHitBoundingBox && objectBoundingBox().contains(localPoint))
+            || (hitRules.canHitStroke && (svgStyle->hasStroke() || !hitRules.requireStroke) && strokeContains(localPoint, hitRules.requireStroke))
             || (hitRules.canHitFill && (svgStyle->hasFill() || !hitRules.requireFill) && fillContains(localPoint, hitRules.requireFill, fillRule)))
             return true;
     }

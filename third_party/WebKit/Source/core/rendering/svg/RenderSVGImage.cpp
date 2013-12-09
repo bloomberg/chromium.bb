@@ -190,7 +190,7 @@ bool RenderSVGImage::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
         if (!SVGRenderSupport::pointInClippingArea(this, localPoint))
             return false;
 
-        if (hitRules.canHitFill) {
+        if (hitRules.canHitFill || hitRules.canHitBoundingBox) {
             if (m_objectBoundingBox.contains(localPoint)) {
                 updateHitTestResult(result, roundedLayoutPoint(localPoint));
                 return true;

@@ -40,6 +40,7 @@ public:
     bool requireStroke;
     bool canHitStroke;
     bool canHitFill;
+    bool canHitBoundingBox;
 };
 
 }

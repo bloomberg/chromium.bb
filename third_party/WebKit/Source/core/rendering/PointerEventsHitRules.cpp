@@ -28,6 +28,7 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTe
     , requireStroke(false)
     , canHitStroke(false)
     , canHitFill(false)
+    , canHitBoundingBox(false)
 {
     if (request.svgClipContent())
         pointerEvents = PE_FILL;
@@ -35,6 +36,9 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTe
     if (hitTesting == SVG_GEOMETRY_HITTESTING) {
         switch (pointerEvents)
         {
+            case PE_BOUNDINGBOX:
+                canHitBoundingBox = true;
+                break;
             case PE_VISIBLE_PAINTED:
             case PE_AUTO: // "auto" is like "visiblePainted" when in SVG content
                 requireFill = true;
@@ -72,6 +76,9 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTe
     } else {
         switch (pointerEvents)
         {
+            case PE_BOUNDINGBOX:
+                canHitBoundingBox = true;
+                break;
             case PE_VISIBLE_PAINTED:
             case PE_AUTO: // "auto" is like "visiblePainted" when in SVG content
                 requireVisible = true;

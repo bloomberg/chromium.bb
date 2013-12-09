@@ -738,7 +738,8 @@ bool SVGInlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult&
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING, request, renderer()->style()->pointerEvents());
     bool isVisible = renderer()->style()->visibility() == VISIBLE;
     if (isVisible || !hitRules.requireVisible) {
-        if ((hitRules.canHitStroke && (renderer()->style()->svgStyle()->hasStroke() || !hitRules.requireStroke))
+        if (hitRules.canHitBoundingBox
+            || (hitRules.canHitStroke && (renderer()->style()->svgStyle()->hasStroke() || !hitRules.requireStroke))
             || (hitRules.canHitFill && (renderer()->style()->svgStyle()->hasFill() || !hitRules.requireFill))) {
             FloatPoint boxOrigin(x(), y());
             boxOrigin.moveBy(accumulatedOffset);
