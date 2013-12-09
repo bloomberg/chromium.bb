@@ -1,6 +1,7 @@
 include_rules = [
     "+bindings",
     "+core",
+    "+heap",
     "+mozilla",
     "+platform",
     "+public/platform",

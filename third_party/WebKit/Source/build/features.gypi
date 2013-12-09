@@ -45,6 +45,8 @@
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
     'variables': {
+      # Enables the Oilpan garbage-collection infrastructure.
+      'enable_oilpan%': 0,
       'enable_touch_icon_loading%' : 0,
     },
     'conditions': [
@@ -94,6 +96,11 @@
       ['use_default_render_theme==1', {
         'feature_defines': [
           'WTF_USE_DEFAULT_RENDER_THEME=1',
+        ],
+      }],
+      ['enable_oilpan==1', {
+        'feature_defines': [
+          'ENABLE_OILPAN=1',
         ],
       }],
     ],

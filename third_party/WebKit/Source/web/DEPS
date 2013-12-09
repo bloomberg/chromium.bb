@@ -2,6 +2,7 @@ include_rules = [
     "+..",
     "+bindings",
     "+core",
+    "+heap",
     "+modules",
     "+painting",
     "+platform",
