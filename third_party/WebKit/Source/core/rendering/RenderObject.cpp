@@ -1584,6 +1584,10 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     return false;
 }
 
+void RenderObject::repaintOverflow()
+{
+}
+
 bool RenderObject::checkForRepaintDuringLayout() const
 {
     return !document().view()->needsFullRepaint() && !hasLayer() && everHadLayout();

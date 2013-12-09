@@ -294,13 +294,13 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
 
     SubtreeLayoutScope layoutScope(this);
 
-    LayoutUnit repaintLogicalTop = 0;
-    LayoutUnit repaintLogicalBottom = 0;
+    m_repaintLogicalTop = 0;
+    m_repaintLogicalBottom = 0;
     LayoutUnit maxFloatLogicalBottom = 0;
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
     if (childrenInline())
-        layoutInlineChildren(relayoutChildren, repaintLogicalTop, repaintLogicalBottom);
+        layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom);
     else
         layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope);
 
@@ -370,48 +370,10 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
     // we overflow or not.
     updateScrollInfoAfterLayout();
 
-    // FIXME: This repaint logic should be moved into a separate helper function!
     // Repaint with our new bounds if they are different from our old bounds.
     bool didFullRepaint = repainter.repaintAfterLayout();
-    if (!didFullRepaint && repaintLogicalTop != repaintLogicalBottom && (styleToUse->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent())) {
-        // FIXME: We could tighten up the left and right invalidation points if we let layoutInlineChildren fill them in based off the particular lines
-        // it had to lay out. We wouldn't need the hasOverflowClip() hack in that case either.
-        LayoutUnit repaintLogicalLeft = logicalLeftVisualOverflow();
-        LayoutUnit repaintLogicalRight = logicalRightVisualOverflow();
-        if (hasOverflowClip()) {
-            // If we have clipped overflow, we should use layout overflow as well, since visual overflow from lines didn't propagate to our block's overflow.
-            // Note the old code did this as well but even for overflow:visible. The addition of hasOverflowClip() at least tightens up the hack a bit.
-            // layoutInlineChildren should be patched to compute the entire repaint rect.
-            repaintLogicalLeft = min(repaintLogicalLeft, logicalLeftLayoutOverflow());
-            repaintLogicalRight = max(repaintLogicalRight, logicalRightLayoutOverflow());
-        }
-
-        LayoutRect repaintRect;
-        if (isHorizontalWritingMode())
-            repaintRect = LayoutRect(repaintLogicalLeft, repaintLogicalTop, repaintLogicalRight - repaintLogicalLeft, repaintLogicalBottom - repaintLogicalTop);
-        else
-            repaintRect = LayoutRect(repaintLogicalTop, repaintLogicalLeft, repaintLogicalBottom - repaintLogicalTop, repaintLogicalRight - repaintLogicalLeft);
-
-        // The repaint rect may be split across columns, in which case adjustRectForColumns() will return the union.
-        adjustRectForColumns(repaintRect);
-
-        repaintRect.inflate(maximalOutlineSize(PaintPhaseOutline));
-
-        if (hasOverflowClip()) {
-            // Adjust repaint rect for scroll offset
-            repaintRect.move(-scrolledContentOffset());
-
-            // Don't allow this rect to spill out of our overflow box.
-            repaintRect.intersect(LayoutRect(LayoutPoint(), size()));
-        }
-
-        // Make sure the rect is still non-empty after intersecting for overflow above
-        if (!repaintRect.isEmpty()) {
-            repaintRectangle(repaintRect); // We need to do a partial repaint of our content.
-            if (hasReflection())
-                repaintRectangle(reflectedRect(repaintRect));
-        }
-    }
+    if (!didFullRepaint && m_repaintLogicalTop != m_repaintLogicalBottom && (styleToUse->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent()))
+        repaintOverflow();
 
     clearNeedsLayout();
 }
@@ -1840,6 +1802,50 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
             floatingObject->renderer()->repaintOverhangingFloats(false);
         }
     }
+}
+
+void RenderBlockFlow::repaintOverflow()
+{
+    // FIXME: We could tighten up the left and right invalidation points if we let layoutInlineChildren fill them in based off the particular lines
+    // it had to lay out. We wouldn't need the hasOverflowClip() hack in that case either.
+    LayoutUnit repaintLogicalLeft = logicalLeftVisualOverflow();
+    LayoutUnit repaintLogicalRight = logicalRightVisualOverflow();
+    if (hasOverflowClip()) {
+        // If we have clipped overflow, we should use layout overflow as well, since visual overflow from lines didn't propagate to our block's overflow.
+        // Note the old code did this as well but even for overflow:visible. The addition of hasOverflowClip() at least tightens up the hack a bit.
+        // layoutInlineChildren should be patched to compute the entire repaint rect.
+        repaintLogicalLeft = min(repaintLogicalLeft, logicalLeftLayoutOverflow());
+        repaintLogicalRight = max(repaintLogicalRight, logicalRightLayoutOverflow());
+    }
+
+    LayoutRect repaintRect;
+    if (isHorizontalWritingMode())
+        repaintRect = LayoutRect(repaintLogicalLeft, m_repaintLogicalTop, repaintLogicalRight - repaintLogicalLeft, m_repaintLogicalBottom - m_repaintLogicalTop);
+    else
+        repaintRect = LayoutRect(m_repaintLogicalTop, repaintLogicalLeft, m_repaintLogicalBottom - m_repaintLogicalTop, repaintLogicalRight - repaintLogicalLeft);
+
+    // The repaint rect may be split across columns, in which case adjustRectForColumns() will return the union.
+    adjustRectForColumns(repaintRect);
+
+    repaintRect.inflate(maximalOutlineSize(PaintPhaseOutline));
+
+    if (hasOverflowClip()) {
+        // Adjust repaint rect for scroll offset
+        repaintRect.move(-scrolledContentOffset());
+
+        // Don't allow this rect to spill out of our overflow box.
+        repaintRect.intersect(LayoutRect(LayoutPoint(), size()));
+    }
+
+    // Make sure the rect is still non-empty after intersecting for overflow above
+    if (!repaintRect.isEmpty()) {
+        repaintRectangle(repaintRect); // We need to do a partial repaint of our content.
+        if (hasReflection())
+            repaintRectangle(reflectedRect(repaintRect));
+    }
+
+    m_repaintLogicalTop = 0;
+    m_repaintLogicalBottom = 0;
 }
 
 void RenderBlockFlow::paintFloats(PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase)

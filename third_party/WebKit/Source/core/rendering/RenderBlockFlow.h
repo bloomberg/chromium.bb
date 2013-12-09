@@ -227,6 +227,7 @@ private:
 
     virtual void moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert) OVERRIDE;
     virtual void repaintOverhangingFloats(bool paintAllDescendants) OVERRIDE FINAL;
+    virtual void repaintOverflow() OVERRIDE;
     virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool preservePhase = false) OVERRIDE FINAL;
     virtual void clipOutFloatingObjects(RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) OVERRIDE;
     void clearFloats(EClear);
@@ -387,6 +388,9 @@ private:
     void createRenderNamedFlowFragmentIfNeeded();
 
     RenderBlockFlowRareData& ensureRareData();
+
+    LayoutUnit m_repaintLogicalTop;
+    LayoutUnit m_repaintLogicalBottom;
 
 protected:
     OwnPtr<RenderBlockFlowRareData> m_rareData;
