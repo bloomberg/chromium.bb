@@ -71,7 +71,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/WidthIterator.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringConcatenate.h"

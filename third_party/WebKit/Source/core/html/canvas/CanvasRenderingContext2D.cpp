@@ -61,7 +61,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/DrawLooper.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CheckedArithmetic.h"
 #include "wtf/MathExtras.h"

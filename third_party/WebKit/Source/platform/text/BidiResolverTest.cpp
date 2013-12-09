@@ -31,8 +31,8 @@
 #include "config.h"
 #include "platform/text/BidiResolver.h"
 
-#include "platform/graphics/TextRunIterator.h"
 #include "platform/text/BidiTestHarness.h"
+#include "platform/text/TextRunIterator.h"
 #include "wtf/OwnPtr.h"
 #include <fstream>
 #include <gtest/gtest.h>

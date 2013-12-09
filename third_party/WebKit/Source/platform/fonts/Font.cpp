@@ -26,7 +26,7 @@
 
 #include "platform/fonts/WidthIterator.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"

@@ -29,7 +29,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/graphics/DrawLooper.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 
 namespace WebCore {
 

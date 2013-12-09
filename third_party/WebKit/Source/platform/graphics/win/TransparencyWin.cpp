@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/win/TransparencyWin.h"
+#include "platform/graphics/win/TransparencyWin.h"
 
+#include "SkColorPriv.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "SkColorPriv.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace WebCore {
@@ -51,9 +51,7 @@ inline const SkBitmap& bitmapForContext(const GraphicsContext& context)
     return context.layerBitmap();
 }
 
-void compositeToCopy(GraphicsContext& sourceLayers,
-                     GraphicsContext& destContext,
-                     const AffineTransform& matrix)
+void compositeToCopy(GraphicsContext& sourceLayers, GraphicsContext& destContext, const AffineTransform& matrix)
 {
     // Make a list of all devices. The iterator goes top-down, and we want
     // bottom-up. Note that each layer can also have an offset in canvas
@@ -62,7 +60,7 @@ void compositeToCopy(GraphicsContext& sourceLayers,
         DeviceInfo(SkBaseDevice* d, int lx, int ly)
             : device(d)
             , x(lx)
-            , y(ly) {}
+            , y(ly) { }
         SkBaseDevice* device;
         int x;
         int y;
@@ -93,7 +91,7 @@ void compositeToCopy(GraphicsContext& sourceLayers,
     }
 }
 
-}  // namespace
+} // namespace
 
 // If either of these pointers is non-null, both must be valid and point to
 // bitmaps of the same size.
@@ -176,10 +174,7 @@ void TransparencyWin::composite()
     }
 }
 
-void TransparencyWin::init(GraphicsContext* dest,
-                           LayerMode layerMode,
-                           TransformMode transformMode,
-                           const IntRect& region)
+void TransparencyWin::init(GraphicsContext* dest, LayerMode layerMode, TransformMode transformMode, const IntRect& region)
 {
     m_destContext = dest;
     m_orgTransform = dest->getCTM();
@@ -211,8 +206,9 @@ void TransparencyWin::computeLayerSize()
             clippedSourceRect.intersect(enclosingIntRect(clipRect));
         }
         m_transformedSourceRect = m_orgTransform.mapRect(clippedSourceRect);
-    } else
+    } else {
         m_transformedSourceRect = m_orgTransform.mapRect(m_sourceRect);
+    }
 
     m_layerSize = IntSize(m_transformedSourceRect.width(), m_transformedSourceRect.height());
 }
@@ -237,7 +233,7 @@ void TransparencyWin::setupLayer()
 
 void TransparencyWin::setupLayerForNoLayer()
 {
-    m_drawContext = m_destContext;  // Draw to the source context.
+    m_drawContext = m_destContext; // Draw to the source context.
     m_validLayer = true;
 }
 
@@ -249,7 +245,7 @@ void TransparencyWin::setupLayerForOpaqueCompositeLayer()
 
     AffineTransform mapping;
     mapping.translate(-m_transformedSourceRect.x(), -m_transformedSourceRect.y());
-    if (m_transformMode == Untransform){
+    if (m_transformMode == Untransform) {
         // Compute the inverse mapping from the canvas space to the
         // coordinate space of our bitmap.
         mapping *= m_orgTransform.inverse();
@@ -394,7 +390,7 @@ void TransparencyWin::initializeNewContext()
 
     // Create a new cached buffer.
     if (m_cachedBuffers)
-      delete m_cachedBuffers;
+        delete m_cachedBuffers;
     m_cachedBuffers = new OwnedBuffers(m_layerSize, true);
 
     m_layerBuffer = m_cachedBuffers->destBitmap();
@@ -431,8 +427,9 @@ void TransparencyWin::compositeOpaqueComposite()
                     dest[x] |= (0xFF << SK_A32_SHIFT);
             }
         }
-    } else
+    } else {
         makeLayerOpaque();
+    }
 
     SkRect destRect;
     if (m_transformMode != Untransform) {
@@ -446,8 +443,9 @@ void TransparencyWin::compositeOpaqueComposite()
         m_destContext->setMatrix(identity);
 
         destRect.set(m_transformedSourceRect.x(), m_transformedSourceRect.y(), m_transformedSourceRect.maxX(), m_transformedSourceRect.maxY());
-    } else
+    } else {
         destRect.set(m_sourceRect.x(), m_sourceRect.y(), m_sourceRect.maxX(), m_sourceRect.maxY());
+    }
 
     SkPaint paint;
     paint.setFilterBitmap(true);

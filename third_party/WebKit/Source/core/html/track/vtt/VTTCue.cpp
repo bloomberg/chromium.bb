@@ -45,8 +45,8 @@
 #include "core/html/track/vtt/VTTParser.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/rendering/RenderVTTCue.h"
-#include "platform/graphics/TextRunIterator.h"
 #include "platform/text/BidiResolver.h"
+#include "platform/text/TextRunIterator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 

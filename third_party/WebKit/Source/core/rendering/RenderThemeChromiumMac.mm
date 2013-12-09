@@ -34,7 +34,6 @@
 #import "core/html/TimeRanges.h"
 #import "core/html/shadow/MediaControlElements.h"
 #import "core/frame/FrameView.h"
-#import "core/platform/graphics/StringTruncator.h"
 #import "core/platform/mac/ThemeMac.h"
 #import "core/platform/mac/WebCoreNSCellExtras.h"
 #import "core/rendering/PaintInfo.h"
@@ -56,6 +55,7 @@
 #import "platform/mac/ColorMac.h"
 #import "platform/mac/LocalCurrentGraphicsContext.h"
 #import "platform/text/PlatformLocale.h"
+#import "platform/text/StringTruncator.h"
 
 #import <AvailabilityMacros.h>
 #import <Carbon/Carbon.h>

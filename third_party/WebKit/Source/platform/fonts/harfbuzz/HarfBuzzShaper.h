@@ -34,7 +34,7 @@
 #include "hb.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatPoint.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

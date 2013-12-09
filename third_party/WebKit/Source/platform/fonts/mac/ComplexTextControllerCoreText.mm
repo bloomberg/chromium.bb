@@ -28,7 +28,7 @@
 
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #import <AvailabilityMacros.h>

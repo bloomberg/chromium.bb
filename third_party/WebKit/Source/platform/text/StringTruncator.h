@@ -29,13 +29,14 @@
 #ifndef StringTruncator_h
 #define StringTruncator_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
 
 class Font;
 
-class StringTruncator {
+class PLATFORM_EXPORT StringTruncator {
 public:
     enum EnableRoundingHacksOrNot { DisableRoundingHacks, EnableRoundingHacks };
 

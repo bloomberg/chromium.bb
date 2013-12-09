@@ -2,6 +2,7 @@ include_rules = [
     "+mozilla",
     "+platform",
     "+public/platform",
+    "+skia/ext",
     "+third_party/skia",
     "-bindings",
     "-core",

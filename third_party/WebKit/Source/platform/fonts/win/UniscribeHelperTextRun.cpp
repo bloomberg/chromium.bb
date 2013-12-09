@@ -34,7 +34,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/win/FontPlatformDataWin.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 
 namespace WebCore {
 

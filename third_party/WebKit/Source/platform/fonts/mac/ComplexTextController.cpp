@@ -28,8 +28,8 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include "platform/fonts/Font.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/graphics/TextRun.h"
 #include "platform/text/TextBreakIterator.h"
+#include "platform/text/TextRun.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
 

@@ -31,13 +31,11 @@
 #ifndef TransparencyWin_h
 #define TransparencyWin_h
 
-#include <windows.h>
-
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/transforms/AffineTransform.h"
-
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
+#include <windows.h>
 
 class SkBitmap;
 class SkCanvas;
@@ -55,7 +53,7 @@ class TransparencyWin_OpaqueCompositeLayer_Test;
 // that is composited later manually. This is to get around Windows' inability
 // to handle the alpha channel, semitransparent text, and transformed form
 // controls.
-class TransparencyWin {
+class PLATFORM_EXPORT TransparencyWin {
     WTF_MAKE_NONCOPYABLE(TransparencyWin);
 public:
     enum LayerMode {
@@ -131,14 +129,11 @@ public:
 
     // Initializes the members if you use the 0-argument constructor. Don't call
     // this if you use the multiple-argument constructor.
-    void init(GraphicsContext* dest,
-              LayerMode layerMode,
-              TransformMode transformMode,
-              const IntRect& region);
+    void init(GraphicsContext*, LayerMode, TransformMode, const IntRect&);
 
     // Combines the source and destination bitmaps using the given mode.
     // Calling this function before the destructor runs is mandatory in most
-    // cases, and harmless otherwise.  The mandatory cases are:
+    // cases, and harmless otherwise. The mandatory cases are:
     //       (m_layerMode != NoLayer) || (m_transformMode == ScaleTransform)
     void composite();
 
@@ -148,7 +143,7 @@ public:
 
     // When the mode is TextComposite, this sets the color that the text will
     // get. See the enum above for more.
-    void setTextCompositeColor(Color color);
+    void setTextCompositeColor(Color);
 
     // Returns the input bounds translated into the destination space. This is
     // not necessary for KeepTransform since the rectangle will be unchanged.

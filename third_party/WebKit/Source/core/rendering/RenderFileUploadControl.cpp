@@ -32,8 +32,8 @@
 #include "core/rendering/RenderTheme.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/TextRun.h"
 #include "platform/text/PlatformLocale.h"
+#include "platform/text/TextRun.h"
 
 using namespace std;
 

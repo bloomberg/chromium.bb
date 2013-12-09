@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 
 namespace WebCore {
 

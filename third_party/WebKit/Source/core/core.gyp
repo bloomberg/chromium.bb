@@ -642,16 +642,10 @@
             # Use USE_NEW_THEME on Mac.
             ['include', 'platform/Theme\\.cpp$'],
           ],
-        },{ # OS!="mac"
-          'sources/': [
-            ['exclude', 'Mac\\.(cpp|mm?)$'],
-          ],
         }],
         ['OS=="win"', {
           'sources/': [
             ['exclude', 'Posix\\.cpp$'],
-
-            ['include', 'platform/graphics/win/TransparencyWin\\.(cpp|h)$'],
           ],
         },{ # OS!="win"
           'sources/': [

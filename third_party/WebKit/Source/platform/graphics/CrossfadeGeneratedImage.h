@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,41 +23,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GeneratedImage_h
-#define GeneratedImage_h
+#ifndef CrossfadeGeneratedImage_h
+#define CrossfadeGeneratedImage_h
 
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GeneratedImage.h"
 #include "platform/graphics/Image.h"
+#include "platform/graphics/ImageObserver.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class GeneratedImage : public Image {
+class CSSCrossfadeValue;
+
+class PLATFORM_EXPORT CrossfadeGeneratedImage : public GeneratedImage {
 public:
-    virtual bool currentFrameHasSingleSecurityOrigin() const OVERRIDE { return true; }
+    static PassRefPtr<CrossfadeGeneratedImage> create(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize& size)
+    {
+        return adoptRef(new CrossfadeGeneratedImage(fromImage, toImage, percentage, crossfadeSize, size));
+    }
 
-    virtual void setContainerSize(const IntSize& size) OVERRIDE { m_size = size; }
-    virtual bool usesContainerSize() const OVERRIDE { return true; }
-    virtual bool hasRelativeWidth() const OVERRIDE { return true; }
-    virtual bool hasRelativeHeight() const OVERRIDE { return true; }
-    virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) OVERRIDE;
+    virtual void setContainerSize(const IntSize&) { }
+    virtual bool usesContainerSize() const { return false; }
+    virtual bool hasRelativeWidth() const { return false; }
+    virtual bool hasRelativeHeight() const { return false; }
 
-    virtual IntSize size() const OVERRIDE { return m_size; }
-
-    // Assume that generated content has no decoded data we need to worry about
-    virtual void destroyDecodedData(bool) OVERRIDE { }
+    virtual IntSize size() const { return m_crossfadeSize; }
 
 protected:
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
+        CompositeOperator, blink::WebBlendMode) OVERRIDE;
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) OVERRIDE = 0;
+        const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
 
-    // FIXME: Implement this to be less conservative.
-    virtual bool currentFrameKnownToBeOpaque() OVERRIDE { return false; }
+    CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);
 
-    GeneratedImage() { }
+private:
+    void drawCrossfade(GraphicsContext*);
 
-    IntSize m_size;
+    Image* m_fromImage;
+    Image* m_toImage;
+
+    float m_percentage;
+    IntSize m_crossfadeSize;
 };
 
 }

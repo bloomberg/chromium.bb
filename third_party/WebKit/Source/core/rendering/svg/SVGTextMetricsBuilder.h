@@ -23,7 +23,7 @@
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
 #include "platform/fonts/WidthIterator.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

@@ -33,7 +33,7 @@
 #include "platform/fonts/SVGGlyph.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/WidthIterator.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 #include "wtf/unicode/Unicode.h"

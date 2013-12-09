@@ -37,7 +37,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"

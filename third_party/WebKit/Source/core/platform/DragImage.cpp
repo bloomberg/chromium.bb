@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/platform/DragImage.h"
 
-#include "core/platform/graphics/StringTruncator.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
@@ -39,8 +38,9 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/TextRun.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
+#include "platform/text/StringTruncator.h"
+#include "platform/text/TextRun.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/weborigin/KURL.h"
 #include "skia/ext/image_operations.h"

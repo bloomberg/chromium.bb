@@ -27,14 +27,14 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/StringTruncator.h"
+#include "platform/text/StringTruncator.h"
 
 #include "platform/fonts/Font.h"
-#include "platform/graphics/TextRun.h"
 #include "platform/text/TextBreakIterator.h"
+#include "platform/text/TextRun.h"
 #include "wtf/Assertions.h"
-#include "wtf/unicode/CharacterNames.h"
 #include "wtf/Vector.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 
@@ -177,9 +177,8 @@ static String truncateString(const String& string, float maxWidth, const Font& f
         }
     }
 
-    if (keepCountForLargestKnownToFit == 0) {
+    if (!keepCountForLargestKnownToFit)
         keepCountForLargestKnownToFit = 1;
-    }
 
     if (keepCount != keepCountForLargestKnownToFit) {
         keepCount = keepCountForLargestKnownToFit;

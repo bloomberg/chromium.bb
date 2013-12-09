@@ -31,8 +31,8 @@
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/shapes/ShapeInsideInfo.h"
 #include "core/rendering/style/ShapeValue.h"
-#include "platform/graphics/TextRun.h"
 #include "platform/text/TextBreakIterator.h"
+#include "platform/text/TextRun.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 

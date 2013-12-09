@@ -39,8 +39,8 @@
 #include "platform/fonts/FontSelector.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/Path.h"
-#include "platform/graphics/TextRun.h"
 #include "platform/text/PlatformLocale.h"
+#include "platform/text/TextRun.h"
 
 namespace WebCore {
 

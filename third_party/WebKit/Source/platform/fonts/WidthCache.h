@@ -26,7 +26,7 @@
 #ifndef WidthCache_h
 #define WidthCache_h
 
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashSet.h"

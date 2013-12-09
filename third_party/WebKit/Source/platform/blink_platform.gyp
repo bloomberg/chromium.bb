@@ -270,6 +270,8 @@
 
           ['include', 'scroll/ScrollbarThemeWin\\.(cpp|h)$'],
 
+          ['include', 'graphics/win/TransparencyWin\\.(cpp|h)$'],
+
           # SystemInfo.cpp is useful and we don't want to copy it.
           ['include', 'win/SystemInfo\\.cpp$'],
         ],
@@ -339,13 +341,6 @@
         'export_dependent_settings': [
           '<(DEPTH)/build/linux/system.gyp:fontconfig',
         ],
-        'direct_dependent_settings': {
-          'cflags': [
-            # WebCore does not work with strict aliasing enabled.
-            # https://bugs.webkit.org/show_bug.cgi?id=25864
-            '-fno-strict-aliasing',
-          ],
-        },
       }],
       ['use_default_render_theme==1', {
         'sources/': [

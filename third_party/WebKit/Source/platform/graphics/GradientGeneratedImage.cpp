@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/GradientGeneratedImage.h"
+#include "platform/graphics/GradientGeneratedImage.h"
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"

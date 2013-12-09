@@ -25,7 +25,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/SVGGlyph.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/unicode/Unicode.h"
 #include "wtf/Vector.h"

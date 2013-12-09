@@ -32,7 +32,7 @@
 #include "platform/fonts/mac/ComplexTextController.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/TextRun.h"
+#include "platform/text/TextRun.h"
 #include "wtf/MathExtras.h"
 
 using namespace std;

@@ -26,8 +26,8 @@
 #ifndef GradientGeneratedImage_h
 #define GradientGeneratedImage_h
 
-#include "core/platform/graphics/GeneratedImage.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GeneratedImage.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class GradientGeneratedImage : public GeneratedImage {
+class PLATFORM_EXPORT GradientGeneratedImage : public GeneratedImage {
 public:
     static PassRefPtr<GradientGeneratedImage> create(PassRefPtr<Gradient> generator, const IntSize& size)
     {

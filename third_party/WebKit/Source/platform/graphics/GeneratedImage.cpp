@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/GeneratedImage.h"
+#include "platform/graphics/GeneratedImage.h"
 
 #include "platform/geometry/FloatSize.h"
 

@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/CrossfadeGeneratedImage.h"
+#include "platform/graphics/CrossfadeGeneratedImage.h"
 
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/geometry/FloatRect.h"
 
 using namespace std;
 
@@ -61,18 +61,22 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
 
     // Draw the image we're fading away from.
     context->save();
-    if (m_crossfadeSize != fromImageSize)
-        context->scale(FloatSize(static_cast<float>(m_crossfadeSize.width()) / fromImageSize.width(),
-                                 static_cast<float>(m_crossfadeSize.height()) / fromImageSize.height()));
+    if (m_crossfadeSize != fromImageSize) {
+        context->scale(FloatSize(
+            static_cast<float>(m_crossfadeSize.width()) / fromImageSize.width(),
+            static_cast<float>(m_crossfadeSize.height()) / fromImageSize.height()));
+    }
     context->setAlpha(inversePercentage);
     context->drawImage(m_fromImage, IntPoint());
     context->restore();
 
     // Draw the image we're fading towards.
     context->save();
-    if (m_crossfadeSize != toImageSize)
-        context->scale(FloatSize(static_cast<float>(m_crossfadeSize.width()) / toImageSize.width(),
-                                 static_cast<float>(m_crossfadeSize.height()) / toImageSize.height()));
+    if (m_crossfadeSize != toImageSize) {
+        context->scale(FloatSize(
+            static_cast<float>(m_crossfadeSize.width()) / toImageSize.width(),
+            static_cast<float>(m_crossfadeSize.height()) / toImageSize.height()));
+    }
     context->setAlpha(m_percentage);
     context->drawImage(m_toImage, IntPoint(), CompositePlusLighter);
     context->restore();
