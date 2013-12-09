@@ -317,8 +317,6 @@ void FrameLoader::clear(ClearOptions options)
 
     if (m_stateMachine.isDisplayingInitialEmptyDocument())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
-    else if (!m_stateMachine.committedMultipleRealLoads())
-        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
 }
 
 void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPolicy)
@@ -350,6 +348,10 @@ void FrameLoader::receivedFirstData()
     if (m_loadType == FrameLoadTypeInitialInChildFrame || navigationHistoryPolicy == NavigationCreatedHistoryEntry)
         historyItemPolicy = CreateNewHistoryItem;
     setHistoryItemStateForCommit(historyItemPolicy);
+
+    if (!m_stateMachine.committedMultipleRealLoads() && navigationHistoryPolicy == NavigationCreatedHistoryEntry)
+        m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
+
     m_client->dispatchDidCommitLoad(m_frame, m_currentItem.get(), navigationHistoryPolicy);
 
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
