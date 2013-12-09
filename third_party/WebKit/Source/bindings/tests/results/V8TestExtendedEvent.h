@@ -159,7 +159,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Ev
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
-bool fillEventInit(EventInit&, const Dictionary&, ExceptionState&, const String& = "");
+bool initializeEvent(EventInit&, const Dictionary&, ExceptionState&, const String& = "");
 
 }
 #endif // ENABLE(TEST)

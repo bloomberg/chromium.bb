@@ -115,7 +115,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
         ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-        if (!fillEventInit(eventInit, options, exceptionState)) {
+        if (!initializeEvent(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -133,10 +133,10 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestExtendedEventAttri
     {"keyLocation", EventV8Internal::keyLocationAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
-bool fillEventInit(EventInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
+bool initializeEvent(EventInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("TestExtendedEvent") : forEventName, "", exceptionState);
-    if (!fillTestEventInit(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestExtendedEvent") : forEventName))
+    if (!initializeTestEvent(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestExtendedEvent") : forEventName))
         return false;
 
     if (!options.convert(conversionContext.withAttributes(false, NormalConversion), "location", eventInit.location))

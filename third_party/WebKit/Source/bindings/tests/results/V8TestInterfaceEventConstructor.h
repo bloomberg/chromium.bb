@@ -157,7 +157,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<Te
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
-bool fillTestInterfaceEventConstructorInit(TestInterfaceEventConstructorInit&, const Dictionary&, ExceptionState&, const String& = "");
+bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit&, const Dictionary&, ExceptionState&, const String& = "");
 
 }
 #endif // V8TestInterfaceEventConstructor_h

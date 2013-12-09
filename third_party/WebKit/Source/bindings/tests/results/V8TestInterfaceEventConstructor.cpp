@@ -111,7 +111,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
         ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-        if (!fillTestInterfaceEventConstructorInit(eventInit, options, exceptionState)) {
+        if (!initializeTestInterfaceEventConstructor(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -129,7 +129,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceEventCons
     {"attr2", TestInterfaceEventConstructorV8Internal::attr2AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
-bool fillTestInterfaceEventConstructorInit(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
+bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName, "", exceptionState);
     if (!options.convert(conversionContext, "attr2", eventInit.attr2))

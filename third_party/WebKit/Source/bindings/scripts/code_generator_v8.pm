@@ -1026,7 +1026,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<${
 END
 
     if ($interface->extendedAttributes->{"EventConstructor"}) {
-        $header{nameSpaceWebCore}->add("bool fill${implClassName}Init(${implClassName}Init&, const Dictionary&, ExceptionState&, const String& = \"\");\n\n");
+        $header{nameSpaceWebCore}->add("bool initialize${implClassName}(${implClassName}Init&, const Dictionary&, ExceptionState&, const String& = \"\");\n\n");
     }
 }
 
@@ -2900,7 +2900,7 @@ END
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
         ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-        if (!fill${implClassName}Init(eventInit, options, exceptionState)) {
+        if (!initialize${implClassName}(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -2964,7 +2964,7 @@ END
 
     my $code = "";
     $code .= <<END;
-bool fill${implClassName}Init(${implClassName}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
+bool initialize${implClassName}(${implClassName}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("${interfaceName}") : forEventName, "", exceptionState);
 END
@@ -2972,7 +2972,7 @@ END
     if ($interface->parent) {
         my $interfaceBase = $interface->parent;
         $code .= <<END;
-    if (!fill${interfaceBase}Init(eventInit, options, exceptionState, forEventName.isEmpty() ? String("${interfaceName}") : forEventName))
+    if (!initialize${interfaceBase}(eventInit, options, exceptionState, forEventName.isEmpty() ? String("${interfaceName}") : forEventName))
         return false;
 
 END

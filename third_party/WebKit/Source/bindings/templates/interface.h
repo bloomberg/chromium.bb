@@ -231,7 +231,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<{{
 }
 
 {% if has_event_constructor %}
-bool fill{{cpp_class}}Init({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const String& = "");
+bool initialize{{cpp_class}}({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const String& = "");
 
 {% endif %}
 }

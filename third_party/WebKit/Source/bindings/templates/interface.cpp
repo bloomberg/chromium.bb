@@ -167,7 +167,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
         ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-        if (!fill{{cpp_class}}Init(eventInit, options, exceptionState)) {
+        if (!initialize{{cpp_class}}(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -252,7 +252,7 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {##############################################################################}
 {% block initialize_event %}
 {% if has_event_constructor %}
-bool fill{{cpp_class}}Init({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
+bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("{{interface_name}}") : forEventName, "", exceptionState);
     {# FIXME: implement [InitializedByEventConstructor] #}
