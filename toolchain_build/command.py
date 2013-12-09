@@ -214,6 +214,21 @@ def Copy(src, dst):
   return Runnable(copy, src, dst)
 
 
+def CopyTree(src, dst, exclude=[]):
+  """Copy a directory tree, excluding a list of top-level entries."""
+  def copyTree(subst, src, dst, exclude):
+    src = subst.SubstituteAbsPaths(src)
+    dst = subst.SubstituteAbsPaths(dst)
+    def ignoreExcludes(dir, files):
+      if dir == src:
+        return exclude
+      else:
+        return []
+    file_tools.RemoveDirectoryIfPresent(dst)
+    shutil.copytree(src, dst, symlinks=True, ignore=ignoreExcludes)
+  return Runnable(copyTree, src, dst, exclude)
+
+
 def RemoveDirectory(path):
   """Convenience method for generating a command to remove a directory tree."""
   def remove(subst, path):

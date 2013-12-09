@@ -36,30 +36,34 @@ def CollectSources():
         }
 
   # The gcc_libs component gets the whole GCC source tree.
-  sources['gcc_libs'] = sources['gcc'].copy()
+  sources['gcc_libs'] = sources['gcc']
 
   # The gcc component omits all the source directories that are used solely
   # for building target libraries.  We don't want those included in the
   # input hash calculation so that we don't rebuild the compiler when the
   # the only things that have changed are target libraries.
-  # TODO(mcgrathr): Make this copy from the gcc_libs component rather than
-  # repeating the git clone.
-  sources['gcc']['commands'] += [command.RemoveDirectory(dir) for dir in [
-      'boehm-gc',
-      'libada',
-      'libffi',
-      'libgcc',
-      'libgfortran',
-      'libgo',
-      'libgomp',
-      'libitm',
-      'libjava',
-      'libmudflap',
-      'libobjc',
-      'libquadmath',
-      'libssp',
-      'libstdc++-v3',
-      ]]
+  sources['gcc'] = {
+        'type': 'build',
+        'dependencies': ['gcc_libs'],
+        'commands': [command.CopyTree('%(gcc_libs)s', '%(output)s', [
+            'boehm-gc',
+            'libada',
+            'libatomic',
+            'libffi',
+            'libgcc',
+            'libgfortran',
+            'libgo',
+            'libgomp',
+            'libitm',
+            'libjava',
+            'libmudflap',
+            'libobjc',
+            'libquadmath',
+            'libsanitizer',
+            'libssp',
+            'libstdc++-v3',
+            ])]
+      }
 
   # We have to populate the newlib source tree with the "exported" form of
   # some headers from the native_client source tree.  The newlib build
