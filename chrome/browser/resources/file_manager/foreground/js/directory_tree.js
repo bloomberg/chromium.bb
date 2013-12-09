@@ -203,10 +203,6 @@ DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
  */
 DirectoryItem.prototype.decorate = function(
     dirEntry, parentDirItem, tree) {
-  var path = dirEntry.fullPath;
-  var label;
-  label = dirEntry.label ? dirEntry.label : dirEntry.name;
-
   this.className = 'tree-item';
   this.innerHTML =
       '<div class="tree-row">' +
@@ -220,8 +216,8 @@ DirectoryItem.prototype.decorate = function(
   this.parentTree_ = tree;
   this.directoryModel_ = tree.directoryModel;
   this.parent_ = parentDirItem;
-  this.label = label;
-  this.fullPath = path;
+  this.label = dirEntry.label || dirEntry.name;
+  this.fullPath = dirEntry.fullPath;
   this.dirEntry_ = dirEntry;
   this.fileFilter_ = this.directoryModel_.getFileFilter();
 
@@ -232,9 +228,13 @@ DirectoryItem.prototype.decorate = function(
   this.addEventListener('expand', this.onExpand_.bind(this), false);
   var icon = this.querySelector('.icon');
   icon.classList.add('volume-icon');
-  var iconType = PathUtil.getRootType(path);
-  if (iconType && PathUtil.isRootPath(path))
-    icon.setAttribute('volume-type-icon', iconType);
+  var location = tree.volumeManager.getLocationInfo(dirEntry);
+  // TODO(hirono): Check the case where the location is null.
+  if (!location)
+    console.warn('Location is null. The entryPath property is ' +
+        dirEntry.fullPath);
+  if (location && location.rootType && location.isRootEntry)
+    icon.setAttribute('volume-type-icon', location.rootType);
   else
     icon.setAttribute('file-type-icon', 'folder');
 
