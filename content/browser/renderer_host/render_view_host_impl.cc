@@ -1183,10 +1183,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   if (delegate_->OnMessageReceived(this, msg))
     return true;
 
-  // TODO(jochen): Consider removing message handlers that only add a this
-  // pointer and forward the messages to the RenderViewHostDelegate. The
-  // respective delegates can handle the messages themselves in their
-  // OnMessageReceived implementation.
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderViewHostImpl, msg, msg_is_ok)
