@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebCursorInfo.h"
 
-#include "core/platform/Cursor.h"
+#include "platform/Cursor.h"
 
 using namespace WebCore;
 

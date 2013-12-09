@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/Cursor.h"
+#include "platform/Cursor.h"
 
 namespace WebCore {
 

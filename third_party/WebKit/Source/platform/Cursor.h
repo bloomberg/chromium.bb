@@ -26,6 +26,7 @@
 #ifndef Cursor_h
 #define Cursor_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/Image.h"
 #include "wtf/Assertions.h"
@@ -33,7 +34,7 @@
 
 namespace WebCore {
 
-class Cursor {
+class PLATFORM_EXPORT Cursor {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     enum Type {
@@ -118,51 +119,51 @@ private:
     float m_imageScaleFactor;
 };
 
-IntPoint determineHotSpot(Image*, const IntPoint& specifiedHotSpot);
+PLATFORM_EXPORT IntPoint determineHotSpot(Image*, const IntPoint& specifiedHotSpot);
 
-const Cursor& pointerCursor();
-const Cursor& crossCursor();
-const Cursor& handCursor();
-const Cursor& moveCursor();
-const Cursor& iBeamCursor();
-const Cursor& waitCursor();
-const Cursor& helpCursor();
-const Cursor& eastResizeCursor();
-const Cursor& northResizeCursor();
-const Cursor& northEastResizeCursor();
-const Cursor& northWestResizeCursor();
-const Cursor& southResizeCursor();
-const Cursor& southEastResizeCursor();
-const Cursor& southWestResizeCursor();
-const Cursor& westResizeCursor();
-const Cursor& northSouthResizeCursor();
-const Cursor& eastWestResizeCursor();
-const Cursor& northEastSouthWestResizeCursor();
-const Cursor& northWestSouthEastResizeCursor();
-const Cursor& columnResizeCursor();
-const Cursor& rowResizeCursor();
-const Cursor& middlePanningCursor();
-const Cursor& eastPanningCursor();
-const Cursor& northPanningCursor();
-const Cursor& northEastPanningCursor();
-const Cursor& northWestPanningCursor();
-const Cursor& southPanningCursor();
-const Cursor& southEastPanningCursor();
-const Cursor& southWestPanningCursor();
-const Cursor& westPanningCursor();
-const Cursor& verticalTextCursor();
-const Cursor& cellCursor();
-const Cursor& contextMenuCursor();
-const Cursor& noDropCursor();
-const Cursor& notAllowedCursor();
-const Cursor& progressCursor();
-const Cursor& aliasCursor();
-const Cursor& zoomInCursor();
-const Cursor& zoomOutCursor();
-const Cursor& copyCursor();
-const Cursor& noneCursor();
-const Cursor& grabCursor();
-const Cursor& grabbingCursor();
+PLATFORM_EXPORT const Cursor& pointerCursor();
+PLATFORM_EXPORT const Cursor& crossCursor();
+PLATFORM_EXPORT const Cursor& handCursor();
+PLATFORM_EXPORT const Cursor& moveCursor();
+PLATFORM_EXPORT const Cursor& iBeamCursor();
+PLATFORM_EXPORT const Cursor& waitCursor();
+PLATFORM_EXPORT const Cursor& helpCursor();
+PLATFORM_EXPORT const Cursor& eastResizeCursor();
+PLATFORM_EXPORT const Cursor& northResizeCursor();
+PLATFORM_EXPORT const Cursor& northEastResizeCursor();
+PLATFORM_EXPORT const Cursor& northWestResizeCursor();
+PLATFORM_EXPORT const Cursor& southResizeCursor();
+PLATFORM_EXPORT const Cursor& southEastResizeCursor();
+PLATFORM_EXPORT const Cursor& southWestResizeCursor();
+PLATFORM_EXPORT const Cursor& westResizeCursor();
+PLATFORM_EXPORT const Cursor& northSouthResizeCursor();
+PLATFORM_EXPORT const Cursor& eastWestResizeCursor();
+PLATFORM_EXPORT const Cursor& northEastSouthWestResizeCursor();
+PLATFORM_EXPORT const Cursor& northWestSouthEastResizeCursor();
+PLATFORM_EXPORT const Cursor& columnResizeCursor();
+PLATFORM_EXPORT const Cursor& rowResizeCursor();
+PLATFORM_EXPORT const Cursor& middlePanningCursor();
+PLATFORM_EXPORT const Cursor& eastPanningCursor();
+PLATFORM_EXPORT const Cursor& northPanningCursor();
+PLATFORM_EXPORT const Cursor& northEastPanningCursor();
+PLATFORM_EXPORT const Cursor& northWestPanningCursor();
+PLATFORM_EXPORT const Cursor& southPanningCursor();
+PLATFORM_EXPORT const Cursor& southEastPanningCursor();
+PLATFORM_EXPORT const Cursor& southWestPanningCursor();
+PLATFORM_EXPORT const Cursor& westPanningCursor();
+PLATFORM_EXPORT const Cursor& verticalTextCursor();
+PLATFORM_EXPORT const Cursor& cellCursor();
+PLATFORM_EXPORT const Cursor& contextMenuCursor();
+PLATFORM_EXPORT const Cursor& noDropCursor();
+PLATFORM_EXPORT const Cursor& notAllowedCursor();
+PLATFORM_EXPORT const Cursor& progressCursor();
+PLATFORM_EXPORT const Cursor& aliasCursor();
+PLATFORM_EXPORT const Cursor& zoomInCursor();
+PLATFORM_EXPORT const Cursor& zoomOutCursor();
+PLATFORM_EXPORT const Cursor& copyCursor();
+PLATFORM_EXPORT const Cursor& noneCursor();
+PLATFORM_EXPORT const Cursor& grabCursor();
+PLATFORM_EXPORT const Cursor& grabbingCursor();
 
 } // namespace WebCore
 

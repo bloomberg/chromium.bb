@@ -24,7 +24,7 @@
 
 #include "core/loader/NavigationPolicy.h"
 #include "core/page/FocusDirection.h"
-#include "core/platform/Cursor.h"
+#include "platform/Cursor.h"
 #include "platform/HostWindow.h"
 #include "wtf/Forward.h"
 

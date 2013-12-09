@@ -20,6 +20,8 @@
       'Cookie.h',
       'CrossThreadCopier.cpp',
       'CrossThreadCopier.h',
+      'Cursor.cpp',
+      'Cursor.h',
       'DateComponents.cpp',
       'DateComponents.h',
       'DateTimeChooser.cpp',
