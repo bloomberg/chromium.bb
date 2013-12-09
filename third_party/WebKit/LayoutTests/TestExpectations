@@ -403,6 +403,7 @@ crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Fa
 crbug.com/318431 [ Linux ] fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Pass Timeout ]
 
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
+crbug.com/326881 [ Mac Debug ] svg/carto.net/window.svg [ Pass ImageOnlyFailure ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ Pass ImageOnlyFailure ]
