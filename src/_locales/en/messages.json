@@ -71,6 +71,10 @@
     "message": "Photo Lab",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
+  "modernEffect": {
+    "message": "Modern",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Swirl",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
