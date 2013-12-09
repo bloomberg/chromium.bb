@@ -3,12 +3,12 @@ function importTestKeys()
     var keyFormat = "raw";
     var data = asciiToUint8Array("16 bytes of key!");
     var extractable = true;
-    var keyUsages = ['encrypt', 'decrypt', 'sign', 'verify'];
+    var keyUsages = ['wrapKey', 'unwrapKey', 'encrypt', 'decrypt', 'sign', 'verify'];
 
     var hmacPromise = crypto.subtle.importKey(keyFormat, data, {name: 'hmac', hash: {name: 'sha-1'}}, extractable, keyUsages);
     var aesCbcPromise = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, keyUsages);
     var aesCbcJustDecrypt = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, false, ['decrypt']);
-    // TODO(ellyjones): use AES-CTR key type once it's implemented
+    // FIXME: use AES-CTR key type once it's implemented
     var aesCtrPromise = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, keyUsages);
 
     return Promise.all([hmacPromise, aesCbcPromise, aesCbcJustDecrypt, aesCtrPromise]).then(function(results) {

@@ -189,6 +189,7 @@ bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, Algo
 
     // Verify that the algorithm-specific parameters for the key conform to the
     // algorithm.
+    // FIXME: Verify that this is complete.
 
     if (m_key.algorithm().id() == blink::WebCryptoAlgorithmIdHmac) {
         blink::WebCryptoAlgorithmId keyHash;

@@ -58,6 +58,9 @@ public:
     ScriptPromise importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
     ScriptPromise exportKey(const String&, Key*, ExceptionState&);
 
+    ScriptPromise wrapKey(const String&, Key*, Key*, const Dictionary&, ExceptionState&);
+    ScriptPromise unwrapKey(const String&, ArrayBufferView*, Key*, const Dictionary&, const Dictionary&, bool, const Vector<String>&, ExceptionState&);
+
 private:
     SubtleCrypto();
 };

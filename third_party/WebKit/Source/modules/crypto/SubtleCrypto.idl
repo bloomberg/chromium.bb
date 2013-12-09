@@ -40,5 +40,8 @@
     [RaisesException] Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
     [RaisesException] Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary? algorithm, boolean extractable, DOMString[] keyUsages);
     [RaisesException] Promise exportKey(DOMString format, Key key);
+
+    [RaisesException] Promise wrapKey(DOMString format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
+    [RaisesException] Promise unwrapKey(DOMString format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary? unwrappedKeyAlgorithm, boolean extractable, DOMString[] keyUsages);
 };
 

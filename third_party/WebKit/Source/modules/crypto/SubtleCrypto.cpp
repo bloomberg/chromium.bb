@@ -203,4 +203,80 @@ ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, Excepti
     return promise;
 }
 
+ScriptPromise SubtleCrypto::wrapKey(const String& rawFormat, Key* key, Key* wrappingKey, const Dictionary& rawWrapAlgorithm, ExceptionState& exceptionState)
+{
+    blink::WebCryptoKeyFormat format;
+    if (!Key::parseFormat(rawFormat, format, exceptionState))
+        return ScriptPromise();
+
+    if (!key) {
+        exceptionState.throwTypeError("Invalid key argument");
+        return ScriptPromise();
+    }
+
+    if (!wrappingKey) {
+        exceptionState.throwTypeError("Invalid wrappingKey argument");
+        return ScriptPromise();
+    }
+
+    blink::WebCryptoAlgorithm wrapAlgorithm;
+    if (!normalizeAlgorithm(rawWrapAlgorithm, WrapKey, wrapAlgorithm, exceptionState))
+        return ScriptPromise();
+
+    if (!key->extractable()) {
+        exceptionState.throwDOMException(NotSupportedError, "key is not extractable");
+        return ScriptPromise();
+    }
+
+    if (!wrappingKey->canBeUsedForAlgorithm(wrapAlgorithm, WrapKey, exceptionState))
+        return ScriptPromise();
+
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    blink::Platform::current()->crypto()->wrapKey(format, key->key(), wrappingKey->key(), wrapAlgorithm, result->result());
+    return promise;
+}
+
+ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, ArrayBufferView* wrappedKey, Key* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& exceptionState)
+{
+    blink::WebCryptoKeyFormat format;
+    if (!Key::parseFormat(rawFormat, format, exceptionState))
+        return ScriptPromise();
+
+    if (!wrappedKey) {
+        exceptionState.throwTypeError("Invalid wrappedKey argument");
+        return ScriptPromise();
+    }
+
+    if (!unwrappingKey) {
+        exceptionState.throwTypeError("Invalid unwrappingKey argument");
+        return ScriptPromise();
+    }
+
+    blink::WebCryptoAlgorithm unwrapAlgorithm;
+    if (!normalizeAlgorithm(rawUnwrapAlgorithm, UnwrapKey, unwrapAlgorithm, exceptionState))
+        return ScriptPromise();
+
+    // The unwrappedKeyAlgorithm is optional.
+    blink::WebCryptoAlgorithm unwrappedKeyAlgorithm;
+    if (!rawUnwrappedKeyAlgorithm.isUndefinedOrNull() && !normalizeAlgorithm(rawUnwrappedKeyAlgorithm, ImportKey, unwrappedKeyAlgorithm, exceptionState))
+        return ScriptPromise();
+
+    blink::WebCryptoKeyUsageMask keyUsages;
+    if (!Key::parseUsageMask(rawKeyUsages, keyUsages, exceptionState))
+        return ScriptPromise();
+
+    if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, UnwrapKey, exceptionState))
+        return ScriptPromise();
+
+    const unsigned char* wrappedKeyData = static_cast<const unsigned char*>(wrappedKey->baseAddress());
+    unsigned wrappedKeyDataSize = wrappedKey->byteLength();
+
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    blink::Platform::current()->crypto()->unwrapKey(format, wrappedKeyData, wrappedKeyDataSize, unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
+    return promise;
+}
+
+
 } // namespace WebCore
