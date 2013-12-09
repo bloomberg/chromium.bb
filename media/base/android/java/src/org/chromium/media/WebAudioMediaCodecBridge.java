@@ -13,6 +13,7 @@ import android.media.MediaFormat;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import java.io.IOException;
 import java.io.File;
 import java.nio.ByteBuffer;
 
@@ -84,7 +85,15 @@ class WebAudioMediaCodecBridge {
               " Format: " + format);
 
         // Create decoder
-        MediaCodec codec = MediaCodec.createDecoderByType(mime);
+        MediaCodec codec;
+        try {
+            codec = MediaCodec.createDecoderByType(mime);
+        } catch (Exception e) {
+            Log.w(LOG_TAG, "Failed to create MediaCodec for mime type: " + mime);
+            encodedFD.detachFd();
+            return false;
+        }
+
         codec.configure(format, null /* surface */, null /* crypto */, 0 /* flags */);
         codec.start();
 
