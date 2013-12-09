@@ -82,6 +82,11 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
                          bool fin,
                          const SpdyHeaderBlock& headers) OVERRIDE;
 
+  // Called when data frame header is received.
+  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                 size_t length,
+                                 bool fin) OVERRIDE {}
+
   // Called when data is received.
   // |stream_id| The stream receiving data.
   // |data| A buffer containing the data received.

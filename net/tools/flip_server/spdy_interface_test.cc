@@ -56,6 +56,7 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
   MOCK_METHOD3(OnSynStream, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
   MOCK_METHOD3(OnSynReply, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
   MOCK_METHOD3(OnHeaders, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
+  MOCK_METHOD3(OnDataFrameHeader, void(SpdyStreamId, size_t, bool));
   MOCK_METHOD4(OnStreamFrameData, void(SpdyStreamId,
                                        const char*,
                                        size_t,
@@ -469,6 +470,8 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound_SPDY2) {
         .WillOnce(SaveArg<2>(&actual_header_block));
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
+                OnDataFrameHeader(stream_id, _, true));
+    EXPECT_CALL(*spdy_framer_visitor_,
                 OnStreamFrameData(stream_id, _, _, false)).Times(1)
         .WillOnce(DoAll(SaveArg<1>(&actual_data),
                         SaveArg<2>(&actual_size)));
@@ -511,6 +514,8 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound) {
                 OnSynReply(stream_id, false, _))
         .WillOnce(SaveArg<2>(&actual_header_block));
     EXPECT_CALL(checkpoint, Call(0));
+    EXPECT_CALL(*spdy_framer_visitor_,
+                OnDataFrameHeader(stream_id, _, true));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnStreamFrameData(stream_id, _, _, false)).Times(1)
         .WillOnce(DoAll(SaveArg<1>(&actual_data),
@@ -678,6 +683,8 @@ TEST_P(SpdySMProxyTest, SendDataFrame) {
   {
     InSequence s;
     EXPECT_CALL(*spdy_framer_visitor_,
+                OnDataFrameHeader(stream_id, _, false));
+    EXPECT_CALL(*spdy_framer_visitor_,
                 OnStreamFrameData(stream_id, _, _, false))
         .WillOnce(DoAll(SaveArg<1>(&actual_data),
                         SaveArg<2>(&actual_size)));
@@ -702,10 +709,14 @@ TEST_P(SpdySMProxyTest, SendLongDataFrame) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnStreamFrameData(stream_id, _, _, false)).Times(3)
-        .WillRepeatedly(DoAll(SaveArg<1>(&actual_data),
-                        SaveArg<2>(&actual_size)));
+    for (int i = 0; i < 3; ++i) {
+        EXPECT_CALL(*spdy_framer_visitor_,
+                    OnDataFrameHeader(stream_id, _, false));
+        EXPECT_CALL(*spdy_framer_visitor_,
+                    OnStreamFrameData(stream_id, _, _, false))
+            .WillOnce(DoAll(SaveArg<1>(&actual_data),
+                            SaveArg<2>(&actual_size)));
+    }
   }
 
   ASSERT_EQ(3u, connection_->output_list()->size());
@@ -824,6 +835,8 @@ TEST_P(SpdySMServerTest, NewStreamError) {
                 OnSynReply(stream_id, false, _))
         .WillOnce(SaveArg<2>(&actual_header_block));
     EXPECT_CALL(checkpoint, Call(0));
+    EXPECT_CALL(*spdy_framer_visitor_,
+                OnDataFrameHeader(stream_id, _, true));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnStreamFrameData(stream_id, _, _, false)).Times(1)
         .WillOnce(DoAll(SaveArg<1>(&actual_data),

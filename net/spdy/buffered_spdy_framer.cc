@@ -175,6 +175,7 @@ void BufferedSpdyFramer::OnDataFrameHeader(SpdyStreamId stream_id,
                                            bool fin) {
   frames_received_++;
   header_stream_id_ = stream_id;
+  visitor_->OnDataFrameHeader(stream_id, length, fin);
 }
 
 void BufferedSpdyFramer::OnStreamFrameData(SpdyStreamId stream_id,

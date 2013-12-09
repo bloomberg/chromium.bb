@@ -993,6 +993,70 @@ TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustBidirectional) {
       base::Bind(&AdjustStreamSendWindowSize));
 }
 
+// Test calculation of amount of bytes received from network.
+TEST_P(SpdyStreamTest, ReceivedBytes) {
+  GURL url(kStreamUrl);
+
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+
+  scoped_ptr<SpdyFrame> syn(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  AddWrite(*syn);
+
+  scoped_ptr<SpdyFrame>
+      reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  AddRead(*reply);
+
+  scoped_ptr<SpdyFrame> msg(
+      spdy_util_.ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
+  AddRead(*msg);
+
+  AddReadEOF();
+
+  DeterministicSocketData data(GetReads(), GetNumReads(),
+                               GetWrites(), GetNumWrites());
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
+
+  base::WeakPtr<SpdyStream> stream =
+      CreateStreamSynchronously(
+          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+
+  StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrlFromHeaders());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_TRUE(stream->HasUrlFromHeaders());
+  EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
+
+  int64 reply_frame_len = reply->size();
+  int64 data_header_len = spdy_util_.CreateFramer()->GetDataFrameMinimumSize();
+  int64 data_frame_len = data_header_len + kPostBodyLength;
+  int64 response_len = reply_frame_len + data_frame_len;
+
+  EXPECT_EQ(0, stream->raw_received_bytes());
+  data.RunFor(1); // SYN
+  EXPECT_EQ(0, stream->raw_received_bytes());
+  data.RunFor(1); // REPLY
+  EXPECT_EQ(reply_frame_len, stream->raw_received_bytes());
+  data.RunFor(1); // DATA
+  EXPECT_EQ(response_len, stream->raw_received_bytes());
+  data.RunFor(1); // FIN
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+}
+
 }  // namespace
 
 }  // namespace test

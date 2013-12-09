@@ -53,6 +53,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
                          bool fin,
                          const SpdyHeaderBlock& headers) = 0;
 
+  // Called when a data frame header is received.
+  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                 size_t length,
+                                 bool fin) = 0;
+
   // Called when data is received.
   // |stream_id| The stream receiving data.
   // |data| A buffer containing the data received.

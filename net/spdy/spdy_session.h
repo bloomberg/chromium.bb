@@ -781,6 +781,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                            SpdyRstStreamStatus status) OVERRIDE;
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) OVERRIDE;
+  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                 size_t length,
+                                 bool fin) OVERRIDE;
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
@@ -817,7 +820,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   virtual void OnReceiveCompressedFrame(
       SpdyStreamId stream_id,
       SpdyFrameType type,
-      size_t frame_len) OVERRIDE {}
+      size_t frame_len) OVERRIDE;
 
   // Called when bytes are consumed from a SpdyBuffer for a DATA frame
   // that is to be written or is being written. Increases the send
@@ -1032,6 +1035,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // This is the last time we had activity in the session.
   base::TimeTicks last_activity_time_;
+
+  // This is the length of the last compressed frame.
+  size_t last_compressed_frame_len_;
 
   // This is the next time that unclaimed push streams should be checked for
   // expirations.

@@ -67,6 +67,12 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     headers_ = headers;
   }
 
+  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                 size_t length,
+                                 bool fin) OVERRIDE {
+    ADD_FAILURE() << "Unexpected OnDataFrameHeader call.";
+  }
+
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,

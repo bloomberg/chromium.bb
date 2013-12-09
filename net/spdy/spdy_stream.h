@@ -388,6 +388,12 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   int response_status() const { return response_status_; }
 
+  void IncrementRawReceivedBytes(size_t received_bytes) {
+    raw_received_bytes_ += received_bytes;
+  }
+
+  int64 raw_received_bytes() const { return raw_received_bytes_; }
+
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
   // Get the URL from the appropriate stream headers, or the empty
@@ -519,6 +525,10 @@ class NET_EXPORT_PRIVATE SpdyStream {
   base::TimeTicks send_time_;
   base::TimeTicks recv_first_byte_time_;
   base::TimeTicks recv_last_byte_time_;
+
+  // Number of bytes that have been received on this stream, including frame
+  // overhead and headers.
+  int64 raw_received_bytes_;
 
   // Number of data bytes that have been sent/received on this stream, not
   // including frame overhead. Note that this does not count headers.
