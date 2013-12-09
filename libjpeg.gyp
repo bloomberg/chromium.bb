@@ -156,11 +156,11 @@
           ],
         }],
         # The ARM SIMD implementation can be used for devices that support
-        # the NEON instruction set. This can safely be done dynamically by
-        # probing CPU features at runtime, if you wish.
+        # the NEON instruction set. This is done dynamically by probing CPU
+        # features at runtime, so always compile it for ARMv7-A devices.
         [ 'target_arch=="arm"', {
           'conditions': [
-            [ 'arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
+            [ 'armv7 == 1 or arm_neon == 1', {
               'sources': [
                 'simd/jsimd_arm.c',
                 'simd/jsimd_arm_neon.S',
