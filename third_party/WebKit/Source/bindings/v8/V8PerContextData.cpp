@@ -51,7 +51,7 @@ static void disposeMapWithUnsafePersistentValues(Map* map)
 void V8PerContextData::dispose()
 {
     v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Context>::New(m_isolate, m_context)->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
+    V8PerContextDataHolder::from(v8::Local<v8::Context>::New(m_isolate, m_context))->setPerContextData(0);
 
     disposeMapWithUnsafePersistentValues(&m_wrapperBoilerplates);
     disposeMapWithUnsafePersistentValues(&m_constructorMap);
@@ -78,7 +78,7 @@ void V8PerContextData::dispose()
 bool V8PerContextData::init()
 {
     v8::Handle<v8::Context> context = v8::Local<v8::Context>::New(m_isolate, m_context);
-    context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
+    V8PerContextDataHolder::from(context)->setPerContextData(this);
 
     v8::Handle<v8::String> prototypeString = v8AtomicString(m_isolate, "prototype");
     if (prototypeString.IsEmpty())

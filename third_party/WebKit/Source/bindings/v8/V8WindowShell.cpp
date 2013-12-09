@@ -196,6 +196,8 @@ bool V8WindowShell::initializeIfNeeded()
 
     v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
 
+    V8PerContextDataHolder::install(context);
+
     m_world->setIsolatedWorldField(context);
 
     bool isMainWorld = m_world->isMainWorld();

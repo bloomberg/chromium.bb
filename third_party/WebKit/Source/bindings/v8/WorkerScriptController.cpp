@@ -109,6 +109,8 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
     v8::Context::Scope scope(context);
 
+    V8PerContextDataHolder::install(context);
+
     m_perContextData = V8PerContextData::create(context);
     if (!m_perContextData->init()) {
         disposeContext();

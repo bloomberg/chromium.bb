@@ -36,6 +36,8 @@
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include "gin/public/context_holder.h"
+#include "gin/public/gin_embedders.h"
 #include <v8.h>
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
@@ -46,16 +48,58 @@
 namespace WebCore {
 
 class CustomElementDefinition;
+class DOMWrapperWorld;
+class V8PerContextData;
 struct V8NPObject;
 typedef WTF::Vector<V8NPObject*> V8NPObjectVector;
 typedef WTF::HashMap<int, V8NPObjectVector> V8NPObjectMap;
 
 enum V8ContextEmbedderDataField {
-    v8ContextDebugIdIndex,
-    v8ContextPerContextDataIndex,
-    v8ContextIsolatedWorld,
-    // Rather than adding more embedder data fields to v8::Context,
-    // consider adding the data to V8PerContextData instead.
+    v8ContextDebugIdIndex = static_cast<int>(gin::kDebugIdIndex),
+    v8ContextPerContextDataIndex = static_cast<int>(gin::kPerContextDataStartIndex + gin::kEmbedderBlink),
+};
+
+class V8PerContextDataHolder {
+    WTF_MAKE_NONCOPYABLE(V8PerContextDataHolder);
+public:
+    static void install(v8::Handle<v8::Context> context)
+    {
+        new V8PerContextDataHolder(context);
+    }
+
+    static V8PerContextDataHolder* from(v8::Handle<v8::Context> context)
+    {
+        return static_cast<V8PerContextDataHolder*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
+    }
+
+    V8PerContextData* perContextData() const { return m_perContextData; }
+    void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
+
+    DOMWrapperWorld* isolatedWorld() const { return m_isolatedWorld; }
+    void setIsolatedWorld(DOMWrapperWorld* world) { m_isolatedWorld = world; }
+
+private:
+    explicit V8PerContextDataHolder(v8::Handle<v8::Context> context)
+        : m_context(v8::Isolate::GetCurrent(), context)
+        , m_perContextData(0)
+        , m_isolatedWorld(0)
+    {
+        m_context.SetWeak(this, &V8PerContextDataHolder::weakCallback);
+        context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
+    }
+
+    ~V8PerContextDataHolder() {}
+
+    static void weakCallback(const v8::WeakCallbackData<v8::Context, V8PerContextDataHolder>& data)
+    {
+        data.GetValue()->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
+        data.GetParameter()->m_context.Reset();
+        delete data.GetParameter();
+    }
+
+    v8::Persistent<v8::Context> m_context;
+    V8PerContextData* m_perContextData;
+    DOMWrapperWorld* m_isolatedWorld;
 };
 
 class V8PerContextData {
@@ -74,7 +118,7 @@ public:
 
     static V8PerContextData* from(v8::Handle<v8::Context> context)
     {
-        return static_cast<V8PerContextData*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
+        return V8PerContextDataHolder::from(context)->perContextData();
     }
 
     // To create JS Wrapper objects, we create a cache of a 'boiler plate'

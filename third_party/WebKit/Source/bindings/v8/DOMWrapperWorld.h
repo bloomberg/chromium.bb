@@ -68,7 +68,7 @@ public:
     static DOMWrapperWorld* isolatedWorld(v8::Handle<v8::Context> context)
     {
         ASSERT(contextHasCorrectPrototype(context));
-        return static_cast<DOMWrapperWorld*>(context->GetAlignedPointerFromEmbedderData(v8ContextIsolatedWorld));
+        return V8PerContextDataHolder::from(context)->isolatedWorld();
     }
 
     // Will return null if there is no DOMWrapperWorld for the current v8::Context

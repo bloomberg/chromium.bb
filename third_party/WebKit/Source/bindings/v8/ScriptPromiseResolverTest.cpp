@@ -54,7 +54,9 @@ public:
 
     void SetUp()
     {
-        m_perContextData = V8PerContextData::create(m_context.newLocal(m_isolate));
+        v8::Handle<v8::Context> context(m_context.newLocal(m_isolate));
+        V8PerContextDataHolder::install(context);
+        m_perContextData = V8PerContextData::create(context);
         m_perContextData->init();
         m_promise = ScriptPromise::createPending();
         m_resolver = ScriptPromiseResolver::create(m_promise);
