@@ -51,7 +51,7 @@ class CustomFrameViewAshWindowStateDelegate
   CustomFrameViewAshWindowStateDelegate(
       ash::wm::WindowState* window_state,
       ash::CustomFrameViewAsh* custom_frame_view)
-      : window_state_(window_state) {
+      : window_state_(NULL) {
 #if defined(OS_CHROMEOS)
     // TODO(pkotwicz): Investigate if immersive fullscreen can be enabled for
     // Windows Ash.
@@ -67,8 +67,9 @@ class CustomFrameViewAshWindowStateDelegate
       // WindowState::ToggleFullscreen(). This is the case when exiting
       // immersive fullscreen via the "Restore" window control.
       // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
-      window_state->AddObserver(this);
-      window_state->window()->AddObserver(this);
+      window_state_ = window_state;
+      window_state_->AddObserver(this);
+      window_state_->window()->AddObserver(this);
     }
 #endif
   }
