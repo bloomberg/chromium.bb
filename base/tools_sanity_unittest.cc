@@ -65,14 +65,26 @@ void WriteValueOutOfArrayBoundsRight(char *ptr, size_t size) {
 
 void MakeSomeErrors(char *ptr, size_t size) {
   ReadUninitializedValue(ptr);
+
   HARMFUL_ACCESS(ReadValueOutOfArrayBoundsLeft(ptr),
-                 "heap-buffer-overflow.*2 bytes to the left");
+                 "heap-buffer-overflow");
+  HARMFUL_ACCESS(ReadValueOutOfArrayBoundsLeft(ptr),
+                 "2 bytes to the left");
+
   HARMFUL_ACCESS(ReadValueOutOfArrayBoundsRight(ptr, size),
-                 "heap-buffer-overflow.*1 bytes to the right");
+                 "heap-buffer-overflow");
+  HARMFUL_ACCESS(ReadValueOutOfArrayBoundsRight(ptr, size),
+                 "1 bytes to the right");
+
   HARMFUL_ACCESS(WriteValueOutOfArrayBoundsLeft(ptr),
-                 "heap-buffer-overflow.*1 bytes to the left");
+                 "heap-buffer-overflow");
+  HARMFUL_ACCESS(WriteValueOutOfArrayBoundsLeft(ptr),
+                 "1 bytes to the left");
+
   HARMFUL_ACCESS(WriteValueOutOfArrayBoundsRight(ptr, size),
-                 "heap-buffer-overflow.*0 bytes to the right");
+                 "heap-buffer-overflow");
+  HARMFUL_ACCESS(WriteValueOutOfArrayBoundsRight(ptr, size),
+                 "0 bytes to the right");
 }
 
 }  // namespace
