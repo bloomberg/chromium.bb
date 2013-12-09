@@ -372,7 +372,7 @@ DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
   content::RecordAction(content::UserMetricsAction("DevTools_InspectWorker"));
   return Create(profile, GURL(), NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true,
-                false);
+                false, false);
 }
 
 // static
@@ -405,7 +405,7 @@ void DevToolsWindow::OpenExternalFrontend(
   DevToolsWindow* window = FindDevToolsWindow(agent_host);
   if (!window) {
     window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
-                    DEVTOOLS_DOCK_SIDE_UNDOCKED, false, true);
+                    DEVTOOLS_DOCK_SIDE_UNDOCKED, false, true, false);
     content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         agent_host, window->frontend_host_.get());
   }
@@ -428,7 +428,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
     content::RecordAction(
         content::UserMetricsAction("DevTools_InspectRenderer"));
-    window = Create(profile, GURL(), inspected_rvh, dock_side, false, false);
+    window = Create(profile, GURL(), inspected_rvh, dock_side, false, false,
+        true);
     manager->RegisterDevToolsClientHostFor(agent.get(),
                                            window->frontend_host_.get());
     do_open = true;
@@ -547,7 +548,8 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     int inspected_tab_index = -1;
     // Tell inspected browser to update splitter and switch to inspected panel.
     if (!IsInspectedBrowserPopup() &&
-        FindInspectedBrowserAndTabIndex(&inspected_browser,
+        FindInspectedBrowserAndTabIndex(GetInspectedWebContents(),
+                                        &inspected_browser,
                                         &inspected_tab_index)) {
       BrowserWindow* inspected_window = inspected_browser->window();
       web_contents_->SetDelegate(this);
@@ -712,11 +714,26 @@ DevToolsWindow* DevToolsWindow::Create(
     content::RenderViewHost* inspected_rvh,
     DevToolsDockSide dock_side,
     bool shared_worker_frontend,
-    bool external_frontend) {
+    bool external_frontend,
+    bool can_dock) {
+  if (inspected_rvh) {
+    // Check for a place to dock.
+    Browser* browser = NULL;
+    int tab;
+    content::WebContents* inspected_web_contents =
+        content::WebContents::FromRenderViewHost(inspected_rvh);
+    if (!FindInspectedBrowserAndTabIndex(inspected_web_contents,
+                                         &browser, &tab) ||
+        browser->is_type_popup()) {
+      can_dock = false;
+    }
+  }
+
   // Create WebContents with devtools.
   GURL url(GetDevToolsURL(profile, frontend_url, dock_side,
                           shared_worker_frontend,
-                          external_frontend));
+                          external_frontend,
+                          can_dock));
   return new DevToolsWindow(profile, url, inspected_rvh, dock_side);
 }
 
@@ -725,7 +742,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     const GURL& base_url,
                                     DevToolsDockSide dock_side,
                                     bool shared_worker_frontend,
-                                    bool external_frontend) {
+                                    bool external_frontend,
+                                    bool can_dock) {
   if (base_url.SchemeIs("data"))
     return base_url;
 
@@ -745,6 +763,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     url_string += "&isSharedWorker=true";
   if (external_frontend)
     url_string += "&remoteFrontend=true";
+  if (can_dock)
+    url_string += "&can_dock=true";
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
@@ -961,7 +981,8 @@ void DevToolsWindow::RunFileChooser(content::WebContents* web_contents,
 void DevToolsWindow::WebContentsFocused(content::WebContents* contents) {
   Browser* inspected_browser = NULL;
   int inspected_tab_index = -1;
-  if (IsDocked() && FindInspectedBrowserAndTabIndex(&inspected_browser,
+  if (IsDocked() && FindInspectedBrowserAndTabIndex(GetInspectedWebContents(),
+                                                    &inspected_browser,
                                                     &inspected_tab_index))
     inspected_browser->window()->WebContentsFocused(contents);
 }
@@ -1334,9 +1355,9 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   GetRenderViewHost()->SyncRendererPrefs();
 }
 
-bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
-                                                     int* tab) {
-  content::WebContents* inspected_web_contents = GetInspectedWebContents();
+// static
+bool DevToolsWindow::FindInspectedBrowserAndTabIndex(
+    content::WebContents* inspected_web_contents, Browser** browser, int* tab) {
   if (!inspected_web_contents)
     return false;
 
@@ -1355,14 +1376,16 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
 BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
   Browser* browser = NULL;
   int tab;
-  return FindInspectedBrowserAndTabIndex(&browser, &tab) ?
+  return FindInspectedBrowserAndTabIndex(GetInspectedWebContents(),
+                                         &browser, &tab) ?
       browser->window() : NULL;
 }
 
 bool DevToolsWindow::IsInspectedBrowserPopup() {
   Browser* browser = NULL;
   int tab;
-  return FindInspectedBrowserAndTabIndex(&browser, &tab) &&
+  return FindInspectedBrowserAndTabIndex(GetInspectedWebContents(),
+                                         &browser, &tab) &&
       browser->is_type_popup();
 }
 

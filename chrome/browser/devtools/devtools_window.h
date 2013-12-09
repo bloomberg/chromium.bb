@@ -219,17 +219,21 @@ class DevToolsWindow : private content::NotificationObserver,
                                 content::RenderViewHost* inspected_rvh,
                                 DevToolsDockSide dock_side,
                                 bool shared_worker_frontend,
-                                bool external_frontend);
+                                bool external_frontend,
+                                bool can_dock);
   static GURL GetDevToolsURL(Profile* profile,
                              const GURL& base_url,
                              DevToolsDockSide dock_side,
                              bool shared_worker_frontend,
-                             bool external_frontend);
+                             bool external_frontend,
+                             bool can_dock);
   static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
   static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
   static DevToolsDockSide GetDockSideFromPrefs(Profile* profile);
   static std::string SideToString(DevToolsDockSide dock_side);
   static DevToolsDockSide SideFromString(const std::string& dock_side);
+  static bool FindInspectedBrowserAndTabIndex(
+      content::WebContents* inspected_web_contents, Browser**, int* tab);
 
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -317,7 +321,6 @@ class DevToolsWindow : private content::NotificationObserver,
                                   const InfoBarCallback& callback);
 
   void CreateDevToolsBrowser();
-  bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
   BrowserWindow* GetInspectedBrowserWindow();
   bool IsInspectedBrowserPopup();
   void UpdateFrontendDockSide();
