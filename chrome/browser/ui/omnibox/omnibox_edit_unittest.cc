@@ -221,7 +221,9 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
   }
 }
 
-TEST_F(AutocompleteEditTest, InlineAutocompleteText) {
+// This test causes resource leak.  Disabled until it's fixed.
+// TODO(yukishiino): Fix the leak.
+TEST_F(AutocompleteEditTest, DISABLED_InlineAutocompleteText) {
   TestingOmniboxEditController controller(toolbar_model());
   TestingOmniboxView view(&controller);
   TestingProfile profile;
