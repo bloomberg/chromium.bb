@@ -3421,6 +3421,9 @@ xdg_shell_unversioned_dispatch(const void *implementation,
 
 #define XDG_SERVER_VERSION 1
 
+	static_assert(XDG_SERVER_VERSION == XDG_SHELL_VERSION_CURRENT,
+		      "shell implementation doesn't match protocol version");
+
 	if (args[0].i != XDG_SERVER_VERSION) {
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
