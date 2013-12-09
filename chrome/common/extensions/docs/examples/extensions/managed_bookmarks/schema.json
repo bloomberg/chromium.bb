@@ -9,9 +9,21 @@
       "items": {
         "type": "object",
         "properties": {
-          "title": { "type": "string" },
-          "url": { "type": "string" },
-          "children": { "$ref": "ListOfBookmarks" }
+          "title": {
+            "title": "Bookmark name",
+            "description": "The name that appears on the bookmark.",
+            "type": "string"
+          },
+          "url": {
+            "title": "Bookmark URL",
+            "description": "The URL for the bookmark. If a URL is not set then this bookmark will be a folder.",
+            "type": "string"
+          },
+          "children": {
+            "title": "Contents of this bookmark folder",
+            "description": "A list of bookmarks that will be inside this bookmark folder. If this is set then the URL for this bookmark will be ignored.",
+            "$ref": "ListOfBookmarks"
+          }
         }
       }
     },

@@ -1,10 +1,10 @@
 {
   "extName":  {
-    "message": "Managed Bookmarks API Sample",
+    "message": "Managed Bookmarks",
     "description": "The extension name."
   },
   "extDescription": {
-    "message": "Set Chrome bookmarks using policy for an extension; a demonstration of Chrome's managed storage API",
+    "message": "Adds bookmarks configured by your system administrator to Chrome.",
     "description": "The extension description."
   }
 }
