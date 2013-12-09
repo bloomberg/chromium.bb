@@ -278,13 +278,13 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
                 }.bind(this), function() {
                   // Ignore this error, since it is better to load something
                   // than nothing.
-                  log.warn('Unabled to save the recreated thumbnail.');
+                  console.warn('Unabled to save the recreated thumbnail.');
                   callback();
                 });
           }.bind(this), function() {
             // Ignore this error, since it is better to load something than
             // nothing.
-            log.warn('Unable to recreate the thumbnail.');
+            console.warn('Unable to recreate the thumbnail.');
             callback();
           });
         } else {
