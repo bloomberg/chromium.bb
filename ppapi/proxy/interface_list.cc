@@ -29,7 +29,6 @@
 #include "ppapi/c/dev/ppb_var_resource_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_view_dev.h"
-#include "ppapi/c/extensions/dev/ppb_ext_alarms_dev.h"
 #include "ppapi/c/extensions/dev/ppb_ext_socket_dev.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_audio.h"

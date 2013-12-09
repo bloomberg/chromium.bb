@@ -87,12 +87,7 @@
         'widget_dev.cc',
         'var_resource_dev.cc',
 
-        # ppapi/cpp/extensions
-        'event_base.cc',
-
         # ppapi/cpp/extensions/dev
-        'alarms_dev.cc',
-        'events_dev.cc',
         'socket_dev.cc',
 
         # ppapi/utility/graphics
@@ -198,7 +193,6 @@
     {
       'FILES': [
         'dict_field.h',
-        'event_base.h',
         'ext_output_traits.h',
         'from_var_converter.h',
         'optional.h',
@@ -208,8 +202,6 @@
     },
     {
       'FILES': [
-        'alarms_dev.h',
-        'events_dev.h',
         'socket_dev.h',
       ],
       'DEST': 'include/ppapi/cpp/extensions/dev',

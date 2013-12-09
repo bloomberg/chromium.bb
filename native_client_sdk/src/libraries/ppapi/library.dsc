@@ -136,8 +136,6 @@
     },
     {
       'FILES': [
-        'ppb_ext_alarms_dev.h',
-        'ppb_ext_events_dev.h',
         'ppb_ext_socket_dev.h',
       ],
       'DEST': 'include/ppapi/c/extensions/dev',

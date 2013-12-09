@@ -149,7 +149,6 @@
           'thunk/ppb_cursor_control_thunk.cc',
           'thunk/ppb_device_ref_api.h',
           'thunk/ppb_device_ref_dev_thunk.cc',
-          'thunk/ppb_ext_alarms_thunk.cc',
           'thunk/ppb_ext_crx_file_system_private_thunk.cc',
           'thunk/ppb_ext_socket_thunk.cc',
           'thunk/ppb_file_chooser_api.h',
