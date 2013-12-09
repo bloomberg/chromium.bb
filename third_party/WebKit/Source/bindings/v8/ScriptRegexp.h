@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RegularExpression_h
-#define RegularExpression_h
+#ifndef ScriptRegexp_h
+#define ScriptRegexp_h
 
-#include <v8.h>
 #include "bindings/v8/ScopedPersistent.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -39,10 +39,10 @@ enum MultilineMode {
     MultilineEnabled
 };
 
-class RegularExpression {
-    WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(RegularExpression);
+class ScriptRegexp {
+    WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(ScriptRegexp);
 public:
-    RegularExpression(const String&, TextCaseSensitivity, MultilineMode = MultilineDisabled);
+    ScriptRegexp(const String&, TextCaseSensitivity, MultilineMode = MultilineDisabled);
 
     int match(const String&, int startFrom = 0, int* matchLength = 0) const;
 
@@ -54,4 +54,4 @@ private:
 
 } // namespace WebCore
 
-#endif // RegularExpression_h
+#endif // ScriptRegexp_h

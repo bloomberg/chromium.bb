@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptRegexp.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/fetch/Resource.h"
 #include "core/inspector/ContentSearchUtils.h"
@@ -42,7 +43,6 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/platform/text/RegularExpression.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"
 
@@ -172,11 +172,11 @@ void InspectorDebuggerAgent::disable(ErrorString*)
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
 }
 
-static PassOwnPtr<RegularExpression> compileSkipCallFramePattern(String patternText)
+static PassOwnPtr<ScriptRegexp> compileSkipCallFramePattern(String patternText)
 {
     if (patternText.isEmpty())
         return nullptr;
-    OwnPtr<RegularExpression> result = adoptPtr(new RegularExpression(patternText, TextCaseSensitive));
+    OwnPtr<ScriptRegexp> result = adoptPtr(new ScriptRegexp(patternText, TextCaseSensitive));
     if (!result->isValid())
         result.clear();
     return result.release();
@@ -291,7 +291,7 @@ static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, 
 static bool matches(const String& url, const String& pattern, bool isRegex)
 {
     if (isRegex) {
-        RegularExpression regex(pattern, TextCaseSensitive);
+        ScriptRegexp regex(pattern, TextCaseSensitive);
         return regex.match(url) != -1;
     }
     return url == pattern;
@@ -916,7 +916,7 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scop
 
 void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const String* pattern)
 {
-    OwnPtr<RegularExpression> compiled;
+    OwnPtr<ScriptRegexp> compiled;
     String patternValue = pattern ? *pattern : "";
     if (!patternValue.isEmpty()) {
         compiled = compileSkipCallFramePattern(patternValue);

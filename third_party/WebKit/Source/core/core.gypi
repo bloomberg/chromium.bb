@@ -2790,7 +2790,6 @@
             'platform/mock/GeolocationClientMock.cpp',
             'platform/mock/PlatformSpeechSynthesizerMock.cpp',
             'platform/mock/PlatformSpeechSynthesizerMock.h',
-            'platform/text/RegularExpression.cpp',
         ],
         'webcore_svg_files': [
             'rendering/style/SVGRenderStyle.cpp',

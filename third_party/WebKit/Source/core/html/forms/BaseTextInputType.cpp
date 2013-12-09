@@ -25,8 +25,8 @@
 #include "core/html/forms/BaseTextInputType.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ScriptRegexp.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/platform/text/RegularExpression.h"
 
 namespace WebCore {
 
@@ -41,12 +41,12 @@ bool BaseTextInputType::patternMismatch(const String& value) const
 {
     const AtomicString& rawPattern = element().fastGetAttribute(patternAttr);
     // Empty values can't be mismatched
-    if (rawPattern.isNull() || value.isEmpty() || !RegularExpression(rawPattern, TextCaseSensitive).isValid())
+    if (rawPattern.isNull() || value.isEmpty() || !ScriptRegexp(rawPattern, TextCaseSensitive).isValid())
         return false;
     String pattern = "^(?:" + rawPattern + ")$";
     int matchLength = 0;
     int valueLength = value.length();
-    int matchOffset = RegularExpression(pattern, TextCaseSensitive).match(value, 0, &matchLength);
+    int matchOffset = ScriptRegexp(pattern, TextCaseSensitive).match(value, 0, &matchLength);
     return matchOffset || matchLength != valueLength;
 }
 

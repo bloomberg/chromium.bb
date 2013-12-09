@@ -27,19 +27,15 @@
  */
 
 #include "config.h"
-#include "core/platform/text/RegularExpression.h"
+#include "bindings/v8/ScriptRegexp.h"
 
-// FIXME: These seem like a layering violation, but converting the strings manually
-// without v8String is difficult, and calling into v8 without V8RecursionScope will
-// assert. Perhaps v8 basic utilities shouldn't be in bindings, or we should put
-// RegularExpression as some kind of abstract interface that's implemented in bindings.
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8RecursionScope.h"
 
 namespace WebCore {
 
-RegularExpression::RegularExpression(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
+ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -60,17 +56,17 @@ RegularExpression::RegularExpression(const String& pattern, TextCaseSensitivity 
         m_regex.set(isolate, regex);
 }
 
-int RegularExpression::match(const String& string, int startFrom, int* matchLength) const
+int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) const
 {
     if (matchLength)
         *matchLength = 0;
 
     if (m_regex.isEmpty() || string.isNull())
-         return -1;
+        return -1;
 
     // v8 strings are limited to int.
     if (string.length() > INT_MAX)
-         return -1;
+        return -1;
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -94,7 +90,7 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp/exec
 
     if (!returnValue->IsArray())
-         return -1;
+        return -1;
 
     v8::Local<v8::Array> result = returnValue.As<v8::Array>();
     int matchOffset = result->Get(v8AtomicString(isolate, "index"))->ToInt32()->Value();

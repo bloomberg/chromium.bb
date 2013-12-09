@@ -57,7 +57,7 @@ class ScriptCallStack;
 class ScriptDebugServer;
 class ScriptSourceCode;
 class ScriptValue;
-class RegularExpression;
+class ScriptRegexp;
 
 typedef String ErrorString;
 
@@ -224,7 +224,7 @@ private:
 
     int m_skipStepInCount;
     bool m_skipAllPauses;
-    OwnPtr<RegularExpression> m_cachedSkipStackRegExp;
+    OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     AsyncCallStackTracker m_asyncCallStackTracker;
 };
 

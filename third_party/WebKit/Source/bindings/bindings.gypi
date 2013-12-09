@@ -65,6 +65,8 @@
             'v8/ScriptPromise.h',
             'v8/ScriptPromiseResolver.cpp',
             'v8/ScriptPromiseResolver.h',
+            'v8/ScriptRegexp.cpp',
+            'v8/ScriptRegexp.h',
             'v8/ScriptScope.cpp',
             'v8/ScriptScope.h',
             'v8/ScriptSourceCode.h',

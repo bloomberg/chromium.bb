@@ -25,11 +25,11 @@
 #include "core/html/forms/EmailInputType.h"
 
 #include "InputTypeNames.h"
+#include "bindings/v8/ScriptRegexp.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/platform/text/RegularExpression.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
@@ -125,7 +125,7 @@ static bool isValidEmailAddress(const String& address)
     if (!addressLength)
         return false;
 
-    DEFINE_STATIC_LOCAL(const RegularExpression, regExp, (emailPattern, TextCaseInsensitive));
+    DEFINE_STATIC_LOCAL(const ScriptRegexp, regExp, (emailPattern, TextCaseInsensitive));
 
     int matchLength;
     int matchOffset = regExp.match(address, 0, &matchLength);
