@@ -75,9 +75,6 @@ GlyphData WidthIterator::glyphDataForCharacter(UChar32 character, bool mirror, i
 #if ENABLE(SVG_FONTS)
     if (TextRun::RenderingContext* renderingContext = m_run.renderingContext())
         return renderingContext->glyphDataForCharacter(*m_font, m_run, *this, character, mirror, currentCharacter, advanceLength);
-#else
-    UNUSED_PARAM(currentCharacter);
-    UNUSED_PARAM(advanceLength);
 #endif
 
     return m_font->glyphDataForCharacter(character, mirror);

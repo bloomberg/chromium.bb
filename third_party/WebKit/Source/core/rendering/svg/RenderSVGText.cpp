@@ -231,9 +231,6 @@ static inline void checkLayoutAttributesConsistency(RenderSVGText* text, Vector<
     Vector<SVGTextLayoutAttributes*> newLayoutAttributes;
     collectLayoutAttributes(text, newLayoutAttributes);
     ASSERT(newLayoutAttributes == expectedLayoutAttributes);
-#else
-    UNUSED_PARAM(text);
-    UNUSED_PARAM(expectedLayoutAttributes);
 #endif
 }
 

@@ -59,7 +59,6 @@
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGRenderTreeAsText.h"
 #include "wtf/HexNumber.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"
 #include "wtf/unicode/CharacterNames.h"
 

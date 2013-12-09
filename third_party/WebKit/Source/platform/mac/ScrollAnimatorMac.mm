@@ -40,7 +40,6 @@
 #include "platform/scroll/ScrollbarThemeMacOverlayAPI.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/UnusedParam.h"
 
 using namespace WebCore;
 using namespace std;
@@ -209,7 +208,6 @@ static NSSize abs(NSSize size)
 
 - (NSRect)contentAreaRectForScrollerImpPair:(id)scrollerImpPair
 {
-    UNUSED_PARAM(scrollerImpPair);
     if (!_scrollableArea)
         return NSZeroRect;
 
@@ -219,7 +217,6 @@ static NSSize abs(NSSize size)
 
 - (BOOL)inLiveResizeForScrollerImpPair:(id)scrollerImpPair
 {
-    UNUSED_PARAM(scrollerImpPair);
     if (!_scrollableArea)
         return NO;
 
@@ -228,7 +225,6 @@ static NSSize abs(NSSize size)
 
 - (NSPoint)mouseLocationInContentAreaForScrollerImpPair:(id)scrollerImpPair
 {
-    UNUSED_PARAM(scrollerImpPair);
     if (!_scrollableArea)
         return NSZeroPoint;
 
@@ -237,7 +233,6 @@ static NSSize abs(NSSize size)
 
 - (NSPoint)scrollerImpPair:(id)scrollerImpPair convertContentPoint:(NSPoint)pointInContentArea toScrollerImp:(id)scrollerImp
 {
-    UNUSED_PARAM(scrollerImpPair);
 
     if (!_scrollableArea || !scrollerImp)
         return NSZeroPoint;
@@ -263,9 +258,6 @@ static NSSize abs(NSSize size)
 
 - (void)scrollerImpPair:(id)scrollerImpPair setContentAreaNeedsDisplayInRect:(NSRect)rect
 {
-    UNUSED_PARAM(scrollerImpPair);
-    UNUSED_PARAM(rect);
-
     if (!_scrollableArea)
         return;
 
@@ -572,8 +564,6 @@ enum FeatureToAnimate {
 
 - (void)scrollerImp:(id)scrollerImp overlayScrollerStateChangedTo:(NSUInteger)newOverlayScrollerState
 {
-    UNUSED_PARAM(scrollerImp);
-    UNUSED_PARAM(newOverlayScrollerState);
 }
 
 - (void)invalidate

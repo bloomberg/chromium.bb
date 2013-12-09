@@ -38,7 +38,6 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 
@@ -98,7 +97,7 @@ public:
 
     virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*) { return true; }
 
-    virtual void notifyContentAreaScrolled(const FloatSize& delta) { UNUSED_PARAM(delta); }
+    virtual void notifyContentAreaScrolled(const FloatSize&) { }
 
     virtual bool isRubberBandInProgress() const { return false; }
 

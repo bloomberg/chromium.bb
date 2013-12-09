@@ -28,7 +28,6 @@
 #include "wtf/PartitionAlloc.h"
 #include "wtf/QuantizedAllocation.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/VectorTraits.h"
 #include "wtf/WTF.h"
 #include <string.h>

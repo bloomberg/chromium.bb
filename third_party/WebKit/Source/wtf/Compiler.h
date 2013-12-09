@@ -205,6 +205,14 @@
 #define WARN_UNUSED_RETURN
 #endif
 
+/* ALLOW_UNUSED */
+
+#if COMPILER(GCC)
+#define ALLOW_UNUSED __attribute__((unused))
+#else
+#define ALLOW_UNUSED
+#endif
+
 /* OVERRIDE and FINAL */
 
 #if COMPILER_SUPPORTS(CXX_OVERRIDE_CONTROL)

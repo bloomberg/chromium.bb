@@ -671,9 +671,6 @@ void RenderTheme::adjustRepaintRect(const RenderObject* o, IntRect& r)
 {
 #if USE(NEW_THEME)
     m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForRenderer(o), r, o->style()->effectiveZoom());
-#else
-    UNUSED_PARAM(o);
-    UNUSED_PARAM(r);
 #endif
 }
 

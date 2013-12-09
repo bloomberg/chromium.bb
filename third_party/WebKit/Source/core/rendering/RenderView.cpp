@@ -164,7 +164,6 @@ void RenderView::positionDialogs()
 
 void RenderView::layoutContent(const LayoutState& state)
 {
-    UNUSED_PARAM(state);
     ASSERT(needsLayout());
 
     LayoutRectRecorder recorder(*this);

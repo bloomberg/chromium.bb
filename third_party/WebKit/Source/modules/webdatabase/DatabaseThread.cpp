@@ -36,7 +36,6 @@
 #include "platform/Logging.h"
 #include "public/platform/Platform.h"
 #include "wtf/AutodrainedPool.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 
@@ -76,8 +75,6 @@ bool DatabaseThread::terminationRequested(DatabaseTaskSynchronizer* taskSynchron
 #ifndef NDEBUG
     if (taskSynchronizer)
         taskSynchronizer->setHasCheckedForTermination();
-#else
-    UNUSED_PARAM(taskSynchronizer);
 #endif
 
     return m_terminationRequested;

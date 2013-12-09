@@ -205,10 +205,9 @@ static bool parseCustomFilterParameterList(CSSValue* parametersValue, CustomFilt
     return true;
 }
 
-static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithAtRuleReferenceSyntax(CSSFilterValue* filterValue)
+static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithAtRuleReferenceSyntax(CSSFilterValue*)
 {
     // FIXME: Implement style resolution for the custom filter at-rule reference syntax.
-    UNUSED_PARAM(filterValue);
     return 0;
 }
 

@@ -238,9 +238,6 @@ static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorPr
     if (!ignoreProfile)
         colorProfile.append(profileData, profileLength);
     free(profile);
-#else
-    UNUSED_PARAM(info);
-    UNUSED_PARAM(colorProfile);
 #endif
 }
 #endif

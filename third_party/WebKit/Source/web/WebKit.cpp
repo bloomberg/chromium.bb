@@ -52,7 +52,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/WTF.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
@@ -217,8 +216,6 @@ void enableLogChannel(const char* name)
     WTFLogChannel* channel = WebCore::getChannelFromName(name);
     if (channel)
         channel->state = WTFLogChannelOn;
-#else
-    UNUSED_PARAM(name);
 #endif // !LOG_DISABLED
 }
 

@@ -579,9 +579,8 @@ static bool transform3dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fr
     return returnValueIfNoParameter;
 }
 
-static bool viewModeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
+static bool viewModeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix)
 {
-    UNUSED_PARAM(op);
     if (!value)
         return true;
 

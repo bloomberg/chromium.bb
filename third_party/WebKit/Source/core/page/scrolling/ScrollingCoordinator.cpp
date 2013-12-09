@@ -604,9 +604,8 @@ void ScrollingCoordinator::setWheelEventHandlerCount(unsigned count)
         scrollLayer->setHaveWheelEventHandlers(count > 0);
 }
 
-void ScrollingCoordinator::recomputeWheelEventHandlerCountForFrameView(FrameView* frameView)
+void ScrollingCoordinator::recomputeWheelEventHandlerCountForFrameView(FrameView*)
 {
-    UNUSED_PARAM(frameView);
     setWheelEventHandlerCount(computeCurrentWheelEventHandlerCount());
 }
 

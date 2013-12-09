@@ -135,9 +135,8 @@ FloatPoint ScrollAnimator::currentPosition() const
     return FloatPoint(m_currentPosX, m_currentPosY);
 }
 
-void ScrollAnimator::notifyPositionChanged(const FloatSize& delta)
+void ScrollAnimator::notifyPositionChanged(const FloatSize&)
 {
-    UNUSED_PARAM(delta);
     m_scrollableArea->setScrollOffsetFromAnimation(IntPoint(m_currentPosX, m_currentPosY));
 }
 

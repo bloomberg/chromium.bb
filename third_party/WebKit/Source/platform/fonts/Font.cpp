@@ -29,7 +29,6 @@
 #include "platform/text/TextRun.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace WTF;

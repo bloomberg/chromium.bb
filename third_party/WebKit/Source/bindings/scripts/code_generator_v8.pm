@@ -4501,9 +4501,6 @@ END
     $code .= $runtimeEnabledIndent . "        " . ($hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods),\n" : "0, 0,\n");
     $code .= $runtimeEnabledIndent . "        isolate, currentWorldType);\n";
 
-    AddToImplIncludes("wtf/UnusedParam.h");
-    $code .= "    UNUSED_PARAM(defaultSignature);\n";
-
     if (IsConstructable($interface)) {
         $code .= "    functionTemplate->SetCallHandler(${v8ClassName}::constructorCallback);\n";
         my $interfaceLength = GetInterfaceLength($interface);
@@ -4511,10 +4508,8 @@ END
     }
 
         $code .=  <<END;
-    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
-    UNUSED_PARAM(instanceTemplate);
-    UNUSED_PARAM(prototypeTemplate);
+    v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
 END
 
     if ($accessCheck) {
@@ -4693,12 +4688,10 @@ END
         $code .= <<END;
 void ${v8ClassName}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
-    UNUSED_PARAM(prototypeTemplate);
 END
         # Define per-context enabled operations.
         $code .=  <<END;
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate, worldType(isolate)));
-    UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
 END

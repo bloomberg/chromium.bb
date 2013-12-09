@@ -31,7 +31,6 @@
 #include "platform/Logging.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebString.h"
-#include "wtf/UnusedParam.h"
 #include <math.h>
 
 using blink::WebInbandTextTrack;

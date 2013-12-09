@@ -80,7 +80,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/UnusedParam.h"
 
 #if OS(MACOSX)
 #include <AvailabilityMacros.h>
@@ -2319,7 +2318,6 @@ class TCMalloc_ThreadCache_FreeList {
     // is not present
     NEVER_INLINE void Validate(HardenedSLL missing, size_t size) {
         HardenedSLL node = list_;
-        UNUSED_PARAM(size);
         while (node) {
             RELEASE_ASSERT(node != missing);
             RELEASE_ASSERT(IS_DEFINITELY_POISONED(node.value(), size));

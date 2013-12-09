@@ -176,8 +176,6 @@ void DatabaseManager::throwExceptionForDatabaseError(DatabaseError error, const 
 
 static void logOpenDatabaseError(ExecutionContext* context, const String& name)
 {
-    UNUSED_PARAM(context);
-    UNUSED_PARAM(name);
     WTF_LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(),
         context->securityOrigin()->toString().ascii().data());
 }

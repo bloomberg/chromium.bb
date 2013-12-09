@@ -291,10 +291,6 @@ static void readColorProfile(png_structp png, png_infop info, ColorProfile& colo
     ASSERT(colorProfile.isEmpty());
     if (!ignoreProfile)
         colorProfile.append(profileData, profileLength);
-#else
-    UNUSED_PARAM(png);
-    UNUSED_PARAM(info);
-    UNUSED_PARAM(colorProfile);
 #endif
 }
 #endif

@@ -33,7 +33,6 @@
 
 #include "cached-powers.h"
 #include "utils.h"
-#include "wtf/UnusedParam.h"
 
 namespace WTF {
 
@@ -160,7 +159,6 @@ namespace double_conversion {
                                                                 int max_exponent,
                                                                 DiyFp* power,
                                                                 int* decimal_exponent) {
-        UNUSED_PARAM(max_exponent);
 #ifndef NDEBUG
         validateStaticConstants();
 #endif

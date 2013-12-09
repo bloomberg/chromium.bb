@@ -73,9 +73,8 @@ CustomFilterMeshGenerator::CustomFilterMeshGenerator(unsigned columns, unsigned 
 #endif
 }
 
-void CustomFilterMeshGenerator::addAttachedMeshIndex(int quadX, int quadY, int triangleX, int triangleY, int triangle)
+void CustomFilterMeshGenerator::addAttachedMeshIndex(int quadX, int quadY, int triangleX, int triangleY, int)
 {
-    UNUSED_PARAM(triangle);
     m_indices.append((quadY + triangleY) * m_points.width() + (quadX + triangleX));
 }
 

@@ -39,7 +39,6 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/TraceEvent.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 
@@ -81,11 +80,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceDoNotCheckConsta
         0, 0,
         0, 0,
         isolate, currentWorldType);
-    UNUSED_PARAM(defaultSignature);
-    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
-    UNUSED_PARAM(instanceTemplate);
-    UNUSED_PARAM(prototypeTemplate);
+    v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
     static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceDoNotCheckConstantsConstants[] = {
         {"CONST_VALUE_0", 0},
         {"CONST_JAVASCRIPT", 1},

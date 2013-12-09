@@ -29,8 +29,6 @@
 #include "core/svg/SVGFontData.h"
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceElement.h"
-#else
-#include "wtf/UnusedParam.h"
 #endif
 
 namespace WebCore {
@@ -77,8 +75,6 @@ float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, const
     kerning *= m_font.size() / m_font.fontMetrics().unitsPerEm();
     return kerning;
 #else
-    UNUSED_PARAM(isVerticalText);
-    UNUSED_PARAM(currentGlyph);
     return false;
 #endif
 }

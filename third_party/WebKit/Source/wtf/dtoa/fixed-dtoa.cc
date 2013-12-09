@@ -31,7 +31,6 @@
 
 #include "double.h"
 #include "fixed-dtoa.h"
-#include "wtf/UnusedParam.h"
 
 namespace WTF {
 
@@ -155,9 +154,8 @@ namespace double_conversion {
     }
 
 
-    static void FillDigits64FixedLength(uint64_t number, int requested_length,
+    static void FillDigits64FixedLength(uint64_t number, int,
                                         Vector<char> buffer, int* length) {
-        UNUSED_PARAM(requested_length);
         const uint32_t kTen7 = 10000000;
         // For efficiency cut the number into 3 uint32_t parts, and print those.
         uint32_t part2 = static_cast<uint32_t>(number % kTen7);

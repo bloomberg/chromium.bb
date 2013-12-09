@@ -42,7 +42,6 @@
 #include "wtf/ThreadIdentifierDataPthreads.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/ThreadingPrimitives.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/dtoa.h"
 #include "wtf/dtoa/cached-powers.h"
@@ -187,8 +186,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     }
 
     // Balanced by adoptPtr() in wtfThreadEntryPoint.
-    ThreadFunctionInvocation* leakedInvocation = invocation.leakPtr();
-    UNUSED_PARAM(leakedInvocation);
+    ThreadFunctionInvocation* ALLOW_UNUSED leakedInvocation = invocation.leakPtr();
 
     return establishIdentifierForPthreadHandle(threadHandle);
 }
@@ -197,8 +195,6 @@ void initializeCurrentThreadInternal(const char* threadName)
 {
 #if HAVE(PTHREAD_SETNAME_NP)
     pthread_setname_np(threadName);
-#else
-    UNUSED_PARAM(threadName);
 #endif
 
 #if OS(MACOSX)

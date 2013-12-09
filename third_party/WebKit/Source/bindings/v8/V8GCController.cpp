@@ -98,9 +98,7 @@ class MinorGCWrapperVisitor : public v8::PersistentHandleVisitor {
 public:
     explicit MinorGCWrapperVisitor(v8::Isolate* isolate)
         : m_isolate(isolate)
-    {
-        UNUSED_PARAM(m_isolate);
-    }
+    { }
 
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
     {
@@ -272,7 +270,6 @@ public:
         }
 
         if (classId == v8DOMNodeClassId) {
-            UNUSED_PARAM(m_isolate);
             ASSERT(V8Node::hasInstanceInAnyWorld(*wrapper, m_isolate));
             ASSERT(!value->IsIndependent());
 

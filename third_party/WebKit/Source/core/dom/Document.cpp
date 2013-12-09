@@ -184,7 +184,6 @@
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextEncodingRegistry.h"
 

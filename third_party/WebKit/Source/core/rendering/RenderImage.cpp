@@ -46,7 +46,6 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "wtf/UnusedParam.h"
 
 using namespace std;
 
@@ -486,9 +485,8 @@ bool RenderImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance 
     return !const_cast<RenderImage*>(this)->backgroundIsKnownToBeObscured();
 }
 
-bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const
+bool RenderImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned) const
 {
-    UNUSED_PARAM(maxDepthToTest);
     if (!m_imageResource->hasImage() || m_imageResource->errorOccurred())
         return false;
     if (m_imageResource->cachedImage() && !m_imageResource->cachedImage()->isLoaded())

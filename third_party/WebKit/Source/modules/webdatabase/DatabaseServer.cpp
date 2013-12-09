@@ -32,7 +32,6 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/DatabaseTracker.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

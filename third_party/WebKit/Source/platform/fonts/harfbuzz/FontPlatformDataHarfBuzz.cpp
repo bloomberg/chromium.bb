@@ -183,9 +183,8 @@ String FontPlatformData::description() const
 }
 #endif
 
-void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) const
+void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
 {
-    UNUSED_PARAM(context);
     paint->setAntiAlias(m_style.useAntiAlias);
     paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
     paint->setEmbeddedBitmapText(m_style.useBitmaps);

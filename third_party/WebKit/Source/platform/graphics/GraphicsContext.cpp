@@ -616,8 +616,6 @@ void GraphicsContext::drawEllipse(const IntRect& elipseRect)
 void GraphicsContext::drawFocusRing(const Path& focusRingPath, int width, int offset, const Color& color)
 {
     // FIXME: Implement support for offset.
-    UNUSED_PARAM(offset);
-
     if (paintingDisabled())
         return;
 

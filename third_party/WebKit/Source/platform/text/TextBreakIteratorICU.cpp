@@ -168,13 +168,8 @@ static UText* textClone(UText* destination, const UText* source, UBool deep, UEr
     return destination;
 }
 
-static int32_t textExtract(UText* text, int64_t start, int64_t limit, UChar* destination, int32_t destinationCapacity, UErrorCode* errorCode)
+static int32_t textExtract(UText*, int64_t, int64_t, UChar*, int32_t, UErrorCode* errorCode)
 {
-    UNUSED_PARAM(text);
-    UNUSED_PARAM(start);
-    UNUSED_PARAM(limit);
-    UNUSED_PARAM(destination);
-    UNUSED_PARAM(destinationCapacity);
     // In the present context, this text provider is used only with ICU functions
     // that do not perform an extract operation.
     ASSERT_NOT_REACHED();

@@ -115,7 +115,6 @@ private:
 inline ComposedTreeWalker::ComposedTreeWalker(const Node* node, StartPolicy startPolicy)
     : m_node(node)
 {
-    UNUSED_PARAM(startPolicy);
 #ifndef NDEBUG
     if (m_node && startPolicy == CannotStartFromShadowBoundary)
         assertPrecondition();

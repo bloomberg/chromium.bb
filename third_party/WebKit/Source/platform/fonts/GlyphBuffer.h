@@ -33,7 +33,6 @@
 #include "platform/fonts/Glyph.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatSize.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"
 
 #if OS(MACOSX)

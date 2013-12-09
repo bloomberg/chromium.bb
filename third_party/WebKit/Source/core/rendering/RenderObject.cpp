@@ -83,7 +83,6 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "wtf/RefCountedLeakCounter.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
 #ifndef NDEBUG

@@ -433,8 +433,6 @@ void SVGInlineTextBox::restoreGraphicsContextAfterTextPainting(GraphicsContext*&
     TextRun::RenderingContext* renderingContext = textRun.renderingContext();
     if (renderingContext)
         static_cast<SVGTextRunRenderingContext*>(renderingContext)->setActivePaintingResource(0);
-#else
-    UNUSED_PARAM(textRun);
 #endif
 }
 

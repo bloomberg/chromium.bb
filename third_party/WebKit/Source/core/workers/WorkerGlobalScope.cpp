@@ -53,7 +53,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

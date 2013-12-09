@@ -39,7 +39,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringHash.h"
-#include "wtf/UnusedParam.h"
 
 #if OS(MACOSX)
 #include "wtf/RetainPtr.h"
@@ -170,12 +169,8 @@ public:
     bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 #endif
 
-    bool applyTransforms(GlyphBufferGlyph* glyphs, GlyphBufferAdvance* advances, size_t glyphCount, TypesettingFeatures typesettingFeatures) const
+    bool applyTransforms(GlyphBufferGlyph*, GlyphBufferAdvance*, size_t, TypesettingFeatures) const
     {
-        UNUSED_PARAM(glyphs);
-        UNUSED_PARAM(advances);
-        UNUSED_PARAM(glyphCount);
-        UNUSED_PARAM(typesettingFeatures);
         return false;
     }
 

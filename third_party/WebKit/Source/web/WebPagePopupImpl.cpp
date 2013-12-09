@@ -87,9 +87,6 @@ private:
     {
 #ifndef NDEBUG
         fprintf(stderr, "CONSOLE MESSSAGE:%u: %s\n", lineNumber, message.utf8().data());
-#else
-        UNUSED_PARAM(message);
-        UNUSED_PARAM(lineNumber);
 #endif
     }
 

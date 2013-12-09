@@ -35,7 +35,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/WebColor.h"
-#include "wtf/UnusedParam.h"
 
 using namespace::WebCore;
 

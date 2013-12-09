@@ -55,7 +55,6 @@ INTERFACE_CPP_INCLUDES = set([
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'platform/TraceEvent.h',
-    'wtf/UnusedParam.h',
 ])
 
 

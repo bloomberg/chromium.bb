@@ -338,7 +338,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
 {
     functionTemplate->ReadOnlyPrototype();
 
-    v8::Local<v8::Signature> defaultSignature;
+    v8::Local<v8::Signature> ALLOW_UNUSED defaultSignature;
     {% set parent_template =
            'V8%s::domTemplate(isolate, currentWorldType)' % parent_interface
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
@@ -369,15 +369,12 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
         isolate, currentWorldType);
     {% endfilter %}
 
-    UNUSED_PARAM(defaultSignature);
     {% if has_constructor or has_event_constructor %}
     functionTemplate->SetCallHandler({{v8_class}}::constructorCallback);
     functionTemplate->SetLength({{length}});
     {% endif %}
-    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
-    UNUSED_PARAM(instanceTemplate);
-    UNUSED_PARAM(prototypeTemplate);
+    v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
     {% if is_check_security and interface_name != 'Window' %}
     instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
@@ -577,10 +574,8 @@ void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> ins
 {% if has_per_context_enabled_methods %}
 void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
-    UNUSED_PARAM(prototypeTemplate);
     {# Define per-context enabled operations #}
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate, worldType(isolate)));
-    UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
     {% for method in methods if method.per_context_enabled_function %}

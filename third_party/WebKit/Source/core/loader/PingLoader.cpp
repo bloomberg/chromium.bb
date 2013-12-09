@@ -47,7 +47,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoader.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 
@@ -68,8 +67,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    PingLoader* leakedPingLoader = pingLoader.leakPtr();
-    UNUSED_PARAM(leakedPingLoader);
+    PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing
@@ -98,8 +96,7 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    PingLoader* leakedPingLoader = pingLoader.leakPtr();
-    UNUSED_PARAM(leakedPingLoader);
+    PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
 }
 
 void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
@@ -117,8 +114,7 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->securityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    PingLoader* leakedPingLoader = pingLoader.leakPtr();
-    UNUSED_PARAM(leakedPingLoader);
+    PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
 }
 
 PingLoader::PingLoader(Frame* frame, ResourceRequest& request, StoredCredentials credentialsAllowed)

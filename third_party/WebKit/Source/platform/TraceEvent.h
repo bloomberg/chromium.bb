@@ -166,7 +166,6 @@
 #include "platform/EventTracer.h"
 
 #include "wtf/DynamicAnnotations.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/text/CString.h"
 
 // By default, const char* argument values are assumed to have long-lived scope
@@ -693,22 +692,22 @@ public:
     {
         *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
     }
-    TraceID(DontMangle id, unsigned char* flags) : m_data(id.data()) { UNUSED_PARAM(flags); }
-    TraceID(unsigned long long id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
-    TraceID(unsigned long id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
-    TraceID(unsigned id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
-    TraceID(unsigned short id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
-    TraceID(unsigned char id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
-    TraceID(long long id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
-    TraceID(long id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
-    TraceID(int id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
-    TraceID(short id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
-    TraceID(signed char id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
+    TraceID(DontMangle id, unsigned char*) : m_data(id.data()) { }
+    TraceID(unsigned long long id, unsigned char*) : m_data(id) { }
+    TraceID(unsigned long id, unsigned char*) : m_data(id) { }
+    TraceID(unsigned id, unsigned char*) : m_data(id) { }
+    TraceID(unsigned short id, unsigned char*) : m_data(id) { }
+    TraceID(unsigned char id, unsigned char*) : m_data(id) { }
+    TraceID(long long id, unsigned char*) :
+        m_data(static_cast<unsigned long long>(id)) { }
+    TraceID(long id, unsigned char*) :
+        m_data(static_cast<unsigned long long>(id)) { }
+    TraceID(int id, unsigned char*) :
+        m_data(static_cast<unsigned long long>(id)) { }
+    TraceID(short id, unsigned char*) :
+        m_data(static_cast<unsigned long long>(id)) { }
+    TraceID(signed char id, unsigned char*) :
+        m_data(static_cast<unsigned long long>(id)) { }
 
     unsigned long long data() const { return m_data; }
 

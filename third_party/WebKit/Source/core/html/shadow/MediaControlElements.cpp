@@ -417,10 +417,9 @@ const AtomicString& MediaControlOverlayPlayButtonElement::pseudo() const
 
 // ----------------------------
 
-MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement(Document& document, MediaControls* controls)
+MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement(Document& document, MediaControls*)
     : MediaControlInputElement(document, MediaShowClosedCaptionsButton)
 {
-    UNUSED_PARAM(controls);
 }
 
 PassRefPtr<MediaControlToggleClosedCaptionsButtonElement> MediaControlToggleClosedCaptionsButtonElement::create(Document& document, MediaControls* controls)

@@ -139,7 +139,6 @@
             'Uint16Array.h',
             'Uint32Array.h',
             'Uint8Array.h',
-            'UnusedParam.h',
             'VMTags.h',
             'Vector.h',
             'VectorTraits.h',

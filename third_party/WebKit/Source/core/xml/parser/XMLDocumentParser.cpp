@@ -67,7 +67,6 @@
 #include "wtf/StringExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/Threading.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"
 #include "wtf/unicode/UTF8.h"
 

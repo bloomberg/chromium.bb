@@ -40,7 +40,6 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

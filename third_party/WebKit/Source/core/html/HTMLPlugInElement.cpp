@@ -49,8 +49,6 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
 #include "platform/plugins/PluginData.h"
-#include "wtf/UnusedParam.h"
-
 
 namespace WebCore {
 

@@ -33,7 +33,6 @@
 
 #include "core/page/Settings.h"
 #include "platform/graphics/DeferredImageDecoder.h"
-#include "wtf/UnusedParam.h"
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
