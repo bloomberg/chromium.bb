@@ -427,7 +427,7 @@ create_outgoing_proxy(struct wl_proxy *proxy, const struct wl_message *message,
  * \param proxy The proxy object
  * \param opcode Opcode of the request to be sent
  * \param args Extra arguments for the given request
- * \param iterface The interface to use for the new proxy
+ * \param interface The interface to use for the new proxy
  *
  * Translates the request given by opcode and the extra arguments into the
  * wire format and write it to the connection buffer.  This version takes an
@@ -519,7 +519,7 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
  *
  * \param proxy The proxy object
  * \param opcode Opcode of the request to be sent
- * \param iterface The interface to use for the new proxy
+ * \param interface The interface to use for the new proxy
  * \param ... Extra arguments for the given request
  * \return A new wl_proxy for the new_id argument or NULL on error
  *
