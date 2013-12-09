@@ -4,6 +4,7 @@
 
 #include "cloud_print/gcp20/prototype/printer.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -36,7 +38,7 @@ const uint32 kTtlDefault = 60*60;  // in seconds
 const char kServiceType[] = "_privet._tcp.local";
 const char kSecondaryServiceType[] = "_printer._sub._privet._tcp.local";
 const char kServiceNamePrefixDefault[] = "first_gcp20_device";
-const char kServiceDomainNameDefault[] = "my-privet-device.local";
+const char kServiceDomainNameFormatDefault[] = "my-privet-device%d.local";
 
 const char kPrinterName[] = "Google GCP2.0 Prototype";
 const char kPrinterDescription[] = "Printer emulator";
@@ -841,8 +843,11 @@ bool Printer::StartDnsServer() {
   std::string service_name_prefix =
       command_line_reader::ReadServiceNamePrefix(net::IPAddressToString(ip) +
                                                  kServiceNamePrefixDefault);
+
   std::string service_domain_name =
-      command_line_reader::ReadDomainName(kServiceDomainNameDefault);
+      command_line_reader::ReadDomainName(
+          base::StringPrintf(kServiceDomainNameFormatDefault,
+                             base::RandInt(0, INT_MAX)));
 
   ServiceParameters params(kServiceType, kSecondaryServiceType,
                            service_name_prefix,
