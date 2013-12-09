@@ -73,8 +73,7 @@ class HostDrivenTestCase(object):
       self.ports_to_forward = ports_to_forward
 
   def TearDown(self):
-    if self.ports_to_forward:
-      forwarder.Forwarder.UnmapAllDevicePorts(self.adb)
+    pass
 
   # TODO(craigdh): Remove GetOutDir once references have been removed
   # downstream.
@@ -92,8 +91,6 @@ class HostDrivenTestCase(object):
             '--End Full HostForwarder log\n' % forwarder.Forwarder.GetHostLog())
 
   def __StartForwarder(self):
-    # Unmap any left over from previous test.
-    forwarder.Forwarder.UnmapAllDevicePorts(self.adb)
     logging.warning('Forwarding %s %s', self.ports_to_forward,
                     self.has_forwarded_ports)
     if self.ports_to_forward and not self.has_forwarded_ports:
