@@ -4,7 +4,7 @@
 
 {
   'sources': [
-    'character_composer_unittest.cc',
+    'chromeos/character_composer_unittest.cc',
     'composition_text_util_pango_unittest.cc',
     'input_method_base_unittest.cc',
     'input_method_ibus_unittest.cc',
@@ -16,7 +16,7 @@
   'conditions': [
     ['chromeos==0 or use_x11==0', {
       'sources!': [
-        'character_composer_unittest.cc',
+        'chromeos/character_composer_unittest.cc',
         'input_method_ibus_unittest.cc',
       ],
     }],

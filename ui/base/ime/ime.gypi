@@ -7,8 +7,8 @@
     '<(DEPTH)/ui/events/events.gyp:events',
   ],
   'sources': [
-    'character_composer.cc',
-    'character_composer.h',
+    'chromeos/character_composer.cc',
+    'chromeos/character_composer.h',
     'chromeos/ibus_bridge.cc',
     'chromeos/ibus_bridge.h',
     'chromeos/mock_ime_candidate_window_handler.cc',
@@ -82,11 +82,11 @@
     }],
     ['chromeos==0 or use_x11==0', {
       'sources!': [
-        'character_composer.cc',
-        'character_composer.h',
-	'chromeos/ibus_bridge.cc',
+        'chromeos/character_composer.cc',
+        'chromeos/character_composer.h',
+        'chromeos/ibus_bridge.cc',
         'chromeos/ibus_bridge.h',
-	'chromeos/mock_ime_candidate_window_handler.cc',
+        'chromeos/mock_ime_candidate_window_handler.cc',
         'chromeos/mock_ime_candidate_window_handler.h',
         'chromeos/mock_ime_engine_handler.cc',
         'chromeos/mock_ime_engine_handler.h',
