@@ -421,7 +421,7 @@ public:
 
     virtual bool matchesReadOnlyPseudoClass() const { return false; }
     virtual bool matchesReadWritePseudoClass() const { return false; }
-    bool matches(const String& selectors, ExceptionState&);
+    bool webkitMatchesSelector(const String& selectors, ExceptionState&);
     virtual bool shouldAppearIndeterminate() const { return false; }
 
     DOMTokenList* classList();

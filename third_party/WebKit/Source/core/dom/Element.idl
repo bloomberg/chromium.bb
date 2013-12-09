@@ -62,8 +62,6 @@
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, RaisesException=Setter] attribute DOMString prefix;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
 
-    [RaisesException] boolean matches(DOMString selectors);
-
     // Common extensions
 
     [PerWorldBindings] readonly attribute long offsetLeft;
@@ -105,7 +103,7 @@
     [RaisesException] NodeList querySelectorAll(DOMString selectors);
 
     // WebKit extension
-    [RaisesException, ImplementedAs=matches, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector(DOMString selectors);
+    [RaisesException, MeasureAs=ElementPrefixedMatchesSelector] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
 
     // Shadow DOM API
     [RuntimeEnabled=ShadowDOM, Reflect, TreatNullAs=NullString, PerWorldBindings] attribute DOMString pseudo;
