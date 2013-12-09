@@ -52,8 +52,6 @@ static const char userInitiatedProfiling[] = "userInitiatedProfiling";
 static const char profilerEnabled[] = "profilerEnabled";
 }
 
-static const char CPUProfileType[] = "CPU";
-
 PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
     return adoptPtr(new InspectorProfilerAgent(instrumentingAgents, consoleAgent, inspectorState, injectedScriptManager, overlay));
@@ -164,13 +162,13 @@ void InspectorProfilerAgent::getCPUProfile(ErrorString* errorString, int rawUid,
     profileObject->setSamples(it->value->buildInspectorObjectForSamples());
 }
 
-void InspectorProfilerAgent::removeProfile(ErrorString*, const String& type, int rawUid)
+void InspectorProfilerAgent::removeProfile(ErrorString* errorString, int rawUid)
 {
     unsigned uid = static_cast<unsigned>(rawUid);
-    if (type == CPUProfileType) {
-        if (m_profiles.contains(uid))
-            m_profiles.remove(uid);
-    }
+    if (m_profiles.contains(uid))
+        m_profiles.remove(uid);
+    else
+        *errorString = "Profile not found";
 }
 
 void InspectorProfilerAgent::clearProfiles(ErrorString*)

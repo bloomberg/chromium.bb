@@ -69,7 +69,7 @@ public:
     bool enabled();
     String getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false);
     virtual void getCPUProfile(ErrorString*, int uid, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
-    virtual void removeProfile(ErrorString*, const String& type, int uid);
+    virtual void removeProfile(ErrorString*, int uid);
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
