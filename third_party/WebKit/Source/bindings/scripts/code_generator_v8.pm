@@ -4984,17 +4984,6 @@ END
     }
 }
 
-sub BaseInterfaceName
-{
-    my $interface = shift;
-
-    while ($interface->parent) {
-        $interface = ParseInterface($interface->parent);
-    }
-
-    return $interface->name;
-}
-
 sub GenerateSpecialWrap
 {
     my $interface = shift;
@@ -5057,7 +5046,6 @@ sub GenerateToV8Converters
     }
 
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
-    my $baseType = BaseInterfaceName($interface);
 
     # FIXME: Do we really need to treat /SVG/ as dependent DOM objects?
     my $wrapperConfiguration = "WrapperConfiguration::Independent";
@@ -5081,9 +5069,6 @@ v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
-END
-
-    $code .= <<END if ($baseType ne $interfaceName);
 END
 
     if (InheritsInterface($interface, "Document")) {
@@ -5952,22 +5937,6 @@ sub ForAllParents
     };
 
     &$recurse($interface);
-}
-
-sub FindSuperMethod
-{
-    my ($interface, $functionName) = @_;
-    my $indexer;
-    ForAllParents($interface, undef, sub {
-        my $currentInterface = shift;
-        foreach my $function (@{$currentInterface->functions}) {
-            if ($function->name eq $functionName) {
-                $indexer = $function;
-                return 'prune';
-            }
-        }
-    });
-    return $indexer;
 }
 
 sub IsPrimitiveType
