@@ -159,7 +159,7 @@ FileTasks.EXECUTABLE_EXTENSIONS = Object.freeze([
  * @private
  */
 FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
-  '.crdownload', '.dsc', '.inf',
+  '.crdownload', '.dsc', '.inf', '.crx',
 ]);
 
 /**
@@ -333,15 +333,27 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
   var mimeType = this.mimeTypes_[0];
 
   var showAlert = function() {
-    var messageStringId =
-        extension === '.exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
-                               'NO_ACTION_FOR_FILE';
+    var textMessageId;
+    var titleMessageId;
+    switch (extension) {
+      case '.exe':
+        textMessageId = 'NO_ACTION_FOR_EXECUTABLE';
+        break;
+      case '.crx':
+        textMessageId = 'NO_ACTION_FOR_CRX';
+        titleMessageId = 'NO_ACTION_FOR_CRX_TITLE';
+        break;
+      default:
+        textMessageId = 'NO_ACTION_FOR_FILE';
+    }
+
     var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
-    var text = strf(messageStringId,
+    var text = strf(textMessageId,
                     webStoreUrl,
                     FileTasks.NO_ACTION_FOR_FILE_URL);
-    this.fileManager_.alert.showHtml(filename, text, function() {});
-    callback(false, entries);
+    var title = titleMessageId ? str(titleMessageId) : filename;
+    this.fileManager_.alert.showHtml(title, text, function() {});
+    callback(false, urls);
   }.bind(this);
 
   var onViewFilesFailure = function() {
