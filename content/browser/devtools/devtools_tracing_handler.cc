@@ -103,7 +103,7 @@ void DevToolsTracingHandler::OnTraceDataCollected(
   std::string message = base::StringPrintf(
       "{ \"method\": \"%s\", \"params\": { \"%s\": [ %s ] } }",
       devtools::Tracing::dataCollected::kName,
-      devtools::Tracing::dataCollected::kValue,
+      devtools::Tracing::dataCollected::kParamValue,
       trace_fragment.c_str());
   SendRawMessage(message);
 }
@@ -133,12 +133,12 @@ DevToolsTracingHandler::OnStart(
   std::string categories;
   base::DictionaryValue* params = command->params();
   if (params)
-    params->GetString(devtools::Tracing::start::kCategories, &categories);
+    params->GetString(devtools::Tracing::start::kParamCategories, &categories);
 
   TracingController::Options options = TracingController::DEFAULT_OPTIONS;
-  if (params && params->HasKey(devtools::Tracing::start::kTraceOptions)) {
+  if (params && params->HasKey(devtools::Tracing::start::kParamOptions)) {
     std::string options_param;
-    params->GetString(devtools::Tracing::start::kTraceOptions, &options_param);
+    params->GetString(devtools::Tracing::start::kParamOptions, &options_param);
     options = TraceOptionsFromString(options_param);
   }
 

@@ -63,7 +63,7 @@ static int kCaptureRetryLimit = 2;
 void ParseGenericInputParams(base::DictionaryValue* params,
                              WebInputEvent* event) {
   int modifiers = 0;
-  if (params->GetInteger(devtools::Input::kParamModifiers,
+  if (params->GetInteger(devtools::Input::dispatchMouseEvent::kParamModifiers,
                          &modifiers)) {
     if (modifiers & 1)
       event->modifiers |= WebInputEvent::AltKey;
@@ -75,7 +75,7 @@ void ParseGenericInputParams(base::DictionaryValue* params,
       event->modifiers |= WebInputEvent::ShiftKey;
   }
 
-  params->GetDouble(devtools::Input::kParamTimestamp,
+  params->GetDouble(devtools::Input::dispatchMouseEvent::kParamTimestamp,
                     &event->timeStampSeconds);
 }
 
@@ -372,13 +372,13 @@ RendererOverridesHandler::PageGetNavigationHistory(
         const NavigationEntry* entry = controller.GetEntryAtIndex(i);
         base::DictionaryValue* entry_value = new base::DictionaryValue();
         entry_value->SetInteger(
-            devtools::Page::getNavigationHistory::kResponseEntryId,
+            devtools::Page::NavigationEntry::kParamId,
             entry->GetUniqueID());
         entry_value->SetString(
-            devtools::Page::getNavigationHistory::kResponseEntryURL,
+            devtools::Page::NavigationEntry::kParamUrl,
             entry->GetURL().spec());
         entry_value->SetString(
-            devtools::Page::getNavigationHistory::kResponseEntryTitle,
+            devtools::Page::NavigationEntry::kParamTitle,
             entry->GetTitle());
         entries->Append(entry_value);
       }
@@ -449,7 +449,7 @@ RendererOverridesHandler::PageCaptureScreenshot(
     if (success) {
       base::DictionaryValue* result = new base::DictionaryValue();
       result->SetString(
-          devtools::Page::kData, base64_data);
+          devtools::Page::captureScreenshot::kResponseData, base64_data);
       return command->SuccessResponse(result);
     }
     return command->InternalErrorResponse("Unable to base64encode screenshot");
@@ -565,34 +565,51 @@ void RendererOverridesHandler::ScreenshotCaptured(
   }
 
   base::DictionaryValue* response = new base::DictionaryValue();
-  response->SetString(devtools::Page::kData, base_64_data);
+  response->SetString(devtools::Page::screencastFrame::kParamData,
+                      base_64_data);
 
   // Consider metadata empty in case it has no device scale factor.
   if (metadata.device_scale_factor != 0) {
     base::DictionaryValue* response_metadata = new base::DictionaryValue();
 
-    response_metadata->SetDouble(devtools::Page::kParamDeviceScaleFactor,
-                        metadata.device_scale_factor);
-    response_metadata->SetDouble(devtools::Page::kParamPageScaleFactor,
-                        metadata.page_scale_factor);
-    response_metadata->SetDouble(devtools::Page::kParamPageScaleFactorMin,
-                        metadata.min_page_scale_factor);
-    response_metadata->SetDouble(devtools::Page::kParamPageScaleFactorMax,
-                        metadata.max_page_scale_factor);
-    response_metadata->SetDouble(devtools::Page::kParamOffsetTop,
-                        metadata.location_bar_content_translation.y());
-    response_metadata->SetDouble(devtools::Page::kParamOffsetBottom,
-                        metadata.overdraw_bottom_height);
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamDeviceScaleFactor,
+        metadata.device_scale_factor);
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamPageScaleFactor,
+        metadata.page_scale_factor);
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamPageScaleFactorMin,
+        metadata.min_page_scale_factor);
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamPageScaleFactorMax,
+        metadata.max_page_scale_factor);
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamOffsetTop,
+        metadata.location_bar_content_translation.y());
+    response_metadata->SetDouble(
+        devtools::Page::ScreencastFrameMetadata::kParamOffsetBottom,
+        metadata.overdraw_bottom_height);
 
     base::DictionaryValue* viewport = new base::DictionaryValue();
-    viewport->SetDouble(devtools::kParamX, metadata.root_scroll_offset.x());
-    viewport->SetDouble(devtools::kParamY, metadata.root_scroll_offset.y());
-    viewport->SetDouble(devtools::kParamWidth, metadata.viewport_size.width());
-    viewport->SetDouble(devtools::kParamHeight,
+    viewport->SetDouble(devtools::DOM::Rect::kParamX,
+                        metadata.root_scroll_offset.x());
+    viewport->SetDouble(devtools::DOM::Rect::kParamY,
+                        metadata.root_scroll_offset.y());
+    viewport->SetDouble(devtools::DOM::Rect::kParamWidth,
+                        metadata.viewport_size.width());
+    viewport->SetDouble(devtools::DOM::Rect::kParamHeight,
                         metadata.viewport_size.height());
-    response_metadata->Set(devtools::Page::kParamViewport, viewport);
+    response_metadata->Set(
+        devtools::Page::ScreencastFrameMetadata::kParamViewport, viewport);
 
-    response->Set(devtools::Page::kMetadata, response_metadata);
+    if (command) {
+      response->Set(devtools::Page::captureScreenshot::kResponseMetadata,
+                    response_metadata);
+    } else {
+      response->Set(devtools::Page::screencastFrame::kParamMetadata,
+                    response_metadata);
+    }
   }
 
   if (command) {
@@ -631,8 +648,8 @@ void DidGetHostUsage(
     const base::Closure& barrier,
     int64 value) {
   base::DictionaryValue* usage_item = new base::DictionaryValue;
-  usage_item->SetString(devtools::Page::UsageItem::kItemID, client_id);
-  usage_item->SetDouble(devtools::Page::UsageItem::kItemValue, value);
+  usage_item->SetString(devtools::Page::UsageItem::kParamId, client_id);
+  usage_item->SetDouble(devtools::Page::UsageItem::kParamValue, value);
   list->Append(usage_item);
   barrier.Run();
 }
@@ -663,11 +680,11 @@ void DidGetUsageAndQuotaForWebApps(
 std::string GetStorageTypeName(quota::StorageType type) {
   switch (type) {
     case quota::kStorageTypeTemporary:
-      return devtools::Page::Usage::kItemTemporary;
+      return devtools::Page::Usage::kParamTemporary;
     case quota::kStorageTypePersistent:
-      return devtools::Page::Usage::kItemPersistent;
+      return devtools::Page::Usage::kParamPersistent;
     case quota::kStorageTypeSyncable:
-      return devtools::Page::Usage::kItemSyncable;
+      return devtools::Page::Usage::kParamSyncable;
     case quota::kStorageTypeQuotaNotManaged:
     case quota::kStorageTypeUnknown:
       NOTREACHED();
@@ -678,13 +695,13 @@ std::string GetStorageTypeName(quota::StorageType type) {
 std::string GetQuotaClientName(quota::QuotaClient::ID id) {
   switch (id) {
     case quota::QuotaClient::kFileSystem:
-      return devtools::Page::UsageItem::ID::kFilesystem;
+      return devtools::Page::UsageItem::Id::kEnumFilesystem;
     case quota::QuotaClient::kDatabase:
-      return devtools::Page::UsageItem::ID::kDatabase;
+      return devtools::Page::UsageItem::Id::kEnumDatabase;
     case quota::QuotaClient::kAppcache:
-      return devtools::Page::UsageItem::ID::kAppcache;
+      return devtools::Page::UsageItem::Id::kEnumAppcache;
     case quota::QuotaClient::kIndexedDatabase:
-      return devtools::Page::UsageItem::ID::kIndexedDatabase;
+      return devtools::Page::UsageItem::Id::kEnumIndexeddatabase;
     default:
       NOTREACHED();
       return "";
@@ -733,12 +750,12 @@ void QueryUsageAndQuotaOnIOThread(
       security_origin,
       quota::kStorageTypeTemporary,
       base::Bind(&DidGetUsageAndQuotaForWebApps, quota_raw_ptr,
-                 std::string(devtools::Page::Quota::kItemTemporary), barrier));
+                 std::string(devtools::Page::Quota::kParamTemporary), barrier));
 
   quota_manager->GetPersistentHostQuota(
       host,
       base::Bind(&DidGetQuotaValue, quota_raw_ptr,
-                 std::string(devtools::Page::Quota::kItemPersistent),
+                 std::string(devtools::Page::Quota::kParamPersistent),
                  barrier));
 
   for (size_t i = 0; i != arraysize(kQuotaClients); i++) {
@@ -819,8 +836,9 @@ RendererOverridesHandler::InputDispatchMouseEvent(
     return NULL;
 
   bool device_space = false;
-  if (!params->GetBoolean(devtools::Input::kParamDeviceSpace,
-                          &device_space) ||
+  if (!params->GetBoolean(
+          devtools::Input::dispatchMouseEvent::kParamDeviceSpace,
+          &device_space) ||
       !device_space) {
     return NULL;
   }
@@ -830,13 +848,16 @@ RendererOverridesHandler::InputDispatchMouseEvent(
   ParseGenericInputParams(params, &mouse_event);
 
   std::string type;
-  if (params->GetString(devtools::Input::kParamType,
+  if (params->GetString(devtools::Input::dispatchMouseEvent::kParamType,
                         &type)) {
-    if (type == "mousePressed")
+    if (type ==
+        devtools::Input::dispatchMouseEvent::Type::kEnumMousePressed)
       mouse_event.type = WebInputEvent::MouseDown;
-    else if (type == "mouseReleased")
+    else if (type ==
+        devtools::Input::dispatchMouseEvent::Type::kEnumMouseReleased)
       mouse_event.type = WebInputEvent::MouseUp;
-    else if (type == "mouseMoved")
+    else if (type ==
+        devtools::Input::dispatchMouseEvent::Type::kEnumMouseMoved)
       mouse_event.type = WebInputEvent::MouseMove;
     else
       return NULL;
@@ -844,8 +865,10 @@ RendererOverridesHandler::InputDispatchMouseEvent(
     return NULL;
   }
 
-  if (!params->GetInteger(devtools::kParamX, &mouse_event.x) ||
-      !params->GetInteger(devtools::kParamY, &mouse_event.y)) {
+  if (!params->GetInteger(devtools::Input::dispatchMouseEvent::kParamX,
+                          &mouse_event.x) ||
+      !params->GetInteger(devtools::Input::dispatchMouseEvent::kParamY,
+                          &mouse_event.y)) {
     return NULL;
   }
 
@@ -895,23 +918,31 @@ RendererOverridesHandler::InputDispatchGestureEvent(
   ParseGenericInputParams(params, &event);
 
   std::string type;
-  if (params->GetString(devtools::Input::kParamType,
+  if (params->GetString(devtools::Input::dispatchGestureEvent::kParamType,
                         &type)) {
-    if (type == "scrollBegin")
+    if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumScrollBegin)
       event.type = WebInputEvent::GestureScrollBegin;
-    else if (type == "scrollUpdate")
+    else if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumScrollUpdate)
       event.type = WebInputEvent::GestureScrollUpdate;
-    else if (type == "scrollEnd")
+    else if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumScrollEnd)
       event.type = WebInputEvent::GestureScrollEnd;
-    else if (type == "tapDown")
+    else if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumTapDown)
       event.type = WebInputEvent::GestureTapDown;
-    else if (type == "tap")
+    else if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumTap)
       event.type = WebInputEvent::GestureTap;
-    else if (type == "pinchBegin")
+    else if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumPinchBegin)
       event.type = WebInputEvent::GesturePinchBegin;
-    else if (type == "pinchUpdate")
+    else if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumPinchUpdate)
       event.type = WebInputEvent::GesturePinchUpdate;
-    else if (type == "pinchEnd")
+    else if (type ==
+        devtools::Input::dispatchGestureEvent::Type::kEnumPinchEnd)
       event.type = WebInputEvent::GesturePinchEnd;
     else
       return NULL;
@@ -919,8 +950,10 @@ RendererOverridesHandler::InputDispatchGestureEvent(
     return NULL;
   }
 
-  if (!params->GetInteger(devtools::kParamX, &event.x) ||
-      !params->GetInteger(devtools::kParamY, &event.y)) {
+  if (!params->GetInteger(devtools::Input::dispatchGestureEvent::kParamX,
+                          &event.x) ||
+      !params->GetInteger(devtools::Input::dispatchGestureEvent::kParamY,
+                          &event.y)) {
     return NULL;
   }
   event.globalX = event.x;
