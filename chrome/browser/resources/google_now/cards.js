@@ -241,6 +241,7 @@ function buildCardSet() {
       // otherwise notifications data with 2 pointers to the same object won't
       // be stored correctly to chrome.storage.
       var winningActionUrls = winningCard &&
+          (winningCard.receivedNotification.actionUrls || null) &&
           JSON.parse(JSON.stringify(
               winningCard.receivedNotification.actionUrls));
 
