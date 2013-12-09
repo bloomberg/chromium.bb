@@ -5,17 +5,19 @@
 #ifndef COMPONENTS_BREAKPAD_APP_BREAKPAD_MAC_H_
 #define COMPONENTS_BREAKPAD_APP_BREAKPAD_MAC_H_
 
+#include <string>
+
 // This header defines the entry points for Breakpad integration.
 
 namespace breakpad {
 
 // Initializes Breakpad.
-void InitCrashReporter();
+void InitCrashReporter(const std::string& process_type);
 
 // Give Breakpad a chance to store information about the current process.
 // Extra information requires a parsed command line, so call this after
 // CommandLine::Init has been called.
-void InitCrashProcessInfo();
+void InitCrashProcessInfo(const std::string& process_type_switch);
 
 // Is Breakpad enabled?
 bool IsCrashReporterEnabled();

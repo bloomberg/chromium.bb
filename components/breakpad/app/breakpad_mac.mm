@@ -24,7 +24,6 @@
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "components/breakpad/app/breakpad_client.h"
-#include "content/public/common/content_switches.h"
 
 namespace breakpad {
 
@@ -147,7 +146,7 @@ bool IsCrashReporterEnabled() {
 }
 
 // Only called for a branded build of Chrome.app.
-void InitCrashReporter() {
+void InitCrashReporter(const std::string& process_type) {
   DCHECK(!gBreakpadRef);
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
@@ -256,16 +255,13 @@ void InitCrashReporter() {
   CHECK(0 == sigaction(SIGABRT, &sigact, NULL));
 }
 
-void InitCrashProcessInfo() {
+void InitCrashProcessInfo(const std::string& process_type_switch) {
   if (gBreakpadRef == NULL) {
     return;
   }
 
   // Determine the process type.
   NSString* process_type = @"browser";
-  std::string process_type_switch =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType);
   if (!process_type_switch.empty()) {
     process_type = base::SysUTF8ToNSString(process_type_switch);
   }

@@ -106,8 +106,8 @@ bool ShowFirstRun(Profile* profile) {
     // on the first run it may not have been enabled due to the missing opt-in
     // from the user.  If the user agreed now, enable breakpad if necessary.
     if (!breakpad::IsCrashReporterEnabled() && stats_enabled) {
-      breakpad::InitCrashReporter();
-      breakpad::InitCrashProcessInfo();
+      breakpad::InitCrashReporter(std::string());
+      breakpad::InitCrashProcessInfo(std::string());
     }
 
     // If selected set as default browser.

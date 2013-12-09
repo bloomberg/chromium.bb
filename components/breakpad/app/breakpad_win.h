@@ -11,7 +11,7 @@
 
 namespace breakpad {
 
-void InitCrashReporter();
+void InitCrashReporter(const std::string& process_type_switch);
 
 // If chrome has been restarted because it crashed, this function will display
 // a dialog asking for permission to continue execution or to exit now.

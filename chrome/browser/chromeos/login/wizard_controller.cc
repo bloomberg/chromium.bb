@@ -480,7 +480,7 @@ void WizardController::OnEulaAccepted() {
 #if defined(GOOGLE_CHROME_BUILD)
     // The crash reporter initialization needs IO to complete.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    breakpad::InitCrashReporter();
+    breakpad::InitCrashReporter(std::string());
 #endif
   }
 

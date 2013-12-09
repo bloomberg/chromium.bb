@@ -137,6 +137,9 @@ class BreakpadClient {
   // Install additional breakpad filter callbacks.
   virtual void InstallAdditionalFilters(BreakpadRef breakpad);
 #endif
+
+  // Returns true if breakpad should run in the given process type.
+  virtual bool EnableBreakpadForProcess(const std::string& process_type);
 };
 
 }  // namespace breakpad
