@@ -272,6 +272,11 @@ window_create(struct display *display);
 struct window *
 window_create_custom(struct display *display);
 
+void
+window_set_transient_for(struct window *window, struct window *parent_window);
+struct window *
+window_get_transient_for(struct window *window);
+
 int
 window_has_focus(struct window *window);
 
