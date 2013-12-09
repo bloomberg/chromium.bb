@@ -49,6 +49,11 @@
               'message': 'Generating header',
             },
           ],
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              '-Wno-objc-property-no-attribute',
+            ],
+          },
         },
       ],
     }, {  # else, OS=="ios" and "<(GENERATOR)"!="ninja"
