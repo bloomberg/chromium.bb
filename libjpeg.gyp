@@ -25,7 +25,6 @@
       'defines': [
         'WITH_SIMD',
         'MOTION_JPEG_SUPPORTED',
-        'NO_GETENV',
       ],
       'sources': [
         'jcapimin.c',
@@ -265,6 +264,11 @@
               }],
             ],
           },
+        }],
+        [ 'OS=="android"', {
+          'defines': [
+            'NO_GETENV',  # getenv() is not thread-safe.
+          ],
         }],
       ],
       'rules': [
