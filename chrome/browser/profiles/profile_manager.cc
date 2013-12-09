@@ -429,6 +429,54 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
   return to_return;
 }
 
+Profile* ProfileManager::GetPrimaryUserProfile() {
+#if defined(OS_CHROMEOS)
+  // TODO(skuhne): Remove once GetDefaultProfile is removed.
+  CHECK(s_allow_get_default_profile)
+      << "GetPrimaryUserProfile() called before allowed.";
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager->IsLoggedIn())
+    return GetDefaultProfile();
+  chromeos::UserManager* manager = chromeos::UserManager::Get();
+  return manager->GetProfileByUser(manager->GetPrimaryUser());
+#else
+  return GetDefaultProfile();
+#endif
+}
+
+Profile* ProfileManager::GetActiveUserProfile() {
+#if defined(OS_CHROMEOS)
+  // TODO(skuhne): Remove once GetDefaultProfile is removed.
+  CHECK(s_allow_get_default_profile)
+      << "GetActiveUserProfile() called before allowed.";
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager->IsLoggedIn())
+    return GetDefaultProfile();
+  chromeos::UserManager* manager = chromeos::UserManager::Get();
+  return manager->GetProfileByUser(manager->GetActiveUser());
+#else
+  return GetDefaultProfile();
+#endif
+}
+
+Profile* ProfileManager::GetPrimaryUserProfileOrOffTheRecord() {
+  Profile* profile = GetPrimaryUserProfile();
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOffTheRecordProfile();
+#endif
+  return profile;
+}
+
+Profile* ProfileManager::GetActiveUserProfileOrOffTheRecord() {
+  Profile* profile = GetActiveUserProfile();
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOffTheRecordProfile();
+#endif
+  return profile;
+}
+
 Profile* ProfileManager::GetDefaultProfile(
     const base::FilePath& user_data_dir) {
 #if defined(OS_CHROMEOS)
