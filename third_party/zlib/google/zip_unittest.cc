@@ -174,6 +174,24 @@ TEST_F(ZipTest, ZipIgnoreHidden) {
   TestUnzipFile(zip_file, false);
 }
 
+TEST_F(ZipTest, ZipNonASCIIDir) {
+  base::FilePath src_dir;
+  ASSERT_TRUE(GetTestDataDirectory(&src_dir));
+  src_dir = src_dir.AppendASCII("test");
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  // Append 'Тест' (in cyrillic).
+  base::FilePath src_dir_russian =
+      temp_dir.path().Append(base::FilePath::FromUTF8Unsafe(
+          "\xD0\xA2\xD0\xB5\xD1\x81\xD1\x82"));
+  base::CopyDirectory(src_dir, src_dir_russian, true);
+  base::FilePath zip_file = temp_dir.path().AppendASCII("out_russian.zip");
+
+  EXPECT_TRUE(zip::Zip(src_dir_russian, zip_file, true));
+  TestUnzipFile(zip_file, true);
+}
+
 #if defined(OS_POSIX)
 TEST_F(ZipTest, ZipFiles) {
   base::FilePath src_dir;
