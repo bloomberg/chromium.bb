@@ -177,7 +177,6 @@ class GSContext(object):
 
   GSUTIL_TAR = 'gsutil_3.37.tar.gz'
   GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'pub/%s' % GSUTIL_TAR
-  GSUTIL_FLAGS = ['-o', 'GSUtil:parallel_composite_upload_threshold=0']
 
   RESUMABLE_UPLOAD_ERROR = ('Too many resumable upload attempts failed without '
                             'progress')
@@ -238,6 +237,28 @@ class GSContext(object):
     else:
       self._CheckFile('gsutil not found', gsutil_bin)
     self.gsutil_bin = gsutil_bin
+
+    # TODO (yjhong): disable parallel composite upload for now because
+    # it is not backward compatible (older gsutil versions cannot
+    # download files uploaded with this option enabled). Remove this
+    # after all users transition to newer versions (3.37 and above).
+    self.gsutil_flags = ['-o', 'GSUtil:parallel_composite_upload_threshold=0']
+
+    # Set HTTP proxy if environment variable http_proxy is set
+    # (crbug.com/325032).
+    if 'http_proxy' in os.environ:
+      url = urlparse.urlparse(os.environ['http_proxy'])
+      if not url.hostname or (not url.username and url.password):
+        logging.warning('GS_ERROR: Ignoring env variable http_proxy because it '
+                        'is not properly set: %s', os.environ['http_proxy'])
+      else:
+        self.gsutil_flags += ['-o', 'Boto:proxy=%s' % url.hostname]
+        if url.username:
+          self.gsutil_flags += ['-o', 'Boto:proxy_user=%s' % url.username]
+        if url.password:
+          self.gsutil_flags += ['-o', 'Boto:proxy_pass=%s' % url.password]
+        if url.port:
+          self.gsutil_flags += ['-o', 'Boto:proxy_port=%d' % url.port]
 
     # Prefer boto_file if specified, else prefer the env then the default.
     default_boto = False
@@ -447,11 +468,7 @@ class GSContext(object):
     kwargs.setdefault('redirect_stderr', True)
 
     cmd = [self.gsutil_bin]
-    # TODO (yjhong): disable parallel composite upload for now because
-    # it is not backward compatible (older gsutil versions cannot
-    # download files uploaded with this option enbaled). Remove this
-    # after all users transition to newer versions (3.37 above).
-    cmd += self.GSUTIL_FLAGS
+    cmd += self.gsutil_flags
     for header in headers:
       cmd += ['-h', header]
     cmd.extend(gsutil_cmd)

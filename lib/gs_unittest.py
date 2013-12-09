@@ -215,6 +215,43 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(gs.GSContext(acl=self.acl_file).acl,
                      self.acl_file)
 
+  def _testHTTPProxySettings(self, d):
+    flags = gs.GSContext().gsutil_flags
+    for key in d:
+      flag = 'Boto:%s=%s' % (key, d[key])
+      error_msg = '%s not in %s' % (flag, ' '.join(flags))
+      self.assertTrue(flag in flags, error_msg)
+
+  def testHTTPProxy(self):
+    """Test we set http proxy correctly."""
+    d = {'proxy': 'fooserver', 'proxy_user': 'foouser',
+         'proxy_pass': 'foopasswd', 'proxy_port': '8080'}
+    os.environ['http_proxy'] = 'http://%s:%s@%s:%s/' % (
+        d['proxy_user'], d['proxy_pass'], d['proxy'], d['proxy_port'])
+    self._testHTTPProxySettings(d)
+
+  def testHTTPProxyNoPort(self):
+    """Test we accept http proxy without port number."""
+    d = {'proxy': 'fooserver', 'proxy_user': 'foouser',
+         'proxy_pass': 'foopasswd'}
+    os.environ['http_proxy'] = 'http://%s:%s@%s/' % (
+        d['proxy_user'], d['proxy_pass'], d['proxy'])
+    self._testHTTPProxySettings(d)
+
+  def testHTTPProxyNoUserPasswd(self):
+    """Test we accept http proxy without user and password."""
+    d = {'proxy': 'fooserver', 'proxy_port': '8080'}
+    os.environ['http_proxy'] = 'http://%s:%s/' % (d['proxy'], d['proxy_port'])
+    self._testHTTPProxySettings(d)
+
+  def testHTTPProxyNoPasswd(self):
+    """Test we accept http proxy without password."""
+    d = {'proxy': 'fooserver', 'proxy_user': 'foouser',
+         'proxy_port': '8080'}
+    os.environ['http_proxy'] = 'http://%s@%s:%s/' % (
+        d['proxy_user'], d['proxy'], d['proxy_port'])
+    self._testHTTPProxySettings(d)
+
 
 class GSDoCommandTest(cros_test_lib.TestCase):
   """Tests of gs.DoCommand behavior.
@@ -233,7 +270,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
   def _testDoCommand(self, ctx, retries, sleep):
     with mock.patch.object(cros_build_lib, 'GenericRetry', autospec=True):
       ctx.Copy('/blah', 'gs://foon')
-      cmd = [self.ctx.gsutil_bin] + self.ctx.GSUTIL_FLAGS
+      cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags
       cmd += ['cp', '--', '/blah', 'gs://foon']
 
       cros_build_lib.GenericRetry.assert_called_once_with(
