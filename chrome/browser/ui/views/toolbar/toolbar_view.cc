@@ -486,34 +486,35 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 // ToolbarView, views::View overrides:
 
 gfx::Size ToolbarView::GetPreferredSize() {
+  gfx::Size size(location_bar_->GetPreferredSize());
   if (is_display_mode_normal()) {
     int button_spacing = GetButtonSpacing();
-    int min_width = kLeftEdgeSpacing +
-        back_->GetPreferredSize().width() + button_spacing +
-        forward_->GetPreferredSize().width() + button_spacing +
-        reload_->GetPreferredSize().width() + kStandardSpacing +
-        (show_home_button_.GetValue() ?
-            (home_->GetPreferredSize().width() + button_spacing) : 0) +
-        location_bar_->GetPreferredSize().width() +
-        (site_chip_view_->ShouldShow() ?
-            (site_chip_view_->GetPreferredSize().width() +
-                2 * kStandardSpacing + 2 * button_spacing) :
-            0) +
-        browser_actions_->GetPreferredSize().width() +
-        app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
+    size.Enlarge(
+        kLeftEdgeSpacing + back_->GetPreferredSize().width() + button_spacing +
+            forward_->GetPreferredSize().width() + button_spacing +
+            reload_->GetPreferredSize().width() + kStandardSpacing +
+            (show_home_button_.GetValue() ?
+                (home_->GetPreferredSize().width() + button_spacing) : 0) +
+            (site_chip_view_->ShouldShow() ?
+                (site_chip_view_->GetPreferredSize().width() +
+                    2 * kStandardSpacing + 2 * button_spacing) :
+                0) +
+            browser_actions_->GetPreferredSize().width() +
+            app_menu_->GetPreferredSize().width() + kRightEdgeSpacing,
+        0);
     gfx::ImageSkia* normal_background =
         GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-    return gfx::Size(min_width,
-                     normal_background->height() - content_shadow_height());
+    size.SetToMax(
+        gfx::Size(0, normal_background->height() - content_shadow_height()));
+  } else {
+    const int kPopupBottomSpacingGlass = 1;
+    const int kPopupBottomSpacingNonGlass = 2;
+    size.Enlarge(
+        0,
+        PopupTopSpacing() + (GetWidget()->ShouldUseNativeFrame() ?
+            kPopupBottomSpacingGlass : kPopupBottomSpacingNonGlass));
   }
-
-  const int kPopupBottomSpacingGlass = 1;
-  const int kPopupBottomSpacingNonGlass = 2;
-  int vertical_spacing = PopupTopSpacing() +
-      (GetWidget()->ShouldUseNativeFrame() ?
-          kPopupBottomSpacingGlass : kPopupBottomSpacingNonGlass);
-  return gfx::Size(0, location_bar_->GetPreferredSize().height() +
-      vertical_spacing);
+  return size;
 }
 
 void ToolbarView::Layout() {
