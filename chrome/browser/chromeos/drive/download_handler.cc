@@ -33,11 +33,16 @@ class DriveUserData : public base::SupportsUserData::Data {
   virtual ~DriveUserData() {}
 
   const base::FilePath& file_path() const { return file_path_; }
+  const base::FilePath& cache_file_path() const { return cache_file_path_; }
+  void set_cache_file_path(const base::FilePath& path) {
+    cache_file_path_ = path;
+  }
   bool is_complete() const { return is_complete_; }
   void set_complete() { is_complete_ = true; }
 
  private:
   const base::FilePath file_path_;
+  base::FilePath cache_file_path_;
   bool is_complete_;
 };
 
@@ -68,11 +73,13 @@ base::FilePath GetDriveTempDownloadPath(
 
 // Moves downloaded file to Drive.
 void MoveDownloadedFile(const base::FilePath& downloaded_file,
+                        base::FilePath* cache_file_path,
                         FileError error,
                         const base::FilePath& dest_path) {
-  if (error != FILE_ERROR_OK)
+  if (error != FILE_ERROR_OK ||
+      !base::Move(downloaded_file, dest_path))
     return;
-  base::Move(downloaded_file, dest_path);
+  *cache_file_path = dest_path;
 }
 
 // Used to implement CheckForFileExistence().
@@ -184,6 +191,11 @@ base::FilePath DownloadHandler::GetTargetPath(
   // picker.
   DCHECK(data);
   return data ? data->file_path() : base::FilePath();
+}
+
+base::FilePath DownloadHandler::GetCacheFilePath(const DownloadItem* download) {
+  const DriveUserData* data = GetDriveUserData(download);
+  return data ? data->cache_file_path() : base::FilePath();
 }
 
 bool DownloadHandler::IsDriveDownload(const DownloadItem* download) {
@@ -302,11 +314,35 @@ void DownloadHandler::OnCreateDirectory(
 
 void DownloadHandler::UploadDownloadItem(DownloadItem* download) {
   DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
-  WriteOnCacheFile(
+  base::FilePath* cache_file_path = new base::FilePath;
+  WriteOnCacheFileAndReply(
       file_system_,
       util::ExtractDrivePath(GetTargetPath(download)),
       download->GetMimeType(),
-      base::Bind(&MoveDownloadedFile, download->GetTargetFilePath()));
+      base::Bind(&MoveDownloadedFile, download->GetTargetFilePath(),
+                 cache_file_path),
+      base::Bind(&DownloadHandler::SetCacheFilePath,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 download->GetId(),
+                 base::Owned(cache_file_path)));
 }
+
+void DownloadHandler::SetCacheFilePath(int id,
+                                       const base::FilePath* cache_file_path,
+                                       FileError error) {
+  if (error != FILE_ERROR_OK)
+    return;
+  DownloadManager* manager = notifier_->GetManager();
+  if (!manager)
+    return;
+  DownloadItem* download = manager->GetDownload(id);
+  if (!download)
+    return;
+  DriveUserData* data = GetDriveUserData(download);
+  if (!data)
+    return;
+  data->set_cache_file_path(*cache_file_path);
+}
+
 
 }  // namespace drive

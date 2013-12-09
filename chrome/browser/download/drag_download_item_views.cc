@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
@@ -29,6 +30,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/download_handler.h"
+#endif
+
 void DragDownloadItem(const content::DownloadItem* download,
                       gfx::Image* icon,
                       gfx::NativeView view) {
@@ -43,8 +48,20 @@ void DragDownloadItem(const content::DownloadItem* download,
         download->GetFileNameToReportUser(), icon->ToImageSkia(), &data);
   }
 
-  const base::FilePath full_path = download->GetTargetFilePath();
-  data.SetFilename(full_path);
+  base::FilePath full_path = download->GetTargetFilePath();
+#if defined(OS_CHROMEOS)
+  // Overwrite |full_path| with drive cache file path when appropriate.
+  Profile* profile = Profile::FromBrowserContext(download->GetBrowserContext());
+  drive::DownloadHandler* drive_download_handler =
+      drive::DownloadHandler::GetForProfile(profile);
+  if (drive_download_handler &&
+      drive_download_handler->IsDriveDownload(download))
+    full_path = drive_download_handler->GetCacheFilePath(download);
+#endif
+  std::vector<ui::OSExchangeData::FileInfo> file_infos;
+  file_infos.push_back(ui::OSExchangeData::FileInfo(
+      full_path, download->GetFileNameToReportUser()));
+  data.SetFilenames(file_infos);
 
   // Add URL so that we can load supported files when dragged to WebContents.
   data.SetURL(net::FilePathToFileURL(full_path),

@@ -35,6 +35,14 @@ void WriteOnCacheFile(FileSystemInterface* file_system,
                       const std::string& mime_type,
                       const WriteOnCacheFileCallback& callback);
 
+// Does the same thing as WriteOnCacheFile() and runs |reply| on the UI thread
+// after the completion.
+void WriteOnCacheFileAndReply(FileSystemInterface* file_system,
+                              const base::FilePath& path,
+                              const std::string& mime_type,
+                              const WriteOnCacheFileCallback& callback,
+                              const FileOperationCallback& reply);
+
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_WRITE_ON_CACHE_FILE_H_
