@@ -24,6 +24,7 @@ class XcodeSettings(object):
   # Populated lazily by _SdkPath(). Shared by all XcodeSettings, so cached
   # at class-level for efficiency.
   _sdk_path_cache = {}
+  _sdk_root_cache = {}
 
   # Populated lazily by GetExtraPlistItems(). Shared by all XcodeSettings, so
   # cached at class-level for efficiency.
@@ -290,9 +291,14 @@ class XcodeSettings(object):
     sdk_root = self._SdkRoot(configname)
     if sdk_root.startswith('/'):
       return sdk_root
+    return self._XcodeSdkPath(sdk_root)
+
+  def _XcodeSdkPath(self, sdk_root):
     if sdk_root not in XcodeSettings._sdk_path_cache:
-      XcodeSettings._sdk_path_cache[sdk_root] = self._GetSdkVersionInfoItem(
-          sdk_root, 'Path')
+      sdk_path = self._GetSdkVersionInfoItem(sdk_root, 'Path')
+      XcodeSettings._sdk_path_cache[sdk_root] = sdk_path
+      if sdk_root:
+        XcodeSettings._sdk_root_cache[sdk_path] = sdk_root
     return XcodeSettings._sdk_path_cache[sdk_root]
 
   def _AppendPlatformVersionMinFlags(self, lst):
@@ -885,6 +891,8 @@ class XcodeSettings(object):
       cache['DTXcodeBuild'] = xcode_build
 
       sdk_root = self._SdkRoot(configname)
+      if not sdk_root:
+        sdk_root = self._DefaultSdkRoot()
       cache['DTSDKName'] = sdk_root
       if xcode >= '0430':
         cache['DTSDKBuild'] = self._GetSdkVersionInfoItem(
@@ -908,6 +916,29 @@ class XcodeSettings(object):
     if self.isIOS:
       items['UIDeviceFamily'] = self._XcodeIOSDeviceFamily(configname)
     return items
+
+  def _DefaultSdkRoot(self):
+    """Returns the default SDKROOT to use.
+
+    Prior to version 5.0.0, if SDKROOT was not explicitly set in the Xcode
+    project, then the environment variable was empty. Starting with this
+    version, Xcode uses the name of the newest SDK installed.
+    """
+    if self._XcodeVersion() < '0500':
+      return ''
+    default_sdk_path = self._XcodeSdkPath('')
+    default_sdk_root = XcodeSettings._sdk_root_cache.get(default_sdk_path)
+    if default_sdk_root:
+      return default_sdk_root
+    all_sdks = self._GetStdout(['xcodebuild', '-showsdks'])
+    for line in all_sdks.splitlines():
+      items = line.split()
+      if len(items) >= 3 and items[-2] == '-sdk':
+        sdk_root = items[-1]
+        sdk_path = self._XcodeSdkPath(sdk_root)
+        if sdk_path == default_sdk_path:
+          return sdk_root
+    return ''
 
   def _DefaultArch(self):
     # For Mac projects, Xcode changed the default value used when ARCHS is not

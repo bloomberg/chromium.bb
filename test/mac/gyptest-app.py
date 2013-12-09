@@ -32,6 +32,11 @@ def ls(path):
       result.append(os.path.join(dirpath, f)[len(path) + 1:])
   return result
 
+def XcodeVersion():
+  stdout = subprocess.check_output(['xcodebuild', '-version'])
+  version = stdout.splitlines()[0].split()[-1].replace('.', '')
+  return (version + '0' * (3 - len(version))).zfill(4)
+
 
 if sys.platform == 'darwin':
   test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
@@ -56,7 +61,15 @@ if sys.platform == 'darwin':
     plist = plistlib.readPlist(info_plist)
     ExpectEq(GetStdout(['sw_vers', '-buildVersion']),
              plist['BuildMachineOSBuild'])
-    ExpectEq('', plist['DTSDKName'])
+
+    # Prior to Xcode 5.0.0, SDKROOT (and thus DTSDKName) was only defined if
+    # set in the Xcode project file. Starting with that version, it is always
+    # defined.
+    expected = ''
+    if XcodeVersion() >= '0500':
+      version = GetStdout(['xcodebuild', '-version', '-sdk', '', 'SDKVersion'])
+      expected = 'macosx' + version
+    ExpectEq(expected, plist['DTSDKName'])
     sdkbuild = GetStdout(
         ['xcodebuild', '-version', '-sdk', '', 'ProductBuildVersion'])
     if not sdkbuild:
