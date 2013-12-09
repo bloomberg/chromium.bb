@@ -112,8 +112,8 @@ function test()
     InspectorTest.loadTimelineRecords(records);
 
     var timelinePanel = WebInspector.panels.timeline;
+    timelinePanel._modeChanged(WebInspector.TimelineOverviewPane.Mode.Frames);
     var overview = timelinePanel._overviewPane;
-    overview.setMode(WebInspector.TimelineOverviewPane.Mode.Frames);
     var frameOverview = overview._overviewControl;
     InspectorTest.addResult("Main thread frames:");
     frameOverview._mainThreadFrames.forEach(InspectorTest.dumpFrame, InspectorTest);
