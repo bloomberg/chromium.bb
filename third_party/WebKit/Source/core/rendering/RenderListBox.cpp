@@ -615,7 +615,7 @@ bool RenderListBox::listIndexIsVisible(int index)
     return index >= m_indexOffset && index < m_indexOffset + numVisibleItems();
 }
 
-bool RenderListBox::scrollImpl(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
+bool RenderListBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
 {
     return ScrollableArea::scroll(direction, granularity, multiplier);
 }

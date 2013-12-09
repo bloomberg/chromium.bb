@@ -793,57 +793,12 @@ int RenderBox::instrinsicScrollbarLogicalWidth() const
     return 0;
 }
 
-bool RenderBox::scrollImpl(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
+bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
 {
-    RenderLayer* layer = this->layer();
-    return layer && layer->scrollableArea() && layer->scrollableArea()->scroll(direction, granularity, multiplier);
-}
+    if (!layer() || !layer()->scrollableArea())
+        return false;
 
-bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode, Node* startNode, IntPoint absolutePoint)
-{
-    if (scrollImpl(direction, granularity, multiplier)) {
-        if (stopNode)
-            *stopNode = node();
-        return true;
-    }
-
-    if (stopNode && *stopNode && *stopNode == node())
-        return true;
-
-    RenderBlock* nextScrollBlock = containingBlock();
-
-    if (nextScrollBlock && nextScrollBlock->isRenderNamedFlowThread()) {
-        RenderBox* flowedBox = this;
-
-        if (startNode) {
-            if (RenderBox* box = startNode->renderBox())
-                flowedBox = box;
-        }
-
-        nextScrollBlock = toRenderFlowThread(nextScrollBlock)->regionFromAbsolutePointAndBox(absolutePoint, flowedBox);
-    }
-
-    if (nextScrollBlock && !nextScrollBlock->isRenderView())
-        return nextScrollBlock->scroll(direction, granularity, multiplier, stopNode, startNode, absolutePoint);
-    return false;
-}
-
-bool RenderBox::logicalScroll(ScrollLogicalDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
-{
-    if (scrollImpl(logicalToPhysical(direction, isHorizontalWritingMode(), style()->isFlippedBlocksWritingMode()),
-        granularity, multiplier)) {
-        if (stopNode)
-            *stopNode = node();
-        return true;
-    }
-
-    if (stopNode && *stopNode && *stopNode == node())
-        return true;
-
-    RenderBlock* b = containingBlock();
-    if (b && !b->isRenderView())
-        return b->logicalScroll(direction, granularity, multiplier, stopNode);
-    return false;
+    return layer()->scrollableArea()->scroll(direction, granularity, multiplier);
 }
 
 bool RenderBox::canBeScrolledAndHasScrollableArea() const

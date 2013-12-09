@@ -78,7 +78,9 @@
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
@@ -253,15 +255,67 @@ static inline ScrollGranularity wheelGranularityToScrollGranularity(unsigned del
     }
 }
 
+static inline bool scrollNodeLogically(float delta, ScrollGranularity granularity, ScrollLogicalDirection direction, Node* node, Node** stopNode)
+{
+    if (!delta)
+        return false;
+    if (!node->renderer())
+        return false;
+
+    RenderBox* curBox = node->renderer()->enclosingBox();
+
+    while (curBox && !curBox->isRenderView()) {
+        ScrollDirection physicalDirection =
+            logicalToPhysical(direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
+
+        if (curBox->scroll(physicalDirection, granularity, delta)) {
+            if (stopNode)
+                *stopNode = curBox->node();
+            return true;
+        }
+
+        if (stopNode && *stopNode && curBox->node() == *stopNode)
+            return true;
+
+        curBox = curBox->containingBlock();
+    }
+
+    return false;
+}
+
 static inline bool scrollNode(float delta, ScrollGranularity granularity, ScrollDirection positiveDirection, ScrollDirection negativeDirection, Node* node, Node** stopNode, IntPoint absolutePoint = IntPoint())
 {
     if (!delta)
         return false;
     if (!node->renderer())
         return false;
-    RenderBox* enclosingBox = node->renderer()->enclosingBox();
+
     float absDelta = delta > 0 ? delta : -delta;
-    return enclosingBox->scroll(delta < 0 ? negativeDirection : positiveDirection, granularity, absDelta, stopNode, node, absolutePoint);
+    RenderBox* curBox = node->renderer()->enclosingBox();
+
+    while (curBox && !curBox->isRenderView()) {
+        if (curBox->scroll(delta < 0 ? negativeDirection : positiveDirection, granularity, absDelta)) {
+            if (stopNode)
+                *stopNode = curBox->node();
+            return true;
+        }
+
+        if (stopNode && *stopNode && curBox->node() == *stopNode)
+            return true;
+
+        // FIXME: This should probably move to a virtual method on RenderBox, something like RenderBox::scrollAncestor, and specialized for RenderFlowThread
+        curBox = curBox->containingBlock();
+        if (curBox && curBox->isRenderNamedFlowThread()) {
+            RenderBox* flowedBox = curBox;
+
+            if (RenderBox* startBox = node->renderBox())
+                flowedBox = startBox;
+
+            curBox = toRenderFlowThread(curBox)->regionFromAbsolutePointAndBox(absolutePoint, flowedBox);
+        }
+    }
+
+    return false;
 }
 
 // Refetch the event target node if it is removed or currently is the shadow node inside an <input> element.
@@ -948,9 +1002,20 @@ bool EventHandler::scrollOverflow(ScrollDirection direction, ScrollGranularity g
     if (!node)
         node = m_mousePressNode.get();
 
+    // FIXME: Remove once scrollNode is refactored
+    ScrollDirection negative = ScrollUp;
+    if (direction == ScrollLeft)
+        negative = ScrollRight;
+    else if (direction == ScrollRight)
+        negative = ScrollLeft;
+    else if (direction == ScrollUp)
+        negative = ScrollDown;
+    else if (direction == ScrollDown)
+        negative = ScrollUp;
+
     if (node) {
         RenderObject* r = node->renderer();
-        if (r && !r->isListBox() && r->enclosingBox()->scroll(direction, granularity)) {
+        if (r && !r->isListBox() && scrollNode(1.0f, granularity, direction, negative, node, 0)) {
             setFrameWasScrolledByUser();
             return true;
         }
@@ -971,7 +1036,7 @@ bool EventHandler::logicalScrollOverflow(ScrollLogicalDirection direction, Scrol
 
     if (node) {
         RenderObject* r = node->renderer();
-        if (r && !r->isListBox() && r->enclosingBox()->logicalScroll(direction, granularity)) {
+        if (r && !r->isListBox() && scrollNodeLogically(1.0f, granularity, direction, node, 0)) {
             setFrameWasScrolledByUser();
             return true;
         }

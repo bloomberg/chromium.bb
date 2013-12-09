@@ -265,12 +265,7 @@ void RenderEmbeddedObject::viewCleared()
     }
 }
 
-bool RenderEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity granularity, float, Node**, Node*, IntPoint)
-{
-    return false;
-}
-
-bool RenderEmbeddedObject::logicalScroll(ScrollLogicalDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
+bool RenderEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity granularity, float)
 {
     return false;
 }

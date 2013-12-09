@@ -452,8 +452,7 @@ public:
     int horizontalScrollbarHeight() const;
     int instrinsicScrollbarLogicalWidth() const;
     int scrollbarLogicalHeight() const { return style()->isHorizontalWritingMode() ? horizontalScrollbarHeight() : verticalScrollbarWidth(); }
-    virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1, Node** stopNode = 0, Node* startNode = 0, IntPoint absolutePoint = IntPoint());
-    virtual bool logicalScroll(ScrollLogicalDirection, ScrollGranularity, float multiplier = 1, Node** stopNode = 0);
+    virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1);
     bool canBeScrolledAndHasScrollableArea() const;
     virtual bool canBeProgramaticallyScrolled() const;
     virtual void autoscroll(const IntPoint&);
@@ -687,10 +686,6 @@ private:
     virtual void computePreferredLogicalWidths() { clearPreferredLogicalWidthsDirty(); }
 
     virtual LayoutRect frameRectForStickyPositioning() const OVERRIDE FINAL { return frameRect(); }
-
-    // This method performs the actual scroll. Override if scrolling without a RenderLayer. The scroll() and logicalScroll()
-    // are responsible for scroll propagation/bubbling and call this method to do the actual scrolling
-    virtual bool scrollImpl(ScrollDirection, ScrollGranularity, float);
 
 private:
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).

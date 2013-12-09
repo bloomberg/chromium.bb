@@ -71,7 +71,7 @@ private:
 
     virtual bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset);
 
-    virtual bool scrollImpl(ScrollDirection, ScrollGranularity, float) OVERRIDE;
+    virtual bool scroll(ScrollDirection, ScrollGranularity, float) OVERRIDE;
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
