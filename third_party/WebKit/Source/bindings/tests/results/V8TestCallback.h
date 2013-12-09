@@ -44,11 +44,10 @@ class ExecutionContext;
 
 class V8TestCallback : public TestCallback, public ActiveDOMCallback {
 public:
-    static PassOwnPtr<V8TestCallback> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
+    static PassOwnPtr<V8TestCallback> create(v8::Handle<v8::Object> callback, ExecutionContext* context)
     {
-        ASSERT(jsValue->IsObject());
         ASSERT(context);
-        return adoptPtr(new V8TestCallback(v8::Handle<v8::Object>::Cast(jsValue), context));
+        return adoptPtr(new V8TestCallback(callback, context));
     }
 
     virtual ~V8TestCallback();
@@ -61,9 +60,6 @@ public:
     virtual bool callbackWithSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg);
     virtual bool callbackWithFloatArg(float floatArg);
     virtual bool callbackWithThisArg(ScriptValue thisValue, int arg);
-
-    virtual ExecutionContext* executionContext() const { return ContextLifecycleObserver::executionContext(); }
-
 private:
     V8TestCallback(v8::Handle<v8::Object>, ExecutionContext*);
 

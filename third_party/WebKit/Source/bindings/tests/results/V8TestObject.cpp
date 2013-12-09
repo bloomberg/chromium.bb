@@ -3593,7 +3593,7 @@ static void methodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value
         throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = V8TestCallback::create(info[0], getExecutionContext());
+    OwnPtr<TestCallback> callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     imp->methodWithCallbackArg(callback.release());
 }
 
@@ -3616,7 +3616,7 @@ static void methodWithNonCallbackArgAndCallbackArgMethod(const v8::FunctionCallb
         throwTypeError(ExceptionMessages::failedToExecute("methodWithNonCallbackArgAndCallbackArg", "TestObject", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = V8TestCallback::create(info[1], getExecutionContext());
+    OwnPtr<TestCallback> callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
     imp->methodWithNonCallbackArgAndCallbackArg(nonCallback, callback.release());
 }
 
@@ -3636,7 +3636,7 @@ static void methodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInf
             throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callback = V8TestCallback::create(info[0], getExecutionContext());
+        callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     }
     imp->methodWithCallbackAndOptionalArg(callback.release());
 }
@@ -3659,7 +3659,7 @@ static void methodWithNullableCallbackArgMethod(const v8::FunctionCallbackInfo<v
         throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = info[0]->IsNull() ? nullptr : V8TestCallback::create(info[0], getExecutionContext());
+    OwnPtr<TestCallback> callback = info[0]->IsNull() ? nullptr : V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     imp->methodWithNullableCallbackArg(callback.release());
 }
 
@@ -3678,7 +3678,7 @@ static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallb
             throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callback = V8TestCallback::create(info[0], getExecutionContext());
+        callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     }
     TestObj::staticMethodWithCallbackAndOptionalArg(callback.release());
 }
@@ -3700,7 +3700,7 @@ static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8:
         throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = V8TestCallback::create(info[0], getExecutionContext());
+    OwnPtr<TestCallback> callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     TestObj::staticMethodWithCallbackArg(callback.release());
 }
 
@@ -3959,7 +3959,7 @@ static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callbackArg = V8TestCallback::create(info[0], getExecutionContext());
+    OwnPtr<TestCallback> callbackArg = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     imp->overloadedMethod(callbackArg.release());
 }
 
@@ -4928,7 +4928,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> testCallback = V8TestCallback::create(info[0], getExecutionContext());
+    OwnPtr<TestCallback> testCallback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     RefPtr<TestObj> impl = TestObj::create(testCallback);
     v8::Handle<v8::Object> wrapper = info.Holder();
 

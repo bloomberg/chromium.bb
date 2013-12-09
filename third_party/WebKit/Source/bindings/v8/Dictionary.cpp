@@ -683,7 +683,7 @@ bool Dictionary::get(const String& key, OwnPtr<VoidCallback>& value) const
     if (!v8Value->IsFunction())
         return false;
 
-    value = V8VoidCallback::create(v8Value, getExecutionContext());
+    value = V8VoidCallback::create(v8::Handle<v8::Function>::Cast(v8Value), getExecutionContext());
     return true;
 }
 

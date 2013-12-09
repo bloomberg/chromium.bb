@@ -2570,7 +2570,7 @@ END
                 $parameterCheckString .= "            throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"The callback provided as parameter $humanFriendlyIndex is not a function.\"), info.GetIsolate());\n";
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
-                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(info[$paramIndex], getExecutionContext());\n";
+                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), getExecutionContext());\n";
                 $parameterCheckString .= "    }\n";
             } else {
                 $parameterCheckString .= "    if (info.Length() <= $paramIndex || ";
@@ -2585,7 +2585,7 @@ END
                 $parameterCheckString .= "    }\n";
                 $parameterCheckString .= "    OwnPtr<" . $parameter->type . "> $parameterName = ";
                 $parameterCheckString .= "info[$paramIndex]->IsNull() ? nullptr : " if $parameter->isNullable;
-                $parameterCheckString .= "${v8ClassName}::create(info[$paramIndex], getExecutionContext());\n";
+                $parameterCheckString .= "${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), getExecutionContext());\n";
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
                 my $nativeValue = "${parameterName}NativeValue";
@@ -4827,11 +4827,10 @@ sub GenerateCallbackHeader
     $header{class}->addFooter("};\n");
 
     $header{classPublic}->add(<<END);
-    static PassOwnPtr<${v8ClassName}> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
+    static PassOwnPtr<${v8ClassName}> create(v8::Handle<v8::Object> callback, ExecutionContext* context)
     {
-        ASSERT(jsValue->IsObject());
         ASSERT(context);
-        return adoptPtr(new ${v8ClassName}(v8::Handle<v8::Object>::Cast(jsValue), context));
+        return adoptPtr(new ${v8ClassName}(callback, context));
     }
 
     virtual ~${v8ClassName}();
@@ -4858,11 +4857,6 @@ END
         }
     }
 
-    $header{classPublic}->add(<<END);
-
-    virtual ExecutionContext* executionContext() const { return ContextLifecycleObserver::executionContext(); }
-
-END
     $header{classPrivate}->add(<<END);
     ${v8ClassName}(v8::Handle<v8::Object>, ExecutionContext*);
 
