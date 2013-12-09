@@ -424,7 +424,10 @@ libtoytoolkit_la_SOURCES =				\
 	clients/scaler-protocol.c			\
 	clients/scaler-client-protocol.h		\
 	clients/workspaces-protocol.c			\
-	clients/workspaces-client-protocol.h
+	clients/workspaces-client-protocol.h		\
+	clients/xdg-shell-protocol.c                    \
+	clients/xdg-shell-client-protocol.h
+
 
 libtoytoolkit_la_LIBADD =			\
 	$(CLIENT_LIBS)				\
@@ -596,7 +599,9 @@ BUILT_SOURCES +=					\
 	clients/scaler-client-protocol.h		\
 	clients/scaler-protocol.c			\
 	clients/workspaces-client-protocol.h		\
-	clients/workspaces-protocol.c
+	clients/workspaces-protocol.c			\
+	clients/xdg-shell-protocol.c                    \
+	clients/xdg-shell-client-protocol.h
 
 
 westondatadir = $(datadir)/weston

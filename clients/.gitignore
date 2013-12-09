@@ -47,3 +47,5 @@ weston-multi-resource
 workspaces-client-protocol.h
 workspaces-protocol.c
 weston-simple-im
+xdg-shell-client-protocol.h
+xdg-shell-protocol.c
