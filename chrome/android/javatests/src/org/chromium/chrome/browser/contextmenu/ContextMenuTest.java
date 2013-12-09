@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Build;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.ContextMenu;
 
@@ -62,7 +63,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
         assertStringContains("test_link.html", getClipboardText());
     }
 
-    @LargeTest
+    // http://crbug.com/326769
+    @FlakyTest
+    // @LargeTest
     @Feature({"Browser"})
     public void testCopyLinkTextSimple() throws InterruptedException, TimeoutException {
         TabBase tab = getActivity().getActiveTab();
