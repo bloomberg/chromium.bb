@@ -23,11 +23,12 @@ InfoBarContainerView::~InfoBarContainerView() {
 }
 
 gfx::Size InfoBarContainerView::GetPreferredSize() {
-  // We do not have a preferred width (we will expand to fit the available width
-  // of the delegate).
   int total_height;
   GetVerticalOverlap(&total_height);
-  return gfx::Size(0, total_height);
+  gfx::Size size(0, total_height);
+  for (int i = 0; i < child_count(); ++i)
+    size.SetToMax(gfx::Size(child_at(i)->GetPreferredSize().width(), 0));
+  return size;
 }
 
 const char* InfoBarContainerView::GetClassName() const {

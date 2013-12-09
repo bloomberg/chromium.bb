@@ -200,17 +200,20 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
     bookmark_bar_size = bookmark_bar_->GetMinimumSize();
     bookmark_bar_size.Enlarge(0, -bookmark_bar_->GetToolbarOverlap());
   }
+  gfx::Size infobar_container_size(infobar_container_->GetMinimumSize());
   // TODO: Adjust the minimum height for the find bar.
 
   gfx::Size contents_size(contents_split_->GetMinimumSize());
 
   int min_height = delegate_->GetTopInsetInBrowserView() +
       tabstrip_size.height() + toolbar_size.height() +
-      bookmark_bar_size.height() + contents_size.height();
+      bookmark_bar_size.height() + infobar_container_size.height() +
+      contents_size.height();
   int widths[] = {
         tabstrip_size.width(),
         toolbar_size.width(),
         bookmark_bar_size.width(),
+        infobar_container_size.width(),
         contents_size.width() };
   int min_width = *std::max_element(&widths[0], &widths[arraysize(widths)]);
   return gfx::Size(min_width, min_height);
