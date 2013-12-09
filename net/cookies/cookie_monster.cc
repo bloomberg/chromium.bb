@@ -1668,7 +1668,7 @@ int CookieMonster::TrimDuplicateCookiesForKey(
 
 // Note: file must be the last scheme.
 const char* CookieMonster::kDefaultCookieableSchemes[] =
-    { "http", "https", "file" };
+    { "http", "https", "ws", "wss", "file" };
 const int CookieMonster::kDefaultCookieableSchemesCount =
     arraysize(kDefaultCookieableSchemes);
 
