@@ -92,17 +92,7 @@ void SyncTaskManager::ScheduleTask(
 void SyncTaskManager::ScheduleSyncTask(
     scoped_ptr<SyncTask> task,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    PushPendingTask(
-        base::Bind(&SyncTaskManager::ScheduleSyncTask,
-                   AsWeakPtr(), base::Passed(&task), callback),
-        PRIORITY_MED);
-    return;
-  }
-  DCHECK(!running_task_);
-  running_task_ = task.Pass();
-  running_task_->Run(CreateCompletionCallback(token.Pass(), callback));
+  ScheduleSyncTaskAtPriority(task.Pass(), PRIORITY_MED, callback);
 }
 
 void SyncTaskManager::ScheduleTaskAtPriority(
@@ -118,6 +108,23 @@ void SyncTaskManager::ScheduleTaskAtPriority(
     return;
   }
   task.Run(CreateCompletionCallback(token.Pass(), callback));
+}
+
+void SyncTaskManager::ScheduleSyncTaskAtPriority(
+    scoped_ptr<SyncTask> task,
+    Priority priority,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
+  if (!token) {
+    PushPendingTask(
+        base::Bind(&SyncTaskManager::ScheduleSyncTask,
+                   AsWeakPtr(), base::Passed(&task), callback),
+        priority);
+    return;
+  }
+  DCHECK(!running_task_);
+  running_task_ = task.Pass();
+  running_task_->Run(CreateCompletionCallback(token.Pass(), callback));
 }
 
 bool SyncTaskManager::ScheduleTaskIfIdle(const Task& task,

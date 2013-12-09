@@ -66,6 +66,9 @@ class SyncTaskManager
   void ScheduleTaskAtPriority(const Task& task,
                               Priority priority,
                               const SyncStatusCallback& callback);
+  void ScheduleSyncTaskAtPriority(scoped_ptr<SyncTask> task,
+                                  Priority priority,
+                                  const SyncStatusCallback& callback);
 
   // Runs the posted task only when we're idle.  Returns true if tha task is
   // scheduled.
