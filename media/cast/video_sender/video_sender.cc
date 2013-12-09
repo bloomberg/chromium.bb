@@ -367,7 +367,6 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
 
 void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  VLOG(1) << "ReceivedAck:" << acked_frame_id;
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
   cast_environment_->Logging()->InsertGenericEvent(kAckReceived,
                                                    acked_frame_id);
