@@ -23,11 +23,11 @@
  */
 
 [
-    NoInterfaceObject,
     Constructor,
     Constructor(MediaStream stream),
     Constructor(MediaStreamTrack[] tracks),
-    ConstructorCallWith=ExecutionContext
+    ConstructorCallWith=ExecutionContext,
+    NoInterfaceObject,
 ] interface MediaStream : EventTarget {
     // DEPRECATED
     readonly attribute DOMString label;
@@ -50,4 +50,3 @@
     attribute EventHandler onaddtrack;
     attribute EventHandler onremovetrack;
 };
-

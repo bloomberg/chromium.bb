@@ -33,7 +33,7 @@
     ActiveDOMObject,
     Constructor(DOMString title, [Default=Undefined] optional Dictionary options),
     ConstructorCallWith=ExecutionContext,
-    RuntimeEnabled=notifications
+    RuntimeEnabled=Notifications,
 ] interface Notification : EventTarget {
     [CallWith=ExecutionContext] static readonly attribute DOMString permission;
     [CallWith=ExecutionContext] static void requestPermission(optional NotificationPermissionCallback callback);

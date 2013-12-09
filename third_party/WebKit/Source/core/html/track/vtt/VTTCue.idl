@@ -28,9 +28,9 @@
  */
 
 [
-    RuntimeEnabled=VideoTrack,
     Constructor(double startTime, double endTime, DOMString text),
-    ConstructorCallWith=Document
+    ConstructorCallWith=Document,
+    RuntimeEnabled=VideoTrack,
 ] interface VTTCue : TextTrackCue {
     [RuntimeEnabled=WebVTTRegions] attribute DOMString regionId;
     [RaisesException=Setter] attribute DOMString vertical;

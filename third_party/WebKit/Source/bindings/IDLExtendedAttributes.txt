@@ -41,6 +41,8 @@ CheckSecurity=Frame|Node
 Clamp
 Conditional=*
 Constructor
+# FIXME: remove [ConstructorCallWith=Document], as can instead use
+# [ConstructorCallWith=ExecutionContext] + toDocument(executionContext)
 ConstructorCallWith=ExecutionContext|Document
 Custom=|Getter|Setter|LegacyCallAsFunction|ToV8|VisitDOMWrapper|Wrap
 CustomConstructor

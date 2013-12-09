@@ -75,7 +75,9 @@ template <typename T> void V8_USE(T) { }
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(exceptionState);
+    ExecutionContext* context = getExecutionContext();
+    Document& document = *toDocument(getExecutionContext());
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
         return;

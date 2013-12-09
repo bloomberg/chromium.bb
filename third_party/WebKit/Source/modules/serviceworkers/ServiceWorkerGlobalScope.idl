@@ -29,7 +29,7 @@
  */
 [
     GlobalContext=ServiceWorkerGlobalScope,
-    RuntimeEnabled=serviceWorker
+    RuntimeEnabled=ServiceWorker,
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
   attribute EventHandler oninstall;
   attribute EventHandler onactivate;

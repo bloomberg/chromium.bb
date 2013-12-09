@@ -30,10 +30,10 @@
  */
 
 [
-    GlobalContext=Window&WorkerGlobalScope,
     ActiveDOMObject,
     Constructor,
-    ConstructorCallWith=ExecutionContext
+    ConstructorCallWith=ExecutionContext,
+    GlobalContext=Window&WorkerGlobalScope,
 ] interface FileReader : EventTarget {
     // ready states
     const unsigned short EMPTY = 0;

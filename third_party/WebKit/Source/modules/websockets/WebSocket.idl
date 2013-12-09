@@ -30,13 +30,13 @@
  */
 
 [
-    GlobalContext=Window&WorkerGlobalScope,
     ActiveDOMObject,
     Constructor(DOMString url),
     Constructor(DOMString url, sequence<DOMString> protocols),
     Constructor(DOMString url, DOMString protocol),
+    ConstructorCallWith=ExecutionContext,
+    GlobalContext=Window&WorkerGlobalScope,
     RaisesException=Constructor,
-    ConstructorCallWith=ExecutionContext
 ] interface WebSocket : EventTarget {
     readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.
     readonly attribute DOMString url;

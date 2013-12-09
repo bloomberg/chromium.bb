@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     Constructor,
-    ConstructorCallWith=Document
+    ConstructorCallWith=Document,
 ] interface Range {
 
     [RaisesException=Getter] readonly attribute Node startContainer;
@@ -91,4 +91,3 @@
 
     [RaisesException] void expand([Default=Undefined] optional DOMString unit);
 };
-

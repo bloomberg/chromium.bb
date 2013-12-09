@@ -29,11 +29,11 @@
  */
 
 [
-    NoInterfaceObject,
     ActiveDOMObject,
     Constructor(Dictionary rtcIceServers, optional Dictionary mediaConstraints),
+    ConstructorCallWith=ExecutionContext,
+    NoInterfaceObject,
     RaisesException=Constructor,
-    ConstructorCallWith=ExecutionContext
 ] interface RTCPeerConnection : EventTarget {
     [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 

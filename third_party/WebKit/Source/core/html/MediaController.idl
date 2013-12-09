@@ -24,9 +24,9 @@
  */
 
 [
-    RuntimeEnabled=Media,
     Constructor,
-    ConstructorCallWith=ExecutionContext
+    ConstructorCallWith=ExecutionContext,
+    RuntimeEnabled=Media,
 ] interface MediaController : EventTarget {
     readonly attribute TimeRanges buffered;
     readonly attribute TimeRanges seekable;

@@ -30,6 +30,7 @@
 
 [
     Constructor(),
+    ConstructorCallWith=ExecutionContext&Document,
     MeasureAs=TestFeature,
     RaisesException=Constructor,
 ] interface TestInterfaceConstructor {

@@ -137,6 +137,12 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% if is_constructor_raises_exception %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
+    {% if is_constructor_call_with_execution_context %}
+    ExecutionContext* context = getExecutionContext();
+    {% endif %}
+    {% if is_constructor_call_with_document %}
+    Document& document = *toDocument(getExecutionContext());
+    {% endif %}
     RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor_arguments | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();
     {% if is_constructor_raises_exception %}

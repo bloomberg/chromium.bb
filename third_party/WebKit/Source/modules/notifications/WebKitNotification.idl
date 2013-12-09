@@ -29,10 +29,10 @@
  */
 
 [
-    NoInterfaceObject,
     ActiveDOMObject,
     Conditional=LEGACY_NOTIFICATIONS,
-    RuntimeEnabled=notifications
+    NoInterfaceObject,
+    RuntimeEnabled=Notifications,
 ] interface WebKitNotification : EventTarget {
     void show();
     void cancel();

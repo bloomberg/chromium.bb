@@ -26,10 +26,10 @@
  */
 
 [
+    ActiveDOMObject,
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    ActiveDOMObject
 ] interface Worker : EventTarget {
 
     attribute EventHandler onmessage;
@@ -39,4 +39,3 @@
 };
 
 Worker implements AbstractWorker;
-

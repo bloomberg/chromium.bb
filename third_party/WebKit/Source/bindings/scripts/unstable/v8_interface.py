@@ -86,7 +86,7 @@ def generate_interface(interface):
     if is_measure_as:
         includes.add('core/frame/UseCounter.h')
 
-    # [RaisesException]
+    # [RaisesException=Constructor]
     is_constructor_raises_exception = extended_attributes.get('RaisesException') == 'Constructor'
     if is_constructor_raises_exception:
         includes.add('bindings/v8/ExceptionState.h')
@@ -113,7 +113,7 @@ def generate_interface(interface):
 
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
-        'constructor_arguments': ['exceptionState'] if is_constructor_raises_exception else [],  # FIXME: arguments are a complex function in general
+        'constructor_arguments': constructor_arguments(interface),
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_constructor': has_constructor,
@@ -129,6 +129,10 @@ def generate_interface(interface):
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
+        'is_constructor_call_with_document': has_extended_attribute_value(
+            interface, 'ConstructorCallWith', 'Document'),  # [ConstructorCallWith=Document]
+        'is_constructor_call_with_execution_context': has_extended_attribute_value(
+            interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
         'is_constructor_raises_exception': is_constructor_raises_exception,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
         'length': 1 if has_event_constructor else 0,  # FIXME: more complex in general, see discussion of length in http://heycam.github.io/webidl/#es-interface-call
@@ -302,3 +306,18 @@ def overload_check_argument(index, argument):
             type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
         return type_check
     return None
+
+
+def constructor_arguments(interface):
+    arguments = []
+    # [ConstructorCallWith=ExecutionContext]
+    if has_extended_attribute_value(interface, 'ConstructorCallWith', 'ExecutionContext'):
+        arguments.append('context')
+    # [ConstructorCallWith=Document]
+    if has_extended_attribute_value(interface, 'ConstructorCallWith', 'Document'):
+        arguments.append('document')
+    # FIXME: actual arguments!
+    # [RaisesException=Constructor]
+    if interface.extended_attributes.get('RaisesException') == 'Constructor':
+        arguments.append('exceptionState')
+    return arguments

@@ -30,11 +30,11 @@
  */
 
 [
-    GlobalContext=Window&WorkerGlobalScope,
     ActiveDOMObject,
     Constructor(DOMString url, optional Dictionary eventSourceInit),
     ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor
+    GlobalContext=Window&WorkerGlobalScope,
+    RaisesException=Constructor,
 ] interface EventSource : EventTarget {
 
     readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.

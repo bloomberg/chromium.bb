@@ -19,7 +19,7 @@
 
 [
     Constructor,
-    ConstructorCallWith=Document
+    ConstructorCallWith=Document,
 ] interface DocumentFragment : Node {
     // NodeSelector - Selector API
     [RaisesException] Element querySelector(DOMString selectors);
@@ -27,4 +27,3 @@
 };
 
 DocumentFragment implements ParentNode;
-

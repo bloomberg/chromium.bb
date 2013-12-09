@@ -2755,10 +2755,11 @@ END
     $code .= $parameterCheckString;
 
     if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
-        if ($interface->extendedAttributes->{"ConstructorCallWith"} eq "ExecutionContext") {
+        if (ExtendedAttributeContains($interface->extendedAttributes->{"ConstructorCallWith"}, "ExecutionContext")) {
             push(@beforeArgumentList, "context");
             $code .= "    ExecutionContext* context = getExecutionContext();\n";
-        } elsif ($interface->extendedAttributes->{"ConstructorCallWith"} eq "Document") {
+        }
+        if (ExtendedAttributeContains($interface->extendedAttributes->{"ConstructorCallWith"}, "Document")) {
             push(@beforeArgumentList, "document");
             $code .= "    Document& document = *toDocument(getExecutionContext());\n";
         }
