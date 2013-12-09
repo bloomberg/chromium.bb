@@ -193,6 +193,8 @@ static long mpegps_psm_parse(MpegDemuxContext *m, AVIOContext *pb)
     /* skip program_stream_info */
     avio_skip(pb, ps_info_length);
     es_map_length = avio_rb16(pb);
+    /* Ignore es_map_length, trust psm_length */
+    es_map_length = psm_length - ps_info_length - 10;
 
     /* at least one es available? */
     while (es_map_length >= 4){
@@ -521,7 +523,13 @@ static int mpegps_read_packet(AVFormatContext *s,
         codec_id = AV_CODEC_ID_DVD_NAV;
     } else if (startcode >= 0x1c0 && startcode <= 0x1df) {
         type = AVMEDIA_TYPE_AUDIO;
-        codec_id = m->sofdec > 0 ? AV_CODEC_ID_ADPCM_ADX : AV_CODEC_ID_MP2;
+        if (m->sofdec > 0) {
+            codec_id = AV_CODEC_ID_ADPCM_ADX;
+            // Auto-detect AC-3
+            request_probe = 50;
+        } else {
+            codec_id = AV_CODEC_ID_MP2;
+        }
     } else if (startcode >= 0x80 && startcode <= 0x87) {
         type = AVMEDIA_TYPE_AUDIO;
         codec_id = AV_CODEC_ID_AC3;
@@ -916,6 +924,8 @@ static int vobsub_read_seek(AVFormatContext *s, int stream_index,
         return ret;
     }
 
+    if (stream_index == -1) // only 1 stream
+        stream_index = 0;
     return ff_subtitles_queue_seek(&vobsub->q[stream_index], s, stream_index,
                                    min_ts, ts, max_ts, flags);
 }

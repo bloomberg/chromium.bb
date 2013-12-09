@@ -68,6 +68,7 @@ typedef enum {
     EBML_NEST,
     EBML_PASS,
     EBML_STOP,
+    EBML_SINT,
     EBML_TYPE_COUNT
 } EbmlType;
 
@@ -298,7 +299,7 @@ typedef struct {
     EbmlBin  bin;
     uint64_t additional_id;
     EbmlBin  additional;
-    uint64_t discard_padding;
+    int64_t discard_padding;
 } MatroskaBlock;
 
 static EbmlSyntax ebml_header[] = {
@@ -576,8 +577,8 @@ static EbmlSyntax matroska_blockgroup[] = {
     { MATROSKA_ID_BLOCKADDITIONS, EBML_NEST, 0, 0, {.n=matroska_blockadditions} },
     { MATROSKA_ID_SIMPLEBLOCK,    EBML_BIN,  0, offsetof(MatroskaBlock,bin) },
     { MATROSKA_ID_BLOCKDURATION,  EBML_UINT, 0, offsetof(MatroskaBlock,duration) },
-    { MATROSKA_ID_DISCARDPADDING, EBML_UINT, 0, offsetof(MatroskaBlock,discard_padding) },
-    { MATROSKA_ID_BLOCKREFERENCE, EBML_UINT, 0, offsetof(MatroskaBlock,reference) },
+    { MATROSKA_ID_DISCARDPADDING, EBML_SINT, 0, offsetof(MatroskaBlock,discard_padding) },
+    { MATROSKA_ID_BLOCKREFERENCE, EBML_SINT, 0, offsetof(MatroskaBlock,reference) },
     { MATROSKA_ID_CODECSTATE,     EBML_NONE },
     { 1,                          EBML_UINT, 0, offsetof(MatroskaBlock,non_simple), {.u=1} },
     { 0 }
@@ -760,6 +761,30 @@ static int ebml_read_uint(AVIOContext *pb, int size, uint64_t *num)
     *num = 0;
     while (n++ < size)
         *num = (*num << 8) | avio_r8(pb);
+
+    return 0;
+}
+
+/*
+ * Read the next element as a signed int.
+ * 0 is success, < 0 is failure.
+ */
+static int ebml_read_sint(AVIOContext *pb, int size, int64_t *num)
+{
+    int n = 1;
+
+    if (size > 8)
+        return AVERROR_INVALIDDATA;
+
+    if (size == 0) {
+        *num = 0;
+    } else {
+        *num = sign_extend(avio_r8(pb), 8);
+
+        /* big-endian ordering; build up number */
+        while (n++ < size)
+            *num = (*num << 8) | avio_r8(pb);
+    }
 
     return 0;
 }
@@ -991,6 +1016,7 @@ static int ebml_parse_elem(MatroskaDemuxContext *matroska,
 
     switch (syntax->type) {
     case EBML_UINT:  res = ebml_read_uint  (pb, length, data);  break;
+    case EBML_SINT:  res = ebml_read_sint  (pb, length, data);  break;
     case EBML_FLOAT: res = ebml_read_float (pb, length, data);  break;
     case EBML_STR:
     case EBML_UTF8:  res = ebml_read_ascii (pb, length, data);  break;
@@ -1855,7 +1881,9 @@ static int matroska_read_header(AVFormatContext *s)
                       st->codec->height * track->video.display_width,
                       st->codec-> width * track->video.display_height,
                       255);
-            st->need_parsing = AVSTREAM_PARSE_HEADERS;
+            if (st->codec->codec_id != AV_CODEC_ID_HEVC)
+                st->need_parsing = AVSTREAM_PARSE_HEADERS;
+
             if (track->default_duration) {
                 av_reduce(&st->avg_frame_rate.num, &st->avg_frame_rate.den,
                           1000000000, track->default_duration, 30000);
@@ -2405,7 +2433,7 @@ static int matroska_parse_frame(MatroskaDemuxContext *matroska,
                                 uint64_t timecode, uint64_t lace_duration,
                                 int64_t pos, int is_keyframe,
                                 uint8_t *additional, uint64_t additional_id, int additional_size,
-                                uint64_t discard_padding)
+                                int64_t discard_padding)
 {
     MatroskaTrackEncoding *encodings = track->encodings.elem;
     uint8_t *pkt_data = data;
@@ -2542,7 +2570,7 @@ static int matroska_parse_block(MatroskaDemuxContext *matroska, uint8_t *data,
                                 int size, int64_t pos, uint64_t cluster_time,
                                 uint64_t block_duration, int is_keyframe,
                                 uint8_t *additional, uint64_t additional_id, int additional_size,
-                                int64_t cluster_pos, uint64_t discard_padding)
+                                int64_t cluster_pos, int64_t discard_padding)
 {
     uint64_t timecode = AV_NOPTS_VALUE;
     MatroskaTrack *track;

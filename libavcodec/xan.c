@@ -71,7 +71,18 @@ typedef struct XanContext {
 
 } XanContext;
 
-static av_cold int xan_decode_end(AVCodecContext *avctx);
+static av_cold int xan_decode_end(AVCodecContext *avctx)
+{
+    XanContext *s = avctx->priv_data;
+
+    av_frame_free(&s->last_frame);
+
+    av_freep(&s->buffer1);
+    av_freep(&s->buffer2);
+    av_freep(&s->palettes);
+
+    return 0;
+}
 
 static av_cold int xan_decode_init(AVCodecContext *avctx)
 {
@@ -92,6 +103,7 @@ static av_cold int xan_decode_init(AVCodecContext *avctx)
         av_freep(&s->buffer1);
         return AVERROR(ENOMEM);
     }
+
     s->last_frame = av_frame_alloc();
     if (!s->last_frame) {
         xan_decode_end(avctx);
@@ -111,12 +123,11 @@ static int xan_huffman_decode(uint8_t *dest, int dest_len,
     uint8_t val = ival;
     uint8_t *dest_end = dest + dest_len;
     uint8_t *dest_start = dest;
+    int ret;
     GetBitContext gb;
 
-    if (ptr_len < 0)
-        return AVERROR_INVALIDDATA;
-
-    init_get_bits(&gb, ptr, ptr_len * 8);
+    if ((ret = init_get_bits8(&gb, ptr, ptr_len)) < 0)
+        return ret;
 
     while (val != 0x16) {
         unsigned idx = val - 0x17 + get_bits1(&gb) * byte;
@@ -622,19 +633,6 @@ static int xan_decode_frame(AVCodecContext *avctx,
 
     /* always report that the buffer was completely consumed */
     return buf_size;
-}
-
-static av_cold int xan_decode_end(AVCodecContext *avctx)
-{
-    XanContext *s = avctx->priv_data;
-
-    av_frame_free(&s->last_frame);
-
-    av_freep(&s->buffer1);
-    av_freep(&s->buffer2);
-    av_freep(&s->palettes);
-
-    return 0;
 }
 
 AVCodec ff_xan_wc3_decoder = {

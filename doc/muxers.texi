@@ -146,6 +146,40 @@ ffmpeg -i INPUT -f framemd5 -
 
 See also the @ref{md5} muxer.
 
+@anchor{gif}
+@section gif
+
+Animated GIF muxer.
+
+It accepts the following options:
+
+@table @option
+@item loop
+Set the number of times to loop the output. Use @code{-1} for no loop, @code{0}
+for looping indefinitely (default).
+
+@item final_delay
+Force the delay (expressed in centiseconds) after the last frame. Each frame
+ends with a delay until the next frame. The default is @code{-1}, which is a
+special value to tell the muxer to re-use the previous delay. In case of a
+loop, you might want to customize this value to mark a pause for instance.
+@end table
+
+For example, to encode a gif looping 10 times, with a 5 seconds delay between
+the loops:
+@example
+ffmpeg -i INPUT -loop 10 -final_delay 500 out.gif
+@end example
+
+Note 1: if you wish to extract the frames in separate GIF files, you need to
+force the @ref{image2} muxer:
+@example
+ffmpeg -i INPUT -c:v gif -f image2 "out%d.gif"
+@end example
+
+Note 2: the GIF format has a very small time base: the delay between two frames
+can not be smaller than one centi second.
+
 @anchor{hls}
 @section hls
 
@@ -386,7 +420,9 @@ ffmpeg -i INPUT -f md5 -
 
 See also the @ref{framemd5} muxer.
 
-@section MOV/MP4/ISMV
+@section mov/mp4/ismv
+
+MOV/MP4/ISMV (Smooth Streaming) muxer.
 
 The mov/mp4/ismv muxer supports fragmentation. Normally, a MOV/MP4
 file has all the metadata about all packets stored in one location
@@ -638,7 +674,9 @@ The segment muxer works best with a single constant frame rate video.
 
 Optionally it can generate a list of the created segments, by setting
 the option @var{segment_list}. The list type is specified by the
-@var{segment_list_type} option.
+@var{segment_list_type} option. The entry filenames in the segment
+list are set by default to the basename of the corresponding segment
+files.
 
 The segment muxer supports the following options:
 
@@ -670,12 +708,14 @@ Allow caching (only affects M3U8 list files).
 Allow live-friendly file generation.
 @end table
 
-Default value is @code{samp}.
-
 @item segment_list_size @var{size}
 Update the list file so that it contains at most the last @var{size}
 segments. If 0 the list file will contain all the segments. Default
 value is 0.
+
+@item segment_list_entry_prefix @var{prefix}
+Set @var{prefix} to prepend to the name of each entry filename. By
+default no prefix is applied.
 
 @item segment_list_type @var{type}
 Specify the format for the segment list file.

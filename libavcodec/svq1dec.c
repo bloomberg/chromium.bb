@@ -593,8 +593,8 @@ static int svq1_decode_frame_header(AVCodecContext *avctx, AVFrame *frame)
         skip_bits1(bitbuf);
         skip_bits(bitbuf, 2);
 
-        while (get_bits1(bitbuf))
-            skip_bits(bitbuf, 8);
+        if (skip_1stop_8data_bits(bitbuf) < 0)
+            return AVERROR_INVALIDDATA;
     }
 
     s->width  = width;
@@ -638,7 +638,10 @@ static int svq1_decode_frame(AVCodecContext *avctx, void *data,
         av_dlog(avctx, "Error in svq1_decode_frame_header %i\n", result);
         return result;
     }
-    avcodec_set_dimensions(avctx, s->width, s->height);
+
+    result = ff_set_dimensions(avctx, s->width, s->height);
+    if (result < 0)
+        return result;
 
     if ((avctx->skip_frame >= AVDISCARD_NONREF && s->nonref) ||
         (avctx->skip_frame >= AVDISCARD_NONKEY &&
@@ -739,7 +742,7 @@ static av_cold int svq1_decode_init(AVCodecContext *avctx)
     int i;
     int offset = 0;
 
-    s->prev = avcodec_alloc_frame();
+    s->prev = av_frame_alloc();
     if (!s->prev)
         return AVERROR(ENOMEM);
 

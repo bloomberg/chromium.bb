@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2010 Nolan Lum <nol888@gmail.com>
- * Copyright (c) 2009 Loren Merritt <lorenm@u.washignton.edu>
+ * Copyright (c) 2009 Loren Merritt <lorenm@u.washington.edu>
  *
  * This file is part of FFmpeg.
  *
@@ -118,6 +118,7 @@ static void filter(GradFunContext *ctx, uint8_t *dst, const uint8_t *src, int wi
         ctx->filter_line(dst + y * dst_linesize, src + y * src_linesize, dc - r / 2, width, thresh, dither[y & 7]);
         if (++y >= height) break;
     }
+    emms_c();
 }
 
 static av_cold int init(AVFilterContext *ctx)
@@ -250,7 +251,7 @@ static const AVFilterPad avfilter_vf_gradfun_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_gradfun = {
+AVFilter ff_vf_gradfun = {
     .name          = "gradfun",
     .description   = NULL_IF_CONFIG_SMALL("Debands video quickly using gradients."),
     .priv_size     = sizeof(GradFunContext),

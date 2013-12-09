@@ -26,6 +26,10 @@
 #include "mpegvideo.h"
 #include "rl.h"
 
+#if !FF_API_ASPECT_EXTENDED
+#define FF_ASPECT_EXTENDED 15
+#endif
+
 // The defines below define the number of bits that are read at once for
 // reading vlc values. Changing these may improve speed and data cache needs
 // be aware though that decreasing them may need the number of stages that is
@@ -116,7 +120,6 @@ int av_const h263_get_picture_format(int width, int height);
 
 void ff_clean_h263_qscales(MpegEncContext *s);
 int ff_h263_resync(MpegEncContext *s);
-const uint8_t *ff_h263_find_resync_marker(MpegEncContext *s, const uint8_t *p, const uint8_t *end);
 int ff_h263_get_gob_height(MpegEncContext *s);
 void ff_h263_encode_motion(MpegEncContext * s, int val, int f_code);
 

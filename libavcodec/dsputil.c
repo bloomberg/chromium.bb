@@ -69,9 +69,6 @@ const uint8_t ff_zigzag248_direct[64] = {
     53, 61, 54, 62, 39, 47, 55, 63,
 };
 
-/* not permutated inverse zigzag_direct + 1 for MMX quantizer */
-DECLARE_ALIGNED(16, uint16_t, ff_inv_zigzag_direct16)[64];
-
 const uint8_t ff_alternate_horizontal_scan[64] = {
     0,  1,   2,  3,  8,  9, 16, 17,
     10, 11,  4,  5,  6,  7, 15, 14,
@@ -1516,80 +1513,6 @@ static void put_mspel8_mc22_c(uint8_t *dst, uint8_t *src, ptrdiff_t stride)
     wmv2_mspel8_v_lowpass(dst, halfH+8, stride, 8, 8);
 }
 
-static void h263_v_loop_filter_c(uint8_t *src, int stride, int qscale){
-    if(CONFIG_H263_DECODER || CONFIG_H263_ENCODER) {
-    int x;
-    const int strength= ff_h263_loop_filter_strength[qscale];
-
-    for(x=0; x<8; x++){
-        int d1, d2, ad1;
-        int p0= src[x-2*stride];
-        int p1= src[x-1*stride];
-        int p2= src[x+0*stride];
-        int p3= src[x+1*stride];
-        int d = (p0 - p3 + 4*(p2 - p1)) / 8;
-
-        if     (d<-2*strength) d1= 0;
-        else if(d<-  strength) d1=-2*strength - d;
-        else if(d<   strength) d1= d;
-        else if(d< 2*strength) d1= 2*strength - d;
-        else                   d1= 0;
-
-        p1 += d1;
-        p2 -= d1;
-        if(p1&256) p1= ~(p1>>31);
-        if(p2&256) p2= ~(p2>>31);
-
-        src[x-1*stride] = p1;
-        src[x+0*stride] = p2;
-
-        ad1= FFABS(d1)>>1;
-
-        d2= av_clip((p0-p3)/4, -ad1, ad1);
-
-        src[x-2*stride] = p0 - d2;
-        src[x+  stride] = p3 + d2;
-    }
-    }
-}
-
-static void h263_h_loop_filter_c(uint8_t *src, int stride, int qscale){
-    if(CONFIG_H263_DECODER || CONFIG_H263_ENCODER) {
-    int y;
-    const int strength= ff_h263_loop_filter_strength[qscale];
-
-    for(y=0; y<8; y++){
-        int d1, d2, ad1;
-        int p0= src[y*stride-2];
-        int p1= src[y*stride-1];
-        int p2= src[y*stride+0];
-        int p3= src[y*stride+1];
-        int d = (p0 - p3 + 4*(p2 - p1)) / 8;
-
-        if     (d<-2*strength) d1= 0;
-        else if(d<-  strength) d1=-2*strength - d;
-        else if(d<   strength) d1= d;
-        else if(d< 2*strength) d1= 2*strength - d;
-        else                   d1= 0;
-
-        p1 += d1;
-        p2 -= d1;
-        if(p1&256) p1= ~(p1>>31);
-        if(p2&256) p2= ~(p2>>31);
-
-        src[y*stride-1] = p1;
-        src[y*stride+0] = p2;
-
-        ad1= FFABS(d1)>>1;
-
-        d2= av_clip((p0-p3)/4, -ad1, ad1);
-
-        src[y*stride-2] = p0 - d2;
-        src[y*stride+1] = p3 + d2;
-    }
-    }
-}
-
 static inline int pix_abs16_c(void *v, uint8_t *pix1, uint8_t *pix2, int line_size, int h)
 {
     int s, i;
@@ -1931,7 +1854,7 @@ void ff_set_cmp(DSPContext* c, me_cmp_func *cmp, int type){
 
 static void add_bytes_c(uint8_t *dst, uint8_t *src, int w){
     long i;
-    for(i=0; i<=w-(int)sizeof(long); i+=sizeof(long)){
+    for (i = 0; i <= w - (int)sizeof(long); i += sizeof(long)) {
         long a = *(long*)(src+i);
         long b = *(long*)(dst+i);
         *(long*)(dst+i) = ((a&pb_7f) + (b&pb_7f)) ^ ((a^b)&pb_80);
@@ -1956,7 +1879,7 @@ static void diff_bytes_c(uint8_t *dst, const uint8_t *src1, const uint8_t *src2,
         }
     }else
 #endif
-    for(i=0; i<=w-(int)sizeof(long); i+=sizeof(long)){
+    for (i = 0; i <= w - (int)sizeof(long); i += sizeof(long)) {
         long a = *(long*)(src1+i);
         long b = *(long*)(src2+i);
         *(long*)(dst+i) = ((a|pb_80) - (b&pb_7f)) ^ ((a^b^pb_80)&pb_80);
@@ -2572,19 +2495,6 @@ static int32_t scalarproduct_and_madd_int16_c(int16_t *v1, const int16_t *v2, co
     return res;
 }
 
-static void apply_window_int16_c(int16_t *output, const int16_t *input,
-                                 const int16_t *window, unsigned int len)
-{
-    int i;
-    int len2 = len >> 1;
-
-    for (i = 0; i < len2; i++) {
-        int16_t w       = window[i];
-        output[i]       = (MUL16(input[i],       w) + (1 << 14)) >> 15;
-        output[len-i-1] = (MUL16(input[len-i-1], w) + (1 << 14)) >> 15;
-    }
-}
-
 static void vector_clip_int32_c(int32_t *dst, const int32_t *src, int32_t min,
                                 int32_t max, unsigned int len)
 {
@@ -2651,8 +2561,6 @@ av_cold void ff_dsputil_static_init(void)
     for(i=0;i<512;i++) {
         ff_squareTbl[i] = (i - 256) * (i - 256);
     }
-
-    for(i=0; i<64; i++) ff_inv_zigzag_direct16[ff_zigzag_direct[i]]= i+1;
 }
 
 int ff_check_alignment(void){
@@ -2872,18 +2780,12 @@ av_cold void ff_dsputil_init(DSPContext* c, AVCodecContext *avctx)
     c->bswap_buf= bswap_buf;
     c->bswap16_buf = bswap16_buf;
 
-    if (CONFIG_H263_DECODER || CONFIG_H263_ENCODER) {
-        c->h263_h_loop_filter= h263_h_loop_filter_c;
-        c->h263_v_loop_filter= h263_v_loop_filter_c;
-    }
-
     c->try_8x8basis= try_8x8basis_c;
     c->add_8x8basis= add_8x8basis_c;
 
     c->vector_clipf = vector_clipf_c;
     c->scalarproduct_int16 = scalarproduct_int16_c;
     c->scalarproduct_and_madd_int16 = scalarproduct_and_madd_int16_c;
-    c->apply_window_int16 = apply_window_int16_c;
     c->vector_clip_int32 = vector_clip_int32_c;
 
     c->shrink[0]= av_image_copy_plane;

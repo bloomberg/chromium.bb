@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <stdint.h>
+
 #include "libavresample/avresample.h"
 #include "libavutil/attributes.h"
 #include "libavutil/audio_fifo.h"
@@ -309,7 +311,7 @@ static const AVFilterPad avfilter_af_asyncts_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_af_asyncts = {
+AVFilter ff_af_asyncts = {
     .name        = "asyncts",
     .description = NULL_IF_CONFIG_SMALL("Sync audio data to timestamps"),
     .init        = init,

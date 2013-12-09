@@ -57,10 +57,10 @@ static const AVOption options[]={
 {"out_sample_fmt"       , "set output sample format"    , OFFSET(out_sample_fmt ), AV_OPT_TYPE_SAMPLE_FMT , {.i64=AV_SAMPLE_FMT_NONE}, -1   , AV_SAMPLE_FMT_NB-1, PARAM},
 {"tsf"                  , "set internal sample format"  , OFFSET(int_sample_fmt ), AV_OPT_TYPE_SAMPLE_FMT , {.i64=AV_SAMPLE_FMT_NONE}, -1   , AV_SAMPLE_FMT_NB-1, PARAM},
 {"internal_sample_fmt"  , "set internal sample format"  , OFFSET(int_sample_fmt ), AV_OPT_TYPE_SAMPLE_FMT , {.i64=AV_SAMPLE_FMT_NONE}, -1   , AV_SAMPLE_FMT_NB-1, PARAM},
-{"icl"                  , "set input channel layout"    , OFFSET( in_ch_layout  ), AV_OPT_TYPE_INT64, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
-{"in_channel_layout"    , "set input channel layout"    , OFFSET( in_ch_layout  ), AV_OPT_TYPE_INT64, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
-{"ocl"                  , "set output channel layout"   , OFFSET(out_ch_layout  ), AV_OPT_TYPE_INT64, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
-{"out_channel_layout"   , "set output channel layout"   , OFFSET(out_ch_layout  ), AV_OPT_TYPE_INT64, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
+{"icl"                  , "set input channel layout"    , OFFSET( in_ch_layout  ), AV_OPT_TYPE_CHANNEL_LAYOUT, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
+{"in_channel_layout"    , "set input channel layout"    , OFFSET( in_ch_layout  ), AV_OPT_TYPE_CHANNEL_LAYOUT, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
+{"ocl"                  , "set output channel layout"   , OFFSET(out_ch_layout  ), AV_OPT_TYPE_CHANNEL_LAYOUT, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
+{"out_channel_layout"   , "set output channel layout"   , OFFSET(out_ch_layout  ), AV_OPT_TYPE_CHANNEL_LAYOUT, {.i64=0                     }, 0      , INT64_MAX , PARAM, "channel_layout"},
 {"clev"                 , "set center mix level"        , OFFSET(clev           ), AV_OPT_TYPE_FLOAT, {.dbl=C_30DB                }, -32    , 32        , PARAM},
 {"center_mix_level"     , "set center mix level"        , OFFSET(clev           ), AV_OPT_TYPE_FLOAT, {.dbl=C_30DB                }, -32    , 32        , PARAM},
 {"slev"                 , "set surround mix level"      , OFFSET(slev           ), AV_OPT_TYPE_FLOAT, {.dbl=C_30DB                }, -32    , 32        , PARAM},
@@ -534,6 +534,7 @@ static int resample(SwrContext *s, AudioData *out_param, int out_count,
     AudioData in, out, tmp;
     int ret_sum=0;
     int border=0;
+    int padless = ARCH_X86 && s->engine == SWR_ENGINE_SWR ? 7 : 0;
 
     av_assert1(s->in_buffer.ch_count == in_param->ch_count);
     av_assert1(s->in_buffer.planar   == in_param->planar);
@@ -564,9 +565,9 @@ static int resample(SwrContext *s, AudioData *out_param, int out_count,
             }
         }
 
-        if((s->flushed || in_count) && !s->in_buffer_count){
+        if((s->flushed || in_count > padless) && !s->in_buffer_count){
             s->in_buffer_index=0;
-            ret= s->resampler->multiple_resample(s->resample, &out, out_count, &in, in_count, &consumed);
+            ret= s->resampler->multiple_resample(s->resample, &out, out_count, &in, FFMAX(in_count-padless, 0), &consumed);
             out_count -= ret;
             ret_sum += ret;
             buf_set(&out, &out, ret);
@@ -598,6 +599,10 @@ static int resample(SwrContext *s, AudioData *out_param, int out_count,
             s->resample_in_constraint= 0;
             if(s->in_buffer_count != count || in_count)
                 continue;
+            if (padless) {
+                padless = 0;
+                continue;
+            }
         }
         break;
     }while(1);

@@ -170,10 +170,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamplesref)
 {
     AResampleContext *aresample = inlink->dst->priv;
     const int n_in  = insamplesref->nb_samples;
-    int n_out       = n_in * aresample->ratio * 2 + 256;
+    int64_t delay;
+    int n_out       = n_in * aresample->ratio + 32;
     AVFilterLink *const outlink = inlink->dst->outputs[0];
-    AVFrame *outsamplesref = ff_get_audio_buffer(outlink, n_out);
+    AVFrame *outsamplesref;
     int ret;
+
+    delay = swr_get_delay(aresample->swr, outlink->sample_rate);
+    if (delay > 0)
+        n_out += delay;
+
+    outsamplesref = ff_get_audio_buffer(outlink, n_out);
 
     if(!outsamplesref)
         return AVERROR(ENOMEM);
@@ -223,10 +230,15 @@ static int request_frame(AVFilterLink *outlink)
     if (ret == AVERROR_EOF) {
         AVFrame *outsamplesref;
         int n_out = 4096;
+        int64_t pts;
 
         outsamplesref = ff_get_audio_buffer(outlink, n_out);
         if (!outsamplesref)
             return AVERROR(ENOMEM);
+
+        pts = swr_next_pts(aresample->swr, INT64_MIN);
+        pts = ROUNDED_DIV(pts, inlink->sample_rate);
+
         n_out = swr_convert(aresample->swr, outsamplesref->extended_data, n_out, 0, 0);
         if (n_out <= 0) {
             av_frame_free(&outsamplesref);
@@ -235,14 +247,8 @@ static int request_frame(AVFilterLink *outlink)
 
         outsamplesref->sample_rate = outlink->sample_rate;
         outsamplesref->nb_samples  = n_out;
-#if 0
-        outsamplesref->pts = aresample->next_pts;
-        if(aresample->next_pts != AV_NOPTS_VALUE)
-            aresample->next_pts += av_rescale_q(n_out, (AVRational){1 ,outlink->sample_rate}, outlink->time_base);
-#else
-        outsamplesref->pts = swr_next_pts(aresample->swr, INT64_MIN);
-        outsamplesref->pts = ROUNDED_DIV(outsamplesref->pts, inlink->sample_rate);
-#endif
+
+        outsamplesref->pts = pts;
 
         return ff_filter_frame(outlink, outsamplesref);
     }
@@ -296,7 +302,7 @@ static const AVFilterPad aresample_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_af_aresample = {
+AVFilter ff_af_aresample = {
     .name          = "aresample",
     .description   = NULL_IF_CONFIG_SMALL("Resample audio data."),
     .init_dict     = init_dict,

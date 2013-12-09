@@ -184,6 +184,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
         av_log(ctx, AV_LOG_WARNING,
                "video is already interlaced, adjusting framerate only\n");
         out = av_frame_clone(s->cur);
+        if (!out)
+            return AVERROR(ENOMEM);
         out->pts /= 2;  // adjust pts to new framerate
         ret = ff_filter_frame(outlink, out);
         return ret;
@@ -230,7 +232,7 @@ static const AVFilterPad outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_interlace = {
+AVFilter ff_vf_interlace = {
     .name          = "interlace",
     .description   = NULL_IF_CONFIG_SMALL("Convert progressive video into interlaced."),
     .uninit        = uninit,

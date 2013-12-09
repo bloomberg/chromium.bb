@@ -51,6 +51,8 @@ static const char *const var_names[] = {
     "dar",
     "hsub",
     "vsub",
+    "ohsub",
+    "ovsub",
     NULL
 };
 
@@ -64,6 +66,8 @@ enum var_name {
     VAR_DAR,
     VAR_HSUB,
     VAR_VSUB,
+    VAR_OHSUB,
+    VAR_OVSUB,
     VARS_NB
 };
 
@@ -227,6 +231,7 @@ static int config_props(AVFilterLink *outlink)
     enum AVPixelFormat outfmt = outlink->format;
     ScaleContext *scale = ctx->priv;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
+    const AVPixFmtDescriptor *out_desc = av_pix_fmt_desc_get(outlink->format);
     int64_t w, h;
     double var_values[VARS_NB], res;
     char *expr;
@@ -242,6 +247,8 @@ static int config_props(AVFilterLink *outlink)
     var_values[VAR_DAR]   = var_values[VAR_A] * var_values[VAR_SAR];
     var_values[VAR_HSUB]  = 1 << desc->log2_chroma_w;
     var_values[VAR_VSUB]  = 1 << desc->log2_chroma_h;
+    var_values[VAR_OHSUB] = 1 << out_desc->log2_chroma_w;
+    var_values[VAR_OVSUB] = 1 << out_desc->log2_chroma_h;
 
     /* evaluate width and height */
     av_expr_parse_and_eval(&res, (expr = scale->w_expr),
@@ -528,8 +535,8 @@ static const AVOption scale_options[] = {
     { "full",   NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_JPEG}, 0, 0, FLAGS, "range" },
     { "jpeg",   NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_JPEG}, 0, 0, FLAGS, "range" },
     { "mpeg",   NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_MPEG}, 0, 0, FLAGS, "range" },
-    { "tv",     NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_JPEG}, 0, 0, FLAGS, "range" },
-    { "pc",     NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_MPEG}, 0, 0, FLAGS, "range" },
+    { "tv",     NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_MPEG}, 0, 0, FLAGS, "range" },
+    { "pc",     NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_JPEG}, 0, 0, FLAGS, "range" },
     { "in_v_chr_pos",   "input vertical chroma position in luma grid/256"  , OFFSET(in_v_chr_pos), AV_OPT_TYPE_INT, { .i64 = -1}, -1, 512, FLAGS },
     { "in_h_chr_pos",   "input horizontal chroma position in luma grid/256", OFFSET(in_h_chr_pos), AV_OPT_TYPE_INT, { .i64 = -1}, -1, 512, FLAGS },
     { "out_v_chr_pos",   "output vertical chroma position in luma grid/256"  , OFFSET(out_v_chr_pos), AV_OPT_TYPE_INT, { .i64 = -1}, -1, 512, FLAGS },
@@ -567,7 +574,7 @@ static const AVFilterPad avfilter_vf_scale_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_scale = {
+AVFilter ff_vf_scale = {
     .name          = "scale",
     .description   = NULL_IF_CONFIG_SMALL("Scale the input video size and/or convert the image format."),
     .init_dict     = init_dict,

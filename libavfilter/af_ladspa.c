@@ -450,9 +450,11 @@ static av_cold int init(AVFilterContext *ctx)
 
             count_ports(desc, &inputs, &outputs);
             av_log(ctx, AV_LOG_INFO, "%lu:%lu %-25s %s\n", inputs, outputs, desc->Label,
-                                     av_x_if_null(desc->Name, "?"));
-            av_log(ctx, AV_LOG_VERBOSE, "Maker: %s\n", av_x_if_null(desc->Maker, "?"));
-            av_log(ctx, AV_LOG_VERBOSE, "Copyright: %s\n", av_x_if_null(desc->Copyright, "?"));
+                   (char *)av_x_if_null(desc->Name, "?"));
+            av_log(ctx, AV_LOG_VERBOSE, "Maker: %s\n",
+                   (char *)av_x_if_null(desc->Maker, "?"));
+            av_log(ctx, AV_LOG_VERBOSE, "Copyright: %s\n",
+                   (char *)av_x_if_null(desc->Copyright, "?"));
         }
         return AVERROR_EXIT;
     } else {
@@ -688,7 +690,7 @@ static const AVFilterPad ladspa_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_af_ladspa = {
+AVFilter ff_af_ladspa = {
     .name          = "ladspa",
     .description   = NULL_IF_CONFIG_SMALL("Apply LADSPA effect."),
     .priv_size     = sizeof(LADSPAContext),

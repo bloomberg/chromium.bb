@@ -43,10 +43,13 @@
  * Only tracks with associated descriptors will be decoded. "Highly Desirable" SMPTE 377M D.1
  */
 
+#include <stdint.h>
+
 #include "libavutil/aes.h"
 #include "libavutil/avassert.h"
 #include "libavutil/mathematics.h"
 #include "libavcodec/bytestream.h"
+#include "libavutil/intreadwrite.h"
 #include "libavutil/timecode.h"
 #include "avformat.h"
 #include "internal.h"
@@ -213,6 +216,7 @@ typedef struct {
     struct AVAES *aesc;
     uint8_t *local_tags;
     int local_tags_count;
+    uint64_t last_partition;
     uint64_t footer_partition;
     KLVPacket current_klv_data;
     int current_klv_index;
@@ -254,6 +258,7 @@ static const uint8_t mxf_klv_key[]                         = { 0x06,0x0e,0x2b,0x
 static const uint8_t mxf_crypto_source_container_ul[]      = { 0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0x09,0x06,0x01,0x01,0x02,0x02,0x00,0x00,0x00 };
 static const uint8_t mxf_encrypted_triplet_key[]           = { 0x06,0x0e,0x2b,0x34,0x02,0x04,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x7e,0x01,0x00 };
 static const uint8_t mxf_encrypted_essence_container[]     = { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x0b,0x01,0x00 };
+static const uint8_t mxf_random_index_pack_key[]           = { 0x06,0x0E,0x2B,0x34,0x02,0x05,0x01,0x01,0x0D,0x01,0x02,0x01,0x01,0x11,0x01,0x00 };
 static const uint8_t mxf_sony_mpeg4_extradata[]            = { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0e,0x06,0x06,0x02,0x02,0x01,0x00,0x00 };
 
 #define IS_KLV_KEY(x, y) (!memcmp(x, y, sizeof(y)))
@@ -1513,6 +1518,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                 av_log(mxf->fc, AV_LOG_VERBOSE, ".");
         }
         av_log(mxf->fc, AV_LOG_VERBOSE, "\n");
+
         if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
             source_track->intra_only = mxf_is_intra_only(descriptor);
             container_ul = mxf_get_codec_ul(mxf_picture_essence_container_uls, essence_container_ul);
@@ -1602,8 +1608,10 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             if (!ff_alloc_extradata(st->codec, descriptor->extradata_size)) {
                 memcpy(st->codec->extradata, descriptor->extradata, descriptor->extradata_size);
             }
-        } else if(st->codec->codec_id == AV_CODEC_ID_H264) {
-            ff_generate_avci_extradata(st);
+        } else if (st->codec->codec_id == AV_CODEC_ID_H264) {
+            ret = ff_generate_avci_extradata(st);
+            if (ret < 0)
+                return ret;
         }
         if (st->codec->codec_type != AVMEDIA_TYPE_DATA && (*essence_container_ul)[15] > 0x01) {
             /* TODO: decode timestamps */
@@ -1852,31 +1860,33 @@ static int mxf_parse_handle_essence(MXFContext *mxf)
 
     if (mxf->parsing_backward) {
         return mxf_seek_to_previous_partition(mxf);
-    } else {
-        if (!mxf->footer_partition) {
-            av_dlog(mxf->fc, "no footer\n");
-            return 0;
-        }
+    } else if (mxf->footer_partition || mxf->last_partition){
+        uint64_t offset;
 
-        av_dlog(mxf->fc, "seeking to footer\n");
+        offset = mxf->footer_partition ? mxf->footer_partition : mxf->last_partition;
+
+        av_dlog(mxf->fc, "seeking to last partition\n");
 
         /* remember where we were so we don't end up seeking further back than this */
         mxf->last_forward_tell = avio_tell(pb);
 
         if (!pb->seekable) {
-            av_log(mxf->fc, AV_LOG_INFO, "file is not seekable - not parsing footer\n");
+            av_log(mxf->fc, AV_LOG_INFO, "file is not seekable - not parsing last partition\n");
             return -1;
         }
 
-        /* seek to footer partition and parse backward */
-        if ((ret = avio_seek(pb, mxf->run_in + mxf->footer_partition, SEEK_SET)) < 0) {
-            av_log(mxf->fc, AV_LOG_ERROR, "failed to seek to footer @ 0x%"PRIx64" (%"PRId64") - partial file?\n",
-                   mxf->run_in + mxf->footer_partition, ret);
+        /* seek to last partition and parse backward */
+        if ((ret = avio_seek(pb, mxf->run_in + offset, SEEK_SET)) < 0) {
+            av_log(mxf->fc, AV_LOG_ERROR, "failed to seek to last partition @ 0x%"PRIx64" (%"PRId64") - partial file?\n",
+                   mxf->run_in + offset, ret);
             return ret;
         }
 
         mxf->current_partition = NULL;
         mxf->parsing_backward = 1;
+    } else {
+        av_dlog(mxf->fc, "can't find last partition\n");
+        return 0;
     }
 
     return 1;
@@ -1968,6 +1978,34 @@ static void mxf_handle_small_eubc(AVFormatContext *s)
     mxf->edit_units_per_packet = 1920;
 }
 
+static void mxf_read_random_index_pack(AVFormatContext *s)
+{
+    MXFContext *mxf = s->priv_data;
+    uint32_t length;
+    int64_t file_size;
+    KLVPacket klv;
+
+    if (!s->pb->seekable)
+        return;
+
+    file_size = avio_size(s->pb);
+    avio_seek(s->pb, file_size - 4, SEEK_SET);
+    length = avio_rb32(s->pb);
+    if (length <= 32 || length >= FFMIN(file_size, INT_MAX))
+        goto end;
+    avio_seek(s->pb, file_size - length, SEEK_SET);
+    if (klv_read_packet(&klv, s->pb) < 0 ||
+        !IS_KLV_KEY(klv.key, mxf_random_index_pack_key) ||
+        klv.length != length - 20)
+        goto end;
+
+    avio_skip(s->pb, klv.length - 12);
+    mxf->last_partition = avio_rb64(s->pb);
+
+end:
+    avio_seek(s->pb, mxf->run_in, SEEK_SET);
+}
+
 static int mxf_read_header(AVFormatContext *s)
 {
     MXFContext *mxf = s->priv_data;
@@ -1985,6 +2023,8 @@ static int mxf_read_header(AVFormatContext *s)
     avio_seek(s->pb, -14, SEEK_CUR);
     mxf->fc = s;
     mxf->run_in = avio_tell(s->pb);
+
+    mxf_read_random_index_pack(s);
 
     while (!url_feof(s->pb)) {
         const MXFMetadataReadTableEntry *metadata;
@@ -2422,10 +2462,19 @@ static int mxf_probe(AVProbeData *p) {
 
     /* Must skip Run-In Sequence and search for MXF header partition pack key SMPTE 377M 5.5 */
     end -= sizeof(mxf_header_partition_pack_key);
-    for (; bufp < end; bufp++) {
-        if (IS_KLV_KEY(bufp, mxf_header_partition_pack_key))
-            return AVPROBE_SCORE_MAX;
+
+    for (; bufp < end;) {
+        if (!((bufp[13] - 1) & 0xF2)){
+            if (AV_RN32(bufp   ) == AV_RN32(mxf_header_partition_pack_key   ) &&
+                AV_RN32(bufp+ 4) == AV_RN32(mxf_header_partition_pack_key+ 4) &&
+                AV_RN32(bufp+ 8) == AV_RN32(mxf_header_partition_pack_key+ 8) &&
+                AV_RN16(bufp+12) == AV_RN16(mxf_header_partition_pack_key+12))
+                return AVPROBE_SCORE_MAX;
+            bufp ++;
+        } else
+            bufp += 10;
     }
+
     return 0;
 }
 

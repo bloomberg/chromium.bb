@@ -51,6 +51,7 @@
 #include "fft.h"
 #include "internal.h"
 #include "sinewin.h"
+#include "unary.h"
 
 #include "cookdata.h"
 
@@ -228,7 +229,7 @@ static av_cold int init_cook_mlt(COOKContext *q)
 
     /* Initialize the MDCT. */
     if ((ret = ff_mdct_init(&q->mdct_ctx, av_log2(mlt_size) + 1, 1, 1.0 / 32768.0))) {
-        av_free(q->mlt_window);
+        av_freep(&q->mlt_window);
         return ret;
     }
     av_log(q->avctx, AV_LOG_DEBUG, "MDCT initialized, order = %d.\n",
@@ -302,8 +303,8 @@ static av_cold int cook_decode_close(AVCodecContext *avctx)
     av_log(avctx, AV_LOG_DEBUG, "Deallocating memory.\n");
 
     /* Free allocated memory buffers. */
-    av_free(q->mlt_window);
-    av_free(q->decoded_bytes_buffer);
+    av_freep(&q->mlt_window);
+    av_freep(&q->decoded_bytes_buffer);
 
     /* Free the transform. */
     ff_mdct_end(&q->mdct_ctx);
@@ -331,11 +332,7 @@ static void decode_gain_info(GetBitContext *gb, int *gaininfo)
 {
     int i, n;
 
-    while (get_bits1(gb)) {
-        /* NOTHING */
-    }
-
-    n = get_bits_count(gb) - 1;     // amount of elements*2 to update
+    n = get_unary(gb, 0, get_bits_left(gb));     // amount of elements*2 to update
 
     i = 0;
     while (n--) {

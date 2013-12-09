@@ -346,8 +346,8 @@ static void blend_image(AVFilterContext *ctx,
     const int dst_w = dst->width;
     const int dst_h = dst->height;
 
-    if (x >= dst_w || x+dst_w  < 0 ||
-        y >= dst_h || y+dst_h < 0)
+    if (x >= dst_w || x+src_w < 0 ||
+        y >= dst_h || y+src_h < 0)
         return; /* no intersection */
 
     if (s->main_is_packed_rgb) {
@@ -622,7 +622,7 @@ static const AVFilterPad avfilter_vf_overlay_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_overlay = {
+AVFilter ff_vf_overlay = {
     .name          = "overlay",
     .description   = NULL_IF_CONFIG_SMALL("Overlay a video source on top of the input."),
     .init          = init,

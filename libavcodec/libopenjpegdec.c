@@ -32,6 +32,7 @@
 #include "libavutil/pixfmt.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
+#include "internal.h"
 #include "thread.h"
 
 #if HAVE_OPENJPEG_1_5_OPENJPEG_H
@@ -245,7 +246,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
     opj_dinfo_t *dec;
     opj_cio_t *stream;
     opj_image_t *image;
-    int width, height, ret = -1;
+    int width, height, ret;
     int pixel_size = 0;
     int ispacked = 0;
     int i;
@@ -267,7 +268,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
 
     if (!dec) {
         av_log(avctx, AV_LOG_ERROR, "Error initializing decoder.\n");
-        return -1;
+        return AVERROR_UNKNOWN;
     }
     opj_set_event_mgr((opj_common_ptr)dec, NULL, NULL);
     ctx->dec_params.cp_limit_decoding = LIMIT_TO_MAIN_HEADER;
@@ -280,7 +281,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_ERROR,
                "Codestream could not be opened for reading.\n");
         opj_destroy_decompress(dec);
-        return -1;
+        return AVERROR_UNKNOWN;
     }
 
     // Decode the header only.
@@ -290,19 +291,15 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
     if (!image) {
         av_log(avctx, AV_LOG_ERROR, "Error decoding codestream.\n");
         opj_destroy_decompress(dec);
-        return -1;
+        return AVERROR_UNKNOWN;
     }
 
     width  = image->x1 - image->x0;
     height = image->y1 - image->y0;
 
-    if (av_image_check_size(width, height, 0, avctx) < 0) {
-        av_log(avctx, AV_LOG_ERROR,
-               "%dx%d dimension invalid.\n", width, height);
+    ret = ff_set_dimensions(avctx, width, height);
+    if (ret < 0)
         goto done;
-    }
-
-    avcodec_set_dimensions(avctx, width, height);
 
     if (avctx->pix_fmt != AV_PIX_FMT_NONE)
         if (!libopenjpeg_matches_pix_fmt(image, avctx->pix_fmt))
@@ -319,7 +316,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
         if (image->comps[i].prec > avctx->bits_per_raw_sample)
             avctx->bits_per_raw_sample = image->comps[i].prec;
 
-    if (ff_thread_get_buffer(avctx, &frame, 0) < 0)
+    if ((ret = ff_thread_get_buffer(avctx, &frame, 0)) < 0)
         goto done;
 
     ctx->dec_params.cp_limit_decoding = NO_LIMITATION;
@@ -330,6 +327,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
     if (!stream) {
         av_log(avctx, AV_LOG_ERROR,
                "Codestream could not be opened for reading.\n");
+        ret = AVERROR_UNKNOWN;
         goto done;
     }
 
@@ -340,6 +338,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
 
     if (!image) {
         av_log(avctx, AV_LOG_ERROR, "Error decoding codestream.\n");
+        ret = AVERROR_UNKNOWN;
         goto done;
     }
 
@@ -376,6 +375,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
         break;
     default:
         av_log(avctx, AV_LOG_ERROR, "unsupported pixel size %d\n", pixel_size);
+        ret = AVERROR_PATCHWELCOME;
         goto done;
     }
 

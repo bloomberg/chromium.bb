@@ -199,30 +199,6 @@ static int h263_decode_gob_header(MpegEncContext *s)
 }
 
 /**
- * Find the next resync_marker.
- * @param p pointer to buffer to scan
- * @param end pointer to the end of the buffer
- * @return pointer to the next resync_marker, or end if none was found
- */
-const uint8_t *ff_h263_find_resync_marker(MpegEncContext *s, const uint8_t *av_restrict p, const uint8_t *av_restrict end)
-{
-    av_assert2(p < end);
-
-    end-=2;
-    p++;
-    if(s->resync_marker){
-        int prefix_len = ff_mpeg4_get_video_packet_prefix_length(s);
-        for(;p<end; p+=2){
-            if(!*p){
-                if      (!p[-1] && ((p[1] >> (23-prefix_len)) == 1)) return p - 1;
-                else if (!p[ 1] && ((p[2] >> (23-prefix_len)) == 1)) return p;
-            }
-        }
-    }
-    return end+2;
-}
-
-/**
  * Decode the group of blocks / video packet header.
  * @return bit position of the resync_marker, or <0 if none was found
  */
@@ -237,7 +213,7 @@ int ff_h263_resync(MpegEncContext *s){
     if(show_bits(&s->gb, 16)==0){
         pos= get_bits_count(&s->gb);
         if(CONFIG_MPEG4_DECODER && s->codec_id==AV_CODEC_ID_MPEG4)
-            ret= ff_mpeg4_decode_video_packet_header(s);
+            ret= ff_mpeg4_decode_video_packet_header(s->avctx->priv_data);
         else
             ret= h263_decode_gob_header(s);
         if(ret>=0)
@@ -254,7 +230,7 @@ int ff_h263_resync(MpegEncContext *s){
 
             pos= get_bits_count(&s->gb);
             if(CONFIG_MPEG4_DECODER && s->codec_id==AV_CODEC_ID_MPEG4)
-                ret= ff_mpeg4_decode_video_packet_header(s);
+                ret= ff_mpeg4_decode_video_packet_header(s->avctx->priv_data);
             else
                 ret= h263_decode_gob_header(s);
             if(ret>=0)
@@ -894,7 +870,6 @@ int ff_h263_decode_picture_header(MpegEncContext *s)
     i = get_bits(&s->gb, 8); /* picture timestamp */
     if( (s->picture_number&~0xFF)+i < s->picture_number)
         i+= 256;
-    s->current_picture_ptr->f.pts =
     s->picture_number= (s->picture_number&~0xFF) + i;
 
     /* PTYPE starts here */
@@ -1113,9 +1088,8 @@ int ff_h263_decode_picture_header(MpegEncContext *s)
     }
 
     /* PEI */
-    while (get_bits1(&s->gb) != 0) {
-        skip_bits(&s->gb, 8);
-    }
+    if (skip_1stop_8data_bits(&s->gb) < 0)
+        return AVERROR_INVALIDDATA;
 
     if(s->h263_slice_structured){
         if (get_bits1(&s->gb) != 1) {

@@ -47,8 +47,6 @@
 #include "x86/idct_xvid.h"
 #include "dctref.h"
 
-#undef printf
-
 // BFIN
 void ff_bfin_idct(int16_t *block);
 void ff_bfin_fdct(int16_t *block);
@@ -62,8 +60,6 @@ void ff_simple_idct_arm(int16_t *data);
 void ff_simple_idct_armv5te(int16_t *data);
 void ff_simple_idct_armv6(int16_t *data);
 void ff_simple_idct_neon(int16_t *data);
-
-void ff_simple_idct_axp(int16_t *data);
 
 struct algo {
     const char *name;
@@ -156,10 +152,6 @@ static const struct algo idct_tab[] = {
 #endif
 #if HAVE_NEON
     { "SIMPLE-NEON",    ff_simple_idct_neon, PARTTRANS_PERM, AV_CPU_FLAG_NEON },
-#endif
-
-#if ARCH_ALPHA
-    { "SIMPLE-ALPHA",   ff_simple_idct_axp,    NO_PERM },
 #endif
 
     { 0 }
@@ -580,5 +572,8 @@ int main(int argc, char **argv)
             }
     }
 
-    return err;
+    if (err)
+        printf("Error: %d.\n", err);
+
+    return !!err;
 }

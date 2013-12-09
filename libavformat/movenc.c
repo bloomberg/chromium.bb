@@ -21,6 +21,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <stdint.h>
+
 #include "movenc.h"
 #include "avformat.h"
 #include "avio_internal.h"
@@ -1051,6 +1053,7 @@ static const AVCodecTag codec_f4v_tags[] = { // XXX: add GIF/PNG/JPEG?
     { AV_CODEC_ID_MP3,    MKTAG('.','m','p','3') },
     { AV_CODEC_ID_AAC,    MKTAG('m','p','4','a') },
     { AV_CODEC_ID_H264,   MKTAG('a','v','c','1') },
+    { AV_CODEC_ID_VP6A,   MKTAG('V','P','6','A') },
     { AV_CODEC_ID_VP6F,   MKTAG('V','P','6','F') },
     { AV_CODEC_ID_NONE, 0 },
 };
@@ -1069,7 +1072,7 @@ static int mov_find_codec_tag(AVFormatContext *s, MOVTrack *track)
         tag = ipod_get_codec_tag(s, track);
     else if (track->mode & MODE_3GP)
         tag = ff_codec_get_tag(codec_3gp_tags, track->enc->codec_id);
-    else if (track->mode & MODE_F4V)
+    else if (track->mode == MODE_F4V)
         tag = ff_codec_get_tag(codec_f4v_tags, track->enc->codec_id);
     else
         tag = mov_get_codec_tag(s, track);
@@ -1224,7 +1227,11 @@ static int mov_write_video_tag(AVIOContext *pb, MOVTrack *track)
             mov_write_uuid_tag_ipod(pb);
     } else if (track->enc->codec_id == AV_CODEC_ID_VC1 && track->vos_len > 0)
         mov_write_dvc1_tag(pb, track);
-    else if (track->vos_len > 0)
+    else if (track->enc->codec_id == AV_CODEC_ID_VP6F ||
+             track->enc->codec_id == AV_CODEC_ID_VP6A) {
+        /* Don't write any potential extradata here - the cropping
+         * is signalled via the normal width/height fields. */
+    } else if (track->vos_len > 0)
         mov_write_glbl_tag(pb, track);
 
     if (track->enc->codec_id != AV_CODEC_ID_H264 &&
@@ -3878,7 +3885,8 @@ static int mov_write_header(AVFormatContext *s)
             }else{
                 track->sample_size = (av_get_bits_per_sample(st->codec->codec_id) >> 3) * st->codec->channels;
             }
-            if (st->codec->codec_id == AV_CODEC_ID_ILBC) {
+            if (st->codec->codec_id == AV_CODEC_ID_ILBC ||
+                st->codec->codec_id == AV_CODEC_ID_ADPCM_IMA_QT) {
                 track->audio_vbr = 1;
             }
             if (track->mode != MODE_MOV &&

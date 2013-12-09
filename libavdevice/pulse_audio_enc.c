@@ -34,7 +34,9 @@ typedef struct PulseData {
     const char *stream_name;
     const char *device;
     pa_simple *pa;
-    unsigned int stream_index;
+    int64_t timestamp;
+    int buffer_size;
+    int buffer_duration;
 } PulseData;
 
 static av_cold int pulse_write_header(AVFormatContext *h)
@@ -46,23 +48,33 @@ static av_cold int pulse_write_header(AVFormatContext *h)
     pa_buffer_attr attr = { -1, -1, -1, -1, -1 };
     const char *stream_name = s->stream_name;
 
-    for (unsigned i = 0; i < h->nb_streams; i++) {
-        if (h->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
-            st = h->streams[i];
-            s->stream_index = i;
-            break;
-        }
-    }
-
-    if (!st) {
-        av_log(s, AV_LOG_ERROR, "No audio stream found.\n");
+    if (h->nb_streams != 1 || h->streams[0]->codec->codec_type != AVMEDIA_TYPE_AUDIO) {
+        av_log(s, AV_LOG_ERROR, "Only a single audio stream is supported.\n");
         return AVERROR(EINVAL);
     }
+    st = h->streams[0];
 
-    if (!stream_name)
-        stream_name = h->filename;
+    if (!stream_name) {
+        if (h->filename[0])
+            stream_name = h->filename;
+        else
+            stream_name = "Playback";
+    }
 
-    ss.format = codec_id_to_pulse_format(st->codec->codec_id);
+    if (s->buffer_duration) {
+        int64_t bytes = s->buffer_duration;
+        bytes *= st->codec->channels * st->codec->sample_rate *
+                 av_get_bytes_per_sample(st->codec->sample_fmt);
+        bytes /= 1000;
+        attr.tlength = FFMAX(s->buffer_size, av_clip64(bytes, 0, UINT32_MAX - 1));
+        av_log(s, AV_LOG_DEBUG,
+               "Buffer duration: %ums recalculated into %"PRId64" bytes buffer.\n",
+               s->buffer_duration, bytes);
+        av_log(s, AV_LOG_DEBUG, "Real buffer length is %u bytes\n", attr.tlength);
+    } else if (s->buffer_size)
+        attr.tlength = s->buffer_size;
+
+    ss.format = ff_codec_id_to_pulse_format(st->codec->codec_id);
     ss.rate = st->codec->sample_rate;
     ss.channels = st->codec->channels;
 
@@ -98,14 +110,30 @@ static av_cold int pulse_write_trailer(AVFormatContext *h)
 static int pulse_write_packet(AVFormatContext *h, AVPacket *pkt)
 {
     PulseData *s = h->priv_data;
-    int size     = pkt->size;
-    uint8_t *buf = pkt->data;
     int error;
 
-    if (s->stream_index != pkt->stream_index)
-        return 0;
+    if (!pkt) {
+        if (pa_simple_flush(s->pa, &error) < 0) {
+            av_log(s, AV_LOG_ERROR, "pa_simple_flush failed: %s\n", pa_strerror(error));
+            return AVERROR(EIO);
+        }
+        return 1;
+    }
 
-    if ((error = pa_simple_write(s->pa, buf, size, &error))) {
+    if (pkt->dts != AV_NOPTS_VALUE)
+        s->timestamp = pkt->dts;
+
+    if (pkt->duration) {
+        s->timestamp += pkt->duration;
+    } else {
+        AVStream *st = h->streams[0];
+        AVCodecContext *codec_ctx = st->codec;
+        AVRational r = { 1, codec_ctx->sample_rate };
+        int64_t samples = pkt->size / (av_get_bytes_per_sample(codec_ctx->sample_fmt) * codec_ctx->channels);
+        s->timestamp += av_rescale_q(samples, r, st->time_base);
+    }
+
+    if (pa_simple_write(s->pa, pkt->data, pkt->size, &error) < 0) {
         av_log(s, AV_LOG_ERROR, "pa_simple_write failed: %s\n", pa_strerror(error));
         return AVERROR(EIO);
     }
@@ -118,7 +146,7 @@ static void pulse_get_output_timestamp(AVFormatContext *h, int stream, int64_t *
     PulseData *s = h->priv_data;
     pa_usec_t latency = pa_simple_get_latency(s->pa, NULL);
     *wall = av_gettime();
-    *dts = h->streams[s->stream_index]->cur_dts - latency;
+    *dts = s->timestamp - latency;
 }
 
 #define OFFSET(a) offsetof(PulseData, a)
@@ -129,6 +157,8 @@ static const AVOption options[] = {
     { "name",          "set application name",   OFFSET(name),        AV_OPT_TYPE_STRING, {.str = LIBAVFORMAT_IDENT},  0, 0, E },
     { "stream_name",   "set stream description", OFFSET(stream_name), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, E },
     { "device",        "set device name",        OFFSET(device),      AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, E },
+    { "buffer_size",   "set buffer size in bytes", OFFSET(buffer_size), AV_OPT_TYPE_INT,  {.i64 = 0}, 0, INT_MAX, E },
+    { "buffer_duration", "set buffer duration in millisecs", OFFSET(buffer_duration), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT_MAX, E },
     { NULL }
 };
 
@@ -149,6 +179,6 @@ AVOutputFormat ff_pulse_muxer = {
     .write_packet   = pulse_write_packet,
     .write_trailer  = pulse_write_trailer,
     .get_output_timestamp = pulse_get_output_timestamp,
-    .flags          = AVFMT_NOFILE,
+    .flags          = AVFMT_NOFILE | AVFMT_ALLOW_FLUSH,
     .priv_class     = &pulse_muxer_class,
 };

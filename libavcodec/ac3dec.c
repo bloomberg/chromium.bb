@@ -29,6 +29,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/crc.h"
 #include "libavutil/opt.h"
 #include "internal.h"
@@ -178,11 +179,20 @@ static av_cold int ac3_decode_init(AVCodecContext *avctx)
     avctx->sample_fmt = AV_SAMPLE_FMT_FLTP;
 
     /* allow downmixing to stereo or mono */
-    if (avctx->channels > 0 && avctx->request_channels > 0 &&
-            avctx->request_channels < avctx->channels &&
-            avctx->request_channels <= 2) {
-        avctx->channels = avctx->request_channels;
-    }
+#if FF_API_REQUEST_CHANNELS
+FF_DISABLE_DEPRECATION_WARNINGS
+    if (avctx->request_channels == 1)
+        avctx->request_channel_layout = AV_CH_LAYOUT_MONO;
+    else if (avctx->request_channels == 2)
+        avctx->request_channel_layout = AV_CH_LAYOUT_STEREO;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+    if (avctx->channels > 1 &&
+        avctx->request_channel_layout == AV_CH_LAYOUT_MONO)
+        avctx->channels = 1;
+    else if (avctx->channels > 2 &&
+             avctx->request_channel_layout == AV_CH_LAYOUT_STEREO)
+        avctx->channels = 2;
     s->downmixed = 1;
 
     for (i = 0; i < AC3_MAX_CHANNELS; i++) {
@@ -251,7 +261,6 @@ static int parse_frame_header(AC3DecodeContext *s)
     s->bit_alloc_params.sr_code     = hdr.sr_code;
     s->bitstream_mode               = hdr.bitstream_mode;
     s->channel_mode                 = hdr.channel_mode;
-    s->channel_layout               = hdr.channel_layout;
     s->lfe_on                       = hdr.lfe_on;
     s->bit_alloc_params.sr_shift    = hdr.sr_shift;
     s->sample_rate                  = hdr.sample_rate;
@@ -488,6 +497,10 @@ static void ac3_decode_transform_coeffs_ch(AC3DecodeContext *s, int ch_index, ma
             break;
         default: /* 6 to 15 */
             /* Shift mantissa and sign-extend it. */
+            if (bap > 15) {
+                av_log(s->avctx, AV_LOG_ERROR, "bap %d is invalid in plain AC-3\n", bap);
+                bap = 15;
+            }
             mantissa = get_sbits(gbc, quantization_tab[bap]);
             mantissa <<= 24 - quantization_tab[bap];
             break;
@@ -747,8 +760,8 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
     i = !s->channel_mode;
     do {
         if (get_bits1(gbc)) {
-            s->dynamic_range[i] = ((dynamic_range_tab[get_bits(gbc, 8)] - 1.0) *
-                                  s->drc_scale) + 1.0;
+            s->dynamic_range[i] = powf(dynamic_range_tab[get_bits(gbc, 8)],
+                                       s->drc_scale);
         } else if (blk == 0) {
             s->dynamic_range[i] = 1.0f;
         }
@@ -1330,6 +1343,8 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
             if (av_crc(av_crc_get_table(AV_CRC_16_ANSI), 0, &buf[2],
                        s->frame_size - 2)) {
                 av_log(avctx, AV_LOG_ERROR, "frame CRC mismatch\n");
+                if (avctx->err_recognition & AV_EF_EXPLODE)
+                    return AVERROR_INVALIDDATA;
                 err = AAC_AC3_PARSE_ERROR_CRC;
             }
         }
@@ -1347,14 +1362,15 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
         s->output_mode  = s->channel_mode;
         if (s->lfe_on)
             s->output_mode |= AC3_OUTPUT_LFEON;
-        if (avctx->request_channels > 0 && avctx->request_channels <= 2 &&
-                avctx->request_channels < s->channels) {
-            s->out_channels = avctx->request_channels;
-            s->output_mode  = avctx->request_channels == 1 ? AC3_CHMODE_MONO : AC3_CHMODE_STEREO;
-            s->channel_layout = avpriv_ac3_channel_layout_tab[s->output_mode];
+        if (s->channels > 1 &&
+            avctx->request_channel_layout == AV_CH_LAYOUT_MONO) {
+            s->out_channels = 1;
+            s->output_mode  = AC3_CHMODE_MONO;
+        } else if (s->channels > 2 &&
+                   avctx->request_channel_layout == AV_CH_LAYOUT_STEREO) {
+            s->out_channels = 2;
+            s->output_mode  = AC3_CHMODE_STEREO;
         }
-        avctx->channels       = s->out_channels;
-        avctx->channel_layout = s->channel_layout;
 
         s->loro_center_mix_level   = gain_levels[s->  center_mix_level];
         s->loro_surround_mix_level = gain_levels[s->surround_mix_level];
@@ -1370,6 +1386,9 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
         return AVERROR_INVALIDDATA;
     }
     avctx->channels = s->out_channels;
+    avctx->channel_layout = avpriv_ac3_channel_layout_tab[s->output_mode & ~AC3_OUTPUT_LFEON];
+    if (s->output_mode & AC3_OUTPUT_LFEON)
+        avctx->channel_layout |= AV_CH_LOW_FREQUENCY;
 
     /* set audio service type based on bitstream mode for AC-3 */
     avctx->audio_service_type = s->bitstream_mode;

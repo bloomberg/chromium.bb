@@ -40,6 +40,11 @@
 #include "internal.h"
 #include "log.h"
 
+#if HAVE_PTHREADS
+#include <pthread.h>
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
 #define LINE_SZ 1024
 
 static int av_log_level = AV_LOG_INFO;
@@ -70,9 +75,6 @@ static const uint8_t color[16 + AV_CLASS_CATEGORY_NB] = {
 
 static int16_t background, attr_orig;
 static HANDLE con;
-#define set_color(x)  SetConsoleTextAttribute(con, background | color[x])
-#define set_256color set_color
-#define reset_color() SetConsoleTextAttribute(con, attr_orig)
 #else
 
 static const uint32_t color[16 + AV_CLASS_CATEGORY_NB] = {
@@ -96,14 +98,14 @@ static const uint32_t color[16 + AV_CLASS_CATEGORY_NB] = {
     [16+AV_CLASS_CATEGORY_SWRESAMPLER     ] = 147 << 8 | 0x14,
 };
 
-#define set_color(x)  fprintf(stderr, "\033[%d;3%dm", (color[x] >> 4) & 15, color[x] & 15)
-#define set_256color(x) fprintf(stderr, "\033[48;5;%dm\033[38;5;%dm", (color[x] >> 16) & 0xff, (color[x] >> 8) & 0xff)
-#define reset_color() fprintf(stderr, "\033[0m")
 #endif
 static int use_color = -1;
 
 static void colored_fputs(int level, const char *str)
 {
+    if (!*str)
+        return;
+
     if (use_color < 0) {
 #if HAVE_SETCONSOLETEXTATTRIBUTE
         CONSOLE_SCREEN_BUFFER_INFO con_info;
@@ -127,14 +129,29 @@ static void colored_fputs(int level, const char *str)
 #endif
     }
 
-    if (use_color == 1) {
-        set_color(level);
-    } else if (use_color == 256)
-        set_256color(level);
+#if HAVE_SETCONSOLETEXTATTRIBUTE
+    if (use_color && level != AV_LOG_INFO/8)
+        SetConsoleTextAttribute(con, background | color[level]);
     fputs(str, stderr);
-    if (use_color) {
-        reset_color();
-    }
+    if (use_color && level != AV_LOG_INFO/8)
+        SetConsoleTextAttribute(con, attr_orig);
+#else
+    if (use_color == 1 && level != AV_LOG_INFO/8) {
+        fprintf(stderr,
+                "\033[%d;3%dm%s\033[0m",
+                (color[level] >> 4) & 15,
+                color[level] & 15,
+                str);
+    } else if (use_color == 256 && level != AV_LOG_INFO/8) {
+        fprintf(stderr,
+                "\033[48;5;%dm\033[38;5;%dm%s\033[0m",
+                (color[level] >> 16) & 0xff,
+                (color[level] >> 8) & 0xff,
+                str);
+    } else
+        fputs(str, stderr);
+#endif
+
 }
 
 const char *av_default_item_name(void *ptr)
@@ -195,7 +212,7 @@ static void format_line(void *ptr, int level, const char *fmt, va_list vl,
     av_vbprintf(part+2, fmt, vl);
 
     if(*part[0].str || *part[1].str || *part[2].str) {
-        char lastc = part[2].len ? part[2].str[part[2].len - 1] : 0;
+        char lastc = part[2].len && part[2].len <= part[2].size ? part[2].str[part[2].len - 1] : 0;
         *print_prefix = lastc == '\n' || lastc == '\r';
     }
 }
@@ -221,6 +238,10 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl)
 
     if (level > av_log_level)
         return;
+#if HAVE_PTHREADS
+    pthread_mutex_lock(&mutex);
+#endif
+
     format_line(ptr, level, fmt, vl, part, &print_prefix, type);
     snprintf(line, sizeof(line), "%s%s%s", part[0].str, part[1].str, part[2].str);
 
@@ -234,8 +255,7 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl)
         count++;
         if (is_atty == 1)
             fprintf(stderr, "    Last message repeated %d times\r", count);
-        av_bprint_finalize(part+2, NULL);
-        return;
+        goto end;
     }
     if (count > 0) {
         fprintf(stderr, "    Last message repeated %d times\n", count);
@@ -248,7 +268,11 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl)
     colored_fputs(type[1], part[1].str);
     sanitize(part[2].str);
     colored_fputs(av_clip(level >> 3, 0, 6), part[2].str);
+end:
     av_bprint_finalize(part+2, NULL);
+#if HAVE_PTHREADS
+    pthread_mutex_unlock(&mutex);
+#endif
 }
 
 static void (*av_log_callback)(void*, int, const char*, va_list) =
@@ -268,8 +292,9 @@ void av_log(void* avcl, int level, const char *fmt, ...)
 
 void av_vlog(void* avcl, int level, const char *fmt, va_list vl)
 {
-    if(av_log_callback)
-        av_log_callback(avcl, level, fmt, vl);
+    void (*log_callback)(void*, int, const char*, va_list) = av_log_callback;
+    if (log_callback)
+        log_callback(avcl, level, fmt, vl);
 }
 
 int av_log_get_level(void)

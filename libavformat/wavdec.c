@@ -23,6 +23,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <stdint.h>
+
 #include "libavutil/avassert.h"
 #include "libavutil/dict.h"
 #include "libavutil/intreadwrite.h"
@@ -466,8 +468,8 @@ static int wav_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (wav->smv_data_ofs > 0) {
         int64_t audio_dts, video_dts;
 smv_retry:
-        audio_dts = s->streams[0]->cur_dts;
-        video_dts = s->streams[1]->cur_dts;
+        audio_dts = (int32_t)s->streams[0]->cur_dts;
+        video_dts = (int32_t)s->streams[1]->cur_dts;
 
         if (audio_dts != AV_NOPTS_VALUE && video_dts != AV_NOPTS_VALUE) {
             /*We always return a video frame first to get the pixel format first*/

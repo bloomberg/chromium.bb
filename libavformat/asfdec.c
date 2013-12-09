@@ -1122,8 +1122,7 @@ static int asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
         if (url_feof(pb))
             return AVERROR_EOF;
 
-        if (asf->packet_size_left < FRAME_HEADER_SIZE ||
-            asf->packet_segments < 1) {
+        if (asf->packet_size_left < FRAME_HEADER_SIZE) {
             int ret = asf->packet_size_left + asf->packet_padsize;
 
             assert(ret >= 0);
@@ -1138,7 +1137,7 @@ static int asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
         }
         if (asf->packet_time_start == 0) {
             if (asf_read_frame_header(s, pb) < 0) {
-                asf->packet_segments = 0;
+                asf->packet_time_start = asf->packet_segments = 0;
                 continue;
             }
             if (asf->stream_index < 0 ||
@@ -1349,7 +1348,6 @@ static void asf_reset_header(AVFormatContext *s)
     int i;
 
     asf->packet_size_left      = 0;
-    asf->packet_segments       = 0;
     asf->packet_flags          = 0;
     asf->packet_property       = 0;
     asf->packet_timestamp      = 0;

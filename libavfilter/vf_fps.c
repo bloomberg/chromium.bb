@@ -26,6 +26,7 @@
  */
 
 #include <float.h>
+#include <stdint.h>
 
 #include "libavutil/common.h"
 #include "libavutil/fifo.h"
@@ -290,7 +291,7 @@ static const AVFilterPad avfilter_vf_fps_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_fps = {
+AVFilter ff_vf_fps = {
     .name        = "fps",
     .description = NULL_IF_CONFIG_SMALL("Force constant framerate."),
     .init        = init,

@@ -30,6 +30,7 @@
 #include "mpegvideo.h"
 #include "h263.h"
 #include "h261.h"
+#include "internal.h"
 
 #define H261_MBA_VLC_BITS 9
 #define H261_MTYPE_VLC_BITS 6
@@ -125,8 +126,8 @@ static int h261_decode_gob_header(H261Context *h)
     }
 
     /* GEI */
-    while (get_bits1(&s->gb) != 0)
-        skip_bits(&s->gb, 8);
+    if (skip_1stop_8data_bits(&s->gb) < 0)
+        return AVERROR_INVALIDDATA;
 
     if (s->qscale == 0) {
         av_log(s->avctx, AV_LOG_ERROR, "qscale has forbidden 0 value\n");
@@ -478,7 +479,6 @@ static int h261_decode_picture_header(H261Context *h)
     s->picture_number = (s->picture_number & ~31) + i;
 
     s->avctx->time_base      = (AVRational) { 1001, 30000 };
-    s->current_picture.f.pts = s->picture_number;
 
     /* PTYPE starts here */
     skip_bits1(&s->gb); /* split screen off */
@@ -506,8 +506,8 @@ static int h261_decode_picture_header(H261Context *h)
     skip_bits1(&s->gb); /* Reserved */
 
     /* PEI */
-    while (get_bits1(&s->gb) != 0)
-        skip_bits(&s->gb, 8);
+    if (skip_1stop_8data_bits(&s->gb) < 0)
+        return AVERROR_INVALIDDATA;
 
     /* H.261 has no I-frames, but if we pass AV_PICTURE_TYPE_I for the first
      * frame, the codec crashes if it does not contain all I-blocks
@@ -586,15 +586,6 @@ retry:
         if (ff_MPV_common_init(s) < 0)
             return -1;
 
-    /* We need to set current_picture_ptr before reading the header,
-     * otherwise we cannot store anything in there. */
-    if (s->current_picture_ptr == NULL || s->current_picture_ptr->f.data[0]) {
-        int i = ff_find_unused_picture(s, 0);
-        if (i < 0)
-            return i;
-        s->current_picture_ptr = &s->picture[i];
-    }
-
     ret = h261_decode_picture_header(h);
 
     /* skip if the header was thrashed */
@@ -610,7 +601,9 @@ retry:
         s->parse_context = pc;
     }
     if (!s->context_initialized) {
-        avcodec_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions(avctx, s->width, s->height);
+        if (ret < 0)
+            return ret;
 
         goto retry;
     }

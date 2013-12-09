@@ -48,7 +48,6 @@
 #include "video.h"
 
 #include <ft2build.h>
-#include <freetype/config/ftheader.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #if CONFIG_FONTCONFIG
@@ -1056,7 +1055,7 @@ static const AVFilterPad avfilter_vf_drawtext_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_drawtext = {
+AVFilter ff_vf_drawtext = {
     .name          = "drawtext",
     .description   = NULL_IF_CONFIG_SMALL("Draw text on top of video frames using libfreetype library."),
     .priv_size     = sizeof(DrawTextContext),

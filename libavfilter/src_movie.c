@@ -28,6 +28,7 @@
  */
 
 #include <float.h>
+#include <stdint.h>
 
 #include "libavutil/attributes.h"
 #include "libavutil/avstring.h"
@@ -565,7 +566,7 @@ static int movie_request_frame(AVFilterLink *outlink)
 
 AVFILTER_DEFINE_CLASS(movie);
 
-AVFilter avfilter_avsrc_movie = {
+AVFilter ff_avsrc_movie = {
     .name          = "movie",
     .description   = NULL_IF_CONFIG_SMALL("Read from a movie source."),
     .priv_size     = sizeof(MovieContext),
@@ -586,7 +587,7 @@ AVFilter avfilter_avsrc_movie = {
 #define amovie_options movie_options
 AVFILTER_DEFINE_CLASS(amovie);
 
-AVFilter avfilter_avsrc_amovie = {
+AVFilter ff_avsrc_amovie = {
     .name          = "amovie",
     .description   = NULL_IF_CONFIG_SMALL("Read audio from a movie source."),
     .priv_size     = sizeof(MovieContext),

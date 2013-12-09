@@ -361,6 +361,11 @@ static int process_ea_header(AVFormatContext *s)
         if (ea->big_endian)
             size = av_bswap32(size);
 
+        if (size < 8) {
+            av_log(s, AV_LOG_ERROR, "chunk size too small\n");
+            return AVERROR_INVALIDDATA;
+        }
+
         switch (blockid) {
         case ISNh_TAG:
             if (avio_rl32(pb) != EACS_TAG) {
@@ -435,6 +440,8 @@ static int process_ea_header(AVFormatContext *s)
 
 static int ea_probe(AVProbeData *p)
 {
+    unsigned big_endian, size;
+
     switch (AV_RL32(&p->buf[0])) {
     case ISNh_TAG:
     case SCHl_TAG:
@@ -449,7 +456,11 @@ static int ea_probe(AVProbeData *p)
     default:
         return 0;
     }
-    if (AV_RL32(&p->buf[4]) > 0xfffff && AV_RB32(&p->buf[4]) > 0xfffff)
+    size = AV_RL32(&p->buf[4]);
+    big_endian = size > 0x000FFFFF;
+    if (big_endian)
+        size = av_bswap32(size);
+    if (size > 0xfffff || size < 8)
         return 0;
 
     return AVPROBE_SCORE_MAX;

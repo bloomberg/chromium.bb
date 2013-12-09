@@ -66,7 +66,7 @@ static av_cold int init(AVFilterContext *ctx)
         (ret = ff_parse_sample_format(&aconvert->out_sample_fmt, aconvert->format_str, ctx)) < 0)
         return ret;
     if (aconvert->channel_layout_str && strcmp(aconvert->channel_layout_str, "auto"))
-        return ff_parse_channel_layout(&aconvert->out_chlayout, aconvert->channel_layout_str, ctx);
+        return ff_parse_channel_layout(&aconvert->out_chlayout, NULL, aconvert->channel_layout_str, ctx);
     return ret;
 }
 
@@ -183,7 +183,7 @@ static const AVFilterPad aconvert_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_af_aconvert = {
+AVFilter ff_af_aconvert = {
     .name          = "aconvert",
     .description   = NULL_IF_CONFIG_SMALL("Convert the input audio to sample_fmt:channel_layout."),
     .priv_size     = sizeof(AConvertContext),

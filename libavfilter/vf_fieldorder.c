@@ -84,8 +84,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     AVFrame *out;
 
     if (!frame->interlaced_frame ||
-        frame->top_field_first == s->dst_tff)
+        frame->top_field_first == s->dst_tff) {
+        av_log(ctx, AV_LOG_VERBOSE,
+               "Skipping %s.\n",
+               frame->interlaced_frame ?
+               "frame with same field order" : "progressive frame");
         return ff_filter_frame(outlink, frame);
+    }
 
     if (av_frame_is_writable(frame)) {
         out = frame;
@@ -179,7 +184,7 @@ static const AVFilterPad avfilter_vf_fieldorder_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_fieldorder = {
+AVFilter ff_vf_fieldorder = {
     .name          = "fieldorder",
     .description   = NULL_IF_CONFIG_SMALL("Set the field order."),
     .priv_size     = sizeof(FieldOrderContext),

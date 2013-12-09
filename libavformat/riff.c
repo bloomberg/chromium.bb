@@ -85,9 +85,12 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_MPEG4,        MKTAG('M', '4', 'T', '3') },
     { AV_CODEC_ID_MPEG4,        MKTAG('G', 'E', 'O', 'X') },
     /* flipped video */
+    { AV_CODEC_ID_MPEG4,        MKTAG('G', '2', '6', '4') },
+    /* flipped video */
     { AV_CODEC_ID_MPEG4,        MKTAG('H', 'D', 'X', '4') },
     { AV_CODEC_ID_MPEG4,        MKTAG('D', 'M', '4', 'V') },
     { AV_CODEC_ID_MPEG4,        MKTAG('D', 'M', 'K', '2') },
+    { AV_CODEC_ID_MPEG4,        MKTAG('D', 'Y', 'M', '4') },
     { AV_CODEC_ID_MPEG4,        MKTAG('D', 'I', 'G', 'I') },
     { AV_CODEC_ID_MPEG4,        MKTAG('I', 'N', 'M', 'C') },
     /* Ephv MPEG-4 */
@@ -256,6 +259,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_VP6F,         MKTAG('V', 'P', '6', 'F') },
     { AV_CODEC_ID_VP6F,         MKTAG('F', 'L', 'V', '4') },
     { AV_CODEC_ID_VP8,          MKTAG('V', 'P', '8', '0') },
+    { AV_CODEC_ID_VP9,          MKTAG('V', 'P', '9', '0') },
     { AV_CODEC_ID_ASV1,         MKTAG('A', 'S', 'V', '1') },
     { AV_CODEC_ID_ASV2,         MKTAG('A', 'S', 'V', '2') },
     { AV_CODEC_ID_VCR1,         MKTAG('V', 'C', 'R', '1') },

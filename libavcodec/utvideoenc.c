@@ -126,7 +126,7 @@ static av_cold int utvideo_encode_init(AVCodecContext *avctx)
         return AVERROR_OPTION_NOT_FOUND;
     }
 
-    avctx->coded_frame = avcodec_alloc_frame();
+    avctx->coded_frame = av_frame_alloc();
 
     if (!avctx->coded_frame) {
         av_log(avctx, AV_LOG_ERROR, "Could not allocate frame.\n");
@@ -513,8 +513,7 @@ static int utvideo_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     bytestream2_init_writer(&pb, dst, pkt->size);
 
-    av_fast_malloc(&c->slice_bits, &c->slice_bits_size,
-                   width * height + FF_INPUT_BUFFER_PADDING_SIZE);
+    av_fast_padded_malloc(&c->slice_bits, &c->slice_bits_size, width * height);
 
     if (!c->slice_bits) {
         av_log(avctx, AV_LOG_ERROR, "Cannot allocate temporary buffer 2.\n");

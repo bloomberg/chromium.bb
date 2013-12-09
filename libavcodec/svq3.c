@@ -317,8 +317,8 @@ static inline void svq3_mc_dir_part(SVQ3Context *s,
     src  = pic->f.data[0] + mx + my * h->linesize;
 
     if (emu) {
-        h->vdsp.emulated_edge_mc(h->edge_emu_buffer, h->linesize,
-                                 src, h->linesize,
+        h->vdsp.emulated_edge_mc(h->edge_emu_buffer, src,
+                                 h->linesize, h->linesize,
                                  width + 1, height + 1,
                                  mx, my, s->h_edge_pos, s->v_edge_pos);
         src = h->edge_emu_buffer;
@@ -344,8 +344,8 @@ static inline void svq3_mc_dir_part(SVQ3Context *s,
             src  = pic->f.data[i] + mx + my * h->uvlinesize;
 
             if (emu) {
-                h->vdsp.emulated_edge_mc(h->edge_emu_buffer, h->uvlinesize,
-                                         src, h->uvlinesize,
+                h->vdsp.emulated_edge_mc(h->edge_emu_buffer, src,
+                                         h->uvlinesize, h->uvlinesize,
                                          width + 1, height + 1,
                                          mx, my, (s->h_edge_pos >> 1),
                                          s->v_edge_pos >> 1);
@@ -838,8 +838,8 @@ static int svq3_decode_slice_header(AVCodecContext *avctx)
     skip_bits1(&h->gb);
     skip_bits(&h->gb, 2);
 
-    while (get_bits1(&h->gb))
-        skip_bits(&h->gb, 8);
+    if (skip_1stop_8data_bits(&h->gb) < 0)
+        return AVERROR_INVALIDDATA;
 
     /* reset intra predictors and invalidate motion vector references */
     if (h->mb_x > 0) {
@@ -970,8 +970,8 @@ static av_cold int svq3_decode_init(AVCodecContext *avctx)
         /* unknown field */
         skip_bits1(&gb);
 
-        while (get_bits1(&gb))
-            skip_bits(&gb, 8);
+        if (skip_1stop_8data_bits(&gb) < 0)
+            return AVERROR_INVALIDDATA;
 
         s->unknown_flag  = get_bits1(&gb);
         avctx->has_b_frames = !h->low_delay;
@@ -1125,8 +1125,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     h->mb_x = h->mb_y = h->mb_xy = 0;
 
     if (s->watermark_key) {
-        av_fast_malloc(&s->buf, &s->buf_size,
-                       buf_size+FF_INPUT_BUFFER_PADDING_SIZE);
+        av_fast_padded_malloc(&s->buf, &s->buf_size, buf_size);
         if (!s->buf)
             return AVERROR(ENOMEM);
         memcpy(s->buf, avpkt->data, buf_size);

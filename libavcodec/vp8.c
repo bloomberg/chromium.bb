@@ -113,16 +113,15 @@ static void vp8_decode_flush(AVCodecContext *avctx)
 static int update_dimensions(VP8Context *s, int width, int height)
 {
     AVCodecContext *avctx = s->avctx;
-    int i;
+    int i, ret;
 
     if (width  != s->avctx->width || ((width+15)/16 != s->mb_width || (height+15)/16 != s->mb_height) && s->macroblocks_base ||
         height != s->avctx->height) {
-        if (av_image_check_size(width, height, 0, s->avctx))
-            return AVERROR_INVALIDDATA;
-
         vp8_decode_flush_impl(s->avctx, 1);
 
-        avcodec_set_dimensions(s->avctx, width, height);
+        ret = ff_set_dimensions(s->avctx, width, height);
+        if (ret < 0)
+            return ret;
     }
 
     s->mb_width  = (s->avctx->coded_width +15) / 16;
@@ -1197,8 +1196,9 @@ void vp8_mc_luma(VP8Context *s, VP8ThreadData *td, uint8_t *dst,
         src += y_off * linesize + x_off;
         if (x_off < mx_idx || x_off >= width  - block_w - subpel_idx[2][mx] ||
             y_off < my_idx || y_off >= height - block_h - subpel_idx[2][my]) {
-            s->vdsp.emulated_edge_mc(td->edge_emu_buffer, 32,
-                                     src - my_idx * linesize - mx_idx, linesize,
+            s->vdsp.emulated_edge_mc(td->edge_emu_buffer,
+                                     src - my_idx * linesize - mx_idx,
+                                     32, linesize,
                                      block_w + subpel_idx[1][mx],
                                      block_h + subpel_idx[1][my],
                                      x_off - mx_idx, y_off - my_idx, width, height);
@@ -1250,16 +1250,18 @@ void vp8_mc_chroma(VP8Context *s, VP8ThreadData *td, uint8_t *dst1, uint8_t *dst
         ff_thread_await_progress(ref, (3 + y_off + block_h + subpel_idx[2][my]) >> 3, 0);
         if (x_off < mx_idx || x_off >= width  - block_w - subpel_idx[2][mx] ||
             y_off < my_idx || y_off >= height - block_h - subpel_idx[2][my]) {
-            s->vdsp.emulated_edge_mc(td->edge_emu_buffer, 32,
-                                     src1 - my_idx * linesize - mx_idx, linesize,
+            s->vdsp.emulated_edge_mc(td->edge_emu_buffer,
+                                     src1 - my_idx * linesize - mx_idx,
+                                     32, linesize,
                                      block_w + subpel_idx[1][mx],
                                      block_h + subpel_idx[1][my],
                                      x_off - mx_idx, y_off - my_idx, width, height);
             src1 = td->edge_emu_buffer + mx_idx + 32 * my_idx;
             mc_func[my_idx][mx_idx](dst1, linesize, src1, 32, block_h, mx, my);
 
-            s->vdsp.emulated_edge_mc(td->edge_emu_buffer, 32,
-                                     src2 - my_idx * linesize - mx_idx, linesize,
+            s->vdsp.emulated_edge_mc(td->edge_emu_buffer,
+                                     src2 - my_idx * linesize - mx_idx,
+                                     32, linesize,
                                      block_w + subpel_idx[1][mx],
                                      block_h + subpel_idx[1][my],
                                      x_off - mx_idx, y_off - my_idx, width, height);
@@ -2113,52 +2115,6 @@ static int vp8_decode_update_thread_context(AVCodecContext *dst, const AVCodecCo
     return 0;
 }
 
-static unsigned apply_padding(unsigned size) { return size + (size & 1); }
-
-static int webp_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
-                             AVPacket *avpkt)
-{
-    const uint8_t *buf = avpkt->data;
-    int buf_size       = avpkt->size;
-    AVPacket pkt       = *avpkt;
-
-    if (buf_size >= 16
-        && AV_RL32(buf   ) == AV_RL32("RIFF")
-        && AV_RL32(buf+ 8) == AV_RL32("WEBP")) {
-        unsigned riff_size = apply_padding(AV_RL32(buf+4)) + 8;
-        buf += 12;   // Skip over main header
-        buf_size -= 12;
-        if (buf_size < 8 || riff_size < 8) {
-            av_log(avctx, AV_LOG_ERROR, "Incomplete header.\n");
-            return AVERROR_INVALIDDATA;
-        }
-        if (AV_RL32(buf) == AV_RL32("VP8L")) {
-            av_log(avctx, AV_LOG_ERROR, "Unsupported WebP lossless format.\n");
-            return AVERROR_PATCHWELCOME;
-        }
-        if (AV_RL32(buf) == AV_RL32("VP8X") && AV_RL32(buf+4) < (unsigned)buf_size) {
-            unsigned size = apply_padding(AV_RL32(buf+4) + 8);
-            buf      += size;
-            buf_size -= size;
-        }
-        if (buf_size >= 8
-            && AV_RL32(buf) == AV_RL32("ALPH") && AV_RL32(buf+4) < (unsigned)buf_size) {
-            unsigned size = apply_padding(AV_RL32(buf+4) + 8);
-            buf      += size;
-            buf_size -= size;
-            av_log(avctx, AV_LOG_WARNING, "Skipping alpha plane\n");
-        }
-        if (buf_size >= 8 && AV_RL32(buf) == AV_RL32("VP8 ")) {
-            buf      += 8;
-            buf_size -= 8;
-        }
-    }
-    pkt.data = buf;
-    pkt.size = buf_size;
-
-    return ff_vp8_decode_frame(avctx, data, data_size, &pkt);
-}
-
 AVCodec ff_vp8_decoder = {
     .name                  = "vp8",
     .long_name             = NULL_IF_CONFIG_SMALL("On2 VP8"),
@@ -2174,17 +2130,3 @@ AVCodec ff_vp8_decoder = {
     .update_thread_context = ONLY_IF_THREADS_ENABLED(vp8_decode_update_thread_context),
 };
 
-// AVCodec ff_webp_decoder = {
-//     .name                  = "webp",
-//     .long_name             = NULL_IF_CONFIG_SMALL("WebP"),
-//     .type                  = AVMEDIA_TYPE_VIDEO,
-//     .id                    = AV_CODEC_ID_WEBP,
-//     .priv_data_size        = sizeof(VP8Context),
-//     .init                  = vp8_decode_init,
-//     .close                 = vp8_decode_free,
-//     .decode                = webp_decode_frame,
-//     .capabilities          = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS | CODEC_CAP_SLICE_THREADS,
-//     .flush                 = vp8_decode_flush,
-//     .init_thread_copy      = ONLY_IF_THREADS_ENABLED(vp8_decode_init_thread_copy),
-//     .update_thread_context = ONLY_IF_THREADS_ENABLED(vp8_decode_update_thread_context),
-// };

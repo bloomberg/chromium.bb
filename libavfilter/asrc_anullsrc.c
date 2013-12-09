@@ -68,7 +68,7 @@ static av_cold int init(AVFilterContext *ctx)
                                      null->sample_rate_str, ctx)) < 0)
         return ret;
 
-    if ((ret = ff_parse_channel_layout(&null->channel_layout,
+    if ((ret = ff_parse_channel_layout(&null->channel_layout, NULL,
                                         null->channel_layout_str, ctx)) < 0)
         return ret;
 
@@ -134,7 +134,7 @@ static const AVFilterPad avfilter_asrc_anullsrc_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_asrc_anullsrc = {
+AVFilter ff_asrc_anullsrc = {
     .name          = "anullsrc",
     .description   = NULL_IF_CONFIG_SMALL("Null audio source, return empty audio frames."),
     .init          = init,

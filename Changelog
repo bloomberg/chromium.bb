@@ -3,6 +3,21 @@ releases are sorted from youngest to oldest.
 
 version <next>
 
+- HNM version 4 demuxer and video decoder
+- Live HDS muxer
+- setsar/setdar filters now support variables in ratio expressions
+- elbg filter
+- string validation in ffprobe
+- support for decoding through VDPAU in ffmpeg (the -hwaccel option)
+- complete Voxware MetaSound decoder
+- remove mp3_header_compress bitstream filters
+- Windows resource files for shared libraries
+- aeval filter
+- stereoscopic 3d metadata handling
+
+
+version 2.1:
+
 - aecho filter
 - perspective filter ported from libmpcodecs
 - ffprobe -show_programs option
@@ -40,6 +55,12 @@ version <next>
 - dpx parser
 - max_error_rate parameter in ffmpeg
 - PulseAudio output device
+- ReplayGain scanner
+- Enhanced Low Delay AAC (ER AAC ELD) decoding (no LD SBR support)
+- Linux framebuffer output device
+- HEVC decoder
+- raw HEVC, HEVC in MOV/MP4, HEVC in Matroska, HEVC in MPEG-TS demuxing
+- mergeplanes filter
 
 
 version 2.0:

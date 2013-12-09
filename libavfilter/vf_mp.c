@@ -111,8 +111,11 @@ static const struct {
     {IMGFMT_444P,  AV_PIX_FMT_YUVJ444P},
     {IMGFMT_440P,  AV_PIX_FMT_YUVJ440P},
 
+#if FF_API_XVMC
     {IMGFMT_XVMC_MOCO_MPEG2, AV_PIX_FMT_XVMC_MPEG2_MC},
     {IMGFMT_XVMC_IDCT_MPEG2, AV_PIX_FMT_XVMC_MPEG2_IDCT},
+#endif /* FF_API_XVMC */
+
     {IMGFMT_VDPAU_MPEG1,     AV_PIX_FMT_VDPAU_MPEG1},
     {IMGFMT_VDPAU_MPEG2,     AV_PIX_FMT_VDPAU_MPEG2},
     {IMGFMT_VDPAU_H264,      AV_PIX_FMT_VDPAU_H264},
@@ -778,7 +781,7 @@ static const AVFilterPad mp_outputs[] = {
     { NULL }
 };
 
-AVFilter avfilter_vf_mp = {
+AVFilter ff_vf_mp = {
     .name          = "mp",
     .description   = NULL_IF_CONFIG_SMALL("Apply a libmpcodecs filter to the input video."),
     .init          = init,

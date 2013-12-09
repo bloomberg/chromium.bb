@@ -138,10 +138,9 @@ static int read_uncompressed_sgi(unsigned char* out_buf, SgiState *s)
     for (y = s->height - 1; y >= 0; y--) {
         out_end = out_buf + (y * s->linesize);
         if (s->bytes_per_channel == 1) {
-            for (x = s->width; x > 0; x--) {
-                bytestream2_get_bufferu(&gp[z], out_end, s->depth);
-                out_end += s->depth;
-            }
+            for (x = s->width; x > 0; x--)
+                for (z = 0; z < s->depth; z++)
+                    *out_end++ = bytestream2_get_byteu(&gp[z]);
         } else {
             uint16_t *out16 = (uint16_t *)out_end;
             for (x = s->width; x > 0; x--)
@@ -203,9 +202,9 @@ static int decode_frame(AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
     }
 
-    if (av_image_check_size(s->width, s->height, 0, avctx))
-        return AVERROR_INVALIDDATA;
-    avcodec_set_dimensions(avctx, s->width, s->height);
+    ret = ff_set_dimensions(avctx, s->width, s->height);
+    if (ret < 0)
+        return ret;
 
     if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
         return ret;

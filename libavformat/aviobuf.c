@@ -319,15 +319,22 @@ int avio_put_str16le(AVIOContext *s, const char *str)
 {
     const uint8_t *q = str;
     int ret = 0;
+    int err = 0;
 
     while (*q) {
         uint32_t ch;
         uint16_t tmp;
 
-        GET_UTF8(ch, *q++, break;)
+        GET_UTF8(ch, *q++, goto invalid;)
         PUT_UTF16(ch, tmp, avio_wl16(s, tmp); ret += 2;)
+        continue;
+invalid:
+        av_log(s, AV_LOG_ERROR, "Invaid UTF8 sequence in avio_put_str16le\n");
+        err = AVERROR(EINVAL);
     }
     avio_wl16(s, 0);
+    if (err)
+        return err;
     ret += 2;
     return ret;
 }
@@ -1033,6 +1040,11 @@ int avio_close_dyn_buf(AVIOContext *s, uint8_t **pbuffer)
     int size;
     static const char padbuf[FF_INPUT_BUFFER_PADDING_SIZE] = {0};
     int padding = 0;
+
+    if (!s) {
+        *pbuffer = NULL;
+        return 0;
+    }
 
     /* don't attempt to pad fixed-size packet buffers */
     if (!s->max_packet_size) {

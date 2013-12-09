@@ -26,15 +26,15 @@
 
 #define REGISTER_FILTER(X, x, y)                                        \
     {                                                                   \
-        extern AVFilter avfilter_##y##_##x;                             \
+        extern AVFilter ff_##y##_##x;                                   \
         if (CONFIG_##X##_FILTER)                                        \
-            avfilter_register(&avfilter_##y##_##x);                     \
+            avfilter_register(&ff_##y##_##x);                           \
     }
 
 #define REGISTER_FILTER_UNCONDITIONAL(x)                                \
     {                                                                   \
-        extern AVFilter avfilter_##x;                                   \
-        avfilter_register(&avfilter_##x);                               \
+        extern AVFilter ff_##x;                                         \
+        avfilter_register(&ff_##x);                                     \
     }
 
 void avfilter_register_all(void)
@@ -50,6 +50,7 @@ void avfilter_register_all(void)
 #endif
     REGISTER_FILTER(ADELAY,         adelay,         af);
     REGISTER_FILTER(AECHO,          aecho,          af);
+    REGISTER_FILTER(AEVAL,          aeval,          af);
     REGISTER_FILTER(AFADE,          afade,          af);
     REGISTER_FILTER(AFORMAT,        aformat,        af);
     REGISTER_FILTER(AINTERLEAVE,    ainterleave,    af);
@@ -90,6 +91,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(LADSPA,         ladspa,         af);
     REGISTER_FILTER(LOWPASS,        lowpass,        af);
     REGISTER_FILTER(PAN,            pan,            af);
+    REGISTER_FILTER(REPLAYGAIN,     replaygain,     af);
     REGISTER_FILTER(RESAMPLE,       resample,       af);
     REGISTER_FILTER(SILENCEDETECT,  silencedetect,  af);
     REGISTER_FILTER(TREBLE,         treble,         af);
@@ -126,6 +128,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(DRAWGRID,       drawgrid,       vf);
     REGISTER_FILTER(DRAWTEXT,       drawtext,       vf);
     REGISTER_FILTER(EDGEDETECT,     edgedetect,     vf);
+    REGISTER_FILTER(ELBG,           elbg,           vf);
     REGISTER_FILTER(EXTRACTPLANES,  extractplanes,  vf);
     REGISTER_FILTER(FADE,           fade,           vf);
     REGISTER_FILTER(FIELD,          field,          vf);
@@ -153,6 +156,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(LUTRGB,         lutrgb,         vf);
     REGISTER_FILTER(LUTYUV,         lutyuv,         vf);
     REGISTER_FILTER(MCDEINT,        mcdeint,        vf);
+    REGISTER_FILTER(MERGEPLANES,    mergeplanes,    vf);
     REGISTER_FILTER(MP,             mp,             vf);
     REGISTER_FILTER(MPDECIMATE,     mpdecimate,     vf);
     REGISTER_FILTER(NEGATE,         negate,         vf);

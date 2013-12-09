@@ -236,16 +236,14 @@ static int jpg_decode_data(JPGContext *c, int width, int height,
                            int swapuv)
 {
     GetBitContext gb;
-    uint8_t *tmp;
     int mb_w, mb_h, mb_x, mb_y, i, j;
     int bx, by;
     int unesc_size;
     int ret;
 
-    tmp = av_realloc(c->buf, src_size + FF_INPUT_BUFFER_PADDING_SIZE);
-    if (!tmp)
-        return AVERROR(ENOMEM);
-    c->buf = tmp;
+    if ((ret = av_reallocp(&c->buf,
+                           src_size + FF_INPUT_BUFFER_PADDING_SIZE)) < 0)
+        return ret;
     jpg_unescape(src, src_size, c->buf, &unesc_size);
     memset(c->buf + unesc_size, 0, FF_INPUT_BUFFER_PADDING_SIZE);
     init_get_bits(&gb, c->buf, unesc_size * 8);
@@ -375,6 +373,8 @@ static int kempf_decode_tile(G2MContext *c, int tile_x, int tile_y,
         src += 3;
     }
     npal = *src++ + 1;
+    if (src_end - src < npal * 3)
+        return AVERROR_INVALIDDATA;
     memcpy(pal, src, npal * 3); src += npal * 3;
     if (sub_type != 2) {
         for (i = 0; i < npal; i++) {
@@ -480,8 +480,7 @@ static int g2m_load_cursor(AVCodecContext *avctx, G2MContext *c,
     uint32_t bits;
     uint32_t cur_size, cursor_w, cursor_h, cursor_stride;
     uint32_t cursor_hot_x, cursor_hot_y;
-    int cursor_fmt;
-    uint8_t *tmp;
+    int cursor_fmt, err;
 
     cur_size      = bytestream2_get_be32(gb);
     cursor_w      = bytestream2_get_byte(gb);
@@ -490,7 +489,7 @@ static int g2m_load_cursor(AVCodecContext *avctx, G2MContext *c,
     cursor_hot_y  = bytestream2_get_byte(gb);
     cursor_fmt    = bytestream2_get_byte(gb);
 
-    cursor_stride = FFALIGN(cursor_w, c->cursor_fmt==1 ? 32 : 1) * 4;
+    cursor_stride = FFALIGN(cursor_w, cursor_fmt==1 ? 32 : 1) * 4;
 
     if (cursor_w < 1 || cursor_w > 256 ||
         cursor_h < 1 || cursor_h > 256) {
@@ -516,13 +515,11 @@ static int g2m_load_cursor(AVCodecContext *avctx, G2MContext *c,
         return AVERROR_PATCHWELCOME;
     }
 
-    tmp = av_realloc(c->cursor, cursor_stride * cursor_h);
-    if (!tmp) {
+    if ((err = av_reallocp(&c->cursor, cursor_stride * cursor_h)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Cannot allocate cursor buffer\n");
-        return AVERROR(ENOMEM);
+        return err;
     }
 
-    c->cursor        = tmp;
     c->cursor_w      = cursor_w;
     c->cursor_h      = cursor_h;
     c->cursor_hot_x  = cursor_hot_x;
@@ -701,7 +698,7 @@ static int g2m_decode_frame(AVCodecContext *avctx, void *data,
                 goto header_fail;
             }
             if (c->width != avctx->width || c->height != avctx->height)
-                avcodec_set_dimensions(avctx, c->width, c->height);
+                ff_set_dimensions(avctx, c->width, c->height);
             c->compression = bytestream2_get_be32(&bc);
             if (c->compression != 2 && c->compression != 3) {
                 av_log(avctx, AV_LOG_ERROR,
@@ -711,7 +708,8 @@ static int g2m_decode_frame(AVCodecContext *avctx, void *data,
             }
             c->tile_width  = bytestream2_get_be32(&bc);
             c->tile_height = bytestream2_get_be32(&bc);
-            if (!c->tile_width || !c->tile_height) {
+            if (!c->tile_width || !c->tile_height ||
+                ((c->tile_width | c->tile_height) & 0xF)) {
                 av_log(avctx, AV_LOG_ERROR,
                        "Invalid tile dimensions %dx%d\n",
                        c->tile_width, c->tile_height);

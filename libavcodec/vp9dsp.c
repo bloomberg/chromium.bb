@@ -772,9 +772,9 @@ static void vert_left_##size##x##size##_c(uint8_t *dst, ptrdiff_t stride, \
     vo[size - 2] = (top[size - 2] + top[size - 1] * 3 + 2) >> 2; \
 \
     for (j = 0; j < size / 2; j++) { \
-        memcpy(dst +  j*2      * stride, ve + j, size - j); \
+        memcpy(dst +  j*2      * stride, ve + j, size - j - 1); \
         memset(dst +  j*2      * stride + size - j - 1, top[size - 1], j + 1); \
-        memcpy(dst + (j*2 + 1) * stride, vo + j, size - j); \
+        memcpy(dst + (j*2 + 1) * stride, vo + j, size - j - 1); \
         memset(dst + (j*2 + 1) * stride + size - j - 1, top[size - 1], j + 1); \
     } \
 }
@@ -853,13 +853,29 @@ static av_cold void vp9dsp_intrapred_init(VP9DSPContext *dsp)
 #undef init_intra_pred
 }
 
-#define itxfm_wrapper(type_a, type_b, sz, bits) \
+#define itxfm_wrapper(type_a, type_b, sz, bits, has_dconly) \
 static void type_a##_##type_b##_##sz##x##sz##_add_c(uint8_t *dst, \
                                                     ptrdiff_t stride, \
                                                     int16_t *block, int eob) \
 { \
     int i, j; \
     int16_t tmp[sz * sz], out[sz]; \
+\
+    if (has_dconly && eob == 1) { \
+        const int t  = (((block[0] * 11585 + (1 << 13)) >> 14) \
+                                   * 11585 + (1 << 13)) >> 14; \
+        block[0] = 0; \
+        for (i = 0; i < sz; i++) { \
+            for (j = 0; j < sz; j++) \
+                dst[j * stride] = av_clip_uint8(dst[j * stride] + \
+                                                (bits ? \
+                                                 (t + (1 << (bits - 1))) >> bits : \
+                                                 t)); \
+            dst++; \
+        } \
+        return; \
+    } \
+\
     for (i = 0; i < sz; i++) \
         type_a##sz##_1d(block + i, sz, tmp + i * sz, 0); \
     memset(block, 0, sz * sz * sizeof(*block)); \
@@ -875,10 +891,10 @@ static void type_a##_##type_b##_##sz##x##sz##_add_c(uint8_t *dst, \
 }
 
 #define itxfm_wrap(sz, bits) \
-itxfm_wrapper(idct,  idct,  sz, bits) \
-itxfm_wrapper(iadst, idct,  sz, bits) \
-itxfm_wrapper(idct,  iadst, sz, bits) \
-itxfm_wrapper(iadst, iadst, sz, bits)
+itxfm_wrapper(idct,  idct,  sz, bits, 1) \
+itxfm_wrapper(iadst, idct,  sz, bits, 0) \
+itxfm_wrapper(idct,  iadst, sz, bits, 0) \
+itxfm_wrapper(iadst, iadst, sz, bits, 0)
 
 #define IN(x) in[x * stride]
 
@@ -1397,7 +1413,7 @@ static av_always_inline void idct32_1d(const int16_t *in, ptrdiff_t stride,
     out[31] = t0   - t31;
 }
 
-itxfm_wrapper(idct, idct, 32, 6)
+itxfm_wrapper(idct, idct, 32, 6, 1)
 
 static av_always_inline void iwht4_1d(const int16_t *in, ptrdiff_t stride,
                                       int16_t *out, int pass)
@@ -1430,7 +1446,7 @@ static av_always_inline void iwht4_1d(const int16_t *in, ptrdiff_t stride,
     out[3] = t3;
 }
 
-itxfm_wrapper(iwht, iwht, 4, 0)
+itxfm_wrapper(iwht, iwht, 4, 0, 0)
 
 #undef IN
 #undef itxfm_wrapper
@@ -1460,8 +1476,7 @@ static av_cold void vp9dsp_itxfm_init(VP9DSPContext *dsp)
 #undef init_idct
 }
 
-static av_always_inline void loop_filter(uint8_t *dst,  ptrdiff_t stride,
-                                         int E, int I, int H,
+static av_always_inline void loop_filter(uint8_t *dst, int E, int I, int H,
                                          ptrdiff_t stridea, ptrdiff_t strideb,
                                          int wd)
 {
@@ -1573,7 +1588,7 @@ static void loop_filter_##dir##_##wd##_8_c(uint8_t *dst, \
                                            ptrdiff_t stride, \
                                            int E, int I, int H) \
 { \
-    loop_filter(dst, stride, E, I, H, stridea, strideb, wd); \
+    loop_filter(dst, E, I, H, stridea, strideb, wd); \
 }
 
 #define lf_8_fns(wd) \

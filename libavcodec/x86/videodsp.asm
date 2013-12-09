@@ -100,10 +100,10 @@ cglobal emu_edge_hvar, 5, 6, 1, dst, dst_stride, start_x, n_words, h, w
     ; FIXME also write a ssse3 version using pshufb
     movzx            wd, byte [dstq+start_xq]   ;   w = read(1)
     imul             wd, 0x01010101             ;   w *= 0x01010101
-    movd             m0, wd                     ;   FIXME this is sse2, not sse
+    movd             m0, wd
     mov              wq, n_wordsq               ;   initialize w
-%if cpuflag(sse)
-    shufps           m0, m0, q0000              ;   splat
+%if cpuflag(sse2)
+    pshufd           m0, m0, q0000              ;   splat
 %else ; mmx
     punpckldq        m0, m0                     ;   splat
 %endif ; mmx/sse
@@ -124,7 +124,7 @@ INIT_MMX mmx
 hvar_fn
 %endif
 
-INIT_XMM sse
+INIT_XMM sse2
 hvar_fn
 
 ; macro to read/write a horizontal number of pixels (%2) to/from registers
@@ -344,25 +344,23 @@ VERTICAL_EXTEND 16, 22
 ; obviously not the same on both sides.
 
 %macro READ_V_PIXEL 2
-%if %1 == 2
-    movzx          valw, byte %2
-    imul           valw, 0x0101
-%else
     movzx          vald, byte %2
     imul           vald, 0x01010101
 %if %1 >= 8
     movd             m0, vald
 %if mmsize == 16
-    shufps           m0, m0, q0000
+    pshufd           m0, m0, q0000
 %else
     punpckldq        m0, m0
-%endif
-%endif ; %1 >= 8
-%endif
+%endif ; mmsize == 16
+%endif ; %1 > 16
 %endmacro ; READ_V_PIXEL
 
 %macro WRITE_V_PIXEL 2
 %assign %%off 0
+
+%if %1 >= 8
+
 %rep %1/mmsize
     movu     [%2+%%off], m0
 %assign %%off %%off+mmsize
@@ -378,27 +376,29 @@ VERTICAL_EXTEND 16, 22
 %assign %%off %%off+8
 %endif
 %endif ; %1-%%off >= 8
-%endif
+%endif ; mmsize == 16
 
 %if %1-%%off >= 4
-%if %1 > 8 %% %1-%%off > 4
+%if %1 > 8 && %1-%%off > 4
     movq      [%2+%1-8], m0
 %assign %%off %1
-%elif %1 >= 8 && %1-%%off >= 4
-    movd     [%2+%%off], m0
-%assign %%off %%off+4
 %else
-    mov      [%2+%%off], vald
+    movd     [%2+%%off], m0
 %assign %%off %%off+4
 %endif
 %endif ; %1-%%off >= 4
 
-%if %1-%%off >= 2
-%if %1 >= 8
-    movd      [%2+%1-4], m0
-%else
+%else ; %1 < 8
+
+%rep %1/4
+    mov      [%2+%%off], vald
+%assign %%off %%off+4
+%endrep ; %1/4
+
+%endif ; %1 >=/< 8
+
+%if %1-%%off == 2
     mov      [%2+%%off], valw
-%endif
 %endif ; (%1-%%off)/2
 %endmacro ; WRITE_V_PIXEL
 
@@ -423,7 +423,7 @@ H_EXTEND 2, 14
 H_EXTEND 16, 22
 %endif
 
-INIT_XMM sse
+INIT_XMM sse2
 H_EXTEND 16, 22
 
 %macro PREFETCH_FN 1

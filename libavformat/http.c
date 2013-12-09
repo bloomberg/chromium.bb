@@ -55,7 +55,7 @@ typedef struct {
     int64_t off, filesize;
     int icy_data_read;      ///< how much data was read since last ICY metadata packet
     int icy_metaint;        ///< after how many bytes of read data a new metadata packet will be found
-    char location[MAX_URL_SIZE];
+    char *location;
     HTTPAuthState auth_state;
     HTTPAuthState proxy_auth_state;
     char *headers;
@@ -68,6 +68,7 @@ typedef struct {
     uint8_t *post_data;
     int post_datalen;
     int is_akamai;
+    int is_mediagateway;
     char *mime_type;
     char *cookies;          ///< holds newline (\n) delimited Set-Cookie header field values (without the "Set-Cookie: " field name)
     int icy;
@@ -95,14 +96,15 @@ static const AVOption options[] = {
 {"multiple_requests", "use persistent connections", OFFSET(multiple_requests), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, D|E },
 {"post_data", "set custom HTTP post data", OFFSET(post_data), AV_OPT_TYPE_BINARY, .flags = D|E },
 {"mime_type", "set MIME type", OFFSET(mime_type), AV_OPT_TYPE_STRING, {0}, 0, 0, 0 },
-{"cookies", "set cookies to be sent in applicable future requests, use newline delimited Set-Cookie HTTP field value syntax", OFFSET(cookies), AV_OPT_TYPE_STRING, {0}, 0, 0, 0 },
+{"cookies", "set cookies to be sent in applicable future requests, use newline delimited Set-Cookie HTTP field value syntax", OFFSET(cookies), AV_OPT_TYPE_STRING, {0}, 0, 0, D },
 {"icy", "request ICY metadata", OFFSET(icy), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, D },
 {"icy_metadata_headers", "return ICY metadata headers", OFFSET(icy_metadata_headers), AV_OPT_TYPE_STRING, {0}, 0, 0, 0 },
 {"icy_metadata_packet", "return current ICY metadata packet", OFFSET(icy_metadata_packet), AV_OPT_TYPE_STRING, {0}, 0, 0, 0 },
 {"auth_type", "HTTP authentication type", OFFSET(auth_state.auth_type), AV_OPT_TYPE_INT, {.i64 = HTTP_AUTH_NONE}, HTTP_AUTH_NONE, HTTP_AUTH_BASIC, D|E, "auth_type" },
 {"none", "No auth method set, autodetect", 0, AV_OPT_TYPE_CONST, {.i64 = HTTP_AUTH_NONE}, 0, 0, D|E, "auth_type" },
 {"basic", "HTTP basic authentication", 0, AV_OPT_TYPE_CONST, {.i64 = HTTP_AUTH_BASIC}, 0, 0, D|E, "auth_type" },
-{"send_expect_100", "Force sending an Expect: 100-continue header for POST", OFFSET(send_expect_100), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, E, "auth_type" },
+{"send_expect_100", "Force sending an Expect: 100-continue header for POST", OFFSET(send_expect_100), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, E },
+{"location", "The actual location of the data received", OFFSET(location), AV_OPT_TYPE_STRING, { 0 }, 0, 0, D|E },
 {NULL}
 };
 #define HTTP_CLASS(flavor)\
@@ -235,7 +237,10 @@ int ff_http_do_new_request(URLContext *h, const char *uri)
 
     s->off = 0;
     s->icy_data_read = 0;
-    av_strlcpy(s->location, uri, sizeof(s->location));
+    av_free(s->location);
+    s->location = av_strdup(uri);
+    if (!s->location)
+        return AVERROR(ENOMEM);
 
     av_dict_copy(&options, s->chained_options, 0);
     ret = http_open_cnx(h, &options);
@@ -255,7 +260,9 @@ static int http_open(URLContext *h, const char *uri, int flags,
         h->is_streamed = 1;
 
     s->filesize = -1;
-    av_strlcpy(s->location, uri, sizeof(s->location));
+    s->location = av_strdup(uri);
+    if (!s->location)
+        return AVERROR(ENOMEM);
     if (options)
         av_dict_copy(&s->chained_options, *options, 0);
 
@@ -316,7 +323,6 @@ static int process_line(URLContext *h, char *line, int line_count,
 {
     HTTPContext *s = h->priv_data;
     char *tag, *p, *end;
-    char redirected_location[MAX_URL_SIZE];
 
     /* end of header */
     if (line[0] == '\0') {
@@ -332,7 +338,7 @@ static int process_line(URLContext *h, char *line, int line_count,
             p++;
         s->http_code = strtol(p, &end, 10);
 
-        av_dlog(NULL, "http_code=%d\n", s->http_code);
+        av_log(h, AV_LOG_DEBUG, "http_code=%d\n", s->http_code);
 
         /* error codes are 4xx and 5xx, but regard 401 as a success, so we
          * don't abort until all headers have been parsed. */
@@ -356,8 +362,14 @@ static int process_line(URLContext *h, char *line, int line_count,
         while (av_isspace(*p))
             p++;
         if (!av_strcasecmp(tag, "Location")) {
-            ff_make_absolute_url(redirected_location, sizeof(redirected_location), s->location, p);
-            av_strlcpy(s->location, redirected_location, sizeof(s->location));
+            char redirected_location[MAX_URL_SIZE], *new_loc;
+            ff_make_absolute_url(redirected_location, sizeof(redirected_location),
+                                 s->location, p);
+            new_loc = av_strdup(redirected_location);
+            if (!new_loc)
+                return AVERROR(ENOMEM);
+            av_free(s->location);
+            s->location = new_loc;
             *new_location = 1;
         } else if (!av_strcasecmp (tag, "Content-Length") && s->filesize == -1) {
             s->filesize = strtoll(p, NULL, 10);
@@ -386,8 +398,12 @@ static int process_line(URLContext *h, char *line, int line_count,
         } else if (!av_strcasecmp (tag, "Connection")) {
             if (!strcmp(p, "close"))
                 s->willclose = 1;
-        } else if (!av_strcasecmp (tag, "Server") && !av_strcasecmp (p, "AkamaiGHost")) {
-            s->is_akamai = 1;
+        } else if (!av_strcasecmp (tag, "Server")) {
+            if (!av_strcasecmp (p, "AkamaiGHost")) {
+                s->is_akamai = 1;
+            } else if (!av_strncasecmp (p, "MediaGateway", 12)) {
+                s->is_mediagateway = 1;
+            }
         } else if (!av_strcasecmp (tag, "Content-Type")) {
             av_free(s->mime_type); s->mime_type = av_strdup(p);
         } else if (!av_strcasecmp (tag, "Set-Cookie")) {
@@ -437,7 +453,6 @@ static int process_line(URLContext *h, char *line, int line_count,
                 // the header at all if this is the case).
             } else {
                 av_log(h, AV_LOG_WARNING, "Unknown content coding: %s\n", p);
-                return AVERROR(ENOSYS);
             }
         }
     }
@@ -561,7 +576,7 @@ static int http_read_header(URLContext *h, int *new_location)
         if ((err = http_get_line(s, line, sizeof(line))) < 0)
             return err;
 
-        av_dlog(NULL, "header='%s'\n", line);
+        av_log(h, AV_LOG_DEBUG, "header='%s'\n", line);
 
         err = process_line(h, line, s->line_count, new_location);
         if (err < 0)
@@ -570,6 +585,9 @@ static int http_read_header(URLContext *h, int *new_location)
             break;
         s->line_count++;
     }
+
+    if (s->seekable == -1 && s->is_mediagateway && s->filesize == 2000000000)
+        h->is_streamed = 1; /* we can in fact _not_ seek */
 
     return err;
 }
@@ -684,6 +702,9 @@ static int http_connect(URLContext *h, const char *path, const char *local_path,
 
     av_freep(&authstr);
     av_freep(&proxyauthstr);
+
+    av_log(h, AV_LOG_DEBUG, "request: %s\n", s->buffer);
+
     if ((err = ffurl_write(s->hd, s->buffer, strlen(s->buffer))) < 0)
         return err;
 

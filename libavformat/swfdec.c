@@ -55,12 +55,18 @@ static int get_swf_tag(AVIOContext *pb, int *len_ptr)
 
 static int swf_probe(AVProbeData *p)
 {
-    /* check file header */
-    if ((p->buf[0] == 'F' || p->buf[0] == 'C') && p->buf[1] == 'W' &&
-        p->buf[2] == 'S')
-        return AVPROBE_SCORE_MAX;
-    else
+    if(p->buf_size < 15)
         return 0;
+
+    /* check file header */
+    if (   AV_RB24(p->buf) != AV_RB24("CWS")
+        && AV_RB24(p->buf) != AV_RB24("FWS"))
+        return 0;
+
+    if (p->buf[3] >= 20)
+        return AVPROBE_SCORE_MAX / 4;
+
+    return AVPROBE_SCORE_MAX;
 }
 
 #if CONFIG_ZLIB

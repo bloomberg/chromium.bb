@@ -21,10 +21,10 @@
 
 #include <string.h>
 
-#include "avcodec.h"
-
 #include "libavutil/common.h"
 #include "libavutil/internal.h"
+#include "avcodec.h"
+#include "version.h"
 
 static const AVCodecDescriptor codec_descriptors[] = {
     /* video codecs */
@@ -42,6 +42,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("MPEG-2 video"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
+#if FF_API_XVMC
     {
         .id        = AV_CODEC_ID_MPEG2VIDEO_XVMC,
         .type      = AVMEDIA_TYPE_VIDEO,
@@ -49,6 +50,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("MPEG-1/2 video XvMC (X-Video Motion Compensation)"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
+#endif /* FF_API_XVMC */
     {
         .id        = AV_CODEC_ID_H261,
         .type      = AVMEDIA_TYPE_VIDEO,
@@ -223,13 +225,6 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_VIDEO,
         .name      = "h264",
         .long_name = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
-        .props     = AV_CODEC_PROP_LOSSY | AV_CODEC_PROP_LOSSLESS,
-    },
-    {
-        .id        = AV_CODEC_ID_HEVC,
-        .type      = AVMEDIA_TYPE_VIDEO,
-        .name      = "hevc",
-        .long_name = NULL_IF_CONFIG_SMALL("H.265 / HEVC"),
         .props     = AV_CODEC_PROP_LOSSY | AV_CODEC_PROP_LOSSLESS,
     },
     {
@@ -1394,6 +1389,20 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY |
                      AV_CODEC_PROP_LOSSLESS,
     },
+    {
+        .id        = AV_CODEC_ID_HNM4_VIDEO,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "hnm4video",
+        .long_name = NULL_IF_CONFIG_SMALL("HNM 4 video"),
+        .props     = AV_CODEC_PROP_LOSSY,
+    },
+    {
+        .id        = AV_CODEC_ID_HEVC,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "hevc",
+        .long_name = NULL_IF_CONFIG_SMALL("H.265 / HEVC (High Efficiency Video Coding)"),
+        .props     = AV_CODEC_PROP_LOSSY,
+    },
 
     /* various PCM "codecs" */
     {
@@ -1851,6 +1860,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_AUDIO,
         .name      = "adpcm_ima_rad",
         .long_name = NULL_IF_CONFIG_SMALL("ADPCM IMA Radical"),
+        .props     = AV_CODEC_PROP_LOSSY,
+    },
+    {
+        .id        = AV_CODEC_ID_ADPCM_G726LE,
+        .type      = AVMEDIA_TYPE_AUDIO,
+        .name      = "adpcm_g726le",
+        .long_name = NULL_IF_CONFIG_SMALL("G.726 ADPCM little-endian"),
         .props     = AV_CODEC_PROP_LOSSY,
     },
 

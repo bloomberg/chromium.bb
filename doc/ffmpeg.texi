@@ -348,8 +348,13 @@ Stop writing to the stream after @var{framecount} frames.
 
 @item -q[:@var{stream_specifier}] @var{q} (@emph{output,per-stream})
 @itemx -qscale[:@var{stream_specifier}] @var{q} (@emph{output,per-stream})
-Use fixed quality scale (VBR). The meaning of @var{q} is
+Use fixed quality scale (VBR). The meaning of @var{q}/@var{qscale} is
 codec-dependent.
+If @var{qscale} is used without a @var{stream_specifier} then it applies only
+to the video stream, this is to maintain compatibility with previous behavior
+and as specifying the same codec specific value to 2 different codecs that is
+audio and video generally is not what is intended when no stream_specifier is
+used.
 
 @anchor{filter_option}
 @item -filter[:@var{stream_specifier}] @var{filtergraph} (@emph{output,per-stream})
@@ -616,6 +621,42 @@ would be more efficient.
 @item -copyinkf[:@var{stream_specifier}] (@emph{output,per-stream})
 When doing stream copy, copy also non-key frames found at the
 beginning.
+
+@item -hwaccel[:@var{stream_specifier}] @var{hwaccel} (@emph{input,per-stream})
+Use hardware acceleration to decode the matching stream(s). The allowed values
+of @var{hwaccel} are:
+@table @option
+@item none
+Do not use any hardware acceleration (the default).
+
+@item auto
+Automatically select the hardware acceleration method.
+
+@item vdpau
+Use VDPAU (Video Decode and Presentation API for Unix) hardware acceleration.
+@end table
+
+This option has no effect if the selected hwaccel is not available or not
+supported by the chosen decoder.
+
+Note that most acceleration methods are intended for playback and will not be
+faster than software decoding on modern CPUs. Additionally, @command{ffmpeg}
+will usually need to copy the decoded frames from the GPU memory into the system
+memory, resulting in further performance loss. This option is thus mainly
+useful for testing.
+
+@item -hwaccel_device[:@var{stream_specifier}] @var{hwaccel_device} (@emph{input,per-stream})
+Select a device to use for hardware acceleration.
+
+This option only makes sense when the @option{-hwaccel} option is also
+specified. Its exact meaning depends on the specific hardware acceleration
+method chosen.
+
+@table @option
+@item vdpau
+For VDPAU, this option specifies the X11 display/screen to use. If this option
+is not specified, the value of the @var{DISPLAY} environment variable is used
+@end table
 @end table
 
 @section Audio Options
@@ -1072,12 +1113,14 @@ transcoding. Use @option{-noaccurate_seek} to disable it, which may be useful
 e.g. when copying some streams and transcoding the others.
 
 @item -override_ffserver (@emph{global})
-Overrides the input specifications from ffserver. Using this option you can
-map any input stream to ffserver and control many aspects of the encoding from
-ffmpeg. Without this option ffmpeg will transmit to ffserver what is requested by
-ffserver.
+Overrides the input specifications from @command{ffserver}. Using this
+option you can map any input stream to @command{ffserver} and control
+many aspects of the encoding from @command{ffmpeg}. Without this
+option @command{ffmpeg} will transmit to @command{ffserver} what is
+requested by @command{ffserver}.
+
 The option is intended for cases where features are needed that cannot be
-specified to ffserver but can be to ffmpeg.
+specified to @command{ffserver} but can be to @command{ffmpeg}.
 
 @end table
 

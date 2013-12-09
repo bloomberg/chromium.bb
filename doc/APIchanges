@@ -14,6 +14,61 @@ libavutil:     2012-10-22
 
 
 API changes, most recent first:
+2013-12-xx - xxxxxxx - lavu 52.57.100 - opencl.h
+  Add av_opencl_benchmark() function.
+
+2013-11-xx - xxxxxxx - lavu 52.56.100 - ffversion.h
+  Moves version.h to libavutil/ffversion.h.
+  Install ffversion.h and make it public.
+
+2013-11-xx - xxxxxxx- - lavu 52.20.0 - frame.h
+  Add AV_FRAME_DATA_STEREO3D value to the AVFrameSideDataType enum and
+  stereo3d.h API, that identify codec-independent stereo3d information.
+
+2013-11-xx - xxxxxxx- - lavu 52.19.0 - frame.h
+  Add AV_FRAME_DATA_A53_CC value to the AVFrameSideDataType enum, which
+  identifies ATSC A53 Part 4 Closed Captions data.
+
+2013-11-XX - xxxxxxx - lavu 52.54.100 - avstring.h
+  Add av_utf8_decode() function.
+
+2013-11-xx - xxxxxxx - lavc 55.44.100 - avcodec.h
+  Add av_packet_{un,}pack_dictionary()
+  Add AV_PKT_METADATA_UPDATE side data type, used to transmit key/value
+  strings between a stream and the application.
+
+2013-11-xx - xxxxxxx - lavu 52.18.0 - mem.h
+  Move av_fast_malloc() and av_fast_realloc() for libavcodec to libavutil.
+
+2013-10-xx - xxxxxxx - lavc 55.27.0 - avcodec.h
+  Deprecate AVCodecContext.error_rate, it is replaced by the 'error_rate'
+  private option of the mpegvideo encoder family.
+
+2013-11-xx - xxxxxxx - lavc 55.26.0 - vdpau.h
+  Add av_vdpau_get_profile().
+  Add av_vdpau_alloc_context(). This function must from now on be
+  used for allocating AVVDPAUContext.
+
+2013-11-xx - xxxxxxx - lavc 55.41.100 / 55.25.0 - avcodec.h
+                       lavu 52.51.100 - frame.h
+  Add ITU-R BT.2020 and other not yet included values to color primaries,
+  transfer characteristics and colorspaces.
+
+2013-11-04 - xxxxxxx - lavu 52.50.100 - avutil.h
+  Add av_fopen_utf8()
+
+2013-08-xx - xxxxxxx - lavu 52.17.0 - avframe.h
+  Add AVFrame.flags and AV_FRAME_FLAG_CORRUPT.
+
+2013-10-27 - xxxxxxx - lavc 55.39.100 - avcodec.h
+  Add CODEC_CAP_DELAY support to avcodec_decode_subtitle2.
+
+2013-10-27 - xxxxxxx - lavu 52.48.100 - parseutils.h
+  Add av_get_known_color_name().
+
+2013-10-17 - xxxxxxx - lavu 52.47.100 - opt.h
+  Add AV_OPT_TYPE_CHANNEL_LAYOUT and channel layout option handlers
+  av_opt_get_channel_layout() and av_opt_set_channel_layout().
 
 2013-10-xx - xxxxxxx -libswscale 2.5.101 - options.c
   Change default scaler to bicubic
@@ -84,7 +139,7 @@ API changes, most recent first:
 2013-06-24 - af5f9c0 / 95d5246 - lavc 55.17.100 / 55.10.0 - avcodec.h
   Add MPEG-2 AAC profiles
 
-2013-06-25 - 95d5246 - lavf 55.10.100 - avformat.h
+2013-06-25 - af5f9c0 / 95d5246 - lavf 55.10.100 - avformat.h
   Add AV_DISPOSITION_* flags to indicate text track kind.
 
 2013-06-15 - 99b8cd0 - lavu 52.36.100
@@ -452,7 +507,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
 2012-07-29 - 7c26761 / 681ed00 - lavf 54.22.100 / 54.13.0 - avformat.h
   Add AVFMT_FLAG_NOBUFFER for low latency use cases.
 
-2012-07-10 - f3e5e6f - lavu 51.37.0
+2012-07-10 - fbe0245 / f3e5e6f - lavu 51.65.100 / 51.37.0
   Add av_malloc_array() and av_mallocz_array()
 
 2012-06-22 - e847f41 / d3d3a32 - lavu 51.61.100 / 51.34.0

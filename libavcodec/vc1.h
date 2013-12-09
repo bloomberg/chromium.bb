@@ -378,7 +378,7 @@ typedef struct VC1Context{
     //@{
     int new_sprite;
     int two_sprites;
-    AVFrame sprite_output_frame;
+    AVFrame *sprite_output_frame;
     int output_width, output_height, sprite_width, sprite_height;
     uint8_t* sr_rows[2][2];      ///< Sprite resizer line cache
     //@}
@@ -399,6 +399,7 @@ typedef struct VC1Context{
     int end_mb_x;                ///< Horizontal macroblock limit (used only by mss2)
 
     int parse_only;              ///< Context is used within parser
+    int resync_marker;           ///< could this stream contain resync markers
 } VC1Context;
 
 /** Find VC-1 marker in buffer
