@@ -1077,6 +1077,7 @@
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',
         'browser/password_manager/password_store_x_unittest.cc',
+        'browser/password_manager/psl_matching_helper_unittest.cc',
         'browser/performance_monitor/database_unittest.cc',
         'browser/plugins/plugin_finder_unittest.cc',
         'browser/plugins/plugin_metadata_unittest.cc',

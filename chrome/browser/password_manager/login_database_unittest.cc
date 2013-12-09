@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/login_database.h"
+#include "chrome/browser/password_manager/psl_matching_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,10 +36,6 @@ class LoginDatabaseTest : public testing::Test {
 
   std::vector<string16> DeserializeVector(const Pickle& pickle) const {
     return db_.DeserializeVector(pickle);
-  }
-
-  void SetPublicSuffixMatching(bool enabled) {
-    db_.public_suffix_domain_matching_ = enabled;
   }
 
   void FormsAreEqual(const PasswordForm& expected, const PasswordForm& actual) {
@@ -197,7 +194,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
-  SetPublicSuffixMatching(true);
+  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -247,7 +244,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
-  SetPublicSuffixMatching(true);
+  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -297,7 +294,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
 // instead of GetUniqueStatement, since REGEXP is in use. See
 // http://crbug.com/248608.
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
-  SetPublicSuffixMatching(true);
+  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -391,7 +388,7 @@ PasswordForm GetFormWithNewSignonRealm(PasswordForm form,
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
-  SetPublicSuffixMatching(true);
+  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.

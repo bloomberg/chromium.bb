@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_thread.h"
 
 using autofill::PasswordForm;

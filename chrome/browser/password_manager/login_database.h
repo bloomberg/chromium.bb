@@ -11,9 +11,13 @@
 #include "base/files/file_path.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/common/password_form.h"
+#include "chrome/browser/password_manager/psl_matching_helper.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
+
+namespace autofill {
+struct PasswordForm;
+}  // namespace autofill
 
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
@@ -130,8 +134,7 @@ class LoginDatabase {
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
 
-  // Set to true if the public suffix based domain matching is enabled.
-  bool public_suffix_domain_matching_;
+  PSLMatchingHelper psl_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };

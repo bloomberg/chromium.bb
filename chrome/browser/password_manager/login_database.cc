@@ -7,15 +7,13 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_switches.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "components/autofill/core/common/password_form.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -48,85 +46,9 @@ enum LoginTableColumns {
   COLUMN_FORM_DATA
 };
 
-// Enum used for histogram tracking PSL Domain triggering.
-// New entries should only be added to the end of the enum (before *_COUNT) so
-// as to not disrupt existing data.
-enum PSLDomainMatchMetric {
-  PSL_DOMAIN_MATCH_DISABLED = 0,
-  PSL_DOMAIN_MATCH_NONE,
-  PSL_DOMAIN_MATCH_FOUND,
-  PSL_DOMAIN_MATCH_COUNT
-};
-
-// Using the public suffix list for matching the origin is only needed for
-// websites that do not have a single hostname for entering credentials. It
-// would be better for their users if they did, but until then we help them find
-// credentials across different hostnames. We know that accounts.google.com is
-// the only hostname we should be accepting credentials on for any domain under
-// google.com, so we can apply a tighter policy for that domain.
-// For owners of domains where a single hostname is always used when your
-// users are entering their credentials, please contact palmer@chromium.org,
-// nyquist@chromium.org or file a bug at http://crbug.com/ to be added here.
-bool ShouldPSLDomainMatchingApply(
-      const std::string& registry_controlled_domain) {
-  return registry_controlled_domain != "google.com";
-}
-
-std::string GetRegistryControlledDomain(const GURL& signon_realm) {
-  return net::registry_controlled_domains::GetDomainAndRegistry(
-      signon_realm,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-}
-
-std::string GetRegistryControlledDomain(const std::string& signon_realm_str) {
-  GURL signon_realm(signon_realm_str);
-  return net::registry_controlled_domains::GetDomainAndRegistry(
-      signon_realm,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-}
-
-bool RegistryControlledDomainMatches(const scoped_ptr<PasswordForm>& found,
-                                     const PasswordForm current) {
-  const std::string found_registry_controlled_domain =
-      GetRegistryControlledDomain(found->signon_realm);
-  const std::string form_registry_controlled_domain =
-      GetRegistryControlledDomain(current.signon_realm);
-  return found_registry_controlled_domain == form_registry_controlled_domain;
-}
-
-bool SchemeMatches(const scoped_ptr<PasswordForm>& found,
-                   const PasswordForm current) {
-  const std::string found_scheme = GURL(found->signon_realm).scheme();
-  const std::string form_scheme = GURL(current.signon_realm).scheme();
-  return found_scheme == form_scheme;
-}
-
-bool PortMatches(const scoped_ptr<PasswordForm>& found,
-                   const PasswordForm current) {
-  const std::string found_port = GURL(found->signon_realm).port();
-  const std::string form_port = GURL(current.signon_realm).port();
-  return found_port == form_port;
-}
-
-bool IsPublicSuffixDomainMatchingEnabled() {
-#if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePasswordAutofillPublicSuffixDomainMatching)) {
-    return true;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePasswordAutofillPublicSuffixDomainMatching)) {
-    return false;
-  }
-  return true;
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
-LoginDatabase::LoginDatabase() : public_suffix_domain_matching_(false) {
+LoginDatabase::LoginDatabase() {
 }
 
 LoginDatabase::~LoginDatabase() {
@@ -180,8 +102,6 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
     db_.Close();
     return false;
   }
-
-  public_suffix_domain_matching_ = IsPublicSuffixDomainMatchingEnabled();
 
   return true;
 }
@@ -483,10 +403,11 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       "FROM logins WHERE signon_realm == ? ";
   sql::Statement s;
   const GURL signon_realm(form.signon_realm);
-  std::string registered_domain = GetRegistryControlledDomain(signon_realm);
-  PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
-  if (public_suffix_domain_matching_ &&
-      ShouldPSLDomainMatchingApply(registered_domain)) {
+  std::string registered_domain =
+      PSLMatchingHelper::GetRegistryControlledDomain(signon_realm);
+  PSLMatchingHelper::PSLDomainMatchMetric psl_domain_match_metric =
+      PSLMatchingHelper::PSL_DOMAIN_MATCH_NONE;
+  if (psl_helper_.ShouldPSLDomainMatchingApply(registered_domain)) {
     // We are extending the original SQL query with one that includes more
     // possible matches based on public suffix domain matching. Using a regexp
     // here is just an optimization to not have to parse all the stored entries
@@ -516,7 +437,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
     s.BindString(0, form.signon_realm);
     s.BindString(1, regexp);
   } else {
-    psl_domain_match_metric = PSL_DOMAIN_MATCH_DISABLED;
+    psl_domain_match_metric = PSLMatchingHelper::PSL_DOMAIN_MATCH_DISABLED;
     s.Assign(db_.GetCachedStatement(SQL_FROM_HERE, sql_query.c_str()));
     s.BindString(0, form.signon_realm);
   }
@@ -529,15 +450,14 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
       continue;
     DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
-    if (public_suffix_domain_matching_) {
-      if (!SchemeMatches(new_form, form) ||
-          !RegistryControlledDomainMatches(new_form, form) ||
-          !PortMatches(new_form, form)) {
+    if (psl_helper_.IsMatchingEnabled()) {
+      if (!PSLMatchingHelper::IsPublicSuffixDomainMatch(new_form->signon_realm,
+                                                         form.signon_realm)) {
         // The database returned results that should not match. Skipping result.
         continue;
       }
       if (form.signon_realm != new_form->signon_realm) {
-        psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
+        psl_domain_match_metric = PSLMatchingHelper::PSL_DOMAIN_MATCH_FOUND;
         // This is not a perfect match, so we need to create a new valid result.
         // We do this by copying over origin, signon realm and action from the
         // observed form and setting the original signon realm to what we found
@@ -554,7 +474,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
   }
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
                             psl_domain_match_metric,
-                            PSL_DOMAIN_MATCH_COUNT);
+                            PSLMatchingHelper::PSL_DOMAIN_MATCH_COUNT);
   return s.Succeeded();
 }
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "components/autofill/core/common/password_form.h"
 #include "crypto/apple_keychain.h"
 
 using crypto::AppleKeychain;
