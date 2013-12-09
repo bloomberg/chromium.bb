@@ -49,11 +49,18 @@ class WebRtcTestBase : public InProcessBrowserTest {
   std::string ExecuteJavascript(const std::string& javascript,
                                 content::WebContents* tab_contents) const;
 
+  // Call this to enable monitoring of javascript errors for this test method.
+  // This will only work if the tests are run sequentially by the test runner
+  // (i.e. with --test-launcher-developer-mode or --test-launcher-jobs=1).
+  void DetectErrorsInJavaScript();
+
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          InfoBar* infobar) const;
   InfoBar* GetUserMediaAndWaitForInfoBar(content::WebContents* tab_contents,
                                          const std::string& constraints) const;
+
+  bool detect_errors_in_javascript_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcTestBase);
 };

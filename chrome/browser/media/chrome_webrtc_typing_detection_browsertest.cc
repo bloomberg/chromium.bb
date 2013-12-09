@@ -82,13 +82,6 @@ class WebrtcTypingDetectionBrowserTest : public WebRtcTestBase {
         "mixLocalStreamWithPreviouslyLoadedAudioFile()", tab_contents));
   }
 
-  // Ensures we didn't get any errors asynchronously (e.g. while no javascript
-  // call from this test was outstanding).
-  void AssertNoAsynchronousErrors(content::WebContents* tab_contents) {
-    EXPECT_EQ("ok-no-errors",
-              ExecuteJavascript("getAnyTestFailures()", tab_contents));
-  }
-
   void EstablishCall(content::WebContents* from_tab,
                      content::WebContents* to_tab) {
     EXPECT_EQ("ok-negotiating",
@@ -157,15 +150,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcTypingDetectionBrowserTest,
   // state.
   SleepInJavascript(left_tab, 10000);
 
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
-
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   ASSERT_TRUE(peerconnection_server_.Stop());
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 
+#include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
@@ -23,10 +24,47 @@ const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "'{video: true}'";
 const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
     "failed-with-error-PermissionDeniedError";
 
-WebRtcTestBase::WebRtcTestBase() {
+namespace {
+
+base::LazyInstance<bool> hit_javascript_errors_ =
+      LAZY_INSTANCE_INITIALIZER;
+
+// Intercepts all log messages. We always attach this handler but only look at
+// the results if the test requests so. Note that this will only work if the
+// WebrtcTestBase-inheriting test cases do not run in parallel (if they did they
+// would race to look at the log, which is global to all tests).
+bool JavascriptErrorDetectingLogHandler(int severity,
+                                        const char* file,
+                                        int line,
+                                        size_t message_start,
+                                        const std::string& str) {
+  if (file == NULL || std::string("CONSOLE") != file)
+    return false;
+
+  bool contains_uncaught = str.find("\"Uncaught ") != std::string::npos;
+  if (severity == logging::LOG_ERROR ||
+      (severity == logging::LOG_INFO && contains_uncaught)) {
+    hit_javascript_errors_.Get() = true;
+  }
+
+  return false;
+}
+
+}  // namespace
+
+WebRtcTestBase::WebRtcTestBase(): detect_errors_in_javascript_(false) {
+  // The handler gets set for each test method, but that's fine since this
+  // set operation is idempotent.
+  logging::SetLogMessageHandler(&JavascriptErrorDetectingLogHandler);
+  hit_javascript_errors_.Get() = false;
 }
 
 WebRtcTestBase::~WebRtcTestBase() {
+  if (detect_errors_in_javascript_) {
+    EXPECT_FALSE(hit_javascript_errors_.Get())
+        << "Encountered javascript errors during test execution (Search "
+        << "for Uncaught or ERROR:CONSOLE in the test output).";
+  }
 }
 
 void WebRtcTestBase::GetUserMediaAndAccept(
@@ -169,4 +207,8 @@ void WebRtcTestBase::ConnectToPeerConnectionServer(
       "connect('http://localhost:%s', '%s');",
       PeerConnectionServerRunner::kDefaultPort, peer_name.c_str());
   EXPECT_EQ("ok-connected", ExecuteJavascript(javascript, tab_contents));
+}
+
+void WebRtcTestBase::DetectErrorsInJavaScript() {
+  detect_errors_in_javascript_ = true;
 }

@@ -49,6 +49,7 @@ class MAYBE_WebrtcBrowserTest : public WebRtcTestBase {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
+    DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -64,13 +65,6 @@ class MAYBE_WebrtcBrowserTest : public WebRtcTestBase {
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
-  }
-
-  // Ensures we didn't get any errors asynchronously (e.g. while no javascript
-  // call from this test was outstanding).
-  void AssertNoAsynchronousErrors(content::WebContents* tab_contents) {
-    EXPECT_EQ("ok-no-errors",
-              ExecuteJavascript("getAnyTestFailures()", tab_contents));
   }
 
   void EstablishCall(content::WebContents* from_tab,
@@ -90,9 +84,6 @@ class MAYBE_WebrtcBrowserTest : public WebRtcTestBase {
                                  "active", from_tab));
     EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
                                  "active", to_tab));
-
-    AssertNoAsynchronousErrors(from_tab);
-    AssertNoAsynchronousErrors(to_tab);
   }
 
   void StartDetectingVideo(content::WebContents* tab_contents,
@@ -219,9 +210,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
 
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
-
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
@@ -270,9 +258,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
 #endif
   PrintProcessMetrics(browser_process_metrics.get(), "_b");
 
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
-
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
@@ -304,9 +289,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
 
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
-
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
@@ -315,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
-  ASSERT_GT(TestTimeouts::action_max_timeout().InSeconds(), 80) <<
+  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 80) <<
       "This is a long-running test; you must specify "
       "--ui-test-action-max-timeout to have a value of at least 80000.";
 
@@ -354,9 +336,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   ASSERT_TRUE(peerconnection_server_.Stop());
 }

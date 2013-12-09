@@ -502,11 +502,9 @@ function startHangingGet_(server, ourId) {
 
 /** @private */
 function hangingGetCallback_(hangingGetRequest, server, ourId) {
-  if (hangingGetRequest.readyState != 4)
+  if (hangingGetRequest.readyState != 4 || hangingGetRequest.status == 0) {
+    // Code 0 is not possible if the server actually responded. Ignore.
     return;
-  if (hangingGetRequest.status == 0) {
-    // Code 0 is not possible if the server actually responded.
-    throw failTest('Previous request was malformed, or server is unavailable.');
   }
   if (hangingGetRequest.status != 200) {
     throw failTest('Error ' + hangingGetRequest.status + ' from server: ' +
@@ -554,9 +552,8 @@ function closeCall_() {
 function handlePeerMessage_(peerId, message) {
   debug('Received message from peer ' + peerId + ': ' + message);
   if (peerId != gRemotePeerId) {
-    addTestFailure('Received notification from unknown peer ' + peerId +
+    throw failTest('Received notification from unknown peer ' + peerId +
                    ' (only know about ' + gRemotePeerId + '.');
-    return;
   }
   if (message.search('BYE') == 0) {
     debug('Received BYE from peer: closing call');
@@ -590,9 +587,8 @@ function restartHangingGet_(server, ourId) {
 function readResponseHeader_(request, key) {
   var value = request.getResponseHeader(key)
   if (value == null || value.length == 0) {
-    addTestFailure('Received empty value ' + value +
+    throw failTest('Received empty value ' + value +
                    ' for response header key ' + key + '.');
-    return -1;
   }
   return parseInt(value);
 }

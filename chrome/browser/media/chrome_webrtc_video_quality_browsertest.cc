@@ -108,6 +108,7 @@ class MAYBE_WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
+    DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -174,15 +175,6 @@ class MAYBE_WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
 
   bool ShutdownPyWebSocketServer() {
     return base::KillProcess(pywebsocket_server_, 0, false);
-  }
-
-  // Ensures we didn't get any errors asynchronously (e.g. while no javascript
-  // call from this test was outstanding).
-  // TODO(phoglund): this becomes obsolete when we switch to communicating with
-  // the DOM message queue.
-  void AssertNoAsynchronousErrors(content::WebContents* tab_contents) {
-    EXPECT_EQ("ok-no-errors",
-              ExecuteJavascript("getAnyTestFailures()", tab_contents));
   }
 
   void EstablishCall(content::WebContents* from_tab,
@@ -333,6 +325,10 @@ class MAYBE_WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcVideoQualityBrowserTest,
                        MANUAL_TestVGAVideoQuality) {
+  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
+      "This is a long-running test; you must specify "
+      "--ui-test-action-max-timeout to have a value of at least 150000.";
+
   ASSERT_TRUE(HasAllRequiredResources());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(StartPyWebSocketServer());
@@ -356,9 +352,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcVideoQualityBrowserTest,
 
   EstablishCall(left_tab, right_tab);
 
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
-
   // Poll slower here to avoid flooding the log with messages: capturing and
   // sending frames take quite a bit of time.
   int polling_interval_msec = 1000;
@@ -370,9 +363,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcVideoQualityBrowserTest,
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   EXPECT_TRUE(PollingWaitUntil(
       "haveMoreFramesToSend()", "no-more-frames", right_tab,

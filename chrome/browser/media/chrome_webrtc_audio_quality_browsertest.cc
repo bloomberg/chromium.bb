@@ -93,6 +93,7 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
+    DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -122,15 +123,6 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
 
   void PlayAudioFile(content::WebContents* tab_contents) {
     EXPECT_EQ("ok-playing", ExecuteJavascript("playAudioFile()", tab_contents));
-  }
-
-  // Ensures we didn't get any errors asynchronously (e.g. while no javascript
-  // call from this test was outstanding).
-  // TODO(phoglund): this becomes obsolete when we switch to communicating with
-  // the DOM message queue.
-  void AssertNoAsynchronousErrors(content::WebContents* tab_contents) {
-    EXPECT_EQ("ok-no-errors",
-              ExecuteJavascript("getAnyTestFailures()", tab_contents));
   }
 
   void EstablishCall(content::WebContents* from_tab,
@@ -440,15 +432,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
   ASSERT_TRUE(recorder.WaitForRecordingToEnd());
   VLOG(0) << "Done recording to " << recording.value() << std::endl;
 
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
-
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
   WaitUntilHangupVerified(right_tab);
-
-  AssertNoAsynchronousErrors(left_tab);
-  AssertNoAsynchronousErrors(right_tab);
 
   base::FilePath trimmed_recording = CreateTemporaryWaveFile();
 

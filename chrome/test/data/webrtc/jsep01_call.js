@@ -125,8 +125,7 @@ function handleMessage(peerConnection, message) {
     peerConnection.addIceCandidate(candidate);
     return;
   }
-  addTestFailure('unknown message received');
-  return;
+  throw failTest('unknown message received');
 }
 
 function createPeerConnection(stun_server, useRtpDataChannels) {

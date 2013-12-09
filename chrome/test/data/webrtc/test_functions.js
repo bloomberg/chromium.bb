@@ -5,14 +5,6 @@
  */
 
 /**
- * This list keeps track of failures in the test. This is necessary to keep
- * track of failures that happen outside of test calls and need to be reported
- * asynchronously.
- * @private
- */
-var gFailures = [];
-
-/**
  * The callback to send test messages to. By default we will assume that we
  * are being run by an automated test case such as a browser test, but this can
  * be overridden.
@@ -25,23 +17,6 @@ var gReturnCallback = sendToTest;
  * @private
  */
 var gDebugCallback = consoleLog_;
-
-/**
- * Returns the list of errors and clears the list.
- *
- * @return {string} Returns either the string ok-no-errors or a text message
- *     which describes the failure(s) which have been registered through calls
- *     to addTestFailure in this source file.
- */
-function getAnyTestFailures() {
-  if (gFailures.length == 1)
-    returnToTest('Test failure: ' + gFailures[0]);
-  else if (gFailures.length > 1)
-    returnToTest('Multiple failures: ' + gFailures.join(' AND '));
-  else
-    returnToTest('ok-no-errors');
-  gFailures = [];
-}
 
 /**
  * Replaces the test message callback. Test messages are messages sent by the
@@ -99,29 +74,17 @@ function sendToTest(message) {
 }
 
 /**
- * Adds a test failure without affecting the control flow. If the test is
- * blocked, this function will immediately break that call with an error
- * message. Otherwise, the error is saved and it is up to the test to check it
- * with getAnyTestFailures.
- *
- * @param {string} reason The reason why the test failed.
- */
-function addTestFailure(reason) {
-  returnToTest('Test failure: ' + reason)
-  gFailures.push(reason);
-}
-
-/**
- * Follows the same contract as addTestFailure. This is a convenience function
- * that should be invoked like this since you probably want to break the flow of
- * the test on failure and yet point to the right line in a JavaScript debugger:
+ * Fails the test by generating an exception. If the test automation is calling
+ * into us, make sure to fail the test as fast as possible. You must use this
+ * function like this:
  *
  * throw failTest('my reason');
  *
  * @return {!Error}
  */
 function failTest(reason) {
-  addTestFailure(reason);
+  console.error(reason);
+  sentToTest('Test failed: ' + reason);
   return new Error(reason);
 }
 
