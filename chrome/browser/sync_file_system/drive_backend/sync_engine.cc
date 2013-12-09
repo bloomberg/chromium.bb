@@ -153,28 +153,31 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
 void SyncEngine::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleSyncTask(
+  task_manager_->ScheduleSyncTaskAtPriority(
       scoped_ptr<SyncTask>(new RegisterAppTask(this, origin.host())),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
 void SyncEngine::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTask(
+  task_manager_->ScheduleTaskAtPriority(
       base::Bind(&SyncEngine::DoEnableApp,
                  weak_ptr_factory_.GetWeakPtr(),
                  origin.host()),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
 void SyncEngine::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTask(
+  task_manager_->ScheduleTaskAtPriority(
       base::Bind(&SyncEngine::DoDisableApp,
                  weak_ptr_factory_.GetWeakPtr(),
                  origin.host()),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
@@ -182,8 +185,9 @@ void SyncEngine::UninstallOrigin(
     const GURL& origin,
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleSyncTask(
+  task_manager_->ScheduleSyncTaskAtPriority(
       scoped_ptr<SyncTask>(new UninstallAppTask(this, origin.host(), flag)),
+      SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
