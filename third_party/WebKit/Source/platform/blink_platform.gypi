@@ -265,6 +265,8 @@
       'exported/WebRTCICECandidate.cpp',
       'exported/WebRTCStatsResponse.cpp',
       'exported/WebRTCVoidRequest.cpp',
+      'exported/WebScrollbarImpl.cpp',
+      'exported/WebScrollbarImpl.h',
       'exported/WebSocketHandshakeRequestInfo.cpp',
       'exported/WebSocketHandshakeResponseInfo.cpp',
       'exported/WebSocketStreamError.cpp',

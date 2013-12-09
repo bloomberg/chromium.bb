@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "core/platform/chromium/support/WebScrollbarImpl.h"
+#include "platform/exported/WebScrollbarImpl.h"
 
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/Scrollbar.h"

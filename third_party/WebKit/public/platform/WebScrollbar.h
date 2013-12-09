@@ -29,7 +29,7 @@
 #include "WebRect.h"
 #include "WebSize.h"
 #include "WebVector.h"
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
 #endif
 
@@ -40,7 +40,7 @@ class Scrollbar;
 namespace blink {
 
 // A const accessor interface for a WebKit scrollbar
-class WebScrollbar {
+class BLINK_PLATFORM_EXPORT WebScrollbar {
 public:
     enum Orientation {
         Horizontal,

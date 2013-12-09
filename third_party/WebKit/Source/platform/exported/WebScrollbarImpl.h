@@ -25,6 +25,7 @@
 #ifndef WebScrollbarImpl_h
 #define WebScrollbarImpl_h
 
+#include "platform/PlatformExport.h"
 #include "public/platform/WebScrollbar.h"
 
 namespace WebCore {
@@ -33,7 +34,7 @@ class Scrollbar;
 
 namespace blink {
 
-class WebScrollbarImpl : public WebScrollbar {
+class PLATFORM_EXPORT WebScrollbarImpl : public WebScrollbar {
 public:
     explicit WebScrollbarImpl(WebCore::Scrollbar*);
 

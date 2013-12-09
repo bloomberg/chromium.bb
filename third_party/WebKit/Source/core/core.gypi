@@ -3286,8 +3286,6 @@
             'platform/chromium/support/WebRTCSessionDescription.cpp',
             'platform/chromium/support/WebRTCSessionDescriptionRequest.cpp',
             'platform/chromium/support/WebRTCStatsRequest.cpp',
-            'platform/chromium/support/WebScrollbarImpl.cpp',
-            'platform/chromium/support/WebScrollbarImpl.h',
             'platform/chromium/support/WebScrollbarThemeClientImpl.cpp',
             'platform/chromium/support/WebScrollbarThemeClientImpl.h',
             'platform/chromium/support/WebScrollbarThemeGeometryNative.cpp',
