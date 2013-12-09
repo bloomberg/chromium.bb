@@ -72,20 +72,7 @@ private:
     bool m_shouldShrinkImage;
 };
 
-inline ImageDocument* toImageDocument(Document* document)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!document || document->isImageDocument());
-    return static_cast<ImageDocument*>(document);
-}
-
-inline const ImageDocument* toImageDocument(const Document* document)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!document || document->isImageDocument());
-    return static_cast<const ImageDocument*>(document);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toImageDocument(const ImageDocument*);
+DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
 
 }
 

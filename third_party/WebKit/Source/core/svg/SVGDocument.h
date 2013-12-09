@@ -55,20 +55,7 @@ private:
     FloatPoint m_translate;
 };
 
-inline SVGDocument* toSVGDocument(Document* document)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!document || document->isSVGDocument());
-    return static_cast<SVGDocument*>(document);
-}
-
-inline const SVGDocument* toSVGDocument(const Document* document)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!document || document->isSVGDocument());
-    return static_cast<const SVGDocument*>(document);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toSVGDocument(const SVGDocument*);
+DEFINE_DOCUMENT_TYPE_CASTS(SVGDocument);
 
 } // namespace WebCore
 
