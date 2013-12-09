@@ -1697,8 +1697,13 @@ _release.add_config('panther-release',
   vm_tests=None,
 )
 
-_release.add_config('parrot-release',
-  boards=['parrot'],
+_release.add_group('parrot-release-group',
+  _release.add_config('parrot-release',
+    boards=['parrot'],
+  ),
+  _release.add_config('parrot_ivb-release',
+    boards=['parrot_ivb'],
+  )
 )
 
 _release.add_config('peppy-release',
