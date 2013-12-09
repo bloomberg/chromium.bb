@@ -32,11 +32,11 @@ namespace test {
 class ShelfViewTestAPI;
 }
 
-class LauncherDelegate;
-struct LauncherItem;
+class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfItemDelegateManager;
 class ShelfModel;
+struct LauncherItem;
 
 namespace internal {
 
@@ -62,8 +62,8 @@ class ASH_EXPORT ShelfView : public views::View,
                              public app_list::ApplicationDragAndDropHost {
  public:
   ShelfView(ShelfModel* model,
-            LauncherDelegate* delegate,
-            ShelfLayoutManager* shelf_layout_manager);
+            ShelfDelegate* delegate,
+            ShelfLayoutManager* manager);
   virtual ~ShelfView();
 
   ShelfTooltipManager* tooltip_manager() { return tooltip_.get(); }
@@ -335,7 +335,7 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfModel* model_;
 
   // Delegate; owned by Launcher.
-  LauncherDelegate* delegate_;
+  ShelfDelegate* delegate_;
 
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.

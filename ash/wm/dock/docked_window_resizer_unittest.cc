@@ -17,7 +17,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_launcher_delegate.h"
+#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/drag_window_resizer.h"
@@ -77,9 +77,9 @@ class DockedWindowResizerTest
         0,
         bounds);
     if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
-      test::TestLauncherDelegate* launcher_delegate =
-          test::TestLauncherDelegate::instance();
-      launcher_delegate->AddLauncherItem(window);
+      test::TestShelfDelegate* shelf_delegate =
+          test::TestShelfDelegate::instance();
+      shelf_delegate->AddLauncherItem(window);
       PanelLayoutManager* manager =
           static_cast<PanelLayoutManager*>(
               Shell::GetContainer(window->GetRootWindow(),

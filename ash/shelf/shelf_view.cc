@@ -9,7 +9,6 @@
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/launcher/launcher_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/alternate_app_list_button.h"
@@ -18,6 +17,7 @@
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -349,8 +349,8 @@ class ShelfView::StartFadeAnimationDelegate
 };
 
 ShelfView::ShelfView(ShelfModel* model,
-                     LauncherDelegate* delegate,
-                     ShelfLayoutManager* shelf_layout_manager)
+                     ShelfDelegate* delegate,
+                     ShelfLayoutManager* manager)
     : model_(model),
       delegate_(delegate),
       view_model_(new views::ViewModel),
@@ -373,14 +373,14 @@ ShelfView::ShelfView(ShelfModel* model,
       dragged_off_shelf_(false),
       snap_back_from_rip_off_view_(NULL),
       item_manager_(Shell::GetInstance()->shelf_item_delegate_manager()),
-      layout_manager_(shelf_layout_manager),
+      layout_manager_(manager),
       overflow_mode_(false) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
   focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
-  tooltip_.reset(new ShelfTooltipManager(shelf_layout_manager, this));
+  tooltip_.reset(new ShelfTooltipManager(manager, this));
 }
 
 ShelfView::~ShelfView() {

@@ -11,7 +11,7 @@
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_launcher_delegate.h"
+#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -105,7 +105,7 @@ class WindowSelectorTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    ASSERT_TRUE(test::TestLauncherDelegate::instance());
+    ASSERT_TRUE(test::TestShelfDelegate::instance());
 
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
         test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).shelf_view()));
@@ -127,7 +127,7 @@ class WindowSelectorTest : public test::AshTestBase {
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, aura::client::WINDOW_TYPE_PANEL, 0, bounds);
-    test::TestLauncherDelegate::instance()->AddLauncherItem(window);
+    test::TestShelfDelegate::instance()->AddLauncherItem(window);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }

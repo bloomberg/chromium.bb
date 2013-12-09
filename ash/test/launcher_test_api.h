@@ -10,7 +10,7 @@
 namespace ash {
 
 class Launcher;
-class LauncherDelegate;
+class ShelfDelegate;
 
 namespace internal {
 class ShelfView;
@@ -28,8 +28,8 @@ class LauncherTestAPI {
   // An accessor for |shelf_view|.
   internal::ShelfView* shelf_view();
 
-  // Set LauncherDelegate.
-  void SetLauncherDelegate(LauncherDelegate* delegate);
+  // Set ShelfDelegate.
+  void SetShelfDelegate(ShelfDelegate* delegate);
 
  private:
   Launcher* launcher_;

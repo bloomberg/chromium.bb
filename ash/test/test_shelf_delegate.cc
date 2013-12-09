@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/test_launcher_delegate.h"
+#include "ash/test/test_shelf_delegate.h"
 
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -17,24 +17,24 @@
 namespace ash {
 namespace test {
 
-TestLauncherDelegate* TestLauncherDelegate::instance_ = NULL;
+TestShelfDelegate* TestShelfDelegate::instance_ = NULL;
 
-TestLauncherDelegate::TestLauncherDelegate(ShelfModel* model)
+TestShelfDelegate::TestShelfDelegate(ShelfModel* model)
     : model_(model) {
   CHECK(!instance_);
   instance_ = this;
 }
 
-TestLauncherDelegate::~TestLauncherDelegate() {
+TestShelfDelegate::~TestShelfDelegate() {
   instance_ = NULL;
 }
 
-void TestLauncherDelegate::AddLauncherItem(aura::Window* window) {
+void TestShelfDelegate::AddLauncherItem(aura::Window* window) {
   AddLauncherItem(window, STATUS_CLOSED);
 }
 
-void TestLauncherDelegate::AddLauncherItem(aura::Window* window,
-                                           LauncherItemStatus status) {
+void TestShelfDelegate::AddLauncherItem(aura::Window* window,
+                                        LauncherItemStatus status) {
   LauncherItem item;
   if (window->type() == aura::client::WINDOW_TYPE_PANEL)
     item.type = TYPE_APP_PANEL;
@@ -53,7 +53,7 @@ void TestLauncherDelegate::AddLauncherItem(aura::Window* window,
   SetLauncherIDForWindow(id, window);
 }
 
-void TestLauncherDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
+void TestShelfDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
   LauncherID id = GetLauncherIDForWindow(window);
   if (id == 0)
     return;
@@ -63,11 +63,11 @@ void TestLauncherDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
   window->RemoveObserver(this);
 }
 
-void TestLauncherDelegate::OnWindowDestroying(aura::Window* window) {
+void TestShelfDelegate::OnWindowDestroying(aura::Window* window) {
   RemoveLauncherItemForWindow(window);
 }
 
-void TestLauncherDelegate::OnWindowHierarchyChanging(
+void TestShelfDelegate::OnWindowHierarchyChanging(
       const HierarchyChangeParams& params) {
   // The window may be legitimately reparented while staying open if it moves
   // to another display or container. If the window does not have a new parent
@@ -76,33 +76,32 @@ void TestLauncherDelegate::OnWindowHierarchyChanging(
     RemoveLauncherItemForWindow(params.target);
 }
 
-void TestLauncherDelegate::OnLauncherCreated(Launcher* launcher) {
+void TestShelfDelegate::OnLauncherCreated(Launcher* launcher) {
 }
 
-void TestLauncherDelegate::OnLauncherDestroyed(Launcher* launcher) {
+void TestShelfDelegate::OnLauncherDestroyed(Launcher* launcher) {
 }
 
-LauncherID TestLauncherDelegate::GetLauncherIDForAppID(
-    const std::string& app_id) {
+LauncherID TestShelfDelegate::GetLauncherIDForAppID(const std::string& app_id) {
   return 0;
 }
 
-const std::string& TestLauncherDelegate::GetAppIDForLauncherID(LauncherID id) {
+const std::string& TestShelfDelegate::GetAppIDForLauncherID(LauncherID id) {
   return base::EmptyString();
 }
 
-void TestLauncherDelegate::PinAppWithID(const std::string& app_id) {
+void TestShelfDelegate::PinAppWithID(const std::string& app_id) {
 }
 
-bool TestLauncherDelegate::CanPin() const {
+bool TestShelfDelegate::CanPin() const {
   return true;
 }
 
-bool TestLauncherDelegate::IsAppPinned(const std::string& app_id) {
+bool TestShelfDelegate::IsAppPinned(const std::string& app_id) {
   return false;
 }
 
-void TestLauncherDelegate::UnpinAppWithID(const std::string& app_id) {
+void TestShelfDelegate::UnpinAppWithID(const std::string& app_id) {
 }
 
 }  // namespace test

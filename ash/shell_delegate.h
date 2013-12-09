@@ -44,15 +44,15 @@ namespace ash {
 
 class AccessibilityDelegate;
 class CapsLockDelegate;
-class LauncherDelegate;
-struct LauncherItem;
 class MediaDelegate;
 class NewWindowDelegate;
 class RootWindowHostFactory;
 class SessionStateDelegate;
+class ShelfDelegate;
 class ShelfModel;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
+struct LauncherItem;
 
 enum UserMetricsAction {
   UMA_ACCEL_KEYBOARD_BRIGHTNESS_DOWN_F6,
@@ -144,9 +144,9 @@ class ASH_EXPORT ShellDelegate {
   // the created delegate.
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() = 0;
 
-  // Creates a new LauncherDelegate. Shell takes ownership of the returned
+  // Creates a new ShelfDelegate. Shell takes ownership of the returned
   // value.
-  virtual LauncherDelegate* CreateLauncherDelegate(ShelfModel* model) = 0;
+  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) = 0;
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() = 0;

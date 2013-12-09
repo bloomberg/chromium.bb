@@ -16,7 +16,7 @@
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/keyboard_controller_proxy_stub.h"
-#include "ash/shell/launcher_delegate_impl.h"
+#include "ash/shell/shelf_delegate_impl.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
@@ -69,7 +69,7 @@ class MediaDelegateImpl : public MediaDelegate {
 
 ShellDelegateImpl::ShellDelegateImpl()
     : watcher_(NULL),
-      launcher_delegate_(NULL),
+      shelf_delegate_(NULL),
       browser_context_(NULL) {
 }
 
@@ -78,8 +78,8 @@ ShellDelegateImpl::~ShellDelegateImpl() {
 
 void ShellDelegateImpl::SetWatcher(WindowWatcher* watcher) {
   watcher_ = watcher;
-  if (launcher_delegate_)
-    launcher_delegate_->set_watcher(watcher);
+  if (shelf_delegate_)
+    shelf_delegate_->set_watcher(watcher);
 }
 
 bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
@@ -121,9 +121,9 @@ app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
   return ash::shell::CreateAppListViewDelegate();
 }
 
-LauncherDelegate* ShellDelegateImpl::CreateLauncherDelegate(ShelfModel* model) {
-  launcher_delegate_ = new LauncherDelegateImpl(watcher_);
-  return launcher_delegate_;
+ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {
+  shelf_delegate_ = new ShelfDelegateImpl(watcher_);
+  return shelf_delegate_;
 }
 
 ash::SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {

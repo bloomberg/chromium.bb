@@ -41,7 +41,7 @@ namespace test {
 class LauncherTestAPI;
 }
 
-class LauncherDelegate;
+class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
 class ShelfWidget;
@@ -50,9 +50,7 @@ class ASH_EXPORT Launcher {
  public:
   static const char kNativeViewName[];
 
-  Launcher(ShelfModel* shelf_model,
-           LauncherDelegate* launcher_delegate,
-           ShelfWidget* shelf_widget);
+  Launcher(ShelfModel* model, ShelfDelegate* delegate, ShelfWidget* widget);
   virtual ~Launcher();
 
   // Return the launcher for the primary display. NULL if no user is
@@ -122,7 +120,7 @@ class ASH_EXPORT Launcher {
 
   ShelfAlignment alignment_;
 
-  LauncherDelegate* delegate_;
+  ShelfDelegate* delegate_;
 
   ShelfWidget* shelf_widget_;
 

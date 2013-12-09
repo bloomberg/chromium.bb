@@ -21,7 +21,7 @@
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_launcher_delegate.h"
+#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
@@ -50,7 +50,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    ASSERT_TRUE(test::TestLauncherDelegate::instance());
+    ASSERT_TRUE(test::TestShelfDelegate::instance());
 
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
         GetShelfView(Launcher::ForPrimaryDisplay())));
@@ -67,12 +67,11 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         aura::client::WINDOW_TYPE_PANEL,
         0,
         bounds);
-    test::TestLauncherDelegate* launcher_delegate =
-        test::TestLauncherDelegate::instance();
-    launcher_delegate->AddLauncherItem(window);
-    PanelLayoutManager* manager =
-        static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
-                                         layout_manager());
+    test::TestShelfDelegate* shelf_delegate =
+        test::TestShelfDelegate::instance();
+    shelf_delegate->AddLauncherItem(window);
+    PanelLayoutManager* manager = static_cast<PanelLayoutManager*>(
+        GetPanelContainer(window)->layout_manager());
     manager->Relayout();
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;

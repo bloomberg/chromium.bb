@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELL_LAUNCHER_DELEGATE_IMPL_H_
-#define ASH_SHELL_LAUNCHER_DELEGATE_IMPL_H_
+#ifndef ASH_SHELL_SHELF_DELEGATE_IMPL_H_
+#define ASH_SHELL_SHELF_DELEGATE_IMPL_H_
 
-#include "ash/launcher/launcher_delegate.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "base/compiler_specific.h"
 
 namespace aura {
@@ -17,14 +17,14 @@ namespace shell {
 
 class WindowWatcher;
 
-class LauncherDelegateImpl : public ash::LauncherDelegate {
+class ShelfDelegateImpl : public ShelfDelegate {
  public:
-  explicit LauncherDelegateImpl(WindowWatcher* watcher);
-  virtual ~LauncherDelegateImpl();
+  explicit ShelfDelegateImpl(WindowWatcher* watcher);
+  virtual ~ShelfDelegateImpl();
 
   void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
 
-  // LauncherDelegate overrides:
+  // ShelfDelegate overrides:
   virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
@@ -38,10 +38,10 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   // Used to update Launcher. Owned by main.
   WindowWatcher* watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(ShelfDelegateImpl);
 };
 
 }  // namespace shell
 }  // namespace ash
 
-#endif  // ASH_SHELL_LAUNCHER_DELEGATE_IMPL_H_
+#endif  // ASH_SHELL_SHELF_DELEGATE_IMPL_H_

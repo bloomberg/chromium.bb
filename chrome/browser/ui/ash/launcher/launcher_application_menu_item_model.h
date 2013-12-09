@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APPLICATION_MENU_ITEM_MODEL_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APPLICATION_MENU_ITEM_MODEL_H_
 
-#include "ash/launcher/launcher_delegate.h"
 #include "ash/shelf/shelf_menu_model.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"

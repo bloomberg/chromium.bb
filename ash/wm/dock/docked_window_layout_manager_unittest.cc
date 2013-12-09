@@ -18,7 +18,7 @@
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_launcher_delegate.h"
+#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_resizer.h"
@@ -48,7 +48,7 @@ class DockedWindowLayoutManagerTest
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     UpdateDisplay("600x600");
-    ASSERT_TRUE(test::TestLauncherDelegate::instance());
+    ASSERT_TRUE(test::TestShelfDelegate::instance());
 
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
         test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).shelf_view()));
@@ -72,9 +72,9 @@ class DockedWindowLayoutManagerTest
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, window_type_, 0, bounds);
     if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
-      test::TestLauncherDelegate* launcher_delegate =
-          test::TestLauncherDelegate::instance();
-      launcher_delegate->AddLauncherItem(window);
+      test::TestShelfDelegate* shelf_delegate =
+          test::TestShelfDelegate::instance();
+      shelf_delegate->AddLauncherItem(window);
       PanelLayoutManager* manager =
           static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
               layout_manager());
@@ -89,9 +89,9 @@ class DockedWindowLayoutManagerTest
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         delegate, window_type_, 0, bounds);
     if (window_type_ == aura::client::WINDOW_TYPE_PANEL) {
-      test::TestLauncherDelegate* launcher_delegate =
-          test::TestLauncherDelegate::instance();
-      launcher_delegate->AddLauncherItem(window);
+      test::TestShelfDelegate* shelf_delegate =
+          test::TestShelfDelegate::instance();
+      shelf_delegate->AddLauncherItem(window);
       PanelLayoutManager* manager =
           static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
               layout_manager());

@@ -38,7 +38,7 @@
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
 ChromeShellDelegate::ChromeShellDelegate()
-    : launcher_delegate_(NULL) {
+    : shelf_delegate_(NULL) {
   instance_ = this;
   PlatformInit();
 }
@@ -110,17 +110,17 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
       GetControllerDelegate());
 }
 
-ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
+ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     ash::ShelfModel* model) {
   DCHECK(ProfileManager::IsGetDefaultProfileAllowed());
   // TODO(oshima): This is currently broken with multiple launchers.
   // Refactor so that there is just one launcher delegate in the
   // shell.
-  if (!launcher_delegate_) {
-    launcher_delegate_ = ChromeLauncherController::CreateInstance(NULL, model);
-    launcher_delegate_->Init();
+  if (!shelf_delegate_) {
+    shelf_delegate_ = ChromeLauncherController::CreateInstance(NULL, model);
+    shelf_delegate_->Init();
   }
-  return launcher_delegate_;
+  return shelf_delegate_;
 }
 
 aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
@@ -269,12 +269,12 @@ void ChromeShellDelegate::RecordUserMetricsAction(
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::Window* root) {
-  DCHECK(launcher_delegate_);
+  DCHECK(shelf_delegate_);
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())
     return NULL;
 
-  return new LauncherContextMenu(launcher_delegate_, root);
+  return new LauncherContextMenu(shelf_delegate_, root);
 }
 
 ash::RootWindowHostFactory* ChromeShellDelegate::CreateRootWindowHostFactory() {

@@ -85,7 +85,7 @@ class DisplayController;
 class FirstRunHelper;
 class HighContrastController;
 class Launcher;
-class LauncherDelegate;
+class ShelfDelegate;
 class LockStateController;
 class MagnificationController;
 class MediaDelegate;
@@ -512,7 +512,7 @@ class ASH_EXPORT Shell
   }
 
   // Returns the launcher delegate, creating if necesary.
-  LauncherDelegate* GetLauncherDelegate();
+  ShelfDelegate* GetShelfDelegate();
 
   void SetTouchHudProjectionEnabled(bool enabled);
 
@@ -600,7 +600,7 @@ class ASH_EXPORT Shell
   scoped_ptr<AccessibilityDelegate> accessibility_delegate_;
   scoped_ptr<NewWindowDelegate> new_window_delegate_;
   scoped_ptr<MediaDelegate> media_delegate_;
-  scoped_ptr<LauncherDelegate> launcher_delegate_;
+  scoped_ptr<ShelfDelegate> shelf_delegate_;
   scoped_ptr<ShelfItemDelegateManager> shelf_item_delegate_manager_;
   scoped_ptr<internal::ShelfWindowWatcher> shelf_window_watcher_;
 

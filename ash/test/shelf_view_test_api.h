@@ -15,7 +15,7 @@ class Size;
 
 namespace ash {
 
-class LauncherDelegate;
+class ShelfDelegate;
 
 namespace internal {
 class OverflowBubble;
@@ -77,8 +77,8 @@ class ShelfViewTestAPI {
   // Wrapper for ShelfView::SameDragType.
   bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
 
-  // Sets LauncherDelegate.
-  void SetLauncherDelegate(LauncherDelegate* delegate);
+  // Sets ShelfDelegate.
+  void SetShelfDelegate(ShelfDelegate* delegate);
 
   // Returns re-insertable bounds in screen.
   gfx::Rect GetBoundsForDragInsertInScreen();

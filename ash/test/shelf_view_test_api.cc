@@ -120,7 +120,7 @@ bool ShelfViewTestAPI::SameDragType(LauncherItemType typea,
   return shelf_view_->SameDragType(typea, typeb);
 }
 
-void ShelfViewTestAPI::SetLauncherDelegate(LauncherDelegate* delegate) {
+void ShelfViewTestAPI::SetShelfDelegate(ShelfDelegate* delegate) {
   shelf_view_->delegate_ = delegate;
 }
 

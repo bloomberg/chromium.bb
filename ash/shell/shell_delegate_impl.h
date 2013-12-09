@@ -21,7 +21,7 @@ class KeyboardControllerProxy;
 namespace ash {
 namespace shell {
 
-class LauncherDelegateImpl;
+class ShelfDelegateImpl;
 class WindowWatcher;
 
 class ShellDelegateImpl : public ash::ShellDelegate {
@@ -45,7 +45,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
       CreateKeyboardControllerProxy() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
-  virtual LauncherDelegate* CreateLauncherDelegate(ShelfModel* model) OVERRIDE;
+  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual ash::CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
@@ -64,7 +64,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   // Used to update Launcher. Owned by main.
   WindowWatcher* watcher_;
 
-  LauncherDelegateImpl* launcher_delegate_;
+  ShelfDelegateImpl* shelf_delegate_;
   content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);

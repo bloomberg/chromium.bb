@@ -16,7 +16,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_launcher_delegate.h"
+#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
@@ -41,7 +41,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     UpdateDisplay("600x400");
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.shelf_model();
-    launcher_delegate_ = test::TestLauncherDelegate::instance();
+    shelf_delegate_ = test::TestShelfDelegate::instance();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -65,7 +65,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
         aura::client::WINDOW_TYPE_PANEL,
         0,
         bounds);
-    launcher_delegate_->AddLauncherItem(window);
+    shelf_delegate_->AddLauncherItem(window);
     PanelLayoutManager* manager =
         static_cast<PanelLayoutManager*>(
             Shell::GetContainer(window->GetRootWindow(),
@@ -188,7 +188,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   scoped_ptr<WindowResizer> resizer_;
   internal::PanelLayoutManager* panel_layout_manager_;
   ShelfModel* model_;
-  test::TestLauncherDelegate* launcher_delegate_;
+  test::TestShelfDelegate* shelf_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
 };

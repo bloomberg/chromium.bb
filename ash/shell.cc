@@ -30,7 +30,6 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/keyboard_uma_event_filter.h"
-#include "ash/launcher/launcher_delegate.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_delegate.h"
@@ -39,6 +38,7 @@
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -498,15 +498,14 @@ SystemTray* Shell::GetPrimarySystemTray() {
   return GetPrimaryRootWindowController()->GetSystemTray();
 }
 
-LauncherDelegate* Shell::GetLauncherDelegate() {
-  if (!launcher_delegate_) {
+ShelfDelegate* Shell::GetShelfDelegate() {
+  if (!shelf_delegate_) {
     shelf_model_.reset(new ShelfModel);
-    // Creates ShelfItemDelegateManager before LauncherDelegate.
+    // Creates ShelfItemDelegateManager before ShelfDelegate.
     shelf_item_delegate_manager_.reset(
         new ShelfItemDelegateManager(shelf_model_.get()));
 
-    launcher_delegate_.reset(
-        delegate_->CreateLauncherDelegate(shelf_model_.get()));
+    shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model_.get()));
     scoped_ptr<ShelfItemDelegate> controller(
         new internal::AppListShelfItemDelegate);
 
@@ -521,7 +520,7 @@ LauncherDelegate* Shell::GetLauncherDelegate() {
     shelf_window_watcher_.reset(
         new internal::ShelfWindowWatcher(shelf_model_.get()));
   }
-  return launcher_delegate_.get();
+  return shelf_delegate_.get();
 }
 
 void Shell::SetTouchHudProjectionEnabled(bool enabled) {
@@ -657,9 +656,9 @@ Shell::~Shell() {
   display_controller_->CloseChildWindows();
   display_controller_->CloseNonDesktopDisplay();
 
-  // Chrome implementation of launcher delegate depends on FocusClient,
+  // Chrome implementation of shelf delegate depends on FocusClient,
   // so must be deleted before |focus_client_|.
-  launcher_delegate_.reset();
+  shelf_delegate_.reset();
   focus_client_.reset();
 
   // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems

@@ -8,9 +8,9 @@
 #include <cmath>
 
 #include "ash/focus_cycler.h"
-#include "ash/launcher/launcher_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -43,11 +43,11 @@ namespace ash {
 const char Launcher::kNativeViewName[] = "ShelfView";
 
 Launcher::Launcher(ShelfModel* shelf_model,
-                   LauncherDelegate* launcher_delegate,
+                   ShelfDelegate* shelf_delegate,
                    ShelfWidget* shelf_widget)
     : shelf_view_(NULL),
       alignment_(shelf_widget->GetAlignment()),
-      delegate_(launcher_delegate),
+      delegate_(shelf_delegate),
       shelf_widget_(shelf_widget) {
   shelf_view_ = new internal::ShelfView(
       shelf_model, delegate_, shelf_widget_->shelf_layout_manager());

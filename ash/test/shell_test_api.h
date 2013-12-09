@@ -15,7 +15,7 @@ class InputMethodEventFilter;
 
 namespace ash {
 class AshNativeCursorManager;
-class LauncherDelegate;
+class ShelfDelegate;
 class ShelfModel;
 class Shell;
 
@@ -47,8 +47,8 @@ public:
 
   void DisableOutputConfiguratorAnimation();
 
-  // Set LauncherDelegate.
-  void SetLauncherDelegate(LauncherDelegate* delegate);
+  // Set ShelfDelegate.
+  void SetShelfDelegate(ShelfDelegate* delegate);
 
  private:
   Shell* shell_;  // not owned

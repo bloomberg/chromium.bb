@@ -47,7 +47,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
       CreateKeyboardControllerProxy() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
-  virtual ash::LauncherDelegate* CreateLauncherDelegate(
+  virtual ash::ShelfDelegate* CreateShelfDelegate(
       ash::ShelfModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
@@ -74,7 +74,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  ChromeLauncherController* launcher_delegate_;
+  ChromeLauncherController* shelf_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

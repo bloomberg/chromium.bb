@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "ash/display/display_controller.h"
-#include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_model_observer.h"
@@ -90,7 +90,7 @@ class ChromeLauncherControllerUserSwitchObserver {
 // * App shell windows have ShellWindowLauncherItemController, owned by
 //   ShellWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
-class ChromeLauncherController : public ash::LauncherDelegate,
+class ChromeLauncherController : public ash::ShelfDelegate,
                                  public ash::ShelfModelObserver,
                                  public ash::ShellObserver,
                                  public ash::DisplayController::Observer,
@@ -290,7 +290,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   void ActivateWindowOrMinimizeIfActive(ui::BaseWindow* window,
                                         bool allow_minimize);
 
-  // ash::LauncherDelegate overrides:
+  // ash::ShelfDelegate overrides:
   virtual void OnLauncherCreated(ash::Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(ash::Launcher* launcher) OVERRIDE;
   virtual ash::LauncherID GetLauncherIDForAppID(

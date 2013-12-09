@@ -4,8 +4,8 @@
 
 #include "ash/test/shell_test_api.h"
 
-#include "ash/launcher/launcher_delegate.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
 
 #if defined(OS_CHROMEOS)
@@ -67,8 +67,8 @@ void ShellTestApi::DisableOutputConfiguratorAnimation() {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void ShellTestApi::SetLauncherDelegate(LauncherDelegate* delegate) {
-  shell_->launcher_delegate_.reset(delegate);
+void ShellTestApi::SetShelfDelegate(ShelfDelegate* delegate) {
+  shell_->shelf_delegate_.reset(delegate);
 }
 
 }  // namespace test

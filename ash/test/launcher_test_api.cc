@@ -20,7 +20,7 @@ internal::ShelfView* LauncherTestAPI::shelf_view() {
   return launcher_->shelf_view_;
 }
 
-void LauncherTestAPI::SetLauncherDelegate(LauncherDelegate* delegate) {
+void LauncherTestAPI::SetShelfDelegate(ShelfDelegate* delegate) {
   launcher_->delegate_ = delegate;
 }
 

@@ -41,7 +41,7 @@ class TestShellDelegate : public ShellDelegate {
       CreateKeyboardControllerProxy() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
-  virtual LauncherDelegate* CreateLauncherDelegate(ShelfModel* model) OVERRIDE;
+  virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;

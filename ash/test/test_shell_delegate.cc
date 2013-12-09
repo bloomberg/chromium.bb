@@ -15,8 +15,8 @@
 #include "ash/shell.h"
 #include "ash/shell/keyboard_controller_proxy_stub.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/test_launcher_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
+#include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_user_wallpaper_delegate.h"
 #include "ash/wm/window_state.h"
@@ -101,8 +101,8 @@ app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return new app_list::test::AppListTestViewDelegate;
 }
 
-LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(ShelfModel* model) {
-  return new TestLauncherDelegate(model);
+ShelfDelegate* TestShellDelegate::CreateShelfDelegate(ShelfModel* model) {
+  return new TestShelfDelegate(model);
 }
 
 SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
