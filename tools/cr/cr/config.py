@@ -234,3 +234,7 @@ class Config(cr.visitor.Node):
 
   def __setitem__(self, key, value):
     self._Set(key, value)
+
+  def __contains__(self, key):
+    return self.Find(key) is not None
+

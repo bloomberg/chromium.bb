@@ -59,6 +59,7 @@ class InitCommand(cr.Command):
     out = cr.base.client.GetOutArgument(context)
     if out:
       # Output directory is fully specified
+      # We need to deduce other settings from it's name
       base, buildtype = os.path.split(out)
       if not (base and buildtype):
         print 'Specified output directory must be two levels'
@@ -89,16 +90,11 @@ class InitCommand(cr.Command):
           CR_PLATFORM=platform,
           CR_BUILDTYPE=buildtype,
       )
-    elif context.args.CR_BUILDTYPE or context.args.CR_PLATFORM:
-      # output directory name needs to be rebuilt from the parts
-      context.derived.Set(
-          CR_OUT_BASE='out_{CR_PLATFORM}',
-          CR_OUT_FULL=os.path.join('{CR_OUT_BASE}', '{CR_BUILDTYPE}'),
-      )
-    else:
-      # Nothing specified, we are either re-building the selected client
-      # or building from scratch the default client
-      pass
+    if not 'CR_OUT_BASE' in context:
+      context.derived['CR_OUT_BASE'] = 'out_{CR_PLATFORM}'
+    if not 'CR_OUT_FULL' in context:
+      context.derived['CR_OUT_FULL'] = os.path.join(
+          '{CR_OUT_BASE}', '{CR_BUILDTYPE}')
 
   def Run(self, context):
     """Overridden from cr.Command."""
