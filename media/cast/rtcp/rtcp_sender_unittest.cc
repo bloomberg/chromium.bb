@@ -489,7 +489,8 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
       kRtcpMaxReceiverLogMessages, kTimeBaseMs);
 
   for (size_t i = 0; i < kRtcpMaxReceiverLogMessages; ++i) {
-    p.AddReceiverEventLog(kLostPacketId1, 6, kTimeDelayMs * i);
+    p.AddReceiverEventLog(
+        kLostPacketId1, 6, static_cast<uint16>(kTimeDelayMs * i));
   }
 
   test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
