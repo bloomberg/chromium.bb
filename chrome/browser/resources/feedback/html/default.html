@@ -24,20 +24,20 @@
     </span>
   </div>
   <div id="content-pane" class="content">
-    <textarea id="description-text"></textarea>
+    <textarea id="description-text" aria-labelledby="title-bar"></textarea>
     <div id="page-url" class="text-field-container">
       <label id="page-url-label" i18n-content="page-url"></label>
-      <input id="page-url-text" type="text">
+      <input id="page-url-text" aria-labelledby="page-url-label" type="text">
     </div>
     <!-- User e-mail -->
     <div id="user-email" class="text-field-container">
       <label id="user-email-label" i18n-content="user-email"></label>
-      <input id="user-email-text" type="text">
+      <input id="user-email-text" aria-labelledby="user-email-label" type="text">
     </div>
     <!-- Attach a file -->
     <div id="attach-file-container" class="text-field-container">
-      <label i18n-content="attach-file-label"></label>
-      <input id="attach-file" type="file">
+      <label id="attach-file-label" i18n-content="attach-file-label"></label>
+      <input id="attach-file" type="file" aria-labelledby="attach-file-label">
       <div id="custom-file-container" hidden>
         <label id="attached-filename-text"></label>
         <button id="remove-attached-file" class="remove-file-button"></button>
@@ -48,14 +48,14 @@
     <div id="attach-file-note" i18n-content="attach-file-note"></div>
     <!-- Screenshot -->
     <div id="screenshot-container" class="checkbox-field-container">
-      <input id="screenshot-checkbox" type="checkbox" checked>
+      <input id="screenshot-checkbox" type="checkbox" aria-labelledby="screenshot-label" checked>
       <label id="screenshot-label" i18n-content="screenshot"></label>
-      <img id="screenshot-image">
+      <img id="screenshot-image" alt="screenshot">
     </div>
 <if expr="pp_ifdef('chromeos')">
     <!-- System Information -->
     <div class="checkbox-field-container">
-      <input id="sys-info-checkbox" type="checkbox" checked>
+      <input id="sys-info-checkbox" type="checkbox" aria-labelledby="sys-info-label" checked>
       <label id="sys-info-label" i18n-values=".innerHTML:sys-info"></label>
       </span>
     </div>
