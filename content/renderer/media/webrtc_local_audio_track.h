@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/renderer/media/media_stream_audio_track_sink.h"
+#include "content/renderer/media/tagged_list.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
@@ -101,7 +102,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   virtual ~WebRtcLocalAudioTrack();
 
  private:
-  typedef std::list<scoped_refptr<MediaStreamAudioTrackSink> > SinkList;
+  typedef TaggedList<MediaStreamAudioTrackSink> SinkList;
 
   // cricket::AudioCapturer implementation.
   virtual void AddChannel(int channel_id) OVERRIDE;
@@ -126,12 +127,10 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // TODO(xians): merge |track_source_| to |capturer_|.
   talk_base::scoped_refptr<webrtc::AudioSourceInterface> track_source_;
 
-  // A list of sinks that the audio data is fed to.
+  // A tagged list of sinks that the audio data is fed to. Tags
+  // indicate tracks that need to be notified that the audio format
+  // has changed.
   SinkList sinks_;
-
-  // A list of sinks that the track needs to notify the audio format has
-  // changed.
-  SinkList sinks_to_notify_format_;
 
   // Used to DCHECK that some methods are called on the main render thread.
   base::ThreadChecker main_render_thread_checker_;

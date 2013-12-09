@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "content/renderer/media/tagged_list.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/audio/audio_input_device.h"
 #include "media/base/audio_capturer_source.h"
@@ -129,7 +130,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
  private:
   class TrackOwner;
-  typedef std::list<scoped_refptr<TrackOwner> > TrackList;
+  typedef TaggedList<TrackOwner> TrackList;
 
   // AudioCapturerSource::CaptureCallback implementation.
   // Called on the AudioInputDevice audio thread.
@@ -159,12 +160,10 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // |params_| and |buffering_|.
   mutable base::Lock lock_;
 
-  // A list of audio tracks that the audio data is fed to.
+  // A tagged list of audio tracks that the audio data is fed
+  // to. Tagged items need to be notified that the audio format has
+  // changed.
   TrackList tracks_;
-
-  // A list of audio tracks that the capturer needs to notify the audio format
-  // has changed.
-  TrackList tracks_to_notify_format_;
 
   // The audio data source from the browser process.
   scoped_refptr<media::AudioCapturerSource> source_;

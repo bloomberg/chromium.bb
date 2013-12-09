@@ -41,14 +41,16 @@ class MediaStreamAudioTrackSink
   // sinks to/from the list.
   struct WrapsMediaStreamSink {
     WrapsMediaStreamSink(MediaStreamAudioSink* sink) : sink_(sink) {}
-    bool operator()(const scoped_refptr<MediaStreamAudioTrackSink>& owner) {
+    bool operator()(
+        const scoped_refptr<MediaStreamAudioTrackSink>& owner) const {
       return owner->IsEqual(sink_);
     }
     MediaStreamAudioSink* sink_;
   };
   struct WrapsPeerConnectionSink {
     WrapsPeerConnectionSink(PeerConnectionAudioSink* sink) : sink_(sink) {}
-    bool operator()(const scoped_refptr<MediaStreamAudioTrackSink>& owner) {
+    bool operator()(
+        const scoped_refptr<MediaStreamAudioTrackSink>& owner) const {
       return owner->IsEqual(sink_);
     }
     PeerConnectionAudioSink* sink_;

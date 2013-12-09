@@ -166,21 +166,21 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   scoped_refptr<WebRtcAudioCapturer> capturer;
   std::vector<int> voe_channels;
-  SinkList sinks;
-  SinkList sinks_to_notify_format;
+  SinkList::ItemList sinks;
+  SinkList::ItemList sinks_to_notify_format;
   bool is_webaudio_source = false;
   {
     base::AutoLock auto_lock(lock_);
     capturer = capturer_;
     voe_channels = voe_channels_;
-    sinks = sinks_;
-    std::swap(sinks_to_notify_format_, sinks_to_notify_format);
+    sinks = sinks_.Items();
+    sinks_.RetrieveAndClearTags(&sinks_to_notify_format);
     is_webaudio_source = (webaudio_source_.get() != NULL);
   }
 
   // Notify the tracks on when the format changes. This will do nothing if
   // |sinks_to_notify_format| is empty.
-  for (SinkList::const_iterator it = sinks_to_notify_format.begin();
+  for (SinkList::ItemList::const_iterator it = sinks_to_notify_format.begin();
        it != sinks_to_notify_format.end(); ++it) {
     (*it)->OnSetFormat(buffer_->params());
   }
@@ -204,7 +204,9 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
     // disabled. This is currently done so to feed input to WebRTC typing
     // detection and should be changed when audio processing is moved from
     // WebRTC to the track.
-    for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it) {
+    for (SinkList::ItemList::const_iterator it = sinks.begin();
+         it != sinks.end();
+         ++it) {
       int new_volume = (*it)->OnData(buffer_->buffer(),
                                      buffer_->params().sample_rate(),
                                      buffer_->params().channels(),
@@ -236,9 +238,8 @@ void WebRtcLocalAudioTrack::OnSetFormat(
   buffer_->Configure(params);
 
   base::AutoLock auto_lock(lock_);
-  // Copy |sinks_| to |sinks_to_notify_format_| to notify all the sinks
-  // on the new format.
-  sinks_to_notify_format_ = sinks_;
+  // Remember to notify all sinks of the new format.
+  sinks_.TagAll();
 }
 
 void WebRtcLocalAudioTrack::AddChannel(int channel_id) {
@@ -284,20 +285,16 @@ void WebRtcLocalAudioTrack::AddSink(MediaStreamAudioSink* sink) {
   base::AutoLock auto_lock(lock_);
 
   // Verify that |sink| is not already added to the list.
-  DCHECK(std::find_if(
-      sinks_.begin(), sinks_.end(),
-      MediaStreamAudioTrackSink::WrapsMediaStreamSink(sink)) == sinks_.end());
+  DCHECK(!sinks_.Contains(
+      MediaStreamAudioTrackSink::WrapsMediaStreamSink(sink)));
 
-  // Create (and add to the list) a new MediaStreamAudioTrackSink which owns
-  // the |sink| and delagates all calls to the MediaStreamAudioSink
-  // interface.
+  // Create (and add to the list) a new MediaStreamAudioTrackSink
+  // which owns the |sink| and delagates all calls to the
+  // MediaStreamAudioSink interface. It will be tagged in the list, so
+  // we remember to call OnSetFormat() on the new sink.
   scoped_refptr<MediaStreamAudioTrackSink> sink_owner(
       new MediaStreamAudioSinkOwner(sink));
-  sinks_.push_back(sink_owner);
-
-  // Also push the |sink_owner| to |sinks_to_notify_format_| so that we will
-  // call OnSetFormat() on the new sink.
-  sinks_to_notify_format_.push_back(sink_owner);
+  sinks_.AddAndTag(sink_owner);
 }
 
 void WebRtcLocalAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
@@ -305,25 +302,15 @@ void WebRtcLocalAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
   DVLOG(1) << "WebRtcLocalAudioTrack::RemoveSink()";
 
   base::AutoLock auto_lock(lock_);
-  // Remove the item on |tracks_to_notify_format_|.
-  // This has to be done before remove the element in |sinks_| since there it
-  // will clear the delegate.
-  SinkList::iterator it = std::find_if(
-      sinks_to_notify_format_.begin(), sinks_to_notify_format_.end(),
-      MediaStreamAudioTrackSink::WrapsMediaStreamSink(sink));
-  if (it != sinks_to_notify_format_.end())
-    sinks_to_notify_format_.erase(it);
 
-  // Get iterator to the first element for which WrapsSink(sink) returns true.
-  it = std::find_if(sinks_.begin(), sinks_.end(),
-                    MediaStreamAudioTrackSink::WrapsMediaStreamSink(sink));
-  if (it != sinks_.end()) {
-    // Clear the delegate to ensure that no more capture callbacks will
-    // be sent to this sink. Also avoids a possible crash which can happen
-    // if this method is called while capturing is active.
-    (*it)->Reset();
-    sinks_.erase(it);
-  }
+  scoped_refptr<MediaStreamAudioTrackSink> removed_item = sinks_.Remove(
+      MediaStreamAudioTrackSink::WrapsMediaStreamSink(sink));
+
+  // Clear the delegate to ensure that no more capture callbacks will
+  // be sent to this sink. Also avoids a possible crash which can happen
+  // if this method is called while capturing is active.
+  if (removed_item.get())
+    removed_item->Reset();
 }
 
 void WebRtcLocalAudioTrack::AddSink(PeerConnectionAudioSink* sink) {
@@ -332,21 +319,16 @@ void WebRtcLocalAudioTrack::AddSink(PeerConnectionAudioSink* sink) {
   base::AutoLock auto_lock(lock_);
 
   // Verify that |sink| is not already added to the list.
-  DCHECK(std::find_if(
-      sinks_.begin(), sinks_.end(),
-      MediaStreamAudioTrackSink::WrapsPeerConnectionSink(sink)) ==
-          sinks_.end());
+  DCHECK(!sinks_.Contains(
+      MediaStreamAudioTrackSink::WrapsPeerConnectionSink(sink)));
 
-  // Create (and add to the list) a new MediaStreamAudioTrackSink which owns
-  // the |sink| and delagates all calls to the MediaStreamAudioSink
-  // interface.
+  // Create (and add to the list) a new MediaStreamAudioTrackSink
+  // which owns the |sink| and delagates all calls to the
+  // MediaStreamAudioSink interface. It will be tagged in the list, so
+  // we remember to call OnSetFormat() on the new sink.
   scoped_refptr<MediaStreamAudioTrackSink> sink_owner(
       new PeerConnectionAudioSinkOwner(sink));
-  sinks_.push_back(sink_owner);
-
-  // Also push the |sink_owner| to |sinks_to_notify_format_| so that we will
-  // call OnSetFormat() on the new sink.
-  sinks_to_notify_format_.push_back(sink_owner);
+  sinks_.AddAndTag(sink_owner);
 }
 
 void WebRtcLocalAudioTrack::RemoveSink(PeerConnectionAudioSink* sink) {
@@ -354,26 +336,14 @@ void WebRtcLocalAudioTrack::RemoveSink(PeerConnectionAudioSink* sink) {
   DVLOG(1) << "WebRtcLocalAudioTrack::RemoveSink()";
 
   base::AutoLock auto_lock(lock_);
-  // Remove the item on |tracks_to_notify_format_|.
-  // This has to be done before remove the element in |sinks_| since there it
-  // will clear the delegate.
-  SinkList::iterator it = std::find_if(
-      sinks_to_notify_format_.begin(), sinks_to_notify_format_.end(),
-      MediaStreamAudioTrackSink::WrapsPeerConnectionSink(sink));
-  if (it != sinks_to_notify_format_.end())
-    sinks_to_notify_format_.erase(it);
 
-  // Get iterator to the first element for which WrapsPeerConnectionSink(sink)
-  // returns true.
-  it = std::find_if(sinks_.begin(), sinks_.end(),
-                    MediaStreamAudioTrackSink::WrapsPeerConnectionSink(sink));
-  if (it != sinks_.end()) {
-    // Clear the delegate to ensure that no more capture callbacks will
-    // be sent to this sink. Also avoids a possible crash which can happen
-    // if this method is called while capturing is active.
-    (*it)->Reset();
-    sinks_.erase(it);
-  }
+  scoped_refptr<MediaStreamAudioTrackSink> removed_item = sinks_.Remove(
+      MediaStreamAudioTrackSink::WrapsPeerConnectionSink(sink));
+  // Clear the delegate to ensure that no more capture callbacks will
+  // be sent to this sink. Also avoids a possible crash which can happen
+  // if this method is called while capturing is active.
+  if (removed_item.get())
+    removed_item->Reset();
 }
 
 void WebRtcLocalAudioTrack::Start() {
@@ -411,16 +381,18 @@ void WebRtcLocalAudioTrack::Stop() {
 
   // Protect the pointers using the lock when accessing |sinks_| and
   // setting the |capturer_| to NULL.
-  SinkList sinks;
+  SinkList::ItemList sinks;
   {
     base::AutoLock auto_lock(lock_);
-    sinks.swap(sinks_);
-    sinks_to_notify_format_.clear();
+    sinks = sinks_.Items();
+    sinks_.Clear();
     webaudio_source_ = NULL;
     capturer_ = NULL;
   }
 
-  for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it)
+  for (SinkList::ItemList::const_iterator it = sinks.begin();
+       it != sinks.end();
+       ++it)
     (*it)->Reset();
 }
 

@@ -73,7 +73,7 @@ class WebRtcAudioCapturer::TrackOwner
   struct TrackWrapper {
     TrackWrapper(WebRtcLocalAudioTrack* track) : track_(track) {}
     bool operator()(
-        const scoped_refptr<WebRtcAudioCapturer::TrackOwner>& owner) {
+        const scoped_refptr<WebRtcAudioCapturer::TrackOwner>& owner) const {
       return owner->IsEqual(track_);
     }
     WebRtcLocalAudioTrack* track_;
@@ -121,9 +121,8 @@ void WebRtcAudioCapturer::Reconfigure(int sample_rate,
     base::AutoLock auto_lock(lock_);
     params_ = params;
 
-    // Copy |tracks_| to |tracks_to_notify_format_| to notify all the tracks
-    // on the new format.
-    tracks_to_notify_format_ = tracks_;
+    // Notify all tracks about the new format.
+    tracks_.TagAll();
   }
 }
 
@@ -220,7 +219,7 @@ WebRtcAudioCapturer::WebRtcAudioCapturer()
 
 WebRtcAudioCapturer::~WebRtcAudioCapturer() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(tracks_.empty());
+  DCHECK(tracks_.IsEmpty());
   DCHECK(!running_);
   DVLOG(1) << "WebRtcAudioCapturer::~WebRtcAudioCapturer()";
 }
@@ -232,14 +231,12 @@ void WebRtcAudioCapturer::AddTrack(WebRtcLocalAudioTrack* track) {
   {
     base::AutoLock auto_lock(lock_);
     // Verify that |track| is not already added to the list.
-    DCHECK(std::find_if(tracks_.begin(), tracks_.end(),
-                        TrackOwner::TrackWrapper(track)) == tracks_.end());
-    scoped_refptr<TrackOwner> track_owner(new TrackOwner(track));
-    tracks_.push_back(track_owner);
+    DCHECK(!tracks_.Contains(TrackOwner::TrackWrapper(track)));
 
-    // Also push the track to |tracks_to_notify_format_| so that we will call
-    // OnSetFormat() on the new track.
-    tracks_to_notify_format_.push_back(track_owner);
+    // Add with a tag, so we remember to call OnSetFormat() on the new
+    // track.
+    scoped_refptr<TrackOwner> track_owner(new TrackOwner(track));
+    tracks_.AddAndTag(track_owner);
   }
 
   // Start the source if the first audio track is connected to the capturer.
@@ -254,29 +251,18 @@ void WebRtcAudioCapturer::RemoveTrack(WebRtcLocalAudioTrack* track) {
   bool stop_source = false;
   {
     base::AutoLock auto_lock(lock_);
-    // Remove the item on |tracks_to_notify_format_|.
-    // This has to be done before remove the element in |tracks_| since there
-    // it will clear the delegate.
-    TrackList::iterator it = std::find_if(tracks_to_notify_format_.begin(),
-                                          tracks_to_notify_format_.end(),
-                                          TrackOwner::TrackWrapper(track));
-    if (it != tracks_to_notify_format_.end())
-      tracks_to_notify_format_.erase(it);
 
-    // Get iterator to the first element for which WrapsSink(track) returns
-    // true.
-    it = std::find_if(tracks_.begin(), tracks_.end(),
-                      TrackOwner::TrackWrapper(track));
-    if (it != tracks_.end()) {
-      // Clear the delegate to ensure that no more capture callbacks will
-      // be sent to this sink. Also avoids a possible crash which can happen
-      // if this method is called while capturing is active.
-      (*it)->Reset();
-      tracks_.erase(it);
-    }
+    scoped_refptr<TrackOwner> removed_item =
+        tracks_.Remove(TrackOwner::TrackWrapper(track));
+
+    // Clear the delegate to ensure that no more capture callbacks will
+    // be sent to this sink. Also avoids a possible crash which can happen
+    // if this method is called while capturing is active.
+    if (removed_item.get())
+      removed_item->Reset();
 
     // Stop the source if the last audio track is going away.
-    stop_source = tracks_.empty();
+    stop_source = tracks_.IsEmpty();
   }
 
   if (stop_source)
@@ -376,8 +362,7 @@ void WebRtcAudioCapturer::Stop() {
       return;
 
     source = source_;
-    tracks_.clear();
-    tracks_to_notify_format_.clear();
+    tracks_.Clear();
     running_ = false;
   }
 
@@ -421,8 +406,8 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   DCHECK_LE(volume, 1.6);
 #endif
 
-  TrackList tracks;
-  TrackList tracks_to_notify_format;
+  TrackList::ItemList tracks;
+  TrackList::ItemList tracks_to_notify_format;
   int current_volume = 0;
   media::AudioParameters params;
   {
@@ -437,8 +422,8 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     current_volume = volume_;
     audio_delay_ = base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
     key_pressed_ = key_pressed;
-    tracks = tracks_;
-    std::swap(tracks_to_notify_format_, tracks_to_notify_format);
+    tracks = tracks_.Items();
+    tracks_.RetrieveAndClearTags(&tracks_to_notify_format);
 
     CHECK(params_.IsValid());
     CHECK_EQ(audio_source->channels(), params_.channels());
@@ -448,13 +433,13 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
 
   // Notify the tracks on when the format changes. This will do nothing if
   // |tracks_to_notify_format| is empty.
-  for (TrackList::const_iterator it = tracks_to_notify_format.begin();
+  for (TrackList::ItemList::const_iterator it = tracks_to_notify_format.begin();
        it != tracks_to_notify_format.end(); ++it) {
     (*it)->OnSetFormat(params);
   }
 
   // Feed the data to the tracks.
-  for (TrackList::const_iterator it = tracks.begin();
+  for (TrackList::ItemList::const_iterator it = tracks.begin();
        it != tracks.end();
        ++it) {
     (*it)->Capture(audio_source, audio_delay_milliseconds,
