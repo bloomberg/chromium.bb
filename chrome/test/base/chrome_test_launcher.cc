@@ -19,7 +19,6 @@
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"

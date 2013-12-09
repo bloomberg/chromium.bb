@@ -84,6 +84,8 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   void RunAndExitGracefully();
 
   // InProcessBrowserTest overrides:
+  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
   virtual bool SetUpUserDataDirectory() OVERRIDE;
 
   // AppShimHandler overrides:
@@ -117,11 +119,9 @@ AppShimHostManagerBrowserTest::AppShimHostManagerBrowserTest()
     : last_launch_type_(apps::APP_SHIM_LAUNCH_NUM_TYPES),
       launch_count_(0),
       quit_count_(0) {
-  apps::AppShimHandler::RegisterHandler(kTestAppMode, this);
 }
 
 AppShimHostManagerBrowserTest::~AppShimHostManagerBrowserTest() {
-  apps::AppShimHandler::RemoveHandler(kTestAppMode);
 }
 
 void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
@@ -137,6 +137,15 @@ void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
   EXPECT_EQ(1, quit_count_);
 
   test_client_.reset();
+}
+
+void AppShimHostManagerBrowserTest::SetUpOnMainThread() {
+  // Can't do this in the constructor, it needs a BrowserProcess.
+  apps::AppShimHandler::RegisterHandler(kTestAppMode, this);
+}
+
+void AppShimHostManagerBrowserTest::TearDownOnMainThread() {
+  apps::AppShimHandler::RemoveHandler(kTestAppMode);
 }
 
 bool AppShimHostManagerBrowserTest::SetUpUserDataDirectory() {

@@ -17,14 +17,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "content/public/test/test_launcher.h"
 #include "extensions/common/extension_paths.h"
@@ -84,33 +82,14 @@ bool IsCrosPythonProcess() {
 #endif  // defined(OS_CHROMEOS)
 }
 
+// Initializes services needed by both unit tests and browser tests.
+// See also ChromeUnitTestSuite for additional services created for unit tests.
 class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
  public:
   ChromeTestSuiteInitializer() {
   }
 
   virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
-    DCHECK(!g_browser_process);
-    g_browser_process = new TestingBrowserProcess;
-
-    SetUpContentClients();
-    SetUpExtensionsClients();
-  }
-
-  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
-    TearDownExtensionsClients();
-    TearDownContentClients();
-
-    if (g_browser_process) {
-      BrowserProcess* browser_process = g_browser_process;
-      // g_browser_process must be NULL during its own destruction.
-      g_browser_process = NULL;
-      delete browser_process;
-    }
-  }
-
- private:
-  void SetUpContentClients() {
     content_client_.reset(new ChromeContentClient);
     content::SetContentClient(content_client_.get());
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
@@ -122,7 +101,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 #endif
   }
 
-  void TearDownContentClients() {
+  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
     browser_content_client_.reset();
@@ -130,19 +109,9 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 #endif
     content_client_.reset();
     content::SetContentClient(NULL);
-  }
+ }
 
-  void SetUpExtensionsClients() {
-    extensions_browser_client_.reset(
-        new extensions::ChromeExtensionsBrowserClient);
-    extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
-  }
-
-  void TearDownExtensionsClients() {
-    extensions_browser_client_.reset();
-    extensions::ExtensionsBrowserClient::Set(NULL);
-  }
-
+ private:
   // Client implementations for the content module.
   scoped_ptr<ChromeContentClient> content_client_;
   // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
@@ -150,10 +119,6 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
   scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
   scoped_ptr<chrome::ChromeContentUtilityClient> utility_content_client_;
 #endif
-
-  // Client implementations for the extensions module.
-  scoped_ptr<extensions::ChromeExtensionsBrowserClient>
-      extensions_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestSuiteInitializer);
 };

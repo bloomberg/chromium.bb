@@ -447,6 +447,10 @@ class LoginUtilsTest : public testing::Test,
   }
 
  protected:
+  // Must be the first member variable as browser_process_ and local_state_
+  // rely on this being set up.
+  TestingBrowserProcessInitializer initializer_;
+
   base::Closure fake_io_thread_work_;
   base::WaitableEvent fake_io_thread_completion_;
   base::Thread fake_io_thread_;

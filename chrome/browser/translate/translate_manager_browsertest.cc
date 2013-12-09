@@ -220,6 +220,11 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
  protected:
   virtual void SetUp() {
+    // This test is a unit test but runs in the browser_tests suite. Therefore
+    // it needs to manage its own TestingBrowserProcess.
+    // TODO(jamescook): Figure out how to move this suite back to unit_tests.
+    // Right now it fails to get the translate infobar if you run it there.
+    TestingBrowserProcess::CreateInstance();
     // Access the TranslateManager singleton so it is created before we call
     // ChromeRenderViewHostTestHarness::SetUp() to match what's done in Chrome,
     // where the TranslateManager is created before the WebContents.  This
@@ -250,6 +255,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
         content::Source<InfoBarService>(infobar_service()));
 
     ChromeRenderViewHostTestHarness::TearDown();
+    TestingBrowserProcess::DeleteInstance();
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {

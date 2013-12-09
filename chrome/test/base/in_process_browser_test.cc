@@ -145,13 +145,8 @@ InProcessBrowserTest::~InProcessBrowserTest() {
 }
 
 void InProcessBrowserTest::SetUp() {
-  // Undo TestingBrowserProcess creation in ChromeTestSuite.
-  // TODO(phajdan.jr): Extract a smaller test suite so we don't need this.
-  DCHECK(g_browser_process);
-  BrowserProcess* old_browser_process = g_browser_process;
-  // g_browser_process must be NULL during its own destruction.
-  g_browser_process = NULL;
-  delete old_browser_process;
+  // Browser tests will create their own g_browser_process later.
+  DCHECK(!g_browser_process);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Allow subclasses to change the command line before running any tests.

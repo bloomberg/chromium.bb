@@ -299,7 +299,9 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   CloudPrintProxyPolicyStartupTest();
   virtual ~CloudPrintProxyPolicyStartupTest();
 
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
   scoped_refptr<base::MessageLoopProxy> IOMessageLoopProxy() {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
@@ -376,6 +378,7 @@ CloudPrintProxyPolicyStartupTest::~CloudPrintProxyPolicyStartupTest() {
 }
 
 void CloudPrintProxyPolicyStartupTest::SetUp() {
+  TestingBrowserProcess::CreateInstance();
 #if defined(OS_MACOSX)
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.path(),
@@ -406,6 +409,10 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   }
   ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir));
+}
+
+void CloudPrintProxyPolicyStartupTest::TearDown() {
+  TestingBrowserProcess::DeleteInstance();
 }
 
 base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(

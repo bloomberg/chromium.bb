@@ -52,9 +52,6 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
 
-  // Get the LazyInstance for ChromeBrowserClient.
-  static ChromeExtensionsBrowserClient* GetInstance();
-
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;
 

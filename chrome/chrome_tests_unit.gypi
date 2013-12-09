@@ -221,6 +221,8 @@
         'test/base/chrome_test_launcher.h',
         'test/base/chrome_test_suite.cc',
         'test/base/chrome_test_suite.h',
+        'test/base/chrome_unit_test_suite.cc',
+        'test/base/chrome_unit_test_suite.h',
         'test/base/find_in_page_observer.cc',
         'test/base/find_in_page_observer.h',
         'test/base/history_index_restore_observer.cc',
@@ -313,6 +315,7 @@
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
             ['include', '^test/base/chrome_test_suite\\.cc$'],
+            ['include', '^test/base/chrome_unit_test_suite\\.cc$'],
             ['include', '^test/base/testing_browser_process'],
           ],
         }],
@@ -1203,6 +1206,7 @@
         'browser/services/gcm/gcm_client_mock.cc',
         'browser/services/gcm/gcm_client_mock.h',
         'browser/services/gcm/gcm_profile_service_unittest.cc',
+        'browser/sessions/persistent_tab_restore_service_unittest.cc',
         'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
         'browser/sessions/session_backend_unittest.cc',
         'browser/sessions/session_service_unittest.cc',
@@ -2602,7 +2606,7 @@
             'test/base/browser_with_test_window_test.h',
             'test/base/test_browser_window.h',
 
-            'browser/sessions/persistent_tab_restore_service_browsertest.cc',
+            'browser/sessions/persistent_tab_restore_service_unittest.cc',
             'browser/sessions/session_backend_unittest.cc',
 
             # Test files cannot be opened on Android.

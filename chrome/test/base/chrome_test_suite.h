@@ -15,12 +15,15 @@ namespace base {
 class StatsTable;
 }
 
+// Test suite for unit and browser tests. Creates services needed by both.
+// See also ChromeUnitTestSuite for additional services created for unit tests.
 class ChromeTestSuite : public content::ContentTestSuiteBase {
  public:
   ChromeTestSuite(int argc, char** argv);
   virtual ~ChromeTestSuite();
 
  protected:
+  // base::TestSuite overrides:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
@@ -35,6 +38,8 @@ class ChromeTestSuite : public content::ContentTestSuiteBase {
 
   std::string stats_filename_;
   scoped_ptr<base::StatsTable> stats_table_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeTestSuite);
 };
 
 #endif  // CHROME_TEST_BASE_CHROME_TEST_SUITE_H_

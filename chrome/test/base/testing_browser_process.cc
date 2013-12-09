@@ -10,6 +10,7 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
@@ -48,6 +49,20 @@ TestingBrowserProcess* TestingBrowserProcess::GetGlobal() {
   return static_cast<TestingBrowserProcess*>(g_browser_process);
 }
 
+// static
+void TestingBrowserProcess::CreateInstance() {
+  DCHECK(!g_browser_process);
+  g_browser_process = new TestingBrowserProcess;
+}
+
+// static
+void TestingBrowserProcess::DeleteInstance() {
+  // g_browser_process must be NULL during its own destruction.
+  BrowserProcess* browser_process = g_browser_process;
+  g_browser_process = NULL;
+  delete browser_process;
+}
+
 TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
       module_ref_count_(0),
@@ -58,7 +73,10 @@ TestingBrowserProcess::TestingBrowserProcess()
       local_state_(NULL),
       io_thread_(NULL),
       system_request_context_(NULL),
-      platform_part_(new TestingBrowserProcessPlatformPart()) {
+      platform_part_(new TestingBrowserProcessPlatformPart()),
+      extensions_browser_client_(
+          new extensions::ChromeExtensionsBrowserClient) {
+  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
@@ -66,6 +84,7 @@ TestingBrowserProcess::~TestingBrowserProcess() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   SetBrowserPolicyConnector(NULL);
 #endif
+  extensions::ExtensionsBrowserClient::Set(NULL);
 
   // Destructors for some objects owned by TestingBrowserProcess will use
   // g_browser_process if it is not NULL, so it must be NULL before proceeding.
@@ -427,4 +446,14 @@ void TestingBrowserProcess::SetStorageMonitor(
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   storage_monitor_ = storage_monitor.Pass();
 #endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+TestingBrowserProcessInitializer::TestingBrowserProcessInitializer() {
+  TestingBrowserProcess::CreateInstance();
+}
+
+TestingBrowserProcessInitializer::~TestingBrowserProcessInitializer() {
+  TestingBrowserProcess::DeleteInstance();
 }

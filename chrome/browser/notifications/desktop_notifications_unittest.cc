@@ -94,7 +94,8 @@ int MockBalloonCollection::UppermostVerticalPosition() {
 }
 
 DesktopNotificationsTest::DesktopNotificationsTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_) {
+    : ui_thread_(BrowserThread::UI, &message_loop_),
+      balloon_collection_(NULL) {
 }
 
 DesktopNotificationsTest::~DesktopNotificationsTest() {

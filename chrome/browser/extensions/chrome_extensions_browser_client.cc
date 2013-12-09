@@ -19,13 +19,6 @@
 
 namespace extensions {
 
-namespace {
-
-static base::LazyInstance<ChromeExtensionsBrowserClient> g_client =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {}
 
 ChromeExtensionsBrowserClient::~ChromeExtensionsBrowserClient() {}
@@ -134,11 +127,6 @@ scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {
 
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return chrome::IsRunningInForcedAppMode();
-}
-
-// static
-ChromeExtensionsBrowserClient* ChromeExtensionsBrowserClient::GetInstance() {
-  return g_client.Pointer();
 }
 
 }  // namespace extensions

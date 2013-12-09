@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/media_stream_request.h"
 #include "grit/generated_resources.h"
@@ -47,6 +48,10 @@ class ContentSettingBubbleControllerTest
   // Helper function to create the bubble controller.
   ContentSettingBubbleController* CreateBubbleController(
       ContentSettingsType settingsType);
+
+  // This is a unit test running in the browser_tests suite, so we must create
+  // the TestingBrowserProcess manually. Must be first member.
+  TestingBrowserProcessInitializer initializer_;
 
   base::scoped_nsobject<NSWindow> parent_;
 

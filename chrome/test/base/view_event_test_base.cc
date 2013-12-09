@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -74,6 +75,9 @@ const int kMouseMoveDelayMS = 200;
 ViewEventTestBase::ViewEventTestBase()
   : window_(NULL),
     content_view_(NULL) {
+  // The TestingBrowserProcess must be created in the constructor because there
+  // are tests that require it before SetUp() is called.
+  TestingBrowserProcess::CreateInstance();
 }
 
 void ViewEventTestBase::Done() {
@@ -194,6 +198,7 @@ views::Widget* ViewEventTestBase::GetWidget() {
 }
 
 ViewEventTestBase::~ViewEventTestBase() {
+  TestingBrowserProcess::DeleteInstance();
 }
 
 void ViewEventTestBase::StartMessageLoopAndRunTest() {
