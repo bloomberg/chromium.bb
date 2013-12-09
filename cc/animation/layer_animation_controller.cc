@@ -282,11 +282,14 @@ void LayerAnimationController::SetAnimationRegistrar(
 void LayerAnimationController::NotifyAnimationStarted(
     const AnimationEvent& event,
     double wall_clock_time) {
+  base::TimeTicks monotonic_time = base::TimeTicks::FromInternalValue(
+      event.monotonic_time * base::Time::kMicrosecondsPerSecond);
   if (event.is_impl_only) {
     FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
                       OnAnimationStarted(event));
     if (layer_animation_delegate_)
-      layer_animation_delegate_->NotifyAnimationStarted(wall_clock_time);
+      layer_animation_delegate_->NotifyAnimationStarted(
+          wall_clock_time, monotonic_time, event.target_property);
 
     return;
   }
@@ -301,7 +304,8 @@ void LayerAnimationController::NotifyAnimationStarted(
       FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
                         OnAnimationStarted(event));
       if (layer_animation_delegate_)
-        layer_animation_delegate_->NotifyAnimationStarted(wall_clock_time);
+        layer_animation_delegate_->NotifyAnimationStarted(
+            wall_clock_time, monotonic_time, event.target_property);
 
       return;
     }
@@ -311,9 +315,12 @@ void LayerAnimationController::NotifyAnimationStarted(
 void LayerAnimationController::NotifyAnimationFinished(
     const AnimationEvent& event,
     double wall_clock_time) {
+  base::TimeTicks monotonic_time = base::TimeTicks::FromInternalValue(
+      event.monotonic_time * base::Time::kMicrosecondsPerSecond);
   if (event.is_impl_only) {
     if (layer_animation_delegate_)
-      layer_animation_delegate_->NotifyAnimationFinished(wall_clock_time);
+      layer_animation_delegate_->NotifyAnimationFinished(
+          wall_clock_time, monotonic_time, event.target_property);
     return;
   }
 
@@ -322,7 +329,8 @@ void LayerAnimationController::NotifyAnimationFinished(
         active_animations_[i]->target_property() == event.target_property) {
       active_animations_[i]->set_received_finished_event(true);
       if (layer_animation_delegate_)
-        layer_animation_delegate_->NotifyAnimationFinished(wall_clock_time);
+        layer_animation_delegate_->NotifyAnimationFinished(
+            wall_clock_time, monotonic_time, event.target_property);
 
       return;
     }

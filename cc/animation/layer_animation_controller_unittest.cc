@@ -766,11 +766,17 @@ class FakeAnimationDelegate : public AnimationDelegate {
       : started_(false),
         finished_(false) {}
 
-  virtual void NotifyAnimationStarted(double time) OVERRIDE {
+  virtual void NotifyAnimationStarted(
+      double wall_clock_time,
+      base::TimeTicks monotonic_time,
+      Animation::TargetProperty target_property) OVERRIDE {
     started_ = true;
   }
 
-  virtual void NotifyAnimationFinished(double time) OVERRIDE {
+  virtual void NotifyAnimationFinished(
+      double wall_clock_time,
+      base::TimeTicks monotonic_time,
+      Animation::TargetProperty target_property) OVERRIDE {
     finished_ = true;
   }
 
