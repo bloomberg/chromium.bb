@@ -447,7 +447,7 @@ int Parser::lex(void* data)
     return tok.type;
 }
 
-bool Parser::expandQName(const String& qName, String& localName, String& namespaceURI)
+bool Parser::expandQName(const String& qName, AtomicString& localName, AtomicString& namespaceURI)
 {
     size_t colon = qName.find(':');
     if (colon != kNotFound) {
@@ -456,9 +456,10 @@ bool Parser::expandQName(const String& qName, String& localName, String& namespa
         namespaceURI = m_resolver->lookupNamespaceURI(qName.left(colon));
         if (namespaceURI.isNull())
             return false;
-        localName = qName.substring(colon + 1);
-    } else
-        localName = qName;
+        localName = AtomicString(qName.substring(colon + 1));
+    } else {
+        localName = AtomicString(qName);
+    }
 
     return true;
 }

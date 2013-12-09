@@ -47,7 +47,7 @@ public:
     static PassRefPtr<V8CustomXPathNSResolver> create(v8::Handle<v8::Object> resolver, v8::Isolate*);
 
     virtual ~V8CustomXPathNSResolver();
-    virtual String lookupNamespaceURI(const String& prefix);
+    virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
 
 private:
     V8CustomXPathNSResolver(v8::Handle<v8::Object> resolver, v8::Isolate*);

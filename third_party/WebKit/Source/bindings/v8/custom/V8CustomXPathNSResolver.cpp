@@ -58,7 +58,7 @@ V8CustomXPathNSResolver::~V8CustomXPathNSResolver()
 {
 }
 
-String V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
+AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
 {
     v8::Handle<v8::Function> lookupNamespaceURIFunc;
     v8::Handle<v8::String> lookupNamespaceURIName = v8AtomicString(m_isolate, "lookupNamespaceURI");
@@ -74,7 +74,7 @@ String V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
         Frame* frame = activeDOMWindow()->frame();
         if (frame && frame->page())
             frame->page()->console().addMessage(JSMessageSource, ErrorMessageLevel, "XPathNSResolver does not have a lookupNamespaceURI method.");
-        return String();
+        return nullAtom;
     }
 
     // Catch exceptions from calling the namespace resolver.
@@ -89,9 +89,10 @@ String V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
 
     // Eat exceptions from namespace resolver and return an empty string. This will most likely cause NamespaceError.
     if (tryCatch.HasCaught())
-        return String();
+        return nullAtom;
 
-    return toWebCoreStringWithNullCheck(retval);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, returnString, retval, nullAtom);
+    return returnString;
 }
 
 } // namespace WebCore

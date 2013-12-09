@@ -38,7 +38,7 @@ public:
     static PassRefPtr<NativeXPathNSResolver> create(PassRefPtr<Node> node) { return adoptRef(new NativeXPathNSResolver(node)); }
     virtual ~NativeXPathNSResolver();
 
-    virtual String lookupNamespaceURI(const String& prefix);
+    virtual AtomicString lookupNamespaceURI(const String& prefix) OVERRIDE;
 
 private:
     explicit NativeXPathNSResolver(PassRefPtr<Node>);

@@ -252,7 +252,7 @@ static inline QualifiedName constructQualifiedName(const SVGElement* svgElement,
     if (!Document::parseQualifiedName(attributeName, prefix, localName, ASSERT_NO_EXCEPTION))
         return anyQName();
 
-    String namespaceURI = svgElement->lookupNamespaceURI(prefix);
+    const AtomicString& namespaceURI = svgElement->lookupNamespaceURI(prefix);
     if (namespaceURI.isEmpty())
         return anyQName();
 

@@ -59,7 +59,7 @@ public:
 
         NodeTest(Kind kind) : m_kind(kind) { }
         NodeTest(Kind kind, const String& data) : m_kind(kind), m_data(data) { }
-        NodeTest(Kind kind, const String& data, const String& namespaceURI) : m_kind(kind), m_data(data), m_namespaceURI(namespaceURI) { }
+        NodeTest(Kind kind, const AtomicString& data, const AtomicString& namespaceURI) : m_kind(kind), m_data(data), m_namespaceURI(namespaceURI) { }
 
         NodeTest(const NodeTest& o)
             : m_kind(o.m_kind)

@@ -192,8 +192,8 @@ Step:
     |
     NAMETEST OptionalPredicateList
     {
-        String localName;
-        String namespaceURI;
+        AtomicString localName;
+        AtomicString namespaceURI;
         if (!parser->expandQName(*$1, localName, namespaceURI)) {
             parser->m_gotNamespaceError = true;
             YYABORT;
@@ -221,8 +221,8 @@ Step:
     |
     AxisSpecifier NAMETEST OptionalPredicateList
     {
-        String localName;
-        String namespaceURI;
+        AtomicString localName;
+        AtomicString namespaceURI;
         if (!parser->expandQName(*$2, localName, namespaceURI)) {
             parser->m_gotNamespaceError = true;
             YYABORT;

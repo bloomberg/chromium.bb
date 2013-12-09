@@ -62,7 +62,7 @@ public:
     ~Parser();
 
     XPathNSResolver* resolver() const { return m_resolver.get(); }
-    bool expandQName(const String& qName, String& localName, String& namespaceURI);
+    bool expandQName(const String& qName, AtomicString& localName, AtomicString& namespaceURI);
 
     Expression* parseStatement(const String& statement, PassRefPtr<XPathNSResolver>, ExceptionState&);
 

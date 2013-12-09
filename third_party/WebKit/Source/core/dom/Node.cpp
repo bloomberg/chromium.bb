@@ -1427,13 +1427,13 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
     }
 }
 
-String Node::lookupPrefix(const AtomicString &namespaceURI) const
+const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
 {
     // Implemented according to
     // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#lookupNamespacePrefixAlgo
 
     if (namespaceURI.isEmpty())
-        return String();
+        return nullAtom;
 
     switch (nodeType()) {
         case ELEMENT_NODE:
@@ -1441,32 +1441,32 @@ String Node::lookupPrefix(const AtomicString &namespaceURI) const
         case DOCUMENT_NODE:
             if (Element* de = toDocument(this)->documentElement())
                 return de->lookupPrefix(namespaceURI);
-            return String();
+            return nullAtom;
         case ENTITY_NODE:
         case NOTATION_NODE:
         case DOCUMENT_FRAGMENT_NODE:
         case DOCUMENT_TYPE_NODE:
-            return String();
+            return nullAtom;
         case ATTRIBUTE_NODE: {
             const Attr *attr = static_cast<const Attr *>(this);
             if (attr->ownerElement())
                 return attr->ownerElement()->lookupPrefix(namespaceURI);
-            return String();
+            return nullAtom;
         }
         default:
             if (Element* ancestor = ancestorElement())
                 return ancestor->lookupPrefix(namespaceURI);
-            return String();
+            return nullAtom;
     }
 }
 
-String Node::lookupNamespaceURI(const String &prefix) const
+const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
 {
     // Implemented according to
     // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#lookupNamespaceURIAlgo
 
     if (!prefix.isNull() && prefix.isEmpty())
-        return String();
+        return nullAtom;
 
     switch (nodeType()) {
         case ELEMENT_NODE: {
@@ -1483,47 +1483,47 @@ String Node::lookupNamespaceURI(const String &prefix) const
                         if (!attr->value().isEmpty())
                             return attr->value();
 
-                        return String();
+                        return nullAtom;
                     } else if (attr->localName() == xmlnsAtom && prefix.isNull()) {
                         if (!attr->value().isEmpty())
                             return attr->value();
 
-                        return String();
+                        return nullAtom;
                     }
                 }
             }
             if (Element* ancestor = ancestorElement())
                 return ancestor->lookupNamespaceURI(prefix);
-            return String();
+            return nullAtom;
         }
         case DOCUMENT_NODE:
             if (Element* de = toDocument(this)->documentElement())
                 return de->lookupNamespaceURI(prefix);
-            return String();
+            return nullAtom;
         case ENTITY_NODE:
         case NOTATION_NODE:
         case DOCUMENT_TYPE_NODE:
         case DOCUMENT_FRAGMENT_NODE:
-            return String();
+            return nullAtom;
         case ATTRIBUTE_NODE: {
             const Attr *attr = static_cast<const Attr *>(this);
 
             if (attr->ownerElement())
                 return attr->ownerElement()->lookupNamespaceURI(prefix);
             else
-                return String();
+                return nullAtom;
         }
         default:
             if (Element* ancestor = ancestorElement())
                 return ancestor->lookupNamespaceURI(prefix);
-            return String();
+            return nullAtom;
     }
 }
 
-String Node::lookupNamespacePrefix(const AtomicString &_namespaceURI, const Element *originalElement) const
+const AtomicString& Node::lookupNamespacePrefix(const AtomicString& _namespaceURI, const Element* originalElement) const
 {
     if (_namespaceURI.isNull())
-        return String();
+        return nullAtom;
 
     if (originalElement->lookupNamespaceURI(prefix()) == _namespaceURI)
         return prefix();
@@ -1542,7 +1542,7 @@ String Node::lookupNamespacePrefix(const AtomicString &_namespaceURI, const Elem
 
     if (Element* ancestor = ancestorElement())
         return ancestor->lookupNamespacePrefix(_namespaceURI, originalElement);
-    return String();
+    return nullAtom;
 }
 
 static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool& isNullString, StringBuilder& content)

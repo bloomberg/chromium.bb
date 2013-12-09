@@ -36,7 +36,7 @@ namespace WebCore {
 class XPathNSResolver : public RefCounted<XPathNSResolver>, public ScriptWrappable {
 public:
     virtual ~XPathNSResolver();
-    virtual String lookupNamespaceURI(const String& prefix) = 0;
+    virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;
 
 protected:
     XPathNSResolver()
