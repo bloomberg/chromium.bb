@@ -898,6 +898,12 @@ void LoginUtils::Set(LoginUtils* mock) {
 
 // static
 bool LoginUtils::IsWhitelisted(const std::string& username) {
+  // Skip whitelist check for tests.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kOobeSkipPostLogin)) {
+    return true;
+  }
+
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = false;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
