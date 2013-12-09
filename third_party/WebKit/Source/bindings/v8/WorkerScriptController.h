@@ -34,6 +34,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/events/ErrorEvent.h"
+#include "gin/public/isolate_holder.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/TextPosition.h"
@@ -98,22 +99,21 @@ namespace WebCore {
         ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState*);
 
         // Returns a local handle of the context.
-        v8::Local<v8::Context> context() { return m_context.newLocal(m_isolate); }
+        v8::Local<v8::Context> context() { return m_context.newLocal(isolate()); }
 
         // Send a notification about current thread is going to be idle.
         // Returns true if the embedder should stop calling idleNotification
         // until real work has been done.
         bool idleNotification() { return v8::V8::IdleNotification(); }
 
-        v8::Isolate* isolate() const { return m_isolate; }
+        v8::Isolate* isolate() const { return m_isolateHolder->isolate(); }
 
     private:
         bool initializeContextIfNeeded();
         void disposeContext();
 
         WorkerGlobalScope& m_workerGlobalScope;
-        v8::Isolate* m_isolate;
-        gin::IsolateHolder* m_ginIsolateHolder;
+        OwnPtr<gin::IsolateHolder> m_isolateHolder;
         ScopedPersistent<v8::Context> m_context;
         OwnPtr<V8PerContextData> m_perContextData;
         String m_disableEvalPending;

@@ -50,7 +50,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "gin/public/isolate_holder.h"
 #include <v8.h>
 
 #include "public/platform/Platform.h"
@@ -60,15 +59,14 @@ namespace WebCore {
 
 WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
-    , m_isolate(v8::Isolate::New())
-    , m_ginIsolateHolder(new gin::IsolateHolder(m_isolate))
+    , m_isolateHolder(adoptPtr(new gin::IsolateHolder(v8::Isolate::New())))
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
 {
-    m_isolate->Enter();
-    V8Initializer::initializeWorker(m_isolate);
+    isolate()->Enter();
+    V8Initializer::initializeWorker(isolate());
     v8::V8::Initialize();
-    V8PerIsolateData* data = V8PerIsolateData::create(m_isolate);
+    V8PerIsolateData* data = V8PerIsolateData::create(isolate());
     m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
     data->setWorkerDOMDataStore(m_domDataStore.get());
 }
@@ -83,10 +81,11 @@ WorkerScriptController::~WorkerScriptController()
     blink::Platform::current()->didStopWorkerRunLoop(blink::WebWorkerRunLoop(&m_workerGlobalScope.thread()->runLoop()));
 
     disposeContext();
-    V8PerIsolateData::dispose(m_isolate);
-    delete m_ginIsolateHolder;
-    m_isolate->Exit();
-    m_isolate->Dispose();
+    V8PerIsolateData::dispose(isolate());
+    v8::Isolate* v8Isolate = isolate();
+    v8Isolate->Exit();
+    m_isolateHolder.clear();
+    v8Isolate->Dispose();
 }
 
 void WorkerScriptController::disposeContext()
@@ -100,12 +99,12 @@ bool WorkerScriptController::initializeContextIfNeeded()
     if (!m_context.isEmpty())
         return true;
 
-    m_context.set(m_isolate, v8::Context::New(m_isolate));
+    m_context.set(isolate(), v8::Context::New(isolate()));
     if (m_context.isEmpty())
         return false;
 
     // Starting from now, use local context only.
-    v8::Local<v8::Context> context = m_context.newLocal(m_isolate);
+    v8::Local<v8::Context> context = m_context.newLocal(isolate());
 
     v8::Context::Scope scope(context);
 
@@ -118,7 +117,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     }
 
     // Set DebugId for the new context.
-    context->SetEmbedderData(0, v8AtomicString(m_isolate, "worker"));
+    context->SetEmbedderData(0, v8AtomicString(isolate(), "worker"));
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::wrapperTypeInfo;
@@ -133,10 +132,10 @@ bool WorkerScriptController::initializeContextIfNeeded()
         return false;
     }
 
-    V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtr<WorkerGlobalScope>(m_workerGlobalScope), contextType, jsWorkerGlobalScope, m_isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtr<WorkerGlobalScope>(m_workerGlobalScope), contextType, jsWorkerGlobalScope, isolate(), WrapperConfiguration::Dependent);
 
     // Insert the object instance as the prototype of the shadow object.
-    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_context.newLocal(m_isolate)->Global()->GetPrototype());
+    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_context.newLocal(isolate())->Global()->GetPrototype());
     globalObject->SetPrototype(jsWorkerGlobalScope);
 
     return true;
@@ -144,15 +143,15 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
 ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState* state)
 {
-    v8::HandleScope handleScope(m_isolate);
+    v8::HandleScope handleScope(isolate());
 
     if (!initializeContextIfNeeded())
         return ScriptValue();
 
-    v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
+    v8::Handle<v8::Context> context = m_context.newLocal(isolate());
     if (!m_disableEvalPending.isEmpty()) {
         context->AllowCodeGenerationFromStrings(false);
-        context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, m_disableEvalPending));
+        context->SetErrorMessageForCodeGenerationFromStrings(v8String(isolate(), m_disableEvalPending));
         m_disableEvalPending = String();
     }
 
@@ -160,9 +159,9 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     v8::TryCatch block;
 
-    v8::Handle<v8::String> scriptString = v8String(m_isolate, script);
-    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, 0, m_isolate);
-    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(compiledScript, &m_workerGlobalScope, m_isolate);
+    v8::Handle<v8::String> scriptString = v8String(isolate(), script);
+    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, 0, isolate());
+    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(compiledScript, &m_workerGlobalScope, isolate());
 
     if (!block.CanContinue()) {
         m_workerGlobalScope.script()->forbidExecution();
@@ -176,7 +175,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->lineNumber = message->GetLineNumber();
         state->columnNumber = message->GetStartColumn() + 1;
         state->sourceURL = toWebCoreString(message->GetScriptResourceName());
-        state->exception = ScriptValue(block.Exception(), m_isolate);
+        state->exception = ScriptValue(block.Exception(), isolate());
         block.Reset();
     } else
         state->hadException = false;
@@ -184,7 +183,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (result.IsEmpty() || result->IsUndefined())
         return ScriptValue();
 
-    return ScriptValue(result, m_isolate);
+    return ScriptValue(result, isolate());
 }
 
 void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr<ErrorEvent>* errorEvent)
@@ -198,7 +197,7 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
         if (errorEvent) {
             *errorEvent = m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
                 ErrorEvent::createSanitizedError(0) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
-            V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_isolate);
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), isolate());
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
@@ -216,7 +215,7 @@ void WorkerScriptController::scheduleExecutionTermination()
         MutexLocker locker(m_scheduledTerminationMutex);
         m_executionScheduledToTerminate = true;
     }
-    v8::V8::TerminateExecution(m_isolate);
+    v8::V8::TerminateExecution(isolate());
 }
 
 bool WorkerScriptController::isExecutionTerminating() const
@@ -246,7 +245,7 @@ void WorkerScriptController::disableEval(const String& errorMessage)
 void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtr<ErrorEvent> errorEvent)
 {
     m_errorEventFromImportedScript = errorEvent;
-    throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), m_isolate), m_isolate);
+    throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), isolate()), isolate());
 }
 
 WorkerScriptController* WorkerScriptController::controllerForContext()

@@ -612,25 +612,25 @@ v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, Sc
     return wrapper.IsEmpty() ? v8::Local<v8::Value>() : wrapper->GetHiddenValue(key);
 }
 
-static v8::Isolate* mainIsolate = 0;
 static gin::IsolateHolder* mainIsolateHolder = 0;
 
 v8::Isolate* mainThreadIsolate()
 {
-    ASSERT(mainIsolate);
+    ASSERT(mainIsolateHolder);
     ASSERT(isMainThread());
-    return mainIsolate;
+    return mainIsolateHolder->isolate();
 }
 
 void setMainThreadIsolate(v8::Isolate* isolate)
 {
-    ASSERT(!mainIsolate || !isolate);
+    ASSERT(!mainIsolateHolder || !isolate);
     ASSERT(isMainThread());
-    mainIsolate = isolate;
-    if (isolate)
+    if (isolate) {
         mainIsolateHolder = new gin::IsolateHolder(isolate);
-    else
+    } else {
         delete mainIsolateHolder;
+        mainIsolateHolder = 0;
+    }
 }
 
 v8::Isolate* toIsolate(ExecutionContext* context)
