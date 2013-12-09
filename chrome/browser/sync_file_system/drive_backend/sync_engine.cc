@@ -579,8 +579,13 @@ void SyncEngine::UpdateServiceStateFromSyncStatusCode(
     case SYNC_STATUS_NETWORK_ERROR:
     case SYNC_STATUS_ABORT:
     case SYNC_STATUS_FAILED:
-      UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
-                         "Network or temporary service error.");
+      if (drive_service_->HasRefreshToken()) {
+        UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
+                           "Network or temporary service error.");
+      } else {
+        UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                           "Authentication required");
+      }
       break;
 
     // Errors which would require manual user intervention to resolve.

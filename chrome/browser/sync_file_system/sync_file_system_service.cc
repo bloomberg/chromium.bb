@@ -460,6 +460,20 @@ void SyncFileSystemService::DidRegisterOrigin(
             app_origin.spec().c_str(),
             SyncStatusCodeToString(status));
 
+  if (status == SYNC_STATUS_FAILED) {
+    // If we got generic error return the service status information.
+    switch (GetRemoteService(app_origin)->GetCurrentState()) {
+      case REMOTE_SERVICE_AUTHENTICATION_REQUIRED:
+        callback.Run(SYNC_STATUS_AUTHENTICATION_FAILED);
+        return;
+      case REMOTE_SERVICE_TEMPORARY_UNAVAILABLE:
+        callback.Run(SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE);
+        return;
+      default:
+        break;
+    }
+  }
+
   callback.Run(status);
 }
 
