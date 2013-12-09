@@ -564,8 +564,10 @@ uint16 KeyEvent::GetCharacter() const {
     ch = GetCharacterFromXEvent(native_event());
   return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
 #else
-  DCHECK(EventTypeFromNative(native_event()) == ET_KEY_PRESSED ||
-         EventTypeFromNative(native_event()) == ET_KEY_RELEASED);
+  if (native_event()) {
+    DCHECK(EventTypeFromNative(native_event()) == ET_KEY_PRESSED ||
+           EventTypeFromNative(native_event()) == ET_KEY_RELEASED);
+  }
 
   return GetCharacterFromKeyCode(key_code_, flags());
 #endif
