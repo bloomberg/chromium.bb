@@ -21,6 +21,9 @@
         'chrome_elf_main.cc',
         'chrome_elf_main.h',
       ],
+      'dependencies': [
+        'chrome_elf_lib',
+      ],
       'msvs_settings': {
         'VCLinkerTool': {
           'BaseAddress': '0x01c20000',
@@ -28,6 +31,33 @@
           'SubSystem': '2',
         },
       },
+    },
+    {
+      'target_name': 'chrome_elf_unittests',
+      'type': 'executable',
+      'sources': [
+        'ntdll_cache_unittest.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'chrome_elf_lib',
+        '<(DEPTH)/base/base.gyp:run_all_unittests',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+      ],
+    },
+    {
+      'target_name': 'chrome_elf_lib',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'chrome_elf_types.h',
+        'ntdll_cache.cc',
+        'ntdll_cache.h',
+      ],
     },
   ],
 }
