@@ -1313,7 +1313,11 @@ wl_display_dispatch_queue(struct wl_display *display,
 
 	pfd[0].fd = display->fd;
 	pfd[0].events = POLLIN;
-	if (poll(pfd, 1, -1) == -1) {
+	do {
+		ret = poll(pfd, 1, -1);
+	} while (ret == -1 && errno == EINTR);
+
+	if (ret == -1) {
 		wl_display_cancel_read(display);
 		return -1;
 	}
