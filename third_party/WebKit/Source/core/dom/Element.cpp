@@ -2690,14 +2690,9 @@ RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
     return 0;
 }
 
-bool Element::webkitMatchesSelector(const String& selector, ExceptionState& exceptionState)
+bool Element::matches(const String& selectors, ExceptionState& exceptionState)
 {
-    if (selector.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
-        return false;
-    }
-
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selector, document(), exceptionState);
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(*this);
