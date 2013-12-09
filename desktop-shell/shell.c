@@ -43,6 +43,10 @@
 #define DEFAULT_NUM_WORKSPACES 1
 #define DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH 200
 
+#ifndef static_assert
+#define static_assert(cond, msg)
+#endif
+
 struct focus_state {
 	struct weston_seat *seat;
 	struct workspace *ws;
