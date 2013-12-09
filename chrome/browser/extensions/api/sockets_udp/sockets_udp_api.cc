@@ -61,6 +61,7 @@ linked_ptr<sockets_udp::SocketInfo> CreateSocketInfo(
   if (socket->buffer_size() > 0) {
     socket_info->buffer_size.reset(new int(socket->buffer_size()));
   }
+  socket_info->paused = socket->paused();
 
   // Grab the local address as known by the OS.
   net::IPEndPoint localAddress;
@@ -130,6 +131,41 @@ void SocketsUdpUpdateFunction::Work() {
   results_ = sockets_udp::Update::Results::Create();
 }
 
+SocketsUdpSetPausedFunction::SocketsUdpSetPausedFunction()
+    : socket_event_dispatcher_(NULL) {}
+
+SocketsUdpSetPausedFunction::~SocketsUdpSetPausedFunction() {}
+
+bool SocketsUdpSetPausedFunction::Prepare() {
+  params_ = api::sockets_udp::SetPaused::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+
+  socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(GetProfile());
+  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
+    "If this assertion is failing during a test, then it is likely that "
+    "TestExtensionSystem is failing to provide an instance of "
+    "UDPSocketEventDispatcher.";
+  return socket_event_dispatcher_ != NULL;
+}
+
+void SocketsUdpSetPausedFunction::Work() {
+  ResumableUDPSocket* socket = GetUdpSocket(params_->socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    return;
+  }
+
+  if (socket->paused() != params_->paused) {
+    socket->set_paused(params_->paused);
+    if (socket->IsBound() && !params_->paused) {
+      socket_event_dispatcher_->OnSocketResume(extension_->id(),
+                                               params_->socket_id);
+    }
+  }
+
+  results_ = sockets_udp::SetPaused::Results::Create();
+}
+
 SocketsUdpBindFunction::SocketsUdpBindFunction()
     : socket_event_dispatcher_(NULL) {
 }
@@ -185,6 +221,7 @@ bool SocketsUdpSendFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   io_buffer_size_ = params_->data.size();
   io_buffer_ = new net::WrappedIOBuffer(params_->data.data());
+
   return true;
 }
 
@@ -269,6 +306,7 @@ void SocketsUdpCloseFunction::Work() {
     return;
   }
 
+  socket->Disconnect();
   RemoveSocket(params_->socket_id);
   results_ = sockets_udp::Close::Results::Create();
 }

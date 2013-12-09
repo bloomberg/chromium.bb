@@ -39,6 +39,8 @@ class UDPSocket : public Socket {
   virtual bool GetLocalAddress(net::IPEndPoint* address) OVERRIDE;
   virtual Socket::SocketType GetSocketType() const OVERRIDE;
 
+  bool IsBound();
+
   int JoinGroup(const std::string& address);
   int LeaveGroup(const std::string& address);
 
@@ -93,6 +95,9 @@ class ResumableUDPSocket : public UDPSocket {
   int buffer_size() const { return buffer_size_; }
   void set_buffer_size(int buffer_size) { buffer_size_ = buffer_size; }
 
+  bool paused() const { return paused_; }
+  void set_paused(bool paused) { paused_ = paused; }
+
  private:
   friend class ApiResourceManager<ResumableUDPSocket>;
   static const char* service_name() {
@@ -106,6 +111,9 @@ class ResumableUDPSocket : public UDPSocket {
   bool persistent_;
   // The size of the buffer used to receive data - see sockets_udp.idl.
   int buffer_size_;
+  // Flag indicating whether a connected socket blocks its peer from sending
+  // more data - see sockets_udp.idl.
+  bool paused_;
 };
 
 }  //  namespace extensions

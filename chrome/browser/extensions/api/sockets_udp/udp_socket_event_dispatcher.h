@@ -28,6 +28,9 @@ class UDPSocketEventDispatcher
   // Socket is active, start receving from it.
   void OnSocketBind(const std::string& extension_id, int socket_id);
 
+  // Socket is active again, start receiving data from it.
+  void OnSocketResume(const std::string& extension_id, int socket_id);
+
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<UDPSocketEventDispatcher>* GetFactoryInstance();
 

@@ -54,6 +54,11 @@ UDPSocketEventDispatcher::ReceiveParams::~ReceiveParams() {}
 
 void UDPSocketEventDispatcher::OnSocketBind(const std::string& extension_id,
                                             int socket_id) {
+  OnSocketResume(extension_id, socket_id);
+}
+
+void UDPSocketEventDispatcher::OnSocketResume(const std::string& extension_id,
+                                              int socket_id) {
   DCHECK(BrowserThread::CurrentlyOn(thread_id_));
 
   ReceiveParams params;
@@ -79,6 +84,10 @@ void UDPSocketEventDispatcher::StartReceive(const ReceiveParams& params) {
   DCHECK(params.extension_id == socket->owner_extension_id())
     << "Socket has wrong owner.";
 
+  // Don't start another read if the socket has been paused.
+  if (socket->paused())
+    return;
+
   int buffer_size = (socket->buffer_size() <= 0 ? 4096 : socket->buffer_size());
   socket->RecvFrom(buffer_size,
                    base::Bind(&UDPSocketEventDispatcher::ReceiveCallback,
@@ -94,8 +103,9 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     int port) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
-  // Note: if "bytes_read" < 0, there was a network error, and "bytes_read" is
-  // a value from "net::ERR_".
+  // If |bytes_read| == 0, the message contained no data.
+  // If |bytes_read| < 0, there was a network error, and |bytes_read| is a value
+  // from "net::ERR_".
 
   if (bytes_read >= 0) {
     // Dispatch "onReceive" event.
@@ -115,6 +125,9 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     BrowserThread::PostTask(
         params.thread_id, FROM_HERE,
         base::Bind(&UDPSocketEventDispatcher::StartReceive, params));
+  } else if (bytes_read == net::ERR_IO_PENDING) {
+    // This happens when resuming a socket which already had an
+    // active "recv" callback.
   } else {
     // Dispatch "onReceiveError" event but don't start another read to avoid
     // potential infinite reads if we have a persistent network error.
@@ -126,6 +139,14 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     scoped_ptr<Event> event(
       new Event(sockets_udp::OnReceiveError::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
+
+    // Since we got an error, the socket is now "paused" until the application
+    // "resumes" it.
+    ResumableUDPSocket* socket =
+        params.sockets->Get(params.extension_id, params.socket_id);
+    if (socket) {
+      socket->set_paused(true);
+    }
   }
 }
 

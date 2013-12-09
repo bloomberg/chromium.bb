@@ -13,8 +13,8 @@ namespace sockets.udp {
   // <code>create</code>, or the existing value if preserved when calling
   // <code>update</code>.
   dictionary SocketProperties {
-    // Flag indicating if the socket is left open when the event page of
-    // the application is unloaded (see
+    // Flag indicating if the socket is left open when the event page of the
+    // application is unloaded (see
     // <a href="http://developer.chrome.com/apps/app_lifecycle.html">Manage App
     // Lifecycle</a>). The default value is "false." When the application is
     // loaded, any sockets previously opened with persistent=true can be fetched
@@ -64,6 +64,9 @@ namespace sockets.udp {
   // Callback from the <code>update</code> method.
   callback UpdateCallback = void ();
 
+  // Callback from the <code>setPaused<code> method.
+  callback SetPausedCallback = void ();
+
   // Result of the <code>getInfo</code> method.
   dictionary SocketInfo {
     // The socket identifier.
@@ -79,6 +82,10 @@ namespace sockets.udp {
     // The size of the buffer used to receive data. If no buffer size has been
     // specified explictly, the value is not provided.
     long? bufferSize;
+
+    // Flag indicating whether the socket is blocked from firing onReceive
+    // events.
+    boolean paused;
 
     // If the underlying socket is bound, contains its local
     // IPv4/6 address.
@@ -145,7 +152,7 @@ namespace sockets.udp {
   };
 
   interface Functions {
-    // Creates a UDP socket.
+    // Creates a UDP socket with the given properties.
     // |properties| : The socket properties (optional).
     // |callback| : Called when the socket has been created.
     static void create(optional SocketProperties properties,
@@ -157,18 +164,29 @@ namespace sockets.udp {
     // |callback| : Called when the properties are updated.
     static void update(long socketId,
                        SocketProperties properties,
-                       UpdateCallback callback);
+                       optional UpdateCallback callback);
 
-    // Binds the local address for socket. When the <code>bind</code> operation
-    // completes successfully, <code>onReceive</code> events are raised
-    // when UDP packets arrive on the address/port specified. If a network
-    // error occurs while the runtime is receiving packets, an
-    // <code>onReceiveError</code> event is raised, at which point no more
-    // <code>onReceive</code> events will be raised for this socket.
+    // Pauses or unpauses a socket. A paused socket is blocked from firing
+    // <code>onReceive</code> events.
+    // |connectionId| : The socket ID.
+    // |paused| : Flag to indicate whether to pause or unpause.
+    // |callback| : Called when the socket has been successfully paused or
+    // unpaused.
+    static void setPaused(long socketId,
+                          boolean paused,
+                          optional SetPausedCallback callback);
+
+    // Binds the local address and port for the socket. For a client socket, it
+    // is recommended to use port 0 to let the platform pick a free port.
+    //
+    // Once the <code>bind</code> operation completes successfully,
+    // <code>onReceive</code> events are raised when UDP packets arrive on the
+    // address/port specified -- unless the socket is paused.
+    //
     // |socketId| : The socket ID.
     // |address| : The address of the local machine. DNS name, IPv4 and IPv6
-    //  formats are supported. Use "0.0.0.0" to accept packets from all local
-    //  available network interfaces.
+    // formats are supported. Use "0.0.0.0" to accept packets from all local
+    // available network interfaces.
     // |port| : The port of the local machine. Use "0" to bind to a free port.
     // |callback| : Called when the <code>bind</code> operation completes.
     static void bind(long socketId,
@@ -176,7 +194,8 @@ namespace sockets.udp {
                      long port,
                      BindCallback callback);
 
-    // Sends data on the given UDP socket to the given address and port.
+    // Sends data on the given socket to the given address and port. The socket
+    // must be bound to a local port before calling this method.
     // |socketId| : The socket ID.
     // |data| : The data to send.
     // |address| : The address of the remote machine.
@@ -190,7 +209,7 @@ namespace sockets.udp {
 
     // Closes the socket and releases the address/port the socket is bound to.
     // Each socket created should be closed after use. The socket id is no
-    // no longer valid as soon at the function is called. However, the socket is
+    // longer valid as soon at the function is called. However, the socket is
     // guaranteed to be closed only when the callback is invoked.
     // |socketId| : The socket ID.
     // |callback| : Called when the <code>close</code> operation completes.
@@ -244,8 +263,8 @@ namespace sockets.udp {
         long ttl,
         SetMulticastTimeToLiveCallback callback);
 
-    // Sets whether multicast packets sent from the host to the multicast
-    // group will be looped back to the host.
+    // Sets whether multicast packets sent from the host to the multicast group
+    // will be looped back to the host.
     //
     // Note: the behavior of <code>setMulticastLoopbackMode</code> is slightly
     // different between Windows and Unix-like systems. The inconsistency
@@ -274,13 +293,14 @@ namespace sockets.udp {
   };
 
   interface Events {
-    // Event raised when a UDP packet has been received for a given socket.
+    // Event raised when a UDP packet has been received for the given socket.
     // |info| : The event data.
     static void onReceive(ReceiveInfo info);
 
     // Event raised when a network error occured while the runtime was waiting
-    // for data on the socket address and port. Once this event is raised, no
-    // more <code>onReceive</code> events will be raise for this socket.
+    // for data on the socket address and port. Once this event is raised, the
+    // socket is paused and no more <code>onReceive</code> events will be raised
+    // for this socket until the socket is resumed.
     // |info| : The event data.
     static void onReceiveError(ReceiveErrorInfo info);
   };

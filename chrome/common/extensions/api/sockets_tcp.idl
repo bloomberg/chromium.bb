@@ -155,7 +155,7 @@ namespace sockets.tcp {
     // |callback| : Called when the properties are updated.
     static void update(long socketId,
                        SocketProperties properties,
-                       UpdateCallback callback);
+                       optional UpdateCallback callback);
 
     // Enables or disables the application from receiving messages from its
     // peer. The default value is "false". Pausing a socket is typically used
@@ -165,7 +165,7 @@ namespace sockets.tcp {
     // when messages are received.
     static void setPaused(long socketId,
                           boolean paused,
-                          SetPausedCallback callback);
+                          optional SetPausedCallback callback);
 
     // Enables or disables the keep-alive functionality for a TCP connection.
     // |socketId| : The socket identifier.

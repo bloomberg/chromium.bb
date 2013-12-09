@@ -34,9 +34,7 @@ UDPSocket::UDPSocket(const std::string& owner_extension_id)
 }
 
 UDPSocket::~UDPSocket() {
-  if (is_connected_) {
-    Disconnect();
-  }
+  Disconnect();
 }
 
 void UDPSocket::Connect(const std::string& address,
@@ -61,6 +59,9 @@ void UDPSocket::Connect(const std::string& address,
 }
 
 int UDPSocket::Bind(const std::string& address, int port) {
+  if (IsBound())
+    return net::ERR_CONNECTION_FAILED;
+
   net::IPEndPoint ip_end_point;
   if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
     return net::ERR_INVALID_ARGUMENT;
@@ -243,6 +244,10 @@ void UDPSocket::OnSendToComplete(int result) {
   send_to_callback_.Reset();
 }
 
+bool UDPSocket::IsBound() {
+  return socket_.is_connected();
+}
+
 int UDPSocket::JoinGroup(const std::string& address) {
   net::IPAddressNumber ip;
   if (!net::ParseIPLiteralToNumber(address, &ip))
@@ -296,7 +301,8 @@ const std::vector<std::string>& UDPSocket::GetJoinedGroups() const {
 ResumableUDPSocket::ResumableUDPSocket(const std::string& owner_extension_id)
     : UDPSocket(owner_extension_id),
       persistent_(false),
-      buffer_size_(0) {
+      buffer_size_(0),
+      paused_(false) {
 }
 
 bool ResumableUDPSocket::IsPersistent() const {

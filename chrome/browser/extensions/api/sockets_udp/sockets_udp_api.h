@@ -73,6 +73,25 @@ class SocketsUdpUpdateFunction : public UDPSocketAsyncApiFunction {
   scoped_ptr<sockets_udp::Update::Params> params_;
 };
 
+class SocketsUdpSetPausedFunction
+    : public UDPSocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("sockets.udp.setPaused", SOCKETS_UDP_SETPAUSED)
+
+  SocketsUdpSetPausedFunction();
+
+ protected:
+  virtual ~SocketsUdpSetPausedFunction();
+
+  // AsyncApiFunction
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<sockets_udp::SetPaused::Params> params_;
+  UDPSocketEventDispatcher* socket_event_dispatcher_;
+};
+
 class SocketsUdpBindFunction : public UDPSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("sockets.udp.bind", SOCKETS_UDP_BIND)

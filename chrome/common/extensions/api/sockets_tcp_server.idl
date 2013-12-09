@@ -94,7 +94,9 @@ namespace sockets.tcpServer {
 
     // The client socket identifier, i.e. the socket identifier of the newly
     // established connection. This socket identifier should be used only with
-    // functions from the <code>chrome.sockets.tcp<code> namespace.
+    // functions from the <code>chrome.sockets.tcp<code> namespace. Note the
+    // client socket is initially paused and must be explictly un-paused by the
+    // application to start receiving data.
     long clientSocketId;
   };
 
