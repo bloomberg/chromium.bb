@@ -29,8 +29,9 @@ interface NativeViewport {
 
 [Peer=NativeViewport]
 interface NativeViewportClient {
-  void DidOpen();
-  void HandleEvent(Event event);
+  void OnCreated();
+  void OnDestroyed();
+  void OnEvent(Event event);
 };
 
 }

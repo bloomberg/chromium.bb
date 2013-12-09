@@ -21,8 +21,9 @@ class NativeViewportClientImpl : public NativeViewportClientStub {
   void Open();
 
  private:
-  virtual void DidOpen() MOJO_OVERRIDE;
-  virtual void HandleEvent(const Event& event) MOJO_OVERRIDE;
+  virtual void OnCreated() MOJO_OVERRIDE;
+  virtual void OnDestroyed() MOJO_OVERRIDE;
+  virtual void OnEvent(const Event& event) MOJO_OVERRIDE;
 
   scoped_ptr<GLES2ClientImpl> gles2_client_;
 

@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 
 namespace mojo {
 namespace examples {
@@ -31,10 +32,14 @@ void NativeViewportClientImpl::Open() {
   service_->CreateGLES2Context(gles2_client.Pass());
 }
 
-void NativeViewportClientImpl::DidOpen() {
+void NativeViewportClientImpl::OnCreated() {
 }
 
-void NativeViewportClientImpl::HandleEvent(const Event& event) {
+void NativeViewportClientImpl::OnDestroyed() {
+  base::MessageLoop::current()->Quit();
+}
+
+void NativeViewportClientImpl::OnEvent(const Event& event) {
   if (!event.location().is_null()) {
     LOG(INFO) << "Located Event @"
               << event.location().x() << "," << event.location().y();

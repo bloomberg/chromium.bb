@@ -26,11 +26,10 @@ NativeViewportImpl::~NativeViewportImpl() {
 void NativeViewportImpl::Open() {
   native_viewport_ = services::NativeViewport::Create(context_, this);
   native_viewport_->Init();
-  client_->DidOpen();
+  client_->OnCreated();
 }
 
 void NativeViewportImpl::Close() {
-  gles2_.reset();
   DCHECK(native_viewport_);
   native_viewport_->Close();
 }
@@ -69,7 +68,7 @@ bool NativeViewportImpl::OnEvent(ui::Event* ui_event) {
     event.set_touch_data(touch_data.Finish());
   }
 
-  client_->HandleEvent(event.Finish());
+  client_->OnEvent(event.Finish());
   return false;
 }
 
@@ -83,7 +82,16 @@ void NativeViewportImpl::OnResized(const gfx::Size& size) {
 }
 
 void NativeViewportImpl::OnDestroyed() {
-  base::MessageLoop::current()->Quit();
+  // TODO(beng):
+  // Destroying |gles2_| on the shell thread here hits thread checker asserts.
+  // All code must stop touching the AcceleratedWidget at this point as it is
+  // dead after this call stack. jamesr said we probably should make our own
+  // GLSurface and simply tell it to stop touching the AcceleratedWidget
+  // via Destroy() but we have no good way of doing that right now given our
+  // current threading model so james' recommendation was just to wait until
+  // after we move the gl service out of process.
+  // gles2_.reset();
+  client_->OnDestroyed();
 }
 
 }  // namespace services
