@@ -107,6 +107,9 @@ public:
     BLINK_EXPORT static void enableNotifications(bool);
     BLINK_EXPORT static bool isNotificationsEnabled();
 
+    BLINK_EXPORT static void enableNavigatorContentUtils(bool);
+    BLINK_EXPORT static bool isNavigatorContentUtilsEnabled();
+
     BLINK_EXPORT static void enablePagePopup(bool);
     BLINK_EXPORT static bool isPagePopupEnabled();
 
