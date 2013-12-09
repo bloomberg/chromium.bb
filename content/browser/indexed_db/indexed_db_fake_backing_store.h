@@ -107,6 +107,17 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                              indexed_db::CursorDirection)
       OVERRIDE;
 
+  class FakeTransaction : public IndexedDBBackingStore::Transaction {
+   public:
+    FakeTransaction(bool result);
+    virtual void Begin() OVERRIDE;
+    virtual bool Commit() OVERRIDE;
+    virtual void Rollback() OVERRIDE;
+
+   private:
+    bool result_;
+  };
+
  protected:
   friend class base::RefCounted<IndexedDBFakeBackingStore>;
   virtual ~IndexedDBFakeBackingStore();
