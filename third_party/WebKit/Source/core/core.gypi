@@ -1585,6 +1585,8 @@
             'rendering/break_lines.h',
             'rendering/animation/WebAnimationProvider.cpp',
             'rendering/animation/WebAnimationProvider.h',
+            'rendering/shapes/BoxShape.cpp',
+            'rendering/shapes/BoxShape.h',
             'rendering/shapes/PolygonShape.cpp',
             'rendering/shapes/PolygonShape.h',
             'rendering/shapes/RasterShape.cpp',

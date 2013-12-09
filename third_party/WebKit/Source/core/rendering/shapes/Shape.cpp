@@ -31,10 +31,12 @@
 #include "core/rendering/shapes/Shape.h"
 
 #include "core/fetch/ImageResource.h"
+#include "core/rendering/shapes/BoxShape.h"
 #include "core/rendering/shapes/PolygonShape.h"
 #include "core/rendering/shapes/RasterShape.h"
 #include "core/rendering/shapes/RectangleShape.h"
 #include "platform/LengthFunctions.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/WindRule.h"
@@ -42,6 +44,12 @@
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
+
+static PassOwnPtr<Shape> createBoxShape(const FloatRoundedRect& bounds, float shapeMargin, float shapePadding)
+{
+    ASSERT(bounds.rect().width() >= 0 && bounds.rect().height() >= 0);
+    return adoptPtr(new BoxShape(bounds, shapeMargin, shapePadding));
+}
 
 static PassOwnPtr<Shape> createRectangleShape(const FloatRect& bounds, const FloatSize& radii)
 {
@@ -248,13 +256,16 @@ PassOwnPtr<Shape> Shape::createShape(const StyleImage* styleImage, float thresho
 
 PassOwnPtr<Shape> Shape::createLayoutBoxShape(const LayoutSize& logicalSize, WritingMode writingMode, const Length& margin, const Length& padding)
 {
-    FloatRect bounds(0, 0, logicalSize.width(), logicalSize.height());
+    FloatRect rect(0, 0, logicalSize.width(), logicalSize.height());
     FloatSize radii(0, 0);
+    FloatRoundedRect bounds(rect, radii, radii, radii, radii);
+    float shapeMargin = floatValueForLength(margin, 0);
+    float shapePadding = floatValueForLength(padding, 0);
 
-    OwnPtr<Shape> shape = createRectangleShape(bounds, radii);
+    OwnPtr<Shape> shape = createBoxShape(bounds, shapeMargin, shapePadding);
     shape->m_writingMode = writingMode;
-    shape->m_margin = floatValueForLength(margin, 0);
-    shape->m_padding = floatValueForLength(padding, 0);
+    shape->m_margin = shapeMargin;
+    shape->m_padding = shapePadding;
 
     return shape.release();
 }

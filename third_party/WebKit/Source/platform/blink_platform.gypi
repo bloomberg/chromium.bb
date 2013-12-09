@@ -391,6 +391,8 @@
       'geometry/FloatQuad.h',
       'geometry/FloatRect.cpp',
       'geometry/FloatRect.h',
+      'geometry/FloatRoundedRect.cpp',
+      'geometry/FloatRoundedRect.h',
       'geometry/FloatSize.cpp',
       'geometry/FloatSize.h',
       'geometry/IntPoint.h',
