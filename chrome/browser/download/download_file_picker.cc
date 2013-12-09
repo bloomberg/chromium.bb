@@ -69,7 +69,9 @@ DownloadFilePicker::DownloadFilePicker(
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents));
   ui::SelectFileDialog::FileTypeInfo file_type_info;
-  base::FilePath::StringType extension = suggested_path_.Extension();
+  // Platform file pickers, notably on Mac and Windows, tend to break
+  // with double extensions like .tar.gz, so only pass in normal ones.
+  base::FilePath::StringType extension = suggested_path_.FinalExtension();
   if (!extension.empty()) {
     extension.erase(extension.begin());  // drop the .
     file_type_info.extensions.resize(1);

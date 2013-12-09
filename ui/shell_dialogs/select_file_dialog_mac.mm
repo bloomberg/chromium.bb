@@ -266,7 +266,20 @@ void SelectFileDialogImpl::SelectFileImpl(
   type_map_[dialog] = type;
 
   if (type == SELECT_SAVEAS_FILE) {
-    [dialog setCanSelectHiddenExtension:YES];
+    // When file extensions are hidden and removing the extension from
+    // the default filename gives one which still has an extension
+    // that OS X recognizes, it will get confused and think the user
+    // is trying to override the default extension. This happens with
+    // filenames like "foo.tar.gz" or "ball.of.tar.png". Work around
+    // this by never hiding extensions in that case.
+    base::FilePath::StringType penultimate_extension =
+        default_path.RemoveFinalExtension().FinalExtension();
+    if (!penultimate_extension.empty() &&
+        penultimate_extension.length() <= 5U) {
+      [dialog setExtensionHidden:NO];
+    } else {
+      [dialog setCanSelectHiddenExtension:YES];
+    }
   } else {
     NSOpenPanel* open_dialog = (NSOpenPanel*)dialog;
 

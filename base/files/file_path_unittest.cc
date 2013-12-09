@@ -708,6 +708,7 @@ TEST_F(FilePathTest, Extension) {
 
   FilePath jpg = base_dir.Append(FILE_PATH_LITERAL("foo.jpg"));
   EXPECT_EQ(FILE_PATH_LITERAL(".jpg"), jpg.Extension());
+  EXPECT_EQ(FILE_PATH_LITERAL(".jpg"), jpg.FinalExtension());
 
   FilePath base = jpg.BaseName().RemoveExtension();
   EXPECT_EQ(FILE_PATH_LITERAL("foo"), base.value());
@@ -717,6 +718,7 @@ TEST_F(FilePathTest, Extension) {
 
   EXPECT_EQ(path_no_ext.value(), path_no_ext.RemoveExtension().value());
   EXPECT_EQ(FILE_PATH_LITERAL(""), path_no_ext.Extension());
+  EXPECT_EQ(FILE_PATH_LITERAL(""), path_no_ext.FinalExtension());
 }
 
 TEST_F(FilePathTest, Extension2) {
@@ -739,16 +741,9 @@ TEST_F(FilePathTest, Extension2) {
     { FPL("/foo/bar/"),              FPL("") },
     { FPL("/foo/bar./"),             FPL(".") },
     { FPL("/foo/bar/baz.ext1.ext2"), FPL(".ext2") },
-    { FPL("/foo.tar.gz"),            FPL(".tar.gz") },
-    { FPL("/foo.tar.Z"),             FPL(".tar.Z") },
-    { FPL("/foo.tar.bz2"),           FPL(".tar.bz2") },
     { FPL("/subversion-1.6.12.zip"), FPL(".zip") },
-    { FPL("/foo.1234.gz"),           FPL(".1234.gz") },
     { FPL("/foo.12345.gz"),          FPL(".gz") },
     { FPL("/foo..gz"),               FPL(".gz") },
-    { FPL("/foo.1234.tar.gz"),       FPL(".tar.gz") },
-    { FPL("/foo.tar.tar.gz"),        FPL(".tar.gz") },
-    { FPL("/foo.tar.gz.gz"),         FPL(".gz.gz") },
     { FPL("."),                      FPL("") },
     { FPL(".."),                     FPL("") },
     { FPL("./foo"),                  FPL("") },
@@ -757,12 +752,30 @@ TEST_F(FilePathTest, Extension2) {
     { FPL("/foo.bar////"),           FPL(".bar") },
     { FPL("/foo.bar/.."),            FPL("") },
     { FPL("/foo.bar/..////"),        FPL("") },
-    { FPL("/foo.1234.user.js"),      FPL(".user.js") },
-    { FPL("foo.user.js"),            FPL(".user.js") },
     { FPL("/foo.1234.luser.js"),     FPL(".js") },
     { FPL("/user.js"),               FPL(".js") },
   };
+  const struct UnaryTestData double_extension_cases[] = {
+    { FPL("/foo.tar.gz"),            FPL(".tar.gz") },
+    { FPL("/foo.tar.Z"),             FPL(".tar.Z") },
+    { FPL("/foo.tar.bz2"),           FPL(".tar.bz2") },
+    { FPL("/foo.1234.gz"),           FPL(".1234.gz") },
+    { FPL("/foo.1234.tar.gz"),       FPL(".tar.gz") },
+    { FPL("/foo.tar.tar.gz"),        FPL(".tar.gz") },
+    { FPL("/foo.tar.gz.gz"),         FPL(".gz.gz") },
+    { FPL("/foo.1234.user.js"),      FPL(".user.js") },
+    { FPL("foo.user.js"),            FPL(".user.js") },
+  };
   for (unsigned int i = 0; i < arraysize(cases); ++i) {
+    FilePath path(cases[i].input);
+    FilePath::StringType extension = path.Extension();
+    FilePath::StringType final_extension = path.FinalExtension();
+    EXPECT_STREQ(cases[i].expected, extension.c_str()) << "i: " << i <<
+        ", path: " << path.value();
+    EXPECT_STREQ(cases[i].expected, final_extension.c_str()) << "i: " << i <<
+        ", path: " << path.value();
+  }
+  for (unsigned int i = 0; i < arraysize(double_extension_cases); ++i) {
     FilePath path(cases[i].input);
     FilePath::StringType extension = path.Extension();
     EXPECT_STREQ(cases[i].expected, extension.c_str()) << "i: " << i <<
@@ -850,7 +863,6 @@ TEST_F(FilePathTest, RemoveExtension) {
     { FPL("foo."),                FPL("foo") },
     { FPL("foo.."),               FPL("foo.") },
     { FPL("foo.baz.dll"),         FPL("foo.baz") },
-    { FPL("foo.tar.gz"),          FPL("foo") },
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
     { FPL("C:\\foo.bar\\foo"),    FPL("C:\\foo.bar\\foo") },
     { FPL("C:\\foo.bar\\..\\\\"), FPL("C:\\foo.bar\\..\\\\") },
@@ -861,8 +873,19 @@ TEST_F(FilePathTest, RemoveExtension) {
   for (unsigned int i = 0; i < arraysize(cases); ++i) {
     FilePath path(cases[i].input);
     FilePath removed = path.RemoveExtension();
+    FilePath removed_final = path.RemoveFinalExtension();
     EXPECT_EQ(cases[i].expected, removed.value()) << "i: " << i <<
         ", path: " << path.value();
+    EXPECT_EQ(cases[i].expected, removed_final.value()) << "i: " << i <<
+        ", path: " << path.value();
+  }
+  {
+    FilePath path(FPL("foo.tar.gz"));
+    FilePath removed = path.RemoveExtension();
+    FilePath removed_final = path.RemoveFinalExtension();
+    EXPECT_EQ(FPL("foo"), removed.value()) << ", path: " << path.value();
+    EXPECT_EQ(FPL("foo.tar"), removed_final.value()) << ", path: "
+                                                     << path.value();
   }
 }
 

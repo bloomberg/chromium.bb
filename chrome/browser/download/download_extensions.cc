@@ -146,9 +146,6 @@ static const struct Executables {
   { "shs", ALLOW_ON_USER_GESTURE },
   { "sys", DANGEROUS },
   { "url", ALLOW_ON_USER_GESTURE },
-  // TODO(davidben): Remove this when double-extensions are no longer
-  // a nuisance.
-  { "user.js", ALLOW_ON_USER_GESTURE },
   { "vb", ALLOW_ON_USER_GESTURE },
   { "vbe", ALLOW_ON_USER_GESTURE },
   { "vbs", ALLOW_ON_USER_GESTURE },
@@ -208,7 +205,7 @@ static const struct Executables {
 };
 
 DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path) {
-  base::FilePath::StringType extension(path.Extension());
+  base::FilePath::StringType extension(path.FinalExtension());
   if (extension.empty())
     return NOT_DANGEROUS;
   if (!IsStringASCII(extension))

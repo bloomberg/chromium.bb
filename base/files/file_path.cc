@@ -107,18 +107,21 @@ bool AreAllSeparators(const StringType& input) {
 
 // Find the position of the '.' that separates the extension from the rest
 // of the file name. The position is relative to BaseName(), not value().
-// This allows a second extension component of up to 4 characters when the
-// rightmost extension component is a common double extension (gz, bz2, Z).
-// For example, foo.tar.gz or foo.tar.Z would have extension components of
-// '.tar.gz' and '.tar.Z' respectively. Returns npos if it can't find an
-// extension.
-StringType::size_type ExtensionSeparatorPosition(const StringType& path) {
+// Returns npos if it can't find an extension.
+StringType::size_type FinalExtensionSeparatorPosition(const StringType& path) {
   // Special case "." and ".."
   if (path == FilePath::kCurrentDirectory || path == FilePath::kParentDirectory)
     return StringType::npos;
 
-  const StringType::size_type last_dot =
-      path.rfind(FilePath::kExtensionSeparator);
+  return path.rfind(FilePath::kExtensionSeparator);
+}
+
+// Same as above, but allow a second extension component of up to 4
+// characters when the rightmost extension component is a common double
+// extension (gz, bz2, Z).  For example, foo.tar.gz or foo.tar.Z would have
+// extension components of '.tar.gz' and '.tar.Z' respectively.
+StringType::size_type ExtensionSeparatorPosition(const StringType& path) {
+  const StringType::size_type last_dot = FinalExtensionSeparatorPosition(path);
 
   // No extension, or the extension is the whole filename.
   if (last_dot == StringType::npos || last_dot == 0U)
@@ -370,11 +373,31 @@ StringType FilePath::Extension() const {
   return base.path_.substr(dot, StringType::npos);
 }
 
+StringType FilePath::FinalExtension() const {
+  FilePath base(BaseName());
+  const StringType::size_type dot = FinalExtensionSeparatorPosition(base.path_);
+  if (dot == StringType::npos)
+    return StringType();
+
+  return base.path_.substr(dot, StringType::npos);
+}
+
 FilePath FilePath::RemoveExtension() const {
   if (Extension().empty())
     return *this;
 
   const StringType::size_type dot = ExtensionSeparatorPosition(path_);
+  if (dot == StringType::npos)
+    return *this;
+
+  return FilePath(path_.substr(0, dot));
+}
+
+FilePath FilePath::RemoveFinalExtension() const {
+  if (FinalExtension().empty())
+    return *this;
+
+  const StringType::size_type dot = FinalExtensionSeparatorPosition(path_);
   if (dot == StringType::npos)
     return *this;
 
