@@ -1072,15 +1072,6 @@ util.EntryChangedKind = {
 };
 
 /**
- * @param {DirectoryEntry|Object} entry DirectoryEntry to be checked.
- * @return {boolean} True if the given entry is fake.
- */
-util.isFakeDirectoryEntry = function(entry) {
-  // Currently, fake entry doesn't support createReader.
-  return !('createReader' in entry);
-};
-
-/**
  * Obtains whether an entry is fake or not.
  * @param {Entry|Object} entry Entry of fake entry.
  * @return {boolean} True if the given entry is fake.

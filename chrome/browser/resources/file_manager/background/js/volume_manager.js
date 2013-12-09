@@ -577,7 +577,7 @@ VolumeManager.prototype.resolveAbsolutePath = function(
 VolumeManager.prototype.getVolumeInfo = function(target) {
   if (typeof target === 'string')
     return this.volumeInfoList.findByPath(target);
-  else if (util.isFakeDirectoryEntry(target))
+  else if (util.isFakeEntry(target))
     return this.getCurrentProfileVolumeInfo(util.VolumeType.DRIVE);
   else
     return this.volumeInfoList.findByPath(target.fullPath);

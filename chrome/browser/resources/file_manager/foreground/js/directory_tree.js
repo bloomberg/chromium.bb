@@ -297,7 +297,7 @@ DirectoryItem.prototype.onExpand_ = function(e) {
  */
 DirectoryItem.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  if (util.isFakeDirectoryEntry(this.entry)) {
+  if (util.isFakeEntry(this.entry)) {
     if (opt_errorCallback)
       opt_errorCallback();
     return;
@@ -580,7 +580,7 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
 DirectoryTree.prototype.maybeResolveMyDriveRoot_ = function(
     completionCallback) {
   var myDriveItem = this.items[0];
-  if (!util.isFakeDirectoryEntry(myDriveItem.entry)) {
+  if (!util.isFakeEntry(myDriveItem.entry)) {
     // The entry is already resolved. Don't need to try again.
     completionCallback();
     return;
@@ -590,9 +590,8 @@ DirectoryTree.prototype.maybeResolveMyDriveRoot_ = function(
   this.directoryModel_.resolveDirectory(
       myDriveItem.fullPath,
       function(entry) {
-        if (!util.isFakeDirectoryEntry(entry)) {
+        if (!util.isFakeEntry(entry))
           myDriveItem.dirEntry_ = entry;
-        }
 
         completionCallback();
       },

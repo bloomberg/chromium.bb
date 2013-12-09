@@ -2243,7 +2243,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateTitle_();
     this.updateGearMenu_();
     var currentEntry = this.getCurrentDirectoryEntry();
-    this.previewPanel_.currentEntry = util.isFakeDirectoryEntry(currentEntry) ?
+    this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
         null : currentEntry;
   };
 
@@ -3084,7 +3084,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         if (!isValid)
           return;
 
-        if (util.isFakeDirectoryEntry(directory)) {
+        if (util.isFakeEntry(directory)) {
           // Can't save a file into a fake directory.
           return;
         }

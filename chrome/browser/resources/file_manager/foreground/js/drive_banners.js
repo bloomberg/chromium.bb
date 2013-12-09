@@ -391,7 +391,7 @@ FileListBannerController.prototype.maybeShowWelcomeBanner_ = function() {
  */
 FileListBannerController.prototype.isOnCurrentProfileDrive = function() {
   var entry = this.directoryModel_.getCurrentDirEntry();
-  if (!entry || util.isFakeDirectoryEntry(entry))
+  if (!entry || util.isFakeEntry(entry))
     return false;
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
   return locationInfo &&
