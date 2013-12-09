@@ -40,7 +40,7 @@ from v8_globals import includes
 import v8_methods
 import v8_types
 import v8_utilities
-from v8_utilities import conditional_string, cpp_name, has_extended_attribute, runtime_enabled_function_name
+from v8_utilities import conditional_string, cpp_name, has_extended_attribute, has_extended_attribute_value, runtime_enabled_function_name
 
 
 INTERFACE_H_INCLUDES = set([
@@ -107,11 +107,13 @@ def generate_interface(interface):
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_constructor': has_constructor,
-        'has_custom_legacy_call': 'CustomLegacyCall' in extended_attributes,  # [CustomLegacyCall]
-        'has_custom_to_v8': 'CustomToV8' in extended_attributes,  # [CustomToV8]
-        'has_custom_wrap': 'CustomWrap' in extended_attributes,  # [CustomWrap]
-        'has_visit_dom_wrapper': has_extended_attribute(interface,
-            ['CustomVisitDOMWrapper', 'GenerateVisitDOMWrapper']),
+        'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
+        'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
+        'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
+        'has_visit_dom_wrapper': (
+            # [Custom=Wrap], [GenerateVisitDOMWrapper]
+            has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
+            'GenerateVisitDOMWrapper' in extended_attributes),
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]

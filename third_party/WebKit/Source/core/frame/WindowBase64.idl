@@ -26,8 +26,8 @@
  */
 
 [
+    ImplementedAs=DOMWindowBase64,
     NoInterfaceObject,
-    ImplementedAs=DOMWindowBase64
 ] interface WindowBase64 {
     [RaisesException] DOMString atob(DOMString string);
     [RaisesException] DOMString btoa(DOMString string);

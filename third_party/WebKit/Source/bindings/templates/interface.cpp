@@ -354,7 +354,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
            (interface_name, attribute.name) %}
     functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "{{attribute.name}}", v8::String::kInternalizedString), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfor %}
-    {% if has_custom_legacy_call %}
+    {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}
     {% if interface_name == 'HTMLAllCollection' %}

@@ -79,7 +79,7 @@ public:
     {% endfilter %}
     {% endif %}
     {% endfor %}
-    {% if has_custom_legacy_call %}
+    {% if has_custom_legacy_call_as_function %}
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;

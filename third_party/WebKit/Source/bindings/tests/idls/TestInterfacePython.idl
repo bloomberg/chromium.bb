@@ -31,8 +31,7 @@
 [
     ActiveDOMObject,
     Conditional=CONDITION,
-    CustomLegacyCall,
-    CustomToV8,
+    Custom=LegacyCallAsFunction|ToV8,
     GenerateVisitDOMWrapper=ownerNode,
     ImplementedAs=TestInterfacePythonImplementation,
     RuntimeEnabled=FeatureName,

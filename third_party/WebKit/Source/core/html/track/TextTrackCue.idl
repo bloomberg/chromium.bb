@@ -24,8 +24,8 @@
  */
 
 [
+    Custom=ToV8,
     CustomConstructor(double startTime, double endTime, DOMString text),
-    CustomToV8,
     RuntimeEnabled=VideoTrack,
 ] interface TextTrackCue : EventTarget {
     readonly attribute TextTrack track;

@@ -29,9 +29,9 @@
  */
 
 [
-    CustomWrap,
+    ActiveDOMObject,
+    Custom=Wrap,
     NoInterfaceObject,
-    ActiveDOMObject
 ] interface MIDIOutput : MIDIPort {
     [RaisesException] void send(Uint8Array data, optional double timestamp);
     [RaisesException] void send(sequence<unsigned long> data, optional double timestamp);

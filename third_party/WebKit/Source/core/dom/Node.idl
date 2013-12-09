@@ -19,8 +19,8 @@
  */
 
 [
-    CustomWrap,
-    DependentLifetime
+    Custom=Wrap,
+    DependentLifetime,
 ] interface Node : EventTarget {
     // NodeType
     const unsigned short      ELEMENT_NODE                   = 1;

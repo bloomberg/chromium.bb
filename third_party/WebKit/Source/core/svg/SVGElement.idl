@@ -21,7 +21,7 @@
  */
 
 [
-    CustomWrap,
+    Custom=Wrap,
 ] interface SVGElement : Element {
     [TreatNullAs=NullString] attribute DOMString xmlbase;
     readonly attribute SVGSVGElement ownerSVGElement;

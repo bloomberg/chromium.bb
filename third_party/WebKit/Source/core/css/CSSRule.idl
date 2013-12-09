@@ -20,8 +20,8 @@
 
 // Introduced in DOM Level 2:
 [
-    CustomWrap,
-    DependentLifetime
+    Custom=Wrap,
+    DependentLifetime,
 ] interface CSSRule {
 
     // RuleType

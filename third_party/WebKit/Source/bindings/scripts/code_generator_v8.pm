@@ -479,7 +479,7 @@ sub HeaderFilesForInterface
 sub NeedsVisitDOMWrapper
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"GenerateVisitDOMWrapper"} || $interface->extendedAttributes->{"CustomVisitDOMWrapper"} || $interface->extendedAttributes->{"SetReference"} || SVGTypeNeedsToHoldContextElement($interface->name);
+    return $interface->extendedAttributes->{"GenerateVisitDOMWrapper"} || ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "VisitDOMWrapper") || $interface->extendedAttributes->{"SetReference"} || SVGTypeNeedsToHoldContextElement($interface->name);
 }
 
 sub GenerateVisitDOMWrapper
@@ -488,7 +488,7 @@ sub GenerateVisitDOMWrapper
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    if ($interface->extendedAttributes->{"CustomVisitDOMWrapper"}) {
+    if (ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "VisitDOMWrapper")) {
         return;
     }
 
@@ -807,7 +807,7 @@ END
     }
 
     GenerateHeaderNamedAndIndexedPropertyAccessors($interface);
-    GenerateHeaderLegacyCall($interface);
+    GenerateHeaderLegacyCallAsFunction($interface);
     GenerateHeaderCustomInternalFieldIndices($interface);
 
     my $toWrappedType;
@@ -883,7 +883,7 @@ END
     }
     $header{classPublic}->add("\n");  # blank line to separate classPrivate
 
-    my $customToV8 = $interface->extendedAttributes->{"CustomToV8"};
+    my $customToV8 = ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "ToV8");
     if (!$customToV8) {
         my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
         $header{classPrivate}->add(<<END);
@@ -1114,11 +1114,11 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     }
 }
 
-sub GenerateHeaderLegacyCall
+sub GenerateHeaderLegacyCallAsFunction
 {
     my $interface = shift;
 
-    if ($interface->extendedAttributes->{"CustomLegacyCall"}) {
+    if (ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "LegacyCallAsFunction")) {
         $header{classPublic}->add("    static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);\n");
     }
 }
@@ -4134,14 +4134,14 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 END
 }
 
-sub GenerateImplementationLegacyCall
+sub GenerateImplementationLegacyCallAsFunction
 {
     my $interface = shift;
     my $code = "";
 
     my $v8ClassName = GetV8ClassName($interface);
 
-    if ($interface->extendedAttributes->{"CustomLegacyCall"}) {
+    if (ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "LegacyCallAsFunction")) {
         $code .= "    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(${v8ClassName}::legacyCallCustom);\n";
     }
     return $code;
@@ -4579,7 +4579,7 @@ END
 
     $code .= GenerateImplementationIndexedPropertyAccessors($interface);
     $code .= GenerateImplementationNamedPropertyAccessors($interface);
-    $code .= GenerateImplementationLegacyCall($interface);
+    $code .= GenerateImplementationLegacyCallAsFunction($interface);
     $code .= GenerateImplementationMarkAsUndetectable($interface);
 
     # Define operations.
@@ -5051,7 +5051,7 @@ sub GenerateToV8Converters
     my $nativeType = shift;
     my $interfaceName = $interface->name;
 
-    if ($interface->extendedAttributes->{"CustomToV8"}) {
+    if (ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "ToV8")) {
         return;
     }
 
@@ -6329,12 +6329,12 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
 
 sub ExtendedAttributeContains
 {
-    my $callWith = shift;
-    return 0 unless $callWith;
+    my $extendedAttributeValue = shift;
+    return 0 unless $extendedAttributeValue;
     my $keyword = shift;
 
-    my @callWithKeywords = split /\s*\&\s*/, $callWith;
-    return grep { $_ eq $keyword } @callWithKeywords;
+    my @extendedAttributeValues = split /\s*(\&|\|)\s*/, $extendedAttributeValue;
+    return grep { $_ eq $keyword } @extendedAttributeValues;
 }
 
 sub InheritsInterface
@@ -6377,8 +6377,8 @@ sub NeedsSpecialWrap
 {
     my $interface = shift;
 
-    return 1 if $interface->extendedAttributes->{"CustomToV8"};
-    return 1 if $interface->extendedAttributes->{"CustomWrap"};
+    return 1 if ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "ToV8");
+    return 1 if ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "Wrap");
     return 1 if $interface->extendedAttributes->{"SpecialWrapFor"};
     return 1 if InheritsInterface($interface, "Document");
 

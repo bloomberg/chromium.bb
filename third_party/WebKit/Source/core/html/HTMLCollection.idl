@@ -19,7 +19,7 @@
  */
 
 [
-    CustomWrap,
+    Custom=Wrap,
     DependentLifetime,
     GenerateVisitDOMWrapper=ownerNode,
 ] interface HTMLCollection {

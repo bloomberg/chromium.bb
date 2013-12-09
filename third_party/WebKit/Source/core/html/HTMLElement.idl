@@ -19,7 +19,7 @@
  */
 
 [
-    CustomWrap,
+    Custom=Wrap,
 ] interface HTMLElement : Element {
     [Reflect] attribute DOMString title;
     [Reflect] attribute DOMString lang;

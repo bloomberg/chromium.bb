@@ -29,8 +29,8 @@
  */
 
 [
+    Custom=Wrap,
     NoInterfaceObject,
-    CustomWrap,
 ] interface Algorithm {
     readonly attribute DOMString name;
 };

@@ -42,14 +42,10 @@ Clamp
 Conditional=*
 Constructor
 ConstructorCallWith=ExecutionContext|Document
-Custom=|Getter|Setter
+Custom=|Getter|Setter|LegacyCallAsFunction|ToV8|VisitDOMWrapper|Wrap
 CustomConstructor
 CustomElementCallbacks
 CustomEnumerateProperty
-CustomLegacyCall
-CustomToV8
-CustomVisitDOMWrapper
-CustomWrap
 Default=NullString|Undefined
 DependentLifetime
 DeprecateAs=*

@@ -29,7 +29,7 @@
 // FIXME: explain all uses of [DoNotCheckSecurity]
 [
     CheckSecurity=Frame,
-    CustomToV8,
+    Custom=ToV8,
     ImplementedAs=DOMWindow,
 ] interface Window : EventTarget {
     // DOM Level 0

@@ -19,7 +19,7 @@
  */
 
 [
-    CustomToV8,
+    Custom=ToV8,
 ] interface EventTarget {
     void addEventListener(DOMString type,
                           EventListener listener,

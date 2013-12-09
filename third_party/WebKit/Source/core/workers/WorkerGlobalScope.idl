@@ -25,7 +25,7 @@
  */
 
 [
-    CustomToV8,
+    Custom=ToV8,
     GlobalContext=WorkerGlobalScope,
 ] interface WorkerGlobalScope : EventTarget {
 

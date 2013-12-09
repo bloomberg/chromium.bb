@@ -19,7 +19,7 @@
 [
     Constructor([Default=NullString] optional DOMString data),
     ConstructorCallWith=Document,
-    CustomWrap,
+    Custom=Wrap,
 ] interface Text : CharacterData {
 
     // DOM Level 1

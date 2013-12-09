@@ -24,7 +24,7 @@
  */
 
 [
-    CustomLegacyCall,
+    Custom=LegacyCallAsFunction,
     DependentLifetime,
     GenerateVisitDOMWrapper=ownerNode,
 ] interface HTMLAllCollection {
