@@ -252,8 +252,8 @@ void InspectUI::Observe(int type,
 }
 
 void InspectUI::StartListeningNotifications() {
-  if (!target_handlers_.empty())
-    return;
+  if (!target_handlers_.empty())  // Possible when reloading the page.
+    StopListeningNotifications();
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
