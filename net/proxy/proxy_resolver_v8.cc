@@ -426,39 +426,41 @@ class ProxyResolverV8::Context {
 
     // Attach the javascript bindings.
     v8::Local<v8::FunctionTemplate> alert_template =
-        v8::FunctionTemplate::New(&AlertCallback, v8_this);
+        v8::FunctionTemplate::New(isolate_, &AlertCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "alert"),
                          alert_template);
 
     v8::Local<v8::FunctionTemplate> my_ip_address_template =
-        v8::FunctionTemplate::New(&MyIpAddressCallback, v8_this);
+        v8::FunctionTemplate::New(isolate_, &MyIpAddressCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "myIpAddress"),
                          my_ip_address_template);
 
     v8::Local<v8::FunctionTemplate> dns_resolve_template =
-        v8::FunctionTemplate::New(&DnsResolveCallback, v8_this);
+        v8::FunctionTemplate::New(isolate_, &DnsResolveCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "dnsResolve"),
                          dns_resolve_template);
 
     // Microsoft's PAC extensions:
 
     v8::Local<v8::FunctionTemplate> dns_resolve_ex_template =
-        v8::FunctionTemplate::New(&DnsResolveExCallback, v8_this);
+        v8::FunctionTemplate::New(isolate_, &DnsResolveExCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "dnsResolveEx"),
                          dns_resolve_ex_template);
 
     v8::Local<v8::FunctionTemplate> my_ip_address_ex_template =
-        v8::FunctionTemplate::New(&MyIpAddressExCallback, v8_this);
+        v8::FunctionTemplate::New(isolate_, &MyIpAddressExCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "myIpAddressEx"),
                          my_ip_address_ex_template);
 
     v8::Local<v8::FunctionTemplate> sort_ip_address_list_template =
-        v8::FunctionTemplate::New(&SortIpAddressListCallback, v8_this);
+        v8::FunctionTemplate::New(isolate_,
+                                  &SortIpAddressListCallback,
+                                  v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "sortIpAddressList"),
                          sort_ip_address_list_template);
 
     v8::Local<v8::FunctionTemplate> is_in_net_ex_template =
-        v8::FunctionTemplate::New(&IsInNetExCallback, v8_this);
+        v8::FunctionTemplate::New(isolate_, &IsInNetExCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String(isolate_, "isInNetEx"),
                          is_in_net_ex_template);
 

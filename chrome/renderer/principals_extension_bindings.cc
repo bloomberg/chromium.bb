@@ -61,10 +61,10 @@ v8::Handle<v8::FunctionTemplate>
         v8::Isolate* isolate, v8::Handle<v8::String> name) {
   if (name->Equals(v8::String::NewFromUtf8(
       isolate, "NativeGetManagedAccounts"))) {
-    return v8::FunctionTemplate::New(GetManagedAccounts);
+    return v8::FunctionTemplate::New(isolate, GetManagedAccounts);
   } else if (name->Equals(v8::String::NewFromUtf8(
       isolate, "ShowBrowserAccountManagementUI"))) {
-    return v8::FunctionTemplate::New(ShowBrowserAccountManagementUI);
+    return v8::FunctionTemplate::New(isolate, ShowBrowserAccountManagementUI);
   }
   return v8::Handle<v8::FunctionTemplate>();
 }

@@ -68,7 +68,7 @@ void ObjectBackedNativeHandler::RouteFunction(
       v8::String::NewFromUtf8(isolate, kHandlerFunction),
       v8::External::New(isolate, new HandlerFunction(handler_function)));
   v8::Handle<v8::FunctionTemplate> function_template =
-      v8::FunctionTemplate::New(Router, local_data);
+      v8::FunctionTemplate::New(isolate, Router, local_data);
   object_template_.NewHandle(isolate)
       ->Set(isolate, name.c_str(), function_template);
   router_data_.push_back(UnsafePersistent<v8::Object>(&data));

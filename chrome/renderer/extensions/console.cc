@@ -82,6 +82,7 @@ void BindLogMethod(v8::Isolate* isolate,
                    const std::string& name,
                    LogMethod log_method) {
   v8::Local<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New(
+      isolate,
       &BoundLogMethodCallback,
       v8::External::New(isolate, reinterpret_cast<void*>(log_method)));
   target->Set(v8::String::NewFromUtf8(isolate, name.c_str()),
