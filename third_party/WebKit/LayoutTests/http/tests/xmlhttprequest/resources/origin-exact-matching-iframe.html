@@ -6,29 +6,40 @@
 <body>
 <script type="text/javascript">
 description("Check that exact matching is used when comparing a request's originating url and the value provided by Access-Control-Allow-Origin.");
-var urlTemplate = "http://127.0.0.1:8000/xmlhttprequest/resources/access-control-allow-lists.php?origin=";
+
+var baseUrl = "http://127.0.0.1:8000/xmlhttprequest/resources/access-control-allow-lists.php";
+
+function generateURL(origin)
+{
+    if (Array.isArray(origin))
+        return baseUrl + "?origins=" + origin.map(encodeURIComponent).join(",");
+    else
+        return baseUrl + "?origin=" + encodeURIComponent(origin);
+}
 
 function shouldPass(origin) {
     debug("Should allow origin: '" + origin + "'");
     xhr = new XMLHttpRequest();
-    xhr.open('GET', urlTemplate + encodeURIComponent(origin), false);
+    xhr.open('GET', generateURL(origin), false);
     shouldBeUndefined("xhr.send(null)");
 }
 
 function shouldFail(origin) {
     debug("Should disallow origin: '" + origin + "'");
     xhr = new XMLHttpRequest();
-    xhr.open('GET', urlTemplate + encodeURIComponent(origin), false);
+    xhr.open('GET', generateURL(origin), false);
     shouldThrow("xhr.send(null)");
 }
 
-shouldPass('*');
-shouldPass(' *  ');
-shouldPass('	*');
-shouldPass(location.protocol + "//" + location.host);
-shouldPass(" "+location.protocol + "//" + location.host);
-shouldPass(" "+location.protocol + "//" + location.host + "   	 ");
-shouldPass("	"+location.protocol + "//" + location.host);
+var thisOrigin = location.protocol + "//" + location.host;
+
+shouldPass("*");
+shouldPass(" *  ");
+shouldPass("	*");
+shouldPass(thisOrigin);
+shouldPass(" " + thisOrigin);
+shouldPass(" " + thisOrigin + "   	 ");
+shouldPass("	" + thisOrigin);
 shouldFail(location.protocol + "//www2." + location.host);
 shouldFail("//" + location.host);
 shouldFail("://" + location.host);
@@ -37,15 +48,15 @@ shouldFail("http:://" + location.host);
 shouldFail("http:/" + location.host);
 shouldFail("http:" + location.host);
 shouldFail(location.host);
-shouldFail(location.protocol + "//" + location.host + "?");
-shouldFail(location.protocol + "//" + location.host + "/");
-shouldFail(location.protocol + "//" + location.host + " /");
-shouldFail(location.protocol + "//" + location.host + "#");
-shouldFail(location.protocol + "//" + location.host + "%23");
-shouldFail(location.protocol + "//" + location.host + ":80");
-shouldFail(location.protocol + "//" + location.host + ", *");
-//shouldFail(location.protocol + "//" + location.host + "\0"); // Doesn't fail on Linux. See http://wkbug.com/88688 and http://wkbug.com/88139
-shouldFail((location.protocol + "//" + location.host).toUpperCase());
+shouldFail(thisOrigin + "?");
+shouldFail(thisOrigin + "/");
+shouldFail(thisOrigin + " /");
+shouldFail(thisOrigin + "#");
+shouldFail(thisOrigin + "%23");
+shouldFail(thisOrigin + ":80");
+shouldFail(thisOrigin + ", *");
+//shouldFail(thisOrigin + "\0"); // Doesn't fail on Linux. See http://wkbug.com/88688 and http://wkbug.com/88139
+shouldFail(thisOrigin.toUpperCase());
 shouldFail(location.protocol.toUpperCase() + "//" + location.host);
 shouldFail("-");
 shouldFail("**");
@@ -55,16 +66,20 @@ shouldFail("'*'");
 shouldFail('"*"');
 shouldFail("* *");
 shouldFail("*" + location.protocol + "//" + "*");
-shouldFail("*" + location.protocol + "//" + location.host);
-shouldFail("* " + location.protocol + "//" + location.host);
-shouldFail("*, " + location.protocol + "//" + location.host);
-shouldFail("\0" + location.protocol + "//" + location.host);
-shouldFail("null " + location.protocol + "//" + location.host);
-shouldFail('http://example.net');
-shouldFail('null');
-shouldFail('');
+shouldFail("*" + thisOrigin);
+shouldFail("* " + thisOrigin);
+shouldFail("*, " + thisOrigin);
+shouldFail("\0" + thisOrigin);
+shouldFail("null " + thisOrigin);
+shouldFail("http://example.net");
+shouldFail("http://example.net " + thisOrigin);
+shouldFail("http://example.net, " + thisOrigin);
+shouldFail(["http://example.net", thisOrigin]);
+shouldFail([thisOrigin, thisOrigin]);
+shouldFail("null");
+shouldFail("");
 shouldFail(location.href);
-shouldFail(location.href.replace(/\/[^\/]*$/, '/'));
+shouldFail(location.href.replace(/\/[^\/]*$/, "/"));
 shouldFail(location.href.replace(location.hostname, "localhost"));
 
 </script>

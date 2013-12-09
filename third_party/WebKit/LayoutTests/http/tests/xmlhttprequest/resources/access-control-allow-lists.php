@@ -1,9 +1,12 @@
 <?php
 
-$origin = $_GET['origin'];
-
-if ($origin != 'none')
-    header("Access-Control-Allow-Origin: $origin");
+if (isset($_GET['origin'])) {
+    header("Access-Control-Allow-Origin: " . $_GET['origin']);
+} else if (isset($_GET['origins'])) {
+    $origins = explode(',', $_GET['origins']);
+    for ($i = 0; $i < sizeof($origins); ++$i)
+         header("Access-Control-Allow-Origin: " . $origins[$i], false);
+}
 
 if (isset($_GET['headers']))
     header("Access-Control-Allow-Headers: {$_GET['headers']}");

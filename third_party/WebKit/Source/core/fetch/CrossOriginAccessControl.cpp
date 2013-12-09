@@ -123,8 +123,7 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
 
         HTTPHeaderMap::const_iterator end = requestHeaderFields.end();
         for (; it != end; ++it) {
-            headerBuffer.append(',');
-            headerBuffer.append(' ');
+            headerBuffer.appendLiteral(", ");
             headerBuffer.append(it->key);
         }
 
@@ -132,6 +131,11 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
     }
 
     return preflightRequest;
+}
+
+static bool isOriginSeparator(UChar ch)
+{
+    return isASCIISpace(ch) || ch == ',';
 }
 
 bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription)
@@ -145,18 +149,19 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     if (accessControlOriginString == starAtom && includeCredentials == DoNotAllowStoredCredentials)
         return true;
 
-    // FIXME: Access-Control-Allow-Origin can contain a list of origins.
     if (accessControlOriginString != securityOrigin->toString()) {
         if (accessControlOriginString == starAtom) {
-            errorDescription = "Wildcards cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+            errorDescription = "A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
         } else if (accessControlOriginString.isEmpty()) {
             errorDescription = "No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+        } else if (accessControlOriginString.string().find(isOriginSeparator, 0) != kNotFound) {
+            errorDescription = "The 'Access-Control-Allow-Origin' header contains multiple values '" + accessControlOriginString + "', but only one is allowed. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
         } else {
             KURL headerOrigin(KURL(), accessControlOriginString);
             if (!headerOrigin.isValid())
                 errorDescription = "The 'Access-Control-Allow-Origin' header contains the invalid value '" + accessControlOriginString + "'. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
             else
-                errorDescription = "The 'Access-Control-Allow-Origin' whitelists only '" + accessControlOriginString + "'. Origin '" + securityOrigin->toString() + "' is not in the list, and is therefore not allowed access.";
+                errorDescription = "The 'Access-Control-Allow-Origin' header has a value '" + accessControlOriginString + "' that is not equal to the supplied origin. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
         }
         return false;
     }
