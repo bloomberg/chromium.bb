@@ -267,6 +267,8 @@
       'exported/WebRTCVoidRequest.cpp',
       'exported/WebScrollbarImpl.cpp',
       'exported/WebScrollbarImpl.h',
+      'exported/WebScrollbarThemeClientImpl.cpp',
+      'exported/WebScrollbarThemeClientImpl.h',
       'exported/WebSocketHandshakeRequestInfo.cpp',
       'exported/WebSocketHandshakeResponseInfo.cpp',
       'exported/WebSocketStreamError.cpp',

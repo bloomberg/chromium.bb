@@ -26,6 +26,7 @@
 #ifndef WebScrollbarThemeClientImpl_h
 #define WebScrollbarThemeClientImpl_h
 
+#include "platform/PlatformExport.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "public/platform/WebScrollbar.h"
 #include "wtf/Noncopyable.h"
@@ -34,7 +35,7 @@ namespace WebCore {
 class ScrollView;
 
 // Adapts a WebScrollbar to the ScrollbarThemeClient interface
-class WebScrollbarThemeClientImpl : public ScrollbarThemeClient {
+class PLATFORM_EXPORT WebScrollbarThemeClientImpl : public ScrollbarThemeClient {
     WTF_MAKE_NONCOPYABLE(WebScrollbarThemeClientImpl);
 public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
