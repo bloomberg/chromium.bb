@@ -9476,7 +9476,7 @@ PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > CSSParser::sinkFloatingMediaQueryExp
     return m_floatingMediaQueryExpList.release();
 }
 
-MediaQuery* CSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restrictor, const String& mediaType, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > expressions)
+MediaQuery* CSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restrictor, const AtomicString& mediaType, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > expressions)
 {
     m_floatingMediaQuery = adoptPtr(new MediaQuery(restrictor, mediaType, expressions));
     return m_floatingMediaQuery.get();
@@ -9484,12 +9484,12 @@ MediaQuery* CSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restricto
 
 MediaQuery* CSSParser::createFloatingMediaQuery(PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > expressions)
 {
-    return createFloatingMediaQuery(MediaQuery::None, "all", expressions);
+    return createFloatingMediaQuery(MediaQuery::None, AtomicString("all", AtomicString::ConstructFromLiteral), expressions);
 }
 
 MediaQuery* CSSParser::createFloatingNotAllQuery()
 {
-    return createFloatingMediaQuery(MediaQuery::Not, "all", sinkFloatingMediaQueryExpList(createFloatingMediaQueryExpList()));
+    return createFloatingMediaQuery(MediaQuery::Not, AtomicString("all", AtomicString::ConstructFromLiteral), sinkFloatingMediaQueryExpList(createFloatingMediaQueryExpList()));
 }
 
 PassOwnPtr<MediaQuery> CSSParser::sinkFloatingMediaQuery(MediaQuery* query)

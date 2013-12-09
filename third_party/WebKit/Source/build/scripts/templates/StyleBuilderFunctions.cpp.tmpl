@@ -333,7 +333,7 @@ namespace WebCore {
         if (!pair || !pair->first() || !pair->second())
             continue;
 
-        AtomicString identifier = pair->first()->getStringValue();
+        AtomicString identifier(pair->first()->getStringValue());
         int value = pair->second()->getIntValue();
         CounterDirectives& directives = map.add(identifier, CounterDirectives()).iterator->value;
         {%- if action == "Reset" %}

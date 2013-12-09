@@ -337,8 +337,8 @@ public:
 
     String suggestedMIMEType() const;
 
-    String contentLanguage() const { return m_contentLanguage; }
-    void setContentLanguage(const String&);
+    const AtomicString& contentLanguage() const { return m_contentLanguage; }
+    void setContentLanguage(const AtomicString&);
 
     String xmlEncoding() const { return m_xmlEncoding; }
     String xmlVersion() const { return m_xmlVersion; }
@@ -703,7 +703,7 @@ public:
      * @param equiv The http header name (value of the meta tag's "equiv" attribute)
      * @param content The header value (value of the meta tag's "content" attribute)
      */
-    void processHttpEquiv(const String& equiv, const String& content);
+    void processHttpEquiv(const AtomicString& equiv, const AtomicString& content);
     void processViewport(const String& features, ViewportDescription::Type origin);
     void updateViewportDescription();
     void processReferrerPolicy(const String& policy);
@@ -1087,11 +1087,11 @@ private:
     void didAssociateFormControlsTimerFired(Timer<Document>*);
     void styleResolverThrowawayTimerFired(Timer<Document>*);
 
-    void processHttpEquivDefaultStyle(const String& content);
-    void processHttpEquivRefresh(const String& content);
-    void processHttpEquivSetCookie(const String& content);
-    void processHttpEquivXFrameOptions(const String& content);
-    void processHttpEquivContentSecurityPolicy(const String& equiv, const String& content);
+    void processHttpEquivDefaultStyle(const AtomicString& content);
+    void processHttpEquivRefresh(const AtomicString& content);
+    void processHttpEquivSetCookie(const AtomicString& content);
+    void processHttpEquivXFrameOptions(const AtomicString& content);
+    void processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content);
 
     DocumentLifecycle m_lifecyle;
 
@@ -1214,7 +1214,7 @@ private:
     unsigned m_xmlStandalone : 2;
     unsigned m_hasXMLDeclaration : 1;
 
-    String m_contentLanguage;
+    AtomicString m_contentLanguage;
 
     DocumentEncodingData m_encodingData;
 

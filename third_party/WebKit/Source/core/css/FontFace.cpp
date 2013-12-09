@@ -98,7 +98,7 @@ static PassRefPtr<CSSValue> parseCSSValue(const String& s, CSSPropertyID propert
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 
-PassRefPtr<FontFace> FontFace::create(const String& family, const String& source, const Dictionary& descriptors, ExceptionState& exceptionState)
+PassRefPtr<FontFace> FontFace::create(const AtomicString& family, const String& source, const Dictionary& descriptors, ExceptionState& exceptionState)
 {
     RefPtr<CSSValue> src = parseCSSValue(source, CSSPropertySrc);
     if (!src || !src->isValueList()) {
@@ -291,9 +291,9 @@ bool FontFace::setFamilyValue(CSSValueList* familyList)
         return false;
 
     CSSPrimitiveValue* familyValue = toCSSPrimitiveValue(familyList->itemWithoutBoundsCheck(0));
-    String family;
+    AtomicString family;
     if (familyValue->isString()) {
-        family = familyValue->getStringValue();
+        family = AtomicString(familyValue->getStringValue());
     } else if (familyValue->isValueID()) {
         // We need to use the raw text for all the generic family types, since @font-face is a way of actually
         // defining what font to use for those types.

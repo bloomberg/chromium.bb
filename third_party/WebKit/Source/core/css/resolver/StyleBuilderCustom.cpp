@@ -791,7 +791,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
     if (primitiveValue->isString()) {
         state.style()->setTextEmphasisFill(TextEmphasisFillFilled);
         state.style()->setTextEmphasisMark(TextEmphasisMarkCustom);
-        state.style()->setTextEmphasisCustomMark(primitiveValue->getStringValue());
+        state.style()->setTextEmphasisCustomMark(AtomicString(primitiveValue->getStringValue()));
         return;
     }
 
@@ -1258,7 +1258,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
                     CSSValueID listStyleIdent = counterValue->listStyleIdent();
                     if (listStyleIdent != CSSValueNone)
                         listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
-                    OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(counterValue->identifier(), listStyleType, counterValue->separator()));
+                    OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
                     state.style()->setContent(counter.release(), didSet);
                     didSet = true;
                 } else {
@@ -1408,7 +1408,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (primitiveValue->getValueID() == CSSValueAuto)
             state.style()->setLocale(nullAtom);
         else
-            state.style()->setLocale(primitiveValue->getStringValue());
+            state.style()->setLocale(AtomicString(primitiveValue->getStringValue()));
         state.fontBuilder().setScript(state.style()->locale());
         return;
     }

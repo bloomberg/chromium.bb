@@ -64,7 +64,7 @@ StyleSheet* StyleSheetList::item(unsigned index)
     return index < sheets.size() ? sheets[index].get() : 0;
 }
 
-HTMLStyleElement* StyleSheetList::getNamedItem(const String& name) const
+HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
 {
     if (!m_treeScope)
         return 0;

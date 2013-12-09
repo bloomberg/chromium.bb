@@ -73,7 +73,7 @@ static bool expressionCompare(const OwnPtr<MediaQueryExp>& a, const OwnPtr<Media
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
-MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<ExpressionVector> expressions)
+MediaQuery::MediaQuery(Restrictor r, const AtomicString& mediaType, PassOwnPtr<ExpressionVector> expressions)
     : m_restrictor(r)
     , m_mediaType(mediaType.lower())
     , m_expressions(expressions)

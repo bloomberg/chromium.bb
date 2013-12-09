@@ -179,7 +179,7 @@ void FontBuilder::setFontFamilyValue(CSSValue* value, float effectiveZoom)
         AtomicString face;
         Settings* settings = m_document->settings();
         if (contentValue->isString()) {
-            face = contentValue->getStringValue();
+            face = AtomicString(contentValue->getStringValue());
         } else if (settings) {
             switch (contentValue->getValueID()) {
             case CSSValueWebkitBody:

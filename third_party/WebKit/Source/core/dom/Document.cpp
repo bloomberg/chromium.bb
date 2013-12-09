@@ -1118,7 +1118,7 @@ void Document::setCharset(const String& charset)
     setEncodingData(newEncodingData);
 }
 
-void Document::setContentLanguage(const String& language)
+void Document::setContentLanguage(const AtomicString& language)
 {
     if (m_contentLanguage == language)
         return;
@@ -2804,7 +2804,7 @@ CSSStyleSheet* Document::elementSheet()
     return m_elemSheet.get();
 }
 
-void Document::processHttpEquiv(const String& equiv, const String& content)
+void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& content)
 {
     ASSERT(!equiv.isNull() && !content.isNull());
 
@@ -2827,7 +2827,7 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
         processHttpEquivContentSecurityPolicy(equiv, content);
 }
 
-void Document::processHttpEquivContentSecurityPolicy(const String& equiv, const String& content)
+void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content)
 {
     if (equalIgnoringCase(equiv, "content-security-policy"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce);
@@ -2842,7 +2842,7 @@ void Document::processHttpEquivContentSecurityPolicy(const String& equiv, const 
         ASSERT_NOT_REACHED();
 }
 
-void Document::processHttpEquivDefaultStyle(const String& content)
+void Document::processHttpEquivDefaultStyle(const AtomicString& content)
 {
     // The preferred style set has been overridden as per section
     // 14.3.2 of the HTML4.0 specification. We need to update the
@@ -2855,7 +2855,7 @@ void Document::processHttpEquivDefaultStyle(const String& content)
     styleResolverChanged(RecalcStyleDeferred);
 }
 
-void Document::processHttpEquivRefresh(const String& content)
+void Document::processHttpEquivRefresh(const AtomicString& content)
 {
     maybeHandleHttpRefresh(content, HttpRefreshFromMetaTag);
 }
@@ -2888,7 +2888,7 @@ void Document::maybeHandleHttpRefresh(const String& content, HttpRefreshType htt
     m_frame->navigationScheduler().scheduleRedirect(delay, refreshURL);
 }
 
-void Document::processHttpEquivSetCookie(const String& content)
+void Document::processHttpEquivSetCookie(const AtomicString& content)
 {
     // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
     if (!isHTMLDocument())
@@ -2898,7 +2898,7 @@ void Document::processHttpEquivSetCookie(const String& content)
     toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION);
 }
 
-void Document::processHttpEquivXFrameOptions(const String& content)
+void Document::processHttpEquivXFrameOptions(const AtomicString& content)
 {
     Frame* frame = this->frame();
     if (!frame)

@@ -41,7 +41,7 @@ public:
     unsigned length();
     StyleSheet* item(unsigned index);
 
-    HTMLStyleElement* getNamedItem(const String&) const;
+    HTMLStyleElement* getNamedItem(const AtomicString&) const;
 
     Document* document() { return m_treeScope->documentScope(); }
 

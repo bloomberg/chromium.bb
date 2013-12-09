@@ -53,12 +53,12 @@ class FontFace : public RefCounted<FontFace> {
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 
-    static PassRefPtr<FontFace> create(const String& family, const String& source, const Dictionary&, ExceptionState&);
+    static PassRefPtr<FontFace> create(const AtomicString& family, const String& source, const Dictionary&, ExceptionState&);
     static PassRefPtr<FontFace> create(const StyleRuleFontFace*);
 
     ~FontFace();
 
-    String family() const { return m_family; }
+    const AtomicString& family() const { return m_family; }
     String style() const;
     String weight() const;
     String stretch() const;
@@ -67,7 +67,7 @@ public:
     String featureSettings() const;
 
     // FIXME: Changing these attributes should affect font matching.
-    void setFamily(const String& s, ExceptionState&) { m_family = s; }
+    void setFamily(const AtomicString& s, ExceptionState&) { m_family = s; }
     void setStyle(const String&, ExceptionState&);
     void setWeight(const String&, ExceptionState&);
     void setStretch(const String&, ExceptionState&);
@@ -95,7 +95,7 @@ private:
     bool setFamilyValue(CSSValueList*);
     void resolveReadyPromises();
 
-    String m_family;
+    AtomicString m_family;
     RefPtr<CSSValue> m_src;
     RefPtr<CSSValue> m_style;
     RefPtr<CSSValue> m_weight;

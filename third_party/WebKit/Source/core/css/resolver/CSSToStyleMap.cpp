@@ -401,7 +401,7 @@ void CSSToStyleMap::mapAnimationName(CSSAnimationData* layer, CSSValue* value) c
     if (primitiveValue->getValueID() == CSSValueNone)
         layer->setIsNoneAnimation(true);
     else
-        layer->setName(primitiveValue->getStringValue());
+        layer->setName(AtomicString(primitiveValue->getStringValue()));
 }
 
 void CSSToStyleMap::mapAnimationPlayState(CSSAnimationData* layer, CSSValue* value) const

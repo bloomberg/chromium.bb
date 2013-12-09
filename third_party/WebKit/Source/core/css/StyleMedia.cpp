@@ -40,13 +40,13 @@ StyleMedia::StyleMedia(Frame* frame)
 {
 }
 
-String StyleMedia::type() const
+AtomicString StyleMedia::type() const
 {
     FrameView* view = m_frame ? m_frame->view() : 0;
     if (view)
         return view->mediaType();
 
-    return String();
+    return nullAtom;
 }
 
 bool StyleMedia::matchMedium(const String& query) const

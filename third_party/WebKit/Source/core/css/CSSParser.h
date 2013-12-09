@@ -345,7 +345,7 @@ public:
     PassOwnPtr<MediaQueryExp> sinkFloatingMediaQueryExp(MediaQueryExp*);
     Vector<OwnPtr<MediaQueryExp> >* createFloatingMediaQueryExpList();
     PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > sinkFloatingMediaQueryExpList(Vector<OwnPtr<MediaQueryExp> >*);
-    MediaQuery* createFloatingMediaQuery(MediaQuery::Restrictor, const String&, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > >);
+    MediaQuery* createFloatingMediaQuery(MediaQuery::Restrictor, const AtomicString&, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > >);
     MediaQuery* createFloatingMediaQuery(PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > >);
     MediaQuery* createFloatingNotAllQuery();
     PassOwnPtr<MediaQuery> sinkFloatingMediaQuery(MediaQuery*);
