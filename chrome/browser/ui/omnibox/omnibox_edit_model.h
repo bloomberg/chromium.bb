@@ -89,6 +89,7 @@ class OmniboxEditModel {
 
   // TODO: The edit and popup should be siblings owned by the LocationBarView,
   // making this accessor unnecessary.
+  // NOTE: popup_model() can be NULL for testing.
   OmniboxPopupModel* popup_model() const {
     return omnibox_controller_->popup_model();
   }

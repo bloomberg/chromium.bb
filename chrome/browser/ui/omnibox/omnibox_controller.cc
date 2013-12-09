@@ -56,6 +56,7 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
                                      Profile* profile)
     : omnibox_edit_model_(omnibox_edit_model),
       profile_(profile),
+      popup_(NULL),
       autocomplete_controller_(new AutocompleteController(profile, this,
           AutocompleteClassifier::kDefaultOmniboxProviders)) {
 }

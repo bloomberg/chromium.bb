@@ -288,7 +288,8 @@ bool OmniboxEditModel::UpdatePermanentText() {
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
       (!has_focus() ||
-       (!user_input_in_progress_ && !popup_model()->IsOpen() &&
+       (!user_input_in_progress_ &&
+        !(popup_model() && popup_model()->IsOpen()) &&
         controller_->GetToolbarModel()->search_term_replacement_enabled())) &&
       (gray_text.empty() ||
        new_permanent_text != user_text_ + gray_text);
@@ -665,7 +666,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
 
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
-  if (popup_model()->IsOpen()) {
+  if (popup_model() && popup_model()->IsOpen()) {
     base::TimeDelta elapsed_time_since_last_change_to_default_match(
         now - autocomplete_controller()->last_time_default_match_changed());
     // These elapsed times don't really make sense for ZeroSuggest matches
@@ -810,7 +811,7 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
   autocomplete_controller()->Stop(false);
   is_keyword_hint_ = false;
 
-  if (popup_model()->IsOpen())
+  if (popup_model() && popup_model()->IsOpen())
     popup_model()->SetSelectedLineState(OmniboxPopupModel::KEYWORD);
   else
     StartAutocomplete(false, true);
@@ -845,7 +846,8 @@ void OmniboxEditModel::ClearKeyword(const string16& visible_text) {
 
   // Only reset the result if the edit text has changed since the
   // keyword was accepted, or if the popup is closed.
-  if (just_deleted_text_ || !visible_text.empty() || !popup_model()->IsOpen()) {
+  if (just_deleted_text_ || !visible_text.empty() ||
+      !(popup_model() && popup_model()->IsOpen())) {
     view_->OnBeforePossibleChange();
     view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
         false, false);
@@ -974,7 +976,7 @@ void OmniboxEditModel::OnPaste() {
 
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
   // NOTE: This purposefully doesn't trigger any code that resets paste_state_.
-  if (popup_model()->IsOpen()) {
+  if (popup_model() && popup_model()->IsOpen()) {
     // The popup is open, so the user should be able to interact with it
     // normally.
     popup_model()->Move(count);
@@ -1204,7 +1206,8 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   string16 keyword;
   bool is_keyword_hint;
   match.GetKeywordUIState(profile_, &keyword, &is_keyword_hint);
-  popup_model()->OnResultChanged();
+  if (popup_model())
+    popup_model()->OnResultChanged();
   // OnPopupDataChanged() resets OmniboxController's |current_match_| early
   // on.  Therefore, copy match.inline_autocompletion to a temp to preserve
   // its value across the entire call.
@@ -1268,7 +1271,8 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     match->destination_url =
         delegate_->GetNavigationController().GetVisibleEntry()->GetURL();
     match->transition = content::PAGE_TRANSITION_RELOAD;
-  } else if (popup_model()->IsOpen() || query_in_progress()) {
+  } else if (query_in_progress() ||
+             (popup_model() && popup_model()->IsOpen())) {
     if (query_in_progress()) {
       // It's technically possible for |result| to be empty if no provider
       // returns a synchronous result but the query has not completed
@@ -1285,7 +1289,8 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
       CHECK(popup_model()->selected_line() < result().size());
       *match = result().match_at(popup_model()->selected_line());
     }
-    if (alternate_nav_url && popup_model()->manually_selected_match().empty())
+    if (alternate_nav_url &&
+        (!popup_model() || popup_model()->manually_selected_match().empty()))
       *alternate_nav_url = result().alternate_nav_url();
   } else {
     AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
@@ -1301,7 +1306,7 @@ void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
   just_deleted_text_ = false;
   has_temporary_text_ = false;
 
-  if (revert_popup)
+  if (revert_popup && popup_model())
     popup_model()->ResetToDefaultMatch();
   view_->OnRevertTemporaryText();
 }
