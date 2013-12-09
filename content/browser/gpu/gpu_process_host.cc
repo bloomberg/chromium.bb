@@ -48,6 +48,10 @@
 #include "ui/surface/accelerated_surface_win.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/ozone_switches.h"
+#endif
+
 namespace content {
 
 bool GpuProcessHost::gpu_enabled_ = true;
@@ -1131,6 +1135,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #endif
 #if defined(USE_AURA)
     switches::kUIPrioritizeInGpuProcess,
+#endif
+#if defined(USE_OZONE)
+    switches::kOzonePlatform,
 #endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
