@@ -19,6 +19,7 @@
 
 class GURL;
 class Profile;
+class ProfileOAuth2TokenService;
 
 namespace drive { class DriveUploaderInterface; }
 
@@ -248,6 +249,7 @@ class APIUtil : public APIUtilInterface,
 
   google_apis::GDataWapiUrlGenerator wapi_url_generator_;
   google_apis::DriveApiUrlGenerator drive_api_url_generator_;
+  ProfileOAuth2TokenService* oauth_service_;
 
   UploadCallbackMap upload_callback_map_;
   UploadKey upload_next_key_;
@@ -255,6 +257,8 @@ class APIUtil : public APIUtilInterface,
   base::FilePath temp_dir_path_;
 
   std::string root_resource_id_;
+
+  bool has_initialized_token_;
 
   ObserverList<APIUtilObserver> observers_;
 

@@ -167,17 +167,17 @@ APIUtil::APIUtil(Profile* profile,
           GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
           GURL(google_apis::DriveApiUrlGenerator::
                kBaseDownloadUrlForProduction)),
+      oauth_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
       upload_next_key_(0),
-      temp_dir_path_(temp_dir_path) {
-  ProfileOAuth2TokenService* oauth_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+      temp_dir_path_(temp_dir_path),
+      has_initialized_token_(false) {
   base::SequencedWorkerPool* blocking_pool =
       content::BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> task_runner(
       blocking_pool->GetSequencedTaskRunner(blocking_pool->GetSequenceToken()));
   if (IsDriveAPIDisabled()) {
     drive_service_.reset(new drive::GDataWapiService(
-        oauth_service,
+        oauth_service_,
         profile->GetRequestContext(),
         task_runner.get(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
@@ -185,7 +185,7 @@ APIUtil::APIUtil(Profile* profile,
         std::string() /* custom_user_agent */));
   } else {
     drive_service_.reset(new drive::DriveAPIService(
-        oauth_service,
+        oauth_service_,
         profile->GetRequestContext(),
         task_runner.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
@@ -194,8 +194,10 @@ APIUtil::APIUtil(Profile* profile,
         std::string() /* custom_user_agent */));
   }
 
-  drive_service_->Initialize(oauth_service->GetPrimaryAccountId());
+  drive_service_->Initialize(oauth_service_->GetPrimaryAccountId());
   drive_service_->AddObserver(this);
+  has_initialized_token_ = drive_service_->HasRefreshToken();
+
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
   drive_uploader_.reset(new drive::DriveUploader(
@@ -679,6 +681,10 @@ GURL APIUtil::DirectoryTitleToOrigin(const std::string& title) {
 
 void APIUtil::OnReadyToSendRequests() {
   DCHECK(CalledOnValidThread());
+  if (!has_initialized_token_) {
+    drive_service_->Initialize(oauth_service_->GetPrimaryAccountId());
+    has_initialized_token_ = true;
+  }
   FOR_EACH_OBSERVER(APIUtilObserver, observers_, OnAuthenticated());
 }
 
