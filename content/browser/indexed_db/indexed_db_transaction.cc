@@ -18,8 +18,6 @@
 
 namespace content {
 
-const int64 kInactivityTimeoutPeriodSeconds = 60;
-
 IndexedDBTransaction::TaskQueue::TaskQueue() {}
 IndexedDBTransaction::TaskQueue::~TaskQueue() { clear(); }
 
@@ -55,8 +53,7 @@ IndexedDBTransaction::IndexedDBTransaction(
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
     const std::set<int64>& object_store_ids,
     indexed_db::TransactionMode mode,
-    IndexedDBDatabase* database,
-    IndexedDBBackingStore::Transaction* backing_store_transaction)
+    IndexedDBDatabase* database)
     : id_(id),
       object_store_ids_(object_store_ids),
       mode_(mode),
@@ -65,7 +62,7 @@ IndexedDBTransaction::IndexedDBTransaction(
       commit_pending_(false),
       callbacks_(callbacks),
       database_(database),
-      transaction_(backing_store_transaction),
+      transaction_(database->backing_store()),
       backing_store_transaction_begun_(false),
       should_process_queue_(false),
       pending_preemptive_events_(0) {
@@ -89,7 +86,6 @@ void IndexedDBTransaction::ScheduleTask(Operation task, Operation abort_task) {
   if (state_ == FINISHED)
     return;
 
-  timeout_timer_.Stop();
   used_ = true;
   task_queue_.push(task);
   ++diagnostics_.tasks_scheduled;
@@ -102,7 +98,6 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
   if (state_ == FINISHED)
     return;
 
-  timeout_timer_.Stop();
   used_ = true;
   if (type == IndexedDBDatabase::NORMAL_TASK) {
     task_queue_.push(task);
@@ -139,8 +134,6 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   if (state_ == FINISHED)
     return;
 
-  timeout_timer_.Stop();
-
   // The last reference to this object may be released while performing the
   // abort steps below. We therefore take a self reference to keep ourselves
   // alive while executing this method.
@@ -150,7 +143,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   should_process_queue_ = false;
 
   if (backing_store_transaction_begun_)
-    transaction_->Rollback();
+    transaction_.Rollback();
 
   // Run the abort tasks, if any.
   while (!abort_task_stack_.empty()) {
@@ -165,7 +158,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   // release references and allow the backing store itself to be
   // released, and order is critical.
   CloseOpenCursors();
-  transaction_->Reset();
+  transaction_.Reset();
 
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
@@ -231,8 +224,6 @@ void IndexedDBTransaction::Commit() {
   if (HasPendingTasks())
     return;
 
-  timeout_timer_.Stop();
-
   // The last reference to this object may be released while performing the
   // commit steps below. We therefore take a self reference to keep ourselves
   // alive while executing this method.
@@ -243,14 +234,14 @@ void IndexedDBTransaction::Commit() {
 
   state_ = FINISHED;
 
-  bool committed = !used_ || transaction_->Commit();
+  bool committed = !used_ || transaction_.Commit();
 
   // Backing store resources (held via cursors) must be released
   // before script callbacks are fired, as the script callbacks may
   // release references and allow the backing store itself to be
   // released, and order is critical.
   CloseOpenCursors();
-  transaction_->Reset();
+  transaction_.Reset();
 
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
@@ -284,7 +275,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   should_process_queue_ = false;
 
   if (!backing_store_transaction_begun_) {
-    transaction_->Begin();
+    transaction_.Begin();
     backing_store_transaction_begun_ = true;
   }
 
@@ -311,23 +302,8 @@ void IndexedDBTransaction::ProcessTaskQueue() {
 
   // If there are no pending tasks, we haven't already committed/aborted,
   // and the front-end requested a commit, it is now safe to do so.
-  if (!HasPendingTasks() && state_ != FINISHED && commit_pending_) {
+  if (!HasPendingTasks() && state_ != FINISHED && commit_pending_)
     Commit();
-    return;
-  }
-
-  // Otherwise, start a timer in case the front-end gets wedged and
-  // never requests further activity.
-  timeout_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kInactivityTimeoutPeriodSeconds),
-      base::Bind(&IndexedDBTransaction::Timeout, this));
-}
-
-void IndexedDBTransaction::Timeout() {
-  Abort(IndexedDBDatabaseError(
-      blink::WebIDBDatabaseExceptionTimeoutError,
-      ASCIIToUTF16("Transaction timed out due to inactivity.")));
 }
 
 void IndexedDBTransaction::CloseOpenCursors() {

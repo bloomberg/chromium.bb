@@ -118,7 +118,6 @@ class CONTENT_EXPORT IndexedDBDatabase
     return transaction_coordinator_;
   }
 
-  void TransactionCreated(scoped_refptr<IndexedDBTransaction> transaction);
   void TransactionStarted(IndexedDBTransaction* transaction);
   void TransactionFinished(IndexedDBTransaction* transaction);
   void TransactionFinishedAndCompleteFired(IndexedDBTransaction* transaction);
