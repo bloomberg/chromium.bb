@@ -53,8 +53,6 @@ class ConflictResolver : public SyncTask {
   void DidRemoveFile(const SyncStatusCallback& callback,
                      const std::string& file_id,
                      google_apis::GDataErrorCode error);
-  void DidUpdateDatabaseForRemovedFile(const SyncStatusCallback& callback,
-                                       SyncStatusCode status);
 
   std::string target_file_id_;
   std::vector<std::string> parents_to_remove_;

@@ -321,10 +321,6 @@ class MetadataDatabase {
   // Sets |app_ids| to a list of all registered app ids.
   void GetRegisteredAppIDs(std::vector<std::string>* app_ids);
 
-  // Marks |tracker_id| dirty.
-  void MarkTrackerDirty(int64 tracker_id,
-                        const SyncStatusCallback& callback);
-
  private:
   friend class ListChangesTaskTest;
   friend class MetadataDatabaseTest;
@@ -348,8 +344,6 @@ class MetadataDatabase {
       scoped_ptr<MetadataDatabase>* metadata_database_out);
   SyncStatusCode InitializeOnTaskRunner(const base::FilePath& database_path);
   void BuildIndexes(DatabaseContents* contents);
-
-  SyncStatusCode SetLargestChangeIDForTesting(int64 largest_changestamp);
 
   // Database manipulation methods.
   void RegisterTrackerAsAppRoot(const std::string& app_id,

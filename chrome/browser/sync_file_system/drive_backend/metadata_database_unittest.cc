@@ -218,12 +218,6 @@ class MetadataDatabaseTest : public testing::Test {
 
   MetadataDatabase* metadata_database() { return metadata_database_.get(); }
 
-  leveldb::DB* db() {
-    if (!metadata_database_)
-      return NULL;
-    return metadata_database_->db_.get();
-  }
-
   scoped_ptr<leveldb::DB> InitializeLevelDB() {
     leveldb::DB* db = NULL;
     leveldb::Options options;

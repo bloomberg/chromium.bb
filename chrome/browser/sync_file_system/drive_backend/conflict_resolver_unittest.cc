@@ -85,14 +85,6 @@ class ConflictResolverTest : public testing::Test,
     EXPECT_EQ(SYNC_STATUS_OK, status);
   }
 
-  SyncStatusCode RunRemoteSyncer() {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    scoped_ptr<RemoteToLocalSyncer> syncer(new RemoteToLocalSyncer(this));
-    syncer->Run(CreateResultReceiver(&status));
-    base::RunLoop().RunUntilIdle();
-    return status;
-  }
-
   virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE {
     return fake_drive_service_.get();
   }

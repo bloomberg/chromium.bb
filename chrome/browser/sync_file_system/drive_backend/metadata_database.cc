@@ -1200,19 +1200,6 @@ void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
   }
 }
 
-void MetadataDatabase::MarkTrackerDirty(int64 tracker_id,
-                                        const SyncStatusCallback& callback) {
-  TrackerByID::iterator found = tracker_by_id_.find(tracker_id);
-  if (found == tracker_by_id_.end()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
-    return;
-  }
-
-  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
-  MarkSingleTrackerDirty(found->second, batch.get());
-  WriteToDatabase(batch.Pass(), callback);
-}
-
 MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
     : task_runner_(task_runner),
       largest_known_change_id_(0),
@@ -1249,16 +1236,6 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
   if (status == SYNC_STATUS_OK)
     *metadata_database_out = metadata_database.Pass();
   return status;
-}
-
-SyncStatusCode MetadataDatabase::SetLargestChangeIDForTesting(
-    int64 largest_change_id) {
-  service_metadata_->set_largest_change_id(largest_change_id);
-
-  leveldb::WriteBatch batch;
-  PutServiceMetadataToBatch(*service_metadata_, &batch);
-  return LevelDBStatusToSyncStatusCode(
-      db_->Write(leveldb::WriteOptions(), &batch));
 }
 
 SyncStatusCode MetadataDatabase::InitializeOnTaskRunner(

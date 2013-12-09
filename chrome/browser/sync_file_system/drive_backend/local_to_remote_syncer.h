@@ -52,10 +52,8 @@ class LocalToRemoteSyncer : public SyncTask {
   void SyncCompleted(const SyncStatusCallback& callback,
                      SyncStatusCode status);
 
-  void HandleMissingRemoteFile(const SyncStatusCallback& callback);
   void HandleConflict(const SyncStatusCallback& callback);
   void HandleExistingRemoteFile(const SyncStatusCallback& callback);
-  void HandleMissingParentCase(const SyncStatusCallback& callback);
 
   void DeleteRemoteFile(const SyncStatusCallback& callback);
   void DidDeleteRemoteFile(const SyncStatusCallback& callback,

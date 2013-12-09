@@ -7,7 +7,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
@@ -80,13 +79,6 @@ class ListChangesTaskTest : public testing::Test,
     return base::MessageLoopProxy::current();
   }
 
-  int64 GetRemoteLargestChangeID() {
-    scoped_ptr<google_apis::AboutResource> about_resource;
-    EXPECT_EQ(google_apis::HTTP_SUCCESS,
-              fake_drive_service_helper_->GetAboutResource(&about_resource));
-    return about_resource->largest_change_id();
-  }
-
  protected:
   SyncStatusCode RunTask(SyncTask* sync_task) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
@@ -101,10 +93,6 @@ class ListChangesTaskTest : public testing::Test,
 
   FakeDriveServiceHelper* fake_drive_service_helper() {
     return fake_drive_service_helper_.get();
-  }
-
-  drive::FakeDriveService* fake_drive_service() {
-    return fake_drive_service_.get();
   }
 
   void SetUpChangesInFolder(const std::string& folder_id) {
@@ -146,10 +134,6 @@ class ListChangesTaskTest : public testing::Test,
     return fake_drive_service_->GetRootResourceId();
   }
 
-  std::string sync_root_folder_id() {
-    return sync_root_folder_id_;
-  }
-
   std::string app_root_folder_id() {
     return app_root_folder_id_;
   }
@@ -186,16 +170,9 @@ class ListChangesTaskTest : public testing::Test,
     EXPECT_EQ(SYNC_STATUS_OK, RunTask(&register_app));
   }
 
-  std::string GenerateFileID() {
-    return base::StringPrintf("file_id_%" PRId64, next_file_id_++);
-  }
-
   std::string sync_root_folder_id_;
   std::string app_root_folder_id_;
   std::string unregistered_app_root_folder_id_;
-
-  int64 next_file_id_;
-  int64 next_tracker_id_;
 
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir database_dir_;
