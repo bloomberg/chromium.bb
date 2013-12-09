@@ -406,6 +406,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
     m_layerToNodeMap.clear();
     m_pixelRefToImageInfo.clear();
     m_imageBeingPainted = 0;
+    m_paintSetupStart = 0;
     m_mayEmitFirstPaint = false;
 
     for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
@@ -1136,6 +1137,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_maxCallStackDepth(5)
     , m_platformInstrumentationClientInstalledAtStackDepth(0)
     , m_imageBeingPainted(0)
+    , m_paintSetupStart(0)
     , m_styleRecalcElementCounter(0)
     , m_mayEmitFirstPaint(false)
 {
