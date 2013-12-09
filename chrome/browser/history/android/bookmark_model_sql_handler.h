@@ -42,16 +42,20 @@ class BookmarkModelSQLHandler : public SQLHandler {
     Task();
 
     // Add the a bookmark with the given |url| to mobile folder.
-    void AddBookmarkToMobileFolder(const GURL& url, const string16& title);
+    void AddBookmarkToMobileFolder(const GURL& url,
+                                   const base::string16& title);
 
     // Adds a bookmark with the given |url|, |title| and |parent_id|.
-    void AddBookmark(const GURL& url, const string16& title, int64 parent_id);
+    void AddBookmark(const GURL& url,
+                     const base::string16& title,
+                     int64 parent_id);
 
     // Removes the bookmark with the given |url|.
     void RemoveBookmark(const GURL& url);
 
     // Updates the given bookmark's title.
-    void UpdateBookmarkTitle(const GURL& url, const string16&title);
+    void UpdateBookmarkTitle(const GURL& url,
+                             const base::string16& title);
 
    private:
     friend class base::RefCountedThreadSafe<Task>;

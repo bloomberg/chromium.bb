@@ -39,35 +39,35 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
     // The pieces of an AutocompleteMatch that we preserve in a shortcut.
     struct MatchCore {
       explicit MatchCore(const AutocompleteMatch& match);
-      MatchCore(const string16& fill_into_edit,
+      MatchCore(const base::string16& fill_into_edit,
                 const GURL& destination_url,
-                const string16& contents,
+                const base::string16& contents,
                 const ACMatchClassifications& contents_class,
-                const string16& description,
+                const base::string16& description,
                 const ACMatchClassifications& description_class,
                 content::PageTransition transition,
                 AutocompleteMatch::Type type,
-                const string16& keyword);
+                const base::string16& keyword);
       ~MatchCore();
 
       AutocompleteMatch ToMatch() const;
 
-      string16 fill_into_edit;
+      base::string16 fill_into_edit;
       GURL destination_url;
-      string16 contents;
+      base::string16 contents;
       // For both contents_class and description_class, we strip MATCH
       // classifications; the ShortcutsProvider will re-mark MATCH regions based
       // on the user's current typing.
       ACMatchClassifications contents_class;
-      string16 description;
+      base::string16 description;
       ACMatchClassifications description_class;
       content::PageTransition transition;
       AutocompleteMatch::Type type;
-      string16 keyword;
+      base::string16 keyword;
     };
 
     Shortcut(const std::string& id,
-             const string16& text,
+             const base::string16& text,
              const MatchCore& match_core,
              const base::Time& last_access_time,
              int number_of_hits);
@@ -76,7 +76,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
     ~Shortcut();
 
     std::string id;  // Unique guid for the shortcut.
-    string16 text;   // The user's original input string.
+    base::string16 text;   // The user's original input string.
     MatchCore match_core;
     base::Time last_access_time;  // Last time shortcut was selected.
     int number_of_hits;           // How many times shortcut was selected.
@@ -119,7 +119,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
 
   // Looks for an existing shortcut to match.destination_url that starts with
   // |text|.  Updates that shortcut if found, otherwise adds a new shortcut.
-  void AddOrUpdateShortcut(const string16& text,
+  void AddOrUpdateShortcut(const base::string16& text,
                            const AutocompleteMatch& match);
 
  private:

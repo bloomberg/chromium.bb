@@ -32,9 +32,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   // it.
   {
     autocomplete_controller->Start(
-        AutocompleteInput(ASCIIToUTF16("keywor"), string16::npos, string16(),
-                          GURL(), AutocompleteInput::NTP, true, false,
-                          true, AutocompleteInput::ALL_MATCHES));
+        AutocompleteInput(ASCIIToUTF16("keywor"), base::string16::npos,
+                          base::string16(), GURL(), AutocompleteInput::NTP,
+                          true, false, true, AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -54,9 +54,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   // Test that our extension can send suggestions back to us.
   {
     autocomplete_controller->Start(
-        AutocompleteInput(ASCIIToUTF16("keyword suggestio"), string16::npos,
-                          string16(), GURL(), AutocompleteInput::NTP,
-                          true, false, true, AutocompleteInput::ALL_MATCHES));
+        AutocompleteInput(ASCIIToUTF16("keyword suggestio"),
+                          base::string16::npos, base::string16(), GURL(),
+                          AutocompleteInput::NTP, true, false, true,
+                          AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -90,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(3).provider->type());
 
-    string16 description =
+    base::string16 description =
         ASCIIToUTF16("Description with style: <match>, [dim], (url till end)");
     EXPECT_EQ(description, result.match_at(1).contents);
     ASSERT_EQ(6u, result.match_at(1).contents_class.size());
@@ -164,8 +165,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   omnibox_view->OnAfterPossibleChange();
 
   autocomplete_controller->Start(
-      AutocompleteInput(ASCIIToUTF16("keyword command"), string16::npos,
-                        string16(), GURL(), AutocompleteInput::NTP,
+      AutocompleteInput(ASCIIToUTF16("keyword command"), base::string16::npos,
+                        base::string16(), GURL(), AutocompleteInput::NTP,
                         true, false, true, AutocompleteInput::ALL_MATCHES));
   omnibox_view->model()->AcceptInput(CURRENT_TAB, false);
   WaitForAutocompleteDone(autocomplete_controller);
@@ -179,8 +180,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   EXPECT_TRUE(autocomplete_controller->done());
 
   autocomplete_controller->Start(
-      AutocompleteInput(ASCIIToUTF16("keyword newtab"), string16::npos,
-                        string16(), GURL(), AutocompleteInput::NTP,
+      AutocompleteInput(ASCIIToUTF16("keyword newtab"), base::string16::npos,
+                        base::string16(), GURL(), AutocompleteInput::NTP,
                         true, false, true, AutocompleteInput::ALL_MATCHES));
   omnibox_view->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
   WaitForAutocompleteDone(autocomplete_controller);
@@ -216,9 +217,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   // Test that we get the incognito-specific suggestions.
   {
     autocomplete_controller->Start(
-        AutocompleteInput(ASCIIToUTF16("keyword suggestio"), string16::npos,
-                          string16(), GURL(), AutocompleteInput::NTP,
-                          true, false, true, AutocompleteInput::ALL_MATCHES));
+        AutocompleteInput(ASCIIToUTF16("keyword suggestio"),
+                          base::string16::npos, base::string16(), GURL(),
+                          AutocompleteInput::NTP, true, false, true,
+                          AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
 
@@ -239,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
     ResultCatcher catcher;
     autocomplete_controller->Start(
         AutocompleteInput(ASCIIToUTF16("keyword command incognito"),
-                          string16::npos, string16(), GURL(),
+                          base::string16::npos, base::string16(), GURL(),
                           AutocompleteInput::NTP, true, false, true,
                           AutocompleteInput::ALL_MATCHES));
     location_bar->AcceptInput();

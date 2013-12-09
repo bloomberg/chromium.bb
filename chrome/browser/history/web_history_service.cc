@@ -233,7 +233,7 @@ std::string ServerTimeString(base::Time time) {
 // |options|. |version_info|, if not empty, should be a token that was received
 // from the server in response to a write operation. It is used to help ensure
 // read consistency after a write.
-GURL GetQueryUrl(const string16& text_query,
+GURL GetQueryUrl(const base::string16& text_query,
                  const QueryOptions& options,
                  const std::string& version_info) {
   GURL url = GURL(kHistoryQueryHistoryUrl);
@@ -299,7 +299,7 @@ WebHistoryService::~WebHistoryService() {
 }
 
 scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
-    const string16& text_query,
+    const base::string16& text_query,
     const QueryOptions& options,
     const WebHistoryService::QueryWebHistoryCallback& callback) {
   // Wrap the original callback into a generic completion callback.

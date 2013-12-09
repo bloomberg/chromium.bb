@@ -57,7 +57,7 @@ void ProxyEventRouter::OnPACScriptError(
     EventRouterForwarder* event_router,
     void* profile,
     int line_number,
-    const string16& error) {
+    const base::string16& error) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean(keys::kProxyEventFatal, false);

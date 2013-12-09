@@ -45,7 +45,7 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   ScoredHistoryMatch(const URLRow& row,
                      const VisitInfoVector& visits,
                      const std::string& languages,
-                     const string16& lower_string,
+                     const base::string16& lower_string,
                      const String16Vector& terms_vector,
                      const RowWordStarts& word_starts,
                      const base::Time now,
@@ -91,7 +91,7 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   // process so they only reflect matches used for scoring.  (For
   // instance, some mid-word matches are not given credit in scoring.)
   float GetTopicalityScore(const int num_terms,
-                           const string16& cleaned_up_url,
+                           const base::string16& cleaned_up_url,
                            const RowWordStarts& word_starts);
 
   // Precalculates raw_term_score_to_topicality_score_, used in

@@ -68,7 +68,7 @@ class SearchProviderTest : public InProcessBrowserTest {
 
   void FinishIsSearchProviderInstalledTest(
       const IsSearchProviderTestData& data) {
-    string16 title = data.tab->GetTitle();
+    base::string16 title = data.tab->GetTitle();
     if (title.empty()) {
       content::TitleWatcher title_watcher(data.tab, ASCIIToUTF16("OK"));
       title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));

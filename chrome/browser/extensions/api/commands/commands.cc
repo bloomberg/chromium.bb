@@ -15,7 +15,7 @@ base::DictionaryValue* CreateCommandValue(
   result->SetString("description", command.description());
   result->SetString("shortcut",
                     active ? command.accelerator().GetShortcutText() :
-                             string16());
+                             base::string16());
   return result;
 }
 

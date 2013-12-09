@@ -180,7 +180,7 @@ static bool FromStore(const Extension* extension) {
 
 bool InstallVerifier::MustRemainDisabled(const Extension* extension,
                                          Extension::DisableReason* reason,
-                                         string16* error) const {
+                                         base::string16* error) const {
   if (!ShouldEnforce() || !extension->is_extension() ||
       Manifest::IsUnpackedLocation(extension->location()) ||
       AllowedByEnterprisePolicy(extension->id()))

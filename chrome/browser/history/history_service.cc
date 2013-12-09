@@ -376,7 +376,7 @@ void HistoryService::Shutdown() {
 
 void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
                                                  TemplateURLID keyword_id,
-                                                 const string16& term) {
+                                                 const base::string16& term) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::SetKeywordSearchTermsForURL,
@@ -393,7 +393,7 @@ void HistoryService::DeleteAllSearchTermsForKeyword(
 
 HistoryService::Handle HistoryService::GetMostRecentKeywordSearchTerms(
     TemplateURLID keyword_id,
-    const string16& prefix,
+    const base::string16& prefix,
     int max_count,
     CancelableRequestConsumerBase* consumer,
     const GetMostRecentKeywordSearchTermsCallback& callback) {
@@ -524,7 +524,7 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
 }
 
 void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
-                                               const string16& title) {
+                                               const base::string16& title) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!CanAddURL(url))
     return;
@@ -534,7 +534,7 @@ void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
 }
 
 void HistoryService::SetPageTitle(const GURL& url,
-                                  const string16& title) {
+                                  const base::string16& title) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetPageTitle, url, title);
 }
@@ -549,7 +549,7 @@ void HistoryService::UpdateWithPageEndTime(const void* host,
 }
 
 void HistoryService::AddPageWithDetails(const GURL& url,
-                                        const string16& title,
+                                        const base::string16& title,
                                         int visit_count,
                                         int typed_count,
                                         Time last_visit,
@@ -842,7 +842,7 @@ void HistoryService::RemoveDownloads(const std::set<uint32>& ids) {
 }
 
 HistoryService::Handle HistoryService::QueryHistory(
-    const string16& text_query,
+    const base::string16& text_query,
     const history::QueryOptions& options,
     CancelableRequestConsumerBase* consumer,
     const QueryHistoryCallback& callback) {

@@ -41,7 +41,7 @@ class IsolatedContext;
 // client, including metadata like the name and ID, and API handles like the
 // fsid (filesystem ID) used to hook up the API objects.
 struct MediaFileSystemInfo {
-  MediaFileSystemInfo(const string16& fs_name,
+  MediaFileSystemInfo(const base::string16& fs_name,
                       const base::FilePath& fs_path,
                       const std::string& filesystem_id,
                       MediaGalleryPrefId pref_id,
@@ -51,7 +51,7 @@ struct MediaFileSystemInfo {
   MediaFileSystemInfo();
   ~MediaFileSystemInfo();
 
-  string16 name;
+  base::string16 name;
   base::FilePath path;
   std::string fsid;
   MediaGalleryPrefId pref_id;

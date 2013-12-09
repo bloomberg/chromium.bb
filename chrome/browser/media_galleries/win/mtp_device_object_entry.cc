@@ -9,8 +9,8 @@
 MTPDeviceObjectEntry::MTPDeviceObjectEntry() : is_directory(false), size(0) {
 }
 
-MTPDeviceObjectEntry::MTPDeviceObjectEntry(const string16& object_id,
-                                           const string16& object_name,
+MTPDeviceObjectEntry::MTPDeviceObjectEntry(const base::string16& object_id,
+                                           const base::string16& object_name,
                                            bool is_directory,
                                            int64 size,
                                            const base::Time& last_modified_time)

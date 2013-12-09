@@ -48,9 +48,9 @@ struct ProcessMemoryInformation {
   // The committed bytes.
   base::CommittedKBytes committed;
   // The process version
-  string16 version;
+  base::string16 version;
   // The process product name.
-  string16 product_name;
+  base::string16 product_name;
   // The number of processes which this memory represents.
   int num_processes;
   // A process is a diagnostics process if it is rendering about:memory.
@@ -74,8 +74,8 @@ struct ProcessData {
   ~ProcessData();
   ProcessData& operator=(const ProcessData& rhs);
 
-  string16 name;
-  string16 process_name;
+  base::string16 name;
+  base::string16 process_name;
   ProcessMemoryInformationList processes;
 
   // Track site data for predicting process counts with out-of-process iframes.

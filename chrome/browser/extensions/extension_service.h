@@ -268,7 +268,7 @@ class ExtensionService
   // to ExtensionPrefs some other way.
   virtual bool UninstallExtension(std::string extension_id,
                                   bool external_uninstall,
-                                  string16* error);
+                                  base::string16* error);
 
   virtual bool IsExtensionEnabled(
       const std::string& extension_id) const OVERRIDE;

@@ -211,8 +211,8 @@ TEST_F(EnumerateModulesTest, MatchFunction) {
 }
 
 const struct CollapsePathList {
-  string16 expected_result;
-  string16 test_case;
+  base::string16 expected_result;
+  base::string16 test_case;
 } kCollapsePathList[] = {
   // Negative testing (should not collapse this path).
   { ASCIIToUTF16("c:\\a\\a.dll"), ASCIIToUTF16("c:\\a\\a.dll") },

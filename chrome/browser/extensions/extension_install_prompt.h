@@ -97,16 +97,16 @@ class ExtensionInstallPrompt
     void set_type(PromptType type) { type_ = type; }
 
     // Getters for UI element labels.
-    string16 GetDialogTitle() const;
-    string16 GetHeading() const;
+    base::string16 GetDialogTitle() const;
+    base::string16 GetHeading() const;
     int GetDialogButtons() const;
     bool HasAcceptButtonLabel() const;
-    string16 GetAcceptButtonLabel() const;
+    base::string16 GetAcceptButtonLabel() const;
     bool HasAbortButtonLabel() const;
-    string16 GetAbortButtonLabel() const;
-    string16 GetPermissionsHeading() const;
-    string16 GetOAuthHeading() const;
-    string16 GetRetainedFilesHeading() const;
+    base::string16 GetAbortButtonLabel() const;
+    base::string16 GetPermissionsHeading() const;
+    base::string16 GetOAuthHeading() const;
+    base::string16 GetRetainedFilesHeading() const;
 
     bool ShouldShowPermissions() const;
 
@@ -119,17 +119,17 @@ class ExtensionInstallPrompt
     // that they append to the star display area.
     typedef void(*StarAppender)(const gfx::ImageSkia*, void*);
     void AppendRatingStars(StarAppender appender, void* data) const;
-    string16 GetRatingCount() const;
-    string16 GetUserCount() const;
+    base::string16 GetRatingCount() const;
+    base::string16 GetUserCount() const;
     size_t GetPermissionCount() const;
     size_t GetPermissionsDetailsCount() const;
-    string16 GetPermission(size_t index) const;
-    string16 GetPermissionsDetails(size_t index) const;
+    base::string16 GetPermission(size_t index) const;
+    base::string16 GetPermissionsDetails(size_t index) const;
     bool GetIsShowingDetails(DetailsType type, size_t index) const;
     size_t GetOAuthIssueCount() const;
     const IssueAdviceInfoEntry& GetOAuthIssue(size_t index) const;
     size_t GetRetainedFileCount() const;
-    string16 GetRetainedFile(size_t index) const;
+    base::string16 GetRetainedFile(size_t index) const;
 
     // Populated for BUNDLE_INSTALL_PROMPT.
     const extensions::BundleInstaller* bundle() const { return bundle_; }
@@ -169,7 +169,7 @@ class ExtensionInstallPrompt
     IssueAdviceInfo oauth_issue_advice_;
 
     // User name to be used in Oauth heading label.
-    string16 oauth_user_name_;
+    base::string16 oauth_user_name_;
 
     // The extension or bundle being installed.
     const extensions::Extension* extension_;

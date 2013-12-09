@@ -274,7 +274,7 @@ class DeveloperPrivateChooseEntryFunction : public ChromeAsyncExtensionFunction,
   virtual bool RunImpl() OVERRIDE;
   bool ShowPicker(ui::SelectFileDialog::Type picker_type,
                   const base::FilePath& last_directory,
-                  const string16& select_title,
+                  const base::string16& select_title,
                   const ui::SelectFileDialog::FileTypeInfo& info,
                   int file_type_index);
 

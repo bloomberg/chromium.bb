@@ -48,7 +48,7 @@ ScoredHistoryMatch::ScoredHistoryMatch()
 ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
                                        const VisitInfoVector& visits,
                                        const std::string& languages,
-                                       const string16& lower_string,
+                                       const base::string16& lower_string,
                                        const String16Vector& terms,
                                        const RowWordStarts& word_starts,
                                        const base::Time now,
@@ -64,12 +64,12 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
 
   // Figure out where each search term appears in the URL and/or page title
   // so that we can score as well as provide autocomplete highlighting.
-  string16 url = CleanUpUrlForMatching(gurl, languages);
-  string16 title = CleanUpTitleForMatching(row.title());
+  base::string16 url = CleanUpUrlForMatching(gurl, languages);
+  base::string16 title = CleanUpTitleForMatching(row.title());
   int term_num = 0;
   for (String16Vector::const_iterator iter = terms.begin(); iter != terms.end();
        ++iter, ++term_num) {
-    string16 term = *iter;
+    base::string16 term = *iter;
     TermMatches url_term_matches = MatchTermInString(term, url, term_num);
     TermMatches title_term_matches = MatchTermInString(term, title, term_num);
     if (url_term_matches.empty() && title_term_matches.empty())
@@ -134,7 +134,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     // Now, the code that implements this.
     // The deepest prefix for this URL regardless of where the match is.
     const URLPrefix* best_prefix =
-        URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), string16());
+        URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), base::string16());
     DCHECK(best_prefix != NULL);
     const int num_components_in_best_prefix = best_prefix->num_components;
     // If the URL is inlineable, we must have a match.  Note the prefix that
@@ -276,7 +276,7 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
 
 float ScoredHistoryMatch::GetTopicalityScore(
     const int num_terms,
-    const string16& url,
+    const base::string16& url,
     const RowWordStarts& word_starts) {
   // Because the below thread is not thread safe, we check that we're
   // only calling it from one thread: the UI thread.  Specifically,

@@ -217,11 +217,11 @@ class HistoryService : public CancelableRequestProvider,
   // Adds an entry for the specified url without creating a visit. This should
   // only be used when bookmarking a page, otherwise the row leaks in the
   // history db (it never gets cleaned).
-  void AddPageNoVisitForBookmark(const GURL& url, const string16& title);
+  void AddPageNoVisitForBookmark(const GURL& url, const base::string16& title);
 
   // Sets the title for the given page. The page should be in history. If it
   // is not, this operation is ignored.
-  void SetPageTitle(const GURL& url, const string16& title);
+  void SetPageTitle(const GURL& url, const base::string16& title);
 
   // Updates the history database with a page's ending time stamp information.
   // The page can be identified by the combination of the pointer to
@@ -267,7 +267,7 @@ class HistoryService : public CancelableRequestProvider,
   // Queries all history with the given options (see QueryOptions in
   // history_types.h).  If empty, all results matching the given options
   // will be returned.
-  Handle QueryHistory(const string16& text_query,
+  Handle QueryHistory(const base::string16& text_query,
                       const history::QueryOptions& options,
                       CancelableRequestConsumerBase* consumer,
                       const QueryHistoryCallback& callback);
@@ -487,7 +487,7 @@ class HistoryService : public CancelableRequestProvider,
   // id of the url, keyword_id the id of the keyword and term the search term.
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    TemplateURLID keyword_id,
-                                   const string16& term);
+                                   const base::string16& term);
 
   // Deletes all search terms for the specified keyword.
   void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
@@ -502,7 +502,7 @@ class HistoryService : public CancelableRequestProvider,
   // first.
   Handle GetMostRecentKeywordSearchTerms(
       TemplateURLID keyword_id,
-      const string16& prefix,
+      const base::string16& prefix,
       int max_count,
       CancelableRequestConsumerBase* consumer,
       const GetMostRecentKeywordSearchTermsCallback& callback);
@@ -556,7 +556,7 @@ class HistoryService : public CancelableRequestProvider,
   // visit using the |last_visit| timestamp, and a PageTransition type of LINK,
   // if |visit_source| != SYNCED.
   void AddPageWithDetails(const GURL& url,
-                          const string16& title,
+                          const base::string16& title,
                           int visit_count,
                           int typed_count,
                           base::Time last_visit,

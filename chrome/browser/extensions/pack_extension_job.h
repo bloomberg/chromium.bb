@@ -44,7 +44,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   void ClearClient();
 
   // The standard packing success message.
-  static string16 StandardSuccessMessage(const base::FilePath& crx_file,
+  static base::string16 StandardSuccessMessage(const base::FilePath& crx_file,
                                          const base::FilePath& key_file);
 
   void set_asynchronous(bool async) { asynchronous_ = async; }

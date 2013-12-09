@@ -25,7 +25,7 @@ namespace {
 
 AutocompleteMatch::Type ConvertedMatchType(AutocompleteMatch::Type type) {
   return ShortcutsBackend::Shortcut(
-      std::string(), string16(), ShortcutsBackend::Shortcut::MatchCore(
+      std::string(), base::string16(), ShortcutsBackend::Shortcut::MatchCore(
           AutocompleteMatch(NULL, 0, 0, type)),
       base::Time::Now(), 0).match_core.type;
 }

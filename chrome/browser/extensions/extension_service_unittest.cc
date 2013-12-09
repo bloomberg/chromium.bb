@@ -4265,8 +4265,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   webkit_database::DatabaseTracker* db_tracker =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetDatabaseTracker();
-  string16 db_name = UTF8ToUTF16("db");
-  string16 description = UTF8ToUTF16("db_description");
+  base::string16 db_name = UTF8ToUTF16("db");
+  base::string16 description = UTF8ToUTF16("db_description");
   int64 size;
   db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
   db_tracker->DatabaseClosed(origin_id, db_name);
@@ -4381,8 +4381,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   webkit_database::DatabaseTracker* db_tracker =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetDatabaseTracker();
-  string16 db_name = UTF8ToUTF16("db");
-  string16 description = UTF8ToUTF16("db_description");
+  base::string16 db_name = UTF8ToUTF16("db");
+  base::string16 description = UTF8ToUTF16("db_description");
   int64 size;
   db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
   db_tracker->DatabaseClosed(origin_id, db_name);

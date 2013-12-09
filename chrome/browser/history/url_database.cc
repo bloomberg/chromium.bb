@@ -331,7 +331,7 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
   return true;
 }
 
-bool URLDatabase::GetTextMatches(const string16& query,
+bool URLDatabase::GetTextMatches(const base::string16& query,
                                  URLRows* results) {
   ScopedVector<QueryNode> query_nodes;
   query_parser_.ParseQueryNodes(query, &query_nodes.get());
@@ -342,19 +342,19 @@ bool URLDatabase::GetTextMatches(const string16& query,
 
   while (statement.Step()) {
     std::vector<QueryWord> query_words;
-    string16 url = base::i18n::ToLower(statement.ColumnString16(1));
+    base::string16 url = base::i18n::ToLower(statement.ColumnString16(1));
     query_parser_.ExtractQueryWords(url, &query_words);
     GURL gurl(url);
     if (gurl.is_valid()) {
       // Decode punycode to match IDN.
       // |query_words| won't be shown to user - therefore we can use empty
       // |languages| to reduce dependency (no need to call PrefService).
-      string16 ascii = base::ASCIIToUTF16(gurl.host());
-      string16 utf = net::IDNToUnicode(gurl.host(), std::string());
+      base::string16 ascii = base::ASCIIToUTF16(gurl.host());
+      base::string16 utf = net::IDNToUnicode(gurl.host(), std::string());
       if (ascii != utf)
         query_parser_.ExtractQueryWords(utf, &query_words);
     }
-    string16 title = base::i18n::ToLower(statement.ColumnString16(2));
+    base::string16 title = base::i18n::ToLower(statement.ColumnString16(2));
     query_parser_.ExtractQueryWords(title, &query_words);
 
     if (query_parser_.DoesQueryMatch(query_words, query_nodes.get())) {
@@ -411,7 +411,7 @@ bool URLDatabase::DropKeywordSearchTermsTable() {
 
 bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
                                               TemplateURLID keyword_id,
-                                              const string16& term) {
+                                              const base::string16& term) {
   DCHECK(url_id && keyword_id && !term.empty());
 
   sql::Statement exist_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -455,7 +455,7 @@ bool URLDatabase::GetKeywordSearchTermRow(URLID url_id,
 }
 
 bool URLDatabase::GetKeywordSearchTermRows(
-    const string16& term,
+    const base::string16& term,
     std::vector<KeywordSearchTermRow>* rows) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT keyword_id, url_id FROM keyword_search_terms WHERE term=?"));
@@ -486,7 +486,7 @@ void URLDatabase::DeleteAllSearchTermsForKeyword(
 
 void URLDatabase::GetMostRecentKeywordSearchTerms(
     TemplateURLID keyword_id,
-    const string16& prefix,
+    const base::string16& prefix,
     int max_count,
     std::vector<KeywordSearchTermVisit>* matches) {
   // NOTE: the keyword_id can be zero if on first run the user does a query
@@ -504,9 +504,9 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
       "ORDER BY u.last_visit_time DESC LIMIT ?"));
 
   // NOTE: Keep this ToLower() call in sync with search_provider.cc.
-  string16 lower_prefix = base::i18n::ToLower(prefix);
+  base::string16 lower_prefix = base::i18n::ToLower(prefix);
   // This magic gives us a prefix search.
-  string16 next_prefix = lower_prefix;
+  base::string16 next_prefix = lower_prefix;
   next_prefix[next_prefix.size() - 1] =
       next_prefix[next_prefix.size() - 1] + 1;
   statement.BindInt64(0, keyword_id);
@@ -523,7 +523,7 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
   }
 }
 
-bool URLDatabase::DeleteKeywordSearchTerm(const string16& term) {
+bool URLDatabase::DeleteKeywordSearchTerm(const base::string16& term) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM keyword_search_terms WHERE term=?"));
   statement.BindString16(0, term);

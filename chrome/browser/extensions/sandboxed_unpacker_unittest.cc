@@ -47,7 +47,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
 
   }
 
-  virtual void OnUnpackFailure(const string16& error) OVERRIDE {
+  virtual void OnUnpackFailure(const base::string16& error) OVERRIDE {
     ASSERT_TRUE(false);
   }
 

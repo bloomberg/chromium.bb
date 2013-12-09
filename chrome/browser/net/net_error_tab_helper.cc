@@ -93,7 +93,7 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
 
 void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     PageTransition transition_type,
@@ -119,11 +119,11 @@ void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
 
 void NetErrorTabHelper::DidFailProvisionalLoad(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description,
+    const base::string16& error_description,
     RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

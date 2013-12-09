@@ -118,11 +118,11 @@ class WebAuthFlow : public content::NotificationObserver,
       bool is_iframe_srcdoc,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFailProvisionalLoad(int64 frame_id,
-                                      const string16& frame_unique_name,
+                                      const base::string16& frame_unique_name,
                                       bool is_main_frame,
                                       const GURL& validated_url,
                                       int error_code,
-                                      const string16& error_description,
+                                      const base::string16& error_description,
                                       content::RenderViewHost* render_view_host)
       OVERRIDE;
 

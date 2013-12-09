@@ -112,7 +112,7 @@ ExtensionIndicatorIcon::ExtensionIndicatorIcon(const Extension* extension,
   // used as the tool tip.
   gfx::ImageSkia icon_image =
       icon_factory_.GetIcon(ExtensionAction::kDefaultTabId).AsImageSkia();
-  string16 tool_tip = UTF8ToUTF16(extension_->name());
+  base::string16 tool_tip = UTF8ToUTF16(extension_->name());
 
   icon_ = status_tray_->CreateStatusIcon(
       StatusTray::OTHER_ICON, icon_image, tool_tip);

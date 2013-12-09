@@ -44,7 +44,7 @@ class SandboxedUnpackerClient
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension,
                                const SkBitmap& install_icon) = 0;
-  virtual void OnUnpackFailure(const string16& error) = 0;
+  virtual void OnUnpackFailure(const base::string16& error) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<SandboxedUnpackerClient>;
@@ -179,9 +179,9 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
 
   // IPC message handlers.
   void OnUnpackExtensionSucceeded(const base::DictionaryValue& manifest);
-  void OnUnpackExtensionFailed(const string16& error_message);
+  void OnUnpackExtensionFailed(const base::string16& error_message);
 
-  void ReportFailure(FailureReason reason, const string16& message);
+  void ReportFailure(FailureReason reason, const base::string16& message);
   void ReportSuccess(const base::DictionaryValue& original_manifest,
                      const SkBitmap& install_icon);
 

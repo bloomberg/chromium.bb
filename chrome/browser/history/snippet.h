@@ -52,7 +52,7 @@ class Snippet {
   void ComputeSnippet(const MatchPositions& matches,
                       const std::string& document);
 
-  const string16& text() const { return text_; }
+  const base::string16& text() const { return text_; }
   const MatchPositions& matches() const { return matches_; }
 
   // Efficiently swaps the contents of this snippet with the other.
@@ -60,7 +60,7 @@ class Snippet {
 
  private:
   // The text of the snippet.
-  string16 text_;
+  base::string16 text_;
 
   // The matches within text_.
   MatchPositions matches_;

@@ -65,12 +65,12 @@ struct URLsDeletedDetails : public HistoryDetails {
 struct KeywordSearchUpdatedDetails : public HistoryDetails {
   KeywordSearchUpdatedDetails(const GURL& url,
                               TemplateURLID keyword_id,
-                              const string16& term);
+                              const base::string16& term);
   virtual ~KeywordSearchUpdatedDetails();
 
   GURL url;
   TemplateURLID keyword_id;
-  string16 term;
+  base::string16 term;
 };
 
 // Details for HISTORY_KEYWORD_SEARCH_TERM_DELETED.

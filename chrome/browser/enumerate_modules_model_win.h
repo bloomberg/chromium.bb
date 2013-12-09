@@ -78,17 +78,17 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
     // The module status (benign/bad/etc).
     ModuleStatus status;
     // The module path, not including filename.
-    string16 location;
+    base::string16 location;
     // The name of the module (filename).
-    string16 name;
+    base::string16 name;
     // The name of the product the module belongs to.
-    string16 product_name;
+    base::string16 product_name;
     // The module file description.
-    string16 description;
+    base::string16 description;
     // The module version.
-    string16 version;
+    base::string16 version;
     // The signer of the digital certificate for the module.
-    string16 digital_signer;
+    base::string16 digital_signer;
     // The help tips bitmask.
     RecommendedAction recommended_action;
     // The duplicate count within each category of modules.
@@ -199,10 +199,11 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
 
   // Given a filename, returns the Subject (who signed it) retrieved from
   // the digital signature (Authenticode).
-  string16 GetSubjectNameFromDigitalSignature(const base::FilePath& filename);
+  base::string16 GetSubjectNameFromDigitalSignature(
+      const base::FilePath& filename);
 
   // The typedef for the vector that maps a regular file path to %env_var%.
-  typedef std::vector< std::pair<string16, string16> > PathMapping;
+  typedef std::vector< std::pair<string16, base::string16> > PathMapping;
 
   // The vector of paths to %env_var%, used to account for differences in
   // where people keep there files, c:\windows vs. d:\windows, etc.

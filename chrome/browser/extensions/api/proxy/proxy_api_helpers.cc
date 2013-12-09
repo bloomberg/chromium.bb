@@ -106,7 +106,7 @@ bool GetPacUrlFromExtensionPref(const base::DictionaryValue* proxy_config,
     return true;
 
   // TODO(battre): Handle UTF-8 URLs (http://crbug.com/72692).
-  string16 pac_url16;
+  base::string16 pac_url16;
   if (pac_dict->HasKey(keys::kProxyConfigPacScriptUrl) &&
       !pac_dict->GetString(keys::kProxyConfigPacScriptUrl, &pac_url16)) {
     LOG(ERROR) << "'pacScript.url' could not be parsed.";
@@ -131,7 +131,7 @@ bool GetPacDataFromExtensionPref(const base::DictionaryValue* proxy_config,
   if (!pac_dict)
     return true;
 
-  string16 pac_data16;
+  base::string16 pac_data16;
   if (pac_dict->HasKey(keys::kProxyConfigPacScriptData) &&
       !pac_dict->GetString(keys::kProxyConfigPacScriptData, &pac_data16)) {
     LOG(ERROR) << "'pacScript.data' could not be parsed.";
@@ -164,7 +164,7 @@ bool GetProxyServer(const base::DictionaryValue* proxy_server,
     scheme = default_scheme;
 
   // TODO(battre): handle UTF-8 in hostnames (http://crbug.com/72692).
-  string16 host16;
+  base::string16 host16;
   if (!proxy_server->GetString(keys::kProxyConfigRuleHost, &host16)) {
     LOG(ERROR) << "Could not parse a 'rules.*.host' entry.";
     *bad_message = true;
@@ -267,7 +267,7 @@ bool JoinUrlList(const base::ListValue* list,
       result.append(joiner);
 
     // TODO(battre): handle UTF-8 (http://crbug.com/72692).
-    string16 entry;
+    base::string16 entry;
     if (!list->GetString(i, &entry)) {
       LOG(ERROR) << "'rules.bypassList' could not be parsed.";
       *bad_message = true;

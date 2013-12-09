@@ -22,7 +22,7 @@ PortableDeviceMapService* PortableDeviceMapService::GetInstance() {
 }
 
 void PortableDeviceMapService::AddPortableDevice(
-    const string16& device_location,
+    const base::string16& device_location,
     IPortableDevice* device) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!device_location.empty());
@@ -32,7 +32,7 @@ void PortableDeviceMapService::AddPortableDevice(
 }
 
 void PortableDeviceMapService::MarkPortableDeviceForDeletion(
-    const string16& device_location) {
+    const base::string16& device_location) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(!device_location.empty());
   base::AutoLock lock(lock_);
@@ -42,7 +42,7 @@ void PortableDeviceMapService::MarkPortableDeviceForDeletion(
 }
 
 void PortableDeviceMapService::RemovePortableDevice(
-    const string16& device_location) {
+    const base::string16& device_location) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!device_location.empty());
   base::AutoLock lock(lock_);
@@ -52,7 +52,7 @@ void PortableDeviceMapService::RemovePortableDevice(
 }
 
 IPortableDevice* PortableDeviceMapService::GetPortableDevice(
-    const string16& device_location) {
+    const base::string16& device_location) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!device_location.empty());
   base::AutoLock lock(lock_);

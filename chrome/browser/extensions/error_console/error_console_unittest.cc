@@ -49,7 +49,7 @@ string16 GetSourceForExtensionId(const std::string& extension_id) {
 scoped_ptr<ExtensionError> CreateNewRuntimeError(
     bool from_incognito,
     const std::string& extension_id,
-    const string16& message) {
+    const base::string16& message) {
   return scoped_ptr<ExtensionError>(new RuntimeError(
       extension_id,
       from_incognito,
@@ -117,7 +117,7 @@ TEST_F(ErrorConsoleUnitTest, AddAndRemoveErrors) {
   // Add another error for a different extension id.
   const std::string kSecondId = id_util::GenerateId("id2");
   error_console_->ReportError(
-      CreateNewRuntimeError(false, kSecondId, string16()));
+      CreateNewRuntimeError(false, kSecondId, base::string16()));
 
   // There should be two entries now, one for each id, and there should be one
   // error for the second extension.

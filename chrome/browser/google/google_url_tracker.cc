@@ -155,7 +155,7 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  string16 fetched_host(net::StripWWWFromHost(fetched_google_url_));
+  base::string16 fetched_host(net::StripWWWFromHost(fetched_google_url_));
   if (fetched_google_url_ == google_url_) {
     // Either the user has continually been on this URL, or we prompted for a
     // different URL but have now changed back before they responded to any of

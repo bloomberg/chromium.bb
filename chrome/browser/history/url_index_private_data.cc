@@ -73,7 +73,8 @@ typedef imui::InMemoryURLIndexCacheItem_WordStartsMapItem_WordStartsMapEntry
 // Algorithm Functions ---------------------------------------------------------
 
 // Comparison function for sorting search terms by descending length.
-bool LengthGreater(const string16& string_a, const string16& string_b) {
+bool LengthGreater(const base::string16& string_a,
+                   const base::string16& string_b) {
   return string_a.length() > string_b.length();
 }
 
@@ -151,14 +152,14 @@ URLIndexPrivateData::URLIndexPrivateData()
 }
 
 ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
-    string16 search_string,
+    base::string16 search_string,
     size_t cursor_position,
     const std::string& languages,
     BookmarkService* bookmark_service) {
   // If cursor position is set and useful (not at either end of the
   // string), allow the search string to be broken at cursor position.
   // We do this by pretending there's a space where the cursor is.
-  if ((cursor_position != string16::npos) &&
+  if ((cursor_position != base::string16::npos) &&
       (cursor_position < search_string.length()) &&
       (cursor_position > 0)) {
     search_string.insert(cursor_position, ASCIIToUTF16(" "));
@@ -170,8 +171,8 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // the index we need individual, lower-cased words, ignoring escapings. For
   // the final filtering we need whitespace separated substrings possibly
   // containing escaped characters.
-  string16 lower_raw_string(base::i18n::ToLower(search_string));
-  string16 lower_unescaped_string =
+  base::string16 lower_raw_string(base::i18n::ToLower(search_string));
+  base::string16 lower_unescaped_string =
       net::UnescapeURLComponent(lower_raw_string,
           net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
   // Extract individual 'words' (as opposed to 'terms'; see below) from the
@@ -527,7 +528,7 @@ HistoryIDSet URLIndexPrivateData::HistoryIDSetFromWords(
   std::sort(words.begin(), words.end(), LengthGreater);
   for (String16Vector::iterator iter = words.begin(); iter != words.end();
        ++iter) {
-    string16 uni_word = *iter;
+    base::string16 uni_word = *iter;
     HistoryIDSet term_history_set = HistoryIDsForTerm(uni_word);
     if (term_history_set.empty()) {
       history_id_set.clear();
@@ -548,7 +549,7 @@ HistoryIDSet URLIndexPrivateData::HistoryIDSetFromWords(
 }
 
 HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
-    const string16& term) {
+    const base::string16& term) {
   if (term.empty())
     return HistoryIDSet();
 
@@ -572,7 +573,7 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
     // If a prefix was found then determine the leftover characters to be used
     // for further refining the results from that prefix.
     Char16Set prefix_chars;
-    string16 leftovers(term);
+    base::string16 leftovers(term);
     if (best_prefix != search_term_cache_.end()) {
       // If the prefix is an exact match for the term then grab the cached
       // results and we're done.
@@ -624,7 +625,7 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
     // contains words which do not have the search term as a proper subset.
     for (WordIDSet::iterator word_set_iter = word_id_set.begin();
          word_set_iter != word_id_set.end(); ) {
-      if (word_list_[*word_set_iter].find(term) == string16::npos)
+      if (word_list_[*word_set_iter].find(term) == base::string16::npos)
         word_id_set.erase(word_set_iter++);
       else
         ++word_set_iter;
@@ -706,7 +707,7 @@ bool URLIndexPrivateData::IndexRow(
 
   URLID row_id = row.id();
   // Strip out username and password before saving and indexing.
-  string16 url(net::FormatUrl(gurl, languages,
+  base::string16 url(net::FormatUrl(gurl, languages,
       net::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::NONE,
       NULL, NULL, NULL));
@@ -755,10 +756,10 @@ void URLIndexPrivateData::AddRowWordsToIndex(const URLRow& row,
   HistoryID history_id = static_cast<HistoryID>(row.id());
   // Split URL into individual, unique words then add in the title words.
   const GURL& gurl(row.url());
-  const string16& url = CleanUpUrlForMatching(gurl, languages);
+  const base::string16& url = CleanUpUrlForMatching(gurl, languages);
   String16Set url_words = String16SetFromString16(url,
       word_starts ? &word_starts->url_word_starts_ : NULL);
-  const string16& title = CleanUpTitleForMatching(row.title());
+  const base::string16& title = CleanUpTitleForMatching(row.title());
   String16Set title_words = String16SetFromString16(title,
       word_starts ? &word_starts->title_word_starts_ : NULL);
   String16Set words;
@@ -772,7 +773,7 @@ void URLIndexPrivateData::AddRowWordsToIndex(const URLRow& row,
   search_term_cache_.clear();  // Invalidate the term cache.
 }
 
-void URLIndexPrivateData::AddWordToIndex(const string16& term,
+void URLIndexPrivateData::AddWordToIndex(const base::string16& term,
                                          HistoryID history_id) {
   WordMap::iterator word_pos = word_map_.find(term);
   if (word_pos != word_map_.end())
@@ -781,7 +782,7 @@ void URLIndexPrivateData::AddWordToIndex(const string16& term,
     AddWordHistory(term, history_id);
 }
 
-void URLIndexPrivateData::AddWordHistory(const string16& term,
+void URLIndexPrivateData::AddWordHistory(const base::string16& term,
                                          HistoryID history_id) {
   WordID word_id = word_list_.size();
   if (available_words_.empty()) {
@@ -863,7 +864,7 @@ void URLIndexPrivateData::RemoveRowWordsFromIndex(const URLRow& row) {
       continue;  // The word is still in use.
 
     // The word is no longer in use. Reconcile any changes to character usage.
-    string16 word = word_list_[word_id];
+    base::string16 word = word_list_[word_id];
     Char16Set characters = Char16SetFromString16(word);
     for (Char16Set::iterator uni_char_iter = characters.begin();
          uni_char_iter != characters.end(); ++uni_char_iter) {
@@ -876,7 +877,7 @@ void URLIndexPrivateData::RemoveRowWordsFromIndex(const URLRow& row) {
     // Complete the removal of references to the word.
     word_id_history_map_.erase(word_id);
     word_map_.erase(word);
-    word_list_[word_id] = string16();
+    word_list_[word_id] = base::string16();
     available_words_.insert(word_id);
   }
 }
@@ -1180,7 +1181,7 @@ bool URLIndexPrivateData::RestoreHistoryInfoMap(
     url_row.set_typed_count(iter->typed_count());
     url_row.set_last_visit(base::Time::FromInternalValue(iter->last_visit()));
     if (iter->has_title()) {
-      string16 title(UTF8ToUTF16(iter->title()));
+      base::string16 title(UTF8ToUTF16(iter->title()));
       url_row.set_title(title);
     }
     history_info_map_[history_id].url_row = url_row;
@@ -1236,9 +1237,9 @@ bool URLIndexPrivateData::RestoreWordStartsMap(
          iter != history_info_map_.end(); ++iter) {
       RowWordStarts word_starts;
       const URLRow& row(iter->second.url_row);
-      const string16& url = CleanUpUrlForMatching(row.url(), languages);
+      const base::string16& url = CleanUpUrlForMatching(row.url(), languages);
       String16VectorFromString16(url, false, &word_starts.url_word_starts_);
-      const string16& title = CleanUpTitleForMatching(row.title());
+      const base::string16& title = CleanUpTitleForMatching(row.title());
       String16VectorFromString16(title, false, &word_starts.title_word_starts_);
       word_starts_map_[iter->first] = word_starts;
     }
@@ -1275,7 +1276,7 @@ URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     const URLIndexPrivateData& private_data,
     const std::string& languages,
     BookmarkService* bookmark_service,
-    const string16& lower_string,
+    const base::string16& lower_string,
     const String16Vector& lower_terms,
     const base::Time now)
   : private_data_(private_data),

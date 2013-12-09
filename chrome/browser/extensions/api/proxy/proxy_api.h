@@ -55,7 +55,7 @@ class ProxyEventRouter {
   void OnPACScriptError(EventRouterForwarder* event_router,
                         void* profile,
                         int line_number,
-                        const string16& error);
+                        const base::string16& error);
 
  private:
   friend struct DefaultSingletonTraits<ProxyEventRouter>;

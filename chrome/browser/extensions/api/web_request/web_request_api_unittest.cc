@@ -1295,8 +1295,8 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
   const bool cancel = true;
 
-  string16 username = ASCIIToUTF16("foo");
-  string16 password = ASCIIToUTF16("bar");
+  base::string16 username = ASCIIToUTF16("foo");
+  base::string16 password = ASCIIToUTF16("bar");
   scoped_ptr<net::AuthCredentials> credentials(
       new net::AuthCredentials(username, password));
 
@@ -2068,9 +2068,9 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   net::BoundNetLog net_log = capturing_net_log.bound();
   ExtensionWarningSet warning_set;
   EventResponseDeltas deltas;
-  string16 username = ASCIIToUTF16("foo");
-  string16 password = ASCIIToUTF16("bar");
-  string16 password2 = ASCIIToUTF16("baz");
+  base::string16 username = ASCIIToUTF16("foo");
+  base::string16 password = ASCIIToUTF16("bar");
+  base::string16 password2 = ASCIIToUTF16("baz");
 
   // Check that we can handle if not returning credentials.
   linked_ptr<EventResponseDelta> d0(

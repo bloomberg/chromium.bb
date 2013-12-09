@@ -61,7 +61,7 @@ content::WebContents* BalloonHost::GetAssociatedWebContents() const {
   return NULL;
 }
 
-const string16& BalloonHost::GetSource() const {
+const base::string16& BalloonHost::GetSource() const {
   return balloon_->notification().display_source();
 }
 

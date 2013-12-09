@@ -32,7 +32,7 @@ namespace values = manifest_values;
 
 scoped_refptr<Extension> ConvertUserScriptToExtension(
     const base::FilePath& user_script_path, const GURL& original_url,
-    const base::FilePath& extensions_dir, string16* error) {
+    const base::FilePath& extensions_dir, base::string16* error) {
   std::string content;
   if (!base::ReadFileToString(user_script_path, &content)) {
     *error = ASCIIToUTF16("Could not read source file.");
@@ -171,7 +171,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
-  // with string16
+  // with base::string16
   std::string utf8_error;
   scoped_refptr<Extension> extension = Extension::Create(
       temp_dir.path(),

@@ -34,7 +34,7 @@ bool VirtualKeyboardPrivateInsertTextFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  string16 text;
+  base::string16 text;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
 
   return keyboard::InsertText(text, ash::Shell::GetPrimaryRootWindow());

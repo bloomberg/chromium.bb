@@ -1792,7 +1792,7 @@ void MetricsService::LogPluginLoadingError(const base::FilePath& plugin_path) {
 
 MetricsService::ChildProcessStats& MetricsService::GetChildProcessStats(
     const content::ChildProcessData& data) {
-  const string16& child_name = data.name;
+  const base::string16& child_name = data.name;
   if (!ContainsKey(child_process_stats_buffer_, child_name)) {
     child_process_stats_buffer_[child_name] =
         ChildProcessStats(data.process_type);
@@ -1821,7 +1821,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     }
 
     // TODO(viettrungluu): remove conversions
-    string16 name16 = UTF8ToUTF16(plugin_name);
+    base::string16 name16 = UTF8ToUTF16(plugin_name);
     if (child_process_stats_buffer_.find(name16) ==
         child_process_stats_buffer_.end()) {
       continue;

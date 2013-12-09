@@ -39,7 +39,7 @@ class BalloonHost : public content::WebContentsDelegate,
       const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
-  const string16& GetSource() const;
+  const base::string16& GetSource() const;
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
 

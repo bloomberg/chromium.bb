@@ -206,7 +206,7 @@ void CrxInstaller::InstallUserScript(const base::FilePath& source_file,
 }
 
 void CrxInstaller::ConvertUserScriptOnFileThread() {
-  string16 error;
+  base::string16 error;
   scoped_refptr<Extension> extension = ConvertUserScriptToExtension(
       source_file_, download_url_, install_directory_, &error);
   if (!extension.get()) {
@@ -231,7 +231,7 @@ void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
 void CrxInstaller::ConvertWebAppOnFileThread(
     const WebApplicationInfo& web_app,
     const base::FilePath& install_directory) {
-  string16 error;
+  base::string16 error;
   scoped_refptr<Extension> extension(
       ConvertWebAppToExtension(web_app, base::Time::Now(), install_directory));
   if (!extension.get()) {
@@ -416,7 +416,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
   return CrxInstallerError();
 }
 
-void CrxInstaller::OnUnpackFailure(const string16& error_message) {
+void CrxInstaller::OnUnpackFailure(const base::string16& error_message) {
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallSource",
@@ -564,7 +564,7 @@ void CrxInstaller::ConfirmInstall() {
     }
   }
 
-  string16 error = installer_.CheckManagementPolicy();
+  base::string16 error = installer_.CheckManagementPolicy();
   if (!error.empty()) {
     // We don't want to show the error infobar for installs from the WebStore,
     // because the WebStore already shows an error dialog itself.
@@ -695,7 +695,7 @@ void CrxInstaller::CompleteInstall() {
   // TODO(aa): All paths to resources inside extensions should be created
   // lazily and based on the Extension's root path at that moment.
   // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
-  // with string16
+  // with base::string16
   std::string extension_id = extension()->id();
   std::string error;
   installer_.set_extension(extension_file_util::LoadExtension(
@@ -729,7 +729,7 @@ void CrxInstaller::ReportFailureFromUIThread(const CrxInstallerError& error) {
       content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                   content::Source<CrxInstaller>(this),
-                  content::Details<const string16>(&error.message()));
+                  content::Details<const base::string16>(&error.message()));
 
   // This isn't really necessary, it is only used because unit tests expect to
   // see errors get reported via this interface.

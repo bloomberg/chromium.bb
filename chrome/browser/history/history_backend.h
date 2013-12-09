@@ -143,8 +143,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // |request.time| must be unique with high probability.
   void AddPage(const HistoryAddPageArgs& request);
-  virtual void SetPageTitle(const GURL& url, const string16& title);
-  void AddPageNoVisitForBookmark(const GURL& url, const string16& title);
+  virtual void SetPageTitle(const GURL& url, const base::string16& title);
+  void AddPageNoVisitForBookmark(const GURL& url, const base::string16& title);
 
   // Updates the database backend with a page's ending time stamp information.
   // The page can be identified by the combination of the pointer to
@@ -172,7 +172,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                 const GURL& url,
                 bool want_visits);
   void QueryHistory(scoped_refptr<QueryHistoryRequest> request,
-                    const string16& text_query,
+                    const base::string16& text_query,
                     const QueryOptions& options);
   void QueryRedirectsFrom(scoped_refptr<QueryRedirectsRequest> request,
                           const GURL& url);
@@ -308,14 +308,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    TemplateURLID keyword_id,
-                                   const string16& term);
+                                   const base::string16& term);
 
   void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
 
   void GetMostRecentKeywordSearchTerms(
       scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
       TemplateURLID keyword_id,
-      const string16& prefix,
+      const base::string16& prefix,
       int max_count);
 
   void DeleteKeywordSearchTermForURL(const GURL& url);
@@ -620,7 +620,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                          const QueryOptions& options, QueryResults* result);
   void QueryHistoryText(URLDatabase* url_db,
                         VisitDatabase* visit_db,
-                        const string16& text_query,
+                        const base::string16& text_query,
                         const QueryOptions& options,
                         QueryResults* result);
 

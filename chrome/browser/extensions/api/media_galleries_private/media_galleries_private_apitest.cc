@@ -89,7 +89,7 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   void Attach() {
     DCHECK(StorageMonitor::GetInstance()->IsInitialized());
     StorageInfo info(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
-                     string16(), string16(), string16(), 0);
+                     base::string16(), base::string16(), base::string16(), 0);
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
     content::RunAllPendingInMessageLoop();
   }

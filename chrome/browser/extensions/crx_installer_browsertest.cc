@@ -52,7 +52,7 @@ class MockPromptProxy :
   bool did_succeed() const { return !extension_id_.empty(); }
   const std::string& extension_id() { return extension_id_; }
   bool confirmation_requested() const { return confirmation_requested_; }
-  const string16& error() const { return error_; }
+  const base::string16& error() const { return error_; }
 
   // To have any effect, this should be called before CreatePrompt.
   void set_record_oauth2_grant(bool record_oauth2_grant) {
@@ -61,7 +61,7 @@ class MockPromptProxy :
 
   void set_extension_id(const std::string& id) { extension_id_ = id; }
   void set_confirmation_requested() { confirmation_requested_ = true; }
-  void set_error(const string16& error) { error_ = error; }
+  void set_error(const base::string16& error) { error_ = error; }
 
   scoped_ptr<ExtensionInstallPrompt> CreatePrompt();
 
@@ -76,7 +76,7 @@ class MockPromptProxy :
   // Data reported back to us by the prompt we created.
   bool confirmation_requested_;
   std::string extension_id_;
-  string16 error_;
+  base::string16 error_;
 };
 
 class MockInstallPrompt : public ExtensionInstallPrompt {

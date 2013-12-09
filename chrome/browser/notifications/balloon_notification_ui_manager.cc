@@ -90,7 +90,7 @@ void BalloonNotificationUIManager::Add(const Notification& notification,
 bool BalloonNotificationUIManager::Update(const Notification& notification,
                                           Profile* profile) {
   const GURL& origin = notification.origin_url();
-  const string16& replace_id = notification.replace_id();
+  const base::string16& replace_id = notification.replace_id();
 
   if (replace_id.empty())
     return false;
@@ -226,7 +226,7 @@ bool BalloonNotificationUIManager::UpdateNotification(
     const Notification& notification,
     Profile* profile) {
   const GURL& origin = notification.origin_url();
-  const string16& replace_id = notification.replace_id();
+  const base::string16& replace_id = notification.replace_id();
 
   DCHECK(!replace_id.empty());
 

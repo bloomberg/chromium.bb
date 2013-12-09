@@ -60,7 +60,7 @@ struct MediaGalleryPrefInfo {
   MediaGalleryPrefId pref_id;
 
   // The user-visible name of this gallery.
-  string16 display_name;
+  base::string16 display_name;
 
   // A string which uniquely and persistently identifies the device that the
   // gallery lives on.
@@ -74,15 +74,15 @@ struct MediaGalleryPrefInfo {
 
   // The volume label of the volume/device on which the gallery
   // resides. Empty if there is no such label or it is unknown.
-  string16 volume_label;
+  base::string16 volume_label;
 
   // Vendor name for the volume/device on which the gallery is located.
   // Will be empty if unknown.
-  string16 vendor_name;
+  base::string16 vendor_name;
 
   // Model name for the volume/device on which the gallery is located.
   // Will be empty if unknown.
-  string16 model_name;
+  base::string16 model_name;
 
   // The capacity in bytes of the volume/device on which the gallery is
   // located. Will be zero if unknown.
@@ -104,9 +104,9 @@ struct MediaGalleryPrefInfo {
   int prefs_version;
 
   // Called by views to provide details for the gallery permission entries.
-  string16 GetGalleryDisplayName() const;
-  string16 GetGalleryTooltip() const;
-  string16 GetGalleryAdditionalDetails() const;
+  base::string16 GetGalleryDisplayName() const;
+  base::string16 GetGalleryTooltip() const;
+  base::string16 GetGalleryAdditionalDetails() const;
 
   // Returns true if the gallery is currently a removable device gallery which
   // is now attached, or a fixed storage gallery.
@@ -195,9 +195,9 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   MediaGalleryPrefId AddGallery(const std::string& device_id,
                                 const base::FilePath& relative_path,
                                 bool user_added,
-                                const string16& volume_label,
-                                const string16& vendor_name,
-                                const string16& model_name,
+                                const base::string16& volume_label,
+                                const base::string16& vendor_name,
+                                const base::string16& model_name,
                                 uint64 total_size_in_bytes,
                                 base::Time last_attach_time);
 
@@ -263,12 +263,12 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   void InitFromPrefs();
 
   MediaGalleryPrefId AddGalleryInternal(const std::string& device_id,
-                                        const string16& display_name,
+                                        const base::string16& display_name,
                                         const base::FilePath& relative_path,
                                         bool user_added,
-                                        const string16& volume_label,
-                                        const string16& vendor_name,
-                                        const string16& model_name,
+                                        const base::string16& volume_label,
+                                        const base::string16& vendor_name,
+                                        const base::string16& model_name,
                                         uint64 total_size_in_bytes,
                                         base::Time last_attach_time,
                                         bool volume_metadata_valid,

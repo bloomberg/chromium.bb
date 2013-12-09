@@ -89,7 +89,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
 
   bool finished() { return finished_; }
   bool success() { return success_; }
-  const string16& error() { return error_; }
+  const base::string16& error() { return error_; }
 
   void Start() {
     BrowserThread::PostTask(BrowserThread::FILE,
@@ -114,7 +114,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
                                        this));
   }
 
-  virtual void OnUnpackFailure(const string16& error) OVERRIDE {
+  virtual void OnUnpackFailure(const base::string16& error) OVERRIDE {
     finished_ = true;
     success_ = false;
     error_ = error;
@@ -161,7 +161,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
   bool success_;
 
   // If the unpacking wasn't successful, this contains an error message.
-  string16 error_;
+  base::string16 error_;
 };
 
 }  // namespace

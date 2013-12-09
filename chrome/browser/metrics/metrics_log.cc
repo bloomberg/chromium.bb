@@ -874,7 +874,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   omnibox_event->set_just_deleted_text(log.just_deleted_text);
   omnibox_event->set_num_typed_terms(num_terms);
   omnibox_event->set_selected_index(log.selected_index);
-  if (log.completed_length != string16::npos)
+  if (log.completed_length != base::string16::npos)
     omnibox_event->set_completed_length(log.completed_length);
   if (log.elapsed_time_since_user_first_modified_omnibox !=
       base::TimeDelta::FromMilliseconds(-1)) {

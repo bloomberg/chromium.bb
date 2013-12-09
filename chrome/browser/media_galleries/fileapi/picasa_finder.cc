@@ -39,7 +39,7 @@ base::FilePath GetCustomPicasaAppDataPathFromWinRegistry() {
     return base::FilePath();
   }
 
-  string16 value;
+  base::string16 value;
   if (key.ReadValue(kPicasaRegistryAppDataPathKey, &value) != ERROR_SUCCESS)
     return base::FilePath();
   if (value.empty())

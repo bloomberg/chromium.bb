@@ -70,13 +70,13 @@ class MediaGalleriesDialogController
                                  const base::Closure& on_finish);
 
   // The title of the dialog view.
-  string16 GetHeader() const;
+  base::string16 GetHeader() const;
 
   // Explanatory text directly below the title.
-  string16 GetSubtext() const;
+  base::string16 GetSubtext() const;
 
   // Header for unattached devices part of the dialog.
-  string16 GetUnattachedLocationsHeader() const;
+  base::string16 GetUnattachedLocationsHeader() const;
 
   // Initial state of whether the dialog's confirmation button will be enabled.
   bool HasPermittedGalleries() const;

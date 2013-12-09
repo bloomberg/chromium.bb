@@ -113,7 +113,7 @@ void ChromeAccessTokenStore::LoadAccessTokens(
 ChromeAccessTokenStore::~ChromeAccessTokenStore() {}
 
 static void SetAccessTokenOnUIThread(const GURL& server_url,
-                                     const string16& token) {
+                                     const base::string16& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               prefs::kGeolocationAccessToken);
@@ -122,8 +122,9 @@ static void SetAccessTokenOnUIThread(const GURL& server_url,
       server_url.spec(), Value::CreateStringValue(token));
 }
 
-void ChromeAccessTokenStore::SaveAccessToken(const GURL& server_url,
-                                             const string16& access_token) {
+void ChromeAccessTokenStore::SaveAccessToken(
+    const GURL& server_url,
+    const base::string16& access_token) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SetAccessTokenOnUIThread, server_url, access_token));

@@ -112,7 +112,7 @@ bool GetBrand(std::string* brand) {
     return true;
   }
 
-  string16 brand16;
+  base::string16 brand16;
   bool ret = GoogleUpdateSettings::GetBrand(&brand16);
   if (ret)
     brand->assign(WideToASCII(brand16));
@@ -120,7 +120,7 @@ bool GetBrand(std::string* brand) {
 }
 
 bool GetReactivationBrand(std::string* brand) {
-  string16 brand16;
+  base::string16 brand16;
   bool ret = GoogleUpdateSettings::GetReactivationBrand(&brand16);
   if (ret)
     brand->assign(WideToASCII(brand16));

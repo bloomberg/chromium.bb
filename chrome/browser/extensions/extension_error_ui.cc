@@ -40,7 +40,7 @@ string16 ExtensionErrorUI::GenerateMessageSection(
   CHECK(extensions);
   CHECK(extension_template_message_id);
   CHECK(app_template_message_id);
-  string16 message;
+  base::string16 message;
 
   for (ExtensionIdSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {

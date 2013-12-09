@@ -378,7 +378,7 @@ bool HistorySearchFunction::RunAsyncImpl() {
   scoped_ptr<Search::Params> params(Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  string16 search_text = UTF8ToUTF16(params->query.text);
+  base::string16 search_text = UTF8ToUTF16(params->query.text);
 
   history::QueryOptions options;
   options.SetRecentDayRange(1);

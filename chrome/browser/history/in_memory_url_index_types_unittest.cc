@@ -30,7 +30,7 @@ class InMemoryURLIndexTypesTest : public testing::Test {
 
 TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   // Test String16VectorFromString16
-  string16 string_a(ASCIIToUTF16("http://www.google.com/ frammy  the brammy"));
+  base::string16 string_a(ASCIIToUTF16("http://www.google.com/ frammy  the brammy"));
   WordStarts actual_starts_a;
   String16Vector string_vec =
       String16VectorFromString16(string_a, false, &actual_starts_a);
@@ -60,7 +60,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_TRUE(IntArraysEqual(expected_starts_b, arraysize(expected_starts_b),
                              actual_starts_b));
 
-  string16 string_c(ASCIIToUTF16(
+  base::string16 string_c(ASCIIToUTF16(
       " funky%20string-with=@strange   sequences, intended(to exceed)"));
   WordStarts actual_starts_c;
   string_vec = String16VectorFromString16(string_c, false, &actual_starts_c);
@@ -71,7 +71,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
                              actual_starts_c));
 
   // Test String16SetFromString16
-  string16 string_d(ASCIIToUTF16(
+  base::string16 string_d(ASCIIToUTF16(
       "http://web.google.com/search Google Web Search"));
   WordStarts actual_starts_d;
   String16Set string_set = String16SetFromString16(string_d, &actual_starts_d);
@@ -135,7 +135,7 @@ TEST_F(InMemoryURLIndexTypesTest, OffsetsAndTermMatches) {
     EXPECT_EQ(expected_offsets_a[i], offsets[i]);
 
   // Test ReplaceOffsetsInTermMatches
-  offsets[2] = string16::npos;
+  offsets[2] = base::string16::npos;
   history::TermMatches matches_b =
       ReplaceOffsetsInTermMatches(matches_a, offsets);
   const size_t expected_offsets_b[] = {1, 4, 10, 14};

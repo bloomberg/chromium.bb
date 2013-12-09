@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
       browser(),
       ws_server.GetURL("connect_check.html").ReplaceComponents(replacements));
 
-  const string16 result = watcher.WaitAndGetTitle();
+  const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(EqualsASCII(result, "PASS"));
   EXPECT_TRUE(observer.auth_handled());
 }

@@ -211,7 +211,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
   // The length of snippets we try to produce.
   // We can generate longer snippets but stop once we cross kSnippetMaxLength.
   const size_t kSnippetMaxLength = 200;
-  const string16 kEllipsis = ASCIIToUTF16(" ... ");
+  const base::string16 kEllipsis = ASCIIToUTF16(" ... ");
 
   UText* document_utext = NULL;
   UErrorCode status = U_ZERO_ERROR;
@@ -227,7 +227,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
   // We build the snippet by iterating through the matches and then grabbing
   // context around each match.  If matches are near enough each other (within
   // kSnippetContext), we skip the "..." between them.
-  string16 snippet;
+  base::string16 snippet;
   size_t start = 0;
   for (size_t i = 0; i < match_positions.size(); ++i) {
     // Some shorter names for the current match.

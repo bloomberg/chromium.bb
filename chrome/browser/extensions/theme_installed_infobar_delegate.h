@@ -46,9 +46,9 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual ThemeInstalledInfoBarDelegate*
       AsThemePreviewInfobarDelegate() OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
   // content::NotificationObserver:

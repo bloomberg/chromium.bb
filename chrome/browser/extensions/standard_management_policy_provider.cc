@@ -33,7 +33,7 @@ std::string
 
 bool StandardManagementPolicyProvider::UserMayLoad(
     const Extension* extension,
-    string16* error) const {
+    base::string16* error) const {
   PrefService* pref_service = prefs_->pref_service();
 
   const base::ListValue* blacklist =
@@ -52,13 +52,13 @@ bool StandardManagementPolicyProvider::UserMayLoad(
 
 bool StandardManagementPolicyProvider::UserMayModifySettings(
     const Extension* extension,
-    string16* error) const {
+    base::string16* error) const {
   return admin_policy::UserMayModifySettings(extension, error);
 }
 
 bool StandardManagementPolicyProvider::MustRemainEnabled(
     const Extension* extension,
-    string16* error) const {
+    base::string16* error) const {
   return admin_policy::MustRemainEnabled(extension, error);
 }
 

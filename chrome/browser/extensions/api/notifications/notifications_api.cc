@@ -249,8 +249,8 @@ bool NotificationsApiFunction::CreateNotification(
   // Extract required fields: type, title, message, and icon.
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->type);
-  const string16 title(UTF8ToUTF16(*options->title));
-  const string16 message(UTF8ToUTF16(*options->message));
+  const base::string16 title(UTF8ToUTF16(*options->title));
+  const base::string16 message(UTF8ToUTF16(*options->message));
   gfx::Image icon;
 
   // TODO(dewittj): Return error if this fails.

@@ -21,7 +21,7 @@ SerialPortEnumerator::GenerateValidSerialPortNames() {
       L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
 
   for (; iter_key.Valid(); ++iter_key) {
-    string16 str(iter_key.Value());
+    base::string16 str(iter_key.Value());
     std::string device_string(WideToASCII(str));
     name_set.insert(device_string);
   }

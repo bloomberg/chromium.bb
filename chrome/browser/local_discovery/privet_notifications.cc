@@ -234,7 +234,7 @@ bool PrivetNotificationService::IsForced() {
 
 void PrivetNotificationService::PrivetNotify(bool has_multiple,
                                              bool added) {
-    string16 product_name = l10n_util::GetStringUTF16(
+    base::string16 product_name = l10n_util::GetStringUTF16(
         IDS_LOCAL_DISOCVERY_PRODUCT_NAME_PRINTER);
 
     int title_resource = has_multiple ?
@@ -245,8 +245,9 @@ void PrivetNotificationService::PrivetNotify(bool has_multiple,
         IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER_MULTIPLE :
         IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER;
 
-    string16 title = l10n_util::GetStringUTF16(title_resource);
-    string16 body = l10n_util::GetStringFUTF16(body_resource, product_name);
+    base::string16 title = l10n_util::GetStringUTF16(title_resource);
+    base::string16 body =
+        l10n_util::GetStringFUTF16(body_resource, product_name);
 
     Profile* profile_object = Profile::FromBrowserContext(profile_);
     message_center::RichNotificationData rich_notification_data;

@@ -279,7 +279,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   ConfirmInfoBarDelegate* infobar_delegate_0 = infobar_service()->
       infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_0);
-  string16 text_0 = infobar_delegate_0->GetButtonLabel(
+  base::string16 text_0 = infobar_delegate_0->GetButtonLabel(
       ConfirmInfoBarDelegate::BUTTON_OK);
 
   NavigateAndCommit(requesting_frame);
@@ -290,7 +290,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   ConfirmInfoBarDelegate* infobar_delegate_1 = infobar_service()->
       infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_1);
-  string16 text_1 = infobar_delegate_1->GetButtonLabel(
+  base::string16 text_1 = infobar_delegate_1->GetButtonLabel(
       ConfirmInfoBarDelegate::BUTTON_OK);
   EXPECT_NE(text_0, text_1);
 
@@ -355,7 +355,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_0->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_0);
-  string16 text_0 = infobar_delegate_0->GetMessageText();
+  base::string16 text_0 = infobar_delegate_0->GetMessageText();
 
   // Accept the first frame.
   infobar_delegate_0->Accept();
@@ -373,7 +373,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   ConfirmInfoBarDelegate* infobar_delegate_1 =
       infobar_1->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_1);
-  string16 text_1 = infobar_delegate_1->GetMessageText();
+  base::string16 text_1 = infobar_delegate_1->GetMessageText();
   EXPECT_NE(text_0, text_1);
 
   // Cancel (block) this frame.
@@ -474,7 +474,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_0->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_0);
-  string16 text_0 = infobar_delegate_0->GetMessageText();
+  base::string16 text_0 = infobar_delegate_0->GetMessageText();
 
   // Simulate the frame going away, ensure the infobar for this frame
   // is removed and the next pending infobar is created.
@@ -488,7 +488,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   ConfirmInfoBarDelegate* infobar_delegate_1 =
       infobar_1->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_1);
-  string16 text_1 = infobar_delegate_1->GetMessageText();
+  base::string16 text_1 = infobar_delegate_1->GetMessageText();
   EXPECT_NE(text_0, text_1);
 
   // Allow this frame.

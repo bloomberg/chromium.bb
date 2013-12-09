@@ -203,7 +203,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 
   base::PlatformFile read_file;
 #if defined(OS_WIN)
-  string16 pipe_name = base::StringPrintf(
+  base::string16 pipe_name = base::StringPrintf(
       L"\\\\.\\pipe\\chrome.nativeMessaging.out.%llx", base::RandUint64());
   base::win::ScopedHandle write_handle(
       CreateNamedPipeW(pipe_name.c_str(),

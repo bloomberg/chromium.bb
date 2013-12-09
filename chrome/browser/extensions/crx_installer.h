@@ -219,7 +219,7 @@ class CrxInstaller
   CrxInstallerError AllowInstall(const Extension* extension);
 
   // SandboxedUnpackerClient
-  virtual void OnUnpackFailure(const string16& error_message) OVERRIDE;
+  virtual void OnUnpackFailure(const base::string16& error_message) OVERRIDE;
   virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
                                const base::FilePath& extension_dir,
                                const base::DictionaryValue* original_manifest,

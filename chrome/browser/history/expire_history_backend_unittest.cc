@@ -87,7 +87,7 @@ class ExpireHistoryTest : public testing::Test,
 
   void StarURL(const GURL& url) {
     bookmark_model_.AddURL(
-        bookmark_model_.bookmark_bar_node(), 0, string16(), url);
+        bookmark_model_.bookmark_bar_node(), 0, base::string16(), url);
   }
 
   static bool IsStringInFile(const base::FilePath& filename, const char* str);

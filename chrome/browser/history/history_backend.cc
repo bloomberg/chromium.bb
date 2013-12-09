@@ -873,7 +873,8 @@ bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) {
   return time < expirer_.GetCurrentArchiveTime();
 }
 
-void HistoryBackend::SetPageTitle(const GURL& url, const string16& title) {
+void HistoryBackend::SetPageTitle(const GURL& url,
+                                  const base::string16& title) {
   if (!db_)
     return;
 
@@ -919,7 +920,7 @@ void HistoryBackend::SetPageTitle(const GURL& url, const string16& title) {
 }
 
 void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
-                                               const string16& title) {
+                                               const base::string16& title) {
   if (!db_)
     return;
 
@@ -1129,7 +1130,7 @@ void HistoryBackend::QuerySegmentDuration(
 
 void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
                                                  TemplateURLID keyword_id,
-                                                 const string16& term) {
+                                                 const base::string16& term) {
   if (!db_)
     return;
 
@@ -1162,7 +1163,7 @@ void HistoryBackend::DeleteAllSearchTermsForKeyword(
 void HistoryBackend::GetMostRecentKeywordSearchTerms(
     scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
     TemplateURLID keyword_id,
-    const string16& prefix,
+    const base::string16& prefix,
     int max_count) {
   if (request->canceled())
     return;
@@ -1253,7 +1254,7 @@ void HistoryBackend::RemoveDownloads(const std::set<uint32>& ids) {
 }
 
 void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
-                                  const string16& text_query,
+                                  const base::string16& text_query,
                                   const QueryOptions& options) {
   if (request->canceled())
     return;
@@ -1348,7 +1349,7 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
 // Text-based querying of history.
 void HistoryBackend::QueryHistoryText(URLDatabase* url_db,
                                       VisitDatabase* visit_db,
-                                      const string16& text_query,
+                                      const base::string16& text_query,
                                       const QueryOptions& options,
                                       QueryResults* result) {
   URLRows text_matches;

@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 std::string GalleryName(const MediaGalleryPrefInfo& gallery) {
-  string16 name = gallery.GetGalleryDisplayName();
+  base::string16 name = gallery.GetGalleryDisplayName();
   return UTF16ToASCII(name);
 }
 
@@ -33,7 +33,7 @@ TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
   gallery.display_name = ASCIIToUTF16("override");
   EXPECT_EQ("override", GalleryName(gallery));
 
-  gallery.display_name = string16();
+  gallery.display_name = base::string16();
   gallery.volume_label = ASCIIToUTF16("label");
   EXPECT_EQ(galleryName, GalleryName(gallery));
 
@@ -60,10 +60,10 @@ TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
   gallery.model_name = ASCIIToUTF16("model");
   EXPECT_EQ("override", GalleryName(gallery));
 
-  gallery.display_name = string16();
+  gallery.display_name = base::string16();
   EXPECT_EQ("volume", GalleryName(gallery));
 
-  gallery.volume_label = string16();
+  gallery.volume_label = base::string16();
   EXPECT_EQ("vendor, model", GalleryName(gallery));
 
   gallery.total_size_in_bytes = 1000000;

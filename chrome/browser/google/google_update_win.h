@@ -77,8 +77,8 @@ class GoogleUpdateStatusListener {
   // server config for Chrome) is blank.
   virtual void OnReportResults(GoogleUpdateUpgradeResult results,
                                GoogleUpdateErrorCode error_code,
-                               const string16& error_message,
-                               const string16& version) = 0;
+                               const base::string16& error_message,
+                               const base::string16& version) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // listener.
   // Note, after this function completes, this object will have deleted itself.
   bool ReportFailure(HRESULT hr, GoogleUpdateErrorCode error_code,
-                     const string16& error_message,
+                     const base::string16& error_message,
                      base::MessageLoop* main_loop);
 
   // The update check needs to run on another thread than the main thread, and
@@ -132,11 +132,11 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // Note, after this function completes, this object will have deleted itself.
   void ReportResults(GoogleUpdateUpgradeResult results,
                      GoogleUpdateErrorCode error_code,
-                     const string16& error_message);
+                     const base::string16& error_message);
 
   // Which version string Google Update found (if a new one was available).
   // Otherwise, this will be blank.
-  string16 version_available_;
+  base::string16 version_available_;
 
   // The listener who is interested in finding out the result of the operation.
   GoogleUpdateStatusListener* listener_;

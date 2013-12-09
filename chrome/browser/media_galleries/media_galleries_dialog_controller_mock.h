@@ -15,8 +15,8 @@ class MediaGalleriesDialogControllerMock
       const extensions::Extension& extension);
   virtual ~MediaGalleriesDialogControllerMock();
 
-  MOCK_CONST_METHOD0(GetHeader, string16());
-  MOCK_CONST_METHOD0(GetSubtext, string16());
+  MOCK_CONST_METHOD0(GetHeader, base::string16());
+  MOCK_CONST_METHOD0(GetSubtext, base::string16());
   MOCK_CONST_METHOD0(HasPermittedGalleries, bool());
   MOCK_CONST_METHOD0(AttachedPermissions, GalleryPermissionsVector());
   MOCK_CONST_METHOD0(UnattachedPermissions, GalleryPermissionsVector());

@@ -35,7 +35,7 @@ class ExtensionInstaller {
   void CheckRequirements(const RequirementsCallback& callback);
 
   // Checks the management policy if the extension can be installed.
-  string16 CheckManagementPolicy();
+  base::string16 CheckManagementPolicy();
 
   Profile* profile() const {
     return profile_;

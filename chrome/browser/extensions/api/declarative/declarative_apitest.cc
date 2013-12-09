@@ -102,7 +102,7 @@ const char kRedirectToDataNoRules[] =
 class DeclarativeApiTest : public ExtensionApiTest {
  public:
   std::string GetTitle() {
-    string16 title(
+    base::string16 title(
         browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
     return base::UTF16ToUTF8(title);
   }

@@ -59,7 +59,7 @@ class WebHistoryService : public BrowserContextKeyedService {
   // The caller takes ownership of the returned Request. If it is destroyed, the
   // request is cancelled.
   scoped_ptr<Request> QueryHistory(
-      const string16& text_query,
+      const base::string16& text_query,
       const QueryOptions& options,
       const QueryWebHistoryCallback& callback);
 

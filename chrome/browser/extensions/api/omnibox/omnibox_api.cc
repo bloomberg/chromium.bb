@@ -317,7 +317,7 @@ ACMatchClassifications StyleTypesToACMatchClassifications(
     const omnibox::SuggestResult &suggestion) {
   ACMatchClassifications match_classifications;
   if (suggestion.description_styles) {
-    string16 description = UTF8ToUTF16(suggestion.description);
+    base::string16 description = UTF8ToUTF16(suggestion.description);
     std::vector<int> styles(description.length(), 0);
 
     for (std::vector<linked_ptr<omnibox::SuggestResult::DescriptionStylesType> >
@@ -368,7 +368,7 @@ ACMatchClassifications StyleTypesToACMatchClassifications(
 void ApplyDefaultSuggestionForExtensionKeyword(
     Profile* profile,
     const TemplateURL* keyword,
-    const string16& remaining_input,
+    const base::string16& remaining_input,
     AutocompleteMatch* match) {
   DCHECK(keyword->GetType() == TemplateURL::OMNIBOX_API_EXTENSION);
 
@@ -377,18 +377,18 @@ void ApplyDefaultSuggestionForExtensionKeyword(
   if (!suggestion || suggestion->description.empty())
     return;  // fall back to the universal default
 
-  const string16 kPlaceholderText(ASCIIToUTF16("%s"));
-  const string16 kReplacementText(ASCIIToUTF16("<input>"));
+  const base::string16 kPlaceholderText(ASCIIToUTF16("%s"));
+  const base::string16 kReplacementText(ASCIIToUTF16("<input>"));
 
-  string16 description = UTF8ToUTF16(suggestion->description);
+  base::string16 description = UTF8ToUTF16(suggestion->description);
   ACMatchClassifications& description_styles = match->contents_class;
   description_styles = StyleTypesToACMatchClassifications(*suggestion);
 
   // Replace "%s" with the user's input and adjust the style offsets to the
   // new length of the description.
   size_t placeholder(description.find(kPlaceholderText, 0));
-  if (placeholder != string16::npos) {
-    string16 replacement =
+  if (placeholder != base::string16::npos) {
+    base::string16 replacement =
         remaining_input.empty() ? kReplacementText : remaining_input;
     description.replace(placeholder, kPlaceholderText.length(), replacement);
 

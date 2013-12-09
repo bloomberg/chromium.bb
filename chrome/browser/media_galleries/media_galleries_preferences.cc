@@ -127,13 +127,13 @@ bool GetType(const DictionaryValue& dict, MediaGalleryPrefInfo::Type* type) {
 bool PopulateGalleryPrefInfoFromDictionary(
     const DictionaryValue& dict, MediaGalleryPrefInfo* out_gallery_info) {
   MediaGalleryPrefId pref_id;
-  string16 display_name;
+  base::string16 display_name;
   std::string device_id;
   base::FilePath::StringType path;
   MediaGalleryPrefInfo::Type type = MediaGalleryPrefInfo::kAutoDetected;
-  string16 volume_label;
-  string16 vendor_name;
-  string16 model_name;
+  base::string16 volume_label;
+  base::string16 vendor_name;
+  base::string16 model_name;
   double total_size_in_bytes = 0.0;
   double last_attach_time = 0.0;
   bool volume_metadata_valid = false;
@@ -245,8 +245,8 @@ bool GetMediaGalleryPermissionFromDictionary(
   return false;
 }
 
-string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
-                                 const string16& name) {
+base::string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
+                                       const base::string16& name) {
   DCHECK(!name.empty());
   return (storage_size_in_bytes == 0) ?
       name : ui::FormatBytes(storage_size_in_bytes) + ASCIIToUTF16(" ") + name;
@@ -254,8 +254,8 @@ string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
 
 // For a device with |device_name| and a relative path |sub_folder|, construct
 // a display name. If |sub_folder| is empty, then just return |device_name|.
-string16 GetDisplayNameForSubFolder(const string16& device_name,
-                                    const base::FilePath& sub_folder) {
+base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
+                                          const base::FilePath& sub_folder) {
   if (sub_folder.empty())
     return device_name;
   return (sub_folder.BaseName().LossyDisplayName() +
@@ -263,12 +263,12 @@ string16 GetDisplayNameForSubFolder(const string16& device_name,
           device_name);
 }
 
-string16 GetFullProductName(const string16& vendor_name,
-                            const string16& model_name) {
+base::string16 GetFullProductName(const base::string16& vendor_name,
+                                  const base::string16& model_name) {
   if (vendor_name.empty() && model_name.empty())
-    return string16();
+    return base::string16();
 
-  string16 product_name;
+  base::string16 product_name;
   if (vendor_name.empty())
     product_name = model_name;
   else if (model_name.empty())
@@ -297,7 +297,7 @@ base::FilePath MediaGalleryPrefInfo::AbsolutePath() const {
   return base_path.empty() ? base_path : base_path.Append(path);
 }
 
-string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
+base::string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
   if (!StorageInfo::IsRemovableDevice(device_id)) {
     // For fixed storage, the default name is the fully qualified directory
     // name, or in the case of a root directory, the root directory name.
@@ -322,7 +322,7 @@ string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
 #endif
   }
 
-  string16 name = display_name;
+  base::string16 name = display_name;
   if (name.empty())
     name = volume_label;
   if (name.empty())
@@ -338,12 +338,12 @@ string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
   return name;
 }
 
-string16 MediaGalleryPrefInfo::GetGalleryTooltip() const {
+base::string16 MediaGalleryPrefInfo::GetGalleryTooltip() const {
   return AbsolutePath().LossyDisplayName();
 }
 
-string16 MediaGalleryPrefInfo::GetGalleryAdditionalDetails() const {
-  string16 attached;
+base::string16 MediaGalleryPrefInfo::GetGalleryAdditionalDetails() const {
+  base::string16 attached;
   if (StorageInfo::IsRemovableDevice(device_id)) {
     if (MediaStorageUtil::IsRemovableStorageAttached(device_id)) {
       attached = l10n_util::GetStringUTF16(
@@ -562,7 +562,7 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
 
     AddGalleryInternal(device_id, ASCIIToUTF16(gallery_name),
                        base::FilePath(), false /*not user added*/,
-                       string16(), string16(), string16(), 0,
+                       base::string16(), base::string16(), base::string16(), 0,
                        base::Time(), false, 2);
   }
 
@@ -698,20 +698,20 @@ base::FilePath MediaGalleriesPreferences::LookUpGalleryPathForExtension(
 MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const std::string& device_id,
     const base::FilePath& relative_path, bool user_added,
-    const string16& volume_label, const string16& vendor_name,
-    const string16& model_name, uint64 total_size_in_bytes,
+    const base::string16& volume_label, const base::string16& vendor_name,
+    const base::string16& model_name, uint64 total_size_in_bytes,
     base::Time last_attach_time) {
   DCHECK(IsInitialized());
-  return AddGalleryInternal(device_id, string16(), relative_path, user_added,
-                            volume_label, vendor_name, model_name,
+  return AddGalleryInternal(device_id, base::string16(), relative_path,
+                            user_added, volume_label, vendor_name, model_name,
                             total_size_in_bytes, last_attach_time, true, 2);
 }
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
-    const std::string& device_id, const string16& display_name,
+    const std::string& device_id, const base::string16& display_name,
     const base::FilePath& relative_path, bool user_added,
-    const string16& volume_label, const string16& vendor_name,
-    const string16& model_name, uint64 total_size_in_bytes,
+    const base::string16& volume_label, const base::string16& vendor_name,
+    const base::string16& model_name, uint64 total_size_in_bytes,
     base::Time last_attach_time,
     bool volume_metadata_valid,
     int prefs_version) {

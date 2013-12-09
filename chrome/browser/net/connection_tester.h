@@ -140,9 +140,9 @@ class ConnectionTester {
   void RunAllTests(const GURL& url);
 
   // Returns a text string explaining what |experiment| is testing.
-  static string16 ProxySettingsExperimentDescription(
+  static base::string16 ProxySettingsExperimentDescription(
       ProxySettingsExperiment experiment);
-  static string16 HostResolverExperimentDescription(
+  static base::string16 HostResolverExperimentDescription(
       HostResolverExperiment experiment);
 
  private:

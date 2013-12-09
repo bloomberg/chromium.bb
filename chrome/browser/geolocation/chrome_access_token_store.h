@@ -25,7 +25,7 @@ class ChromeAccessTokenStore : public content::AccessTokenStore {
 
   // AccessTokenStore
   virtual void SaveAccessToken(
-      const GURL& server_url, const string16& access_token) OVERRIDE;
+      const GURL& server_url, const base::string16& access_token) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAccessTokenStore);
 };

@@ -18,10 +18,10 @@ namespace {
 
 struct MTPDeviceObjectEntryData {
   // Friendly name of the object, e.g. "IMG_9911.jpeg".
-  string16 name;
+  base::string16 name;
 
   // The object identifier, e.g. "o299".
-  string16 object_id;
+  base::string16 object_id;
 
   // True if the current object is a directory/folder/album content type.
   bool is_directory;

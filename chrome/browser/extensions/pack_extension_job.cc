@@ -93,8 +93,8 @@ void PackExtensionJob::ReportFailureOnClientThread(
 string16 PackExtensionJob::StandardSuccessMessage(
     const base::FilePath& crx_file,
     const base::FilePath& key_file) {
-  string16 crx_file_string = crx_file.LossyDisplayName();
-  string16 key_file_string = key_file.LossyDisplayName();
+  base::string16 crx_file_string = crx_file.LossyDisplayName();
+  base::string16 key_file_string = key_file.LossyDisplayName();
   if (key_file_string.empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,

@@ -133,12 +133,12 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
       content::NotificationService::NoDetails());
 }
 
-void ChromeMetroViewerProcessHost::OnOpenURL(const string16& url) {
+void ChromeMetroViewerProcessHost::OnOpenURL(const base::string16& url) {
   OpenURL(GURL(url));
 }
 
 void ChromeMetroViewerProcessHost::OnHandleSearchRequest(
-    const string16& search_string) {
+    const base::string16& search_string) {
   GURL url(GetDefaultSearchURLForSearchTerms(
       ProfileManager::GetDefaultProfileOrOffTheRecord(), search_string));
   if (url.is_valid())

@@ -41,8 +41,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // directly, figure out how to send it via the proper calls to
   // location_bar or location_bar->().
   autocomplete_controller->Start(
-      AutocompleteInput(ASCIIToUTF16("keyword command"), string16::npos,
-                        string16(), GURL(), AutocompleteInput::NTP,
+      AutocompleteInput(ASCIIToUTF16("keyword command"), base::string16::npos,
+                        base::string16(), GURL(), AutocompleteInput::NTP,
                         true, false, true, AutocompleteInput::ALL_MATCHES));
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);

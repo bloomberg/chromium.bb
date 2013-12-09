@@ -79,7 +79,7 @@ bool IncognitoConnectability::Query(const Extension* extension,
       result = chrome::ShowMessageBox(
           web_contents ? web_contents->GetView()->GetTopLevelNativeWindow()
                        : NULL,
-          string16(),  // no title
+          base::string16(),  // no title
           l10n_util::GetStringFUTF16(template_id,
                                      UTF8ToUTF16(origin.spec()),
                                      UTF8ToUTF16(extension->name())),

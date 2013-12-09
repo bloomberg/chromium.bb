@@ -120,7 +120,7 @@ string16 BuildSnippet(const std::string& document,
   snippet.ComputeSnippet(match_positions, document);
 
   // Now "highlight" all matches in the snippet with **.
-  string16 star_snippet;
+  base::string16 star_snippet;
   Snippet::MatchPositions::const_iterator match;
   size_t pos = 0;
   for (match = snippet.matches().begin();

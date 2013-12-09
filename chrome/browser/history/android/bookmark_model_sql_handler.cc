@@ -31,7 +31,7 @@ BookmarkModelSQLHandler::Task::Task() {
 
 void BookmarkModelSQLHandler::Task::AddBookmarkToMobileFolder(
     const GURL& url,
-    const string16& title) {
+    const base::string16& title) {
   BookmarkModel* bookmark_model = GetBookmarkModel();
   if (!bookmark_model)
     return;
@@ -41,7 +41,7 @@ void BookmarkModelSQLHandler::Task::AddBookmarkToMobileFolder(
 }
 
 void BookmarkModelSQLHandler::Task::AddBookmark(const GURL& url,
-                                                const string16& title,
+                                                const base::string16& title,
                                                 int64 parent_id) {
   BookmarkModel* bookmark_model = GetBookmarkModel();
   if (!bookmark_model)
@@ -64,8 +64,9 @@ void BookmarkModelSQLHandler::Task::RemoveBookmark(const GURL& url) {
   }
 }
 
-void BookmarkModelSQLHandler::Task::UpdateBookmarkTitle(const GURL& url,
-                                                        const string16&title) {
+void BookmarkModelSQLHandler::Task::UpdateBookmarkTitle(
+    const GURL& url,
+    const base::string16& title) {
   BookmarkModel* bookmark_model = GetBookmarkModel();
   if (!bookmark_model)
     return;
@@ -170,4 +171,4 @@ bool BookmarkModelSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   return true;
 }
 
-}  // namespace history.
+}  // namespace history

@@ -70,7 +70,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
   for (std::set<string16>::const_iterator it = keys.begin();
        it != keys.end(); ++it) {
     base::win::RegKey key;
-    string16 key_path = ASCIIToWide(kRegistryExtensions);
+    base::string16 key_path = ASCIIToWide(kRegistryExtensions);
     key_path.append(L"\\");
     key_path.append(*it);
     if (key.Open(HKEY_LOCAL_MACHINE,
@@ -83,7 +83,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       }
     }
 
-    string16 extension_path_str;
+    base::string16 extension_path_str;
     if (key.ReadValue(kRegistryExtensionPath, &extension_path_str)
         != ERROR_SUCCESS) {
       // TODO(erikkay): find a way to get this into about:extensions
@@ -115,7 +115,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    string16 extension_version;
+    base::string16 extension_version;
     if (key.ReadValue(kRegistryExtensionVersion, &extension_version)
         != ERROR_SUCCESS) {
       // TODO(erikkay): find a way to get this into about:extensions

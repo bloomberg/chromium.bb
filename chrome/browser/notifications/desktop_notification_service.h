@@ -94,15 +94,15 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   // Creates a data:xxxx URL which contains the full HTML for a notification
   // using supplied icon, title, and text, run through a template which contains
   // the standard formatting for notifications.
-  static string16 CreateDataUrl(const GURL& icon_url,
-                                const string16& title,
-                                const string16& body,
-                                blink::WebTextDirection dir);
+  static base::string16 CreateDataUrl(const GURL& icon_url,
+                                      const base::string16& title,
+                                      const base::string16& body,
+                                      blink::WebTextDirection dir);
 
   // Creates a data:xxxx URL which contains the full HTML for a notification
   // using resource template which contains the standard formatting for
   // notifications.
-  static string16 CreateDataUrl(int resource,
+  static base::string16 CreateDataUrl(int resource,
                                 const std::vector<std::string>& subst);
 
   // Add a desktop notification. On non-Ash platforms this will generate a HTML
@@ -111,19 +111,19 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   // TODO(mukai): remove these methods. HTML notifications are no longer
   // supported.
   static std::string AddNotification(const GURL& origin_url,
-                                     const string16& title,
-                                     const string16& message,
+                                     const base::string16& title,
+                                     const base::string16& message,
                                      const GURL& icon_url,
-                                     const string16& replace_id,
+                                     const base::string16& replace_id,
                                      NotificationDelegate* delegate,
                                      Profile* profile);
 
   // Same as above, but takes a gfx::Image for the icon instead.
   static std::string AddIconNotification(const GURL& origin_url,
-                                         const string16& title,
-                                         const string16& message,
+                                         const base::string16& title,
+                                         const base::string16& message,
                                          const gfx::Image& icon,
-                                         const string16& replace_id,
+                                         const base::string16& replace_id,
                                          NotificationDelegate* delegate,
                                          Profile* profile);
 
@@ -170,7 +170,8 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   // Returns a display name for an origin in the process id, to be used in
   // permission infobar or on the frame of the notification toast.  Different
   // from the origin itself when dealing with extensions.
-  string16 DisplayNameForOriginInProcessId(const GURL& origin, int process_id);
+  base::string16 DisplayNameForOriginInProcessId(const GURL& origin,
+                                                 int process_id);
 
   // Notifies the observers when permissions settings change.
   void NotifySettingsChange();

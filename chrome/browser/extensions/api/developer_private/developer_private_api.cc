@@ -818,7 +818,7 @@ bool DeveloperPrivateInspectFunction::RunImpl() {
 DeveloperPrivateInspectFunction::~DeveloperPrivateInspectFunction() {}
 
 bool DeveloperPrivateLoadUnpackedFunction::RunImpl() {
-  string16 select_title =
+  base::string16 select_title =
       l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
 
   // Balanced in FileSelected / FileSelectionCanceled.
@@ -849,7 +849,7 @@ void DeveloperPrivateLoadUnpackedFunction::FileSelectionCanceled() {
 bool DeveloperPrivateChooseEntryFunction::ShowPicker(
     ui::SelectFileDialog::Type picker_type,
     const base::FilePath& last_directory,
-    const string16& select_title,
+    const base::string16& select_title,
     const ui::SelectFileDialog::FileTypeInfo& info,
     int file_type_index) {
   ShellWindowRegistry* registry = ShellWindowRegistry::Get(GetProfile());
@@ -1178,7 +1178,7 @@ bool DeveloperPrivateChoosePathFunction::RunImpl() {
   if (params->select_type == developer::SELECT_TYPE_FILE) {
     type = ui::SelectFileDialog::SELECT_OPEN_FILE;
   }
-  string16 select_title;
+  base::string16 select_title;
 
   int file_type_index = 0;
   if (params->file_type == developer::FILE_TYPE_LOAD)

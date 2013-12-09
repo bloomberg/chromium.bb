@@ -827,7 +827,7 @@ bool AndroidProviderBackend::UpdateSearchTermTable() {
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
                                                    kSearchTermUpdateClause));
   while (statement.Step()) {
-    string16 term = statement.ColumnString16(0);
+    base::string16 term = statement.ColumnString16(0);
     Time last_visit_time = Time::FromInternalValue(statement.ColumnInt64(1));
     SearchTermRow search_term_row;
     if (history_db_->GetSearchTerm(term, &search_term_row)) {

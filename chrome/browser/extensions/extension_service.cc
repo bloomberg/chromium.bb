@@ -168,12 +168,12 @@ class SharedModuleProvider : public extensions::ManagementPolicy::Provider {
   }
 
   virtual bool UserMayModifySettings(const Extension* extension,
-                                     string16* error) const OVERRIDE {
+                                     base::string16* error) const OVERRIDE {
     return !IsCWSSharedModule(extension);
   }
 
   virtual bool MustRemainEnabled(const Extension* extension,
-                                 string16* error) const OVERRIDE {
+                                 base::string16* error) const OVERRIDE {
     return IsCWSSharedModule(extension);
   }
 
@@ -296,7 +296,7 @@ bool ExtensionService::UninstallExtensionHelper(
 
   // The following call to UninstallExtension will not allow an uninstall of a
   // policy-controlled extension.
-  string16 error;
+  base::string16 error;
   if (!extensions_service->UninstallExtension(extension_id, false, &error)) {
     LOG(WARNING) << "Cannot uninstall extension with id " << extension_id
                  << ": " << error;
@@ -745,7 +745,7 @@ void ExtensionService::ReloadExtension(const std::string extension_id) {
 bool ExtensionService::UninstallExtension(
     std::string extension_id,
     bool external_uninstall,
-    string16* error) {
+    base::string16* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_refptr<const Extension> extension(GetInstalledExtension(extension_id));
@@ -2418,7 +2418,7 @@ void ExtensionService::ReportExtensionLoadError(
       content::Details<const std::string>(&error));
 
   std::string path_str = UTF16ToUTF8(extension_path.LossyDisplayName());
-  string16 message = UTF8ToUTF16(base::StringPrintf(
+  base::string16 message = UTF8ToUTF16(base::StringPrintf(
       "Could not load extension from '%s'. %s",
       path_str.c_str(), error.c_str()));
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);

@@ -368,7 +368,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
   // Localize manifest now, so confirm UI gets correct extension name.
 
   // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
-  // with string16
+  // with base::string16
   std::string utf8_error;
   if (!extension_l10n_util::LocalizeExtension(extension_root_,
                                               final_manifest.get(),
@@ -404,7 +404,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
   ReportSuccess(manifest, install_icon);
 }
 
-void SandboxedUnpacker::OnUnpackExtensionFailed(const string16& error) {
+void SandboxedUnpacker::OnUnpackExtensionFailed(const base::string16& error) {
   CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
   got_response_ = true;
   ReportFailure(
@@ -577,7 +577,7 @@ bool SandboxedUnpacker::ValidateSignature() {
 }
 
 void SandboxedUnpacker::ReportFailure(FailureReason reason,
-                                      const string16& error) {
+                                      const base::string16& error) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.SandboxUnpackFailureReason",
                             reason, NUM_FAILURE_REASONS);
   UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",

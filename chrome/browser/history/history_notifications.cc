@@ -25,7 +25,7 @@ URLsDeletedDetails::~URLsDeletedDetails() {}
 KeywordSearchUpdatedDetails::KeywordSearchUpdatedDetails(
     const GURL& url,
     TemplateURLID keyword_id,
-    const string16& term)
+    const base::string16& term)
     : url(url),
       keyword_id(keyword_id),
       term(term) {

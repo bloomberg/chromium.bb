@@ -2301,8 +2301,8 @@ bool WebRequestEventHandled::RunImpl() {
       EXTENSION_FUNCTION_VALIDATE(value->GetDictionary(
           keys::kAuthCredentialsKey,
           &credentials_value));
-      string16 username;
-      string16 password;
+      base::string16 username;
+      base::string16 password;
       EXTENSION_FUNCTION_VALIDATE(
           credentials_value->GetString(keys::kUsernameKey, &username));
       EXTENSION_FUNCTION_VALIDATE(

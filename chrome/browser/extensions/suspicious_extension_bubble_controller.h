@@ -36,11 +36,11 @@ class SuspiciousExtensionBubbleController : public ProfileKeyedAPI {
   void Show(SuspiciousExtensionBubble* bubble);
 
   // Text for various UI labels shown in the bubble.
-  string16 GetTitle();
-  string16 GetMessageBody();
-  string16 GetOverflowText(const string16& overflow_count);
-  string16 GetLearnMoreLabel();
-  string16 GetDismissButtonLabel();
+  base::string16 GetTitle();
+  base::string16 GetMessageBody();
+  base::string16 GetOverflowText(const base::string16& overflow_count);
+  base::string16 GetLearnMoreLabel();
+  base::string16 GetDismissButtonLabel();
 
   // Returns a vector of names of suspicious extensions found.
   std::vector<string16> GetSuspiciousExtensionNames();

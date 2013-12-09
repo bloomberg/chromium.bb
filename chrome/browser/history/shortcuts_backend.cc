@@ -82,15 +82,15 @@ ShortcutsBackend::Shortcut::MatchCore::MatchCore(
 }
 
 ShortcutsBackend::Shortcut::MatchCore::MatchCore(
-    const string16& fill_into_edit,
+    const base::string16& fill_into_edit,
     const GURL& destination_url,
-    const string16& contents,
+    const base::string16& contents,
     const ACMatchClassifications& contents_class,
-    const string16& description,
+    const base::string16& description,
     const ACMatchClassifications& description_class,
     content::PageTransition transition,
     AutocompleteMatch::Type type,
-    const string16& keyword)
+    const base::string16& keyword)
     : fill_into_edit(fill_into_edit),
       destination_url(destination_url),
       contents(contents),
@@ -124,7 +124,7 @@ AutocompleteMatch ShortcutsBackend::Shortcut::MatchCore::ToMatch() const {
 
 ShortcutsBackend::Shortcut::Shortcut(
     const std::string& id,
-    const string16& text,
+    const base::string16& text,
     const MatchCore& match_core,
     const base::Time& last_access_time,
     int number_of_hits)
@@ -189,9 +189,9 @@ void ShortcutsBackend::RemoveObserver(ShortcutsBackendObserver* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-void ShortcutsBackend::AddOrUpdateShortcut(const string16& text,
+void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
                                            const AutocompleteMatch& match) {
-  const string16 text_lowercase(base::i18n::ToLower(text));
+  const base::string16 text_lowercase(base::i18n::ToLower(text));
   const base::Time now(base::Time::Now());
   for (ShortcutMap::const_iterator it(
        shortcuts_map_.lower_bound(text_lowercase));

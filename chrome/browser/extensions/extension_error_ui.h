@@ -56,10 +56,10 @@ class ExtensionErrorUI {
   ExtensionService* extension_service() const { return extension_service_; }
 
   // Model methods for the bubble view.
-  string16 GetBubbleViewTitle();
+  base::string16 GetBubbleViewTitle();
   std::vector<string16> GetBubbleViewMessages();
-  string16 GetBubbleViewAcceptButtonLabel();
-  string16 GetBubbleViewCancelButtonLabel();
+  base::string16 GetBubbleViewAcceptButtonLabel();
+  base::string16 GetBubbleViewCancelButtonLabel();
 
   // Sub-classes should call this methods based on the actions taken by the user
   // in the error bubble.
@@ -72,16 +72,17 @@ class ExtensionErrorUI {
   ExtensionService* extension_service_;
   scoped_ptr<extensions::ExtensionIdSet> external_extension_ids_;
   scoped_ptr<extensions::ExtensionIdSet> blacklisted_extension_ids_;
-  string16 message_;  // Displayed in the body of the alert.
+  base::string16 message_;  // Displayed in the body of the alert.
 
   // For a given set of extension IDs, generates appropriate text
   // describing what the user needs to know about them.
-  string16 GenerateMessageSection(const extensions::ExtensionIdSet* extensions,
-                                  int extension_template_message_id,
-                                  int app_template_message_id);
+  base::string16 GenerateMessageSection(
+      const extensions::ExtensionIdSet* extensions,
+      int extension_template_message_id,
+      int app_template_message_id);
 
   // Generates the message displayed in the body of the alert.
-  string16 GenerateMessage();
+  base::string16 GenerateMessage();
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionErrorUI);
 };

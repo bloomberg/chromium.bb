@@ -149,7 +149,7 @@ class AndroidProviderBackendTest : public testing::Test {
   void AddBookmark(const GURL& url) {
     const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
     ASSERT_TRUE(mobile_node);
-    ASSERT_TRUE(bookmark_model_->AddURL(mobile_node, 0, string16(), url));
+    ASSERT_TRUE(bookmark_model_->AddURL(mobile_node, 0, base::string16(), url));
   }
 
   bool GetAndroidURLsRows(std::vector<AndroidURLRow>* rows,
@@ -227,7 +227,7 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
 
   // Add a bookmark which is not in the history.
   GURL url3("http://www.bookmark.com");
-  string16 title3(UTF8ToUTF16("bookmark"));
+  base::string16 title3(UTF8ToUTF16("bookmark"));
   ASSERT_TRUE(bookmark_model_->AddURL(bookmark_model_->bookmark_bar_node(), 0,
                                       title3, url3));
   // Only use the HistoryBackend to generate the test data.
@@ -354,7 +354,7 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
 TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   GURL url1("http://www.cnn.com");
   URLID url_id1 = 0;
-  const string16 title1(UTF8ToUTF16("cnn"));
+  const base::string16 title1(UTF8ToUTF16("cnn"));
   std::vector<VisitInfo> visits1;
   Time last_visited1 = Time::Now() - TimeDelta::FromDays(1);
   Time created1 = last_visited1 - TimeDelta::FromDays(20);
@@ -366,7 +366,7 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   GURL url2("http://www.example.com");
   URLID url_id2 = 0;
   std::vector<VisitInfo> visits2;
-  const string16 title2(UTF8ToUTF16("example"));
+  const base::string16 title2(UTF8ToUTF16("example"));
   Time last_visited2 = Time::Now();
   Time created2 = last_visited2 - TimeDelta::FromDays(10);
   visits2.push_back(VisitInfo(created2, content::PAGE_TRANSITION_LINK));
@@ -1195,7 +1195,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
-  string16 term = UTF8ToUTF16("Search term 1");
+  base::string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
@@ -1216,7 +1216,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
   url_id = history_db_.GetRowForURL(row2.url(), NULL);
   ASSERT_TRUE(url_id);
-  string16 term2 = UTF8ToUTF16("Search term 2");
+  base::string16 term2 = UTF8ToUTF16("Search term 2");
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term2));
   ASSERT_TRUE(backend->UpdateSearchTermTable());
   SearchTermID search_id1 = history_db_.GetSearchTerm(term,
@@ -1273,7 +1273,7 @@ TEST_F(AndroidProviderBackendTest, QuerySearchTerms) {
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
-  string16 term = UTF8ToUTF16("Search term 1");
+  base::string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
@@ -1306,7 +1306,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
-  string16 term = UTF8ToUTF16("Search term 1");
+  base::string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
@@ -1327,7 +1327,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
   EXPECT_FALSE(statement->statement()->Step());
 
   // Update the search term and time.
-  string16 update_term = UTF8ToUTF16("Update search term");
+  base::string16 update_term = UTF8ToUTF16("Update search term");
   args.clear();
   args.push_back(term);
   SearchRow search_row;
@@ -1410,7 +1410,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
-  string16 term = UTF8ToUTF16("Search term 1");
+  base::string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
@@ -1437,7 +1437,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row2.set_title(UTF8ToUTF16("google"));
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
-  string16 term2 = UTF8ToUTF16("Search term 2");
+  base::string16 term2 = UTF8ToUTF16("Search term 2");
   URLID url_id2 = history_db_.GetRowForURL(row2.url(), NULL);
   ASSERT_TRUE(url_id2);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id2, 1, term2));
@@ -1751,7 +1751,7 @@ TEST_F(AndroidProviderBackendTest, AndroidCTSComplianceFolderColumnExists) {
 TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   GURL url1("http://www.cnn.com");
   URLID url_id1 = 0;
-  const string16 title1(UTF8ToUTF16("cnn"));
+  const base::string16 title1(UTF8ToUTF16("cnn"));
   std::vector<VisitInfo> visits1;
   Time last_visited1 = Time::Now() - TimeDelta::FromDays(1);
   Time created1 = last_visited1 - TimeDelta::FromDays(20);
@@ -1763,7 +1763,7 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   GURL url2("http://www.example.com");
   URLID url_id2 = 0;
   std::vector<VisitInfo> visits2;
-  const string16 title2(UTF8ToUTF16("example"));
+  const base::string16 title2(UTF8ToUTF16("example"));
   Time last_visited2 = Time::Now();
   Time created2 = last_visited2 - TimeDelta::FromDays(10);
   visits2.push_back(VisitInfo(created2, content::PAGE_TRANSITION_LINK));

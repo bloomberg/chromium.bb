@@ -134,7 +134,7 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
 
   // Add a keyword visit.
   TemplateURLID keyword_id = 100;
-  string16 keyword = UTF8ToUTF16("visit");
+  base::string16 keyword = UTF8ToUTF16("visit");
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id, keyword_id, keyword));
 
   // Make sure we get it back.
@@ -233,7 +233,7 @@ TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
 
   // Add a keyword visit.
   TemplateURLID keyword_id = 100;
-  string16 keyword = UTF8ToUTF16("visit");
+  base::string16 keyword = UTF8ToUTF16("visit");
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id1, keyword_id, keyword));
 
   URLRow url_info2(GURL("https://www.google.com/"));
@@ -256,7 +256,7 @@ TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
   url_info3.set_hidden(false);
   URLID url_id3 = AddURL(url_info3);
   ASSERT_NE(0, url_id3);
-  string16 keyword2 = UTF8ToUTF16("Search");
+  base::string16 keyword2 = UTF8ToUTF16("Search");
 
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id3, keyword_id, keyword2));
 

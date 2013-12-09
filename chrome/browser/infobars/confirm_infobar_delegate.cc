@@ -37,7 +37,7 @@ bool ConfirmInfoBarDelegate::Cancel() {
 }
 
 string16 ConfirmInfoBarDelegate::GetLinkText() const {
-  return string16();
+  return base::string16();
 }
 
 bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {

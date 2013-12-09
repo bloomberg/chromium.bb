@@ -49,18 +49,20 @@ string16 CleanUpUrlForMatching(const GURL& gurl,
       NULL, NULL, NULL));
 }
 
-string16 CleanUpTitleForMatching(const string16& title) {
+string16 CleanUpTitleForMatching(const base::string16& title) {
   return base::i18n::ToLower(title.substr(0u, kCleanedUpTitleMaxLength));
 }
 
-TermMatches MatchTermInString(const string16& term,
-                              const string16& cleaned_string,
+TermMatches MatchTermInString(const base::string16& term,
+                              const base::string16& cleaned_string,
                               int term_num) {
   const size_t kMaxCompareLength = 2048;
-  const string16& short_string = (cleaned_string.length() > kMaxCompareLength) ?
+  const base::string16& short_string =
+      (cleaned_string.length() > kMaxCompareLength) ?
       cleaned_string.substr(0, kMaxCompareLength) : cleaned_string;
   TermMatches matches;
-  for (size_t location = short_string.find(term); location != string16::npos;
+  for (size_t location = short_string.find(term);
+       location != base::string16::npos;
        location = short_string.find(term, location + 1))
     matches.push_back(TermMatch(term_num, location, term.length()));
   return matches;
@@ -102,7 +104,7 @@ TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
   std::vector<size_t>::const_iterator offset_iter = offsets.begin();
   for (TermMatches::const_iterator term_iter = matches.begin();
        term_iter != matches.end(); ++term_iter, ++offset_iter) {
-    if (*offset_iter != string16::npos) {
+    if (*offset_iter != base::string16::npos) {
       TermMatch new_match(*term_iter);
       new_match.offset = *offset_iter;
       new_matches.push_back(new_match);
@@ -113,7 +115,7 @@ TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
 
 // Utility Functions -----------------------------------------------------------
 
-String16Set String16SetFromString16(const string16& cleaned_uni_string,
+String16Set String16SetFromString16(const base::string16& cleaned_uni_string,
                                     WordStarts* word_starts) {
   String16Vector words =
       String16VectorFromString16(cleaned_uni_string, false, word_starts);
@@ -124,9 +126,10 @@ String16Set String16SetFromString16(const string16& cleaned_uni_string,
   return word_set;
 }
 
-String16Vector String16VectorFromString16(const string16& cleaned_uni_string,
-                                          bool break_on_space,
-                                          WordStarts* word_starts) {
+String16Vector String16VectorFromString16(
+    const base::string16& cleaned_uni_string,
+    bool break_on_space,
+    WordStarts* word_starts) {
   if (word_starts)
     word_starts->clear();
   base::i18n::BreakIterator iter(cleaned_uni_string,
@@ -137,10 +140,10 @@ String16Vector String16VectorFromString16(const string16& cleaned_uni_string,
     return words;
   while (iter.Advance()) {
     if (break_on_space || iter.IsWord()) {
-      string16 word(iter.GetString());
+      base::string16 word(iter.GetString());
       size_t initial_whitespace = 0;
       if (break_on_space) {
-        string16 trimmed_word;
+        base::string16 trimmed_word;
         TrimWhitespace(word, TRIM_LEADING, &trimmed_word);
         initial_whitespace = word.length() - trimmed_word.length();
         TrimWhitespace(trimmed_word, TRIM_TRAILING, &word);
@@ -158,7 +161,7 @@ String16Vector String16VectorFromString16(const string16& cleaned_uni_string,
   return words;
 }
 
-Char16Set Char16SetFromString16(const string16& term) {
+Char16Set Char16SetFromString16(const base::string16& term) {
   Char16Set characters;
   for (string16::const_iterator iter = term.begin(); iter != term.end(); ++iter)
     characters.insert(*iter);

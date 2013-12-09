@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, MANUAL_ReceivesPush) {
   const std::string& client_secret = sync_setup_helper()->client_secret();
   const std::string& refresh_token = sync_setup_helper()->refresh_token();
 
-  const string16& script_string = UTF8ToUTF16(base::StringPrintf(
+  const base::string16& script_string = UTF8ToUTF16(base::StringPrintf(
       "startTestWithCredentials('%s', '%s', '%s');",
       client_id.c_str(), client_secret.c_str(), refresh_token.c_str()));
 

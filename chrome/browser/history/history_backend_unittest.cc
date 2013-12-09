@@ -504,7 +504,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   // Star row1.
   bookmark_model_.AddURL(
-      bookmark_model_.bookmark_bar_node(), 0, string16(), row1.url());
+      bookmark_model_.bookmark_bar_node(), 0, base::string16(), row1.url());
 
   // Now finally clear all history.
   backend_->DeleteAllHistory();
@@ -654,8 +654,10 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
 
   // Star the two URLs.
-  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row1.url(), string16());
-  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row2.url(), string16());
+  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row1.url(),
+                                     base::string16());
+  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row2.url(),
+                                     base::string16());
 
   // Delete url 2. Because url 2 is starred this won't delete the URL, only
   // the visits.
@@ -862,8 +864,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   EXPECT_TRUE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
 
   // If the URL is bookmarked, it should get added to history with 0 visits.
-  bookmark_model_.AddURL(bookmark_model_.bookmark_bar_node(), 0, string16(),
-                         url3);
+  bookmark_model_.AddURL(bookmark_model_.bookmark_bar_node(), 0,
+                         base::string16(), url3);
   backend_->SetImportedFavicons(favicons);
   EXPECT_FALSE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
   EXPECT_TRUE(url_row3.visit_count() == 0);
@@ -2612,7 +2614,7 @@ TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {
   ASSERT_TRUE(backend_.get());
 
   GURL url("http://www.google.com");
-  string16 title(UTF8ToUTF16("Bookmark title"));
+  base::string16 title(UTF8ToUTF16("Bookmark title"));
   backend_->AddPageNoVisitForBookmark(url, title);
 
   URLRow row;
@@ -2622,7 +2624,7 @@ TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {
   EXPECT_EQ(0, row.visit_count());
 
   backend_->DeleteURL(url);
-  backend_->AddPageNoVisitForBookmark(url, string16());
+  backend_->AddPageNoVisitForBookmark(url, base::string16());
   backend_->GetURL(url, &row);
   EXPECT_EQ(url, row.url());
   EXPECT_EQ(UTF8ToUTF16(url.spec()), row.title());

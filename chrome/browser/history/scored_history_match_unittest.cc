@@ -51,9 +51,9 @@ class ScoredHistoryMatchTest : public testing::Test {
   // term match and word break information automatically that are needed
   // to call GetTopicalityScore().  It only works for scoring a single term,
   // not multiple terms.
-  float GetTopicalityScoreOfTermAgainstURLAndTitle(const string16& term,
-                                                   const string16& url,
-                                                   const string16& title);
+  float GetTopicalityScoreOfTermAgainstURLAndTitle(const base::string16& term,
+                                                   const base::string16& url,
+                                                   const base::string16& title);
 };
 
 URLRow ScoredHistoryMatchTest::MakeURLRow(const char* url,
@@ -93,9 +93,9 @@ String16Vector ScoredHistoryMatchTest::Make2Terms(const char* term_1,
 }
 
 float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
-    const string16& term,
-    const string16& url,
-    const string16& title) {
+    const base::string16& term,
+    const base::string16& url,
+    const base::string16& title) {
   // Make an empty match and simply populate the fields we need in order
   // to call GetTopicalityScore().
   ScoredHistoryMatch scored_match;
@@ -361,9 +361,9 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScoreTrailingSlash) {
 // This function only tests scoring of single terms that match exactly
 // once somewhere in the URL or title.
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
-  string16 url = ASCIIToUTF16("http://abc.def.com/path1/path2?"
+  base::string16 url = ASCIIToUTF16("http://abc.def.com/path1/path2?"
       "arg1=val1&arg2=val2#hash_component");
-  string16 title = ASCIIToUTF16("here is a title");
+  base::string16 title = ASCIIToUTF16("here is a title");
   const float hostname_score =
       GetTopicalityScoreOfTermAgainstURLAndTitle(
           ASCIIToUTF16("abc"), url, title);

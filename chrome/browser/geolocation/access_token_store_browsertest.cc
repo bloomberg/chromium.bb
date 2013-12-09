@@ -32,8 +32,8 @@ class GeolocationAccessTokenStoreTest
       : token_to_expect_(NULL), token_to_set_(NULL) {}
 
   void DoTestStepAndWaitForResults(
-      const char* ref_url, const string16* token_to_expect,
-      const string16* token_to_set);
+      const char* ref_url, const base::string16* token_to_expect,
+      const base::string16* token_to_set);
 
   void OnAccessTokenStoresLoaded(
       AccessTokenStore::AccessTokenSet access_token_set,
@@ -41,8 +41,8 @@ class GeolocationAccessTokenStoreTest
 
   scoped_refptr<AccessTokenStore> token_store_;
   GURL ref_url_;
-  const string16* token_to_expect_;
-  const string16* token_to_set_;
+  const base::string16* token_to_expect_;
+  const base::string16* token_to_set_;
 };
 
 void StartTestStepFromClientThread(
@@ -62,8 +62,8 @@ struct TokenLoadClientForTest {
 };
 
 void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
-    const char* ref_url, const string16* token_to_expect,
-    const string16* token_to_set) {
+    const char* ref_url, const base::string16* token_to_expect,
+    const base::string16* token_to_set) {
   ref_url_ = GURL(ref_url);
   token_to_expect_ = token_to_expect;
   token_to_set_ = token_to_set;
@@ -104,8 +104,8 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
-  const string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
-  const string16 ref_token2 = ASCIIToUTF16("\1\2\3\4\5\6\7\10\11\12=023");
+  const base::string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
+  const base::string16 ref_token2 = ASCIIToUTF16("\1\2\3\4\5\6\7\10\11\12=023");
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DoTestStepAndWaitForResults(kRefServerUrl1, NULL, &ref_token1);
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, OldUrlRemoval) {
-  const string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
+  const base::string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Set a token for the old default network provider url.

@@ -101,7 +101,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   void LoadAndWaitForURL(const GURL& url) {
-    string16 expected_title(ASCIIToUTF16("OK"));
+    base::string16 expected_title(ASCIIToUTF16("OK"));
     content::TitleWatcher title_watcher(
         browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SubmitFormAddsTargetPage) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  string16 expected_title(ASCIIToUTF16("Target Page"));
+  base::string16 expected_title(ASCIIToUTF16("Target Page"));
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
   ASSERT_TRUE(content::ExecuteScript(
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
   // 'Loading...' for a brief time while the history page loads.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  string16 expected_title(ASCIIToUTF16("History"));
+  base::string16 expected_title(ASCIIToUTF16("History"));
   content::TitleWatcher title_watcher(web_contents, expected_title);
   chrome::ExecuteCommand(browser(), IDC_SHOW_HISTORY);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());

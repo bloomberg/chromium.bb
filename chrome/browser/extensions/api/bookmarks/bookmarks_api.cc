@@ -532,7 +532,7 @@ bool BookmarksCreateFunction::RunImpl() {
     }
   }
 
-  string16 title;  // Optional.
+  base::string16 title;  // Optional.
   if (params->bookmark.title.get())
     title = UTF8ToUTF16(*params->bookmark.title.get());
 
@@ -648,7 +648,7 @@ bool BookmarksUpdateFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Optional but we need to distinguish non present from an empty title.
-  string16 title;
+  base::string16 title;
   bool has_title = false;
   if (params->changes.title.get()) {
     title = UTF8ToUTF16(*params->changes.title);
@@ -930,7 +930,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   // a case if file-selection dialogs are forbidden by policy, we will not
   // show an InfoBar, which is better than letting one appear out of the blue.
   select_file_dialog_->SelectFile(type,
-                                  string16(),
+                                  base::string16(),
                                   default_path,
                                   &file_type_info,
                                   0,

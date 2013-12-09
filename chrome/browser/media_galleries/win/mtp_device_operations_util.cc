@@ -69,7 +69,7 @@ base::win::ScopedComPtr<IPortableDeviceContent> GetDeviceContent(
 // |parent_id| specifies the parent object identifier.
 base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
     IPortableDevice* device,
-    const string16& parent_id) {
+    const base::string16& parent_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   DCHECK(!parent_id.empty());
@@ -106,14 +106,14 @@ bool IsDirectory(IPortableDeviceValues* properties_values) {
 
 // Returns the friendly name of the object from the property key values
 // specified by the |properties_values|.
-string16 GetObjectName(IPortableDeviceValues* properties_values,
+base::string16 GetObjectName(IPortableDeviceValues* properties_values,
                        bool is_directory) {
   DCHECK(properties_values);
   base::win::ScopedCoMem<char16> buffer;
   REFPROPERTYKEY key =
       is_directory ? WPD_OBJECT_NAME : WPD_OBJECT_ORIGINAL_FILE_NAME;
   HRESULT hr = properties_values->GetStringValue(key, &buffer);
-  string16 result;
+  base::string16 result;
   if (SUCCEEDED(hr))
     result.assign(buffer);
   return result;
@@ -165,8 +165,8 @@ bool GetObjectSize(IPortableDeviceValues* properties_values, int64* size) {
 // transfer protocol |device|. On success, returns true and fills in |name|,
 // |is_directory|, |size| and |last_modified_time|.
 bool GetObjectDetails(IPortableDevice* device,
-                      const string16 object_id,
-                      string16* name,
+                      const base::string16 object_id,
+                      base::string16* name,
                       bool* is_directory,
                       int64* size,
                       base::Time* last_modified_time) {
@@ -228,13 +228,13 @@ bool GetObjectDetails(IPortableDevice* device,
 // Creates an MTP device object entry for the given |device| and |object_id|.
 // On success, returns true and fills in |entry|.
 bool GetMTPDeviceObjectEntry(IPortableDevice* device,
-                             const string16& object_id,
+                             const base::string16& object_id,
                              MTPDeviceObjectEntry* entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   DCHECK(!object_id.empty());
   DCHECK(entry);
-  string16 name;
+  base::string16 name;
   bool is_directory;
   int64 size;
   base::Time last_modified_time;
@@ -252,8 +252,8 @@ bool GetMTPDeviceObjectEntry(IPortableDevice* device,
 // |object_name|. Leave |object_name| blank to request all entries. On
 // success returns true and set |object_entries|.
 bool GetMTPDeviceObjectEntries(IPortableDevice* device,
-                               const string16& directory_object_id,
-                               const string16& object_name,
+                               const base::string16& directory_object_id,
+                               const base::string16& object_name,
                                MTPDeviceObjectEntries* object_entries) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
@@ -295,7 +295,7 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
 }  // namespace
 
 base::win::ScopedComPtr<IPortableDevice> OpenDevice(
-    const string16& pnp_device_id) {
+    const base::string16& pnp_device_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!pnp_device_id.empty());
   base::win::ScopedComPtr<IPortableDeviceValues> client_info;
@@ -317,7 +317,7 @@ base::win::ScopedComPtr<IPortableDevice> OpenDevice(
 
 base::PlatformFileError GetFileEntryInfo(
     IPortableDevice* device,
-    const string16& object_id,
+    const base::string16& object_id,
     base::PlatformFileInfo* file_entry_info) {
   DCHECK(device);
   DCHECK(!object_id.empty());
@@ -336,14 +336,14 @@ base::PlatformFileError GetFileEntryInfo(
 }
 
 bool GetDirectoryEntries(IPortableDevice* device,
-                         const string16& directory_object_id,
+                         const base::string16& directory_object_id,
                          MTPDeviceObjectEntries* object_entries) {
-  return GetMTPDeviceObjectEntries(device, directory_object_id, string16(),
-                                   object_entries);
+  return GetMTPDeviceObjectEntries(device, directory_object_id,
+                                   base::string16(), object_entries);
 }
 
 HRESULT GetFileStreamForObject(IPortableDevice* device,
-                               const string16& file_object_id,
+                               const base::string16& file_object_id,
                                IStream** file_stream,
                                DWORD* optimal_transfer_size) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -392,14 +392,14 @@ DWORD CopyDataChunkToLocalFile(IStream* stream,
   return data_len;
 }
 
-string16 GetObjectIdFromName(IPortableDevice* device,
-                             const string16& parent_id,
-                             const string16& object_name) {
+base::string16 GetObjectIdFromName(IPortableDevice* device,
+                                   const base::string16& parent_id,
+                                   const base::string16& object_name) {
   MTPDeviceObjectEntries object_entries;
   if (!GetMTPDeviceObjectEntries(device, parent_id, object_name,
                                  &object_entries) ||
       object_entries.empty())
-    return string16();
+    return base::string16();
   // TODO(thestig): This DCHECK can fail. Multiple MTP objects can have
   // the same name. Handle the situation gracefully. Refer to crbug.com/169930
   // for more details.

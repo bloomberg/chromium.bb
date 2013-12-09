@@ -27,14 +27,14 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
   // Returns the message string to be displayed for the InfoBar.
-  virtual string16 GetMessageText() const = 0;
+  virtual base::string16 GetMessageText() const = 0;
 
   // Return the buttons to be shown for this InfoBar.
   virtual int GetButtons() const;
 
   // Return the label for the specified button. The default implementation
   // returns "OK" for the OK button and "Cancel" for the Cancel button.
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const;
 
   // Return whether or not the specified button needs elevation.
   virtual bool NeedElevation(InfoBarButton button) const;
@@ -51,7 +51,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // and empty string.
-  virtual string16 GetLinkText() const;
+  virtual base::string16 GetLinkText() const;
 
   // Called when the Link (if any) is clicked. The |disposition| specifies how
   // the resulting document should be loaded (based on the event flags present

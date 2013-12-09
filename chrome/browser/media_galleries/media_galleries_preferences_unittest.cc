@@ -200,7 +200,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     return default_galleries_count_;
   }
 
-  void AddGalleryExpectation(MediaGalleryPrefId id, string16 display_name,
+  void AddGalleryExpectation(MediaGalleryPrefId id, base::string16 display_name,
                              std::string device_id,
                              base::FilePath relative_path,
                              MediaGalleryPrefInfo::Type type) {
@@ -217,30 +217,33 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   }
 
   MediaGalleryPrefId AddGalleryWithNameV0(const std::string& device_id,
-                                          const string16& display_name,
+                                          const base::string16& display_name,
                                           const base::FilePath& relative_path,
                                           bool user_added) {
     return gallery_prefs()->AddGalleryInternal(
         device_id, display_name, relative_path, user_added,
-        string16(), string16(), string16(), 0, base::Time(), false, 0);
+        base::string16(), base::string16(), base::string16(), 0, base::Time(),
+        false, 0);
   }
 
   MediaGalleryPrefId AddGalleryWithNameV1(const std::string& device_id,
-                                          const string16& display_name,
+                                          const base::string16& display_name,
                                           const base::FilePath& relative_path,
                                           bool user_added) {
     return gallery_prefs()->AddGalleryInternal(
         device_id, display_name, relative_path, user_added,
-        string16(), string16(), string16(), 0, base::Time(), false, 1);
+        base::string16(), base::string16(), base::string16(), 0, base::Time(),
+        false, 1);
   }
 
   MediaGalleryPrefId AddGalleryWithNameV2(const std::string& device_id,
-                                          const string16& display_name,
+                                          const base::string16& display_name,
                                           const base::FilePath& relative_path,
                                           bool user_added) {
     return gallery_prefs()->AddGalleryInternal(
         device_id, display_name, relative_path, user_added,
-        string16(), string16(), string16(), 0, base::Time(), false, 2);
+        base::string16(), base::string16(), base::string16(), 0, base::Time(),
+        false, 2);
   }
 
   bool UpdateDeviceIDForSingletonType(const std::string& device_id) {
@@ -382,7 +385,7 @@ TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
                                    ASCIIToUTF16("model name"),
                                    1000000ULL, now);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
-  AddGalleryExpectation(id, string16(), info.device_id(), relative_path,
+  AddGalleryExpectation(id, base::string16(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
@@ -428,7 +431,7 @@ TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
                                             ASCIIToUTF16("model name"),
                                             1000000ULL, now);
   EXPECT_EQ(id, metadata_id);
-  AddGalleryExpectation(id, string16(), info.device_id(), relative_path,
+  AddGalleryExpectation(id, base::string16(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
 
   // Make sure the display_name is set to empty now, as the metadata
@@ -502,7 +505,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryNameV2) {
   Verify();
 
   // Won't override the name -- don't change any expectation.
-  info.set_name(string16());
+  info.set_name(base::string16());
   AddGalleryWithNameV2(info.device_id(), info.name(), relative_path, false);
   Verify();
 
@@ -864,9 +867,9 @@ TEST(MediaGalleryPrefInfoTest, NameGeneration) {
   info.model_name = ASCIIToUTF16("model");
   EXPECT_EQ(ASCIIToUTF16("o2"), info.GetGalleryDisplayName());
 
-  info.display_name = string16();
+  info.display_name = base::string16();
   EXPECT_EQ(ASCIIToUTF16("vol"), info.GetGalleryDisplayName());
-  info.volume_label = string16();
+  info.volume_label = base::string16();
   EXPECT_EQ(ASCIIToUTF16("vendor, model"), info.GetGalleryDisplayName());
 
   info.device_id = StorageInfo::MakeDeviceId(

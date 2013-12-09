@@ -103,13 +103,13 @@ class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
   virtual Severity GetSeverity() OVERRIDE;
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
-  virtual string16 MenuItemLabel() OVERRIDE;
+  virtual base::string16 MenuItemLabel() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
-  virtual string16 GetBubbleViewTitle() OVERRIDE;
+  virtual base::string16 GetBubbleViewTitle() OVERRIDE;
   virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
-  virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
-  virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
+  virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
+  virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
@@ -137,10 +137,10 @@ class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual gfx::Image GetBubbleViewIcon() OVERRIDE;
-  virtual string16 GetBubbleViewTitle() OVERRIDE;
+  virtual base::string16 GetBubbleViewTitle() OVERRIDE;
   virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
-  virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
-  virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
+  virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
+  virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
@@ -282,7 +282,7 @@ bool ExternalInstallMenuAlert::HasBubbleView() {
   return false;
 }
 string16 ExternalInstallMenuAlert::GetBubbleViewTitle() {
-  return string16();
+  return base::string16();
 }
 
 std::vector<string16> ExternalInstallMenuAlert::GetBubbleViewMessages() {
@@ -290,11 +290,11 @@ std::vector<string16> ExternalInstallMenuAlert::GetBubbleViewMessages() {
 }
 
 string16 ExternalInstallMenuAlert::GetBubbleViewAcceptButtonLabel() {
-  return string16();
+  return base::string16();
 }
 
 string16 ExternalInstallMenuAlert::GetBubbleViewCancelButtonLabel() {
-  return string16();
+  return base::string16();
 }
 
 void ExternalInstallMenuAlert::OnBubbleViewDidClose(Browser* browser) {

@@ -282,13 +282,13 @@ KeywordSearchTermRow::~KeywordSearchTermRow() {}
 MostVisitedURL::MostVisitedURL() {}
 
 MostVisitedURL::MostVisitedURL(const GURL& url,
-                               const string16& title)
+                               const base::string16& title)
     : url(url),
       title(title) {
 }
 
 MostVisitedURL::MostVisitedURL(const GURL& url,
-                               const string16& title,
+                               const base::string16& title,
                                const base::Time& last_forced_time)
     : url(url),
       title(title),

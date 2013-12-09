@@ -182,7 +182,7 @@ class RPHReferenceManager : public content::NotificationObserver {
 
 }  // namespace
 
-MediaFileSystemInfo::MediaFileSystemInfo(const string16& fs_name,
+MediaFileSystemInfo::MediaFileSystemInfo(const base::string16& fs_name,
                                          const base::FilePath& fs_path,
                                          const std::string& filesystem_id,
                                          MediaGalleryPrefId pref_id,

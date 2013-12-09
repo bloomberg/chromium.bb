@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetPermissionLevel) {
     message_center::NotifierId notifier_id(
         message_center::NotifierId::APPLICATION,
         empty_extension->id());
-    message_center::Notifier notifier(notifier_id, string16(), true);
+    message_center::Notifier notifier(notifier_id, base::string16(), true);
     g_browser_process->message_center()->GetNotifierSettingsProvider()->
         SetNotifierEnabled(notifier, false);
 
@@ -806,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
     message_center::NotifierId notifier_id(
         message_center::NotifierId::APPLICATION,
         extension->id());
-    message_center::Notifier notifier(notifier_id, string16(), true);
+    message_center::Notifier notifier(notifier_id, base::string16(), true);
     g_browser_process->message_center()->GetNotifierSettingsProvider()->
         SetNotifierEnabled(notifier, false);
 
@@ -820,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
     message_center::NotifierId notifier_id(
         message_center::NotifierId::APPLICATION,
         extension->id());
-    message_center::Notifier notifier(notifier_id, string16(), false);
+    message_center::Notifier notifier(notifier_id, base::string16(), false);
     g_browser_process->message_center()->GetNotifierSettingsProvider()->
         SetNotifierEnabled(notifier, true);
 

@@ -49,13 +49,13 @@ class MTPDeviceDelegateImplWinTest : public ChromeRenderViewHostTestHarness {
   void TearDown() OVERRIDE;
 
   void ProcessAttach(const std::string& id,
-                     const string16& name,
+                     const base::string16& name,
                      const base::FilePath::StringType& location);
   std::string AttachDevice(StorageInfo::Type type,
                            const std::string& unique_id,
                            const base::FilePath& location);
   void CheckGalleryInfo(const MediaFileSystemInfo& info,
-                        const string16& name,
+                        const base::string16& name,
                         const base::FilePath& path,
                         bool removable,
                         bool media_device);
@@ -109,9 +109,10 @@ void MTPDeviceDelegateImplWinTest::TearDown() {
 
 void MTPDeviceDelegateImplWinTest::ProcessAttach(
     const std::string& id,
-    const string16& label,
+    const base::string16& label,
     const base::FilePath::StringType& location) {
-  StorageInfo info(id, string16(), location, label, string16(), string16(), 0);
+  StorageInfo info(id, base::string16(), location, label, base::string16(),
+                   base::string16(), 0);
   monitor_->receiver()->ProcessAttach(info);
 }
 
@@ -121,7 +122,7 @@ std::string MTPDeviceDelegateImplWinTest::AttachDevice(
     const base::FilePath& location) {
   std::string device_id = StorageInfo::MakeDeviceId(type, unique_id);
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
-  string16 label = location.LossyDisplayName();
+  base::string16 label = location.LossyDisplayName();
   ProcessAttach(device_id, label, location.value());
   base::RunLoop().RunUntilIdle();
   return device_id;
@@ -129,7 +130,7 @@ std::string MTPDeviceDelegateImplWinTest::AttachDevice(
 
 void MTPDeviceDelegateImplWinTest::CheckGalleryInfo(
     const MediaFileSystemInfo& info,
-    const string16& name,
+    const base::string16& name,
     const base::FilePath& path,
     bool removable,
     bool media_device) {

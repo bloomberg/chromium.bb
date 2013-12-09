@@ -41,11 +41,11 @@ class PageUsageData {
     return url_;
   }
 
-  void SetTitle(const string16& s) {
+  void SetTitle(const base::string16& s) {
     title_ = s;
   }
 
-  const string16& GetTitle() const {
+  const base::string16& GetTitle() const {
     return title_;
   }
 
@@ -71,7 +71,7 @@ class PageUsageData {
  private:
   history::SegmentID id_;
   GURL url_;
-  string16 title_;
+  base::string16 title_;
 
   double score_;
 

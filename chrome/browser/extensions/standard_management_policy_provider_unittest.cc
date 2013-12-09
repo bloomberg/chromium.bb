@@ -55,7 +55,7 @@ TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
   scoped_refptr<const Extension> extension =
       CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD, true);
 
-  string16 error16;
+  base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
   EXPECT_EQ(string16(), error16);
 
@@ -73,7 +73,7 @@ TEST_F(StandardManagementPolicyProviderTest, NotRequiredExtension) {
   scoped_refptr<const Extension> extension =
       CreateExtension(Manifest::INTERNAL, false);
 
-  string16 error16;
+  base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
   EXPECT_EQ(string16(), error16);
   EXPECT_TRUE(provider_.UserMayModifySettings(extension.get(), &error16));

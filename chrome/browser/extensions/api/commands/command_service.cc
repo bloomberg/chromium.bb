@@ -344,7 +344,7 @@ Command CommandService::FindCommandByName(
     CHECK(tokens.size() >= 2);
     shortcut = tokens[1];
 
-    return Command(command_name, string16(), shortcut, global);
+    return Command(command_name, base::string16(), shortcut, global);
   }
 
   return Command();

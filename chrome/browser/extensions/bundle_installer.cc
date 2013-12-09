@@ -97,7 +97,7 @@ void BundleInstaller::SetAutoApproveForTesting(bool auto_approve) {
 BundleInstaller::Item::Item() : state(STATE_PENDING) {}
 
 string16 BundleInstaller::Item::GetNameForDisplay() {
-  string16 name = UTF8ToUTF16(localized_name);
+  base::string16 name = UTF8ToUTF16(localized_name);
   base::i18n::AdjustStringForLocaleDirection(&name);
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_PERMISSION_LINE, name);
 }
@@ -182,7 +182,7 @@ string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
   if (state == Item::STATE_FAILED) {
     if (GetItemsWithState(state).size())
       return l10n_util::GetStringUTF16(IDS_EXTENSION_BUNDLE_ERROR_HEADING);
-    return string16();
+    return base::string16();
   }
 
   size_t total = GetItemsWithState(state).size();
@@ -198,7 +198,7 @@ string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
 
   int msg_id = kHeadingIds[state][index];
   if (!msg_id)
-    return string16();
+    return base::string16();
 
   return l10n_util::GetStringUTF16(msg_id);
 }

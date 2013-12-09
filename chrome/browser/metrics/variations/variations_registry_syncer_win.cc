@@ -50,7 +50,7 @@ void VariationsRegistrySyncer::SyncWithRegistry() {
       !InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());
 
   // Read the current bits from the registry.
-  string16 registry_labels;
+  base::string16 registry_labels;
   bool success = GoogleUpdateSettings::ReadExperimentLabels(is_system_install,
                                                             &registry_labels);
   if (!success) {
@@ -60,17 +60,18 @@ void VariationsRegistrySyncer::SyncWithRegistry() {
 
   // Since the non-Variations contents of experiment_labels should not be,
   // clobbered, separate them from the Variations contents.
-  const string16 other_labels = ExtractNonVariationLabels(registry_labels);
+  const base::string16 other_labels =
+      ExtractNonVariationLabels(registry_labels);
 
   // Compute the new Variations part of the label.
   base::FieldTrial::ActiveGroups active_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
-  const string16 variation_labels =
+  const base::string16 variation_labels =
       BuildGoogleUpdateExperimentLabel(active_groups);
 
   // Append the old non-Variations labels with the new Variations labels and
   // write it back to the registry.
-  const string16 combined_labels =
+  const base::string16 combined_labels =
       CombineExperimentLabels(variation_labels, other_labels);
 
   if (!GoogleUpdateSettings::SetExperimentLabels(is_system_install,

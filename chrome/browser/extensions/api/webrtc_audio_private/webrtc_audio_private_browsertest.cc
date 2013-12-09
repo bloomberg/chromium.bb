@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
 
   content::TitleWatcher title_watcher(tab, ASCIIToUTF16("success"));
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("failure"));
-  string16 result = title_watcher.WaitAndGetTitle();
+  base::string16 result = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(ASCIIToUTF16("success"), result);
 }
 

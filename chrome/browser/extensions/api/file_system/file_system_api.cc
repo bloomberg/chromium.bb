@@ -153,7 +153,7 @@ bool g_allow_directory_access_for_test = false;
 bool GetFileTypesFromAcceptOption(
     const file_system::AcceptOption& accept_option,
     std::vector<base::FilePath::StringType>* extensions,
-    string16* description) {
+    base::string16* description) {
   std::set<base::FilePath::StringType> extension_set;
   int description_id = 0;
 
@@ -469,7 +469,7 @@ class FileSystemChooseEntryFunction::FilePicker
     }
 
     select_file_dialog_->SelectFile(picker_type,
-                                    string16(),
+                                    base::string16(),
                                     suggested_name,
                                     &file_type_info,
                                     0,
@@ -774,7 +774,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
     typedef file_system::AcceptOption AcceptOption;
     for (std::vector<linked_ptr<AcceptOption> >::const_iterator iter =
             accepts->begin(); iter != accepts->end(); ++iter) {
-      string16 description;
+      base::string16 description;
       std::vector<base::FilePath::StringType> extensions;
 
       if (!GetFileTypesFromAcceptOption(**iter, &extensions, &description))

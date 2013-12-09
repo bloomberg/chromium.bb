@@ -80,7 +80,7 @@ ScopedJavaLocalRef<jobjectArray> SQLiteCursor::GetColumnNames(JNIEnv* env,
 ScopedJavaLocalRef<jstring> SQLiteCursor::GetString(JNIEnv* env,
                                                     jobject obj,
                                                     jint column) {
-  string16 value = statement_->statement()->ColumnString16(column);
+  base::string16 value = statement_->statement()->ColumnString16(column);
   return ScopedJavaLocalRef<jstring>(env,
       env->NewString(value.data(), value.size()));
 }

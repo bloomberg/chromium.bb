@@ -227,12 +227,12 @@ class ProfileState {
   extensions::Extension* regular_permission_extension();
   Profile* profile();
 
-  void AddNameForReadCompare(const string16& name);
-  void AddNameForAllCompare(const string16& name);
+  void AddNameForReadCompare(const base::string16& name);
+  void AddNameForAllCompare(const base::string16& name);
 
  private:
   void CompareResults(const std::string& test,
-                      const std::vector<string16>& names,
+                      const std::vector<base::string16>& names,
                       const std::vector<MediaFileSystemInfo>& expected,
                       const std::vector<MediaFileSystemInfo>& actual);
   bool ContainsEntry(const MediaFileSystemInfo& info,
@@ -257,8 +257,8 @@ class ProfileState {
   content::MockRenderProcessHost* single_rph_;
   content::MockRenderProcessHost* shared_rph_;
 
-  std::vector<string16> compare_names_read_;
-  std::vector<string16> compare_names_all_;
+  std::vector<base::string16> compare_names_read_;
+  std::vector<base::string16> compare_names_all_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileState);
 };
@@ -317,9 +317,10 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
       ProfileState* profile_state);
 
   void ProcessAttach(const std::string& id,
-                     const string16& name,
+                     const base::string16& name,
                      const base::FilePath::StringType& location) {
-    StorageInfo info(id, string16(), location, name, string16(), string16(), 0);
+    StorageInfo info(id, base::string16(), location, name, base::string16(),
+                     base::string16(), 0);
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
   }
 
@@ -479,7 +480,7 @@ void ProfileState::CheckGalleries(
 
   // No Media Galleries permissions.
   std::vector<MediaFileSystemInfo> empty_expectation;
-  std::vector<string16> empty_names;
+  std::vector<base::string16> empty_names;
   registry->GetMediaFileSystemsForExtension(
       rvh, no_permissions_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
@@ -534,11 +535,11 @@ Profile* ProfileState::profile() {
   return profile_.get();
 }
 
-void ProfileState::AddNameForReadCompare(const string16& name) {
+void ProfileState::AddNameForReadCompare(const base::string16& name) {
   compare_names_read_.push_back(name);
 }
 
-void ProfileState::AddNameForAllCompare(const string16& name) {
+void ProfileState::AddNameForAllCompare(const base::string16& name) {
   compare_names_all_.push_back(name);
 }
 
@@ -558,7 +559,7 @@ bool ProfileState::ContainsEntry(
 
 void ProfileState::CompareResults(
     const std::string& test,
-    const std::vector<string16>& names,
+    const std::vector<base::string16>& names,
     const std::vector<MediaFileSystemInfo>& expected,
     const std::vector<MediaFileSystemInfo>& actual) {
   num_comparisons_++;
@@ -569,7 +570,7 @@ void ProfileState::CompareResults(
   std::sort(sorted.begin(), sorted.end(), MediaFileSystemInfoComparator);
   std::vector<MediaFileSystemInfo> expect(expected);
   std::sort(expect.begin(), expect.end(), MediaFileSystemInfoComparator);
-  std::vector<string16> expect_names(names);
+  std::vector<base::string16> expect_names(names);
   std::sort(expect_names.begin(), expect_names.end());
 
   for (size_t i = 0; i < expect.size() && i < sorted.size(); ++i) {
@@ -621,7 +622,8 @@ std::string MediaFileSystemRegistryTest::AddUserGallery(
   for (size_t i = 0; i < profile_states_.size(); ++i) {
     profile_states_[i]->GetMediaGalleriesPrefs()->AddGallery(
         device_id, base::FilePath(), true /*user_added*/,
-        string16(), string16(), string16(), 0, base::Time::Now());
+        base::string16(), base::string16(), base::string16(), 0,
+        base::Time::Now());
   }
   return device_id;
 }
@@ -632,7 +634,7 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
     const base::FilePath& location) {
   std::string device_id = StorageInfo::MakeDeviceId(type, unique_id);
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
-  string16 label = location.BaseName().LossyDisplayName();
+  base::string16 label = location.BaseName().LossyDisplayName();
   ProcessAttach(device_id, label, location.value());
   base::MessageLoop::current()->RunUntilIdle();
   return device_id;

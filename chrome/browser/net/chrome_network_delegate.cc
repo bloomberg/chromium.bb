@@ -576,7 +576,7 @@ void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
 }
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,
-                                             const string16& error) {
+                                             const base::string16& error) {
   extensions::ProxyEventRouter::GetInstance()->OnPACScriptError(
       event_router_.get(), profile_, line_number, error);
 }
