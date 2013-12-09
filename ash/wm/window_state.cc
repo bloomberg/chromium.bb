@@ -31,7 +31,6 @@ bool WindowState::IsMaximizedOrFullscreenState(ui::WindowShowState show_state) {
 
 WindowState::WindowState(aura::Window* window)
     : window_(window),
-      is_dragged_(false),
       window_position_managed_(false),
       bounds_changed_by_user_(false),
       panel_attached_(true),

@@ -174,9 +174,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void AddObserver(WindowStateObserver* observer);
   void RemoveObserver(WindowStateObserver* observer);
 
-  // Whether the window is being dragged. Default is false.
-  bool is_dragged() const { return is_dragged_; }
-  void set_is_dragged(bool is_dragged) { is_dragged_ = is_dragged; }
+  // Whether the window is being dragged.
+  bool is_dragged() const { return !!window_resizer_; }
 
   // Whether or not the window's position can be managed by the
   // auto management logic.
@@ -259,7 +258,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   aura::Window* window_;
   scoped_ptr<WindowStateDelegate> delegate_;
 
-  bool is_dragged_;
   bool window_position_managed_;
   bool bounds_changed_by_user_;
   bool panel_attached_;

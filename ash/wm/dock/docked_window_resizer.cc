@@ -122,9 +122,6 @@ void DockedWindowResizer::CompleteDrag(int event_flags) {
 }
 
 void DockedWindowResizer::RevertDrag() {
-  // Temporarily clear kWindowTrackedByWorkspaceKey for panels so that they
-  // don't get forced into the workspace that may be shrunken because of docked
-  // windows.
   next_window_resizer_->RevertDrag();
   // Restore docked state to what it was before the drag if necessary.
   if (is_docked_ != was_docked_) {
@@ -201,7 +198,6 @@ void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
 void DockedWindowResizer::StartedDragging() {
   // During resizing the window width is preserved by DockedwindowLayoutManager.
   wm::WindowState* window_state = wm::GetWindowState(GetTarget());
-  window_state->set_is_dragged(true);
   if (is_docked_ &&
       (details_.bounds_change & WindowResizer::kBoundsChange_Resizes)) {
     window_state->set_bounds_changed_by_user(true);
@@ -277,7 +273,6 @@ void DockedWindowResizer::FinishedDragging() {
         details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
             DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
   is_docked_ = false;
-  window_state->set_is_dragged(false);
 }
 
 DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(

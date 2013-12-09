@@ -121,13 +121,11 @@ void WorkspaceLayoutManager::SetChildBounds(
   wm::WindowState* window_state = wm::GetWindowState(child);
   if (window_state->is_dragged()) {
     SetChildBoundsDirect(child, requested_bounds);
-    return;
-  }
-  gfx::Rect child_bounds(requested_bounds);
-  // Some windows rely on this to set their initial bounds.
-  if (!SetMaximizedOrFullscreenBounds(window_state)) {
+  } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
+    // Some windows rely on this to set their initial bounds.
     // Non-maximized/full-screen windows have their size constrained to the
     // work-area.
+    gfx::Rect child_bounds(requested_bounds);
     child_bounds.set_width(std::min(work_area_in_parent_.width(),
                                     child_bounds.width()));
     child_bounds.set_height(std::min(work_area_in_parent_.height(),
@@ -392,13 +390,7 @@ bool WorkspaceLayoutManager::SetMaximizedOrFullscreenBounds(
 
 void WorkspaceLayoutManager::AdjustSnappedBounds(wm::WindowState* window_state,
                                                  gfx::Rect* bounds) {
-  // TODO(varkha): DockedWindowResizer sets |WindowState::tracked_by_workspace_|
-  // to false during the drag. The same can be done in WorkspaceWindowResizer.
-  // This will allow us to remove the check for window_resizer() to determine if
-  // the window is being dragged.
-  if (window_state->is_dragged() ||
-      !window_state->IsSnapped() ||
-      window_state->window_resizer())
+  if (window_state->is_dragged() || !window_state->IsSnapped())
     return;
   gfx::Rect maximized_bounds = ScreenAsh::GetMaximizedWindowBoundsInParent(
       window_state->window()->parent()->parent());
