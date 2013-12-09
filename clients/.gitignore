@@ -15,6 +15,7 @@ weston-simple-egl
 weston-simple-shm
 weston-simple-touch
 weston-smoke
+weston-stacking
 weston-subsurfaces
 weston-transformed
 weston-view
