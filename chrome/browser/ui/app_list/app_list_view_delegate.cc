@@ -131,10 +131,6 @@ void AppListViewDelegate::OnProfileChanged() {
   app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
 #endif
 
-  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver,
-                    observers_,
-                    OnProfilesChanged());
-
   // Don't populate the app list users if we are on the ash desktop.
   chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
       controller_->GetAppListWindow());
@@ -144,6 +140,10 @@ void AppListViewDelegate::OnProfileChanged() {
   // Populate the app list users.
   PopulateUsers(g_browser_process->profile_manager()->GetProfileInfoCache(),
                 profile_->GetPath(), &users_);
+
+  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver,
+                    observers_,
+                    OnProfilesChanged());
 }
 
 bool AppListViewDelegate::ForceNativeDesktop() const {
