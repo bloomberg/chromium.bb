@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/values.h"
 #include "base/win/object_watcher.h"
 #include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/policy_types.h"
@@ -67,9 +66,6 @@ class POLICY_EXPORT PolicyLoaderWin
   virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
 
  private:
-  // Builds the Chrome policy schema in |chrome_policy_schema_|.
-  void BuildChromePolicySchema();
-
   // Reads Chrome Policy from a PReg file at the given path and stores the
   // result in |policy|.
   bool ReadPRegFile(const base::FilePath& preg_file,
@@ -113,7 +109,6 @@ class POLICY_EXPORT PolicyLoaderWin
   bool is_initialized_;
   const string16 chrome_policy_key_;
   class AppliedGPOListProvider* gpo_provider_;
-  base::DictionaryValue chrome_policy_schema_;
 
   base::WaitableEvent user_policy_changed_event_;
   base::WaitableEvent machine_policy_changed_event_;

@@ -48,7 +48,9 @@ class PolicyTestBase : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
-  Schema chrome_schema_;
+  bool RegisterSchema(const PolicyNamespace& ns,
+                      const std::string& schema);
+
   SchemaRegistry schema_registry_;
 
   // Create an actual IO loop (needed by FilePathWatcher).

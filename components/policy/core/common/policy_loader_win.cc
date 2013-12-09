@@ -20,6 +20,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/scoped_native_library.h"
@@ -27,6 +28,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
@@ -47,8 +49,48 @@ const char kKeyRecommended[] = "recommended";
 const char kKeySchema[] = "schema";
 const char kKeyThirdParty[] = "3rdparty";
 
+// The Legacy Browser Support was the first user of the policy-for-extensions
+// API, and relied on behavior that will be phased out. If this extension is
+// present then its policies will be loaded in a special way.
+// TODO(joaodasilva): remove this for M35. http://crbug.com/325349
+const char kLegacyBrowserSupportExtensionId[] =
+    "heildphpnddilhkemkielfhnkaagiabh";
+
 // The GUID of the registry settings group policy extension.
 GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
+
+// If the LBS extension is found and contains a schema in the registry then this
+// function is used to patch it, and make it compliant. The fix is to
+// add an "items" attribute to lists that don't declare it.
+std::string PatchSchema(const std::string& schema) {
+  base::JSONParserOptions options = base::JSON_PARSE_RFC;
+  scoped_ptr<base::Value> json(base::JSONReader::Read(schema, options));
+  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* properties = NULL;
+  if (!json ||
+      !json->GetAsDictionary(&dict) ||
+      !dict->GetDictionary(schema::kProperties, &properties)) {
+    return schema;
+  }
+
+  for (base::DictionaryValue::Iterator it(*properties);
+       !it.IsAtEnd(); it.Advance()) {
+    base::DictionaryValue* policy_schema = NULL;
+    std::string type;
+    if (properties->GetDictionary(it.key(), &policy_schema) &&
+        policy_schema->GetString(schema::kType, &type) &&
+        type == schema::kArray &&
+        !policy_schema->HasKey(schema::kItems)) {
+      scoped_ptr<base::DictionaryValue> items(new base::DictionaryValue());
+      items->SetString(schema::kType, schema::kString);
+      policy_schema->Set(schema::kItems, items.release());
+    }
+  }
+
+  std::string serialized;
+  base::JSONWriter::Write(json.get(), &serialized);
+  return serialized;
+}
 
 // A helper class encapsulating run-time-linked function calls to Wow64 APIs.
 class Wow64Functions {
@@ -164,32 +206,12 @@ class WinGPOListProvider : public AppliedGPOListProvider {
 static base::LazyInstance<WinGPOListProvider> g_win_gpo_list_provider =
     LAZY_INSTANCE_INITIALIZER;
 
-std::string GetSchemaTypeForValueType(base::Value::Type value_type) {
-  switch (value_type) {
-    case base::Value::TYPE_DICTIONARY:
-      return json_schema_constants::kObject;
-    case base::Value::TYPE_INTEGER:
-      return json_schema_constants::kInteger;
-    case base::Value::TYPE_LIST:
-      return json_schema_constants::kArray;
-    case base::Value::TYPE_BOOLEAN:
-      return json_schema_constants::kBoolean;
-    case base::Value::TYPE_STRING:
-      return json_schema_constants::kString;
-    default:
-      break;
-  }
-
-  NOTREACHED() << "Unsupported policy value type " << value_type;
-  return json_schema_constants::kNull;
-}
-
 // Parses |gpo_dict| according to |schema| and writes the resulting policy
 // settings to |policy| for the given |scope| and |level|.
 void ParsePolicy(const RegistryDict* gpo_dict,
                  PolicyLevel level,
                  PolicyScope scope,
-                 const base::DictionaryValue* schema,
+                 const Schema& schema,
                  PolicyMap* policy) {
   if (!gpo_dict)
     return;
@@ -263,9 +285,6 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   if (is_initialized_)
     SetupWatches();
 
-  if (chrome_policy_schema_.empty())
-    BuildChromePolicySchema();
-
   // Policy scope and corresponding hive.
   static const struct {
     PolicyScope scope;
@@ -324,36 +343,6 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   }
 
   return bundle.Pass();
-}
-
-void PolicyLoaderWin::BuildChromePolicySchema() {
-  // TODO(joaodasilva): use the Schema directly instead of building this
-  // DictionaryValue.
-  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue());
-  const Schema* chrome_schema =
-      schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
-  for (Schema::Iterator it = chrome_schema->GetPropertiesIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    const std::string schema_type =
-        GetSchemaTypeForValueType(it.schema().type());
-    scoped_ptr<base::DictionaryValue> entry_schema(new base::DictionaryValue());
-    entry_schema->SetStringWithoutPathExpansion(json_schema_constants::kType,
-                                                schema_type);
-
-    if (it.schema().type() == base::Value::TYPE_LIST) {
-      scoped_ptr<base::DictionaryValue> items_schema(
-          new base::DictionaryValue());
-      items_schema->SetStringWithoutPathExpansion(
-          json_schema_constants::kType, json_schema_constants::kString);
-      entry_schema->SetWithoutPathExpansion(json_schema_constants::kItems,
-                                            items_schema.release());
-    }
-    properties->SetWithoutPathExpansion(it.key(), entry_schema.release());
-  }
-  chrome_policy_schema_.SetStringWithoutPathExpansion(
-      json_schema_constants::kType, json_schema_constants::kObject);
-  chrome_policy_schema_.SetWithoutPathExpansion(
-      json_schema_constants::kProperties, properties.release());
 }
 
 bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,
@@ -456,7 +445,9 @@ void PolicyLoaderWin::LoadChromePolicy(const RegistryDict* gpo_dict,
                                        PolicyScope scope,
                                        PolicyMap* chrome_policy_map) {
   PolicyMap policy;
-  ParsePolicy(gpo_dict, level, scope, &chrome_policy_schema_, &policy);
+  const Schema* chrome_schema =
+      schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  ParsePolicy(gpo_dict, level, scope, *chrome_schema, &policy);
   chrome_policy_map->MergeFrom(policy);
 }
 
@@ -491,16 +482,26 @@ void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
              domain_dict->keys().begin());
          component != domain_dict->keys().end();
          ++component) {
-      // Load the schema.
-      const base::DictionaryValue* schema_dict = NULL;
-      scoped_ptr<base::Value> schema;
-      std::string schema_json;
-      const base::Value* schema_value = component->second->GetValue(kKeySchema);
-      if (schema_value && schema_value->GetAsString(&schema_json)) {
-        schema.reset(base::JSONReader::Read(schema_json));
-        if (!schema || !schema->GetAsDictionary(&schema_dict)) {
-          LOG(WARNING) << "Failed to parse 3rd-part policy schema for "
-                       << domain << "/" << component->first;
+      const PolicyNamespace policy_namespace(domain, component->first);
+
+      const Schema* schema_from_map = schema_map()->GetSchema(policy_namespace);
+      if (!schema_from_map) {
+        // This extension isn't installed or doesn't support policies.
+        continue;
+      }
+      Schema schema = *schema_from_map;
+
+      if (!schema.valid() &&
+          policy_namespace.domain == POLICY_DOMAIN_EXTENSIONS &&
+          policy_namespace.component_id == kLegacyBrowserSupportExtensionId) {
+        // TODO(joaodasilva): remove this special treatment for LBS by M35.
+        std::string schema_json;
+        const base::Value* value = component->second->GetValue(kKeySchema);
+        if (value && value->GetAsString(&schema_json)) {
+          std::string error;
+          schema = Schema::Parse(PatchSchema(schema_json), &error);
+          if (!schema.valid())
+            LOG(WARNING) << "Invalid schema in the registry for LBS: " << error;
         }
       }
 
@@ -512,8 +513,7 @@ void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
           continue;
 
         PolicyMap policy;
-        ParsePolicy(policy_dict, kLevels[j].level, scope, schema_dict, &policy);
-        PolicyNamespace policy_namespace(domain, component->first);
+        ParsePolicy(policy_dict, kLevels[j].level, scope, schema, &policy);
         bundle->Get(policy_namespace).MergeFrom(policy);
       }
     }

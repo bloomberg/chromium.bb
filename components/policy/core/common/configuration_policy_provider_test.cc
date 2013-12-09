@@ -126,15 +126,24 @@ PolicyTestBase::PolicyTestBase() {}
 PolicyTestBase::~PolicyTestBase() {}
 
 void PolicyTestBase::SetUp() {
-  std::string error;
-  chrome_schema_ = Schema::Parse(kTestChromeSchema, &error);
-  ASSERT_TRUE(chrome_schema_.valid()) << error;
-  schema_registry_.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
-                                     chrome_schema_);
+  const PolicyNamespace ns(POLICY_DOMAIN_CHROME, "");
+  ASSERT_TRUE(RegisterSchema(ns, kTestChromeSchema));
 }
 
 void PolicyTestBase::TearDown() {
   loop_.RunUntilIdle();
+}
+
+bool PolicyTestBase::RegisterSchema(const PolicyNamespace& ns,
+                                    const std::string& schema_string) {
+  std::string error;
+  Schema schema = Schema::Parse(schema_string, &error);
+  if (schema.valid()) {
+    schema_registry_.RegisterComponent(ns, schema);
+    return true;
+  }
+  ADD_FAILURE() << error;
+  return false;
 }
 
 PolicyProviderTestHarness::PolicyProviderTestHarness(PolicyLevel level,
@@ -166,8 +175,10 @@ void ConfigurationPolicyProviderTest::SetUp() {
   test_harness_.reset((*GetParam())());
   test_harness_->SetUp();
 
+  const PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  Schema chrome_schema = *schema_registry_.schema_map()->GetSchema(chrome_ns);
   Schema extension_schema =
-      chrome_schema_.GetKnownProperty(test_keys::kKeyDictionary);
+      chrome_schema.GetKnownProperty(test_keys::kKeyDictionary);
   ASSERT_TRUE(extension_schema.valid());
   schema_registry_.RegisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,

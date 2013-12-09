@@ -4,11 +4,11 @@
 
 #include "components/policy/core/common/registry_dict_win.h"
 
-#include "base/values.h"
-#include "components/json_schema/json_schema_constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include <string>
 
-namespace schema = json_schema_constants;
+#include "base/values.h"
+#include "components/policy/core/common/schema.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 namespace {
@@ -187,6 +187,8 @@ TEST(RegistryDictTest, ConvertToJSON) {
 
   base::FundamentalValue int_value(42);
   base::StringValue string_value("fortytwo");
+  base::StringValue string_zero("0");
+  base::StringValue string_dict("{ \"key\": [ \"value\" ] }");
 
   test_dict.SetValue("one", make_scoped_ptr(int_value.DeepCopy()));
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
@@ -194,17 +196,35 @@ TEST(RegistryDictTest, ConvertToJSON) {
   test_dict.SetKey("three", subdict.Pass());
   scoped_ptr<RegistryDict> list(new RegistryDict());
   list->SetValue("1", make_scoped_ptr(string_value.DeepCopy()));
-  test_dict.SetKey("four", list.Pass());
+  test_dict.SetKey("dict-to-list", list.Pass());
+  test_dict.SetValue("int-to-bool", make_scoped_ptr(int_value.DeepCopy()));
+  test_dict.SetValue("int-to-double", make_scoped_ptr(int_value.DeepCopy()));
+  test_dict.SetValue("string-to-bool", make_scoped_ptr(string_zero.DeepCopy()));
+  test_dict.SetValue("string-to-double",
+                     make_scoped_ptr(string_zero.DeepCopy()));
+  test_dict.SetValue("string-to-int", make_scoped_ptr(string_zero.DeepCopy()));
+  test_dict.SetValue("string-to-dict", make_scoped_ptr(string_dict.DeepCopy()));
 
-  base::DictionaryValue schema;
-  scoped_ptr<base::DictionaryValue> list_schema(new base::DictionaryValue());
-  list_schema->SetString(schema::kType, schema::kArray);
-  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue());
-  properties->Set("four", list_schema.release());
-  schema.SetString(schema::kType, schema::kObject);
-  schema.Set(schema::kProperties, properties.release());
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"dict-to-list\": {"
+      "      \"type\": \"array\","
+      "      \"items\": { \"type\": \"string\" }"
+      "    },"
+      "    \"int-to-bool\": { \"type\": \"boolean\" },"
+      "    \"int-to-double\": { \"type\": \"number\" },"
+      "    \"string-to-bool\": { \"type\": \"boolean\" },"
+      "    \"string-to-double\": { \"type\": \"number\" },"
+      "    \"string-to-int\": { \"type\": \"integer\" },"
+      "    \"string-to-dict\": { \"type\": \"object\" }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema.valid()) << error;
 
-  scoped_ptr<base::Value> actual(test_dict.ConvertToJSON(&schema));
+  scoped_ptr<base::Value> actual(test_dict.ConvertToJSON(schema));
 
   base::DictionaryValue expected;
   expected.Set("one", int_value.DeepCopy());
@@ -214,7 +234,17 @@ TEST(RegistryDictTest, ConvertToJSON) {
   expected.Set("three", expected_subdict.release());
   scoped_ptr<base::ListValue> expected_list(new base::ListValue());
   expected_list->Append(string_value.DeepCopy());
-  expected.Set("four", expected_list.release());
+  expected.Set("dict-to-list", expected_list.release());
+  expected.Set("int-to-bool", new base::FundamentalValue(true));
+  expected.Set("int-to-double", new base::FundamentalValue(42.0));
+  expected.Set("string-to-bool", new base::FundamentalValue(false));
+  expected.Set("string-to-double", new base::FundamentalValue(0.0));
+  expected.Set("string-to-int", new base::FundamentalValue((int) 0));
+  expected_list.reset(new base::ListValue());
+  expected_list->Append(new base::StringValue("value"));
+  expected_subdict.reset(new base::DictionaryValue());
+  expected_subdict->Set("key", expected_list.release());
+  expected.Set("string-to-dict", expected_subdict.release());
 
   EXPECT_TRUE(base::Value::Equals(actual.get(), &expected));
 }

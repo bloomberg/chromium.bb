@@ -12,9 +12,7 @@
 #include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "base/win/registry.h"
-#include "components/json_schema/json_schema_constants.h"
-
-namespace schema = json_schema_constants;
+#include "components/policy/core/common/schema.h"
 
 using base::win::RegistryKeyIterator;
 using base::win::RegistryValueIterator;
@@ -23,96 +21,39 @@ namespace policy {
 
 namespace {
 
-// Returns the entry with key |name| in |dictionary| (can be NULL), or NULL.
-const base::DictionaryValue* GetEntry(const base::DictionaryValue* dictionary,
-                                      const std::string& name) {
-  if (!dictionary)
-    return NULL;
-  const base::DictionaryValue* entry = NULL;
-  dictionary->GetDictionaryWithoutPathExpansion(name, &entry);
-  return entry;
-}
-
-// Returns the Value type described in |schema|, or |default_type| if not found.
-base::Value::Type GetValueTypeForSchema(const base::DictionaryValue* schema,
-                                        base::Value::Type default_type) {
-  // JSON-schema types to base::Value::Type mapping.
-  static const struct {
-    // JSON schema type.
-    const char* schema_type;
-    // Correspondent value type.
-    base::Value::Type value_type;
-  } kSchemaToValueTypeMap[] = {
-    { schema::kArray,        base::Value::TYPE_LIST        },
-    { schema::kBoolean,      base::Value::TYPE_BOOLEAN     },
-    { schema::kInteger,      base::Value::TYPE_INTEGER     },
-    { schema::kNull,         base::Value::TYPE_NULL        },
-    { schema::kNumber,       base::Value::TYPE_DOUBLE      },
-    { schema::kObject,       base::Value::TYPE_DICTIONARY  },
-    { schema::kString,       base::Value::TYPE_STRING      },
-  };
-
-  if (!schema)
-    return default_type;
-  std::string type;
-  if (!schema->GetStringWithoutPathExpansion(schema::kType, &type))
-    return default_type;
-  for (size_t i = 0; i < arraysize(kSchemaToValueTypeMap); ++i) {
-    if (type == kSchemaToValueTypeMap[i].schema_type)
-      return kSchemaToValueTypeMap[i].value_type;
-  }
-  return default_type;
-}
-
-// Returns the schema for property |name| given the |schema| of an object.
-// Returns the "additionalProperties" schema if no specific schema for
-// |name| is present. Returns NULL if no schema is found.
-const base::DictionaryValue* GetSchemaFor(const base::DictionaryValue* schema,
-                                          const std::string& name) {
-  const base::DictionaryValue* properties =
-      GetEntry(schema, schema::kProperties);
-  const base::DictionaryValue* sub_schema = GetEntry(properties, name);
-  if (sub_schema)
-    return sub_schema;
-  // "additionalProperties" can be a boolean, but that case is ignored.
-  return GetEntry(schema, schema::kAdditionalProperties);
-}
-
 // Converts a value (as read from the registry) to meet |schema|, converting
 // types as necessary. Unconvertible types will show up as NULL values in the
 // result.
 scoped_ptr<base::Value> ConvertValue(const base::Value& value,
-                                     const base::DictionaryValue* schema) {
-  // Figure out the type to convert to from the schema.
-  const base::Value::Type result_type(
-      GetValueTypeForSchema(schema, value.GetType()));
+                                     const Schema& schema) {
+  if (!schema.valid())
+    return make_scoped_ptr(value.DeepCopy());
 
   // If the type is good already, go with it.
-  if (value.IsType(result_type)) {
-    // Recurse for complex types if there is a schema.
-    if (schema) {
-      const base::DictionaryValue* dict = NULL;
-      const base::ListValue* list = NULL;
-      if (value.GetAsDictionary(&dict)) {
-        scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-        for (base::DictionaryValue::Iterator entry(*dict); !entry.IsAtEnd();
-             entry.Advance()) {
-          scoped_ptr<base::Value> converted_value(
-              ConvertValue(entry.value(), GetSchemaFor(schema, entry.key())));
-          result->SetWithoutPathExpansion(entry.key(),
-                                          converted_value.release());
-        }
-        return result.Pass();
-      } else if (value.GetAsList(&list)) {
-        scoped_ptr<base::ListValue> result(new base::ListValue());
-        const base::DictionaryValue* item_schema =
-            GetEntry(schema, schema::kItems);
-        for (base::ListValue::const_iterator entry(list->begin());
-             entry != list->end(); ++entry) {
-          result->Append(ConvertValue(**entry, item_schema).release());
-        }
-        return result.Pass();
+  if (value.IsType(schema.type())) {
+    // Recurse for complex types.
+    const base::DictionaryValue* dict = NULL;
+    const base::ListValue* list = NULL;
+    if (value.GetAsDictionary(&dict)) {
+      scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+      for (base::DictionaryValue::Iterator entry(*dict); !entry.IsAtEnd();
+           entry.Advance()) {
+        scoped_ptr<base::Value> converted =
+            ConvertValue(entry.value(), schema.GetProperty(entry.key()));
+        if (converted)
+          result->SetWithoutPathExpansion(entry.key(), converted.release());
       }
+      return result.Pass();
+    } else if (value.GetAsList(&list)) {
+      scoped_ptr<base::ListValue> result(new base::ListValue());
+      for (base::ListValue::const_iterator entry(list->begin());
+           entry != list->end(); ++entry) {
+        scoped_ptr<base::Value> converted =
+            ConvertValue(**entry, schema.GetItems());
+        if (converted)
+          result->Append(converted.release());
+      }
+      return result.Pass();
     }
     return make_scoped_ptr(value.DeepCopy());
   }
@@ -120,7 +61,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
   // Else, do some conversions to map windows registry data types to JSON types.
   std::string string_value;
   int int_value = 0;
-  switch (result_type) {
+  switch (schema.type()) {
     case base::Value::TYPE_NULL: {
       return make_scoped_ptr(base::Value::CreateNullValue());
     }
@@ -157,13 +98,14 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
       const base::DictionaryValue* dict = NULL;
       if (value.GetAsDictionary(&dict)) {
         scoped_ptr<base::ListValue> result(new base::ListValue());
-        const base::DictionaryValue* item_schema =
-            GetEntry(schema, schema::kItems);
         for (int i = 1; ; ++i) {
           const base::Value* entry = NULL;
           if (!dict->Get(base::IntToString(i), &entry))
             break;
-          result->Append(ConvertValue(*entry, item_schema).release());
+          scoped_ptr<base::Value> converted =
+              ConvertValue(*entry, schema.GetItems());
+          if (converted)
+            result->Append(converted.release());
         }
         return result.Pass();
       }
@@ -173,7 +115,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
       // Dictionaries may be encoded as JSON strings.
       if (value.GetAsString(&string_value)) {
         scoped_ptr<base::Value> result(base::JSONReader::Read(string_value));
-        if (result && result->IsType(result_type))
+        if (result && result->IsType(schema.type()))
           return result.Pass();
       }
       break;
@@ -185,8 +127,8 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
   }
 
   LOG(WARNING) << "Failed to convert " << value.GetType()
-               << " to " << result_type;
-  return make_scoped_ptr(base::Value::CreateNullValue());
+               << " to " << schema.type();
+  return scoped_ptr<base::Value>();
 }
 
 }  // namespace
@@ -348,42 +290,49 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
 }
 
 scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
-    const base::DictionaryValue* schema) const {
+    const Schema& schema) const {
   base::Value::Type type =
-      GetValueTypeForSchema(schema, base::Value::TYPE_DICTIONARY);
+      schema.valid() ? schema.type() : base::Value::TYPE_DICTIONARY;
   switch (type) {
     case base::Value::TYPE_DICTIONARY: {
       scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
       for (RegistryDict::ValueMap::const_iterator entry(values_.begin());
            entry != values_.end(); ++entry) {
-        result->SetWithoutPathExpansion(
-            entry->first,
-            ConvertValue(*entry->second,
-                         GetSchemaFor(schema, entry->first)).release());
+        Schema subschema =
+            schema.valid() ? schema.GetProperty(entry->first) : Schema();
+        scoped_ptr<base::Value> converted =
+            ConvertValue(*entry->second, subschema);
+        if (converted)
+          result->SetWithoutPathExpansion(entry->first, converted.release());
       }
       for (RegistryDict::KeyMap::const_iterator entry(keys_.begin());
            entry != keys_.end(); ++entry) {
-        result->SetWithoutPathExpansion(
-            entry->first,
-            entry->second->ConvertToJSON(
-                GetSchemaFor(schema, entry->first)).release());
+        Schema subschema =
+            schema.valid() ? schema.GetProperty(entry->first) : Schema();
+        scoped_ptr<base::Value> converted =
+            entry->second->ConvertToJSON(subschema);
+        if (converted)
+          result->SetWithoutPathExpansion(entry->first, converted.release());
       }
       return result.Pass();
     }
     case base::Value::TYPE_LIST: {
       scoped_ptr<base::ListValue> result(new base::ListValue());
-      const base::DictionaryValue* item_schema =
-          GetEntry(schema, schema::kItems);
+      Schema item_schema = schema.valid() ? schema.GetItems() : Schema();
       for (int i = 1; ; ++i) {
         const std::string name(base::IntToString(i));
         const RegistryDict* key = GetKey(name);
         if (key) {
-          result->Append(key->ConvertToJSON(item_schema).release());
+          scoped_ptr<base::Value> converted = key->ConvertToJSON(item_schema);
+          if (converted)
+            result->Append(converted.release());
           continue;
         }
         const base::Value* value = GetValue(name);
         if (value) {
-          result->Append(ConvertValue(*value, item_schema).release());
+          scoped_ptr<base::Value> converted = ConvertValue(*value, item_schema);
+          if (converted)
+            result->Append(converted.release());
           continue;
         }
         break;
@@ -394,7 +343,7 @@ scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
       LOG(WARNING) << "Can't convert registry key to schema type " << type;
   }
 
-  return make_scoped_ptr(base::Value::CreateNullValue());
+  return scoped_ptr<base::Value>();
 }
 
 }  // namespace policy

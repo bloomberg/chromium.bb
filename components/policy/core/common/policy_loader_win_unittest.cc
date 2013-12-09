@@ -28,7 +28,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/win/registry.h"
-#include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -37,8 +36,6 @@
 #include "components/policy/core/common/preg_parser_win.h"
 #include "components/policy/core/common/schema_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace schema = json_schema_constants;
 
 using base::win::RegKey;
 
@@ -51,7 +48,7 @@ const wchar_t kPathSep[] = L"\\";
 const wchar_t kThirdParty[] = L"3rdparty";
 const wchar_t kMandatory[] = L"policy";
 const wchar_t kRecommended[] = L"recommended";
-const wchar_t kSchema[] = L"schema";
+const char kSchema[] = "schema";
 const wchar_t kTestPolicyKey[] = L"chrome.policy.key";
 
 // Installs |value| in the given registry |path| and |hive|, under the key
@@ -134,84 +131,6 @@ bool InstallValue(const base::Value& value,
   }
   NOTREACHED();
   return false;
-}
-
-// Builds a JSON schema that represents the types contained in |value|.
-// Ownership is transferred to the caller.
-base::DictionaryValue* BuildSchema(const base::Value& value) {
-  base::DictionaryValue* schema = new base::DictionaryValue();
-  switch (value.GetType()) {
-    case base::Value::TYPE_NULL:
-      schema->SetString(schema::kType, "null");
-      break;
-    case base::Value::TYPE_BOOLEAN:
-      schema->SetString(schema::kType, "boolean");
-      break;
-    case base::Value::TYPE_INTEGER:
-      schema->SetString(schema::kType, "integer");
-      break;
-    case base::Value::TYPE_DOUBLE:
-      schema->SetString(schema::kType, "number");
-      break;
-    case base::Value::TYPE_STRING:
-      schema->SetString(schema::kType, "string");
-      break;
-
-    case base::Value::TYPE_LIST: {
-      // Assumes every list element has the same type.
-      const base::ListValue* list = NULL;
-      if (value.GetAsList(&list) && !list->empty()) {
-        schema->SetString(schema::kType, "array");
-        schema->Set(schema::kItems, BuildSchema(**list->begin()));
-      }
-      break;
-    }
-
-    case base::Value::TYPE_DICTIONARY: {
-      const base::DictionaryValue* dict = NULL;
-      if (value.GetAsDictionary(&dict)) {
-        base::DictionaryValue* properties = new base::DictionaryValue();
-        for (base::DictionaryValue::Iterator it(*dict);
-             !it.IsAtEnd(); it.Advance()) {
-          properties->Set(it.key(), BuildSchema(it.value()));
-        }
-        schema->SetString(schema::kType, "object");
-        schema->Set(schema::kProperties, properties);
-      }
-      break;
-    }
-
-    case base::Value::TYPE_BINARY:
-      break;
-  }
-  return schema;
-}
-
-// Writes a JSON |schema| at the registry entry |name| at |path|
-// in the given |hive|. Returns false on failure.
-bool WriteSchema(const base::DictionaryValue& schema,
-                 HKEY hive,
-                 const string16& path,
-                 const string16& name) {
-  std::string encoded;
-  base::JSONWriter::Write(&schema, &encoded);
-  if (encoded.empty())
-    return false;
-  string16 encoded16 = UTF8ToUTF16(encoded);
-  // KEY_ALL_ACCESS causes the ctor to create the key if it does not exist yet.
-  RegKey key(hive, path.c_str(), KEY_ALL_ACCESS);
-  EXPECT_TRUE(key.Valid());
-  return key.WriteValue(name.c_str(), encoded16.c_str()) == ERROR_SUCCESS;
-}
-
-// Builds a JSON schema for |value| and writes it at the registry entry |name|
-// at |path| in the given |hive|. Returns false on failure.
-bool InstallSchema(const base::Value& value,
-                   HKEY hive,
-                   const string16& path,
-                   const string16& name) {
-  scoped_ptr<base::DictionaryValue> schema_dict(BuildSchema(value));
-  return WriteSchema(*schema_dict, hive, path, name);
 }
 
 // This class provides sandboxing and mocking for the parts of the Windows
@@ -508,7 +427,6 @@ void RegistryTestHarness::Install3rdPartyPolicy(
                             UTF8ToUTF16(domain.key()) + kPathSep +
                             UTF8ToUTF16(component.key());
       InstallValue(component.value(), hive_, path, kMandatory);
-      EXPECT_TRUE(InstallSchema(component.value(), hive_, path, kSchema));
     }
   }
 }
@@ -611,15 +529,6 @@ void PRegTestHarness::Install3rdPartyPolicy(
           domain_path + kPathSep + UTF8ToUTF16(component.key());
       AppendPolicyToPRegFile(component_path, UTF16ToUTF8(kMandatory),
                              &component.value());
-
-      scoped_ptr<base::DictionaryValue> schema_dict(
-          BuildSchema(component.value()));
-      std::string schema_json;
-      base::JSONWriter::Write(schema_dict.get(), &schema_json);
-      if (!schema_json.empty()) {
-        AppendStringToPRegFile(component_path, UTF16ToUTF8(kSchema),
-                               schema_json);
-      }
     }
   }
 }
@@ -798,17 +707,6 @@ class PolicyLoaderWinTest : public PolicyTestBase,
                                    .AppendASCII("data")
                                    .AppendASCII("policy")
                                    .AppendASCII("gpo");
-
-    // Unknown components will be filtered out. Register their names with an
-    // invalid schema to avoid that.
-    ComponentMap components;
-    components["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"] = Schema();
-    components["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"] = Schema();
-    components["int"] = Schema();
-    components["merge"] = Schema();
-    components["string"] = Schema();
-    components["test"] = Schema();
-    schema_registry_.RegisterComponents(POLICY_DOMAIN_EXTENSIONS, components);
   }
 
   // AppliedGPOListProvider:
@@ -904,35 +802,21 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
   EXPECT_TRUE(Matches(expected));
 }
 
-TEST_F(PolicyLoaderWinTest, Load3rdPartyWithoutSchema) {
-  base::DictionaryValue dict;
-  dict.SetString("str", "string value");
-  dict.SetInteger("int", 123);
-  dict.Set("subdict", dict.DeepCopy());
-  dict.Set("subsubdict", dict.DeepCopy());
-  dict.Set("subsubsubdict", dict.DeepCopy());
-
-  base::DictionaryValue policy_dict;
-  policy_dict.Set("extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.policy",
-                  dict.DeepCopy());
-  policy_dict.Set("extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.policy",
-                  dict.DeepCopy());
-  EXPECT_TRUE(InstallValue(policy_dict, HKEY_LOCAL_MACHINE,
-                           kTestPolicyKey, kThirdParty));
-
-  PolicyBundle expected;
-  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
-                               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
-      .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
-  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
-                               "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"))
-      .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
-  EXPECT_TRUE(Matches(expected));
-}
-
 TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   // Policy for the same extension will be provided at the 4 level/scope
   // combinations, to verify that they overlap as expected.
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, "merge");
+  ASSERT_TRUE(RegisterSchema(
+      ns,
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"a\": { \"type\": \"string\" },"
+      "    \"b\": { \"type\": \"string\" },"
+      "    \"c\": { \"type\": \"string\" },"
+      "    \"d\": { \"type\": \"string\" }"
+      "  }"
+      "}"));
 
   const string16 kPathSuffix =
       kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\merge");
@@ -963,8 +847,7 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
                            kPathSuffix, kRecommended));
 
   PolicyBundle expected;
-  PolicyMap& expected_policy =
-      expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "merge"));
+  PolicyMap& expected_policy = expected.Get(ns);
   expected_policy.Set("a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                       base::Value::CreateStringValue(kMachineMandatory), NULL);
   expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -979,8 +862,26 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
 
 TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   // Create a dictionary with all the types that can be stored encoded in a
-  // string, to pass to InstallSchema(). Also build an equivalent dictionary
-  // with the encoded values, to pass to InstallValue().
+  // string.
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, "string");
+  ASSERT_TRUE(RegisterSchema(
+      ns,
+      "{"
+      "  \"type\": \"object\","
+      "  \"id\": \"MainType\","
+      "  \"properties\": {"
+      "    \"null\": { \"type\": \"null\" },"
+      "    \"bool\": { \"type\": \"boolean\" },"
+      "    \"int\": { \"type\": \"integer\" },"
+      "    \"double\": { \"type\": \"number\" },"
+      "    \"list\": {"
+      "      \"type\": \"array\","
+      "      \"items\": { \"$ref\": \"MainType\" }"
+      "    },"
+      "    \"dict\": { \"$ref\": \"MainType\" }"
+      "  }"
+      "}"));
+
   base::DictionaryValue policy;
   policy.Set("null", base::Value::CreateNullValue());
   policy.SetBoolean("bool", true);
@@ -995,7 +896,6 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   base::JSONWriter::Write(&policy, &encoded_dict);
   ASSERT_FALSE(encoded_dict.empty());
   policy.Set("dict", policy.DeepCopy());
-
   std::string encoded_list;
   base::JSONWriter::Write(&list, &encoded_list);
   ASSERT_FALSE(encoded_list.empty());
@@ -1009,21 +909,26 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
 
   const string16 kPathSuffix =
       kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\string");
-  EXPECT_TRUE(InstallSchema(policy, HKEY_CURRENT_USER, kPathSuffix, kSchema));
   EXPECT_TRUE(
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
   PolicyBundle expected;
-  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "string"))
-      .LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  expected.Get(ns).LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(Matches(expected));
 }
 
 TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
-  base::DictionaryValue policy;
-  policy.SetBoolean("bool", true);
-  policy.SetInteger("int", 123);
-  policy.SetDouble("double", 456.0);
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, "int");
+  ASSERT_TRUE(RegisterSchema(
+      ns,
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"bool\": { \"type\": \"boolean\" },"
+      "    \"int\": { \"type\": \"integer\" },"
+      "    \"double\": { \"type\": \"number\" }"
+      "  }"
+      "}"));
 
   base::DictionaryValue encoded_policy;
   encoded_policy.SetInteger("bool", 1);
@@ -1032,33 +937,38 @@ TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
 
   const string16 kPathSuffix =
       kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\int");
-  EXPECT_TRUE(InstallSchema(policy, HKEY_CURRENT_USER, kPathSuffix, kSchema));
   EXPECT_TRUE(
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
+  base::DictionaryValue policy;
+  policy.SetBoolean("bool", true);
+  policy.SetInteger("int", 123);
+  policy.SetDouble("double", 456.0);
   PolicyBundle expected;
-  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "int"))
-      .LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  expected.Get(ns).LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(Matches(expected));
 }
 
 TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   // Build a schema for an "object" with a default schema for its properties.
-  base::DictionaryValue default_schema;
-  default_schema.SetString(schema::kType, "number");
-  base::DictionaryValue integer_schema;
-  integer_schema.SetString(schema::kType, "integer");
-  base::DictionaryValue properties;
-  properties.Set("special-int1", integer_schema.DeepCopy());
-  properties.Set("special-int2", integer_schema.DeepCopy());
-  base::DictionaryValue schema;
-  schema.SetString(schema::kType, "object");
-  schema.Set(schema::kProperties, properties.DeepCopy());
-  schema.Set(schema::kAdditionalProperties, default_schema.DeepCopy());
-
-  const string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\test");
-  EXPECT_TRUE(WriteSchema(schema, HKEY_CURRENT_USER, kPathSuffix, kSchema));
+  // Note that the top-level object can't have "additionalProperties", so
+  // a "policy" property is used instead.
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, "test");
+  ASSERT_TRUE(RegisterSchema(
+      ns,
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"policy\": {"
+      "      \"type\": \"object\","
+      "      \"properties\": {"
+      "        \"special-int1\": { \"type\": \"integer\" },"
+      "        \"special-int2\": { \"type\": \"integer\" }"
+      "      },"
+      "      \"additionalProperties\": { \"type\": \"number\" }"
+      "    }"
+      "  }"
+      "}"));
 
   // Write some test values.
   base::DictionaryValue policy;
@@ -1069,17 +979,24 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   policy.SetInteger("double1", 789.0);
   policy.SetString("double2", "123.456e7");
   policy.SetString("invalid", "omg");
-  EXPECT_TRUE(InstallValue(policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
+  base::DictionaryValue all_policies;
+  all_policies.Set("policy", policy.DeepCopy());
+
+  const string16 kPathSuffix =
+      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\test");
+  EXPECT_TRUE(
+      InstallValue(all_policies, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
   base::DictionaryValue expected_policy;
   expected_policy.SetInteger("special-int1", 123);
   expected_policy.SetInteger("special-int2", -456);
   expected_policy.SetDouble("double1", 789.0);
   expected_policy.SetDouble("double2", 123.456e7);
-  expected_policy.Set("invalid", base::Value::CreateNullValue());
+  base::DictionaryValue expected_policies;
+  expected_policies.Set("policy", expected_policy.DeepCopy());
   PolicyBundle expected;
-  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "test"))
-      .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  expected.Get(ns).LoadFrom(
+      &expected_policies, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -1200,18 +1117,69 @@ TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
   gpo_list_ = &gpo;
   gpo_list_status_ = ERROR_SUCCESS;
 
+  const char kTestSchema[] =
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"policy 1\": { \"type\": \"integer\" },"
+      "    \"policy 2\": { \"type\": \"integer\" }"
+      "  }"
+      "}";
+  const PolicyNamespace ns_a(
+      POLICY_DOMAIN_EXTENSIONS, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  const PolicyNamespace ns_b(
+      POLICY_DOMAIN_EXTENSIONS, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  ASSERT_TRUE(RegisterSchema(ns_a, kTestSchema));
+  ASSERT_TRUE(RegisterSchema(ns_b, kTestSchema));
+
   PolicyBundle expected;
   base::DictionaryValue expected_a;
   expected_a.SetInteger("policy 1", 3);
   expected_a.SetInteger("policy 2", 3);
-  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
-                               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
-      .LoadFrom(&expected_a, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  expected.Get(ns_a).LoadFrom(
+      &expected_a, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
   base::DictionaryValue expected_b;
   expected_b.SetInteger("policy 1", 2);
-  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
-                               "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"))
-      .LoadFrom(&expected_b, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  expected.Get(ns_b).LoadFrom(
+      &expected_b, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  EXPECT_TRUE(Matches(expected));
+}
+
+TEST_F(PolicyLoaderWinTest, LBSSupport) {
+  const PolicyNamespace ns(
+      POLICY_DOMAIN_EXTENSIONS, "heildphpnddilhkemkielfhnkaagiabh");
+  schema_registry_.RegisterComponent(ns, Schema());
+
+  const char kIncompleteSchema[] =
+      "{"
+       "  \"type\": \"object\","
+       "  \"properties\": {"
+       "    \"url_list\": { \"type\": \"array\" },"
+       "    \"url_greylist\": { \"type\": \"array\" }"
+       "  }"
+      "}";
+
+  const string16 kPathSuffix =
+      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions");
+
+  base::ListValue list;
+  list.AppendString("youtube.com");
+  base::DictionaryValue policy;
+  policy.Set("url_list", list.DeepCopy());
+  policy.SetString("alternative_browser_path", "c:\\legacy\\browser.exe");
+  base::DictionaryValue root;
+  root.Set(UTF16ToUTF8(kMandatory), policy.DeepCopy());
+  root.SetString(kSchema, kIncompleteSchema);
+  EXPECT_TRUE(InstallValue(root, HKEY_LOCAL_MACHINE,
+                           kPathSuffix, ASCIIToUTF16(ns.component_id)));
+
+  PolicyBundle expected;
+  PolicyMap& expected_policy = expected.Get(ns);
+  expected_policy.Set("alternative_browser_path",
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      new base::StringValue("c:\\legacy\\browser.exe"), NULL);
+  expected_policy.Set("url_list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      list.DeepCopy(), NULL);
   EXPECT_TRUE(Matches(expected));
 }
 

@@ -52,6 +52,13 @@ namespace {
 const char kLoadSchemasBackgroundTaskTokenName[] =
     "load_managed_storage_schemas_token";
 
+// The Legacy Browser Support was the first user of the policy-for-extensions
+// API, and relied on behavior that will be phased out. If this extension is
+// present then its policies will be loaded in a special way.
+// TODO(joaodasilva): remove this for M35. http://crbug.com/325349
+const char kLegacyBrowserSupportExtensionId[] =
+    "heildphpnddilhkemkielfhnkaagiabh";
+
 }  // namespace
 
 // This helper observes initialization of all the installed extensions and
@@ -173,13 +180,8 @@ bool ManagedValueStoreCache::ExtensionTracker::UsesManagedStorage(
   if (extension->manifest()->HasPath(manifest_keys::kStorageManagedSchema))
     return true;
 
-  // TODO(joaodasilva): also load extensions that use the storage API for now,
-  // to support the Legacy Browser Support extension. Remove this.
-  // http://crbug.com/240704
-  if (extension->HasAPIPermission(APIPermission::kStorage))
-    return true;
-
-  return false;
+  // TODO(joaodasilva): remove this by M35.
+  return extension->id() == kLegacyBrowserSupportExtensionId;
 }
 
 // static
