@@ -1,6 +1,7 @@
 <html>
 <head>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script type="text/javascript" src="layer-protocol-test.js"></script>
 <script type="text/javascript">
 
 function addCompositedLayer()
@@ -19,55 +20,24 @@ function test()
     var initialLayers;
     var modifiedLayers;
 
-    getDocument();
+    InspectorTest.enableLayerTreeAgent(gotInitialLayerTree);
 
-    function getDocument()
+    function gotInitialLayerTree(layers)
     {
-        step({
-            name: "Get the Document",
-            command: "DOM.getDocument",
-            parameters: {},
-            callback: enableLayerTreeAgent
-        });
+        initialLayers = layers;
+        InspectorTest.setLayerTreeChangeCallback(gotModifiedLayerTree);
+
+        InspectorTest.sendCommand("Runtime.evaluate", {"expression": "addCompositedLayer()"});
     };
 
-    function enableLayerTreeAgent()
+    function gotModifiedLayerTree(layers)
     {
-        InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = gotInitialLayerTree;
-        step({
-            name: "Enable the LayerTree agent",
-            command: "LayerTree.enable",
-            parameters: {},
-        });
-        testRunner.display();
-    };
-
-    function gotInitialLayerTree(message)
-    {
-        InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = gotModifiedLayerTree;
-        initialLayers = message.params.layers;
-
-        step({
-            name: "Message the page to add a new composited layer",
-            command: "Runtime.evaluate",
-            parameters: {"expression": "addCompositedLayer()"},
-        });
-    };
-
-    function gotModifiedLayerTree(message)
-    {
-        InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = null;
-        modifiedLayers = message.params.layers;
+        modifiedLayers = layers;
 
         var mutations = layerMutations(initialLayers, modifiedLayers);
         var newLayer = mutations.additions[0];
 
-        step({
-            name: "Get attributes for the newly inserted node",
-            command: "DOM.getAttributes",
-            parameters: {"nodeId": newLayer.nodeId},
-            callback: gotNodeAttributes
-        });
+        InspectorTest.sendCommand("DOM.getAttributes", {"nodeId": newLayer.nodeId}, InspectorTest.wrapCallback(gotNodeAttributes));
     };
 
     function gotNodeAttributes(result)
@@ -130,39 +100,6 @@ function test()
 
         InspectorTest.log("\n" + JSON.stringify(layers, replacer, "    "));
     };
-
-    function step(test)
-    {
-        InspectorTest.sendCommand(test.command, test.parameters, function(messageObject) {
-            if (messageObject.hasOwnProperty("error")) {
-                InspectorTest.log("FAIL: " + messageObject.error.message + " (" + messageObject.error.code + ")");
-                InspectorTest.completeTest();
-                return;
-            }
-
-            if (test.callback)
-               test.callback(messageObject.result);
-        });
-    };
-
-    // Makes next step deferred to let backend do its asynchronous processing and sending us all pending notifications.
-    // Scheduling on timer with no delay is enough deferring.
-    function makeDeferredCallback(callback)
-    {
-        return function(result)
-        {
-            setTimeout(callback.bind(this, result), 0);
-        };
-    }
-
-    function assert(name, actual, expected)
-    {
-        if (expected === actual)
-            InspectorTest.log("PASS: " + name + ".");
-        else
-            InspectorTest.log("FAIL: " + name + ". Expected " + expected + " but got " + actual);
-    };
-
 };
 
 window.addEventListener("DOMContentLoaded", function () {

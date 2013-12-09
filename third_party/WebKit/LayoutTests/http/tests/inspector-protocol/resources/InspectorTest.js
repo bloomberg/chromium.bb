@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Samsung Electronics. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,6 +46,33 @@ InspectorTest.sendCommand = function(method, params, handler)
     InspectorFrontendHost.sendMessageToBackend(JSON.stringify(messageObject));
 
     return this._requestId;
+}
+
+/**
+ * @param {function(object)=} callback
+ */
+InspectorTest.wrapCallback = function(callback)
+{
+    /**
+     * @param {object} message
+     */
+    function callbackWrapper(message)
+    {
+        if (message.hasOwnProperty("error")) {
+            InspectorTest.log("Error " + message["error"].message);
+            InspectorTest.completeTest();
+            return;
+        }
+        if (!callback)
+            return;
+        try {
+            callback(message["result"]);
+        } catch (e) {
+            InspectorTest.log("Exception " + e + " while invoking callback: " + callback);
+            InspectorTest.completeTest();
+        }
+    }
+    return callbackWrapper;
 }
 
 /**
