@@ -34,7 +34,6 @@
 #include "V8TestInterfaceEventConstructor.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Event.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8DOMConfiguration.h"
