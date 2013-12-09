@@ -179,6 +179,7 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
       read_buf_(read_buffer),
       read_buf_unused_offset_(0),
       response_header_start_offset_(-1),
+      received_bytes_(0),
       response_body_length_(-1),
       response_body_read_(0),
       user_read_buf_(NULL),
@@ -693,6 +694,9 @@ int HttpStreamParser::DoReadBodyComplete(int result) {
       result = ERR_CONTENT_LENGTH_MISMATCH;
   }
 
+  if (result > 0)
+    received_bytes_ += result;
+
   // Filter incoming data if appropriate.  FilterBuf may return an error.
   if (result > 0 && chunked_decoder_.get()) {
     result = chunked_decoder_->FilterBuf(user_read_buf_->data(), result);
@@ -734,6 +738,7 @@ int HttpStreamParser::DoReadBodyComplete(int result) {
     }
 
     if (save_amount) {
+      received_bytes_ -= save_amount;
       memcpy(read_buf_->StartOfBuffer(), user_read_buf_->data() + result,
              save_amount);
     }
@@ -788,6 +793,7 @@ int HttpStreamParser::DoParseResponseHeaders(int end_offset) {
   DCHECK_EQ(0, read_buf_unused_offset_);
 
   if (response_header_start_offset_ >= 0) {
+    received_bytes_ += end_offset;
     headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(
         read_buf_->StartOfBuffer(), end_offset));
   } else {

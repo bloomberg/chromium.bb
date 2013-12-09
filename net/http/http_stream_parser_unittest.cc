@@ -28,6 +28,8 @@
 
 namespace net {
 
+namespace {
+
 const size_t kOutputSize = 1024;  // Just large enough for this test.
 // The number of bytes that can fit in a buffer of kOutputSize.
 const size_t kMaxPayloadSize =
@@ -483,5 +485,321 @@ TEST(HttpStreamParser, Websocket101Response) {
                               read_buffer->capacity()));
 }
 
+// Helper class for constructing HttpStreamParser and running GET requests.
+class SimpleGetRunner {
+ public:
+  SimpleGetRunner() : read_buffer_(new GrowableIOBuffer), sequence_number_(0) {
+    writes_.push_back(MockWrite(
+        SYNCHRONOUS, sequence_number_++, "GET / HTTP/1.1\r\n\r\n"));
+  }
+
+  HttpStreamParser* parser() { return parser_.get(); }
+  GrowableIOBuffer* read_buffer() { return read_buffer_.get(); }
+  HttpResponseInfo* response_info() { return &response_info_; }
+
+  void AddInitialData(const std::string& data) {
+    int offset = read_buffer_->offset();
+    int size = data.size();
+    read_buffer_->SetCapacity(offset + size);
+    memcpy(read_buffer_->StartOfBuffer() + offset, data.data(), size);
+    read_buffer_->set_offset(offset + size);
+  }
+
+  void AddRead(const std::string& data) {
+    reads_.push_back(MockRead(SYNCHRONOUS, sequence_number_++, data.data()));
+  }
+
+  void SetupParserAndSendRequest() {
+    reads_.push_back(MockRead(SYNCHRONOUS, 0, sequence_number_++));  // EOF
+
+    socket_handle_.reset(new ClientSocketHandle);
+    data_.reset(new DeterministicSocketData(
+        &reads_.front(), reads_.size(), &writes_.front(), writes_.size()));
+    data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+    data_->SetStop(reads_.size() + writes_.size());
+
+    transport_.reset(new DeterministicMockTCPClientSocket(NULL, data_.get()));
+    data_->set_delegate(transport_->AsWeakPtr());
+
+    TestCompletionCallback callback;
+    int rv = transport_->Connect(callback.callback());
+    rv = callback.GetResult(rv);
+    ASSERT_EQ(OK, rv);
+
+    socket_handle_->SetSocket(transport_.PassAs<StreamSocket>());
+
+    request_info_.method = "GET";
+    request_info_.url = GURL("http://localhost");
+    request_info_.load_flags = LOAD_NORMAL;
+
+    parser_.reset(new HttpStreamParser(
+        socket_handle_.get(), &request_info_, read_buffer(), BoundNetLog()));
+
+    rv = parser_->SendRequest("GET / HTTP/1.1\r\n", request_headers_,
+                              &response_info_, callback.callback());
+    ASSERT_EQ(OK, rv);
+  }
+
+  void ReadHeaders() {
+    TestCompletionCallback callback;
+    EXPECT_EQ(OK, parser_->ReadResponseHeaders(callback.callback()));
+  }
+
+  void ReadBody(int user_buf_len, int* read_lengths) {
+    TestCompletionCallback callback;
+    scoped_refptr<IOBuffer> buffer = new IOBuffer(user_buf_len);
+    int rv;
+    int i = 0;
+    while (true) {
+      rv = parser_->ReadResponseBody(buffer, user_buf_len, callback.callback());
+      EXPECT_EQ(read_lengths[i], rv);
+      i++;
+      if (rv <= 0)
+        return;
+    }
+  }
+
+ private:
+  HttpRequestHeaders request_headers_;
+  HttpResponseInfo response_info_;
+  HttpRequestInfo request_info_;
+  scoped_refptr<GrowableIOBuffer> read_buffer_;
+  std::vector<MockRead> reads_;
+  std::vector<MockWrite> writes_;
+  scoped_ptr<ClientSocketHandle> socket_handle_;
+  scoped_ptr<DeterministicSocketData> data_;
+  scoped_ptr<DeterministicMockTCPClientSocket> transport_;
+  scoped_ptr<HttpStreamParser> parser_;
+  int sequence_number_;
+};
+
+// Test that HTTP/0.9 response size is correctly calculated.
+TEST(HttpStreamParser, ReceivedBytesNoHeaders) {
+  std::string response = "hello\r\nworld\r\n";
+
+  SimpleGetRunner get_runner;
+  get_runner.AddRead(response);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  EXPECT_EQ(0, get_runner.parser()->received_bytes());
+  int64 response_size = response.size();
+  int read_lengths[] = {response_size, 0};
+  get_runner.ReadBody(response_size, read_lengths);
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+}
+
+// Test basic case where there is no keep-alive or extra data from the socket,
+// and the entire response is received in a single read.
+TEST(HttpStreamParser, ReceivedBytesNormal) {
+  std::string headers = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 7\r\n\r\n";
+  std::string body = "content";
+  std::string response = headers + body;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddRead(response);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  int64 headers_size = headers.size();
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int64 body_size = body.size();
+  int read_lengths[] = {body_size, 0};
+  get_runner.ReadBody(body_size, read_lengths);
+  int64 response_size = response.size();
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+}
+
+// Test that bytes that represent "next" response are not counted
+// as current response "received_bytes".
+TEST(HttpStreamParser, ReceivedBytesExcludesNextResponse) {
+  std::string headers = "HTTP/1.1 200 OK\r\n"
+      "Content-Length:  8\r\n\r\n";
+  std::string body = "content8";
+  std::string response = headers + body;
+  std::string next_response = "HTTP/1.1 200 OK\r\n\r\nFOO";
+  std::string data = response + next_response;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddRead(data);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  EXPECT_EQ(39, get_runner.parser()->received_bytes());
+  int64 headers_size = headers.size();
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int64 body_size = body.size();
+  int read_lengths[] = {body_size, 0};
+  get_runner.ReadBody(body_size, read_lengths);
+  int64 response_size = response.size();
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+  int64 next_response_size = next_response.size();
+  EXPECT_EQ(next_response_size, get_runner.read_buffer()->offset());
+}
+
+// Test that "received_bytes" calculation works fine when last read
+// contains more data than requested by user.
+// We send data in two reads:
+// 1) Headers + beginning of response
+// 2) remaining part of response + next response start
+// We setup user read buffer so it fully accepts the beginnig of response
+// body, but it is larger that remaining part of body.
+TEST(HttpStreamParser, ReceivedBytesMultiReadExcludesNextResponse) {
+  std::string headers = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 36\r\n\r\n";
+  int64 user_buf_len = 32;
+  std::string body_start = std::string(user_buf_len, '#');
+  int64 body_start_size = body_start.size();
+  EXPECT_EQ(user_buf_len, body_start_size);
+  std::string response_start = headers + body_start;
+  std::string body_end = "abcd";
+  std::string next_response = "HTTP/1.1 200 OK\r\n\r\nFOO";
+  std::string response_end = body_end + next_response;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddRead(response_start);
+  get_runner.AddRead(response_end);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  int64 headers_size = headers.size();
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int64 body_end_size = body_end.size();
+  int read_lengths[] = {body_start_size, body_end_size, 0};
+  get_runner.ReadBody(body_start_size, read_lengths);
+  int64 response_size = response_start.size() + body_end_size;
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+  int64 next_response_size = next_response.size();
+  EXPECT_EQ(next_response_size, get_runner.read_buffer()->offset());
+}
+
+// Test that "received_bytes" calculation works fine when there is no
+// network activity at all; that is when all data is read from read buffer.
+// In this case read buffer contains two responses. We expect that only
+// bytes that correspond to the first one are taken into account.
+TEST(HttpStreamParser, ReceivedBytesFromReadBufExcludesNextResponse) {
+  std::string headers = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 7\r\n\r\n";
+  std::string body = "content";
+  std::string response = headers + body;
+  std::string next_response = "HTTP/1.1 200 OK\r\n\r\nFOO";
+  std::string data = response + next_response;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddInitialData(data);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  int64 headers_size = headers.size();
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int64 body_size = body.size();
+  int read_lengths[] = {body_size, 0};
+  get_runner.ReadBody(body_size, read_lengths);
+  int64 response_size = response.size();
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+  int64 next_response_size = next_response.size();
+  EXPECT_EQ(next_response_size, get_runner.read_buffer()->offset());
+}
+
+// Test calculating "received_bytes" when part of request has been already
+// loaded and placed to read buffer by previous stream parser.
+TEST(HttpStreamParser, ReceivedBytesUseReadBuf) {
+  std::string buffer = "HTTP/1.1 200 OK\r\n";
+  std::string remaining_headers = "Content-Length: 7\r\n\r\n";
+  int64 headers_size = buffer.size() + remaining_headers.size();
+  std::string body = "content";
+  std::string response = remaining_headers + body;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddInitialData(buffer);
+  get_runner.AddRead(response);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int64 body_size = body.size();
+  int read_lengths[] = {body_size, 0};
+  get_runner.ReadBody(body_size, read_lengths);
+  EXPECT_EQ(headers_size + body_size, get_runner.parser()->received_bytes());
+  EXPECT_EQ(0, get_runner.read_buffer()->offset());
+}
+
+// Test the case when the resulting read_buf contains both unused bytes and
+// bytes ejected by chunked-encoding filter.
+TEST(HttpStreamParser, ReceivedBytesChunkedTransferExcludesNextResponse) {
+  std::string response = "HTTP/1.1 200 OK\r\n"
+      "Transfer-Encoding: chunked\r\n\r\n"
+      "7\r\nChunk 1\r\n"
+      "8\r\nChunky 2\r\n"
+      "6\r\nTest 3\r\n"
+      "0\r\n\r\n";
+  std::string next_response = "foo bar\r\n";
+  std::string data = response + next_response;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddInitialData(data);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  int read_lengths[] = {4, 3, 6, 2, 6, 0};
+  get_runner.ReadBody(7, read_lengths);
+  int64 response_size = response.size();
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+  int64 next_response_size = next_response.size();
+  EXPECT_EQ(next_response_size, get_runner.read_buffer()->offset());
+}
+
+// Test that data transfered in multiple reads is correctly processed.
+// We feed data into 4-bytes reads. Also we set length of read
+// buffer to 5-bytes to test all possible buffer misaligments.
+TEST(HttpStreamParser, ReceivedBytesMultipleReads) {
+  std::string headers = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 33\r\n\r\n";
+  std::string body = "foo bar baz\r\n"
+      "sputnik mir babushka";
+  std::string response = headers + body;
+
+  size_t receive_length = 4;
+  std::vector<std::string> blocks;
+  for (size_t i = 0; i < response.size(); i += receive_length) {
+    size_t length = std::min(receive_length, response.size() - i);
+    blocks.push_back(response.substr(i, length));
+  }
+
+  SimpleGetRunner get_runner;
+  for(std::vector<std::string>::size_type i = 0; i < blocks.size(); ++i)
+    get_runner.AddRead(blocks[i]);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  int64 headers_size = headers.size();
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int read_lengths[] = {1, 4, 4, 4, 4, 4, 4, 4, 4, 0};
+  get_runner.ReadBody(receive_length + 1, read_lengths);
+  int64 response_size = response.size();
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+}
+
+// Test that "continue" HTTP header is counted as "received_bytes".
+TEST(HttpStreamParser, ReceivedBytesIncludesContinueHeader) {
+  std::string status100 = "HTTP/1.1 100 OK\r\n\r\n";
+  std::string headers = "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 7\r\n\r\n";
+  int64 headers_size = status100.size() + headers.size();
+  std::string body = "content";
+  std::string response = headers + body;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddRead(status100);
+  get_runner.AddRead(response);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  EXPECT_EQ(100, get_runner.response_info()->headers->response_code());
+  int64 status100_size = status100.size();
+  EXPECT_EQ(status100_size, get_runner.parser()->received_bytes());
+  get_runner.ReadHeaders();
+  EXPECT_EQ(200, get_runner.response_info()->headers->response_code());
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int64 response_size = headers_size + body.size();
+  int64 body_size = body.size();
+  int read_lengths[] = {body_size, 0};
+  get_runner.ReadBody(body_size, read_lengths);
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+}
+
+}  // namespace
 
 }  // namespace net

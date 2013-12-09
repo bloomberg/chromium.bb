@@ -77,6 +77,8 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   bool IsConnectionReusable() const;
 
+  int64 received_bytes() const { return received_bytes_; }
+
   void GetSSLInfo(SSLInfo* ssl_info);
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
@@ -185,6 +187,10 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // The amount beyond |read_buf_unused_offset_| where the status line starts;
   // -1 if not found yet.
   int response_header_start_offset_;
+
+  // The amount of received data.  If connection is reused then intermediate
+  // value may be bigger than final.
+  int64 received_bytes_;
 
   // The parsed response headers.  Owned by the caller.
   HttpResponseInfo* response_;
