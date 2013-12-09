@@ -1,0 +1,4 @@
+desktop-shell-protocol.c
+desktop-shell-server-protocol.h
+xdg-shell-protocol.c
+xdg-shell-server-protocol.h

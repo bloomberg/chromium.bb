@@ -7,17 +7,9 @@ screenshooter-server-protocol.h
 spring-tool
 text-cursor-position-protocol.c
 text-cursor-position-server-protocol.h
-tablet-shell-protocol.c
-tablet-shell-server-protocol.h
-xserver-protocol.c
-xserver-server-protocol.h
-desktop-shell-protocol.c
-desktop-shell-server-protocol.h
 text-protocol.c
 text-server-protocol.h
 workspaces-protocol.c
 workspaces-server-protocol.h
 input-method-protocol.c
 input-method-server-protocol.h
-xdg-shell-protocol.c
-xdg-shell-server-protocol.h
