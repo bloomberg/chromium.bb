@@ -39,9 +39,12 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
                               bool hidden,
                               const string16& title) OVERRIDE;
 
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+
  protected:
   RenderViewContextMenuViews(content::WebContents* web_contents,
                              const content::ContextMenuParams& params);
+
   // RenderViewContextMenu implementation.
   virtual void PlatformInit() OVERRIDE;
   virtual void PlatformCancel() OVERRIDE;
@@ -50,6 +53,13 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
       ui::Accelerator* accelerator) OVERRIDE;
 
  private:
+  virtual void AppendPlatformEditableItems() OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+
+  // Model for the BiDi input submenu.
+  ui::SimpleMenuModel bidi_submenu_model_;
+
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuViews);

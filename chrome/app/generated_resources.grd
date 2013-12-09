@@ -590,21 +590,21 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_DISABLE" desc="Used for Disable on buttons">
         Disable
       </message>
+      <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU" desc="The name of the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+        Writing Direction
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT" desc="The name of the 'default' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+        Default
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR" desc="The name of the 'Left to Right' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+        Left to Right
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL" desc="The name of the 'Right to Left' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+        Right to Left
+      </message>
 
       <!-- content area context menus -->
       <if expr="is_macosx or is_linux">
-          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU" desc="The name of the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
-            Writing Direction
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT" desc="The name of the 'default' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
-            Default
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR" desc="The name of the 'Left to Right' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
-            Left to Right
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL" desc="The name of the 'Right to Left' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
-            Right to Left
-          </message>
           <message name="IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY" desc="The name of the 'Look Up in Dictionary' item in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
             Look Up in Dictionary
           </message>

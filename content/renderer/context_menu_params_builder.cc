@@ -35,11 +35,9 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.speech_input_enabled = data.isSpeechInputEnabled;
   params.spellcheck_enabled = data.isSpellCheckingEnabled;
   params.is_editable = data.isEditable;
-#if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
   params.writing_direction_default = data.writingDirectionDefault;
   params.writing_direction_left_to_right = data.writingDirectionLeftToRight;
   params.writing_direction_right_to_left = data.writingDirectionRightToLeft;
-#endif  // OS_MACOSX || defined(TOOLKIT_GTK)
   params.edit_flags = data.editFlags;
   params.frame_charset = data.frameEncoding.utf8();
   params.referrer_policy = data.referrerPolicy;

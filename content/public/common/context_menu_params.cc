@@ -25,14 +25,12 @@ ContextMenuParams::ContextMenuParams()
       speech_input_enabled(false),
       spellcheck_enabled(false),
       is_editable(false),
-#if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
       writing_direction_default(
           blink::WebContextMenuData::CheckableMenuItemDisabled),
       writing_direction_left_to_right(
           blink::WebContextMenuData::CheckableMenuItemEnabled),
       writing_direction_right_to_left(
           blink::WebContextMenuData::CheckableMenuItemEnabled),
-#endif  // OS_MACOSX || defined(TOOLKIT_GTK)
       edit_flags(0),
       referrer_policy(blink::WebReferrerPolicyDefault) {
 }

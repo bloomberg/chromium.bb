@@ -124,13 +124,10 @@ struct CONTENT_EXPORT ContextMenuParams {
   // Whether context is editable.
   bool is_editable;
 
-#if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
   // Writing direction menu items.
-  // Currently only used on OS X and Linux.
   int writing_direction_default;
   int writing_direction_left_to_right;
   int writing_direction_right_to_left;
-#endif  // OS_MACOSX || defined(TOOLKIT_GTK)
 
   // These flags indicate to the browser whether the renderer believes it is
   // able to perform the corresponding action.

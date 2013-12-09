@@ -228,10 +228,10 @@
 #define IDC_SPELLCHECK_ADD_TO_DICTIONARY 41110
 
 // Writing direction
-#define IDC_WRITING_DIRECTION_MENU       41120     // OSX and Linux Gtk only
-#define IDC_WRITING_DIRECTION_DEFAULT    41121     // OSX and Linux Gtk only
-#define IDC_WRITING_DIRECTION_LTR        41122     // OSX and Linux Gtk only
-#define IDC_WRITING_DIRECTION_RTL        41123     // OSX and Linux Gtk only
+#define IDC_WRITING_DIRECTION_MENU       41120
+#define IDC_WRITING_DIRECTION_DEFAULT    41121
+#define IDC_WRITING_DIRECTION_LTR        41122
+#define IDC_WRITING_DIRECTION_RTL        41123
 
 // Translate
 #define IDC_TRANSLATE_OPTIONS_ALWAYS                42000

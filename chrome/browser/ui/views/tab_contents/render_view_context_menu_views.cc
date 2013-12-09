@@ -7,15 +7,18 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+
 
 using content::WebContents;
 
@@ -25,7 +28,8 @@ using content::WebContents;
 RenderViewContextMenuViews::RenderViewContextMenuViews(
     WebContents* web_contents,
     const content::ContextMenuParams& params)
-    : RenderViewContextMenu(web_contents, params) {
+    : RenderViewContextMenu(web_contents, params),
+      bidi_submenu_model_(this) {
 }
 
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
@@ -107,6 +111,83 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     default:
       return false;
   }
+}
+
+void RenderViewContextMenuViews::ExecuteCommand(int command_id,
+                                                int event_flags) {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      // WebKit's current behavior is for this menu item to always be disabled.
+      NOTREACHED();
+      break;
+
+    case IDC_WRITING_DIRECTION_RTL:
+    case IDC_WRITING_DIRECTION_LTR: {
+      content::RenderViewHost* view_host = GetRenderViewHost();
+      view_host->UpdateTextDirection((command_id == IDC_WRITING_DIRECTION_RTL) ?
+          blink::WebTextDirectionRightToLeft :
+          blink::WebTextDirectionLeftToRight);
+      view_host->NotifyTextDirection();
+      break;
+    }
+
+    default:
+      RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
+      break;
+  }
+}
+
+bool RenderViewContextMenuViews::IsCommandIdChecked(int command_id) const {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      return (params_.writing_direction_default &
+          blink::WebContextMenuData::CheckableMenuItemChecked) != 0;
+    case IDC_WRITING_DIRECTION_RTL:
+      return (params_.writing_direction_right_to_left &
+          blink::WebContextMenuData::CheckableMenuItemChecked) != 0;
+    case IDC_WRITING_DIRECTION_LTR:
+      return (params_.writing_direction_left_to_right &
+          blink::WebContextMenuData::CheckableMenuItemChecked) != 0;
+
+    default:
+      return RenderViewContextMenu::IsCommandIdChecked(command_id);
+  }
+}
+
+bool RenderViewContextMenuViews::IsCommandIdEnabled(int command_id) const {
+  switch (command_id) {
+    case IDC_WRITING_DIRECTION_MENU:
+      return true;
+    case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
+      return params_.writing_direction_default &
+          blink::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+          blink::WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+          blink::WebContextMenuData::CheckableMenuItemEnabled;
+
+    default:
+      return RenderViewContextMenu::IsCommandIdEnabled(command_id);
+  }
+}
+
+void RenderViewContextMenuViews::AppendPlatformEditableItems() {
+  bidi_submenu_model_.AddCheckItem(
+      IDC_WRITING_DIRECTION_DEFAULT,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT));
+  bidi_submenu_model_.AddCheckItem(
+      IDC_WRITING_DIRECTION_LTR,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR));
+  bidi_submenu_model_.AddCheckItem(
+      IDC_WRITING_DIRECTION_RTL,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
+
+  menu_model_.AddSubMenu(
+      IDC_WRITING_DIRECTION_MENU,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
+      &bidi_submenu_model_);
 }
 
 void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
