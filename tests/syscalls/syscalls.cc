@@ -94,8 +94,9 @@ bool test2() {
 }
 
 // TODO(sbc): remove this restriction once glibc is updated to
-// use dev-filename-0.2
-#if TESTS_USE_IRT && defined(__GLIBC__)
+// use dev-filename-0.2:
+// https://code.google.com/p/nativeclient/issues/detail?id=3709
+#if defined(__GLIBC__)
 
 bool test_chdir() {
   return passed("test_chdir", "all");
@@ -221,7 +222,7 @@ bool test_unlink(const char *test_file) {
   return passed("test_unlink", "all");
 }
 
-#endif  // !TESTS_USE_IRT
+#endif  // !__GLIBC__
 
 // open() returns the new file descriptor, or -1 if an error occurred
 bool test_open(const char *test_file) {

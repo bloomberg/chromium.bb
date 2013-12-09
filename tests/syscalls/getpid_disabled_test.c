@@ -8,10 +8,11 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_assert.h"
 
 int main(void) {
   int pid = getpid();
-  assert(pid == -1);
-  assert(errno == EACCES);
+  ASSERT_EQ(pid, -1);
+  ASSERT_EQ(errno, EACCES);
   return 0;
 }

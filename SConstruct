@@ -622,9 +622,6 @@ nacl_glibc_skiplist = set([
     # web accessible resources in the extensions's manifest.json,
     # not just the nexe and nmf file.
     'run_ppapi_extension_mime_handler_browser_test',
-
-    # This test need more investigation.
-    'run_syscall_test',
     ])
 nacl_glibc_skiplist.update(['%s_irt' % test for test in nacl_glibc_skiplist])
 

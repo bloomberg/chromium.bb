@@ -14,8 +14,6 @@ if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
 
 env.ComponentLibrary('syscall_test_framework', ['test.cc'])
 
-env.Append(CPPDEFINES=[['TESTS_USE_IRT', str(int(env.Bit('tests_use_irt')))]])
-
 syscalls_nexe = env.ComponentProgram('syscalls',
                                      'syscalls.cc',
                                      EXTRA_LIBS=['${PTHREAD_LIBS}',
@@ -46,9 +44,9 @@ if not env.Bit('host_windows'):
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 #endif
 
-# TODO(mseaborn): Change nacl-glibc to use the IRT's getpid() interface.
-# See http://code.google.com/p/nativeclient/issues/detail?id=2488
-getpid_is_broken = env.Bit('nacl_glibc')
+# getpid() works with nacl-glibc, but only via the IRT (there is no
+# direct syscall version).
+getpid_is_broken = env.Bit('nacl_glibc') and not env.Bit('tests_use_irt')
 
 getpid_test_nexe = env.ComponentProgram('getpid_test',
                                         ['getpid_test.cc'],
@@ -79,10 +77,11 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_raw_getpid_test')
 
+# getpid_disabled test must be run without -a, but glibc requires -a.
 getpid_disabled_is_broken = (
     'TRUSTED_ENV' in env and
     env['TRUSTED_ENV'].Bit('coverage_enabled') and
-    env.Bit('host_mac')) or getpid_is_broken
+    env.Bit('host_mac')) or env.Bit('nacl_glibc')
 
 getpid_disabled_test_nexe = env.ComponentProgram(
     'getpid_disabled_test', ['getpid_disabled_test.c'],
