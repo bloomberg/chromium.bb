@@ -103,7 +103,7 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     {# FIXME: don't call GetIsolate 3 times #}
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
     {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
@@ -298,7 +298,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
 
     v8::Local<v8::Signature> defaultSignature;
     {% set parent_template =
-           'V8%s::GetTemplate(isolate, currentWorldType)' % parent_interface
+           'V8%s::domTemplate(isolate, currentWorldType)' % parent_interface
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
     {% if runtime_enabled_function %}
     if (!{{runtime_enabled_function}}())
@@ -476,7 +476,7 @@ COMPILE_ASSERT({{constant.value}} == {{cpp_class}}::{{constant.reflected_name}},
 {##############################################################################}
 {% block get_template %}
 {# FIXME: rename to get_dom_template and GetDOMTemplate #}
-v8::Handle<v8::FunctionTemplate> {{v8_class}}::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -486,7 +486,7 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}::GetTemplate(v8::Isolate* isolate,
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        Configure{{v8_class}}Template(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        Configure{{v8_class}}Template(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
@@ -537,7 +537,7 @@ void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> protot
 {
     UNUSED_PARAM(prototypeTemplate);
     {# Define per-context enabled operations #}
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, GetTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());

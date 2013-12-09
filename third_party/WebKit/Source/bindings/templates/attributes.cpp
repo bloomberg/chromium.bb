@@ -9,7 +9,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
     {% if attribute.is_unforgeable %}
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
     {{cpp_class}}* imp = {{v8_class}}::toNative(holder);

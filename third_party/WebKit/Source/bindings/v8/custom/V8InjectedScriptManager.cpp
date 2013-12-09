@@ -53,7 +53,7 @@ struct InjectedScriptManager::CallbackData {
 
 static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHost* host, v8::Isolate* isolate)
 {
-    v8::Local<v8::Function> function = V8InjectedScriptHost::GetTemplate(isolate, MainWorld)->GetFunction();
+    v8::Local<v8::Function> function = V8InjectedScriptHost::domTemplate(isolate, MainWorld)->GetFunction();
     if (function.IsEmpty()) {
         // Return if allocation failed.
         return v8::Local<v8::Object>();
@@ -111,9 +111,9 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     v8::Local<v8::Object> global = context->Global();
     if (global.IsEmpty())
         return false;
-    v8::Handle<v8::Object> holder = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), MainWorld));
+    v8::Handle<v8::Object> holder = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), MainWorld));
     if (holder.IsEmpty())
-        holder = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
+        holder = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), IsolatedWorld));
     if (holder.IsEmpty())
         return false;
     Frame* frame = V8Window::toNative(holder)->frame();

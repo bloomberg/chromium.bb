@@ -67,7 +67,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfacePython2*
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfacePython2::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfacePython2::GetTemplate, V8TestInterfacePython2::derefObject, 0, 0, V8TestInterfacePython2::visitDOMWrapper, V8TestInterfacePython2::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfacePython2::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfacePython2::domTemplate, V8TestInterfacePython2::derefObject, 0, 0, V8TestInterfacePython2::visitDOMWrapper, V8TestInterfacePython2::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfacePython2V8Internal {
 
@@ -96,7 +96,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePython2Template(
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestInterfacePython2::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestInterfacePython2::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -106,7 +106,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfacePython2::GetTemplate(v8::Isolate
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfacePython2Template(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestInterfacePython2Template(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

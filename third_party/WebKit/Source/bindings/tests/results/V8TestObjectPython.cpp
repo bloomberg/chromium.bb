@@ -107,7 +107,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestObjectPython* obj
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestObjectPython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObjectPython::GetTemplate, V8TestObjectPython::derefObject, 0, 0, 0, V8TestObjectPython::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestObjectPython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObjectPython::domTemplate, V8TestObjectPython::derefObject, 0, 0, 0, V8TestObjectPython::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestObjectPythonV8Internal {
 
@@ -3088,7 +3088,7 @@ static void urlStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8:
 
 static void unforgeableLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestObjectPython::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestObjectPython::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
     TestObjectPython* imp = V8TestObjectPython::toNative(holder);
@@ -6332,43 +6332,43 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 
     // Custom Signature 'voidMethodTestInterfaceEmptyArg'
     const int voidMethodTestInterfaceEmptyArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodTestInterfaceEmptyArgArgv[voidMethodTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodTestInterfaceEmptyArgArgv[voidMethodTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodTestInterfaceEmptyArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodTestInterfaceEmptyArgArgc, voidMethodTestInterfaceEmptyArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodTestInterfaceEmptyArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodTestInterfaceEmptyArgSignature, 1));
 
     // Custom Signature 'voidMethodLongArgTestInterfaceEmptyArg'
     const int voidMethodLongArgTestInterfaceEmptyArgArgc = 2;
-    v8::Handle<v8::FunctionTemplate> voidMethodLongArgTestInterfaceEmptyArgArgv[voidMethodLongArgTestInterfaceEmptyArgArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodLongArgTestInterfaceEmptyArgArgv[voidMethodLongArgTestInterfaceEmptyArgArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodLongArgTestInterfaceEmptyArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodLongArgTestInterfaceEmptyArgArgc, voidMethodLongArgTestInterfaceEmptyArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodLongArgTestInterfaceEmptyArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodLongArgTestInterfaceEmptyArgSignature, 2));
 
     // Custom Signature 'voidMethodAttrArg'
     const int voidMethodAttrArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodAttrArgArgv[voidMethodAttrArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Attr::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodAttrArgArgv[voidMethodAttrArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8Attr::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodAttrArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodAttrArgArgc, voidMethodAttrArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodAttrArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodAttrArgMethodCallback, v8Undefined(), voidMethodAttrArgSignature, 1));
 
     // Custom Signature 'voidMethodDocumentArg'
     const int voidMethodDocumentArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodDocumentArgArgv[voidMethodDocumentArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Document::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodDocumentArgArgv[voidMethodDocumentArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8Document::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodDocumentArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodDocumentArgArgc, voidMethodDocumentArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodDocumentArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodDocumentArgMethodCallback, v8Undefined(), voidMethodDocumentArgSignature, 1));
 
     // Custom Signature 'voidMethodDocumentTypeArg'
     const int voidMethodDocumentTypeArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodDocumentTypeArgArgv[voidMethodDocumentTypeArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DocumentType::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodDocumentTypeArgArgv[voidMethodDocumentTypeArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8DocumentType::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodDocumentTypeArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodDocumentTypeArgArgc, voidMethodDocumentTypeArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodDocumentTypeArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodDocumentTypeArgMethodCallback, v8Undefined(), voidMethodDocumentTypeArgSignature, 1));
 
     // Custom Signature 'voidMethodElementArg'
     const int voidMethodElementArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodElementArgArgv[voidMethodElementArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Element::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodElementArgArgv[voidMethodElementArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8Element::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodElementArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodElementArgArgc, voidMethodElementArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodElementArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodElementArgMethodCallback, v8Undefined(), voidMethodElementArgSignature, 1));
 
     // Custom Signature 'voidMethodNodeArg'
     const int voidMethodNodeArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodNodeArgArgv[voidMethodNodeArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodNodeArgArgv[voidMethodNodeArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8Node::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodNodeArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodNodeArgArgc, voidMethodNodeArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodNodeArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodNodeArgMethodCallback, v8Undefined(), voidMethodNodeArgSignature, 1));
 
@@ -6404,7 +6404,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 
     // Custom Signature 'voidMethodNullableStringArg'
     const int voidMethodNullableStringArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodNullableStringArgArgv[voidMethodNullableStringArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodNullableStringArgArgv[voidMethodNullableStringArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodNullableStringArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodNullableStringArgArgc, voidMethodNullableStringArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodNullableStringArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodNullableStringArgMethodCallback, v8Undefined(), voidMethodNullableStringArgSignature, 1));
 
@@ -6416,20 +6416,20 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 
     // Custom Signature 'voidMethodVariadicTestInterfaceEmptyArg'
     const int voidMethodVariadicTestInterfaceEmptyArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodVariadicTestInterfaceEmptyArgArgv[voidMethodVariadicTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodVariadicTestInterfaceEmptyArgArgv[voidMethodVariadicTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodVariadicTestInterfaceEmptyArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodVariadicTestInterfaceEmptyArgArgc, voidMethodVariadicTestInterfaceEmptyArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodVariadicTestInterfaceEmptyArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodVariadicTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodVariadicTestInterfaceEmptyArgSignature, 1));
 
     // Custom Signature 'voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg'
     const int voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgArgc = 2;
-    v8::Handle<v8::FunctionTemplate> voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgArgv[voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgArgv[voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgArgc, voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgSignature, 2));
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "overloadedStaticMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::overloadedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
 
     // Custom Signature 'voidMethodDefaultUndefinedTestInterfaceEmptyArg'
     const int voidMethodDefaultUndefinedTestInterfaceEmptyArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> voidMethodDefaultUndefinedTestInterfaceEmptyArgArgv[voidMethodDefaultUndefinedTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodDefaultUndefinedTestInterfaceEmptyArgArgv[voidMethodDefaultUndefinedTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodDefaultUndefinedTestInterfaceEmptyArgSignature = v8::Signature::New(isolate, functionTemplate, voidMethodDefaultUndefinedTestInterfaceEmptyArgArgc, voidMethodDefaultUndefinedTestInterfaceEmptyArgArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodDefaultUndefinedTestInterfaceEmptyArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodDefaultUndefinedTestInterfaceEmptyArgSignature, 0));
 #if ENABLE(CONDITION)
@@ -6440,7 +6440,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 
     // Custom Signature 'perWorldBindingsVoidMethodTestInterfaceEmptyArg'
     const int perWorldBindingsVoidMethodTestInterfaceEmptyArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> perWorldBindingsVoidMethodTestInterfaceEmptyArgArgv[perWorldBindingsVoidMethodTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> perWorldBindingsVoidMethodTestInterfaceEmptyArgArgv[perWorldBindingsVoidMethodTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> perWorldBindingsVoidMethodTestInterfaceEmptyArgSignature = v8::Signature::New(isolate, functionTemplate, perWorldBindingsVoidMethodTestInterfaceEmptyArgArgc, perWorldBindingsVoidMethodTestInterfaceEmptyArgArgv);
     if (currentWorldType == MainWorld) {
         prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "perWorldBindingsVoidMethodTestInterfaceEmptyArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld, v8Undefined(), perWorldBindingsVoidMethodTestInterfaceEmptyArgSignature, 1));
@@ -6467,7 +6467,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestObjectPython::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestObjectPython::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -6477,7 +6477,7 @@ v8::Handle<v8::FunctionTemplate> V8TestObjectPython::GetTemplate(v8::Isolate* is
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestObjectPythonTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestObjectPythonTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
@@ -6507,7 +6507,7 @@ void V8TestObjectPython::installPerContextEnabledProperties(v8::Handle<v8::Objec
 void V8TestObjectPython::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
     UNUSED_PARAM(prototypeTemplate);
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, GetTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());

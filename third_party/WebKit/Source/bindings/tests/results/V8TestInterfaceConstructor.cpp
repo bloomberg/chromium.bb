@@ -68,7 +68,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceConstruc
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor::GetTemplate, V8TestInterfaceConstructor::derefObject, 0, 0, 0, V8TestInterfaceConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfaceConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor::domTemplate, V8TestInterfaceConstructor::derefObject, 0, 0, 0, V8TestInterfaceConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceConstructorV8Internal {
 
@@ -128,7 +128,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceConstructorTempl
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -138,7 +138,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructor::GetTemplate(v8::Iso
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfaceConstructorTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestInterfaceConstructorTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

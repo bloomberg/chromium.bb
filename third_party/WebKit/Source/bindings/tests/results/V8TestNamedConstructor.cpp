@@ -68,7 +68,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestNamedConstructor*
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestNamedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNamedConstructor::GetTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestNamedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNamedConstructor::domTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestNamedConstructorV8Internal {
 
@@ -76,7 +76,7 @@ template <typename T> void V8_USE(T) { }
 
 } // namespace TestNamedConstructorV8Internal
 
-const WrapperTypeInfo V8TestNamedConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNamedConstructorConstructor::GetTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestNamedConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNamedConstructorConstructor::domTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -115,7 +115,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
     v8SetReturnValue(info, wrapper);
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -131,7 +131,7 @@ v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(V8TestNamedConstructor::internalFieldCount);
     result->SetClassName(v8::String::NewFromUtf8(isolate, "TestNamedConstructor", v8::String::kInternalizedString));
-    result->Inherit(V8TestNamedConstructor::GetTemplate(isolate, currentWorldType));
+    result->Inherit(V8TestNamedConstructor::domTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 
     return scope.Escape(result);
@@ -158,7 +158,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNamedConstructorTemplate(
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestNamedConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestNamedConstructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -168,7 +168,7 @@ v8::Handle<v8::FunctionTemplate> V8TestNamedConstructor::GetTemplate(v8::Isolate
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestNamedConstructorTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestNamedConstructorTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

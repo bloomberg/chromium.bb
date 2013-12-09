@@ -59,7 +59,7 @@ static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v
     const WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
     if (V8Window::wrapperTypeInfo.equals(type)) {
-        v8::Handle<v8::Object> windowWrapper = host->FindInstanceInPrototypeChain(V8Window::GetTemplate(isolate, worldTypeInMainThread(isolate)));
+        v8::Handle<v8::Object> windowWrapper = host->FindInstanceInPrototypeChain(V8Window::domTemplate(isolate, worldTypeInMainThread(isolate)));
         if (windowWrapper.IsEmpty())
             return 0;
         return V8Window::toNative(windowWrapper)->frame();

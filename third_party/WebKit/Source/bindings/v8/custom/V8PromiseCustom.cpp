@@ -645,7 +645,7 @@ void V8PromiseCustom::setState(v8::Handle<v8::Object> internal, PromiseState sta
 bool V8PromiseCustom::isPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate* isolate)
 {
     WrapperWorldType currentWorldType = worldType(isolate);
-    return V8Promise::GetTemplate(isolate, currentWorldType)->HasInstance(maybePromise);
+    return V8Promise::domTemplate(isolate, currentWorldType)->HasInstance(maybePromise);
 }
 
 v8::Local<v8::Object> V8PromiseCustom::toPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate* isolate)

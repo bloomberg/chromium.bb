@@ -192,7 +192,7 @@ def custom_signature(method, arguments):
             # Compatibility: all other browsers accepts a callable for
             # XPathNSResolver, despite it being against spec.
             not idl_type == 'XPathNSResolver'):
-            return 'V8PerIsolateData::from(isolate)->rawTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
+            return 'V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
         return 'v8::Handle<v8::FunctionTemplate>()'
 
     if (any(argument.is_optional and

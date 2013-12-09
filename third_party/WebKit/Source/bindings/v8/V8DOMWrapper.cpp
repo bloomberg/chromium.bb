@@ -54,7 +54,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
         if (shadowTemplate.IsEmpty())
             return v8::Local<v8::Object>();
         shadowTemplate->SetClassName(v8AtomicString(isolate, "HTMLDocument"));
-        shadowTemplate->Inherit(V8HTMLDocument::GetTemplate(isolate, currentWorldType));
+        shadowTemplate->Inherit(V8HTMLDocument::domTemplate(isolate, currentWorldType));
         shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
         data->setPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey, shadowTemplate);
     }
@@ -76,7 +76,7 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creatio
     V8WrapperInstantiationScope scope(creationContext, isolate);
 
     V8PerContextData* perContextData = V8PerContextData::from(scope.context());
-    v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate(isolate, worldTypeInMainThread(isolate))->GetFunction());
+    v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->domTemplate(isolate, worldTypeInMainThread(isolate))->GetFunction());
 
     if (type == &V8HTMLDocument::wrapperTypeInfo && !wrapper.IsEmpty())
         wrapper = wrapInShadowTemplate(wrapper, static_cast<Node*>(impl), isolate);

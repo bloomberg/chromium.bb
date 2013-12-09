@@ -255,7 +255,7 @@ WorkerScriptController* WorkerScriptController::controllerForContext()
         return 0;
     v8::Handle<v8::Context> context = isolate->GetCurrentContext();
     v8::Handle<v8::Object> global = context->Global();
-    global = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::GetTemplate(isolate, WorkerWorld));
+    global = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::domTemplate(isolate, WorkerWorld));
     // Return 0 if the current executing context is not the worker context.
     if (global.IsEmpty())
         return 0;

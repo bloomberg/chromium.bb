@@ -70,7 +70,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestOverloadedConstru
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestOverloadedConstructors::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestOverloadedConstructors::GetTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, 0, V8TestOverloadedConstructors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestOverloadedConstructors::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestOverloadedConstructors::domTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, 0, V8TestOverloadedConstructors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestOverloadedConstructorsV8Internal {
 
@@ -183,7 +183,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestOverloadedConstructorsTem
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestOverloadedConstructors::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestOverloadedConstructors::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -193,7 +193,7 @@ v8::Handle<v8::FunctionTemplate> V8TestOverloadedConstructors::GetTemplate(v8::I
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestOverloadedConstructorsTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestOverloadedConstructorsTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

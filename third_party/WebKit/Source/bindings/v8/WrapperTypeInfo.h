@@ -57,7 +57,7 @@ namespace WebCore {
         WorkerWorld
     };
 
-    typedef v8::Handle<v8::FunctionTemplate> (*GetTemplateFunction)(v8::Isolate*, WrapperWorldType);
+    typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*, WrapperWorldType);
     typedef void (*DerefObjectFunction)(void*);
     typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
     typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
@@ -100,7 +100,7 @@ namespace WebCore {
             return false;
         }
 
-        v8::Handle<v8::FunctionTemplate> getTemplate(v8::Isolate* isolate, WrapperWorldType worldType) const { return getTemplateFunction(isolate, worldType); }
+        v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate* isolate, WrapperWorldType worldType) const { return domTemplateFunction(isolate, worldType); }
 
         void derefObject(void* object) const
         {
@@ -139,7 +139,7 @@ namespace WebCore {
         // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.
         const gin::GinEmbedder ginEmbedder;
 
-        const GetTemplateFunction getTemplateFunction;
+        const DomTemplateFunction domTemplateFunction;
         const DerefObjectFunction derefObjectFunction;
         const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
         const ToEventTargetFunction toEventTargetFunction;

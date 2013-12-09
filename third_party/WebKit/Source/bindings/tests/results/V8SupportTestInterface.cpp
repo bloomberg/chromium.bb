@@ -71,7 +71,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::SupportTestInterface*
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8SupportTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SupportTestInterface::GetTemplate, V8SupportTestInterface::derefObject, 0, 0, 0, V8SupportTestInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8SupportTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SupportTestInterface::domTemplate, V8SupportTestInterface::derefObject, 0, 0, 0, V8SupportTestInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace SupportTestInterfaceV8Internal {
 
@@ -430,7 +430,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8SupportTestInterfaceTemplate(
 
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;
-    v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(isolate, functionTemplate, supplementalMethod2Argc, supplementalMethod2Argv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, SupportTestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -449,7 +449,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8SupportTestInterfaceTemplate(
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8SupportTestInterface::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8SupportTestInterface::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -459,7 +459,7 @@ v8::Handle<v8::FunctionTemplate> V8SupportTestInterface::GetTemplate(v8::Isolate
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8SupportTestInterfaceTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8SupportTestInterfaceTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

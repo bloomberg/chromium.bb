@@ -110,7 +110,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     DOMWindow* sourceArg = 0;
     if (info[6]->IsObject()) {
         v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(info[6]);
-        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::GetTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
+        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::domTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
         if (!window.IsEmpty())
             sourceArg = V8Window::toNative(window);
     }

@@ -65,7 +65,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceDoNotChe
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceDoNotCheckConstants::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDoNotCheckConstants::GetTemplate, V8TestInterfaceDoNotCheckConstants::derefObject, 0, 0, 0, V8TestInterfaceDoNotCheckConstants::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfaceDoNotCheckConstants::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDoNotCheckConstants::domTemplate, V8TestInterfaceDoNotCheckConstants::derefObject, 0, 0, 0, V8TestInterfaceDoNotCheckConstants::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceDoNotCheckConstantsV8Internal {
 
@@ -99,7 +99,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceDoNotCheckConsta
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestInterfaceDoNotCheckConstants::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestInterfaceDoNotCheckConstants::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -109,7 +109,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceDoNotCheckConstants::GetTemplate
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfaceDoNotCheckConstantsTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestInterfaceDoNotCheckConstantsTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

@@ -68,7 +68,7 @@ namespace WebCore {
                            if has_visit_dom_wrapper else '0' %}
 {% set parent_wrapper_type_info = '&V8%s::wrapperTypeInfo' % parent_interface
                                   if parent_interface else '0' %}
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::GetTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, 0, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, {{parent_wrapper_type_info}}, WrapperTypeObjectPrototype };
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, 0, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, {{parent_wrapper_type_info}}, WrapperTypeObjectPrototype };
 
 namespace {{cpp_class}}V8Internal {
 

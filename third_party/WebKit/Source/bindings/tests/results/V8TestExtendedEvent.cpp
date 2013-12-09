@@ -70,7 +70,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::Event* object)
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestExtendedEvent::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestExtendedEvent::GetTemplate, V8TestExtendedEvent::derefObject, 0, 0, 0, V8TestExtendedEvent::installPerContextEnabledMethods, &V8TestEvent::wrapperTypeInfo, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestExtendedEvent::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestExtendedEvent::domTemplate, V8TestExtendedEvent::derefObject, 0, 0, 0, V8TestExtendedEvent::installPerContextEnabledMethods, &V8TestEvent::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace EventV8Internal {
 
@@ -172,9 +172,9 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8:
 
     v8::Local<v8::Signature> defaultSignature;
     if (!RuntimeEnabledFeatures::testEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", V8TestEvent::domTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
     else
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestExtendedEvent", V8TestEvent::GetTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestExtendedEvent", V8TestEvent::domTemplate(isolate, currentWorldType), V8TestExtendedEvent::internalFieldCount,
             V8TestExtendedEventAttributes, WTF_ARRAY_LENGTH(V8TestExtendedEventAttributes),
             0, 0,
             0, 0,
@@ -192,7 +192,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8:
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestExtendedEvent::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestExtendedEvent::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -202,7 +202,7 @@ v8::Handle<v8::FunctionTemplate> V8TestExtendedEvent::GetTemplate(v8::Isolate* i
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestExtendedEventTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestExtendedEventTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

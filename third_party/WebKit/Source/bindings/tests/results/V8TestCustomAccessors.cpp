@@ -66,7 +66,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestCustomAccessors* 
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestCustomAccessors::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestCustomAccessors::GetTemplate, V8TestCustomAccessors::derefObject, 0, 0, 0, V8TestCustomAccessors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestCustomAccessors::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestCustomAccessors::domTemplate, V8TestCustomAccessors::derefObject, 0, 0, 0, V8TestCustomAccessors::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestCustomAccessorsV8Internal {
 
@@ -175,7 +175,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestCustomAccessorsTemplate(v
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestCustomAccessors::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestCustomAccessors::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -185,7 +185,7 @@ v8::Handle<v8::FunctionTemplate> V8TestCustomAccessors::GetTemplate(v8::Isolate*
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestCustomAccessorsTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestCustomAccessorsTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

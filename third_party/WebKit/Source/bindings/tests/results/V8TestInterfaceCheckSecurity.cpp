@@ -67,7 +67,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceCheckSec
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::GetTemplate, V8TestInterfaceCheckSecurity::derefObject, 0, 0, 0, V8TestInterfaceCheckSecurity::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::domTemplate, V8TestInterfaceCheckSecurity::derefObject, 0, 0, 0, V8TestInterfaceCheckSecurity::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceCheckSecurityV8Internal {
 
@@ -202,9 +202,9 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
     static int privateTemplateUniqueKey;
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
 
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::GetTemplate(info.GetIsolate(), currentWorldType));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -214,7 +214,7 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
@@ -254,9 +254,9 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
     static int privateTemplateUniqueKey;
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
 
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::GetTemplate(info.GetIsolate(), currentWorldType));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -266,7 +266,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
@@ -306,9 +306,9 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
     static int privateTemplateUniqueKey;
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
 
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::GetTemplate(info.GetIsolate(), currentWorldType));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -318,7 +318,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
@@ -358,9 +358,9 @@ static void doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetter(const v8:
     static int privateTemplateUniqueKey;
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
 
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::GetTemplate(info.GetIsolate(), currentWorldType));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -370,7 +370,7 @@ static void doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetter(const v8:
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
@@ -410,9 +410,9 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
     static int privateTemplateUniqueKey;
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
 
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::GetTemplate(info.GetIsolate(), currentWorldType));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -422,7 +422,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&V8TestInterfaceCheckSecurity::wrapperTypeInfo, currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
@@ -445,7 +445,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetterCallbac
 
 static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
@@ -509,7 +509,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceCheckSecurityTem
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestInterfaceCheckSecurity::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestInterfaceCheckSecurity::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -519,7 +519,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceCheckSecurity::GetTemplate(v8::I
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfaceCheckSecurityTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestInterfaceCheckSecurityTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

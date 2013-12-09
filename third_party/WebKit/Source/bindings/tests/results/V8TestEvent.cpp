@@ -66,7 +66,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestEvent* object)
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestEvent::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestEvent::GetTemplate, V8TestEvent::derefObject, 0, 0, 0, V8TestEvent::installPerContextEnabledMethods, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestEvent::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestEvent::domTemplate, V8TestEvent::derefObject, 0, 0, 0, V8TestEvent::installPerContextEnabledMethods, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace TestEventV8Internal {
 
@@ -79,7 +79,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTemplate(v8::Handle<
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestEvent", V8Event::GetTemplate(isolate, currentWorldType), V8TestEvent::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestEvent", V8Event::domTemplate(isolate, currentWorldType), V8TestEvent::internalFieldCount,
         0, 0,
         0, 0,
         0, 0,
@@ -95,7 +95,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTemplate(v8::Handle<
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestEvent::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestEvent::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -105,7 +105,7 @@ v8::Handle<v8::FunctionTemplate> V8TestEvent::GetTemplate(v8::Isolate* isolate, 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestEventTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestEventTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

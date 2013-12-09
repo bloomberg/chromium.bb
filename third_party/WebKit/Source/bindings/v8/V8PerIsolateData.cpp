@@ -117,9 +117,9 @@ void V8PerIsolateData::setPrivateTemplate(WrapperWorldType currentWorldType, voi
     templateMap(currentWorldType).add(privatePointer, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::rawTemplate(const WrapperTypeInfo* info, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::rawDOMTemplate(const WrapperTypeInfo* info, WrapperWorldType currentWorldType)
 {
-    TemplateMap& templates = rawTemplateMap(currentWorldType);
+    TemplateMap& templates = rawDOMTemplateMap(currentWorldType);
     TemplateMap::iterator result = templates.find(info);
     if (result != templates.end())
         return result->value.newLocal(m_isolate);
@@ -141,7 +141,7 @@ v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, WrapperWorldType currentWorldType)
 {
-    TemplateMap& templates = rawTemplateMap(currentWorldType);
+    TemplateMap& templates = rawDOMTemplateMap(currentWorldType);
     TemplateMap::iterator result = templates.find(info);
     if (result == templates.end())
         return false;

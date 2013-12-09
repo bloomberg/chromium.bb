@@ -457,10 +457,10 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 {
     v8::Handle<v8::Object> global = context->Global();
     ASSERT(!global.IsEmpty());
-    v8::Handle<v8::Object> window = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), MainWorld));
+    v8::Handle<v8::Object> window = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), MainWorld));
     if (!window.IsEmpty())
         return V8Window::toNative(window);
-    window = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
+    window = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), IsolatedWorld));
     ASSERT(!window.IsEmpty());
     return V8Window::toNative(window);
 }
@@ -468,13 +468,13 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
 {
     v8::Handle<v8::Object> global = context->Global();
-    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), MainWorld));
+    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), MainWorld));
     if (!windowWrapper.IsEmpty())
         return V8Window::toNative(windowWrapper)->executionContext();
-    windowWrapper = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
+    windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), IsolatedWorld));
     if (!windowWrapper.IsEmpty())
         return V8Window::toNative(windowWrapper)->executionContext();
-    v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::GetTemplate(context->GetIsolate(), WorkerWorld));
+    v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::domTemplate(context->GetIsolate(), WorkerWorld));
     if (!workerWrapper.IsEmpty())
         return V8WorkerGlobalScope::toNative(workerWrapper)->executionContext();
     // FIXME: Is this line of code reachable?

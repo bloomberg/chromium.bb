@@ -100,7 +100,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestObj* object)
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::GetTemplate, V8TestObject::derefObject, 0, V8TestObject::toEventTarget, 0, V8TestObject::installPerContextEnabledMethods, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::domTemplate, V8TestObject::derefObject, 0, V8TestObject::toEventTarget, 0, V8TestObject::installPerContextEnabledMethods, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace TestObjV8Internal {
 
@@ -5232,7 +5232,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestObject", V8EventTarget::GetTemplate(isolate, currentWorldType), V8TestObject::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestObject", V8EventTarget::domTemplate(isolate, currentWorldType), V8TestObject::internalFieldCount,
         V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes),
         V8TestObjectAccessors, WTF_ARRAY_LENGTH(V8TestObjectAccessors),
         V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods),
@@ -5259,25 +5259,25 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
 
     // Custom Signature 'voidMethodWithArgs'
     const int voidMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> voidMethodWithArgsArgv[voidMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> voidMethodWithArgsArgv[voidMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, voidMethodWithArgsArgc, voidMethodWithArgsArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::voidMethodWithArgsMethodCallback, v8Undefined(), voidMethodWithArgsSignature, 3));
 
     // Custom Signature 'longMethodWithArgs'
     const int longMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> longMethodWithArgsArgv[longMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> longMethodWithArgsArgv[longMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> longMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, longMethodWithArgsArgc, longMethodWithArgsArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "longMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::longMethodWithArgsMethodCallback, v8Undefined(), longMethodWithArgsSignature, 3));
 
     // Custom Signature 'objMethodWithArgs'
     const int objMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> objMethodWithArgsArgv[objMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> objMethodWithArgsArgv[objMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> objMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, objMethodWithArgsArgc, objMethodWithArgsArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "objMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature, 3));
 
     // Custom Signature 'methodThatRequiresAllArgsAndThrows'
     const int methodThatRequiresAllArgsAndThrowsArgc = 2;
-    v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> methodThatRequiresAllArgsAndThrowsSignature = v8::Signature::New(isolate, functionTemplate, methodThatRequiresAllArgsAndThrowsArgc, methodThatRequiresAllArgsAndThrowsArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "methodThatRequiresAllArgsAndThrows", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature, 2));
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "staticMethodWithCallbackAndOptionalArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
@@ -5290,31 +5290,31 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
 
     // Custom Signature 'domStringListFunction'
     const int domStringListFunctionArgc = 1;
-    v8::Handle<v8::FunctionTemplate> domStringListFunctionArgv[domStringListFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMStringList::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> domStringListFunctionArgv[domStringListFunctionArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8DOMStringList::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> domStringListFunctionSignature = v8::Signature::New(isolate, functionTemplate, domStringListFunctionArgc, domStringListFunctionArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "domStringListFunction", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::domStringListFunctionMethodCallback, v8Undefined(), domStringListFunctionSignature, 1));
 
     // Custom Signature 'convert1'
     const int convert1Argc = 1;
-    v8::Handle<v8::FunctionTemplate> convert1Argv[convert1Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> convert1Argv[convert1Argc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> convert1Signature = v8::Signature::New(isolate, functionTemplate, convert1Argc, convert1Argv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "convert1", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::convert1MethodCallback, v8Undefined(), convert1Signature, 1));
 
     // Custom Signature 'convert2'
     const int convert2Argc = 1;
-    v8::Handle<v8::FunctionTemplate> convert2Argv[convert2Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> convert2Argv[convert2Argc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> convert2Signature = v8::Signature::New(isolate, functionTemplate, convert2Argc, convert2Argv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "convert2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::convert2MethodCallback, v8Undefined(), convert2Signature, 1));
 
     // Custom Signature 'svgPointMethod'
     const int svgPointMethodArgc = 2;
-    v8::Handle<v8::FunctionTemplate> svgPointMethodArgv[svgPointMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8SVGPoint::wrapperTypeInfo, currentWorldType), v8::Handle<v8::FunctionTemplate>() };
+    v8::Handle<v8::FunctionTemplate> svgPointMethodArgv[svgPointMethodArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8SVGPoint::wrapperTypeInfo, currentWorldType), v8::Handle<v8::FunctionTemplate>() };
     v8::Handle<v8::Signature> svgPointMethodSignature = v8::Signature::New(isolate, functionTemplate, svgPointMethodArgc, svgPointMethodArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "svgPointMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::svgPointMethodMethodCallback, v8Undefined(), svgPointMethodSignature, 2));
 
     // Custom Signature 'variadicNodeMethod'
     const int variadicNodeMethodArgc = 2;
-    v8::Handle<v8::FunctionTemplate> variadicNodeMethodArgv[variadicNodeMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType), V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::FunctionTemplate> variadicNodeMethodArgv[variadicNodeMethodArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8Node::wrapperTypeInfo, currentWorldType), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8Node::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(isolate, functionTemplate, variadicNodeMethodArgc, variadicNodeMethodArgv);
     prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "variadicNodeMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature, 2));
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "deprecatedStaticMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
@@ -5329,7 +5329,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestObject::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestObject::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -5339,7 +5339,7 @@ v8::Handle<v8::FunctionTemplate> V8TestObject::GetTemplate(v8::Isolate* isolate,
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestObjectTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestObjectTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
@@ -5369,7 +5369,7 @@ void V8TestObject::installPerContextEnabledProperties(v8::Handle<v8::Object> ins
 void V8TestObject::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
     UNUSED_PARAM(prototypeTemplate);
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, GetTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());

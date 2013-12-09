@@ -318,7 +318,7 @@ bool Dictionary::get(const String& key, RefPtr<DOMWindow>& value) const
     value = 0;
     if (v8Value->IsObject()) {
         v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
-        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::GetTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
+        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::domTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
         if (!window.IsEmpty())
             value = V8Window::toNative(window);
     }
@@ -471,7 +471,7 @@ bool Dictionary::get(const String& key, RefPtr<TrackBase>& value) const
 
         // FIXME: this will need to be changed so it can also return an AudioTrack or a VideoTrack once
         // we add them.
-        v8::Handle<v8::Object> track = wrapper->FindInstanceInPrototypeChain(V8TextTrack::GetTemplate(m_isolate, worldType(m_isolate)));
+        v8::Handle<v8::Object> track = wrapper->FindInstanceInPrototypeChain(V8TextTrack::domTemplate(m_isolate, worldType(m_isolate)));
         if (!track.IsEmpty())
             source = V8TextTrack::toNative(track);
     }
@@ -538,7 +538,7 @@ bool Dictionary::get(const String& key, RefPtr<EventTarget>& value) const
     // exists on a prototype chain of v8Value.
     if (v8Value->IsObject()) {
         v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
-        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::GetTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
+        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::domTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
         if (!window.IsEmpty()) {
             value = toWrapperTypeInfo(window)->toEventTarget(window);
             return true;
@@ -666,7 +666,7 @@ bool Dictionary::get(const String& key, RefPtr<DOMError>& value) const
     DOMError* error = 0;
     if (v8Value->IsObject()) {
         v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
-        v8::Handle<v8::Object> domError = wrapper->FindInstanceInPrototypeChain(V8DOMError::GetTemplate(m_isolate, worldType(m_isolate)));
+        v8::Handle<v8::Object> domError = wrapper->FindInstanceInPrototypeChain(V8DOMError::domTemplate(m_isolate, worldType(m_isolate)));
         if (!domError.IsEmpty())
             error = V8DOMError::toNative(domError);
     }

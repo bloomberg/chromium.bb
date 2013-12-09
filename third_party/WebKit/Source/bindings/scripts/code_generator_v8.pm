@@ -716,7 +716,7 @@ sub GenerateHeader
 
 class V8${nativeType}Constructor {
 public:
-    static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
+    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*, WrapperWorldType);
     static const WrapperTypeInfo wrapperTypeInfo;
 };
 END
@@ -728,7 +728,7 @@ END
     $header{classPublic}->add(<<END);
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool hasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
+    static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*, WrapperWorldType);
     static ${nativeType}* toNative(v8::Handle<v8::Object> object)
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
@@ -1216,7 +1216,7 @@ sub GenerateDomainSafeFunctionGetter
     my $funcName = $function->name;
 
     my $functionLength = GetFunctionLength($function);
-    my $signature = "v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&" . $v8ClassName . "::wrapperTypeInfo, currentWorldType))";
+    my $signature = "v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&" . $v8ClassName . "::wrapperTypeInfo, currentWorldType))";
     if ($function->extendedAttributes->{"DoNotCheckSignature"}) {
         $signature = "v8::Local<v8::Signature>()";
     }
@@ -1233,7 +1233,7 @@ static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::Pro
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, $newTemplateParams, $functionLength);
 
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::GetTemplate(info.GetIsolate(), currentWorldType));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::domTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -1282,7 +1282,7 @@ sub GenerateDomainSafeFunctionSetter
     $implementation{nameSpaceInternal}->add(<<END);
 static void ${implClassName}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
@@ -1491,7 +1491,7 @@ END
         } else {
             # perform lookup first
             $code .= <<END;
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8ClassName}::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
 END
@@ -3058,7 +3058,7 @@ sub GenerateNamedConstructor
     }
 
     $implementation{nameSpaceWebCore}->add(<<END);
-const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}Constructor::domTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 END
 
@@ -3129,7 +3129,7 @@ END
     $implementation{nameSpaceWebCore}->add($code);
 
     $code = <<END;
-v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -3145,7 +3145,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isol
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(${v8ClassName}::internalFieldCount);
     result->SetClassName(v8::String::NewFromUtf8(isolate, "${implClassName}", v8::String::kInternalizedString));
-    result->Inherit(${v8ClassName}::GetTemplate(isolate, currentWorldType));
+    result->Inherit(${v8ClassName}::domTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 
     return scope.Escape(result);
@@ -4195,7 +4195,7 @@ sub GenerateImplementation
         my $parent = $interface->parent;
         AddToImplIncludes("V8${parent}.h");
         $parentClass = "V8" . $parent;
-        $parentClassTemplate = $parentClass . "::GetTemplate(isolate, currentWorldType)";
+        $parentClassTemplate = $parentClass . "::domTemplate(isolate, currentWorldType)";
     }
 
     my $parentClassInfo = $parentClass ? "&${parentClass}::wrapperTypeInfo" : "0";
@@ -4235,7 +4235,7 @@ END
         $implementation{nameSpaceWebCore}->addHeader($code);
     }
 
-    my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
+    my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}::domTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
     $code .= "$visitDOMWrapper, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
@@ -4630,7 +4630,7 @@ END
     $implementation{nameSpaceWebCore}->add($code);
 
     $implementation{nameSpaceWebCore}->add(<<END);
-v8::Handle<v8::FunctionTemplate> ${v8ClassName}::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> ${v8ClassName}::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -4640,7 +4640,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}::GetTemplate(v8::Isolate* isolat
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        Configure${v8ClassName}Template(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        Configure${v8ClassName}Template(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
@@ -4699,7 +4699,7 @@ void ${v8ClassName}::installPerContextEnabledMethods(v8::Handle<v8::Object> prot
 END
         # Define per-context enabled operations.
         $code .=  <<END;
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, GetTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
@@ -5546,7 +5546,7 @@ sub CreateCustomSignature
                 } else {
                     AddIncludesForType($type);
                 }
-                $code .= "V8PerIsolateData::from(isolate)->rawTemplate(&V8${type}::wrapperTypeInfo, currentWorldType)";
+                $code .= "V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8${type}::wrapperTypeInfo, currentWorldType)";
             }
         } else {
             $code .= "v8::Handle<v8::FunctionTemplate>()";

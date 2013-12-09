@@ -69,7 +69,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfacePythonIm
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfacePython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfacePython::GetTemplate, V8TestInterfacePython::derefObject, V8TestInterfacePython::toActiveDOMObject, 0, V8TestInterfacePython::visitDOMWrapper, V8TestInterfacePython::installPerContextEnabledMethods, &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfacePython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfacePython::domTemplate, V8TestInterfacePython::derefObject, V8TestInterfacePython::toActiveDOMObject, 0, V8TestInterfacePython::visitDOMWrapper, V8TestInterfacePython::installPerContextEnabledMethods, &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace TestInterfacePythonImplementationV8Internal {
 
@@ -93,9 +93,9 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePythonTemplate(v
 
     v8::Local<v8::Signature> defaultSignature;
     if (!RuntimeEnabledFeatures::featureNameEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", V8TestInterfaceEmpty::GetTemplate(isolate, currentWorldType), V8TestInterfacePython::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", V8TestInterfaceEmpty::domTemplate(isolate, currentWorldType), V8TestInterfacePython::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
     else
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfacePython", V8TestInterfaceEmpty::GetTemplate(isolate, currentWorldType), V8TestInterfacePython::internalFieldCount,
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfacePython", V8TestInterfaceEmpty::domTemplate(isolate, currentWorldType), V8TestInterfacePython::internalFieldCount,
             0, 0,
             0, 0,
             0, 0,
@@ -112,7 +112,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePythonTemplate(v
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestInterfacePython::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestInterfacePython::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -122,7 +122,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfacePython::GetTemplate(v8::Isolate*
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfacePythonTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestInterfacePythonTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
