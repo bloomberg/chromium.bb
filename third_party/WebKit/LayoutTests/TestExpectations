@@ -301,18 +301,7 @@ crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ Skip 
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ Skip ]
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ Skip ]
 
-crbug.com/324553 [ Mac ] virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
-crbug.com/324553 [ Mac ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ NeedsRebaseline ]
-crbug.com/324553 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-png-canvas.html [ NeedsRebaseline ]
-crbug.com/324553 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-png.html [ NeedsRebaseline ]
-crbug.com/324553 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ NeedsRebaseline ]
-crbug.com/324553 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg2.html [ NeedsRebaseline ]
-crbug.com/324553 fast/forms/button/button-disabled-blur.html [ NeedsRebaseline ]
 crbug.com/324553 http/tests/appcache/fallback.html [ NeedsRebaseline ]
-crbug.com/324553 inspector/console/console-external-array.html [ NeedsRebaseline ]
-crbug.com/324553 inspector/extensions/extensions-resources.html [ NeedsRebaseline ]
-crbug.com/324553 inspector/styles/media-using-same-url.html [ NeedsRebaseline ]
-crbug.com/324553 inspector/styles/pseudo-elements.html [ NeedsRebaseline ]
 crbug.com/324553 svg/W3C-SVG-1.1-SE/coords-units-03-b.svg [ NeedsRebaseline ]
 crbug.com/324553 svg/W3C-SVG-1.1/pservers-grad-08-b.svg [ NeedsRebaseline ]
 crbug.com/324553 fast/forms/input-baseline.html [ NeedsRebaseline ]
@@ -532,7 +521,7 @@ crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure P
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
-#crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
+crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/303444 virtual/legacy-animations-engine/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
 crbug.com/303444 virtual/legacy-animations-engine/animations/unsigned-underflow.html [ Timeout ]
@@ -545,7 +534,7 @@ crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
 
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
-#crbug.com/316145 [ XP ] fast/text/justify-ideograph-complex.html [ Failure Pass ]
+crbug.com/316145 [ XP ] fast/text/justify-ideograph-complex.html [ Failure Pass ]
 
 crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 
