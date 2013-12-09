@@ -6,6 +6,7 @@ package org.chromium.ui.gl;
 
 import android.graphics.SurfaceTexture;
 import android.os.Build;
+import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -16,6 +17,9 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("gfx")
 class SurfaceTexturePlatformWrapper {
+
+    private static final String TAG = "SurfaceTexturePlatformWrapper";
+
     @CalledByNative
     private static SurfaceTexture create(int textureId) {
         return new SurfaceTexture(textureId);
@@ -36,7 +40,11 @@ class SurfaceTexturePlatformWrapper {
 
     @CalledByNative
     private static void updateTexImage(SurfaceTexture surfaceTexture) {
-        surfaceTexture.updateTexImage();
+        try {
+            surfaceTexture.updateTexImage();
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Error calling updateTexImage", e);
+        }
     }
 
     @CalledByNative
