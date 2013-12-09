@@ -262,6 +262,8 @@ Status ParseChromeOptions(
         base::Bind(&ParseString, &capabilities->android_package);
     parser_map["androidProcess"] =
         base::Bind(&ParseString, &capabilities->android_process);
+    parser_map["androidUseRunningApp"] =
+        base::Bind(&ParseBoolean, &capabilities->android_use_running_app);
     parser_map["args"] = base::Bind(&ParseSwitches);
   } else if (is_existing) {
     parser_map["debuggerAddress"] = base::Bind(&ParseUseExistingBrowser);

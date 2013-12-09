@@ -102,17 +102,18 @@ TEST(Device, StartStopApp) {
   DeviceManager device_manager(&adb);
   scoped_ptr<Device> device1;
   ASSERT_TRUE(device_manager.AcquireDevice(&device1).IsOk());
-  ASSERT_TRUE(device1->StopApp().IsOk());
-  ASSERT_TRUE(device1->StartApp("a.chrome.package", "", "", "", 0).IsOk());
-  ASSERT_FALSE(device1->StartApp("a.chrome.package", "", "", "", 0).IsOk());
-  ASSERT_TRUE(device1->StopApp().IsOk());
-  ASSERT_FALSE(device1->StartApp(
-      "a.chrome.package", "an.activity", "", "", 0).IsOk());
-  ASSERT_FALSE(device1->StartApp("a.package", "", "", "", 0).IsOk());
-  ASSERT_TRUE(device1->StartApp("a.package", "an.activity", "", "", 0).IsOk());
-  ASSERT_TRUE(device1->StopApp().IsOk());
-  ASSERT_TRUE(device1->StopApp().IsOk());
-  ASSERT_TRUE(device1->StartApp(
-      "a.package", "an.activity", "a.process", "", 0).IsOk());
-  ASSERT_TRUE(device1->StopApp().IsOk());
+  ASSERT_TRUE(device1->TearDown().IsOk());
+  ASSERT_TRUE(device1->SetUp("a.chrome.package", "", "", "", false, 0).IsOk());
+  ASSERT_FALSE(device1->SetUp("a.chrome.package", "", "", "", false, 0).IsOk());
+  ASSERT_TRUE(device1->TearDown().IsOk());
+  ASSERT_FALSE(device1->SetUp(
+      "a.chrome.package", "an.activity", "", "", false, 0).IsOk());
+  ASSERT_FALSE(device1->SetUp("a.package", "", "", "", false, 0).IsOk());
+  ASSERT_TRUE(device1->SetUp(
+      "a.package", "an.activity", "", "", false, 0).IsOk());
+  ASSERT_TRUE(device1->TearDown().IsOk());
+  ASSERT_TRUE(device1->TearDown().IsOk());
+  ASSERT_TRUE(device1->SetUp(
+      "a.package", "an.activity", "a.process", "", false, 0).IsOk());
+  ASSERT_TRUE(device1->TearDown().IsOk());
 }

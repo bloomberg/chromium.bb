@@ -62,9 +62,9 @@ class ChromeDriver(object):
 
   def __init__(self, server_url, chrome_binary=None, android_package=None,
                android_activity=None, android_process=None,
-               chrome_switches=None, chrome_extensions=None,
-               chrome_log_path=None, debugger_address=None,
-               browser_log_level=None):
+               android_use_running_app=None, chrome_switches=None,
+               chrome_extensions=None, chrome_log_path=None,
+               debugger_address=None, browser_log_level=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -74,6 +74,8 @@ class ChromeDriver(object):
         options['androidActivity'] = android_activity
       if android_process:
         options['androidProcess'] = android_process
+      if android_use_running_app:
+        options['androidUseRunningApp'] = android_use_running_app
     elif chrome_binary:
       options['binary'] = chrome_binary
 

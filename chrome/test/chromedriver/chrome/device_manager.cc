@@ -27,11 +27,12 @@ Device::~Device() {
   release_callback_.Run();
 }
 
-Status Device::StartApp(const std::string& package,
-                        const std::string& activity,
-                        const std::string& process,
-                        const std::string& args,
-                        int port) {
+Status Device::SetUp(const std::string& package,
+                     const std::string& activity,
+                     const std::string& process,
+                     const std::string& args,
+                     bool use_running_app,
+                     int port) {
   if (!active_package_.empty())
     return Status(kUnknownError,
         active_package_ + " was launched and has not been quit");
@@ -40,13 +41,9 @@ Status Device::StartApp(const std::string& package,
   if (!status.IsOk())
     return status;
 
-  status = adb_->ClearAppData(serial_, package);
-  if (!status.IsOk())
-    return status;
-
   std::string known_activity;
-  std::string device_socket;
   std::string command_line_file;
+  std::string device_socket;
   std::string exec_name;
   if (package.compare("org.chromium.content_shell_apk") == 0) {
     known_activity = ".ContentShellActivity";
@@ -66,32 +63,49 @@ Status Device::StartApp(const std::string& package,
     exec_name = "chrome";
   }
 
-  if (!known_activity.empty()) {
-    if (!activity.empty() || !process.empty())
-      return Status(kUnknownError, "known package " + package +
-                    " does not accept activity/process");
-  } else if (activity.empty()) {
-    return Status(kUnknownError, "WebView apps require activity name");
-  }
-
-  if (!command_line_file.empty()) {
-    status = adb_->SetCommandLineFile(serial_, command_line_file, exec_name,
-                                      args);
+  if (!use_running_app) {
+    status = adb_->ClearAppData(serial_, package);
     if (!status.IsOk())
       return status;
+
+    if (!known_activity.empty()) {
+      if (!activity.empty() ||
+          !process.empty())
+        return Status(kUnknownError, "known package " + package +
+                      " does not accept activity/process");
+    } else if (activity.empty()) {
+      return Status(kUnknownError, "WebView apps require activity name");
+    }
+
+    if (!command_line_file.empty()) {
+      status = adb_->SetCommandLineFile(serial_, command_line_file, exec_name,
+                                        args);
+      if (!status.IsOk())
+        return status;
+    }
+
+    status = adb_->Launch(serial_, package,
+                          known_activity.empty() ? activity : known_activity);
+    if (!status.IsOk())
+      return status;
+
+    active_package_ = package;
   }
+  this->ForwardDevtoolsPort(package, process, device_socket, port);
 
-  status = adb_->Launch(serial_, package,
-                        known_activity.empty() ? activity : known_activity);
-  if (!status.IsOk())
-    return status;
-  active_package_ = package;
+  return status;
+}
 
+Status Device::ForwardDevtoolsPort(const std::string& package,
+                                   const std::string& process,
+                                   std::string& device_socket,
+                                   int port) {
   if (device_socket.empty()) {
     // Assume this is a WebView app.
     int pid;
-    status = adb_->GetPidByName(serial_, process.empty() ? package : process,
-                                &pid);
+    Status status = adb_->GetPidByName(serial_,
+                                       process.empty() ? package : process,
+                                       &pid);
     if (!status.IsOk()) {
       if (process.empty())
         status.AddDetails(
@@ -104,7 +118,7 @@ Status Device::StartApp(const std::string& package,
   return adb_->ForwardPort(serial_, port, device_socket);
 }
 
-Status Device::StopApp() {
+Status Device::TearDown() {
   if (!active_package_.empty()) {
     std::string response;
     Status status = adb_->ForceStop(serial_, active_package_);

@@ -360,12 +360,14 @@ Status LaunchAndroidChrome(
     switches.SetSwitch(kCommonSwitches[i]);
   switches.SetSwitch("disable-fre");
   switches.SetSwitch("enable-remote-debugging");
-  status = device->StartApp(capabilities.android_package,
-                            capabilities.android_activity,
-                            capabilities.android_process,
-                            switches.ToString(), port);
+  status = device->SetUp(capabilities.android_package,
+                         capabilities.android_activity,
+                         capabilities.android_process,
+                         switches.ToString(),
+                         capabilities.android_use_running_app,
+                         port);
   if (!status.IsOk()) {
-    device->StopApp();
+    device->TearDown();
     return status;
   }
 
