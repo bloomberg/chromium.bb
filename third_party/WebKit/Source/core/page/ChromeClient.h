@@ -32,7 +32,6 @@
 #include "core/platform/PopupMenuClient.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/style/RenderStyleConstants.h"
-#include "modules/webdatabase/DatabaseDetails.h"
 #include "platform/HostWindow.h"
 #include "platform/PopupMenu.h"
 #include "platform/graphics/GraphicsContext.h"

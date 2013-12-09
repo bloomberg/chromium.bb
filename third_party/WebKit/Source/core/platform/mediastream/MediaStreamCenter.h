@@ -32,7 +32,6 @@
 #ifndef MediaStreamCenter_h
 #define MediaStreamCenter_h
 
-#include "modules/mediastream/SourceInfo.h"
 #include "public/platform/WebMediaStreamCenterClient.h"
 #include "public/platform/WebVector.h"
 #include "wtf/OwnPtr.h"

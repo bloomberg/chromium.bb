@@ -26,8 +26,7 @@
 #include "config.h"
 #include "public/platform/WebSpeechSynthesisVoice.h"
 
-#include "modules/speech/SpeechRecognitionAlternative.h"
-#include "modules/speech/SpeechSynthesisVoice.h"
+#include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
