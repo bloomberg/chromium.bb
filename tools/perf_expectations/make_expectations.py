@@ -33,7 +33,7 @@ USAGE = ''
 
 def ReadFile(filename):
   try:
-    file = open(filename, 'r')
+    file = open(filename, 'rb')
   except IOError, e:
     print >> sys.stderr, ('I/O Error reading file %s(%s): %s' %
                           (filename, e.errno, e.strerror))
@@ -104,7 +104,7 @@ def GetRowDigest(rowdata, key):
 def WriteJson(filename, data, keys, calculate_sha1=True):
   """Write a list of |keys| in |data| to the file specified in |filename|."""
   try:
-    file = open(filename, 'w')
+    file = open(filename, 'wb')
   except IOError, e:
     print >> sys.stderr, ('I/O Error writing file %s(%s): %s' %
                           (filename, e.errno, e.strerror))
