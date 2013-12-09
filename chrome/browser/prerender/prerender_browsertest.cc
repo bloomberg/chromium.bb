@@ -1606,6 +1606,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 #elif defined(OS_LINUX)
 // http://crbug.com/306715
 #define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
+#else
+#define MAYBE_PrerenderDelayLoadPlugin PrerenderDelayLoadPlugin
 #endif
 // http://crbug.com/306715
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderDelayLoadPlugin) {
