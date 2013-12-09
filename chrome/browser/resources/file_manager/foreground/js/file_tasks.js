@@ -135,11 +135,11 @@ FileTasks.prototype.onTasks_ = function(tasks) {
  */
 FileTasks.knownExtensions_ = [
   'other', '.3ga', '.3gp', '.aac', '.alac', '.asf', '.avi', '.bmp', '.csv',
-  '.doc', '.docx', '.flac', '.gif', '.jpeg', '.jpg', '.log', '.m3u', '.m3u8',
-  '.m4a', '.m4v', '.mid', '.mkv', '.mov', '.mp3', '.mp4', '.mpg', '.odf',
-  '.odp', '.ods', '.odt', '.oga', '.ogg', '.ogv', '.pdf', '.png', '.ppt',
-  '.pptx', '.ra', '.ram', '.rar', '.rm', '.rtf', '.wav', '.webm', '.webp',
-  '.wma', '.wmv', '.xls', '.xlsx',
+  '.doc', '.docx', '.flac', '.gif', '.ico', '.jpeg', '.jpg', '.log', '.m3u',
+  '.m3u8', '.m4a', '.m4v', '.mid', '.mkv', '.mov', '.mp3', '.mp4', '.mpg',
+  '.odf', '.odp', '.ods', '.odt', '.oga', '.ogg', '.ogv', '.pdf', '.png',
+  '.ppt', '.pptx', '.ra', '.ram', '.rar', '.rm', '.rtf', '.wav', '.webm',
+  '.webp', '.wma', '.wmv', '.xls', '.xlsx',
 ];
 
 /**

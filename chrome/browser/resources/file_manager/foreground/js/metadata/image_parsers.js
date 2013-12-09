@@ -165,3 +165,34 @@ WebpParser.prototype.parseHeader = function(metadata, br) {
 };
 
 MetadataDispatcher.registerParserClass(WebpParser);
+
+/**
+ * Parser for the header of .ico icon files.
+ * @param {MetadataDispatcher} parent Parent metadata dispatcher object.
+ * @constructor
+ * @extends SimpleImageParser
+ */
+function IcoParser(parent) {
+  SimpleImageParser.call(this, parent, 'ico', /\.ico$/i, 8);
+}
+
+IcoParser.prototype = {__proto__: SimpleImageParser.prototype};
+
+/**
+ * Parse the binary data as a ico header and stores to metadata.
+ * @param {Object} metadata Dictionary to store the parser metadata.
+ * @param {ByteReader} byteReader Reader for header binary data.
+ */
+IcoParser.prototype.parseHeader = function(metadata, byteReader) {
+  byteReader.setByteOrder(ByteReader.LITTLE_ENDIAN);
+
+  var signature = byteReader.readString(4);
+  if (signature !== '\x00\x00\x00\x01')
+    throw new Error('Invalid ICO signature: ' + signature);
+
+  byteReader.seek(2);
+  metadata.width = byteReader.readScalar(1);
+  metadata.height = byteReader.readScalar(1);
+};
+
+MetadataDispatcher.registerParserClass(IcoParser);

@@ -46,6 +46,7 @@ const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
   FILE_PATH_LITERAL(".swf"),
 #endif
   FILE_PATH_LITERAL(".bmp"),
+  FILE_PATH_LITERAL(".ico"),
   FILE_PATH_LITERAL(".jpg"),
   FILE_PATH_LITERAL(".jpeg"),
   FILE_PATH_LITERAL(".png"),

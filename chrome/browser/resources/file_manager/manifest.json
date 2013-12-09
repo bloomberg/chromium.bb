@@ -122,6 +122,7 @@
         // Image formats
         "filesystem:*.bmp",
         "filesystem:*.gif",
+        "filesystem:*.ico",
         "filesystem:*.jpg",
         "filesystem:*.jpeg",
         "filesystem:*.png",
