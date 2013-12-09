@@ -96,15 +96,15 @@ bool PdfMetafileSkia::FinishDocument() {
 
   data_->current_page_.clear();
 
-  int font_counts[SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1];
+  int font_counts[SkAdvancedTypefaceMetrics::kOther_Font + 2];
   data_->pdf_doc_.getCountOfFontTypes(font_counts);
   for (int type = 0;
-       type <= SkAdvancedTypefaceMetrics::kNotEmbeddable_Font;
+       type <= SkAdvancedTypefaceMetrics::kOther_Font + 1;
        type++) {
     for (int count = 0; count < font_counts[type]; count++) {
       UMA_HISTOGRAM_ENUMERATION(
           "PrintPreview.FontType", type,
-          SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1);
+          SkAdvancedTypefaceMetrics::kOther_Font + 2);
     }
   }
 
