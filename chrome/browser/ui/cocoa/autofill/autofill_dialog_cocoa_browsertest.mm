@@ -4,6 +4,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -69,6 +71,11 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   AutofillDialogCocoaBrowserTest() : InProcessBrowserTest() {}
 
   virtual ~AutofillDialogCocoaBrowserTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableInteractiveAutocomplete);
+  }
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Ensure Mac OS X does not pop up a modal dialog for the Address Book.

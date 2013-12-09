@@ -266,8 +266,13 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   }
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
+#if defined(OS_MACOSX)
+  bool enable_autofill = command_line.HasSwitch(
+      autofill::switches::kEnableInteractiveAutocomplete);
+#else
   bool enable_autofill = !command_line.HasSwitch(
       autofill::switches::kDisableInteractiveAutocomplete);
+#endif
   WebRuntimeFeatures::enableRequestAutocomplete(
       enable_autofill ||
       command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures));
