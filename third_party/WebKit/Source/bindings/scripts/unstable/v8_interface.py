@@ -107,9 +107,14 @@ def generate_interface(interface):
 
     # [EventConstructor]
     has_event_constructor = 'EventConstructor' in extended_attributes
+    has_any_type_attributes = any(attribute
+                                  for attribute in interface.attributes
+                                  if attribute.idl_type == 'any')
     if has_event_constructor:
         includes.update(['bindings/v8/Dictionary.h',
                          'bindings/v8/V8ObjectConstructor.h'])
+        if has_any_type_attributes:
+            includes.add('bindings/v8/SerializedScriptValue.h')
 
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
@@ -121,6 +126,7 @@ def generate_interface(interface):
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
         'has_event_constructor': has_event_constructor,
+        'has_any_type_attributes': has_any_type_attributes,
         'has_visit_dom_wrapper': (
             # [Custom=Wrap], [GenerateVisitDOMWrapper]
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or

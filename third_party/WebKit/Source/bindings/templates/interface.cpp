@@ -169,6 +169,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
+    {% for attribute in attributes if attribute.idl_type == 'any' %}
+    v8::Local<v8::Value> {{attribute.name}};
+    {% endfor %}
     {{cpp_class}}Init eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
@@ -177,8 +180,27 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
+        {# Store attributes of type |any| on the wrapper to avoid leaking them
+           between isolated worlds. #}
+        {% for attribute in attributes if attribute.idl_type == 'any' %}
+        options.get("{{attribute.name}}", {{attribute.name}});
+        if (!{{attribute.name}}.IsEmpty())
+            info.Holder()->SetHiddenValue(V8HiddenPropertyName::{{attribute.name}}(info.GetIsolate()), {{attribute.name}});
+        {% endfor %}
     }
     RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
+    {% if has_any_type_attributes %}
+    {# If we're in an isolated world, create a SerializedScriptValue and store
+       it in the event for later cloning if the property is accessed from
+       another world. The main world case is handled lazily (in custom code). #}
+    if (isolatedWorldForIsolate(info.GetIsolate())) {
+        {% for attribute in attributes if attribute.idl_type == 'any' %}
+        if (!{{attribute.name}}.IsEmpty())
+            event->{{attribute.set_serialized_script_value}}(SerializedScriptValue::createAndSwallowExceptions({{attribute.name}}, info.GetIsolate()));
+        {% endfor %}
+    }
+
+    {% endif %}
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(event.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
@@ -267,7 +289,8 @@ bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& opt
 
     {% endif %}
     {% for attribute in attributes
-           if attribute.is_initialized_by_event_constructor %}
+           if (attribute.is_initialized_by_event_constructor and
+               not attribute.idl_type == 'any')%}
     {# FIXME: implement [ImplementedAs] #}
     {# FIXME: implement [DeprecateAs] #}
     {# FIXME: special-case any #}

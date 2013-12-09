@@ -114,6 +114,7 @@ def generate_attribute(interface, attribute):
         'name': attribute.name,
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'property_attributes': property_attributes(attribute),
+        'set_serialized_script_value': 'setSerialized' + capitalize(attribute.name),  # [EventConstructor] on interface
         'setter_callback': setter_callback_name(interface, attribute),
         'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]

@@ -36,6 +36,8 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
@@ -71,29 +73,42 @@ namespace TestInterfaceEventConstructorV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceEventConstructor* imp = V8TestInterfaceEventConstructor::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->attr1(), info.GetIsolate());
+    v8SetReturnValueString(info, imp->readonlyStringAttribute(), info.GetIsolate());
 }
 
-static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceEventConstructorV8Internal::attr1AttributeGetter(info);
+    TestInterfaceEventConstructorV8Internal::readonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void attr2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void InitializedByEventConstructorReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceEventConstructor* imp = V8TestInterfaceEventConstructor::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->attr2(), info.GetIsolate());
+    v8SetReturnValueString(info, imp->initializedByEventConstructorReadonlyStringAttribute(), info.GetIsolate());
 }
 
-static void attr2AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void InitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceEventConstructorV8Internal::attr2AttributeGetter(info);
+    TestInterfaceEventConstructorV8Internal::InitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void InitializedByEventConstructorReadonlyAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceEventConstructor* imp = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8SetReturnValue(info, imp->initializedByEventConstructorReadonlyAnyAttribute().v8Value());
+}
+
+static void InitializedByEventConstructorReadonlyAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfaceEventConstructorV8Internal::InitializedByEventConstructorReadonlyAnyAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -105,6 +120,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
+    v8::Local<v8::Value> InitializedByEventConstructorReadonlyAnyAttribute;
     TestInterfaceEventConstructorInit eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
@@ -113,8 +129,16 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
             exceptionState.throwIfNeeded();
             return;
         }
+        options.get("InitializedByEventConstructorReadonlyAnyAttribute", InitializedByEventConstructorReadonlyAnyAttribute);
+        if (!InitializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
+            info.Holder()->SetHiddenValue(V8HiddenPropertyName::InitializedByEventConstructorReadonlyAnyAttribute(info.GetIsolate()), InitializedByEventConstructorReadonlyAnyAttribute);
     }
     RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit);
+    if (isolatedWorldForIsolate(info.GetIsolate())) {
+        if (!InitializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
+            event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(InitializedByEventConstructorReadonlyAnyAttribute, info.GetIsolate()));
+    }
+
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventConstructor>(event.release(), &V8TestInterfaceEventConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
@@ -123,8 +147,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 } // namespace TestInterfaceEventConstructorV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceEventConstructorAttributes[] = {
-    {"attr1", TestInterfaceEventConstructorV8Internal::attr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"attr2", TestInterfaceEventConstructorV8Internal::attr2AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyStringAttribute", TestInterfaceEventConstructorV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"InitializedByEventConstructorReadonlyStringAttribute", TestInterfaceEventConstructorV8Internal::InitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"InitializedByEventConstructorReadonlyAnyAttribute", TestInterfaceEventConstructorV8Internal::InitializedByEventConstructorReadonlyAnyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
@@ -133,7 +158,7 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
     if (!initializeEvent(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName))
         return false;
 
-    if (!options.convert(conversionContext, "attr2", eventInit.attr2))
+    if (!options.convert(conversionContext, "InitializedByEventConstructorReadonlyStringAttribute", eventInit.InitializedByEventConstructorReadonlyStringAttribute))
         return false;
     return true;
 }

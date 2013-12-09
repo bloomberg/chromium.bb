@@ -29,7 +29,7 @@
 [
     EventConstructor,
 ] interface TestInterfaceEventConstructor : Event {
-    // Attributes
-    readonly attribute DOMString attr1;
-    [InitializedByEventConstructor] readonly attribute DOMString attr2;
+    readonly attribute DOMString readonlyStringAttribute;
+    [InitializedByEventConstructor] readonly attribute DOMString InitializedByEventConstructorReadonlyStringAttribute;
+    [InitializedByEventConstructor] readonly attribute any InitializedByEventConstructorReadonlyAnyAttribute;
 };
