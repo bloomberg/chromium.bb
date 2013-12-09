@@ -27,6 +27,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
+from chromite.lib import timeout_util
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
@@ -34,6 +35,7 @@ import mock
 
 # pylint: disable=W0212
 _BUFSIZE = 10**4
+_EXIT_TIMEOUT = 30
 _NUM_WRITES = 100
 _NUM_THREADS = 50
 _TOTAL_BYTES = _NUM_THREADS * _NUM_WRITES * _BUFSIZE
@@ -121,6 +123,13 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
     self.tempfile = None
 
   def tearDown(self):
+    # Wait for children to exit.
+    try:
+      timeout_util.WaitForReturnValue([[]], multiprocessing.active_children,
+                                      timeout=_EXIT_TIMEOUT)
+    except timeout_util.TimeoutError:
+      pass
+
     # Complain if there are any children left over.
     active_children = multiprocessing.active_children()
     for child in active_children:
@@ -421,8 +430,8 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
 
 if __name__ == '__main__':
   # Set timeouts small so that if the unit test hangs, it won't hang for long.
-  parallel._BackgroundTask.STARTUP_TIMEOUT = 5
-  parallel._BackgroundTask.EXIT_TIMEOUT = 5
+  parallel._BackgroundTask.STARTUP_TIMEOUT = _EXIT_TIMEOUT
+  parallel._BackgroundTask.EXIT_TIMEOUT = _EXIT_TIMEOUT
 
   # Run the tests.
   cros_test_lib.main(level=logging.INFO)
