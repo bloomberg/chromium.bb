@@ -56,13 +56,16 @@ fullscreen_handler(struct window *window, void *data);
 static void
 redraw_handler(struct widget *widget, void *data);
 
+/* Iff parent_window is set, the new window will be transient. */
 static struct window *
-new_window(struct stacking *stacking)
+new_window(struct stacking *stacking, struct window *parent_window)
 {
 	struct window *new_window;
 	struct widget *new_widget;
 
 	new_window = window_create(stacking->display);
+	window_set_transient_for(new_window, parent_window);
+
 	new_widget = window_frame_create(new_window, new_window);
 
 	window_set_title(new_window, "Stacking Test");
@@ -141,7 +144,8 @@ key_handler(struct window *window,
 		break;
 
 	case XKB_KEY_n:
-		new_window(stacking);
+		/* New top-level window. */
+		new_window(stacking, NULL);
 		break;
 
 	case XKB_KEY_p:
@@ -150,6 +154,11 @@ key_handler(struct window *window,
 
 	case XKB_KEY_q:
 		exit (0);
+		break;
+
+	case XKB_KEY_t:
+		/* New transient window. */
+		new_window(stacking, window);
 		break;
 
 	default:
@@ -221,7 +230,9 @@ draw_string(cairo_t *cr,
 static void
 set_window_background_colour(cairo_t *cr, struct window *window)
 {
-	if (window_is_maximized(window))
+	if (window_get_transient_for(window))
+		cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.4);
+	else if (window_is_maximized(window))
 		cairo_set_source_rgba(cr, 1.0, 1.0, 0.0, 0.6);
 	else if (window_is_fullscreen(window))
 		cairo_set_source_rgba(cr, 0.0, 1.0, 1.0, 0.6);
@@ -260,11 +271,12 @@ redraw_handler(struct widget *widget, void *data)
 	            "Window: %p\n"
 	            "Fullscreen? %u\n"
 	            "Maximized? %u\n"
+	            "Transient? %u\n"
 	            "Keys: (f)ullscreen, (m)aximize,\n"
 	            "      (n)ew window, (p)opup,\n"
-	            "      (q)uit\n",
+	            "      (q)uit, (t)ransient window\n",
 	            window, window_is_fullscreen(window),
-	            window_is_maximized(window));
+	            window_is_maximized(window), window_get_transient_for(window) ? 1 : 0);
 
 	cairo_destroy(cr);
 }
@@ -288,7 +300,7 @@ main(int argc, char *argv[])
 
 	display_set_user_data(stacking.display, &stacking);
 
-	stacking.root_window = new_window(&stacking);
+	stacking.root_window = new_window(&stacking, NULL);
 
 	display_run(stacking.display);
 
