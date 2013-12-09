@@ -219,9 +219,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     recovered_context_ = true;
   }
 
-  virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(9u, test_case_);
-  }
+  virtual void AfterTest() OVERRIDE { EXPECT_EQ(9u, test_case_); }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     // If the last frame had a context loss, then we'll commit again to

@@ -90,7 +90,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
              int highp_threshold_min);
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
-  void Initialize();
   void InitializeGrContext();
 
   const gfx::QuadF& SharedGeometryQuad() const { return shared_geometry_quad_; }

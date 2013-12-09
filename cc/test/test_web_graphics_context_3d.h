@@ -165,9 +165,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     return test_capabilities_;
   }
 
-  void set_context_lost(bool context_lost) {
-    context_lost_ = context_lost;
-  }
+  void set_context_lost(bool context_lost) { context_lost_ = context_lost; }
   void set_times_bind_texture_succeeds(int times) {
     times_bind_texture_succeeds_ = times;
   }

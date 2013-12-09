@@ -208,7 +208,6 @@ class FakeRendererGL : public GLRenderer {
   // GLRenderer methods.
 
   // Changing visibility to public.
-  using GLRenderer::Initialize;
   using GLRenderer::IsBackbufferDiscarded;
   using GLRenderer::DoDrawQuad;
   using GLRenderer::BeginDrawingFrame;
@@ -233,8 +232,6 @@ class GLRendererTest : public testing::Test {
                                                    output_surface_.get(),
                                                    resource_provider_.get()));
   }
-
-  virtual void SetUp() { renderer_->Initialize(); }
 
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
 
@@ -264,7 +261,6 @@ class GLRendererShaderTest : public testing::Test {
                                        &settings_,
                                        output_surface_.get(),
                                        resource_provider_.get()));
-    renderer_->Initialize();
   }
 
   void TestRenderPassProgram(TexCoordPrecision precision) {
@@ -578,8 +574,6 @@ TEST(GLRendererTest2, InitializationDoesNotMakeSynchronousCalls) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-
-  renderer.Initialize();
 }
 
 class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
@@ -614,8 +608,6 @@ TEST(GLRendererTest2, InitializationWithQuicklyLostContextDoesNotAssert) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-
-  renderer.Initialize();
 }
 
 class ClearCountingContext : public TestWebGraphicsContext3D {
@@ -651,8 +643,6 @@ TEST(GLRendererTest2, OpaqueBackground) {
                           resource_provider.get());
 
   renderer_client.root_render_pass()->has_transparent_background = false;
-
-  renderer.Initialize();
 
   // On DEBUG builds, render passes with opaque background clear to blue to
   // easily see regions that were not drawn on the screen.
@@ -690,8 +680,6 @@ TEST(GLRendererTest2, TransparentBackground) {
 
   renderer_client.root_render_pass()->has_transparent_background = true;
 
-  renderer.Initialize();
-
   EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _))
       .Times(1);
   EXPECT_CALL(*context, clear(_)).Times(1);
@@ -719,8 +707,6 @@ TEST(GLRendererTest2, OffscreenOutputSurface) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-
-  renderer.Initialize();
 
   EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, _, _))
       .With(Args<2, 1>(ElementsAre(GL_COLOR_ATTACHMENT0)))
@@ -800,8 +786,6 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
                           output_surface.get(),
                           resource_provider.get());
 
-  renderer.Initialize();
-
   // Ensure that the call to SetSurfaceVisible is the last call issue to the
   // GPU process, after glFlush is called, and after the RendererClient's
   // SetManagedMemoryPolicy is called. Plumb this tracking between both the
@@ -862,7 +846,6 @@ TEST(GLRendererTest2, ActiveTextureState) {
 
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
-  renderer.Initialize();
 
   cc::RenderPass::Id id(1, 1);
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
@@ -948,7 +931,6 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  renderer.Initialize();
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport());
   ScopedPtrVector<RenderPass>& render_passes =
@@ -1034,7 +1016,6 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  renderer.Initialize();
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport());
@@ -1123,7 +1104,6 @@ TEST(GLRendererTest2, NoDiscardOnPartialUpdates) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  renderer.Initialize();
   EXPECT_TRUE(renderer.Capabilities().using_partial_swap);
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport());
@@ -1301,7 +1281,6 @@ TEST(GLRendererTest2, ScissorAndViewportWithinNonreshapableSurface) {
                           &settings,
                           output_surface.get(),
                           resource_provider.get());
-  renderer.Initialize();
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
 
   gfx::Rect viewport_rect(renderer_client.DeviceViewport().size());
@@ -1648,7 +1627,6 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
     renderer_.reset(new FakeRendererGL(
         this, &settings_, &output_surface_, resource_provider_.get()));
-    renderer_->Initialize();
   }
 
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }

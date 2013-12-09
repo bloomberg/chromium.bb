@@ -150,14 +150,12 @@ scoped_ptr<GLRenderer> GLRenderer::Create(
     ResourceProvider* resource_provider,
     TextureMailboxDeleter* texture_mailbox_deleter,
     int highp_threshold_min) {
-  scoped_ptr<GLRenderer> renderer(new GLRenderer(client,
-                                                 settings,
-                                                 output_surface,
-                                                 resource_provider,
-                                                 texture_mailbox_deleter,
-                                                 highp_threshold_min));
-  renderer->Initialize();
-  return renderer.Pass();
+  return make_scoped_ptr(new GLRenderer(client,
+                                        settings,
+                                        output_surface,
+                                        resource_provider,
+                                        texture_mailbox_deleter,
+                                        highp_threshold_min));
 }
 
 GLRenderer::GLRenderer(RendererClient* client,
@@ -184,9 +182,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       on_demand_tile_raster_resource_id_(0) {
   DCHECK(context_);
   DCHECK(context_support_);
-}
 
-void GLRenderer::Initialize() {
   ContextProvider::Capabilities context_caps =
     output_surface_->context_provider()->ContextCapabilities();
 
