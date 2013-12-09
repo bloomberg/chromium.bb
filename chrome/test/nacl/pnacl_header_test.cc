@@ -25,7 +25,7 @@ PnaclHeaderTest::PnaclHeaderTest() : noncors_loads_(0), cors_loads_(0) {}
 
 PnaclHeaderTest::~PnaclHeaderTest() {}
 
-void PnaclHeaderTest::SetUp() {
+void PnaclHeaderTest::StartServer() {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // For most requests, just serve files, but register a special test handler
@@ -35,19 +35,12 @@ void PnaclHeaderTest::SetUp() {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&PnaclHeaderTest::WatchForPexeFetch, base::Unretained(this)));
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-  noncors_loads_ = 0;
-  cors_loads_ = 0;
-  InProcessBrowserTest::SetUp();
-}
-
-void PnaclHeaderTest::TearDown() {
-  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-  InProcessBrowserTest::TearDown();
 }
 
 void PnaclHeaderTest::RunLoadTest(const std::string& url,
                                   int expected_noncors,
                                   int expected_cors) {
+  StartServer();
   LoadTestMessageHandler handler;
   JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
@@ -105,8 +98,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   return http_response.PassAs<HttpResponse>();
 }
 
-// Disabled: http://crbug.com/315328.
-IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, DISABLED_TestHasPnaclHeader) {
+IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, TestHasPnaclHeader) {
   // Load 2 pexes, one same origin and one cross orgin.
   RunLoadTest("/nacl/pnacl_request_header/pnacl_request_header.html", 1, 1);
 }

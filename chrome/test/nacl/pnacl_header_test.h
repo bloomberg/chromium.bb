@@ -32,10 +32,9 @@ class PnaclHeaderTest : public InProcessBrowserTest {
                    int expected_noncors,
                    int expected_cors);
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-
  private:
+  void StartServer();
+
   scoped_ptr<net::test_server::HttpResponse> WatchForPexeFetch(
       const net::test_server::HttpRequest& request);
 
