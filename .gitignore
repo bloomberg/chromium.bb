@@ -20,8 +20,7 @@
 /.subversion
 
 # Ignore locations where third-party tools are placed during bootstrapping.
-/python_bin
-/python275_bin
+/python*_bin
 /git_bin
 /git-1.8.0_bin
 /svn_bin
