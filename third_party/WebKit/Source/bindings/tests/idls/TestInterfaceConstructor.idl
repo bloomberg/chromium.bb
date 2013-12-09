@@ -30,5 +30,6 @@
 
 [
     Constructor(),
+    RaisesException=Constructor,
 ] interface TestInterfaceConstructor {
 };

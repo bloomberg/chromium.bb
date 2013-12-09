@@ -420,15 +420,6 @@ def extended_attributes_to_constructors(extended_attributes):
             constructors.append(constructor)
             overloaded_index += 1
 
-        # Prefix 'CallWith' and 'RaisesException' with 'Constructor'
-        # FIXME: Change extended attributes to include prefix explicitly.
-        if 'CallWith' in extended_attributes:
-            extended_attributes['ConstructorCallWith'] = extended_attributes['CallWith']
-            del extended_attributes['CallWith']
-        if 'RaisesException' in extended_attributes:
-            extended_attributes['ConstructorRaisesException'] = extended_attributes['RaisesException']
-            del extended_attributes['RaisesException']
-
     if 'CustomConstructors' in extended_attributes:
         custom_constructor_list = extended_attributes['CustomConstructors']
         # If not overloaded, have index 0, otherwise index from 1

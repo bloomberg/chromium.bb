@@ -83,6 +83,11 @@ def generate_interface(interface):
         includes.update(['bindings/v8/V8GCController.h',
                          'core/dom/Element.h'])
 
+    # [RaisesException]
+    is_constructor_raises_exception = extended_attributes.get('RaisesException') == 'Constructor'
+    if is_constructor_raises_exception:
+        includes.add('bindings/v8/ExceptionState.h')
+
     # [SpecialWrapFor]
     if 'SpecialWrapFor' in extended_attributes:
         special_wrap_for = extended_attributes['SpecialWrapFor'].split('|')
@@ -93,6 +98,7 @@ def generate_interface(interface):
 
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
+        'constructor_arguments': ['exceptionState'] if is_constructor_raises_exception else [],  # FIXME: arguments are a complex function in general
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_constructor': has_constructor,
@@ -105,6 +111,7 @@ def generate_interface(interface):
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
+        'is_constructor_raises_exception': is_constructor_raises_exception,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'special_wrap_for': special_wrap_for,

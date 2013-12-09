@@ -134,9 +134,15 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 {# FIXME: support overloading #}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    {# FIXME: support arguments #}
-    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create();
+    {% if is_constructor_raises_exception %}
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    {% endif %}
+    RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor_arguments | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();
+    {% if is_constructor_raises_exception %}
+    if (exceptionState.throwIfNeeded())
+        return;
+    {% endif %}
 
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{v8_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);

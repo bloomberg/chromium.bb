@@ -35,6 +35,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -74,8 +75,11 @@ template <typename T> void V8_USE(T) { }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create();
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
+    if (exceptionState.throwIfNeeded())
+        return;
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor>(impl.release(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(info, wrapper);
