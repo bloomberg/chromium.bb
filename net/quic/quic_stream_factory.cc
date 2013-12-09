@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -21,6 +22,7 @@
 #include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/port_suggester.h"
 #include "net/quic/quic_client_session.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_connection.h"
@@ -256,7 +258,8 @@ QuicStreamFactory::QuicStreamFactory(
       random_generator_(random_generator),
       clock_(clock),
       max_packet_length_(max_packet_length),
-      weak_factory_(this) {
+      weak_factory_(this),
+      port_entropy_(random_generator_->RandUint64()) {
   config_.SetDefaults();
   config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(30),
@@ -448,11 +451,16 @@ QuicClientSession* QuicStreamFactory::CreateSession(
     const BoundNetLog& net_log) {
   QuicGuid guid = random_generator_->RandUint64();
   IPEndPoint addr = *address_list.begin();
+  scoped_refptr<PortSuggester> port_suggester =
+      new PortSuggester(host_port_proxy_pair.first, port_entropy_);
   scoped_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
-          DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
+          DatagramSocket::RANDOM_BIND,
+          base::Bind(&PortSuggester::SuggestPort, port_suggester),
           net_log.net_log(), net_log.source()));
   socket->Connect(addr);
+  UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
+                       port_suggester->call_count());
 
   // We should adaptively set this buffer size, but for now, we'll use a size
   // that is more than large enough for a full receive window, and yet
