@@ -518,6 +518,8 @@ public:
 
     virtual void setPrefix(const AtomicString&, ExceptionState&) OVERRIDE FINAL;
 
+    void synchronizeAttribute(const AtomicString& localName) const;
+
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)
         : ContainerNode(document, type)
@@ -604,7 +606,6 @@ private:
     void didRemoveAttribute(const QualifiedName&);
 
     void synchronizeAttribute(const QualifiedName&) const;
-    void synchronizeAttribute(const AtomicString& localName) const;
 
     void updateId(const AtomicString& oldId, const AtomicString& newId);
     void updateId(TreeScope&, const AtomicString& oldId, const AtomicString& newId);

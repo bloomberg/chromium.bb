@@ -203,6 +203,12 @@ namespace WebCore {
 
         const QualifiedName& tagQName() const;
         const AtomicString& value() const;
+
+        // WARNING: Use of QualifiedName by attribute() is a lie.
+        // attribute() will return a QualifiedName with prefix and namespaceURI
+        // set to starAtom to mean "matches any namespace". Be very careful
+        // how you use the returned QualifiedName.
+        // http://www.w3.org/TR/css3-selectors/#attrnmsp
         const QualifiedName& attribute() const;
         const AtomicString& argument() const { return m_hasRareData ? m_data.m_rareData->m_argument : nullAtom; }
         const CSSSelectorList* selectorList() const { return m_hasRareData ? m_data.m_rareData->m_selectorList.get() : 0; }

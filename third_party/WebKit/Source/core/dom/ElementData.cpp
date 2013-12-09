@@ -129,6 +129,8 @@ size_t ElementData::getAttributeItemIndexSlowCase(const AtomicString& name, bool
     // Continue to checking case-insensitively and/or full namespaced names if necessary:
     for (unsigned i = 0; i < length(); ++i) {
         const Attribute* attribute = attributeItem(i);
+        // FIXME: Why check the prefix? Namespace is all that should matter
+        // and all HTML/SVG attributes have a null namespace!
         if (!attribute->name().hasPrefix()) {
             if (shouldIgnoreAttributeCase && equalIgnoringCase(name, attribute->localName()))
                 return i;

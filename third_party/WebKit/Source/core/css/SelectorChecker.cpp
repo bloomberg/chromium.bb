@@ -428,9 +428,23 @@ static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::M
     return true;
 }
 
-static bool anyAttributeMatches(Element& element, CSSSelector::Match match, const QualifiedName& selectorAttr, const AtomicString& selectorValue, bool caseSensitive)
+static bool anyAttributeMatches(Element& element, CSSSelector::Match match, const CSSSelector& selector)
 {
-    ASSERT(element.hasAttributesWithoutUpdate());
+    const QualifiedName& selectorAttr = selector.attribute();
+    ASSERT(selectorAttr.localName() != starAtom); // Should not be possible from the CSS grammar.
+
+    // Synchronize the attribute in case it is lazy-computed.
+    // Currently all lazy properties have a null namespace, so only pass localName().
+    element.synchronizeAttribute(selectorAttr.localName());
+
+    if (!element.hasAttributesWithoutUpdate())
+        return false;
+
+    const AtomicString& selectorValue =  selector.value();
+    // Case sensitivity for attribute matching is looser than hasAttribute or
+    // Element::shouldIgnoreAttributeCase() for now. Unclear if that's correct.
+    bool caseSensitive = !element.document().isHTMLDocument() || HTMLDocument::isCaseSensitiveAttribute(selectorAttr);
+
     for (size_t i = 0; i < element.attributeCount(); ++i) {
         const Attribute* attributeItem = element.attributeItem(i);
 
@@ -463,14 +477,9 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         return element.hasID() && element.idForStyleResolution() == selector->value() && !elementIsHostInItsShadowTree;
 
     if (selector->isAttributeSelector()) {
-        const QualifiedName& attr = selector->attribute();
-
-        if (!element.hasAttributes() || elementIsHostInItsShadowTree)
+        if (elementIsHostInItsShadowTree)
             return false;
-
-        bool caseSensitive = !m_documentIsHTML || HTMLDocument::isCaseSensitiveAttribute(attr);
-
-        if (!anyAttributeMatches(element, static_cast<CSSSelector::Match>(selector->m_match), attr, selector->value(), caseSensitive))
+        if (!anyAttributeMatches(element, static_cast<CSSSelector::Match>(selector->m_match), *selector))
             return false;
     }
 

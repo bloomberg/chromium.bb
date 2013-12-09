@@ -439,7 +439,7 @@ inline void Element::synchronizeAttribute(const QualifiedName& name) const
     }
 }
 
-inline void Element::synchronizeAttribute(const AtomicString& localName) const
+void Element::synchronizeAttribute(const AtomicString& localName) const
 {
     // This version of synchronizeAttribute() is streamlined for the case where you don't have a full QualifiedName,
     // e.g when called from DOM API.
