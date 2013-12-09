@@ -689,7 +689,7 @@
     'chrome_frame': ['amit@chromium.org', 'grt+watch@chromium.org',
                      'robertshield@chromium.org'],
     'chrome_views': ['tfarina@chromium.org'],
-    'chromedriver': ['kkania@chromium.org', 'frankf@chromium.org'],
+    'chromedriver': ['chrisgao@chromium.org', 'frankf@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
                   'stevenjb+watch@chromium.org'],
     'chromeos_attestation' : ['dkrahn+watch@chromium.org'],
