@@ -204,6 +204,11 @@
       <if expr="pp_ifdef('enable_settings_app')">
         <include name="IDR_SETTINGS_APP_JS" file="settings_app/settings_app.js" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('enable_plugins')">
+        <include name="IDR_PDF_HTML" file="pdf/pdf.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_PDF_BACKGROUND_JS" file="pdf/background.js" type="BINDATA" />
+        <include name="IDR_PDF_JS" file="pdf/pdf.js" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

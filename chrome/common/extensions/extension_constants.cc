@@ -110,6 +110,7 @@ const char kHTermAppId[] = "pnhechapfaindjhompbnflcldabbghjo";
 const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kIdentityApiUiAppId[] = "ahjaciijnoiaklcomgnblndopackapon";
 const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
+const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
 const char kQuickOfficeComponentExtensionId[] =
     "bpmcpldpdmajfigpchkicefoigmkfalc";
 const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";

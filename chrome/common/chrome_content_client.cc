@@ -62,8 +62,10 @@ namespace {
 const char kPDFPluginMimeType[] = "application/pdf";
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
-const char kPDFPluginPrintPreviewMimeType
-   [] = "application/x-google-chrome-print-preview-pdf";
+const char kPDFPluginPrintPreviewMimeType[] =
+   "application/x-google-chrome-print-preview-pdf";
+const char kPDFPluginOutOfProcessMimeType[] =
+   "application/x-google-chrome-pdf";
 const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
 
@@ -149,20 +151,26 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       content::PepperPluginInfo pdf;
       pdf.path = path;
       pdf.name = ChromeContentClient::kPDFPluginName;
-      content::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
-                                               kPDFPluginExtension,
-                                               kPDFPluginDescription);
-      content::WebPluginMimeType print_preview_pdf_mime_type(
-          kPDFPluginPrintPreviewMimeType,
-          kPDFPluginExtension,
-          kPDFPluginDescription);
-      pdf.mime_types.push_back(pdf_mime_type);
-      pdf.mime_types.push_back(print_preview_pdf_mime_type);
-      pdf.permissions = kPDFPluginPermissions;
       if (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kOutOfProcessPdf)) {
         pdf.is_out_of_process = true;
+        content::WebPluginMimeType pdf_mime_type(kPDFPluginOutOfProcessMimeType,
+                                                 kPDFPluginExtension,
+                                                 kPDFPluginDescription);
+        pdf.mime_types.push_back(pdf_mime_type);
+        // TODO(raymes): Make print preview work with out of process PDF.
+      } else {
+        content::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
+                                                 kPDFPluginExtension,
+                                                 kPDFPluginDescription);
+        content::WebPluginMimeType print_preview_pdf_mime_type(
+            kPDFPluginPrintPreviewMimeType,
+            kPDFPluginExtension,
+            kPDFPluginDescription);
+        pdf.mime_types.push_back(pdf_mime_type);
+        pdf.mime_types.push_back(print_preview_pdf_mime_type);
       }
+      pdf.permissions = kPDFPluginPermissions;
       plugins->push_back(pdf);
 
       skip_pdf_file_check = true;

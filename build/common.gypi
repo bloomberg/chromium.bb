@@ -1715,6 +1715,10 @@
       ['enable_extensions==1', {
         'grit_defines': ['-D', 'enable_extensions'],
       }],
+      ['enable_plugins!=0', {
+
+        'grit_defines': ['-D', 'enable_plugins'],
+      }],
       ['enable_printing!=0', {
         'grit_defines': ['-D', 'enable_printing'],
       }],

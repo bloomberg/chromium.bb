@@ -24,6 +24,7 @@ namespace errors = extensions::manifest_errors;
 namespace {
 
 const char* const kMIMETypeHandlersWhitelist[] = {
+  extension_misc::kPdfExtensionId,
   extension_misc::kQuickOfficeComponentExtensionId,
   extension_misc::kQuickOfficeDevExtensionId,
   extension_misc::kQuickOfficeExtensionId,
