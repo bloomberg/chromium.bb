@@ -271,7 +271,6 @@ fileOperationUtil.zipSelection = function(
 function FileOperationManager() {
   this.copyTasks_ = [];
   this.deleteTasks_ = [];
-  this.unloadTimeout_ = null;
   this.taskIdCounter_ = 0;
 
   this.eventRouter_ = new FileOperationManager.EventRouter();
@@ -967,17 +966,6 @@ FileOperationManager.Error = function(code, data) {
 // FileOperationManager methods.
 
 /**
- * Called before a new method is run in the manager. Prepares the manager's
- * state for running a new method.
- */
-FileOperationManager.prototype.willRunNewMethod = function() {
-  // Cancel any pending close actions so the file copy manager doesn't go away.
-  if (this.unloadTimeout_)
-    clearTimeout(this.unloadTimeout_);
-  this.unloadTimeout_ = null;
-};
-
-/**
  * @return {Object} Status object.
  */
 FileOperationManager.prototype.getStatus = function() {
@@ -1048,23 +1036,6 @@ FileOperationManager.prototype.hasQueuedTasks = function() {
 };
 
 /**
- * Unloads the host page in 5 secs of idling. Need to be called
- * each time this.copyTasks_.length or this.deleteTasks_.length
- * changed.
- *
- * @private
- */
-FileOperationManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
-  if (!this.hasQueuedTasks()) {
-    if (this.unloadTimeout_ === null)
-      this.unloadTimeout_ = setTimeout(maybeCloseBackgroundPage, 5000);
-  } else if (this.unloadTimeout_) {
-    clearTimeout(this.unloadTimeout_);
-    this.unloadTimeout_ = null;
-  }
-};
-
-/**
  * Completely clear out the copy queue, either because we encountered an error
  * or completed successfully.
  *
@@ -1072,7 +1043,6 @@ FileOperationManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
  */
 FileOperationManager.prototype.resetQueue_ = function() {
   this.copyTasks_ = [];
-  this.maybeScheduleCloseBackgroundPage_();
 };
 
 /**
@@ -1221,7 +1191,6 @@ FileOperationManager.prototype.queueCopy_ = function(
   task.taskId = this.generateTaskId_();
   task.initialize(function() {
     this.copyTasks_.push(task);
-    this.maybeScheduleCloseBackgroundPage_();
     this.eventRouter_.sendProgressEvent('BEGIN', task.getStatus(), task.taskId);
     if (this.copyTasks_.length == 1)
       this.serviceAllTasks_();
@@ -1266,7 +1235,6 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   var onTaskSuccess = function() {
     // The task at the front of the queue is completed. Pop it from the queue.
     var task = this.copyTasks_.shift();
-    this.maybeScheduleCloseBackgroundPage_();
     this.eventRouter_.sendProgressEvent('SUCCESS',
                                         task.getStatus(),
                                         task.taskId);
@@ -1321,7 +1289,6 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
   group.run(function() {
     this.deleteTasks_.push(task);
     this.eventRouter_.sendDeleteEvent('BEGIN', task);
-    this.maybeScheduleCloseBackgroundPage_();
     if (this.deleteTasks_.length === 1)
       this.serviceAllDeleteTasks_();
   }.bind(this));
@@ -1336,15 +1303,12 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
  * @private
  */
 FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
-  if (!this.deleteTasks_.length) {
-    this.maybeScheduleCloseBackgroundPage_();
-    return;
-  }
   this.serviceDeleteTask_(
       this.deleteTasks_[0],
       function() {
         this.deleteTasks_.shift();
-        this.serviceAllDeleteTasks_();
+        if (this.deleteTasks_.length)
+          this.serviceAllDeleteTasks_();
       }.bind(this));
 };
 

@@ -4,8 +4,7 @@
 'use strict';
 
 // Mock items.
-var fileOperationManager = null;
-var progressCenter = null;
+var background = null;
 
 // Test target.
 var handler = null;
@@ -22,17 +21,14 @@ function setUp() {
   };
 
   // Make ProgressCenterHandler.
-  fileOperationManager = new MockFileOperationManager();
-  progressCenter = new MockProgressCenter();
-  handler = new ProgressCenterHandler(
-      fileOperationManager,
-      progressCenter);
+  background = new MockBackground();
+  handler = new FileOperationHandler(background);
 }
 
 // Test for success copy.
 function testCopySuccess() {
   // Dispatch an event.
-  fileOperationManager.dispatchEvent({
+  background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
     reason: 'BEGIN',
@@ -46,7 +42,7 @@ function testCopySuccess() {
   });
 
   // Check the updated item.
-  var item = progressCenter.items['TASK_ID'];
+  var item = background.progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.PROGRESSING, item.state);
   assertEquals('TASK_ID', item.id);
   assertEquals('Copying sample.txt...', item.message);
@@ -55,10 +51,55 @@ function testCopySuccess() {
   assertEquals(0, item.progressRateInPercent);
 
   // Dispatch an event.
-  fileOperationManager.cancelEvent = {
+  background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
     reason: 'SUCCESS',
+    status: {
+      operationType: 'COPY'
+    }
+  });
+
+  // Check the updated item.
+  item = background.progressCenter.items['TASK_ID'];
+  assertEquals(ProgressItemState.COMPLETED, item.state);
+  assertEquals('TASK_ID', item.id);
+  assertEquals('', item.message);
+  assertEquals('copy', item.type);
+  assertEquals(false, item.summarized);
+  assertEquals(100, item.progressRateInPercent);
+  assertEquals(1, background.closeRequestCount);
+}
+
+// Test for copy cancel.
+function testCopyCancel() {
+  // Dispatch an event.
+  background.fileOperationManager.dispatchEvent({
+    type: 'copy-progress',
+    taskId: 'TASK_ID',
+    reason: 'BEGIN',
+    status: {
+      operationType: 'COPY',
+      numRemainingItems: 1,
+      processingEntry: {name: 'sample.txt'},
+      totalBytes: 200,
+      processedBytes: 0
+    }
+  });
+
+  // Check the updated item.
+  var item = background.progressCenter.items['TASK_ID'];
+  assertEquals(ProgressItemState.PROGRESSING, item.state);
+  assertEquals('Copying sample.txt...', item.message);
+  assertEquals('copy', item.type);
+  assertEquals(false, item.summarized);
+  assertEquals(0, item.progressRateInPercent);
+
+  // Dispatch an event.
+  background.fileOperationManager.cancelEvent = {
+    type: 'copy-progress',
+    taskId: 'TASK_ID',
+    reason: 'CANCELED',
     status: {
       operationType: 'COPY'
     }
@@ -66,62 +107,19 @@ function testCopySuccess() {
   item.cancelCallback();
 
   // Check the updated item.
-  item = progressCenter.items['TASK_ID'];
-  assertEquals(ProgressItemState.COMPLETED, item.state);
-  assertEquals('TASK_ID', item.id);
-  assertEquals('', item.message);
-  assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
-  assertEquals(100, item.progressRateInPercent);
-}
-
-// Test for copy cancel.
-function testCopyCancel() {
-  // Dispatch an event.
-  fileOperationManager.dispatchEvent({
-    type: 'copy-progress',
-    taskId: 'TASK_ID',
-    reason: 'BEGIN',
-    status: {
-      operationType: 'COPY',
-      numRemainingItems: 1,
-      processingEntry: {name: 'sample.txt'},
-      totalBytes: 200,
-      processedBytes: 0
-    }
-  });
-
-  // Check the updated item.
-  var item = progressCenter.items['TASK_ID'];
-  assertEquals(ProgressItemState.PROGRESSING, item.state);
-  assertEquals('Copying sample.txt...', item.message);
-  assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
-  assertEquals(0, item.progressRateInPercent);
-
-  // Dispatch an event.
-  fileOperationManager.dispatchEvent({
-    type: 'copy-progress',
-    taskId: 'TASK_ID',
-    reason: 'CANCELED',
-    status: {
-      operationType: 'COPY'
-    }
-  });
-
-  // Check the updated item.
-  item = progressCenter.items['TASK_ID'];
+  item = background.progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.CANCELED, item.state);
   assertEquals('', item.message);
   assertEquals('copy', item.type);
   assertEquals(false, item.summarized);
   assertEquals(0, item.progressRateInPercent);
+  assertEquals(1, background.closeRequestCount);
 }
 
 // Test for copy target exists error.
 function testCopyTargetExistsError() {
   // Dispatch an event.
-  fileOperationManager.dispatchEvent({
+  background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
     reason: 'ERROR',
@@ -135,18 +133,19 @@ function testCopyTargetExistsError() {
   });
 
   // Check the updated item.
-  var item = progressCenter.items['TASK_ID'];
+  var item = background.progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('sample.txt is already exists.', item.message);
   assertEquals('copy', item.type);
   assertEquals(false, item.summarized);
   assertEquals(0, item.progressRateInPercent);
+  assertEquals(1, background.closeRequestCount);
 }
 
 // Test for copy file system error.
 function testCopyFileSystemError() {
   // Dispatch an event.
-  fileOperationManager.dispatchEvent({
+  background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
     reason: 'ERROR',
@@ -160,18 +159,19 @@ function testCopyFileSystemError() {
   });
 
   // Check the updated item.
-  var item = progressCenter.items['TASK_ID'];
+  var item = background.progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('Copy filesystem error: File error generic.', item.message);
   assertEquals('copy', item.type);
   assertEquals(false, item.summarized);
   assertEquals(0, item.progressRateInPercent);
+  assertEquals(1, background.closeRequestCount);
 }
 
 // Test for copy unexpected error.
 function testCopyUnexpectedError() {
   // Dispatch an event.
-  fileOperationManager.dispatchEvent({
+  background.fileOperationManager.dispatchEvent({
     type: 'copy-progress',
     taskId: 'TASK_ID',
     reason: 'ERROR',
@@ -185,10 +185,11 @@ function testCopyUnexpectedError() {
   });
 
   // Check the updated item.
-  var item = progressCenter.items['TASK_ID'];
+  var item = background.progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('Copy unexpected error: Unexpected', item.message);
   assertEquals('copy', item.type);
   assertEquals(false, item.summarized);
   assertEquals(0, item.progressRateInPercent);
+  assertEquals(1, background.closeRequestCount);
 }

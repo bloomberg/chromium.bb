@@ -42,7 +42,6 @@ FileOperationManagerWrapper.prototype.isRunning = function() {
  */
 FileOperationManagerWrapper.decorateAsyncMethod = function(method) {
   FileOperationManagerWrapper.prototype[method] = function() {
-    this.fileOperationManager_.willRunNewMethod();
     this.fileOperationManager_[method].apply(
         this.fileOperationManager_, arguments);
   };

@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(
-    FileManagerJsTest, ProgressCenterHandlerTest) {
+    FileManagerJsTest, FileOperationHandlerTest) {
   RunTest(base::FilePath(
-      FILE_PATH_LITERAL("progress_center_handler_unittest.html")));
+      FILE_PATH_LITERAL("file_operation_handler_unittest.html")));
 }

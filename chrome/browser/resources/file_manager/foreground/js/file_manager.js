@@ -2313,7 +2313,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
     window.closing = true;
     if (this.backgroundPage_ && util.platform.runningInBrowser())
-      this.backgroundPage_.maybeCloseBackgroundPage();
+      this.backgroundPage_.background.tryClose();
   };
 
   FileManager.prototype.initiateRename = function() {
