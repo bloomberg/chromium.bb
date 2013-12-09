@@ -62,13 +62,13 @@ scoped_ptr<CTLogVerifier> CreateGooglePilotLogVerifier() {
   return CTLogVerifier::Create(key, kGooglePilotLogName);
 }
 
-scoped_ptr<net::CTLogVerifier> CreateGoogleAviatorLogVerifier() {
+scoped_ptr<CTLogVerifier> CreateGoogleAviatorLogVerifier() {
   base::StringPiece key(kGoogleAviatorLogKey, kGoogleAviatorLogKeyLength);
 
   return CTLogVerifier::Create(key, kGoogleAviatorLogName);
 }
 
-scoped_ptr<net::CTLogVerifier> CreateGoogleRocketeerLogVerifier() {
+scoped_ptr<CTLogVerifier> CreateGoogleRocketeerLogVerifier() {
   base::StringPiece key(kGoogleRocketeerLogKey, kGoogleRocketeerLogKeyLength);
 
   return CTLogVerifier::Create(key, kGoogleRocketeerLogName);

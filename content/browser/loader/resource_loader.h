@@ -12,7 +12,7 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_controller.h"
-#include "content/public/common/ssl_status.h"
+#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "net/url_request/url_request.h"
 
 namespace content {

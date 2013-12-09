@@ -15,7 +15,7 @@ std::string SerializeSecurityInfo(
     int security_bits,
     int ssl_connection_status,
     const SignedCertificateTimestampIDStatusList&
-      signed_certificate_timestamp_ids) {
+        signed_certificate_timestamp_ids) {
   Pickle pickle;
   pickle.WriteInt(cert_id);
   pickle.WriteUInt32(cert_status);
@@ -31,13 +31,13 @@ std::string SerializeSecurityInfo(
   return std::string(static_cast<const char*>(pickle.data()), pickle.size());
 }
 
-bool DeserializeSecurityInfo(const std::string& state,
-                             int* cert_id,
-                             net::CertStatus* cert_status,
-                             int* security_bits,
-                             int* ssl_connection_status,
-                             SignedCertificateTimestampIDStatusList*
-                                 signed_certificate_timestamp_ids) {
+bool DeserializeSecurityInfo(
+    const std::string& state,
+    int* cert_id,
+    net::CertStatus* cert_status,
+    int* security_bits,
+    int* ssl_connection_status,
+    SignedCertificateTimestampIDStatusList* signed_certificate_timestamp_ids) {
   DCHECK(cert_id && cert_status && security_bits && ssl_connection_status &&
          signed_certificate_timestamp_ids);
   if (state.empty()) {
