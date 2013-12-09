@@ -1,0 +1,4 @@
+drm-client-protocol.h
+drm-protocol.c
+xserver-client-protocol.h
+xserver-protocol.c
