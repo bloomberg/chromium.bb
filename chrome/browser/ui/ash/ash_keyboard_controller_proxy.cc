@@ -28,6 +28,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
@@ -36,6 +37,9 @@ typedef virtual_keyboard_private::OnTextInputBoxFocused::Context Context;
 namespace {
 
 const char* kVirtualKeyboardExtensionID = "mppnpdlheglhdfmldimlhpnegondlapf";
+
+// The virtual keyboard show/hide animation duration.
+const int kAnimationDurationMs = 1000;
 
 Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
   switch (type) {
@@ -147,14 +151,57 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
   if (container->GetRootWindow() != ash::Shell::GetPrimaryRootWindow())
     NOTIMPLEMENTED();
 
+  ui::LayerAnimator* container_animator = container->layer()->GetAnimator();
+  // If the container is not animating, transform the keyboard window off screen
+  // before start animating. Otherwise, start animating from current state to
+  // new state immediately (IMMEDIATELY_ANIMATE_TO_NEW_TARGET).
+  if (!container_animator->is_animating()) {
+     gfx::Transform transform;
+     transform.Translate(0, GetKeyboardWindow()->bounds().height());
+     container->SetTransform(transform);
+  }
+
+  container_animator->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+  {
+    // Scope the following animation settings as we don't want to animate
+    // visibility change that triggered by a call to the base class function
+    // ShowKeyboardContainer with these settings. The container should become
+    // visible immediately.
+    ui::ScopedLayerAnimationSettings settings(container_animator);
+    settings.SetTweenType(gfx::Tween::EASE_IN);
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+    container->SetTransform(gfx::Transform());
+  }
+
+  // TODO(bshe): Add animation observer and do the workspace resizing after
+  // animation finished.
   KeyboardControllerProxy::ShowKeyboardContainer(container);
-  // GetTextInputClient may return NULL when keyboard-usability-test flag is
-  // set.
+  // GetTextInputClient may return NULL when keyboard-usability-experiment flag
+  // is set.
   if (GetInputMethod()->GetTextInputClient()) {
     gfx::Rect showing_area =
         ash::DisplayController::GetPrimaryDisplay().work_area();
     GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(showing_area);
   }
+}
+
+void AshKeyboardControllerProxy::HideKeyboardContainer(
+    aura::Window* container) {
+  // The following animation settings should persist within this function scope.
+  // Otherwise, a call to base class function HideKeyboardContainer will hide
+  // the container immediately.
+  ui::ScopedLayerAnimationSettings
+      settings(container->layer()->GetAnimator());
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  gfx::Transform transform;
+  transform.Translate(0, GetKeyboardWindow()->bounds().height());
+  container->SetTransform(transform);
+  KeyboardControllerProxy::HideKeyboardContainer(container);
 }
 
 void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {

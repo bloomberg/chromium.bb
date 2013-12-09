@@ -26,6 +26,8 @@ namespace ui {
 class InputMethod;
 }
 
+// Subclass of KeyboardControllerProxy. It is used by KeyboardController to get
+// access to the virtual keyboard window and setup Chrome extension functions.
 class AshKeyboardControllerProxy
     : public keyboard::KeyboardControllerProxy,
       public content::WebContentsObserver,
@@ -45,6 +47,7 @@ class AshKeyboardControllerProxy
       const content::MediaResponseCallback& callback) OVERRIDE;
   virtual void SetupWebContents(content::WebContents* contents) OVERRIDE;
   virtual void ShowKeyboardContainer(aura::Window* container) OVERRIDE;
+  virtual void HideKeyboardContainer(aura::Window* container) OVERRIDE;
 
   // The overridden implementation dispatches
   // chrome.virtualKeyboardPrivate.onTextInputBoxFocused event to extension to
