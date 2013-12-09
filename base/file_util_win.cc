@@ -214,8 +214,6 @@ bool DirectoryExists(const FilePath& path) {
 }
 
 bool GetTempDir(FilePath* path) {
-  ThreadRestrictions::AssertIOAllowed();
-
   wchar_t temp_path[MAX_PATH + 1];
   DWORD path_len = ::GetTempPath(MAX_PATH, temp_path);
   if (path_len >= MAX_PATH || path_len <= 0)
