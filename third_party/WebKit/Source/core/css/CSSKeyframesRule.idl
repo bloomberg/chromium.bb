@@ -28,8 +28,7 @@
 
 // Introduced in DOM Level ?:
 interface CSSKeyframesRule : CSSRule {
-
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString name;
+    attribute DOMString name;
     readonly attribute CSSRuleList cssRules;
 
     [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule(unsigned long index);
@@ -37,4 +36,3 @@ interface CSSKeyframesRule : CSSRule {
     void deleteRule([Default=Undefined] optional DOMString key);
     CSSKeyframeRule findRule([Default=Undefined] optional DOMString key);
 };
-

@@ -19,6 +19,5 @@
  */
 
 interface CSSCharsetRule : CSSRule {
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter] attribute DOMString encoding;
+    attribute DOMString encoding;
 };
-

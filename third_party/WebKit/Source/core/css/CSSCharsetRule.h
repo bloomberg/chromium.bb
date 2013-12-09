@@ -42,7 +42,7 @@ public:
     virtual void reattach(StyleRuleBase* rule) OVERRIDE { ASSERT_UNUSED(rule, !rule); }
 
     const String& encoding() const { return m_encoding; }
-    void setEncoding(const String& encoding, ExceptionState&) { m_encoding = encoding; }
+    void setEncoding(const String& encoding) { m_encoding = encoding; }
 
 private:
     CSSCharsetRule(CSSStyleSheet* parent, const String& encoding);
