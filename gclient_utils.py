@@ -797,7 +797,7 @@ def GetEditor(git, git_editor=None):
   - core.editor git configuration variable (if supplied by git-cl)
   - VISUAL environment variable
   - EDITOR environment variable
-  - vim (non-Windows) or notepad (Windows)
+  - vi (non-Windows) or notepad (Windows)
 
   In the case of git-cl, this matches git's behaviour, except that it does not
   include dumb terminal detection.
@@ -817,7 +817,7 @@ def GetEditor(git, git_editor=None):
     if sys.platform.startswith('win'):
       editor = 'notepad'
     else:
-      editor = 'vim'
+      editor = 'vi'
   return editor
 
 
