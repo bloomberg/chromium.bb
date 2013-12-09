@@ -42,6 +42,7 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
@@ -90,6 +91,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
     if (!info.IsConstructCall()) {
         throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;

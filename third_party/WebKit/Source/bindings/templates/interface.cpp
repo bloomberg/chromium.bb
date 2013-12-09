@@ -158,6 +158,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
+    {% if measure_as %}
+    UseCounter::count(activeDOMWindow(), UseCounter::{{measure_as}});
+    {% endif %}
     if (!info.IsConstructCall()) {
         throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;

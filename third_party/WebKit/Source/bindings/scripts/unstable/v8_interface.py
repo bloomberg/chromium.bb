@@ -83,6 +83,11 @@ def generate_interface(interface):
         includes.update(['bindings/v8/V8GCController.h',
                          'core/dom/Element.h'])
 
+    # [MeasureAs]
+    is_measure_as = 'MeasureAs' in extended_attributes
+    if is_measure_as:
+        includes.add('core/frame/UseCounter.h')
+
     # [RaisesException]
     is_constructor_raises_exception = extended_attributes.get('RaisesException') == 'Constructor'
     if is_constructor_raises_exception:
@@ -113,6 +118,7 @@ def generate_interface(interface):
         'is_check_security': is_check_security,
         'is_constructor_raises_exception': is_constructor_raises_exception,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
+        'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),

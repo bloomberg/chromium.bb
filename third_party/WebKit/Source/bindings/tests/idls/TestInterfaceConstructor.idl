@@ -30,6 +30,7 @@
 
 [
     Constructor(),
+    MeasureAs=TestFeature,
     RaisesException=Constructor,
 ] interface TestInterfaceConstructor {
 };
