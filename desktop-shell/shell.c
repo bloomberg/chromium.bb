@@ -176,6 +176,8 @@ struct shell_surface {
 		bool relative;
 	} state, next_state; /* surface states */
 	bool state_changed;
+
+	int focus_count;
 };
 
 struct shell_grab {
@@ -214,6 +216,7 @@ struct rotate_grab {
 struct shell_seat {
 	struct weston_seat *seat;
 	struct wl_listener seat_destroy_listener;
+	struct weston_surface *focused_surface;
 
 	struct {
 		struct weston_pointer_grab grab;
@@ -1910,6 +1913,56 @@ create_pointer_focus_listener(struct weston_seat *seat)
 	listener = malloc(sizeof *listener);
 	listener->notify = handle_pointer_focus;
 	wl_signal_add(&seat->pointer->focus_signal, listener);
+}
+
+static void
+shell_surface_lose_keyboard_focus(struct shell_surface *shsurf)
+{
+	if (--shsurf->focus_count == 0)
+		if (shell_surface_is_xdg_surface(shsurf))
+			xdg_surface_send_focused_unset(shsurf->resource);
+}
+
+static void
+shell_surface_gain_keyboard_focus(struct shell_surface *shsurf)
+{
+	if (shsurf->focus_count++ == 0)
+		if (shell_surface_is_xdg_surface(shsurf))
+			xdg_surface_send_focused_set(shsurf->resource);
+}
+
+static void
+handle_keyboard_focus(struct wl_listener *listener, void *data)
+{
+	struct weston_keyboard *keyboard = data;
+	struct shell_seat *seat = get_shell_seat(keyboard->seat);
+
+	if (seat->focused_surface) {
+		struct shell_surface *shsurf = get_shell_surface(seat->focused_surface);
+		if (shsurf)
+			shell_surface_lose_keyboard_focus(shsurf);
+	}
+
+	seat->focused_surface = keyboard->focus;
+
+	if (seat->focused_surface) {
+		struct shell_surface *shsurf = get_shell_surface(seat->focused_surface);
+		if (shsurf)
+			shell_surface_gain_keyboard_focus(shsurf);
+	}
+}
+
+static void
+create_keyboard_focus_listener(struct weston_seat *seat)
+{
+	struct wl_listener *listener;
+
+	if (!seat->keyboard)
+		return;
+
+	listener = malloc(sizeof *listener);
+	listener->notify = handle_keyboard_focus;
+	wl_signal_add(&seat->keyboard->focus_signal, listener);
 }
 
 static void
@@ -5706,8 +5759,10 @@ module_init(struct weston_compositor *ec,
 	shell->screensaver.timer =
 		wl_event_loop_add_timer(loop, screensaver_timeout, shell);
 
-	wl_list_for_each(seat, &ec->seat_list, link)
+	wl_list_for_each(seat, &ec->seat_list, link) {
 		create_pointer_focus_listener(seat);
+		create_keyboard_focus_listener(seat);
+	}
 
 	shell_add_bindings(ec, shell);
 
