@@ -694,7 +694,7 @@ WebGeolocationClientMock* WebTestProxyBase::geolocationClientMock()
 WebMIDIClientMock* WebTestProxyBase::midiClientMock()
 {
     if (!m_midiClient.get())
-        m_midiClient.reset(WebMIDIClientMock::create());
+        m_midiClient.reset(new WebMIDIClientMock);
     return m_midiClient.get();
 }
 

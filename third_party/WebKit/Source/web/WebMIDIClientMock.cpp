@@ -42,11 +42,6 @@ WebMIDIClientMock::WebMIDIClientMock()
     m_clientMock.reset(new WebCore::MIDIClientMock());
 }
 
-WebMIDIClientMock* WebMIDIClientMock::create()
-{
-    return new WebMIDIClientMock();
-}
-
 void WebMIDIClientMock::setSysExPermission(bool allowed)
 {
     m_clientMock->setSysExPermission(allowed);
@@ -72,4 +67,4 @@ void WebMIDIClientMock::reset()
     m_clientMock.reset(0);
 }
 
-} // WebKit
+} // blink
