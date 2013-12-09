@@ -28,7 +28,7 @@
 
 [
     EventConstructor,
-] interface TestInterfaceEventConstructor {
+] interface TestInterfaceEventConstructor : Event {
     // Attributes
     readonly attribute DOMString attr1;
     [InitializedByEventConstructor] readonly attribute DOMString attr2;

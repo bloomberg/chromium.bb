@@ -34,6 +34,7 @@
 #include "V8TestInterfaceEventConstructor.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "V8Event.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8Binding.h"
@@ -67,7 +68,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceEventCon
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::derefObject, 0, 0, 0, V8TestInterfaceEventConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::derefObject, 0, 0, 0, V8TestInterfaceEventConstructor::installPerContextEnabledMethods, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceEventConstructorV8Internal {
 
@@ -132,6 +133,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceEventCons
 bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName, "", exceptionState);
+    if (!initializeEvent(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName))
+        return false;
+
     if (!options.convert(conversionContext, "attr2", eventInit.attr2))
         return false;
     return true;
@@ -158,7 +162,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceEventConstructor
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceEventConstructor", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEventConstructor::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceEventConstructor", V8Event::domTemplate(isolate, currentWorldType), V8TestInterfaceEventConstructor::internalFieldCount,
         V8TestInterfaceEventConstructorAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceEventConstructorAttributes),
         0, 0,
         0, 0,

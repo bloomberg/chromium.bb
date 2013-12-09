@@ -33,6 +33,7 @@
 #ifndef V8TestInterfaceEventConstructor_h
 #define V8TestInterfaceEventConstructor_h
 
+#include "V8Event.h"
 #include "bindings/tests/idls/TestInterfaceEventConstructor.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -56,12 +57,12 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestInterfaceEventConstructor* impl)
     {
-        return impl;
+        return V8Event::toInternalPointer(impl);
     }
 
     static inline TestInterfaceEventConstructor* fromInternalPointer(void* object)
     {
-        return static_cast<TestInterfaceEventConstructor*>(object);
+        return static_cast<TestInterfaceEventConstructor*>(V8Event::fromInternalPointer(object));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceEventConstructor*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

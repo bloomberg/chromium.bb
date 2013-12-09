@@ -255,7 +255,11 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("{{interface_name}}") : forEventName, "", exceptionState);
-    {# FIXME: parent interface #}
+    {% if parent_interface %}{# any Event interface except Event itself #}
+    if (!initialize{{parent_interface}}(eventInit, options, exceptionState, forEventName.isEmpty() ? String("{{interface_name}}") : forEventName))
+        return false;
+
+    {% endif %}
     {% for attribute in attributes
            if attribute.is_initialized_by_event_constructor %}
     {# FIXME: implement [ImplementedAs] #}
