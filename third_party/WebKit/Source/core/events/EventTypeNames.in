@@ -28,6 +28,7 @@ beforecut
 beforeload
 beforepaste
 beforeunload
+beginEvent
 blocked
 blur
 boundary
@@ -73,6 +74,7 @@ durationchange
 emptied
 end
 ended
+endEvent
 enter
 error
 exit
@@ -139,6 +141,7 @@ readystatechange
 removesourcebuffer
 removestream
 removetrack
+repeatEvent
 reset
 resize
 result

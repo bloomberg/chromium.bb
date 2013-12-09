@@ -637,6 +637,12 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
     // standard events
     if (name == onloadAttr)
         setAttributeEventListener(EventTypeNames::load, createAttributeEventListener(this, name, value));
+    else if (name == onbeginAttr)
+        setAttributeEventListener(EventTypeNames::beginEvent, createAttributeEventListener(this, name, value));
+    else if (name == onendAttr)
+        setAttributeEventListener(EventTypeNames::endEvent, createAttributeEventListener(this, name, value));
+    else if (name == onrepeatAttr)
+        setAttributeEventListener(EventTypeNames::repeatEvent, createAttributeEventListener(this, name, value));
     else if (name == onclickAttr)
         setAttributeEventListener(EventTypeNames::click, createAttributeEventListener(this, name, value));
     else if (name == onmousedownAttr)
