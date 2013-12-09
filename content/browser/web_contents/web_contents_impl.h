@@ -268,6 +268,10 @@ class CONTENT_EXPORT WebContentsImpl
                             bool is_favicon,
                             uint32_t max_bitmap_size,
                             const ImageDownloadCallback& callback) OVERRIDE;
+#if defined(OS_ANDROID)
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
+      OVERRIDE;
+#endif
 
   // Implementation of PageNavigator.
   virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE;

@@ -24,6 +24,7 @@
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/android/web_contents_observer_android.h"
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
+#include "content/browser/frame_host/navigation_controller_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/media/android/media_drm_credential_manager.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
@@ -33,6 +34,7 @@
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/vibration/vibration_provider_android.h"
+#include "content/browser/web_contents/web_contents_android.h"
 
 using content::SurfaceTexturePeerBrowserImpl;
 
@@ -56,11 +58,13 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"InterstitialPageDelegateAndroid",
      content::InterstitialPageDelegateAndroid::
          RegisterInterstitialPageDelegateAndroid},
+    {"LoadUrlParams", content::RegisterLoadUrlParams},
     {"MediaDrmCredentialManager",
      content::MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
     {"MediaResourceGetterImpl",
      content::MediaResourceGetterImpl::RegisterMediaResourceGetter},
-    {"LoadUrlParams", content::RegisterLoadUrlParams},
+    {"NavigationControllerAndroid",
+     content::NavigationControllerAndroid::Register},
     {"PowerSaveBlock", content::RegisterPowerSaveBlocker},
     {"RegisterImeAdapter", content::RegisterImeAdapter},
     {"SpeechRecognizerImplAndroid",
@@ -70,6 +74,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"TouchPoint", content::RegisterTouchPoint},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
     {"VibrationProvider", content::VibrationProviderAndroid::Register},
+    {"WebContentsAndroid", content::WebContentsAndroid::Register},
     {"WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid},
     {"WebViewStatics", content::RegisterWebViewStatics}, };
 

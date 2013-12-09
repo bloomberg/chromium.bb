@@ -24,6 +24,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
+
 namespace base {
 class TimeTicks;
 }
@@ -461,6 +465,12 @@ class WebContents : public PageNavigator,
                             bool is_favicon,
                             uint32_t max_bitmap_size,
                             const ImageDownloadCallback& callback) = 0;
+
+#if defined(OS_ANDROID)
+  CONTENT_EXPORT static WebContents* FromJavaWebContents(
+      jobject jweb_contents_android);
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() = 0;
+#endif  // OS_ANDROID
 
  private:
   // This interface should only be implemented inside content.

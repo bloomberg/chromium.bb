@@ -92,6 +92,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
+#include "content/browser/web_contents/web_contents_android.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/public/browser/android/content_view_core.h"
 #endif
@@ -156,6 +157,10 @@ namespace content {
 namespace {
 
 const char kDotGoogleDotCom[] = ".google.com";
+
+#if defined(OS_ANDROID)
+const char kWebContentsAndroidKey[] = "web_contents_android";
+#endif  // OS_ANDROID
 
 base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
@@ -3666,6 +3671,19 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 }
 
 #if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject>
+WebContentsImpl::GetJavaWebContents() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WebContentsAndroid* web_contents_android =
+      static_cast<WebContentsAndroid*>(GetUserData(kWebContentsAndroidKey));
+  if (!web_contents_android) {
+    web_contents_android = new WebContentsAndroid(this);
+    SetUserData(kWebContentsAndroidKey, web_contents_android);
+  }
+  return web_contents_android->GetJavaObject();
+}
+
 bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
   return CreateRenderViewForRenderManager(GetRenderViewHost(),
                                           MSG_ROUTING_NONE);

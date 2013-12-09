@@ -209,6 +209,11 @@ ContentViewCoreImpl::~ContentViewCoreImpl() {
   notification_registrar_.RemoveAll();
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+ContentViewCoreImpl::GetWebContentsAndroid(JNIEnv* env, jobject obj) {
+  return web_contents_->GetJavaWebContents();
+}
+
 void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(JNIEnv* env,
                                                          jobject obj) {
   DCHECK(env->IsSameObject(java_ref_.get(env).obj(), obj));
@@ -1122,37 +1127,6 @@ void ContentViewCoreImpl::MoveCaret(JNIEnv* env, jobject obj,
     GetRenderWidgetHostViewAndroid()->MoveCaret(
         gfx::Point(x / GetDpiScale(), y / GetDpiScale()));
   }
-}
-
-jboolean ContentViewCoreImpl::CanGoBack(JNIEnv* env, jobject obj) {
-  return web_contents_->GetController().CanGoBack();
-}
-
-jboolean ContentViewCoreImpl::CanGoForward(JNIEnv* env, jobject obj) {
-  return web_contents_->GetController().CanGoForward();
-}
-
-jboolean ContentViewCoreImpl::CanGoToOffset(JNIEnv* env, jobject obj,
-                                            jint offset) {
-  return web_contents_->GetController().CanGoToOffset(offset);
-}
-
-void ContentViewCoreImpl::GoBack(JNIEnv* env, jobject obj) {
-  web_contents_->GetController().GoBack();
-}
-
-void ContentViewCoreImpl::GoForward(JNIEnv* env, jobject obj) {
-  web_contents_->GetController().GoForward();
-}
-
-void ContentViewCoreImpl::GoToOffset(JNIEnv* env, jobject obj, jint offset) {
-  web_contents_->GetController().GoToOffset(offset);
-}
-
-void ContentViewCoreImpl::GoToNavigationIndex(JNIEnv* env,
-                                              jobject obj,
-                                              jint index) {
-  web_contents_->GetController().GoToIndex(index);
 }
 
 void ContentViewCoreImpl::LoadIfNecessary(JNIEnv* env, jobject obj) {

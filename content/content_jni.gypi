@@ -35,6 +35,8 @@
     'public/android/java/src/org/chromium/content/browser/TracingControllerAndroid.java',
     'public/android/java/src/org/chromium/content/browser/VibrationProvider.java',
     'public/android/java/src/org/chromium/content/browser/WebContentsObserverAndroid.java',
+    'public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java',
+    'public/android/java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java',
     'public/android/java/src/org/chromium/content/common/DeviceTelephonyInfo.java',
     'public/android/java/src/org/chromium/content/common/TraceEvent.java',
    ],
