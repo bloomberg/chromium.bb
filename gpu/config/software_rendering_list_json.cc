@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.17",
+  "version": "6.18",
   "entries": [
     {
       "id": 1,
@@ -1001,6 +1001,22 @@ LONG_STRING_CONST(
       },
       "features": [
         "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 84,
+      "description": "Incorrect rendering in pink with NVIDIA driver 9.18.13.3165 on Windows",
+      "cr_bugs": [319115],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "value": "9.18.13.3165"
+      },
+      "features": [
+        "all"
       ]
     }
   ]
