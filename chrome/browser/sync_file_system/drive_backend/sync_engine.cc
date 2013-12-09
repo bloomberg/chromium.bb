@@ -37,6 +37,7 @@
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "google_apis/drive/gdata_wapi_url_generator.h"
 #include "webkit/common/blob/scoped_file.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -473,8 +474,14 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                                           SYNC_DIRECTION_REMOTE_TO_LOCAL));
   }
 
-  if (status == SYNC_STATUS_OK)
+  if (status == SYNC_STATUS_OK) {
+    if (syncer->sync_action() == SYNC_ACTION_DELETED &&
+        syncer->url().is_valid() &&
+        fileapi::VirtualPath::IsRootPath(syncer->url().path())) {
+      RegisterOrigin(syncer->url().origin(), base::Bind(&EmptyStatusCallback));
+    }
     should_check_conflict_ = true;
+  }
   callback.Run(status, syncer->url());
 }
 
@@ -512,6 +519,12 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
 
   if (status == SYNC_STATUS_OK)
     should_check_conflict_ = true;
+
+  if (status == SYNC_STATUS_UNKNOWN_ORIGIN && syncer->url().is_valid()) {
+    RegisterOrigin(syncer->url().origin(),
+                   base::Bind(&EmptyStatusCallback));
+  }
+
   callback.Run(status);
 }
 

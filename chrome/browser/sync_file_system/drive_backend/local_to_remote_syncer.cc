@@ -80,7 +80,7 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
           app_id, path,
           active_ancestor_tracker.get(), &active_ancestor_path)) {
     // The app is disabled or not registered.
-    callback.Run(SYNC_STATUS_FAILED);
+    callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
     return;
   }
   DCHECK(active_ancestor_tracker->active());

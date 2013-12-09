@@ -582,14 +582,6 @@ void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
     return;
   }
 
-  if (dirty_tracker_->tracker_kind() == TRACKER_KIND_APP_ROOT) {
-    // TODO(tzik): Active app-root is deleted. Needs special handling.
-    NOTIMPLEMENTED();
-    callback.Run(SYNC_STATUS_FAILED);
-    return;
-  }
-
-  DCHECK(!fileapi::VirtualPath::IsRootPath(url_.path()));
   remote_change_processor()->ApplyRemoteChange(
       FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN),
       base::FilePath(),
