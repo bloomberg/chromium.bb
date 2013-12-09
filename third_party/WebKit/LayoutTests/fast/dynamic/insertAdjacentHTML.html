@@ -20,6 +20,7 @@ if (window.testRunner)
       var testPassed = false;
       try {
          func();
+         document.getElementById("error-log").innerHTML += "Expected exception missing.\n";
       } catch (e) {
          document.getElementById("error-log").innerHTML += "Caught expected exception: " + e + "\n";
          testPassed = true;
@@ -29,10 +30,15 @@ if (window.testRunner)
 
    // check that exceptions are thrown as required
    var passes = true;
-   passes = passes & assertThrows(function() {
+   passes = assertThrows(function() {
       // should throw TYPE_MISMATCH_ERR
       document.getElementById("container").insertAdjacentHTML("blah", "<span>html</span>");
-   });
+   }) && passes;
+
+   passes = assertThrows(function() {
+      // Should throw NoModificationAllowedError.
+      document.createElement('div').insertAdjacentHTML("afterEnd", "<span>html</span>");
+   }) && passes;
 
    if (passes) {
       document.getElementById("status").style.color = "green";

@@ -506,12 +506,12 @@ Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChi
     return toElement(returnValue);
 }
 
-// Step 3 of http://www.whatwg.org/specs/web-apps/current-work/multipage/apis-in-html-documents.html#insertadjacenthtml()
+// Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
 static Element* contextElementForInsertion(const String& where, Element* element, ExceptionState& exceptionState)
 {
     if (equalIgnoringCase(where, "beforeBegin") || equalIgnoringCase(where, "afterEnd")) {
         ContainerNode* parent = element->parentNode();
-        if (parent && !parent->isElementNode()) {
+        if (!parent || !parent->isElementNode()) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The element has no parent.");
             return 0;
         }
