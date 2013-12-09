@@ -29,6 +29,7 @@ namespace sync_file_system {
 namespace drive_backend {
 
 class MetadataDatabase;
+class SyncEngineContext;
 
 // This class performs initializion sequence of SyncEngine.
 //
@@ -59,7 +60,8 @@ class MetadataDatabase;
 //
 class SyncEngineInitializer : public SyncTask {
  public:
-  SyncEngineInitializer(base::SequencedTaskRunner* task_runner,
+  SyncEngineInitializer(SyncEngineContext* sync_context,
+                        base::SequencedTaskRunner* task_runner,
                         drive::DriveServiceInterface* drive_service,
                         const base::FilePath& database_path);
   virtual ~SyncEngineInitializer();
@@ -98,6 +100,8 @@ class SyncEngineInitializer : public SyncTask {
   void PopulateDatabase(const SyncStatusCallback& callback);
   void DidPopulateDatabase(const SyncStatusCallback& callback,
                            SyncStatusCode status);
+
+  SyncEngineContext* sync_context_;  // Not owned.
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   drive::DriveServiceInterface* drive_service_;

@@ -59,6 +59,7 @@ class SyncEngineInitializerTest : public testing::Test {
 
   SyncStatusCode RunInitializer() {
     initializer_.reset(new SyncEngineInitializer(
+        NULL,
         base::MessageLoopProxy::current(),
         &fake_drive_service_,
         database_path()));

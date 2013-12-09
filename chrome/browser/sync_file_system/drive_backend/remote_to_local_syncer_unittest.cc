@@ -79,7 +79,8 @@ class RemoteToLocalSyncerTest : public testing::Test,
   }
 
   void InitializeMetadataDatabase() {
-    SyncEngineInitializer initializer(base::MessageLoopProxy::current(),
+    SyncEngineInitializer initializer(this,
+                                      base::MessageLoopProxy::current(),
                                       fake_drive_service_.get(),
                                       database_dir_.path());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;

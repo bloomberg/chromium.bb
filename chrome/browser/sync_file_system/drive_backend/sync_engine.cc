@@ -90,13 +90,14 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   scoped_ptr<drive_backend::SyncEngine> sync_engine(
-      new drive_backend::SyncEngine(
+      new SyncEngine(
           GetSyncFileSystemDir(context->GetPath()),
           task_runner.get(),
           drive_service.Pass(),
           drive_uploader.Pass(),
           notification_manager,
-          extension_service));
+          extension_service,
+          token_service));
   sync_engine->Initialize();
 
   return sync_engine.Pass();
@@ -122,14 +123,7 @@ void SyncEngine::Initialize() {
   task_manager_.reset(new SyncTaskManager(weak_ptr_factory_.GetWeakPtr()));
   task_manager_->Initialize(SYNC_STATUS_OK);
 
-  SyncEngineInitializer* initializer =
-      new SyncEngineInitializer(task_runner_.get(),
-                                drive_service_.get(),
-                                base_dir_.Append(kDatabaseName));
-  task_manager_->ScheduleSyncTask(
-      scoped_ptr<SyncTask>(initializer),
-      base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
-                 initializer));
+  PostInitializeTask();
 
   if (notification_manager_)
     notification_manager_->AddObserver(this);
@@ -344,8 +338,14 @@ void SyncEngine::OnPushNotificationEnabled(bool enabled) {}
 void SyncEngine::OnReadyToSendRequests() {
   if (service_state_ == REMOTE_SERVICE_OK)
     return;
-
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
+
+  if (!metadata_database_ && auth_token_service_) {
+    drive_service_->Initialize(auth_token_service_->GetPrimaryAccountId());
+    PostInitializeTask();
+    return;
+  }
+
   should_check_remote_change_ = true;
   MaybeScheduleNextTask();
 }
@@ -397,13 +397,15 @@ SyncEngine::SyncEngine(
     scoped_ptr<drive::DriveServiceInterface> drive_service,
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     drive::DriveNotificationManager* notification_manager,
-    ExtensionServiceInterface* extension_service)
+    ExtensionServiceInterface* extension_service,
+    ProfileOAuth2TokenService* auth_token_service)
     : base_dir_(base_dir),
       task_runner_(task_runner),
       drive_service_(drive_service.Pass()),
       drive_uploader_(drive_uploader.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
+      auth_token_service_(auth_token_service),
       remote_change_processor_(NULL),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       should_check_conflict_(true),
@@ -424,10 +426,34 @@ void SyncEngine::DoEnableApp(const std::string& app_id,
   metadata_database_->EnableApp(app_id, callback);
 }
 
+void SyncEngine::PostInitializeTask() {
+  DCHECK(!metadata_database_);
+
+  // This initializer task may not run if metadata_database_ is already
+  // initialized when it runs.
+  SyncEngineInitializer* initializer =
+      new SyncEngineInitializer(this,
+                                task_runner_.get(),
+                                drive_service_.get(),
+                                base_dir_.Append(kDatabaseName));
+  task_manager_->ScheduleSyncTask(
+      scoped_ptr<SyncTask>(initializer),
+      base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
+                 initializer));
+}
+
 void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {
-  if (status != SYNC_STATUS_OK)
+  if (status != SYNC_STATUS_OK) {
+    if (drive_service_->HasRefreshToken()) {
+      UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
+                         "Could not initialize remote service");
+    } else {
+      UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                         "Authentication required.");
+    }
     return;
+  }
   metadata_database_ = initializer->PassMetadataDatabase();
   UpdateRegisteredApps();
 }

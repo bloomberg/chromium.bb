@@ -17,6 +17,7 @@
 #include "net/base/network_change_notifier.h"
 
 class ExtensionServiceInterface;
+class ProfileOAuth2TokenService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -131,13 +132,15 @@ class SyncEngine : public RemoteFileSyncService,
              scoped_ptr<drive::DriveServiceInterface> drive_service,
              scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
              drive::DriveNotificationManager* notification_manager,
-             ExtensionServiceInterface* extension_service);
+             ExtensionServiceInterface* extension_service,
+             ProfileOAuth2TokenService* auth_token_service);
 
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
   void DoEnableApp(const std::string& app_id,
                    const SyncStatusCallback& callback);
 
+  void PostInitializeTask();
   void DidInitialize(SyncEngineInitializer* initializer,
                      SyncStatusCode status);
   void DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
@@ -172,6 +175,7 @@ class SyncEngine : public RemoteFileSyncService,
   // BrowserContextKeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
   ExtensionServiceInterface* extension_service_;
+  ProfileOAuth2TokenService* auth_token_service_;
 
   ObserverList<SyncServiceObserver> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;

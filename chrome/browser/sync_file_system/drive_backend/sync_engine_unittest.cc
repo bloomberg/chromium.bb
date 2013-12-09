@@ -117,8 +117,9 @@ class SyncEngineTest
         base::MessageLoopProxy::current(),
         fake_drive_service.PassAs<drive::DriveServiceInterface>(),
         scoped_ptr<drive::DriveUploaderInterface>(),
-        NULL,
-        extension_service_.get()));
+        NULL /* notification_manager */,
+        extension_service_.get(),
+        NULL /* auth_token_service */));
     sync_engine_->Initialize();
     base::RunLoop().RunUntilIdle();
   }
