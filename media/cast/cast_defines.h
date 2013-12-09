@@ -73,6 +73,11 @@ inline bool IsNewerFrameId(uint32 frame_id, uint32 prev_frame_id) {
       static_cast<uint32>(frame_id - prev_frame_id) < 0x80000000;
 }
 
+inline bool IsNewerRtpTimestamp(uint32 timestamp, uint32 prev_timestamp) {
+  return (timestamp != prev_timestamp) &&
+      static_cast<uint32>(timestamp - prev_timestamp) < 0x80000000;
+}
+
 inline bool IsOlderFrameId(uint32 frame_id, uint32 prev_frame_id) {
   return (frame_id == prev_frame_id) || IsNewerFrameId(prev_frame_id, frame_id);
 }

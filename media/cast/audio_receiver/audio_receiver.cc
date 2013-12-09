@@ -104,7 +104,9 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                                    true,
                                    0));
   } else {
-    audio_decoder_.reset(new AudioDecoder(audio_config));
+    audio_decoder_.reset(new AudioDecoder(cast_environment,
+                                          audio_config,
+                                          incoming_payload_feedback_.get()));
   }
   if (audio_config.aes_iv_mask.size() == kAesKeySize &&
       audio_config.aes_key.size() == kAesKeySize) {
@@ -453,24 +455,34 @@ void AudioReceiver::SendNextRtcpReport() {
 // if not triggered elsewhere, e.g. by the cast message_builder.
 void AudioReceiver::ScheduleNextCastMessage() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  base::TimeTicks send_time;
   if (audio_buffer_) {
-    base::TimeTicks send_time;
     audio_buffer_->TimeToSendNextCastMessage(&send_time);
-
-    base::TimeDelta time_to_send = send_time -
-        cast_environment_->Clock()->NowTicks();
-    time_to_send = std::max(time_to_send,
-        base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
-    cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&AudioReceiver::SendNextCastMessage,
-                   weak_factory_.GetWeakPtr()), time_to_send);
+  } else if (audio_decoder_) {
+    audio_decoder_->TimeToSendNextCastMessage(&send_time);
+  } else {
+    NOTREACHED();
   }
+  base::TimeDelta time_to_send = send_time -
+      cast_environment_->Clock()->NowTicks();
+  time_to_send = std::max(time_to_send,
+      base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
+  cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(&AudioReceiver::SendNextCastMessage,
+                 weak_factory_.GetWeakPtr()), time_to_send);
 }
 
 void AudioReceiver::SendNextCastMessage() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  DCHECK(audio_buffer_) << "Invalid function call in this configuration";
-  audio_buffer_->SendCastMessage();  // Will only send a message if it is time.
+
+  if (audio_buffer_) {
+    // Will only send a message if it is time.
+    audio_buffer_->SendCastMessage();
+  }
+  if (audio_decoder_) {
+    // Will only send a message if it is time.
+    audio_decoder_->SendCastMessage();
+  }
   ScheduleNextCastMessage();
 }
 

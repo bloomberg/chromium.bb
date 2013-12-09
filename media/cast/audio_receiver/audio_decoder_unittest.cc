@@ -2,22 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ref_counted.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "media/cast/audio_receiver/audio_decoder.h"
+#include "media/cast/cast_environment.h"
+#include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
 
+namespace {
+class TestRtpPayloadFeedback : public RtpPayloadFeedback {
+ public:
+  TestRtpPayloadFeedback() {}
+  virtual ~TestRtpPayloadFeedback() {}
+
+  virtual void CastFeedback(const RtcpCastMessage& cast_feedback) OVERRIDE {
+    EXPECT_EQ(1u, cast_feedback.ack_frame_id_);
+    EXPECT_EQ(0u, cast_feedback.missing_frames_and_packets_.size());
+  }
+};
+}  // namespace.
+
 class AudioDecoderTest : public ::testing::Test {
  protected:
-  AudioDecoderTest() {}
+  AudioDecoderTest() {
+    testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1234));
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+        task_runner_, task_runner_, task_runner_, task_runner_,
+        GetDefaultCastLoggingConfig());
+  }
   virtual ~AudioDecoderTest() {}
 
   void Configure(const AudioReceiverConfig& audio_config) {
-    audio_decoder_.reset(new AudioDecoder(audio_config));
+    audio_decoder_.reset(
+        new AudioDecoder(cast_environment_, audio_config, &cast_feedback_));
   }
 
+  TestRtpPayloadFeedback cast_feedback_;
+  base::SimpleTestTickClock testing_clock_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<AudioDecoder> audio_decoder_;
 };
 
@@ -80,6 +106,7 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
   Configure(audio_config);
 
   RtpCastHeader rtp_header;
+  rtp_header.frame_id = 0;
   rtp_header.webrtc.header.payloadType = 127;
   rtp_header.webrtc.header.sequenceNumber = 1234;
   rtp_header.webrtc.header.timestamp = 0x87654321;
@@ -107,7 +134,6 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
                                                desired_frequency,
                                                &audio_frame,
                                                &rtp_timestamp));
-
   EXPECT_EQ(2, audio_frame.channels);
   EXPECT_EQ(16000, audio_frame.frequency);
   EXPECT_EQ(640ul, audio_frame.samples.size());
@@ -117,6 +143,7 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
     EXPECT_EQ(0x3412, audio_frame.samples[i]);
   }
 
+  rtp_header.frame_id++;
   rtp_header.webrtc.header.sequenceNumber++;
   rtp_header.webrtc.header.timestamp += (audio_config.frequency / 100) * 2 * 2;
 
@@ -133,6 +160,10 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
   for (size_t i = 0; i < audio_frame.samples.size(); ++i) {
     EXPECT_NEAR(0x3412, audio_frame.samples[i], 1000);
   }
+  // Test cast callback.
+  audio_decoder_->SendCastMessage();
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(33));
+  audio_decoder_->SendCastMessage();
 }
 
 TEST_F(AudioDecoderTest, Pcm16Resample) {
