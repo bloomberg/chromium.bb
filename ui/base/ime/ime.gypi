@@ -82,16 +82,6 @@
     }],
     ['chromeos==0 or use_x11==0', {
       'sources!': [
-        'chromeos/character_composer.cc',
-        'chromeos/character_composer.h',
-        'chromeos/ibus_bridge.cc',
-        'chromeos/ibus_bridge.h',
-        'chromeos/mock_ime_candidate_window_handler.cc',
-        'chromeos/mock_ime_candidate_window_handler.h',
-        'chromeos/mock_ime_engine_handler.cc',
-        'chromeos/mock_ime_engine_handler.h',
-        'chromeos/mock_ime_input_context_handler.cc',
-        'chromeos/mock_ime_input_context_handler.h',
         'input_method_ibus.cc',
         'input_method_ibus.h',
       ],

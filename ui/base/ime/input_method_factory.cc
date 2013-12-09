@@ -42,7 +42,16 @@ InputMethodFactory* InputMethodFactory::GetInstance() {
 
 // static
 void InputMethodFactory::SetInstance(InputMethodFactory* instance) {
+  CHECK(!g_input_method_factory);
+  CHECK(instance);
+
   g_input_method_factory = instance;
+}
+
+// static
+void InputMethodFactory::ClearInstance() {
+  // It's a client's duty to delete the object.
+  g_input_method_factory = NULL;
 }
 
 // DefaultInputMethodFactory

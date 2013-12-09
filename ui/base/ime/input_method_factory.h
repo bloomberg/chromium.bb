@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -40,6 +41,12 @@ class UI_EXPORT InputMethodFactory {
   virtual scoped_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate,
       gfx::AcceleratedWidget widget) = 0;
+
+ private:
+  static void ClearInstance();
+
+  friend UI_EXPORT void ShutdownInputMethod();
+  friend UI_EXPORT void ShutdownInputMethodForTesting();
 };
 
 class DefaultInputMethodFactory : public InputMethodFactory {
@@ -85,6 +92,8 @@ UI_EXPORT scoped_ptr<InputMethod> CreateInputMethod(
     gfx::AcceleratedWidget widget);
 
 // Shorthand for InputMethodFactory::SetInstance(new MockInputMethodFactory()).
+// TODO(yukishiino): Retires this shorthand, and makes ui::InitializeInputMethod
+// and ui::InitializeInputMethodForTesting set the appropriate factory.
 UI_EXPORT void SetUpInputMethodFactoryForTesting();
 
 #if defined(OS_WIN)
