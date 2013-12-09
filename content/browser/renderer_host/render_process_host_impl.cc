@@ -969,7 +969,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableUnprefixedMediaSource,
     switches::kDisableVp8AlphaPlayback,
     switches::kDisableWebAnimationsCSS,
-    switches::kDisableWebAudio,
     switches::kDisableWebKitMediaSource,
     switches::kDomAutomationController,
     switches::kEnableAcceleratedFixedRootBackground,
@@ -1123,6 +1122,13 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kHideScrollbars,
     switches::kMediaDrmEnableNonCompositing,
     switches::kNetworkCountryIso,
+#endif
+#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
+    switches::kEnableWebAudio,
+#else
+    // Need to be able to disable webaudio on other platforms where it
+    // is enabled by default.
+    switches::kDisableWebAudio,
 #endif
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.

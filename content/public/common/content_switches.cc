@@ -326,9 +326,6 @@ const char kDisableUnprefixedMediaSource[]  = "disable-unprefixed-media-source";
 // Disable CSS Transitions / Animations on the Web Animations model.
 const char kDisableWebAnimationsCSS[]        = "disable-web-animations-css";
 
-// Disable web audio API.
-const char kDisableWebAudio[]               = "disable-webaudio";
-
 // Disables prefixed Media Source API (i.e., the WebKitMediaSource object).
 const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
 
@@ -1014,6 +1011,13 @@ const char kNetworkCountryIso[] = "network-country-iso";
 
 // Enables remote debug over HTTP on the specified socket name.
 const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
+#endif
+
+#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
+const char kEnableWebAudio[]                = "enable-webaudio";
+#else
+// Disable web audio API.
+const char kDisableWebAudio[]               = "disable-webaudio";
 #endif
 
 #if defined(OS_CHROMEOS)

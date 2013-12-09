@@ -106,7 +106,6 @@ CONTENT_EXPORT extern const char kDisableThreadedHTMLParser[];
 CONTENT_EXPORT extern const char kDisableUniversalAcceleratedOverflowScroll[];
 CONTENT_EXPORT extern const char kDisableUnprefixedMediaSource[];
 extern const char kDisableWebAnimationsCSS[];
-CONTENT_EXPORT extern const char kDisableWebAudio[];
 CONTENT_EXPORT extern const char kDisableWebKitMediaSource[];
 CONTENT_EXPORT extern const char kDisableWebSecurity[];
 extern const char kDisableXSLT[];
@@ -292,6 +291,12 @@ CONTENT_EXPORT extern const char kEnableSpeechRecognition[];
 CONTENT_EXPORT extern const char kHideScrollbars[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
+#endif
+
+#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
+CONTENT_EXPORT extern const char kEnableWebAudio[];
+#else
+CONTENT_EXPORT extern const char kDisableWebAudio[];
 #endif
 
 #if defined(OS_CHROMEOS)
