@@ -54,8 +54,6 @@ function verticalScrollTest() {
     var touchWidth = 25;
     var touchHeight = 25;
 
-    eventSender.gestureTapDown(
-        scrollbarX, scrollbarY, touchWidth, touchHeight);
     shouldBe('textArea.scrollTop', '0');
     eventSender.gestureShowPress(
         scrollbarX, scrollbarY, touchWidth, touchHeight);

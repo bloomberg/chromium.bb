@@ -7,15 +7,9 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 PASS movingDiv.scrollTop is 0
-PASS movingDiv.scrollTop is 0
-PASS movingDiv.scrollTop is >= 20
-PASS movingDiv.scrollTop is >= 85
-PASS movingDiv.scrollTop is >= 85
+PASS movingDiv.scrollTop is >= 1
 PASS movingDiv.scrollLeft is 0
-PASS movingDiv.scrollLeft is 0
-PASS movingDiv.scrollLeft is >= 20
-PASS movingDiv.scrollLeft is >= 85
-PASS movingDiv.scrollLeft is >= 85
+PASS movingDiv.scrollLeft is >= 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
