@@ -97,6 +97,8 @@ def generate_attribute(interface, attribute):
         'is_getter_raises_exception': (
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in [None, 'Getter']),
+        'is_initialized_by_event_constructor':
+            'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,

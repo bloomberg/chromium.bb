@@ -255,7 +255,16 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("{{interface_name}}") : forEventName, "", exceptionState);
-    {# FIXME: implement [InitializedByEventConstructor] #}
+    {# FIXME: parent interface #}
+    {% for attribute in attributes
+           if attribute.is_initialized_by_event_constructor %}
+    {# FIXME: implement [ImplementedAs] #}
+    {# FIXME: implement [DeprecateAs] #}
+    {# FIXME: special-case any #}
+    {# FIXME: implement withPropertyAttributes #}
+    if (!options.convert(conversionContext, "{{attribute.name}}", eventInit.{{attribute.name}}))
+        return false;
+    {% endfor %}
     return true;
 }
 
