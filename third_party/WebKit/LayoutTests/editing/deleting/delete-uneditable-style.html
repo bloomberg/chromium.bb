@@ -14,7 +14,7 @@
 Markup.description('Test case for crash bug http://crbug.com/177470');
 function $(id) { return document.getElementById(id); }
 var range = document.createRange();
-range.setStart($('start'));
+range.setStart($('start'), 0);
 range.setEnd($('end'), NaN);
 getSelection().addRange(range);
 document.execCommand('delete', null, '');

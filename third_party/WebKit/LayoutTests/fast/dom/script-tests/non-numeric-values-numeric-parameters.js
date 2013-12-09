@@ -298,10 +298,10 @@ shouldBe("nonNumericPolicy('document.getElementsByTagName(\"div\").item(x)')", "
 
 // Range
 
-shouldBe("nonNumericPolicy('document.createRange().setStart(document, x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.createRange().setEnd(document, x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.createRange().comparePoint(document, x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.createRange().isPointInRange(document, x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.createRange().setStart(document, x)')", "'any type allowed (but not omitted)'");
+shouldBe("nonNumericPolicy('document.createRange().setEnd(document, x)')", "'any type allowed (but not omitted)'");
+shouldBe("nonNumericPolicy('document.createRange().comparePoint(document, x)')", "'any type allowed (but not omitted)'");
+shouldBe("nonNumericPolicy('document.createRange().isPointInRange(document, x)')", "'any type allowed (but not omitted)'");
 
 // Selection
 

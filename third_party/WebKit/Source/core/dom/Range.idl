@@ -31,17 +31,15 @@
     [RaisesException=Getter] readonly attribute boolean collapsed;
     [RaisesException=Getter] readonly attribute Node commonAncestorContainer;
 
-     [RaisesException] void setStart([Default=Undefined] optional Node refNode,
-                                 [Default=Undefined] optional long offset);
-     [RaisesException] void setEnd([Default=Undefined] optional Node refNode,
-                               [Default=Undefined] optional long offset);
-    [RaisesException] void setStartBefore([Default=Undefined] optional Node refNode);
-    [RaisesException] void setStartAfter([Default=Undefined] optional Node refNode);
-    [RaisesException] void setEndBefore([Default=Undefined] optional Node refNode);
-    [RaisesException] void setEndAfter([Default=Undefined] optional Node refNode);
+    [RaisesException] void setStart(Node refNode, long offset);
+    [RaisesException] void setEnd(Node refNode, long offset);
+    [RaisesException] void setStartBefore(Node refNode);
+    [RaisesException] void setStartAfter(Node refNode);
+    [RaisesException] void setEndBefore(Node refNode);
+    [RaisesException] void setEndAfter(Node refNode);
     [RaisesException] void collapse([Default=Undefined] optional boolean toStart);
-    [RaisesException] void selectNode([Default=Undefined] optional Node refNode);
-    [RaisesException] void selectNodeContents([Default=Undefined] optional Node refNode);
+    [RaisesException] void selectNode(Node refNode);
+    [RaisesException] void selectNodeContents(Node refNode);
 
     // CompareHow
     const unsigned short START_TO_START = 0;
@@ -49,33 +47,33 @@
     const unsigned short END_TO_END     = 2;
     const unsigned short END_TO_START   = 3;
 
-     [RaisesException] short compareBoundaryPoints([Default=Undefined] optional CompareHow how,
-                                               [Default=Undefined] optional Range sourceRange);
+    [RaisesException] short compareBoundaryPoints(CompareHow how, Range sourceRange);
 
     [RaisesException, CustomElementCallbacks] void deleteContents();
     [RaisesException, CustomElementCallbacks] DocumentFragment extractContents();
     [RaisesException, CustomElementCallbacks] DocumentFragment cloneContents();
-    [RaisesException, CustomElementCallbacks] void insertNode([Default=Undefined] optional Node newNode);
-    [RaisesException, CustomElementCallbacks] void surroundContents([Default=Undefined] optional Node newParent);
+    [RaisesException, CustomElementCallbacks] void insertNode(Node newNode);
+    [RaisesException, CustomElementCallbacks] void surroundContents(Node newParent);
     [RaisesException] Range cloneRange();
     [RaisesException] DOMString toString();
 
     [RaisesException] void detach();
+
+    [RaisesException] boolean isPointInRange(Node refNode, long offset);
+    [RaisesException] short comparePoint(Node refNode, long offset);
+
+    [RaisesException] boolean intersectsNode(Node refNode);
 
     // CSSOM View Module API extensions
 
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
 
-    // extensions
+    // DOM Parsing and Serialization
 
-    [RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment([Default=Undefined] optional DOMString html);
+    [RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment(DOMString html);
 
     // WebKit extensions
-
-    [RaisesException] boolean intersectsNode([Default=Undefined] optional Node refNode);
-
-    [RaisesException] short compareNode([Default=Undefined] optional Node refNode);
 
     // CompareResults
     const unsigned short NODE_BEFORE           = 0;
@@ -83,11 +81,7 @@
     const unsigned short NODE_BEFORE_AND_AFTER = 2;
     const unsigned short NODE_INSIDE           = 3;
 
-    [RaisesException] short comparePoint([Default=Undefined] optional Node refNode,
-                       [Default=Undefined] optional long offset);
-
-    [RaisesException] boolean isPointInRange([Default=Undefined] optional Node refNode,
-                           [Default=Undefined] optional long offset);
+    [RaisesException] short compareNode([Default=Undefined] optional Node refNode);
 
     [RaisesException] void expand([Default=Undefined] optional DOMString unit);
 };

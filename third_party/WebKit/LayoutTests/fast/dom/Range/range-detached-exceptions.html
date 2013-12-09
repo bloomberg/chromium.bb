@@ -38,11 +38,11 @@
         shouldThrow("range.extractContents()", execute("extractContents"));
         shouldThrow("range.insertNode(document.getElementById('b1'))", execute("insertNode"));
         shouldThrow("range.intersectsNode(document.getElementById('b1'))", execute("intersectsNode"));
-        shouldThrow("range.isPointInRange(document.getElementById('b1'))", execute("isPointInRange"));
+        shouldThrow("range.isPointInRange(document.getElementById('b1'), 0)", execute("isPointInRange"));
         shouldThrow("range.selectNode(document.getElementById('b1'))", execute("selectNode"));
         shouldThrow("range.selectNodeContents(document.getElementById('b1'))", execute("selectNodeContents"));
-        shouldThrow("range.setEnd(document.getElementById('b1'))", execute("setEnd"));
-        shouldThrow("range.setStart(document.getElementById('b1'))", execute("setStart"));
+        shouldThrow("range.setEnd(document.getElementById('b1'), 0)", execute("setEnd"));
+        shouldThrow("range.setStart(document.getElementById('b1'), 0)", execute("setStart"));
         shouldThrow("range.startContainer", read("startContainer"));
         shouldThrow("range.startOffset", read("startOffset"));
         shouldThrow("range.surroundContents(document.getElementById('b1'))", execute("surroundContents"));
