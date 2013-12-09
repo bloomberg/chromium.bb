@@ -5,19 +5,30 @@
 import logging
 import os
 import psutil
+import signal
 
 from pylib import android_commands
 
+
 def _KillWebServers():
-  for retry in xrange(5):
-    for server in ['lighttpd', 'web-page-replay']:
-      pids = [p.pid for p in psutil.process_iter() if server in p.name]
-      for pid in pids:
+  for s in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT, signal.SIGKILL]:
+    signalled = []
+    for server in ['lighttpd', 'webpagereplay']:
+      for p in psutil.process_iter():
         try:
-          logging.warning('Killing %s %s', server, pid)
-          os.kill(pid, signal.SIGQUIT)
+          if not server in ' '.join(p.cmdline):
+            continue
+          logging.info('Killing %s %s %s', s, server, p.pid)
+          p.send_signal(s)
+          signalled.append(p)
         except Exception as e:
-          logging.warning('Failed killing %s %s %s', server, pid, e)
+          logging.warning('Failed killing %s %s %s', server, p.pid, e)
+    for p in signalled:
+      try:
+        p.wait(1)
+      except Exception as e:
+        logging.warning('Failed waiting for %s to die. %s', p.pid, e)
+
 
 
 def CleanupLeftoverProcesses():
