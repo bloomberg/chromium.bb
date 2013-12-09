@@ -179,6 +179,7 @@ exports.canvas = function() {
     canvas.vibrance = wrap(vibrance);
     canvas.sepia = wrap(sepia);
     canvas.photolab = wrap(photolab);
+    canvas.modern = wrap(modern);
 
     return canvas;
 };

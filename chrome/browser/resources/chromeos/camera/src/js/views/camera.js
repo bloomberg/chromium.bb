@@ -453,6 +453,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.addEffect_(new camera.effects.Grayscale(this.tracker_));
     this.addEffect_(new camera.effects.Sepia(this.tracker_));
     this.addEffect_(new camera.effects.Colorize(this.tracker_));
+    this.addEffect_(new camera.effects.Modern(this.tracker_));
     this.addEffect_(new camera.effects.Beauty(this.tracker_));
     this.addEffect_(new camera.effects.Newspaper(this.tracker_));
     this.addEffect_(new camera.effects.Funky(this.tracker_));
