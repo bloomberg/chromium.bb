@@ -1845,8 +1845,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
       ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest,
-           PictureDrawQuadNonIdentityScale) {
+TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.

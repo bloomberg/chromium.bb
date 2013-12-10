@@ -31,6 +31,7 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) OVERRIDE;
   virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE;
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE;
 
   virtual scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest();
 

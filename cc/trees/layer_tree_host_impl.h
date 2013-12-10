@@ -209,13 +209,7 @@ class CC_EXPORT LayerTreeHostImpl
   // invariant relative to page scale).
   gfx::SizeF UnscaledScrollableViewportSize() const;
 
-  // RendererClient implementation
-
-  // Viewport rectangle and clip in nonflipped window space.  These rects
-  // should only be used by Renderer subclasses to populate glViewport/glClip
-  // and their software-mode equivalents.
-  virtual gfx::Rect DeviceViewport() const OVERRIDE;
-  virtual gfx::Rect DeviceClip() const OVERRIDE;
+  // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE;
 
   // TileManagerClient implementation.
@@ -418,6 +412,11 @@ class CC_EXPORT LayerTreeHostImpl
   void ScheduleMicroBenchmark(scoped_ptr<MicroBenchmarkImpl> benchmark);
 
   CompositorFrameMetadata MakeCompositorFrameMetadata() const;
+  // Viewport rectangle and clip in nonflipped window space.  These rects
+  // should only be used by Renderer subclasses to populate glViewport/glClip
+  // and their software-mode equivalents.
+  gfx::Rect DeviceViewport() const;
+  gfx::Rect DeviceClip() const;
 
   // When a SwapPromiseMonitor is created on the impl thread, it calls
   // InsertSwapPromiseMonitor() to register itself with LayerTreeHostImpl.

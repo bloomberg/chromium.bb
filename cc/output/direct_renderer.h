@@ -34,6 +34,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
+                         gfx::Rect device_viewport_rect,
+                         gfx::Rect device_clip_rect,
                          bool allow_partial_swap,
                          bool disable_picture_quad_image_filtering) OVERRIDE;
 
@@ -46,6 +48,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
     const ScopedResource* current_texture;
 
     gfx::RectF root_damage_rect;
+    gfx::Rect device_viewport_rect;
+    gfx::Rect device_clip_rect;
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
@@ -74,7 +78,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
   gfx::Rect MoveFromDrawToWindowSpace(const gfx::RectF& draw_rect) const;
 
   bool NeedDeviceClip(const DrawingFrame* frame) const;
-  gfx::Rect DeviceClipRect(const DrawingFrame* frame) const;
+  gfx::Rect DeviceClipRectInWindowSpace(const DrawingFrame* frame) const;
   static gfx::RectF ComputeScissorRectForRenderPass(const DrawingFrame* frame);
   void SetScissorStateForQuad(const DrawingFrame* frame, const DrawQuad& quad);
   void SetScissorStateForQuadWithRenderPassScissor(

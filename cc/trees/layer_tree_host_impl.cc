@@ -1387,9 +1387,13 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_, output_surface_.get(), NULL);
-    temp_software_renderer->DrawFrame(
-        &frame->render_passes, NULL, device_scale_factor_, allow_partial_swap,
-        disable_picture_quad_image_filtering);
+    temp_software_renderer->DrawFrame(&frame->render_passes,
+                                      NULL,
+                                      device_scale_factor_,
+                                      DeviceViewport(),
+                                      DeviceClip(),
+                                      allow_partial_swap,
+                                      disable_picture_quad_image_filtering);
   } else {
     // We don't track damage on the HUD layer (it interacts with damage tracking
     // visualizations), so disable partial swaps to make the HUD layer display
@@ -1399,6 +1403,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
     renderer_->DrawFrame(&frame->render_passes,
                          offscreen_context_provider_.get(),
                          device_scale_factor_,
+                         DeviceViewport(),
+                         DeviceClip(),
                          allow_partial_swap,
                          false);
   }
@@ -1894,9 +1900,6 @@ void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {
 
   UpdateMaxScrollOffset();
 
-  if (renderer_)
-    renderer_->ViewportChanged();
-
   client_->OnCanDrawStateChanged(CanDraw());
   SetFullRootLayerDamage();
 }
@@ -1921,9 +1924,6 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor == device_scale_factor_)
     return;
   device_scale_factor_ = device_scale_factor;
-
-  if (renderer_)
-    renderer_->ViewportChanged();
 
   UpdateMaxScrollOffset();
   SetFullRootLayerDamage();

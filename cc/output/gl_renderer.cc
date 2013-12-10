@@ -212,9 +212,6 @@ GLRenderer::GLRenderer(RendererClient* client,
       context_caps.discard_framebuffer;
 
   InitializeSharedObjects();
-
-  // Make sure the viewport and context gets initialized, even if it is to zero.
-  ViewportChanged();
 }
 
 GLRenderer::~GLRenderer() {
@@ -310,10 +307,10 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame,
 }
 
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
-  if (client_->DeviceViewport().IsEmpty())
+  if (frame->device_viewport_rect.IsEmpty())
     return;
 
-  TRACE_EVENT0("cc", "GLRenderer::DrawLayers");
+  TRACE_EVENT0("cc", "GLRenderer::BeginDrawingFrame");
 
   ReinitializeGLState();
 }
@@ -2142,23 +2139,24 @@ void GLRenderer::Finish() {
 }
 
 void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
-  DCHECK(visible_);
   DCHECK(!is_backbuffer_discarded_);
 
   TRACE_EVENT0("cc", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
+  gfx::Size surface_size = output_surface_->SurfaceSize();
+
   CompositorFrame compositor_frame;
   compositor_frame.metadata = metadata;
   compositor_frame.gl_frame_data = make_scoped_ptr(new GLFrameData);
-  compositor_frame.gl_frame_data->size = output_surface_->SurfaceSize();
+  compositor_frame.gl_frame_data->size = surface_size;
   if (capabilities_.using_partial_swap) {
     // If supported, we can save significant bandwidth by only swapping the
-    // damaged/scissored region (clamped to the viewport)
-    swap_buffer_rect_.Intersect(client_->DeviceViewport());
-    int flipped_y_pos_of_rect_bottom =
-        client_->DeviceViewport().height() - swap_buffer_rect_.y() -
-        swap_buffer_rect_.height();
+    // damaged/scissored region (clamped to the viewport).
+    swap_buffer_rect_.Intersect(gfx::Rect(surface_size));
+    int flipped_y_pos_of_rect_bottom = surface_size.height() -
+                                       swap_buffer_rect_.y() -
+                                       swap_buffer_rect_.height();
     compositor_frame.gl_frame_data->sub_buffer_rect =
         gfx::Rect(swap_buffer_rect_.x(),
                   flipped_y_pos_of_rect_bottom,

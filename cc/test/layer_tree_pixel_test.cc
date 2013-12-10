@@ -34,7 +34,6 @@ LayerTreePixelTest::~LayerTreePixelTest() {}
 
 scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
     bool fallback) {
-  gfx::Vector2d viewport_offset(20, 10);
   gfx::Size surface_expansion_size(40, 60);
   scoped_ptr<PixelTestOutputSurface> output_surface;
 
@@ -62,7 +61,6 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
     }
   }
 
-  output_surface->set_viewport_offset(viewport_offset);
   output_surface->set_surface_expansion_size(surface_expansion_size);
   return output_surface.PassAs<OutputSurface>();
 }
@@ -73,6 +71,21 @@ LayerTreePixelTest::OffscreenContextProvider() {
       webkit::gpu::ContextProviderInProcess::CreateOffscreen();
   CHECK(provider.get());
   return provider;
+}
+
+void LayerTreePixelTest::CommitCompleteOnThread(LayerTreeHostImpl* impl) {
+  LayerTreeImpl* commit_tree =
+      impl->pending_tree() ? impl->pending_tree() : impl->active_tree();
+  if (commit_tree->source_frame_number() != 0)
+    return;
+
+  gfx::Rect viewport = impl->DeviceViewport();
+  // The viewport has a 0,0 origin without external influence.
+  EXPECT_EQ(gfx::Point().ToString(), viewport.origin().ToString());
+  // Be that influence!
+  viewport += gfx::Vector2d(20, 10);
+  impl->SetExternalDrawConstraints(gfx::Transform(), viewport, viewport, true);
+  EXPECT_EQ(viewport.ToString(), impl->DeviceViewport().ToString());
 }
 
 scoped_ptr<CopyOutputRequest> LayerTreePixelTest::CreateCopyOutputRequest() {

@@ -22,20 +22,12 @@ class PixelTestOutputSurface : public OutputSurface {
   void set_surface_expansion_size(gfx::Size surface_expansion_size) {
     surface_expansion_size_ = surface_expansion_size;
   }
-  void set_viewport_offset(gfx::Vector2d viewport_offset) {
-    viewport_offset_ = viewport_offset;
-  }
-  void set_device_clip(gfx::Rect device_clip) {
-    device_clip_ = device_clip;
-  }
   void set_has_external_stencil_test(bool has_test) {
     external_stencil_test_ = has_test;
   }
 
  private:
   gfx::Size surface_expansion_size_;
-  gfx::Vector2d viewport_offset_;
-  gfx::Rect device_clip_;
   bool external_stencil_test_;
 };
 

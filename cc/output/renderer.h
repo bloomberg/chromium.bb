@@ -18,15 +18,7 @@ class ScopedResource;
 
 class CC_EXPORT RendererClient {
  public:
-  // These return the draw viewport and clip in non-y-flipped window space.
-  // Note that while a draw is in progress, these are guaranteed to be
-  // contained within the output surface size.
-  virtual gfx::Rect DeviceViewport() const = 0;
-  virtual gfx::Rect DeviceClip() const = 0;
   virtual void SetFullRootLayerDamage() = 0;
-
- protected:
-  virtual ~RendererClient() {}
 };
 
 class CC_EXPORT Renderer {
@@ -34,8 +26,6 @@ class CC_EXPORT Renderer {
   virtual ~Renderer() {}
 
   virtual const RendererCapabilities& Capabilities() const = 0;
-
-  virtual void ViewportChanged() {}
 
   virtual bool CanReadPixels() const = 0;
 
@@ -46,9 +36,13 @@ class CC_EXPORT Renderer {
   // This passes ownership of the render passes to the renderer. It should
   // consume them, and empty the list. The parameters here may change from frame
   // to frame and should not be cached.
+  // The |device_viewport_rect| and |device_clip_rect| are in non-y-flipped
+  // window space.
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
+                         gfx::Rect device_viewport_rect,
+                         gfx::Rect device_clip_rect,
                          bool allow_partial_swap,
                          bool disable_picture_quad_image_filtering) = 0;
 
