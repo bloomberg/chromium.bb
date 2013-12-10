@@ -514,12 +514,6 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       "--single-process (to do the above, and also run Chrome in single-"
           "process mode).\n");
 
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // TODO(erg): Trying to parallelize tests on linux_aura makes things flaky
-  // because all shards share X11 state. http://crbug.com/326701
-  default_jobs = 1;
-#endif
-
   base::MessageLoopForIO message_loop;
 
   WrapperTestLauncherDelegate delegate(launcher_delegate);
