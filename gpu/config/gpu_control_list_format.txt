@@ -48,10 +48,7 @@
 // 21. "description" has the description of the entry.
 // 22. "webkit_bugs" is an array of associated webkit bug numbers.
 // 23. "cr_bugs" is an array of associated webkit bug numbers.
-// 24. "browser_version" is a VERSION structure (defined below).  If this
-//     condition is not satisfied, the entry will be ignored.  If it is not
-//     present, then the entry applies to all versions of the browser.
-// 25. "disabled" is a boolean. If it is present, the entry will be skipped.
+// 24. "disabled" is a boolean. If it is present, the entry will be skipped.
 //     This can not be used in exceptions.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of

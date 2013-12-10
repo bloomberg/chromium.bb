@@ -57,8 +57,8 @@ void ApplyGpuDriverBugWorkarounds(CommandLine* command_line) {
   GPUInfo gpu_info;
   CollectBasicGraphicsInfo(&gpu_info);
 
-  GpuDriverBugList* list = GpuDriverBugList::Create();
-  list->LoadList("0", kGpuDriverBugListJson,
+  scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  list->LoadList(kGpuDriverBugListJson,
                  GpuControlList::kCurrentOsOnly);
   std::set<int> workarounds = list->MakeDecision(
       GpuControlList::kOsAny, std::string(), gpu_info);

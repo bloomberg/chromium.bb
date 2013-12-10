@@ -198,21 +198,6 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
       gpu_info.gl_reset_notification_strategy);
 }
 
-// Strip out the non-digital info; if after that, we get an empty string,
-// return "0".
-std::string ProcessVersionString(const std::string& raw_string) {
-  const std::string valid_set = "0123456789.";
-  size_t start_pos = raw_string.find_first_of(valid_set);
-  if (start_pos == std::string::npos)
-    return "0";
-  size_t end_pos = raw_string.find_first_not_of(raw_string, start_pos);
-  std::string version_string = raw_string.substr(
-      start_pos, end_pos - start_pos);
-  if (version_string.empty())
-    return "0";
-  return version_string;
-}
-
 // Combine the integers into a string, seperated by ','.
 std::string IntSetToString(const std::set<int>& list) {
   std::string rt;
@@ -1010,10 +995,6 @@ void GpuDataManagerImplPrivate::InitializeImpl(
     const std::string& gpu_blacklist_json,
     const std::string& gpu_driver_bug_list_json,
     const gpu::GPUInfo& gpu_info) {
-  std::string browser_version_string = ProcessVersionString(
-      GetContentClient()->GetProduct());
-  CHECK(!browser_version_string.empty());
-
   const bool log_gpu_control_list_decisions =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLogGpuControlListDecisions);
@@ -1023,8 +1004,7 @@ void GpuDataManagerImplPrivate::InitializeImpl(
     if (log_gpu_control_list_decisions)
       gpu_blacklist_->enable_control_list_logging("gpu_blacklist");
     bool success = gpu_blacklist_->LoadList(
-        browser_version_string, gpu_blacklist_json,
-        gpu::GpuControlList::kCurrentOsOnly);
+        gpu_blacklist_json, gpu::GpuControlList::kCurrentOsOnly);
     DCHECK(success);
   }
   if (!gpu_driver_bug_list_json.empty()) {
@@ -1032,8 +1012,7 @@ void GpuDataManagerImplPrivate::InitializeImpl(
     if (log_gpu_control_list_decisions)
       gpu_driver_bug_list_->enable_control_list_logging("gpu_driver_bug_list");
     bool success = gpu_driver_bug_list_->LoadList(
-        browser_version_string, gpu_driver_bug_list_json,
-        gpu::GpuControlList::kCurrentOsOnly);
+        gpu_driver_bug_list_json, gpu::GpuControlList::kCurrentOsOnly);
     DCHECK(success);
   }
 

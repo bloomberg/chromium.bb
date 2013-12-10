@@ -46,8 +46,6 @@ class GPU_EXPORT GpuControlList {
   // Loads control list information from a json file.
   // If failed, the current GpuControlList is un-touched.
   bool LoadList(const std::string& json_context, OsFilter os_filter);
-  bool LoadList(const std::string& browser_version_string,
-                const std::string& json_context, OsFilter os_filter);
 
   // Collects system information and combines them with gpu_info and control
   // list information to decide which entries are applied to the current
@@ -107,12 +105,6 @@ class GPU_EXPORT GpuControlList {
   friend class OsInfoTest;
   friend class StringInfoTest;
   friend class VersionInfoTest;
-
-  enum BrowserVersionSupport {
-    kSupported,
-    kUnsupported,
-    kMalformed
-  };
 
   enum NumericOp {
     kBetween,  // <= * <=
@@ -466,18 +458,10 @@ class GPU_EXPORT GpuControlList {
 
   void Clear();
 
-  // Check if the entry is supported by the current version of browser.
-  // By default, if there is no browser version information in the entry,
-  // return kSupported;
-  BrowserVersionSupport IsEntrySupportedByCurrentBrowserVersion(
-      const base::DictionaryValue* value);
-
   static NumericOp StringToNumericOp(const std::string& op);
 
   std::string version_;
   std::vector<ScopedGpuControlListEntry> entries_;
-
-  std::string browser_version_;
 
   // This records all the blacklist entries that are appliable to the current
   // user machine.  It is updated everytime MakeDecision() is called and is

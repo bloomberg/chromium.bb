@@ -789,11 +789,6 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
       }
       dictionary_entry_count++;
     }
-
-    const base::DictionaryValue* browser_version_value = NULL;
-    // browser_version is processed in LoadGpuControlList().
-    if (value->GetDictionary("browser_version", &browser_version_value))
-      dictionary_entry_count++;
   }
 
   if (value->size() != dictionary_entry_count) {
@@ -1201,20 +1196,8 @@ GpuControlList::~GpuControlList() {
 }
 
 bool GpuControlList::LoadList(
-    const std::string& json_context, GpuControlList::OsFilter os_filter) {
-  const std::string browser_version_string = "0";
-  return LoadList(browser_version_string, json_context, os_filter);
-}
-
-bool GpuControlList::LoadList(
-    const std::string& browser_version_string,
     const std::string& json_context,
     GpuControlList::OsFilter os_filter) {
-  std::vector<std::string> pieces;
-  if (!ProcessVersionString(browser_version_string, '.', &pieces))
-    return false;
-  browser_version_ = browser_version_string;
-
   scoped_ptr<base::Value> root;
   root.reset(base::JSONReader::Read(json_context));
   if (root.get() == NULL || !root->IsType(base::Value::TYPE_DICTIONARY))
@@ -1245,15 +1228,6 @@ bool GpuControlList::LoadList(const base::DictionaryValue& parsed_json,
     bool valid = list->GetDictionary(i, &list_item);
     if (!valid || list_item == NULL)
       return false;
-    // Check browser version compatibility: if the entry is not for the
-    // current browser version, don't process it.
-    BrowserVersionSupport browser_version_support =
-        IsEntrySupportedByCurrentBrowserVersion(list_item);
-    if (browser_version_support == kMalformed)
-      return false;
-    if (browser_version_support == kUnsupported)
-      continue;
-    DCHECK(browser_version_support == kSupported);
     ScopedGpuControlListEntry entry(GpuControlListEntry::GetEntryFromValue(
         list_item, true, feature_map_, supports_feature_type_all_));
     if (entry.get() == NULL)
@@ -1383,30 +1357,6 @@ void GpuControlList::Clear() {
   entries_.clear();
   active_entries_.clear();
   max_entry_id_ = 0;
-}
-
-GpuControlList::BrowserVersionSupport
-GpuControlList::IsEntrySupportedByCurrentBrowserVersion(
-    const base::DictionaryValue* value) {
-  DCHECK(value);
-  const base::DictionaryValue* browser_version_value = NULL;
-  if (value->GetDictionary("browser_version", &browser_version_value)) {
-    std::string version_op = "any";
-    std::string version_string;
-    std::string version_string2;
-    browser_version_value->GetString(kOp, &version_op);
-    browser_version_value->GetString("value", &version_string);
-    browser_version_value->GetString("value2", &version_string2);
-    scoped_ptr<VersionInfo> browser_version_info;
-    browser_version_info.reset(new VersionInfo(
-        version_op, std::string(), version_string, version_string2));
-    if (!browser_version_info->IsValid())
-      return kMalformed;
-    if (browser_version_info->Contains(browser_version_))
-      return kSupported;
-    return kUnsupported;
-  }
-  return kSupported;
 }
 
 // static
