@@ -12,11 +12,9 @@ namespace syncer {
 
 SyncManagerForProfileSyncTest::SyncManagerForProfileSyncTest(
     std::string name,
-    base::Closure init_callback,
-    bool set_initial_sync_ended)
+    base::Closure init_callback)
   : SyncManagerImpl(name),
-    init_callback_(init_callback),
-    set_initial_sync_ended_(set_initial_sync_ended) {}
+    init_callback_(init_callback) {}
 
 SyncManagerForProfileSyncTest::~SyncManagerForProfileSyncTest() {}
 
@@ -27,18 +25,14 @@ void SyncManagerForProfileSyncTest::NotifyInitializationSuccess() {
   if (!init_callback_.is_null())
     init_callback_.Run();
 
-  if (set_initial_sync_ended_) {
-    ModelTypeSet early_download_types;
-    early_download_types.PutAll(ControlTypes());
-    early_download_types.PutAll(PriorityUserTypes());
-    for (ModelTypeSet::Iterator it = early_download_types.First();
-         it.Good(); it.Inc()) {
-      if (!directory->InitialSyncEndedForType(it.Get())) {
-        syncer::TestUserShare::CreateRoot(it.Get(), user_share);
-      }
+  ModelTypeSet early_download_types;
+  early_download_types.PutAll(ControlTypes());
+  early_download_types.PutAll(PriorityUserTypes());
+  for (ModelTypeSet::Iterator it = early_download_types.First();
+       it.Good(); it.Inc()) {
+    if (!directory->InitialSyncEndedForType(it.Get())) {
+      syncer::TestUserShare::CreateRoot(it.Get(), user_share);
     }
-  } else {
-    VLOG(2) << "Skipping directory init";
   }
 
   SyncManagerImpl::NotifyInitializationSuccess();

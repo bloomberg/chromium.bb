@@ -706,9 +706,6 @@ class ProfileSyncService
       scoped_ptr<syncer::NetworkResources> network_resources);
 
  protected:
-  // Used by test classes that derive from ProfileSyncService.
-  virtual browser_sync::SyncBackendHost* GetBackendForTest();
-
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
 

@@ -19,14 +19,12 @@ class SyncManagerForProfileSyncTest
     : public syncer::SyncManagerImpl {
  public:
   SyncManagerForProfileSyncTest(std::string name,
-                                base::Closure init_callback,
-                                bool set_initial_sync_ended);
+                                base::Closure init_callback);
   virtual ~SyncManagerForProfileSyncTest();
   virtual void NotifyInitializationSuccess() OVERRIDE;
 
  private:
   base::Closure init_callback_;
-  bool set_initial_sync_ended_;
 };
 
 }  // namespace syncer

@@ -1742,12 +1742,6 @@ bool ProfileSyncService::IsCryptographerReady(
   return backend_.get() && backend_->IsCryptographerReady(trans);
 }
 
-SyncBackendHost* ProfileSyncService::GetBackendForTest() {
-  // We don't check |backend_initialized_|; we assume the test class
-  // knows what it's doing.
-  return backend_.get();
-}
-
 void ProfileSyncService::ConfigurePriorityDataTypes() {
   const syncer::ModelTypeSet priority_types =
       Intersection(GetPreferredDataTypes(), syncer::PriorityUserTypes());
