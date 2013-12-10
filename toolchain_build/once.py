@@ -29,6 +29,27 @@ import substituter
 import working_directory
 
 
+class HumanReadableSignature(object):
+  """Accumator of signature information in human readable form.
+
+  A replacement for hashlib that collects the inputs for later display.
+  """
+  def __init__(self):
+    self._items = []
+
+  def update(self, data):
+    """Add an item to the signature."""
+    # Drop paranoid nulls for human readable output.
+    data = data.replace('\0', '')
+    self._items.append(data)
+
+  def hexdigest(self):
+    """Fake version of hexdigest that returns the inputs."""
+    return ('*' * 30 + ' PACKAGE SIGNATURE ' + '*' * 30 + '\n' +
+            '\n'.join(self._items) + '\n' +
+            '=' * 70 + '\n')
+
+
 class Once(object):
   """Class to memoize slow operations."""
 
@@ -166,7 +187,8 @@ class Once(object):
     return False
 
   def Run(self, package, inputs, output, commands, unpack_commands=None,
-          hashed_inputs=None, working_dir=None, memoize=True):
+          hashed_inputs=None, working_dir=None, memoize=True,
+          signature_file=None):
     """Run an operation once, possibly hitting cache.
 
     Args:
@@ -179,6 +201,8 @@ class Once(object):
       hashed_inputs: An alternate dict of inputs to use for hashing and after
                      the packing stage (or None).
       working_dir: Working directory to use, or None for a temp dir.
+      memoize: Boolean indicating the the result should be memoized.
+      signature_file: File to write human readable build signatures to or None.
     """
     if working_dir is None:
       wdm = working_directory.TemporaryWorkingDirectory()
@@ -205,6 +229,12 @@ class Once(object):
       # Compute the build signature with modified inputs.
       build_signature = self.BuildSignature(
           package, inputs=inputs, commands=commands)
+      # Optionally write human readable version of signature.
+      if signature_file:
+        signature_file.write(self.BuildSignature(
+            package, inputs=inputs, commands=commands,
+            hasher=HumanReadableSignature()))
+        signature_file.flush()
 
       # We're done if it's in the cache.
       if (memoize and
@@ -249,7 +279,7 @@ class Once(object):
       self._system_summary = str(items)
     return self._system_summary
 
-  def BuildSignature(self, package, inputs, commands):
+  def BuildSignature(self, package, inputs, commands, hasher=None):
     """Compute a total checksum for a computation.
 
     The computed hash includes system properties, inputs, and the commands run.
@@ -259,10 +289,16 @@ class Once(object):
               inputs set.
       commands: A list of command.Command objects describing the commands run
                 for this computation.
+      hasher: Optional hasher to use.
     Returns:
-      A hex formatted sha1 to use as a computation key.
+      A hex formatted sha1 to use as a computation key or a human readable
+      signature.
     """
-    h = hashlib.sha1()
+    if hasher is None:
+      h = hashlib.sha1()
+    else:
+      h = hasher
+
     h.update('package:' + package)
     h.update('summary:' + self.SystemSummary())
     for command in commands:

@@ -31,25 +31,13 @@ DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
 
-def PrintFlush(message):
-  """Print to stdout and flush.
-
-  Windows flushes stdout very intermittently (particularly through the
-  buildbot). Forcing an immediate flush so that buildbot annotator section
-  headings appear at the right place in relation to logging output which goes
-  to stderr.
-  """
-  print message
-  sys.stdout.flush()
-
-
 def PrintAnnotatorURL(url):
   """Print an URL in buildbot annotator form.
 
   Args:
     url: A URL to print.
   """
-  PrintFlush('@@@STEP_LINK@download@%s@@@' % url)
+  print >>sys.stderr, '@@@STEP_LINK@download@%s@@@' % url
 
 
 class PackageBuilder(object):
@@ -124,6 +112,12 @@ class PackageBuilder(object):
         cache_results=self._options.cache_results,
         print_url=PrintAnnotatorURL,
         storage=self.CreateStorage())
+    self._signature_file = None
+    if self._options.emit_signatures is not None:
+      if self._options.emit_signatures == '-':
+        self._signature_file = sys.stdout
+      else:
+        self._signature_file = open(self._options.emit_signatures, 'w')
 
   def Main(self):
     """Main entry point."""
@@ -146,7 +140,7 @@ class PackageBuilder(object):
       package: Package name to sync.
     """
 
-    PrintFlush('@@@BUILD_STEP sync %s@@@' % package)
+    print >>sys.stderr, '@@@BUILD_STEP sync %s@@@' % package
     package_info = self._packages[package]
     url = package_info['git_url']
     revision = package_info['git_revision']
@@ -199,9 +193,10 @@ class PackageBuilder(object):
         logging.debug('Sync skipped: not running commands for %s' % package)
         return
 
-    PrintFlush('@@@BUILD_STEP %s (%s)@@@' % (package, type_text))
+    print >>sys.stderr, '@@@BUILD_STEP %s (%s)@@@' % (package, type_text)
 
     dependencies = package_info.get('dependencies', [])
+
     # Collect a dict of all the inputs.
     inputs = {}
     # Add in explicit inputs or a tar source or a git source.
@@ -254,7 +249,8 @@ class PackageBuilder(object):
         unpack_commands=package_info.get('unpack_commands', []),
         hashed_inputs=hashed_inputs,
         working_dir=work_dir,
-        memoize=not is_source_target)
+        memoize=not is_source_target,
+        signature_file=self._signature_file)
 
   def BuildOrder(self, targets):
     """Find what needs to be built in what order to build all targets.
@@ -362,9 +358,14 @@ class PackageBuilder(object):
         '-y', '--sync', dest='sync_sources',
         default=False, action='store_true',
         help='Sync git sources and run source target commands')
+    parser.add_option(
+        '--emit-signatures', dest='emit_signatures',
+        help='Write human readable build signature for each step to FILE.',
+        metavar='FILE')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
-      PrintFlush('ERROR: Tried to run with both --trybot and --buildbot.')
+      print >>sys.stderr, (
+          'ERROR: Tried to run with both --trybot and --buildbot.')
       sys.exit(1)
     if options.trybot or options.buildbot:
       options.verbose = True
