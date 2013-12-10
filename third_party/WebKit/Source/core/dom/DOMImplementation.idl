@@ -24,25 +24,24 @@
 
     // DOM Level 1
 
-     boolean hasFeature([Default=Undefined] optional DOMString feature,
-                                      [TreatNullAs=NullString,Default=Undefined] optional DOMString version);
+    boolean hasFeature(DOMString feature, [TreatNullAs=NullString] DOMString version);
 
     // DOM Level 2
 
-     [RaisesException] DocumentType createDocumentType([TreatNullAs=NullString] DOMString qualifiedName,
-                                                       [TreatNullAs=NullString] DOMString publicId,
-                                                       [TreatNullAs=NullString] DOMString systemId);
-     [RaisesException] Document createDocument([TreatNullAs=NullString] DOMString namespaceURI,
-                                               [TreatNullAs=NullString] DOMString qualifiedName,
-                                               [Default=Undefined] optional DocumentType doctype);
+    [RaisesException] DocumentType createDocumentType(DOMString qualifiedName,
+                                                      DOMString publicId,
+                                                      DOMString systemId);
+    [RaisesException] Document createDocument([TreatNullAs=NullString] DOMString namespaceURI,
+                                              [TreatNullAs=NullString] DOMString qualifiedName,
+                                              [Default=Undefined] optional DocumentType doctype);
 
     // DOMImplementationCSS interface from DOM Level 2 CSS
 
-     CSSStyleSheet createCSSStyleSheet([Default=Undefined] optional DOMString title,
-                                       [Default=Undefined] optional DOMString media);
+    [MeasureAs=DOMImplementationCreateCSSStyleSheet]
+    CSSStyleSheet createCSSStyleSheet([Default=Undefined] optional DOMString title,
+                                      [Default=Undefined] optional DOMString media);
 
     // HTMLDOMImplementation interface from DOM Level 2 HTML
 
     HTMLDocument createHTMLDocument([Default=NullString] optional DOMString title);
 };
-

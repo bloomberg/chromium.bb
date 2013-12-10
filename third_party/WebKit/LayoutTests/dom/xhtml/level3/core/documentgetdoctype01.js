@@ -131,7 +131,7 @@ newDocType = domImpl.createDocumentType(rootName,nullPubID,nullSysID);
 
       newSysID = replacedDocType.systemId;
 
-      assertNull("newSysIdNull",newSysID);
+      assertEquals("newSysIdNull", "null", newSysID);
     
 }
 
