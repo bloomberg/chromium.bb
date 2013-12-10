@@ -197,7 +197,7 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
     error_ = error;
   }
 
-  while (stream_map_.size() != 0) {
+  while (!stream_map_.empty()) {
     ReliableStreamMap::iterator it = stream_map_.begin();
     QuicStreamId id = it->first;
     it->second->OnConnectionClosed(error, from_peer);
@@ -363,8 +363,7 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     case ENCRYPTION_REESTABLISHED:
       // Retransmit originally packets that were sent, since they can't be
       // decrypted by the peer.
-      connection_->RetransmitUnackedPackets(
-          QuicConnection::INITIAL_ENCRYPTION_ONLY);
+      connection_->RetransmitUnackedPackets(INITIAL_ENCRYPTION_ONLY);
       break;
 
     case HANDSHAKE_CONFIRMED:

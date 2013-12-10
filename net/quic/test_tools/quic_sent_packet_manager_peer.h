@@ -6,10 +6,10 @@
 #define NET_QUIC_TEST_TOOLS_QUIC_SENT_PACKET_MANAGER_PEER_H_
 
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_sent_packet_manager.h"
 
 namespace net {
 
-class QuicSentPacketManager;
 class SendAlgorithmInterface;
 
 namespace test {
@@ -24,6 +24,14 @@ class QuicSentPacketManagerPeer {
       QuicPacketSequenceNumber sequence_number);
 
   static QuicTime::Delta rtt(QuicSentPacketManager* sent_packet_manager);
+
+  // Returns true if |sequence_number| is a retransmission of a packet.
+  static bool IsRetransmission(QuicSentPacketManager* sent_packet_manager,
+                               QuicPacketSequenceNumber sequence_number);
+
+  static void MarkForRetransmission(QuicSentPacketManager* sent_packet_manager,
+                                    QuicPacketSequenceNumber sequence_number,
+                                    TransmissionType transmission_type);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManagerPeer);

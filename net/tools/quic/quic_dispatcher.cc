@@ -106,7 +106,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
     // session for it.  All initial packets for a new connection are required to
     // have the flag set.  Otherwise it may be a stray packet.
     if (has_version_flag) {
-      session = CreateQuicSession(guid, client_address);
+      session = CreateQuicSession(guid, server_address, client_address);
     }
 
     if (session == NULL) {
@@ -214,6 +214,7 @@ void QuicDispatcher::OnConnectionClosed(QuicGuid guid, QuicErrorCode error) {
 
 QuicSession* QuicDispatcher::CreateQuicSession(
     QuicGuid guid,
+    const IPEndPoint& server_address,
     const IPEndPoint& client_address) {
   QuicServerSession* session = new QuicServerSession(
       config_, new QuicConnection(guid, client_address, helper_.get(), this,

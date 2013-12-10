@@ -119,9 +119,6 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // not the *available* window.  Some send algorithms may not use a congestion
   // window and will return 0.
   virtual QuicByteCount GetCongestionWindow() const = 0;
-
-  // Sets the value of the current congestion window to |window| bytes.
-  virtual void SetCongestionWindow(QuicByteCount window) = 0;
 };
 
 }  // namespace net

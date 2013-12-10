@@ -494,7 +494,7 @@ uint32 ReliableQuicStream::StripPriorityAndHeaderId(
     QuicPriority temporary_priority = priority_;
     total_bytes_parsed = StripUint32(
         data, data_len, &headers_id_and_priority_buffer_, &temporary_priority);
-    if (total_bytes_parsed > 0 && headers_id_and_priority_buffer_.size() == 0) {
+    if (total_bytes_parsed > 0 && headers_id_and_priority_buffer_.empty()) {
       priority_parsed_ = true;
 
       // Spdy priorities are inverted, so the highest numerical value is the

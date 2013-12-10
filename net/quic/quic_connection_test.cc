@@ -275,6 +275,8 @@ class TestPacketWriter : public QuicPacketWriter {
         blocked_(false),
         is_write_blocked_data_buffered_(false),
         is_server_(true),
+        final_bytes_of_last_packet_(0),
+        final_bytes_of_previous_packet_(0),
         use_tagging_decrypter_(false),
         packets_write_attempts_(0) {
   }
@@ -289,6 +291,7 @@ class TestPacketWriter : public QuicPacketWriter {
     ++packets_write_attempts_;
 
     if (packet.length() >= sizeof(final_bytes_of_last_packet_)) {
+      final_bytes_of_previous_packet_ = final_bytes_of_last_packet_;
       memcpy(&final_bytes_of_last_packet_, packet.data() + packet.length() - 4,
              sizeof(final_bytes_of_last_packet_));
     }
@@ -347,6 +350,11 @@ class TestPacketWriter : public QuicPacketWriter {
   // a given packet.
   uint32 final_bytes_of_last_packet() { return final_bytes_of_last_packet_; }
 
+  // Returns the final bytes of the second to last packet.
+  uint32 final_bytes_of_previous_packet() {
+    return final_bytes_of_previous_packet_;
+  }
+
   void use_tagging_decrypter() {
     use_tagging_decrypter_ = true;
   }
@@ -360,6 +368,7 @@ class TestPacketWriter : public QuicPacketWriter {
   bool is_write_blocked_data_buffered_;
   bool is_server_;
   uint32 final_bytes_of_last_packet_;
+  uint32 final_bytes_of_previous_packet_;
   bool use_tagging_decrypter_;
   uint32 packets_write_attempts_;
 
@@ -558,6 +567,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
 
   uint32 final_bytes_of_last_packet() {
     return writer_->final_bytes_of_last_packet();
+  }
+
+  uint32 final_bytes_of_previous_packet() {
+    return writer_->final_bytes_of_previous_packet();
   }
 
   void use_tagging_decrypter() {
@@ -1315,7 +1328,9 @@ TEST_F(QuicConnectionTest, DontAbandonAckedFEC) {
 
   clock_.AdvanceTime(DefaultRetransmissionTime());
 
-  // Don't abandon the acked FEC packet.
+  // Don't abandon the acked FEC packet, but it will abandon 2 the subsequent
+  // FEC packets.
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
   connection_.GetAbandonFecAlarm()->Fire();
 }
 
@@ -1915,16 +1930,22 @@ TEST_F(QuicConnectionTest, RTOWithSameEncryptionLevel) {
 
   EXPECT_EQ(default_retransmission_time,
             connection_.GetRetransmissionAlarm()->deadline());
+  {
+    InSequence s;
+    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+    EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
+    EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 3, _, RTO_RETRANSMISSION, _));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 4, _, RTO_RETRANSMISSION, _));
+  }
+
   // Simulate the retransmission alarm firing.
   clock_.AdvanceTime(DefaultRetransmissionTime());
+  connection_.GetRetransmissionAlarm()->Fire();
 
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  connection_.RetransmitPacket(1, RTO_RETRANSMISSION);
   // Packet should have been sent with ENCRYPTION_NONE.
-  EXPECT_EQ(0x01010101u, final_bytes_of_last_packet());
+  EXPECT_EQ(0x01010101u, final_bytes_of_previous_packet());
 
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  connection_.RetransmitPacket(2, RTO_RETRANSMISSION);
   // Packet should have been sent with ENCRYPTION_INITIAL.
   EXPECT_EQ(0x02020202u, final_bytes_of_last_packet());
 }
@@ -2000,7 +2021,7 @@ TEST_F(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
 
-  connection_.RetransmitUnackedPackets(QuicConnection::INITIAL_ENCRYPTION_ONLY);
+  connection_.RetransmitUnackedPackets(INITIAL_ENCRYPTION_ONLY);
 }
 
 TEST_F(QuicConnectionTest, BufferNonDecryptablePackets) {
@@ -2927,7 +2948,7 @@ TEST_F(QuicConnectionTest, CheckSendStats) {
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, _, NACK_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(3);
-  EXPECT_CALL(visitor_, OnCanWrite()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, OnCanWrite()).WillRepeatedly(Return(true));
 
   // Retransmit due to RTO.
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10));

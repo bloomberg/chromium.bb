@@ -99,6 +99,7 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
 
   virtual QuicSession* CreateQuicSession(
       QuicGuid guid,
+      const IPEndPoint& server_address,
       const IPEndPoint& client_address);
 
   // Deletes all sessions on the closed session list and clears the list.

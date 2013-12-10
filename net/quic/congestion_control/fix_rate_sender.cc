@@ -140,7 +140,4 @@ QuicByteCount FixRateSender::GetCongestionWindow() const {
   return 0;
 }
 
-void FixRateSender::SetCongestionWindow(QuicByteCount window) {
-}
-
 }  // namespace net

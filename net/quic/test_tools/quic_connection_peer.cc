@@ -11,6 +11,7 @@
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
+#include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_writer.h"
 
 namespace net {
@@ -78,7 +79,8 @@ bool QuicConnectionPeer::IsSavedForRetransmission(
 bool QuicConnectionPeer::IsRetransmission(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return connection->sent_packet_manager_.IsRetransmission(sequence_number);
+  return QuicSentPacketManagerPeer::IsRetransmission(
+      &connection->sent_packet_manager_, sequence_number);
 }
 
 // static

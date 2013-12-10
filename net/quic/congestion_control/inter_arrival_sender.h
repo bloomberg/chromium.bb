@@ -61,7 +61,6 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   virtual QuicTime::Delta SmoothedRtt() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
-  virtual void SetCongestionWindow(QuicByteCount window) OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:

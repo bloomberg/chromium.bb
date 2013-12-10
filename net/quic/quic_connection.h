@@ -186,11 +186,6 @@ class NET_EXPORT_PRIVATE QuicConnection
     FORCE
   };
 
-  enum RetransmissionType {
-    INITIAL_ENCRYPTION_ONLY,
-    ALL_PACKETS
-  };
-
   // Constructs a new QuicConnection for the specified |guid| and |address|.
   // |helper| and |writer| must outlive this connection.
   QuicConnection(QuicGuid guid,
@@ -321,11 +316,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicGuid guid() const { return guid_; }
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
-
-  // Called to retransmit a packet, in the case a packet was sufficiently
-  // nacked by the peer, or not acked within the time out window.
-  void RetransmitPacket(QuicPacketSequenceNumber sequence_number,
-                        TransmissionType transmission_type);
 
   QuicPacketCreator::Options* options() { return packet_creator_.options(); }
 

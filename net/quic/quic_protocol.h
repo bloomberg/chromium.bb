@@ -49,8 +49,10 @@ typedef uint32 QuicPriority;
 // Default and initial maximum size in bytes of a QUIC packet.
 const QuicByteCount kDefaultMaxPacketSize = 1200;
 // The maximum packet size of any QUIC packet, based on ethernet's max size,
-// minus the IP and UDP headers.
-const QuicByteCount kMaxPacketSize = 1472;
+// minus the IP and UDP headers. IPv6 has a 40 byte header, UPD adds an
+// additional 8 bytes.  This is a total overhead of 48 bytes.  Ethernet's
+// max packet size is 1500 bytes,  1500 - 48 = 1452.
+const QuicByteCount kMaxPacketSize = 1452;
 
 // Maximum size of the initial congestion window in packets.
 const size_t kDefaultInitialWindow = 10;
@@ -119,6 +121,11 @@ enum TransmissionType {
   NOT_RETRANSMISSION,
   NACK_RETRANSMISSION,
   RTO_RETRANSMISSION,
+};
+
+enum RetransmissionType {
+  INITIAL_ENCRYPTION_ONLY,
+  ALL_PACKETS
 };
 
 enum HasRetransmittableData {

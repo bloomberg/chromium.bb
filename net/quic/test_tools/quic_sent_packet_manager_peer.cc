@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 
+#include "base/stl_util.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
@@ -30,6 +31,25 @@ size_t QuicSentPacketManagerPeer::GetNackCount(
 QuicTime::Delta QuicSentPacketManagerPeer::rtt(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->rtt_sample_;
+}
+
+// static
+bool QuicSentPacketManagerPeer::IsRetransmission(
+    QuicSentPacketManager* sent_packet_manager,
+    QuicPacketSequenceNumber sequence_number) {
+  DCHECK(sent_packet_manager->HasRetransmittableFrames(sequence_number));
+  return sent_packet_manager->HasRetransmittableFrames(sequence_number) &&
+      ContainsKey(sent_packet_manager->previous_transmissions_map_,
+                  sequence_number);
+}
+
+// static
+void QuicSentPacketManagerPeer::MarkForRetransmission(
+    QuicSentPacketManager* sent_packet_manager,
+    QuicPacketSequenceNumber sequence_number,
+    TransmissionType transmission_type) {
+  sent_packet_manager->MarkForRetransmission(sequence_number,
+                                             transmission_type);
 }
 
 }  // namespace test

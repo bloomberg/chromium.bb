@@ -88,8 +88,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void OnRetransmittedPacket(QuicPacketSequenceNumber old_sequence_number,
                              QuicPacketSequenceNumber new_sequence_number);
 
-  // Processes the ReceivedPacketInfo data from the incoming ack.
-  void OnPacketAcked(const ReceivedPacketInfo& received_info);
+  // Processes the incoming ack and returns true if the retransmission or ack
+  // alarm should be reset.
+  bool OnIncomingAck(const ReceivedPacketInfo& received_info,
+                     QuicTime ack_receive_time);
 
   // Discards any information for the packet corresponding to |sequence_number|.
   // If this packet has been retransmitted, information on those packets
@@ -99,30 +101,17 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Discards all information about fec packet |sequence_number|.
   void DiscardFecPacket(QuicPacketSequenceNumber sequence_number);
 
-  // Returns true if |sequence_number| is a retransmission of a packet.
-  bool IsRetransmission(QuicPacketSequenceNumber sequence_number) const;
-
   // Returns true if the non-FEC packet |sequence_number| is unacked.
   bool IsUnacked(QuicPacketSequenceNumber sequence_number) const;
 
-  // Returns true if the FEC packet |sequence_number| is unacked.
-  bool IsFecUnacked(QuicPacketSequenceNumber sequence_number) const;
+  // Requests retransmission of all unacked packets of |retransmission_type|.
+  void RetransmitUnackedPackets(RetransmissionType retransmission_type);
 
   // Returns true if the unacked packet |sequence_number| has retransmittable
   // frames.  This will only return false if the packet has been acked, if a
   // previous transmission of this packet was ACK'd, or if this packet has been
   // retransmitted as with different sequence number.
   bool HasRetransmittableFrames(QuicPacketSequenceNumber sequence_number) const;
-
-  // Returns the RetransmittableFrames for |sequence_number|.
-  const RetransmittableFrames& GetRetransmittableFrames(
-      QuicPacketSequenceNumber sequence_number) const;
-
-  // Request that |sequence_number| be retransmitted after the other pending
-  // retransmissions.  Returns false if there are no retransmittable frames for
-  // |sequence_number| and true if it will be retransmitted.
-  bool MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
-                             TransmissionType transmission_type);
 
   // Returns true if there are pending retransmissions.
   bool HasPendingRetransmissions() const;
@@ -164,13 +153,14 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when we have received an ack frame from peer.
   // Returns a set containing all the sequence numbers to be nack retransmitted
   // as a result of the ack.
-  virtual SequenceNumberSet OnIncomingAckFrame(const QuicAckFrame& frame,
-                                               QuicTime ack_receive_time);
+  virtual SequenceNumberSet OnIncomingAckFrame(
+      const ReceivedPacketInfo& received_info,
+      const QuicTime& ack_receive_time);
 
   // Called when a congestion feedback frame is received from peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame,
-      QuicTime feedback_receive_time);
+      const QuicTime& feedback_receive_time);
 
   // Called when we have sent bytes to the peer.  This informs the manager both
   // the number of bytes sent and if they were retransmitted.
@@ -183,9 +173,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when the retransmission timer expires.
   virtual void OnRetransmissionTimeout();
 
-  // Called when the least unacked sequence number increases, indicating the
-  // consecutive rto count should be reset to 0.
-  virtual void OnLeastUnackedIncreased();
+  // Called when the fec timout timer expires.  Returns the next timeout of the
+  // FEC timer if it should be reset, and QuicTime::Zero() otherwise.
+  virtual QuicTime OnAbandonFecTimeout();
 
   // Called when a packet is timed out, such as an RTO.  Removes the bytes from
   // the congestion manager, but does not change the congestion window size.
@@ -219,9 +209,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // not the *available* window.  Some send algorithms may not use a congestion
   // window and will return 0.
   QuicByteCount GetCongestionWindow() const;
-
-  // Sets the value of the current congestion window to |window|.
-  void SetCongestionWindow(QuicByteCount window);
 
   // Enables pacing if it has not already been enabled, and if
   // FLAGS_enable_quic_pacing is set.
@@ -261,6 +248,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Process the incoming ack looking for newly ack'd FEC packets.
   void HandleAckForSentFecPackets(const ReceivedPacketInfo& received_info);
 
+  // Update the RTT if the ack is for the largest acked sequence number.
+  void MaybeUpdateRTT(const ReceivedPacketInfo& received_info,
+                      const QuicTime& ack_receive_time);
+
   // Marks |sequence_number| as having been seen by the peer.  Returns an
   // iterator to the next remaining unacked packet.
   UnackedPacketMap::iterator MarkPacketReceivedByPeer(
@@ -269,6 +260,12 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Simply removes the entries, if any, from the unacked packet map
   // and the retransmission map.
   void DiscardPacket(QuicPacketSequenceNumber sequence_number);
+
+  // Request that |sequence_number| be retransmitted after the other pending
+  // retransmissions.  Returns false if there are no retransmittable frames for
+  // |sequence_number| and true if it will be retransmitted.
+  bool MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
+                             TransmissionType transmission_type);
 
   // Returns the length of the serialized sequence number for
   // the packet |sequence_number|.
@@ -279,6 +276,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // most recently transmitted as.
   QuicPacketSequenceNumber GetMostRecentTransmission(
       QuicPacketSequenceNumber sequence_number) const;
+
+  // Clears up to |num_to_clear| previous transmissions in order to make room
+  // in the ack frame for new acks.
+  void ClearPreviousRetransmissions(size_t num_to_clear);
 
   void CleanupPacketHistory();
 

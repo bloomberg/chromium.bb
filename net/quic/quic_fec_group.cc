@@ -134,7 +134,7 @@ bool QuicFecGroup::UpdateParity(StringPiece payload, bool entropy) {
     payload_parity_len_ = payload.size();
   }
   DCHECK_LE(payload.size(), kMaxPacketSize);
-  if (received_packets_.size() == 0 &&
+  if (received_packets_.empty() &&
       min_protected_packet_ == kNoSequenceNumber) {
     // Initialize the parity to the value of this payload
     memcpy(payload_parity_, payload.data(), payload.size());

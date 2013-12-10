@@ -394,7 +394,6 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_CONST_METHOD0(SmoothedRtt, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());
-  MOCK_METHOD1(SetCongestionWindow, void(QuicByteCount));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);

@@ -730,7 +730,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
     configs.push_back(it->second);
   }
 
-  if (configs.size() == 0) {
+  if (configs.empty()) {
     // Tests don't set |primary_time_|. For that case we promote the first
     // Config and leave it as primary forever.
     if (!primary_config_.get() && first_config.get()) {

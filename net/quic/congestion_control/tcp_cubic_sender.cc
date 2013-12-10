@@ -217,13 +217,6 @@ QuicByteCount TcpCubicSender::GetCongestionWindow() const {
   return congestion_window_ * kMaxSegmentSize;
 }
 
-void TcpCubicSender::SetCongestionWindow(QuicByteCount window) {
-  congestion_window_ = window / kMaxSegmentSize;
-  if (congestion_window_ < kMinimumCongestionWindow) {
-    congestion_window_ = kMinimumCongestionWindow;
-  }
-}
-
 void TcpCubicSender::Reset() {
   delay_min_ = QuicTime::Delta::Zero();
   hybrid_slow_start_.Restart();

@@ -135,8 +135,4 @@ QuicByteCount PacingSender::GetCongestionWindow() const {
   return sender_->GetCongestionWindow();
 }
 
-void PacingSender::SetCongestionWindow(QuicByteCount window) {
-  sender_->SetCongestionWindow(window);
-}
-
 }  // namespace net

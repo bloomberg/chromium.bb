@@ -539,7 +539,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
         .WillOnce(Return(data->size()));
   }
 
-  while (list_.size() != 0) {
+  while (!list_.empty()) {
     int index = OneToN(list_.size()) - 1;
     LOG(ERROR) << "Sending index " << index << " "
                << list_[index].second.data();
@@ -562,7 +562,7 @@ TEST_F(QuicSequencerRandomTest, RandomFramesDroppingNoBackup) {
         .WillOnce(Return(data->size()));
   }
 
-  while (list_.size() != 0) {
+  while (!list_.empty()) {
     int index = OneToN(list_.size()) - 1;
     LOG(ERROR) << "Sending index " << index << " "
                << list_[index].second.data();
