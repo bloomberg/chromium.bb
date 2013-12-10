@@ -40,7 +40,6 @@
 
 #include <asm/ptrace.h>
 #include <assert.h>
-#include <cpuid.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -49,6 +48,10 @@
 #include <string.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
+
+#if defined(__i386)
+#include <cpuid.h>
+#endif
 
 #include "client/linux/minidump_writer/directory_reader.h"
 #include "client/linux/minidump_writer/line_reader.h"
