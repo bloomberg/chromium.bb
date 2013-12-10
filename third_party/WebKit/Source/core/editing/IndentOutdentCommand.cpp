@@ -107,7 +107,6 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
     if (!nodeToSplitTo)
         return;
 
-    RefPtr<Node> nodeAfterStart = start.computeNodeAfterPosition();
     RefPtr<Node> outerBlock = (start.containerNode() == nodeToSplitTo) ? start.containerNode() : splitTreeToNode(start.containerNode(), nodeToSplitTo);
 
     VisiblePosition startOfContents = start;
@@ -194,16 +193,16 @@ void IndentOutdentCommand::outdentParagraph()
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection
 void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection)
 {
+    VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
     VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
 
-    if (endOfParagraph(startOfSelection) == endOfLastParagraph) {
+    if (endOfCurrentParagraph == endOfLastParagraph) {
         outdentParagraph();
         return;
     }
 
     Position originalSelectionEnd = endingSelection().end();
-    VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
-    VisiblePosition endAfterSelection = endOfParagraph(endOfParagraph(endOfSelection).next());
+    VisiblePosition endAfterSelection = endOfParagraph(endOfLastParagraph.next());
 
     while (endOfCurrentParagraph != endAfterSelection) {
         VisiblePosition endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());

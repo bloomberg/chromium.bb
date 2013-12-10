@@ -117,8 +117,9 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
 
     RefPtr<Element> blockquoteForNextIndent;
     VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
-    VisiblePosition endAfterSelection = endOfParagraph(endOfParagraph(endOfSelection).next());
-    m_endOfLastParagraph = endOfParagraph(endOfSelection).deepEquivalent();
+    VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
+    VisiblePosition endAfterSelection = endOfParagraph(endOfLastParagraph.next());
+    m_endOfLastParagraph = endOfLastParagraph.deepEquivalent();
 
     bool atEnd = false;
     Position end;
