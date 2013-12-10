@@ -467,8 +467,7 @@
   "permissions": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "contexts": "all",
-    "matches": ["<all_urls>"]
+    "contexts": ["blessed_extension"]
   },
   "power": {
     "dependencies": ["permission:power"],
