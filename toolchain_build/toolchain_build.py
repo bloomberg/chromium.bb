@@ -8,7 +8,9 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
+import fnmatch
 import platform
+import re
 import sys
 
 import command
@@ -89,6 +91,14 @@ def CollectSources():
   return sources
 
 
+# Map of native host tuple to extra tuples that it cross-builds for.
+EXTRA_HOSTS_MAP = {
+# TODO(mcgrathr): Cross-building binutils is waiting for an upstream
+# makefile fix, see https://sourceware.org/ml/binutils/2013-12/msg00107.html
+#    'i686-linux': ['arm-linux-gnueabihf'],
+    }
+
+# The list of targets to build toolchains for.
 TARGET_LIST = ['arm']
 
 # These are extra arguments to pass gcc's configure that vary by target.
@@ -114,51 +124,94 @@ MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 REMOVE_INFO_DIR = command.Remove(command.path.join('%(output)s',
                                                    'share', 'info', 'dir'))
 
-CONFIGURE_HOST_ARCH = []
-if sys.platform.startswith('linux'):
-  cc = ['gcc']
-  cxx = ['g++', '-static-libstdc++']
-  if any(platform.machine().lower().startswith(machine) for machine in
-         ['x86_64', 'amd64', 'x64', 'i686']):
-    # We build the tools for x86-32 hosts so they will run on either x86-32
-    # or x86-64 hosts (with the right compatibility libraries installed).
-    cc += ['-m32']
-    cxx += ['-m32']
-    CONFIGURE_HOST_ARCH += ['--build=i686-linux']
-  CONFIGURE_HOST_ARCH += [
-      'CC=' + ' '.join(cc),
-      'CXX=' + ' '.join(cxx),
-      ]
-elif sys.platform.startswith('win'):
-  # The i18n support brings in runtime dependencies on MinGW DLLs
-  # that we don't want to have to distribute alongside our binaries.
-  # So just disable it, and compiler messages will always be in US English.
-  CONFIGURE_HOST_ARCH += [
-      '--disable-nls',
-      ]
-  # There appears to be nothing we can pass at top-level configure time
-  # that will prevent the configure scripts from finding MinGW's libiconv
-  # and using it.  We have to force this variable into the environment
-  # of the sub-configure runs, which are run via make.
-  MAKE_PARALLEL_CMD += [
-      'HAVE_LIBICONV=no',
-      ]
+def ConfigureHostArch(host):
+  configure_args = []
 
-CONFIGURE_HOST_COMMON = CONFIGURE_HOST_ARCH + [
+  native, extra_cc_args = NativeTuple()
+  is_cross = host != native
+
+  if is_cross:
+    extra_cc_args = []
+    configure_args.append('--host=' + host)
+  elif extra_cc_args:
+    # The host we've chosen is "native enough", such as x86-32 on x86-64.
+    # But it's not what config.guess will yield, so we need to supply
+    # a --build switch to ensure things build correctly.
+    configure_args.append('--build=' + host)
+
+  extra_cxx_args = list(extra_cc_args)
+  if fnmatch.fnmatch(host, '*-linux*'):
+    # Avoid shipping binaries with a runtime dependency on
+    # a particular version of the libstdc++ shared library.
+    # TODO(mcgrathr): Do we want this for MinGW and/or Mac too?
+    extra_cxx_args.append('-static-libstdc++')
+
+  if extra_cc_args:
+    # These are the defaults when there is no setting, but we will add
+    # additional switches, so we must supply the command name too.
+    if is_cross:
+      cc = host + '-gcc'
+    else:
+      cc = 'gcc'
+    configure_args.append('CC=' + ' '.join([cc] + extra_cc_args))
+
+  if extra_cxx_args:
+    # These are the defaults when there is no setting, but we will add
+    # additional switches, so we must supply the command name too.
+    if is_cross:
+      cxx = host + '-g++'
+    else:
+      cxx = 'g++'
+    configure_args.append('CXX=' + ' '.join([cxx] + extra_cxx_args))
+
+  if HostIsWindows(host):
+    # The i18n support brings in runtime dependencies on MinGW DLLs
+    # that we don't want to have to distribute alongside our binaries.
+    # So just disable it, and compiler messages will always be in US English.
+    configure_args.append('--disable-nls')
+
+  return configure_args
+
+
+def ConfigureHostCommon(host):
+  return ConfigureHostArch(host) + [
       '--prefix=',
       '--disable-silent-rules',
       '--without-gcc-arch',
       ]
 
-CONFIGURE_HOST_LIB = CONFIGURE_HOST_COMMON + [
+
+def ConfigureHostLib(host):
+  return ConfigureHostCommon(host) + [
       '--disable-shared',
       ]
 
-CONFIGURE_HOST_TOOL = CONFIGURE_HOST_COMMON + [
-    '--with-pkgversion=' + PACKAGE_NAME,
-    '--with-bugurl=' + BUG_URL,
-    '--without-zlib',
-]
+
+def ConfigureHostTool(host):
+  return ConfigureHostCommon(host) + [
+      '--with-pkgversion=' + PACKAGE_NAME,
+      '--with-bugurl=' + BUG_URL,
+      '--without-zlib',
+      ]
+
+
+def MakeCommand(host, extra_args=[]):
+  if HostIsWindows(host):
+    # There appears to be nothing we can pass at top-level configure time
+    # that will prevent the configure scripts from finding MinGW's libiconv
+    # and using it.  We have to force this variable into the environment
+    # of the sub-configure runs, which are run via make.
+    return MAKE_PARALLEL_CMD + ['HAVE_LIBICONV=no']
+  return MAKE_PARALLEL_CMD
+
+
+# Return the 'make check' command to run.
+# When cross-compiling, don't try to run test suites.
+def MakeCheckCommand(host):
+  native, _ = NativeTuple()
+  if host != native:
+    return ['true']
+  return MAKE_CHECK_CMD
 
 
 def InstallDocFiles(subdir, files):
@@ -250,8 +303,12 @@ def ConfigureTargetArgs(arch):
 
 
 def CommandsInBuild(command_lines):
-  return [command.Mkdir('build')] + [command.Command(cmd, cwd='build')
-                                     for cmd in command_lines]
+  return [
+      command.RemoveDirectory('build'),
+      command.Mkdir('build'),
+      ] + [command.Command(cmd, cwd='build')
+           for cmd in command_lines]
+
 
 def UnpackSrc(is_gzip):
   if is_gzip:
@@ -264,6 +321,7 @@ def UnpackSrc(is_gzip):
       command.Command(extract + ['%(src)s'], cwd='src'),
       ]
 
+
 def PopulateDeps(dep_dirs):
   commands = [command.RemoveDirectory('all_deps'),
               command.Mkdir('all_deps')]
@@ -271,112 +329,134 @@ def PopulateDeps(dep_dirs):
                for dirname in dep_dirs]
   return commands
 
+
 def WithDepsOptions(options):
   return ['--with-' + option + '=%(abs_all_deps)s' for option in options]
 
+
+# Return the component name we'll use for a base component name and
+# a host tuple.  The component names cannot contain dashes or other
+# non-identifier characters, because the names of the files uploaded
+# to Google Storage are constrained.  GNU configuration tuples contain
+# dashes, which we translate to underscores.
+def ForHost(component_name, host):
+  return component_name + '_' + re.sub(r'[^A-Za-z0-9_/.]', '_', host)
+
+
 # These are libraries that go into building the compiler itself.
 # TODO(mcgrathr): Make these use source targets in some fashion.
-HOST_GCC_LIBS = {
-    'gmp': {
-        'type': 'build',
-        'tar_src': 'third_party/gmp/gmp-5.1.3.tar.bz2',
-        'unpack_commands': UnpackSrc(False),
-        'hashed_inputs': {'src': 'src'},
-        'commands': CommandsInBuild([
-            CONFIGURE_CMD + CONFIGURE_HOST_LIB + [
-                '--with-sysroot=%(abs_output)s',
-                '--enable-cxx',
-                # Without this, the built library will assume the
-                # instruction set details available on the build machine.
-                # With this, it dynamically chooses what code to use based
-                # on the details of the actual host CPU at runtime.
-                '--enable-fat',
-                ],
-            MAKE_PARALLEL_CMD,
-            MAKE_CHECK_CMD,
-            MAKE_DESTDIR_CMD + ['install-strip'],
-            ]),
-        },
-    'mpfr': {
-        'type': 'build',
-        'dependencies': ['gmp'],
-        'tar_src': 'third_party/mpfr/mpfr-3.1.2.tar.bz2',
-        'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(gmp)s']),
-        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-        'commands': CommandsInBuild([
-            CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions(['sysroot',
-                                                                  'gmp']),
-            MAKE_PARALLEL_CMD,
-            MAKE_CHECK_CMD,
-            MAKE_DESTDIR_CMD + ['install-strip'],
-            ]),
-        },
-    'mpc': {
-        'type': 'build',
-        'dependencies': ['gmp', 'mpfr'],
-        'tar_src': 'third_party/mpc/mpc-1.0.1.tar.gz',
-        'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(gmp)s',
-                                                           '%(mpfr)s']),
-        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-        'commands': CommandsInBuild([
-            CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions(['sysroot',
-                                                                  'gmp',
-                                                                  'mpfr']),
-            MAKE_PARALLEL_CMD,
-            MAKE_CHECK_CMD,
-            MAKE_DESTDIR_CMD + ['install-strip'],
-            ]),
-        },
-    'isl': {
-        'type': 'build',
-        'dependencies': ['gmp'],
-        'tar_src': 'third_party/cloog/isl-0.12.1.tar.bz2',
-        'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(gmp)s']),
-        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-        'commands': CommandsInBuild([
-            CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions([
-                'sysroot',
-                'gmp-prefix',
-                ]),
-            MAKE_PARALLEL_CMD,
-            MAKE_CHECK_CMD,
-            MAKE_DESTDIR_CMD + ['install-strip'],
-            ]) + [
-                # The .pc files wind up containing some absolute paths
-                # that make the output depend on the build directory name.
-                # The dependents' configure scripts don't need them anyway.
-                command.RemoveDirectory(command.path.join('%(output)s',
-                                                          'lib', 'pkgconfig')),
-                ],
-        },
-    'cloog': {
-        'type': 'build',
-        'dependencies': ['gmp', 'isl'],
-        'tar_src': 'third_party/cloog/cloog-0.18.1.tar.gz',
-        'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(gmp)s',
-                                                           '%(isl)s']),
-        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-        'commands': CommandsInBuild([
-            CONFIGURE_CMD + CONFIGURE_HOST_LIB + [
-                '--with-bits=gmp',
-                '--with-isl=system',
-                ] + WithDepsOptions(['sysroot',
-                                     'gmp-prefix',
-                                     'isl-prefix']),
-            MAKE_PARALLEL_CMD,
-            MAKE_CHECK_CMD,
-            MAKE_DESTDIR_CMD + ['install-strip'],
-            ]) + [
-                # The .pc files wind up containing some absolute paths
-                # that make the output depend on the build directory name.
-                # The dependents' configure scripts don't need them anyway.
-                command.RemoveDirectory(command.path.join('%(output)s',
-                                                          'lib', 'pkgconfig')),
-                ],
-        },
-    }
+def HostGccLibs(host):
+  def H(component_name):
+    return ForHost(component_name, host)
+  host_gcc_libs = {
+      H('gmp'): {
+          'type': 'build',
+          'tar_src': 'third_party/gmp/gmp-5.1.3.tar.bz2',
+          'unpack_commands': UnpackSrc(False),
+          'hashed_inputs': {'src': 'src'},
+          'commands': CommandsInBuild([
+              CONFIGURE_CMD + ConfigureHostLib(host) + [
+                  '--with-sysroot=%(abs_output)s',
+                  '--enable-cxx',
+                  # Without this, the built library will assume the
+                  # instruction set details available on the build machine.
+                  # With this, it dynamically chooses what code to use based
+                  # on the details of the actual host CPU at runtime.
+                  '--enable-fat',
+                  ],
+              MakeCommand(host),
+              MakeCheckCommand(host),
+              MAKE_DESTDIR_CMD + ['install-strip'],
+              ]),
+          },
+      H('mpfr'): {
+          'type': 'build',
+          'dependencies': [H('gmp')],
+          'tar_src': 'third_party/mpfr/mpfr-3.1.2.tar.bz2',
+          'unpack_commands': (UnpackSrc(False) +
+                              PopulateDeps(['%(' + H('gmp') + ')s'])),
+          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
+          'commands': CommandsInBuild([
+              CONFIGURE_CMD + ConfigureHostLib(host) + WithDepsOptions(
+                  ['sysroot', 'gmp']),
+              MakeCommand(host),
+              MakeCheckCommand(host),
+              MAKE_DESTDIR_CMD + ['install-strip'],
+              ]),
+          },
+      H('mpc'): {
+          'type': 'build',
+          'dependencies': [H('gmp'), H('mpfr')],
+          'tar_src': 'third_party/mpc/mpc-1.0.1.tar.gz',
+          'unpack_commands': (UnpackSrc(True) +
+                              PopulateDeps(['%(' + H('gmp') + ')s',
+                                            '%(' + H('mpfr') + ')s'])),
+          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
+          'commands': CommandsInBuild([
+              CONFIGURE_CMD + ConfigureHostLib(host) + WithDepsOptions(
+                  ['sysroot', 'gmp', 'mpfr']),
+              MakeCommand(host),
+              MakeCheckCommand(host),
+              MAKE_DESTDIR_CMD + ['install-strip'],
+              ]),
+          },
+      H('isl'): {
+          'type': 'build',
+          'dependencies': [H('gmp')],
+          'tar_src': 'third_party/cloog/isl-0.12.1.tar.bz2',
+          'unpack_commands': (UnpackSrc(False) +
+                              PopulateDeps(['%(' + H('gmp') + ')s'])),
+          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
+          'commands': CommandsInBuild([
+              CONFIGURE_CMD + ConfigureHostLib(host) + WithDepsOptions([
+                  'sysroot',
+                  'gmp-prefix',
+                  ]),
+              MakeCommand(host),
+              MakeCheckCommand(host),
+              MAKE_DESTDIR_CMD + ['install-strip'],
+              ]) + [
+                  # The .pc files wind up containing some absolute paths
+                  # that make the output depend on the build directory name.
+                  # The dependents' configure scripts don't need them anyway.
+                  command.RemoveDirectory(command.path.join(
+                      '%(output)s', 'lib', 'pkgconfig')),
+                  ],
+          },
+      H('cloog'): {
+          'type': 'build',
+          'dependencies': [H('gmp'), H('isl')],
+          'tar_src': 'third_party/cloog/cloog-0.18.1.tar.gz',
+          'unpack_commands': (UnpackSrc(True) +
+                              PopulateDeps(['%(' + H('gmp') + ')s',
+                                            '%(' + H('isl') + ')s'])),
+          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
+          'commands': CommandsInBuild([
+              CONFIGURE_CMD + ConfigureHostLib(host) + [
+                  '--with-bits=gmp',
+                  '--with-isl=system',
+                  ] + WithDepsOptions(['sysroot',
+                                       'gmp-prefix',
+                                       'isl-prefix']),
+              MakeCommand(host),
+              MakeCheckCommand(host),
+              MAKE_DESTDIR_CMD + ['install-strip'],
+              ]) + [
+                  # The .pc files wind up containing some absolute paths
+                  # that make the output depend on the build directory name.
+                  # The dependents' configure scripts don't need them anyway.
+                  command.RemoveDirectory(command.path.join(
+                      '%(output)s', 'lib', 'pkgconfig')),
+                  ],
+          },
+      }
+  return host_gcc_libs
+
 
 HOST_GCC_LIBS_DEPS = ['gmp', 'mpfr', 'mpc', 'isl', 'cloog']
+
+def HostGccLibsDeps(host):
+  return [ForHost(package, host) for package in HOST_GCC_LIBS_DEPS]
 
 
 def ConfigureCommand(source_component):
@@ -384,25 +464,38 @@ def ConfigureCommand(source_component):
           for command in CONFIGURE_CMD]
 
 
-def GccCommand(target, cmd):
+# When doing a Canadian cross, we need native-hosted cross components
+# to do the GCC build.
+def GccDeps(host, target):
+  native, _ = NativeTuple()
+  components = ['binutils_' + target]
+  if host != native:
+    components.append('gcc_' + target)
+    host = native
+  return [ForHost(component, host) for component in components]
+
+
+def GccCommand(host, target, cmd):
+  components_for_path = GccDeps(host, target)
   return command.Command(
-      cmd, path_dirs=[command.path.join('%(abs_binutils_' + target + ')s',
-                                        'bin')])
+      cmd, path_dirs=[command.path.join('%(abs_' + component + ')s', 'bin')
+                      for component in components_for_path])
 
 
-def ConfigureGccCommand(source_component, target, extra_args=[]):
+def ConfigureGccCommand(source_component, host, target, extra_args=[]):
   target_cflagstr = ' '.join(CommonTargetCflags(target))
   return GccCommand(
+      host,
       target,
       ConfigureCommand(source_component) +
-      CONFIGURE_HOST_TOOL +
+      ConfigureHostTool(host) +
       ConfigureTargetArgs(target) +
       TARGET_GCC_CONFIG.get(target, []) + [
-          '--with-gmp=%(abs_gmp)s',
-          '--with-mpfr=%(abs_mpfr)s',
-          '--with-mpc=%(abs_mpc)s',
-          '--with-isl=%(abs_isl)s',
-          '--with-cloog=%(abs_cloog)s',
+          '--with-gmp=%(abs_' + ForHost('gmp', host) + ')s',
+          '--with-mpfr=%(abs_' + ForHost('mpfr', host) + ')s',
+          '--with-mpc=%(abs_' + ForHost('mpc', host) + ')s',
+          '--with-isl=%(abs_' + ForHost('isl', host) + ')s',
+          '--with-cloog=%(abs_' + ForHost('cloog', host) + ')s',
           '--enable-cloog-backend=isl',
           '--disable-dlopen',
           '--disable-shared',
@@ -415,23 +508,26 @@ def ConfigureGccCommand(source_component, target, extra_args=[]):
           ] + extra_args)
 
 
-def HostTools(target):
+
+def HostTools(host, target):
+  def H(component_name):
+    return ForHost(component_name, host)
   tools = {
-      'binutils_' + target: {
+      H('binutils_' + target): {
           'type': 'build',
           'dependencies': ['binutils'],
           'commands': ConfigureTargetPrep(target) + [
               command.Command(
                   ConfigureCommand('binutils') +
-                  CONFIGURE_HOST_TOOL +
+                  ConfigureHostTool(host) +
                   ConfigureTargetArgs(target) + [
                       '--enable-deterministic-archives',
                       '--enable-gold',
-                      ] + ([] if sys.platform == 'win32' else [
+                      ] + ([] if HostIsWindows(host) else [
                           '--enable-plugins',
                           ])),
-              command.Command(MAKE_PARALLEL_CMD),
-              command.Command(MAKE_CHECK_CMD),
+              command.Command(MakeCommand(host)),
+              command.Command(MakeCheckCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
               REMOVE_INFO_DIR,
               ] + InstallDocFiles('binutils',
@@ -445,11 +541,12 @@ def HostTools(target):
                for name in ['lib', 'lib32', 'lib64']],
           },
 
-      'gcc_' + target: {
+      H('gcc_' + target): {
           'type': 'build',
-          'dependencies': ['gcc'] + HOST_GCC_LIBS_DEPS + ['binutils_' + target],
+          'dependencies': (['gcc'] + HostGccLibsDeps(host) +
+                           GccDeps(host, target)),
           'commands': ConfigureTargetPrep(target) + [
-              ConfigureGccCommand('gcc', target),
+              ConfigureGccCommand('gcc', host, target),
               # GCC's configure step writes configargs.h with some strings
               # including the configure command line, which get embedded
               # into the gcc driver binary.  The build only works if we use
@@ -460,11 +557,13 @@ def HostTools(target):
               # in place to replace the absolute paths with something that
               # never varies.  Note that the 'configure-gcc' target will
               # actually build some components before running gcc/configure.
-              GccCommand(target, MAKE_PARALLEL_CMD + ['configure-gcc']),
+              GccCommand(host, target,
+                         MakeCommand(host, ['configure-gcc'])),
               command.Command(['sed', '-i', '-e',
                                ';'.join(['s@%%(abs_%s)s@.../%s_install@g' %
                                          (component, component)
-                                         for component in HOST_GCC_LIBS_DEPS] +
+                                         for component in
+                                         HostGccLibsDeps(host)] +
                                         ['s@%(cwd)s@...@g']),
                                command.path.join('gcc', 'configargs.h')]),
               # gcc/Makefile's install rules ordinarily look at the
@@ -473,14 +572,15 @@ def HostTools(target):
               # should be made to expect a libc-supplied limits.h or not.
               # Since we're doing this build in a clean environment without
               # any libc installed, we need to force its hand here.
-              GccCommand(target, MAKE_PARALLEL_CMD + ['all-gcc',
-                                                      'LIMITS_H_TEST=true']),
+              GccCommand(host, target,
+                         MakeCommand(['all-gcc', 'LIMITS_H_TEST=true'])),
               # gcc/Makefile's install targets populate this directory
               # only if it already exists.
               command.Mkdir(command.path.join('%(output)s',
                                               target + '-nacl', 'bin'),
                             True),
-              GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-gcc']),
+              GccCommand(host, target,
+                         MAKE_DESTDIR_CMD + ['install-strip-gcc']),
               REMOVE_INFO_DIR,
               # Note we include COPYING.RUNTIME here and not with gcc_libs.
               ] + InstallDocFiles('gcc', ['COPYING3', 'COPYING.RUNTIME']),
@@ -506,20 +606,21 @@ def NewlibTargetCflags(target):
   return ' '.join(options)
 
 
-def TargetCommands(target, command_list):
+def TargetCommands(host, target, command_list):
   # First we have to copy the host tools into a common directory.
   # We can't just have both directories in our PATH, because the
   # compiler looks for the assembler and linker relative to itself.
-  commands = PopulateDeps(['%(binutils_' + target + ')s',
-                           '%(gcc_' + target + ')s'])
+  commands = PopulateDeps(['%(' + ForHost('binutils_' + target, host) + ')s',
+                           '%(' + ForHost('gcc_' + target, host) + ')s'])
   bindir = command.path.join('%(cwd)s', 'all_deps', 'bin')
   commands += [command.Command(cmd, path_dirs=[bindir])
                for cmd in command_list]
   return commands
 
 
-def TargetLibs(target):
-  lib_deps = ['binutils_' + target, 'gcc_' + target]
+def TargetLibs(host, target):
+  lib_deps = [ForHost(component + '_' + target, host)
+              for component in ['binutils', 'gcc']]
 
   def NewlibFile(subdir, name):
     return command.path.join('%(output)s', target + '-nacl', subdir, name)
@@ -532,43 +633,50 @@ def TargetLibs(target):
                                   '%(abs_newlib)s/install-sh',
                                   '-c', '-s', '-m', '644'])
 
+  iconv_encodings = 'UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4'
+  newlib_configure_args = [
+      '--disable-libgloss',
+      '--enable-newlib-iconv',
+      '--enable-newlib-iconv-from-encodings=' + iconv_encodings,
+      '--enable-newlib-iconv-to-encodings=' + iconv_encodings,
+      '--enable-newlib-io-long-long',
+      '--enable-newlib-io-long-double',
+      '--enable-newlib-io-c99-formats',
+      '--enable-newlib-mb',
+      'CFLAGS=-O2',
+      'CFLAGS_FOR_TARGET=' + NewlibTargetCflags(target),
+      'INSTALL_DATA=' + newlib_install_data,
+      ]
+
+  newlib_post_install = [
+      command.Remove(NewlibFile('include', 'pthread.h')),
+      command.Rename(NewlibFile('lib', 'libc.a'),
+                     NewlibFile('lib', 'libcrt_common.a')),
+      command.WriteData(NewlibLibcScript(target),
+                        NewlibFile('lib', 'libc.a')),
+      ]
+
   libs = {
       'newlib_' + target: {
           'type': 'build',
           'dependencies': ['newlib'] + lib_deps,
-          'commands': ConfigureTargetPrep(target) + TargetCommands(target, [
-              ConfigureCommand('newlib') +
-              CONFIGURE_HOST_TOOL +
-              ConfigureTargetArgs(target) + [
-                  '--disable-libgloss',
-                  '--enable-newlib-iconv',
-                  ('--enable-newlib-iconv-from-encodings=' +
-                   'UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4'),
-                  ('--enable-newlib-iconv-to-encodings=' +
-                   'UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4'),
-                  '--enable-newlib-io-long-long',
-                  '--enable-newlib-io-long-double',
-                  '--enable-newlib-io-c99-formats',
-                  '--enable-newlib-mb',
-                  'CFLAGS=-O2',
-                  'CFLAGS_FOR_TARGET=' + NewlibTargetCflags(target),
-                  'INSTALL_DATA=' + newlib_install_data,
-                  ],
-              MAKE_PARALLEL_CMD,
-              MAKE_DESTDIR_CMD + ['install-strip'],
-              ]) + [
-                  command.Remove(NewlibFile('include', 'pthread.h')),
-                  command.Rename(NewlibFile('lib', 'libc.a'),
-                                 NewlibFile('lib', 'libcrt_common.a')),
-                  command.WriteData(NewlibLibcScript(target),
-                                    NewlibFile('lib', 'libc.a')),
-                  ] + InstallDocFiles('newlib', ['COPYING.NEWLIB']),
+          'commands': (ConfigureTargetPrep(target) +
+                       TargetCommands(host, target, [
+                           ConfigureCommand('newlib') +
+                           ConfigureHostTool(host) +
+                           ConfigureTargetArgs(target) +
+                           newlib_configure_args,
+                           MakeCommand(host),
+                           MAKE_DESTDIR_CMD + ['install-strip'],
+                           ]) +
+                       newlib_post_install +
+                       InstallDocFiles('newlib', ['COPYING.NEWLIB'])),
           },
 
       'gcc_libs_' + target: {
           'type': 'build',
-          'dependencies': (['gcc_libs'] + lib_deps +
-                           ['newlib_' + target] + HOST_GCC_LIBS_DEPS),
+          'dependencies': (['gcc_libs'] + lib_deps + ['newlib_' + target] +
+                           HostGccLibsDeps(host)),
           # This actually builds the compiler again and uses that compiler
           # to build the target libraries.  That's by far the easiest thing
           # to get going given the interdependencies of the target
@@ -579,14 +687,16 @@ def TargetLibs(target):
           # interdependencies better, unpack the compiler, configure with
           # --disable-gcc, and just build all-target.
           'commands': ConfigureTargetPrep(target) + [
-              ConfigureGccCommand('gcc_libs', target, [
+              ConfigureGccCommand('gcc_libs', host, target, [
                   '--with-build-sysroot=' + newlib_sysroot,
                   ]),
-              GccCommand(target, MAKE_PARALLEL_CMD + [
-                  'build_tooldir=' + newlib_tooldir,
-                  'all-target',
-                  ]),
-              GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-target']),
+              GccCommand(host, target,
+                         MakeCommand(host) + [
+                             'build_tooldir=' + newlib_tooldir,
+                             'all-target',
+                             ]),
+              GccCommand(host, target,
+                         MAKE_DESTDIR_CMD + ['install-strip-target']),
               REMOVE_INFO_DIR,
               ],
           },
@@ -594,21 +704,59 @@ def TargetLibs(target):
   return libs
 
 
+def NativeTuple():
+  if sys.platform.startswith('linux'):
+    machine = platform.machine().lower()
+    if machine.startswith('arm'):
+      return ('arm-linux-gnueabihf', [])
+    if any(fnmatch.fnmatch(machine, pattern) for pattern in
+           ['x86_64*', 'amd64*', 'x64*', 'i?86*']):
+      # We build the tools for x86-32 hosts so they will run on either x86-32
+      # or x86-64 hosts (with the right compatibility libraries installed).
+      # So for an x86-64 host, we call x86-32 the "native" machine.
+      return ('i686-linux', ['-m32'])
+    raise Exception('Machine %s not recognized' % machine)
+  elif sys.platform.startswith('win'):
+    return ('i686-w64-mingw32', [])
+  elif sys.platform.startswith('darwin'):
+    return ('x86_64-apple-darwin', [])
+  raise Exception('Platform %s not recognized' % sys.platform)
+
+
+def HostIsWindows(host):
+  return host == 'i686-w64-mingw32'
+
+
+# We build target libraries only on Linux for two reasons:
+# 1. We only need to build them once.
+# 2. Linux is the fastest to build.
+# TODO(mcgrathr): In future set up some scheme whereby non-Linux
+# bots can build target libraries but not archive them, only verifying
+# that the results came out the same as the ones archived by the
+# official builder bot.  That will serve as a test of the host tools
+# on the other host platforms.
+def BuildTargetLibsOn(host):
+  return host == 'i686-linux'
+
+
+def CollectPackagesForHost(host, targets):
+  packages = HostGccLibs(host).copy()
+  for target in targets:
+    packages.update(HostTools(host, target))
+    if BuildTargetLibsOn(host):
+      packages.update(TargetLibs(host, target))
+  return packages
+
+
 def CollectPackages(targets):
   packages = CollectSources()
-  packages.update(HOST_GCC_LIBS)
-  for target in targets:
-    packages.update(HostTools(target))
-    # We build target libraries only on Linux for two reasons:
-    # 1. We only need to build them once.
-    # 2. Linux is the fastest to build.
-    # TODO(mcgrathr): In future set up some scheme whereby non-Linux
-    # bots can build target libraries but not archive them, only verifying
-    # that the results came out the same as the ones archived by the
-    # official builder bot.  That will serve as a test of the host tools
-    # on the other host platforms.
-    if sys.platform.startswith('linux'):
-      packages.update(TargetLibs(target))
+
+  native, _ = NativeTuple()
+  packages.update(CollectPackagesForHost(native, targets))
+
+  for host in EXTRA_HOSTS_MAP.get(native, []):
+    packages.update(CollectPackagesForHost(host, targets))
+
   return packages
 
 
