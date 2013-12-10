@@ -116,6 +116,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
                            contents_opaque(),
                            pile_invalidation_,
                            visible_layer_rect,
+                           update_source_frame_number_,
                            rendering_stats_instrumentation());
   last_updated_visible_content_rect_ = visible_content_rect();
 

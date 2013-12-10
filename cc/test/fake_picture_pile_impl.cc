@@ -78,7 +78,7 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   scoped_refptr<Picture> picture(Picture::Create(bounds));
   picture->Record(&client_, tile_grid_info_);
   picture->GatherPixelRefs(tile_grid_info_);
-  picture_map_[std::pair<int, int>(x, y)].picture = picture;
+  picture_map_[std::pair<int, int>(x, y)].SetPicture(picture);
   EXPECT_TRUE(HasRecordingAt(x, y));
 
   UpdateRecordedRegion();

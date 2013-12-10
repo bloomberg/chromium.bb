@@ -170,7 +170,8 @@ void PicturePileImpl::CoalesceRasters(gfx::Rect canvas_rect,
     if (map_iter == picture_map_.end())
       continue;
     PictureInfo& info = map_iter->second;
-    if (!info.picture.get())
+    Picture* picture = info.GetPicture();
+    if (!picture)
       continue;
 
     // This is intentionally *enclosed* rect, so that the clip is aligned on
@@ -182,13 +183,13 @@ void PicturePileImpl::CoalesceRasters(gfx::Rect canvas_rect,
     gfx::Rect content_clip =
         gfx::ScaleToEnclosedRect(chunk_rect, contents_scale);
     DCHECK(!content_clip.IsEmpty()) << "Layer rect: "
-                                    << info.picture->LayerRect().ToString()
+                                    << picture->LayerRect().ToString()
                                     << "Contents scale: " << contents_scale;
     content_clip.Intersect(canvas_rect);
 
-    PictureRegionMap::iterator it = results->find(info.picture.get());
+    PictureRegionMap::iterator it = results->find(picture);
     if (it == results->end()) {
-      Region& region = (*results)[info.picture.get()];
+      Region& region = (*results)[picture];
       region = content_rect;
       region.Subtract(content_clip);
       continue;
@@ -365,7 +366,7 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
     if (it == picture_pile_->picture_map_.end())
       continue;
 
-    const Picture* picture = it->second.picture.get();
+    const Picture* picture = it->second.GetPicture();
     if (!picture || (processed_pictures_.count(picture) != 0))
       continue;
 
@@ -382,7 +383,7 @@ void PicturePileImpl::DidBeginTracing() {
   for (PictureMap::iterator it = picture_map_.begin();
        it != picture_map_.end();
        ++it) {
-    Picture* picture = it->second.picture.get();
+    Picture* picture = it->second.GetPicture();
     if (picture && (processed_pictures.count(picture) == 0)) {
       picture->EmitTraceSnapshot();
       processed_pictures.insert(picture);

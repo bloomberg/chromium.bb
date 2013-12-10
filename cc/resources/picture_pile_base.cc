@@ -25,6 +25,15 @@ const bool kDefaultClearCanvasSetting = false;
 #else
 const bool kDefaultClearCanvasSetting = true;
 #endif
+
+// Invalidation frequency settings. kInvalidationFrequencyThreshold is a value
+// between 0 and 1 meaning invalidation frequency between 0% and 100% that
+// indicates when to stop invalidating offscreen regions.
+// kFrequentInvalidationDistanceThreshold defines what it means to be
+// "offscreen" in terms of distance to visible in css pixels.
+const float kInvalidationFrequencyThreshold = 0.75f;
+const int kFrequentInvalidationDistanceThreshold = 512;
+
 }  // namespace
 
 namespace cc {
@@ -165,7 +174,7 @@ void PicturePileBase::UpdateRecordedRegion() {
   for (PictureMap::const_iterator it = picture_map_.begin();
        it != picture_map_.end();
        ++it) {
-    if (it->second.picture.get()) {
+    if (it->second.GetPicture()) {
       const PictureMapKey& key = it->first;
       recorded_region_.Union(tile_bounds(key.first, key.second));
     }
@@ -176,7 +185,7 @@ bool PicturePileBase::HasRecordingAt(int x, int y) {
   PictureMap::const_iterator found = picture_map_.find(PictureMapKey(x, y));
   if (found == picture_map_.end())
     return false;
-  return !!found->second.picture.get();
+  return !!found->second.GetPicture();
 }
 
 bool PicturePileBase::CanRaster(float contents_scale, gfx::Rect content_rect) {
@@ -210,7 +219,7 @@ scoped_ptr<base::Value> PicturePileBase::AsValue() const {
     if (map_iter == picture_map_.end())
       continue;
 
-    Picture* picture = map_iter->second.picture.get();
+    Picture* picture = map_iter->second.GetPicture();
     if (picture && (appended_pictures.count(picture) == 0)) {
       appended_pictures.insert(picture);
       pictures->Append(TracedValue::CreateIDRef(picture).release());
@@ -219,23 +228,61 @@ scoped_ptr<base::Value> PicturePileBase::AsValue() const {
   return pictures.PassAs<base::Value>();
 }
 
-PicturePileBase::PictureInfo::PictureInfo() {}
+PicturePileBase::PictureInfo::PictureInfo() : last_frame_number_(0) {}
 
 PicturePileBase::PictureInfo::~PictureInfo() {}
 
-bool PicturePileBase::PictureInfo::Invalidate() {
-  if (!picture.get())
-    return false;
-  picture = NULL;
-  return true;
+void PicturePileBase::PictureInfo::AdvanceInvalidationHistory(
+    int frame_number) {
+  DCHECK_GE(frame_number, last_frame_number_);
+  if (frame_number == last_frame_number_)
+    return;
+
+  invalidation_history_ <<= (frame_number - last_frame_number_);
+  last_frame_number_ = frame_number;
+}
+
+bool PicturePileBase::PictureInfo::Invalidate(int frame_number) {
+  AdvanceInvalidationHistory(frame_number);
+  invalidation_history_.set(0);
+
+  bool did_invalidate = !!picture_;
+  picture_ = NULL;
+  return did_invalidate;
+}
+
+bool PicturePileBase::PictureInfo::NeedsRecording(int frame_number,
+                                                  int distance_to_visible) {
+  AdvanceInvalidationHistory(frame_number);
+
+  // We only need recording if we don't have a picture. Furthermore, we only
+  // need a recording if we're within frequent invalidation distance threshold
+  // or the invalidation is not frequent enough (below invalidation frequency
+  // threshold).
+  return !picture_ &&
+         ((distance_to_visible <= kFrequentInvalidationDistanceThreshold) ||
+          (GetInvalidationFrequency() < kInvalidationFrequencyThreshold));
+}
+
+void PicturePileBase::PictureInfo::SetPicture(scoped_refptr<Picture> picture) {
+  picture_ = picture;
+}
+
+Picture* PicturePileBase::PictureInfo::GetPicture() const {
+  return picture_.get();
 }
 
 PicturePileBase::PictureInfo PicturePileBase::PictureInfo::CloneForThread(
     int thread_index) const {
   PictureInfo info = *this;
-  if (picture.get())
-    info.picture = picture->GetCloneForDrawingOnThread(thread_index);
+  if (picture_.get())
+    info.picture_ = picture_->GetCloneForDrawingOnThread(thread_index);
   return info;
+}
+
+float PicturePileBase::PictureInfo::GetInvalidationFrequency() const {
+  return invalidation_history_.count() /
+         static_cast<float>(INVALIDATION_FRAMES_TRACKED);
 }
 
 }  // namespace cc

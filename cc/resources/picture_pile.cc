@@ -11,6 +11,7 @@
 #include "cc/base/region.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/tile_priority.h"
 
 namespace {
 // Layout pixel buffer around the visible layer rect to record.  Any base
@@ -151,6 +152,7 @@ bool PicturePile::Update(
     bool contents_opaque,
     const Region& invalidation,
     gfx::Rect visible_layer_rect,
+    int frame_number,
     RenderingStatsInstrumentation* stats_instrumentation) {
   background_color_ = background_color;
   contents_opaque_ = contents_opaque;
@@ -175,7 +177,8 @@ bool PicturePile::Update(
       if (picture_it == picture_map_.end())
         continue;
 
-      invalidated = picture_it->second.Invalidate() || invalidated;
+      // Inform the grid cell that it has been invalidated in this frame.
+      invalidated = picture_it->second.Invalidate(frame_number) || invalidated;
     }
   }
 
@@ -186,8 +189,13 @@ bool PicturePile::Update(
   for (TilingData::Iterator it(&tiling_, interest_rect);
        it; ++it) {
     const PictureMapKey& key = it.index();
-    const PictureInfo& info = picture_map_[key];
-    if (!info.picture.get()) {
+    PictureInfo& info = picture_map_[key];
+
+    gfx::Rect rect = PaddedRect(key);
+    int distance_to_visible =
+        rect.ManhattanInternalDistance(visible_layer_rect);
+
+    if (info.NeedsRecording(frame_number, distance_to_visible)) {
       gfx::Rect tile = tiling_.TileBounds(key.first, key.second);
       invalid_tiles.push_back(tile);
     }
@@ -235,7 +243,7 @@ bool PicturePile::Update(
       gfx::Rect tile = PaddedRect(key);
       if (record_rect.Contains(tile)) {
         PictureInfo& info = picture_map_[key];
-        info.picture = picture;
+        info.SetPicture(picture);
       }
     }
   }

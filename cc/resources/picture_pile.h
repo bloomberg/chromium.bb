@@ -26,6 +26,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
       bool contents_opaque,
       const Region& invalidation,
       gfx::Rect visible_layer_rect,
+      int frame_number,
       RenderingStatsInstrumentation* stats_instrumentation);
 
   void set_num_raster_threads(int num_raster_threads) {
