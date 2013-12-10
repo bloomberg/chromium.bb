@@ -59,6 +59,7 @@ namespace views {
 class BubbleDelegateView;
 class ImageButton;
 class Label;
+class LabelButton;
 class Widget;
 }
 
@@ -493,6 +494,9 @@ class LocationBarView : public LocationBar,
 
   // The star.
   StarView* star_view_;
+
+  // The search/go button.
+  views::LabelButton* search_button_;
 
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.

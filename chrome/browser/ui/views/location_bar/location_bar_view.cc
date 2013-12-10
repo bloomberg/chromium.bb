@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -81,6 +82,8 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -182,6 +185,7 @@ LocationBarView::LocationBarView(Browser* browser,
       script_bubble_icon_view_(NULL),
       translate_icon_view_(NULL),
       star_view_(NULL),
+      search_button_(NULL),
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -355,6 +359,39 @@ void LocationBarView::Init() {
   star_view_ = new StarView(command_updater());
   star_view_->SetVisible(false);
   AddChildView(star_view_);
+
+  search_button_ = new views::LabelButton(this, string16());
+  search_button_->set_triggerable_event_flags(
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
+  search_button_->SetStyle(views::Button::STYLE_BUTTON);
+  search_button_->set_focusable(false);
+  search_button_->set_min_size(gfx::Size());
+  views::LabelButtonBorder* search_button_border =
+      static_cast<views::LabelButtonBorder*>(search_button_->border());
+  search_button_border->set_insets(gfx::Insets());
+  const int kSearchButtonNormalImages[] = IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON);
+  search_button_border->SetPainter(
+      false, views::Button::STATE_NORMAL,
+      views::Painter::CreateImageGridPainter(kSearchButtonNormalImages));
+  const int kSearchButtonHoveredImages[] =
+      IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON_HOVER);
+  search_button_border->SetPainter(
+      false, views::Button::STATE_HOVERED,
+      views::Painter::CreateImageGridPainter(kSearchButtonHoveredImages));
+  const int kSearchButtonPressedImages[] =
+      IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON_PRESSED);
+  search_button_border->SetPainter(
+      false, views::Button::STATE_PRESSED,
+      views::Painter::CreateImageGridPainter(kSearchButtonPressedImages));
+  search_button_border->SetPainter(false, views::Button::STATE_DISABLED, NULL);
+  search_button_border->SetPainter(true, views::Button::STATE_NORMAL, NULL);
+  search_button_border->SetPainter(true, views::Button::STATE_HOVERED, NULL);
+  search_button_border->SetPainter(true, views::Button::STATE_PRESSED, NULL);
+  search_button_border->SetPainter(true, views::Button::STATE_DISABLED, NULL);
+  const int kSearchButtonWidth = 56;
+  search_button_->set_min_size(gfx::Size(kSearchButtonWidth, 0));
+  search_button_->SetVisible(false);
+  AddChildView(search_button_);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
@@ -624,11 +661,19 @@ string16 LocationBarView::GetGrayTextAutocompletion() const {
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
-  return background_border_painter_->GetMinimumSize();
+  gfx::Size background_min_size(background_border_painter_->GetMinimumSize());
+  if (!IsInitialized())
+    return background_min_size;
+  gfx::Size search_button_min_size(search_button_->GetMinimumSize());
+  gfx::Size min_size(background_min_size);
+  min_size.SetToMax(search_button_min_size);
+  min_size.set_width(
+      background_min_size.width() + search_button_min_size.width());
+  return min_size;
 }
 
 void LocationBarView::Layout() {
-  if (!omnibox_view_)
+  if (!IsInitialized())
     return;
 
   selected_keyword_view_->SetVisible(false);
@@ -759,7 +804,16 @@ void LocationBarView::Layout() {
 
   // Perform layout.
   const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
-  int full_width = width() - 2 * horizontal_edge_thickness;
+  int full_width = width() - horizontal_edge_thickness;
+  // The search button images are made to look as if they overlay the normal
+  // edge images, but to align things, the search button needs to be inset
+  // horizontally by 1 px.
+  const int kSearchButtonInset = 1;
+  const gfx::Size search_button_size(search_button_->GetPreferredSize());
+  const int search_button_reserved_width =
+      search_button_size.width() + kSearchButtonInset;
+  full_width -= search_button_->visible() ?
+      search_button_reserved_width : horizontal_edge_thickness;
   int entry_width = full_width;
   leading_decorations.LayoutPass1(&entry_width);
   trailing_decorations.LayoutPass1(&entry_width);
@@ -852,6 +906,10 @@ void LocationBarView::Layout() {
   }
 
   omnibox_view_->SetBoundsRect(location_bounds);
+
+  search_button_->SetBoundsRect(gfx::Rect(
+      gfx::Point(width() - search_button_reserved_width, 0),
+      search_button_size));
 }
 
 void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
@@ -970,9 +1028,24 @@ void LocationBarView::Update(const WebContents* contents) {
 }
 
 void LocationBarView::OnChanged() {
-  location_icon_view_->SetImage(
-      GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));
+  int icon_id = omnibox_view_->GetIcon();
+  location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon_id));
   location_icon_view_->ShowTooltip(!GetOmniboxView()->IsEditingOrEmpty());
+
+  ToolbarModel* toolbar_model = GetToolbarModel();
+  chrome::DisplaySearchButtonConditions conditions =
+      chrome::GetDisplaySearchButtonConditions();
+  bool meets_conditions =
+      (conditions == chrome::DISPLAY_SEARCH_BUTTON_ALWAYS) ||
+      ((conditions != chrome::DISPLAY_SEARCH_BUTTON_NEVER) &&
+       (toolbar_model->WouldPerformSearchTermReplacement(true) ||
+        ((conditions == chrome::DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP) &&
+         toolbar_model->input_in_progress())));
+  search_button_->SetVisible(!is_popup_mode_ && meets_conditions);
+  search_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      *GetThemeProvider()->GetImageSkiaNamed((icon_id == IDR_OMNIBOX_SEARCH) ?
+          IDR_OMNIBOX_SEARCH_BUTTON_LOUPE : IDR_OMNIBOX_SEARCH_BUTTON_ARROW));
 
   Layout();
   SchedulePaint();
@@ -1007,7 +1080,7 @@ bool LocationBarView::HasFocus() const {
 }
 
 void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  if (!omnibox_view_)
+  if (!IsInitialized())
     return;
 
   state->role = ui::AccessibilityTypes::ROLE_LOCATION_BAR;
@@ -1039,8 +1112,15 @@ void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void LocationBarView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  DCHECK_EQ(mic_search_view_, sender);
-  command_updater()->ExecuteCommand(IDC_TOGGLE_SPEECH_INPUT);
+  if (sender == mic_search_view_) {
+    command_updater()->ExecuteCommand(IDC_TOGGLE_SPEECH_INPUT);
+    return;
+  }
+
+  DCHECK_EQ(search_button_, sender);
+  // TODO(pkasting): When macourteau adds UMA stats for this, wire them up here.
+  omnibox_view_->model()->AcceptInput(
+      ui::DispositionFromEventFlags(event.flags()), false);
 }
 
 void LocationBarView::WriteDragDataForView(views::View* sender,
