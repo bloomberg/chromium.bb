@@ -23,11 +23,8 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/quota/quota_types.h"
 
-using ppapi::host::ReplyMessageContext;
-
 namespace content {
 class PepperFileSystemBrowserHost;
-class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
                          public base::SupportsWeakPtr<PepperFileIOHost> {
@@ -44,6 +41,12 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
+
+  // Direct access for PepperFileSystemBrowserHost.
+  int64_t max_written_offset() const { return max_written_offset_; }
+  void set_max_written_offset(int64_t max_written_offset) {
+      max_written_offset_ = max_written_offset;
+  }
 
   struct UIThreadStuff {
     UIThreadStuff();
@@ -76,30 +79,49 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   // PP_Error code and send back the reply. Note that the argument
   // ReplyMessageContext is copied so that we have a closure containing all
   // necessary information to reply.
-  void ExecutePlatformGeneralCallback(ReplyMessageContext reply_context,
-                                      base::PlatformFileError error_code);
-  void ExecutePlatformOpenFileCallback(ReplyMessageContext reply_context,
-                                       base::PlatformFileError error_code,
-                                       base::PassPlatformFile file,
-                                       bool unused_created);
-  void ExecutePlatformWriteCallback(ReplyMessageContext reply_context,
-                                    base::PlatformFileError error_code,
-                                    int bytes_written);
+  void ExecutePlatformGeneralCallback(
+      ppapi::host::ReplyMessageContext reply_context,
+      base::PlatformFileError error_code);
+  void ExecutePlatformOpenFileCallback(
+      ppapi::host::ReplyMessageContext reply_context,
+      base::PlatformFileError error_code,
+      base::PassPlatformFile file,
+      bool unused_created);
+  void ExecutePlatformWriteCallback(
+      ppapi::host::ReplyMessageContext reply_context,
+      base::PlatformFileError error_code,
+      int bytes_written);
 
   void GotUIThreadStuffForInternalFileSystems(
-      ReplyMessageContext reply_context,
+      ppapi::host::ReplyMessageContext reply_context,
       int platform_file_flags,
       UIThreadStuff ui_thread_stuff);
   void DidOpenInternalFile(
-      ReplyMessageContext reply_context,
+      ppapi::host::ReplyMessageContext reply_context,
       base::PlatformFileError result,
       base::PlatformFile file,
       const base::Closure& on_close_callback);
   void GotResolvedRenderProcessId(
-      ReplyMessageContext reply_context,
+      ppapi::host::ReplyMessageContext reply_context,
       base::FilePath path,
       int platform_file_flags,
       base::ProcessId resolved_render_process_id);
+
+  void DidOpenQuotaFile(ppapi::host::ReplyMessageContext reply_context,
+                        base::PlatformFile file,
+                        int64_t max_written_offset);
+  void GotWriteQuota(ppapi::host::ReplyMessageContext reply_context,
+                     int64_t offset,
+                     const std::string& buffer,
+                     int32_t granted);
+  void GotSetLengthQuota(ppapi::host::ReplyMessageContext reply_context,
+                         int64_t length,
+                         int32_t granted);
+  bool CallWrite(ppapi::host::ReplyMessageContext reply_context,
+                 int64_t offset,
+                 const std::string& buffer);
+  bool CallSetLength(ppapi::host::ReplyMessageContext reply_context,
+                     int64_t length);
 
   void DidCloseFile(base::PlatformFileError error);
 
@@ -115,6 +137,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   base::ProcessId resolved_render_process_id_;
 
   base::PlatformFile file_;
+  int32_t open_flags_;
 
   // The file system type specified in the Open() call. This will be
   // PP_FILESYSTEMTYPE_INVALID before open was called. This value does not
@@ -122,19 +145,15 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   PP_FileSystemType file_system_type_;
   base::WeakPtr<PepperFileSystemBrowserHost> file_system_host_;
 
+  // Used to check if we can pass file handle to plugins.
+  quota::QuotaLimitType quota_policy_;
+
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   fileapi::FileSystemURL file_system_url_;
   base::Closure on_close_callback_;
-
-  // Used to check if we can pass file handle to plugins.
-  quota::QuotaLimitType quota_policy_;
-
-  // Pointer to a QuotaFileIO instance, which is valid only while a file
-  // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.
-  scoped_ptr<QuotaFileIO> quota_file_io_;
-
-  int32_t open_flags_;
+  int64_t max_written_offset_;
+  bool check_quota_;
 
   ppapi::FileIOStateManager state_manager_;
 
