@@ -12,11 +12,8 @@ GCMClientImpl::GCMClientImpl() {
 GCMClientImpl::~GCMClientImpl() {
 }
 
-void GCMClientImpl::SetUserDelegate(const std::string& username,
-                                    Delegate* delegate) {
-}
-
-void GCMClientImpl::CheckIn(const std::string& username) {
+void GCMClientImpl::CheckIn(const std::string& username,
+                            Delegate* delegate) {
 }
 
 void GCMClientImpl::Register(const std::string& username,

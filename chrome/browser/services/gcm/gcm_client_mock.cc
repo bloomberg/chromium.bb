@@ -25,23 +25,17 @@ uint64 HashToUInt64(const std::string& hash) {
 
 }  // namespace
 
-GCMClientMock::GCMClientMock()
-    : is_loading_(false),
-      checkin_failure_enabled_(false) {
+GCMClientMock::GCMClientMock() : checkin_failure_enabled_(false) {
 }
 
 GCMClientMock::~GCMClientMock() {
 }
 
-void GCMClientMock::SetUserDelegate(const std::string& username,
-                                    Delegate* delegate) {
+void GCMClientMock::CheckIn(const std::string& username, Delegate* delegate) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
+  DCHECK(delegates_.find(username) == delegates_.end());
   delegates_[username] = delegate;
-}
-
-void GCMClientMock::CheckIn(const std::string& username) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   // Simulate the android_id and secret by some sort of hashing.
   CheckInInfo checkin_info;
@@ -93,7 +87,7 @@ void GCMClientMock::Send(const std::string& username,
 }
 
 bool GCMClientMock::IsLoading() const {
-  return is_loading_;
+  return false;
 }
 
 void GCMClientMock::ReceiveMessage(const std::string& username,
@@ -149,20 +143,6 @@ std::string GCMClientMock::GetRegistrationIdFromSenderIds(
   return registration_id;
 }
 
-void GCMClientMock::SetIsLoading(bool is_loading) {
-  if (is_loading == is_loading_)
-    return;
-  is_loading_ = is_loading;
-
-  if (is_loading_)
-    return;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GCMClientMock::LoadingCompleted,
-                 base::Unretained(this)));
-}
-
 GCMClient::Delegate* GCMClientMock::GetDelegate(
     const std::string& username) const {
   std::map<std::string, Delegate*>::const_iterator iter =
@@ -216,14 +196,6 @@ void GCMClientMock::MessageSendError(std::string username,
                                      std::string app_id,
                                      std::string message_id) {
   GetDelegate(username)->OnMessageSendError(app_id, message_id, NETWORK_ERROR);
-}
-
-void GCMClientMock::LoadingCompleted() {
-  for (std::map<std::string, Delegate*>::const_iterator iter =
-           delegates_.begin();
-       iter != delegates_.end(); ++iter) {
-    iter->second->OnLoadingCompleted();
-  }
 }
 
 }  // namespace gcm

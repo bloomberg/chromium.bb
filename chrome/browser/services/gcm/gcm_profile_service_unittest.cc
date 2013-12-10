@@ -170,6 +170,10 @@ class GCMProfileServiceTest : public testing::Test,
     SignalCompleted();
   }
 
+  virtual void LoadingFromPersistentStoreFinished() OVERRIDE {
+    SignalCompleted();
+  }
+
   // Waits until the asynchrnous operation finishes.
   void WaitForCompleted() {
     run_loop_.reset(new base::RunLoop);
@@ -463,12 +467,11 @@ TEST_F(GCMProfileServiceRegisterTest, RegisterAgainWithDifferentSenderIDs) {
 
 // http://crbug.com/326321
 #if defined(OS_WIN)
-#define MAYBE_ReadRegistrationFromStateStore \
-    DISABLED_ReadRegistrationFromStateStore
+#define MAYBE_RegisterFromStateStore DISABLED_RegisterFromStateStore
 #else
-#define MAYBE_ReadRegistrationFromStateStore ReadRegistrationFromStateStore
+#define MAYBE_RegisterFromStateStore RegisterFromStateStore
 #endif
-TEST_F(GCMProfileServiceRegisterTest, MAYBE_ReadRegistrationFromStateStore) {
+TEST_F(GCMProfileServiceRegisterTest, MAYBE_RegisterFromStateStore) {
   scoped_refptr<Extension> extension(CreateExtension());
 
   std::vector<std::string> sender_ids;
@@ -480,8 +483,8 @@ TEST_F(GCMProfileServiceRegisterTest, MAYBE_ReadRegistrationFromStateStore) {
   EXPECT_EQ(GCMClient::SUCCESS, result_);
   std::string old_registration_id = registration_id_;
 
-  // Clears the results that would be set by the Register callback in
-  // preparation to call register 2nd time.
+  // Clears the results the would be set by the Register callback in preparation
+  // to call register 2nd time.
   registration_id_.clear();
   result_ = GCMClient::UNKNOWN_ERROR;
 
@@ -493,56 +496,15 @@ TEST_F(GCMProfileServiceRegisterTest, MAYBE_ReadRegistrationFromStateStore) {
   extension_service_->UnloadExtension(extension->id(),
                                       UnloadedExtensionInfo::REASON_TERMINATE);
   extension_service_->AddExtension(extension.get());
+
+  // TODO(jianli): The waiting would be removed once we support delaying running
+  // register operation until the persistent loading completes.
+  WaitForCompleted();
 
   // This should read the registration info from the extension's state store.
   // There is no need to wait since register returns the registration ID being
   // read.
   Register(extension->id(), sender_ids);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(old_registration_id, registration_id_);
-  EXPECT_EQ(GCMClient::SUCCESS, result_);
-}
-
-TEST_F(GCMProfileServiceRegisterTest,
-       GCMClientLoadingCompletedAfterReadingRegistration) {
-  scoped_refptr<Extension> extension(CreateExtension());
-
-  std::vector<std::string> sender_ids;
-  sender_ids.push_back("sender1");
-  Register(extension->id(), sender_ids);
-
-  WaitForCompleted();
-  EXPECT_FALSE(registration_id_.empty());
-  EXPECT_EQ(GCMClient::SUCCESS, result_);
-  std::string old_registration_id = registration_id_;
-
-  // Clears the results that would be set by the Register callback in
-  // preparation to call register 2nd time.
-  registration_id_.clear();
-  result_ = GCMClient::UNKNOWN_ERROR;
-
-  // Mark that GCMClient is in loading state.
-  gcm_client_mock_->SetIsLoading(true);
-
-  // Simulate start-up by recreating GCMProfileService.
-  GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &GCMProfileServiceTest::BuildGCMProfileService);
-
-  // Simulate start-up by reloading extension.
-  extension_service_->UnloadExtension(extension->id(),
-                                      UnloadedExtensionInfo::REASON_TERMINATE);
-  extension_service_->AddExtension(extension.get());
-
-  // Read the registration info from the extension's state store.
-  // This would hold up because GCMClient is in loading state.
-  Register(extension->id(), sender_ids);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(registration_id_.empty());
-  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, result_);
-
-  // Register operation will be invoked after GCMClient finishes the loading.
-  gcm_client_mock_->SetIsLoading(false);
-  WaitForCompleted();
   EXPECT_EQ(old_registration_id, registration_id_);
   EXPECT_EQ(GCMClient::SUCCESS, result_);
 }

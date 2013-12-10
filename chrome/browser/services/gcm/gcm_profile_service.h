@@ -52,6 +52,7 @@ class GCMProfileService : public BrowserContextKeyedService,
     virtual GCMEventRouter* GetEventRouter() const = 0;
     virtual void CheckInFinished(const GCMClient::CheckInInfo& checkin_info,
                                  GCMClient::Result result) = 0;
+    virtual void LoadingFromPersistentStoreFinished() = 0;
   };
 
   // Returns true if the GCM support is enabled.
@@ -100,13 +101,11 @@ class GCMProfileService : public BrowserContextKeyedService,
   FRIEND_TEST_ALL_PREFIXES(GCMProfileServiceTest, CheckOut);
   FRIEND_TEST_ALL_PREFIXES(GCMProfileServiceRegisterTest, Unregister);
 
-  class DelayedTaskController;
   class IOWorker;
 
   struct RegistrationInfo {
     RegistrationInfo();
     ~RegistrationInfo();
-    bool IsValid() const;
 
     std::vector<std::string> sender_ids;
     std::string registration_id;
@@ -122,7 +121,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Allows a signed-in user to use the GCM. If the check-in info can be found
   // in the prefs store, use it directly. Otherwise, a check-in communication
   // will be made with the GCM.
-  void AddUser(const std::string& username);
+  void AddUser();
 
   // Stops the user from using the GCM after the user signs out. This simply
   // removes the cached and persisted check-in info.
@@ -131,15 +130,6 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Unregisters an app from using the GCM after it has been uninstalled.
   void Unregister(const std::string& app_id);
 
-  void DoRegister(const std::string& app_id,
-                  const std::vector<std::string>& sender_ids,
-                  const std::string& cert,
-                  RegisterCallback callback);
-  void DoSend(const std::string& app_id,
-              const std::string& receiver_id,
-              const GCMClient::OutgoingMessage& message);
-
-  // Callbacks posted from IO thread to UI thread.
   void CheckInFinished(GCMClient::CheckInInfo checkin_info,
                        GCMClient::Result result);
   void RegisterFinished(std::string app_id,
@@ -154,8 +144,6 @@ class GCMProfileService : public BrowserContextKeyedService,
   void MessageSendError(std::string app_id,
                         std::string message_id,
                         GCMClient::Result result);
-  void CheckGCMClientLoadingFinished(bool is_loading);
-  void GCMClientLoadingFinished();
 
   // Returns the event router to fire the event for the given app.
   GCMEventRouter* GetEventRouter(const std::string& app_id);
@@ -180,8 +168,6 @@ class GCMProfileService : public BrowserContextKeyedService,
   std::string username_;
 
   content::NotificationRegistrar registrar_;
-
-  scoped_ptr<DelayedTaskController> delayed_task_controller_;
 
   // For all the work occured in IO thread.
   scoped_refptr<IOWorker> io_worker_;
