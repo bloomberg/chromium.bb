@@ -283,14 +283,19 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, co
 
 void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, int id)
 {
-    if (!element.renderer() || element.renderer()->compositingState() != PaintsIntoOwnBacking)
+    if (!canStartAnimationOnCompositor(element)) {
+        ASSERT_NOT_REACHED();
         return;
+    }
     toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
 }
 
 void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& element, int id, double pauseTime)
 {
-    ASSERT(canStartAnimationOnCompositor(element));
+    if (!canStartAnimationOnCompositor(element)) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
     toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
 }
 

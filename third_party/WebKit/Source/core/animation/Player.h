@@ -72,8 +72,6 @@ public:
     // Pausing via this method is not reflected in the value returned by
     // paused() and must never overlap with pausing via setPaused().
     void pauseForTesting();
-    // Reflects all pausing, including via pauseForTesting().
-    bool pausedInternal() const { return !isNull(m_pauseStartTime); }
 
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
@@ -86,6 +84,8 @@ private:
 
 
     void setPausedImpl(bool);
+    // Reflects all pausing, including via pauseForTesting().
+    bool pausedInternal() const { return !isNull(m_pauseStartTime); }
 
     double m_pauseStartTime;
     double m_playbackRate;
