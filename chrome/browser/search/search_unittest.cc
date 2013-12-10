@@ -513,6 +513,23 @@ TEST_F(SearchTest, InstantCacheableNTPNavigationEntry) {
                                    controller.GetLastCommittedEntry()));
 }
 
+TEST_F(SearchTest, InstantCacheableNTPNavigationEntryNewProfile) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
+  SetSearchProvider(false, false);
+  AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
+  content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::NavigationController& controller = contents->GetController();
+  // Test virtual url chrome://newtab  for first NTP of a new profile
+  EXPECT_TRUE(NavEntryIsInstantNTP(contents,
+                                   controller.GetLastCommittedEntry()));
+  // The new_tab_url gets set after the first NTP is visible.
+  SetSearchProvider(true, false);
+  EXPECT_TRUE(NavEntryIsInstantNTP(contents,
+                                   controller.GetLastCommittedEntry()));
+}
+
 TEST_F(SearchTest, UseLocalNTPInIncognito) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));

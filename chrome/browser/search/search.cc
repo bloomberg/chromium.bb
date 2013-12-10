@@ -382,7 +382,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   if (!IsRenderedInInstantProcess(contents, profile))
     return false;
 
-  if (entry->GetVirtualURL() == GetLocalInstantURL(profile))
+  if (entry->GetURL() == GetLocalInstantURL(profile))
     return true;
 
   if (ShouldUseCacheableNTP()) {
