@@ -260,6 +260,7 @@ class AndroidCommands(object):
     self._util_wrapper = ''
     self._api_strict_mode = api_strict_mode
     self._system_properties = system_properties.SystemProperties(self.Adb())
+    self._push_if_needed_cache = {}
 
     if not self._api_strict_mode:
       logging.warning(
@@ -965,6 +966,15 @@ class AndroidCommands(object):
     MAX_INDIVIDUAL_PUSHES = 50
     assert os.path.exists(host_path), 'Local path not found %s' % host_path
 
+    # See if the file on the host changed since the last push (if any) and
+    # return early if it didn't. Note that this shortcut assumes that the tests
+    # on the device don't modify the files.
+    if not os.path.isdir(host_path):
+      if host_path in self._push_if_needed_cache:
+        host_path_mtime = self._push_if_needed_cache[host_path]
+        if host_path_mtime == os.stat(host_path).st_mtime:
+          return
+
     def GetHostSize(path):
       return int(cmd_helper.GetCmdOutput(['du', '-sb', path]).split()[0])
 
@@ -989,6 +999,8 @@ class AndroidCommands(object):
       while True:
         output = self._adb.SendCommand(push_command, timeout_time=30 * 60)
         if _HasAdbPushSucceeded(output):
+          if not os.path.isdir(host_path):
+            self._push_if_needed_cache[host] = os.stat(host).st_mtime
           return
         if retry < 3:
           retry += 1
