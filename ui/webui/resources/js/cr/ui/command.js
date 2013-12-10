@@ -186,6 +186,17 @@ cr.define('cr.ui', function() {
   cr.defineProperty(Command, 'checked', cr.PropertyKind.BOOL_ATTR);
 
   /**
+   * The flag that prevents the shortcut text from being displayed on menu.
+   *
+   * If false, the keyboard shortcut text (eg. "Ctrl+X" for the cut command)
+   * is displayed in menu when the command is assosiated with a menu item.
+   * Otherwise, no text is displayed.
+   *
+   * @type {boolean}
+   */
+  cr.defineProperty(Command, 'hideShortcutText', cr.PropertyKind.BOOL_ATTR);
+
+  /**
    * Dispatches a canExecute event on the target.
    * @param {cr.ui.Command} command The command that we are testing for.
    * @param {Element} target The target element to dispatch the event on.

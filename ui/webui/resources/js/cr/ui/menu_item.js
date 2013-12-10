@@ -128,7 +128,9 @@ cr.define('cr.ui', function() {
     updateShortcut_: function() {
       this.removeAttribute('shortcutText');
 
-      if (!(this.command_ && this.command_.shortcut))
+      if (!this.command_ ||
+          !this.command_.shortcut ||
+          this.command_.hideShortcutText)
         return;
 
       var shortcuts = this.command_.shortcut.split(/\s+/);
