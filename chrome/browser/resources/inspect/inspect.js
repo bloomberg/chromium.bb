@@ -687,7 +687,7 @@ function validatePort(input) {
   if (!match)
     return false;
   var port = parseInt(match[1]);
-  if (port < 5000 || 10000 < port)
+  if (port < 1024 || 10000 < port)
     return false;
 
   var inputs = document.querySelectorAll('input.port:not(.invalid)');
