@@ -29,6 +29,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/drive/drive_api_url_generator.h"
+#include "google_apis/drive/gdata_wapi_url_generator.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -45,8 +47,6 @@ const char kSyncRootDirectoryNameDev[] = "Chrome Syncable FileSystem Dev";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 const char kFakeAccountId[] = "test_user@gmail.com";
-const char kFakeServerBaseUrl[] = "https://fake_server/";
-const char kFakeDownloadServerBaseUrl[] = "https://fake_download_server/";
 
 void EmptyGDataErrorCodeCallback(google_apis::GDataErrorCode error) {}
 
@@ -159,15 +159,7 @@ bool CreateTemporaryFile(const base::FilePath& dir_path,
 
 APIUtil::APIUtil(Profile* profile,
                  const base::FilePath& temp_dir_path)
-    : wapi_url_generator_(
-          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-          GURL(google_apis::GDataWapiUrlGenerator::
-               kBaseDownloadUrlForProduction)),
-      drive_api_url_generator_(
-          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-          GURL(google_apis::DriveApiUrlGenerator::
-               kBaseDownloadUrlForProduction)),
-      oauth_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
+    : oauth_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
       upload_next_key_(0),
       temp_dir_path_(temp_dir_path),
       has_initialized_token_(false) {
@@ -210,22 +202,16 @@ scoped_ptr<APIUtil> APIUtil::CreateForTesting(
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader) {
   return make_scoped_ptr(new APIUtil(
       temp_dir_path,
-      GURL(kFakeServerBaseUrl),
-      GURL(kFakeDownloadServerBaseUrl),
       drive_service.Pass(),
       drive_uploader.Pass(),
       kFakeAccountId));
 }
 
 APIUtil::APIUtil(const base::FilePath& temp_dir_path,
-                 const GURL& base_url,
-                 const GURL& base_download_url,
                  scoped_ptr<drive::DriveServiceInterface> drive_service,
                  scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
                  const std::string& account_id)
-    : wapi_url_generator_(base_url, base_download_url),
-      drive_api_url_generator_(base_url, base_download_url),
-      upload_next_key_(0),
+    : upload_next_key_(0),
       temp_dir_path_(temp_dir_path) {
   drive_service_ = drive_service.Pass();
   drive_service_->Initialize(account_id);
@@ -617,12 +603,6 @@ void APIUtil::DeleteFile(const std::string& resource_id,
       std::string(),
       base::Bind(&APIUtil::DidDeleteFile, AsWeakPtr(), callback));
   return;
-}
-
-GURL APIUtil::ResourceIdToResourceLink(const std::string& resource_id) const {
-  return IsDriveAPIDisabled()
-      ? wapi_url_generator_.GenerateEditUrl(resource_id)
-      : drive_api_url_generator_.GetFilesGetUrl(resource_id);
 }
 
 void APIUtil::EnsureSyncRootIsNotInMyDrive(

@@ -95,8 +95,6 @@ class FakeAPIUtil : public APIUtilInterface {
   virtual void DeleteFile(const std::string& resource_id,
                           const std::string& remote_file_md5,
                           const GDataErrorCallback& callback) OVERRIDE;
-  virtual GURL ResourceIdToResourceLink(
-      const std::string& resource_id) const OVERRIDE;
   virtual void EnsureSyncRootIsNotInMyDrive(
       const std::string& sync_root_resource_id) OVERRIDE;
 
@@ -118,6 +116,7 @@ class FakeAPIUtil : public APIUtilInterface {
 
   scoped_ptr<google_apis::ResourceEntry> CreateResourceEntry(
       const RemoteResource& resource_id) const;
+  GURL ResourceIdToResourceLink(const std::string& resource_id) const;
 
   int64 largest_changestamp_;
   google_apis::GDataWapiUrlGenerator url_generator_;

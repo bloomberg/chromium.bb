@@ -216,11 +216,6 @@ void FakeAPIUtil::DeleteFile(const std::string& resource_id,
       base::Bind(callback, google_apis::HTTP_SUCCESS));
 }
 
-GURL FakeAPIUtil::ResourceIdToResourceLink(
-    const std::string& resource_id) const {
-  return url_generator_.GenerateEditUrl(resource_id);
-}
-
 void FakeAPIUtil::EnsureSyncRootIsNotInMyDrive(
     const std::string& sync_root_resource_id) {
   // Nothing to do.
@@ -270,6 +265,11 @@ scoped_ptr<google_apis::ResourceEntry> FakeAPIUtil::CreateResourceEntry(
   }
 
   return entry.Pass();
+}
+
+GURL FakeAPIUtil::ResourceIdToResourceLink(
+    const std::string& resource_id) const {
+  return url_generator_.GenerateEditUrl(resource_id);
 }
 
 }  // namespace drive_backend
