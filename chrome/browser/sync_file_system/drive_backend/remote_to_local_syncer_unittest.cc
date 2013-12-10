@@ -305,7 +305,7 @@ TEST_F(RemoteToLocalSyncerTest, DeleteFile) {
                        FileChange::FILE_CHANGE_DELETE,
                        SYNC_FILE_TYPE_UNKNOWN);
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
   VerifyConsistency();
 
@@ -351,7 +351,7 @@ TEST_F(RemoteToLocalSyncerTest, DeleteNestedFiles) {
                        SYNC_FILE_TYPE_UNKNOWN);
   // Changes for descendant files ("folder2" and "file2") should be ignored.
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
   VerifyConsistency();
 
@@ -375,7 +375,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFolder) {
 
   // Folder-File conflict happens. File creation should be ignored.
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
   VerifyConsistency();
 
@@ -406,7 +406,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFile) {
                        FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                        SYNC_FILE_TYPE_DIRECTORY);
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
   VerifyConsistency();
 
@@ -430,7 +430,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFolder) {
 
   // Folder-Folder conflict happens. Folder creation should be ignored.
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
   VerifyConsistency();
 
@@ -454,7 +454,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFile) {
 
   // File-File conflict happens. File creation should be ignored.
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
   VerifyConsistency();
 
@@ -483,7 +483,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateNestedFolderOnFile) {
                        FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                        SYNC_FILE_TYPE_DIRECTORY);
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
 
   CreateLocalFile(URL(kOrigin, "/folder"));
@@ -494,9 +494,36 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateNestedFolderOnFile) {
                        FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                        SYNC_FILE_TYPE_DIRECTORY);
 
-  ListChanges();
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunSyncerUntilIdle();
   VerifyConsistency();
+}
+
+TEST_F(RemoteToLocalSyncerTest, AppRootDeletion) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+
+  DeleteRemoteFile(app_root);
+
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_DELETE,
+                       SYNC_FILE_TYPE_UNKNOWN);
+
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+
+  // SyncEngine will re-register the app and resurrect the app root later.
 }
 
 }  // namespace drive_backend

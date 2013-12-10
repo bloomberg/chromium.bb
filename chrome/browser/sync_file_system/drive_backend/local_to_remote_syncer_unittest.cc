@@ -492,5 +492,30 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFolder) {
   ASSERT_TRUE(trackers.has_active());
 }
 
+TEST_F(LocalToRemoteSyncerTest, AppRootDeletion) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  RemoveResource(app_root);
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  SyncStatusCode status;
+  do {
+    status = RunRemoteToLocalSyncer();
+    EXPECT_TRUE(status == SYNC_STATUS_OK ||
+                status == SYNC_STATUS_RETRY ||
+                status == SYNC_STATUS_NO_CHANGE_TO_SYNC);
+  } while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
+
+  EXPECT_EQ(SYNC_STATUS_UNKNOWN_ORIGIN, RunLocalToRemoteSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY),
+      URL(kOrigin, "foo")));
+
+  // SyncEngine will re-register the app and resurrect the app root later.
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
