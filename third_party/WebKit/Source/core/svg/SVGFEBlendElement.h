@@ -21,9 +21,9 @@
 #ifndef SVGFEBlendElement_h
 #define SVGFEBlendElement_h
 
-#include "core/platform/graphics/filters/FEBlend.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/FEBlend.h"
 
 namespace WebCore {
 

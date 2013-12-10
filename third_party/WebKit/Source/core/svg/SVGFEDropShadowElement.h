@@ -20,9 +20,9 @@
 #ifndef SVGFEDropShadowElement_h
 #define SVGFEDropShadowElement_h
 
-#include "core/platform/graphics/filters/FEDropShadow.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/FEDropShadow.h"
 
 namespace WebCore {
 

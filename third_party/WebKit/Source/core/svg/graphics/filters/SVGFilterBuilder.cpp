@@ -20,8 +20,7 @@
 #include "config.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
-#include "core/platform/graphics/filters/SourceAlpha.h"
-
+#include "platform/graphics/filters/SourceAlpha.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 
 namespace WebCore {

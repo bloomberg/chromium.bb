@@ -21,10 +21,10 @@
 #ifndef SVGComponentTransferFunctionElement_h
 #define SVGComponentTransferFunctionElement_h
 
-#include "core/platform/graphics/filters/FEComponentTransfer.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGAnimatedNumberList.h"
+#include "platform/graphics/filters/FEComponentTransfer.h"
 
 namespace WebCore {
 

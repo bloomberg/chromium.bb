@@ -20,10 +20,10 @@
 #ifndef SVGFEDisplacementMapElement_h
 #define SVGFEDisplacementMapElement_h
 
-#include "core/platform/graphics/filters/FEDisplacementMap.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/FEDisplacementMap.h"
 
 namespace WebCore {
 

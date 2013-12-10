@@ -18,11 +18,10 @@
  */
 
 #include "config.h"
-
-#include "SVGNames.h"
 #include "core/svg/SVGFEPointLightElement.h"
 
-#include "core/platform/graphics/filters/PointLightSource.h"
+#include "SVGNames.h"
+#include "platform/graphics/filters/PointLightSource.h"
 
 namespace WebCore {
 

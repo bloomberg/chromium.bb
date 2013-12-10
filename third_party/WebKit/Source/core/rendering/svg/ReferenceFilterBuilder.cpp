@@ -34,11 +34,11 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/platform/graphics/filters/SourceAlpha.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "platform/graphics/filters/SourceAlpha.h"
 
 namespace WebCore {
 

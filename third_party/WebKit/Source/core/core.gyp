@@ -598,10 +598,6 @@
 
         # Used only by mac.
         ['exclude', 'platform/Theme\\.cpp$'],
-
-        # *NEON.cpp files need special compile options.
-        # They are moved to the webcore_arm_neon target.
-        ['exclude', 'platform/graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
       ],
       'conditions': [
         ['OS!="linux"', {
@@ -675,36 +671,6 @@
           'sources/': [
             ['exclude', 'platform/chromium/PlatformThemeChromiumDefault\\.(cpp|h)'],
           ],
-        }],
-      ],
-    },
-    # The *NEON.cpp files fail to compile when -mthumb is passed. Force
-    # them to build in ARM mode.
-    # See https://bugs.webkit.org/show_bug.cgi?id=62916.
-    {
-      'target_name': 'webcore_arm_neon',
-      'conditions': [
-        ['target_arch=="arm"', {
-          'type': 'static_library',
-          'dependencies': [
-            'webcore_prerequisites',
-          ],
-          'hard_dependency': 1,
-          'sources': [
-            '<@(webcore_files)',
-          ],
-          'sources/': [
-            ['exclude', '.*'],
-            ['include', 'platform/graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
-          ],
-          'cflags': ['-marm'],
-          'conditions': [
-            ['OS=="android"', {
-              'cflags!': ['-mthumb'],
-            }],
-          ],
-        },{  # target_arch!="arm"
-          'type': 'none',
         }],
       ],
     },
@@ -882,11 +848,6 @@
         ],
       },
       'conditions': [
-        ['target_arch=="arm"', {
-          'dependencies': [
-            'webcore_arm_neon',
-          ],
-        }],
         ['OS=="linux" and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines', {
           'link_settings': {
             'ldflags': [

@@ -29,7 +29,6 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/FlowThreadController.h"
@@ -46,6 +45,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 
 namespace WebCore {
 

@@ -41,7 +41,6 @@
 #include "core/page/Settings.h"
 #include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderApplet.h"
@@ -58,6 +57,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContext3D.h"
+#include "platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 

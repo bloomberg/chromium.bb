@@ -21,11 +21,11 @@
 #ifndef SVGFETurbulenceElement_h
 #define SVGFETurbulenceElement_h
 
-#include "core/platform/graphics/filters/FETurbulence.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedInteger.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/FETurbulence.h"
 
 namespace WebCore {
 

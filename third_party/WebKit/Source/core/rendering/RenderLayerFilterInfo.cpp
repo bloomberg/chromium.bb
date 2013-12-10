@@ -32,8 +32,6 @@
 #include "core/rendering/RenderLayerFilterInfo.h"
 
 #include "core/fetch/DocumentResourceReference.h"
-#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
@@ -41,6 +39,8 @@
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
+#include "platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "platform/graphics/filters/custom/CustomFilterProgram.h"
 
 namespace WebCore {
 

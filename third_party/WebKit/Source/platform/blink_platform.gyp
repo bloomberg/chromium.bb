@@ -367,12 +367,47 @@
           '<(DEPTH)/third_party/openmax_dl/dl/dl.gyp:openmax_dl',
         ],
       }],
+      ['target_arch=="arm"', {
+        'dependencies': [
+          'blink_arm_neon',
+        ],
+      }],
     ],
     'target_conditions': [
       ['OS=="android"', {
         'sources/': [
             ['include', 'exported/linux/WebFontRenderStyle\\.cpp$'],
         ],
+      }],
+    ],
+  },
+  # The *NEON.cpp files fail to compile when -mthumb is passed. Force
+  # them to build in ARM mode.
+  # See https://bugs.webkit.org/show_bug.cgi?id=62916.
+  {
+    'target_name': 'blink_arm_neon',
+    'conditions': [
+      ['target_arch=="arm"', {
+        'type': 'static_library',
+        'dependencies': [
+          'blink_common',
+        ],
+        'hard_dependency': 1,
+        'sources': [
+          '<@(platform_files)',
+        ],
+        'sources/': [
+          ['exclude', '.*'],
+          ['include', 'graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
+        ],
+        'cflags': ['-marm'],
+        'conditions': [
+          ['OS=="android"', {
+            'cflags!': ['-mthumb'],
+          }],
+        ],
+      },{  # target_arch!="arm"
+        'type': 'none',
       }],
     ],
   }],

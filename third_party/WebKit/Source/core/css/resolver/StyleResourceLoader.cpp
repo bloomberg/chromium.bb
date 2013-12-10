@@ -30,7 +30,6 @@
 #include "core/css/CSSShaderValue.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/FillLayer.h"
@@ -44,6 +43,7 @@
 #include "core/rendering/style/StylePendingImage.h"
 #include "core/rendering/style/StylePendingShader.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
+#include "platform/graphics/filters/custom/CustomFilterOperation.h"
 
 namespace WebCore {
 

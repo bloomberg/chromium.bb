@@ -18,11 +18,10 @@
  */
 
 #include "config.h"
-
-#include "SVGNames.h"
 #include "core/svg/SVGFEDistantLightElement.h"
 
-#include "core/platform/graphics/filters/DistantLightSource.h"
+#include "SVGNames.h"
+#include "platform/graphics/filters/DistantLightSource.h"
 
 namespace WebCore {
 

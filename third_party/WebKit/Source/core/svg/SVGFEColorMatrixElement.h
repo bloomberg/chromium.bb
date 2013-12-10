@@ -21,10 +21,10 @@
 #ifndef SVGFEColorMatrixElement_h
 #define SVGFEColorMatrixElement_h
 
-#include "core/platform/graphics/filters/FEColorMatrix.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/FEColorMatrix.h"
 
 namespace WebCore {
 

@@ -21,9 +21,9 @@
 #ifndef SVGFEOffsetElement_h
 #define SVGFEOffsetElement_h
 
-#include "core/platform/graphics/filters/FEOffset.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/filters/FEOffset.h"
 
 namespace WebCore {
 
