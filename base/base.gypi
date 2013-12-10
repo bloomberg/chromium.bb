@@ -292,6 +292,8 @@
           'memory/aligned_memory.cc',
           'memory/aligned_memory.h',
           'memory/discardable_memory.h',
+          'memory/discardable_memory_allocator_android.h',
+          'memory/discardable_memory_allocator_android.cc',
           'memory/discardable_memory_android.cc',
           'memory/discardable_memory_emulated.cc',
           'memory/discardable_memory_mac.cc',

@@ -3,11 +3,26 @@
 // found in the LICENSE file.
 
 #include "base/memory/discardable_memory.h"
+
+#include <limits>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
 const size_t kSize = 1024;
+
+TEST(DiscardableMemoryTest, TooLargeAllocationFails) {
+  const size_t kPageSize = 4096;
+  const size_t max_allowed_allocation_size =
+      std::numeric_limits<size_t>::max() - kPageSize + 1;
+  scoped_ptr<DiscardableMemory> memory(
+      DiscardableMemory::CreateLockedMemory(max_allowed_allocation_size + 1));
+  // On certain platforms (e.g. Android), page-alignment would have caused an
+  // overflow resulting in a small allocation if the input size wasn't checked
+  // correctly.
+  ASSERT_FALSE(memory);
+}
 
 TEST(DiscardableMemoryTest, SupportedNatively) {
 #if defined(DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY)
