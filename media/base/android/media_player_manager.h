@@ -94,24 +94,24 @@ class MEDIA_EXPORT MediaPlayerManager {
 
   // Called when MediaDrmBridge determines a SessionId.
   virtual void OnSessionCreated(int media_keys_id,
-                                uint32 reference_id,
-                                const std::string& session_id) = 0;
+                                uint32 session_id,
+                                const std::string& web_session_id) = 0;
 
   // Called when MediaDrmBridge wants to send a Message event.
   virtual void OnSessionMessage(int media_keys_id,
-                                uint32 reference_id,
+                                uint32 session_id,
                                 const std::vector<uint8>& message,
                                 const std::string& destination_url) = 0;
 
   // Called when MediaDrmBridge wants to send a Ready event.
-  virtual void OnSessionReady(int media_keys_id, uint32 reference_id) = 0;
+  virtual void OnSessionReady(int media_keys_id, uint32 session_id) = 0;
 
   // Called when MediaDrmBridge wants to send a Closed event.
-  virtual void OnSessionClosed(int media_keys_id, uint32 reference_id) = 0;
+  virtual void OnSessionClosed(int media_keys_id, uint32 session_id) = 0;
 
   // Called when MediaDrmBridge wants to send an Error event.
   virtual void OnSessionError(int media_keys_id,
-                              uint32 reference_id,
+                              uint32 session_id,
                               media::MediaKeys::KeyError error_code,
                               int system_code) = 0;
 };

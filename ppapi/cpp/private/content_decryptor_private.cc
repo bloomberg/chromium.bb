@@ -39,7 +39,7 @@ void Initialize(PP_Instance instance,
 }
 
 void CreateSession(PP_Instance instance,
-                   uint32_t reference_id,
+                   uint32_t session_id,
                    PP_Var type_arg,
                    PP_Var init_data_arg) {
   void* object =
@@ -56,12 +56,12 @@ void CreateSession(PP_Instance instance,
     return;
   pp::VarArrayBuffer init_data_array_buffer(init_data_var);
 
-  static_cast<ContentDecryptor_Private*>(object)->CreateSession(
-      reference_id, type_var.AsString(), init_data_array_buffer);
+  static_cast<ContentDecryptor_Private*>(object)
+      ->CreateSession(session_id, type_var.AsString(), init_data_array_buffer);
 }
 
 void UpdateSession(PP_Instance instance,
-                   uint32_t reference_id,
+                   uint32_t session_id,
                    PP_Var response_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
@@ -74,16 +74,16 @@ void UpdateSession(PP_Instance instance,
   pp::VarArrayBuffer response(response_var);
 
   static_cast<ContentDecryptor_Private*>(object)
-      ->UpdateSession(reference_id, response);
+      ->UpdateSession(session_id, response);
 }
 
-void ReleaseSession(PP_Instance instance, uint32_t reference_id) {
+void ReleaseSession(PP_Instance instance, uint32_t session_id) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
 
-  static_cast<ContentDecryptor_Private*>(object)->ReleaseSession(reference_id);
+  static_cast<ContentDecryptor_Private*>(object)->ReleaseSession(session_id);
 }
 
 
@@ -206,51 +206,52 @@ ContentDecryptor_Private::~ContentDecryptor_Private() {
                                     this);
 }
 
-void ContentDecryptor_Private::SessionCreated(uint32_t reference_id,
-                                              const std::string& session_id) {
+void ContentDecryptor_Private::SessionCreated(
+    uint32_t session_id,
+    const std::string& web_session_id) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
-    pp::Var session_id_var(session_id);
+    pp::Var web_session_id_var(web_session_id);
     get_interface<PPB_ContentDecryptor_Private>()->SessionCreated(
         associated_instance_.pp_instance(),
-        reference_id,
-        session_id_var.pp_var());
+        session_id,
+        web_session_id_var.pp_var());
   }
 }
 
-void ContentDecryptor_Private::SessionMessage(uint32_t reference_id,
+void ContentDecryptor_Private::SessionMessage(uint32_t session_id,
                                               pp::VarArrayBuffer message,
                                               const std::string& default_url) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var default_url_var(default_url);
     get_interface<PPB_ContentDecryptor_Private>()->SessionMessage(
         associated_instance_.pp_instance(),
-        reference_id,
+        session_id,
         message.pp_var(),
         default_url_var.pp_var());
   }
 }
 
-void ContentDecryptor_Private::SessionReady(uint32_t reference_id) {
+void ContentDecryptor_Private::SessionReady(uint32_t session_id) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->SessionReady(
-        associated_instance_.pp_instance(), reference_id);
+        associated_instance_.pp_instance(), session_id);
   }
 }
 
-void ContentDecryptor_Private::SessionClosed(uint32_t reference_id) {
+void ContentDecryptor_Private::SessionClosed(uint32_t session_id) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->SessionClosed(
-        associated_instance_.pp_instance(), reference_id);
+        associated_instance_.pp_instance(), session_id);
   }
 }
 
-void ContentDecryptor_Private::SessionError(uint32_t reference_id,
+void ContentDecryptor_Private::SessionError(uint32_t session_id,
                                             int32_t media_error,
                                             int32_t system_code) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->SessionError(
         associated_instance_.pp_instance(),
-        reference_id,
+        session_id,
         media_error,
         system_code);
   }

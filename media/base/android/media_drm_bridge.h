@@ -61,14 +61,14 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   static bool RegisterMediaDrmBridge(JNIEnv* env);
 
   // MediaKeys implementations.
-  virtual bool CreateSession(uint32 reference_id,
+  virtual bool CreateSession(uint32 session_id,
                              const std::string& type,
                              const uint8* init_data,
                              int init_data_length) OVERRIDE;
-  virtual void UpdateSession(uint32 reference_id,
+  virtual void UpdateSession(uint32 session_id,
                              const uint8* response,
                              int response_length) OVERRIDE;
-  virtual void ReleaseSession(uint32 reference_id) OVERRIDE;
+  virtual void ReleaseSession(uint32 session_id) OVERRIDE;
 
   // Returns a MediaCrypto object if it's already created. Returns a null object
   // otherwise.
@@ -106,7 +106,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   GURL frame_url() const { return frame_url_; }
 
  private:
-  // Map between session_id and reference_id.
+  // Map between session_id and web_session_id.
   typedef std::map<uint32_t, std::string> SessionMap;
 
   static bool IsSecureDecoderRequired(SecurityLevel security_level);
@@ -120,12 +120,12 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();
 
-  // Determine the corresponding reference_id for |session_id|.
-  uint32_t DetermineReferenceId(const std::string& session_id);
+  // Determine the corresponding session_id for |web_session_id|.
+  uint32_t LookupSessionId(const std::string& web_session_id);
 
-  // Determine the corresponding session_id for |reference_id|. The returned
+  // Determine the corresponding web_session_id for |session_id|. The returned
   // value is only valid on the main thread, and should be stored by copy.
-  const std::string& LookupSessionId(uint32_t reference_id);
+  const std::string& LookupWebSessionId(uint32_t session_id);
 
   // ID of the MediaKeys object.
   int media_keys_id_;
@@ -151,8 +151,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // As the response from GenerateKeyRequest() will be asynchronous, add this
   // request to a queue and assume that the subsequent responses come back in
   // the order issued.
-  // TODO(jrummell): Remove once the Java interface supports reference_id.
-  std::queue<uint32_t> pending_key_request_reference_ids_;
+  // TODO(jrummell): Remove once the Java interface supports session_id.
+  std::queue<uint32_t> pending_key_request_session_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };

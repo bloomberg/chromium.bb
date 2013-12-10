@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_content_decryptor_private.idl,
-//   modified Wed Nov 27 11:47:56 2013.
+//   modified Fri Dec  6 12:16:22 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -19,17 +19,17 @@ namespace thunk {
 namespace {
 
 void SessionCreated(PP_Instance instance,
-                    uint32_t reference_id,
+                    uint32_t session_id,
                     struct PP_Var web_session_id) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionCreated()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionCreated(instance, reference_id, web_session_id);
+  enter.functions()->SessionCreated(instance, session_id, web_session_id);
 }
 
 void SessionMessage(PP_Instance instance,
-                    uint32_t reference_id,
+                    uint32_t session_id,
                     struct PP_Var message,
                     struct PP_Var destination_url) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionMessage()";
@@ -37,29 +37,29 @@ void SessionMessage(PP_Instance instance,
   if (enter.failed())
     return;
   enter.functions()->SessionMessage(instance,
-                                    reference_id,
+                                    session_id,
                                     message,
                                     destination_url);
 }
 
-void SessionReady(PP_Instance instance, uint32_t reference_id) {
+void SessionReady(PP_Instance instance, uint32_t session_id) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionReady()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionReady(instance, reference_id);
+  enter.functions()->SessionReady(instance, session_id);
 }
 
-void SessionClosed(PP_Instance instance, uint32_t reference_id) {
+void SessionClosed(PP_Instance instance, uint32_t session_id) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionClosed()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionClosed(instance, reference_id);
+  enter.functions()->SessionClosed(instance, session_id);
 }
 
 void SessionError(PP_Instance instance,
-                  uint32_t reference_id,
+                  uint32_t session_id,
                   int32_t media_error,
                   int32_t system_code) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionError()";
@@ -67,7 +67,7 @@ void SessionError(PP_Instance instance,
   if (enter.failed())
     return;
   enter.functions()->SessionError(instance,
-                                  reference_id,
+                                  session_id,
                                   media_error,
                                   system_code);
 }

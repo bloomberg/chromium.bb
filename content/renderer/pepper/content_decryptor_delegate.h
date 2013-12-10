@@ -49,14 +49,14 @@ class ContentDecryptorDelegate {
       const media::SessionErrorCB& session_error_cb);
 
   // Provides access to PPP_ContentDecryptor_Private.
-  bool CreateSession(uint32 reference_id,
+  bool CreateSession(uint32 session_id,
                      const std::string& type,
                      const uint8* init_data,
                      int init_data_length);
-  bool UpdateSession(uint32 reference_id,
+  bool UpdateSession(uint32 session_id,
                      const uint8* response,
                      int response_length);
-  bool ReleaseSession(uint32 reference_id);
+  bool ReleaseSession(uint32 session_id);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
@@ -80,13 +80,13 @@ class ContentDecryptorDelegate {
       const media::Decryptor::VideoDecodeCB& video_decode_cb);
 
   // PPB_ContentDecryptor_Private dispatching methods.
-  void OnSessionCreated(uint32 reference_id, PP_Var session_id_var);
-  void OnSessionMessage(uint32 reference_id,
+  void OnSessionCreated(uint32 session_id, PP_Var web_session_id_var);
+  void OnSessionMessage(uint32 session_id,
                         PP_Var message,
                         PP_Var destination_url);
-  void OnSessionReady(uint32 reference_id);
-  void OnSessionClosed(uint32 reference_id);
-  void OnSessionError(uint32 reference_id,
+  void OnSessionReady(uint32 session_id);
+  void OnSessionClosed(uint32 session_id);
+  void OnSessionError(uint32 session_id,
                       int32_t media_error,
                       int32_t system_code);
   void DeliverBlock(PP_Resource decrypted_block,

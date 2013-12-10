@@ -32,12 +32,12 @@ class ContentDecryptor_Private {
   // strings. The change would allow the CDM wrapper to reuse vars when
   // replying to the browser.
   virtual void Initialize(const std::string& key_system) = 0;
-  virtual void CreateSession(uint32_t reference_id,
+  virtual void CreateSession(uint32_t session_id,
                              const std::string& type,
                              pp::VarArrayBuffer init_data) = 0;
-  virtual void UpdateSession(uint32_t reference_id,
+  virtual void UpdateSession(uint32_t session_id,
                              pp::VarArrayBuffer response) = 0;
-  virtual void ReleaseSession(uint32_t reference_id) = 0;
+  virtual void ReleaseSession(uint32_t session_id) = 0;
   virtual void Decrypt(pp::Buffer_Dev encrypted_buffer,
                        const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
   virtual void InitializeAudioDecoder(
@@ -58,13 +58,13 @@ class ContentDecryptor_Private {
 
   // PPB_ContentDecryptor_Private methods for passing data from the decryptor
   // to the browser.
-  void SessionCreated(uint32_t reference_id, const std::string& session_id);
-  void SessionMessage(uint32_t reference_id,
+  void SessionCreated(uint32_t session_id, const std::string& web_session_id);
+  void SessionMessage(uint32_t session_id,
                       pp::VarArrayBuffer message,
                       const std::string& default_url);
-  void SessionReady(uint32_t reference_id);
-  void SessionClosed(uint32_t reference_id);
-  void SessionError(uint32_t reference_id,
+  void SessionReady(uint32_t session_id);
+  void SessionClosed(uint32_t session_id);
+  void SessionError(uint32_t session_id,
                     int32_t media_error,
                     int32_t system_code);
 

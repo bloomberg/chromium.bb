@@ -37,7 +37,7 @@ class MEDIA_EXPORT MediaKeys {
     kMaxKeyError  // Must be last and greater than any legit value.
   };
 
-  const static uint32 kInvalidReferenceId = 0;
+  const static uint32 kInvalidSessionId = 0;
 
   MediaKeys();
   virtual ~MediaKeys();
@@ -47,18 +47,18 @@ class MEDIA_EXPORT MediaKeys {
   // Note: UpdateSession() and ReleaseSession() should only be called after
   // CreateSession() returns true.
   // TODO(jrummell): Remove return value when prefixed API is removed.
-  virtual bool CreateSession(uint32 reference_id,
+  virtual bool CreateSession(uint32 session_id,
                              const std::string& type,
                              const uint8* init_data,
                              int init_data_length) = 0;
 
-  // Updates a session specified by |reference_id| with |response|.
-  virtual void UpdateSession(uint32 reference_id,
+  // Updates a session specified by |session_id| with |response|.
+  virtual void UpdateSession(uint32 session_id,
                              const uint8* response,
                              int response_length) = 0;
 
-  // Releases the session specified by |reference_id|.
-  virtual void ReleaseSession(uint32 reference_id) = 0;
+  // Releases the session specified by |session_id|.
+  virtual void ReleaseSession(uint32 session_id) = 0;
 
   // Gets the Decryptor object associated with the MediaKeys. Returns NULL if
   // no Decryptor object is associated. The returned object is only guaranteed
@@ -71,19 +71,20 @@ class MEDIA_EXPORT MediaKeys {
 
 // Key event callbacks. See the spec for details:
 // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#event-summary
-typedef base::Callback<void(uint32 reference_id, const std::string& session_id)>
+typedef base::Callback<
+    void(uint32 session_id, const std::string& web_session_id)>
     SessionCreatedCB;
 
-typedef base::Callback<void(uint32 reference_id,
+typedef base::Callback<void(uint32 session_id,
                             const std::vector<uint8>& message,
                             const std::string& destination_url)>
     SessionMessageCB;
 
-typedef base::Callback<void(uint32 reference_id)> SessionReadyCB;
+typedef base::Callback<void(uint32 session_id)> SessionReadyCB;
 
-typedef base::Callback<void(uint32 reference_id)> SessionClosedCB;
+typedef base::Callback<void(uint32 session_id)> SessionClosedCB;
 
-typedef base::Callback<void(uint32 reference_id,
+typedef base::Callback<void(uint32 session_id,
                             media::MediaKeys::KeyError error_code,
                             int system_code)> SessionErrorCB;
 

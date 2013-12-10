@@ -235,68 +235,68 @@ void RendererMediaPlayerManager::InitializeCDM(int media_keys_id,
 
 void RendererMediaPlayerManager::GenerateKeyRequest(
     int media_keys_id,
-    uint32 reference_id,
+    uint32 session_id,
     const std::string& type,
     const std::vector<uint8>& init_data) {
   Send(new MediaKeysHostMsg_GenerateKeyRequest(
-      routing_id(), media_keys_id, reference_id, type, init_data));
+      routing_id(), media_keys_id, session_id, type, init_data));
 }
 
 void RendererMediaPlayerManager::AddKey(int media_keys_id,
-                                        uint32 reference_id,
+                                        uint32 session_id,
                                         const std::vector<uint8>& key,
                                         const std::vector<uint8>& init_data) {
   Send(new MediaKeysHostMsg_AddKey(
-      routing_id(), media_keys_id, reference_id, key, init_data));
+      routing_id(), media_keys_id, session_id, key, init_data));
 }
 
 void RendererMediaPlayerManager::CancelKeyRequest(int media_keys_id,
-                                                  uint32 reference_id) {
+                                                  uint32 session_id) {
   Send(new MediaKeysHostMsg_CancelKeyRequest(
-      routing_id(), media_keys_id, reference_id));
+      routing_id(), media_keys_id, session_id));
 }
 
 void RendererMediaPlayerManager::OnSessionCreated(
     int media_keys_id,
-    uint32 reference_id,
-    const std::string& session_id) {
+    uint32 session_id,
+    const std::string& web_session_id) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnSessionCreated(reference_id, session_id);
+    media_keys->OnSessionCreated(session_id, web_session_id);
 }
 
 void RendererMediaPlayerManager::OnSessionMessage(
     int media_keys_id,
-    uint32 reference_id,
+    uint32 session_id,
     const std::vector<uint8>& message,
     const std::string& destination_url) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnSessionMessage(reference_id, message, destination_url);
+    media_keys->OnSessionMessage(session_id, message, destination_url);
 }
 
 void RendererMediaPlayerManager::OnSessionReady(int media_keys_id,
-                                                uint32 reference_id) {
+                                                uint32 session_id) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnSessionReady(reference_id);
+    media_keys->OnSessionReady(session_id);
 }
 
 void RendererMediaPlayerManager::OnSessionClosed(int media_keys_id,
-                                                 uint32 reference_id) {
+                                                 uint32 session_id) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnSessionClosed(reference_id);
+    media_keys->OnSessionClosed(session_id);
 }
 
 void RendererMediaPlayerManager::OnSessionError(
     int media_keys_id,
-    uint32 reference_id,
+    uint32 session_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnSessionError(reference_id, error_code, system_code);
+    media_keys->OnSessionError(session_id, error_code, system_code);
 }
 
 int RendererMediaPlayerManager::RegisterMediaPlayer(

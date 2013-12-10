@@ -247,13 +247,13 @@ void CdmAdapter::Initialize(const std::string& key_system) {
   key_system_ = key_system;
 }
 
-void CdmAdapter::CreateSession(uint32_t reference_id,
+void CdmAdapter::CreateSession(uint32_t session_id,
                                const std::string& type,
                                pp::VarArrayBuffer init_data) {
   // Initialize() doesn't report an error, so CreateSession() can be called
   // even if Initialize() failed.
   if (!cdm_) {
-    OnSessionError(reference_id, cdm::kUnknownError, 0);
+    OnSessionError(session_id, cdm::kUnknownError, 0);
     return;
   }
 
@@ -261,7 +261,7 @@ void CdmAdapter::CreateSession(uint32_t reference_id,
   PP_URLComponents_Dev url_components = {};
   const pp::URLUtil_Dev* url_util = pp::URLUtil_Dev::Get();
   if (!url_util) {
-    OnSessionError(reference_id, cdm::kUnknownError, 0);
+    OnSessionError(session_id, cdm::kUnknownError, 0);
     return;
   }
   pp::Var href = url_util->GetDocumentURL(
@@ -272,19 +272,19 @@ void CdmAdapter::CreateSession(uint32_t reference_id,
   PP_DCHECK(0 < url_components.host.len);
 #endif  // defined(CHECK_DOCUMENT_URL)
 
-  cdm_->CreateSession(reference_id,
+  cdm_->CreateSession(session_id,
                       type.data(),
                       type.size(),
                       static_cast<const uint8_t*>(init_data.Map()),
                       init_data.ByteLength());
 }
 
-void CdmAdapter::UpdateSession(uint32_t reference_id,
+void CdmAdapter::UpdateSession(uint32_t session_id,
                                pp::VarArrayBuffer response) {
   // TODO(jrummell): In EME WD, AddKey() can only be called on valid sessions.
   // We should be able to DCHECK(cdm_) when addressing http://crbug.com/249976.
   if (!cdm_) {
-    OnSessionError(reference_id, cdm::kUnknownError, 0);
+    OnSessionError(session_id, cdm::kUnknownError, 0);
     return;
   }
 
@@ -292,32 +292,32 @@ void CdmAdapter::UpdateSession(uint32_t reference_id,
   const uint32_t response_size = response.ByteLength();
 
   if (!response_ptr || response_size <= 0) {
-    OnSessionError(reference_id, cdm::kUnknownError, 0);
+    OnSessionError(session_id, cdm::kUnknownError, 0);
     return;
   }
   CdmWrapper::Result result =
-      cdm_->UpdateSession(reference_id, response_ptr, response_size);
+      cdm_->UpdateSession(session_id, response_ptr, response_size);
   switch (result) {
     case CdmWrapper::NO_ACTION:
       break;
     case CdmWrapper::CALL_KEY_ADDED:
-      OnSessionReady(reference_id);
+      OnSessionReady(session_id);
       break;
     case CdmWrapper::CALL_KEY_ERROR:
-      OnSessionError(reference_id, cdm::kUnknownError, 0);
+      OnSessionError(session_id, cdm::kUnknownError, 0);
       break;
   }
 }
 
-void CdmAdapter::ReleaseSession(uint32_t reference_id) {
+void CdmAdapter::ReleaseSession(uint32_t session_id) {
   // TODO(jrummell): In EME WD, AddKey() can only be called on valid sessions.
   // We should be able to DCHECK(cdm_) when addressing http://crbug.com/249976.
   if (!cdm_) {
-    OnSessionError(reference_id, cdm::kUnknownError, 0);
+    OnSessionError(session_id, cdm::kUnknownError, 0);
     return;
   }
 
-  CdmWrapper::Result result = cdm_->ReleaseSession(reference_id);
+  CdmWrapper::Result result = cdm_->ReleaseSession(session_id);
   switch (result) {
     case CdmWrapper::NO_ACTION:
       break;
@@ -325,7 +325,7 @@ void CdmAdapter::ReleaseSession(uint32_t reference_id) {
       PP_NOTREACHED();
       break;
     case CdmWrapper::CALL_KEY_ERROR:
-      OnSessionError(reference_id, cdm::kUnknownError, 0);
+      OnSessionError(session_id, cdm::kUnknownError, 0);
       break;
   }
 }
@@ -536,11 +536,12 @@ void CdmAdapter::SendKeyMessage(
 
   std::string session_id_str(session_id, session_id_length);
   PP_DCHECK(!session_id_str.empty());
-  uint32_t reference_id = cdm_->DetermineReferenceId(session_id_str);
+  uint32_t session_reference_id = cdm_->LookupSessionId(session_id_str);
 
-  OnSessionCreated(reference_id, session_id, session_id_length);
-  OnSessionMessage(
-      reference_id, message, message_length, default_url, default_url_length);
+  OnSessionCreated(session_reference_id, session_id, session_id_length);
+  OnSessionMessage(session_reference_id,
+                   message, message_length,
+                   default_url, default_url_length);
 }
 
 void CdmAdapter::SendKeyError(const char* session_id,
@@ -548,8 +549,8 @@ void CdmAdapter::SendKeyError(const char* session_id,
                               cdm::MediaKeyError error_code,
                               uint32_t system_code) {
   std::string session_id_str(session_id, session_id_length);
-  uint32_t reference_id = cdm_->DetermineReferenceId(session_id_str);
-  OnSessionError(reference_id, error_code, system_code);
+  uint32_t session_reference_id = cdm_->LookupSessionId(session_id_str);
+  OnSessionError(session_reference_id, error_code, system_code);
 }
 
 void CdmAdapter::GetPrivateData(int32_t* instance,
@@ -558,56 +559,56 @@ void CdmAdapter::GetPrivateData(int32_t* instance,
   *get_interface = pp::Module::Get()->get_browser_interface();
 }
 
-void CdmAdapter::OnSessionCreated(uint32_t reference_id,
-                                  const char* session_id,
-                                  uint32_t session_id_length) {
+void CdmAdapter::OnSessionCreated(uint32_t session_id,
+                                  const char* web_session_id,
+                                  uint32_t web_session_id_length) {
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionCreatedInternal,
-      reference_id,
-      std::string(session_id, session_id_length)));
+      session_id,
+      std::string(web_session_id, web_session_id_length)));
 }
 
-void CdmAdapter::OnSessionMessage(uint32_t reference_id,
+void CdmAdapter::OnSessionMessage(uint32_t session_id,
                                   const char* message,
                                   uint32_t message_length,
                                   const char* destination_url,
                                   uint32_t destination_url_length) {
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionMessageInternal,
-      reference_id,
+      session_id,
       std::vector<uint8>(message, message + message_length),
       std::string(destination_url, destination_url_length)));
 }
 
-void CdmAdapter::OnSessionReady(uint32_t reference_id) {
+void CdmAdapter::OnSessionReady(uint32_t session_id) {
   PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendSessionReadyInternal, reference_id));
+      &CdmAdapter::SendSessionReadyInternal, session_id));
 }
 
-void CdmAdapter::OnSessionClosed(uint32_t reference_id) {
+void CdmAdapter::OnSessionClosed(uint32_t session_id) {
   PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendSessionClosedInternal, reference_id));
+      &CdmAdapter::SendSessionClosedInternal, session_id));
 }
 
-void CdmAdapter::OnSessionError(uint32_t reference_id,
+void CdmAdapter::OnSessionError(uint32_t session_id,
                                 cdm::MediaKeyError error_code,
                                 uint32_t system_code) {
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendSessionErrorInternal,
-      reference_id,
+      session_id,
       error_code,
       system_code));
 }
 
 void CdmAdapter::SendSessionCreatedInternal(int32_t result,
-                                            uint32_t reference_id,
-                                            const std::string& session_id) {
+                                            uint32_t session_id,
+                                            const std::string& web_session_id) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionCreated(reference_id, session_id);
+  pp::ContentDecryptor_Private::SessionCreated(session_id, web_session_id);
 }
 
 void CdmAdapter::SendSessionMessageInternal(int32_t result,
-                                            uint32_t reference_id,
+                                            uint32_t session_id,
                                             const std::vector<uint8>& message,
                                             const std::string& default_url) {
   PP_DCHECK(result == PP_OK);
@@ -618,28 +619,27 @@ void CdmAdapter::SendSessionMessageInternal(int32_t result,
   }
 
   pp::ContentDecryptor_Private::SessionMessage(
-      reference_id, message_array_buffer, default_url);
+      session_id, message_array_buffer, default_url);
 }
 
-void CdmAdapter::SendSessionReadyInternal(int32_t result,
-                                          uint32_t reference_id) {
+void CdmAdapter::SendSessionReadyInternal(int32_t result, uint32_t session_id) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionReady(reference_id);
+  pp::ContentDecryptor_Private::SessionReady(session_id);
 }
 
 void CdmAdapter::SendSessionClosedInternal(int32_t result,
-                                           uint32_t reference_id) {
+                                           uint32_t session_id) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionClosed(reference_id);
+  pp::ContentDecryptor_Private::SessionClosed(session_id);
 }
 
 void CdmAdapter::SendSessionErrorInternal(int32_t result,
-                                          uint32_t reference_id,
+                                          uint32_t session_id,
                                           cdm::MediaKeyError error_code,
                                           uint32_t system_code) {
   PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::SessionError(
-      reference_id, error_code, system_code);
+      session_id, error_code, system_code);
 }
 
 void CdmAdapter::DeliverBlock(int32_t result,

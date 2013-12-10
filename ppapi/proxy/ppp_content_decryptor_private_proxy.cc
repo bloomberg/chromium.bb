@@ -125,7 +125,7 @@ void Initialize(PP_Instance instance,
 }
 
 void CreateSession(PP_Instance instance,
-                   uint32_t reference_id,
+                   uint32_t session_id,
                    PP_Var type,
                    PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
@@ -137,14 +137,12 @@ void CreateSession(PP_Instance instance,
   dispatcher->Send(new PpapiMsg_PPPContentDecryptor_CreateSession(
       API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
       instance,
-      reference_id,
+      session_id,
       SerializedVarSendInput(dispatcher, type),
       SerializedVarSendInput(dispatcher, init_data)));
 }
 
-void UpdateSession(PP_Instance instance,
-                   uint32_t reference_id,
-                   PP_Var response) {
+void UpdateSession(PP_Instance instance, uint32_t session_id, PP_Var response) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -154,11 +152,11 @@ void UpdateSession(PP_Instance instance,
   dispatcher->Send(new PpapiMsg_PPPContentDecryptor_UpdateSession(
       API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
       instance,
-      reference_id,
+      session_id,
       SerializedVarSendInput(dispatcher, response)));
 }
 
-void ReleaseSession(PP_Instance instance, uint32_t reference_id) {
+void ReleaseSession(PP_Instance instance, uint32_t session_id) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -166,7 +164,7 @@ void ReleaseSession(PP_Instance instance, uint32_t reference_id) {
   }
 
   dispatcher->Send(new PpapiMsg_PPPContentDecryptor_ReleaseSession(
-      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE, instance, reference_id));
+      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE, instance, session_id));
 }
 
 void Decrypt(PP_Instance instance,
@@ -438,13 +436,13 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitialize(
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgCreateSession(
     PP_Instance instance,
-    uint32_t reference_id,
+    uint32_t session_id,
     SerializedVarReceiveInput type,
     SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->CreateSession,
                       instance,
-                      reference_id,
+                      session_id,
                       ExtractReceivedVarAndAddRef(dispatcher(), &type),
                       ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }
@@ -452,23 +450,23 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgCreateSession(
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgUpdateSession(
     PP_Instance instance,
-    uint32_t reference_id,
+    uint32_t session_id,
     SerializedVarReceiveInput response) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->UpdateSession,
                       instance,
-                      reference_id,
+                      session_id,
                       ExtractReceivedVarAndAddRef(dispatcher(), &response));
   }
 }
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgReleaseSession(
     PP_Instance instance,
-    uint32_t reference_id) {
+    uint32_t session_id) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->ReleaseSession,
                       instance,
-                      reference_id);
+                      session_id);
   }
 }
 

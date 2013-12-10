@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Wed Nov 27 14:10:24 2013.
+ *   modified Fri Dec  6 12:16:22 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -46,7 +46,7 @@ struct PPB_ContentDecryptor_Private_0_9 {
   /**
    * A session has been created by the CDM.
    *
-   * @param[in] reference_id A reference for the session for which the CDM
+   * @param[in] session_id Identifies the session for which the CDM
    * created a session.
    *
    * @param[in] web_session_id A <code>PP_Var</code> of type
@@ -55,7 +55,7 @@ struct PPB_ContentDecryptor_Private_0_9 {
    *
    */
   void (*SessionCreated)(PP_Instance instance,
-                         uint32_t reference_id,
+                         uint32_t session_id,
                          struct PP_Var web_session_id);
   /**
    * A message or request has been generated for key_system in the CDM, and
@@ -71,7 +71,7 @@ struct PPB_ContentDecryptor_Private_0_9 {
    * of <code>UpdateSession()</code> and <code>SessionMessage()</code> calls
    * required to prepare for decryption.
    *
-   * @param[in] reference_id A reference for the session for which the message
+   * @param[in] session_id Identifies the session for which the message
    * is intended.
    *
    * @param[in] message A <code>PP_Var</code> of type
@@ -82,7 +82,7 @@ struct PPB_ContentDecryptor_Private_0_9 {
    * message.
    */
   void (*SessionMessage)(PP_Instance instance,
-                         uint32_t reference_id,
+                         uint32_t session_id,
                          struct PP_Var message,
                          struct PP_Var destination_url);
   /**
@@ -97,23 +97,23 @@ struct PPB_ContentDecryptor_Private_0_9 {
    * The CDM must call <code>SessionReady()</code> when the sequence is
    * completed, and, in response, the browser must notify the web application.
    *
-   * @param[in] reference_id A reference for the session that is ready.
+   * @param[in] session_id Identifies the session that is ready.
    */
-  void (*SessionReady)(PP_Instance instance, uint32_t reference_id);
+  void (*SessionReady)(PP_Instance instance, uint32_t session_id);
   /**
    * The session has been closed as the result of a call to the
    * <code>ReleaseSession()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface, or due to other
    * factors as determined by the CDM.
    *
-   * @param[in] reference_id A reference for the session that is closed.
+   * @param[in] session_id Identifies the session that is closed.
    */
-  void (*SessionClosed)(PP_Instance instance, uint32_t reference_id);
+  void (*SessionClosed)(PP_Instance instance, uint32_t session_id);
   /**
    * An error occurred in a <code>PPP_ContentDecryptor_Private</code> method,
    * or within the plugin implementing the interface.
    *
-   * @param[in] reference_id A reference for the session for which the error
+   * @param[in] session_id Identifies the session for which the error
    * is intended.
    *
    * @param[in] media_error A MediaKeyError.
@@ -121,7 +121,7 @@ struct PPB_ContentDecryptor_Private_0_9 {
    * @param[in] system_error A system error code.
    */
   void (*SessionError)(PP_Instance instance,
-                       uint32_t reference_id,
+                       uint32_t session_id,
                        int32_t media_error,
                        int32_t system_code);
   /**

@@ -20,61 +20,72 @@
 
 namespace content {
 
-// Forwards the reference ID-based callbacks of the MediaKeys interface to the
+// Forwards the session ID-based callbacks of the MediaKeys interface to the
 // appropriate session object.
-class ReferenceIdAdapter {
+class SessionIdAdapter {
  public:
-  ReferenceIdAdapter();
-  ~ReferenceIdAdapter();
+  SessionIdAdapter();
+  ~SessionIdAdapter();
 
   // On success, creates a MediaKeys, returns it in |media_keys|, returns true.
   bool Initialize(const std::string& key_system,
                   scoped_ptr<media::MediaKeys>* media_keys);
 
+  // Generates a unique internal session id.
+  uint32 GenerateSessionId();
+
   // Adds a session to the internal map. Does not take ownership of the session.
-  void AddSession(uint32 reference_id,
+  void AddSession(uint32 session_id,
                   WebContentDecryptionModuleSessionImpl* session);
 
   // Removes a session from the internal map.
-  void RemoveSession(uint32 reference_id);
+  void RemoveSession(uint32 session_id);
 
  private:
   typedef std::map<uint32, WebContentDecryptionModuleSessionImpl*> SessionMap;
 
   // Callbacks for firing session events.
-  void OnSessionCreated(uint32 reference_id, const std::string& session_id);
-  void OnSessionMessage(uint32 reference_id,
+  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
+  void OnSessionMessage(uint32 session_id,
                         const std::vector<uint8>& message,
                         const std::string& destination_url);
-  void OnSessionReady(uint32 reference_id);
-  void OnSessionClosed(uint32 reference_id);
-  void OnSessionError(uint32 reference_id,
+  void OnSessionReady(uint32 session_id);
+  void OnSessionClosed(uint32 session_id);
+  void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
                       int system_code);
 
   // Helper function of the callbacks.
-  WebContentDecryptionModuleSessionImpl* GetSession(uint32 reference_id);
+  WebContentDecryptionModuleSessionImpl* GetSession(uint32 session_id);
 
-  base::WeakPtrFactory<ReferenceIdAdapter> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionIdAdapter> weak_ptr_factory_;
 
   SessionMap sessions_;
 
-  DISALLOW_COPY_AND_ASSIGN(ReferenceIdAdapter);
+  // Session ID should be unique per renderer process for debugging purposes.
+  static uint32 next_session_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionIdAdapter);
 };
 
-ReferenceIdAdapter::ReferenceIdAdapter()
+const uint32 kStartingSessionId = 1;
+uint32 SessionIdAdapter::next_session_id_ = kStartingSessionId;
+COMPILE_ASSERT(kStartingSessionId > media::MediaKeys::kInvalidSessionId,
+               invalid_starting_value);
+
+SessionIdAdapter::SessionIdAdapter()
     : weak_ptr_factory_(this) {
 }
 
-ReferenceIdAdapter::~ReferenceIdAdapter() {
+SessionIdAdapter::~SessionIdAdapter() {
 }
 
-bool ReferenceIdAdapter::Initialize(const std::string& key_system,
-                                    scoped_ptr<media::MediaKeys>* media_keys) {
+bool SessionIdAdapter::Initialize(const std::string& key_system,
+                                  scoped_ptr<media::MediaKeys>* media_keys) {
   DCHECK(media_keys);
   DCHECK(!*media_keys);
 
-  base::WeakPtr<ReferenceIdAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
+  base::WeakPtr<SessionIdAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   scoped_ptr<media::MediaKeys> created_media_keys =
       ContentDecryptionModuleFactory::Create(
           // TODO(ddorwin): Address lower in the stack: http://crbug.com/252065
@@ -91,11 +102,11 @@ bool ReferenceIdAdapter::Initialize(const std::string& key_system,
           // TODO(ddorwin): Get the URL for the frame containing the MediaKeys.
           GURL(),
 #endif  // defined(ENABLE_PEPPER_CDMS)
-          base::Bind(&ReferenceIdAdapter::OnSessionCreated, weak_this),
-          base::Bind(&ReferenceIdAdapter::OnSessionMessage, weak_this),
-          base::Bind(&ReferenceIdAdapter::OnSessionReady, weak_this),
-          base::Bind(&ReferenceIdAdapter::OnSessionClosed, weak_this),
-          base::Bind(&ReferenceIdAdapter::OnSessionError, weak_this));
+          base::Bind(&SessionIdAdapter::OnSessionCreated, weak_this),
+          base::Bind(&SessionIdAdapter::OnSessionMessage, weak_this),
+          base::Bind(&SessionIdAdapter::OnSessionReady, weak_this),
+          base::Bind(&SessionIdAdapter::OnSessionClosed, weak_this),
+          base::Bind(&SessionIdAdapter::OnSessionError, weak_this));
   if (!created_media_keys)
     return false;
 
@@ -103,47 +114,51 @@ bool ReferenceIdAdapter::Initialize(const std::string& key_system,
   return true;
 }
 
-void ReferenceIdAdapter::AddSession(
-    uint32 reference_id,
+uint32 SessionIdAdapter::GenerateSessionId() {
+  return next_session_id_++;
+}
+
+void SessionIdAdapter::AddSession(
+    uint32 session_id,
     WebContentDecryptionModuleSessionImpl* session) {
-  DCHECK(sessions_.find(reference_id) == sessions_.end());
-  sessions_[reference_id] = session;
+  DCHECK(sessions_.find(session_id) == sessions_.end());
+  sessions_[session_id] = session;
 }
 
-void ReferenceIdAdapter::RemoveSession(uint32 reference_id) {
-  DCHECK(sessions_.find(reference_id) != sessions_.end());
-  sessions_.erase(reference_id);
+void SessionIdAdapter::RemoveSession(uint32 session_id) {
+  DCHECK(sessions_.find(session_id) != sessions_.end());
+  sessions_.erase(session_id);
 }
 
-void ReferenceIdAdapter::OnSessionCreated(uint32 reference_id,
-                                          const std::string& session_id) {
-  GetSession(reference_id)->OnSessionCreated(session_id);
+void SessionIdAdapter::OnSessionCreated(uint32 session_id,
+                                        const std::string& web_session_id) {
+  GetSession(session_id)->OnSessionCreated(web_session_id);
 }
 
-void ReferenceIdAdapter::OnSessionMessage(uint32 reference_id,
-                                          const std::vector<uint8>& message,
-                                          const std::string& destination_url) {
-  GetSession(reference_id)->OnSessionMessage(message, destination_url);
+void SessionIdAdapter::OnSessionMessage(uint32 session_id,
+                                        const std::vector<uint8>& message,
+                                        const std::string& destination_url) {
+  GetSession(session_id)->OnSessionMessage(message, destination_url);
 }
 
-void ReferenceIdAdapter::OnSessionReady(uint32 reference_id) {
-  GetSession(reference_id)->OnSessionReady();
+void SessionIdAdapter::OnSessionReady(uint32 session_id) {
+  GetSession(session_id)->OnSessionReady();
 }
 
-void ReferenceIdAdapter::OnSessionClosed(uint32 reference_id) {
-  GetSession(reference_id)->OnSessionClosed();
+void SessionIdAdapter::OnSessionClosed(uint32 session_id) {
+  GetSession(session_id)->OnSessionClosed();
 }
 
-void ReferenceIdAdapter::OnSessionError(uint32 reference_id,
-                                        media::MediaKeys::KeyError error_code,
-                                        int system_code) {
-  GetSession(reference_id)->OnSessionError(error_code, system_code);
+void SessionIdAdapter::OnSessionError(uint32 session_id,
+                                      media::MediaKeys::KeyError error_code,
+                                      int system_code) {
+  GetSession(session_id)->OnSessionError(error_code, system_code);
 }
 
-WebContentDecryptionModuleSessionImpl* ReferenceIdAdapter::GetSession(
-    uint32 reference_id) {
-  DCHECK(sessions_.find(reference_id) != sessions_.end());
-  return sessions_[reference_id];
+WebContentDecryptionModuleSessionImpl* SessionIdAdapter::GetSession(
+    uint32 session_id) {
+  DCHECK(sessions_.find(session_id) != sessions_.end());
+  return sessions_[session_id];
 }
 
 //------------------------------------------------------------------------------
@@ -157,10 +172,10 @@ WebContentDecryptionModuleImpl::Create(const base::string16& key_system) {
     return NULL;
   }
 
-  // ReferenceIdAdapter creates the MediaKeys so it can provide its callbacks to
+  // SessionIdAdapter creates the MediaKeys so it can provide its callbacks to
   // during creation of the MediaKeys.
   scoped_ptr<media::MediaKeys> media_keys;
-  scoped_ptr<ReferenceIdAdapter> adapter(new ReferenceIdAdapter());
+  scoped_ptr<SessionIdAdapter> adapter(new SessionIdAdapter());
   if (!adapter->Initialize(UTF16ToASCII(key_system), &media_keys))
     return NULL;
 
@@ -169,7 +184,7 @@ WebContentDecryptionModuleImpl::Create(const base::string16& key_system) {
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(
     scoped_ptr<media::MediaKeys> media_keys,
-    scoped_ptr<ReferenceIdAdapter> adapter)
+    scoped_ptr<SessionIdAdapter> adapter)
     : media_keys_(media_keys.Pass()),
       adapter_(adapter.Pass()) {
 }
@@ -182,19 +197,21 @@ blink::WebContentDecryptionModuleSession*
 WebContentDecryptionModuleImpl::createSession(
     blink::WebContentDecryptionModuleSession::Client* client) {
   DCHECK(media_keys_);
+  uint32 session_id = adapter_->GenerateSessionId();
   WebContentDecryptionModuleSessionImpl* session =
       new WebContentDecryptionModuleSessionImpl(
+          session_id,
           media_keys_.get(),
           client,
           base::Bind(&WebContentDecryptionModuleImpl::OnSessionClosed,
                      base::Unretained(this)));
 
-  adapter_->AddSession(session->reference_id(), session);
+  adapter_->AddSession(session_id, session);
   return session;
 }
 
-void WebContentDecryptionModuleImpl::OnSessionClosed(uint32 reference_id) {
-  adapter_->RemoveSession(reference_id);
+void WebContentDecryptionModuleImpl::OnSessionClosed(uint32 session_id) {
+  adapter_->RemoveSession(session_id);
 }
 
 }  // namespace content

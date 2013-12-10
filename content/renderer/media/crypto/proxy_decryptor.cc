@@ -21,9 +21,9 @@ namespace content {
 // WebContentDecryptionModuleSessionImpl for the short time both paths are
 // active, start with 100000 and generate the IDs from there.
 // TODO(jrummell): Only allow one path http://crbug.com/306680.
-uint32 ProxyDecryptor::next_reference_id_ = 100000;
+uint32 ProxyDecryptor::next_session_id_ = 100000;
 
-const uint32 INVALID_REFERENCE_ID = 0;
+const uint32 kInvalidSessionId = 0;
 
 #if defined(ENABLE_PEPPER_CDMS)
 void ProxyDecryptor::DestroyHelperPlugin() {
@@ -116,9 +116,9 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
   // Use a unique reference id for this request.
-  uint32 reference_id = next_reference_id_++;
+  uint32 session_id = next_session_id_++;
   if (!media_keys_->CreateSession(
-           reference_id, type, init_data, init_data_length)) {
+           session_id, type, init_data, init_data_length)) {
     media_keys_.reset();
     return false;
   }
@@ -130,12 +130,12 @@ void ProxyDecryptor::AddKey(const uint8* key,
                             int key_length,
                             const uint8* init_data,
                             int init_data_length,
-                            const std::string& session_id) {
+                            const std::string& web_session_id) {
   DVLOG(1) << "AddKey()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  uint32 reference_id = LookupReferenceId(session_id);
-  if (reference_id == INVALID_REFERENCE_ID) {
+  uint32 session_id = LookupSessionId(web_session_id);
+  if (session_id == kInvalidSessionId) {
     // Session hasn't been referenced before, so it is an error.
     // Note that the specification says "If sessionId is not null and is
     // unrecognized, throw an INVALID_ACCESS_ERR." However, for backwards
@@ -162,25 +162,25 @@ void ProxyDecryptor::AddKey(const uint8* key,
         media::GenerateJWKSet(key, key_length, init_data, init_data_length);
     DCHECK(!jwk.empty());
     media_keys_->UpdateSession(
-        reference_id, reinterpret_cast<const uint8*>(jwk.data()), jwk.size());
+        session_id, reinterpret_cast<const uint8*>(jwk.data()), jwk.size());
     return;
   }
 
-  media_keys_->UpdateSession(reference_id, key, key_length);
+  media_keys_->UpdateSession(session_id, key, key_length);
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  uint32 reference_id = LookupReferenceId(session_id);
-  if (reference_id == INVALID_REFERENCE_ID) {
+  uint32 session_reference_id = LookupSessionId(session_id);
+  if (session_reference_id == kInvalidSessionId) {
     // Session hasn't been created, so it is an error.
     key_error_cb_.Run(
         std::string(), media::MediaKeys::kUnknownError, 0);
   }
   else {
-    media_keys_->ReleaseSession(reference_id);
+    media_keys_->ReleaseSession(session_reference_id);
   }
 }
 
@@ -211,40 +211,40 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ProxyDecryptor::OnSessionCreated(uint32 reference_id,
-                                      const std::string& session_id) {
+void ProxyDecryptor::OnSessionCreated(uint32 session_id,
+                                      const std::string& web_session_id) {
   // Due to heartbeat messages, OnSessionCreated() can get called multiple
   // times.
-  SessionIdMap::iterator it = sessions_.find(reference_id);
-  DCHECK(it == sessions_.end() || it->second == session_id);
+  SessionIdMap::iterator it = sessions_.find(session_id);
+  DCHECK(it == sessions_.end() || it->second == web_session_id);
   if (it == sessions_.end())
-    sessions_[reference_id] = session_id;
+    sessions_[session_id] = web_session_id;
 }
 
-void ProxyDecryptor::OnSessionMessage(uint32 reference_id,
+void ProxyDecryptor::OnSessionMessage(uint32 session_id,
                                       const std::vector<uint8>& message,
                                       const std::string& destination_url) {
   // Assumes that OnSessionCreated() has been called before this.
-  key_message_cb_.Run(LookupSessionId(reference_id), message, destination_url);
+  key_message_cb_.Run(LookupWebSessionId(session_id), message, destination_url);
 }
 
-void ProxyDecryptor::OnSessionReady(uint32 reference_id) {
+void ProxyDecryptor::OnSessionReady(uint32 session_id) {
   // Assumes that OnSessionCreated() has been called before this.
-  key_added_cb_.Run(LookupSessionId(reference_id));
+  key_added_cb_.Run(LookupWebSessionId(session_id));
 }
 
-void ProxyDecryptor::OnSessionClosed(uint32 reference_id) {
+void ProxyDecryptor::OnSessionClosed(uint32 session_id) {
   // No closed event in EME v0.1b.
 }
 
-void ProxyDecryptor::OnSessionError(uint32 reference_id,
+void ProxyDecryptor::OnSessionError(uint32 session_id,
                                     media::MediaKeys::KeyError error_code,
                                     int system_code) {
   // Assumes that OnSessionCreated() has been called before this.
-  key_error_cb_.Run(LookupSessionId(reference_id), error_code, system_code);
+  key_error_cb_.Run(LookupWebSessionId(session_id), error_code, system_code);
 }
 
-uint32 ProxyDecryptor::LookupReferenceId(const std::string& session_id) {
+uint32 ProxyDecryptor::LookupSessionId(const std::string& session_id) {
   for (SessionIdMap::iterator it = sessions_.begin();
        it != sessions_.end();
        ++it) {
@@ -256,14 +256,14 @@ uint32 ProxyDecryptor::LookupReferenceId(const std::string& session_id) {
   if (session_id.empty() && sessions_.size() == 1)
     return sessions_.begin()->first;
 
-  return INVALID_REFERENCE_ID;
+  return kInvalidSessionId;
 }
 
-const std::string& ProxyDecryptor::LookupSessionId(uint32 reference_id) {
-  DCHECK_NE(reference_id, INVALID_REFERENCE_ID);
+const std::string& ProxyDecryptor::LookupWebSessionId(uint32 session_id) {
+  DCHECK_NE(session_id, kInvalidSessionId);
 
   // Session may not exist if error happens during GenerateKeyRequest().
-  SessionIdMap::iterator it = sessions_.find(reference_id);
+  SessionIdMap::iterator it = sessions_.find(session_id);
   return (it != sessions_.end()) ? it->second : base::EmptyString();
 }
 

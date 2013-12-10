@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Wed Nov 27 15:42:55 2013.
+ *   modified Tue Dec  3 17:05:10 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -60,7 +60,7 @@ struct PPP_ContentDecryptor_Private_0_9 {
    * browser by the CDM via <code>SessionCreated()</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
-   * @param[in] reference_id A reference for the session for which a session
+   * @param[in] session_id A reference for the session for which a session
    * should be generated.
    *
    * @param[in] type A <code>PP_Var</code> of type
@@ -71,7 +71,7 @@ struct PPP_ContentDecryptor_Private_0_9 {
    * initialization data.
    */
   void (*CreateSession)(PP_Instance instance,
-                        uint32_t reference_id,
+                        uint32_t session_id,
                         struct PP_Var type,
                         struct PP_Var init_data);
   /**
@@ -86,22 +86,22 @@ struct PPP_ContentDecryptor_Private_0_9 {
    * <code>PPB_ContentDecryptor_Private</code> interface, and the browser
    * must notify the web application.
    *
-   * @param[in] reference_id A reference for the session to update.
+   * @param[in] session_id A reference for the session to update.
    *
    * @param[in] response A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the license or other
    * message for the given session ID.
    */
   void (*UpdateSession)(PP_Instance instance,
-                        uint32_t reference_id,
+                        uint32_t session_id,
                         struct PP_Var response);
   /**
    * Release the specified session and related resources.
    *
-   * @param[in] reference_id A reference for the session that should be
+   * @param[in] session_id A reference for the session that should be
    * released.
    */
-  void (*ReleaseSession)(PP_Instance instance, uint32_t reference_id);
+  void (*ReleaseSession)(PP_Instance instance, uint32_t session_id);
   /**
    * Decrypts the block and returns the unencrypted block via
    * <code>DeliverBlock()</code> on the

@@ -20,7 +20,7 @@
 
 namespace media {
 
-uint32 AesDecryptor::next_session_id_ = 1;
+uint32 AesDecryptor::next_web_session_id_ = 1;
 
 enum ClearBytesBufferSel {
   kSrcContainsClearBytes,
@@ -157,11 +157,11 @@ AesDecryptor::~AesDecryptor() {
   STLDeleteValues(&key_map_);
 }
 
-bool AesDecryptor::CreateSession(uint32 reference_id,
+bool AesDecryptor::CreateSession(uint32 session_id,
                                  const std::string& type,
                                  const uint8* init_data,
                                  int init_data_length) {
-  std::string session_id_string(base::UintToString(next_session_id_++));
+  std::string web_session_id_string(base::UintToString(next_web_session_id_++));
 
   // For now, the AesDecryptor does not care about |type|;
   // just fire the event with the |init_data| as the request.
@@ -169,12 +169,12 @@ bool AesDecryptor::CreateSession(uint32 reference_id,
   if (init_data && init_data_length)
     message.assign(init_data, init_data + init_data_length);
 
-  session_created_cb_.Run(reference_id, session_id_string);
-  session_message_cb_.Run(reference_id, message, std::string());
+  session_created_cb_.Run(session_id, web_session_id_string);
+  session_message_cb_.Run(session_id, message, std::string());
   return true;
 }
 
-void AesDecryptor::UpdateSession(uint32 reference_id,
+void AesDecryptor::UpdateSession(uint32 session_id,
                                  const uint8* response,
                                  int response_length) {
   CHECK(response);
@@ -184,13 +184,13 @@ void AesDecryptor::UpdateSession(uint32 reference_id,
                          response_length);
   KeyIdAndKeyPairs keys;
   if (!ExtractKeysFromJWKSet(key_string, &keys)) {
-    session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+    session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
   // Make sure that at least one key was extracted.
   if (keys.empty()) {
-    session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+    session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -198,11 +198,11 @@ void AesDecryptor::UpdateSession(uint32 reference_id,
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << key_string.length();
-      session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+      session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
       return;
     }
     if (!AddDecryptionKey(it->first, it->second)) {
-      session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+      session_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
       return;
     }
   }
@@ -213,10 +213,10 @@ void AesDecryptor::UpdateSession(uint32 reference_id,
   if (!new_video_key_cb_.is_null())
     new_video_key_cb_.Run();
 
-  session_ready_cb_.Run(reference_id);
+  session_ready_cb_.Run(session_id);
 }
 
-void AesDecryptor::ReleaseSession(uint32 reference_id) {
+void AesDecryptor::ReleaseSession(uint32 session_id) {
   // TODO: Implement: http://crbug.com/313412.
 }
 

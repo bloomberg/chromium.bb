@@ -26,7 +26,7 @@ interface PPB_ContentDecryptor_Private {
   /**
    * A session has been created by the CDM.
    *
-   * @param[in] reference_id A reference for the session for which the CDM
+   * @param[in] session_id Identifies the session for which the CDM
    * created a session.
    *
    * @param[in] web_session_id A <code>PP_Var</code> of type
@@ -36,7 +36,7 @@ interface PPB_ContentDecryptor_Private {
    */
   void SessionCreated(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id,
+      [in] uint32_t session_id,
       [in] PP_Var web_session_id);
 
   /**
@@ -53,7 +53,7 @@ interface PPB_ContentDecryptor_Private {
    * of <code>UpdateSession()</code> and <code>SessionMessage()</code> calls
    * required to prepare for decryption.
    *
-   * @param[in] reference_id A reference for the session for which the message
+   * @param[in] session_id Identifies the session for which the message
    * is intended.
    *
    * @param[in] message A <code>PP_Var</code> of type
@@ -65,7 +65,7 @@ interface PPB_ContentDecryptor_Private {
    */
   void SessionMessage(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id,
+      [in] uint32_t session_id,
       [in] PP_Var message,
       [in] PP_Var destination_url);
 
@@ -81,11 +81,11 @@ interface PPB_ContentDecryptor_Private {
    * The CDM must call <code>SessionReady()</code> when the sequence is
    * completed, and, in response, the browser must notify the web application.
    *
-   * @param[in] reference_id A reference for the session that is ready.
+   * @param[in] session_id Identifies the session that is ready.
    */
   void SessionReady(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id);
+      [in] uint32_t session_id);
 
   /**
    * The session has been closed as the result of a call to the
@@ -93,17 +93,17 @@ interface PPB_ContentDecryptor_Private {
    * <code>PPP_ContentDecryptor_Private</code> interface, or due to other
    * factors as determined by the CDM.
    *
-   * @param[in] reference_id A reference for the session that is closed.
+   * @param[in] session_id Identifies the session that is closed.
    */
   void SessionClosed(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id);
+      [in] uint32_t session_id);
 
   /**
    * An error occurred in a <code>PPP_ContentDecryptor_Private</code> method,
    * or within the plugin implementing the interface.
    *
-   * @param[in] reference_id A reference for the session for which the error
+   * @param[in] session_id Identifies the session for which the error
    * is intended.
    *
    * @param[in] media_error A MediaKeyError.
@@ -112,7 +112,7 @@ interface PPB_ContentDecryptor_Private {
    */
   void SessionError(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id,
+      [in] uint32_t session_id,
       [in] int32_t media_error,
       [in] int32_t system_code);
 

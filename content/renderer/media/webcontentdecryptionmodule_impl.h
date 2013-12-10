@@ -18,7 +18,7 @@ class MediaKeys;
 namespace content {
 
 class WebContentDecryptionModuleSessionImpl;
-class ReferenceIdAdapter;
+class SessionIdAdapter;
 
 class WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
@@ -35,13 +35,13 @@ class WebContentDecryptionModuleImpl
  private:
   // Takes ownership of |media_keys| and |adapter|.
   WebContentDecryptionModuleImpl(scoped_ptr<media::MediaKeys> media_keys,
-                                 scoped_ptr<ReferenceIdAdapter> adapter);
+                                 scoped_ptr<SessionIdAdapter> adapter);
 
   // Called when a WebContentDecryptionModuleSessionImpl is closed.
-  void OnSessionClosed(uint32 reference_id);
+  void OnSessionClosed(uint32 session_id);
 
   scoped_ptr<media::MediaKeys> media_keys_;
-  scoped_ptr<ReferenceIdAdapter> adapter_;
+  scoped_ptr<SessionIdAdapter> adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentDecryptionModuleImpl);
 };

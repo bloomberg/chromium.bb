@@ -45,54 +45,54 @@ void ProxyMediaKeys::InitializeCDM(const std::string& key_system,
 #endif
 }
 
-bool ProxyMediaKeys::CreateSession(uint32 reference_id,
+bool ProxyMediaKeys::CreateSession(uint32 session_id,
                                    const std::string& type,
                                    const uint8* init_data,
                                    int init_data_length) {
   manager_->GenerateKeyRequest(
       media_keys_id_,
-      reference_id,
+      session_id,
       type,
       std::vector<uint8>(init_data, init_data + init_data_length));
   return true;
 }
 
-void ProxyMediaKeys::UpdateSession(uint32 reference_id,
+void ProxyMediaKeys::UpdateSession(uint32 session_id,
                                    const uint8* response,
                                    int response_length) {
   manager_->AddKey(media_keys_id_,
-                   reference_id,
+                   session_id,
                    std::vector<uint8>(response, response + response_length),
                    std::vector<uint8>());
 }
 
-void ProxyMediaKeys::ReleaseSession(uint32 reference_id) {
-  manager_->CancelKeyRequest(media_keys_id_, reference_id);
+void ProxyMediaKeys::ReleaseSession(uint32 session_id) {
+  manager_->CancelKeyRequest(media_keys_id_, session_id);
 }
 
-void ProxyMediaKeys::OnSessionCreated(uint32 reference_id,
-                                      const std::string& session_id) {
-  session_created_cb_.Run(reference_id, session_id);
+void ProxyMediaKeys::OnSessionCreated(uint32 session_id,
+                                      const std::string& web_session_id) {
+  session_created_cb_.Run(session_id, web_session_id);
 }
 
-void ProxyMediaKeys::OnSessionMessage(uint32 reference_id,
+void ProxyMediaKeys::OnSessionMessage(uint32 session_id,
                                       const std::vector<uint8>& message,
                                       const std::string& destination_url) {
-  session_message_cb_.Run(reference_id, message, destination_url);
+  session_message_cb_.Run(session_id, message, destination_url);
 }
 
-void ProxyMediaKeys::OnSessionReady(uint32 reference_id) {
-  session_ready_cb_.Run(reference_id);
+void ProxyMediaKeys::OnSessionReady(uint32 session_id) {
+  session_ready_cb_.Run(session_id);
 }
 
-void ProxyMediaKeys::OnSessionClosed(uint32 reference_id) {
-  session_closed_cb_.Run(reference_id);
+void ProxyMediaKeys::OnSessionClosed(uint32 session_id) {
+  session_closed_cb_.Run(session_id);
 }
 
-void ProxyMediaKeys::OnSessionError(uint32 reference_id,
+void ProxyMediaKeys::OnSessionError(uint32 session_id,
                                     media::MediaKeys::KeyError error_code,
                                     int system_code) {
-  session_error_cb_.Run(reference_id, error_code, system_code);
+  session_error_cb_.Run(session_id, error_code, system_code);
 }
 
 }  // namespace content

@@ -285,7 +285,7 @@ void ContentDecryptorDelegate::SetSessionEventCallbacks(
   session_error_cb_ = session_error_cb;
 }
 
-bool ContentDecryptorDelegate::CreateSession(uint32 reference_id,
+bool ContentDecryptorDelegate::CreateSession(uint32 session_id,
                                              const std::string& type,
                                              const uint8* init_data,
                                              int init_data_length) {
@@ -293,27 +293,26 @@ bool ContentDecryptorDelegate::CreateSession(uint32 reference_id,
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data_length, init_data);
 
-  plugin_decryption_interface_->CreateSession(
-      pp_instance_,
-      reference_id,
-      StringVar::StringToPPVar(type),
-      init_data_array);
+  plugin_decryption_interface_->CreateSession(pp_instance_,
+                                              session_id,
+                                              StringVar::StringToPPVar(type),
+                                              init_data_array);
   return true;
 }
 
-bool ContentDecryptorDelegate::UpdateSession(uint32 reference_id,
+bool ContentDecryptorDelegate::UpdateSession(uint32 session_id,
                                              const uint8* response,
                                              int response_length) {
   PP_Var response_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           response_length, response);
   plugin_decryption_interface_->UpdateSession(
-      pp_instance_, reference_id, response_array);
+      pp_instance_, session_id, response_array);
   return true;
 }
 
-bool ContentDecryptorDelegate::ReleaseSession(uint32 reference_id) {
-  plugin_decryption_interface_->ReleaseSession(pp_instance_, reference_id);
+bool ContentDecryptorDelegate::ReleaseSession(uint32 session_id) {
+  plugin_decryption_interface_->ReleaseSession(pp_instance_, session_id);
   return true;
 }
 
@@ -590,22 +589,22 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   return true;
 }
 
-void ContentDecryptorDelegate::OnSessionCreated(uint32 reference_id,
-                                                PP_Var session_id_var) {
+void ContentDecryptorDelegate::OnSessionCreated(uint32 session_id,
+                                                PP_Var web_session_id_var) {
   if (session_created_cb_.is_null())
     return;
 
-  StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
+  StringVar* session_id_string = StringVar::FromPPVar(web_session_id_var);
 
   if (!session_id_string) {
-    OnSessionError(reference_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  session_created_cb_.Run(reference_id, session_id_string->value());
+  session_created_cb_.Run(session_id, session_id_string->value());
 }
 
-void ContentDecryptorDelegate::OnSessionMessage(uint32 reference_id,
+void ContentDecryptorDelegate::OnSessionMessage(uint32 session_id,
                                                 PP_Var message_var,
                                                 PP_Var default_url_var) {
   if (session_message_cb_.is_null())
@@ -622,34 +621,34 @@ void ContentDecryptorDelegate::OnSessionMessage(uint32 reference_id,
   StringVar* default_url_string = StringVar::FromPPVar(default_url_var);
 
   if (!default_url_string) {
-    OnSessionError(reference_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  session_message_cb_.Run(reference_id, message, default_url_string->value());
+  session_message_cb_.Run(session_id, message, default_url_string->value());
 }
 
-void ContentDecryptorDelegate::OnSessionReady(uint32 reference_id) {
+void ContentDecryptorDelegate::OnSessionReady(uint32 session_id) {
   if (session_ready_cb_.is_null())
     return;
 
-  session_ready_cb_.Run(reference_id);
+  session_ready_cb_.Run(session_id);
 }
 
-void ContentDecryptorDelegate::OnSessionClosed(uint32 reference_id) {
+void ContentDecryptorDelegate::OnSessionClosed(uint32 session_id) {
   if (session_closed_cb_.is_null())
     return;
 
-  session_closed_cb_.Run(reference_id);
+  session_closed_cb_.Run(session_id);
 }
 
-void ContentDecryptorDelegate::OnSessionError(uint32 reference_id,
+void ContentDecryptorDelegate::OnSessionError(uint32 session_id,
                                               int32_t media_error,
                                               int32_t system_code) {
   if (session_error_cb_.is_null())
     return;
 
-  session_error_cb_.Run(reference_id,
+  session_error_cb_.Run(session_id,
                         static_cast<media::MediaKeys::KeyError>(media_error),
                         system_code);
 }

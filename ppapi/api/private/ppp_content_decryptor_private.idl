@@ -40,7 +40,7 @@ interface PPP_ContentDecryptor_Private {
    * browser by the CDM via <code>SessionCreated()</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
-   * @param[in] reference_id A reference for the session for which a session
+   * @param[in] session_id A reference for the session for which a session
    * should be generated.
    *
    * @param[in] type A <code>PP_Var</code> of type
@@ -52,7 +52,7 @@ interface PPP_ContentDecryptor_Private {
    */
   void CreateSession(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id,
+      [in] uint32_t session_id,
       [in] PP_Var type,
       [in] PP_Var init_data);
 
@@ -68,7 +68,7 @@ interface PPP_ContentDecryptor_Private {
    * <code>PPB_ContentDecryptor_Private</code> interface, and the browser
    * must notify the web application.
    *
-   * @param[in] reference_id A reference for the session to update.
+   * @param[in] session_id A reference for the session to update.
    *
    * @param[in] response A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the license or other
@@ -76,18 +76,18 @@ interface PPP_ContentDecryptor_Private {
    */
   void UpdateSession(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id,
+      [in] uint32_t session_id,
       [in] PP_Var response);
 
   /**
    * Release the specified session and related resources.
    *
-   * @param[in] reference_id A reference for the session that should be
+   * @param[in] session_id A reference for the session that should be
    * released.
    */
   void ReleaseSession(
       [in] PP_Instance instance,
-      [in] uint32_t reference_id);
+      [in] uint32_t session_id);
 
   /**
    * Decrypts the block and returns the unencrypted block via

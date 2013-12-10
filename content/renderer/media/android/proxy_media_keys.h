@@ -32,23 +32,23 @@ class ProxyMediaKeys : public media::MediaKeys {
   void InitializeCDM(const std::string& key_system, const GURL& frame_url);
 
   // MediaKeys implementation.
-  virtual bool CreateSession(uint32 reference_id,
+  virtual bool CreateSession(uint32 session_id,
                              const std::string& type,
                              const uint8* init_data,
                              int init_data_length) OVERRIDE;
-  virtual void UpdateSession(uint32 reference_id,
+  virtual void UpdateSession(uint32 session_id,
                              const uint8* response,
                              int response_length) OVERRIDE;
-  virtual void ReleaseSession(uint32 reference_id) OVERRIDE;
+  virtual void ReleaseSession(uint32 session_id) OVERRIDE;
 
   // Callbacks.
-  void OnSessionCreated(uint32 reference_id, const std::string& session_id);
-  void OnSessionMessage(uint32 reference_id,
+  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
+  void OnSessionMessage(uint32 session_id,
                         const std::vector<uint8>& message,
                         const std::string& destination_url);
-  void OnSessionReady(uint32 reference_id);
-  void OnSessionClosed(uint32 reference_id);
-  void OnSessionError(uint32 reference_id,
+  void OnSessionReady(uint32 session_id);
+  void OnSessionClosed(uint32 session_id);
+  void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
                       int system_code);
 

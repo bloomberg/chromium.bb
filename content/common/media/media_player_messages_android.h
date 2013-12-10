@@ -289,37 +289,37 @@ IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_InitializeCDM,
 
 IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_GenerateKeyRequest,
                     int /* media_keys_id */,
-                    uint32_t /* reference_id */,
+                    uint32_t /* session_id */,
                     std::string /* type */,
                     std::vector<uint8> /* init_data */)
 
 IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_AddKey,
                     int /* media_keys_id */,
-                    uint32_t /* reference_id */,
+                    uint32_t /* session_id */,
                     std::vector<uint8> /* key */,
                     std::vector<uint8> /* init_data */)
 
 IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_CancelKeyRequest,
                     int /* media_keys_id */,
-                    uint32_t /* reference_id */)
+                    uint32_t /* session_id */)
 
 IPC_MESSAGE_ROUTED2(MediaKeysMsg_KeyAdded,
                     int /* media_keys_id */,
-                    uint32_t /* reference_id */)
+                    uint32_t /* session_id */)
 
 IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyError,
                     int /* media_keys_id */,
-                    uint32_t /* reference_id */,
+                    uint32_t /* session_id */,
                     media::MediaKeys::KeyError /* error_code */,
                     int /* system_code */)
 
 IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyMessage,
                     int /* media_keys_id */,
-                    uint32_t /* reference_id */,
+                    uint32_t /* session_id */,
                     std::vector<uint8> /* message */,
                     std::string /* destination_url */)
 
 IPC_MESSAGE_ROUTED3(MediaKeysMsg_SetSessionId,
                     int /* media_keys_id */,
-                    uint32_t /* reference_id */,
-                    std::string /* session_id */)
+                    uint32_t /* session_id */,
+                    std::string /* web_session_id */)

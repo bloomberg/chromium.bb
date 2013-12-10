@@ -35,9 +35,11 @@ class RendererMediaPlayerManager;
 // A decryptor proxy that creates a real decryptor object on demand and
 // forwards decryptor calls to it.
 //
-// Now that the Pepper API calls use reference ID to match responses with
-// requests, this class maintains a mapping between reference ID and session ID.
-// Callers of this class expect session IDs in the responses.
+// Now that the Pepper API calls use session ID to match responses with
+// requests, this class maintains a mapping between session ID and web session
+// ID. Callers of this class expect web session IDs in the responses.
+// Session IDs are internal unique references to the session. Web session IDs
+// are the CDM generated ID for the session, and are what are visible to users.
 //
 // TODO(xhwang): Currently we don't support run-time switching among decryptor
 // objects. Fix this when needed.
@@ -45,7 +47,7 @@ class RendererMediaPlayerManager;
 class ProxyDecryptor {
  public:
   // These are similar to the callbacks in media_keys.h, but pass back the
-  // session ID rather than a reference ID.
+  // web session ID rather than the internal session ID.
   typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
   typedef base::Callback<void(const std::string& session_id,
                               media::MediaKeys::KeyError error_code,
@@ -86,7 +88,7 @@ class ProxyDecryptor {
   void CancelKeyRequest(const std::string& session_id);
 
  private:
-  // This is reference_id <-> session_id map.
+  // Session_id <-> web_session_id map.
   typedef std::map<uint32, std::string> SessionIdMap;
 
   // Helper function to create MediaKeys to handle the given |key_system|.
@@ -94,23 +96,23 @@ class ProxyDecryptor {
                                                const GURL& frame_url);
 
   // Callbacks for firing session events.
-  void OnSessionCreated(uint32 reference_id, const std::string& session_id);
-  void OnSessionMessage(uint32 reference_id,
+  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
+  void OnSessionMessage(uint32 session_id,
                         const std::vector<uint8>& message,
                         const std::string& default_url);
-  void OnSessionReady(uint32 reference_id);
-  void OnSessionClosed(uint32 reference_id);
-  void OnSessionError(uint32 reference_id,
+  void OnSessionReady(uint32 session_id);
+  void OnSessionClosed(uint32 session_id);
+  void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
                       int system_code);
 
-  // Helper function to determine reference_id for the provided |session_id|.
-  uint32 LookupReferenceId(const std::string& session_id);
+  // Helper function to determine session_id for the provided |web_session_id|.
+  uint32 LookupSessionId(const std::string& web_session_id);
 
-  // Helper function to determine session_id for the provided |reference_id|.
-  // The returned session_id is only valid on the main thread, and should be
+  // Helper function to determine web_session_id for the provided |session_id|.
+  // The returned web_session_id is only valid on the main thread, and should be
   // stored by copy.
-  const std::string& LookupSessionId(uint32 reference_id);
+  const std::string& LookupWebSessionId(uint32 session_id);
 
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
 
@@ -141,10 +143,10 @@ class ProxyDecryptor {
 
   media::DecryptorReadyCB decryptor_ready_cb_;
 
-  // Reference IDs are used to uniquely track sessions so that CDM callbacks
-  // can get mapped to the correct session ID. Reference ID should be unique
+  // Session IDs are used to uniquely track sessions so that CDM callbacks
+  // can get mapped to the correct session ID. Session ID should be unique
   // per renderer process for debugging purposes.
-  static uint32 next_reference_id_;
+  static uint32 next_session_id_;
 
   SessionIdMap sessions_;
 

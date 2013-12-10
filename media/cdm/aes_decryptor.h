@@ -35,14 +35,14 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   virtual ~AesDecryptor();
 
   // MediaKeys implementation.
-  virtual bool CreateSession(uint32 reference_id,
+  virtual bool CreateSession(uint32 session_id,
                              const std::string& type,
                              const uint8* init_data,
                              int init_data_length) OVERRIDE;
-  virtual void UpdateSession(uint32 reference_id,
+  virtual void UpdateSession(uint32 session_id,
                              const uint8* response,
                              int response_length) OVERRIDE;
-  virtual void ReleaseSession(uint32 reference_id) OVERRIDE;
+  virtual void ReleaseSession(uint32 session_id) OVERRIDE;
   virtual Decryptor* GetDecryptor() OVERRIDE;
 
   // Decryptor implementation.
@@ -115,10 +115,9 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   KeyMap key_map_;  // Protected by the |key_map_lock_|.
   mutable base::Lock key_map_lock_;  // Protects the |key_map_|.
 
-  // Make session ID unique per renderer by making it static.
-  // TODO(xhwang): Make session ID more strictly defined if needed:
-  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=16739#c0
-  static uint32 next_session_id_;
+  // Make web session ID unique per renderer by making it static. Web session
+  // IDs seen by the app will be "1", "2", etc.
+  static uint32 next_web_session_id_;
 
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;

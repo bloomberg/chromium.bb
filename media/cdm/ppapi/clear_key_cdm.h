@@ -72,7 +72,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   class Client {
    public:
     // TODO(jrummell): Remove bitmask and rename kNone to kInvalid once CDM
-    // interface supports reference_id passing completely.
+    // interface supports session_id passing completely.
     enum Status {
       kNone = 0,
       kCreated = 1 << 0,
@@ -86,7 +86,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
     virtual ~Client();
 
     Status status() { return status_; }
-    const std::string& session_id() { return session_id_; }
+    const std::string& web_session_id() { return web_session_id_; }
     const std::vector<uint8>& message() { return message_; }
     const std::string& destination_url() { return destination_url_; }
     MediaKeys::KeyError error_code() { return error_code_; }
@@ -95,19 +95,19 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
     // Resets the Client to a clean state.
     void Reset();
 
-    void OnSessionCreated(uint32 reference_id, const std::string& session_id);
-    void OnSessionMessage(uint32 reference_id,
+    void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
+    void OnSessionMessage(uint32 session_id,
                           const std::vector<uint8>& message,
                           const std::string& destination_url);
-    void OnSessionReady(uint32 reference_id);
-    void OnSessionClosed(uint32 reference_id);
-    void OnSessionError(uint32 reference_id,
+    void OnSessionReady(uint32 session_id);
+    void OnSessionClosed(uint32 session_id);
+    void OnSessionError(uint32 session_id,
                         MediaKeys::KeyError error_code,
                         int system_code);
 
    private:
     Status status_;
-    std::string session_id_;
+    std::string web_session_id_;
     std::vector<uint8> message_;
     std::string destination_url_;
     MediaKeys::KeyError error_code_;

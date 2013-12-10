@@ -11,20 +11,15 @@
 
 namespace content {
 
-static const uint32 kStartingReferenceId = 1;
-uint32 WebContentDecryptionModuleSessionImpl::next_reference_id_ =
-    kStartingReferenceId;
-COMPILE_ASSERT(kStartingReferenceId != media::MediaKeys::kInvalidReferenceId,
-               invalid_starting_value);
-
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
+    uint32 session_id,
     media::MediaKeys* media_keys,
     Client* client,
     const SessionClosedCB& session_closed_cb)
     : media_keys_(media_keys),
       client_(client),
       session_closed_cb_(session_closed_cb),
-      reference_id_(next_reference_id_++) {
+      session_id_(session_id) {
   DCHECK(media_keys_);
 }
 
@@ -33,7 +28,7 @@ WebContentDecryptionModuleSessionImpl::
 }
 
 blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
-  return blink::WebString::fromUTF8(session_id_);
+  return web_session_id_;
 }
 
 void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
@@ -48,29 +43,30 @@ void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
   }
 
   media_keys_->CreateSession(
-      reference_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
+      session_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
 }
 
 void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
                                                    size_t response_length) {
   DCHECK(response);
-  media_keys_->UpdateSession(reference_id_, response, response_length);
+  media_keys_->UpdateSession(session_id_, response, response_length);
 }
 
 void WebContentDecryptionModuleSessionImpl::close() {
-  media_keys_->ReleaseSession(reference_id_);
+  media_keys_->ReleaseSession(session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionCreated(
-    const std::string& session_id) {
+    const std::string& web_session_id) {
   // Due to heartbeat messages, OnSessionCreated() can get called multiple
   // times.
   // TODO(jrummell): Once all CDMs are updated to support reference ids,
   // OnSessionCreated() should only be called once, and the second check can be
   // removed.
-  DCHECK(session_id_.empty() || session_id_ == session_id)
+  blink::WebString id = blink::WebString::fromUTF8(web_session_id);
+  DCHECK(web_session_id_.isEmpty() || web_session_id_ == id)
       << "Session ID may not be changed once set.";
-  session_id_ = session_id;
+  web_session_id_ = id;
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
@@ -89,7 +85,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
   if (!session_closed_cb_.is_null())
-    base::ResetAndReturn(&session_closed_cb_).Run(reference_id_);
+    base::ResetAndReturn(&session_closed_cb_).Run(session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionError(
