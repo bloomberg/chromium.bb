@@ -206,9 +206,14 @@ public:
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
-    void restoreScrollPositionAndViewState();
     void saveDocumentAndScrollState();
     void clearScrollPositionAndViewState();
+
+    enum RestorePolicy {
+        StandardRestore,
+        ForcedRestoreForSameDocumentHistoryNavigation
+    };
+    void restoreScrollPositionAndViewState(RestorePolicy = StandardRestore);
 
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants

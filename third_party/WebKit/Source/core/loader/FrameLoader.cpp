@@ -1043,9 +1043,9 @@ void FrameLoader::checkLoadCompleteForThisFrame()
 // which case the restore silent fails and we will fix it in when we try to restore on doc completion.
 // 2) If the layout happens after the load completes, the attempt to restore at load completion time silently
 // fails. We then successfully restore it when the layout happens.
-void FrameLoader::restoreScrollPositionAndViewState()
+void FrameLoader::restoreScrollPositionAndViewState(RestorePolicy restorePolicy)
 {
-    if (!isBackForwardLoadType(m_loadType) && m_loadType != FrameLoadTypeReload && m_loadType != FrameLoadTypeReloadFromOrigin)
+    if (!isBackForwardLoadType(m_loadType) && m_loadType != FrameLoadTypeReload && m_loadType != FrameLoadTypeReloadFromOrigin && restorePolicy != ForcedRestoreForSameDocumentHistoryNavigation)
         return;
     if (!m_frame->page() || !m_currentItem || !m_stateMachine.committedFirstRealDocumentLoad())
         return;
@@ -1056,7 +1056,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
                 scrollingCoordinator->frameViewRootLayerDidChange(view);
         }
 
-        if (!view->wasScrolledByUser()) {
+        if (!view->wasScrolledByUser() || restorePolicy == ForcedRestoreForSameDocumentHistoryNavigation) {
             if (m_frame->isMainFrame() && m_currentItem->pageScaleFactor())
                 m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), m_currentItem->scrollPoint());
             else
@@ -1274,6 +1274,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = 0;
     }
+    saveDocumentAndScrollState();
     loadInSameDocument(request.url(), 0, isNewNavigation, clientRedirect);
 }
 
@@ -1517,6 +1518,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
     m_currentItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
         loadInSameDocument(item->url(), item->stateObject(), false, NotClientRedirect);
+        restoreScrollPositionAndViewState(ForcedRestoreForSameDocumentHistoryNavigation);
         return;
     }
 
