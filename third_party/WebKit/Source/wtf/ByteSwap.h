@@ -46,19 +46,18 @@ inline uint32_t wswap32(uint32_t x) { return ((x & 0xffff0000) >> 16) | ((x & 0x
 
 #if COMPILER(MSVC)
 
-inline uint64_t bswap64(uint64_t x) { return _byteswap_uint64(x); }
-inline uint32_t bswap32(uint32_t x) { return _byteswap_ulong(x); }
-inline uint16_t bswap16(uint16_t x) { return _byteswap_ushort(x); }
+ALWAYS_INLINE uint64_t bswap64(uint64_t x) { return _byteswap_uint64(x); }
+ALWAYS_INLINE uint32_t bswap32(uint32_t x) { return _byteswap_ulong(x); }
+ALWAYS_INLINE uint16_t bswap16(uint16_t x) { return _byteswap_ushort(x); }
 
 #else
 
-inline uint64_t bswap64(uint64_t x) { return __builtin_bswap64(x); }
-inline uint32_t bswap32(uint32_t x) { return __builtin_bswap32(x); }
-// GCC lacks bswap16.
+ALWAYS_INLINE uint64_t bswap64(uint64_t x) { return __builtin_bswap64(x); }
+ALWAYS_INLINE uint32_t bswap32(uint32_t x) { return __builtin_bswap32(x); }
+// GCC 4.6 lacks __builtin_bswap16. Newer versions have it but we support 4.6.
 #if COMPILER(CLANG)
-inline uint16_t bswap16(uint16_t x) { return __builtin_bswap16(x); }
+ALWAYS_INLINE uint16_t bswap16(uint16_t x) { return __builtin_bswap16(x); }
 #else
-// GCC lacks __builtin_bswap16.
 inline uint16_t bswap16(uint16_t x) { return ((x & 0xff00) >> 8) | ((x & 0x00ff) << 8); }
 #endif
 
@@ -66,11 +65,11 @@ inline uint16_t bswap16(uint16_t x) { return ((x & 0xff00) >> 8) | ((x & 0x00ff)
 
 #if CPU(64BIT)
 
-inline size_t bswapuintptrt(size_t x) { return bswap64(x); }
+ALWAYS_INLINE size_t bswapuintptrt(size_t x) { return bswap64(x); }
 
 #else
 
-inline size_t bswapuintptrt(size_t x) { return bswap32(x); }
+ALWAYS_INLINE size_t bswapuintptrt(size_t x) { return bswap32(x); }
 
 #endif
 
