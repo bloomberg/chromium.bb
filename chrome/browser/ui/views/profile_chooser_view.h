@@ -26,6 +26,7 @@ class Image;
 }
 
 namespace views {
+class GridLayout;
 class Link;
 class TextButton;
 class LabelButton;
@@ -134,6 +135,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
       const AvatarMenu::Item& avatar_item);
   views::View* CreateCurrentProfileAccountsView(
       const AvatarMenu::Item& avatar_item);
+  void CreateAccountButton(views::GridLayout* layout,
+                           const std::string& account,
+                           bool is_primary_account);
 
   scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;

@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -793,34 +795,24 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
                     views::kButtonHEdgeMarginNew);
 
   Profile* profile = browser_->profile();
+  std::string primary_account =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
+  DCHECK(!primary_account.empty());
   std::vector<std::string> accounts(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts());
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  DCHECK_EQ(1, std::count_if(accounts.begin(), accounts.end(),
+                             std::bind1st(std::equal_to<std::string>(),
+                                          primary_account)));
+
+  // The primary account should always be listed first.  However, the vector
+  // returned by ProfileOAuth2TokenService::GetAccounts() will contain the
+  // primary account too.  Ignore it when it appears later.
+  // TODO(rogerta): we still need to further differentiate the primary account
+  // from the others, so more work is likely required here: crbug.com/311124.
+  CreateAccountButton(layout, primary_account, true);
   for (size_t i = 0; i < accounts.size(); ++i) {
-    bool is_primary_account = (i == 0);
-
-    // Use a MenuButtonListener and not a regular ButtonListener to be
-    // able to distinguish between the unnamed "other profile" buttons and the
-    // unnamed "multiple accounts" buttons.
-    views::MenuButton* email_button = new views::MenuButton(
-        NULL,
-        gfx::ElideEmail(UTF8ToUTF16(accounts[i]),
-                        rb->GetFontList(ui::ResourceBundle::BaseFont),
-                        width()),
-        is_primary_account ? NULL : this,  // Cannot delete the primary account.
-        !is_primary_account);
-    email_button->SetFont(rb->GetFont(ui::ResourceBundle::BaseFont));
-    email_button->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 0));
-    if (!is_primary_account) {
-      email_button->set_menu_marker(
-          rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia());
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    }
-    layout->StartRow(1, 0);
-    layout->AddView(email_button);
-
-    // Save the original email address, as the button text could be elided.
-    current_profile_accounts_map_[email_button] = accounts[i];
+    if (primary_account != accounts[i])
+      CreateAccountButton(layout, accounts[i], false);
   }
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -832,4 +824,32 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   layout->StartRow(1, 0);
   layout->AddView(add_account_button_);
   return view;
+}
+
+void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
+                                             const std::string& account,
+                                             bool is_primary_account) {
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  // Use a MenuButtonListener and not a regular ButtonListener to be
+  // able to distinguish between the unnamed "other profile" buttons and the
+  // unnamed "multiple accounts" buttons.
+  views::MenuButton* email_button = new views::MenuButton(
+      NULL,
+      gfx::ElideEmail(UTF8ToUTF16(account),
+                      rb->GetFontList(ui::ResourceBundle::BaseFont),
+                      width()),
+      is_primary_account ? NULL : this,  // Cannot delete the primary account.
+      !is_primary_account);
+  email_button->SetFont(rb->GetFont(ui::ResourceBundle::BaseFont));
+  email_button->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 0));
+  if (!is_primary_account) {
+    email_button->set_menu_marker(
+        rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia());
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  }
+  layout->StartRow(1, 0);
+  layout->AddView(email_button);
+
+  // Save the original email address, as the button text could be elided.
+  current_profile_accounts_map_[email_button] = account;
 }
