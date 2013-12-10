@@ -34,12 +34,10 @@ class NativeMessagingHostManifestTest : public ::testing::Test {
   bool WriteManifest(const std::string& name,
                      const std::string& path,
                      const std::string& origin) {
-    std::string escaped_path;
-    base::JsonDoubleQuote(path, false, &escaped_path);
     return WriteManifest("{"
       "  \"name\": \"" + name + "\","
       "  \"description\": \"Native Messaging Test\","
-      "  \"path\": \"" + escaped_path + "\","
+      "  \"path\": " + base::GetQuotedJSONString(path) + ","
       "  \"type\": \"stdio\","
       "  \"allowed_origins\": ["
       "    \"" + origin + "\""

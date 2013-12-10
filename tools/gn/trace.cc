@@ -241,7 +241,7 @@ void SaveTraces(const base::FilePath& file_name) {
     out << ",\"dur\":" << item.delta().InMicroseconds();
 
     quote_buffer.resize(0);
-    base::JsonDoubleQuote(item.name(), true, &quote_buffer);
+    base::EscapeJSONString(item.name(), true, &quote_buffer);
     out << ",\"name\":" << quote_buffer;
 
     out << ",\"cat\":";
@@ -270,13 +270,13 @@ void SaveTraces(const base::FilePath& file_name) {
       bool needs_comma = false;
       if (!item.toolchain().empty()) {
         quote_buffer.resize(0);
-        base::JsonDoubleQuote(item.toolchain(), true, &quote_buffer);
+        base::EscapeJSONString(item.toolchain(), true, &quote_buffer);
         out << "\"toolchain\":" << quote_buffer;
         needs_comma = true;
       }
       if (!item.cmdline().empty()) {
         quote_buffer.resize(0);
-        base::JsonDoubleQuote(item.cmdline(), true, &quote_buffer);
+        base::EscapeJSONString(item.cmdline(), true, &quote_buffer);
         if (needs_comma)
           out << ",";
         out << "\"cmdline\":" << quote_buffer;

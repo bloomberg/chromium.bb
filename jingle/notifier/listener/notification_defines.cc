@@ -65,10 +65,12 @@ bool Notification::Equals(const Notification& other) const {
 }
 
 std::string Notification::ToString() const {
-  // |channel| or |data| could hold binary data, so use GetDoubleQuotedJson()
-  // to escape them.
-  const std::string& printable_channel = base::GetDoubleQuotedJson(channel);
-  const std::string& printable_data = base::GetDoubleQuotedJson(data);
+  // |channel| or |data| could hold binary data, so convert all non-ASCII
+  // characters to escape sequences.
+  const std::string& printable_channel =
+      base::EscapeBytesAsInvalidJSONString(channel, true /* put_in_quotes */);
+  const std::string& printable_data =
+      base::EscapeBytesAsInvalidJSONString(data, true /* put_in_quotes */);
   return
       "{ channel: " + printable_channel + ", data: " + printable_data + " }";
 }

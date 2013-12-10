@@ -2260,8 +2260,8 @@ TEST(NetUtilTest, GetDirectoryListingEntry) {
      false,
      10000,
      base::Time(),
-     "<script>addRow(\"\\uD55C\\uAE00.txt\",\"%ED%95%9C%EA%B8%80.txt\""
-         ",0,\"9.8 kB\",\"\");</script>\n"},
+     "<script>addRow(\"\xED\x95\x9C\xEA\xB8\x80.txt\","
+         "\"%ED%95%9C%EA%B8%80.txt\",0,\"9.8 kB\",\"\");</script>\n"},
     // U+D55C0 U+AE00. raw_bytes is the corresponding EUC-KR sequence:
     // a local or remote file in EUC-KR.
     {L"\xD55C\xAE00.txt",
@@ -2269,7 +2269,7 @@ TEST(NetUtilTest, GetDirectoryListingEntry) {
      false,
      10000,
      base::Time(),
-     "<script>addRow(\"\\uD55C\\uAE00.txt\",\"%C7%D1%B1%DB.txt\""
+     "<script>addRow(\"\xED\x95\x9C\xEA\xB8\x80.txt\",\"%C7%D1%B1%DB.txt\""
          ",0,\"9.8 kB\",\"\");</script>\n"},
   };
 

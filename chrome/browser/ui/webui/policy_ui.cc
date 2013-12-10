@@ -178,8 +178,7 @@ scoped_ptr<base::StringValue> DictionaryToJSONString(
     const base::DictionaryValue* dict) {
   std::string json_string;
   base::JSONWriter::WriteWithOptions(dict,
-                                     base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
-                                         base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_string);
   return make_scoped_ptr(new base::StringValue(json_string));
 }

@@ -16,9 +16,8 @@ scoped_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
   for (ProgressMarkerMap::const_iterator it = marker_map.begin();
        it != marker_map.end(); ++it) {
     std::string printable_payload;
-    base::JsonDoubleQuote(it->second,
-                          false /* put_in_quotes */,
-                          &printable_payload);
+    base::EscapeJSONString(
+        it->second, false /* put_in_quotes */, &printable_payload);
     value->SetString(ModelTypeToString(it->first), printable_payload);
   }
   return value.Pass();

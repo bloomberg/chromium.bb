@@ -117,7 +117,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(4U, i->size());
     scoped_refptr<Action> action = i->at(0);
     ASSERT_EQ("XMLHttpRequest.open", action->api_name());
-    ASSERT_EQ("[\"POST\",\"\\u003Carg_url\\u003E\"]",
+    ASSERT_EQ("[\"POST\",\"\\u003Carg_url>\"]",
               ActivityLogPolicy::Util::Serialize(action->args()));
     ASSERT_EQ("http://api.google.com/", action->arg_url().spec());
     // Test that the dom_verb field was changed to XHR (from METHOD).  This
@@ -131,7 +131,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
     action = i->at(1);
     ASSERT_EQ("XMLHttpRequest.open", action->api_name());
-    ASSERT_EQ("[\"POST\",\"\\u003Carg_url\\u003E\"]",
+    ASSERT_EQ("[\"POST\",\"\\u003Carg_url>\"]",
               ActivityLogPolicy::Util::Serialize(action->args()));
     ASSERT_EQ("http://www.google.com/api/", action->arg_url().spec());
 
@@ -143,7 +143,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
     action = i->at(3);
     ASSERT_EQ("windows.create", action->api_name());
-    ASSERT_EQ("[{\"url\":\"\\u003Carg_url\\u003E\"}]",
+    ASSERT_EQ("[{\"url\":\"\\u003Carg_url>\"}]",
               ActivityLogPolicy::Util::Serialize(action->args()));
     ASSERT_EQ("http://www.google.co.uk/", action->arg_url().spec());
   }

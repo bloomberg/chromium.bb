@@ -147,11 +147,9 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
     os << g_metas_columns[i].name << ": " << field << ", ";
   }
   for ( ; i < PROTO_FIELDS_END; ++i) {
-    std::string escaped_str;
-    base::JsonDoubleQuote(
+    std::string escaped_str = base::EscapeBytesAsInvalidJSONString(
         kernel->ref(static_cast<ProtoField>(i)).SerializeAsString(),
-        false,
-        &escaped_str);
+        false);
     os << g_metas_columns[i].name << ": " << escaped_str << ", ";
   }
   for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
