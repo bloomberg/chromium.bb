@@ -1208,9 +1208,13 @@ FileOperationManager.prototype.queueCopy_ = function(
 FileOperationManager.prototype.serviceAllTasks_ = function() {
   if (!this.copyTasks_.length) {
     // All tasks have been serviced, clean up and exit.
+    chrome.power.releaseKeepAwake();
     this.resetQueue_();
     return;
   }
+
+  // Prevent the system from sleeping while copy is in progress.
+  chrome.power.requestKeepAwake('system');
 
   var onTaskProgress = function() {
     this.eventRouter_.sendProgressEvent('PROGRESS',
