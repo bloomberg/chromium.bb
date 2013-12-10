@@ -4,8 +4,8 @@
 
 package org.chromium.ui.gfx;
 
-import android.content.Context;
 import android.content.ComponentCallbacks;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Build;

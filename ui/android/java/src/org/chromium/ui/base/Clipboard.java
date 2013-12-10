@@ -4,17 +4,15 @@
 
 package org.chromium.ui.base;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.widget.Toast;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.ui.R;
-
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.os.Build;
-import android.text.TextUtils;
-import android.widget.Toast;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android

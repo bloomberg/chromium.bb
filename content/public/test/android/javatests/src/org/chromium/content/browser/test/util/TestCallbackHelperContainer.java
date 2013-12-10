@@ -5,8 +5,6 @@
 package org.chromium.content.browser.test.util;
 
 
-import android.util.Log;
-
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 

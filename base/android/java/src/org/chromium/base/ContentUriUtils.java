@@ -10,8 +10,6 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
-
 /**
  * This class provides methods to access content URI schemes.
  */

@@ -4,11 +4,8 @@
 
 package org.chromium.android_webview;
 
-import android.util.Pair;
-import android.view.View.MeasureSpec;
 import android.view.View;
-
-import org.chromium.content.browser.ContentViewCore;
+import android.view.View.MeasureSpec;
 
 /**
  * Helper methods used to manage the layout of the View that contains AwContents.

@@ -4,12 +4,9 @@
 
 package org.chromium.android_webview.test;
 
-import android.content.Context;
 import android.graphics.Rect;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.view.View.MeasureSpec;
-import android.view.View;
 import android.widget.OverScroller;
 
 import org.chromium.android_webview.AwScrollOffsetManager;

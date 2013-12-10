@@ -4,19 +4,13 @@
 
 package org.chromium.base;
 
+import android.os.Build;
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import android.app.ActivityManager;
-import android.app.ActivityManager.MemoryInfo;
-import android.content.Context;
-import android.os.Build;
-import android.util.Log;
-
-import org.chromium.base.BaseSwitches;
-import org.chromium.base.CommandLine;
 
 /**
  * Exposes system related information about the current device.

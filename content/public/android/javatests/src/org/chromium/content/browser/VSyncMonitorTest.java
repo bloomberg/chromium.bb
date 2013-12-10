@@ -7,10 +7,11 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
-import java.util.Arrays;
-import java.util.concurrent.Callable;
 
 import org.chromium.base.ThreadUtils;
+
+import java.util.Arrays;
+import java.util.concurrent.Callable;
 
 public class VSyncMonitorTest extends InstrumentationTestCase {
     private static class VSyncDataCollector implements VSyncMonitor.Listener {

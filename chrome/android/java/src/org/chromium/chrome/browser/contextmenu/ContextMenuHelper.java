@@ -11,15 +11,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.view.View.OnCreateContextMenuListener;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
-
-import android.view.View.OnCreateContextMenuListener;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * A helper class that handles generating context menus for {@link ContentView}s.

@@ -19,7 +19,6 @@ import android.speech.SpeechRecognizer;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.browser.SpeechRecognitionError;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -12,16 +12,15 @@ import android.os.Handler;
 import android.util.Log;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 import java.io.IOException;
-import java.lang.RuntimeException;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.UUID;

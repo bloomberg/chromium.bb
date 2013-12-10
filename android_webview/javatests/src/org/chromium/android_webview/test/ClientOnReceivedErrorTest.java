@@ -8,10 +8,8 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.webkit.WebSettings;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 import java.util.concurrent.TimeUnit;

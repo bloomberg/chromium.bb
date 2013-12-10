@@ -17,23 +17,19 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings;
-import android.provider.Settings.System;
 import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @JNINamespace("media")
 class AudioManagerAndroid {

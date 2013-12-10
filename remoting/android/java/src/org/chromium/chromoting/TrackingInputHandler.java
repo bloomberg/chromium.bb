@@ -7,7 +7,6 @@ package org.chromium.chromoting;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.PointF;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;

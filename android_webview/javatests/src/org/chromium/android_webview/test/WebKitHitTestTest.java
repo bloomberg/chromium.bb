@@ -4,9 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import android.content.res.Configuration;
 import android.os.SystemClock;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
@@ -14,8 +12,8 @@ import android.view.MotionEvent;
 import android.webkit.WebView.HitTestResult;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.base.test.util.Feature;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;

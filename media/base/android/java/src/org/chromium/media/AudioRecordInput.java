@@ -4,16 +4,16 @@
 
 package org.chromium.media;
 
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
 import android.os.Process;
 import android.util.Log;
-import java.nio.ByteBuffer;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.nio.ByteBuffer;
 
 // Owned by its native counterpart declared in audio_record_input.h. Refer to
 // that class for general comments.

@@ -12,8 +12,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
-
 /**
  * BuildInfo is a utility class providing easy access to {@link PackageInfo}
  * information. This is primarly of use for accessesing package information

@@ -4,9 +4,9 @@
 
 package org.chromium.content.browser;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import android.util.SparseArray;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;

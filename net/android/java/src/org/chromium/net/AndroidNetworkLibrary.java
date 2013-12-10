@@ -12,8 +12,6 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
-import org.chromium.net.CertVerifyResultAndroid;
-import org.chromium.net.CertificateMimeType;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -25,7 +23,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
-import java.util.List;
 
 /**
  * This class implements net utilities required by the net component.

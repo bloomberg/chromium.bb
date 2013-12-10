@@ -4,7 +4,6 @@
 
 package org.chromium.base;
 
-import java.lang.Iterable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

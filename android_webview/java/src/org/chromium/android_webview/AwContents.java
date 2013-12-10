@@ -1043,7 +1043,7 @@ public class AwContents {
     }
 
     /**
-     * @see WebView#requestChildRectangleOnScreen(View, Rect, boolean)
+     * @see android.webkit.WebView#requestChildRectangleOnScreen(View, Rect, boolean)
      */
     public boolean requestChildRectangleOnScreen(View child, Rect rect, boolean immediate) {
         return mScrollOffsetManager.requestChildRectangleOnScreen(

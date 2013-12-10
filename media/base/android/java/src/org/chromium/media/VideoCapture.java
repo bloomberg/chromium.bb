@@ -15,13 +15,13 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import java.io.IOException;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.Iterator;
-import java.util.List;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @JNINamespace("media")
 public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {

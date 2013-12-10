@@ -111,13 +111,17 @@ public class AwScrollOffsetManager {
     }
 
     //---------------------------------------------------------------------------------------------
-    // Called when the scroll range changes. This needs to be the size of the on-screen content.
+    /**
+     * Called when the scroll range changes. This needs to be the size of the on-screen content.
+     */
     public void setMaxScrollOffset(int width, int height) {
         mMaxHorizontalScrollOffset = width;
         mMaxVerticalScrollOffset = height;
     }
 
-    // Called when the physical size of the view changes.
+    /**
+     * Called when the physical size of the view changes.
+     */
     public void setContainerViewSize(int width, int height) {
         mContainerViewWidth = width;
         mContainerViewHeight = height;
@@ -333,7 +337,7 @@ public class AwScrollOffsetManager {
     }
 
     /**
-     * See {@link WebView#pageUp(boolean)}
+     * See {@link android.webkit.WebView#pageUp(boolean)}
      */
     public boolean pageUp(boolean top) {
         final int scrollX = mDelegate.getContainerViewScrollX();
@@ -353,7 +357,7 @@ public class AwScrollOffsetManager {
     }
 
     /**
-     * See {@link WebView#pageDown(boolean)}
+     * See {@link android.webkit.WebView#pageDown(boolean)}
      */
     public boolean pageDown(boolean bottom) {
         final int scrollX = mDelegate.getContainerViewScrollX();
@@ -372,7 +376,7 @@ public class AwScrollOffsetManager {
     }
 
     /**
-     * See {@link WebView#requestChildRectangleOnScreen(View, Rect, boolean)}
+     * See {@link android.webkit.WebView#requestChildRectangleOnScreen(View, Rect, boolean)}
      */
     public boolean requestChildRectangleOnScreen(int childOffsetX, int childOffsetY, Rect rect,
             boolean immediate) {

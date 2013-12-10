@@ -5,10 +5,11 @@
 package org.chromium.content.browser.test.util;
 
 import android.os.SystemClock;
+import android.test.ActivityInstrumentationTestCase2;
+import android.test.TouchUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.test.ActivityInstrumentationTestCase2;
 
 /**
  * Touch-related functionality reused across test cases.

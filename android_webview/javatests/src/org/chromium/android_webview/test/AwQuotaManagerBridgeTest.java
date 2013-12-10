@@ -19,7 +19,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 import java.util.List;
 
 public class AwQuotaManagerBridgeTest extends AwTestBase {

@@ -4,7 +4,6 @@
 
 package org.chromium.content.app;
 
-import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;

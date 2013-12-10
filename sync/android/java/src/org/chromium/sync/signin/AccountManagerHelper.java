@@ -5,8 +5,6 @@
 package org.chromium.sync.signin;
 
 
-import com.google.common.annotations.VisibleForTesting;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
@@ -20,14 +18,17 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.List;
+
 import javax.annotation.Nullable;
 
 /**

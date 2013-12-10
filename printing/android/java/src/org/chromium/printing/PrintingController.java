@@ -4,6 +4,8 @@
 
 package org.chromium.printing;
 
+import android.print.PrintDocumentAdapter;
+
 /**
  * This interface describes a class which is responsible of talking to the printing backend.
  *

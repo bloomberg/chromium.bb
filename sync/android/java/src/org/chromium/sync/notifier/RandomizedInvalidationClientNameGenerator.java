@@ -6,8 +6,6 @@ package org.chromium.sync.notifier;
 
 import android.util.Base64;
 
-import org.chromium.sync.notifier.InvalidationClientNameGenerator;
-
 import java.util.Random;
 
 /**

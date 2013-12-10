@@ -8,13 +8,13 @@ import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.JsonReader;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.concurrent.TimeoutException;
-
 import junit.framework.Assert;
 
 import org.chromium.content.browser.ContentView;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Collection of DOM-based utilities.

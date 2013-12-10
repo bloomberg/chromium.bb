@@ -5,10 +5,10 @@ package org.chromium.chrome.test.util;
 
 import android.os.SystemClock;
 
-import java.util.concurrent.TimeUnit;
-
 import org.chromium.chrome.browser.infobar.AnimationHelper;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Allow tests to register for animation finished notifications.

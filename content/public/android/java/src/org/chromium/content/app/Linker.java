@@ -4,21 +4,18 @@
 
 package org.chromium.content.app;
 
-import java.io.File;
-import java.io.FileInputStream;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.ParcelFileDescriptor;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.chromium.base.SysUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * Technical note:

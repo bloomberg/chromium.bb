@@ -17,15 +17,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A wrapper of the MediaCodec class to facilitate exception capturing and

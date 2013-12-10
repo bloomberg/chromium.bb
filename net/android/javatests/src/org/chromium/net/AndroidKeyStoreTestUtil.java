@@ -4,22 +4,17 @@
 
 package org.chromium.net;
 
-import android.os.Build;
 import android.util.Log;
-
-import java.security.PrivateKey;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.KeyFactory;
-import java.security.spec.KeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.KeyStoreException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.NoSuchAlgorithmException;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.net.PrivateKeyType;
+
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 @JNINamespace("net::android")
 public class AndroidKeyStoreTestUtil {

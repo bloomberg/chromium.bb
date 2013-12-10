@@ -10,8 +10,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 
-import org.chromium.content.browser.ContentViewCore;
-
 import java.util.concurrent.Callable;
 
 /**

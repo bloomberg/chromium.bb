@@ -4,21 +4,11 @@
 package org.chromium.ui;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.AdapterView;
 
 import org.chromium.ui.ColorSuggestionListAdapter.OnColorSuggestionClickListener;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Draws a grid of (predefined) colors and allows the user to choose one of

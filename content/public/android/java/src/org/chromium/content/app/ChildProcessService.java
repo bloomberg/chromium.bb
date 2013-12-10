@@ -19,9 +19,9 @@ import android.view.Surface;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ChildProcessConnection;
+import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
-import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.common.ProcessInitException;
 
 import java.util.ArrayList;

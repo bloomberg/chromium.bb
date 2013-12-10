@@ -5,13 +5,12 @@
 package org.chromium.android_webview.shell;
 
 import android.app.Application;
-import android.content.Context;
 import android.os.Debug;
 import android.util.Log;
 
+import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
-import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.content.browser.ResourceExtractor;
 
 public class AwShellApplication extends Application {

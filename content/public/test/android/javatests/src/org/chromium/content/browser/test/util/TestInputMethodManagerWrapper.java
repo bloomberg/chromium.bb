@@ -6,9 +6,9 @@ package org.chromium.content.browser.test.util;
 
 import android.os.IBinder;
 import android.os.ResultReceiver;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.View;
 
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;

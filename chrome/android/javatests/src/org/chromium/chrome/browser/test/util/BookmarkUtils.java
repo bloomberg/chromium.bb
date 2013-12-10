@@ -12,8 +12,8 @@ import android.util.Log;
 import org.chromium.base.test.util.UrlUtils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 

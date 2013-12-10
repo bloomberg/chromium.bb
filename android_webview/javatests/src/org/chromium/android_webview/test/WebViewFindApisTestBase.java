@@ -4,12 +4,11 @@
 
 package org.chromium.android_webview.test;
 
-import java.util.concurrent.Callable;
+import org.chromium.android_webview.AwContents;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.chromium.android_webview.AwContents;
 
 /**
  * Base class for WebView find-in-page API tests.

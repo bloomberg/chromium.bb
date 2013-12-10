@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview;
 
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;

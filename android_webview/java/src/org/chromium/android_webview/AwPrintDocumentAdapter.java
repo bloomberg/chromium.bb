@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
@@ -12,9 +11,6 @@ import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
-
-import android.util.Log;
-
 import android.webkit.ValueCallback;
 
 

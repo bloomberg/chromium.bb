@@ -7,7 +7,6 @@ package org.chromium.content.browser;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.app.LibraryLoader;
@@ -18,7 +17,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.Throwable;
 
 
 /**

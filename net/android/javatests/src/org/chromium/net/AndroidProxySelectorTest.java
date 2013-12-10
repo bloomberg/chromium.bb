@@ -17,14 +17,14 @@ package org.chromium.net;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.Feature;
+
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Properties;
-
-import org.chromium.base.test.util.Feature;
 
 public class AndroidProxySelectorTest extends InstrumentationTestCase {
     Properties mProperties;

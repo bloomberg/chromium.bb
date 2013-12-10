@@ -5,12 +5,10 @@
 package org.chromium.android_webview.test.util;
 
 import android.test.InstrumentationTestCase;
-import android.util.Log;
 
 import junit.framework.Assert;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;

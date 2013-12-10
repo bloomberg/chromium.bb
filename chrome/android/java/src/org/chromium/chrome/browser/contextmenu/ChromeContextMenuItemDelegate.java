@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import org.chromium.chrome.browser.TabBase;
+import org.chromium.content.browser.ContentView;
 
 /**
  * A delegate responsible for taking actions based on context menu selections.

@@ -4,15 +4,11 @@
 
 package org.chromium.content.browser.accessibility;
 
-import android.os.Bundle;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.accessibility.AccessibilityNodeProvider;
 
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
-
-import java.util.List;
 
 /**
  * Subclass of BrowserAccessibilityManager for KitKat that creates an

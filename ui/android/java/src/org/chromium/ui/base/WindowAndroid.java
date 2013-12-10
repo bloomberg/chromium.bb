@@ -12,10 +12,10 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.widget.Toast;
 
-import java.util.HashMap;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.util.HashMap;
 
 /**
  * The window base class that has the minimum functionality.

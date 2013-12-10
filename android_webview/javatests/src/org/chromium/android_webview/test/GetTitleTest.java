@@ -8,8 +8,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
 
 /**

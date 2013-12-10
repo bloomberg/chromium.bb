@@ -9,17 +9,13 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
-
-import java.util.ArrayList;
 
 /**
  * The adapter used to populate ColorPickerSimple.

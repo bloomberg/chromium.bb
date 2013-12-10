@@ -10,13 +10,13 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.TypedValue;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.net.URLConnection;
-import java.util.List;
-
 import org.chromium.base.CalledByNativeUnchecked;
 import org.chromium.base.JNINamespace;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.util.List;
 
 /**
  * Implements the Java side of Android URL protocol jobs.

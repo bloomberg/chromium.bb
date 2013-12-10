@@ -4,20 +4,18 @@
 
 package org.chromium.android_webview;
 
-import android.content.pm.PackageManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.provider.Settings;
-import android.webkit.WebSettings.PluginState;
 import android.webkit.WebSettings;
-import android.webkit.WebView;
+import android.webkit.WebSettings.PluginState;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.

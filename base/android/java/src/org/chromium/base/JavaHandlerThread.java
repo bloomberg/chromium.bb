@@ -6,8 +6,6 @@ package org.chromium.base;
 
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
 
 /**
  * This class is an internal detail of the native counterpart.

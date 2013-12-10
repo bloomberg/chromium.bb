@@ -9,12 +9,12 @@ import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
 
-import java.io.File;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+
+import java.io.File;
 
 public class TracingControllerAndroidTest extends ContentShellTestBase {
 

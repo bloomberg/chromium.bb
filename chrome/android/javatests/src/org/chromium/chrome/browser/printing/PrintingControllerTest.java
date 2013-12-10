@@ -10,6 +10,7 @@ import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
+import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.Feature;
@@ -20,17 +21,14 @@ import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.chrome.testshell.TestShellTab;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintManagerDelegate;
-import org.chromium.printing.Printable;
 import org.chromium.printing.PrintingControllerImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-
-import android.test.suitebuilder.annotation.LargeTest;
 
 /**
  * Tests Android printing.

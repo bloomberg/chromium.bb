@@ -7,10 +7,8 @@ package org.chromium.base;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.test.util.Feature;
 
-import java.lang.Iterable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 

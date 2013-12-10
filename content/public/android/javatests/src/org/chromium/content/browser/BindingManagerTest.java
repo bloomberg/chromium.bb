@@ -8,9 +8,9 @@ import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
-import org.chromium.base.test.util.Feature;
 
 /**
  * Unit tests for BindingManager. The tests run agains mock ChildProcessConnection implementation,

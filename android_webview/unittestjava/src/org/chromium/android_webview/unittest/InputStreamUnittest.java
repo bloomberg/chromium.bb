@@ -7,7 +7,6 @@ package org.chromium.android_webview.unittest;
 import org.chromium.base.CalledByNative;
 
 import java.io.InputStream;
-import java.io.IOException;
 
 class InputStreamUnittest {
     private InputStreamUnittest() {

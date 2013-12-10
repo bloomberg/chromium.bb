@@ -7,6 +7,7 @@ package org.chromium.ui.gfx;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 

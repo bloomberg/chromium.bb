@@ -5,10 +5,7 @@
 package org.chromium.content.browser;
 
 import android.test.FlakyTest;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.common.ContentSwitches;
 

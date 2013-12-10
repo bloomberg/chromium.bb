@@ -5,7 +5,6 @@
 package org.chromium.media;
 
 import android.content.Context;
-import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaExtractor;
@@ -13,12 +12,11 @@ import android.media.MediaFormat;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import java.io.IOException;
-import java.io.File;
-import java.nio.ByteBuffer;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+
+import java.io.File;
+import java.nio.ByteBuffer;
 
 @JNINamespace("media")
 class WebAudioMediaCodecBridge {

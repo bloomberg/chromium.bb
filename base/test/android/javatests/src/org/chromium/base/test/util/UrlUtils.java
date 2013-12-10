@@ -4,9 +4,9 @@
 
 package org.chromium.base.test.util;
 
-import org.chromium.base.PathUtils;
-
 import junit.framework.Assert;
+
+import org.chromium.base.PathUtils;
 
 /**
  * Collection of URL utilities.

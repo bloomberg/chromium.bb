@@ -4,14 +4,14 @@
 
 package org.chromium.android_webview;
 
+import android.webkit.ValueCallback;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
-import android.webkit.ValueCallback;
-
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Bridge between android.webview.WebStorage and native QuotaManager. This object is owned by Java

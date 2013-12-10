@@ -6,12 +6,9 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;

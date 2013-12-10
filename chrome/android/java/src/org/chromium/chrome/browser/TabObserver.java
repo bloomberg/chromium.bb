@@ -6,6 +6,8 @@ package org.chromium.chrome.browser;
 
 import android.view.ContextMenu;
 
+import org.chromium.content.browser.ContentView;
+
 /**
  * An observer that is notified of changes to a {@link TabBase} object.
  */

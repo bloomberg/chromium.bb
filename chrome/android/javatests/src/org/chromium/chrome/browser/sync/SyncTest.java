@@ -10,7 +10,6 @@ import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.HostDrivenTest;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -30,8 +29,6 @@ import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockAccountManager;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
-import java.lang.Override;
-import java.lang.Runnable;
 import java.util.concurrent.TimeoutException;
 
 /**

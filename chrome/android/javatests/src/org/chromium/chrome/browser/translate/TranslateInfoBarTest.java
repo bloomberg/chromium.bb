@@ -5,15 +5,13 @@
 package org.chromium.chrome.browser.translate;
 
 import android.test.FlakyTest;
-import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.chrome.test.util.TranslateUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.chrome.test.util.TranslateUtil;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 
 import java.util.List;

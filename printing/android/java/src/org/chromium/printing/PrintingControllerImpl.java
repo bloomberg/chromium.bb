@@ -4,18 +4,15 @@
 
 package org.chromium.printing;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.printing.PrintDocumentAdapterWrapper.PdfGenerator;;
-
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
 import android.print.PrintAttributes;
-import android.print.PrintAttributes.MediaSize;
-import android.print.PrintAttributes.Resolution;
-import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.printing.PrintDocumentAdapterWrapper.PdfGenerator;
 
 import java.io.IOException;
 import java.util.ArrayList;

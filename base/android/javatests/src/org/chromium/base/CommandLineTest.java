@@ -5,10 +5,8 @@
 package org.chromium.base;
 
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 
 public class CommandLineTest extends InstrumentationTestCase {

@@ -6,14 +6,11 @@ package org.chromium.android_webview;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Picture;
-import android.util.Log;
 import android.util.LruCache;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.common.TraceEvent;
 
 /**
  * Provides auxiliary methods related to Picture objects and native SkPictures.

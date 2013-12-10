@@ -5,12 +5,10 @@
 package org.chromium.chrome.browser;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.test.util.TabBaseTabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;

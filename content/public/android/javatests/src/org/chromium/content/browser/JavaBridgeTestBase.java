@@ -6,8 +6,6 @@ package org.chromium.content.browser;
 
 import junit.framework.Assert;
 
-import org.chromium.content.browser.LoadUrlParams;
-
 /**
  * Common functionality for testing the Java Bridge.
  */

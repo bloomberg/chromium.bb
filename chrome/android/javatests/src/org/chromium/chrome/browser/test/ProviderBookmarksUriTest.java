@@ -8,14 +8,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.Browser.BookmarkColumns;
-import android.test.suitebuilder.annotation.MediumTest;
-
-import java.util.Date;
 
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
 import org.chromium.chrome.browser.test.util.BookmarkUtils;
+
+import java.util.Date;
 
 /**
  * Tests the use of the Bookmark URI as part of the Android provider public API.

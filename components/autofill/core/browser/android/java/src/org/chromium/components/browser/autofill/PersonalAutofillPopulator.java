@@ -6,30 +6,15 @@
 
 package org.chromium.components.browser.autofill;
 
-import android.app.Activity;
-import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.OperationApplicationException;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.RemoteException;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.Profile;
 import android.provider.ContactsContract;
-import android.util.Log;
-import android.view.View.OnClickListener;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-
-import java.util.ArrayList;
 
 /**
  * Loads user profile information stored under the "Me" contact.

@@ -5,8 +5,8 @@
 package org.chromium.content.browser;
 
 import android.app.Activity;
-import android.test.UiThreadTest;
 import android.test.InstrumentationTestCase;
+import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ActivityStatus;

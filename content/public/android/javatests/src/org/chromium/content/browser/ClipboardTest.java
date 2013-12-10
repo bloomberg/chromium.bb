@@ -4,13 +4,12 @@
 
 package org.chromium.content.browser;
 
-import android.content.ClipboardManager;
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;

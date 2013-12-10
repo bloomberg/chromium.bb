@@ -5,17 +5,13 @@
 package org.chromium.chrome.browser;
 
 import android.content.Intent;
-import android.os.Parcel;
 import android.test.FlakyTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.util.Log;
-import org.chromium.base.test.util.Feature;
+
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellApplication;
 import org.chromium.chrome.testshell.ChromiumTestShellApplicationObserver;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.chrome.testshell.TestShellTab;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 

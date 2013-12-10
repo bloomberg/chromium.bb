@@ -6,12 +6,11 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.ImageButton;
 
-import org.chromium.chrome.R;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.R;
 
 /**
  * The base class for all InfoBar classes.

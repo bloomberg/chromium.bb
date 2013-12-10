@@ -11,8 +11,6 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
-import java.io.OutputStream;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 

@@ -4,11 +4,9 @@
 
 package org.chromium.android_webview.test.util;
 
-import android.app.Activity;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 
 import java.util.concurrent.CountDownLatch;
 

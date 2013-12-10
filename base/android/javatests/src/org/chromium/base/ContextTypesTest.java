@@ -4,13 +4,13 @@
 
 package org.chromium.base;
 
+import static org.chromium.base.ContextTypes.CONTEXT_TYPE_NORMAL;
+import static org.chromium.base.ContextTypes.CONTEXT_TYPE_WEBAPP;
+
 import android.content.Context;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 import android.test.suitebuilder.annotation.SmallTest;
-
-import static org.chromium.base.ContextTypes.CONTEXT_TYPE_NORMAL;
-import static org.chromium.base.ContextTypes.CONTEXT_TYPE_WEBAPP;
 
 public class ContextTypesTest extends AndroidTestCase {
 

@@ -6,10 +6,8 @@ package org.chromium.android_webview.test;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 /**

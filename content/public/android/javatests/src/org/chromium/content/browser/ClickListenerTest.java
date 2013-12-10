@@ -4,10 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.test.suitebuilder.annotation.MediumTest;
-
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 
 /**
  * Test suite for click listener validation in content detection.

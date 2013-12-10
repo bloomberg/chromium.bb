@@ -4,14 +4,13 @@
 
 package org.chromium.chrome.browser;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import android.util.Log;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class UrlUtilitiesTest extends InstrumentationTestCase {
     @SmallTest

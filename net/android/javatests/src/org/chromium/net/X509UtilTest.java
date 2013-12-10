@@ -4,26 +4,18 @@
 
 package org.chromium.net;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.telephony.TelephonyManager;
-import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Base64;
+
+import org.chromium.base.PathUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
-
-import org.chromium.base.PathUtils;
 
 /**
  * Tests for org.chromium.net.X509Util.

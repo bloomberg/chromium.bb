@@ -7,8 +7,6 @@ package org.chromium.ui.base;
 import android.view.View;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * From the Chromium architecture point of view, ViewAndroid and its native counterpart

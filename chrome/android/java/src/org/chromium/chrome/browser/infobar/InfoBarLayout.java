@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.ArrayList;

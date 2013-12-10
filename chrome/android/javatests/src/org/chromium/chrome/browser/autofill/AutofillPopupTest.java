@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import org.chromium.base.test.util.Feature;
+import android.test.FlakyTest;
+import android.text.TextUtils;
+import android.view.View;
+
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -17,11 +20,6 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.autofill.AutofillPopup;
-
-import android.test.FlakyTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.text.TextUtils;
-import android.view.View;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;

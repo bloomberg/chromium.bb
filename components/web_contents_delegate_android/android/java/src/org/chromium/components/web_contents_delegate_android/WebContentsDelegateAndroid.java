@@ -4,7 +4,6 @@
 
 package org.chromium.components.web_contents_delegate_android;
 
-import android.graphics.Rect;
 import android.view.KeyEvent;
 
 import org.chromium.base.CalledByNative;

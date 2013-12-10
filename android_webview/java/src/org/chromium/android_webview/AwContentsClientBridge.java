@@ -10,7 +10,6 @@ import android.webkit.ValueCallback;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.ThreadUtils;
 
 /**
  * This class handles the JNI communication logic for the the AwContentsClient class.

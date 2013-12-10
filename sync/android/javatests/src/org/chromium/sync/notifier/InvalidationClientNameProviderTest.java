@@ -8,7 +8,6 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.sync.notifier.InvalidationClientNameProvider;
 
 import java.util.Arrays;
 

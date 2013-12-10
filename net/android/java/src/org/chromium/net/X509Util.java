@@ -12,7 +12,6 @@ import android.security.KeyChain;
 import android.util.Log;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.net.CertVerifyResultAndroid;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,9 +20,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateParsingException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 

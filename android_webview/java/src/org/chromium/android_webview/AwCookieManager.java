@@ -4,13 +4,7 @@
 
 package org.chromium.android_webview;
 
-import android.net.ParseException;
-import android.util.Log;
-
 import org.chromium.base.JNINamespace;
-import org.chromium.base.ThreadUtils;
-
-import java.util.concurrent.Callable;
 
 /**
  * AwCookieManager manages cookies according to RFC2109 spec.

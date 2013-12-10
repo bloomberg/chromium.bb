@@ -5,11 +5,9 @@
 package org.chromium.chrome.test.util;
 
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.TouchUtils;
 import android.view.View;
 
 import org.chromium.chrome.R;
-
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 

@@ -9,13 +9,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.Browser;
 import android.provider.Browser.SearchColumns;
-import android.test.suitebuilder.annotation.MediumTest;
-
-import java.util.Date;
 
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
+
+import java.util.Date;
 
 /**
  * Tests the use of the Searches URI as part of the Android provider public API.

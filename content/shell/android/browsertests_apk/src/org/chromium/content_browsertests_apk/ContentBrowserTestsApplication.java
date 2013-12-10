@@ -7,7 +7,6 @@ package org.chromium.content_browsertests_apk;
 import android.app.Application;
 
 import org.chromium.base.PathUtils;
-import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ResourceExtractor;
 
 public class ContentBrowserTestsApplication extends Application {

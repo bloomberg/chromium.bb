@@ -5,13 +5,10 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.WindowManager;
 
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 

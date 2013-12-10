@@ -13,7 +13,6 @@ import android.util.Printer;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.common.ContentSwitches;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
