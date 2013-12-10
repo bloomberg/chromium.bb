@@ -245,6 +245,8 @@ void PrinterJobHandler::OnJobChanged() {
 
 void PrinterJobHandler::OnJobSpoolSucceeded(const PlatformJobId& job_id) {
   DCHECK(base::MessageLoop::current() == print_thread_.message_loop());
+  job_spooler_->AddRef();
+  print_thread_.message_loop()->ReleaseSoon(FROM_HERE, job_spooler_.get());
   job_spooler_ = NULL;
   job_handler_message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&PrinterJobHandler::JobSpooled, this, job_id));
@@ -252,6 +254,8 @@ void PrinterJobHandler::OnJobSpoolSucceeded(const PlatformJobId& job_id) {
 
 void PrinterJobHandler::OnJobSpoolFailed() {
   DCHECK(base::MessageLoop::current() == print_thread_.message_loop());
+  job_spooler_->AddRef();
+  print_thread_.message_loop()->ReleaseSoon(FROM_HERE, job_spooler_.get());
   job_spooler_ = NULL;
   VLOG(1) << "CP_CONNECTOR: Job failed (spool failed)";
   job_handler_message_loop_proxy_->PostTask(
@@ -496,6 +500,9 @@ void PrinterJobHandler::StartPrinting() {
   // We are done with the request object for now.
   request_ = NULL;
   if (!shutting_down_) {
+#if defined(OS_WIN)
+    print_thread_.init_com_with_mta(true);
+#endif
     if (!print_thread_.Start()) {
       VLOG(1) << "CP_CONNECTOR: Failed to start print thread"
               << ", printer id: " << printer_info_cloud_.printer_id;

@@ -6,7 +6,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
 #include "chrome/common/crash_keys.h"
@@ -107,12 +106,12 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
 
   // PrintSystem::JobSpooler implementation.
   virtual bool Spool(const std::string& print_ticket,
-                      const base::FilePath& print_data_file_path,
-                      const std::string& print_data_mime_type,
-                      const std::string& printer_name,
-                      const std::string& job_title,
-                      const std::vector<std::string>& tags,
-                      JobSpooler::Delegate* delegate) OVERRIDE {
+                     const base::FilePath& print_data_file_path,
+                     const std::string& print_data_mime_type,
+                     const std::string& printer_name,
+                     const std::string& job_title,
+                     const std::vector<std::string>& tags,
+                     JobSpooler::Delegate* delegate) OVERRIDE {
     // TODO(gene): add tags handling.
     scoped_refptr<printing::PrintBackend> print_backend(
         printing::PrintBackend::CreateInstance(NULL));
@@ -142,11 +141,11 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     ~Core() {}
 
     bool Spool(const std::string& print_ticket,
-                const base::FilePath& print_data_file_path,
-                const std::string& print_data_mime_type,
-                const std::string& printer_name,
-                const std::string& job_title,
-                JobSpooler::Delegate* delegate) {
+               const base::FilePath& print_data_file_path,
+               const std::string& print_data_mime_type,
+               const std::string& printer_name,
+               const std::string& job_title,
+               JobSpooler::Delegate* delegate) {
       scoped_refptr<printing::PrintBackend> print_backend(
           printing::PrintBackend::CreateInstance(NULL));
       crash_keys::ScopedPrinterInfo crash_key(
@@ -243,24 +242,19 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         return;
       XPS_JOB_STATUS job_status = {0};
       xps_print_job_->GetJobStatus(&job_status);
-      bool done = false;
       if ((job_status.completion == XPS_JOB_CANCELLED) ||
           (job_status.completion == XPS_JOB_FAILED)) {
         delegate_->OnJobSpoolFailed();
-        done = true;
       } else if (job_status.jobId ||
                   (job_status.completion == XPS_JOB_COMPLETED)) {
         // Note: In the case of the XPS document being printed to the
         // Microsoft XPS Document Writer, it seems to skip spooling the job
         // and goes to the completed state without ever assigning a job id.
         delegate_->OnJobSpoolSucceeded(job_status.jobId);
-        done = true;
       } else {
         job_progress_watcher_.StopWatching();
         job_progress_watcher_.StartWatching(job_progress_event_.Get(), this);
       }
-      if (done)
-        com_initializer_.reset();
     }
 
     virtual void OnRenderPDFPagesToMetafileFailed() OVERRIDE {
@@ -362,9 +356,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       if (!job_progress_event_.Get())
         return false;
 
-      scoped_ptr<base::win::ScopedCOMInitializer> com_initializer(
-          new base::win::ScopedCOMInitializer(
-              base::win::ScopedCOMInitializer::kMTA));
       PrintJobCanceler job_canceler(&xps_print_job_);
       base::win::ScopedComPtr<IXpsPrintJobStream> doc_stream;
       base::win::ScopedComPtr<IXpsPrintJobStream> print_ticket_stream;
@@ -396,7 +387,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         return false;
 
       job_progress_watcher_.StartWatching(job_progress_event_.Get(), this);
-      com_initializer_.swap(com_initializer);
       job_canceler.reset();
       return true;
     }
@@ -407,6 +397,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     // batch. Filed a bug to track this at
     // http://code.google.com/p/chromium/issues/detail?id=57350.
     static const int kPageCountPerBatch = 1;
+
     int last_page_printed_;
     PlatformJobId job_id_;
     PrintSystem::JobSpooler::Delegate* delegate_;
@@ -416,7 +407,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     base::win::ScopedHandle job_progress_event_;
     base::win::ObjectWatcher job_progress_watcher_;
     base::win::ScopedComPtr<IXpsPrintJob> xps_print_job_;
-    scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
