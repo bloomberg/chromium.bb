@@ -463,6 +463,7 @@ void DesktopRootWindowHostX11::SetShape(gfx::NativeRegion native_region) {
 
 void DesktopRootWindowHostX11::Activate() {
   X11DesktopHandler::get()->ActivateWindow(xwindow_);
+  native_widget_delegate_->AsWidget()->SetInitialFocus();
 }
 
 void DesktopRootWindowHostX11::Deactivate() {
@@ -732,6 +733,8 @@ void DesktopRootWindowHostX11::Show() {
     base::MessagePumpX11::Current()->BlockUntilWindowMapped(xwindow_);
     window_mapped_ = true;
   }
+
+  native_widget_delegate_->AsWidget()->SetInitialFocus();
 }
 
 void DesktopRootWindowHostX11::Hide() {
