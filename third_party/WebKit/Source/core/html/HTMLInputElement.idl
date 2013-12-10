@@ -29,7 +29,7 @@ interface HTMLInputElement : HTMLElement {
     attribute boolean checked;
     [Reflect] attribute DOMString dirName;
     [Reflect] attribute boolean disabled;
-    readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
     // The 'files' attribute is intentionally not readonly.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList files;

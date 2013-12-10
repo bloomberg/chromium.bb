@@ -32,7 +32,7 @@ interface HTMLKeygenElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute DOMString challenge;
     [Reflect] attribute boolean disabled;
-    readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
     [Reflect] attribute DOMString keytype;
     [Reflect] attribute DOMString name;
 

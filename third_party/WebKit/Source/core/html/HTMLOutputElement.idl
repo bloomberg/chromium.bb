@@ -24,7 +24,7 @@
 
 interface HTMLOutputElement : HTMLElement {
     [PutForwards=value] readonly attribute DOMSettableTokenList htmlFor;
-    readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
     [Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;

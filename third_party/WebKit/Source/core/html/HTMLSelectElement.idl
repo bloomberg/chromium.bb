@@ -22,7 +22,7 @@
 interface HTMLSelectElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute boolean disabled;
-    readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
     attribute boolean multiple;
     [Reflect] attribute DOMString name;
     [Reflect] attribute boolean required;

@@ -78,7 +78,7 @@ public:
     virtual bool rendererIsNeeded(const RenderStyle&);
     virtual RenderObject* createRenderer(RenderStyle*);
 
-    HTMLFormElement* form() const { return virtualForm(); }
+    HTMLFormElement* formOwner() const { return virtualForm(); }
 
     HTMLFormElement* findFormAncestor() const;
 

@@ -21,7 +21,7 @@
 [
     Custom=LegacyCallAsFunction,
 ] interface HTMLObjectElement : HTMLElement {
-    readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
     [Reflect] attribute DOMString code;
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString archive;

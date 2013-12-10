@@ -82,7 +82,7 @@ void HTMLLegendElement::accessKeyAction(bool sendMouseEvents)
         control->accessKeyAction(sendMouseEvents);
 }
 
-HTMLFormElement* HTMLLegendElement::virtualForm() const
+HTMLFormElement* HTMLLegendElement::form() const
 {
     // According to the specification, If the legend has a fieldset element as
     // its parent, then the form attribute must return the same value as the
@@ -91,7 +91,7 @@ HTMLFormElement* HTMLLegendElement::virtualForm() const
     if (!fieldset || !fieldset->hasTagName(fieldsetTag))
         return 0;
 
-    return toHTMLFieldSetElement(fieldset)->form();
+    return toHTMLFieldSetElement(fieldset)->formOwner();
 }
 
 } // namespace

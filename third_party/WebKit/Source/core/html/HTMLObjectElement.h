@@ -42,9 +42,6 @@ public:
     virtual bool useFallbackContent() const OVERRIDE;
     virtual void renderFallbackContent() OVERRIDE;
 
-    // Implementations of FormAssociatedElement
-    HTMLFormElement* form() const { return FormAssociatedElement::form(); }
-
     virtual bool isFormControlElement() const { return false; }
 
     virtual bool isEnumeratable() const { return true; }

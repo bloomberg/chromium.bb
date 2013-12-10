@@ -34,6 +34,8 @@ class HTMLLegendElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLLegendElement> create(Document&);
 
+    HTMLFormElement* form() const;
+
 private:
     explicit HTMLLegendElement(Document&);
 
@@ -42,7 +44,6 @@ private:
 
     virtual void accessKeyAction(bool sendMouseEvents);
     virtual void focus(bool restorePreviousSelection, FocusDirection) OVERRIDE;
-    virtual HTMLFormElement* virtualForm() const OVERRIDE;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLLegendElement, hasTagName(HTMLNames::legendTag));

@@ -43,8 +43,6 @@ class HTMLFormControlElement : public LabelableElement, public FormAssociatedEle
 public:
     virtual ~HTMLFormControlElement();
 
-    HTMLFormElement* form() const { return FormAssociatedElement::form(); }
-
     String formEnctype() const;
     void setFormEnctype(const AtomicString&);
     String formMethod() const;

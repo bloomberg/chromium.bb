@@ -576,7 +576,7 @@ unsigned HTMLFormElement::formElementIndex(FormAssociatedElement& associatedElem
             }
             if (!element->isFormControlElement() && !element->hasTagName(objectTag))
                 continue;
-            if (!element->isHTMLElement() || toHTMLElement(element)->form() != this)
+            if (!element->isHTMLElement() || toHTMLElement(element)->formOwner() != this)
                 continue;
             ++i;
         }
@@ -713,7 +713,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
             HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
-            if (!control->checkValidity(unhandledInvalidControls, dispatchEvents) && control->form() == this)
+            if (!control->checkValidity(unhandledInvalidControls, dispatchEvents) && control->formOwner() == this)
                 hasInvalidControls = true;
         }
     }
@@ -728,7 +728,7 @@ Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName) con
 #if !ASSERT_DISABLED
     if (!node)
         return 0;
-    ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(node)->form() == this);
+    ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(node)->formOwner() == this);
     if (node->hasTagName(imgTag)) {
         ASSERT_WITH_SECURITY_IMPLICATION(m_imageElements.find(node) != kNotFound);
     } else if (node->hasTagName(objectTag)) {

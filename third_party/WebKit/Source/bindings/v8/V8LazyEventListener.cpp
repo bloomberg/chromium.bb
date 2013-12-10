@@ -136,7 +136,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     // FIXME: Remove the following 'with' hack.
     //
     // Nodes other than the document object, when executing inline event
-    // handlers push document, form, and the target node on the scope chain.
+    // handlers push document, form owner, and the target node on the scope chain.
     // We do this by using 'with' statement.
     // See chrome/fast/forms/form-action.html
     //     chrome/fast/forms/selected-index-value.html
@@ -171,7 +171,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
 
     HTMLFormElement* formElement = 0;
     if (m_node && m_node->isHTMLElement())
-        formElement = toHTMLElement(m_node)->form();
+        formElement = toHTMLElement(m_node)->formOwner();
 
     v8::Handle<v8::Object> nodeWrapper = toObjectWrapper<Node>(m_node, isolate);
     v8::Handle<v8::Object> formWrapper = toObjectWrapper<HTMLFormElement>(formElement, isolate);

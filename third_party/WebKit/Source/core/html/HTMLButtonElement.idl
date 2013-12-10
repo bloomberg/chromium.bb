@@ -21,7 +21,7 @@
 interface HTMLButtonElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute boolean disabled;
-    readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString formAction;
     attribute DOMString formEnctype;
     attribute DOMString formMethod;
