@@ -7,7 +7,6 @@
 #------------------------------------------------
 AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
 AVCodec *avcodec_find_decoder(enum AVCodecID id);
-AVFrame *avcodec_alloc_frame(void);
 int av_new_packet(AVPacket *pkt, int size);
 int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame, int *got_frame_ptr, const AVPacket *avpkt);
 int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt);
@@ -30,6 +29,7 @@ uint8_t *av_packet_get_side_data(AVPacket *pkt, enum AVPacketSideDataType type, 
 void av_frame_unref(AVFrame *frame);
 void av_frame_free(AVFrame **frame);
 void avcodec_free_frame(AVFrame **frame);
+AVFrame* av_frame_alloc();
 
 # RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);
