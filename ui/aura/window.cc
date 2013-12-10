@@ -555,6 +555,18 @@ void Window::ConvertPointToTarget(const Window* source,
     client::ScreenPositionClient* target_client =
         client::GetScreenPositionClient(target->GetRootWindow());
     target_client->ConvertPointFromScreen(target, point);
+  } else if ((source != target) && (!source->layer_ || !target->layer_)) {
+    if (!source->layer_) {
+      gfx::Vector2d offset_to_layer;
+      source = source->GetAncestorWithLayer(&offset_to_layer);
+      *point += offset_to_layer;
+    }
+    if (!target->layer_) {
+      gfx::Vector2d offset_to_layer;
+      target = target->GetAncestorWithLayer(&offset_to_layer);
+      *point -= offset_to_layer;
+    }
+    ui::Layer::ConvertPointToLayer(source->layer_, target->layer_, point);
   } else {
     ui::Layer::ConvertPointToLayer(source->layer_, target->layer_, point);
   }

@@ -3472,5 +3472,85 @@ TEST_F(WindowTest, PaintLayerless) {
   EXPECT_EQ(0, w111_delegate.paint_count());
 }
 
+namespace {
+
+std::string ConvertPointToTargetString(const Window* source,
+                                       const Window* target) {
+  gfx::Point location;
+  Window::ConvertPointToTarget(source, target, &location);
+  return location.ToString();
+}
+
+}  // namespace
+
+// Assertions around Window::ConvertPointToTarget() with layerless windows.
+TEST_F(WindowTest, ConvertPointToTargetLayerless) {
+  // Creates the following structure (all children owned by root):
+  // root
+  //   w1ll      1,2
+  //     w11ll   3,4
+  //       w111  5,6
+  //     w12     7,8
+  //       w121  9,10
+  //
+  // ll: layer less, eg no layer
+  Window root(NULL);
+  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  Window* w1ll = new Window(NULL);
+  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->SetBounds(gfx::Rect(1, 2, 100, 100));
+
+  Window* w11ll = new Window(NULL);
+  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->SetBounds(gfx::Rect(3, 4, 100, 100));
+  w1ll->AddChild(w11ll);
+
+  Window* w111 = new Window(NULL);
+  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->SetBounds(gfx::Rect(5, 6, 100, 100));
+  w11ll->AddChild(w111);
+
+  Window* w12 = new Window(NULL);
+  w12->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w12->SetBounds(gfx::Rect(7, 8, 100, 100));
+  w1ll->AddChild(w12);
+
+  Window* w121 = new Window(NULL);
+  w121->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w121->SetBounds(gfx::Rect(9, 10, 100, 100));
+  w12->AddChild(w121);
+
+  root.AddChild(w1ll);
+
+  // w111->w11ll
+  EXPECT_EQ("5,6", ConvertPointToTargetString(w111, w11ll));
+
+  // w111->w1ll
+  EXPECT_EQ("8,10", ConvertPointToTargetString(w111, w1ll));
+
+  // w111->root
+  EXPECT_EQ("9,12", ConvertPointToTargetString(w111, &root));
+
+  // w111->w12
+  EXPECT_EQ("1,2", ConvertPointToTargetString(w111, w12));
+
+  // w111->w121
+  EXPECT_EQ("-8,-8", ConvertPointToTargetString(w111, w121));
+
+  // w11ll->w111
+  EXPECT_EQ("-5,-6", ConvertPointToTargetString(w11ll, w111));
+
+  // w11ll->w11ll
+  EXPECT_EQ("3,4", ConvertPointToTargetString(w11ll, w1ll));
+
+  // w11ll->root
+  EXPECT_EQ("4,6", ConvertPointToTargetString(w11ll, &root));
+
+  // w11ll->w12
+  EXPECT_EQ("-4,-4", ConvertPointToTargetString(w11ll, w12));
+}
+
 }  // namespace test
 }  // namespace aura
