@@ -155,6 +155,8 @@ class AudioRendererImplTest : public ::testing::Test {
     WaitableMessageLoopEvent flush_event;
     renderer_->Flush(flush_event.GetClosure());
     flush_event.RunAndWait();
+
+    EXPECT_FALSE(IsReadPending());
   }
 
   void Preroll() {
@@ -186,9 +188,27 @@ class AudioRendererImplTest : public ::testing::Test {
     event.RunAndWait();
   }
 
+  void Pause() {
+    WaitableMessageLoopEvent pause_event;
+    renderer_->Pause(pause_event.GetClosure());
+    pause_event.RunAndWait();
+  }
+
+  void Seek() {
+    Pause();
+
+    Flush();
+
+    Preroll();
+  }
+
   void WaitForEnded() {
     SCOPED_TRACE("WaitForEnded()");
     ended_event_.RunAndWait();
+  }
+
+  bool IsReadPending() const {
+    return !read_cb_.is_null();
   }
 
   void WaitForPendingRead() {
@@ -511,14 +531,7 @@ TEST_F(AudioRendererImplTest, Underflow_FollowedByFlush) {
   // Deliver data to get the renderer out of the underflow/rebuffer state.
   DeliverRemainingAudio();
 
-  // Pause the renderer.
-  WaitableMessageLoopEvent pause_event;
-  renderer_->Pause(pause_event.GetClosure());
-  pause_event.RunAndWait();
-
-  Flush();
-
-  Preroll();
+  Seek();
 
   // Verify that the buffer capacity is restored to the |initial_capacity|.
   EXPECT_EQ(buffer_capacity(), initial_capacity);
@@ -698,6 +711,88 @@ TEST_F(AudioRendererImplTest, AbortPendingRead_Pause) {
   event.RunAndWait();
 
   Flush();
+
+  // Preroll again to a different timestamp and verify it completed normally.
+  Preroll(1000, PIPELINE_OK);
+}
+
+
+TEST_F(AudioRendererImplTest, AbortPendingRead_Flush) {
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Partially drain internal buffer so we get a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  WaitForPendingRead();
+
+  Pause();
+
+  EXPECT_TRUE(IsReadPending());
+
+  // Start flushing.
+  WaitableMessageLoopEvent flush_event;
+  renderer_->Flush(flush_event.GetClosure());
+
+  // Simulate the decoder aborting the pending read.
+  AbortPendingRead();
+  flush_event.RunAndWait();
+
+  EXPECT_FALSE(IsReadPending());
+
+  // Preroll again to a different timestamp and verify it completed normally.
+  Preroll(1000, PIPELINE_OK);
+}
+
+TEST_F(AudioRendererImplTest, PendingRead_Pause) {
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Partially drain internal buffer so we get a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  WaitForPendingRead();
+
+  // Start pausing.
+  WaitableMessageLoopEvent event;
+  renderer_->Pause(event.GetClosure());
+
+  SatisfyPendingRead(kDataSize);
+
+  event.RunAndWait();
+
+  Flush();
+
+  // Preroll again to a different timestamp and verify it completed normally.
+  Preroll(1000, PIPELINE_OK);
+}
+
+
+TEST_F(AudioRendererImplTest, PendingRead_Flush) {
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Partially drain internal buffer so we get a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  WaitForPendingRead();
+
+  Pause();
+
+  EXPECT_TRUE(IsReadPending());
+
+  // Start flushing.
+  WaitableMessageLoopEvent flush_event;
+  renderer_->Flush(flush_event.GetClosure());
+
+  SatisfyPendingRead(kDataSize);
+
+  flush_event.RunAndWait();
+
+  EXPECT_FALSE(IsReadPending());
 
   // Preroll again to a different timestamp and verify it completed normally.
   Preroll(1000, PIPELINE_OK);

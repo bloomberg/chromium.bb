@@ -93,9 +93,11 @@ class MEDIA_EXPORT AudioRendererImpl
  private:
   friend class AudioRendererImplTest;
 
+  // TODO(acolwell): Add a state machine graph.
   enum State {
     kUninitialized,
     kPaused,
+    kFlushing,
     kPrerolling,
     kPlaying,
     kStopped,
@@ -169,12 +171,16 @@ class MEDIA_EXPORT AudioRendererImpl
       scoped_ptr<AudioDecoder> decoder,
       scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
-  void ResetDecoder(const base::Closure& callback);
+  // Used to initiate the flush operation once all pending reads have
+  // completed.
+  void DoFlush_Locked();
+
+  // Calls |decoder_|.Reset() and arranges for ResetDecoderDone() to get
+  // called when the reset completes.
+  void ResetDecoder();
 
   // Called when the |decoder_|.Reset() has completed.
-  // |callback| is the closure passed to the Flush() call that
-  // triggered the decoder reset.
-  void ResetDecoderDone(const base::Closure& callback);
+  void ResetDecoderDone();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
@@ -205,8 +211,8 @@ class MEDIA_EXPORT AudioRendererImpl
   base::Closure disabled_cb_;
   PipelineStatusCB error_cb_;
 
-  // Callback provided to Pause().
-  base::Closure pause_cb_;
+  // Callback provided to Flush().
+  base::Closure flush_cb_;
 
   // Callback provided to Preroll().
   PipelineStatusCB preroll_cb_;
