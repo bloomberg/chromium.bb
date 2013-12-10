@@ -346,7 +346,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
       break;
     case media::PIXEL_FORMAT_NV21:
       DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_NV12;
+      origin_colorspace = libyuv::FOURCC_NV21;
       break;
     case media::PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width && !chopped_height);
@@ -513,8 +513,20 @@ VideoCaptureController::VideoCaptureDeviceClient::DoReserveOutputBuffer(
   if ((rotation % 180) == 0) {
     rotated_buffers_.erase(buffer_id);
   } else {
-    if (rotated_buffers_.insert(buffer_id).second)
-      memset(output_buffer->data(), 0, output_buffer->size());
+    if (rotated_buffers_.insert(buffer_id).second) {
+      scoped_refptr<media::VideoFrame> frame =
+          media::VideoFrame::WrapExternalPackedMemory(
+              media::VideoFrame::I420,
+              dimensions,
+              gfx::Rect(dimensions),
+              dimensions,
+              static_cast<uint8*>(output_buffer->data()),
+              output_buffer->size(),
+              base::SharedMemory::NULLHandle(),
+              base::TimeDelta(),
+              base::Closure());
+      media::FillYUV(frame, 0, 128, 128);
+    }
   }
 
   return output_buffer;
