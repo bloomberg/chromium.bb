@@ -8,7 +8,7 @@ var isTest = false;
 
 // Set to true when loading a "Release" NaCl module, false when loading a
 // "Debug" NaCl module.
-var isRelease = false;
+var isRelease = true;
 
 // Javascript module pattern:
 //   see http://en.wikipedia.org/wiki/Unobtrusive_JavaScript#Namespaces
@@ -186,12 +186,24 @@ var common = (function() {
     var listenerDiv = document.getElementById('listener');
     listenerDiv.addEventListener('load', moduleDidLoad, true);
     listenerDiv.addEventListener('message', handleMessage, true);
+    listenerDiv.addEventListener('error', handleError, true);
     listenerDiv.addEventListener('crash', handleCrash, true);
     if (typeof window.attachListeners !== 'undefined') {
       window.attachListeners();
     }
   }
 
+  /**
+   * Called when the NaCl module fails to load.
+   *
+   * This event listener is registered in createNaClModule above.
+   */
+  function handleError(event) {
+    // We can't use common.naclModule yet because the module has not been
+    // loaded.
+    var moduleEl = document.getElementById('nacl_module');
+    updateStatus('ERROR [' + moduleEl.lastError + ']');
+  }
 
   /**
    * Called when the Browser can not communicate with the Module

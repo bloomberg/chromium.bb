@@ -3,19 +3,33 @@
 // found in the LICENSE file.
 
 var iframeUpdateIntervalID;
+var queryParams = '';
 
-function selectExample(el) {
-  setIframeSrc(el.dataset.href);
-  deselectAllNavItems();
-  selectNavItem(el);
+function selectConfig(el) {
+  deselectAllItems('.config-item');
+  selectItem(el);
+  updateIframe();
 }
 
-function selectNavItem(el) {
+function selectExample(el) {
+  deselectAllItems('.nav-item');
+  selectItem(el);
+  updateIframe();
+}
+
+function updateIframe() {
+  var exampleEl = document.querySelector('.nav-item.selected');
+  var configEl = document.querySelector('.config-item.selected');
+  var url = exampleEl.dataset.href + '?config=' + configEl.textContent;
+  setIframeSrc(url);
+}
+
+function selectItem(el) {
   el.classList.add('selected');
 }
 
-function deselectAllNavItems() {
-  var navItemEls = document.querySelectorAll('.nav-item');
+function deselectAllItems(selector) {
+  var navItemEls = document.querySelectorAll(selector);
   for (var i = 0; i < navItemEls.length; ++i) {
     navItemEls[i].classList.remove('selected');
   }
@@ -32,8 +46,15 @@ function setIframeSrc(src) {
 document.addEventListener('DOMContentLoaded', function () {
   var iframeEl = document.querySelector('iframe');
   var iframeWrapperEl = document.querySelector('.iframe-wrapper');
-  var navItemEls = document.querySelectorAll('.nav-item');
 
+  var configItemEls = document.querySelectorAll('.config-item');
+  for (var i = 0; i < configItemEls.length; ++i) {
+    configItemEls[i].addEventListener('click', function (e) {
+      selectConfig(this);
+    });
+  }
+
+  var navItemEls = document.querySelectorAll('.nav-item');
   for (var i = 0; i < navItemEls.length; ++i) {
     navItemEls[i].addEventListener('click', function (e) {
       selectExample(this);

@@ -81,6 +81,21 @@ body {
   overflow-y: auto;
   -webkit-flex: auto;
 }
+.config-group {
+  border-bottom: 1px solid #ccc;
+}
+.config-header {
+  font-weight: bold;
+  padding: 4px 0;
+}
+.config-item {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 0;
+}
+.config-item:hover {
+  background-color: #eee;
+}
 iframe {
   border: none;
   width: 100%;

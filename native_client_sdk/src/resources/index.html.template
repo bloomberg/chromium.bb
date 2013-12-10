@@ -20,6 +20,11 @@
       <div class="left-border"></div>
       <div class="nav-wrapper">
         <div class="nav">
+          <div class="config-group">
+            <div class="config-header">Configuration</div>
+            <div class="config-item">Debug</div>
+            <div class="config-item selected">Release</div>
+          </div>
 [[for section in section_map:]]
           <div class="nav-group-header">{{section}}</div>
 [[  for desc in section_map[section]:]]
