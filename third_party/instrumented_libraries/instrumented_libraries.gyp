@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  # Default value for all libraries.
+  'custom_configure_flags': '',
+  
   'variables': {
     'verbose_libraries_build%': 0,
   },
@@ -29,6 +32,14 @@
       'dependencies': [
         '<(_sanitizer_type)-libpng12-0',
         '<(_sanitizer_type)-libxau6',
+        '<(_sanitizer_type)-libxdmcp6',
+        '<(_sanitizer_type)-libx11-6',
+        '<(_sanitizer_type)-libxcb1',
+        '<(_sanitizer_type)-libxext6',
+        '<(_sanitizer_type)-libxi6',
+        '<(_sanitizer_type)-libxrandr2',
+        '<(_sanitizer_type)-libxrender1',
+        '<(_sanitizer_type)-libxtst6',
       ],
       'conditions': [
         ['asan==1', {
@@ -66,6 +77,51 @@
     {
       'library_name': 'libglib2.0-0',
       'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxdmcp6',
+      'dependencies=': [],
+      'custom_configure_flags': '--disable-docs',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libx11-6',
+      'dependencies=': [],
+      'custom_configure_flags': '--disable-specs',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxcb1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxext6',
+      'dependencies=': [],
+      'custom_configure_flags': '--disable-specs',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxi6',
+      'dependencies=': [],
+      'custom_configure_flags': '--disable-specs --disable-docs',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxrandr2',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxrender1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libxtst6',
+      'dependencies=': [],
+      'custom_configure_flags': '--disable-specs',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
