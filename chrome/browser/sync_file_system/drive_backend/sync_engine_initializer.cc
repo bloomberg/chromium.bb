@@ -159,8 +159,10 @@ void SyncEngineInitializer::DidGetAboutResource(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   cancel_callback_.Reset();
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
@@ -192,8 +194,10 @@ void SyncEngineInitializer::DidFindSyncRoot(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
   cancel_callback_.Reset();
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
@@ -259,9 +263,10 @@ void SyncEngineInitializer::DidCreateSyncRoot(
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(!sync_root_folder_);
   cancel_callback_.Reset();
-  if (error != google_apis::HTTP_SUCCESS &&
-      error != google_apis::HTTP_CREATED) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
@@ -282,8 +287,10 @@ void SyncEngineInitializer::DidDetachSyncRoot(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
   cancel_callback_.Reset();
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
@@ -306,8 +313,10 @@ void SyncEngineInitializer::DidListAppRootFolders(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
   cancel_callback_.Reset();
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
