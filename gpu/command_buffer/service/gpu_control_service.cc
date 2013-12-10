@@ -101,6 +101,10 @@ void GpuControlService::SendManagedMemoryStats(
   NOTREACHED();
 }
 
+void GpuControlService::Echo(const base::Closure& callback) {
+  NOTREACHED();
+}
+
 bool GpuControlService::RegisterGpuMemoryBuffer(
     int32 id,
     gfx::GpuMemoryBufferHandle buffer,

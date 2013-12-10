@@ -60,6 +60,9 @@ class GPU_EXPORT GpuControl {
 
   virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
 
+  // Invokes the callback once the context has been flushed.
+  virtual void Echo(const base::Closure& callback) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);
 };

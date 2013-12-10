@@ -139,6 +139,10 @@ void PpapiCommandBufferProxy::DestroyTransferBuffer(int32 id) {
       ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id));
 }
 
+void PpapiCommandBufferProxy::Echo(const base::Closure& callback) {
+  NOTREACHED();
+}
+
 gpu::Buffer PpapiCommandBufferProxy::GetTransferBuffer(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return gpu::Buffer();

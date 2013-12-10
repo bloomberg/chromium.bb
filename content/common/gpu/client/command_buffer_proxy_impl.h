@@ -113,9 +113,9 @@ class CommandBufferProxyImpl
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
   virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
       OVERRIDE;
+  virtual void Echo(const base::Closure& callback) OVERRIDE;
 
   int GetRouteID() const;
-  bool Echo(const base::Closure& callback);
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
   void SetChannelErrorCallback(const base::Closure& callback);
 

@@ -464,7 +464,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   gles2::DisallowedFeatures disallowed_features;
-  disallowed_features.swap_buffer_complete_callback = true;
   disallowed_features.gpu_memory_manager = true;
   if (!decoder_->Initialize(surface_,
                             context_,
@@ -733,6 +732,10 @@ void InProcessCommandBuffer::SetSurfaceVisible(bool visible) {}
 
 void InProcessCommandBuffer::SendManagedMemoryStats(
     const gpu::ManagedMemoryStats& stats) {
+}
+
+void InProcessCommandBuffer::Echo(const base::Closure& callback) {
+  QueueTask(WrapCallback(callback));
 }
 
 gpu::error::Error InProcessCommandBuffer::GetLastError() {

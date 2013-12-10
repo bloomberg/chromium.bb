@@ -3399,14 +3399,13 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
 // Make sure damage tracking propagates all the way to the graphics context,
 // where it should request to swap only the sub-buffer that is damaged.
 TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
-  scoped_refptr<TestContextProvider> provider(
+  scoped_refptr<TestContextProvider> context_provider(
       TestContextProvider::Create());
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(provider));
+  context_provider->BindToCurrentThread();
+  context_provider->TestContext3d()->set_have_post_sub_buffer(true);
 
-  provider->BindToCurrentThread();
-  TestWebGraphicsContext3D* context = provider->TestContext3d();
-  context->set_have_post_sub_buffer(true);
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(context_provider));
 
   // This test creates its own LayerTreeHostImpl, so
   // that we can force partial swap enabled.
@@ -3441,14 +3440,9 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   layer_tree_host_impl->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  gfx::Rect actual_swap_rect = context->update_rect();
-  gfx::Rect expected_swap_rect = gfx::Rect(0, 0, 500, 500);
-  EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
-  EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
-  EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
-  EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
-  EXPECT_EQ(context->last_update_type(),
-            TestWebGraphicsContext3D::PrepareTexture);
+  EXPECT_EQ(TestContextSupport::SWAP,
+            context_provider->support()->last_swap_type());
+
   // Second frame, only the damaged area should get swapped. Damage should be
   // the union of old and new child rects.
   // expected damage rect: gfx::Rect(26, 28);
@@ -3459,18 +3453,17 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  actual_swap_rect = context->update_rect();
-  expected_swap_rect = gfx::Rect(0, 500-28, 26, 28);
-  EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
-  EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
-  EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
-  EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
-  EXPECT_EQ(context->last_update_type(),
-            TestWebGraphicsContext3D::PostSubBuffer);
 
   // Make sure that partial swap is constrained to the viewport dimensions
   // expected damage rect: gfx::Rect(500, 500);
   // expected swap rect: flipped damage rect, but also clamped to viewport
+  EXPECT_EQ(TestContextSupport::PARTIAL_SWAP,
+            context_provider->support()->last_swap_type());
+  gfx::Rect expected_swap_rect(0, 500-28, 26, 28);
+  EXPECT_EQ(expected_swap_rect.ToString(),
+            context_provider->support()->
+                last_partial_swap_rect().ToString());
+
   layer_tree_host_impl->SetViewportSize(gfx::Size(10, 10));
   // This will damage everything.
   layer_tree_host_impl->active_tree()->root_layer()->SetBackgroundColor(
@@ -3479,14 +3472,9 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  actual_swap_rect = context->update_rect();
-  expected_swap_rect = gfx::Rect(10, 10);
-  EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
-  EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
-  EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
-  EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
-  EXPECT_EQ(context->last_update_type(),
-            TestWebGraphicsContext3D::PrepareTexture);
+
+  EXPECT_EQ(TestContextSupport::SWAP,
+            context_provider->support()->last_swap_type());
 }
 
 TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {

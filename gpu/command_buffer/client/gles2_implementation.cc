@@ -2775,6 +2775,32 @@ void GLES2Implementation::GetVertexAttribiv(
   CheckGLError();
 }
 
+void GLES2Implementation::Swap() {
+  SwapBuffers();
+  gpu_control_->Echo(
+      base::Bind(&GLES2Implementation::OnSwapBuffersComplete,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GLES2Implementation::PartialSwapBuffers(gfx::Rect sub_buffer) {
+  PostSubBufferCHROMIUM(sub_buffer.x(),
+                        sub_buffer.y(),
+                        sub_buffer.width(),
+                        sub_buffer.height());
+  gpu_control_->Echo(base::Bind(&GLES2Implementation::OnSwapBuffersComplete,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GLES2Implementation::SetSwapBuffersCompleteCallback(
+      const base::Closure& swap_buffers_complete_callback) {
+  swap_buffers_complete_callback_ = swap_buffers_complete_callback;
+}
+
+void GLES2Implementation::OnSwapBuffersComplete() {
+  if (!swap_buffers_complete_callback_.is_null())
+    swap_buffers_complete_callback_.Run();
+}
+
 GLboolean GLES2Implementation::EnableFeatureCHROMIUM(
     const char* feature) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

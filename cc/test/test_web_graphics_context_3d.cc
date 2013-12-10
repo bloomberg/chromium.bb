@@ -68,7 +68,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       times_map_image_chromium_succeeds_(-1),
       times_map_buffer_chromium_succeeds_(-1),
       context_lost_callback_(NULL),
-      swap_buffers_callback_(NULL),
       next_program_id_(1000),
       next_shader_id_(2000),
       max_texture_size_(2048),
@@ -84,7 +83,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       peak_transfer_buffer_memory_used_bytes_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
-  test_capabilities_.swapbuffers_complete_callback = true;
 }
 
 TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
@@ -437,42 +435,12 @@ void TestWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
   shared_contexts_.clear();
 }
 
-void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
-    WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {
-  if (test_capabilities_.swapbuffers_complete_callback)
-    swap_buffers_callback_ = callback;
-}
-
-void TestWebGraphicsContext3D::prepareTexture() {
-  update_rect_ = gfx::Rect(width_, height_);
-  last_update_type_ = PrepareTexture;
-
-  // TODO(jamesr): This should implemented as ContextSupport::SwapBuffers().
-  if (swap_buffers_callback_) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&TestWebGraphicsContext3D::SwapBuffersComplete,
-                              weak_ptr_factory_.GetWeakPtr()));
-  }
-  test_support_->CallAllSyncPointCallbacks();
-}
-
-void TestWebGraphicsContext3D::postSubBufferCHROMIUM(
-    int x, int y, int width, int height) {
-  update_rect_ = gfx::Rect(x, y, width, height);
-  last_update_type_ = PostSubBuffer;
-}
-
 void TestWebGraphicsContext3D::finish() {
   test_support_->CallAllSyncPointCallbacks();
 }
 
 void TestWebGraphicsContext3D::flush() {
   test_support_->CallAllSyncPointCallbacks();
-}
-
-void TestWebGraphicsContext3D::SwapBuffersComplete() {
-  if (swap_buffers_callback_)
-    swap_buffers_callback_->onSwapBuffersComplete();
 }
 
 void TestWebGraphicsContext3D::bindBuffer(blink::WGC3Denum target,

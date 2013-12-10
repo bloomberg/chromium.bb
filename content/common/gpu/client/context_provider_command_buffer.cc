@@ -35,28 +35,6 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
   ContextProviderCommandBuffer* provider_;
 };
 
-class ContextProviderCommandBuffer::SwapBuffersCompleteCallbackProxy
-    : public blink::WebGraphicsContext3D::
-          WebGraphicsSwapBuffersCompleteCallbackCHROMIUM {
- public:
-  explicit SwapBuffersCompleteCallbackProxy(
-      ContextProviderCommandBuffer* provider)
-      : provider_(provider) {
-    provider_->context3d_->setSwapBuffersCompleteCallbackCHROMIUM(this);
-  }
-
-  virtual ~SwapBuffersCompleteCallbackProxy() {
-    provider_->context3d_->setSwapBuffersCompleteCallbackCHROMIUM(NULL);
-  }
-
-  virtual void onSwapBuffersComplete() {
-    provider_->OnSwapBuffersComplete();
-  }
-
- private:
-  ContextProviderCommandBuffer* provider_;
-};
-
 scoped_refptr<ContextProviderCommandBuffer>
 ContextProviderCommandBuffer::Create(
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
@@ -90,7 +68,6 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
     context3d_->GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(
         CommandBufferProxyImpl::MemoryAllocationChangedCallback());
   }
-  swap_buffers_complete_callback_proxy_.reset();
   lost_context_callback_proxy_.reset();
 
   if (leak_on_destroy_) {
@@ -118,8 +95,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   context3d_->pushGroupMarkerEXT(unique_context_name.c_str());
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
-  swap_buffers_complete_callback_proxy_.reset(
-      new SwapBuffersCompleteCallbackProxy(this));
   context3d_->GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(
       base::Bind(&ContextProviderCommandBuffer::OnMemoryAllocationChanged,
                  base::Unretained(this)));
@@ -201,12 +176,6 @@ void ContextProviderCommandBuffer::OnLostContext() {
     base::ResetAndReturn(&lost_context_callback_).Run();
 }
 
-void ContextProviderCommandBuffer::OnSwapBuffersComplete() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-  if (!swap_buffers_complete_callback_.is_null())
-    swap_buffers_complete_callback_.Run();
-}
-
 void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
     const gpu::MemoryAllocation& allocation) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -224,10 +193,6 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
 
 void ContextProviderCommandBuffer::InitializeCapabilities() {
   Capabilities caps(context3d_->GetImplementation()->capabilities());
-
-  // The swapbuffers complete callback is always supported by multi-process
-  // command buffer implementations.
-  caps.swapbuffers_complete_callback = true;
 
   size_t mapped_memory_limit = context3d_->GetMappedMemoryLimit();
   caps.max_transfer_buffer_usage_bytes =
@@ -251,14 +216,6 @@ void ContextProviderCommandBuffer::SetLostContextCallback(
   DCHECK(lost_context_callback_.is_null() ||
          lost_context_callback.is_null());
   lost_context_callback_ = lost_context_callback;
-}
-
-void ContextProviderCommandBuffer::SetSwapBuffersCompleteCallback(
-    const SwapBuffersCompleteCallback& swap_buffers_complete_callback) {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-  DCHECK(swap_buffers_complete_callback_.is_null() ||
-         swap_buffers_complete_callback.is_null());
-  swap_buffers_complete_callback_ = swap_buffers_complete_callback;
 }
 
 void ContextProviderCommandBuffer::SetMemoryPolicyChangedCallback(

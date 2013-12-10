@@ -29,10 +29,9 @@ class GPU_EXPORT GpuControlService : public GpuControl {
                     const gpu::Capabilities& decoder_capabilities);
   virtual ~GpuControlService();
 
-  // Overridden from GpuControl:
 
+  // GpuControl implementation.
   virtual gpu::Capabilities GetCapabilities() OVERRIDE;
-
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,
@@ -49,6 +48,7 @@ class GPU_EXPORT GpuControlService : public GpuControl {
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
   virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats)
       OVERRIDE;
+  virtual void Echo(const base::Closure& callback) OVERRIDE;
 
   // Register an existing gpu memory buffer and get an ID that can be used
   // to identify it in the command buffer.

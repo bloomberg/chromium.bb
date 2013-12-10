@@ -453,13 +453,11 @@ GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
   if (!gpu_channel_host)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
-  bool use_echo_for_swap_ack = true;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
           surface_id,
           url,
           gpu_channel_host.get(),
-          use_echo_for_swap_ack,
           attrs,
           false,
           WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));

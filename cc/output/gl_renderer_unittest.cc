@@ -129,23 +129,6 @@ namespace {
 TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
 #endif
 
-class FrameCountingContext : public TestWebGraphicsContext3D {
- public:
-  FrameCountingContext()
-      : frame_(0) {}
-
-  // WebGraphicsContext3D methods.
-
-  // This method would normally do a glSwapBuffers under the hood.
-  virtual void prepareTexture() { frame_++; }
-
-  // Methods added for test.
-  int frame_count() { return frame_; }
-
- private:
-  int frame_;
-};
-
 class FakeRendererClient : public RendererClient {
  public:
   FakeRendererClient()
@@ -218,11 +201,8 @@ class FakeRendererGL : public GLRenderer {
 class GLRendererTest : public testing::Test {
  protected:
   GLRendererTest() {
-    scoped_ptr<FrameCountingContext> context3d(new FrameCountingContext);
-    context3d_ = context3d.get();
-
     output_surface_ = FakeOutputSurface::Create3d(
-        context3d.PassAs<TestWebGraphicsContext3D>()).Pass();
+        TestWebGraphicsContext3D::Create()).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ = ResourceProvider::Create(
@@ -236,7 +216,6 @@ class GLRendererTest : public testing::Test {
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
 
   LayerTreeSettings settings_;
-  FrameCountingContext* context3d_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   FakeRendererClient renderer_client_;
@@ -382,7 +361,7 @@ TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration) {
   EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
 
   SwapBuffers();
-  EXPECT_EQ(1, context3d_->frame_count());
+  EXPECT_EQ(1u, output_surface_->num_sent_frames());
 }
 
 TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible) {
@@ -1589,7 +1568,6 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
   MOCK_METHOD0(ensureBackbufferCHROMIUM, void());
   MOCK_METHOD0(discardBackbufferCHROMIUM, void());
   MOCK_METHOD2(bindFramebuffer, void(WGC3Denum target, WebGLId framebuffer));
-  MOCK_METHOD0(prepareTexture, void());
   MOCK_METHOD3(reshapeWithScaleFactor,
                void(int width, int height, float scale_factor));
   MOCK_METHOD4(drawElements,

@@ -118,8 +118,8 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
   const int32 kMaxTransferBufferSize = 16 * 1024 * 1024;
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
-  bool bind_creates_resources = true;
-  bool free_everything_when_invisible = false;
+  const bool bind_creates_resources = true;
+  const bool free_everything_when_invisible = false;
 
   // Create the object exposing the OpenGL API.
   gles2_impl_.reset(new gpu::gles2::GLES2Implementation(

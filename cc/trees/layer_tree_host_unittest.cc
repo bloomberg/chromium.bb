@@ -3025,7 +3025,6 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
       OVERRIDE {
     scoped_ptr<TestWebGraphicsContext3D> context3d(
         TestWebGraphicsContext3D::Create());
-    context3d->set_support_swapbuffers_complete_callback(false);
 
     return FakeOutputSurface::CreateDeferredGL(
         scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice))

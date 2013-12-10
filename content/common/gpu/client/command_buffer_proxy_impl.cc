@@ -435,19 +435,17 @@ int CommandBufferProxyImpl::GetRouteID() const {
   return route_id_;
 }
 
-bool CommandBufferProxyImpl::Echo(const base::Closure& callback) {
+void CommandBufferProxyImpl::Echo(const base::Closure& callback) {
   if (last_state_.error != gpu::error::kNoError) {
-    return false;
+    return;
   }
 
-  if (!Send(new GpuCommandBufferMsg_Echo(route_id_,
-                    GpuCommandBufferMsg_EchoAck(route_id_)))) {
-    return false;
+  if (!Send(new GpuCommandBufferMsg_Echo(
+           route_id_, GpuCommandBufferMsg_EchoAck(route_id_)))) {
+    return;
   }
 
   echo_tasks_.push(callback);
-
-  return true;
 }
 
 bool CommandBufferProxyImpl::DiscardBackbuffer() {

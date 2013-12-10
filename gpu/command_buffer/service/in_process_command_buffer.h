@@ -125,6 +125,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
   virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
       OVERRIDE;
+  virtual void Echo(const base::Closure& callback) OVERRIDE;
 
   // The serializer interface to the GPU service (i.e. thread).
   class SchedulerClient {

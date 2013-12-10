@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
@@ -39,8 +40,6 @@ class TestContextProvider : public cc::ContextProvider {
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE;
-  virtual void SetSwapBuffersCompleteCallback(
-      const SwapBuffersCompleteCallback& cb) OVERRIDE;
   virtual void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& cb) OVERRIDE;
 
@@ -62,8 +61,8 @@ class TestContextProvider : public cc::ContextProvider {
   explicit TestContextProvider(scoped_ptr<TestWebGraphicsContext3D> context);
   virtual ~TestContextProvider();
 
+ private:
   void OnLostContext();
-  void OnSwapBuffersComplete();
 
   TestContextSupport support_;
 
@@ -78,15 +77,14 @@ class TestContextProvider : public cc::ContextProvider {
   bool destroyed_;
 
   LostContextCallback lost_context_callback_;
-  SwapBuffersCompleteCallback swap_buffers_complete_callback_;
   MemoryPolicyChangedCallback memory_policy_changed_callback_;
 
   class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
 
-  class SwapBuffersCompleteCallbackProxy;
-  scoped_ptr<SwapBuffersCompleteCallbackProxy>
-      swap_buffers_complete_callback_proxy_;
+  base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestContextProvider);
 };
 
 }  // namespace cc

@@ -149,8 +149,8 @@ void PlatformContext3D::SetOnConsoleMessageCallback(
   console_message_callback_ = task;
 }
 
-bool PlatformContext3D::Echo(const base::Closure& task) {
-  return command_buffer_->Echo(task);
+void PlatformContext3D::Echo(const base::Closure& task) {
+  command_buffer_->Echo(task);
 }
 
 void PlatformContext3D::OnContextLost() {

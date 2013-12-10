@@ -42,9 +42,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) OVERRIDE;
-  virtual void SetSwapBuffersCompleteCallback(
-      const SwapBuffersCompleteCallback& swap_buffers_complete_callback)
-      OVERRIDE;
   virtual void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& memory_policy_changed_callback)
       OVERRIDE;
@@ -61,7 +58,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   virtual ~ContextProviderCommandBuffer();
 
   void OnLostContext();
-  void OnSwapBuffersComplete();
   void OnMemoryAllocationChanged(const gpu::MemoryAllocation& allocation);
 
  private:
@@ -77,7 +73,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   std::string debug_name_;
 
   LostContextCallback lost_context_callback_;
-  SwapBuffersCompleteCallback swap_buffers_complete_callback_;
   MemoryPolicyChangedCallback memory_policy_changed_callback_;
 
   base::Lock main_thread_lock_;
@@ -86,10 +81,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
   class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
-
-  class SwapBuffersCompleteCallbackProxy;
-  scoped_ptr<SwapBuffersCompleteCallbackProxy>
-      swap_buffers_complete_callback_proxy_;
 };
 
 }  // namespace content

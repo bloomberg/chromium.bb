@@ -41,7 +41,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
     bool iosurface : 1;
     bool map_image : 1;
     bool post_sub_buffer : 1;
-    bool swapbuffers_complete_callback : 1;
     bool texture_format_bgra8888 : 1;
     bool texture_format_etc1 : 1;
     bool texture_rectangle : 1;
@@ -78,12 +77,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   typedef base::Closure LostContextCallback;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) = 0;
-
-  // Sets a callback to be called when swap buffers completes. This should be
-  // called from the same thread that the context is bound to.
-  typedef base::Closure SwapBuffersCompleteCallback;
-  virtual void SetSwapBuffersCompleteCallback(
-      const SwapBuffersCompleteCallback& swap_buffers_complete_callback) = 0;
 
   // Sets a callback to be called when the memory policy changes. This should be
   // called from the same thread that the context is bound to.

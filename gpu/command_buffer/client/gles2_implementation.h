@@ -215,6 +215,13 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   virtual void GetVertexAttribiv(
       GLuint index, GLenum pname, GLint* params) OVERRIDE;
 
+  // ContextSupport implementation.
+  virtual void Swap() OVERRIDE;
+  virtual void PartialSwapBuffers(gfx::Rect sub_buffer) OVERRIDE;
+  virtual void SetSwapBuffersCompleteCallback(
+      const base::Closure& swap_buffers_complete_callback)
+          OVERRIDE;
+
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);
   GLint GetUniformLocationHelper(GLuint program, const char* name);
@@ -247,6 +254,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   const Capabilities& capabilities() const {
     return capabilities_;
+  }
+
+  GpuControl* gpu_control() {
+    return gpu_control_;
   }
 
  private:
@@ -578,6 +589,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   void RunIfContextNotLost(const base::Closure& callback);
 
+  void OnSwapBuffersComplete();
+
   bool GetBoundPixelTransferBuffer(
       GLenum target, const char* function_name, GLuint* buffer_id);
   BufferTracker::Buffer* GetBoundPixelUnpackTransferBufferIfValid(
@@ -701,6 +714,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool free_everything_when_invisible_;
 
   Capabilities capabilities_;
+
+  bool use_echo_for_swap_ack_;
+  base::Closure swap_buffers_complete_callback_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 

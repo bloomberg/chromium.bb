@@ -568,9 +568,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
       bool is_offscreen,
       gfx::AcceleratedWidget window);
 
-  // SwapBuffers callback.
-  void OnSwapBuffersComplete();
-  virtual void OnContextLost();
+  void OnContextLost();
 
   bool MaybeInitializeGL();
 

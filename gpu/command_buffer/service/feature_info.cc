@@ -694,9 +694,6 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.ext_frag_depth = true;
   }
 
-  if (!disallowed_features_.swap_buffer_complete_callback)
-    AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
-
   bool ui_gl_fence_works = extensions.Contains("GL_NV_fence") ||
                            extensions.Contains("GL_ARB_sync") ||
                            extensions.Contains("EGL_KHR_fence_sync");

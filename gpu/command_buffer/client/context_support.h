@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_CONTEXT_SUPPORT_H_
 
 #include "base/callback.h"
+#include "ui/gfx/rect.h"
 
 namespace gpu {
 struct ManagedMemoryStats;
@@ -25,6 +26,12 @@ class ContextSupport {
   virtual void SetSurfaceVisible(bool visible) = 0;
 
   virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
+
+  virtual void Swap() = 0;
+  virtual void PartialSwapBuffers(gfx::Rect sub_buffer) = 0;
+
+  virtual void SetSwapBuffersCompleteCallback(
+      const base::Closure& callback) = 0;
 
  protected:
   ContextSupport() {}

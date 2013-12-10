@@ -334,15 +334,12 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::prepareTexture() {
-  if (!isContextLost()) {
-    gl_->SwapBuffers();
-    gl_->ShallowFlushCHROMIUM();
-  }
+  NOTREACHED();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::postSubBufferCHROMIUM(
     int x, int y, int width, int height) {
-  gl_->PostSubBufferCHROMIUM(x, y, width, height);
+  NOTREACHED();
 }
 
 DELEGATE_TO_GL_3(reshapeWithScaleFactor, ResizeCHROMIUM, int, int, float)
@@ -1056,9 +1053,6 @@ DELEGATE_TO_GL_1R(createShader, CreateShader, WGC3Denum, WebGLId);
 DELEGATE_TO_GL_1(deleteProgram, DeleteProgram, WebGLId);
 
 DELEGATE_TO_GL_1(deleteShader, DeleteShader, WebGLId);
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::OnSwapBuffersComplete() {
-}
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::setContextLostCallback(
     WebGraphicsContext3D::WebGraphicsContextLostCallback* cb) {

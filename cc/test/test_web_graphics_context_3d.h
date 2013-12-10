@@ -125,11 +125,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void loseContextCHROMIUM(blink::WGC3Denum current,
                                    blink::WGC3Denum other);
 
-  virtual void setSwapBuffersCompleteCallbackCHROMIUM(
-      WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
-
-  virtual void prepareTexture();
-  virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
   virtual void finish();
   virtual void flush();
 
@@ -194,9 +189,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   }
   void ResetUsedTextures() { used_textures_.clear(); }
 
-  void set_support_swapbuffers_complete_callback(bool support) {
-    test_capabilities_.swapbuffers_complete_callback = support;
-  }
   void set_have_extension_io_surface(bool have) {
     test_capabilities_.iosurface = have;
     test_capabilities_.texture_rectangle = have;
@@ -319,8 +311,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   TestWebGraphicsContext3D();
 
-  void CallAllSyncPointCallbacks();
-  void SwapBuffersComplete();
   void CreateNamespace();
   blink::WebGLId BoundTextureId(blink::WGC3Denum target);
   scoped_refptr<TestTexture> BoundTexture(blink::WGC3Denum target);
@@ -336,7 +326,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_map_image_chromium_succeeds_;
   int times_map_buffer_chromium_succeeds_;
   WebGraphicsContextLostCallback* context_lost_callback_;
-  WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* swap_buffers_callback_;
   base::hash_set<unsigned> used_textures_;
   unsigned next_program_id_;
   base::hash_set<unsigned> program_set_;

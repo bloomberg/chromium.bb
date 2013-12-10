@@ -59,7 +59,7 @@ class PlatformContext3D {
   void SetOnConsoleMessageCallback(const ConsoleMessageCallback& callback);
 
   // Run the callback once the channel has been flushed.
-  bool Echo(const base::Closure& task);
+  void Echo(const base::Closure& task);
 
  private:
   bool InitRaw();

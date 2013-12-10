@@ -77,7 +77,6 @@ class WebGraphicsContext3DCommandBufferImpl
       int surface_id,
       const GURL& active_url,
       GpuChannelHost* host,
-      bool use_echo_for_swap_ack,
       const Attributes& attributes,
       bool bind_generates_resources,
       const SharedMemoryLimits& limits);
@@ -527,10 +526,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback);
 
-  virtual void setSwapBuffersCompleteCallbackCHROMIUM(
-      WebGraphicsContext3D::
-          WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
-
   virtual void texImageIOSurface2DCHROMIUM(
       WGC3Denum target, WGC3Dint width, WGC3Dint height,
       WGC3Duint ioSurfaceId, WGC3Duint plane);
@@ -688,8 +683,6 @@ class WebGraphicsContext3DCommandBufferImpl
   // unnecessary complexity at the moment.
   bool CreateContext(bool onscreen);
 
-  // SwapBuffers callback.
-  void OnSwapBuffersComplete();
   virtual void OnGpuChannelLost();
   virtual void OnErrorMessage(const std::string& message, int id);
 
@@ -710,9 +703,6 @@ class WebGraphicsContext3DCommandBufferImpl
   scoped_ptr<WebGraphicsContext3DErrorMessageCallback>
       client_error_message_callback_;
 
-  WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM*
-      swapbuffers_complete_callback_;
-
   blink::WebGraphicsContext3D::Attributes attributes_;
   gfx::GpuPreference gpu_preference_;
 
@@ -729,9 +719,7 @@ class WebGraphicsContext3DCommandBufferImpl
   scoped_ptr<gpu::gles2::GLES2Implementation> real_gl_;
   scoped_ptr<gpu::gles2::GLES2Interface> trace_gl_;
   Error last_error_;
-  int frame_number_;
   bool bind_generates_resources_;
-  bool use_echo_for_swap_ack_;
   SharedMemoryLimits mem_limits_;
 
   uint32_t flush_id_;

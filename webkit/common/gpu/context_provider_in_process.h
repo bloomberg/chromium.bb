@@ -42,9 +42,6 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) OVERRIDE;
-  virtual void SetSwapBuffersCompleteCallback(
-      const SwapBuffersCompleteCallback& swap_buffers_complete_callback)
-      OVERRIDE;
   virtual void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& memory_policy_changed_callback)
       OVERRIDE;
@@ -56,7 +53,6 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual ~ContextProviderInProcess();
 
   void OnLostContext();
-  void OnSwapBuffersComplete();
 
  private:
   void InitializeCapabilities();
@@ -69,7 +65,6 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 
   LostContextCallback lost_context_callback_;
-  SwapBuffersCompleteCallback swap_buffers_complete_callback_;
 
   base::Lock destroyed_lock_;
   bool destroyed_;
@@ -77,10 +72,6 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   std::string debug_name_;
   class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
-
-  class SwapBuffersCompleteCallbackProxy;
-  scoped_ptr<SwapBuffersCompleteCallbackProxy>
-      swap_buffers_complete_callback_proxy_;
 
   cc::ContextProvider::Capabilities capabilities_;
 
