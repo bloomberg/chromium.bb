@@ -101,15 +101,6 @@ message DeviceCertUploadRequest {
 message DeviceCertUploadResponse {
 }
 
-// Request for a setting or with optional watermark on client side.
-// TODO(gfeher): remove this after Chrome OS TT is over.
-message DevicePolicySettingRequest {
-  // setting key
-  required string key = 1;
-  // watermark last read from server if available.
-  optional string watermark = 2;
-}
-
 // Request to access a Google service with the given scope.
 message DeviceServiceApiAccessRequest {
   // The list of auth scopes the device requests from DMServer.
@@ -294,13 +285,6 @@ message PolicyFetchResponse {
 
 // Request from device to server for reading policies.
 message DevicePolicyRequest {
-  // identify request scope: CrOS settings or other type of settings.
-  // TODO(gfeher): remove this after Chrome OS TT is over.
-  optional string policy_scope = 1;
-  // identify key to the settings: proxy etc.
-  // TODO(gfeher): remove this after Chrome OS TT is over.
-  repeated DevicePolicySettingRequest setting_request = 2;
-
   // The policy fetch request.  If this field exists, the request must
   // comes from a non-TT client.  The repeated field allows client to
   // request multiple policies for better performance.
