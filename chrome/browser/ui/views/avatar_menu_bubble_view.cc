@@ -290,7 +290,6 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
       l10n_util::GetStringUTF16(IDS_PROFILES_EDIT_PROFILE_LINK), this);
   edit_link_->set_listener(parent);
   edit_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  edit_link_->SetHasFocusBorder(true);
   AddChildView(edit_link_);
 
   OnHighlightStateChanged();
