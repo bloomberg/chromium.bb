@@ -50,7 +50,6 @@ class UserCloudPolicyManagerTest : public testing::Test {
     store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
     manager_.reset(new UserCloudPolicyManager(
-        NULL,
         scoped_ptr<UserCloudPolicyStore>(store_),
         base::FilePath(),
         scoped_ptr<CloudExternalDataManager>(),

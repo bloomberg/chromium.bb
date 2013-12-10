@@ -12,17 +12,12 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 
 class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace content {
-class BrowserContext;
 }
 
 namespace net {
@@ -35,10 +30,8 @@ class CloudExternalDataManager;
 class DeviceManagementService;
 class UserCloudPolicyStore;
 
-// UserCloudPolicyManager handles initialization of user policy for Chrome
-// Profiles on the desktop platforms.
-class UserCloudPolicyManager : public CloudPolicyManager,
-                               public BrowserContextKeyedService {
+// UserCloudPolicyManager handles initialization of user policy.
+class UserCloudPolicyManager : public CloudPolicyManager {
  public:
   // |task_runner| is the runner for policy refresh tasks.
   // |file_task_runner| is used for file operations. Currently this must be
@@ -46,7 +39,6 @@ class UserCloudPolicyManager : public CloudPolicyManager,
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
   UserCloudPolicyManager(
-      content::BrowserContext* context,
       scoped_ptr<UserCloudPolicyStore> store,
       const base::FilePath& component_policy_cache_path,
       scoped_ptr<CloudExternalDataManager> external_data_manager,
@@ -55,6 +47,7 @@ class UserCloudPolicyManager : public CloudPolicyManager,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   virtual ~UserCloudPolicyManager();
 
+  // ConfigurationPolicyProvider overrides:
   virtual void Shutdown() OVERRIDE;
 
   void SetSigninUsername(const std::string& username);
@@ -85,9 +78,6 @@ class UserCloudPolicyManager : public CloudPolicyManager,
       scoped_refptr<net::URLRequestContextGetter> request_context);
 
  private:
-  // The context this instance belongs to.
-  content::BrowserContext* context_;
-
   // Typed pointer to the store owned by UserCloudPolicyManager. Note that
   // CloudPolicyManager only keeps a plain CloudPolicyStore pointer.
   scoped_ptr<UserCloudPolicyStore> store_;

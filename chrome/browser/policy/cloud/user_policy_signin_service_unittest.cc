@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/mock_user_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -163,7 +164,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     mock_store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*mock_store_, Load()).Times(AnyNumber());
     manager_.reset(new UserCloudPolicyManager(
-        profile_.get(),
         scoped_ptr<UserCloudPolicyStore>(mock_store_),
         base::FilePath(),
         scoped_ptr<CloudExternalDataManager>(),
@@ -171,6 +171,8 @@ class UserPolicySigninServiceTest : public testing::Test {
         base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current()));
     manager_->Init(&schema_registry_);
+    UserCloudPolicyManagerFactory::GetInstance()->RegisterForTesting(
+        profile_.get(), manager_.get());
 
     AddProfile();
 

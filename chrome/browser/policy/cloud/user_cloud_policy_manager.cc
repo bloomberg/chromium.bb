@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -21,7 +20,6 @@ namespace em = enterprise_management;
 namespace policy {
 
 UserCloudPolicyManager::UserCloudPolicyManager(
-    content::BrowserContext* context,
     scoped_ptr<UserCloudPolicyStore> store,
     const base::FilePath& component_policy_cache_path,
     scoped_ptr<CloudExternalDataManager> external_data_manager,
@@ -34,22 +32,16 @@ UserCloudPolicyManager::UserCloudPolicyManager(
           task_runner,
           file_task_runner,
           io_task_runner),
-      context_(context),
       store_(store.Pass()),
       component_policy_cache_path_(component_policy_cache_path),
-      external_data_manager_(external_data_manager.Pass()) {
-  UserCloudPolicyManagerFactory::GetInstance()->Register(context_, this);
-}
+      external_data_manager_(external_data_manager.Pass()) {}
 
-UserCloudPolicyManager::~UserCloudPolicyManager() {
-  UserCloudPolicyManagerFactory::GetInstance()->Unregister(context_, this);
-}
+UserCloudPolicyManager::~UserCloudPolicyManager() {}
 
 void UserCloudPolicyManager::Shutdown() {
   if (external_data_manager_)
     external_data_manager_->Disconnect();
   CloudPolicyManager::Shutdown();
-  BrowserContextKeyedService::Shutdown();
 }
 
 void UserCloudPolicyManager::SetSigninUsername(const std::string& username) {

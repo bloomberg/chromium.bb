@@ -71,8 +71,11 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
       content::BrowserContext* original_context,
       content::BrowserContext* off_the_record_context);
 
+  void RegisterForTesting(content::BrowserContext* context,
+                          UserCloudPolicyManager* manager);
+
  private:
-  friend class UserCloudPolicyManager;
+  class ManagerWrapper;
   friend struct DefaultSingletonTraits<UserCloudPolicyManagerFactory>;
 
   UserCloudPolicyManagerFactory();
@@ -96,20 +99,15 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   // BrowserContextKeyedBaseFactory:
   virtual void BrowserContextShutdown(
       content::BrowserContext* context) OVERRIDE;
+  virtual void BrowserContextDestroyed(
+      content::BrowserContext* context) OVERRIDE;
   virtual void SetEmptyTestingFactory(
       content::BrowserContext* context) OVERRIDE;
   virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
 
-  // Invoked by UserCloudPolicyManager to register/unregister instances.
-  void Register(content::BrowserContext* context,
-                UserCloudPolicyManager* instance);
-  void Unregister(content::BrowserContext* context,
-                  UserCloudPolicyManager* instance);
+  typedef std::map<content::BrowserContext*, ManagerWrapper*> ManagerWrapperMap;
 
-  typedef std::map<content::BrowserContext*, UserCloudPolicyManager*>
-      ManagerMap;
-
-  ManagerMap managers_;
+  ManagerWrapperMap manager_wrappers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerFactory);
 };
