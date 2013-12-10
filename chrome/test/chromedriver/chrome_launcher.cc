@@ -524,7 +524,27 @@ Status ProcessExtension(const std::string& extension,
   base::DictionaryValue* manifest;
   if (!manifest_value || !manifest_value->GetAsDictionary(&manifest))
     return Status(kUnknownError, "invalid manifest");
-  if (!manifest->HasKey("key")) {
+
+  std::string manifest_key_base64;
+  if (manifest->GetString("key", &manifest_key_base64)) {
+    // If there is a key in both the header and the manifest, use the key in the
+    // manifest. This allows chromedriver users users who generate dummy crxs
+    // to set the manifest key and have a consistent ID.
+    std::string manifest_key;
+    if (!base::Base64Decode(manifest_key_base64, &manifest_key))
+      return Status(kUnknownError, "'key' in manifest is not base64 encoded");
+    std::string manifest_id = GenerateExtensionId(manifest_key);
+    if (id != manifest_id) {
+      LOG(WARNING)
+          << "Public key in crx header is different from key in manifest"
+          << std::endl << "key from header:   " << public_key_base64
+          << std::endl << "key from manifest: " << manifest_key_base64
+          << std::endl << "generated extension id from header key:   " << id
+          << std::endl << "generated extension id from manifest key: "
+          << manifest_id;
+      id = manifest_id;
+    }
+  } else {
     manifest->SetString("key", public_key_base64);
     base::JSONWriter::Write(manifest, &manifest_data);
     if (file_util::WriteFile(
