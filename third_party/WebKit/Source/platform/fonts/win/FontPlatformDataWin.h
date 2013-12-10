@@ -76,7 +76,7 @@ public:
     FontPlatformData(float size, bool bold, bool oblique);
     FontPlatformData(const FontPlatformData&);
     FontPlatformData(const FontPlatformData&, float textSize);
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal, bool useSubpixelPositioning = false);
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal, bool useSubpixelPositioning = defaultUseSubpixelPositioning());
 
     void setupPaint(SkPaint*, GraphicsContext* = 0) const;
 
@@ -129,6 +129,8 @@ public:
 #endif
 
 private:
+    bool static defaultUseSubpixelPositioning();
+
 #if !USE(HARFBUZZ)
     // We refcount the internal HFONT so that FontPlatformData can be
     // efficiently copied. WebKit depends on being able to copy it, and we

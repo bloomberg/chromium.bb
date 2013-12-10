@@ -95,6 +95,10 @@ public:
     PassRefPtr<SimpleFontData> fontDataFromDescriptionAndLogFont(const FontDescription&, ShouldRetain, const LOGFONT&, wchar_t* outFontFamilyName);
 #endif
 
+#if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+    bool useSubpixelPositioning() const { return m_useSubpixelPositioning; }
+#endif
+
 #if ENABLE(OPENTYPE_VERTICAL)
     typedef uint32_t FontFileKey;
     PassRefPtr<OpenTypeVerticalData> getVerticalData(const FontFileKey&, const FontPlatformData&);

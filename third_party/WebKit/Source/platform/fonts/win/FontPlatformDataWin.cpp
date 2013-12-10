@@ -397,6 +397,15 @@ bool FontPlatformData::ensureFontLoaded(HFONT font)
 }
 #endif
 
+bool FontPlatformData::defaultUseSubpixelPositioning()
+{
+#if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+    return FontCache::fontCache()->useSubpixelPositioning();
+#else
+    return false;
+#endif
+}
+
 #ifndef NDEBUG
 String FontPlatformData::description() const
 {
@@ -404,4 +413,4 @@ String FontPlatformData::description() const
 }
 #endif
 
-}
+} // namespace WebCore
