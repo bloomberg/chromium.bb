@@ -397,6 +397,8 @@
         'browser/chromeos/imageburner/burn_device_handler.h',
         'browser/chromeos/imageburner/burn_manager.cc',
         'browser/chromeos/imageburner/burn_manager.h',
+        'browser/chromeos/input_method/accessibility.cc',
+        'browser/chromeos/input_method/accessibility.h',
         'browser/chromeos/input_method/browser_state_monitor.cc',
         'browser/chromeos/input_method/browser_state_monitor.h',
         'browser/chromeos/input_method/candidate_window_controller.cc',
