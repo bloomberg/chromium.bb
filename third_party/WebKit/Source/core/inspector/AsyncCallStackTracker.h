@@ -41,6 +41,8 @@
 
 namespace WebCore {
 
+class ExecutionContext;
+
 class AsyncCallStackTracker {
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
 public:
@@ -71,13 +73,13 @@ public:
     void setAsyncCallStackDepth(int);
     const AsyncCallChain* currentAsyncCallChain() const;
 
-    void didInstallTimer(int timerId, bool singleShot, const ScriptValue& callFrames);
-    void didRemoveTimer(int timerId);
-    void willFireTimer(int timerId);
+    void didInstallTimer(ExecutionContext*, int timerId, bool singleShot, const ScriptValue& callFrames);
+    void didRemoveTimer(ExecutionContext*, int timerId);
+    void willFireTimer(ExecutionContext*, int timerId);
 
-    void didRequestAnimationFrame(int callbackId, const ScriptValue& callFrames);
-    void didCancelAnimationFrame(int callbackId);
-    void willFireAnimationFrame(int callbackId);
+    void didRequestAnimationFrame(ExecutionContext*, int callbackId, const ScriptValue& callFrames);
+    void didCancelAnimationFrame(ExecutionContext*, int callbackId);
+    void willFireAnimationFrame(ExecutionContext*, int callbackId);
 
     void didFireAsyncCall();
     void clear();
@@ -87,11 +89,13 @@ private:
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     static bool validateCallFrames(const ScriptValue& callFrames);
 
+    class ExecutionContextData;
+    void contextDestroyed(ExecutionContext*);
+    ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
+
     unsigned m_maxAsyncCallStackDepth;
     RefPtr<AsyncCallChain> m_currentAsyncCallChain;
-    HashSet<int> m_intervalTimerIds;
-    HashMap<int, RefPtr<AsyncCallChain> > m_timerCallChains;
-    HashMap<int, RefPtr<AsyncCallChain> > m_animationFrameCallChains;
+    HashMap<ExecutionContext*, ExecutionContextData*> m_executionContextDataMap;
 };
 
 } // namespace WebCore

@@ -31,35 +31,46 @@
 #include "config.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 
+#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ExecutionContext.h"
+
 namespace WebCore {
 
-#ifdef DEBUG_ASYNC_CALLS_DEBUGGER_SUPPORT
-namespace {
-unsigned totalAsyncCallStacks = 0;
-}
-#endif
+class AsyncCallStackTracker::ExecutionContextData : public ContextLifecycleObserver {
+    WTF_MAKE_FAST_ALLOCATED;
+public:
+    ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
+        : ContextLifecycleObserver(executionContext)
+        , m_tracker(tracker)
+    {
+    }
+
+    virtual void contextDestroyed() OVERRIDE
+    {
+        ContextLifecycleObserver::contextDestroyed();
+        m_tracker->contextDestroyed(executionContext());
+    }
+
+private:
+    friend class AsyncCallStackTracker;
+    AsyncCallStackTracker* m_tracker;
+    HashSet<int> m_intervalTimerIds;
+    HashMap<int, RefPtr<AsyncCallChain> > m_timerCallChains;
+    HashMap<int, RefPtr<AsyncCallChain> > m_animationFrameCallChains;
+};
 
 AsyncCallStackTracker::AsyncCallStack::AsyncCallStack(const ScriptValue& callFrames)
     : m_callFrames(callFrames)
 {
-#ifdef DEBUG_ASYNC_CALLS_DEBUGGER_SUPPORT
-    fprintf(stderr, "AsyncCallStack::AsyncCallStack() %u\n", ++totalAsyncCallStacks);
-#endif
 }
 
 AsyncCallStackTracker::AsyncCallStack::~AsyncCallStack()
 {
-#ifdef DEBUG_ASYNC_CALLS_DEBUGGER_SUPPORT
-    fprintf(stderr, "AsyncCallStack::~AsyncCallStack() %u\n", --totalAsyncCallStacks);
-#endif
 }
 
 AsyncCallStackTracker::AsyncCallStackTracker()
     : m_maxAsyncCallStackDepth(0)
 {
-#ifdef DEBUG_ASYNC_CALLS_DEBUGGER_SUPPORT
-    m_maxAsyncCallStackDepth = 4;
-#endif
 }
 
 void AsyncCallStackTracker::setAsyncCallStackDepth(int depth)
@@ -79,60 +90,74 @@ const AsyncCallStackTracker::AsyncCallChain* AsyncCallStackTracker::currentAsync
     return m_currentAsyncCallChain.get();
 }
 
-void AsyncCallStackTracker::didInstallTimer(int timerId, bool singleShot, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timerId, bool singleShot, const ScriptValue& callFrames)
 {
     ASSERT(isEnabled());
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(timerId > 0);
-    m_timerCallChains.set(timerId, createAsyncCallChain(callFrames));
+    ExecutionContextData* data = createContextDataIfNeeded(context);
+    data->m_timerCallChains.set(timerId, createAsyncCallChain(callFrames));
     if (!singleShot)
-        m_intervalTimerIds.add(timerId);
+        data->m_intervalTimerIds.add(timerId);
 }
 
-void AsyncCallStackTracker::didRemoveTimer(int timerId)
+void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerId)
 {
     if (!isEnabled() || timerId <= 0)
         return;
-    m_intervalTimerIds.remove(timerId);
-    m_timerCallChains.remove(timerId);
+    ExecutionContextData* data = m_executionContextDataMap.get(context);
+    if (!data)
+        return;
+    data->m_intervalTimerIds.remove(timerId);
+    data->m_timerCallChains.remove(timerId);
 }
 
-void AsyncCallStackTracker::willFireTimer(int timerId)
+void AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId)
 {
     if (!isEnabled())
         return;
     ASSERT(timerId > 0);
     ASSERT(!m_currentAsyncCallChain);
-    if (m_intervalTimerIds.contains(timerId))
-        m_currentAsyncCallChain = m_timerCallChains.get(timerId);
+    ExecutionContextData* data = m_executionContextDataMap.get(context);
+    if (!data)
+        return;
+    if (data->m_intervalTimerIds.contains(timerId))
+        m_currentAsyncCallChain = data->m_timerCallChains.get(timerId);
     else
-        m_currentAsyncCallChain = m_timerCallChains.take(timerId);
+        m_currentAsyncCallChain = data->m_timerCallChains.take(timerId);
 }
 
-void AsyncCallStackTracker::didRequestAnimationFrame(int callbackId, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, int callbackId, const ScriptValue& callFrames)
 {
     ASSERT(isEnabled());
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(callbackId > 0);
-    m_animationFrameCallChains.set(callbackId, createAsyncCallChain(callFrames));
+    ExecutionContextData* data = createContextDataIfNeeded(context);
+    data->m_animationFrameCallChains.set(callbackId, createAsyncCallChain(callFrames));
 }
 
-void AsyncCallStackTracker::didCancelAnimationFrame(int callbackId)
+void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
 {
     if (!isEnabled() || callbackId <= 0)
         return;
-    m_animationFrameCallChains.remove(callbackId);
+    ExecutionContextData* data = m_executionContextDataMap.get(context);
+    if (!data)
+        return;
+    data->m_animationFrameCallChains.remove(callbackId);
 }
 
-void AsyncCallStackTracker::willFireAnimationFrame(int callbackId)
+void AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, int callbackId)
 {
     if (!isEnabled())
         return;
     ASSERT(callbackId > 0);
     ASSERT(!m_currentAsyncCallChain);
-    m_currentAsyncCallChain = m_animationFrameCallChains.take(callbackId);
+    ExecutionContextData* data = m_executionContextDataMap.get(context);
+    if (!data)
+        return;
+    m_currentAsyncCallChain = data->m_animationFrameCallChains.take(callbackId);
 }
 
 void AsyncCallStackTracker::didFireAsyncCall()
@@ -160,12 +185,31 @@ bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
     return !callFrames.hasNoValue() && callFrames.isObject();
 }
 
+void AsyncCallStackTracker::contextDestroyed(ExecutionContext* context)
+{
+    ExecutionContextData* data = m_executionContextDataMap.take(context);
+    if (data)
+        delete data;
+}
+
+AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)
+{
+    ExecutionContextData* data = m_executionContextDataMap.get(context);
+    if (!data) {
+        data = new AsyncCallStackTracker::ExecutionContextData(this, context);
+        m_executionContextDataMap.set(context, data);
+    }
+    return data;
+}
+
 void AsyncCallStackTracker::clear()
 {
     m_currentAsyncCallChain = 0;
-    m_intervalTimerIds.clear();
-    m_timerCallChains.clear();
-    m_animationFrameCallChains.clear();
+    Vector<ExecutionContextData*> contextsData;
+    copyValuesToVector(m_executionContextDataMap, contextsData);
+    m_executionContextDataMap.clear();
+    for (Vector<ExecutionContextData*>::const_iterator it = contextsData.begin(); it != contextsData.end(); ++it)
+        delete *it;
 }
 
 } // namespace WebCore

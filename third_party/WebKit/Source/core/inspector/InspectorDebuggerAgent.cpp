@@ -35,6 +35,7 @@
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptRegexp.h"
 #include "bindings/v8/ScriptSourceCode.h"
+#include "core/dom/Document.h"
 #include "core/fetch/Resource.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -50,7 +51,6 @@ using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Debugger::BreakpointId;
 using WebCore::TypeBuilder::Debugger::CallFrame;
 using WebCore::TypeBuilder::Debugger::FunctionDetails;
-using WebCore::TypeBuilder::Debugger::Location;
 using WebCore::TypeBuilder::Debugger::ScriptId;
 using WebCore::TypeBuilder::Debugger::StackTrace;
 using WebCore::TypeBuilder::Runtime::RemoteObject;
@@ -297,9 +297,9 @@ static bool matches(const String& url, const String& pattern, bool isRegex)
     return url == pattern;
 }
 
-void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int lineNumber, const String* const optionalURL, const String* const optionalURLRegex, const int* const optionalColumnNumber, const String* const optionalCondition, const bool* isAntiBreakpoint, BreakpointId* outBreakpointId, RefPtr<Array<Location> >& locations)
+void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int lineNumber, const String* const optionalURL, const String* const optionalURLRegex, const int* const optionalColumnNumber, const String* const optionalCondition, const bool* isAntiBreakpoint, BreakpointId* outBreakpointId, RefPtr<Array<TypeBuilder::Debugger::Location> >& locations)
 {
-    locations = Array<Location>::create();
+    locations = Array<TypeBuilder::Debugger::Location>::create();
     if (!optionalURL == !optionalURLRegex) {
         *errorString = "Either url or urlRegex must be specified.";
         return;
@@ -336,7 +336,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
         for (ScriptsMap::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it) {
             if (!matches(it->value.url, url, isRegex))
                 continue;
-            RefPtr<Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
+            RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
             if (location)
                 locations->addItem(location);
         }
@@ -356,7 +356,7 @@ static bool parseLocation(ErrorString* errorString, PassRefPtr<JSONObject> locat
     return true;
 }
 
-void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPtr<JSONObject>& location, const String* const optionalCondition, BreakpointId* outBreakpointId, RefPtr<Location>& actualLocation)
+void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPtr<JSONObject>& location, const String* const optionalCondition, BreakpointId* outBreakpointId, RefPtr<TypeBuilder::Debugger::Location>& actualLocation)
 {
     String scriptId;
     int lineNumber;
@@ -429,7 +429,7 @@ void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const 
     resume(errorString);
 }
 
-void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const String& callFrameId, RefPtr<Array<Location> >& positions)
+void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location> >& positions)
 {
     if (!isPaused() || m_currentCallStack.isNull()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -542,7 +542,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPaus
     return ScriptDebugListener::NoSkip;
 }
 
-PassRefPtr<Location> InspectorDebuggerAgent::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
+PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
 {
     ScriptsMap::iterator scriptIterator = m_scripts.find(scriptId);
     if (scriptIterator == m_scripts.end())
@@ -564,7 +564,7 @@ PassRefPtr<Location> InspectorDebuggerAgent::resolveBreakpoint(const String& bre
         debugServerBreakpointIdsIterator = m_breakpointIdToDebugServerBreakpointIds.set(breakpointId, Vector<String>()).iterator;
     debugServerBreakpointIdsIterator->value.append(debugServerBreakpointId);
 
-    RefPtr<Location> location = Location::create()
+    RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
         .setScriptId(scriptId)
         .setLineNumber(actualLineNumber);
     location->setColumnNumber(actualColumnNumber);
@@ -660,20 +660,20 @@ void InspectorDebuggerAgent::cancelPauseOnNextStatement()
     scriptDebugServer().setPauseOnNextStatement(false);
 }
 
-void InspectorDebuggerAgent::didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot)
+void InspectorDebuggerAgent::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didInstallTimer(timerId, singleShot, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.didInstallTimer(context, timerId, singleShot, scriptDebugServer().currentCallFrames());
 }
 
-void InspectorDebuggerAgent::didRemoveTimer(ExecutionContext*, int timerId)
+void InspectorDebuggerAgent::didRemoveTimer(ExecutionContext* context, int timerId)
 {
-    m_asyncCallStackTracker.didRemoveTimer(timerId);
+    m_asyncCallStackTracker.didRemoveTimer(context, timerId);
 }
 
-bool InspectorDebuggerAgent::willFireTimer(ExecutionContext*, int timerId)
+bool InspectorDebuggerAgent::willFireTimer(ExecutionContext* context, int timerId)
 {
-    m_asyncCallStackTracker.willFireTimer(timerId);
+    m_asyncCallStackTracker.willFireTimer(context, timerId);
     return true;
 }
 
@@ -683,20 +683,20 @@ void InspectorDebuggerAgent::didFireTimer()
     cancelPauseOnNextStatement();
 }
 
-void InspectorDebuggerAgent::didRequestAnimationFrame(Document*, int callbackId)
+void InspectorDebuggerAgent::didRequestAnimationFrame(Document* document, int callbackId)
 {
     if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRequestAnimationFrame(callbackId, scriptDebugServer().currentCallFrames());
+        m_asyncCallStackTracker.didRequestAnimationFrame(document, callbackId, scriptDebugServer().currentCallFrames());
 }
 
-void InspectorDebuggerAgent::didCancelAnimationFrame(Document*, int callbackId)
+void InspectorDebuggerAgent::didCancelAnimationFrame(Document* document, int callbackId)
 {
-    m_asyncCallStackTracker.didCancelAnimationFrame(callbackId);
+    m_asyncCallStackTracker.didCancelAnimationFrame(document, callbackId);
 }
 
-bool InspectorDebuggerAgent::willFireAnimationFrame(Document*, int callbackId)
+bool InspectorDebuggerAgent::willFireAnimationFrame(Document* document, int callbackId)
 {
-    m_asyncCallStackTracker.willFireAnimationFrame(callbackId);
+    m_asyncCallStackTracker.willFireAnimationFrame(document, callbackId);
     return true;
 }
 
@@ -1041,7 +1041,7 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
-        RefPtr<Location> location = resolveBreakpoint(it->key, scriptId, breakpoint, UserBreakpointSource);
+        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(it->key, scriptId, breakpoint, UserBreakpointSource);
         if (location)
             m_frontend->breakpointResolved(it->key, location);
     }
