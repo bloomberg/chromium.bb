@@ -11,7 +11,6 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/webdata/common/web_data_service_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
@@ -37,8 +36,7 @@ class SigninGlobalError;
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use ProfileOAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
-                                  public BrowserContextKeyedService,
-                                  public WebDataServiceConsumer {
+                                  public BrowserContextKeyedService {
  public:
   // Initializes this token service with the profile.
   virtual void Initialize(Profile* profile);
@@ -46,9 +44,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Loads credentials from a backing persistent store to make them available
   // after service is used between profile restarts.
   // Usually it's not necessary to directly call this method.
-  // TODO(bauerb): Make this method private once this class initializes itself
+  // TODO(bauerb): Make this method protected once this class initializes itself
   // automatically.
-  void LoadCredentials();
+  virtual void LoadCredentials();
 
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -81,32 +79,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   Profile* profile() const { return profile_; }
 
  protected:
-  friend class ProfileOAuth2TokenServiceFactory;
-  ProfileOAuth2TokenService();
-  virtual ~ProfileOAuth2TokenService();
-
-  // OAuth2TokenService overrides.
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
-
-  // OAuth2TokenService implementation.
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
-
-  // Updates the internal cache of the result from the most-recently-completed
-  // auth request (used for reporting errors to the user).
-  virtual void UpdateAuthError(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
-
-  // Persists credentials for |account_id|. Enables overriding for
-  // testing purposes, or other cases, when accessing the DB is not desired.
-  virtual void PersistCredentials(const std::string& account_id,
-                                  const std::string& refresh_token);
-
-  // Clears credentials persisted for |account_id|. Enables overriding for
-  // testing purposes, or other cases, when accessing the DB is not desired.
-  virtual void ClearPersistedCredentials(const std::string& account_id);
-
- private:
   class AccountInfo : public SigninGlobalError::AuthStatusProvider {
    public:
     AccountInfo(ProfileOAuth2TokenService* token_service,
@@ -138,38 +110,45 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // to information about the account.
   typedef std::map<std::string, linked_ptr<AccountInfo> > AccountInfoMap;
 
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
+  ProfileOAuth2TokenService();
+  virtual ~ProfileOAuth2TokenService();
+
+  // OAuth2TokenService overrides.
+  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
+
+  // OAuth2TokenService implementation.
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+
+  // Updates the internal cache of the result from the most-recently-completed
+  // auth request (used for reporting errors to the user).
+  virtual void UpdateAuthError(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) OVERRIDE;
+
+  // Persists credentials for |account_id|. Enables overriding for
+  // testing purposes, or other cases, when accessing the DB is not desired.
+  virtual void PersistCredentials(const std::string& account_id,
+                                  const std::string& refresh_token);
+
+  // Clears credentials persisted for |account_id|. Enables overriding for
+  // testing purposes, or other cases, when accessing the DB is not desired.
+  virtual void ClearPersistedCredentials(const std::string& account_id);
+
+  AccountInfoMap& refresh_tokens() { return refresh_tokens_; }
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            TokenServiceUpdateClearsCache);
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            PersistenceDBUpgrade);
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            PersistenceLoadCredentials);
-
-  // When migrating an old login-scoped refresh token, this returns the account
-  // ID with which the token was associated.
-  std::string GetAccountIdForMigratingRefreshToken();
-
-  // WebDataServiceConsumer implementation:
-  virtual void OnWebDataServiceRequestDone(
-      WebDataServiceBase::Handle handle,
-      const WDTypedResult* result) OVERRIDE;
-
-  // Loads credentials into in memory stucture.
-  void LoadAllCredentialsIntoMemory(
-      const std::map<std::string, std::string>& db_tokens);
-
-  // Loads a single pair of |account_id|, |refresh_token| into memory.
-  void LoadCredentialsIntoMemory(const std::string& account_id,
-                                 const std::string& refresh_token);
 
   // Revokes the refresh token on the server.
   virtual void RevokeCredentialsOnServer(const std::string& refresh_token);
 
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
-
-  // Handle to the request reading tokens from database.
-  WebDataServiceBase::Handle web_data_service_request_;
 
   // In memory refresh token store mapping account_id to refresh_token.
   AccountInfoMap refresh_tokens_;
