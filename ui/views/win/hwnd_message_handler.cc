@@ -780,17 +780,9 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
 void HWNDMessageHandler::FrameTypeChanged() {
   // Called when the frame type could possibly be changing (theme change or
   // DWM composition change).
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    // We need to toggle the rendering policy of the DWM/glass frame as we
-    // change from opaque to glass. "Non client rendering enabled" means that
-    // the DWM's glass non-client rendering is enabled, which is why
-    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
-    // DWM doesn't render glass, and so is used in the custom frame case.
-    DWMNCRENDERINGPOLICY policy = !delegate_->IsUsingCustomFrame() ?
-        DWMNCRP_ENABLED : DWMNCRP_DISABLED;
-    DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY,
-                          &policy, sizeof(DWMNCRENDERINGPOLICY));
-  }
+
+  // Update rendering of the DWM/glass frame depending on the new frame type.
+  UpdateDwmNcRenderingPolicy();
 
   // Don't redraw the window here, because we need to hide and show the window
   // which will also trigger a redraw.
@@ -1154,6 +1146,16 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   DeleteObject(current_rgn);
 }
 
+void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+  DWMNCRENDERINGPOLICY policy = DWMNCRP_ENABLED;
+  if (remove_standard_frame_ || delegate_->IsUsingCustomFrame())
+    policy = DWMNCRP_DISABLED;
+  DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY,
+                        &policy, sizeof(DWMNCRENDERINGPOLICY));
+}
+
 LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
                                                         WPARAM w_param,
                                                         LPARAM l_param) {
@@ -1312,6 +1314,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
               0);
 
   if (remove_standard_frame_) {
+    UpdateDwmNcRenderingPolicy();
     SetWindowLong(hwnd(), GWL_STYLE,
                   GetWindowLong(hwnd(), GWL_STYLE) & ~WS_CAPTION);
     SendFrameChanged();
