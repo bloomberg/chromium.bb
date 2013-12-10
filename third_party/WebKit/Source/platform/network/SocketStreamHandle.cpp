@@ -194,7 +194,7 @@ bool SocketStreamHandle::send(const char* data, int length)
         }
         m_buffer.append(data, length);
         if (m_client)
-            m_client->didUpdateBufferedAmount(static_cast<SocketStreamHandle*>(this), bufferedAmount());
+            m_client->didUpdateBufferedAmount(this, bufferedAmount());
         return true;
     }
     int bytesWritten = 0;
@@ -209,7 +209,7 @@ bool SocketStreamHandle::send(const char* data, int length)
     if (bytesWritten < length) {
         m_buffer.append(data + bytesWritten, length - bytesWritten);
         if (m_client)
-            m_client->didUpdateBufferedAmount(static_cast<SocketStreamHandle*>(this), bufferedAmount());
+            m_client->didUpdateBufferedAmount(this, bufferedAmount());
     }
     return true;
 }
@@ -226,7 +226,7 @@ void SocketStreamHandle::close()
 
 void SocketStreamHandle::disconnect()
 {
-    RefPtr<SocketStreamHandle> protect(static_cast<SocketStreamHandle*>(this)); // closeInternal calls the client, which may make the handle get deallocated immediately.
+    RefPtr<SocketStreamHandle> protect(this); // closeInternal calls the client, which may make the handle get deallocated immediately.
 
     closeInternal();
     m_state = Closed;
@@ -260,7 +260,7 @@ bool SocketStreamHandle::sendPendingData()
         m_buffer.consume(bytesWritten);
     } while (!pending && !m_buffer.isEmpty());
     if (m_client)
-        m_client->didUpdateBufferedAmount(static_cast<SocketStreamHandle*>(this), bufferedAmount());
+        m_client->didUpdateBufferedAmount(this, bufferedAmount());
     return true;
 }
 
