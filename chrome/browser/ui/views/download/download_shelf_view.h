@@ -61,7 +61,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Implementation of gfx::AnimationDelegate.
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
@@ -84,12 +83,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
   // Implementation of MouseWatcherListener OVERRIDE.
   virtual void MouseMovedOutOfHost() OVERRIDE;
-
-  // Override views::FocusChangeListener method from AccessiblePaneView.
-  virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) OVERRIDE;
-  virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
 
   // Removes a specified download view. The supplied view is deleted after
   // it's removed.
@@ -128,15 +121,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Returns true if we can auto close. We can auto-close if all the items on
   // the shelf have been opened.
   bool CanAutoClose();
-
-  // Called when any view |view| gains or loses focus. If it's one of our
-  // DownloadItemView children, call SchedulePaint on its bounds
-  // so that its focus rect is repainted.
-  void SchedulePaintForDownloadItem(views::View* view);
-
-  // Get the rect that perfectly surrounds a DownloadItemView so we can
-  // draw a focus rect around it.
-  gfx::Rect GetFocusRectBounds(const DownloadItemView* download_item_view);
 
   // The browser for this shelf.
   Browser* browser_;

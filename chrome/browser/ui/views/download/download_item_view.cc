@@ -560,6 +560,12 @@ void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
+void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
+  if (HasFocus())
+    canvas->DrawFocusRect(GetLocalBounds());
+}
+
 // The DownloadItemView can be in three major modes (NORMAL_MODE, DANGEROUS_MODE
 // and MALICIOUS_MODE).
 //
@@ -597,7 +603,7 @@ void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
 //  |   \_ Warning icon.  No progress animation.
 //   \_ Body is static.  Doesn't respond to mouse hover or press. (NORMAL only)
 //
-void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
+void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
   BodyImageSet* body_image_set = NULL;
   switch (mode_) {
     case NORMAL_MODE:
@@ -857,6 +863,18 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       canvas->DrawImageInt(*icon, icon_x, icon_y, paint);
     }
   }
+}
+
+void DownloadItemView::OnFocus() {
+  View::OnFocus();
+  // We render differently when focused.
+  SchedulePaint();
+}
+
+void DownloadItemView::OnBlur() {
+  View::OnBlur();
+  // We render differently when focused.
+  SchedulePaint();
 }
 
 void DownloadItemView::OpenDownload() {

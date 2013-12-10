@@ -107,6 +107,9 @@ class DownloadItemView : public views::ButtonListener,
  protected:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
  private:
   enum State {
