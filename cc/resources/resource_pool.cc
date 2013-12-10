@@ -5,30 +5,9 @@
 #include "cc/resources/resource_pool.h"
 
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/scoped_resource.h"
 
 namespace cc {
-
-ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
-                                 gfx::Size size,
-                                 GLenum target,
-                                 ResourceFormat format)
-    : cc::Resource(resource_provider->CreateManagedResource(
-                       size,
-                       target,
-                       GL_CLAMP_TO_EDGE,
-                       ResourceProvider::TextureUsageAny,
-                       format),
-                   size,
-                   format),
-      resource_provider_(resource_provider) {
-  DCHECK(id());
-}
-
-ResourcePool::Resource::~Resource() {
-  DCHECK(id());
-  DCHECK(resource_provider_);
-  resource_provider_->DeleteResource(id());
-}
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
                            GLenum target,
@@ -57,11 +36,10 @@ ResourcePool::~ResourcePool() {
   DCHECK_EQ(0u, resource_count_);
 }
 
-scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
-    gfx::Size size) {
+scoped_ptr<ScopedResource> ResourcePool::AcquireResource(gfx::Size size) {
   for (ResourceList::iterator it = unused_resources_.begin();
        it != unused_resources_.end(); ++it) {
-    Resource* resource = *it;
+    ScopedResource* resource = *it;
     DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
     if (resource->size() != size)
@@ -73,8 +51,9 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
   }
 
   // Create new resource.
-  Resource* resource = new Resource(
-      resource_provider_, size, target_, format_);
+  scoped_ptr<ScopedResource> resource =
+      ScopedResource::Create(resource_provider_);
+  resource->AllocateManaged(size, target_, format_);
 
   // Extend all read locks on all resources until the resource is
   // finished being used, such that we know when resources are
@@ -83,11 +62,10 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
 
   memory_usage_bytes_ += resource->bytes();
   ++resource_count_;
-  return make_scoped_ptr(resource);
+  return resource.Pass();
 }
 
-void ResourcePool::ReleaseResource(
-    scoped_ptr<ResourcePool::Resource> resource) {
+void ResourcePool::ReleaseResource(scoped_ptr<ScopedResource> resource) {
   busy_resources_.push_back(resource.release());
 }
 
@@ -114,7 +92,7 @@ void ResourcePool::ReduceResourceUsage() {
     // can't be locked for write might also not be truly free-able.
     // We can free the resource here but it doesn't mean that the
     // memory is necessarily returned to the OS.
-    Resource* resource = unused_resources_.front();
+    ScopedResource* resource = unused_resources_.front();
     unused_resources_.pop_front();
     memory_usage_bytes_ -= resource->bytes();
     unused_memory_usage_bytes_ -= resource->bytes();
@@ -137,7 +115,7 @@ void ResourcePool::CheckBusyResources() {
   ResourceList::iterator it = busy_resources_.begin();
 
   while (it != busy_resources_.end()) {
-    Resource* resource = *it;
+    ScopedResource* resource = *it;
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
       DidFinishUsingResource(resource);
@@ -148,7 +126,7 @@ void ResourcePool::CheckBusyResources() {
   }
 }
 
-void ResourcePool::DidFinishUsingResource(ResourcePool::Resource* resource) {
+void ResourcePool::DidFinishUsingResource(ScopedResource* resource) {
   unused_memory_usage_bytes_ += resource->bytes();
   unused_resources_.push_back(resource);
 }

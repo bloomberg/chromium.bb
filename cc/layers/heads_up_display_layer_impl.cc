@@ -86,7 +86,7 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
     return false;
 
   if (!hud_resource_)
-    hud_resource_ = ScopedResource::create(resource_provider);
+    hud_resource_ = ScopedResource::Create(resource_provider);
 
   // TODO(danakj): The HUD could swap between two textures instead of creating a
   // texture every frame in ubercompositor.

@@ -11,7 +11,7 @@
 namespace cc {
 namespace {
 
-class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
+class FakeFrameRateControllerClient : public FrameRateControllerClient {
  public:
   FakeFrameRateControllerClient() { Reset(); }
 

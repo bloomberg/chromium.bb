@@ -85,12 +85,12 @@ void LayerAnimationController::RemoveAnimation(
     int animation_id,
     Animation::TargetProperty target_property) {
   ScopedPtrVector<Animation>& animations = active_animations_;
-  animations.erase(cc::remove_if(&animations,
-                                 animations.begin(),
-                                 animations.end(),
-                                 HasAnimationIdAndProperty(animation_id,
-                                                           target_property)),
-                   animations.end());
+  animations.erase(
+      cc::remove_if(&animations,
+                    animations.begin(),
+                    animations.end(),
+                    HasAnimationIdAndProperty(animation_id, target_property)),
+      animations.end());
   UpdateActivation(NormalActivation);
 }
 

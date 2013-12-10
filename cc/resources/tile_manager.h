@@ -169,12 +169,11 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       int layer_id,
       skia::LazyPixelRef* pixel_ref,
       bool was_canceled);
-  void OnRasterTaskCompleted(
-      Tile::Id tile,
-      scoped_ptr<ResourcePool::Resource> resource,
-      RasterMode raster_mode,
-      const PicturePileImpl::Analysis& analysis,
-      bool was_canceled);
+  void OnRasterTaskCompleted(Tile::Id tile,
+                             scoped_ptr<ScopedResource> resource,
+                             RasterMode raster_mode,
+                             const PicturePileImpl::Analysis& analysis,
+                             bool was_canceled);
 
   inline size_t BytesConsumedIfAllocated(const Tile* tile) const {
     return Resource::MemorySizeBytes(tile->size(),

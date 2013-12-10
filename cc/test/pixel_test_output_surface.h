@@ -14,7 +14,7 @@ class PixelTestOutputSurface : public OutputSurface {
   explicit PixelTestOutputSurface(
       scoped_refptr<ContextProvider> context_provider);
   explicit PixelTestOutputSurface(
-      scoped_ptr<cc::SoftwareOutputDevice> software_device);
+      scoped_ptr<SoftwareOutputDevice> software_device);
 
   virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
   virtual bool HasExternalStencilTest() const OVERRIDE;

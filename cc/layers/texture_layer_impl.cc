@@ -105,7 +105,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
       // Have to upload a copy to a texture for it to be used in a
       // hardware draw.
       if (!texture_copy_)
-        texture_copy_ = ScopedResource::create(resource_provider);
+        texture_copy_ = ScopedResource::Create(resource_provider);
       if (texture_copy_->size() != texture_mailbox_.shared_memory_size() ||
           resource_provider->InUseByConsumer(texture_copy_->id()))
         texture_copy_->Free();

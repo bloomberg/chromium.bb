@@ -27,14 +27,13 @@ class TestOutputSurface : public OutputSurface {
         retroactive_begin_impl_frame_deadline_enabled_(false),
         override_retroactive_period_(false) {}
 
-  explicit TestOutputSurface(
-      scoped_ptr<cc::SoftwareOutputDevice> software_device)
+  explicit TestOutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(software_device.Pass()),
         retroactive_begin_impl_frame_deadline_enabled_(false),
         override_retroactive_period_(false) {}
 
   TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
-                    scoped_ptr<cc::SoftwareOutputDevice> software_device)
+                    scoped_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(context_provider, software_device.Pass()),
         retroactive_begin_impl_frame_deadline_enabled_(false),
         override_retroactive_period_(false) {}

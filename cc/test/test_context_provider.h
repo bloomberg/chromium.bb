@@ -20,7 +20,7 @@ namespace cc {
 class TestWebGraphicsContext3D;
 class TestGLES2Interface;
 
-class TestContextProvider : public cc::ContextProvider {
+class TestContextProvider : public ContextProvider {
  public:
   typedef base::Callback<scoped_ptr<TestWebGraphicsContext3D>(void)>
     CreateCallback;

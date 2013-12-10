@@ -84,10 +84,10 @@ void ExpectTransformationMatrixEq(const gfx::Transform& expected,
                                   const gfx::Transform& actual);
 
 #define EXPECT_TRANSFORMATION_MATRIX_EQ(expected, actual) \
-do { \
-  SCOPED_TRACE(""); \
-  cc::ExpectTransformationMatrixEq(expected, actual); \
-} while (false)
+  do {                                                    \
+    SCOPED_TRACE("");                                     \
+    ExpectTransformationMatrixEq(expected, actual);       \
+  } while (false)
 
 // Should be used in test code only, for convenience. Production code should use
 // the gfx::Transform::GetInverse() API.

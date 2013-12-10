@@ -1273,7 +1273,7 @@ TEST(SchedulerTest, PollForCommitCompletion) {
   // Does three iterations to make sure that the timer is properly repeating.
   for (int i = 0; i < 3; ++i) {
     // Wait for 2x the frame interval to match
-    // cc::Scheduler::advance_commit_state_timer_'s rate.
+    // Scheduler::advance_commit_state_timer_'s rate.
     SpinForMillis(interval * 2);
     EXPECT_GT(client.num_actions_(), actions_so_far);
     EXPECT_STREQ(client.Action(client.num_actions_() - 1),

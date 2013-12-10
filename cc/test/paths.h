@@ -7,17 +7,19 @@
 
 namespace cc {
 
-enum {
-  PATH_START = 5000,
+class CCPaths {
+ public:
+  enum {
+    PATH_START = 5000,
 
-  // Valid only in development and testing environments.
-  DIR_TEST_DATA,
+    // Valid only in development and testing environments.
+    DIR_TEST_DATA,
+    PATH_END
+  };
 
-  PATH_END
+  // Call once to register the provider for the path keys defined above.
+  static void RegisterPathProvider();
 };
-
-// Call once to register the provider for the path keys defined above.
-void RegisterPathProvider();
 
 }  // namespace cc
 

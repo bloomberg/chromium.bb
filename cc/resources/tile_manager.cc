@@ -872,9 +872,9 @@ RasterWorkerPool::Task TileManager::CreateImageDecodeTask(
 RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
   ManagedTileState& mts = tile->managed_state();
 
-  scoped_ptr<ResourcePool::Resource> resource =
+  scoped_ptr<ScopedResource> resource =
       resource_pool_->AcquireResource(tile->tile_size_.size());
-  const Resource* const_resource = resource.get();
+  const ScopedResource* const_resource = resource.get();
 
   // Create and queue all image decode tasks that this tile depends on.
   RasterWorkerPool::Task::Set decode_tasks;
@@ -944,7 +944,7 @@ void TileManager::OnImageDecodeTaskCompleted(
 
 void TileManager::OnRasterTaskCompleted(
     Tile::Id tile_id,
-    scoped_ptr<ResourcePool::Resource> resource,
+    scoped_ptr<ScopedResource> resource,
     RasterMode raster_mode,
     const PicturePileImpl::Analysis& analysis,
     bool was_canceled) {

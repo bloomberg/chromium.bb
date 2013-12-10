@@ -104,7 +104,7 @@ void PixelTest::ReadbackResult(base::Closure quit_run_loop,
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
                                      const PixelComparator& comparator) {
   base::FilePath test_data_dir;
-  if (!PathService::Get(cc::DIR_TEST_DATA, &test_data_dir))
+  if (!PathService::Get(CCPaths::DIR_TEST_DATA, &test_data_dir))
     return false;
 
   // If this is false, we didn't set up a readback on a render pass.

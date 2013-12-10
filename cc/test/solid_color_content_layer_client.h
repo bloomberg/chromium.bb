@@ -11,7 +11,7 @@
 
 namespace cc {
 
-class SolidColorContentLayerClient : public cc::ContentLayerClient {
+class SolidColorContentLayerClient : public ContentLayerClient {
  public:
   explicit SolidColorContentLayerClient(SkColor color) : color_(color) {}
 

@@ -878,7 +878,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
 
-  cc::RenderPass::Id id(1, 1);
+  RenderPass::Id id(1, 1);
   TestRenderPass* root_pass = AddRenderPass(
       &render_passes_in_draw_order_, id, gfx::Rect(100, 100), gfx::Transform());
   root_pass->AppendOneOfEveryQuadType(resource_provider.get(),
@@ -1388,7 +1388,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   RenderPass::Id root_pass_id(1, 0);
   TestRenderPass* root_pass;
 
-  cc::ResourceProvider::ResourceId mask = resource_provider_->CreateResource(
+  ResourceProvider::ResourceId mask = resource_provider_->CreateResource(
       gfx::Size(20, 12),
       GL_CLAMP_TO_EDGE,
       ResourceProvider::TextureUsageAny,

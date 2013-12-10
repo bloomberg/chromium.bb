@@ -65,8 +65,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
   return output_surface.PassAs<OutputSurface>();
 }
 
-scoped_refptr<cc::ContextProvider>
-LayerTreePixelTest::OffscreenContextProvider() {
+scoped_refptr<ContextProvider> LayerTreePixelTest::OffscreenContextProvider() {
   scoped_refptr<webkit::gpu::ContextProviderInProcess> provider =
       webkit::gpu::ContextProviderInProcess::CreateOffscreen();
   CHECK(provider.get());
@@ -108,7 +107,7 @@ void LayerTreePixelTest::BeginTest() {
 
 void LayerTreePixelTest::AfterTest() {
   base::FilePath test_data_dir;
-  EXPECT_TRUE(PathService::Get(cc::DIR_TEST_DATA, &test_data_dir));
+  EXPECT_TRUE(PathService::Get(CCPaths::DIR_TEST_DATA, &test_data_dir));
   base::FilePath ref_file_path = test_data_dir.Append(ref_file_);
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();

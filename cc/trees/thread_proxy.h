@@ -159,7 +159,7 @@ class ThreadProxy : public Proxy,
   void StartCommitOnImplThread(
       CompletionEvent* completion,
       ResourceUpdateQueue* queue,
-      scoped_refptr<cc::ContextProvider> offscreen_context_provider);
+      scoped_refptr<ContextProvider> offscreen_context_provider);
   void BeginMainFrameAbortedOnImplThread(bool did_handle);
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);

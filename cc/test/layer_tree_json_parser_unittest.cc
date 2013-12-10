@@ -99,7 +99,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   root_impl->SetBounds(gfx::Size(100, 100));
   touch_layer->SetBounds(gfx::Size(50, 50));
 
-  cc::Region touch_region;
+  Region touch_region;
   touch_region.Union(gfx::Rect(10, 10, 20, 30));
   touch_region.Union(gfx::Rect(40, 10, 20, 20));
   touch_layer->SetTouchEventHandlerRegion(touch_region);

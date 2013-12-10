@@ -32,15 +32,14 @@ static bool CanRectFBeSafelyRoundedToRect(gfx::RectF r) {
   return false;
 }
 
-void LayerTestCommon::VerifyQuadsExactlyCoverRect(const cc::QuadList& quads,
+void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
                                                   gfx::Rect rect) {
-  cc::Region remaining = rect;
+  Region remaining = rect;
 
   for (size_t i = 0; i < quads.size(); ++i) {
-    cc::DrawQuad* quad = quads[i];
+    DrawQuad* quad = quads[i];
     gfx::RectF quad_rectf =
-        cc::MathUtil::MapClippedRect(quad->quadTransform(),
-                                     gfx::RectF(quad->rect));
+        MathUtil::MapClippedRect(quad->quadTransform(), gfx::RectF(quad->rect));
 
     // Before testing for exact coverage in the integer world, assert that
     // rounding will not round the rect incorrectly.

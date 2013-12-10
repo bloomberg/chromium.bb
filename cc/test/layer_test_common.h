@@ -28,7 +28,7 @@ class LayerTestCommon {
  public:
   static const char* quad_string;
 
-  static void VerifyQuadsExactlyCoverRect(const cc::QuadList& quads,
+  static void VerifyQuadsExactlyCoverRect(const QuadList& quads,
                                           gfx::Rect rect);
 };
 

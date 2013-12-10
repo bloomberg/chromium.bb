@@ -395,7 +395,7 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::CheckOutputSurfaceStatusOnImplThread");
   if (!layer_tree_host_impl_->IsContextLost())
     return;
-  if (cc::ContextProvider* offscreen_contexts =
+  if (ContextProvider* offscreen_contexts =
           layer_tree_host_impl_->offscreen_context_provider())
     offscreen_contexts->VerifyContexts();
   scheduler_on_impl_thread_->DidLoseOutputSurface();
@@ -892,7 +892,7 @@ void ThreadProxy::BeginMainFrame(
     SetNeedsAnimate();
   }
 
-  scoped_refptr<cc::ContextProvider> offscreen_context_provider;
+  scoped_refptr<ContextProvider> offscreen_context_provider;
   if (renderer_capabilities_main_thread_copy_.using_offscreen_context3d &&
       layer_tree_host()->needs_offscreen_context()) {
     offscreen_context_provider =
@@ -939,7 +939,7 @@ void ThreadProxy::BeginMainFrame(
 void ThreadProxy::StartCommitOnImplThread(
     CompletionEvent* completion,
     ResourceUpdateQueue* raw_queue,
-    scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
+    scoped_refptr<ContextProvider> offscreen_context_provider) {
   scoped_ptr<ResourceUpdateQueue> queue(raw_queue);
 
   TRACE_EVENT0("cc", "ThreadProxy::StartCommitOnImplThread");

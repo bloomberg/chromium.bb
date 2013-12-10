@@ -16,7 +16,7 @@
 
 namespace cc {
 
-class FakeContentLayerClient : public cc::ContentLayerClient {
+class FakeContentLayerClient : public ContentLayerClient {
  public:
   struct BitmapData {
     SkBitmap bitmap;

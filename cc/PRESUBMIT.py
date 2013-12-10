@@ -152,6 +152,73 @@ def CheckTodos(input_api, output_api):
       items=errors)]
   return []
 
+def FindUnquotedQuote(contents, pos):
+  match = re.search(r"(?<!\\)(?P<quote>\")", contents[pos:])
+  return -1 if not match else match.start("quote") + pos
+
+def FindNamespaceInBlock(pos, namespace, contents, whitelist=[]):
+  open_brace = -1
+  close_brace = -1
+  quote = -1
+  name = -1
+  brace_count = 1
+  quote_count = 0
+  while pos < len(contents) and brace_count > 0:
+    if open_brace < pos: open_brace = contents.find("{", pos)
+    if close_brace < pos: close_brace = contents.find("}", pos)
+    if quote < pos: quote = FindUnquotedQuote(contents, pos)
+    if name < pos: name = contents.find(("%s::" % namespace), pos)
+
+    if name < 0:
+      return False # The namespace is not used at all.
+    if open_brace < 0:
+      open_brace = len(contents)
+    if close_brace < 0:
+      close_brace = len(contents)
+    if quote < 0:
+      quote = len(contents)
+
+    next = min(open_brace, min(close_brace, min(quote, name)))
+
+    if next == open_brace:
+      brace_count += 1
+    elif next == close_brace:
+      brace_count -= 1
+    elif next == quote:
+      quote_count = 0 if quote_count else 1
+    elif next == name and not quote_count:
+      in_whitelist = False
+      for w in whitelist:
+        if re.match(w, contents[next:]):
+          in_whitelist = True
+          break
+      if not in_whitelist:
+        return True
+    pos = next + 1
+  return False
+
+# Checks for the use of cc:: within the cc namespace, which is usually
+# redundant.
+def CheckNamespace(input_api, output_api):
+  errors = []
+
+  source_file_filter = lambda x: x
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    match = re.search(r'namespace\s*cc\s*{', contents)
+    if match:
+      whitelist = [
+        r"cc::remove_if\b",
+        ]
+      if FindNamespaceInBlock(match.end(), 'cc', contents, whitelist=whitelist):
+        errors.append(f.LocalPath())
+
+  if errors:
+    return [output_api.PresubmitError(
+      'Do not use cc:: inside of the cc namespace.',
+      items=errors)]
+  return []
+
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []
@@ -160,6 +227,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckPassByValue(input_api, output_api)
   results += CheckChangeLintsClean(input_api, output_api)
   results += CheckTodos(input_api, output_api)
+  results += CheckNamespace(input_api, output_api)
   return results
 
 def GetPreferredTrySlaves(project, change):
@@ -169,4 +237,4 @@ def GetPreferredTrySlaves(project, change):
     'linux_gpu',
     'mac_gpu',
     'mac_gpu_retina',
-    ]
+  ]

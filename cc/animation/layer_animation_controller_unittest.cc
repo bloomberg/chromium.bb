@@ -425,11 +425,11 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
 
   // Create simple Transform animation.
   TransformOperations operations;
-  curve->AddKeyframe(TransformKeyframe::Create(
-      0, operations, scoped_ptr<cc::TimingFunction>()));
+  curve->AddKeyframe(
+      TransformKeyframe::Create(0, operations, scoped_ptr<TimingFunction>()));
   operations.AppendTranslate(delta_x, delta_y, 0);
-  curve->AddKeyframe(TransformKeyframe::Create(
-      1, operations, scoped_ptr<cc::TimingFunction>()));
+  curve->AddKeyframe(
+      TransformKeyframe::Create(1, operations, scoped_ptr<TimingFunction>()));
 
   scoped_ptr<Animation> animation(Animation::Create(
       curve.PassAs<AnimationCurve>(), 1, 0, Animation::Transform));
@@ -475,12 +475,12 @@ TEST(LayerAnimationControllerTest, FilterTransition) {
 
   FilterOperations start_filters;
   start_filters.Append(FilterOperation::CreateBrightnessFilter(1.f));
-  curve->AddKeyframe(FilterKeyframe::Create(
-      0, start_filters, scoped_ptr<cc::TimingFunction>()));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(0, start_filters, scoped_ptr<TimingFunction>()));
   FilterOperations end_filters;
   end_filters.Append(FilterOperation::CreateBrightnessFilter(2.f));
-  curve->AddKeyframe(FilterKeyframe::Create(
-      1, end_filters, scoped_ptr<cc::TimingFunction>()));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(1, end_filters, scoped_ptr<TimingFunction>()));
 
   scoped_ptr<Animation> animation(Animation::Create(
       curve.PassAs<AnimationCurve>(), 1, 0, Animation::Filter));
@@ -524,12 +524,12 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   // Create simple Filter animation.
   FilterOperations start_filters;
   start_filters.Append(FilterOperation::CreateBrightnessFilter(1.f));
-  curve->AddKeyframe(FilterKeyframe::Create(
-      0, start_filters, scoped_ptr<cc::TimingFunction>()));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(0, start_filters, scoped_ptr<TimingFunction>()));
   FilterOperations end_filters;
   end_filters.Append(FilterOperation::CreateBrightnessFilter(2.f));
-  curve->AddKeyframe(FilterKeyframe::Create(
-      1, end_filters, scoped_ptr<cc::TimingFunction>()));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(1, end_filters, scoped_ptr<TimingFunction>()));
 
   scoped_ptr<Animation> animation(Animation::Create(
       curve.PassAs<AnimationCurve>(), 1, 0, Animation::Filter));
@@ -1415,16 +1415,16 @@ TEST(LayerAnimationControllerTest, AnimatedBounds) {
   EXPECT_EQ(gfx::BoxF(1.f, 2.f, -4.f, 13.f, 19.f, 20.f).ToString(),
             bounds.ToString());
 
-  controller_impl->GetAnimation(1, Animation::Transform)->SetRunState(
-      cc::Animation::Finished, 0.0);
+  controller_impl->GetAnimation(1, Animation::Transform)
+      ->SetRunState(Animation::Finished, 0.0);
 
   // Only the unfinished animation should affect the animated bounds.
   EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));
   EXPECT_EQ(gfx::BoxF(1.f, 2.f, -4.f, 7.f, 16.f, 20.f).ToString(),
             bounds.ToString());
 
-  controller_impl->GetAnimation(2, Animation::Transform)->SetRunState(
-      cc::Animation::Finished, 0.0);
+  controller_impl->GetAnimation(2, Animation::Transform)
+      ->SetRunState(Animation::Finished, 0.0);
 
   // There are no longer any running animations.
   EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));

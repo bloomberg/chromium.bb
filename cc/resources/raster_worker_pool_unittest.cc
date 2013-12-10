@@ -159,7 +159,7 @@ class RasterWorkerPoolTest : public testing::Test,
     const gfx::Size size(1, 1);
 
     scoped_ptr<ScopedResource> resource(
-        ScopedResource::create(resource_provider()));
+        ScopedResource::Create(resource_provider()));
     resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
     const Resource* const_resource = resource.get();
 

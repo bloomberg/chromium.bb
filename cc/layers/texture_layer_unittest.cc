@@ -1538,7 +1538,7 @@ class TextureLayerChangeInvisibleTest
     return texture_;
   }
   virtual bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
+      TextureMailbox* mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE {
     return false;
@@ -1807,7 +1807,7 @@ class TextureLayerChangeInvisibleMailboxTest
   }
 
   virtual bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
+      TextureMailbox* mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE {
     ++prepare_called_;

@@ -49,10 +49,10 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
 
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
 
-  explicit OutputSurface(scoped_ptr<cc::SoftwareOutputDevice> software_device);
+  explicit OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device);
 
   OutputSurface(scoped_refptr<ContextProvider> context_provider,
-                scoped_ptr<cc::SoftwareOutputDevice> software_device);
+                scoped_ptr<SoftwareOutputDevice> software_device);
 
   virtual ~OutputSurface();
 
@@ -151,9 +151,9 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
 
   void PostSwapBuffersComplete();
 
-  struct cc::OutputSurface::Capabilities capabilities_;
+  struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
-  scoped_ptr<cc::SoftwareOutputDevice> software_device_;
+  scoped_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;
   float device_scale_factor_;
 

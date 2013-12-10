@@ -56,8 +56,7 @@ OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
       weak_ptr_factory_(this),
       gpu_latency_history_(kGpuLatencyHistorySize) {}
 
-OutputSurface::OutputSurface(
-    scoped_ptr<cc::SoftwareOutputDevice> software_device)
+OutputSurface::OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
     : software_device_(software_device.Pass()),
       device_scale_factor_(-1),
       max_frames_pending_(0),
@@ -70,9 +69,8 @@ OutputSurface::OutputSurface(
       weak_ptr_factory_(this),
       gpu_latency_history_(kGpuLatencyHistorySize) {}
 
-OutputSurface::OutputSurface(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_ptr<cc::SoftwareOutputDevice> software_device)
+OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider,
+                             scoped_ptr<SoftwareOutputDevice> software_device)
     : context_provider_(context_provider),
       software_device_(software_device.Pass()),
       device_scale_factor_(-1),
@@ -263,7 +261,7 @@ bool OutputSurface::HasExternalStencilTest() const {
 
 bool OutputSurface::ForcedDrawToSoftwareDevice() const { return false; }
 
-bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
+bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
   client_ = client;
   bool success = true;
@@ -382,7 +380,7 @@ void OutputSurface::BindFramebuffer() {
   context_provider_->Context3d()->bindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+void OutputSurface::SwapBuffers(CompositorFrame* frame) {
   if (frame->software_frame_data) {
     PostSwapBuffersComplete();
     DidSwapBuffers();

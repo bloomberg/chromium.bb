@@ -144,7 +144,7 @@ bool FakeOutputSurface::HasExternalStencilTest() const {
 }
 
 void FakeOutputSurface::SetMemoryPolicyToSetAtBind(
-    scoped_ptr<cc::ManagedMemoryPolicy> memory_policy_to_set_at_bind) {
+    scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind) {
   memory_policy_to_set_at_bind_.swap(memory_policy_to_set_at_bind);
 }
 

@@ -121,7 +121,7 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
     return;
   }
 
-  scoped_refptr<cc::ContextProvider> offscreen_context_provider;
+  scoped_refptr<ContextProvider> offscreen_context_provider;
   if (created_offscreen_context_provider_) {
     offscreen_context_provider =
         layer_tree_host_->client()->OffscreenContextProvider();
@@ -453,7 +453,7 @@ bool SingleThreadProxy::CommitAndComposite(
 
   layer_tree_host_->WillCommit();
 
-  scoped_refptr<cc::ContextProvider> offscreen_context_provider;
+  scoped_refptr<ContextProvider> offscreen_context_provider;
   if (renderer_capabilities_for_main_thread_.using_offscreen_context3d &&
       layer_tree_host_->needs_offscreen_context()) {
     offscreen_context_provider =
@@ -489,7 +489,7 @@ void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
 }
 
 bool SingleThreadProxy::DoComposite(
-    scoped_refptr<cc::ContextProvider> offscreen_context_provider,
+    scoped_refptr<ContextProvider> offscreen_context_provider,
     base::TimeTicks frame_begin_time,
     gfx::Rect device_viewport_damage_rect,
     bool for_readback,
@@ -534,7 +534,7 @@ bool SingleThreadProxy::DoComposite(
   }
 
   if (lost_output_surface) {
-    cc::ContextProvider* offscreen_contexts =
+    ContextProvider* offscreen_contexts =
         layer_tree_host_impl_->offscreen_context_provider();
     if (offscreen_contexts)
       offscreen_contexts->VerifyContexts();

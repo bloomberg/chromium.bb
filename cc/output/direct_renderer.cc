@@ -185,7 +185,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
     if (!render_pass_textures_.contains(render_passes_in_draw_order[i]->id)) {
       scoped_ptr<ScopedResource> texture =
-          ScopedResource::create(resource_provider_);
+          ScopedResource::Create(resource_provider_);
       render_pass_textures_.set(render_passes_in_draw_order[i]->id,
                               texture.Pass());
     }
@@ -401,19 +401,16 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
     return true;
   }
 
-  if (!resource_provider_)
-    return false;
-
   ScopedResource* texture = render_pass_textures_.get(render_pass->id);
   DCHECK(texture);
 
   gfx::Size size = RenderPassTextureSize(render_pass);
   size.Enlarge(enlarge_pass_texture_amount_.x(),
                enlarge_pass_texture_amount_.y());
-  if (!texture->id() &&
-      !texture->Allocate(
-           size, ResourceProvider::TextureUsageFramebuffer, RGBA_8888))
-    return false;
+  if (!texture->id())
+    texture->Allocate(
+        size, ResourceProvider::TextureUsageFramebuffer, RGBA_8888);
+  DCHECK(texture->id());
 
   return BindFramebufferToTexture(frame, texture, render_pass->output_rect);
 }

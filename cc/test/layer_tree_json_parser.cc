@@ -110,7 +110,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
 
   if (dict->HasKey("TouchRegion")) {
     success &= dict->GetList("TouchRegion", &list);
-    cc::Region touch_region;
+    Region touch_region;
     for (size_t i = 0; i < list->GetSize(); ) {
       int rect_x, rect_y, rect_width, rect_height;
       success &= list->GetInteger(i++, &rect_x);

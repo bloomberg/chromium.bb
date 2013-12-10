@@ -153,9 +153,9 @@ const char kDisableCompositorTouchHitTesting[] =
 
 bool IsLCDTextEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(cc::switches::kDisableLCDText))
+  if (command_line->HasSwitch(switches::kDisableLCDText))
     return false;
-  else if (command_line->HasSwitch(cc::switches::kEnableLCDText))
+  else if (command_line->HasSwitch(switches::kEnableLCDText))
     return true;
 
 #if defined(OS_ANDROID)
@@ -169,9 +169,9 @@ namespace {
 bool CheckImplSidePaintingStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(cc::switches::kDisableImplSidePainting))
+  if (command_line.HasSwitch(switches::kDisableImplSidePainting))
     return false;
-  else if (command_line.HasSwitch(cc::switches::kEnableImplSidePainting))
+  else if (command_line.HasSwitch(switches::kEnableImplSidePainting))
     return true;
 
 #if defined(OS_ANDROID)
@@ -183,7 +183,7 @@ bool CheckImplSidePaintingStatus() {
 
 bool CheckGPURasterizationStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(cc::switches::kEnableGPURasterization);
+  return command_line.HasSwitch(switches::kEnableGPURasterization);
 }
 
 }  // namespace
@@ -201,9 +201,9 @@ bool IsGPURasterizationEnabled() {
 bool IsMapImageEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(cc::switches::kDisableMapImage))
+  if (command_line.HasSwitch(switches::kDisableMapImage))
     return false;
-  else if (command_line.HasSwitch(cc::switches::kEnableMapImage))
+  else if (command_line.HasSwitch(switches::kEnableMapImage))
     return true;
 
   return false;

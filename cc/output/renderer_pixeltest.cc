@@ -455,7 +455,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
                                     gfx::Vector2d());
     }
 
-    scoped_ptr<YUVVideoDrawQuad> yuv_quad = cc::YUVVideoDrawQuad::Create();
+    scoped_ptr<YUVVideoDrawQuad> yuv_quad = YUVVideoDrawQuad::Create();
     yuv_quad->SetNew(shared_state, rect, opaque_rect, gfx::Size(),
                      y_resource, u_resource, v_resource, a_resource);
     return yuv_quad.Pass();

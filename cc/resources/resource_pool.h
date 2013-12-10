@@ -14,23 +14,10 @@
 #include "cc/resources/resource_format.h"
 
 namespace cc {
+class ScopedResource;
 
 class CC_EXPORT ResourcePool {
  public:
-  class CC_EXPORT Resource : public cc::Resource {
-   public:
-    Resource(ResourceProvider* resource_provider,
-             gfx::Size size,
-             GLenum target,
-             ResourceFormat format);
-    ~Resource();
-
-   private:
-    ResourceProvider* resource_provider_;
-
-    DISALLOW_COPY_AND_ASSIGN(Resource);
-  };
-
   static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider,
                                          GLenum target,
                                          ResourceFormat format) {
@@ -41,8 +28,8 @@ class CC_EXPORT ResourcePool {
 
   virtual ~ResourcePool();
 
-  scoped_ptr<ResourcePool::Resource> AcquireResource(gfx::Size size);
-  void ReleaseResource(scoped_ptr<ResourcePool::Resource>);
+  scoped_ptr<ScopedResource> AcquireResource(gfx::Size size);
+  void ReleaseResource(scoped_ptr<ScopedResource>);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,
                               size_t max_unused_memory_usage_bytes,
@@ -69,7 +56,7 @@ class CC_EXPORT ResourcePool {
   bool ResourceUsageTooHigh();
 
  private:
-  void DidFinishUsingResource(ResourcePool::Resource* resource);
+  void DidFinishUsingResource(ScopedResource* resource);
 
   ResourceProvider* resource_provider_;
   const GLenum target_;
@@ -81,7 +68,7 @@ class CC_EXPORT ResourcePool {
   size_t unused_memory_usage_bytes_;
   size_t resource_count_;
 
-  typedef std::list<Resource*> ResourceList;
+  typedef std::list<ScopedResource*> ResourceList;
   ResourceList unused_resources_;
   ResourceList busy_resources_;
 

@@ -10,6 +10,7 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/scoped_resource.h"
 
 namespace cc {
 
@@ -111,7 +112,7 @@ class CC_EXPORT ManagedTileState {
       Mode mode_;
       SkColor solid_color_;
       bool has_text_;
-      scoped_ptr<ResourcePool::Resource> resource_;
+      scoped_ptr<ScopedResource> resource_;
       RasterWorkerPool::RasterTask raster_task_;
   };
 

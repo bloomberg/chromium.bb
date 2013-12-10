@@ -15,7 +15,7 @@ ScopedResource::~ScopedResource() {
   Free();
 }
 
-bool ScopedResource::Allocate(gfx::Size size,
+void ScopedResource::Allocate(gfx::Size size,
                               ResourceProvider::TextureUsageHint hint,
                               ResourceFormat format) {
   DCHECK(!id());
@@ -28,8 +28,25 @@ bool ScopedResource::Allocate(gfx::Size size,
 #ifndef NDEBUG
   allocate_thread_id_ = base::PlatformThread::CurrentId();
 #endif
+}
 
-  return id() != 0;
+void ScopedResource::AllocateManaged(gfx::Size size,
+                                     GLenum target,
+                                     ResourceFormat format) {
+  DCHECK(!id());
+  DCHECK(!size.IsEmpty());
+
+  set_dimensions(size, format);
+  set_id(resource_provider_->CreateManagedResource(
+      size,
+      target,
+      GL_CLAMP_TO_EDGE,
+      ResourceProvider::TextureUsageAny,
+      format));
+
+#ifndef NDEBUG
+  allocate_thread_id_ = base::PlatformThread::CurrentId();
+#endif
 }
 
 void ScopedResource::Free() {

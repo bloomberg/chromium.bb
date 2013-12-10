@@ -711,16 +711,13 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
       MoveFromDrawToWindowSpace(frame->current_render_pass->output_rect));
 
   scoped_ptr<ScopedResource> device_background_texture =
-      ScopedResource::create(resource_provider_);
+      ScopedResource::Create(resource_provider_);
   // The TextureUsageFramebuffer hint makes ResourceProvider avoid immutable
   // storage allocation (texStorage2DEXT) for this texture. copyTexImage2D fails
   // when called on a texture having immutable storage.
-  if (!device_background_texture->Allocate(
-           window_rect.size(),
-           ResourceProvider::TextureUsageFramebuffer,
-           RGBA_8888)) {
-    return scoped_ptr<ScopedResource>();
-  } else {
+  device_background_texture->Allocate(
+      window_rect.size(), ResourceProvider::TextureUsageFramebuffer, RGBA_8888);
+  {
     ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
                                              device_background_texture->id());
     GetFramebufferTexture(lock.texture_id(),
@@ -755,11 +752,9 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
   }
 
   scoped_ptr<ScopedResource> background_texture =
-      ScopedResource::create(resource_provider_);
-  if (!background_texture->Allocate(quad->rect.size(),
-                                    ResourceProvider::TextureUsageFramebuffer,
-                                    RGBA_8888))
-    return scoped_ptr<ScopedResource>();
+      ScopedResource::Create(resource_provider_);
+  background_texture->Allocate(
+      quad->rect.size(), ResourceProvider::TextureUsageFramebuffer, RGBA_8888);
 
   const RenderPass* target_render_pass = frame->current_render_pass;
   bool using_background_texture =

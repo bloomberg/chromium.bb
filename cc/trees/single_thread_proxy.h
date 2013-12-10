@@ -92,12 +92,11 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
                           bool for_readback,
                           LayerTreeHostImpl::FrameData* frame);
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
-  bool DoComposite(
-      scoped_refptr<cc::ContextProvider> offscreen_context_provider,
-      base::TimeTicks frame_begin_time,
-      gfx::Rect device_viewport_damage_rect,
-      bool for_readback,
-      LayerTreeHostImpl::FrameData* frame);
+  bool DoComposite(scoped_refptr<ContextProvider> offscreen_context_provider,
+                   base::TimeTicks frame_begin_time,
+                   gfx::Rect device_viewport_damage_rect,
+                   bool for_readback,
+                   LayerTreeHostImpl::FrameData* frame);
   void DidSwapFrame();
 
   bool ShouldComposite() const;
