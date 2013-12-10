@@ -40,6 +40,8 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableNotifications(false);
   // Android does not yet support SharedWorker. crbug.com/154571
   WebRuntimeFeatures::enableSharedWorker(false);
+  // Android does not yet support NavigatorContentUtils.
+  WebRuntimeFeatures::enableNavigatorContentUtils(false);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -60,6 +62,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kDisableDesktopNotifications))
     WebRuntimeFeatures::enableNotifications(false);
+
+  if (command_line.HasSwitch(switches::kDisableNavigatorContentUtils))
+    WebRuntimeFeatures::enableNavigatorContentUtils(false);
 
   if (command_line.HasSwitch(switches::kDisableLocalStorage))
     WebRuntimeFeatures::enableLocalStorage(false);
