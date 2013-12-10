@@ -111,8 +111,7 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
   base::TimeTicks capture_time;
-  video_sender_->InsertRawVideoFrame(video_frame, capture_time,
-      base::Bind(base::DoNothing));
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
 }
@@ -171,8 +170,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
   base::TimeTicks capture_time;
-  video_sender_->InsertRawVideoFrame(video_frame, capture_time,
-      base::Bind(base::DoNothing));
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
 
@@ -183,8 +181,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
   video_sender_->OnReceivedCastFeedback(cast_feedback);
 
   video_frame = GetNewVideoFrame();
-  video_sender_->InsertRawVideoFrame(video_frame, capture_time,
-      base::Bind(base::DoNothing));
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
 

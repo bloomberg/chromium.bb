@@ -57,8 +57,7 @@ class VideoSender : public base::NonThreadSafe,
   // has been sent out.
   void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time,
-      const base::Closure& callback);
+      const base::TimeTicks& capture_time);
 
   // The video_frame must be valid until the closure callback is called.
   // The closure callback is called from the main thread as soon as

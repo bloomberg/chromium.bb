@@ -36,8 +36,7 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
   // has been sent out.
   virtual void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time,
-      const base::Closure& callback) = 0;
+      const base::TimeTicks& capture_time) = 0;
 
   // The video_frame must be valid until the callback is called.
   // The callback is called from the main cast thread as soon as

@@ -129,8 +129,7 @@ void VideoSender::InitializeTimers() {
 
 void VideoSender::InsertRawVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
-    const base::TimeTicks& capture_time,
-    const base::Closure& callback) {
+    const base::TimeTicks& capture_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(video_encoder_.get()) << "Invalid state";
   cast_environment_->Logging()->InsertFrameEvent(kVideoFrameReceived,
@@ -138,8 +137,7 @@ void VideoSender::InsertRawVideoFrame(
 
   if (!video_encoder_->EncodeVideoFrame(video_frame, capture_time,
       base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,
-          weak_factory_.GetWeakPtr()), callback)) {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
+          weak_factory_.GetWeakPtr()))) {
   }
 }
 

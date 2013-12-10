@@ -42,8 +42,7 @@ VideoEncoder::~VideoEncoder() {}
 bool VideoEncoder::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
-    const FrameEncodedCallback& frame_encoded_callback,
-    const base::Closure frame_release_callback) {
+    const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (video_config_.codec != kVp8) return false;
 
@@ -58,8 +57,7 @@ bool VideoEncoder::EncodeVideoFrame(
   cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
       base::Bind(&VideoEncoder::EncodeVideoFrameEncoderThread,
                  base::Unretained(this), video_frame, capture_time,
-                 dynamic_config_, frame_encoded_callback,
-                 frame_release_callback));
+                 dynamic_config_, frame_encoded_callback));
 
   dynamic_config_.key_frame_requested = false;
   return true;
@@ -69,8 +67,7 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
     const CodecDynamicConfig& dynamic_config,
-    const FrameEncodedCallback& frame_encoded_callback,
-    const base::Closure frame_release_callback) {
+    const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
   if (dynamic_config.key_frame_requested) {
     vp8_encoder_->GenerateKeyFrame();
@@ -84,9 +81,6 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
 
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(LogFrameEncodedEvent, cast_environment_, capture_time));
-  // We are done with the video frame release it.
-  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-                              frame_release_callback);
 
   if (!retval) {
     VLOG(1) << "Encoding failed";

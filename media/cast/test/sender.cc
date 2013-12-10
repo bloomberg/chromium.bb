@@ -225,11 +225,6 @@ class SendProcess {
       fclose(video_file_);
   }
 
-  void ReleaseVideoFrame(const scoped_refptr<media::VideoFrame>&) {
-     test_app_thread_proxy_->PostTask(FROM_HERE,
-          base::Bind(&SendProcess::SendFrame, base::Unretained(this)));
-  }
-
   void SendFrame() {
     // Make sure that we don't drift.
     int num_10ms_blocks = audio_diff_ / 10;
@@ -280,9 +275,9 @@ class SendProcess {
 
   void SendVideoFrameOnTime(scoped_refptr<media::VideoFrame> video_frame) {
     send_time_ = clock_->NowTicks();
-    frame_input_->InsertRawVideoFrame(video_frame, send_time_,
-        base::Bind(&SendProcess::ReleaseVideoFrame, weak_factory_.GetWeakPtr(),
-        video_frame));
+    frame_input_->InsertRawVideoFrame(video_frame, send_time_);
+    test_app_thread_proxy_->PostTask(FROM_HERE,
+          base::Bind(&SendProcess::SendFrame, base::Unretained(this)));
   }
 
  private:

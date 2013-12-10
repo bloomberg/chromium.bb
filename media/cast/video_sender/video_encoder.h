@@ -41,8 +41,7 @@ class VideoEncoder : public VideoEncoderController {
   // Once the encoded frame is ready the frame_encoded_callback is called.
   bool EncodeVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                         const base::TimeTicks& capture_time,
-                        const FrameEncodedCallback& frame_encoded_callback,
-                        const base::Closure frame_release_callback);
+                        const FrameEncodedCallback& frame_encoded_callback);
 
  protected:
   struct CodecDynamicConfig {
@@ -56,8 +55,7 @@ class VideoEncoder : public VideoEncoderController {
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& capture_time,
       const CodecDynamicConfig& dynamic_config,
-      const FrameEncodedCallback& frame_encoded_callback,
-      const base::Closure frame_release_callback);
+      const FrameEncodedCallback& frame_encoded_callback);
 
   // The following functions are called from the main cast thread.
   virtual void SetBitRate(int new_bit_rate) OVERRIDE;

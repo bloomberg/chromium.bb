@@ -26,11 +26,10 @@ class LocalFrameInput : public FrameInput {
 
   virtual void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time,
-      const base::Closure& callback) OVERRIDE {
+      const base::TimeTicks& capture_time) OVERRIDE {
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoSender::InsertRawVideoFrame, video_sender_,
-            video_frame, capture_time, callback));
+            video_frame, capture_time));
   }
 
   virtual void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,

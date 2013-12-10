@@ -435,8 +435,7 @@ class End2EndTest : public ::testing::Test {
         media::VideoFrame::CreateFrame(
         VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
     PopulateVideoFrame(video_frame, start_value);
-    frame_input_->InsertRawVideoFrame(video_frame, capture_time,
-        base::Bind(base::DoNothing));
+    frame_input_->InsertRawVideoFrame(video_frame, capture_time);
   }
 
   void RunTasks(int during_ms) {
