@@ -170,10 +170,13 @@ void SearchInputType::updateCancelButtonVisibility()
     Element* button = element().userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
     if (!button)
         return;
-    if (element().value().isEmpty())
-        button->setInlineStyleProperty(CSSPropertyVisibility, CSSValueHidden);
-    else
-        button->removeInlineStyleProperty(CSSPropertyVisibility);
+    if (element().value().isEmpty()) {
+        button->setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::CSS_NUMBER);
+        button->setInlineStyleProperty(CSSPropertyPointerEvents, CSSValueNone);
+    } else {
+        button->removeInlineStyleProperty(CSSPropertyOpacity);
+        button->removeInlineStyleProperty(CSSPropertyPointerEvents);
+    }
 }
 
 bool SearchInputType::supportsInputModeAttribute() const

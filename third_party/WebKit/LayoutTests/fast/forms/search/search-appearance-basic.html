@@ -19,7 +19,10 @@ input {
 </style>
 
 <!-- no style for reference -->
-<input type="search" value="foo"> <br>
+<input type="search" value="foo"> <input type="search" value="foo" id="hovered"><br>
+
+<input type="search" readonly value="foo">
+<input type="search" disabled value="foo"> <br>
 
 <!-- border -->
 <input type="search" value="foo" style="border: 3px solid lime;">
@@ -47,4 +50,11 @@ input {
 
 <!-- various style -->
 <input type="search" class="inputtext inputsearch" title="Search for Events" placeholder="Search for Events" id="q_dashboard" name="q" value="" results="10" />
+
+<script>
+var input = document.getElementById('hovered');
+if (window.eventSender)
+    eventSender.mouseMoveTo(input.offsetLeft + input.offsetWidth / 2, input.offsetTop + input.offsetHeight / 2);
+document.querySelector('input[readonly]').focus();
+</script>
 </body>
