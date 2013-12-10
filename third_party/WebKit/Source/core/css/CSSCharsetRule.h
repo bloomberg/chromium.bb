@@ -50,6 +50,8 @@ private:
     String m_encoding;
 };
 
+DEFINE_CSS_RULE_TYPE_CASTS(CSSCharsetRule, CHARSET_RULE);
+
 } // namespace WebCore
 
 #endif // CSSCharsetRule_h

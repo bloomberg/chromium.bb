@@ -60,6 +60,8 @@ private:
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
+DEFINE_CSS_RULE_TYPE_CASTS(CSSViewportRule, VIEWPORT_RULE);
+
 } // namespace WebCore
 
 #endif // CSSViewportRule_h

@@ -94,6 +94,8 @@ private:
     friend class CSSKeyframesRule;
 };
 
+DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, KEYFRAME_RULE);
+
 } // namespace WebCore
 
 #endif // CSSKeyframeRule_h

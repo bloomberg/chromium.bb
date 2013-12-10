@@ -53,6 +53,8 @@ private:
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
+DEFINE_CSS_RULE_TYPE_CASTS(CSSPageRule, PAGE_RULE);
+
 } // namespace WebCore
 
 #endif // CSSPageRule_h

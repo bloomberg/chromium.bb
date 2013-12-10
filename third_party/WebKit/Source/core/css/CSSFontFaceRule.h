@@ -51,11 +51,7 @@ private:
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
-inline CSSFontFaceRule* toCSSFontFaceRule(CSSRule* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(rule->type() == CSSRule::FONT_FACE_RULE);
-    return static_cast<CSSFontFaceRule*>(rule);
-}
+DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFaceRule, FONT_FACE_RULE);
 
 } // namespace WebCore
 

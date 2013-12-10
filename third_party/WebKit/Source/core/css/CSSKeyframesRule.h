@@ -105,6 +105,8 @@ private:
     bool m_isPrefixed;
 };
 
+DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframesRule, KEYFRAMES_RULE);
+
 } // namespace WebCore
 
 #endif // CSSKeyframesRule_h

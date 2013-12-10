@@ -48,6 +48,8 @@ private:
     CSSRegionRule(StyleRuleRegion*, CSSStyleSheet* parent);
 };
 
+DEFINE_CSS_RULE_TYPE_CASTS(CSSRegionRule, WEBKIT_REGION_RULE);
+
 }
 
 #endif // CSSRegionRule_h

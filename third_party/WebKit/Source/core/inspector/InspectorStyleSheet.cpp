@@ -474,13 +474,13 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
         return 0;
 
     if (rule->type() == CSSRule::MEDIA_RULE)
-        return static_cast<CSSMediaRule*>(rule)->cssRules();
+        return toCSSMediaRule(rule)->cssRules();
 
     if (rule->type() == CSSRule::KEYFRAMES_RULE)
-        return static_cast<CSSKeyframesRule*>(rule)->cssRules();
+        return toCSSKeyframesRule(rule)->cssRules();
 
     if (rule->type() == CSSRule::SUPPORTS_RULE)
-        return static_cast<CSSSupportsRule*>(rule)->cssRules();
+        return toCSSSupportsRule(rule)->cssRules();
 
     return 0;
 }

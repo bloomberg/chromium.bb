@@ -54,6 +54,8 @@ private:
     CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
 };
 
+DEFINE_CSS_RULE_TYPE_CASTS(CSSSupportsRule, SUPPORTS_RULE);
+
 } // namespace WebCore
 
 #endif // CSSSupportsRule_h
