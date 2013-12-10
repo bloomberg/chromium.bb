@@ -8,18 +8,23 @@
   },
   'targets': [
     {
-      'target_name': 'ipc_fuzzer_replay',
-      'type': 'executable',
+      'target_name': 'ipc_message_lib',
+      'type': 'static_library',
       'dependencies': [
-        '../message_lib/message_lib.gyp:ipc_message_lib',
         '../../../base/base.gyp:base',
         '../../../chrome/chrome.gyp:common',
         '../../../ipc/ipc.gyp:ipc',
+        '../../../skia/skia.gyp:skia',
       ],
       'sources': [
-        'replay.cc',
-        'replay_process.cc',
-        'replay_process.h',
+        'all_messages.h',
+        'message_cracker.h',
+        'message_file.h',
+        'message_file_format.h',
+        'message_file_reader.cc',
+        'message_file_writer.cc',
+        'message_names.cc',
+        'message_names.h',
       ],
       'include_dirs': [
         '../..',

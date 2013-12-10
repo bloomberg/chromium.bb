@@ -1,0 +1,8 @@
+include_rules = [
+  "+chrome/common",
+  "+components/autofill/core/common",
+  "+components/nacl/common",
+  "+components/tracing",
+  "+components/visitedlink/common",
+  "+content/common",
+]

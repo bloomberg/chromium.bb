@@ -5,9 +5,6 @@
 #ifndef TOOLS_IPC_FUZZER_REPLAY_REPLAY_PROCESS_H_
 #define TOOLS_IPC_FUZZER_REPLAY_REPLAY_PROCESS_H_
 
-#include <list>
-
-#include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -16,6 +13,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "tools/ipc_fuzzer/message_lib/message_file.h"
 
 namespace ipc_fuzzer {
 
@@ -43,7 +41,6 @@ class ReplayProcess : public IPC::Listener {
   virtual void OnChannelError() OVERRIDE;
 
  private:
-  bool ExtractMessages(const char *data, size_t len);
   void SendNextMessage();
 
   scoped_ptr<IPC::ChannelProxy> channel_;
@@ -51,8 +48,8 @@ class ReplayProcess : public IPC::Listener {
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
   scoped_ptr<base::Timer> timer_;
-  scoped_ptr<base::MemoryMappedFile> mapped_testcase_;
-  std::list<IPC::Message*> messages_;
+  MessageVector messages_;
+  size_t message_index_;
 
   DISALLOW_COPY_AND_ASSIGN(ReplayProcess);
 };

@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
-#include "base/stl_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
@@ -21,12 +20,12 @@ namespace ipc_fuzzer {
 ReplayProcess::ReplayProcess()
     : main_loop_(base::MessageLoop::TYPE_DEFAULT),
       io_thread_("Chrome_ChildIOThread"),
-      shutdown_event_(true, false) {
+      shutdown_event_(true, false),
+      message_index_(0) {
 }
 
 ReplayProcess::~ReplayProcess() {
   channel_.reset();
-  STLDeleteElements(&messages_);
 }
 
 bool ReplayProcess::Initialize(int argc, const char** argv) {
@@ -64,53 +63,21 @@ void ReplayProcess::OpenChannel() {
                             io_thread_.message_loop_proxy()));
 }
 
-bool ReplayProcess::ExtractMessages(const char *data, size_t len) {
-  const char* end = data + len;
-
-  while (data < end) {
-    const char* message_tail = IPC::Message::FindNext(data, end);
-    if (!message_tail) {
-      LOG(ERROR) << "Failed to extract message";
-      return false;
-    }
-
-    size_t len = message_tail - data;
-    if (len > INT_MAX) {
-      LOG(ERROR) << "Message too large";
-      return false;
-    }
-
-    IPC::Message* message = new IPC::Message(data, len);
-    messages_.push_back(message);
-    data = message_tail;
-  }
-
-  return true;
-}
-
 bool ReplayProcess::OpenTestcase() {
   base::FilePath path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kIpcFuzzerTestcase);
-  mapped_testcase_.reset(new base::MemoryMappedFile());
-  if (!mapped_testcase_->Initialize(path)) {
-    LOG(ERROR) << "Failed to map testcase: " << path.value();
-    return false;
-  }
-
-  const char* data = reinterpret_cast<const char *>(mapped_testcase_->data());
-  size_t len = mapped_testcase_->length();
-
-  return ExtractMessages(data, len);
+  return MessageFile::Read(path, &messages_);
 }
 
 void ReplayProcess::SendNextMessage() {
-  if (messages_.empty()) {
+  if (message_index_ >= messages_.size()) {
     base::MessageLoop::current()->Quit();
     return;
   }
 
-  IPC::Message* message = messages_.front();
-  messages_.pop_front();
+  // Take next message and release it from vector.
+  IPC::Message* message = messages_[message_index_];
+  messages_[message_index_++] = NULL;
 
   if (!channel_->Send(message)) {
     LOG(ERROR) << "ChannelProxy::Send() failed";
