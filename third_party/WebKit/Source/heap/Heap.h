@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef Heap_h
+#define Heap_h
+
 #include "heap/HeapExport.h"
 #include "wtf/Assertions.h"
 
@@ -42,3 +45,5 @@ public:
 };
 
 }
+
+#endif // Heap_h
