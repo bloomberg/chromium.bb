@@ -81,7 +81,7 @@ Local<FunctionTemplate> GetDefineTemplate(Isolate* isolate) {
   Local<FunctionTemplate> templ = data->GetFunctionTemplate(
       &g_wrapper_info);
   if (templ.IsEmpty()) {
-    templ = FunctionTemplate::New(Define);
+    templ = FunctionTemplate::New(isolate, Define);
     data->SetFunctionTemplate(&g_wrapper_info, templ);
   }
   return templ;

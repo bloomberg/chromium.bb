@@ -40,7 +40,7 @@ v8::Local<ObjectTemplate> Console::GetTemplate(v8::Isolate* isolate) {
   if (templ.IsEmpty()) {
     templ = ObjectTemplate::New();
     templ->Set(StringToSymbol(isolate, "log"),
-               v8::FunctionTemplate::New(Log));
+               v8::FunctionTemplate::New(isolate, Log));
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
   return templ;
