@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,19 +137,19 @@ public class AwSettings {
         void bindUiThread() {
             if (mHandler != null) return;
             mHandler = new Handler(ThreadUtils.getUiThreadLooper()) {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        switch (msg.what) {
-                            case UPDATE_WEBKIT_PREFERENCES:
-                                synchronized (mAwSettingsLock) {
-                                    updateWebkitPreferencesOnUiThreadLocked();
-                                    mIsUpdateWebkitPrefsMessagePending = false;
-                                    mAwSettingsLock.notifyAll();
-                                }
-                                break;
-                        }
+                @Override
+                public void handleMessage(Message msg) {
+                    switch (msg.what) {
+                        case UPDATE_WEBKIT_PREFERENCES:
+                            synchronized (mAwSettingsLock) {
+                                updateWebkitPreferencesOnUiThreadLocked();
+                                mIsUpdateWebkitPrefsMessagePending = false;
+                                mAwSettingsLock.notifyAll();
+                            }
+                            break;
                     }
-                };
+                }
+            };
         }
 
         void maybeRunOnUiThreadBlocking(Runnable r) {
@@ -396,7 +396,7 @@ public class AwSettings {
      * See {@link android.webkit.WebSettings#setNeedInitialFocus}.
      */
     public boolean shouldFocusFirstNode() {
-        synchronized(mAwSettingsLock) {
+        synchronized (mAwSettingsLock) {
             return mShouldFocusFirstNode;
         }
     }
@@ -1188,9 +1188,9 @@ public class AwSettings {
      * See {@link android.webkit.WebSettings#getDomStorageEnabled}.
      */
     public boolean getDomStorageEnabled() {
-       synchronized (mAwSettingsLock) {
-           return mDomStorageEnabled;
-       }
+        synchronized (mAwSettingsLock) {
+            return mDomStorageEnabled;
+        }
     }
 
     @CalledByNative
@@ -1214,9 +1214,9 @@ public class AwSettings {
      * See {@link android.webkit.WebSettings#getDatabaseEnabled}.
      */
     public boolean getDatabaseEnabled() {
-       synchronized (mAwSettingsLock) {
-           return mDatabaseEnabled;
-       }
+        synchronized (mAwSettingsLock) {
+            return mDatabaseEnabled;
+        }
     }
 
     @CalledByNative

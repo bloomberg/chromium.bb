@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,10 @@ import java.util.concurrent.TimeUnit;
  * Tests for the WebViewClient.shouldOverrideUrlLoading() method.
  */
 public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
-    private final static String ABOUT_BLANK_URL = "about:blank";
-    private final static String DATA_URL = "data:text/html,<div/>";
-    private final static String REDIRECT_TARGET_PATH = "/redirect_target.html";
-    private final static String TITLE = "TITLE";
+    private static final String ABOUT_BLANK_URL = "about:blank";
+    private static final String DATA_URL = "data:text/html,<div/>";
+    private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
+    private static final String TITLE = "TITLE";
 
     private static final long TEST_TIMEOUT = 20000L;
     private static final long CHECK_INTERVAL = 100;
@@ -164,7 +164,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                   "} " +
                   "function doRedirectReplace() {" +
                     "location.replace('" + url + "');" +
-                  "} "+
+                  "} " +
                 "</script>",
                 String.format("<iframe onLoad=\"setTimeout('doRedirect%s()', %d);\" />",
                     method, timeout));
@@ -173,7 +173,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private String getHtmlForPageWithSimplePostFormTo(String destination) {
         return makeHtmlPageFrom("",
                 "<form action=\"" + destination + "\" method=\"post\">" +
-                  "<input type=\"submit\" value=\"post\" id=\"link\">"+
+                  "<input type=\"submit\" value=\"post\" id=\"link\">" +
                 "</form>");
     }
 
@@ -226,7 +226,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             contentsClient.getShouldOverrideUrlLoadingHelper();
         final String[] pageTitles = new String[] { "page1", "page2", "page3" };
 
-        for (String title: pageTitles) {
+        for (String title : pageTitles) {
             loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     CommonResources.makeHtmlPageFrom("<title>" + title + "</title>", ""),
                     "text/html", false);

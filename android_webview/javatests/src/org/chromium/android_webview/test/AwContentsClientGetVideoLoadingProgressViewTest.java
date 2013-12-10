@@ -56,14 +56,14 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
     public void testGetVideoLoadingProgressView() throws Throwable {
         TestAwContentsClient contentsClient =
                 new FullScreenVideoTestAwContentsClient(getActivity()) {
-            @Override
-            protected View getVideoLoadingProgressView() {
-                View view = new View(getInstrumentation().getTargetContext());
-                view.addOnAttachStateChangeListener(
-                        AwContentsClientGetVideoLoadingProgressViewTest.this);
-                return view;
-            }
-        };
+                    @Override
+                    protected View getVideoLoadingProgressView() {
+                        View view = new View(getInstrumentation().getTargetContext());
+                        view.addOnAttachStateChangeListener(
+                                AwContentsClientGetVideoLoadingProgressViewTest.this);
+                        return view;
+                    }
+                };
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();

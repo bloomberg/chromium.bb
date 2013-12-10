@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Picture;
 import android.graphics.Rect;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.common.CleanupReference;
 

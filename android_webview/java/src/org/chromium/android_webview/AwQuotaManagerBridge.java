@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,11 +145,11 @@ public class AwQuotaManagerBridge {
     private void onGetUsageAndQuotaForOriginCallback(
             int callbackId, boolean isQuota, long usage, long quota) {
         if (isQuota) {
-          assert mPendingGetQuotaForOriginCallbacks.containsKey(callbackId);
-          mPendingGetQuotaForOriginCallbacks.remove(callbackId).onReceiveValue(quota);
+            assert mPendingGetQuotaForOriginCallbacks.containsKey(callbackId);
+            mPendingGetQuotaForOriginCallbacks.remove(callbackId).onReceiveValue(quota);
         } else {
-          assert mPendingGetUsageForOriginCallbacks.containsKey(callbackId);
-          mPendingGetUsageForOriginCallbacks.remove(callbackId).onReceiveValue(usage);
+            assert mPendingGetUsageForOriginCallbacks.containsKey(callbackId);
+            mPendingGetUsageForOriginCallbacks.remove(callbackId).onReceiveValue(usage);
         }
     }
 

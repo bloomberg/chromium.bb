@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,12 +36,12 @@ import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
 import org.chromium.content.browser.LoadUrlParams;
 
-/*
+/**
  * This is a lightweight activity for tests that only require WebView functionality.
  */
 public class AwShellActivity extends Activity {
-    private final static String PREFERENCES_NAME = "AwShellPrefs";
-    private final static String INITIAL_URL = "about:blank";
+    private static final String PREFERENCES_NAME = "AwShellPrefs";
+    private static final String INITIAL_URL = "about:blank";
     private AwBrowserContext mBrowserContext;
     private AwDevToolsServer mDevToolsServer;
     private AwTestContainerView mAwTestContainerView;
@@ -167,7 +167,7 @@ public class AwShellActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if (mAwTestContainerView.getContentViewCore().canGoForward()) {
-                        mAwTestContainerView.getContentViewCore().goForward();
+                    mAwTestContainerView.getContentViewCore().goForward();
                 }
             }
         });

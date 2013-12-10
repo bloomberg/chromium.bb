@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,9 +51,9 @@ class AwContentsClientCallbackHelper {
         final String mArgs;
 
         LoginRequestInfo(String realm, String account, String args) {
-          mRealm = realm;
-          mAccount = account;
-          mArgs = args;
+            mRealm = realm;
+            mAccount = account;
+            mArgs = args;
         }
     }
 
@@ -69,13 +69,13 @@ class AwContentsClientCallbackHelper {
         }
     }
 
-    private final static int MSG_ON_LOAD_RESOURCE = 1;
-    private final static int MSG_ON_PAGE_STARTED = 2;
-    private final static int MSG_ON_DOWNLOAD_START = 3;
-    private final static int MSG_ON_RECEIVED_LOGIN_REQUEST = 4;
-    private final static int MSG_ON_RECEIVED_ERROR = 5;
-    private final static int MSG_ON_NEW_PICTURE = 6;
-    private final static int MSG_ON_SCALE_CHANGED_SCALED = 7;
+    private static final int MSG_ON_LOAD_RESOURCE = 1;
+    private static final int MSG_ON_PAGE_STARTED = 2;
+    private static final int MSG_ON_DOWNLOAD_START = 3;
+    private static final int MSG_ON_RECEIVED_LOGIN_REQUEST = 4;
+    private static final int MSG_ON_RECEIVED_ERROR = 5;
+    private static final int MSG_ON_NEW_PICTURE = 6;
+    private static final int MSG_ON_SCALE_CHANGED_SCALED = 7;
 
     // Minimum period allowed between consecutive onNewPicture calls, to rate-limit the callbacks.
     private static final long ON_NEW_PICTURE_MIN_PERIOD_MILLIS = 500;
@@ -146,7 +146,7 @@ class AwContentsClientCallbackHelper {
                             "AwContentsClientCallbackHelper: unhandled message " + msg.what);
             }
         }
-    };
+    }
 
     public AwContentsClientCallbackHelper(Looper looper, AwContentsClient contentsClient) {
         mHandler = new MyHandler(looper);

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -305,9 +305,9 @@ public class AwContentsTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-              for (int i = 0; i < 10; ++i) {
-                  awContents.clearCache(true);
-              }
+                for (int i = 0; i < 10; ++i) {
+                    awContents.clearCache(true);
+                }
             }
         });
     }
@@ -348,7 +348,7 @@ public class AwContentsTest extends AwTestBase {
 
             final Object originalFaviconSource = (new URL(faviconUrl)).getContent();
             final Bitmap originalFavicon =
-                BitmapFactory.decodeStream((InputStream)originalFaviconSource);
+                BitmapFactory.decodeStream((InputStream) originalFaviconSource);
             assertNotNull(originalFavicon);
 
             assertTrue(awContents.getFavicon().sameAs(originalFavicon));
@@ -428,7 +428,7 @@ public class AwContentsTest extends AwTestBase {
         public void run() {
             mCallbackHelper.notifyCalled();
         }
-    };
+    }
 
     @Feature({"AndroidWebView", "JavaBridge"})
     @SmallTest

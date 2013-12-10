@@ -74,7 +74,7 @@ public class AwContentViewClient extends ContentViewClient {
     }
 
     @Override
-    final public ContentVideoViewClient getContentVideoViewClient() {
+    public final ContentVideoViewClient getContentVideoViewClient() {
         return new AwContentVideoViewClient();
     }
 

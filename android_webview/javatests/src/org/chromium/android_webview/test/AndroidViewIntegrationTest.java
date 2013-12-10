@@ -34,12 +34,12 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         private int mHeight;
 
         public int getWidth() {
-            assert(getCallCount() > 0);
+            assert getCallCount() > 0;
             return mWidth;
         }
 
         public int getHeight() {
-            assert(getCallCount() > 0);
+            assert getCallCount() > 0;
             return mHeight;
         }
 

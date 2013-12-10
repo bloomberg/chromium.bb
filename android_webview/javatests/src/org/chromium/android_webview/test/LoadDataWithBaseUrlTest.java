@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -360,7 +360,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             assertTrue(canAccessFileFromData(NON_DATA_BASE_URL,
                   "file://" + imagePath + "?" + token));
         } finally {
-          if (!tempImage.delete()) throw new AssertionError();
+            if (!tempImage.delete()) throw new AssertionError();
         }
     }
 }

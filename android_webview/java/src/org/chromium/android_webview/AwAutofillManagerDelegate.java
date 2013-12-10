@@ -14,8 +14,10 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.autofill.AutofillPopup;
 import org.chromium.ui.autofill.AutofillSuggestion;
 
-// Java counterpart to the AwAutofillManagerDelegate. This class is owned by
-// AwContents and has a weak reference from native side.
+/**
+ * Java counterpart to the AwAutofillManagerDelegate. This class is owned by AwContents and has
+ * a weak reference from native side.
+ */
 @JNINamespace("android_webview")
 public class AwAutofillManagerDelegate {
 
@@ -49,7 +51,9 @@ public class AwAutofillManagerDelegate {
                 mContentViewCore.getContext(),
                 mContentViewCore.getViewAndroidDelegate(),
                 new AutofillPopup.AutofillPopupDelegate() {
+                    @Override
                     public void requestHide() { }
+                    @Override
                     public void suggestionSelected(int listIndex) {
                         nativeSuggestionSelected(mNativeAwAutofillManagerDelegate, listIndex);
                     }

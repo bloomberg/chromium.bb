@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,9 @@ public class AwShellApplication extends Application {
         CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
 
         if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
-           Log.e(TAG, "Waiting for Java debugger to connect...");
-           Debug.waitForDebugger();
-           Log.e(TAG, "Java debugger connected. Resuming execution.");
+            Log.e(TAG, "Waiting for Java debugger to connect...");
+            Debug.waitForDebugger();
+            Log.e(TAG, "Java debugger connected. Resuming execution.");
         }
 
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAKS);

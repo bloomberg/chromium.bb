@@ -38,18 +38,18 @@ public class AwViewportTest extends AwTestBase {
                 DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, pageDeviceDpi, "text/html", false);
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
-        assertEquals((float)deviceInfo.getDisplayWidth(), (float)actualWidth, 10f);
+        assertEquals(deviceInfo.getDisplayWidth(), actualWidth, 10f);
 
-        float displayWidth = (float)(deviceInfo.getDisplayWidth());
-        float deviceDpi = (float)(160f * deviceInfo.getDIPScale());
+        float displayWidth = (deviceInfo.getDisplayWidth());
+        float deviceDpi = (float) (160f * deviceInfo.getDIPScale());
 
         loadDataSync(awContents, onPageFinishedHelper, pageHighDpi, "text/html", false);
         actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
-        assertEquals(displayWidth * (240f / deviceDpi), (float)actualWidth, 10f);
+        assertEquals(displayWidth * (240f / deviceDpi), actualWidth, 10f);
 
         loadDataSync(awContents, onPageFinishedHelper, pageDpi100, "text/html", false);
         actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
-        assertEquals(displayWidth * (100f / deviceDpi), (float)actualWidth, 10f);
+        assertEquals(displayWidth * (100f / deviceDpi), actualWidth, 10f);
     }
 
     @MediumTest
@@ -72,9 +72,9 @@ public class AwViewportTest extends AwTestBase {
         DeviceDisplayInfo deviceInfo =
                 DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        float displayWidth = (float)(deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+        float displayWidth = (float) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
-        assertEquals(displayWidth, (float)actualWidth, 10f);
+        assertEquals(displayWidth, actualWidth, 10f);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
     }
 
@@ -98,15 +98,15 @@ public class AwViewportTest extends AwTestBase {
         DeviceDisplayInfo deviceInfo =
                 DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        float displayWidth = (float)(deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+        float displayWidth = (float) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
-        assertEquals(displayWidth, (float)actualWidth, 10f);
+        assertEquals(displayWidth, actualWidth, 10f);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
 
         settings.setUseWideViewPort(true);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
-        assertEquals(displayWidth, (float)actualWidth, 10f);
+        assertEquals(displayWidth, actualWidth, 10f);
         assertEquals(1.0f, getScaleOnUiThread(awContents));
     }
 
@@ -126,7 +126,7 @@ public class AwViewportTest extends AwTestBase {
 
         DeviceDisplayInfo deviceInfo =
                 DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
-        float dipScale = (float)deviceInfo.getDIPScale();
+        float dipScale = (float) deviceInfo.getDIPScale();
         float physicalDisplayWidth = deviceInfo.getDisplayWidth();
         float cssDisplayWidth = physicalDisplayWidth / dipScale;
         float physicalDisplayHeight = deviceInfo.getDisplayHeight();
@@ -145,7 +145,7 @@ public class AwViewportTest extends AwTestBase {
         assertEquals(innerWidth * dipScale, outerWidth, 10f);
         String deviceWidthEqualsScreenWidth = executeJavaScriptAndWaitForResult(awContents,
                 contentClient,
-                "matchMedia(\"screen and (device-width:" + (int)screenWidth + "px)\").matches");
+                "matchMedia(\"screen and (device-width:" + (int) screenWidth + "px)\").matches");
         assertEquals("true", deviceWidthEqualsScreenWidth);
 
         float screenHeight = Integer.parseInt(
@@ -161,7 +161,7 @@ public class AwViewportTest extends AwTestBase {
         assertEquals(innerHeight * dipScale, outerHeight, 10f);
         String deviceHeightEqualsScreenHeight = executeJavaScriptAndWaitForResult(awContents,
                 contentClient,
-                "matchMedia(\"screen and (device-height:" + (int)screenHeight + "px)\").matches");
+                "matchMedia(\"screen and (device-height:" + (int) screenHeight + "px)\").matches");
         assertEquals("true", deviceHeightEqualsScreenHeight);
     }
 

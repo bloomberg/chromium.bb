@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,7 +184,7 @@ public class HttpAuthDatabase {
      *         String[1] is password.  Null is returned if it can't find anything.
      */
     public String[] getHttpAuthUsernamePassword(String host, String realm) {
-        if (host == null || realm == null || !waitForInit()){
+        if (host == null || realm == null || !waitForInit()) {
             return null;
         }
 

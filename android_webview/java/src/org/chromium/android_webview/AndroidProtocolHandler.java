@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,16 +67,16 @@ public class AndroidProtocolHandler {
         return id;
     }
 
-    private static int getValueType(Context context, int field_id) {
-      TypedValue value = new TypedValue();
-      context.getResources().getValue(field_id, value, true);
-      return value.type;
+    private static int getValueType(Context context, int fieldId) {
+        TypedValue value = new TypedValue();
+        context.getResources().getValue(fieldId, value, true);
+        return value.type;
     }
 
     private static InputStream openResource(Context context, Uri uri) {
-        assert(uri.getScheme().equals(FILE_SCHEME));
-        assert(uri.getPath() != null);
-        assert(uri.getPath().startsWith(nativeGetAndroidResourcePath()));
+        assert uri.getScheme().equals(FILE_SCHEME);
+        assert uri.getPath() != null;
+        assert uri.getPath().startsWith(nativeGetAndroidResourcePath());
         // The path must be of the form "/android_res/asset_type/asset_name.ext".
         List<String> pathSegments = uri.getPathSegments();
         if (pathSegments.size() != 3) {
@@ -101,10 +101,10 @@ public class AndroidProtocolHandler {
             if (context.getApplicationContext() != null) {
                 context = context.getApplicationContext();
             }
-            int field_id = getFieldId(context, assetType, assetName);
-            int value_type = getValueType(context, field_id);
-            if (value_type == TypedValue.TYPE_STRING) {
-                return context.getResources().openRawResource(field_id);
+            int fieldId = getFieldId(context, assetType, assetName);
+            int valueType = getValueType(context, fieldId);
+            if (valueType == TypedValue.TYPE_STRING) {
+                return context.getResources().openRawResource(fieldId);
             } else {
                 Log.e(TAG, "Asset not of type string: " + uri);
                 return null;
@@ -122,9 +122,9 @@ public class AndroidProtocolHandler {
     }
 
     private static InputStream openAsset(Context context, Uri uri) {
-        assert(uri.getScheme().equals(FILE_SCHEME));
-        assert(uri.getPath() != null);
-        assert(uri.getPath().startsWith(nativeGetAndroidAssetPath()));
+        assert uri.getScheme().equals(FILE_SCHEME);
+        assert uri.getPath() != null;
+        assert uri.getPath().startsWith(nativeGetAndroidAssetPath());
         String path = uri.getPath().replaceFirst(nativeGetAndroidAssetPath(), "");
         try {
             AssetManager assets = context.getAssets();
@@ -136,7 +136,7 @@ public class AndroidProtocolHandler {
     }
 
     private static InputStream openContent(Context context, Uri uri) {
-        assert(uri.getScheme().equals(CONTENT_SCHEME));
+        assert uri.getScheme().equals(CONTENT_SCHEME);
         try {
             return context.getContentResolver().openInputStream(uri);
         } catch (Exception e) {

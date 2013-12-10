@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,9 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEval
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-// Collection of functions for JavaScript-based interactions with a page.
+/**
+ * Collection of functions for JavaScript-based interactions with a page.
+ */
 public class JSUtils {
     private static final int WAIT_TIMEOUT_SECONDS = 2;
     private static final int CHECK_INTERVAL = 100;

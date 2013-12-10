@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,19 +25,20 @@ public class AwContentsClientFaviconTest extends AwTestBase {
     private static final String FAVICON1_URL = "/favicon1.png";
     private static final String FAVICON1_PAGE_URL = "/favicon1.html";
     private static final String FAVICON1_PAGE_HTML =
-      CommonResources.makeHtmlPageFrom(
-        "<link rel=\"icon\" href=\""+ FAVICON1_URL + "\" />",
-        "Body");
+            CommonResources.makeHtmlPageFrom(
+                    "<link rel=\"icon\" href=\"" + FAVICON1_URL + "\" />",
+                    "Body");
 
     private static final String TOUCHICON_REL_LINK = "touch.png";
     private static final String TOUCHICON_REL_LINK_72 = "touch_72.png";
     private static final String TOUCHICON_REL_URL = "/" + TOUCHICON_REL_LINK;
     private static final String TOUCHICON_REL_URL_72 = "/" + TOUCHICON_REL_LINK_72;
     private static final String TOUCHICON_REL_PAGE_HTML =
-      CommonResources.makeHtmlPageFrom(
-        "<link rel=\"apple-touch-icon\" href=\""+ TOUCHICON_REL_URL + "\" />" +
-        "<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\""+ TOUCHICON_REL_URL_72 + "\" />",
-        "Body");
+            CommonResources.makeHtmlPageFrom(
+                    "<link rel=\"apple-touch-icon\" href=\"" + TOUCHICON_REL_URL + "\" />" +
+                    "<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"" + TOUCHICON_REL_URL_72
+                    + "\" />",
+                    "Body");
 
     private static class FaviconHelper extends CallbackHelper {
         private Bitmap mIcon;
@@ -103,15 +104,15 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         int callCount = mContentsClient.mFaviconHelper.getCallCount();
 
         final String faviconUrl = mWebServer.setResponseBase64(FAVICON1_URL,
-          CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
+            CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
         final String pageUrl = mWebServer.setResponse(FAVICON1_PAGE_URL, FAVICON1_PAGE_HTML,
-          CommonResources.getTextHtmlHeaders(true));
+            CommonResources.getTextHtmlHeaders(true));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
         mContentsClient.mFaviconHelper.waitForCallback(callCount);
         Object originalFaviconSource = (new URL(faviconUrl)).getContent();
-        Bitmap originalFavicon = BitmapFactory.decodeStream((InputStream)originalFaviconSource);
+        Bitmap originalFavicon = BitmapFactory.decodeStream((InputStream) originalFaviconSource);
         assertNotNull(originalFavicon);
         assertNotNull(mContentsClient.mFaviconHelper.mIcon);
         assertTrue(mContentsClient.mFaviconHelper.mIcon.sameAs(originalFavicon));
@@ -123,11 +124,11 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         int callCount = mContentsClient.mFaviconHelper.getCallCount();
 
         final String pageUrl = mWebServer.setResponse(TOUCHICON_REL_URL, TOUCHICON_REL_PAGE_HTML,
-          CommonResources.getTextHtmlHeaders(true));
+            CommonResources.getTextHtmlHeaders(true));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
-        mContentsClient.mFaviconHelper.waitForCallback(callCount,2);
+        mContentsClient.mFaviconHelper.waitForCallback(callCount, 2);
         HashMap<String, Boolean> touchIcons = mContentsClient.mFaviconHelper.mTouchIcons;
         assertEquals(2, touchIcons.size());
         assertFalse(touchIcons.get(mWebServer.getBaseUrl() + TOUCHICON_REL_LINK));

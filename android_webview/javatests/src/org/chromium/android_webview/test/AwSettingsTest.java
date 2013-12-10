@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1063,7 +1063,7 @@ public class AwSettingsTest extends AwTestBase {
             // text zoom values ratio.
             final float ratiosDelta = Math.abs(
                 (actualFontSize / mInitialActualFontSize) -
-                (value / (float)INITIAL_TEXT_ZOOM));
+                (value / (float) INITIAL_TEXT_ZOOM));
             assertTrue(
                 "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
                 value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
@@ -1114,7 +1114,7 @@ public class AwSettingsTest extends AwTestBase {
             // text zoom values ratio.
             final float ratiosDelta = Math.abs(
                 (actualFontSize / mInitialActualFontSize) -
-                (value / (float)INITIAL_TEXT_ZOOM));
+                (value / (float) INITIAL_TEXT_ZOOM));
             assertTrue(
                 "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
                 value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
@@ -1123,8 +1123,8 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     class AwSettingsJavaScriptPopupsTestHelper extends AwSettingsTestHelper<Boolean> {
-        static private final String POPUP_ENABLED = "Popup enabled";
-        static private final String POPUP_BLOCKED = "Popup blocked";
+        private static final String POPUP_ENABLED = "Popup enabled";
+        private static final String POPUP_BLOCKED = "Popup blocked";
 
         AwSettingsJavaScriptPopupsTestHelper(
                 AwContents awContents,
@@ -1245,7 +1245,7 @@ public class AwSettingsTest extends AwTestBase {
     // We specify a very high width value to make sure that it doesn't intersect with
     // device screen widths (in DIP pixels).
     class AwSettingsUseWideViewportTestHelper extends AwSettingsTestHelper<Boolean> {
-        static private final String VIEWPORT_TAG_LAYOUT_WIDTH = "3000";
+        private static final String VIEWPORT_TAG_LAYOUT_WIDTH = "3000";
 
         AwSettingsUseWideViewportTestHelper(
                 AwContents awContents,
@@ -1897,7 +1897,7 @@ public class AwSettingsTest extends AwTestBase {
                     CommonResources.getImagePngHeaders(true));
 
             // Set up file html that loads http iframe.
-            String pageHtml ="<img src='" + imageUrl + "' " +
+            String pageHtml = "<img src='" + imageUrl + "' " +
                       "onload=\"document.title='img_onload_fired';\" " +
                       "onerror=\"document.title='img_onerror_fired';\" />";
             Context context = getInstrumentation().getTargetContext();
@@ -1964,7 +1964,7 @@ public class AwSettingsTest extends AwTestBase {
             // to know whether Url is accessed.
             final String audioUrl = webServer.setResponse(httpPath, "1", null);
 
-            String pageHtml ="<html><body><audio controls src='" + audioUrl + "' " +
+            String pageHtml = "<html><body><audio controls src='" + audioUrl + "' " +
                     "oncanplay=\"AudioEvent.onCanPlay();\" " +
                     "onerror=\"AudioEvent.onError();\" /> </body></html>";
             // Actual test. Blocking should trigger onerror handler.
@@ -2524,7 +2524,7 @@ public class AwSettingsTest extends AwTestBase {
         int height = screenSize.y * 2 + 1;
         int width = screenSize.x * 2 + 1;
         final String page = "<html><body>" +
-                "<p style='height:"+ height + "px;width:" + width + "px'>" +
+                "<p style='height:" + height + "px;width:" + width + "px'>" +
                 "testSetInitialScale</p></body></html>";
         final float defaultScale =
             getInstrumentation().getTargetContext().getResources().getDisplayMetrics().density;
@@ -2588,8 +2588,7 @@ public class AwSettingsTest extends AwTestBase {
             if (waitTime == -1) {
                 observer.waitForEvent();
                 return true;
-            }
-            else {
+            } else {
                 return observer.waitForEvent(waitTime);
             }
         } finally {
@@ -2809,8 +2808,8 @@ public class AwSettingsTest extends AwTestBase {
 
     private void simulateDoubleTapCenterOfWebViewOnUiThread(final AwTestContainerView webView)
             throws Throwable {
-        final int x = (int)(webView.getRight() - webView.getLeft()) / 2;
-        final int y = (int)(webView.getBottom() - webView.getTop()) / 2;
+        final int x = (webView.getRight() - webView.getLeft()) / 2;
+        final int y = (webView.getBottom() - webView.getTop()) / 2;
         final AwContents awContents = webView.getAwContents();
         runTestOnUiThread(new Runnable() {
             @Override

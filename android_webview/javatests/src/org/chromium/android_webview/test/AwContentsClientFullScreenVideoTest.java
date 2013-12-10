@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,7 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
             contentsClient.waitForCustomViewShown();
             getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
             contentsClient.waitForCustomViewHidden();
-        }
-        finally {
+        } finally {
             if (webServer != null) webServer.getTestWebServer().shutdown();
         }
     }

@@ -25,8 +25,6 @@ import android.webkit.ValueCallback;
  */
 public class AwPrintDocumentAdapter extends PrintDocumentAdapter {
 
-    private static final String TAG = "AwPrintDocumentAdapter";
-
     private AwPdfExporter mPdfExporter;
     private PrintAttributes mAttributes;
 
@@ -59,16 +57,16 @@ public class AwPrintDocumentAdapter extends PrintDocumentAdapter {
     public void onWrite(PageRange[] pages, ParcelFileDescriptor destination,
             CancellationSignal cancellationSignal, final WriteResultCallback callback) {
         mPdfExporter.exportToPdf(destination, mAttributes, new ValueCallback<Boolean>() {
-                    @Override
-                    public void onReceiveValue(Boolean value) {
-                        if (value) {
-                            callback.onWriteFinished(new PageRange[] {PageRange.ALL_PAGES});
-                        } else {
-                            // TODO(sgurun) provide a localized error message
-                            callback.onWriteFailed(null);
-                        }
-                    }
-                }, cancellationSignal);
+            @Override
+            public void onReceiveValue(Boolean value) {
+                if (value) {
+                    callback.onWriteFinished(new PageRange[] { PageRange.ALL_PAGES });
+                } else {
+                    // TODO(sgurun) provide a localized error message
+                    callback.onWriteFailed(null);
+                }
+            }
+        }, cancellationSignal);
     }
 }
 

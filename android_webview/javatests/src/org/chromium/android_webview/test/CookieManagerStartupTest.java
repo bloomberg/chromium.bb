@@ -46,7 +46,7 @@ public class CookieManagerStartupTest extends AwTestBase {
             @Override
             public void run() {
                 AwBrowserProcess.start(context);
-             }
+            }
         });
 
         mContentsClient = new TestAwContentsClient();

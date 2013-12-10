@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ public class AwZoomTest extends AwTestBase {
             public Boolean call() throws Exception {
                 return mAwContents.zoomIn();
             }
-           }))
+        }))
             return false;
         // The zoom level is updated asynchronously.
         return waitForScaleChange(previousScale);
@@ -110,7 +110,7 @@ public class AwZoomTest extends AwTestBase {
             public Boolean call() throws Exception {
                 return mAwContents.zoomOut();
             }
-           }))
+        }))
             return false;
         // The zoom level is updated asynchronously.
         return waitForScaleChange(previousScale);

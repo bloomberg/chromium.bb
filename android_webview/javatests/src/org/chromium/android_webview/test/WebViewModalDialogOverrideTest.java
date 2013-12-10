@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,10 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WebViewModalDialogOverrideTest extends AwTestBase {
-    private final static String EMPTY_PAGE =
+    private static final String EMPTY_PAGE =
             "<!doctype html>" +
             "<title>Modal Dialog Test</title><p>Testcase.</p>";
-    private final static String BEFORE_UNLOAD_URL =
+    private static final String BEFORE_UNLOAD_URL =
             "<!doctype html>" +
             "<head><script>window.onbeforeunload=function() {" +
             "return 'Are you sure?';" +

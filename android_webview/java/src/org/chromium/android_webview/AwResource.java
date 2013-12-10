@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,13 +104,12 @@ public class AwResource {
             return "";
         } catch (NoSuchElementException e) {
             return "";
-        }
-        finally {
+        } finally {
             try {
                 if (isr != null) {
                     isr.close();
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
             }
         }
         return result;

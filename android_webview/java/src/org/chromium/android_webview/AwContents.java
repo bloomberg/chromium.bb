@@ -421,19 +421,17 @@ public class AwContents {
 
     //--------------------------------------------------------------------------------------------
     private class AwComponentCallbacks implements ComponentCallbacks2 {
-          @Override
-          public void onTrimMemory(int level) {
-              if (mNativeAwContents == 0) return;
-              nativeTrimMemory(mNativeAwContents, level);
-          }
+        @Override
+        public void onTrimMemory(int level) {
+            if (mNativeAwContents == 0) return;
+            nativeTrimMemory(mNativeAwContents, level);
+        }
 
-          @Override
-          public void onLowMemory() {
-          }
+        @Override
+        public void onLowMemory() {}
 
-          @Override
-          public void onConfigurationChanged(Configuration configuration) {
-          }
+        @Override
+        public void onConfigurationChanged(Configuration configuration) {}
     };
 
     //--------------------------------------------------------------------------------------------
@@ -569,7 +567,7 @@ public class AwContents {
 
         // The only call to onShow. onHide should never be called.
         mContentViewCore.onShow();
-   }
+    }
 
     /**
      * Called on the "source" AwContents that is opening the popup window to
@@ -862,7 +860,7 @@ public class AwContents {
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
      * off during user input).
      *
-     * @param pararms Parameters for this load.
+     * @param params Parameters for this load.
      */
     public void loadUrl(LoadUrlParams params) {
         if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA &&
@@ -892,8 +890,8 @@ public class AwContents {
         // Chromium does not use this use code path and the best emulation of this behavior to call
         // request visited links once on the first URL load of the WebView.
         if (!mHasRequestedVisitedHistoryFromClient) {
-          mHasRequestedVisitedHistoryFromClient = true;
-          requestVisitedHistoryFromClient();
+            mHasRequestedVisitedHistoryFromClient = true;
+            requestVisitedHistoryFromClient();
         }
     }
 
@@ -1358,7 +1356,7 @@ public class AwContents {
 
     @VisibleForTesting
     public float getPageScaleFactor() {
-        return (float)mPageScaleFactor;
+        return mPageScaleFactor;
     }
 
     /**
@@ -1492,8 +1490,8 @@ public class AwContents {
 
             // Note this will trigger IPC back to browser even if nothing is hit.
             nativeRequestNewHitTestDataAt(mNativeAwContents,
-                                          (int)Math.round(event.getX(actionIndex) / mDIPScale),
-                                          (int)Math.round(event.getY(actionIndex) / mDIPScale));
+                                          (int) Math.round(event.getX(actionIndex) / mDIPScale),
+                                          (int) Math.round(event.getY(actionIndex) / mDIPScale));
         }
 
         if (mOverScrollGlow != null && event.getActionMasked() == MotionEvent.ACTION_UP) {
@@ -1555,8 +1553,8 @@ public class AwContents {
         mContentViewCore.onDetachedFromWindow();
 
         if (mComponentCallbacks != null) {
-          mContainerView.getContext().unregisterComponentCallbacks(mComponentCallbacks);
-          mComponentCallbacks = null;
+            mContainerView.getContext().unregisterComponentCallbacks(mComponentCallbacks);
+            mComponentCallbacks = null;
         }
 
         mScrollAccessibilityHelper.removePostedCallbacks();
@@ -1908,7 +1906,7 @@ public class AwContents {
         float oldPageScaleFactor = mPageScaleFactor;
         mPageScaleFactor = pageScaleFactor;
         mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
-                (float)(oldPageScaleFactor * mDIPScale), (float)(mPageScaleFactor * mDIPScale));
+                (float) (oldPageScaleFactor * mDIPScale), (float) (mPageScaleFactor * mDIPScale));
     }
 
     @CalledByNative
@@ -2005,7 +2003,7 @@ public class AwContents {
 
     private native void nativeAddVisitedLinks(long nativeAwContents, String[] visitedLinks);
     private native boolean nativeOnDraw(long nativeAwContents, Canvas canvas,
-            boolean isHardwareAccelerated, int scrollX, int ScrollY,
+            boolean isHardwareAccelerated, int scrollX, int scrollY,
             int clipLeft, int clipTop, int clipRight, int clipBottom);
     private native void nativeSetGlobalVisibleRect(long nativeAwContents, int visibleLeft,
             int visibleTop, int visibleRight, int visibleBottom);

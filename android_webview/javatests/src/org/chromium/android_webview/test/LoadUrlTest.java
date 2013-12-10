@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,8 +110,9 @@ public class LoadUrlTest extends AwTestBase {
             String[] headerNames = {"X-ExtraHeaders1", "x-extraHeaders2"};
             String[] headerValues = {"extra-header-data1", "EXTRA-HEADER-DATA2"};
             Map<String, String> extraHeaders = new HashMap<String, String>();
-            for (int i = 0; i < headerNames.length; ++i)
-              extraHeaders.put(headerNames[i], headerValues[i]);
+            for (int i = 0; i < headerNames.length; ++i) {
+                extraHeaders.put(headerNames[i], headerValues[i]);
+            }
 
             loadUrlWithExtraHeadersSync(awContents,
                                         contentsClient.getOnPageFinishedHelper(),
@@ -120,12 +121,12 @@ public class LoadUrlTest extends AwTestBase {
 
             HttpRequest request = webServer.getLastRequest(path);
             for (int i = 0; i < headerNames.length; ++i) {
-              Header[] matchingHeaders = request.getHeaders(headerNames[i]);
-              assertEquals(1, matchingHeaders.length);
+                Header[] matchingHeaders = request.getHeaders(headerNames[i]);
+                assertEquals(1, matchingHeaders.length);
 
-              Header header = matchingHeaders[0];
-              assertEquals(headerNames[i].toLowerCase(), header.getName());
-              assertEquals(headerValues[i], header.getValue());
+                Header header = matchingHeaders[0];
+                assertEquals(headerNames[i].toLowerCase(), header.getName());
+                assertEquals(headerValues[i], header.getValue());
             }
         } finally {
             if (webServer != null) webServer.shutdown();

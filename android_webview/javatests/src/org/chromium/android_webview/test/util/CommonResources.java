@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@ import android.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-// Auxiliary class providing common HTML and base64 resources using for testing.
+/**
+ * Auxiliary class providing common HTML and base64 resources using for testing.
+ */
 public class CommonResources {
 
     // Content-type headers used for HTML code.
