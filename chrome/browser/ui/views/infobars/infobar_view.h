@@ -104,6 +104,7 @@ class InfoBarView : public InfoBar,
 
  private:
   static const int kHorizontalPadding;
+  static const int kCloseButtonSpacing;
 
   // InfoBar:
   virtual void PlatformSpecificShow(bool animate) OVERRIDE;

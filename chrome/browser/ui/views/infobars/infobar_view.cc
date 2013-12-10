@@ -41,6 +41,9 @@
 #include "ui/gfx/win/hwnd_util.h"
 #endif
 
+
+// InfoBar --------------------------------------------------------------------
+
 // static
 const int InfoBar::kSeparatorLineHeight =
     views::NonClientFrameView::kClientEdgeThickness;
@@ -50,9 +53,14 @@ const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
 const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
 const int InfoBar::kDefaultBarTargetHeight = 36;
 
+
+// InfoBarView ----------------------------------------------------------------
+
+// static
 const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
 const int InfoBarView::kHorizontalPadding = 6;
+const int InfoBarView::kCloseButtonSpacing = kEndOfLabelSpacing;
 
 InfoBarView::InfoBarView(scoped_ptr<InfoBarDelegate> delegate)
     : InfoBar(delegate.Pass()),
@@ -231,10 +239,14 @@ void InfoBarView::Layout() {
                      icon_size.height());
   }
 
+  int content_minimum_width = ContentMinimumWidth();
   gfx::Size button_size = close_button_->GetPreferredSize();
-  close_button_->SetBounds(std::max(start_x + ContentMinimumWidth(),
-      width() - kHorizontalPadding - button_size.width()), OffsetY(button_size),
-      button_size.width(), button_size.height());
+  close_button_->SetBounds(
+      std::max(
+          start_x + content_minimum_width +
+              ((content_minimum_width > 0) ? kCloseButtonSpacing : 0),
+          width() - kHorizontalPadding - button_size.width()),
+      OffsetY(button_size), button_size.width(), button_size.height());
 }
 
 void InfoBarView::ViewHierarchyChanged(
@@ -317,7 +329,6 @@ int InfoBarView::StartX() const {
 }
 
 int InfoBarView::EndX() const {
-  const int kCloseButtonSpacing = 12;
   return close_button_->x() - kCloseButtonSpacing;
 }
 
@@ -389,7 +400,13 @@ void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
-  return gfx::Size(0, total_height());
+  return gfx::Size(
+      kHorizontalPadding +
+          ((icon_ == NULL) ?
+              0 : (icon_->GetPreferredSize().width() + kHorizontalPadding)) +
+          ContentMinimumWidth() + kCloseButtonSpacing +
+          close_button_->GetPreferredSize().width() + kHorizontalPadding,
+      total_height());
 }
 
 void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
