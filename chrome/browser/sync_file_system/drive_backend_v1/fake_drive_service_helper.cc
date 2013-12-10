@@ -77,7 +77,7 @@ GDataErrorCode FakeDriveServiceHelper::AddOrphanedFolder(
       CreateResultReceiver(&error));
   base::RunLoop().RunUntilIdle();
 
-  if (error != google_apis::HTTP_NO_CONTENT)
+  if (error != google_apis::HTTP_SUCCESS)
     return error;
   return google_apis::HTTP_CREATED;
 }

@@ -29,7 +29,6 @@ using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GetContentCallback;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_NOT_FOUND;
-using google_apis::HTTP_NO_CONTENT;
 using google_apis::HTTP_PRECONDITION;
 using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
@@ -1448,7 +1447,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
       test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(HTTP_NO_CONTENT, error);
+  EXPECT_EQ(HTTP_SUCCESS, error);
 
   resource_entry = FindEntry(kResourceId);
   ASSERT_TRUE(resource_entry);

@@ -47,7 +47,6 @@ using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_BAD_REQUEST;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_NOT_FOUND;
-using google_apis::HTTP_NO_CONTENT;
 using google_apis::HTTP_PRECONDITION;
 using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
@@ -938,7 +937,7 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
           links->Remove(i, NULL);
           AddNewChangestamp(entry);
           base::MessageLoop::current()->PostTask(
-              FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+              FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
           return CancelCallback();
         }
       }
