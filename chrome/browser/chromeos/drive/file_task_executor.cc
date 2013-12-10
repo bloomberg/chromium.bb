@@ -105,10 +105,8 @@ void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
   }
 
   {
-    Profile* profile = profile_ ?
-        profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord();
     chrome::ScopedTabbedBrowserDisplayer displayer(
-         profile, chrome::HOST_DESKTOP_TYPE_ASH);
+         profile_, chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::AddSelectedTabWithURL(displayer.browser(), open_link,
                                   content::PAGE_TRANSITION_LINK);
   }
