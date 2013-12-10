@@ -91,20 +91,20 @@ WorkerScriptController::~WorkerScriptController()
 void WorkerScriptController::disposeContext()
 {
     m_perContextData.clear();
-    m_context.clear();
+    m_contextHolder.clear();
 }
 
 bool WorkerScriptController::initializeContextIfNeeded()
 {
-    if (!m_context.isEmpty())
+    if (m_contextHolder)
         return true;
 
-    m_context.set(isolate(), v8::Context::New(isolate()));
-    if (m_context.isEmpty())
+    v8::Handle<v8::Context> context = v8::Context::New(isolate());
+    if (context.IsEmpty())
         return false;
 
-    // Starting from now, use local context only.
-    v8::Local<v8::Context> context = m_context.newLocal(isolate());
+    m_contextHolder = adoptPtr(new gin::ContextHolder(isolate()));
+    m_contextHolder->SetContext(context);
 
     v8::Context::Scope scope(context);
 
@@ -135,7 +135,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtr<WorkerGlobalScope>(m_workerGlobalScope), contextType, jsWorkerGlobalScope, isolate(), WrapperConfiguration::Dependent);
 
     // Insert the object instance as the prototype of the shadow object.
-    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_context.newLocal(isolate())->Global()->GetPrototype());
+    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_contextHolder->context()->Global()->GetPrototype());
     globalObject->SetPrototype(jsWorkerGlobalScope);
 
     return true;
@@ -148,7 +148,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (!initializeContextIfNeeded())
         return ScriptValue();
 
-    v8::Handle<v8::Context> context = m_context.newLocal(isolate());
+    v8::Handle<v8::Context> context = m_contextHolder->context();
     if (!m_disableEvalPending.isEmpty()) {
         context->AllowCodeGenerationFromStrings(false);
         context->SetErrorMessageForCodeGenerationFromStrings(v8String(isolate(), m_disableEvalPending));
