@@ -14,7 +14,7 @@ public class LibraryLoader {
         if (sInitialized)
             return;
         sInitialized = true;
-        System.loadLibrary("mojo_shell.cr");
+        System.loadLibrary("mojo_shell");
         Log.i(TAG, "libmojo_shell initialization success.");
     }
 }

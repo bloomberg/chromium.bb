@@ -24,6 +24,13 @@
       ],
     },
     {
+      'target_name': 'package_sample_app',
+      'variables': {
+        'app_name': 'sample_app',
+      },
+      'includes': [ 'build/package_app.gypi' ],
+    },
+    {
       'target_name': 'hello_world_bindings',
       'type': 'static_library',
       'sources': [
