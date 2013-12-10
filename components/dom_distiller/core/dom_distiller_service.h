@@ -20,10 +20,11 @@ namespace dom_distiller {
 
 class DistilledPageProto;
 class DistillerFactory;
+class DomDistillerObserver;
 class DomDistillerStoreInterface;
 class TaskTracker;
-class ViewRequestDelegate;
 class ViewerHandle;
+class ViewRequestDelegate;
 
 // Provide a view of the article list and ways of interacting with it.
 class DomDistillerService {
@@ -54,6 +55,9 @@ class DomDistillerService {
   // Request to view an article by url.
   scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate* delegate,
                                    const GURL& url);
+
+  void AddObserver(DomDistillerObserver* observer);
+  void RemoveObserver(DomDistillerObserver* observer);
 
  private:
   void CancelTask(TaskTracker* task);

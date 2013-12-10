@@ -144,4 +144,14 @@ void DomDistillerService::AddDistilledPageToList(const ArticleEntry& entry,
   store_->AddEntry(entry);
 }
 
+void DomDistillerService::AddObserver(DomDistillerObserver* observer) {
+  DCHECK(observer);
+  store_->AddObserver(observer);
+}
+
+void DomDistillerService::RemoveObserver(DomDistillerObserver* observer) {
+  DCHECK(observer);
+  store_->RemoveObserver(observer);
+}
+
 }  // namespace dom_distiller

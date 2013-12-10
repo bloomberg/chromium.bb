@@ -91,6 +91,9 @@ class FakeDomDistillerStore : public DomDistillerStoreInterface {
     return NULL;
   }
 
+  virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE {}
+  virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE {}
+
  private:
   DomDistillerModel model_;
 };
