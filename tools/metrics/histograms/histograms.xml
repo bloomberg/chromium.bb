@@ -5569,6 +5569,38 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InertialSensor.AccelerometerAndroidAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the Sensor.TYPE_LINEAR_ACCELERATION was available at the start of
+    Device Motion.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.AccelerometerIncGravityAndroidAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the Sensor.TYPE_ACCELEROMETER was available at the start of Device
+    Motion.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.GyroscopeAndroidAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the Sensor.TYPE_GYROSCOPE was available at the start of Device
+    Motion.
+  </summary>
+</histogram>
+
+<histogram name="InertialSensor.RotationVectorAndroidAvailable"
+    enum="BooleanAvailable">
+  <summary>
+    Whether the Sensor.TYPE_ROTATION_VECTOR was available at the start of Device
+    Orientation.
+  </summary>
+</histogram>
+
 <histogram name="Installer.AttemptsCount.Total" units="count">
   <summary>
     The number of update attempts until the update has been applied. This is
@@ -21695,6 +21727,11 @@ other types of suffix sets.
 <enum name="BooleanAttempted" type="int">
   <int value="0" label="Not Attempted"/>
   <int value="1" label="Attempted"/>
+</enum>
+
+<enum name="BooleanAvailable" type="int">
+  <int value="0" label="Not Available"/>
+  <int value="1" label="Available"/>
 </enum>
 
 <enum name="BooleanCloseTimeout" type="int">

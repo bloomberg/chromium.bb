@@ -8,10 +8,19 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "content/browser/device_orientation/inertial_sensor_consts.h"
 #include "jni/DeviceMotionAndOrientation_jni.h"
 
 using base::android::AttachCurrentThread;
+
+namespace {
+
+static void updateRotationVectorHistogram(bool value) {
+  UMA_HISTOGRAM_BOOLEAN("InertialSensor.RotationVectorAndroidAvailable", value);
+}
+
+}
 
 namespace content {
 
@@ -54,8 +63,10 @@ void DataFetcherImplAndroid::GotOrientation(
   device_orientation_buffer_->data.hasGamma = true;
   device_orientation_buffer_->seqlock.WriteEnd();
 
-  if (!is_orientation_buffer_ready_)
+  if (!is_orientation_buffer_ready_) {
     SetOrientationBufferReadyStatus(true);
+    updateRotationVectorHistogram(true);
+  }
 }
 
 void DataFetcherImplAndroid::GotAcceleration(
@@ -191,6 +202,15 @@ void DataFetcherImplAndroid::CheckMotionBufferReadyToRead() {
     device_motion_buffer_->data.interval = kInertialSensorIntervalMillis;
     device_motion_buffer_->seqlock.WriteEnd();
     SetMotionBufferReadyStatus(true);
+
+    UMA_HISTOGRAM_BOOLEAN("InertialSensor.AccelerometerAndroidAvailable",
+        received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION] > 0);
+    UMA_HISTOGRAM_BOOLEAN(
+        "InertialSensor.AccelerometerIncGravityAndroidAvailable",
+        received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY]
+        > 0);
+    UMA_HISTOGRAM_BOOLEAN("InertialSensor.GyroscopeAndroidAvailable",
+        received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] > 0);
   }
 }
 
@@ -233,6 +253,10 @@ bool DataFetcherImplAndroid::StartFetchingDeviceOrientationData(
     // to start firing all-null events.
     SetOrientationBufferReadyStatus(!success);
   }
+
+  if (!success)
+    updateRotationVectorHistogram(false);
+
   return success;
 }
 
