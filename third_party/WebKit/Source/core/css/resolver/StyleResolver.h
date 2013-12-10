@@ -256,7 +256,7 @@ private:
 
     bool fastRejectSelector(const RuleData&) const;
 
-    void applyMatchedProperties(StyleResolverState&, const MatchResult&, Element* animatingElement);
+    void applyMatchedProperties(StyleResolverState&, const MatchResult&);
     void applyAnimatedProperties(StyleResolverState&, Element* animatingElement);
 
     enum StyleApplicationPass {

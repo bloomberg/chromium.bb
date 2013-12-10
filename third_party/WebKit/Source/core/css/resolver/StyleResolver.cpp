@@ -711,7 +711,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         else
             matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
 
-        applyMatchedProperties(state, collector.matchedResult(), element);
+        applyMatchedProperties(state, collector.matchedResult());
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
@@ -719,6 +719,11 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element);
     }
+
+    // FIXME: The CSSWG wants to specify that the effects of animations are applied before
+    // important rules, but this currently happens here as we require adjustment to have happened
+    // before deciding which properties to transition.
+    applyAnimatedProperties(state, element);
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
     if (element->hasTagName(bodyTag))
@@ -894,7 +899,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
 
         state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
-        applyMatchedProperties(state, collector.matchedResult(), element->pseudoElement(pseudoStyleRequest.pseudoId));
+        applyMatchedProperties(state, collector.matchedResult());
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
@@ -904,6 +909,11 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
         // in the adjustRenderStyle code.
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), 0);
     }
+
+    // FIXME: The CSSWG wants to specify that the effects of animations are applied before
+    // important rules, but this currently happens here as we require adjustment to have happened
+    // before deciding which properties to transition.
+    applyAnimatedProperties(state, element->pseudoElement(pseudoStyleRequest.pseudoId));
 
     didAccess();
 
@@ -1064,6 +1074,12 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     // style for a potential pseudo element that has yet to be created.
     if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || !animatingElement)
         return;
+
+    if (!animatingElement->hasActiveAnimations()
+        && !(state.style()->transitions() && !state.style()->transitions()->isEmpty())
+        && !(state.style()->animations() && !state.style()->animations()->isEmpty()))
+        return;
+
     state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *state.style(), this));
     if (!state.animationUpdate())
         return;
@@ -1073,6 +1089,13 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForTransitions);
     applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForAnimations);
     applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForTransitions);
+
+    // If the animations/transitions change opacity or transform, we need to update
+    // the style to impose the stacking rules. Note that this is also
+    // done in StyleResolver::adjustRenderStyle().
+    RenderStyle* style = state.style();
+    if (style->hasAutoZIndex() && (style->opacity() < 1.0f || style->hasTransform()))
+        style->setZIndex(0);
 }
 
 template <StyleResolver::StyleApplicationPass pass>
@@ -1250,7 +1273,7 @@ void StyleResolver::invalidateMatchedPropertiesCache()
     m_matchedPropertiesCache.clear();
 }
 
-void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, Element* animatingElement)
+void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult)
 {
     const Element* element = state.element();
     ASSERT(element);
@@ -1278,13 +1301,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
-
-            if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
-                && ((animatingElement && animatingElement->hasActiveAnimations())
-                    || (state.style()->transitions() && !state.style()->transitions()->isEmpty())
-                    || (state.style()->animations() && !state.style()->animations()->isEmpty())))
-                applyAnimatedProperties(state, animatingElement);
-            return;
         }
         applyInheritedOnly = true;
     }
@@ -1353,8 +1369,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);
         m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
     }
-
-    applyAnimatedProperties(state, animatingElement);
 
     ASSERT(!state.fontBuilder().fontDirty());
 }
