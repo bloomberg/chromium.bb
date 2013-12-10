@@ -2248,6 +2248,12 @@ def CMDformat(parser, args):
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
+  # git diff generates paths against the root of the repository.  Change
+  # to that directory so clang-format can find files even within subdirs.
+  rel_base_path = RunGit(['rev-parse', '--show-cdup']).strip()
+  if rel_base_path:
+    os.chdir(rel_base_path)
+
   # Generate diff for the current branch's changes.
   diff_cmd = ['diff', '--no-ext-diff', '--no-prefix']
   if opts.full:
