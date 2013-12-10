@@ -51,4 +51,4 @@ class Media(page_measurement.PageMeasurement):
     if self._add_browser_metrics:
       self._cpu_metric.Stop(page, tab)
       self._cpu_metric.AddResults(tab, results, trace_name=trace_name)
-      self._memory_metric.AddSummaryResults(results, trace_name=trace_name)
+      self._memory_metric.AddResults(results, trace_name=trace_name)

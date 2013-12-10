@@ -42,6 +42,3 @@ class MemoryMultiTab(page_measurement.PageMeasurement):
     if len(tab.browser.tabs) == len(page.page_set.pages):
       self._memory_metric.Stop(page, self._first_tab)
       self._memory_metric.AddResults(self._first_tab, results)
-
-  def DidRunTest(self, browser, results):
-    self._memory_metric.AddSummaryResults(results)
