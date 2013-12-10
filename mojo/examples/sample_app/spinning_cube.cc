@@ -293,15 +293,7 @@ class ESMatrix {
   }
 };
 
-float RotationForTimeDelta(float delta_time) {
-  return delta_time * 40.0f;
 }
-
-float RotationForDragDistance(float drag_distance) {
-  return drag_distance / 5; // Arbitrary damping.
-}
-
-}  // namespace
 
 class SpinningCube::GLState {
  public:
@@ -338,9 +330,7 @@ SpinningCube::SpinningCube()
     : initialized_(false),
       width_(0),
       height_(0),
-      state_(new GLState()),
-      fling_multiplier_(1.0f),
-      direction_(1) {
+      state_(new GLState()) {
   state_->angle_ = 45.0f;
 }
 
@@ -394,33 +384,23 @@ void SpinningCube::OnGLContextLost() {
   state_->OnGLContextLost();
 }
 
-void SpinningCube::SetFlingMultiplier(float drag_distance,
-                                      float drag_time) {
-  fling_multiplier_ = RotationForDragDistance(drag_distance) /
-      RotationForTimeDelta(drag_time);
-
-}
-
-void SpinningCube::UpdateForTimeDelta(float delta_time) {
-  state_->angle_ += RotationForTimeDelta(delta_time) * fling_multiplier_;
-  if (state_->angle_ >= 360.0f)
-    state_->angle_ -= 360.0f;
-
-  // Arbitrary 50-step linear reduction in spin speed.
-  if (fling_multiplier_ > 1.0f) {
-    fling_multiplier_ =
-        std::max(1.0f, fling_multiplier_ - (fling_multiplier_ - 1.0f) / 50);
-  }
-
-  Update();
-}
-
-void SpinningCube::UpdateForDragDistance(float distance) {
-  state_->angle_ += RotationForDragDistance(distance);
+void SpinningCube::Update(float delta_time) {
+  state_->angle_ += ( delta_time * 40.0f );
   if (state_->angle_ >= 360.0f )
     state_->angle_ -= 360.0f;
 
-  Update();
+  float aspect = static_cast<GLfloat>(width_) / static_cast<GLfloat>(height_);
+
+  ESMatrix perspective;
+  perspective.LoadIdentity();
+  perspective.Perspective(60.0f, aspect, 1.0f, 20.0f );
+
+  ESMatrix modelview;
+  modelview.LoadIdentity();
+  modelview.Translate(0.0, 0.0, -2.0);
+  modelview.Rotate(state_->angle_, 1.0, 0.0, 1.0);
+
+  state_->mvp_matrix_.Multiply(&modelview, &perspective);
 }
 
 void SpinningCube::Draw() {
@@ -443,21 +423,6 @@ void SpinningCube::Draw() {
                     state_->num_indices_,
                     GL_UNSIGNED_SHORT,
                     0);
-}
-
-void SpinningCube::Update() {
-  float aspect = static_cast<GLfloat>(width_) / static_cast<GLfloat>(height_);
-
-  ESMatrix perspective;
-  perspective.LoadIdentity();
-  perspective.Perspective(60.0f, aspect, 1.0f, 20.0f );
-
-  ESMatrix modelview;
-  modelview.LoadIdentity();
-  modelview.Translate(0.0, 0.0, -2.0);
-  modelview.Rotate(state_->angle_ * direction_, 1.0, 0.0, 1.0);
-
-  state_->mvp_matrix_.Multiply(&modelview, &perspective);
 }
 
 }  // namespace examples

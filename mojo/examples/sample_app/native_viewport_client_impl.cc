@@ -41,8 +41,8 @@ void NativeViewportClientImpl::OnDestroyed() {
 
 void NativeViewportClientImpl::OnEvent(const Event& event) {
   if (!event.location().is_null()) {
-    gles2_client_->HandleInputEvent(event);
-    service_->AckEvent(event);
+    LOG(INFO) << "Located Event @"
+              << event.location().x() << "," << event.location().y();
   }
 }
 
