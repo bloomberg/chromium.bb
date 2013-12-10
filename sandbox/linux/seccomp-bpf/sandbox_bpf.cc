@@ -268,6 +268,10 @@ bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
     SANDBOX_DIE("Process started without standard file descriptors");
   }
 
+  // This code is using fork() and should only ever run single-threaded.
+  // Most of the code below is "async-signal-safe" and only minor changes
+  // would be needed to support threads.
+  DCHECK(IsSingleThreaded(proc_fd_));
   pid_t pid = fork();
   if (pid < 0) {
     // Die if we cannot fork(). We would probably fail a little later
