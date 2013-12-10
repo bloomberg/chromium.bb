@@ -3030,8 +3030,9 @@
             'remoting_native_messaging_base',
           ],
           'sources/': [
-            ['exclude', 'codec/*'],
-            ['exclude', 'host/*'],
+            ['exclude', '^codec/'],
+            ['exclude', '^host/'],
+            ['exclude', '^base/resources_unittest\\.cc$'],
           ]
         }],
         ['toolkit_uses_gtk == 1', {
