@@ -52,15 +52,15 @@ function test()
         var children = root.childNodes;
 
         for (var i = 0; i < children.length; i++) {
-            if (children[i].hasStyleClass("console-message")) {
+            if (children[i].classList.contains("console-message")) {
                 InspectorTest.addResult(indent + ">" + children[i].textContent);
                 indent = indent + "  ";
-            } else if (children[i].hasStyleClass("console-group-messages")) {
+            } else if (children[i].classList.contains("console-group-messages")) {
                 var groupMessages = children[i].childNodes;
                 for (var j = 0; j < groupMessages.length; j++) {
-                    if (groupMessages[j].hasStyleClass("console-message"))
+                    if (groupMessages[j].classList.contains("console-message"))
                         InspectorTest.addResult(indent + groupMessages[j].textContent);
-                    else if (groupMessages[j].hasStyleClass("console-group"))
+                    else if (groupMessages[j].classList.contains("console-group"))
                         dumpVisibleMessages(groupMessages[j], indent);
                 }
             }

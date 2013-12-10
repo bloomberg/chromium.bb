@@ -78,9 +78,9 @@ InspectorTest.dispatchMouseEventTo3DView = function(eventType, button, layer)
 InspectorTest.dumpSelectedStyles = function(message, element)
 {
     var classes = [];
-    if (element.hasStyleClass("selected"))
+    if (element.classList.contains("selected"))
         classes.push("selected");
-    if (element.hasStyleClass("hovered"))
+    if (element.classList.contains("hovered"))
         classes.push("hovered");
 
     InspectorTest.addResult(message + ": " + classes.join(", "));

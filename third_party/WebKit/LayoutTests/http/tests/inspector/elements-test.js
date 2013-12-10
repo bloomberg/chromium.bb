@@ -144,7 +144,7 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
     {
         var result = "";
         for (var node = element.firstChild; node; node = node.nextSibling) {
-            if (node.nodeType === Node.ELEMENT_NODE && node.hasStyleClass("selector-matches"))
+            if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains("selector-matches"))
                 result += "[$" + node.textContent + "$]";
             else
                 result += node.textContent;
@@ -349,12 +349,12 @@ InspectorTest.dumpStyleTreeItem = function(treeItem, prefix, depth)
         !treeItem.listItemElement.textContent.indexOf("height"))
         return;
 
-    if (treeItem.listItemElement.hasStyleClass("inherited"))
+    if (treeItem.listItemElement.classList.contains("inherited"))
         return;
     var typePrefix = "";
-    if (treeItem.listItemElement.hasStyleClass("overloaded") || treeItem.listItemElement.hasStyleClass("inactive") || treeItem.listItemElement.hasStyleClass("not-parsed-ok"))
+    if (treeItem.listItemElement.classList.contains("overloaded") || treeItem.listItemElement.classList.contains("inactive") || treeItem.listItemElement.classList.contains("not-parsed-ok"))
         typePrefix += "/-- overloaded --/ ";
-    if (treeItem.listItemElement.hasStyleClass("disabled"))
+    if (treeItem.listItemElement.classList.contains("disabled"))
         typePrefix += "/-- disabled --/ ";
     var textContent = treeItem.listItemElement.textContent;
 

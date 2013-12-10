@@ -36,7 +36,7 @@ function test()
             var node = childNodes[i];
             switch (node.nodeType) {
             case Node.ELEMENT_NODE:
-                if (node.hasStyleClass("swatch"))
+                if (node.classList.contains("swatch"))
                     result.push("[] ");
                 else
                     dumpNode(node, result);
