@@ -652,6 +652,12 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
         stroke_width = DebugColors::NonFastScrollableRectBorderWidth();
         label_text = "repaints on scroll";
         break;
+      case ANIMATION_BOUNDS_RECT_TYPE:
+        stroke_color = DebugColors::LayerAnimationBoundsBorderColor();
+        fill_color = DebugColors::LayerAnimationBoundsFillColor();
+        stroke_width = DebugColors::LayerAnimationBoundsBorderWidth();
+        label_text = "animation bounds";
+        break;
     }
 
     gfx::RectF debug_layer_rect = gfx::ScaleRect(debug_rects[i].rect,

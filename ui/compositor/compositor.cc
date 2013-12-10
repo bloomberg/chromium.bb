@@ -272,6 +272,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders);
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
+  settings.initial_debug_state.show_layer_animation_bounds_rects =
+      command_line->HasSwitch(cc::switches::kUIShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =
       command_line->HasSwitch(switches::kUIShowPaintRects);
   settings.initial_debug_state.show_property_changed_rects =

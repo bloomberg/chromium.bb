@@ -185,6 +185,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kShowCompositedLayerBorders);
   settings.initial_debug_state.show_fps_counter =
       cmd->HasSwitch(cc::switches::kShowFPSCounter);
+  settings.initial_debug_state.show_layer_animation_bounds_rects =
+      cmd->HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =
       cmd->HasSwitch(switches::kShowPaintRects);
   settings.initial_debug_state.show_property_changed_rects =

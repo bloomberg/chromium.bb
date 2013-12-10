@@ -106,6 +106,10 @@ class DebugColors {
   static int NonFastScrollableRectBorderWidth();
   static SkColor NonFastScrollableRectFillColor();
 
+  static SkColor LayerAnimationBoundsBorderColor();
+  static int LayerAnimationBoundsBorderWidth();
+  static SkColor LayerAnimationBoundsFillColor();
+
   static SkColor NonPaintedFillColor();
   static SkColor MissingPictureFillColor();
   static SkColor PictureBorderColor();

@@ -23,6 +23,7 @@ LayerTreeDebugState::LayerTreeDebugState()
       show_touch_event_handler_rects(false),
       show_wheel_event_handler_rects(false),
       show_non_fast_scrollable_rects(false),
+      show_layer_animation_bounds_rects(false),
       slow_down_raster_scale_factor(0),
       rasterize_only_visible_content(false),
       show_picture_borders(false),
@@ -48,7 +49,8 @@ bool LayerTreeDebugState::ShowHudRects() const {
          show_surface_damage_rects || show_screen_space_rects ||
          show_replica_screen_space_rects || show_occluding_rects ||
          show_non_occluding_rects || show_touch_event_handler_rects ||
-         show_wheel_event_handler_rects || show_non_fast_scrollable_rects;
+         show_wheel_event_handler_rects || show_non_fast_scrollable_rects ||
+         show_layer_animation_bounds_rects;
 }
 
 bool LayerTreeDebugState::ShowMemoryStats() const {
@@ -74,6 +76,8 @@ bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
           b.show_wheel_event_handler_rects &&
           a.show_non_fast_scrollable_rects ==
           b.show_non_fast_scrollable_rects &&
+          a.show_layer_animation_bounds_rects ==
+          b.show_layer_animation_bounds_rects &&
           a.slow_down_raster_scale_factor == b.slow_down_raster_scale_factor &&
           a.rasterize_only_visible_content ==
           b.rasterize_only_visible_content &&
@@ -99,6 +103,7 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
   r.show_touch_event_handler_rects |= b.show_touch_event_handler_rects;
   r.show_wheel_event_handler_rects |= b.show_wheel_event_handler_rects;
   r.show_non_fast_scrollable_rects |= b.show_non_fast_scrollable_rects;
+  r.show_layer_animation_bounds_rects |= b.show_layer_animation_bounds_rects;
 
   if (b.slow_down_raster_scale_factor)
     r.slow_down_raster_scale_factor = b.slow_down_raster_scale_factor;

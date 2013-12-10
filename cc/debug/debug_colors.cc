@@ -253,6 +253,15 @@ SkColor DebugColors::NonFastScrollableRectFillColor() {
   return SkColorSetARGB(30, 238, 163, 59);
 }
 
+// Animation bounds are lime-green.
+SkColor DebugColors::LayerAnimationBoundsBorderColor() {
+  return SkColorSetARGB(255, 112, 229, 0);
+}
+int DebugColors::LayerAnimationBoundsBorderWidth() { return 2; }
+SkColor DebugColors::LayerAnimationBoundsFillColor() {
+  return SkColorSetARGB(30, 112, 229, 0);
+}
+
 // Non-Painted rects in cyan.
 SkColor DebugColors::NonPaintedFillColor() { return SK_ColorCYAN; }
 

@@ -97,6 +97,10 @@ const char kUIShowCompositedLayerBorders[] = "ui-show-layer-borders";
 const char kShowFPSCounter[] = "show-fps-counter";
 const char kUIShowFPSCounter[] = "ui-show-fps-counter";
 
+// Renders a border that represents the bounding box for the layer's animation.
+const char kShowLayerAnimationBounds[] = "show-layer-animation-bounds";
+const char kUIShowLayerAnimationBounds[] = "ui-show-layer-animation-bounds";
+
 // Show rects in the HUD around layers whose properties have changed.
 const char kShowPropertyChangedRects[] = "show-property-changed-rects";
 const char kUIShowPropertyChangedRects[] = "ui-show-property-changed-rects";
