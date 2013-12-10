@@ -4,6 +4,7 @@ include_rules = [
     "+public/platform",
     "+skia/ext",
     "+third_party/skia",
+    "+webp",
     "-bindings",
     "-core",
     "-modules",
