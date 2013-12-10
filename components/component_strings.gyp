@@ -22,6 +22,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/components/strings',
         ],
       },
+      'hard_dependency': 1,
     },
   ],
 }
