@@ -40,6 +40,15 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual void AddKeySystems(
       std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
 
+  virtual bool HandleNavigation(content::RenderView* view,
+                                content::DocumentState* document_state,
+                                int opener_id,
+                                blink::WebFrame* frame,
+                                const blink::WebURLRequest& request,
+                                blink::WebNavigationType type,
+                                blink::WebNavigationPolicy default_policy,
+                                bool is_redirect) OVERRIDE;
+
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;
   scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;

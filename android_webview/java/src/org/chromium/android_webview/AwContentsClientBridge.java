@@ -91,6 +91,11 @@ public class AwContentsClientBridge {
         mClient.handleJsBeforeUnload(url, message, handler);
     }
 
+    @CalledByNative
+    private boolean shouldOverrideUrlLoading(String url) {
+        return mClient.shouldOverrideUrlLoading(url);
+    }
+
     void confirmJsResult(int id, String prompt) {
         if (mNativeContentsClientBridge == 0) return;
         nativeConfirmJsResult(mNativeContentsClientBridge, id, prompt);

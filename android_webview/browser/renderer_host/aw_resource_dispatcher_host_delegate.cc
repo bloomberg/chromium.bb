@@ -67,7 +67,6 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
   virtual const char* GetNameForLogging() const OVERRIDE;
 
-  bool MaybeDeferRequest(bool* defer);
   void OnIoThreadClientReady(int new_child_id, int new_route_id);
   bool MaybeBlockRequest();
   bool ShouldBlockRequest();
@@ -93,7 +92,12 @@ IoThreadClientThrottle::~IoThreadClientThrottle() {
       RemovePendingThrottleOnIoThread(this);
 }
 
+const char* IoThreadClientThrottle::GetNameForLogging() const {
+  return "IoThreadClientThrottle";
+}
+
 void IoThreadClientThrottle::WillStartRequest(bool* defer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(sgurun): This block can be removed when crbug.com/277937 is fixed.
   if (route_id_ < 1) {
     // OPTIONS is used for preflighted requests which are generated internally.
@@ -101,21 +105,6 @@ void IoThreadClientThrottle::WillStartRequest(bool* defer) {
     return;
   }
   DCHECK(child_id_);
-  if (!MaybeDeferRequest(defer)) {
-    MaybeBlockRequest();
-  }
-}
-
-void IoThreadClientThrottle::WillRedirectRequest(const GURL& new_url,
-                                                 bool* defer) {
-  WillStartRequest(defer);
-}
-
-const char* IoThreadClientThrottle::GetNameForLogging() const {
-  return "IoThreadClientThrottle";
-}
-
-bool IoThreadClientThrottle::MaybeDeferRequest(bool* defer) {
   *defer = false;
 
   // Defer all requests of a pop up that is still not associated with Java
@@ -126,8 +115,14 @@ bool IoThreadClientThrottle::MaybeDeferRequest(bool* defer) {
     *defer = true;
     AwResourceDispatcherHostDelegate::AddPendingThrottle(
         child_id_, route_id_, this);
+  } else {
+    MaybeBlockRequest();
   }
-  return *defer;
+}
+
+void IoThreadClientThrottle::WillRedirectRequest(const GURL& new_url,
+                                                 bool* defer) {
+  WillStartRequest(defer);
 }
 
 void IoThreadClientThrottle::OnIoThreadClientReady(int new_child_id,
@@ -216,35 +211,21 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     int child_id,
     int route_id,
     ScopedVector<content::ResourceThrottle>* throttles) {
-  // If io_client is NULL, then the browser side objects have already been
-  // destroyed, so do not do anything to the request. Conversely if the
-  // request relates to a not-yet-created popup window, then the client will
-  // be non-NULL but PopupPendingAssociation() will be set.
-  scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(child_id, route_id);
-  if (!io_client)
-    return;
 
+  // We always push the throttles here. Checking the existence of io_client
+  // is racy when a popup window is created. That is because RequestBeginning
+  // is called whether or not requests are blocked via BlockRequestForRoute()
+  // however io_client may or may not be ready at the time depending on whether
+  // webcontents is created.
   throttles->push_back(new IoThreadClientThrottle(
       child_id, route_id, request));
 
-  bool allow_intercepting =
-      // We allow intercepting navigations within subframes, but only if the
-      // scheme other than http or https. This is because the embedder
-      // can't distinguish main frame and subframe callbacks (which could lead
-      // to broken content if the embedder decides to not ignore the main frame
-      // navigation, but ignores the subframe navigation).
-      // The reason this is supported at all is that certain JavaScript-based
-      // frameworks use iframe navigation as a form of communication with the
-      // embedder.
-      (resource_type == ResourceType::MAIN_FRAME ||
-       (resource_type == ResourceType::SUB_FRAME &&
-        !request->url().SchemeIs(content::kHttpScheme) &&
-        !request->url().SchemeIs(content::kHttpsScheme)));
-  if (allow_intercepting) {
+  // We allow intercepting only navigations within main frames. This
+  // is used to post onPageStarted. We handle shouldOverrideUrlLoading
+  // via a sync IPC.
+  if (resource_type == ResourceType::MAIN_FRAME)
     throttles->push_back(InterceptNavigationDelegate::CreateThrottleFor(
         request));
-  }
 }
 
 void AwResourceDispatcherHostDelegate::DownloadStarting(

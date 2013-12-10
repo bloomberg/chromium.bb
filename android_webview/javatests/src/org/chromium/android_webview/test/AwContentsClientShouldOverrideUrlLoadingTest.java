@@ -395,6 +395,32 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
+    public void testCalledWhenTopLevelAboutBlankNavigation() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
+
+        final String httpPath = "/page_with_about_blank_navigation";
+        final String httpPathOnServer = mWebServer.getResponseUrl(httpPath);
+        addPageToTestServer(mWebServer, httpPath,
+                getHtmlForPageWithSimpleLinkTo(ABOUT_BLANK_URL));
+
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                httpPathOnServer);
+
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
+
+        clickOnLinkUsingJs(awContents, contentsClient);
+
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
+        assertEquals(ABOUT_BLANK_URL,
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
+    }
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})

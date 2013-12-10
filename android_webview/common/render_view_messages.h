@@ -99,3 +99,14 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_PageScaleFactorChanged,
 // Sent whenever the contents size (as seen by RenderView) is changed.
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_OnContentsSizeChanged,
                     gfx::Size /* contents_size */)
+
+// Sent immediately before a top level navigation is initiated within Blink.
+// There are some exlusions, the most important ones are it is not sent
+// when creating a popup window, and not sent for application initiated
+// navigations. See AwContentRendererClient::HandleNavigation for all
+// cornercases. This is sent before updating the NavigationController state
+// or creating a URLRequest for the main frame resource.
+IPC_SYNC_MESSAGE_CONTROL2_1(AwViewHostMsg_ShouldOverrideUrlLoading,
+                            int /* routing id */,
+                            string16 /* in - url */,
+                            bool /* out - result */)

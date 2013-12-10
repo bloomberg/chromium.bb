@@ -51,11 +51,14 @@ class AwContentsClientBridgeBase {
       const string16& default_prompt_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       = 0;
+
   virtual void RunBeforeUnloadDialog(
       const GURL& origin_url,
       const string16& message_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       = 0;
+
+  virtual bool ShouldOverrideUrlLoading(const base::string16& url) = 0;
 };
 
 }  // namespace android_webview

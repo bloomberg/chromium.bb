@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_javascript_dialog_manager.h"
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/native/aw_contents.h"
+#include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -156,6 +157,17 @@ void AwWebContentsDelegate::AddNewContents(WebContents* source,
   if (was_blocked) {
     *was_blocked = !create_popup;
   }
+}
+
+// Notifies the delegate about the creation of a new WebContents. This
+// typically happens when popups are created.
+void AwWebContentsDelegate::WebContentsCreated(
+    WebContents* source_contents,
+    int64 source_frame_id,
+    const string16& frame_name,
+    const GURL& target_url,
+    content::WebContents* new_contents) {
+  AwContentsIoThreadClientImpl::RegisterPendingContents(new_contents);
 }
 
 void AwWebContentsDelegate::CloseContents(WebContents* source) {

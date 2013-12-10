@@ -52,6 +52,7 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
       const string16& message_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       OVERRIDE;
+  virtual bool ShouldOverrideUrlLoading(const base::string16& url) OVERRIDE;
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env, jobject obj, jboolean proceed, jint id);

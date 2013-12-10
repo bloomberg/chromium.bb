@@ -5,6 +5,7 @@
 #include "android_webview/renderer/aw_content_renderer_client.h"
 
 #include "android_webview/common/aw_resource.h"
+#include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
@@ -14,14 +15,22 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "content/public/common/url_constants.h"
+#include "content/public/renderer/document_state.h"
+#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "url/gurl.h"
+
+using content::RenderThread;
 
 namespace android_webview {
 
@@ -40,13 +49,67 @@ void AwContentRendererClient::RenderThreadStarted() {
       ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
 
-  content::RenderThread* thread = content::RenderThread::Get();
+  RenderThread* thread = RenderThread::Get();
 
   aw_render_process_observer_.reset(new AwRenderProcessObserver);
   thread->AddObserver(aw_render_process_observer_.get());
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
   thread->AddObserver(visited_link_slave_.get());
+}
+
+bool AwContentRendererClient::HandleNavigation(
+    content::RenderView* view,
+    content::DocumentState* document_state,
+    int opener_id,
+    blink::WebFrame* frame,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationType type,
+    blink::WebNavigationPolicy default_policy,
+    bool is_redirect) {
+
+  // Only GETs can be overridden.
+  if (!request.httpMethod().equals("GET"))
+    return false;
+
+  // Any navigation from loadUrl, and goBack/Forward are considered application-
+  // initiated and hence will not yield a shouldOverrideUrlLoading() callback.
+  // Webview classic does not consider reload application-initiated so we
+  // continue the same behavior.
+  // TODO(sgurun) is_content_initiated is normally false for cross-origin
+  // navigations but since android_webview does not swap out renderers, this
+  // works fine. This will stop working if android_webview starts swapping out
+  // renderers on navigation.
+  bool application_initiated =
+      !document_state->navigation_state()->is_content_initiated()
+      || type == blink::WebNavigationTypeBackForward;
+
+  // Don't offer application-initiated navigations unless it's a redirect.
+  if (application_initiated && !is_redirect)
+    return false;
+
+  const GURL& gurl = request.url();
+  // For HTTP schemes, only top-level navigations can be overridden. Similarly,
+  // WebView Classic lets app override only top level about:blank navigations.
+  // So we filter out non-top about:blank navigations here.
+  if (frame->parent() && (gurl.SchemeIs(content::kHttpScheme) ||
+                          gurl.SchemeIs(content::kHttpsScheme) ||
+                          gurl.SchemeIs(chrome::kAboutScheme)))
+    return false;
+
+  // use NavigationInterception throttle to handle the call as that can
+  // be deferred until after the java side has been constructed.
+  if (opener_id != MSG_ROUTING_NONE) {
+    return false;
+  }
+
+  bool ignore_navigation = false;
+  base::string16 url =  request.url().string();
+
+  int routing_id = view->GetRoutingID();
+  RenderThread::Get()->Send(new AwViewHostMsg_ShouldOverrideUrlLoading(
+      routing_id, url, &ignore_navigation));
+  return ignore_navigation;
 }
 
 void AwContentRendererClient::RenderViewCreated(

@@ -40,6 +40,13 @@ class AwWebContentsDelegate
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
+
+  virtual void WebContentsCreated(content::WebContents* source_contents,
+                                  int64 source_frame_id,
+                                  const string16& frame_name,
+                                  const GURL& target_url,
+                                  content::WebContents* new_contents) OVERRIDE;
+
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
   virtual void RequestProtectedMediaIdentifierPermission(
