@@ -4,17 +4,18 @@
 
 #include "content/public/common/sandbox_init.h"
 
-#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/sandbox_seccomp_bpf_linux.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 
 namespace content {
 
-bool InitializeSandbox(playground2::BpfSandboxPolicy policy) {
-  return SandboxSeccompBpf::StartSandboxWithExternalPolicy(policy);
+bool InitializeSandbox(scoped_ptr<playground2::SandboxBpfPolicy> policy) {
+  return SandboxSeccompBpf::StartSandboxWithExternalPolicy(policy.Pass());
 }
 
-playground2::BpfSandboxPolicyCallback GetBpfSandboxBaselinePolicy() {
-  return SandboxSeccompBpf::GetBaselinePolicy();
+scoped_ptr<playground2::SandboxBpfPolicy> GetBpfSandboxBaselinePolicy() {
+  return SandboxSeccompBpf::GetBaselinePolicy().Pass();
 }
 
 }  // namespace content

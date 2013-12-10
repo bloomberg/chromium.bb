@@ -8,7 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy_forward.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace playground2 {
+class SandboxBpfPolicy;
+}
 
 namespace content {
 
@@ -35,9 +39,9 @@ class SandboxSeccompBpf {
   // This is the API to enable a seccomp-bpf sandbox by using an
   // external policy.
   static bool StartSandboxWithExternalPolicy(
-      playground2::BpfSandboxPolicy policy);
+      scoped_ptr<playground2::SandboxBpfPolicy> policy);
   // The "baseline" policy can be a useful base to build a sandbox policy.
-  static playground2::BpfSandboxPolicyCallback GetBaselinePolicy();
+  static scoped_ptr<playground2::SandboxBpfPolicy> GetBaselinePolicy();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxSeccompBpf);

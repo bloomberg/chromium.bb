@@ -21,8 +21,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -59,28 +57,7 @@ namespace content {
 
 namespace {
 
-void StartSandboxWithPolicy(SandboxBpfBasePolicy* policy);
-
-// This class allows compatibility with the old, deprecated SetSandboxPolicy.
-// TODO(jln): move NaCl to new policy system and remove.
-class CompatibilityPolicy : public SandboxBpfBasePolicy {
- public:
-  CompatibilityPolicy(Sandbox::EvaluateSyscall syscall_evaluator, void* aux)
-      : syscall_evaluator_(syscall_evaluator), aux_(aux) {
-    DCHECK(syscall_evaluator_);
-  }
-  virtual ~CompatibilityPolicy() {}
-
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE {
-    return syscall_evaluator_(sandbox_compiler, system_call_number, aux_);
-  }
-
- private:
-  Sandbox::EvaluateSyscall syscall_evaluator_;
-  void* aux_;
-  DISALLOW_COPY_AND_ASSIGN(CompatibilityPolicy);
-};
+void StartSandboxWithPolicy(playground2::SandboxBpfPolicy* policy);
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -697,7 +674,7 @@ void StartGpuProcessSandbox(const CommandLine& command_line,
 }
 
 // This function takes ownership of |policy|.
-void StartSandboxWithPolicy(SandboxBpfBasePolicy* policy) {
+void StartSandboxWithPolicy(playground2::SandboxBpfPolicy* policy) {
   // Starting the sandbox is a one-way operation. The kernel doesn't allow
   // us to unload a sandbox policy after it has been started. Nonetheless,
   // in order to make the use of the "Sandbox" object easier, we allow for
@@ -802,21 +779,24 @@ bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
 }
 
 bool SandboxSeccompBpf::StartSandboxWithExternalPolicy(
-    playground2::BpfSandboxPolicy policy) {
+    scoped_ptr<playground2::SandboxBpfPolicy> policy) {
 #if defined(SECCOMP_BPF_SANDBOX)
   if (IsSeccompBpfDesired() && SupportsSandbox()) {
     CHECK(policy);
-    StartSandboxWithPolicy(new CompatibilityPolicy(policy, NULL));
+    StartSandboxWithPolicy(policy.release());
     return true;
   }
 #endif  // defined(SECCOMP_BPF_SANDBOX)
   return false;
 }
 
+scoped_ptr<playground2::SandboxBpfPolicy>
+SandboxSeccompBpf::GetBaselinePolicy() {
 #if defined(SECCOMP_BPF_SANDBOX)
-playground2::BpfSandboxPolicyCallback SandboxSeccompBpf::GetBaselinePolicy() {
-  return base::Bind(&BaselinePolicy::BaselinePolicyDeprecated);
-}
+  return scoped_ptr<playground2::SandboxBpfPolicy>(new BaselinePolicy);
+#else
+  return scoped_ptr<playground2::SandboxBpfPolicy>();
 #endif  // defined(SECCOMP_BPF_SANDBOX)
+}
 
 }  // namespace content

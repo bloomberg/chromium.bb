@@ -20,7 +20,6 @@
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy_forward.h"
 
 namespace playground2 {
 
@@ -52,16 +51,15 @@ class Sandbox {
     STATUS_ENABLED       // The sandbox is now active
   };
 
-  // BpfSandboxPolicy is the following type:
-  // ErrorCode (Sandbox *sb, int sysnum, void *aux);
   // When calling setSandboxPolicy(), the caller can provide an arbitrary
   // pointer in |aux|. This pointer will then be forwarded to the sandbox
   // policy each time a call is made through an EvaluateSyscall function
   // pointer.  One common use case would be to pass the "aux" pointer as an
   // argument to Trap() functions.
-  typedef BpfSandboxPolicy* EvaluateSyscall;
+  typedef ErrorCode (*EvaluateSyscall)(Sandbox* sandbox_compiler,
+                                       int system_call_number,
+                                       void* aux);
   typedef std::vector<std::pair<EvaluateSyscall, void*> > Evaluators;
-
   // A vector of BPF instructions that need to be installed as a filter
   // program in the kernel.
   typedef std::vector<struct sock_filter> Program;

@@ -5,19 +5,19 @@
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOX_INIT_H_
 
-#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-
-#if defined(OS_LINUX)
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy_forward.h"
-#endif  // defined(OS_LINUX)
 
 class CommandLine;
 
 namespace base {
 class FilePath;
+}
+
+namespace playground2 {
+class SandboxBpfPolicy;
 }
 
 namespace sandbox {
@@ -89,14 +89,13 @@ class SandboxInitializerDelegate;
 
 // Initialize a seccomp-bpf sandbox. |policy| may not be NULL.
 // Returns true if the sandbox has been properly engaged.
-CONTENT_EXPORT bool InitializeSandbox(playground2::BpfSandboxPolicy policy);
+CONTENT_EXPORT bool InitializeSandbox(
+    scoped_ptr<playground2::SandboxBpfPolicy> policy);
 
-// Return a Callback implementing the "baseline" policy. This is used by a
-// SandboxInitializerDelegate to implement a policy that is derived from
-// the baseline.
-CONTENT_EXPORT playground2::BpfSandboxPolicyCallback
-    GetBpfSandboxBaselinePolicy();
-
+// Return a "baseline" policy. This is used by a SandboxInitializerDelegate to
+// implement a policy that is derived from the baseline.
+CONTENT_EXPORT scoped_ptr<playground2::SandboxBpfPolicy>
+GetBpfSandboxBaselinePolicy();
 #endif  // defined(OS_LINUX)
 
 }  // namespace content
