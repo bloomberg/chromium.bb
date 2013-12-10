@@ -107,6 +107,13 @@ class InitCommand(cr.Command):
     # This will only be missing if we are creating a brand new output
     # directory
     build_package = cr.auto.build
+
+    # Collect the old version (and float convert)
+    old_version = context.Find('CR_VERSION')
+    try:
+      old_version = float(old_version)
+    except (ValueError, TypeError):
+      old_version = 0.0
     is_new = not hasattr(build_package, 'config')
     if is_new:
 
@@ -116,12 +123,12 @@ class InitCommand(cr.Command):
         def __init__(self):
           self.__name__ = 'config'
 
+      old_version = None
       config = FakeModule()
       setattr(build_package, 'config', config)
       cr.plugin.ChainModuleConfigs(config)
 
     # Force override the version
-    old_version = context.Find('CR_VERSION')
     build_package.config.OVERRIDES.Set(CR_VERSION=cr.base.client.VERSION)
     # Add all the variables that we always want to have
     for name in OUT_CONFIG_VARS:
@@ -137,12 +144,11 @@ class InitCommand(cr.Command):
         value = cr.Config.ParseValue(value.strip())
       build_package.config.OVERRIDES[name] = value
 
-    if not is_new:
-      # Run all the output directory fixup tasks
-      for fixup in InitFixup.Plugins():
-        fixup.Fixup(context, old_version, build_package.config)
-      # Redo activations, they might have changed
-      cr.plugin.Activate(context)
+    # Run all the output directory init hooks
+    for hook in InitHook.Plugins():
+      hook.Run(context, old_version, build_package.config)
+    # Redo activations, they might have changed
+    cr.plugin.Activate(context)
 
     # Write out the new configuration, and select it as the default
     cr.base.client.WriteConfig(context, context.Get('CR_BUILD_DIR'),
@@ -152,13 +158,23 @@ class InitCommand(cr.Command):
     cr.SelectCommand.Select(context)
 
 
-class InitFixup(cr.Plugin, cr.Plugin.Type):
-  """Base class for output directory initialization fixups.
+class InitHook(cr.Plugin, cr.Plugin.Type):
+  """Base class for output directory initialization hooks.
 
-  These are invoked to upgrade an old output directory to an up to date form.
-  They normally live in the cr.fixups package.
+  Implementations used to fix from old version to new ones live in the
+  cr.fixups package.
   """
 
-  def Fixup(self, context, old_version, config):
+  def Run(self, context, old_version, config):
+    """Run the initialization hook.
+
+    This is invoked once per init invocation.
+    Args:
+      context: The context of the init command.
+      old_version: The old version,
+          0.0 if the old version was bad or missing,
+          None if building a new output direcory.
+      config: The mutable config that will be written.
+    """
     raise NotImplementedError('Must be overridden.')
 

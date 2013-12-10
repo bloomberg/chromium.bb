@@ -7,7 +7,7 @@
 import cr
 
 
-class _ArchFixupHelper(cr.InitFixup):
+class _ArchInitHookHelper(cr.InitHook):
   """Base class helper for CR_ARCH value fixups."""
 
   def _VersionTest(self, old_version):
@@ -17,8 +17,8 @@ class _ArchFixupHelper(cr.InitFixup):
   def _ArchConvert(self, old_arch):
     return old_arch
 
-  def Fixup(self, context, old_version, config):
-    if not self._VersionTest(old_version):
+  def Run(self, context, old_version, config):
+    if old_version is None or not self._VersionTest(old_version):
       return
     old_arch = config.OVERRIDES.Find(cr.Arch.SELECTOR)
     new_arch = self._ArchConvert(old_arch)
@@ -27,7 +27,7 @@ class _ArchFixupHelper(cr.InitFixup):
       config.OVERRIDES[cr.Arch.SELECTOR] = new_arch
 
 
-class WrongArchDefaultInitFixup(_ArchFixupHelper):
+class WrongArchDefaultInitHook(_ArchInitHookHelper):
   """Fixes bad initial defaults.
 
   In the initial versions of cr before output directories were versioned
@@ -36,13 +36,13 @@ class WrongArchDefaultInitFixup(_ArchFixupHelper):
   """
 
   def _VersionTest(self, old_version):
-    return old_version is None
+    return old_version <= 0.0
 
   def _ArchConvert(self, _):
     return cr.Arch.default.name
 
 
-class MipsAndArmRenameInitFixup(_ArchFixupHelper):
+class MipsAndArmRenameInitHook(_ArchInitHookHelper):
   """Fixes rename of Mips and Arm to Mips32 and Arm32."""
 
   def _ArchConvert(self, old_arch):
