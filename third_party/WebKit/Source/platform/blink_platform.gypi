@@ -673,6 +673,7 @@
       'mac/ScrollAnimatorMac.mm',
       'mac/ScrollElasticityController.h',
       'mac/ScrollElasticityController.mm',
+      'mac/WebCoreNSCellExtras.h',
       'mac/WebFontCache.h',
       'mac/WebFontCache.mm',
       'mediastream/MediaConstraints.cpp',

@@ -24,13 +24,14 @@
  */
 
 #import <AppKit/AppKit.h>
+#include "platform/PlatformExport.h"
 
 #define BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING 1
 
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
 
 // FIXME: Might want to use this on Mac once we only support OS X 10.8+
-@interface NSCell (WebCoreFocusRingDrawing)
+PLATFORM_EXPORT @interface NSCell (WebCoreFocusRingDrawing)
 - (void)_web_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 @end
 
