@@ -416,8 +416,12 @@ static int
 isEndWord ()
 {
 /*See if this is really the end of a word. */
-  int k;
-  const TranslationTableCharacter *dots;
+  int k = src + currentDotslen;
+  const TranslationTableCharacter *dots = back_findCharOrDots (currentInput[k], 1);
+  if (dots->attributes & (CTC_Space | CTC_Punctuation))
+    return 1;
+  return 0;
+/*
   TranslationTableOffset testRuleOffset;
   TranslationTableRule *testRule;
   for (k = src + currentDotslen; k < srcmax; k++)
@@ -446,6 +450,7 @@ isEndWord ()
 	return 0;
     }
   return 1;
+*/
 }
 
 static int
