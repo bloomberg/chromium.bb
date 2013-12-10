@@ -1492,12 +1492,24 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
 {
     ASSERT(document().inStyleRecalc());
 
-    if (hasCustomStyleCallbacks()) {
-        if (RefPtr<RenderStyle> style = customStyleForRenderer())
-            return style.release();
-    }
+    RefPtr<RenderStyle> style;
 
-    return originalStyleForRenderer();
+    // FIXME: Instead of clearing updates that may have been added from calls to styleForElement
+    // outside recalcStyle, we should just never set them if we're not inside recalcStyle.
+    if (ActiveAnimations* activeAnimations = this->activeAnimations())
+        activeAnimations->cssAnimations().setPendingUpdate(nullptr);
+
+    if (hasCustomStyleCallbacks())
+        style = customStyleForRenderer();
+    if (!style)
+        style = originalStyleForRenderer();
+
+    // styleForElement() might add active animations so we need to get it again.
+    if (ActiveAnimations* activeAnimations = this->activeAnimations())
+        activeAnimations->cssAnimations().maybeApplyPendingUpdate(this);
+
+    ASSERT(style);
+    return style.release();
 }
 
 PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
@@ -1550,11 +1562,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     ASSERT(parentRenderStyle());
 
     RefPtr<RenderStyle> oldStyle = renderStyle();
-    RefPtr<RenderStyle> newStyle;
-    {
-        CSSAnimationUpdateScope cssAnimationUpdateScope(this);
-        newStyle = styleForRenderer();
-    }
+    RefPtr<RenderStyle> newStyle = styleForRenderer();
     StyleRecalcChange localChange = RenderStyle::compare(oldStyle.get(), newStyle.get());
 
     ASSERT(newStyle);

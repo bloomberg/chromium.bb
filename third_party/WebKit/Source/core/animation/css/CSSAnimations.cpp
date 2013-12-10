@@ -327,26 +327,6 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
 
 } // namespace
 
-CSSAnimationUpdateScope::CSSAnimationUpdateScope(Element* target)
-    : m_target(target)
-{
-    if (!m_target)
-        return;
-    // It's possible than an update was created outside an update scope. That's harmless
-    // but we must clear it now to avoid applying it if an updated replacement is not
-    // created in this scope.
-    if (ActiveAnimations* activeAnimations = m_target->activeAnimations())
-        activeAnimations->cssAnimations().setPendingUpdate(nullptr);
-}
-
-CSSAnimationUpdateScope::~CSSAnimationUpdateScope()
-{
-    if (!m_target)
-        return;
-    if (ActiveAnimations* activeAnimations = m_target->activeAnimations())
-        activeAnimations->cssAnimations().maybeApplyPendingUpdate(m_target);
-}
-
 const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver* resolver, const Element* element, const StringImpl* animationName)
 {
     if (resolver->styleTreeHasOnlyScopedResolverForDocument())

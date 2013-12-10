@@ -49,15 +49,6 @@ class StylePropertyShorthand;
 class StyleResolver;
 class StyleRuleKeyframes;
 
-// Applied to scopes where an animation update will be added as pending and should then be applied (eg. Element style recalc).
-class CSSAnimationUpdateScope FINAL {
-public:
-    CSSAnimationUpdateScope(Element*);
-    ~CSSAnimationUpdateScope();
-private:
-    Element* m_target;
-};
-
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the CompositableValueMaps to be applied.
 class CSSAnimationUpdate FINAL {
