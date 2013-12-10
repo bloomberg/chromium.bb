@@ -58,6 +58,19 @@ class DownloadUpdatesTest : public ::testing::Test {
     return &update_handler_map_;
   }
 
+  void InitFakeUpdateResponse(sync_pb::GetUpdatesResponse* response) {
+    ModelTypeSet types = proto_request_types();
+
+    for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+      sync_pb::DataTypeProgressMarker* marker =
+          response->add_new_progress_marker();
+      marker->set_data_type_id(GetSpecificsFieldNumberFromModelType(it.Get()));
+      marker->set_token("foobarbaz");
+    }
+
+    response->set_changes_remaining(0);
+  }
+
  private:
   void AddUpdateHandler(ModelType type, ModelSafeGroup group) {
     DCHECK(directory());
@@ -204,6 +217,51 @@ TEST_F(DownloadUpdatesTest, PollTest) {
     progress_types.Put(type);
   }
   EXPECT_TRUE(proto_request_types().Equals(progress_types));
+}
+
+// Verify that a bogus response message is detected.
+TEST_F(DownloadUpdatesTest, InvalidResponse) {
+  sync_pb::GetUpdatesResponse gu_response;
+  InitFakeUpdateResponse(&gu_response);
+
+  // This field is essential for making the client stop looping.  If it's unset
+  // then something is very wrong.  The client should detect this.
+  gu_response.clear_changes_remaining();
+
+  sessions::StatusController status;
+  SyncerError error = download::ProcessResponse(gu_response,
+                                                proto_request_types(),
+                                                update_handler_map(),
+                                                &status);
+  EXPECT_EQ(error, SERVER_RESPONSE_VALIDATION_FAILED);
+}
+
+// Verify that we correctly detect when there's more work to be done.
+TEST_F(DownloadUpdatesTest, MoreToDownloadResponse) {
+  sync_pb::GetUpdatesResponse gu_response;
+  InitFakeUpdateResponse(&gu_response);
+  gu_response.set_changes_remaining(1);
+
+  sessions::StatusController status;
+  SyncerError error = download::ProcessResponse(gu_response,
+                                                proto_request_types(),
+                                                update_handler_map(),
+                                                &status);
+  EXPECT_EQ(error, SERVER_MORE_TO_DOWNLOAD);
+}
+
+// A simple scenario: No updates returned and nothing more to download.
+TEST_F(DownloadUpdatesTest, NormalResponseTest) {
+  sync_pb::GetUpdatesResponse gu_response;
+  InitFakeUpdateResponse(&gu_response);
+  gu_response.set_changes_remaining(0);
+
+  sessions::StatusController status;
+  SyncerError error = download::ProcessResponse(gu_response,
+                                                proto_request_types(),
+                                                update_handler_map(),
+                                                &status);
+  EXPECT_EQ(error, SYNCER_OK);
 }
 
 class DownloadUpdatesDebugInfoTest : public ::testing::Test {

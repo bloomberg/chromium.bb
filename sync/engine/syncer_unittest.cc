@@ -181,8 +181,12 @@ class SyncerTest : public testing::Test,
     saw_syncer_event_ = true;
   }
 
-  void SyncShareNudge() {
+  void ResetSession() {
     session_.reset(SyncSession::Build(context_.get(), this));
+  }
+
+  void SyncShareNudge() {
+    ResetSession();
 
     // Pretend we've seen a local change, to make the nudge_tracker look normal.
     nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
@@ -195,7 +199,7 @@ class SyncerTest : public testing::Test,
   }
 
   void SyncShareConfigure() {
-    session_.reset(SyncSession::Build(context_.get(), this));
+    ResetSession();
     EXPECT_TRUE(syncer_->ConfigureSyncShare(
             context_->enabled_types(),
             sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
@@ -543,6 +547,9 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   }
 
   // Now sync without enabling bookmarks.
+  mock_server_->ExpectGetUpdatesRequestTypes(
+      Difference(context_->enabled_types(), ModelTypeSet(BOOKMARKS)));
+  ResetSession();
   syncer_->NormalSyncShare(
       Difference(context_->enabled_types(), ModelTypeSet(BOOKMARKS)),
       nudge_tracker_,
@@ -557,10 +564,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   }
 
   // Sync again with bookmarks enabled.
-  syncer_->NormalSyncShare(
-      context_->enabled_types(),
-      nudge_tracker_,
-      session_.get());
+  mock_server_->ExpectGetUpdatesRequestTypes(context_->enabled_types());
   SyncShareNudge();
   {
     // It should have been committed.

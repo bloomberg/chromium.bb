@@ -25,8 +25,6 @@ struct SYNC_EXPORT ModelNeutralState {
   // The set of types for which commits were sent to the server.
   ModelTypeSet commit_request_types;
 
-  sync_pb::ClientToServerResponse updates_response;
-
   int num_successful_commits;
 
   // This is needed for monitoring extensions activity.

@@ -27,6 +27,7 @@ const char* GetSyncerErrorString(SyncerError value) {
     ENUM_CASE(SERVER_RETURN_CONFLICT);
     ENUM_CASE(SERVER_RESPONSE_VALIDATION_FAILED);
     ENUM_CASE(SERVER_RETURN_DISABLED_BY_ADMIN);
+    ENUM_CASE(SERVER_MORE_TO_DOWNLOAD);
     ENUM_CASE(SYNCER_OK);
   }
   NOTREACHED();
@@ -35,7 +36,9 @@ const char* GetSyncerErrorString(SyncerError value) {
 #undef ENUM_CASE
 
 bool SyncerErrorIsError(SyncerError error) {
-  return error != UNSET && error != SYNCER_OK;
+  return error != UNSET
+      && error != SYNCER_OK
+      && error != SERVER_MORE_TO_DOWNLOAD;
 }
 
 }  // namespace syncer

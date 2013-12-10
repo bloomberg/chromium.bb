@@ -103,17 +103,6 @@ SyncerError StatusController::last_get_key_result() const {
   return model_neutral_.last_get_key_result;
 }
 
-// Returns the number of updates received from the sync server.
-int64 StatusController::CountUpdates() const {
-  const sync_pb::ClientToServerResponse& updates =
-      model_neutral_.updates_response;
-  if (updates.has_get_updates()) {
-    return updates.get_updates().entries().size();
-  } else {
-    return 0;
-  }
-}
-
 int StatusController::num_updates_applied() const {
   return model_neutral_.num_updates_applied;
 }
@@ -140,19 +129,6 @@ int StatusController::TotalNumConflictingItems() const {
   sum += num_hierarchy_conflicts();
   sum += num_server_conflicts();
   return sum;
-}
-
-bool StatusController::ServerSaysNothingMoreToDownload() const {
-  if (!download_updates_succeeded())
-    return false;
-
-  if (!updates_response().get_updates().has_changes_remaining()) {
-    NOTREACHED();  // Server should always send changes remaining.
-    return false;  // Avoid looping forever.
-  }
-  // Changes remaining is an estimate, but if it's estimated to be
-  // zero, that's firm and we don't have to ask again.
-  return updates_response().get_updates().changes_remaining() == 0;
 }
 
 }  // namespace sessions

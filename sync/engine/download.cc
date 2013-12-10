@@ -143,7 +143,7 @@ void PartitionProgressMarkersByType(
 
 // Examines the contents of the GetUpdates response message and forwards
 // relevant data to the UpdateHandlers for processing and persisting.
-bool ProcessUpdateResponseMessage(
+bool ProcessUpdateResponseContents(
     const sync_pb::GetUpdatesResponse& gu_response,
     ModelTypeSet proto_request_types,
     UpdateHandlerMap* handler_map,
@@ -353,12 +353,9 @@ SyncerError ExecuteDownloadUpdates(
       update_response);
 
   if (result != SYNCER_OK) {
-    status->mutable_updates_response()->Clear();
     LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
     return result;
   }
-
-  status->mutable_updates_response()->CopyFrom(update_response);
 
   DVLOG(1) << "GetUpdates "
            << " returned " << update_response.get_updates().entries_size()
@@ -379,22 +376,41 @@ SyncerError ExecuteDownloadUpdates(
         HandleGetEncryptionKeyResponse(update_response, dir));
   }
 
-  const sync_pb::GetUpdatesResponse& gu_response =
-      update_response.get_updates();
-  status->increment_num_updates_downloaded_by(gu_response.entries_size());
-  DCHECK(gu_response.has_changes_remaining());
-  status->set_num_server_changes_remaining(gu_response.changes_remaining());
-
   const ModelTypeSet proto_request_types =
       Intersection(request_types, ProtocolTypes());
 
-  if (!ProcessUpdateResponseMessage(gu_response,
-                                    proto_request_types,
-                                    session->context()->update_handler_map(),
-                                    status)) {
+  return ProcessResponse(update_response.get_updates(),
+                         proto_request_types,
+                         session->context()->update_handler_map(),
+                         status);
+}
+
+SyncerError ProcessResponse(
+    const sync_pb::GetUpdatesResponse& gu_response,
+    ModelTypeSet proto_request_types,
+    UpdateHandlerMap* handler_map,
+    StatusController* status) {
+  status->increment_num_updates_downloaded_by(gu_response.entries_size());
+
+  // The changes remaining field is used to prevent the client from looping.  If
+  // that field is being set incorrectly, we're in big trouble.
+  if (!gu_response.has_changes_remaining()) {
     return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+  status->set_num_server_changes_remaining(gu_response.changes_remaining());
+
+
+  if (!ProcessUpdateResponseContents(gu_response,
+                                     proto_request_types,
+                                     handler_map,
+                                     status)) {
+    return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+
+  if (gu_response.changes_remaining() == 0) {
+    return SYNCER_OK;
   } else {
-    return result;
+    return SERVER_MORE_TO_DOWNLOAD;
   }
 }
 

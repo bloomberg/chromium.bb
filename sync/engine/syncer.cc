@@ -130,20 +130,23 @@ bool Syncer::DownloadAndApplyUpdates(
     ModelTypeSet request_types,
     SyncSession* session,
     base::Callback<void(sync_pb::ClientToServerMessage*)> build_fn) {
-  while (!session->status_controller().ServerSaysNothingMoreToDownload()) {
+  SyncerError download_result = UNSET;
+  do {
     TRACE_EVENT0("sync", "DownloadUpdates");
     sync_pb::ClientToServerMessage msg;
     build_fn.Run(&msg);
-    SyncerError download_result =
+    download_result =
         download::ExecuteDownloadUpdates(request_types, session, &msg);
     session->mutable_status_controller()->set_last_download_updates_result(
         download_result);
-    if (download_result != SYNCER_OK) {
-      return false;
-    }
-  }
+  } while (download_result == SERVER_MORE_TO_DOWNLOAD);
+
+  // Exit without applying if we're shutting down or an error was detected.
+  if (download_result != SYNCER_OK)
+    return false;
   if (ExitRequested())
     return false;
+
   ApplyUpdates(session);
   if (ExitRequested())
     return false;

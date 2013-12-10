@@ -42,12 +42,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
   void set_commit_request_types(ModelTypeSet value) {
     model_neutral_.commit_request_types = value;
   }
-  const sync_pb::ClientToServerResponse& updates_response() const {
-    return model_neutral_.updates_response;
-  }
-  sync_pb::ClientToServerResponse* mutable_updates_response() {
-    return &model_neutral_.updates_response;
-  }
 
   // Changelog related state.
   int64 num_server_changes_remaining() const {
@@ -66,24 +60,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
   int num_updates_applied() const;
 
   int num_server_overwrites() const;
-
-  // Returns the number of updates received from the sync server.
-  int64 CountUpdates() const;
-
-  // Returns true if the last download_updates_command received a valid
-  // server response.
-  bool download_updates_succeeded() const {
-    return model_neutral_.last_download_updates_result
-        == SYNCER_OK;
-  }
-
-  // Returns true if the last updates response indicated that we were fully
-  // up to date.  This is subtle: if it's false, it could either mean that
-  // the server said there WAS more to download, or it could mean that we
-  // were unable to reach the server.  If we didn't request every enabled
-  // datatype, then we can't say for sure that there's nothing left to
-  // download: in that case, this also returns false.
-  bool ServerSaysNothingMoreToDownload() const;
 
   base::Time sync_start_time() const {
     // The time at which we sent the first GetUpdates command for this sync.

@@ -31,16 +31,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   EXPECT_EQ(14, status.model_neutral_state().num_successful_commits);
 }
 
-TEST_F(StatusControllerTest, CountUpdates) {
-  StatusController status;
-  EXPECT_EQ(0, status.CountUpdates());
-  sync_pb::ClientToServerResponse* response(status.mutable_updates_response());
-  sync_pb::SyncEntity* entity1 = response->mutable_get_updates()->add_entries();
-  sync_pb::SyncEntity* entity2 = response->mutable_get_updates()->add_entries();
-  ASSERT_TRUE(entity1 != NULL && entity2 != NULL);
-  EXPECT_EQ(2, status.CountUpdates());
-}
-
 // Test TotalNumConflictingItems
 TEST_F(StatusControllerTest, TotalNumConflictingItems) {
   StatusController status;

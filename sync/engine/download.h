@@ -37,7 +37,7 @@ SYNC_EXPORT_PRIVATE void BuildNormalDownloadUpdates(
     sync_pb::ClientToServerMessage* client_to_server_message);
 
 // Helper function.  Defined here for testing.
-void SYNC_EXPORT_PRIVATE BuildNormalDownloadUpdatesImpl(
+SYNC_EXPORT_PRIVATE void BuildNormalDownloadUpdatesImpl(
     ModelTypeSet proto_request_types,
     UpdateHandlerMap* update_handler_map,
     const sessions::NudgeTracker& nudge_tracker,
@@ -54,7 +54,7 @@ SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForConfigure(
     sync_pb::ClientToServerMessage* client_to_server_message);
 
 // Helper function.  Defined here for testing.
-void SYNC_EXPORT_PRIVATE BuildDownloadUpdatesForConfigureImpl(
+SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForConfigureImpl(
     ModelTypeSet proto_request_types,
     UpdateHandlerMap* update_handler_map,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
@@ -70,7 +70,7 @@ SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForPoll(
     sync_pb::ClientToServerMessage* client_to_server_message);
 
 // Helper function.  Defined here for testing.
-void SYNC_EXPORT_PRIVATE BuildDownloadUpdatesForPollImpl(
+SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForPollImpl(
     ModelTypeSet proto_request_types,
     UpdateHandlerMap* update_handler_map,
     sync_pb::GetUpdatesMessage* get_updates);
@@ -82,9 +82,17 @@ SYNC_EXPORT_PRIVATE SyncerError
                            sessions::SyncSession* session,
                            sync_pb::ClientToServerMessage* msg);
 
+// Helper function for processing responses from the server.
+// Defined here for testing.
+SYNC_EXPORT_PRIVATE SyncerError ProcessResponse(
+    const sync_pb::GetUpdatesResponse& gu_response,
+    ModelTypeSet proto_request_types,
+    UpdateHandlerMap* handler_map,
+    sessions::StatusController* status);
+
 // Helper function to copy client debug info from debug_info_getter to
 // debug_info.  Defined here for testing.
-void SYNC_EXPORT_PRIVATE CopyClientDebugInfo(
+SYNC_EXPORT_PRIVATE void CopyClientDebugInfo(
     sessions::DebugInfoGetter* debug_info_getter,
     sync_pb::DebugInfo* debug_info);
 
