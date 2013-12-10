@@ -371,11 +371,11 @@ public class ChildProcessLauncher {
     static void stop(int pid) {
         Log.d(TAG, "stopping child connection: pid=" + pid);
         ChildProcessConnection connection = sServiceMap.remove(pid);
-        sBindingManager.clearConnection(pid);
         if (connection == null) {
             logPidWarning(pid, "Tried to stop non-existent connection");
             return;
         }
+        sBindingManager.clearConnection(pid);
         connection.stop();
         freeConnection(connection);
     }
