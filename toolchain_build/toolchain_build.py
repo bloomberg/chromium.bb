@@ -22,11 +22,37 @@ GIT_REVISIONS = {
     'newlib': '9f95ad0b4875d153b9d138090e61ac4c24e9a87d',
     }
 
+TAR_FILES = {
+    'gmp': command.path.join('gmp', 'gmp-5.1.3.tar.bz2'),
+    'mpfr': command.path.join('mpfr', 'mpfr-3.1.2.tar.bz2'),
+    'mpc': command.path.join('mpc', 'mpc-1.0.1.tar.gz'),
+    'isl': command.path.join('cloog', 'isl-0.12.1.tar.bz2'),
+    'cloog': command.path.join('cloog', 'cloog-0.18.1.tar.gz'),
+    }
+
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
 
 
 def CollectSources():
   sources = {}
+
+  for package in TAR_FILES:
+    tar_file = TAR_FILES[package]
+    if fnmatch.fnmatch(tar_file, '*.bz2'):
+      extract = EXTRACT_STRIP_TBZ2
+    elif fnmatch.fnmatch(tar_file, '*.gz'):
+      extract = EXTRACT_STRIP_TGZ
+    else:
+      raise Exception('unexpected file name pattern in TAR_FILES[%r]' % package)
+    sources[package] = {
+        'type': 'source',
+        'commands': [
+            command.Command(extract + [command.path.join('%(abs_top_srcdir)s',
+                                                         '..', 'third_party',
+                                                         tar_file)],
+                            cwd='%(output)s'),
+            ],
+        }
 
   for package in GIT_REVISIONS:
     sources[package] = {
@@ -310,18 +336,6 @@ def CommandsInBuild(command_lines):
            for cmd in command_lines]
 
 
-def UnpackSrc(is_gzip):
-  if is_gzip:
-    extract = EXTRACT_STRIP_TGZ
-  else:
-    extract = EXTRACT_STRIP_TBZ2
-  return [
-      command.RemoveDirectory('src'),
-      command.Mkdir('src'),
-      command.Command(extract + ['%(src)s'], cwd='src'),
-      ]
-
-
 def PopulateDeps(dep_dirs):
   commands = [command.RemoveDirectory('all_deps'),
               command.Mkdir('all_deps')]
@@ -330,8 +344,13 @@ def PopulateDeps(dep_dirs):
   return commands
 
 
-def WithDepsOptions(options):
-  return ['--with-' + option + '=%(abs_all_deps)s' for option in options]
+def WithDepsOptions(options, component=None):
+  if component is None:
+    directory = command.path.join('%(cwd)s', 'all_deps')
+  else:
+    directory = '%(abs_' + component + ')s'
+  return ['--with-' + option + '=' + directory
+          for option in options]
 
 
 # Return the component name we'll use for a base component name and
@@ -344,110 +363,95 @@ def ForHost(component_name, host):
 
 
 # These are libraries that go into building the compiler itself.
-# TODO(mcgrathr): Make these use source targets in some fashion.
 def HostGccLibs(host):
   def H(component_name):
     return ForHost(component_name, host)
   host_gcc_libs = {
       H('gmp'): {
           'type': 'build',
-          'tar_src': 'third_party/gmp/gmp-5.1.3.tar.bz2',
-          'unpack_commands': UnpackSrc(False),
-          'hashed_inputs': {'src': 'src'},
-          'commands': CommandsInBuild([
-              CONFIGURE_CMD + ConfigureHostLib(host) + [
-                  '--with-sysroot=%(abs_output)s',
-                  '--enable-cxx',
-                  # Without this, the built library will assume the
-                  # instruction set details available on the build machine.
-                  # With this, it dynamically chooses what code to use based
-                  # on the details of the actual host CPU at runtime.
-                  '--enable-fat',
-                  ],
-              MakeCommand(host),
-              MakeCheckCommand(host),
-              MAKE_DESTDIR_CMD + ['install-strip'],
-              ]),
+          'dependencies': ['gmp'],
+          'commands': [
+              command.Command(ConfigureCommand('gmp') +
+                              ConfigureHostLib(host) + [
+                                  '--with-sysroot=%(abs_output)s',
+                                  '--enable-cxx',
+                                  # Without this, the built library will
+                                  # assume the instruction set details
+                                  # available on the build machine.  With
+                                  # this, it dynamically chooses what code
+                                  # to use based on the details of the
+                                  # actual host CPU at runtime.
+                                  '--enable-fat',
+                                  ]),
+              command.Command(MakeCommand(host)),
+              command.Command(MakeCheckCommand(host)),
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
+              ],
           },
       H('mpfr'): {
           'type': 'build',
-          'dependencies': [H('gmp')],
-          'tar_src': 'third_party/mpfr/mpfr-3.1.2.tar.bz2',
-          'unpack_commands': (UnpackSrc(False) +
-                              PopulateDeps(['%(' + H('gmp') + ')s'])),
-          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-          'commands': CommandsInBuild([
-              CONFIGURE_CMD + ConfigureHostLib(host) + WithDepsOptions(
-                  ['sysroot', 'gmp']),
-              MakeCommand(host),
-              MakeCheckCommand(host),
-              MAKE_DESTDIR_CMD + ['install-strip'],
-              ]),
+          'dependencies': ['mpfr', H('gmp')],
+          'commands': [
+              command.Command(ConfigureCommand('mpfr') +
+                              ConfigureHostLib(host) +
+                              WithDepsOptions(['sysroot', 'gmp'], H('gmp'))),
+              command.Command(MakeCommand(host)),
+              command.Command(MakeCheckCommand(host)),
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
+              ],
           },
       H('mpc'): {
           'type': 'build',
-          'dependencies': [H('gmp'), H('mpfr')],
-          'tar_src': 'third_party/mpc/mpc-1.0.1.tar.gz',
-          'unpack_commands': (UnpackSrc(True) +
-                              PopulateDeps(['%(' + H('gmp') + ')s',
-                                            '%(' + H('mpfr') + ')s'])),
-          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-          'commands': CommandsInBuild([
-              CONFIGURE_CMD + ConfigureHostLib(host) + WithDepsOptions(
-                  ['sysroot', 'gmp', 'mpfr']),
-              MakeCommand(host),
-              MakeCheckCommand(host),
-              MAKE_DESTDIR_CMD + ['install-strip'],
-              ]),
+          'dependencies': ['mpc', H('gmp'), H('mpfr')],
+          'commands': PopulateDeps(['%(' + H('gmp') + ')s',
+                                    '%(' + H('mpfr') + ')s']) + [
+              command.Command(ConfigureCommand('mpc') +
+                              ConfigureHostLib(host) +
+                              WithDepsOptions(['sysroot', 'gmp', 'mpfr'])),
+              command.Command(MakeCommand(host)),
+              command.Command(MakeCheckCommand(host)),
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
+              ],
           },
       H('isl'): {
           'type': 'build',
-          'dependencies': [H('gmp')],
-          'tar_src': 'third_party/cloog/isl-0.12.1.tar.bz2',
-          'unpack_commands': (UnpackSrc(False) +
-                              PopulateDeps(['%(' + H('gmp') + ')s'])),
-          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-          'commands': CommandsInBuild([
-              CONFIGURE_CMD + ConfigureHostLib(host) + WithDepsOptions([
-                  'sysroot',
-                  'gmp-prefix',
-                  ]),
-              MakeCommand(host),
-              MakeCheckCommand(host),
-              MAKE_DESTDIR_CMD + ['install-strip'],
-              ]) + [
-                  # The .pc files wind up containing some absolute paths
-                  # that make the output depend on the build directory name.
-                  # The dependents' configure scripts don't need them anyway.
-                  command.RemoveDirectory(command.path.join(
-                      '%(output)s', 'lib', 'pkgconfig')),
-                  ],
+          'dependencies': ['isl', H('gmp')],
+          'commands': [
+              command.Command(ConfigureCommand('isl') +
+                              ConfigureHostLib(host) +
+                              WithDepsOptions(['sysroot', 'gmp-prefix'],
+                                              H('gmp'))),
+              command.Command(MakeCommand(host)),
+              command.Command(MakeCheckCommand(host)),
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
+              # The .pc files wind up containing some absolute paths
+              # that make the output depend on the build directory name.
+              # The dependents' configure scripts don't need them anyway.
+              command.RemoveDirectory(command.path.join(
+                  '%(output)s', 'lib', 'pkgconfig')),
+              ],
           },
       H('cloog'): {
           'type': 'build',
-          'dependencies': [H('gmp'), H('isl')],
-          'tar_src': 'third_party/cloog/cloog-0.18.1.tar.gz',
-          'unpack_commands': (UnpackSrc(True) +
-                              PopulateDeps(['%(' + H('gmp') + ')s',
-                                            '%(' + H('isl') + ')s'])),
-          'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
-          'commands': CommandsInBuild([
-              CONFIGURE_CMD + ConfigureHostLib(host) + [
-                  '--with-bits=gmp',
-                  '--with-isl=system',
-                  ] + WithDepsOptions(['sysroot',
-                                       'gmp-prefix',
-                                       'isl-prefix']),
-              MakeCommand(host),
-              MakeCheckCommand(host),
-              MAKE_DESTDIR_CMD + ['install-strip'],
-              ]) + [
-                  # The .pc files wind up containing some absolute paths
-                  # that make the output depend on the build directory name.
-                  # The dependents' configure scripts don't need them anyway.
-                  command.RemoveDirectory(command.path.join(
-                      '%(output)s', 'lib', 'pkgconfig')),
-                  ],
+          'dependencies': ['cloog', H('gmp'), H('isl')],
+          'commands': PopulateDeps(['%(' + H('gmp') + ')s',
+                                    '%(' + H('isl') + ')s']) + [
+              command.Command(ConfigureCommand('cloog') +
+                              ConfigureHostLib(host) + [
+                                  '--with-bits=gmp',
+                                  '--with-isl=system',
+                                  ] + WithDepsOptions(['sysroot',
+                                                       'gmp-prefix',
+                                                       'isl-prefix'])),
+              command.Command(MakeCommand(host)),
+              command.Command(MakeCheckCommand(host)),
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
+              # The .pc files wind up containing some absolute paths
+              # that make the output depend on the build directory name.
+              # The dependents' configure scripts don't need them anyway.
+              command.RemoveDirectory(command.path.join(
+                  '%(output)s', 'lib', 'pkgconfig')),
+              ],
           },
       }
   return host_gcc_libs
