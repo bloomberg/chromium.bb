@@ -66,7 +66,6 @@
               'events.json',
               'experimental_accessibility.json',
               'experimental_discovery.idl',
-              'experimental_history.json',
               'feedback_private.idl',
               'file_browser_private.json',
               'file_system.idl',

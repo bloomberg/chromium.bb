@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -125,22 +124,6 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   // The actual call to SendResponse.  This is required since the semantics for
   // CancelableRequestConsumerT require it to be accessed after the call.
   void SendResponseToCallback();
-};
-
-class HistoryGetMostVisitedFunction : public HistoryFunctionWithCallback {
- public:
-  DECLARE_EXTENSION_FUNCTION("experimental.history.getMostVisited",
-                             EXPERIMENTAL_HISTORY_GETMOSTVISITED)
-
- protected:
-  virtual ~HistoryGetMostVisitedFunction() {}
-
-  // HistoryFunctionWithCallback:
-  virtual bool RunAsyncImpl() OVERRIDE;
-
-  // Callback for the history function to provide results.
-  void QueryComplete(CancelableRequestProvider::Handle handle,
-                     const history::FilteredURLList& data);
 };
 
 class HistoryGetVisitsFunction : public HistoryFunctionWithCallback {
