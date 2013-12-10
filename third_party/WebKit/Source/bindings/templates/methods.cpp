@@ -12,7 +12,8 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% else %}
     {% if method.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
-        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}

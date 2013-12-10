@@ -4720,6 +4720,7 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodA1Method(info);
         return;
@@ -4729,10 +4730,12 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4771,6 +4774,7 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodB1Method(info);
         return;
@@ -4780,10 +4784,12 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4818,6 +4824,7 @@ static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodC1Method(info);
         return;
@@ -4827,10 +4834,12 @@ static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4864,6 +4873,7 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodD1Method(info);
         return;
@@ -4873,10 +4883,12 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodD", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodD", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodDMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4910,6 +4922,7 @@ static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodE1Method(info);
         return;
@@ -4919,10 +4932,12 @@ static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodE", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodE", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4956,6 +4971,7 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodF1Method(info);
         return;
@@ -4965,10 +4981,12 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodF", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodF", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -5112,6 +5130,7 @@ static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Val
 
 static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedStaticMethod1Method(info);
         return;
@@ -5121,10 +5140,12 @@ static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedStaticMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedStaticMethod", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

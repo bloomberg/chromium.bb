@@ -94,11 +94,12 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
     // may end up being the only node in the map and get garbage-collected prematurely.
     toV8(document, info.Holder(), info.GetIsolate());
 
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestNamedConstructor", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("NamedConstructor", "TestNamedConstructor", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str3, argumentOrNull(info, 2));

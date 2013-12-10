@@ -31,6 +31,9 @@
 #include "V8TextTrackCue.h"
 
 #include "V8VTTCue.h"
+
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/frame/UseCounter.h"
 
 namespace WebCore {
@@ -44,8 +47,10 @@ v8::Handle<v8::Value> toV8(TextTrackCue* impl, v8::Handle<v8::Object> creationCo
 // compat, not per spec, and should be removed at the earliest opportunity.
 void V8TextTrackCue::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TextTrackCue", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 3)) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TextTrackCue", ExceptionMessages::notEnoughArguments(3, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(3, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     V8TRYCATCH_VOID(double, startTime, static_cast<double>(info[0]->NumberValue()));

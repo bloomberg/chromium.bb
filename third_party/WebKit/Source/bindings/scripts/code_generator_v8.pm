@@ -2254,12 +2254,15 @@ sub GenerateOverloadedFunction
 
     my $conditionalString = GenerateConditionalString($function);
     my $leastNumMandatoryParams = 255;
-    my $code = "";
-    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
-    $code .= <<END;
+
+    my $hasExceptionState = 0;
+    my $header = "";
+    $header .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $header .= <<END;
 static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 END
+    my $code = "";
     $code .= GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
 
@@ -2273,17 +2276,32 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
+        if (!$hasExceptionState) {
+            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+            AddToImplIncludes("bindings/v8/ExceptionState.h");
+            $header .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${name}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
+            $hasExceptionState = 1;
+        }
         $code .= "    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {\n";
-        $code .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$interfaceName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length())), info.GetIsolate());\n";
+        $code .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length()));\n";
+        $code .= "        exceptionState.throwIfNeeded();\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
-    $code .= <<END;
-    throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$interfaceName\", \"No function was found that matched the signature provided.\"), info.GetIsolate());
+    if ($hasExceptionState) {
+        $code .= <<END;
+    exceptionState.throwTypeError(\"No function was found that matched the signature provided.\");
+    exceptionState.throwIfNeeded();
 END
+    } else {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+        $code .=<<END;
+    throwTypeError(ExceptionMessages::failedToExecute(\"${name}\", \"${interfaceName}\", \"No function was found that matched the signature provided.\"), info.GetIsolate());
+END
+    }
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
-    $implementation{nameSpaceInternal}->add($code);
+    $implementation{nameSpaceInternal}->add($header . $code);
 }
 
 sub GenerateFunctionCallback
@@ -2362,9 +2380,11 @@ sub GenerateFunction
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
     my $isNonListSVGType = $svgNativeType && !($interfaceName =~ /List$/);
 
+    my $hasExceptionState = 0;
     if ($raisesExceptions || $isEventListener || $isSecurityCheckNecessary || $isNonListSVGType) {
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${unoverloadedName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
+        $hasExceptionState = 1;
     }
 
     if ($isEventListener) {
@@ -2400,7 +2420,7 @@ END
         return;
     }
 
-    $code .= GenerateArgumentsCountCheck($function, $interface);
+    $code .= GenerateArgumentsCountCheck($function, $interface, $hasExceptionState);
 
     if ($svgNativeType) {
         my $nativeClassName = GetNativeType($interfaceName);
@@ -2500,6 +2520,7 @@ sub GenerateArgumentsCountCheck
 {
     my $function = shift;
     my $interface = shift;
+    my $hasExceptionState = shift;
 
     my $functionName = $function->name;
     my $interfaceName = $interface->name;
@@ -2519,7 +2540,12 @@ sub GenerateArgumentsCountCheck
     my $argumentsCountCheckString = "";
     if ($numMandatoryParams >= 1) {
         $argumentsCountCheckString .= "    if (UNLIKELY(info.Length() < $numMandatoryParams)) {\n";
-        $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length())), info.GetIsolate());\n";
+        if ($hasExceptionState) {
+            $argumentsCountCheckString .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length()));\n";
+            $argumentsCountCheckString .= "        exceptionState.throwIfNeeded();\n";
+        } else {
+            $argumentsCountCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", ExceptionMessages::notEnoughArguments($numMandatoryParams, info.Length())), info.GetIsolate());\n";
+        }
         $argumentsCountCheckString .= "        return;\n";
         $argumentsCountCheckString .= "    }\n";
     }
@@ -2688,11 +2714,13 @@ sub GenerateOverloadedConstructorCallback
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
 
-    my $code = "";
-    $code .= <<END;
+    my $hasExceptionState = 0;
+    my $header = "";
+    $header .= <<END;
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 END
+    my $code = "";
     my $leastNumMandatoryParams = 255;
     foreach my $constructor (@{$interface->constructors}) {
         my $name = "constructor" . $constructor->overloadedIndex;
@@ -2704,18 +2732,31 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
+        if (!$hasExceptionState) {
+            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+            AddToImplIncludes("bindings/v8/ExceptionState.h");
+            $header .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
+            $hasExceptionState = 1;
+        }
         $code .= "    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {\n";
-
-        $code .= "        throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length())), info.GetIsolate());\n";
+        $code .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length()));\n";
+        $code .= "        exceptionState.throwIfNeeded();\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
-    $code .= <<END;
-    throwTypeError(ExceptionMessages::failedToConstruct(\"$interfaceName\", \"No matching constructor signature.\"), info.GetIsolate());
-    return;
+    if ($hasExceptionState) {
+        $code .= <<END;
+    exceptionState.throwTypeError(\"No matching constructor signature.\");
+    exceptionState.throwIfNeeded();
 END
+    } else {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+        $code .= <<END;
+    throwTypeError(ExceptionMessages::failedToConstruct(\"${interfaceName}\", \"No matching constructor signature.\"), info.GetIsolate());
+END
+    }
     $code .= "}\n\n";
-    $implementation{nameSpaceInternal}->add($code);
+    $implementation{nameSpaceInternal}->add($header . $code);
 }
 
 sub GenerateSingleConstructorCallback
@@ -2742,7 +2783,8 @@ static void constructor${overloadedIndexString}(const v8::FunctionCallbackInfo<v
 END
 
     if ($function->overloadedIndex == 0) {
-        $code .= GenerateArgumentsCountCheck($function, $interface);
+        my $hasExceptionState = 0;
+        $code .= GenerateArgumentsCountCheck($function, $interface, $hasExceptionState);
     }
 
     if ($raisesExceptions) {
@@ -3083,12 +3125,14 @@ END
 
 END
 
-    $code .= GenerateArgumentsCountCheck($function, $interface);
-
     if ($raisesExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        my $interfaceName = $interface->name;
+        $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
+
+    my $hasExceptionState = $raisesExceptions;
+    $code .= GenerateArgumentsCountCheck($function, $interface, $hasExceptionState);
 
     my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface);
     $code .= $parameterCheckString;

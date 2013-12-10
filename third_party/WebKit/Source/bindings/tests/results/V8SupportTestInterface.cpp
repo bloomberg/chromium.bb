@@ -320,7 +320,8 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "supplementalMethod2", "SupportTestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "SupportTestInterface", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());

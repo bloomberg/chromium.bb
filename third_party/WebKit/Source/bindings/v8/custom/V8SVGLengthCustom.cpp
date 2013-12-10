@@ -76,19 +76,21 @@ void V8SVGLength::valueAttributeSetterCustom(v8::Local<v8::Value> value, const v
 
 void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "convertToSpecifiedUnits", "SVGLength", info.Holder(), info.GetIsolate());
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     if (wrapper->isReadOnly()) {
-        setDOMException(NoModificationAllowedError, info.GetIsolate());
+        exceptionState.throwDOMException(NoModificationAllowedError, "The length is read only.");
+        exceptionState.throwIfNeeded();
         return;
     }
 
     if (info.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToExecute("convertToSpecifiedUnits", "SVGLength", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
 
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_VOID(int, unitType, toUInt32(info[0]));
     SVGLengthContext lengthContext(wrapper->contextElement());
     imp.convertToSpecifiedUnits(unitType, lengthContext, exceptionState);

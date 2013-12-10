@@ -3072,7 +3072,8 @@ static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackI
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "methodThatRequiresAllArgsAndThrows", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodThatRequiresAllArgsAndThrows", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -3997,6 +3998,7 @@ static void overloadedMethod5Method(const v8::FunctionCallbackInfo<v8::Value>& i
 
 static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethod1Method(info);
         return;
@@ -4018,10 +4020,12 @@ static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4061,6 +4065,7 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1) && (info[0]->IsNull() || V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())))) || ((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         overloadedMethodA1Method(info);
         return;
@@ -4070,10 +4075,12 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4107,6 +4114,7 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodB1Method(info);
         return;
@@ -4116,10 +4124,12 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4248,7 +4258,8 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayFunction", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -4270,7 +4281,8 @@ static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "domStringListFunction", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("domStringListFunction", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -4399,7 +4411,8 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "strictSVGPointMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("strictSVGPointMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -4443,7 +4456,8 @@ static void strictFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "strictFunction", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 3)) {
-        throwTypeError(ExceptionMessages::failedToExecute("strictFunction", "TestObject", ExceptionMessages::notEnoughArguments(3, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(3, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -4618,6 +4632,7 @@ static void overloadedPerWorldMethod2Method(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedPerWorldMethod1Method(info);
         return;
@@ -4627,10 +4642,12 @@ static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedPerWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4654,6 +4671,7 @@ static void overloadedPerWorldMethod2MethodForMainWorld(const v8::FunctionCallba
 
 static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedPerWorldMethod1MethodForMainWorld(info);
         return;
@@ -4663,10 +4681,12 @@ static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbac
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedPerWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4822,6 +4842,7 @@ static void overloadedActivityLoggedMethod2Method(const v8::FunctionCallbackInfo
 
 static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedActivityLoggedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedActivityLoggedMethod1Method(info);
         return;
@@ -4831,10 +4852,12 @@ static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedActivityLoggedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4863,6 +4886,7 @@ static void overloadedActivityLoggedMethod2MethodForMainWorld(const v8::Function
 
 static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedActivityLoggedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedActivityLoggedMethod1MethodForMainWorld(info);
         return;
@@ -4872,10 +4896,12 @@ static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionC
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedActivityLoggedMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -557,7 +557,8 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "implementsMethod2", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("implementsMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
@@ -618,7 +619,8 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "supplementalMethod2", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());

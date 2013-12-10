@@ -32,6 +32,7 @@
 #include "V8MutationObserver.h"
 
 #include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8MutationCallback.h"
@@ -42,14 +43,17 @@ namespace WebCore {
 
 void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "MutationObserver", info.Holder(), info.GetIsolate());
     if (info.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("MutationObserver", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
 
     v8::Local<v8::Value> arg = info[0];
     if (!arg->IsFunction()) {
-        throwTypeError("Callback argument must be a function", info.GetIsolate());
+        exceptionState.throwTypeError("Callback argument must be a function");
+        exceptionState.throwIfNeeded();
         return;
     }
 

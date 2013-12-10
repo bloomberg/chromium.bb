@@ -164,33 +164,35 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
 
     if (info.Length() < 2) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
-    } else {
-        XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
+        exceptionState.throwIfNeeded();
+        return;
+    }
 
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, method, info[0]);
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, urlstring, info[1]);
+    XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
 
-        ExecutionContext* context = getExecutionContext();
-        KURL url = context->completeURL(urlstring);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, method, info[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, urlstring, info[1]);
 
-        if (info.Length() >= 3) {
-            bool async = info[2]->BooleanValue();
+    ExecutionContext* context = getExecutionContext();
+    KURL url = context->completeURL(urlstring);
 
-            if (info.Length() >= 4 && !info[3]->IsUndefined()) {
-                V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, user, info[3]);
+    if (info.Length() >= 3) {
+        bool async = info[2]->BooleanValue();
 
-                if (info.Length() >= 5 && !info[4]->IsUndefined()) {
-                    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, password, info[4]);
-                    xmlHttpRequest->open(method, url, async, user, password, exceptionState);
-                } else {
-                    xmlHttpRequest->open(method, url, async, user, exceptionState);
-                }
+        if (info.Length() >= 4 && !info[3]->IsUndefined()) {
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, user, info[3]);
+
+            if (info.Length() >= 5 && !info[4]->IsUndefined()) {
+                V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, password, info[4]);
+                xmlHttpRequest->open(method, url, async, user, password, exceptionState);
             } else {
-                xmlHttpRequest->open(method, url, async, exceptionState);
+                xmlHttpRequest->open(method, url, async, user, exceptionState);
             }
         } else {
-            xmlHttpRequest->open(method, url, exceptionState);
+            xmlHttpRequest->open(method, url, async, exceptionState);
         }
+    } else {
+        xmlHttpRequest->open(method, url, exceptionState);
     }
 
     exceptionState.throwIfNeeded();

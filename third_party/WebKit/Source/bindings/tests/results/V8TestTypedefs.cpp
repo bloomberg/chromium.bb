@@ -372,7 +372,8 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayFunction", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
@@ -394,7 +395,8 @@ static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayFunction2", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction2", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
