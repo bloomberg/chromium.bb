@@ -88,6 +88,7 @@
 #include "core/events/WheelEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ime/InputMethodContext.h"
@@ -2064,6 +2065,9 @@ bool WebViewImpl::setComposition(
     if (!focused || !m_imeAcceptEvents)
         return false;
 
+    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
+        return plugin->setComposition(text, underlines, selectionStart, selectionEnd);
+
     // The input focus has been moved to another WebWidget object.
     // We should use this |editor| object only to complete the ongoing
     // composition.
@@ -2126,6 +2130,10 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
     Frame* focused = focusedWebCoreFrame();
     if (!focused || !m_imeAcceptEvents)
         return false;
+
+    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
+        return plugin->confirmComposition(text, selectionBehavior);
+
     return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
 }
 
@@ -2331,6 +2339,14 @@ InputMethodContext* WebViewImpl::inputMethodContext()
     if (target && target->hasInputMethodContext())
         return target->inputMethodContext();
 
+    return 0;
+}
+
+WebPlugin* WebViewImpl::focusedPluginIfInputMethodSupported(Frame* frame)
+{
+    WebPluginContainerImpl* container = WebFrameImpl::pluginContainerFromNode(frame, WebNode(focusedElement()));
+    if (container && container->supportsInputMethod())
+        return container->plugin();
     return 0;
 }
 

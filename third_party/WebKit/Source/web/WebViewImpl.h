@@ -108,6 +108,7 @@ class WebLayerTreeView;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebPagePopupImpl;
+class WebPlugin;
 class WebPrerendererClient;
 class WebSettingsImpl;
 class WebTouchEvent;
@@ -642,6 +643,7 @@ private:
     void closePendingHelperPlugins(WebCore::Timer<WebViewImpl>*);
 
     WebCore::InputMethodContext* inputMethodContext();
+    WebPlugin* focusedPluginIfInputMethodSupported(WebCore::Frame*);
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;

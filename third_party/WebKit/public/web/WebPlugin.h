@@ -36,6 +36,7 @@
 #include "../platform/WebURL.h"
 #include "WebDragOperation.h"
 #include "WebDragStatus.h"
+#include "WebWidget.h"
 
 struct NPObject;
 struct _NPP;
@@ -48,11 +49,13 @@ class WebFrame;
 class WebInputEvent;
 class WebPluginContainer;
 class WebURLResponse;
+struct WebCompositionUnderline;
 struct WebCursorInfo;
 struct WebPluginParams;
 struct WebPrintParams;
 struct WebPoint;
 struct WebRect;
+struct WebTextInputInfo;
 struct WebURLError;
 template <typename T> class WebVector;
 
@@ -72,6 +75,9 @@ public:
     virtual bool getFormValue(WebString&) { return false; }
     virtual bool supportsKeyboardFocus() const { return false; }
     virtual bool supportsEditCommands() const { return false; }
+    // Returns true if this plugin supports input method, which implements
+    // setComposition() and confirmComposition() below.
+    virtual bool supportsInputMethod() const { return false; }
 
     virtual bool canProcessDrag() const { return false; }
 
@@ -125,6 +131,12 @@ public:
     virtual bool executeEditCommand(const WebString& name) { return false; }
     virtual bool executeEditCommand(const WebString& name, const WebString& value) { return false; }
 
+    // Sets composition text from input method, and returns true if the
+    // composition is set successfully.
+    virtual bool setComposition(const WebString& text, const WebVector<WebCompositionUnderline>& underlines, int selectionStart, int selectionEnd) { return false; }
+    // Confirms an ongoing composition and returns true if there is an ongoing
+    // composition or the text is inserted.
+    virtual bool confirmComposition(const WebString& text, WebWidget::ConfirmCompositionBehavior selectionBehavior) { return false; }
     // If the given position is over a link, returns the absolute url.
     // Otherwise an empty url is returned.
     virtual WebURL linkAtPosition(const WebPoint& position) const { return WebURL(); }

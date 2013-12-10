@@ -49,6 +49,7 @@ public:
     virtual bool getFormValue(String&) { return false; }
     virtual bool wantsWheelEvents() { return false; }
     virtual bool supportsKeyboardFocus() const { return false; }
+    virtual bool supportsInputMethod() const { return false; }
     virtual bool canProcessDrag() const { return false; }
 
     virtual void didReceiveResponse(const ResourceResponse&) { }

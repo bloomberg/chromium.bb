@@ -589,6 +589,11 @@ bool WebPluginContainerImpl::supportsKeyboardFocus() const
     return m_webPlugin->supportsKeyboardFocus();
 }
 
+bool WebPluginContainerImpl::supportsInputMethod() const
+{
+    return m_webPlugin->supportsInputMethod();
+}
+
 bool WebPluginContainerImpl::canProcessDrag() const
 {
     return m_webPlugin->canProcessDrag();

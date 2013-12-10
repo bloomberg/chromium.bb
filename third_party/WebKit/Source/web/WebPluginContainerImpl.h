@@ -77,6 +77,7 @@ public:
     virtual NPObject* scriptableObject() OVERRIDE;
     virtual bool getFormValue(String&) OVERRIDE;
     virtual bool supportsKeyboardFocus() const OVERRIDE;
+    virtual bool supportsInputMethod() const OVERRIDE;
     virtual bool canProcessDrag() const OVERRIDE;
     virtual bool wantsWheelEvents() OVERRIDE;
 
