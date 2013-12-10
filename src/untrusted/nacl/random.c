@@ -38,5 +38,5 @@ int nacl_secure_random(void *dest, size_t bytes, size_t *bytes_written) {
   /*
    * Assume the interface was initialized, cause an untrusted crash if not.
    */
-  return random_interface.get_random_bytes(&dest, bytes, bytes_written);
+  return random_interface.get_random_bytes(dest, bytes, bytes_written);
 }

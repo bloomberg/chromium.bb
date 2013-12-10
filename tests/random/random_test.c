@@ -8,24 +8,19 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "native_client/src/untrusted/irt/irt.h"
+#include <nacl/nacl_random.h>
+
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 int TestMain(void) {
-  struct nacl_irt_random random_interface;
-
-  if (nacl_interface_query(
-          NACL_IRT_RANDOM_v0_1, &random_interface, sizeof(random_interface)) !=
-      sizeof(random_interface)) {
-    fprintf(stderr, "Cannot get random interface!\n");
-    return 1;
-  }
+  nacl_secure_random_init();
 
   int result = 0;
 
-  uint8_t byte1, byte2;
+  uint8_t byte1 = 0;
+  uint8_t byte2 = 0;
   size_t nread;
-  int error = random_interface.get_random_bytes(&byte1, sizeof(byte1), &nread);
+  int error = nacl_secure_random(&byte1, sizeof(byte1), &nread);
   if (error != 0) {
     fprintf(stderr, "get_random_bytes failed for size %u: %s\n",
             sizeof(byte1), strerror(error));
@@ -34,7 +29,7 @@ int TestMain(void) {
     fprintf(stderr, "get_random_bytes read %u != %u\n", nread, sizeof(byte1));
     result = 1;
   } else {
-    error = random_interface.get_random_bytes(&byte2, sizeof(byte2), &nread);
+    error = nacl_secure_random(&byte2, sizeof(byte2), &nread);
     if (error != 0) {
       fprintf(stderr, "get_random_bytes failed for size %u: %s\n",
               sizeof(byte2), strerror(error));
@@ -51,8 +46,9 @@ int TestMain(void) {
      */
   }
 
-  int int1, int2;
-  error = random_interface.get_random_bytes(&int1, sizeof(int1), &nread);
+  int int1 = 0;
+  int int2 = 0;
+  error = nacl_secure_random(&int1, sizeof(int1), &nread);
   if (error != 0) {
     fprintf(stderr, "get_random_bytes failed for size %u: %s\n",
             sizeof(int1), strerror(error));
@@ -61,7 +57,7 @@ int TestMain(void) {
     fprintf(stderr, "get_random_bytes read %u != %u\n", nread, sizeof(int1));
     result = 1;
   } else {
-    error = random_interface.get_random_bytes(&int2, sizeof(int2), &nread);
+    error = nacl_secure_random(&int2, sizeof(int2), &nread);
     if (error != 0) {
       fprintf(stderr, "get_random_bytes failed for size %u: %s\n",
               sizeof(int2), strerror(error));
