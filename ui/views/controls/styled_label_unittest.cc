@@ -7,11 +7,11 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
-#include "ui/views/test/views_test_base.h"
 
 namespace views {
 
@@ -29,7 +29,6 @@ class StyledLabelTest : public testing::Test, public StyledLabelListener {
 
   void InitStyledLabel(const std::string& ascii_text) {
     styled_.reset(new StyledLabel(ASCIIToUTF16(ascii_text), this));
-    styled_->set_owned_by_client();
   }
 
   int StyledLabelContentHeightForWidth(int w) {
@@ -113,19 +112,15 @@ TEST_F(StyledLabelTest, BasicWrapping) {
       styled()->GetInsets().height() + 2 * label_preferred_size.height());
   styled()->Layout();
   ASSERT_EQ(2, styled()->child_count());
-  EXPECT_EQ(3, styled()->child_at(0)->x());
-  EXPECT_EQ(3, styled()->child_at(0)->y());
-  EXPECT_EQ(styled()->height() - 3, styled()->child_at(1)->bounds().bottom());
+  EXPECT_EQ(3, styled()->child_at(0)->bounds().x());
+  EXPECT_EQ(3, styled()->child_at(0)->bounds().y());
+  EXPECT_EQ(styled()->bounds().height() - 3,
+            styled()->child_at(1)->bounds().bottom());
 }
 
 TEST_F(StyledLabelTest, CreateLinks) {
   const std::string text("This is a test block of text.");
   InitStyledLabel(text);
-
-  // Without links, there should be no focus border.
-  EXPECT_TRUE(styled()->GetInsets().empty());
-
-  // Now let's add some links.
   styled()->AddStyleRange(gfx::Range(0, 1),
                           StyledLabel::RangeStyleInfo::CreateForLink());
   styled()->AddStyleRange(gfx::Range(1, 2),
@@ -135,13 +130,9 @@ TEST_F(StyledLabelTest, CreateLinks) {
   styled()->AddStyleRange(gfx::Range(12, 13),
                           StyledLabel::RangeStyleInfo::CreateForLink());
 
-  // Now there should be a focus border because there are non-empty Links.
-  EXPECT_FALSE(styled()->GetInsets().empty());
-
-  // Verify layout creates the right number of children.
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  EXPECT_EQ(7, styled()->child_count());
+  ASSERT_EQ(7, styled()->child_count());
 }
 
 TEST_F(StyledLabelTest, DontBreakLinks) {
@@ -161,15 +152,13 @@ TEST_F(StyledLabelTest, DontBreakLinks) {
   styled()->SetBounds(0, 0, label_preferred_size.width(), pref_height);
   styled()->Layout();
   ASSERT_EQ(2, styled()->child_count());
-  // The label has no focus border while the link (and thus overall styled
-  // label) does, so the label should be inset by the width of the focus border.
-  EXPECT_EQ(Label::kFocusBorderPadding, styled()->child_at(0)->x());
-  EXPECT_EQ(0, styled()->child_at(1)->x());
+  EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
+  EXPECT_EQ(0, styled()->child_at(1)->bounds().x());
 }
 
 TEST_F(StyledLabelTest, StyledRangeWithDisabledLineWrapping) {
   const std::string text("This is a test block of text, ");
-  const std::string unbreakable_text("and this should not be broken");
+  const std::string unbreakable_text("and this should not be breaked");
   InitStyledLabel(text + unbreakable_text);
   StyledLabel::RangeStyleInfo style_info;
   style_info.disable_line_wrapping = true;
@@ -187,8 +176,8 @@ TEST_F(StyledLabelTest, StyledRangeWithDisabledLineWrapping) {
   styled()->SetBounds(0, 0, label_preferred_size.width(), pref_height);
   styled()->Layout();
   ASSERT_EQ(2, styled()->child_count());
-  EXPECT_EQ(0, styled()->child_at(0)->x());
-  EXPECT_EQ(0, styled()->child_at(1)->x());
+  EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
+  EXPECT_EQ(0, styled()->child_at(1)->bounds().x());
 }
 
 TEST_F(StyledLabelTest, StyledRangeUnderlined) {
@@ -240,7 +229,7 @@ TEST_F(StyledLabelTest, StyledRangeBold) {
   StyledLabel unstyled(ASCIIToUTF16(bold_text), this);
   unstyled.SetBounds(0, 0, styled_width, pref_height);
   unstyled.Layout();
-  EXPECT_EQ(1, unstyled.child_count());
+  ASSERT_EQ(1, unstyled.child_count());
 
   styled()->SetBounds(0, 0, styled_width, pref_height);
   styled()->Layout();
@@ -262,10 +251,10 @@ TEST_F(StyledLabelTest, StyledRangeBold) {
             static_cast<Label*>(styled()->child_at(2))->font().GetStyle());
 
   // The second bold part should start on a new line.
-  EXPECT_EQ(0, styled()->child_at(0)->x());
-  EXPECT_EQ(0, styled()->child_at(1)->x());
-  EXPECT_EQ(styled()->child_at(1)->bounds().right(),
-            styled()->child_at(2)->x());
+  EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
+  EXPECT_EQ(0, styled()->child_at(1)->bounds().x());
+  EXPECT_EQ(styled()->child_at(1)->bounds().right() - 2,
+            styled()->child_at(2)->bounds().x());
 }
 
 TEST_F(StyledLabelTest, Color) {
@@ -353,16 +342,13 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
   EXPECT_EQ(label_preferred_size.width(), styled()->width());
 
   ASSERT_EQ(5, styled()->child_count());
-  // The labels have no focus border while the link (and thus overall styled
-  // label) does, so the labels should be inset by the width of the focus
-  // border.
-  EXPECT_EQ(Label::kFocusBorderPadding, styled()->child_at(0)->x());
-  EXPECT_EQ(styled()->child_at(0)->bounds().right(),
-            styled()->child_at(1)->x());
-  EXPECT_EQ(Label::kFocusBorderPadding, styled()->child_at(2)->x());
-  EXPECT_EQ(styled()->child_at(2)->bounds().right(),
-            styled()->child_at(3)->x());
-  EXPECT_EQ(0, styled()->child_at(4)->x());
+  EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
+  EXPECT_EQ(styled()->child_at(0)->bounds().right() - 2,
+            styled()->child_at(1)->bounds().x());
+  EXPECT_EQ(0, styled()->child_at(2)->bounds().x());
+  EXPECT_EQ(styled()->child_at(2)->bounds().right() - 2,
+            styled()->child_at(3)->bounds().x());
+  EXPECT_EQ(0, styled()->child_at(4)->bounds().x());
 
   string16 tooltip;
   EXPECT_TRUE(
@@ -374,10 +360,10 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
 }
 
 TEST_F(StyledLabelTest, HandleEmptyLayout) {
-  const std::string text("This is a test block of text.");
+  const std::string text("This is a test block of text, ");
   InitStyledLabel(text);
   styled()->Layout();
-  EXPECT_EQ(0, styled()->child_count());
+  ASSERT_EQ(0, styled()->child_count());
 }
 
 }  // namespace

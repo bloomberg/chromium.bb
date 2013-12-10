@@ -43,6 +43,11 @@ SkColor Link::GetDefaultEnabledColor() {
 #endif
 }
 
+void Link::OnEnabledChanged() {
+  RecalculateFont();
+  View::OnEnabledChanged();
+}
+
 const char* Link::GetClassName() const {
   return kViewClassName;
 }
@@ -56,6 +61,25 @@ gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
 #endif
+}
+
+void Link::OnPaint(gfx::Canvas* canvas) {
+  Label::OnPaint(canvas);
+
+  if (HasFocus())
+    canvas->DrawFocusRect(GetLocalBounds());
+}
+
+void Link::OnFocus() {
+  Label::OnFocus();
+  // We render differently focused.
+  SchedulePaint();
+}
+
+void Link::OnBlur() {
+  Label::OnBlur();
+  // We render differently focused.
+  SchedulePaint();
 }
 
 bool Link::HitTestRect(const gfx::Rect& rect) const {
@@ -115,6 +139,17 @@ bool Link::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
+bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
+  // Make sure we don't process space or enter as accelerators.
+  return (event.key_code() == ui::VKEY_SPACE) ||
+      (event.key_code() == ui::VKEY_RETURN);
+}
+
+void Link::GetAccessibleState(ui::AccessibleViewState* state) {
+  Label::GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_LINK;
+}
+
 void Link::OnGestureEvent(ui::GestureEvent* event) {
   if (!enabled())
     return;
@@ -132,52 +167,9 @@ void Link::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
-  // Make sure we don't process space or enter as accelerators.
-  return (event.key_code() == ui::VKEY_SPACE) ||
-      (event.key_code() == ui::VKEY_RETURN);
-}
-
-void Link::GetAccessibleState(ui::AccessibleViewState* state) {
-  Label::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_LINK;
-}
-
-void Link::OnEnabledChanged() {
-  RecalculateFont();
-  View::OnEnabledChanged();
-}
-
-void Link::OnPaint(gfx::Canvas* canvas) {
-  Label::OnPaint(canvas);
-
-  if (HasFocus())
-    canvas->DrawFocusRect(GetLocalBounds());
-}
-
-void Link::OnFocus() {
-  Label::OnFocus();
-  // We render differently focused.
-  SchedulePaint();
-}
-
-void Link::OnBlur() {
-  Label::OnBlur();
-  // We render differently focused.
-  SchedulePaint();
-}
-
 void Link::SetFont(const gfx::Font& font) {
   Label::SetFont(font);
   RecalculateFont();
-}
-
-void Link::SetText(const string16& text) {
-  Label::SetText(text);
-  // Disable focusability for empty links.  Otherwise Label::GetInsets() will
-  // give them an unconditional 1-px. inset on every side to allow for a focus
-  // border, when in this case we probably wanted zero width.
-  set_focusable(!text.empty());
 }
 
 void Link::SetEnabledColor(SkColor color) {
@@ -213,12 +205,7 @@ void Link::Init() {
   SetPressedColor(SK_ColorRED);
 #endif
   RecalculateFont();
-
-  // Label::Init() calls SetText(), but if that's being called from Label(), our
-  // SetText() override will not be reached (because the constructed class is
-  // only a Label at the moment, not yet a Link).  So so the set_focusable()
-  // call explicitly here.
-  set_focusable(!text().empty());
+  set_focusable(true);
 }
 
 void Link::SetPressed(bool pressed) {
