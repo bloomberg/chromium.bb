@@ -48,7 +48,28 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
 
+dnl This must come before all the feature tests below.
+AC_ARG_ENABLE(m32,
+              AS_HELP_STRING([--enable-m32],
+                             [Compile/build with -m32]
+                             [(default is no)]),
+              [case "${enableval}" in
+                 yes)
+                   CFLAGS="${CFLAGS} -m32"
+                   CXXFLAGS="${CXXFLAGS} -m32"
+                   usem32=true
+                   ;;
+                 no)
+                   usem32=false
+                   ;;
+                 *)
+                   AC_MSG_ERROR(bad value ${enableval} for --enable-m32)
+                   ;;
+               esac],
+              [usem32=false])
+
 AC_HEADER_STDC
+AC_SYS_LARGEFILE
 m4_include(m4/ax_pthread.m4)
 AX_PTHREAD
 AC_CHECK_HEADERS([a.out.h])
@@ -68,25 +89,6 @@ case $host in
     ;;
 esac
 AM_CONDITIONAL(ANDROID_HOST, test x$ANDROID_HOST = xtrue)
-
-AC_ARG_ENABLE(m32,
-              AS_HELP_STRING([--enable-m32],
-                             [Compile/build with -m32]
-                             [(default is no)]),
-              [case "${enableval}" in
-                 yes)
-                   CFLAGS="${CFLAGS} -m32"
-                   CXXFLAGS="${CXXFLAGS} -m32"
-                   usem32=true
-                   ;;
-                 no)
-                   usem32=false
-                   ;;
-                 *)
-                   AC_MSG_ERROR(bad value ${enableval} for --enable-m32)
-                   ;;
-               esac],
-              [usem32=false])
 
 AC_ARG_ENABLE(processor,
               AS_HELP_STRING([--disable-processor],
