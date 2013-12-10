@@ -46,11 +46,10 @@ class ExecutionContext;
 
 class {{v8_class}} : public {{cpp_class}}, public ActiveDOMCallback {
 public:
-    static PassOwnPtr<{{v8_class}}> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
+    static PassOwnPtr<{{v8_class}}> create(v8::Handle<v8::Object> callback, ExecutionContext* context)
     {
-        ASSERT(jsValue->IsObject());
         ASSERT(context);
-        return adoptPtr(new {{v8_class}}(v8::Handle<v8::Object>::Cast(jsValue), context));
+        return adoptPtr(new {{v8_class}}(callback, context));
     }
 
     virtual ~{{v8_class}}();
@@ -58,9 +57,6 @@ public:
 {% for method in methods %}
     virtual {{method.return_cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}});
 {% endfor %}
-
-    virtual ExecutionContext* executionContext() const { return ContextLifecycleObserver::executionContext(); }
-
 private:
     {{v8_class}}(v8::Handle<v8::Object>, ExecutionContext*);
 
