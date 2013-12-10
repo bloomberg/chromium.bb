@@ -24,9 +24,10 @@ layer at (0,0) size 800x600
         RenderFlexibleBox {DIV} at (3,3) size 149x16
           RenderBlock {DIV} at (0,2.50) size 1x11
           RenderBlock {DIV} at (1,0) size 135x16
-          RenderBlock {DIV} at (137,3.50) size 9x9
       RenderText {#text} at (0,0) size 0x0
 layer at (14,83) size 135x16 scrollWidth 295
   RenderBlock {DIV} at (0,0) size 135x16
     RenderText {#text} at (0,0) size 294x16
       text run at (0,0) width 294: "This text should be centered vertically in the button"
+layer at (150,87) size 9x9 transparent
+  RenderBlock {DIV} at (137,3.50) size 9x9

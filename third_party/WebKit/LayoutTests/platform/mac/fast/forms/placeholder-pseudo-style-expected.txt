@@ -13,7 +13,6 @@ layer at (0,0) size 800x600
         RenderFlexibleBox {DIV} at (4,3) size 117x13
           RenderBlock {DIV} at (0,6.50) size 5x0
           RenderBlock {DIV} at (5,0) size 100x13
-          RenderBlock {DIV} at (106,1) size 11x11
       RenderText {#text} at (260,20) size 4x18
         text run at (260,20) width 4: " "
       RenderTextControl {INPUT} at (266,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -63,3 +62,5 @@ layer at (670,31) size 117x13
       text run at (0,0) width 86: "default disabled"
 layer at (670,31) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
+layer at (251,32) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11

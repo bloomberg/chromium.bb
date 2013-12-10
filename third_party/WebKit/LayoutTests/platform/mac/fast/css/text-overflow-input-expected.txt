@@ -17,7 +17,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (260,20) size 4x18
           text run at (260,20) width 4: " "
         RenderTextControl {INPUT} at (266,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -27,7 +26,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (524,20) size 4x18
           text run at (524,20) width 4: " "
         RenderTextControl {INPUT} at (530,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -39,7 +37,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (260,43) size 4x18
           text run at (260,43) width 4: " "
         RenderTextControl {INPUT} at (266,43) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -49,7 +46,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (524,43) size 4x18
           text run at (524,43) width 4: " "
         RenderTextControl {INPUT} at (530,43) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -65,7 +61,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (260,20) size 4x18
           text run at (260,20) width 4: " "
         RenderTextControl {INPUT} at (266,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -75,7 +70,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (524,20) size 4x18
           text run at (524,20) width 4: " "
         RenderTextControl {INPUT} at (530,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -87,7 +81,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (260,43) size 4x18
           text run at (260,43) width 4: " "
         RenderTextControl {INPUT} at (266,43) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -97,7 +90,6 @@ layer at (0,0) size 800x290
           RenderFlexibleBox {DIV} at (4,3) size 117x13
             RenderBlock {DIV} at (0,6.50) size 5x0
             RenderBlock {DIV} at (5,0) size 100x13
-            RenderBlock {DIV} at (106,1) size 11x11
         RenderText {#text} at (524,43) size 4x18
           text run at (524,43) width 4: " "
         RenderTextControl {INPUT} at (530,43) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -240,3 +232,19 @@ layer at (406,256) size 117x13 scrollWidth 296
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 296x13
       text run at (0,0) width 296: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (251,74) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11
+layer at (515,74) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11
+layer at (251,97) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11
+layer at (515,97) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11
+layer at (251,154) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11
+layer at (515,154) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11
+layer at (251,177) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11
+layer at (515,177) size 11x11 transparent
+  RenderBlock {DIV} at (106,1) size 11x11

@@ -14,19 +14,16 @@ layer at (0,0) size 800x600
                 RenderFlexibleBox {DIV} at (4,3) size 0x13
                   RenderBlock {DIV} at (0,6.50) size 5x0
                   RenderBlock {DIV} at (5,0) size 0x13
-                  RenderBlock {DIV} at (6,1) size 11x11
             RenderTableCell {TD} at (12,1) size 10x25 [r=0 c=1 rs=1 cs=1]
               RenderTextControl {INPUT} at (1,3) size 8x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderFlexibleBox {DIV} at (4,3) size 0x13
                   RenderBlock {DIV} at (0,6.50) size 5x0
                   RenderBlock {DIV} at (5,0) size 0x13
-                  RenderBlock {DIV} at (6,1) size 11x11
             RenderTableCell {TD} at (23,1) size 10x25 [r=0 c=2 rs=1 cs=1]
               RenderTextControl {INPUT} at (1,3) size 8x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderFlexibleBox {DIV} at (4,3) size 0x13
                   RenderBlock {DIV} at (0,6.50) size 5x0
                   RenderBlock {DIV} at (5,0) size 0x13
-                  RenderBlock {DIV} at (6,1) size 11x11
             RenderTableCell {TD} at (34,3) size 749x20 [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 4x18
                 text run at (1,1) width 4: " "
@@ -41,19 +38,28 @@ layer at (0,0) size 800x600
                 RenderFlexibleBox {DIV} at (4,3) size 0x13
                   RenderBlock {DIV} at (0,0) size 16x13
                   RenderBlock {DIV} at (16,0) size 0x13
-                  RenderBlock {DIV} at (17,1) size 11x11
             RenderTableCell {TD} at (12,1) size 10x25 [r=0 c=1 rs=1 cs=1]
               RenderTextControl {INPUT} at (1,3) size 8x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderFlexibleBox {DIV} at (4,3) size 0x13
                   RenderBlock {DIV} at (0,0) size 16x13
                   RenderBlock {DIV} at (16,0) size 0x13
-                  RenderBlock {DIV} at (17,1) size 11x11
             RenderTableCell {TD} at (23,1) size 10x25 [r=0 c=2 rs=1 cs=1]
               RenderTextControl {INPUT} at (1,3) size 8x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 RenderFlexibleBox {DIV} at (4,3) size 0x13
                   RenderBlock {DIV} at (0,0) size 16x13
                   RenderBlock {DIV} at (16,0) size 0x13
-                  RenderBlock {DIV} at (17,1) size 11x11
             RenderTableCell {TD} at (34,3) size 749x20 [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 4x18
                 text run at (1,1) width 4: " "
+layer at (20,34) size 11x11 transparent
+  RenderBlock {DIV} at (6,1) size 11x11
+layer at (31,34) size 11x11 transparent
+  RenderBlock {DIV} at (6,1) size 11x11
+layer at (42,34) size 11x11 transparent
+  RenderBlock {DIV} at (6,1) size 11x11
+layer at (31,97) size 11x11 transparent
+  RenderBlock {DIV} at (17,1) size 11x11
+layer at (42,97) size 11x11 transparent
+  RenderBlock {DIV} at (17,1) size 11x11
+layer at (53,97) size 11x11 transparent
+  RenderBlock {DIV} at (17,1) size 11x11

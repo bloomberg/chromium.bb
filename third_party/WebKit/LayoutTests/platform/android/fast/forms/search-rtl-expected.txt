@@ -20,6 +20,7 @@ layer at (0,0) size 800x600
           RenderFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (2,1.50) size 13x13
             RenderBlock {DIV} at (18,0) size 118x16
+            RenderBlock {DIV} at (137,3.50) size 9x9
         RenderText {#text} at (159,3) size 4x19
           text run at (159,3) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
@@ -27,6 +28,7 @@ layer at (0,0) size 800x600
           RenderFlexibleBox {DIV} at (3,3) size 209x16
             RenderBlock {DIV} at (2,1.50) size 13x13
             RenderBlock {DIV} at (18,0) size 178x16
+            RenderBlock {DIV} at (197,3.50) size 9x9
         RenderText {#text} at (219,29) size 4x19
           text run at (219,29) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
@@ -34,6 +36,7 @@ layer at (0,0) size 800x600
           RenderFlexibleBox {DIV} at (3,3) size 149x16
             RenderBlock {DIV} at (2,1.50) size 13x13
             RenderBlock {DIV} at (18,0) size 118x16
+            RenderBlock {DIV} at (137,3.50) size 9x9
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,130) size 784x20
         RenderText {#text} at (0,0) size 38x19
@@ -56,10 +59,4 @@ layer at (31,75) size 178x16
       text run at (139,0) width 39 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5D6}\x{5D4} "
 layer at (31,101) size 118x16
   RenderBlock {DIV} at (0,0) size 118x16
-layer at (150,53) size 9x9 transparent
-  RenderBlock {DIV} at (137,3.50) size 9x9
-layer at (210,79) size 9x9 transparent
-  RenderBlock {DIV} at (197,3.50) size 9x9
-layer at (150,105) size 9x9 transparent
-  RenderBlock {DIV} at (137,3.50) size 9x9
 caret: position 0 of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 9 {INPUT} of child 3 {P} of body

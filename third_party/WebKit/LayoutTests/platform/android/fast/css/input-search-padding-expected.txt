@@ -7,6 +7,7 @@ layer at (0,0) size 800x600
         RenderFlexibleBox {DIV} at (3,3) size 450x46
           RenderBlock {DIV} at (0,17.50) size 1x11
           RenderBlock {DIV} at (1,0) size 424x46
+          RenderBlock {DIV} at (426,12.50) size 21x21
       RenderBR {BR} at (460,41) size 0x0
       RenderTextControl {INPUT} at (2,87) size 454x81 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBR {BR} at (458,126) size 0x0
@@ -14,6 +15,7 @@ layer at (0,0) size 800x600
         RenderFlexibleBox {DIV} at (6,0.50) size 225x24
           RenderBlock {DIV} at (0,6.50) size 1x11
           RenderBlock {DIV} at (1,0) size 206x24
+          RenderBlock {DIV} at (208,5) size 14x14
 layer at (14,13) size 424x46
   RenderBlock {DIV} at (0,0) size 424x46
     RenderText {#text} at (0,0) size 357x45
@@ -26,7 +28,3 @@ layer at (17,179) size 206x24
   RenderBlock {DIV} at (0,0) size 206x24
     RenderText {#text} at (0,0) size 115x23
       text run at (0,0) width 115: "Sample Input"
-layer at (439,26) size 21x21 transparent
-  RenderBlock {DIV} at (426,12.50) size 21x21
-layer at (224,184) size 14x14 transparent
-  RenderBlock {DIV} at (208,5) size 14x14
