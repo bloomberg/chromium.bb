@@ -653,6 +653,13 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
+     * @return Whether or not this Tab has a live native component.
+     */
+    public boolean isInitialized() {
+        return mNativeTabAndroid != 0;
+    }
+
+    /**
      * @return The url associated with the tab.
      */
     @CalledByNative
