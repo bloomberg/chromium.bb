@@ -89,8 +89,6 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
     // Progress view when the video is loading.
     private View mProgressView;
 
-    private Surface mSurface;
-
     private final ContentVideoViewClient mClient;
 
     private class VideoSurfaceView extends SurfaceView {
