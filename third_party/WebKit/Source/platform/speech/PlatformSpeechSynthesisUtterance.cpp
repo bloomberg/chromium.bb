@@ -24,32 +24,20 @@
  */
 
 #include "config.h"
-#include "core/platform/PlatformSpeechSynthesisVoice.h"
+#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 
 namespace WebCore {
 
-PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
+PassRefPtr<PlatformSpeechSynthesisUtterance> PlatformSpeechSynthesisUtterance::create(PlatformSpeechSynthesisUtteranceClient* client)
 {
-    return adoptRef(new PlatformSpeechSynthesisVoice(voiceURI, name, lang, localService, isDefault));
+    return adoptRef(new PlatformSpeechSynthesisUtterance(client));
 }
 
-PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::create()
-{
-    return adoptRef(new PlatformSpeechSynthesisVoice());
-}
-
-PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
-    : m_voiceURI(voiceURI)
-    , m_name(name)
-    , m_lang(lang)
-    , m_localService(localService)
-    , m_default(isDefault)
-{
-}
-
-PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice()
-    : m_localService(false)
-    , m_default(false)
+PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(PlatformSpeechSynthesisUtteranceClient* client)
+    : m_client(client)
+    , m_volume(1.0f)
+    , m_rate(1.0f)
+    , m_pitch(1.0f)
 {
 }
 

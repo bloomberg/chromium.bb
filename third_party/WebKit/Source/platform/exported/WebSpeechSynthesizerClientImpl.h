@@ -26,7 +26,7 @@
 #ifndef WebSpeechSynthesizerClientImpl_h
 #define WebSpeechSynthesizerClientImpl_h
 
-#include "core/platform/PlatformSpeechSynthesizer.h"
+#include "platform/speech/PlatformSpeechSynthesizer.h"
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesisVoice.h"
 #include "public/platform/WebSpeechSynthesizerClient.h"

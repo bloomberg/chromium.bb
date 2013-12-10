@@ -38,7 +38,7 @@ namespace blink {
 
 class WebSpeechSynthesisVoice {
 public:
-    BLINK_EXPORT WebSpeechSynthesisVoice();
+    BLINK_PLATFORM_EXPORT WebSpeechSynthesisVoice();
     WebSpeechSynthesisVoice(const WebSpeechSynthesisVoice& other) { assign(other); }
     ~WebSpeechSynthesisVoice() { reset(); }
 
@@ -48,17 +48,17 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebSpeechSynthesisVoice&);
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebSpeechSynthesisVoice&);
+    BLINK_PLATFORM_EXPORT void reset();
 
-    BLINK_EXPORT void setVoiceURI(const WebString&);
-    BLINK_EXPORT void setName(const WebString&);
-    BLINK_EXPORT void setLanguage(const WebString&);
-    BLINK_EXPORT void setIsLocalService(bool);
-    BLINK_EXPORT void setIsDefault(bool);
+    BLINK_PLATFORM_EXPORT void setVoiceURI(const WebString&);
+    BLINK_PLATFORM_EXPORT void setName(const WebString&);
+    BLINK_PLATFORM_EXPORT void setLanguage(const WebString&);
+    BLINK_PLATFORM_EXPORT void setIsLocalService(bool);
+    BLINK_PLATFORM_EXPORT void setIsDefault(bool);
 
-#if BLINK_IMPLEMENTATION
-    operator WTF::PassRefPtr<WebCore::PlatformSpeechSynthesisVoice>() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::PlatformSpeechSynthesisVoice>() const;
 #endif
 
 private:

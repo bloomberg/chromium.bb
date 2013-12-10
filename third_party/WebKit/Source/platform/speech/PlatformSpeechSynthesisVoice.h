@@ -26,13 +26,14 @@
 #ifndef PlatformSpeechSynthesisVoice_h
 #define PlatformSpeechSynthesisVoice_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PlatformSpeechSynthesisVoice : public RefCounted<PlatformSpeechSynthesisVoice> {
+class PLATFORM_EXPORT PlatformSpeechSynthesisVoice : public RefCounted<PlatformSpeechSynthesisVoice> {
 public:
     static PassRefPtr<PlatformSpeechSynthesisVoice> create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault);
     static PassRefPtr<PlatformSpeechSynthesisVoice> create();

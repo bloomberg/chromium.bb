@@ -26,7 +26,8 @@
 #ifndef PlatformSpeechSynthesizer_h
 #define PlatformSpeechSynthesizer_h
 
-#include "core/platform/PlatformSpeechSynthesisVoice.h"
+#include "platform/PlatformExport.h"
+#include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -57,7 +58,8 @@ protected:
     virtual ~PlatformSpeechSynthesizerClient() { }
 };
 
-class PlatformSpeechSynthesizer {
+class PLATFORM_EXPORT PlatformSpeechSynthesizer {
+    WTF_MAKE_NONCOPYABLE(PlatformSpeechSynthesizer);
 public:
     static PassOwnPtr<PlatformSpeechSynthesizer> create(PlatformSpeechSynthesizerClient*);
 

@@ -29,8 +29,8 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
-#include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
+#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

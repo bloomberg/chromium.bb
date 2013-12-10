@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "core/platform/PlatformSpeechSynthesizer.h"
+#include "platform/speech/PlatformSpeechSynthesizer.h"
 
-#include "core/platform/PlatformSpeechSynthesisUtterance.h"
-#include "core/platform/chromium/support/WebSpeechSynthesizerClientImpl.h"
+#include "platform/exported/WebSpeechSynthesizerClientImpl.h"
+#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesizer.h"

@@ -24,8 +24,10 @@
  */
 
 #include "config.h"
-#include "core/platform/PlatformSpeechSynthesisUtterance.h"
+
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
+
+#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 
 namespace WebCore {
 

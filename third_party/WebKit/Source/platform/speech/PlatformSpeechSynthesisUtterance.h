@@ -26,7 +26,8 @@
 #ifndef PlatformSpeechSynthesisUtterance_h
 #define PlatformSpeechSynthesisUtterance_h
 
-#include "core/platform/PlatformSpeechSynthesisVoice.h"
+#include "platform/PlatformExport.h"
+#include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -40,7 +41,7 @@ protected:
     virtual ~PlatformSpeechSynthesisUtteranceClient() { }
 };
 
-class PlatformSpeechSynthesisUtterance : public RefCounted<PlatformSpeechSynthesisUtterance> {
+class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance : public RefCounted<PlatformSpeechSynthesisUtterance> {
 public:
     static PassRefPtr<PlatformSpeechSynthesisUtterance> create(PlatformSpeechSynthesisUtteranceClient*);
 

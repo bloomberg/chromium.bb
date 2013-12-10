@@ -28,8 +28,8 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include "modules/speech/SpeechSynthesisEvent.h"
+#include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

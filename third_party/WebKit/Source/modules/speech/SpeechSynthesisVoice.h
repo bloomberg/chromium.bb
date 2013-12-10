@@ -27,7 +27,7 @@
 #define SpeechSynthesisVoice_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/PlatformSpeechSynthesisVoice.h"
+#include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
