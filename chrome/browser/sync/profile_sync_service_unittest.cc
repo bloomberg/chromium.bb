@@ -8,36 +8,133 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/fake_oauth2_token_service.h"
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
+#include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "sync/js/js_arg_list.h"
+#include "sync/js/js_event_details.h"
+#include "sync/js/js_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// TODO(akalin): Add tests here that exercise the whole
+// ProfileSyncService/SyncBackendHost stack while mocking out as
+// little as possible.
 
 namespace browser_sync {
 
 namespace {
 
-ACTION(ReturnNewDataTypeManager) {
-  return new browser_sync::DataTypeManagerImpl(arg0,
-                                               arg1,
-                                               arg2,
-                                               arg3,
-                                               arg4,
-                                               arg5);
+using testing::_;
+using testing::AtLeast;
+using testing::AtMost;
+using testing::Mock;
+using testing::Return;
+using testing::StrictMock;
+
+void SignalDone(base::WaitableEvent* done) {
+  done->Signal();
 }
 
-using testing::_;
-using testing::StrictMock;
+class ProfileSyncServiceTest : public testing::Test {
+ protected:
+  ProfileSyncServiceTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
+                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+   }
+
+  virtual ~ProfileSyncServiceTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeOAuth2TokenService::BuildTokenService);
+    profile_ = builder.Build().Pass();
+    invalidation::InvalidationServiceFactory::GetInstance()->
+        SetBuildOnlyFakeInvalidatorsForTest(true);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Kill the service before the profile.
+    if (service_)
+      service_->Shutdown();
+
+    service_.reset();
+    profile_.reset();
+
+    // Pump messages posted by the sync thread (which may end up
+    // posting on the IO thread).
+    base::RunLoop().RunUntilIdle();
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void StartSyncServiceAndSetInitialSyncEnded() {
+    if (service_)
+      return;
+
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(profile_.get());
+    signin->SetAuthenticatedUsername("test");
+    ProfileOAuth2TokenService* oauth2_token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
+    ProfileSyncComponentsFactoryMock* factory =
+        new ProfileSyncComponentsFactoryMock();
+    service_.reset(new TestProfileSyncService(
+        factory,
+        profile_.get(),
+        signin,
+        oauth2_token_service,
+        ProfileSyncService::AUTO_START,
+        true));
+
+
+    // Register the bookmark data type.
+    ON_CALL(*factory, CreateDataTypeManager(_, _, _, _, _, _)).
+        WillByDefault(ReturnNewDataTypeManager());
+
+    service_->Initialize();
+  }
+
+  void WaitForBackendInitDone() {
+    for (int i = 0; i < 5; ++i) {
+      base::WaitableEvent done(false, false);
+      service_->GetBackendForTest()->GetSyncLoopForTesting()
+          ->PostTask(FROM_HERE, base::Bind(&SignalDone, &done));
+      done.Wait();
+      base::RunLoop().RunUntilIdle();
+      if (service_->sync_initialized()) {
+        return;
+      }
+    }
+    LOG(ERROR) << "Backend not initialized.";
+  }
+
+  void IssueTestTokens() {
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+        ->UpdateCredentials("test", "oauth2_login_token");
+  }
+
+  scoped_ptr<TestProfileSyncService> service_;
+  scoped_ptr<TestingProfile> profile_;
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+};
 
 class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
  public:
@@ -81,12 +178,13 @@ ACTION(ReturnNewSyncBackendHostNoReturn) {
 // MockSyncBackendHost.
 //
 // This is useful if we want to test the ProfileSyncService and don't care about
-// testing the SyncBackendHost.
-class ProfileSyncServiceTest : public ::testing::Test {
+// testing the SyncBackendHost.  It's easier to use than the other tests, since
+// it doesn't involve any threads.
+class ProfileSyncServiceSimpleTest : public ::testing::Test {
  protected:
-  ProfileSyncServiceTest()
+  ProfileSyncServiceSimpleTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-  virtual ~ProfileSyncServiceTest() {}
+  virtual ~ProfileSyncServiceSimpleTest() {}
 
   virtual void SetUp() OVERRIDE {
     TestingProfile::Builder builder;
@@ -176,7 +274,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 };
 
 // Verify that the server URLs are sane.
-TEST_F(ProfileSyncServiceTest, InitialState) {
+TEST_F(ProfileSyncServiceSimpleTest, InitialState) {
   CreateService(ProfileSyncService::AUTO_START);
   Initialize();
   const std::string& url = service()->sync_service_url().spec();
@@ -185,7 +283,7 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 }
 
 // Verify a successful initialization.
-TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
+TEST_F(ProfileSyncServiceSimpleTest, SuccessfulInitialization) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(false));
@@ -201,7 +299,7 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
 
 // Verify that the SetSetupInProgress function call updates state
 // and notifies observers.
-TEST_F(ProfileSyncServiceTest, SetupInProgress) {
+TEST_F(ProfileSyncServiceSimpleTest, SetupInProgress) {
   CreateService(ProfileSyncService::MANUAL_START);
   Initialize();
 
@@ -217,7 +315,7 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
 }
 
 // Verify that disable by enterprise policy works.
-TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
+TEST_F(ProfileSyncServiceSimpleTest, DisabledByPolicyBeforeInit) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(true));
@@ -230,7 +328,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
 
 // Verify that disable by enterprise policy works even after the backend has
 // been initialized.
-TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
+TEST_F(ProfileSyncServiceSimpleTest, DisabledByPolicyAfterInit) {
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   ExpectDataTypeManagerCreation();
@@ -250,7 +348,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
 
 // Exercies the ProfileSyncService's code paths related to getting shut down
 // before the backend initialize call returns.
-TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
+TEST_F(ProfileSyncServiceSimpleTest, AbortedByShutdown) {
   CreateService(ProfileSyncService::AUTO_START);
   PrepareDelayedInitSyncBackendHost();
 
@@ -262,7 +360,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 }
 
 // Test StopAndSuppress() before we've initialized the backend.
-TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
+TEST_F(ProfileSyncServiceSimpleTest, EarlyStopAndSuppress) {
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
 
@@ -283,7 +381,7 @@ TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
 }
 
 // Test StopAndSuppress() after we've initialized the backend.
-TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
+TEST_F(ProfileSyncServiceSimpleTest, DisableAndEnableSyncTemporarily) {
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation();
@@ -312,7 +410,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 // things that deal with concepts like "signing out" and policy.
 #if !defined (OS_CHROMEOS)
 
-TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
+TEST_F(ProfileSyncServiceSimpleTest, EnableSyncAndSignOut) {
   CreateService(ProfileSyncService::AUTO_START);
   ExpectDataTypeManagerCreation();
   ExpectSyncBackendHostCreation();
@@ -328,29 +426,116 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
 
 #endif  // !defined(OS_CHROMEOS)
 
-TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
-  CreateService(ProfileSyncService::AUTO_START);
+TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
+  StartSyncServiceAndSetInitialSyncEnded();
   IssueTestTokens();
-  ExpectDataTypeManagerCreation();
-  ExpectSyncBackendHostCreation();
-  Initialize();
+  EXPECT_TRUE(service_->sync_initialized());
+  EXPECT_TRUE(service_->GetBackendForTest() != NULL);
 
-  // Initial status.
+  base::WeakPtr<syncer::JsController> js_controller =
+      service_->GetJsController();
+  StrictMock<syncer::MockJsEventHandler> event_handler;
+  js_controller->AddJsEventHandler(&event_handler);
+  js_controller->RemoveJsEventHandler(&event_handler);
+}
+
+TEST_F(ProfileSyncServiceTest,
+       JsControllerHandlersDelayedBackendInitialization) {
+  StartSyncServiceAndSetInitialSyncEnded();
+
+  StrictMock<syncer::MockJsEventHandler> event_handler;
+  EXPECT_CALL(event_handler, HandleJsEvent(_, _)).Times(AtLeast(1));
+
+  EXPECT_EQ(NULL, service_->GetBackendForTest());
+  EXPECT_FALSE(service_->sync_initialized());
+
+  base::WeakPtr<syncer::JsController> js_controller =
+      service_->GetJsController();
+  js_controller->AddJsEventHandler(&event_handler);
+  // Since we're doing synchronous initialization, backend should be
+  // initialized by this call.
+  IssueTestTokens();
+  EXPECT_TRUE(service_->sync_initialized());
+  js_controller->RemoveJsEventHandler(&event_handler);
+}
+
+TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
+  StartSyncServiceAndSetInitialSyncEnded();
+  IssueTestTokens();
+  WaitForBackendInitDone();
+
+  StrictMock<syncer::MockJsReplyHandler> reply_handler;
+
+  ListValue arg_list1;
+  arg_list1.Append(Value::CreateStringValue("INVALIDATIONS_ENABLED"));
+  syncer::JsArgList args1(&arg_list1);
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getNotificationState", HasArgs(args1)));
+
+  {
+    base::WeakPtr<syncer::JsController> js_controller =
+        service_->GetJsController();
+    js_controller->ProcessJsMessage("getNotificationState", args1,
+                                    reply_handler.AsWeakHandle());
+  }
+
+  // This forces the sync thread to process the message and reply.
+  base::WaitableEvent done(false, false);
+  service_->GetBackendForTest()->GetSyncLoopForTesting()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&SignalDone, &done));
+  done.Wait();
+
+  // Call TearDown() to flush the message loops before the mock is destroyed.
+  // TearDown() is idempotent, so it's not a problem that it gets called by the
+  // test fixture again later.
+  TearDown();
+}
+
+TEST_F(ProfileSyncServiceTest,
+       JsControllerProcessJsMessageBasicDelayedBackendInitialization) {
+  StartSyncServiceAndSetInitialSyncEnded();
+
+  StrictMock<syncer::MockJsReplyHandler> reply_handler;
+
+  ListValue arg_list1;
+  arg_list1.Append(Value::CreateStringValue("INVALIDATIONS_ENABLED"));
+  syncer::JsArgList args1(&arg_list1);
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getNotificationState", HasArgs(args1)));
+
+  {
+    base::WeakPtr<syncer::JsController> js_controller =
+        service_->GetJsController();
+    js_controller->ProcessJsMessage("getNotificationState",
+                                    args1, reply_handler.AsWeakHandle());
+  }
+
+  IssueTestTokens();
+  WaitForBackendInitDone();
+
+  // This forces the sync thread to process the message and reply.
+  base::WaitableEvent done(false, false);
+  service_->GetBackendForTest()->GetSyncLoopForTesting()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&SignalDone, &done));
+  done.Wait();
+}
+
+TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
+  StartSyncServiceAndSetInitialSyncEnded();
+  IssueTestTokens();
   ProfileSyncService::SyncTokenStatus token_status =
-      service()->GetSyncTokenStatus();
+      service_->GetSyncTokenStatus();
   EXPECT_EQ(syncer::CONNECTION_NOT_ATTEMPTED, token_status.connection_status);
   EXPECT_TRUE(token_status.connection_status_update_time.is_null());
   EXPECT_TRUE(token_status.token_request_time.is_null());
   EXPECT_TRUE(token_status.token_receive_time.is_null());
 
-  // Simulate an auth error.
-  service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
-
-  // The token request will take the form of a posted task.  Run it.
-  base::RunLoop loop;
-  loop.RunUntilIdle();
-
-  token_status = service()->GetSyncTokenStatus();
+  // Sync engine is given invalid token at initialization and will report
+  // auth error when trying to connect.
+  service_->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+  token_status = service_->GetSyncTokenStatus();
   EXPECT_EQ(syncer::CONNECTION_AUTH_ERROR, token_status.connection_status);
   EXPECT_FALSE(token_status.connection_status_update_time.is_null());
   EXPECT_FALSE(token_status.token_request_time.is_null());
@@ -360,8 +545,8 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   EXPECT_TRUE(token_status.next_token_request_time.is_null());
 
   // Simulate successful connection.
-  service()->OnConnectionStatusChange(syncer::CONNECTION_OK);
-  token_status = service()->GetSyncTokenStatus();
+  service_->OnConnectionStatusChange(syncer::CONNECTION_OK);
+  token_status = service_->GetSyncTokenStatus();
   EXPECT_EQ(syncer::CONNECTION_OK, token_status.connection_status);
 }
 
