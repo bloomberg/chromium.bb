@@ -349,7 +349,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
   // If Drive API v2 is enabled, we can copy resources on server side.
   if (util::IsDriveV2ApiEnabled()) {
     CopyResourceOnServer(
-        *gdoc_resource_id, *parent_resource_id,
+        canonicalized_resource_id, *parent_resource_id,
         // Drop the document extension, which should not be in the title.
         // TODO(yoshiki): Remove this code with crbug.com/223304.
         remote_dest_path.BaseName().RemoveExtension().AsUTF8Unsafe(),
