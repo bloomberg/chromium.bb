@@ -16,6 +16,13 @@ namespace mediaGalleries {
     if_needed
   };
 
+  enum GetMetadataType {
+    // Retrieve all available metadata.
+    all,
+    // Retrieve only the mime type.
+    mimeTypeOnly
+  };
+
   [inline_doc] dictionary MediaFileSystemsDetails {
     // Whether to prompt the user for permission to additional media galleries
     // before returning the permitted set. Default is silent.  If the value
@@ -23,6 +30,12 @@ namespace mediaGalleries {
     // any media galleries and the value 'if_needed' is passed, then the
     // media gallery configuration dialog will be displayed.
     GetMediaFileSystemsInteractivity? interactive;
+  };
+
+  dictionary MediaMetadataOptions {
+    // Specifies which subset of the metadata to retrieve. Defaults to 'all'
+    // if the option is omitted.
+    GetMetadataType? metadataType;
   };
 
   callback MediaFileSystemsCallback =
@@ -58,6 +71,8 @@ namespace mediaGalleries {
     DOMString mimeType;
   };
 
+  callback MediaMetadataCallback = void (MediaMetadata metadata);
+
   interface Functions {
     // Get the media galleries configured in this user agent. If none are
     // configured or available, the callback will receive an empty array.
@@ -71,6 +86,12 @@ namespace mediaGalleries {
     // Get metadata for all available media galleries.
     static void getAllMediaFileSystemMetadata(
         MediaFileSystemsMetadataCallback callback);
+                
+    // Gets the media-specific metadata for a media file. This should work
+    // for files in media galleries as well as other DOM filesystems.
+    static void getMetadata([instanceOf=Blob] object mediaFile,
+                            optional MediaMetadataOptions options,
+                            MediaMetadataCallback callback);
   };
 
 };

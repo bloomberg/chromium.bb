@@ -12,13 +12,13 @@
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
@@ -30,6 +30,7 @@
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/pref_names.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -37,6 +38,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "net/base/mime_sniffer.h"
 
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
@@ -320,6 +322,67 @@ void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnGetGalleries(
   }
 
   SetResult(list);
+  SendResponse(true);
+}
+
+MediaGalleriesGetMetadataFunction::~MediaGalleriesGetMetadataFunction() {}
+
+bool MediaGalleriesGetMetadataFunction::RunImpl() {
+  if (!ApiIsAccessible(&error_))
+    return false;
+
+  std::string blob_uuid;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &blob_uuid));
+
+  const base::Value* options_value = NULL;
+  if (!args_->Get(1, &options_value))
+    return false;
+  scoped_ptr<MediaGalleries::MediaMetadataOptions> options =
+      MediaGalleries::MediaMetadataOptions::FromValue(*options_value);
+  if (!options)
+    return false;
+
+  MediaGalleriesPreferences* preferences =
+      media_file_system_registry()->GetPreferences(GetProfile());
+  bool mime_type_only = options->metadata_type ==
+      MediaGalleries::GET_METADATA_TYPE_MIMETYPEONLY;
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesGetMetadataFunction::OnPreferencesInit,
+      this, mime_type_only, blob_uuid));
+
+  return true;
+}
+
+void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
+    bool mime_type_only,
+    const std::string& blob_uuid) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // BlobReader is self-deleting.
+  BlobReader* reader = new BlobReader(
+      GetProfile(),
+      blob_uuid,
+      base::Bind(&MediaGalleriesGetMetadataFunction::SniffMimeType, this,
+                 mime_type_only));
+  reader->SetByteRange(0, net::kMaxBytesToSniff);
+  reader->Start();
+}
+
+void MediaGalleriesGetMetadataFunction::SniffMimeType(
+    bool mime_type_only, scoped_ptr<std::string> blob_header) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  MediaGalleries::MediaMetadata metadata;
+
+  std::string mime_type;
+  bool mime_type_sniffed = net::SniffMimeTypeFromLocalData(
+      blob_header->c_str(), blob_header->size(), &mime_type);
+  if (mime_type_sniffed)
+    metadata.mime_type = mime_type;
+
+  // TODO(tommycli): Kick off SafeMediaMetadataParser if |mime_type_only| false.
+
+  SetResult(metadata.ToValue().release());
   SendResponse(true);
 }
 

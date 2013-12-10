@@ -23874,6 +23874,7 @@ other types of suffix sets.
   <int value="521" label="SYSTEM_STORAGE_GETAVAILABLECAPACITY"/>
   <int value="522" label="VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED"/>
   <int value="523" label="MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA"/>
+  <int value="524" label="MEDIAGALLERIES_GETMETADATA"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

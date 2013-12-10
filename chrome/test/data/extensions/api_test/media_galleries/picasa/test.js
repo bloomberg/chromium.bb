@@ -3,31 +3,9 @@
 // found in the LICENSE file.
 
 var mediaGalleries = chrome.mediaGalleries;
-var expectedGalleryEntryLength = 306;  // hard-coded size of ../common/test.jpg
+var expectedGalleryEntryLength; // Size of ../common/test.jpg.
 
-// Get's entire listing from directory, then verifies the sorted contents.
-function verifyDirectoryEntry(directoryEntry, verifyFunction) {
-  var allEntries = [];
-  var reader = directoryEntry.createReader();
-
-  function readEntries() {
-    reader.readEntries(readEntriesCallback, chrome.test.fail);
-  }
-
-  function readEntriesCallback(entries) {
-    if (entries.length == 0) {
-      verifyFunction(directoryEntry, allEntries.sort());
-      return;
-    }
-
-    allEntries = allEntries.concat(entries);
-    readEntries();
-  }
-
-  readEntries();
-}
-
-// Verifies a directory itself, then the contents.
+//Verifies a directory itself, then the contents.
 function getAndVerifyDirectoryEntry(parentEntry, directoryName,
                                     verifyFunction) {
   function getDirectoryCallback(entry) {
@@ -39,31 +17,6 @@ function getAndVerifyDirectoryEntry(parentEntry, directoryName,
                            getDirectoryCallback, chrome.test.fail);
 }
 
-function verifyJPEG(parentDirectoryEntry, filename, doneCallback) {
-  function verifyFile(file) {
-    var reader = new FileReader();
-
-    reader.onload = function(e) {
-      var arraybuffer = e.target.result;
-      chrome.test.assertEq(expectedGalleryEntryLength,
-                           arraybuffer.byteLength);
-      doneCallback();
-    }
-
-    reader.onerror =
-      chrome.test.fail.bind(null, "Unable to read test image: " + filename);
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  function verifyFileEntry(fileEntry) {
-    fileEntry.file(verifyFile, chrome.test.fail)
-  }
-
-  parentDirectoryEntry.getFile(filename, {create: false}, verifyFileEntry,
-                               chrome.test.fail);
-}
-
 function verifyAllJPEGs(parentDirectoryEntry, filenames, doneCallback) {
   var remaining = filenames;
   function verifyNextJPEG() {
@@ -71,7 +24,8 @@ function verifyAllJPEGs(parentDirectoryEntry, filenames, doneCallback) {
       doneCallback();
       return;
     }
-    verifyJPEG(parentDirectoryEntry, remaining.pop(), verifyNextJPEG);
+    verifyJPEG(parentDirectoryEntry, remaining.pop(),
+               expectedGalleryEntryLength, verifyNextJPEG);
   }
   verifyNextJPEG();
 }
@@ -205,29 +159,20 @@ function getTest(testFunction) {
   }
 }
 
-chrome.test.runTests([
-  getTest(GalleryPropertiesTest),
-  getTest(RootListingTest),
-  getTest(AlbumsListingTest),
-  getTest(FoldersListingTest),
-  getTest(Album1ListingTest),
-  getTest(Album2ListingTest),
-  getTest(Folder1ListingTest),
-  getTest(Folder2ListingTest),
-]);
+CreateDummyWindowToPreventSleep();
 
-// Create a dummy window to prevent the ProcessManager from suspending the
-// chrome-test app. Needed because the FileReader events do not qualify as
-// pending callbacks, so the app looks dormant.
-chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('dummy.html', {
-    bounds: {
-      width: 800,
-      height: 600,
-      left: 100,
-      top: 100
-    },
-    minWidth: 800,
-    minHeight: 600
-  });
+chrome.test.getConfig(function(config) {
+  customArg = JSON.parse(config.customArg);
+  expectedGalleryEntryLength = customArg[0];
+
+  chrome.test.runTests([
+    getTest(GalleryPropertiesTest),
+    getTest(RootListingTest),
+    getTest(AlbumsListingTest),
+    getTest(FoldersListingTest),
+    getTest(Album1ListingTest),
+    getTest(Album2ListingTest),
+    getTest(Folder1ListingTest),
+    getTest(Folder2ListingTest),
+  ]);
 });

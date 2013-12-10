@@ -3,132 +3,98 @@
 // found in the LICENSE file.
 
 var mediaGalleries = chrome.mediaGalleries;
-
-var galleries;
-var testResults = [];
-var foundGalleryWithEntry = false;
-var expectedFileSystems;
 var expectedGalleryEntryLength;
 
-function checkFinished() {
-  if (testResults.length != galleries.length)
-    return;
-  var success = true;
-  for (var i = 0; i < testResults.length; i++) {
-    if (testResults[i]) {
-      success = false;
-    }
+function TestFirstFilesystem(verifyFilesystem) {
+  function getMediaFileSystemsList() {
+    mediaGalleries.getMediaFileSystems(getMediaFileSystemsCallback);
   }
-  if (!foundGalleryWithEntry) {
-    testResults.push("Did not find gallery with 1 FileEntry");
-    success = false;
+
+  function getMediaFileSystemsCallback(results) {
+    chrome.test.assertEq(1, results.length);
+    verifyFilesystem(results[0]);
   }
-  if (success) {
+
+  getMediaFileSystemsList();
+}
+
+function ReadDirectoryTest() {
+  function verifyFilesystem(filesystem) {
+    verifyDirectoryEntry(filesystem.root, verify);
+  }
+
+  function verify(directoryEntry, entries) {
+    chrome.test.assertEq(1, entries.length);
+    chrome.test.assertFalse(entries[0].isDirectory);
+    chrome.test.assertEq("test.jpg", entries[0].name);
     chrome.test.succeed();
-    return;
   }
-  chrome.test.fail(testResults);
+
+  TestFirstFilesystem(verifyFilesystem);
 }
 
-var readFileCallback = function(file) {
-  if (file.target.result.byteLength == expectedGalleryEntryLength) {
-    testResults.push("");
-  } else {
-    testResults.push("File entry is the wrong size");
+function ReadFileToBytesTest() {
+  function verifyFilesystem(filesystem) {
+    verifyJPEG(filesystem.root, "test.jpg", expectedGalleryEntryLength,
+               chrome.test.succeed);
   }
-  checkFinished();
+
+  TestFirstFilesystem(verifyFilesystem);
 }
 
-var readFileFailedCallback = function(err) {
-  testResults.push("Couldn't read file: " + err);
-  checkFinished();
-}
-
-var createFileObjectCallback = function(file) {
-  var reader = new FileReader();
-  reader.onloadend = readFileCallback;
-  reader.onerror = readFileFailedCallback;
-  reader.readAsArrayBuffer(file);
-}
-
-var createFileObjectFailedCallback = function(err) {
-  testResults.push("Couldn't create file: " + err);
-  checkFinished();
-}
-
-var mediaFileSystemsDirectoryEntryCallback = function(entries) {
-  if (entries.length == 0) {
-    testResults.push("");
-  } else if (entries.length == 1) {
-    if (foundGalleryWithEntry) {
-      testResults.push("Found multiple galleries with 1 FileEntry");
-    } else {
-      foundGalleryWithEntry = true;
-      entries[0].file(createFileObjectCallback, createFileObjectFailedCallback);
-    }
-  } else {
-    testResults.push("Found a gallery with more than 1 FileEntry");
+function GetMetadataTest() {
+  function verifyFilesystem(filesystem) {
+    filesystem.root.getFile("test.jpg", {create: false}, verifyFileEntry,
+      chrome.test.fail);
   }
-  checkFinished();
+
+  function verifyFileEntry(fileEntry) {
+    fileEntry.file(verifyFile, chrome.test.fail)
+  }
+
+  function verifyFile(file) {
+    mediaGalleries.getMetadata(file, {}, verifyMetadata);
+  }
+
+  function verifyMetadata(metadata) {
+    chrome.test.assertEq("image/jpeg", metadata.mimeType);
+    chrome.test.succeed();
+  }
+
+  TestFirstFilesystem(verifyFilesystem);
 }
 
-var mediaFileSystemsDirectoryErrorCallback = function(err) {
-  testResults.push("Couldn't read from directory: " + err);
-  checkFinished();
-};
+function GetMediaFileSystemMetadata() {
+  function verifyFilesystem(filesystem) {
+    var metadata = mediaGalleries.getMediaFileSystemMetadata(filesystem);
+    checkMetadata(metadata);
+    chrome.test.succeed();
+  }
 
-var mediaFileSystemsListCallback = function(results) {
-  galleries = results;
-};
+  TestFirstFilesystem(verifyFilesystem);
+}
+
+function GetAllMediaFileSystemMetadata() {
+  function verifyMetadataList(metadataList) {
+    chrome.test.assertEq(1, metadataList.length)
+    checkMetadata(metadataList[0]);
+    chrome.test.succeed();
+  }
+
+  mediaGalleries.getAllMediaFileSystemMetadata(verifyMetadataList);
+}
+
+CreateDummyWindowToPreventSleep();
 
 chrome.test.getConfig(function(config) {
   customArg = JSON.parse(config.customArg);
-  expectedFileSystems = customArg[0];
-  expectedGalleryEntryLength = customArg[1];
+  expectedGalleryEntryLength = customArg[0];
 
   chrome.test.runTests([
-    function getMediaFileSystems() {
-      mediaGalleries.getMediaFileSystems(
-          chrome.test.callbackPass(mediaFileSystemsListCallback));
-    },
-    function readFileSystems() {
-      chrome.test.assertEq(expectedFileSystems, galleries.length);
-      if (expectedFileSystems == 0) {
-        chrome.test.succeed();
-        return;
-      }
-
-      for (var i = 0; i < galleries.length; i++) {
-        var dirReader = galleries[i].root.createReader();
-        dirReader.readEntries(mediaFileSystemsDirectoryEntryCallback,
-                              mediaFileSystemsDirectoryErrorCallback);
-      }
-    },
-    function getMetadata() {
-      chrome.test.assertEq(expectedFileSystems, galleries.length);
-      if (expectedFileSystems == 0) {
-        chrome.test.succeed();
-        return;
-      }
-      for (var i = 0; i < galleries.length; i++) {
-        var metadata = mediaGalleries.getMediaFileSystemMetadata(galleries[i]);
-        checkMetadata(metadata);
-      }
-      chrome.test.succeed();
-    },
-    function getAllMetadata() {
-      chrome.test.assertEq(expectedFileSystems, galleries.length);
-      if (expectedFileSystems == 0) {
-        chrome.test.succeed();
-        return;
-      }
-      mediaGalleries.getAllMediaFileSystemMetadata(function(metadata) {
-        chrome.test.assertEq(galleries.length, metadata.length)
-        for (var i = 0; i < galleries.length; i++) {
-          checkMetadata(metadata[i]);
-        }
-        chrome.test.succeed();
-      });
-    },
+    ReadDirectoryTest,
+    ReadFileToBytesTest,
+    GetMetadataTest,
+    GetMediaFileSystemMetadata,
+    GetAllMediaFileSystemMetadata,
   ]);
 })

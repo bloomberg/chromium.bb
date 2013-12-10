@@ -414,6 +414,11 @@
     "dependencies": ["permission:mediaGalleries"],
     "contexts": ["blessed_extension"]
   },
+  "mediaGalleries.getMetadata": {
+    "channel": "dev",
+    "dependencies": ["permission:mediaGalleries"],
+    "contexts": ["blessed_extension"]
+  },
   "mediaGalleriesPrivate": {
     "dependencies": ["permission:mediaGalleriesPrivate"],
     "contexts": ["blessed_extension"]

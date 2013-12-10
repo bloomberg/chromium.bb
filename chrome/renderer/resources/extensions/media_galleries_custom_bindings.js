@@ -7,6 +7,7 @@
 var binding = require('binding').Binding.create('mediaGalleries');
 
 var mediaGalleriesNatives = requireNative('mediaGalleries');
+var blobNatives = requireNative('blob_natives');
 
 var mediaGalleriesMetadata = {};
 
@@ -42,6 +43,12 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       return mediaGalleriesMetadata[filesystem.name];
     }
     return {};
+  });
+
+  apiFunctions.setUpdateArgumentsPostValidate('getMetadata',
+      function(mediaFile, options, callback) {
+    var blobUuid = blobNatives.GetBlobUuid(mediaFile)
+    return [blobUuid, options, callback];
   });
 });
 
