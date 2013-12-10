@@ -323,6 +323,13 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
     context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation, useLowQualityScale);
 }
 
+void ImageBuffer::flush()
+{
+    if (m_canvas) {
+        m_canvas->flush();
+    }
+}
+
 void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect, blink::WebBlendMode blendMode, const IntSize& repeatSpacing)
 {

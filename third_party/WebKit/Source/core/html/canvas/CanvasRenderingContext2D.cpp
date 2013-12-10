@@ -1531,6 +1531,10 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
             didDraw(dirtyRect);
         }
     }
+
+    // Flush canvas's ImageBuffer when drawImage from WebGL to HW accelerated 2d canvas
+    if (sourceContext && sourceContext->is3d() && is2d() && isAccelerated() && canvas()->buffer())
+        canvas()->buffer()->flush();
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float y, ExceptionState& exceptionState)

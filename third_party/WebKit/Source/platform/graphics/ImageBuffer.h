@@ -133,6 +133,8 @@ public:
     Platform3DObject getBackingTexture();
     bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*);
 
+    void flush();
+
 private:
     bool isValid() const;
 
