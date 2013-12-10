@@ -165,7 +165,15 @@ TEST(AddressTest, GetStreetAddress) {
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave."), address.GetInfo(type, "en-US"));
 
+  // Address has only line 2.
+  address.SetRawInfo(ADDRESS_HOME_LINE1, base::string16());
+  address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt 42."));
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_EQ(ASCIIToUTF16("\nApt 42."), address.GetInfo(type, "en-US"));
+
   // Address has lines 1 and 2.
+  address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
   address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
@@ -175,6 +183,24 @@ TEST(AddressTest, GetStreetAddress) {
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
                          "Apt. 42"),
             address.GetInfo(type, "en-US"));
+}
+
+// Verifies that overwriting an address with N lines with one that has fewer
+// than N lines does not result in an address with blank lines at the end.
+TEST(AddressTest, GetStreetAddressAfterOverwritingLongAddressWithShorterOne) {
+  // Start with an address that has two lines.
+  Address address;
+  address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
+  address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
+
+  // Now clear out the second address line.
+  address.SetRawInfo(ADDRESS_HOME_LINE2, base::string16());
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave."),
+            address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+
+  // Now clear out the first address line as well.
+  address.SetRawInfo(ADDRESS_HOME_LINE1, base::string16());
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 }
 
 // Verifies that Address::SetRawInfo() is able to split address lines correctly.
@@ -190,11 +216,12 @@ TEST(AddressTest, SetRawStreetAddress) {
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
 
-  // Address lines beyond the first two are simply dropped.
   address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, long_street_address);
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave."),
             address.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(ASCIIToUTF16("Apt. 42"), address.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(long_street_address,
+            address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 
   // A short address should clear out unused address lines.
   address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, short_street_address);
@@ -249,6 +276,75 @@ TEST(AddressTest, SetStreetAddress) {
   EXPECT_TRUE(address.SetInfo(type, empty_street_address, "en-US"));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+}
+
+// Verifies that Address::SetInfio() rejects setting data for
+// ADDRESS_HOME_STREET_ADDRESS if the data has any interior blank lines.
+TEST(AddressTest, SetStreetAddressRejectsAddressesWithInteriorBlankLines) {
+  // Start with a non-empty address.
+  Address address;
+  address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
+  address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS).empty());
+
+  // Attempting to set an address with interior blank lines should fail, and
+  // clear out the previously stored address.
+  EXPECT_FALSE(address.SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS),
+                               ASCIIToUTF16("Address line 1\n"
+                                            "\n"
+                                            "Address line 3"),
+                               "en-US"));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+}
+
+// Verifies that Address::SetInfio() rejects setting data for
+// ADDRESS_HOME_STREET_ADDRESS if the data has any leading blank lines.
+TEST(AddressTest, SetStreetAddressRejectsAddressesWithLeadingBlankLines) {
+  // Start with a non-empty address.
+  Address address;
+  address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
+  address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS).empty());
+
+  // Attempting to set an address with leading blank lines should fail, and
+  // clear out the previously stored address.
+  EXPECT_FALSE(address.SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS),
+                               ASCIIToUTF16("\n"
+                                            "Address line 2"
+                                            "Address line 3"),
+                               "en-US"));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+}
+
+// Verifies that Address::SetInfio() rejects setting data for
+// ADDRESS_HOME_STREET_ADDRESS if the data has any trailing blank lines.
+TEST(AddressTest, SetStreetAddressRejectsAddressesWithTrailingBlankLines) {
+  // Start with a non-empty address.
+  Address address;
+  address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
+  address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS).empty());
+
+  // Attempting to set an address with leading blank lines should fail, and
+  // clear out the previously stored address.
+  EXPECT_FALSE(address.SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS),
+                               ASCIIToUTF16("Address line 1"
+                                            "Address line 2"
+                                            "\n"),
+                               "en-US"));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
 }
 
 }  // namespace autofill

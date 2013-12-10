@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/address.h"
 
 #include <stddef.h>
+#include <algorithm>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -29,8 +30,7 @@ Address& Address::operator=(const Address& address) {
   if (this == &address)
     return *this;
 
-  line1_ = address.line1_;
-  line2_ = address.line2_;
+  street_address_ = address.street_address_;
   dependent_locality_ = address.dependent_locality_;
   city_ = address.city_;
   state_ = address.state_;
@@ -44,10 +44,10 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(ADDRESS_HOME, AutofillType(type).group());
   switch (type) {
     case ADDRESS_HOME_LINE1:
-      return line1_;
+      return street_address_.size() > 0 ? street_address_[0] : base::string16();
 
     case ADDRESS_HOME_LINE2:
-      return line2_;
+      return street_address_.size() > 1 ? street_address_[1] : base::string16();
 
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
       return dependent_locality_;
@@ -67,12 +67,8 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
     case ADDRESS_HOME_COUNTRY:
       return ASCIIToUTF16(country_code_);
 
-    case ADDRESS_HOME_STREET_ADDRESS: {
-      base::string16 address = line1_;
-      if (!line2_.empty())
-        address += ASCIIToUTF16("\n") + line2_;
-      return address;
-    }
+    case ADDRESS_HOME_STREET_ADDRESS:
+      return JoinString(street_address_, '\n');
 
     default:
       NOTREACHED();
@@ -84,11 +80,17 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
   DCHECK_EQ(ADDRESS_HOME, AutofillType(type).group());
   switch (type) {
     case ADDRESS_HOME_LINE1:
-      line1_ = value;
+      if (street_address_.empty())
+        street_address_.resize(1);
+      street_address_[0] = value;
+      TrimStreetAddress();
       break;
 
     case ADDRESS_HOME_LINE2:
-      line2_ = value;
+      if (street_address_.size() < 2)
+        street_address_.resize(2);
+      street_address_[1] = value;
+      TrimStreetAddress();
       break;
 
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
@@ -117,21 +119,9 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
       sorting_code_ = value;
       break;
 
-    case ADDRESS_HOME_STREET_ADDRESS: {
-      // Clear any stale values, which might or might not get overwritten below.
-      line1_.clear();
-      line2_.clear();
-
-      std::vector<base::string16> lines;
-      base::SplitString(value, char16('\n'), &lines);
-      if (lines.size() > 0)
-        line1_ = lines[0];
-      if (lines.size() > 1)
-        line2_ = lines[1];
-
-      // TODO(isherman): Add support for additional address lines.
+    case ADDRESS_HOME_STREET_ADDRESS:
+      base::SplitString(value, char16('\n'), &street_address_);
       break;
-    }
 
     default:
       NOTREACHED();
@@ -175,11 +165,22 @@ bool Address::SetInfo(const AutofillType& type,
   // Instead, just give up when importing addresses like this.
   if (storable_type == ADDRESS_HOME_STREET_ADDRESS && !value.empty() &&
       value.find(char16('\n')) == base::string16::npos) {
-    line1_ = line2_ = base::string16();
+    street_address_.clear();
     return false;
   }
 
   SetRawInfo(storable_type, value);
+
+  // Likewise, give up when importing addresses with any entirely blank lines.
+  // There's a good chance that this formatting is not intentional, but it's
+  // also not obviously safe to just strip the newlines.
+  if (storable_type == ADDRESS_HOME_STREET_ADDRESS &&
+      std::find(street_address_.begin(), street_address_.end(),
+                base::string16()) != street_address_.end()) {
+    street_address_.clear();
+    return false;
+  }
+
   return true;
 }
 
@@ -204,6 +205,12 @@ void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(ADDRESS_HOME_ZIP);
   supported_types->insert(ADDRESS_HOME_SORTING_CODE);
   supported_types->insert(ADDRESS_HOME_COUNTRY);
+}
+
+void Address::TrimStreetAddress() {
+  while (!street_address_.empty() && street_address_.back().empty()) {
+    street_address_.pop_back();
+  }
 }
 
 }  // namespace autofill
