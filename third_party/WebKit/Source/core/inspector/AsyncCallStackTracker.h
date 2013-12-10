@@ -48,10 +48,12 @@ class AsyncCallStackTracker {
 public:
     class AsyncCallStack : public RefCounted<AsyncCallStack> {
     public:
-        AsyncCallStack(const ScriptValue&);
+        AsyncCallStack(const String&, const ScriptValue&);
         ~AsyncCallStack();
+        String description() const { return m_description; }
         ScriptValue callFrames() const { return m_callFrames; }
     private:
+        String m_description;
         ScriptValue m_callFrames;
     };
 
@@ -85,7 +87,7 @@ public:
     void clear();
 
 private:
-    PassRefPtr<AsyncCallChain> createAsyncCallChain(const ScriptValue& callFrames);
+    PassRefPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     static bool validateCallFrames(const ScriptValue& callFrames);
 

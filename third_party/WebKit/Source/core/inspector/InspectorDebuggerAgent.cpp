@@ -975,6 +975,7 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
         RefPtr<StackTrace> next = StackTrace::create()
             .setCallFrames(injectedScript.wrapCallFrames((*it)->callFrames()))
             .release();
+        next->setDescription((*it)->description());
         if (result)
             next->setAsyncStackTrace(result.release());
         result.swap(next);

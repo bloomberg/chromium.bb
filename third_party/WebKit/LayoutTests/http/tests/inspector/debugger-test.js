@@ -124,9 +124,8 @@ InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
 {
     options = options || {};
 
-    function printCallFrames(callFrames, indent)
+    function printCallFrames(callFrames)
     {
-        indent = indent || "";
         for (var i = 0; i < callFrames.length; i++) {
             var frame = callFrames[i];
             var script = WebInspector.debuggerModel.scriptForId(frame.location.scriptId);
@@ -140,9 +139,9 @@ InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
                 lineNumber = "(line number)";
             }
             var s = "    " + i + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
-            InspectorTest.addResult(indent + s);
+            InspectorTest.addResult(s);
             if (options.printReturnValue && frame.returnValue)
-                InspectorTest.addResult(indent + "       <return>: " + frame.returnValue.description);
+                InspectorTest.addResult("       <return>: " + frame.returnValue.description);
         }
     }
 
@@ -150,8 +149,8 @@ InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
     printCallFrames(callFrames);
 
     while (asyncStackTrace) {
-        InspectorTest.addResult("    [Async Call]");
-        printCallFrames(asyncStackTrace.callFrames, "    ");
+        InspectorTest.addResult("    [" + (asyncStackTrace.description || "Async Call") + "]");
+        printCallFrames(asyncStackTrace.callFrames);
         if (asyncStackTrace.callFrames[0].functionName === "testFunction")
             break;
         asyncStackTrace = asyncStackTrace.asyncStackTrace;

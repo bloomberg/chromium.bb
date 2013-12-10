@@ -59,8 +59,9 @@ private:
     HashMap<int, RefPtr<AsyncCallChain> > m_animationFrameCallChains;
 };
 
-AsyncCallStackTracker::AsyncCallStack::AsyncCallStack(const ScriptValue& callFrames)
-    : m_callFrames(callFrames)
+AsyncCallStackTracker::AsyncCallStack::AsyncCallStack(const String& description, const ScriptValue& callFrames)
+    : m_description(description)
+    , m_callFrames(callFrames)
 {
 }
 
@@ -92,12 +93,15 @@ const AsyncCallStackTracker::AsyncCallChain* AsyncCallStackTracker::currentAsync
 
 void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timerId, bool singleShot, const ScriptValue& callFrames)
 {
+    DEFINE_STATIC_LOCAL(String, setTimeoutName, ("setTimeout"));
+    DEFINE_STATIC_LOCAL(String, setIntervalName, ("setInterval"));
+
     ASSERT(isEnabled());
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(timerId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_timerCallChains.set(timerId, createAsyncCallChain(callFrames));
+    data->m_timerCallChains.set(timerId, createAsyncCallChain(singleShot ? setTimeoutName : setIntervalName, callFrames));
     if (!singleShot)
         data->m_intervalTimerIds.add(timerId);
 }
@@ -130,12 +134,14 @@ void AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId
 
 void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, int callbackId, const ScriptValue& callFrames)
 {
+    DEFINE_STATIC_LOCAL(String, requestAnimationFrameName, ("requestAnimationFrame"));
+
     ASSERT(isEnabled());
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(callbackId > 0);
     ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_animationFrameCallChains.set(callbackId, createAsyncCallChain(callFrames));
+    data->m_animationFrameCallChains.set(callbackId, createAsyncCallChain(requestAnimationFrameName, callFrames));
 }
 
 void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
@@ -165,12 +171,12 @@ void AsyncCallStackTracker::didFireAsyncCall()
     m_currentAsyncCallChain = 0;
 }
 
-PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const ScriptValue& callFrames)
+PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
 {
     ASSERT(isEnabled());
     RefPtr<AsyncCallChain> chain = adoptRef(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
     ensureMaxAsyncCallChainDepth(chain.get(), m_maxAsyncCallStackDepth - 1);
-    chain->m_callStacks.prepend(adoptRef(new AsyncCallStackTracker::AsyncCallStack(callFrames)));
+    chain->m_callStacks.prepend(adoptRef(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
     return chain.release();
 }
 
