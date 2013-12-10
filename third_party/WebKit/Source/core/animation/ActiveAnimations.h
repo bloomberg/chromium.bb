@@ -40,6 +40,7 @@
 
 namespace WebCore {
 
+class CSSAnimations;
 class RenderObject;
 class Element;
 
@@ -50,6 +51,9 @@ bool hasActiveAnimationsOnCompositor(const RenderObject&, CSSPropertyID);
 
 class ActiveAnimations {
 public:
+    ActiveAnimations()
+        : m_animationStyleChange(false) { }
+
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc. CSS Transitions are included in this stack.
     AnimationStack& defaultStack() { return m_defaultStack; }
@@ -70,10 +74,18 @@ public:
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     void cancelAnimationOnCompositor();
 
+    void setAnimationStyleChange(bool animationStyleChange) { m_animationStyleChange = animationStyleChange; }
+
 private:
+    bool isAnimationStyleChange() const { return m_animationStyleChange; }
+
     AnimationStack m_defaultStack;
     CSSAnimations m_cssAnimations;
     PlayerSet m_players;
+    bool m_animationStyleChange;
+
+    // CSSAnimations checks if a style change is due to animation.
+    friend class CSSAnimations;
 };
 
 } // namespace WebCore

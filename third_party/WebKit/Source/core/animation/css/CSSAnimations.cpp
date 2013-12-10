@@ -539,7 +539,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     }
 }
 
-void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSAnimationData* anim, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update)
+void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSAnimationData* anim, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update, const Element* element)
 {
     if (CSSPropertyAnimation::propertiesEqual(id, &oldStyle, &style))
         return;
@@ -553,6 +553,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
             if (to->equals(activeTo))
                 return;
             update->cancelTransition(id);
+            ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
         }
     }
 
@@ -585,6 +586,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     timing.fillMode = Timing::FillModeBoth;
 
     update->startTransition(id, from.get(), to.get(), InertAnimation::create(effect, timing, isPaused));
+    ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
 }
 
 void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* element, const RenderStyle& style)
@@ -592,10 +594,18 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
     ActiveAnimations* activeAnimations = element->activeAnimations();
     const TransitionMap* activeTransitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : 0;
 
+#if ASSERT_DISABLED
+    // In release builds we avoid the cost of populating and testing listedProperties if the style recalc is due to animation.
+    const bool animationStyleRecalc = activeAnimations && activeAnimations->isAnimationStyleChange();
+#else
+    // In debug builds we verify that it would have been safe to avoid populating and testing listedProperties if the style recalc is due to animation.
+    const bool animationStyleRecalc = false;
+#endif
+
     BitArray<numCSSProperties> listedProperties;
     bool anyTransitionHadAnimateAll = false;
     const RenderObject* renderer = element->renderer();
-    if (style.display() != NONE && renderer && renderer->style() && style.transitions()) {
+    if (!animationStyleRecalc && style.display() != NONE && renderer && renderer->style() && style.transitions()) {
         const RenderStyle& oldStyle = *renderer->style();
 
         for (size_t i = 0; i < style.transitions()->size(); ++i) {
@@ -624,7 +634,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
                 // but this is a bit hard to do with the current applyMatchedProperties system.
                 if (!update->compositableValuesForAnimations().contains(id)
                     && (!activeAnimations || !activeAnimations->cssAnimations().m_previousCompositableValuesForAnimations.contains(id))) {
-                    calculateTransitionUpdateForProperty(id, anim, oldStyle, style, activeTransitions, update);
+                    calculateTransitionUpdateForProperty(id, anim, oldStyle, style, activeTransitions, update, element);
                 }
             }
         }
@@ -634,8 +644,10 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
         for (TransitionMap::const_iterator iter = activeTransitions->begin(); iter != activeTransitions->end(); ++iter) {
             const TimedItem* timedItem = iter->value.transition;
             CSSPropertyID id = iter->key;
-            if (timedItem->phase() == TimedItem::PhaseAfter || (!anyTransitionHadAnimateAll && !listedProperties.get(id)))
+            if (timedItem->phase() == TimedItem::PhaseAfter || (!anyTransitionHadAnimateAll && !animationStyleRecalc && !listedProperties.get(id))) {
+                ASSERT(timedItem->phase() == TimedItem::PhaseAfter || !(activeAnimations && activeAnimations->isAnimationStyleChange()));
                 update->cancelTransition(id);
+            }
         }
     }
 }
