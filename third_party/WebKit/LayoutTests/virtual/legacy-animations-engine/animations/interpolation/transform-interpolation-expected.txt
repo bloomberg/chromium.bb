@@ -268,4 +268,22 @@ PASS: -webkit-transform from [matrix3d(0.571428571428571, -0.625, -0.83333333333
 PASS: -webkit-transform from [matrix3d(0.571428571428571, -0.625, -0.8333333333333346, -0.66666666666669, 0.5, -0.1875, -0.8125, 0.3125, 0.34375, -1, 0.8333333333333327, 1.34375, -1.34375, 1, -0.9375, 1)] to [none] was [matrix3d(1.0093457700315165, -0.12746048375025829, -0.24746788943106088, 1.3202120308857304, 0.6128364656690982, 0.7600694601651116, -0.22233359857303325, 1.4081483224940277, 0.21669805381113447, -0.3786082265932788, 0.908354523914928, 0.6747509193960347, -0.3359375, 0.25, -0.234375, 2.4888661932358964)] at 0.75
 FAIL: -webkit-transform from [matrix3d(0.571428571428571, -0.625, -0.8333333333333346, -0.66666666666669, 0.5, -0.1875, -0.8125, 0.3125, 0.34375, -1, 0.8333333333333327, 1.34375, -1.34375, 1, -0.9375, 1)] to [none] was [matrix(1, 0, 0, 1, 0, 0)] at 1, expected [none]
 PASS: -webkit-transform from [matrix3d(0.571428571428571, -0.625, -0.8333333333333346, -0.66666666666669, 0.5, -0.1875, -0.8125, 0.3125, 0.34375, -1, 0.8333333333333327, 1.34375, -1.34375, 1, -0.9375, 1)] to [none] was [matrix3d(0.39048513570444376, 0.14780794797065988, 0.6963068100217401, -4.857907861239344, -2.967682789284791, 0.6004978769584385, -3.5472376016872444, 26.675324787979896, -2.5953724498995308, 1.6280843851961373, 0.8163834310586356, 9.001735256585825, 1.34375, -1, 0.9375, -14.881239394516227)] at 2
+PASS: -webkit-transform from [none] to [rotate(180deg)] was [rotate(-180deg)] at -1
+PASS: -webkit-transform from [none] to [rotate(180deg)] was [rotate(0deg)] at 0
+PASS: -webkit-transform from [none] to [rotate(180deg)] was [rotate(45deg)] at 0.25
+PASS: -webkit-transform from [none] to [rotate(180deg)] was [rotate(135deg)] at 0.75
+PASS: -webkit-transform from [none] to [rotate(180deg)] was [rotate(180deg)] at 1
+PASS: -webkit-transform from [none] to [rotate(180deg)] was [rotate(360deg)] at 2
+PASS: -webkit-transform from [rotate(180deg)] to [none] was [rotate(360deg)] at -1
+PASS: -webkit-transform from [rotate(180deg)] to [none] was [rotate(180deg)] at 0
+PASS: -webkit-transform from [rotate(180deg)] to [none] was [rotate(135deg)] at 0.25
+PASS: -webkit-transform from [rotate(180deg)] to [none] was [rotate(45deg)] at 0.75
+PASS: -webkit-transform from [rotate(180deg)] to [none] was [rotate(0deg)] at 1
+PASS: -webkit-transform from [rotate(180deg)] to [none] was [rotate(-180deg)] at 2
+PASS: -webkit-transform from [none] to [rotate(360deg)] was [rotate(-360deg)] at -1
+PASS: -webkit-transform from [none] to [rotate(360deg)] was [rotate(0deg)] at 0
+PASS: -webkit-transform from [none] to [rotate(360deg)] was [rotate(90deg)] at 0.25
+PASS: -webkit-transform from [none] to [rotate(360deg)] was [rotate(270deg)] at 0.75
+PASS: -webkit-transform from [none] to [rotate(360deg)] was [rotate(360deg)] at 1
+PASS: -webkit-transform from [none] to [rotate(360deg)] was [rotate(720deg)] at 2
 

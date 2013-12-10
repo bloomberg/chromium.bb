@@ -554,9 +554,13 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTextStrokeColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextStrokeColor(toAnimatableColor(value)->visitedLinkColor());
         return;
-    case CSSPropertyWebkitTransform:
-        style->setTransform(toAnimatableTransform(value)->transformOperations());
+    case CSSPropertyWebkitTransform: {
+        const TransformOperations& operations = toAnimatableTransform(value)->transformOperations();
+        // FIXME: Using identity matrix here when the transform list is empty
+        // forces a layer to be created in the presence of a transform animation.
+        style->setTransform(operations.size() ? operations : TransformOperations(true));
         return;
+    }
     case CSSPropertyWebkitTransformOriginX:
         style->setTransformOriginX(animatableValueToLength(value, state));
         return;

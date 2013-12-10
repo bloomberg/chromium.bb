@@ -19,6 +19,9 @@
   background: orange;
   margin: 1px;
 }
+.test {
+  overflow: hidden;
+}
 </style>
 <body>
 <template id="target-template">
@@ -579,5 +582,42 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(0.39048513570444376, 0.14780794797065988, 0.6963068100217401, -4.857907861239344, -2.967682789284791, 0.6004978769584385, -3.5472376016872444, 26.675324787979896, -2.5953724498995308, 1.6280843851961373, 0.8163834310586356, 9.001735256585825, 1.34375, -1, 0.9375, -14.881239394516227)'},
 ]);
 
+// Mismatched interpolation with an empty list should not use decomposition.
+assertInterpolation({
+  property: '-webkit-transform',
+  from: 'none',
+  to: 'rotate(180deg)'
+}, [
+  {at: -1, is: 'rotate(-180deg)'},
+  {at: 0, is: 'rotate(0deg)'},
+  {at: 0.25, is: 'rotate(45deg)'},
+  {at: 0.75, is: 'rotate(135deg)'},
+  {at: 1, is: 'rotate(180deg)'},
+  {at: 2, is: 'rotate(360deg)'},
+]);
+assertInterpolation({
+  property: '-webkit-transform',
+  from: 'rotate(180deg)',
+  to: 'none'
+}, [
+  {at: -1, is: 'rotate(360deg)'},
+  {at: 0, is: 'rotate(180deg)'},
+  {at: 0.25, is: 'rotate(135deg)'},
+  {at: 0.75, is: 'rotate(45deg)'},
+  {at: 1, is: 'rotate(0deg)'},
+  {at: 2, is: 'rotate(-180deg)'},
+]);
+assertInterpolation({
+  property: '-webkit-transform',
+  from: 'none',
+  to: 'rotate(360deg)'
+}, [
+  {at: -1, is: 'rotate(-360deg)'},
+  {at: 0, is: 'rotate(0deg)'},
+  {at: 0.25, is: 'rotate(90deg)'},
+  {at: 0.75, is: 'rotate(270deg)'},
+  {at: 1, is: 'rotate(360deg)'},
+  {at: 2, is: 'rotate(720deg)'},
+]);
 </script>
 </body>

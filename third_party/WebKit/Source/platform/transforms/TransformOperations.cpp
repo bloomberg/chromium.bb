@@ -99,10 +99,11 @@ TransformOperations TransformOperations::blendByUsingMatrixInterpolation(const T
 
 TransformOperations TransformOperations::blend(const TransformOperations& from, double progress) const
 {
-    if (from == *this)
+    if (from == *this || (!from.size() && !size()))
         return *this;
 
-    if (from.size() && from.operationsMatch(*this))
+    // If either list is empty, use blendByMatchingOperations which has special logic for this case.
+    if (!from.size() || !size() || from.operationsMatch(*this))
         return blendByMatchingOperations(from, progress);
 
     return blendByUsingMatrixInterpolation(from, progress);
