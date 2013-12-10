@@ -1115,7 +1115,7 @@ const AtomicString& XMLHttpRequest::getRequestHeader(const AtomicString& name) c
     return m_requestHeaders.get(name);
 }
 
-String XMLHttpRequest::getAllResponseHeaders(ExceptionState& exceptionState) const
+String XMLHttpRequest::getAllResponseHeaders() const
 {
     if (m_state < HEADERS_RECEIVED || m_error)
         return "";
@@ -1149,7 +1149,7 @@ String XMLHttpRequest::getAllResponseHeaders(ExceptionState& exceptionState) con
     return stringBuilder.toString();
 }
 
-const AtomicString& XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& exceptionState) const
+const AtomicString& XMLHttpRequest::getResponseHeader(const AtomicString& name) const
 {
     if (m_state < HEADERS_RECEIVED || m_error)
         return nullAtom;
@@ -1192,7 +1192,7 @@ bool XMLHttpRequest::responseIsXML() const
     return DOMImplementation::isXMLMIMEType(responseMIMEType().lower());
 }
 
-int XMLHttpRequest::status(ExceptionState& exceptionState) const
+int XMLHttpRequest::status() const
 {
     if (m_state == UNSENT || m_state == OPENED || m_error)
         return 0;
@@ -1203,7 +1203,7 @@ int XMLHttpRequest::status(ExceptionState& exceptionState) const
     return 0;
 }
 
-String XMLHttpRequest::statusText(ExceptionState& exceptionState) const
+String XMLHttpRequest::statusText() const
 {
     if (m_state == UNSENT || m_state == OPENED || m_error)
         return String();

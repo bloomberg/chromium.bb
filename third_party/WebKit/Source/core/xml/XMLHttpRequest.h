@@ -93,8 +93,8 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     const KURL& url() const { return m_url; }
-    String statusText(ExceptionState&) const;
-    int status(ExceptionState&) const;
+    String statusText() const;
+    int status() const;
     State readyState() const;
     bool withCredentials() const { return m_includeCredentials; }
     void setWithCredentials(bool, ExceptionState&);
@@ -112,8 +112,8 @@ public:
     void abort();
     void setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState&);
     void overrideMimeType(const AtomicString& override);
-    String getAllResponseHeaders(ExceptionState&) const;
-    const AtomicString& getResponseHeader(const AtomicString& name, ExceptionState&) const;
+    String getAllResponseHeaders() const;
+    const AtomicString& getResponseHeader(const AtomicString&) const;
     ScriptString responseText(ExceptionState&);
     ScriptString responseJSONSource();
     Document* responseXML(ExceptionState&);
