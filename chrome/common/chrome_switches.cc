@@ -704,9 +704,6 @@ const char kEnablePrintPreviewRegisterPromos[] =
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
-// Enables forwarding preconnection hints to suitable proxy servers.
-const char kEnableProxyPreconnectHints[]    = "enable-proxy-preconnect-hints";
-
 // Enables query in the omnibox.
 const char kEnableQueryExtraction[]         = "enable-query-extraction";
 

@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
 #include "base/metrics/histogram.h"
@@ -27,6 +26,7 @@
 #include "base/values.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
 #include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/chrome_switches.h"
@@ -331,8 +331,7 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   // Until then, we may create a proxy advisor when the proxy feature itself
   // isn't available, and the advisor instance will never send advisory
   // requests, which is slightly wasteful but not harmful.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableProxyPreconnectHints)) {
+  if (DataReductionProxySettings::IsPreconnectHintingAllowed()) {
     proxy_advisor_.reset(new ProxyAdvisor(user_prefs, getter));
   }
 #endif

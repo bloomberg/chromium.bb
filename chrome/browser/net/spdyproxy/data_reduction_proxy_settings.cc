@@ -229,6 +229,13 @@ bool DataReductionProxySettings::IsDataReductionProxyPromoAllowed() {
             kEnabled);
 }
 
+bool DataReductionProxySettings::IsPreconnectHintingAllowed() {
+  if (!IsDataReductionProxyAllowed())
+    return false;
+  return FieldTrialList::FindFullName("DataCompressionProxyPreconnectHints") ==
+      kEnabled;
+}
+
 std::string DataReductionProxySettings::GetDataReductionProxyOrigin() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kSpdyProxyAuthOrigin))

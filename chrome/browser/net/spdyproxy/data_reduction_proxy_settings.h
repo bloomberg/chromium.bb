@@ -84,6 +84,10 @@ class DataReductionProxySettings
   // trial that governs the use of the promotion.
   static bool IsDataReductionProxyPromoAllowed();
 
+  // Returns true if preconnect advisory hinting is enabled by command line
+  // flag or Finch trial.
+  static bool IsPreconnectHintingAllowed();
+
   // Returns the URL of the data reduction proxy.
   static std::string GetDataReductionProxyOrigin();
 
