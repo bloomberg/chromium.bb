@@ -129,6 +129,14 @@ void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
   value->SetString("MDN", device->mdn());
 }
 
+void SetActivationStateAndError(MobileActivator::PlanActivationState state,
+                                const std::string& error_description,
+                                DictionaryValue* value) {
+  value->SetInteger("state", state);
+  if (!error_description.empty())
+    value->SetString("error", error_description);
+}
+
 }  // namespace
 
 class MobileSetupUIHTMLSource : public content::URLDataSource {
@@ -385,6 +393,15 @@ void MobileSetupHandler::OnActivationStateChanged(
   DCHECK_EQ(TYPE_ACTIVATION, type_);
   if (!web_ui())
     return;
+
+  if (!network) {
+    DictionaryValue device_dict;
+    SetActivationStateAndError(state, error_description, &device_dict);
+    web_ui()->CallJavascriptFunction(kJsDeviceStatusChangedCallback,
+                                     device_dict);
+    return;
+  }
+
   NetworkHandler::Get()->network_configuration_handler()->GetProperties(
       network->path(),
       base::Bind(&MobileSetupHandler::GetPropertiesAndCallStatusChanged,
@@ -404,11 +421,8 @@ void MobileSetupHandler::GetPropertiesAndCallStatusChanged(
     const base::DictionaryValue& properties) {
   DictionaryValue device_dict;
   GetDeviceInfo(properties, &device_dict);
-  device_dict.SetInteger("state", state);
-  if (error_description.length())
-    device_dict.SetString("error", error_description);
-  web_ui()->CallJavascriptFunction(
-      kJsDeviceStatusChangedCallback, device_dict);
+  SetActivationStateAndError(state, error_description, &device_dict);
+  web_ui()->CallJavascriptFunction(kJsDeviceStatusChangedCallback, device_dict);
 }
 
 void MobileSetupHandler::RegisterMessages() {

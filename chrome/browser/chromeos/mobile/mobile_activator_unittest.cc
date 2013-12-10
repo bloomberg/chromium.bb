@@ -55,7 +55,7 @@ class TestMobileActivator : public MobileActivator {
                     const network_handler::ErrorCallback&));
   MOCK_METHOD3(ChangeState, void(const NetworkState*,
                                  MobileActivator::PlanActivationState,
-                                 const std::string&));
+                                 std::string));
   MOCK_METHOD1(GetNetworkState, const NetworkState*(const std::string&));
   MOCK_METHOD1(EvaluateCellularNetwork, void(const NetworkState*));
   MOCK_METHOD0(SignalCellularPlanPayment, void(void));
@@ -64,7 +64,7 @@ class TestMobileActivator : public MobileActivator {
 
   void InvokeChangeState(const NetworkState* network,
                          MobileActivator::PlanActivationState new_state,
-                         const std::string& error_description) {
+                         std::string error_description) {
     MobileActivator::ChangeState(network, new_state, error_description);
   }
 

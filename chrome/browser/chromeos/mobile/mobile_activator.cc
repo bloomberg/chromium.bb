@@ -878,7 +878,24 @@ void MobileActivator::RequestCellularActivation(
 
 void MobileActivator::ChangeState(const NetworkState* network,
                                   PlanActivationState new_state,
-                                  const std::string& error_description) {
+                                  std::string error_description) {
+  // Report an error, by transitioning into a PLAN_ACTIVATION_ERROR state with
+  // a "no service" error instead, if no network state is available (e.g. the
+  // cellular service no longer exists) when we are transitioning into certain
+  // plan activation state.
+  if (!network) {
+    switch (new_state) {
+      case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+      case PLAN_ACTIVATION_TRYING_OTASP:
+      case PLAN_ACTIVATION_OTASP:
+      case PLAN_ACTIVATION_DONE:
+        new_state = PLAN_ACTIVATION_ERROR;
+        error_description = GetErrorMessage(kErrorNoService);
+      default:
+        break;
+    }
+  }
+
   static bool first_time = true;
   VLOG(1) << "Activation state flip old = "
           << GetStateDescription(state_)
@@ -967,7 +984,8 @@ void MobileActivator::ChangeState(const NetworkState* network,
                      << "state.";
           break;
       }
-      ForceReconnect(network, next_state);
+      if (network)
+        ForceReconnect(network, next_state);
       break;
     }
     case PLAN_ACTIVATION_DONE:
