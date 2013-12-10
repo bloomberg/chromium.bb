@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import os
+import tempfile
 import time
 
 import android_commands
@@ -56,11 +57,13 @@ class VideoRecorder(object):
     self._host_file = os.path.abspath(self._host_file)
     self._recorder = None
     self._recorder_pids = None
+    self._recorder_stdout = None
+    self._is_started = False
 
     self._args = ['adb']
     if self._adb.GetDevice():
       self._args += ['-s', self._adb.GetDevice()]
-    self._args += ['shell', 'screenrecord']
+    self._args += ['shell', 'screenrecord', '--verbose']
     self._args += ['--bit-rate', str(megabits_per_second * 1000 * 1000)]
     if size:
       self._args += ['--size', '%dx%d' % size]
@@ -71,14 +74,26 @@ class VideoRecorder(object):
   def Start(self):
     """Start recording video."""
     _EnsureHostDirectory(self._host_file)
-    self._recorder = cmd_helper.Popen(self._args)
+    self._recorder_stdout = tempfile.mkstemp()[1]
+    self._recorder = cmd_helper.Popen(
+        self._args, stdout=open(self._recorder_stdout, 'w'))
     self._recorder_pids = self._adb.ExtractPid('screenrecord')
     if not self._recorder_pids:
       raise RuntimeError('Recording failed. Is your device running Android '
                          'KitKat or later?')
 
+  def IsStarted(self):
+    if not self._is_started:
+      for line in open(self._recorder_stdout):
+        self._is_started = line.startswith('Content area is ')
+        if self._is_started:
+          break
+    return self._is_started
+
   def Stop(self):
     """Stop recording video."""
+    os.remove(self._recorder_stdout)
+    self._is_started = False
     if not self._recorder or not self._recorder_pids:
       return
     self._adb.RunShellCommand('kill -SIGINT ' + ' '.join(self._recorder_pids))
