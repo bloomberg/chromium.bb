@@ -42,7 +42,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "grit/component_strings.h"
@@ -391,8 +390,7 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
 
 class MockAutofillDriver : public TestAutofillDriver {
  public:
-  explicit MockAutofillDriver(content::WebContents* web_contents)
-      : TestAutofillDriver(web_contents) {}
+  MockAutofillDriver() {}
 
   // Mock methods to enable testability.
   MOCK_METHOD2(SendFormDataToRenderer, void(int query_id,
@@ -631,7 +629,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
         autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
     personal_data_.set_database(manager_delegate->GetDatabase());
     personal_data_.set_pref_service(profile()->GetPrefs());
-    autofill_driver_.reset(new MockAutofillDriver(web_contents()));
+    autofill_driver_.reset(new MockAutofillDriver());
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(), manager_delegate, &personal_data_));
 

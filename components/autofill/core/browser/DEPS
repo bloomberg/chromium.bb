@@ -12,17 +12,10 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!content/public/browser/render_view_host.h",
-  "!content/public/browser/web_contents.h",
   "!third_party/WebKit/public/web/WebAutofillClient.h",
 ]
 
 specific_include_rules = {
-  'test_autofill_driver.*': [
-    # TODO(blundell): Eliminate the need for TestAutofillDriver to be a
-    # WebContentsObserver.
-    "!content/public/browser/web_contents_observer.h",
-  ],
   'autofill_test_utils\.cc': [
     # TODO(blundell): Bring this list to zero.
     #

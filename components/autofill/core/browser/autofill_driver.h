@@ -13,10 +13,6 @@ namespace base {
 class SequencedWorkerPool;
 }
 
-namespace content {
-class WebContents;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -46,10 +42,6 @@ class AutofillDriver {
 
   // Returns the URL request context information associated with this driver.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
-
-  // TODO(blundell): Remove this method once shared code no longer needs to
-  // know about WebContents.
-  virtual content::WebContents* GetWebContents() = 0;
 
   // Returns the SequencedWorkerPool on which core Autofill code should run
   // tasks that may block. This pool must live at least as long as the driver.

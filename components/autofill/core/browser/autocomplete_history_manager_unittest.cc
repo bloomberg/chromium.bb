@@ -69,13 +69,14 @@ class MockAutofillManagerDelegate
 
 }  // namespace
 
-class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
+class AutocompleteHistoryManagerTest : public testing::Test {
  protected:
+  AutocompleteHistoryManagerTest() {}
+
   virtual void SetUp() OVERRIDE {
-    ChromeRenderViewHostTestHarness::SetUp();
     web_data_service_ = new MockWebDataService();
     manager_delegate_.reset(new MockAutofillManagerDelegate(web_data_service_));
-    autofill_driver_.reset(new TestAutofillDriver(web_contents()));
+    autofill_driver_.reset(new TestAutofillDriver());
     autocomplete_manager_.reset(
         new AutocompleteHistoryManager(autofill_driver_.get(),
                                        manager_delegate_.get()));
@@ -83,9 +84,9 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
 
   virtual void TearDown() OVERRIDE {
     autocomplete_manager_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
   }
 
+  base::MessageLoop message_loop_;
   scoped_refptr<MockWebDataService> web_data_service_;
   scoped_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   scoped_ptr<AutofillDriver> autofill_driver_;

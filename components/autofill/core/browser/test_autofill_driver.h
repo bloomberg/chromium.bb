@@ -9,17 +9,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "content/public/browser/web_contents_observer.h"
 
 namespace autofill {
 
 // This class is only for easier writing of tests.
-// TODO(blundell): Eliminate this class being a WebContentsObserver once
-// autofill shared code no longer needs knowledge of WebContents.
-class TestAutofillDriver : public AutofillDriver,
-                           public content::WebContentsObserver {
+class TestAutofillDriver : public AutofillDriver {
  public:
-  explicit TestAutofillDriver(content::WebContents* web_contents);
+  TestAutofillDriver();
   virtual ~TestAutofillDriver();
 
   // AutofillDriver implementation.
@@ -27,7 +23,6 @@ class TestAutofillDriver : public AutofillDriver,
   // Returns the value passed in to the last call to |SetURLRequestContext()|
   // or NULL if that method has never been called.
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
-  virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;
   virtual void SetRendererActionOnFormDataReception(

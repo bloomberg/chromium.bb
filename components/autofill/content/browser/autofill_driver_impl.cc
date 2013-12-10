@@ -120,7 +120,7 @@ void AutofillDriverImpl::SendAutofillTypePredictionsToRenderer(
       switches::kShowAutofillTypePredictions))
     return;
 
-  content::RenderViewHost* host = GetWebContents()->GetRenderViewHost();
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (!host)
     return;
 

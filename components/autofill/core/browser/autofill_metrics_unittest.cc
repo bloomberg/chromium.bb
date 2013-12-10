@@ -290,7 +290,7 @@ void AutofillMetricsTest::SetUp() {
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->set_database(manager_delegate->GetDatabase());
   personal_data_->set_pref_service(profile()->GetPrefs());
-  autofill_driver_.reset(new TestAutofillDriver(web_contents()));
+  autofill_driver_.reset(new TestAutofillDriver());
   autofill_manager_.reset(new TestAutofillManager(
       autofill_driver_.get(), manager_delegate, personal_data_.get()));
 
@@ -302,9 +302,7 @@ void AutofillMetricsTest::SetUp() {
 
 void AutofillMetricsTest::TearDown() {
   // Order of destruction is important as AutofillManager relies on
-  // PersonalDataManager to be around when it gets destroyed. Also, a real
-  // AutofillManager is tied to the lifetime of the WebContents, so it must
-  // be destroyed at the destruction of the WebContents.
+  // PersonalDataManager to be around when it gets destroyed.
   autofill_manager_.reset();
   autofill_driver_.reset();
   personal_data_.reset();

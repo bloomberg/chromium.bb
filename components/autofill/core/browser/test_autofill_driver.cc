@@ -8,9 +8,8 @@
 
 namespace autofill {
 
-TestAutofillDriver::TestAutofillDriver(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      blocking_pool_(new base::SequencedWorkerPool(4, "TestAutofillDriver")),
+TestAutofillDriver::TestAutofillDriver()
+    : blocking_pool_(new base::SequencedWorkerPool(4, "TestAutofillDriver")),
       url_request_context_(NULL) {}
 
 TestAutofillDriver::~TestAutofillDriver() {
@@ -23,10 +22,6 @@ bool TestAutofillDriver::IsOffTheRecord() const {
 
 net::URLRequestContextGetter* TestAutofillDriver::GetURLRequestContext() {
   return url_request_context_;
-}
-
-content::WebContents* TestAutofillDriver::GetWebContents() {
-  return web_contents();
 }
 
 base::SequencedWorkerPool* TestAutofillDriver::GetBlockingPool() {

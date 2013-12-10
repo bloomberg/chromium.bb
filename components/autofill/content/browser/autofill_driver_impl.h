@@ -45,7 +45,6 @@ class AutofillDriverImpl : public AutofillDriver,
   // AutofillDriver:
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
-  virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;
   virtual void SetRendererActionOnFormDataReception(
@@ -61,6 +60,9 @@ class AutofillDriverImpl : public AutofillDriver,
   virtual void RendererShouldClearFilledForm() OVERRIDE;
   virtual void RendererShouldClearPreviewedForm() OVERRIDE;
   virtual void RendererShouldSetNodeText(const base::string16& value) OVERRIDE;
+
+  // Returns the WebContents with which this instance is associated.
+  content::WebContents* GetWebContents();
 
   AutofillExternalDelegate* autofill_external_delegate() {
     return &autofill_external_delegate_;

@@ -211,9 +211,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
 
-  // Fills |host| with the RenderViewHost for this tab.
-  // Returns false if Autofill is disabled or if the host is unavailable.
-  bool GetHost(content::RenderViewHost** host) const WARN_UNUSED_RESULT;
+  // Returns false if Autofill is disabled or if no Autofill data is available.
+  bool RefreshDataModels() const;
 
   // Unpacks |unique_id| and fills |form_group| and |variant| with the
   // appropriate data source and variant index.  Returns false if the unpacked

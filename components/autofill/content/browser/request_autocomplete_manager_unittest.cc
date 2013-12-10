@@ -74,9 +74,8 @@ class TestAutofillDriverImpl : public AutofillDriverImpl {
   TestAutofillDriverImpl(content::WebContents* contents,
                          AutofillManagerDelegate* delegate)
       : AutofillDriverImpl(contents, delegate, kAppLocale, kDownloadState) {
-    scoped_ptr<AutofillManager> autofill_manager(
-        new TestAutofillManager(this, delegate));
-    SetAutofillManager(autofill_manager.Pass());
+    SetAutofillManager(make_scoped_ptr<AutofillManager>(
+        new TestAutofillManager(this, delegate)));
   }
   virtual ~TestAutofillDriverImpl() {}
 

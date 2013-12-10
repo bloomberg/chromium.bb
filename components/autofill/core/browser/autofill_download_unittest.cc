@@ -65,8 +65,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
                              public testing::Test {
  public:
   AutofillDownloadTest()
-      : driver_(NULL),
-        download_manager_(&driver_, profile_.GetPrefs(), this) {
+      : download_manager_(&driver_, profile_.GetPrefs(), this) {
     driver_.SetURLRequestContext(profile_.GetRequestContext());
   }
 

@@ -22,7 +22,7 @@ namespace {
 
 class MockAutofillDriver : public autofill::TestAutofillDriver {
  public:
-  MockAutofillDriver() : autofill::TestAutofillDriver(NULL) {}
+  MockAutofillDriver() {}
   MOCK_METHOD1(RendererShouldAcceptPasswordAutofillSuggestion,
                void(const base::string16&));
 };
