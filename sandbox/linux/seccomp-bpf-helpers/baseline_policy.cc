@@ -172,12 +172,4 @@ ErrorCode BaselinePolicy::EvaluateSyscall(SandboxBPF* sandbox,
   return EvaluateSyscallImpl(fs_denied_errno_, sandbox, sysno);
 }
 
-// TODO(jln): Migrate NaCl and remove.
-ErrorCode BaselinePolicy::BaselinePolicyDeprecated(SandboxBPF* sandbox,
-                                                   int sysno,
-                                                   void* aux) {
-  DCHECK(!aux);
-  return EvaluateSyscallImpl(EPERM /* fs_denied_errno */, sandbox, sysno);
-}
-
 }  // namespace sandbox.

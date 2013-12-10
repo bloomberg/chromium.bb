@@ -32,11 +32,6 @@ class BaselinePolicy : public SandboxBPFPolicy {
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
-  // TODO(jln): remove once NaCl uses the new policy format. Do not use in new
-  // code. This is the same as EvaluateSyscall. |aux| must be NULL.
-  static ErrorCode BaselinePolicyDeprecated(SandboxBPF* sandbox,
-                                            int sysno,
-                                            void* aux);
 
  private:
   int fs_denied_errno_;
