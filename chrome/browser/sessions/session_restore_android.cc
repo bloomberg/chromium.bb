@@ -45,7 +45,8 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
     current_tab->SwapTabContents(web_contents, new_web_contents);
     delete web_contents;
   } else {
-    DCHECK_EQ(disposition, NEW_FOREGROUND_TAB);
+    DCHECK(disposition == NEW_FOREGROUND_TAB ||
+        disposition == NEW_BACKGROUND_TAB);
     tab_model->CreateTab(new_web_contents);
   }
   return new_web_contents;
