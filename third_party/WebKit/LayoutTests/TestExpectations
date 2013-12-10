@@ -16,8 +16,6 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-allowed
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-blocked.html [ Failure Pass ]
 crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure Pass ]
 
-crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
-
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
 crbug.com/323365 [ Win ] virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ Pass Timeout ]
