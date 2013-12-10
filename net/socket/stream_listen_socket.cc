@@ -65,7 +65,7 @@ StreamListenSocket::StreamListenSocket(SocketDescriptor s,
 }
 
 StreamListenSocket::~StreamListenSocket() {
-  CloseSocket(socket_);
+  CloseSocket();
 #if defined(OS_WIN)
   if (socket_event_) {
     WSACloseEvent(socket_event_);
@@ -194,13 +194,13 @@ void StreamListenSocket::Close() {
   socket_delegate_->DidClose(this);
 }
 
-void StreamListenSocket::CloseSocket(SocketDescriptor s) {
-  if (s && s != kInvalidSocket) {
+void StreamListenSocket::CloseSocket() {
+  if (socket_ != kInvalidSocket) {
     UnwatchSocket();
 #if defined(OS_WIN)
-    closesocket(s);
+    closesocket(socket_);
 #elif defined(OS_POSIX)
-    close(s);
+    close(socket_);
 #endif
   }
 }

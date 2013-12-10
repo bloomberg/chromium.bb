@@ -91,7 +91,7 @@ class NET_EXPORT StreamListenSocket
   void Listen();
   void Read();
   void Close();
-  void CloseSocket(SocketDescriptor s);
+  void CloseSocket();
 
   // Pass any value in case of Windows, because in Windows
   // we are not using state.
