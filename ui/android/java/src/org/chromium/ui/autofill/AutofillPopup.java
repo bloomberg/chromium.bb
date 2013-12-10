@@ -81,7 +81,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
             AutofillPopupDelegate autofillCallback) {
         super(context, null, 0, R.style.AutofillPopupWindow);
         mContext = context;
-        mViewAndroidDelegate = viewAndroidDelegate;
+        mViewAndroidDelegate = viewAndroidDelegate ;
         mAutofillCallback = autofillCallback;
 
         setOnItemClickListener(this);

@@ -11,7 +11,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
-class AutofillDividerDrawable extends Drawable {
+public class AutofillDividerDrawable extends Drawable {
 
     private Paint mPaint;
     private Rect mDividerRect;

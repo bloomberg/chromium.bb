@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
 
     /**
      * @param context The context the dialog is to run in.
+     * @param theme The theme to display the dialog in.
      * @param listener The object to notify when the color is set.
      * @param color The initial color to set.
      * @param suggestions The list of suggestions.
@@ -151,7 +152,9 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
      * Tries to notify any listeners that the color has been set.
      */
     private void tryNotifyColorSet(int color) {
-        if (mListener != null) mListener.onColorChanged(color);
+        if (mListener != null) {
+            mListener.onColorChanged(color);
+        }
     }
 
     /**
@@ -160,6 +163,8 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
      */
     private void updateCurrentColor(int color) {
         mCurrentColor = color;
-        if (mCurrentColorView != null) mCurrentColorView.setBackgroundColor(color);
+        if (mCurrentColorView != null) {
+            mCurrentColorView.setBackgroundColor(color);
+        }
     }
 }

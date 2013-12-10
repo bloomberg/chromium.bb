@@ -34,8 +34,8 @@ class SurfaceTexturePlatformWrapper {
     @CalledByNative
     private static void setFrameAvailableCallback(SurfaceTexture surfaceTexture,
             long nativeSurfaceTextureListener) {
-        surfaceTexture.setOnFrameAvailableListener(
-                new SurfaceTextureListener(nativeSurfaceTextureListener));
+       surfaceTexture.setOnFrameAvailableListener(
+               new SurfaceTextureListener(nativeSurfaceTextureListener));
     }
 
     @CalledByNative

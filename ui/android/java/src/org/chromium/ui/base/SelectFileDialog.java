@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,7 +191,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
     }
 
     private boolean shouldShowImageTypes() {
-        return shouldShowTypes(ALL_IMAGE_TYPES, IMAGE_TYPE);
+        return shouldShowTypes(ALL_IMAGE_TYPES,IMAGE_TYPE);
     }
 
     private boolean shouldShowVideoTypes() {

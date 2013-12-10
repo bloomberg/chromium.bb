@@ -1,7 +1,6 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 package org.chromium.ui;
 
 import android.content.Context;
@@ -19,27 +18,25 @@ public class ColorPickerSimple extends ListView implements OnColorSuggestionClic
 
     private OnColorChangedListener mOnColorChangedListener;
 
-    private static final int[] DEFAULT_COLORS = {
-        Color.RED,
-        Color.CYAN,
-        Color.BLUE,
-        Color.GREEN,
-        Color.MAGENTA,
-        Color.YELLOW,
-        Color.BLACK,
-        Color.WHITE
-    };
+    private static final int[] DEFAULT_COLORS = { Color.RED,
+                                                  Color.CYAN,
+                                                  Color.BLUE,
+                                                  Color.GREEN,
+                                                  Color.MAGENTA,
+                                                  Color.YELLOW,
+                                                  Color.BLACK,
+                                                  Color.WHITE
+                                                };
 
-    private static final int[] DEFAULT_COLOR_LABEL_IDS = {
-        R.string.color_picker_button_red,
-        R.string.color_picker_button_cyan,
-        R.string.color_picker_button_blue,
-        R.string.color_picker_button_green,
-        R.string.color_picker_button_magenta,
-        R.string.color_picker_button_yellow,
-        R.string.color_picker_button_black,
-        R.string.color_picker_button_white
-    };
+    private static final int[] DEFAULT_COLOR_LABEL_IDS = { R.string.color_picker_button_red,
+                                                           R.string.color_picker_button_cyan,
+                                                           R.string.color_picker_button_blue,
+                                                           R.string.color_picker_button_green,
+                                                           R.string.color_picker_button_magenta,
+                                                           R.string.color_picker_button_yellow,
+                                                           R.string.color_picker_button_black,
+                                                           R.string.color_picker_button_white
+                                                         };
 
     public ColorPickerSimple(Context context) {
         super(context);
@@ -68,13 +65,15 @@ public class ColorPickerSimple extends ListView implements OnColorSuggestionClic
         if (suggestions == null) {
             suggestions = new ColorSuggestion[DEFAULT_COLORS.length];
             for (int i = 0; i < suggestions.length; ++i) {
-                suggestions[i] = new ColorSuggestion(DEFAULT_COLORS[i],
-                        getContext().getString(DEFAULT_COLOR_LABEL_IDS[i]));
+                suggestions[i] =
+                        new ColorSuggestion(
+                            DEFAULT_COLORS[i],
+                            getContext().getString(DEFAULT_COLOR_LABEL_IDS[i]));
             }
         }
 
-        ColorSuggestionListAdapter adapter = new ColorSuggestionListAdapter(
-                getContext(), suggestions);
+        ColorSuggestionListAdapter adapter = new ColorSuggestionListAdapter(getContext(),
+                                                                            suggestions);
         adapter.setOnColorSuggestionClickListener(this);
         setAdapter(adapter);
     }
