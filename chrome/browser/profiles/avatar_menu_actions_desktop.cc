@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/avatar_menu_actions_desktop.h"
 
+#include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,11 +62,21 @@ void AvatarMenuActionsDesktop::EditProfile(Profile* profile, size_t index) {
 
 bool AvatarMenuActionsDesktop::ShouldShowAddNewProfileLink() const {
   // |browser_| can be NULL in unit_tests.
-  return !browser_ || !browser_->profile()->IsManaged();
+  if (browser_ && browser_->profile()->IsManaged())
+    return false;
+#if defined(USE_AURA) && defined(OS_WIN)
+  return chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH;
+#else
+  return true;
+#endif
 }
 
 bool AvatarMenuActionsDesktop::ShouldShowEditProfileLink() const {
+#if defined(USE_AURA) && defined(OS_WIN)
+  return chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH;
+#else
   return true;
+#endif
 }
 
 void AvatarMenuActionsDesktop::ActiveBrowserChanged(Browser* browser) {
