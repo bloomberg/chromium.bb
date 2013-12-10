@@ -38,7 +38,7 @@ public class ColorSuggestionListAdapter extends BaseAdapter implements View.OnCl
         void onColorSuggestionClick(ColorSuggestion suggestion);
     }
 
-    private final static int COLORS_PER_ROW = 4;
+    private static final int COLORS_PER_ROW = 4;
 
     ColorSuggestionListAdapter(Context context, ColorSuggestion[] suggestions) {
         mContext = context;
@@ -96,7 +96,7 @@ public class ColorSuggestionListAdapter extends BaseAdapter implements View.OnCl
     public View getView(int position, View convertView, ViewGroup parent) {
         LinearLayout layout;
         if (convertView != null && convertView instanceof LinearLayout) {
-          layout = (LinearLayout) convertView;
+            layout = (LinearLayout) convertView;
         } else {
             layout = new LinearLayout(mContext);
             layout.setLayoutParams(new AbsListView.LayoutParams(
