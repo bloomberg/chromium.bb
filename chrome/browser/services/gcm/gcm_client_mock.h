@@ -19,8 +19,9 @@ class GCMClientMock : public GCMClient {
 
   // Overridden from GCMClient:
   // Called on IO thread.
-  virtual void CheckIn(const std::string& username,
-                       Delegate* delegate) OVERRIDE;
+  virtual void SetUserDelegate(const std::string& username,
+                               Delegate* delegate) OVERRIDE;
+  virtual void CheckIn(const std::string& username) OVERRIDE;
   virtual void Register(const std::string& username,
                         const std::string& app_id,
                         const std::string& cert,
@@ -48,6 +49,8 @@ class GCMClientMock : public GCMClient {
   std::string GetRegistrationIdFromSenderIds(
       const std::vector<std::string>& sender_ids) const;
 
+  void SetIsLoading(bool is_loading);
+
  private:
   Delegate* GetDelegate(const std::string& username) const;
 
@@ -66,8 +69,11 @@ class GCMClientMock : public GCMClient {
   void MessageSendError(std::string username,
                         std::string app_id,
                         std::string message_id);
+  void LoadingCompleted();
 
   std::map<std::string, Delegate*> delegates_;
+
+  bool is_loading_;
 
   // The testing code could set this to force the check-in failure in order to
   // test the error scenario.

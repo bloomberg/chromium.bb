@@ -142,12 +142,17 @@ class GCM_EXPORT GCMClient {
   // Passes a mocked instance for testing purpose.
   static void SetForTesting(GCMClient* client);
 
-  // Checks in the user to use GCM. If the device has not been checked in, it
-  // will be done first.
+  // Sets the delegate to interact with related to a specific user.
   // |username|: the username (email address) used to check in with the server.
   // |delegate|: the delegate whose methods will be called asynchronously in
   //             response to events and messages.
-  virtual void CheckIn(const std::string& username, Delegate* delegate) = 0;
+  virtual void SetUserDelegate(const std::string& username,
+                               Delegate* delegate) = 0;
+
+  // Checks in the user to use GCM. If the device has not been checked in, it
+  // will be done first.
+  // |username|: the username (email address) used to check in with the server.
+  virtual void CheckIn(const std::string& username) = 0;
 
   // Registers the application for GCM. Delegate::OnRegisterFinished will be
   // called asynchronously upon completion.
