@@ -71,6 +71,86 @@ namespace TestInterfacePythonImplementationV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+static void perWorldBindingsStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->perWorldBindingsStringAttribute(), info.GetIsolate());
+}
+
+static void perWorldBindingsStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setPerWorldBindingsStringAttribute(cppValue);
+}
+
+static void perWorldBindingsStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsStringAttributeAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->perWorldBindingsStringAttribute(), info.GetIsolate());
+}
+
+static void perWorldBindingsStringAttributeAttributeGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsStringAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setPerWorldBindingsStringAttribute(cppValue);
+}
+
+static void perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterForMainWorld(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    imp->voidMethod();
+}
+
+static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfacePythonImplementationV8Internal::voidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    imp->voidMethod();
+}
+
+static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfacePythonImplementationV8Internal::voidMethodMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestInterfacePythonImplementationV8Internal
 
 void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
@@ -83,6 +163,14 @@ void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v
     setObjectGroup(object, wrapper, isolate);
 }
 
+static const V8DOMConfiguration::AttributeConfiguration V8TestInterfacePythonAttributes[] = {
+    {"perWorldBindingsStringAttribute", TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallbackForMainWorld, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+};
+
+static const V8DOMConfiguration::MethodConfiguration V8TestInterfacePythonMethods[] = {
+    {"voidMethod", TestInterfacePythonImplementationV8Internal::voidMethodMethodCallback, TestInterfacePythonImplementationV8Internal::voidMethodMethodCallbackForMainWorld, 0},
+};
+
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePythonTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
@@ -92,9 +180,9 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePythonTemplate(v
         defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", V8TestInterfaceEmpty::domTemplate(isolate, currentWorldType), V8TestInterfacePython::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
     else
         defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfacePython", V8TestInterfaceEmpty::domTemplate(isolate, currentWorldType), V8TestInterfacePython::internalFieldCount,
+            V8TestInterfacePythonAttributes, WTF_ARRAY_LENGTH(V8TestInterfacePythonAttributes),
             0, 0,
-            0, 0,
-            0, 0,
+            V8TestInterfacePythonMethods, WTF_ARRAY_LENGTH(V8TestInterfacePythonMethods),
             isolate, currentWorldType);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();

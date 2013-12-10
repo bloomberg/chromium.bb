@@ -5,17 +5,17 @@
 {% macro attribute_configuration(attribute) %}
 {% set getter_callback =
        '%sV8Internal::%sAttributeGetterCallback' %
-            (interface_name, attribute.name)
+            (cpp_class, attribute.name)
        if not attribute.constructor_type else
        '{0}V8Internal::{0}ConstructorGetter'.format(interface_name) %}
 {% set getter_callback_for_main_world =
        '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
-            (interface_name, attribute.name)
+            (cpp_class, attribute.name)
        if attribute.is_per_world_bindings else '0' %}
 {% set setter_callback = attribute.setter_callback %}
 {% set setter_callback_for_main_world =
        '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
-           (interface_name, attribute.name)
+           (cpp_class, attribute.name)
        if attribute.is_per_world_bindings and not attribute.is_read_only else '0' %}
 {% set wrapper_type_info =
        'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
@@ -34,9 +34,9 @@
 {##############################################################################}
 {% macro method_configuration(method) %}
 {% set method_callback =
-   '%sV8Internal::%sMethodCallback' % (interface_name, method.name) %}
+   '%sV8Internal::%sMethodCallback' % (cpp_class, method.name) %}
 {% set method_callback_for_main_world =
-   '%sV8Internal::%sMethodCallbackForMainWorld' % (interface_name, method.name)
+   '%sV8Internal::%sMethodCallbackForMainWorld' % (cpp_class, method.name)
    if method.is_per_world_bindings else '0' %}
 {"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.number_of_required_or_variadic_arguments}}}
 {%- endmacro %}

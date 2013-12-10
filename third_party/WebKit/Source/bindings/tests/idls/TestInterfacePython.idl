@@ -36,4 +36,8 @@
     ImplementedAs=TestInterfacePythonImplementation,
     RuntimeEnabled=FeatureName,
 ] interface TestInterfacePython : TestInterfaceEmpty {
+    // members needed to test [ImplementedAs], as this affect attribute
+    // configuration and method configuration
+    [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
+    [PerWorldBindings] void voidMethod();
 };
