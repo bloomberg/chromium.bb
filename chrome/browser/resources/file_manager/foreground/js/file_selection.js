@@ -342,9 +342,6 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   // Update preview panels.
   var wasVisible = this.previewPanel_.visible;
   this.previewPanel_.setSelection(selection);
-  this.previewPanel_.thumbnails.selection = (selection.totalCount != 0) ?
-      selection :
-      {entries: [this.fileManager_.getCurrentDirectoryEntry()]};
 
   // Scroll to item
   if (!wasVisible && this.selection.totalCount == 1) {

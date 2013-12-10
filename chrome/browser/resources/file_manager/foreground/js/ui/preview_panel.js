@@ -142,6 +142,8 @@ PreviewPanel.prototype = {
    * @param {Entry} entry New entry.
    */
   set currentEntry(entry) {
+    if (util.isSameEntry(this.currentEntry_, entry))
+      return;
     this.currentEntry_ = entry;
     this.updateVisibility_();
     this.updatePreviewArea_();
@@ -190,7 +192,9 @@ PreviewPanel.prototype.setSelection = function(selection) {
   this.sequence_++;
   this.selection_ = selection;
   this.updateVisibility_();
-  this.updatePreviewArea_();
+  // If the previw panel is hiding, does not update the current view.
+  if (this.visible)
+    this.updatePreviewArea_();
 };
 
 /**
@@ -243,6 +247,10 @@ PreviewPanel.prototype.updateVisibility_ = function() {
  */
 PreviewPanel.prototype.updatePreviewArea_ = function(breadCrumbsVisible) {
   var selection = this.selection_;
+
+  // Update thumbnails.
+  this.thumbnails.selection = selection.totalCount !== 0 ?
+      selection : {entries: [this.currentEntry_]};
 
   // Check if the breadcrumb list should show instead on the preview text.
   var entry;

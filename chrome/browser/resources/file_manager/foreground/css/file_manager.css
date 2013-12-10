@@ -945,10 +945,11 @@ input.rename {
 }
 
 .preview-panel[visibility=hiding] {
-  /* Using all seems to cause preview panel and checkbox flicking issue. */
   -webkit-transform: translate(0, 5px);
   opacity: 0;
-  transition: opacity 220ms ease;
+  /* Using all seems to cause preview panel and checkbox flicking issue. */
+  transition: opacity 220ms ease,
+              -webkit-transform 220ms ease;
 }
 
 .preview-panel[visibility=hidden] {
