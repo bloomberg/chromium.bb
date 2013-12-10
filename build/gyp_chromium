@@ -276,6 +276,12 @@ if __name__ == '__main__':
     os.environ['WINDOWSSDKDIR'] = win8sdk
     os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
         for k, v in gyp_defines_dict.iteritems())
+    # Include the VS runtime in the PATH in case it's not machine-installed.
+    runtime_path = ';'.join(
+        os.path.normpath(os.path.join(
+            script_dir, '..', 'third_party', 'win_toolchain', 'files', s))
+        for s in ('sys64', 'sys32'))
+    os.environ['PATH'] = runtime_path + os.environ['PATH']
     print('Using automatic toolchain in %s.' % toolchain)
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
