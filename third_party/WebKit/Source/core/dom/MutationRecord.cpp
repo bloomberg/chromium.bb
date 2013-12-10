@@ -168,22 +168,22 @@ const AtomicString& CharacterDataRecord::type()
 
 PassRefPtr<MutationRecord> MutationRecord::createChildList(PassRefPtr<Node> target, PassRefPtr<NodeList> added, PassRefPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
 {
-    return adoptRef(static_cast<MutationRecord*>(new ChildListRecord(target, added, removed, previousSibling, nextSibling)));
+    return adoptRef(new ChildListRecord(target, added, removed, previousSibling, nextSibling));
 }
 
 PassRefPtr<MutationRecord> MutationRecord::createAttributes(PassRefPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
 {
-    return adoptRef(static_cast<MutationRecord*>(new AttributesRecord(target, name, oldValue)));
+    return adoptRef(new AttributesRecord(target, name, oldValue));
 }
 
 PassRefPtr<MutationRecord> MutationRecord::createCharacterData(PassRefPtr<Node> target, const String& oldValue)
 {
-    return adoptRef(static_cast<MutationRecord*>(new CharacterDataRecord(target, oldValue)));
+    return adoptRef(new CharacterDataRecord(target, oldValue));
 }
 
 PassRefPtr<MutationRecord> MutationRecord::createWithNullOldValue(PassRefPtr<MutationRecord> record)
 {
-    return adoptRef(static_cast<MutationRecord*>(new MutationRecordWithNullOldValue(record)));
+    return adoptRef(new MutationRecordWithNullOldValue(record));
 }
 
 MutationRecord::~MutationRecord()
