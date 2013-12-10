@@ -156,10 +156,10 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     while (cluster && (!isAutosizingContainer(cluster) || !isIndependentDescendant(cluster)))
         cluster = cluster->containingBlock();
 
-    // Skip autosizing if it will have no effect.
+    // Skip autosizing for orphaned trees, or if it will have no effect.
     // Note: this might suppress autosizing of an inner cluster with a different writing mode.
     // It's not clear what the correct behavior is for mixed writing modes anyway.
-    if (clusterMultiplier(cluster->style()->writingMode(), windowInfo,
+    if (!cluster || clusterMultiplier(cluster->style()->writingMode(), windowInfo,
         std::numeric_limits<float>::infinity()) == 1.0f)
         return false;
 
