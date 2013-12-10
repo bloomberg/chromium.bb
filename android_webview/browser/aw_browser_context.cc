@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_pref_store.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
+#include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net/init_native_callback.h"
@@ -17,11 +18,9 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
 
 using base::FilePath;
 using content::BrowserThread;
@@ -33,36 +32,6 @@ namespace {
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }
-
-class AwResourceContext : public content::ResourceContext {
- public:
-  explicit AwResourceContext(net::URLRequestContextGetter* getter)
-      : getter_(getter) {
-    DCHECK(getter_);
-  }
-  virtual ~AwResourceContext() {}
-
-  // content::ResourceContext implementation.
-  virtual net::HostResolver* GetHostResolver() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    return getter_->GetURLRequestContext()->host_resolver();
-  }
-  virtual net::URLRequestContext* GetRequestContext() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    return getter_->GetURLRequestContext();
-  }
-  virtual bool AllowMicAccess(const GURL& origin) OVERRIDE {
-    return false;
-  }
-  virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE {
-    return false;
-  }
-
- private:
-  net::URLRequestContextGetter* getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwResourceContext);
-};
 
 AwBrowserContext* g_browser_context = NULL;
 

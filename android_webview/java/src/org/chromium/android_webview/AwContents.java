@@ -57,6 +57,7 @@ import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -883,6 +884,14 @@ public class AwContents {
         // For WebView, always use the user agent override, which is set
         // every time the user agent in AwSettings is modified.
         params.setOverrideUserAgent(LoadUrlParams.UA_OVERRIDE_TRUE);
+
+        // We don't pass extra headers to the content layer, as WebViewClassic
+        // was adding them in a very narrow set of conditions. See http://crbug.com/306873
+        if (mNativeAwContents != 0) {
+            nativeSetExtraHeadersForUrl(
+                    mNativeAwContents, params.getUrl(), params.getExtraHttpRequestHeadersString());
+        }
+        params.setExtraHeaders(new HashMap<String, String>());
 
         mContentViewCore.loadUrl(params);
 
@@ -2041,6 +2050,8 @@ public class AwContents {
     private native int nativeGetAwDrawGLViewContext(long nativeAwContents);
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);
     private native void nativeEnableOnNewPicture(long nativeAwContents, boolean enabled);
+    private native void nativeSetExtraHeadersForUrl(long nativeAwContents,
+            String url, String extraHeaders);
 
     private native void nativeInvokeGeolocationCallback(
             long nativeAwContents, boolean value, String requestingFrame);

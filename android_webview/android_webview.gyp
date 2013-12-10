@@ -144,6 +144,8 @@
         'browser/aw_quota_permission_context.h',
         'browser/aw_request_interceptor.cc',
         'browser/aw_request_interceptor.h',
+        'browser/aw_resource_context.cc',
+        'browser/aw_resource_context.h',
         'browser/aw_result_codes.h',
         'browser/aw_web_preferences_populater.cc',
         'browser/aw_web_preferences_populater.h',

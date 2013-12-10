@@ -210,6 +210,22 @@ public class AwTestBase
     }
 
     /**
+     * Reloads the current page synchronously.
+     */
+    protected void reloadSync(final AwContents awContents,
+                              CallbackHelper onPageFinishedHelper) throws Throwable {
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                awContents.getContentViewCore().reload(true);
+            }
+        });
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS);
+    }
+
+    /**
      * Factory class used in creation of test AwContents instances.
      *
      * Test cases can provide subclass instances to the createAwTest* methods in order to create an

@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
+#include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/in_process_view_renderer.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
@@ -972,6 +973,18 @@ void AwContents::EnableOnNewPicture(JNIEnv* env,
                                     jboolean enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   browser_view_renderer_->EnableOnNewPicture(enabled);
+}
+
+void AwContents::SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
+                                       jstring url, jstring jextra_headers) {
+  std::string extra_headers;
+  if (jextra_headers)
+    extra_headers = ConvertJavaStringToUTF8(env, jextra_headers);
+  AwResourceContext* resource_context = static_cast<AwResourceContext*>(
+      AwBrowserContext::FromWebContents(web_contents_.get())->
+      GetResourceContext());
+  resource_context->SetExtraHeaders(GURL(ConvertJavaStringToUTF8(env, url)),
+                                    extra_headers);
 }
 
 void AwContents::SetJsOnlineProperty(JNIEnv* env,

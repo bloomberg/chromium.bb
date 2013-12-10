@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_login_delegate.h"
+#include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/common/url_constants.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -212,6 +213,8 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     int route_id,
     ScopedVector<content::ResourceThrottle>* throttles) {
 
+  AddExtraHeadersIfNeeded(request, resource_context);
+
   // We always push the throttles here. Checking the existence of io_client
   // is racy when a popup window is created. That is because RequestBeginning
   // is called whether or not requests are blocked via BlockRequestForRoute()
@@ -227,6 +230,15 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     throttles->push_back(InterceptNavigationDelegate::CreateThrottleFor(
         request));
 }
+
+void AwResourceDispatcherHostDelegate::OnRequestRedirected(
+    const GURL& redirect_url,
+    net::URLRequest* request,
+    content::ResourceContext* resource_context,
+    content::ResourceResponse* response) {
+  AddExtraHeadersIfNeeded(request, resource_context);
+}
+
 
 void AwResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,
@@ -390,6 +402,34 @@ void AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal(
     IoThreadClientThrottle* throttle = it->second;
     throttle->OnIoThreadClientReady(new_child_id, new_route_id);
     pending_throttles_.erase(it);
+  }
+}
+
+void AwResourceDispatcherHostDelegate::AddExtraHeadersIfNeeded(
+    net::URLRequest* request,
+    content::ResourceContext* resource_context) {
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!request_info) return;
+  if (request_info->GetResourceType() != ResourceType::MAIN_FRAME) return;
+
+  const content::PageTransition transition = request_info->GetPageTransition();
+  const bool is_load_url =
+      transition & content::PAGE_TRANSITION_FROM_API;
+  const bool is_go_back_forward =
+      transition & content::PAGE_TRANSITION_FORWARD_BACK;
+  const bool is_reload = content::PageTransitionCoreTypeIs(
+      transition, content::PAGE_TRANSITION_RELOAD);
+  if (is_load_url || is_go_back_forward || is_reload) {
+    AwResourceContext* awrc = static_cast<AwResourceContext*>(resource_context);
+    std::string extra_headers = awrc->GetExtraHeaders(request->url());
+    if (!extra_headers.empty()) {
+      net::HttpRequestHeaders headers;
+      headers.AddHeadersFromString(extra_headers);
+      for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); ) {
+        request->SetExtraRequestHeaderByName(it.name(), it.value(), false);
+      }
+    }
   }
 }
 

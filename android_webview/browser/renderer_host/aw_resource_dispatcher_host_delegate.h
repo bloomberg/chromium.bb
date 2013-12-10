@@ -64,6 +64,12 @@ class AwResourceDispatcherHostDelegate
       content::ResourceResponse* response,
       IPC::Sender* sender) OVERRIDE;
 
+  virtual void OnRequestRedirected(
+      const GURL& redirect_url,
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      content::ResourceResponse* response) OVERRIDE;
+
   void RemovePendingThrottleOnIoThread(IoThreadClientThrottle* throttle);
 
   static void OnIoThreadClientReady(int new_child_id, int new_route_id);
@@ -82,6 +88,8 @@ class AwResourceDispatcherHostDelegate
   void AddPendingThrottleOnIoThread(int child_id,
                                     int route_id,
                                     IoThreadClientThrottle* pending_throttle);
+  void AddExtraHeadersIfNeeded(net::URLRequest* request,
+                               content::ResourceContext* resource_context);
 
   typedef std::pair<int, int> ChildRouteIDPair;
   typedef std::map<ChildRouteIDPair, IoThreadClientThrottle*>
