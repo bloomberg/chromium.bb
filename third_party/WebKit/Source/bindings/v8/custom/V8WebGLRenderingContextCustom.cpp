@@ -222,6 +222,7 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case WebGLExtension::WebGLCompressedTextureATCName:
         extensionObject = toV8(static_cast<WebGLCompressedTextureATC*>(extension), contextObject, isolate);
         referenceName = "webGLCompressedTextureATCName";
+        break;
     case WebGLExtension::WebGLCompressedTexturePVRTCName:
         extensionObject = toV8(static_cast<WebGLCompressedTexturePVRTC*>(extension), contextObject, isolate);
         referenceName = "webGLCompressedTexturePVRTCName";
