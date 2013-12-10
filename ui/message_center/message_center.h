@@ -156,7 +156,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual void SetVisibility(Visibility visible) = 0;
 
   // Allows querying the visibility of the center.
-  virtual bool IsMessageCenterVisible() = 0;
+  virtual bool IsMessageCenterVisible() const = 0;
 
   // UI classes should call this when there is cause to leave popups visible for
   // longer than the default (for example, when the mouse hovers over a popup).

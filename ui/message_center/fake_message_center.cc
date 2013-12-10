@@ -130,7 +130,7 @@ void FakeMessageCenter::EnterQuietModeWithExpire(
 void FakeMessageCenter::SetVisibility(Visibility visible) {
 }
 
-bool FakeMessageCenter::IsMessageCenterVisible() {
+bool FakeMessageCenter::IsMessageCenterVisible() const {
   return false;
 }
 

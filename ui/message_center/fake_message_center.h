@@ -65,7 +65,7 @@ class FakeMessageCenter : public MessageCenter {
   virtual void EnterQuietModeWithExpire(
       const base::TimeDelta& expires_in) OVERRIDE;
   virtual void SetVisibility(Visibility visible) OVERRIDE;
-  virtual bool IsMessageCenterVisible() OVERRIDE;
+  virtual bool IsMessageCenterVisible() const OVERRIDE;
   virtual void RestartPopupTimers() OVERRIDE;
   virtual void PausePopupTimers() OVERRIDE;
 

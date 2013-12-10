@@ -53,6 +53,7 @@ void MessageCenterTray::MarkMessageCenterHidden() {
   if (!message_center_visible_)
     return;
   message_center_visible_ = false;
+  message_center_->SetVisibility(message_center::VISIBILITY_TRANSIENT);
 
   // Some notifications (like system ones) should appear as popups again
   // after the message center is closed.
@@ -60,8 +61,6 @@ void MessageCenterTray::MarkMessageCenterHidden() {
     ShowPopupBubble();
     return;
   }
-
-  message_center_->SetVisibility(message_center::VISIBILITY_TRANSIENT);
 
   NotifyMessageCenterTrayChanged();
 }

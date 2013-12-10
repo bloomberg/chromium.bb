@@ -485,7 +485,7 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
                     OnCenterVisibilityChanged(visibility));
 }
 
-bool MessageCenterImpl::IsMessageCenterVisible() {
+bool MessageCenterImpl::IsMessageCenterVisible() const {
   return notification_list_->is_message_center_visible();
 }
 
@@ -498,7 +498,8 @@ size_t MessageCenterImpl::UnreadNotificationCount() const {
 }
 
 bool MessageCenterImpl::HasPopupNotifications() const {
-  return notification_list_->HasPopupNotifications(blockers_);
+  return !IsMessageCenterVisible() &&
+      notification_list_->HasPopupNotifications(blockers_);
 }
 
 bool MessageCenterImpl::HasNotification(const std::string& id) {
