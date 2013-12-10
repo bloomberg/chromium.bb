@@ -31,6 +31,8 @@
 ] interface TestInterfaceEventConstructor : Event {
     readonly attribute DOMString readonlyStringAttribute;
     [InitializedByEventConstructor] readonly attribute DOMString initializedByEventConstructorReadonlyStringAttribute;
-    [DeprecateAs=initializedByEventConstructorReadonlyStringAttribute, InitializedByEventConstructor] readonly attribute DOMString deprecatedInitializedByEventConstructorReadonlyStringAttribute;
     [InitializedByEventConstructor] readonly attribute any initializedByEventConstructorReadonlyAnyAttribute;
+    [DeprecateAs=initializedByEventConstructorReadonlyStringAttribute, InitializedByEventConstructor] readonly attribute DOMString deprecatedInitializedByEventConstructorReadonlyStringAttribute;
+    [ImplementedAs=implementedAsName, InitializedByEventConstructor] readonly attribute DOMString implementedAsInitializedByEventConstructorReadonlyStringAttribute;
+    [DeprecateAs=initializedByEventConstructorReadonlyStringAttribute, ImplementedAs=deprecatedImplementedAsName, InitializedByEventConstructor] readonly attribute DOMString deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute;
 };

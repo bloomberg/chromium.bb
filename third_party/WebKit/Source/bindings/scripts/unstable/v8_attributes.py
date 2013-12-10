@@ -81,6 +81,7 @@ def generate_attribute(interface, attribute):
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.conditional_string(attribute),
         'constructor_type': v8_types.constructor_type(idl_type) if is_constructor_attribute(attribute) else None,
+        'cpp_name': cpp_name(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
         'enum_validation_expression':
