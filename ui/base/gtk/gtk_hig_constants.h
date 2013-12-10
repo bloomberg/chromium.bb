@@ -10,8 +10,6 @@
 #ifndef UI_BASE_GTK_GTK_HIG_CONSTANTS_H_
 #define UI_BASE_GTK_GTK_HIG_CONSTANTS_H_
 
-#include "ui/base/ui_export.h"
-
 typedef struct _GdkColor GdkColor;
 
 // Define a macro for creating GdkColors from RGB values.  This is a macro to

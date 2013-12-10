@@ -9,12 +9,10 @@
 
 #include "base/basictypes.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/ui_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 namespace ui {
-
 namespace internal {
 
 // This class keeps track of changes to properties on the root window. This is
@@ -38,7 +36,6 @@ class RootWindowPropertyWatcherX {
 };
 
 }  // namespace internal
-
 }  // namespace ui
 
 #endif  // UI_BASE_X_ROOT_WINDOW_PROPERTY_WATCHER_X_H_
