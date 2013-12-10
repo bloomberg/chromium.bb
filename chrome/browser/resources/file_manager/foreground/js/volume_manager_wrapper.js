@@ -277,21 +277,21 @@ VolumeManagerWrapper.prototype.mountArchive = function(
 
 /**
  * Requests unmount the volume at mountPath.
- * @param {string} mountPath The path to the mount location of the volume.
+ * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
  * @param {function(string)} successCallback Called with the mount path
  *     on success.
  * @param {function(util.VolumeError)} errorCallback Called when an error
  *     occurs.
  */
 VolumeManagerWrapper.prototype.unmount = function(
-    mountPath, successCallback, errorCallback) {
+    volumeInfo, successCallback, errorCallback) {
   if (this.pendingTasks_) {
     this.pendingTasks_.push(
-        this.unmount.bind(this, mountPath, successCallback, errorCallback));
+        this.unmount.bind(this, volumeInfo, successCallback, errorCallback));
     return;
   }
 
-  this.volumeManager_.unmount(mountPath, successCallback, errorCallback);
+  this.volumeManager_.unmount(volumeInfo, successCallback, errorCallback);
 };
 
 /**
