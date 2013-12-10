@@ -40,6 +40,14 @@ if (window.testRunner)
       document.createElement('div').insertAdjacentHTML("afterEnd", "<span>html</span>");
    }) && passes;
 
+   passes = assertThrows(function() {
+       document.getElementById("container").insertAdjacentHTML();
+   }) && passes;
+
+   passes = assertThrows(function() {
+       document.getElementById("container").insertAdjacentHTML("beforeBegin");
+   }) && passes;
+
    if (passes) {
       document.getElementById("status").style.color = "green";
       document.getElementById("status").innerHTML = "<br><br>PASS";

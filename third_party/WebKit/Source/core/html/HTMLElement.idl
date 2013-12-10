@@ -38,8 +38,7 @@
 
     [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
                                   [Default=Undefined] optional Element element);
-    [CustomElementCallbacks, RaisesException] void insertAdjacentHTML([Default=Undefined] optional DOMString where,
-                            [Default=Undefined] optional DOMString html);
+    [CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString where, DOMString html);
     [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString text);
 
