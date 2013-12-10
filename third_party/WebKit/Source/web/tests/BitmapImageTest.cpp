@@ -109,7 +109,12 @@ protected:
     RefPtr<BitmapImage> m_image;
 };
 
+// Fails on the WebKit XP (deps) bot, see http://crbug.com/327104
+#if OS(WIN)
+TEST_F(BitmapImageTest, DISABLED_destroyDecodedDataExceptCurrentFrame)
+#else
 TEST_F(BitmapImageTest, destroyDecodedDataExceptCurrentFrame)
+#endif
 {
     loadImage("/LayoutTests/fast/images/resources/animated-10color.gif");
     size_t totalSize = decodedSize();
@@ -121,7 +126,12 @@ TEST_F(BitmapImageTest, destroyDecodedDataExceptCurrentFrame)
     EXPECT_GE(m_imageObserver.m_lastDecodedSizeChangedDelta, -static_cast<int>(totalSize - size));
 }
 
+// Fails on the WebKit XP (deps) bot, see http://crbug.com/327104
+#if OS(WIN)
+TEST_F(BitmapImageTest, DISABLED_destroyAllDecodedData)
+#else
 TEST_F(BitmapImageTest, destroyAllDecodedData)
+#endif
 {
     loadImage("/LayoutTests/fast/images/resources/animated-10color.gif");
     size_t totalSize = decodedSize();
