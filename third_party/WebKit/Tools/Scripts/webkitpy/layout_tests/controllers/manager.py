@@ -240,7 +240,7 @@ class Manager(object):
 
         # Some crash logs can take a long time to be written out so look
         # for new logs after the test run finishes.
-        _log.debug("looking for new crash logs")
+        self._printer.write_update("looking for new crash logs")
         self._look_for_new_crash_logs(initial_results, start_time)
         if retry_results:
             self._look_for_new_crash_logs(retry_results, start_time)
