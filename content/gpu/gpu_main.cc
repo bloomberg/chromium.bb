@@ -236,6 +236,13 @@ int GpuMain(const MainFunctionParams& parameters) {
         VLOG(1) << "gpu::CollectGraphicsInfo failed";
       GetContentClient()->SetGpuInfo(gpu_info);
 
+      // Recompute gpu driver bug workarounds - this is specifically useful
+      // on ChromeOS where vendor_id/device_id aren't available.
+      if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
+        gpu::ApplyGpuDriverBugWorkarounds(
+            gpu_info, const_cast<CommandLine*>(&command_line));
+      }
+
 #if defined(OS_LINUX)
       initialized_gl_context = true;
 #if !defined(OS_CHROMEOS)

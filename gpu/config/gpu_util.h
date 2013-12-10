@@ -15,6 +15,8 @@ class CommandLine;
 
 namespace gpu {
 
+struct GPUInfo;
+
 // Merge features in src into dst.
 GPU_EXPORT void MergeFeatureSets(
     std::set<int>* dst, const std::set<int>& src);
@@ -22,6 +24,11 @@ GPU_EXPORT void MergeFeatureSets(
 // Collect basic GPUInfo, compute the driver bug workarounds for the current
 // system, and append the |command_line|.
 GPU_EXPORT void ApplyGpuDriverBugWorkarounds(CommandLine* command_line);
+
+// With provided GPUInfo, compute the driver bug workarounds for the current
+// system, and append the |command_line|.
+GPU_EXPORT void ApplyGpuDriverBugWorkarounds(
+    const GPUInfo& gpu_inco, CommandLine* command_line);
 
 // |str| is in the format of "feature1,feature2,...,featureN".
 GPU_EXPORT void StringToFeatureSet(

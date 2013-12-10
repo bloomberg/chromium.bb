@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.6",
+  "version": "3.7",
   "entries": [
     {
       "id": 1,
@@ -385,11 +385,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 31,
-      "cr_bugs": [154715, 10068, 269829, 294779],
+      "cr_bugs": [154715, 10068, 269829, 294779, 285292],
       "description": "The Mali T-6xx driver does not guarantee flush ordering.",
-      "os": {
-        "type": "android"
-      },
       "gl_vendor": {
         "op": "beginwith",
         "value": "ARM"
@@ -610,21 +607,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 47,
-      "description": "The Mali T-6xx driver does not guarantee flush ordering.",
-      "cr_bugs": [285292],
-      "os": {
-        "type": "chromeos"
-      },
-      "cpu_info": {
-        "op": "=",
-        "value": "ARM"  // TODO(piman): change to GL_VENDOR/GL_RENDERER switch
-      },
-      "features": [
-        "use_virtualized_gl_contexts"
-      ]
-    },
-    {
       "id": 48,
       "description": "Force to use discrete GPU on older MacBookPro models.",
       "cr_bugs": [113703],
@@ -721,21 +703,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_renderer": {
         "op": "beginwith",
         "value": "Mali"
-      },
-      "features": [
-        "disable_framebuffer_multisample"
-      ]
-    },
-    {
-      "id": 54,
-      "cr_bugs": [321701],
-      "description": "ES3 multisampling is too slow to be usable on Mali (ChromeOS).",
-      "os": {
-        "type": "chromeos"
-      },
-      "cpu_info": {
-        "op": "=",
-        "value": "ARM"  // TODO(piman): consolidate with id 53 (needs GL_VENDOR/GL_RENDERER parsing support)
       },
       "features": [
         "disable_framebuffer_multisample"
