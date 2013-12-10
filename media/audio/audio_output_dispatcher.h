@@ -78,8 +78,6 @@ class MEDIA_EXPORT AudioOutputDispatcher
 
  protected:
   friend class base::RefCountedThreadSafe<AudioOutputDispatcher>;
-  friend class AudioOutputProxyTest;
-
   virtual ~AudioOutputDispatcher();
 
   // A no-reference-held pointer (we don't want circular references) back to the

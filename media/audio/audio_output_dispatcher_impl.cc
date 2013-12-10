@@ -21,36 +21,30 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
     const std::string& output_device_id,
     const std::string& input_device_id,
     const base::TimeDelta& close_delay)
-    : AudioOutputDispatcher(audio_manager, params, output_device_id,
-          input_device_id),
-      pause_delay_(base::TimeDelta::FromMicroseconds(
-          2 * params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
-          static_cast<float>(params.sample_rate()))),
-      paused_proxies_(0),
-      weak_this_(this),
+    : AudioOutputDispatcher(audio_manager,
+                            params,
+                            output_device_id,
+                            input_device_id),
+      idle_proxies_(0),
       close_timer_(FROM_HERE,
                    close_delay,
                    this,
-                   &AudioOutputDispatcherImpl::ClosePendingStreams) {
-}
+                   &AudioOutputDispatcherImpl::CloseAllIdleStreams) {}
 
 AudioOutputDispatcherImpl::~AudioOutputDispatcherImpl() {
+  DCHECK_EQ(idle_proxies_, 0u);
   DCHECK(proxy_to_physical_map_.empty());
   DCHECK(idle_streams_.empty());
-  DCHECK(pausing_streams_.empty());
 }
 
 bool AudioOutputDispatcherImpl::OpenStream() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  paused_proxies_++;
-
   // Ensure that there is at least one open stream.
-  if (idle_streams_.empty() && !CreateAndOpenStream()) {
-    paused_proxies_--;
+  if (idle_streams_.empty() && !CreateAndOpenStream())
     return false;
-  }
 
+  ++idle_proxies_;
   close_timer_.Reset();
   return true;
 }
@@ -66,19 +60,18 @@ bool AudioOutputDispatcherImpl::StartStream(
     return false;
 
   AudioOutputStream* physical_stream = idle_streams_.back();
-  DCHECK(physical_stream);
   idle_streams_.pop_back();
 
-  DCHECK_GT(paused_proxies_, 0u);
-  --paused_proxies_;
-
-  close_timer_.Reset();
+  DCHECK_GT(idle_proxies_, 0u);
+  --idle_proxies_;
 
   double volume = 0;
   stream_proxy->GetVolume(&volume);
   physical_stream->SetVolume(volume);
   physical_stream->Start(callback);
   proxy_to_physical_map_[stream_proxy] = physical_stream;
+
+  close_timer_.Reset();
   return true;
 }
 
@@ -91,17 +84,10 @@ void AudioOutputDispatcherImpl::StopStream(AudioOutputProxy* stream_proxy) {
   proxy_to_physical_map_.erase(it);
 
   physical_stream->Stop();
+  ++idle_proxies_;
+  idle_streams_.push_back(physical_stream);
 
-  ++paused_proxies_;
-
-  pausing_streams_.push_front(physical_stream);
-
-  // Don't recycle stream until two buffers worth of time has elapsed.
-  message_loop_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AudioOutputDispatcherImpl::StopStreamTask,
-                 weak_this_.GetWeakPtr()),
-      pause_delay_);
+  close_timer_.Reset();
 }
 
 void AudioOutputDispatcherImpl::StreamVolumeSet(AudioOutputProxy* stream_proxy,
@@ -114,54 +100,24 @@ void AudioOutputDispatcherImpl::StreamVolumeSet(AudioOutputProxy* stream_proxy,
   }
 }
 
-void AudioOutputDispatcherImpl::StopStreamTask() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
-  if (pausing_streams_.empty())
-    return;
-
-  AudioOutputStream* stream = pausing_streams_.back();
-  pausing_streams_.pop_back();
-  idle_streams_.push_back(stream);
-  close_timer_.Reset();
-}
-
 void AudioOutputDispatcherImpl::CloseStream(AudioOutputProxy* stream_proxy) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  while (!pausing_streams_.empty()) {
-    idle_streams_.push_back(pausing_streams_.back());
-    pausing_streams_.pop_back();
-  }
+  DCHECK_GT(idle_proxies_, 0u);
+  --idle_proxies_;
 
-  DCHECK_GT(paused_proxies_, 0u);
-  paused_proxies_--;
-
-  while (idle_streams_.size() > paused_proxies_) {
-    idle_streams_.back()->Close();
-    idle_streams_.pop_back();
-  }
+  // Leave at least a single stream running until the close timer fires to help
+  // cycle time when streams are opened and closed repeatedly.
+  CloseIdleStreams(std::max(idle_proxies_, static_cast<size_t>(1)));
+  close_timer_.Reset();
 }
 
 void AudioOutputDispatcherImpl::Shutdown() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  // Cancel any pending tasks to close paused streams or create new ones.
-  weak_this_.InvalidateWeakPtrs();
-
-  // No AudioOutputProxy objects should hold a reference to us when we get
-  // to this stage.
-  DCHECK(HasOneRef()) << "Only the AudioManager should hold a reference";
-
-  AudioOutputStreamList::iterator it = idle_streams_.begin();
-  for (; it != idle_streams_.end(); ++it)
-    (*it)->Close();
-  idle_streams_.clear();
-
-  it = pausing_streams_.begin();
-  for (; it != pausing_streams_.end(); ++it)
-    (*it)->Close();
-  pausing_streams_.clear();
+  // Close all idle streams immediately.  The |close_timer_| will handle
+  // invalidating any outstanding tasks upon its destruction.
+  CloseAllIdleStreams();
 }
 
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
@@ -175,26 +131,28 @@ bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
     stream->Close();
     return false;
   }
+
   idle_streams_.push_back(stream);
   return true;
 }
 
-// This method is called by |close_timer_|.
-void AudioOutputDispatcherImpl::ClosePendingStreams() {
+void AudioOutputDispatcherImpl::CloseAllIdleStreams() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  while (!idle_streams_.empty()) {
-    idle_streams_.back()->Close();
-    idle_streams_.pop_back();
-  }
+  CloseIdleStreams(0);
+}
+
+void AudioOutputDispatcherImpl::CloseIdleStreams(size_t keep_alive) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  if (idle_streams_.size() <= keep_alive)
+    return;
+  for (size_t i = keep_alive; i < idle_streams_.size(); ++i)
+    idle_streams_[i]->Close();
+  idle_streams_.erase(idle_streams_.begin() + keep_alive, idle_streams_.end());
 }
 
 void AudioOutputDispatcherImpl::CloseStreamsForWedgeFix() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  while (!pausing_streams_.empty()) {
-    idle_streams_.push_back(pausing_streams_.back());
-    pausing_streams_.pop_back();
-  }
-  ClosePendingStreams();
+  CloseAllIdleStreams();
 }
 
 void AudioOutputDispatcherImpl::RestartStreamsForWedgeFix() {

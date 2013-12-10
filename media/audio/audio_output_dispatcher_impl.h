@@ -13,12 +13,11 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_DISPATCHER_IMPL_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_DISPATCHER_IMPL_H_
 
-#include <list>
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
@@ -31,8 +30,8 @@ class AudioOutputProxy;
 
 class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
  public:
-  // |close_delay_ms| specifies delay after the stream is paused until
-  // the audio device is closed.
+  // |close_delay| specifies delay after the stream is idle until the audio
+  // device is closed.
   AudioOutputDispatcherImpl(AudioManager* audio_manager,
                             const AudioParameters& params,
                             const std::string& output_device_id,
@@ -48,13 +47,16 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   virtual bool StartStream(AudioOutputStream::AudioSourceCallback* callback,
                            AudioOutputProxy* stream_proxy) OVERRIDE;
 
-  // Holds the physical stream temporarily in |pausing_streams_| and then
-  // |stream| is  added to the pool of pending streams (i.e. |idle_streams_|).
+  // Stops the stream assigned to the specified proxy and moves it into
+  // |idle_streams_| for reuse by other proxies.
   virtual void StopStream(AudioOutputProxy* stream_proxy) OVERRIDE;
 
   virtual void StreamVolumeSet(AudioOutputProxy* stream_proxy,
                                double volume) OVERRIDE;
 
+  // Closes |idle_streams_| until the number of |idle_streams_| is equal to the
+  // |idle_proxies_| count.  If there are no |idle_proxies_| a single stream is
+  // kept alive until |close_timer_| fires.
   virtual void CloseStream(AudioOutputProxy* stream_proxy) OVERRIDE;
 
   virtual void Shutdown() OVERRIDE;
@@ -63,34 +65,28 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   virtual void RestartStreamsForWedgeFix() OVERRIDE;
 
  private:
-  typedef std::map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
   friend class base::RefCountedThreadSafe<AudioOutputDispatcherImpl>;
   virtual ~AudioOutputDispatcherImpl();
-
-  friend class AudioOutputProxyTest;
 
   // Creates a new physical output stream, opens it and pushes to
   // |idle_streams_|.  Returns false if the stream couldn't be created or
   // opened.
   bool CreateAndOpenStream();
 
-  // Before a stream is reused, it should sit idle for a bit.  This task is
-  // called once that time has elapsed.
-  void StopStreamTask();
+  // Closes all |idle_streams_|.
+  void CloseAllIdleStreams();
+  // Similar to CloseAllIdleStreams(), but keeps |keep_alive| streams alive.
+  void CloseIdleStreams(size_t keep_alive);
 
-  // Called by |close_timer_|. Closes all pending streams.
-  void ClosePendingStreams();
+  size_t idle_proxies_;
+  std::vector<AudioOutputStream*> idle_streams_;
 
-  base::TimeDelta pause_delay_;
-  size_t paused_proxies_;
-  typedef std::list<AudioOutputStream*> AudioOutputStreamList;
-  AudioOutputStreamList idle_streams_;
-  AudioOutputStreamList pausing_streams_;
-
-  // Used to post delayed tasks to ourselves that we cancel inside Shutdown().
-  base::WeakPtrFactory<AudioOutputDispatcherImpl> weak_this_;
+  // When streams are stopped they're added to |idle_streams_|, if no stream is
+  // reused before |close_delay_| elapses |close_timer_| will run
+  // CloseIdleStreams().
   base::DelayTimer<AudioOutputDispatcherImpl> close_timer_;
 
+  typedef std::map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
   AudioStreamMap proxy_to_physical_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDispatcherImpl);
