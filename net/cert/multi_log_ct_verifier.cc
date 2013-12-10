@@ -147,6 +147,8 @@ bool MultiLogCTVerifier::VerifySingleSCT(
     return false;
   }
 
+  sct->log_description = it->second->description();
+
   if (!it->second->Verify(expected_entry, *sct)) {
     DVLOG(1) << "Unable to verify SCT signature.";
     result->invalid_scts.push_back(sct);

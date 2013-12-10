@@ -26,11 +26,13 @@ namespace net {
 
 namespace {
 
+const char kLogDescription[] = "somelog";
+
 class MultiLogCTVerifierTest : public ::testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     scoped_ptr<CTLogVerifier> log(
-        CTLogVerifier::Create(ct::GetTestPublicKey(), ""));
+        CTLogVerifier::Create(ct::GetTestPublicKey(), kLogDescription));
     ASSERT_TRUE(log);
 
     verifier_.reset(new MultiLogCTVerifier());
@@ -45,7 +47,8 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   bool CheckForSingleVerifiedSCTInResult(const ct::CTVerifyResult& result) {
     return (result.verified_scts.size() == 1U) &&
         result.invalid_scts.empty() &&
-        result.unknown_logs_scts.empty();
+        result.unknown_logs_scts.empty() &&
+        result.verified_scts[0]->log_description == kLogDescription;
   }
 
   bool CheckForSCTOrigin(
@@ -159,6 +162,7 @@ TEST_F(MultiLogCTVerifierTest,
   EXPECT_NE(OK,
       verifier_->Verify(chain_, sct_list, "", &result, BoundNetLog()));
   EXPECT_EQ(1U, result.unknown_logs_scts.size());
+  EXPECT_EQ("", result.unknown_logs_scts[0]->log_description);
 }
 
 }  // namespace

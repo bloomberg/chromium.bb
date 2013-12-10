@@ -1630,6 +1630,7 @@
         'cert/multi_threaded_cert_verifier_unittest.cc',
         'cert/nss_cert_database_unittest.cc',
         'cert/pem_tokenizer_unittest.cc',
+        'cert/signed_certificate_timestamp_unittest.cc',
         'cert/test_root_certs_unittest.cc',
         'cert/x509_certificate_unittest.cc',
         'cert/x509_cert_types_unittest.cc',

@@ -38,6 +38,8 @@ void SignedCertificateTimestamp::Persist(Pickle* pickle) {
   CHECK(pickle->WriteInt(signature.hash_algorithm));
   CHECK(pickle->WriteInt(signature.signature_algorithm));
   CHECK(pickle->WriteString(signature.signature_data));
+  CHECK(pickle->WriteInt(origin));
+  CHECK(pickle->WriteString(log_description));
 }
 
 // static
@@ -49,6 +51,7 @@ SignedCertificateTimestamp::CreateFromPickle(PickleIterator* iter) {
   int sig_algorithm;
   scoped_refptr<SignedCertificateTimestamp> sct(
       new SignedCertificateTimestamp());
+  int origin;
   // string values are set directly
   if (!(iter->ReadInt(&version) &&
         iter->ReadString(&sct->log_id) &&
@@ -56,7 +59,9 @@ SignedCertificateTimestamp::CreateFromPickle(PickleIterator* iter) {
         iter->ReadString(&sct->extensions) &&
         iter->ReadInt(&hash_algorithm) &&
         iter->ReadInt(&sig_algorithm) &&
-        iter->ReadString(&sct->signature.signature_data))) {
+        iter->ReadString(&sct->signature.signature_data) &&
+        iter->ReadInt(&origin) &&
+        iter->ReadString(&sct->log_description))) {
     return NULL;
   }
   // Now set the rest of the member variables:
@@ -66,6 +71,7 @@ SignedCertificateTimestamp::CreateFromPickle(PickleIterator* iter) {
       static_cast<DigitallySigned::HashAlgorithm>(hash_algorithm);
   sct->signature.signature_algorithm =
       static_cast<DigitallySigned::SignatureAlgorithm>(sig_algorithm);
+  sct->origin = static_cast<Origin>(origin);
   return sct;
 }
 
