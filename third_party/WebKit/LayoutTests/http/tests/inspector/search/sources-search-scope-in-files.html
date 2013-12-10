@@ -1,0 +1,168 @@
+<html>
+<head>
+<title>Change inspected iframe's "src" attribute.</title>
+<script src="../inspector-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script>
+function test()
+{
+    var fileSystemPath = "/var/www";
+    var names = ["search.html", "search.js", "search.css"];
+    var files = {};
+    for (var i = 0; i < names.length; ++i) {
+        var name = names[i];
+        files["/" + name] = loadResource(name);
+    }
+
+    function loadResource(name)
+    {
+        var urlPrefix = WebInspector.inspectedPageURL.substr(0, WebInspector.inspectedPageURL.lastIndexOf("/") + 1);
+        var url = urlPrefix + "resources/" + name;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, false);
+        xhr.send(null);
+        return xhr.responseText;
+    }
+
+    InspectorFrontendHost.searchInPath = function(requestId, path, query)
+    {
+        setTimeout(reply);
+        
+        function reply()
+        {
+            var projectDelegate = manager.fileSystemWorkspaceProvider.delegate(path);
+            var paths = [];
+            for (var i = 0; i < names.length; ++i)
+                paths.push("/var/www/" + names[i]);
+            projectDelegate.searchCompleted(requestId, paths);
+        }
+    }
+
+    WebInspector.showPanel("sources");
+
+    InspectorTest.createWorkspace();
+    manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
+    manager.addMockFileSystem(fileSystemPath);
+    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function(){}, 3);
+    manager.addFiles(fileSystemPath, files);
+
+    var scope = new WebInspector.SourcesSearchScope(InspectorTest.testWorkspace);
+
+    function runSearchAndDumpResults(searchConfig, callback)
+    {
+        var searchResults = [];
+        var progress = new WebInspector.Progress();
+        scope.performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback);
+
+        function searchResultCallback(searchResult)
+        {
+            searchResults.push(searchResult);
+        }
+
+        function searchFinishedCallback()
+        {
+            function filterOutEmptySearchResults(searchResult)
+            {
+                return searchResult.searchMatches.length;
+            }
+            searchResults = searchResults.filter(filterOutEmptySearchResults);
+
+            function comparator(searchResultA, searchResultB)
+            {
+                return searchResultA.uiSourceCode.uri().compareTo(searchResultB.uiSourceCode.uri());
+            }
+            searchResults.sort(comparator);
+
+            for (var i = 0; i < searchResults.length; ++i) {
+                var searchResult = searchResults[i];
+                var uiSourceCode = searchResult.uiSourceCode;
+                var searchMatches = searchResult.searchMatches;
+
+                if (!searchMatches.length)
+                    continue;
+                InspectorTest.addResult("Search result #" + (i + 1) + ": uiSourceCode.uri = " + uiSourceCode.uri());
+                for (var j = 0; j < searchMatches.length; ++j) {
+                    var lineNumber = searchMatches[j].lineNumber;
+                    var lineContent = searchMatches[j].lineContent;
+                    InspectorTest.addResult("  search match #" + (j + 1) + ": lineNumber = " + lineNumber + ", lineContent = '" + lineContent + "'");
+                }
+            }
+            callback();
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function testIgnoreCase(next)
+        {
+            var query = "searchTest" + "UniqueString";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testCaseSensitive(next)
+        {
+            var query = "searchTest" + "UniqueString";
+            var searchConfig = new WebInspector.SearchConfig(query, false, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testFileHTML(next)
+        {
+            var query = "searchTest" + "UniqueString" + " file:html";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testFileJS(next)
+        {
+            var query = "file:js " + "searchTest" + "UniqueString";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testFileHTMLJS(next)
+        {
+            var query = "file:js " + "searchTest" + "UniqueString" + " file:html";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testSeveralQueries(next)
+        {
+            var query = "search" + " " + "Test" + "Unique";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testSeveralQueriesFileHTML(next)
+        {
+            var query = "file:html " + "search" + " " + "Test" + "Unique";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testSeveralQueriesFileHTML_SEARCH(next)
+        {
+            var query = "file:html " + "search" + " " + "Test" + "Unique" + " file:search";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testSeveralQueriesFileJS_SEARCH_HTML(next)
+        {
+            var query = "file:js " + "search" + " " + "Test" + "Unique" + " file:search file:html";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<iframe src="resources/search.html">
+<p>Tests that ScriptSearchScope performs search across all sources correctly.</p>
+See <a href="https://bugs.webkit.org/show_bug.cgi?id=41350">bug 41350</a>.
+</body>
+</html>

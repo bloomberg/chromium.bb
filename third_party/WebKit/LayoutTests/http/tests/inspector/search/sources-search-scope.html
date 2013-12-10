@@ -14,11 +14,10 @@ function test()
         InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
     }
 
-
     function runSearchAndDumpResults(searchConfig, callback)
     {
-        var searchResults = [];
         var scope = new WebInspector.SourcesSearchScope(WebInspector.workspace);
+        var searchResults = [];
         var progress = new WebInspector.Progress();
         scope.performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback);
 
@@ -64,21 +63,67 @@ function test()
         InspectorTest.runTestSuite([
             function testIgnoreCase(next)
             {
-                var searchConfig = {};
-                searchConfig.query = "searchTest" + "UniqueString";
-                searchConfig.ignoreCase = true;
-                searchConfig.isRegex = false;
+                var query = "searchTest" + "UniqueString";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
                 runSearchAndDumpResults(searchConfig, next);
             },
 
             function testCaseSensitive(next)
             {
-                var searchConfig = {};
-                searchConfig.query = "searchTest" + "UniqueString";
-                searchConfig.ignoreCase = false;
-                searchConfig.isRegex = false;
+                var query = "searchTest" + "UniqueString";
+                var searchConfig = new WebInspector.SearchConfig(query, false, false);
                 runSearchAndDumpResults(searchConfig, next);
             },
+
+            function testFileHTML(next)
+            {
+                var query = "searchTest" + "UniqueString" + " file:html";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, next);
+            },
+
+            function testFileJS(next)
+            {
+                var query = "file:js " + "searchTest" + "UniqueString";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, next);
+            },
+
+            function testFileHTMLJS(next)
+            {
+                var query = "file:js " + "searchTest" + "UniqueString" + " file:html";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, next);
+            },
+
+            function testSeveralQueries(next)
+            {
+                var query = "search" + " " + "Test" + "Unique";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, next);
+            },
+
+            function testSeveralQueriesFileHTML(next)
+            {
+                var query = "file:html " + "search" + " " + "Test" + "Unique";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, next);
+            },
+
+            function testSeveralQueriesFileHTML_SEARCH(next)
+            {
+                var query = "file:html " + "search" + " " + "Test" + "Unique" + " file:search";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, next);
+            },
+
+            function testSeveralQueriesFileJS_SEARCH_HTML(next)
+            {
+                var query = "file:js " + "search" + " " + "Test" + "Unique" + " file:search file:html";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, next);
+            },
+
         ]);
     }
 }
