@@ -30006,22 +30006,26 @@ other types of suffix sets.
   <int value="11" label="Gesture finger down"/>
   <int value="12" label="Gesture finger up"/>
   <int value="13" label="Gesture double tap"/>
-  <int value="14" label="Gesture two-finger tap"/>
-  <int value="15" label="Gesture pinch begin"/>
-  <int value="16" label="Gesture pinch end"/>
-  <int value="17" label="Gesture pinch update (2 fingers)"/>
-  <int value="18" label="Long press"/>
-  <int value="19" label="Multi-finger swipe (2 fingers)"/>
-  <int value="20" label="Scroll"/>
-  <int value="21" label="Scroll fling start"/>
-  <int value="22" label="Scroll fling cancel"/>
-  <int value="23" label="Multi-finger swipe (3 fingers)"/>
-  <int value="24" label="Multi-finger swipe (4+ fingers)"/>
-  <int value="25" label="Gesture scroll update (2 fingers)"/>
-  <int value="26" label="Gesture scroll update (3 fingers)"/>
-  <int value="27" label="Gesture scroll update (4+ fingers)"/>
-  <int value="28" label="Gesture pinch update (3 fingers)"/>
-  <int value="29" label="Gesture pinch update (4+ fingers)"/>
+  <int value="14" label="Gesture triple tap"/>
+  <int value="15" label="Gesture two-finger tap"/>
+  <int value="16" label="Gesture pinch begin"/>
+  <int value="17" label="Gesture pinch end"/>
+  <int value="18" label="Gesture pinch update (2 fingers)"/>
+  <int value="19" label="Long press"/>
+  <int value="20" label="Multi-finger swipe (2 fingers)"/>
+  <int value="21" label="Scroll"/>
+  <int value="22" label="Scroll fling start"/>
+  <int value="23" label="Scroll fling cancel"/>
+  <int value="24" label="Multi-finger swipe (3 fingers)"/>
+  <int value="25" label="Multi-finger swipe (4+ fingers)"/>
+  <int value="26" label="Gesture scroll update (2 fingers)"/>
+  <int value="27" label="Gesture scroll update (3 fingers)"/>
+  <int value="28" label="Gesture scroll update (4+ fingers)"/>
+  <int value="29" label="Gesture pinch update (3 fingers)"/>
+  <int value="30" label="Gesture pinch update (4+ fingers)"/>
+  <int value="31" label="Long tap"/>
+  <int value="32" label="Show Press"/>
+  <int value="33" label="Tap Cancel"/>
 </enum>
 
 <enum name="UmaInitSequence" type="int">
