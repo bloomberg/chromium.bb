@@ -27,6 +27,7 @@ const char* kAshSystemNotifiers[] = {
   kNotifierInputMethod,
   kNotifierLocale,
   kNotifierLocallyManagedUser,
+  kNotifierMultiProfileFirstRun,
   kNotifierNetwork,
   kNotifierNetworkError,
   kNotifierScreenshot,
@@ -57,6 +58,7 @@ const char kNotifierDisplayError[] = "ash.display.error";
 const char kNotifierInputMethod[] = "ash.input-method";
 const char kNotifierLocale[] = "ash.locale";
 const char kNotifierLocallyManagedUser[] = "ash.locally-managed-user";
+const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
 const char kNotifierNetwork[] = "ash.network";
 const char kNotifierNetworkError[] = "ash.network.error";
 const char kNotifierScreenshot[] = "ash.screenshot";

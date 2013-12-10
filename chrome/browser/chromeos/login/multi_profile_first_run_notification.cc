@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/multi_profile_first_run_notification.h"
 
+#include "ash/system/system_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -25,6 +26,31 @@ namespace chromeos {
 namespace {
 
 const char kNotificationId[] = "chrome:://login/multiprofile";
+
+class MultiProfileFirstRunNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  explicit MultiProfileFirstRunNotificationDelegate(
+      const base::Closure& user_close_callback)
+      : user_close_callback_(user_close_callback) {}
+
+  // Overridden from message_center::NotificationDelegate:
+  virtual void Display() OVERRIDE {}
+  virtual void Error() OVERRIDE {}
+  virtual void Close(bool by_user) OVERRIDE {
+    if (by_user)
+      user_close_callback_.Run();
+  }
+  virtual void Click() OVERRIDE {}
+
+ protected:
+  virtual ~MultiProfileFirstRunNotificationDelegate() {}
+
+ private:
+  base::Closure user_close_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiProfileFirstRunNotificationDelegate);
+};
 
 }  // namespace
 
@@ -61,9 +87,11 @@ void MultiProfileFirstRunNotification::UserProfilePrepared(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_ALERT),
       display_source,
-      message_center::NotifierId(),
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          ash::system_notifier::kNotifierMultiProfileFirstRun),
       message_center::RichNotificationData(),
-      new message_center::HandleNotificationClickedDelegate(
+      new MultiProfileFirstRunNotificationDelegate(
           base::Bind(&MultiProfileFirstRunNotification::OnDismissed,
                      weak_ptr_factory_.GetWeakPtr(),
                      user_profile))));
