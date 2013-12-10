@@ -99,16 +99,16 @@ class BindingManager {
         return managedConnection.getConnection();
     }
 
-    // Pid of the renderer that was most recently oom bound. This is used on low-memory devices
-    // to drop oom bindings of a process when another one acquires them, making sure that only
-    // one renderer process at a time is oom bound.
+    // Pid of the renderer that was most recently bound using bindAsHighPriority(). This is used on
+    // low-memory devices to drop oom bindings of a process when another one acquires them, making
+    // sure that only one renderer process at a time is oom bound.
     private int mLastOomPid = -1;
 
     // Pid of the renderer that is bound with a strong binding for the background period. Equals
     // -1 when there is no such renderer.
     private int mBoundForBackgroundPeriodPid = -1;
 
-    // Synchronizes operations that modify mLastOomPid: addNewConnection() and bindAsHighPriority().
+    // Synchronizes operations that access mLastOomPid: addNewConnection() and bindAsHighPriority().
     private final Object mLastOomPidLock = new Object();
 
     /**
@@ -149,13 +149,11 @@ class BindingManager {
                 ChildProcessConnection lastOomConnection = getConnectionForPid(mLastOomPid);
                 if (lastOomConnection != null) lastOomConnection.dropOomBindings();
             }
-            // This will reset the previous entry for the pid in the unlikely event of the OS
-            // reusing renderer pids.
-            synchronized (mManagedConnections) {
-                mManagedConnections.put(pid, new ManagedConnection(connection));
-            }
-            // Every new connection is bound with initial oom binding.
-            mLastOomPid = pid;
+        }
+        // This will reset the previous entry for the pid in the unlikely event of the OS
+        // reusing renderer pids.
+        synchronized (mManagedConnections) {
+            mManagedConnections.put(pid, new ManagedConnection(connection));
         }
     }
 
@@ -230,11 +228,13 @@ class BindingManager {
      */
     void onSentToBackground() {
         assert mBoundForBackgroundPeriodPid == -1;
-        // mLastOomPid can be -1 at this point as the embedding application could be used in
-        // foreground without spawning any renderers.
-        if (mLastOomPid >= 0) {
-            bindAsHighPriority(mLastOomPid);
-            mBoundForBackgroundPeriodPid = mLastOomPid;
+        synchronized (mLastOomPidLock) {
+            // mLastOomPid can be -1 at this point as the embedding application could be used in
+            // foreground without spawning any renderers.
+            if (mLastOomPid >= 0) {
+                bindAsHighPriority(mLastOomPid);
+                mBoundForBackgroundPeriodPid = mLastOomPid;
+            }
         }
     }
 

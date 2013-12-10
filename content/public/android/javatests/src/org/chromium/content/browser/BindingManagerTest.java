@@ -299,8 +299,14 @@ public class BindingManagerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verifies that onSentToBackground() / onBroughtToForeground() correctly attach and remove a
-     * strong binding that keeps the most recently used renderer bound for the background period.
+     * Verifies that onSentToBackground() / onBroughtToForeground() correctly attach and remove
+     * additional strong binding keept on the most recently bound renderer for the background
+     * period.
+     *
+     * The renderer that will be bound for the background period should be the one that was most
+     * recendly bound using .bindAsHighPriority(), even if there is one that was added using
+     * .addNewConnection() after that. Otherwise we would bound a background renderer when user
+     * loads a new tab in background and leaves the browser.
      */
     @SmallTest
     @Feature({"ProcessManagement"})
@@ -310,25 +316,42 @@ public class BindingManagerTest extends InstrumentationTestCase {
             BindingManager manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
 
-            // Add two connections without strong bindings.
+            // Add two connections, bind and release each.
             MockChildProcessConnection firstConnection = new MockChildProcessConnection(1);
             manager.addNewConnection(firstConnection.getPid(), firstConnection);
-            MockChildProcessConnection secondConnection = new MockChildProcessConnection(1);
+            manager.bindAsHighPriority(firstConnection.getPid());
+            manager.unbindAsHighPriority(firstConnection.getPid());
+
+            MockChildProcessConnection secondConnection = new MockChildProcessConnection(2);
             manager.addNewConnection(secondConnection.getPid(), secondConnection);
+            manager.bindAsHighPriority(secondConnection.getPid());
+            manager.unbindAsHighPriority(secondConnection.getPid());
+
+            // Add third connection, do not bind it.
+            MockChildProcessConnection thirdConnection = new MockChildProcessConnection(3);
+            manager.addNewConnection(thirdConnection.getPid(), thirdConnection);
+
+            // Sanity check: verify that no connection has a strong binding.
+            getInstrumentation().waitForIdleSync();
             assertFalse(message, firstConnection.isStrongBindingBound());
             assertFalse(message, secondConnection.isStrongBindingBound());
+            assertFalse(message, thirdConnection.isStrongBindingBound());
 
-            // Call onSentToBackground() and verify that a strong binding was added for the most
-            // recent connection (but not for the other one).
+            // Call onSentToBackground() and verify that a strong binding was added for the second
+            // connection:
+            // - not the first one, because it was bound earlier than the second
+            // - not the thirs one, because it was never bound at all
             manager.onSentToBackground();
             assertFalse(message, firstConnection.isStrongBindingBound());
             assertTrue(message, secondConnection.isStrongBindingBound());
+            assertFalse(message, thirdConnection.isStrongBindingBound());
 
             // Call onBroughtToForeground() and verify that the strong binding was removed.
             manager.onBroughtToForeground();
             getInstrumentation().waitForIdleSync();
             assertFalse(message, firstConnection.isStrongBindingBound());
             assertFalse(message, secondConnection.isStrongBindingBound());
+            assertFalse(message, thirdConnection.isStrongBindingBound());
         }
     }
 }
