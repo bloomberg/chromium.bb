@@ -1255,20 +1255,12 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
   if (verbatim_relevance > 0) {
-    AddMatchToMap(input_.text(),
-                  verbatim_relevance,
-                  relevance_from_server,
-                  false,
-                  std::string(),
+    SuggestResult verbatim(input_.text(), input_.text(), base::string16(),
+                           std::string(), std::string(), false,
+                           verbatim_relevance, relevance_from_server, false);
+    AddMatchToMap(verbatim, input_.text(), std::string(),
                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-                  false,
-                  input_.text(),
-                  base::string16(),
-                  input_.text(),
-                  did_not_accept_default_suggestion,
-                  std::string(),
-                  std::string(),
-                  &map);
+                  did_not_accept_default_suggestion, &map);
   }
   if (!keyword_input_.text().empty()) {
     const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
@@ -1284,20 +1276,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       const int keyword_verbatim_relevance =
           GetKeywordVerbatimRelevance(&keyword_relevance_from_server);
       if (keyword_verbatim_relevance > 0) {
-        AddMatchToMap(keyword_input_.text(),
-                      keyword_verbatim_relevance,
-                      keyword_relevance_from_server,
-                      false,
-                      std::string(),
+        SuggestResult verbatim(keyword_input_.text(), keyword_input_.text(),
+                               base::string16(), std::string(), std::string(),
+                               true, keyword_verbatim_relevance,
+                               keyword_relevance_from_server, false);
+        AddMatchToMap(verbatim, keyword_input_.text(), std::string(),
                       AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-                      true,
-                      keyword_input_.text(),
-                      base::string16(),
-                      keyword_input_.text(),
-                      did_not_accept_keyword_suggestion,
-                      std::string(),
-                      std::string(),
-                      &map);
+                      did_not_accept_keyword_suggestion, &map);
       }
     }
   }
@@ -1593,20 +1578,9 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                                          is_keyword);
   for (SuggestResults::const_iterator i(scored_results.begin());
        i != scored_results.end(); ++i) {
-    AddMatchToMap(input_text,
-                  i->relevance(),
-                  false,
-                  false,
-                  std::string(),
+    AddMatchToMap(*i, input_text, std::string(),
                   AutocompleteMatchType::SEARCH_HISTORY,
-                  is_keyword,
-                  i->suggestion(),
-                  base::string16(),
-                  i->suggestion(),
-                  did_not_accept_suggestion,
-                  std::string(),
-                  std::string(),
-                  map);
+                  did_not_accept_suggestion, map);
   }
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
                       base::TimeTicks::Now() - start_time);
@@ -1655,9 +1629,8 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
         i->time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
     scored_results.push_back(
-        SuggestResult(i->term, base::string16(), base::string16(),
-                      std::string(), std::string(), is_keyword, relevance,
-                      false, false));
+        SuggestResult(i->term, i->term, base::string16(), std::string(),
+                      std::string(), is_keyword, relevance, false, false));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -1685,20 +1658,8 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
     const bool is_keyword = results[i].from_keyword_provider();
     const base::string16& input = is_keyword ? keyword_input_.text()
                                              : input_.text();
-    AddMatchToMap(input,
-                  results[i].relevance(),
-                  results[i].relevance_from_server(),
-                  results[i].should_prefetch(),
-                  metadata,
-                  AutocompleteMatchType::SEARCH_SUGGEST,
-                  is_keyword,
-                  results[i].match_contents(),
-                  results[i].annotation(),
-                  results[i].suggestion(),
-                  i,
-                  results[i].suggest_query_params(),
-                  results[i].deletion_url(),
-                  map);
+    AddMatchToMap(results[i], input, metadata,
+                  AutocompleteMatchType::SEARCH_SUGGEST, i, map);
   }
 }
 
@@ -1810,19 +1771,11 @@ int SearchProvider::CalculateRelevanceForHistory(
   return std::max(0, base_score - score_discount);
 }
 
-void SearchProvider::AddMatchToMap(const base::string16& input_text,
-                                   int relevance,
-                                   bool relevance_from_server,
-                                   bool should_prefetch,
+void SearchProvider::AddMatchToMap(const SuggestResult& result,
+                                   const base::string16& input_text,
                                    const std::string& metadata,
                                    AutocompleteMatch::Type type,
-                                   bool is_keyword,
-                                   const base::string16& match_contents,
-                                   const base::string16& annotation,
-                                   const base::string16& query_string,
                                    int accepted_suggestion,
-                                   const std::string& suggest_query_params,
-                                   const std::string& deletion_url,
                                    MatchMap* map) {
   // On non-mobile, ask the instant controller for the appropriate start margin.
   // On mobile the start margin is unused, so leave the value as default there.
@@ -1839,24 +1792,25 @@ void SearchProvider::AddMatchToMap(const base::string16& input_text,
   }
 #endif  // !defined(OS_ANDROID) && !defined(IOS)
 
-  const TemplateURL* template_url = is_keyword ?
+  const TemplateURL* template_url = result.from_keyword_provider() ?
       providers_.GetKeywordProviderURL() : providers_.GetDefaultProviderURL();
   AutocompleteMatch match = CreateSearchSuggestion(
-      this, input_, input_text, relevance, type, is_keyword, match_contents,
-      annotation, template_url, query_string, suggest_query_params,
-      accepted_suggestion, omnibox_start_margin,
-      !is_keyword || providers_.default_provider().empty());
+      this, input_, input_text, result.relevance(), type,
+      result.from_keyword_provider(), result.match_contents(),
+      result.annotation(), template_url, result.suggestion(),
+      result.suggest_query_params(), accepted_suggestion, omnibox_start_margin,
+      !result.from_keyword_provider() || providers_.default_provider().empty());
   if (!match.destination_url.is_valid())
     return;
   match.search_terms_args->bookmark_bar_pinned =
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   match.RecordAdditionalInfo(kRelevanceFromServerKey,
-                             relevance_from_server ? kTrue : kFalse);
+                             result.relevance_from_server() ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey,
-                             should_prefetch ? kTrue : kFalse);
+                             result.should_prefetch() ? kTrue : kFalse);
 
-  if (!deletion_url.empty()) {
-    GURL url(match.destination_url.GetOrigin().Resolve(deletion_url));
+  if (!result.deletion_url().empty()) {
+    GURL url(match.destination_url.GetOrigin().Resolve(result.deletion_url()));
     if (url.is_valid()) {
       match.RecordAdditionalInfo(kDeletionUrlKey, url.spec());
       match.deletable = true;
@@ -1864,18 +1818,19 @@ void SearchProvider::AddMatchToMap(const base::string16& input_text,
   }
 
   // Metadata is needed only for prefetching queries.
-  if (should_prefetch)
+  if (result.should_prefetch())
     match.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
 
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
   MatchKey match_key(
-      std::make_pair(base::i18n::ToLower(query_string),
+      std::make_pair(base::i18n::ToLower(result.suggestion()),
                      match.search_terms_args->suggest_query_params));
   const std::pair<MatchMap::iterator, bool> i(
       map->insert(std::make_pair(match_key, match)));
 
+  bool should_prefetch = result.should_prefetch();
   if (!i.second) {
     // NOTE: We purposefully do a direct relevance comparison here instead of
     // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items

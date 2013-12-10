@@ -538,21 +538,13 @@ class SearchProvider : public AutocompleteProvider,
                                    bool prevent_search_history_inlining) const;
 
   // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with
-  // the supplied relevance.  Adds this match to |map|; if such a match already
+  // the supplied details.  Adds this match to |map|; if such a match already
   // exists, whichever one has lower relevance is eliminated.
-  void AddMatchToMap(const base::string16& input_text,
-                     int relevance,
-                     bool relevance_from_server,
-                     bool should_prefetch,
+  void AddMatchToMap(const SuggestResult& result,
+                     const base::string16& input_text,
                      const std::string& metadata,
                      AutocompleteMatch::Type type,
-                     bool is_keyword,
-                     const base::string16& match_contents,
-                     const base::string16& annotation,
-                     const base::string16& query_string,
                      int accepted_suggestion,
-                     const std::string& suggest_query_params,
-                     const std::string& deletion_url,
                      MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion.
