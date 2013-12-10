@@ -96,7 +96,6 @@ class UserMediaClientImpl;
 class ValidationMessageClientImpl;
 class WebAXObject;
 class WebActiveGestureAnimation;
-class WebCompositorImpl;
 class WebDevToolsAgentClient;
 class WebDevToolsAgentPrivate;
 class WebDocument;
