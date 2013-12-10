@@ -3088,9 +3088,6 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR" desc="The text in the keyboard overlay to explain the shortcut.">
     Focus toolbar
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FULL_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (toggles fullscreen mode).">
-    Full screen
-  </message>
   <message name="IDS_KEYBOARD_OVERLAY_GO_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
     Go back
   </message>
@@ -3253,14 +3250,14 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CAPS_LOCK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable caps lock).">
     Toggle caps lock
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
+    Toggle ChromeVox (spoken feedback)
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_PROJECTION_TOUCH_HUD" desc="The text in the keyboard overlay to explain the shortcut.">
     Toggle projection touch HUD
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT" desc="The text in the keyboard overlay to explain the shortcut (start or stop speech input).">
     Toggle speech input
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
-    Toggle ChromeVox (spoken feedback)
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
     Undo

@@ -15849,7 +15849,6 @@ var keyboardOverlayData = {
     'full screen<>ALT': 'keyboardOverlaySwapPrimaryMonitor',
     'full screen<>CTRL': 'keyboardOverlayMirrorMonitors',
     'full screen<>SEARCH': 'keyboardOverlayF4',
-    'full screen<>SHIFT': 'keyboardOverlayFullScreen',
     'g<>CTRL': 'keyboardOverlayFindTextAgain',
     'g<>CTRL<>SHIFT': 'keyboardOverlayFindPreviousText',
     'h<>CTRL': 'keyboardOverlayHistory',
@@ -15912,7 +15911,7 @@ var keyboardOverlayData = {
     'w<>CTRL': 'keyboardOverlayCloseTab',
     'w<>CTRL<>SHIFT': 'keyboardOverlayCloseWindow',
     'x<>CTRL': 'keyboardOverlayCut',
-    'z<>ALT<>CTRL': 'keyboardOverlayToggleSpokenFeedback',
+    'z<>ALT<>CTRL': 'keyboardOverlayToggleChromevoxSpokenFeedback',
     'z<>CTRL': 'keyboardOverlayUndo'
   }
 };
