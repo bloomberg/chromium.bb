@@ -655,7 +655,7 @@ static int eg_surface_init_2d(struct radeon_surface_manager *surf_man,
     tileb = tilew * tileh * bpe * surf->nsamples;
     /* slices per tile */
     slice_pt = 1;
-    if (tileb > tile_split) {
+    if (tileb > tile_split && tile_split) {
         slice_pt = tileb / tile_split;
     }
     tileb = tileb / slice_pt;
@@ -1621,7 +1621,7 @@ static int si_surface_init_2d(struct radeon_surface_manager *surf_man,
     tileb = tilew * tileh * bpe * surf->nsamples;
     /* slices per tile */
     slice_pt = 1;
-    if (tileb > tile_split) {
+    if (tileb > tile_split && tile_split) {
         slice_pt = tileb / tile_split;
     }
     tileb = tileb / slice_pt;
@@ -2223,7 +2223,7 @@ static int cik_surface_init_2d(struct radeon_surface_manager *surf_man,
 
     /* slices per tile */
     slice_pt = 1;
-    if (tileb > tile_split) {
+    if (tileb > tile_split && tile_split) {
         slice_pt = tileb / tile_split;
         tileb = tileb / slice_pt;
     }
