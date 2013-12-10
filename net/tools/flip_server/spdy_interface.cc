@@ -22,15 +22,12 @@ std::string SpdySM::forward_ip_header_;
 
 class SpdyFrameDataFrame : public DataFrame {
  public:
-  explicit SpdyFrameDataFrame(SpdyFrame* spdy_frame)
-      : frame(spdy_frame) {
+  explicit SpdyFrameDataFrame(SpdyFrame* spdy_frame) : frame(spdy_frame) {
     data = spdy_frame->data();
     size = spdy_frame->size();
   }
 
-  virtual ~SpdyFrameDataFrame() {
-    delete frame;
-  }
+  virtual ~SpdyFrameDataFrame() { delete frame; }
 
   const SpdyFrame* frame;
 };
@@ -54,9 +51,7 @@ SpdySM::SpdySM(SMConnection* connection,
   buffered_spdy_framer_->set_visitor(this);
 }
 
-SpdySM::~SpdySM() {
-  delete buffered_spdy_framer_;
-}
+SpdySM::~SpdySM() { delete buffered_spdy_framer_; }
 
 void SpdySM::InitSMConnection(SMConnectionPoolInterface* connection_pool,
                               SMInterface* sm_interface,
@@ -66,11 +61,15 @@ void SpdySM::InitSMConnection(SMConnectionPoolInterface* connection_pool,
                               std::string server_port,
                               std::string remote_ip,
                               bool use_ssl) {
-  VLOG(2) << ACCEPTOR_CLIENT_IDENT
-          << "SpdySM: Initializing server connection.";
-  connection_->InitSMConnection(connection_pool, sm_interface,
-                                epoll_server, fd, server_ip, server_port,
-                                remote_ip, use_ssl);
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Initializing server connection.";
+  connection_->InitSMConnection(connection_pool,
+                                sm_interface,
+                                epoll_server,
+                                fd,
+                                server_ip,
+                                server_port,
+                                remote_ip,
+                                use_ssl);
 }
 
 SMInterface* SpdySM::NewConnectionInterface() {
@@ -85,25 +84,22 @@ SMInterface* SpdySM::NewConnectionInterface() {
     return NULL;
   }
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Creating new HTTP interface";
-  SMInterface *sm_http_interface = new HttpSM(server_connection,
-                                              this,
-                                              memory_cache_,
-                                              acceptor_);
+  SMInterface* sm_http_interface =
+      new HttpSM(server_connection, this, memory_cache_, acceptor_);
   return sm_http_interface;
 }
 
 SMInterface* SpdySM::FindOrMakeNewSMConnectionInterface(
     const std::string& server_ip,
     const std::string& server_port) {
-  SMInterface *sm_http_interface;
+  SMInterface* sm_http_interface;
   int32 server_idx;
   if (unused_server_interface_list.empty()) {
     sm_http_interface = NewConnectionInterface();
     server_idx = server_interface_list.size();
     server_interface_list.push_back(sm_http_interface);
     VLOG(2) << ACCEPTOR_CLIENT_IDENT
-            << "SpdySM: Making new server connection on index: "
-            << server_idx;
+            << "SpdySM: Making new server connection on index: " << server_idx;
   } else {
     server_idx = unused_server_interface_list.back();
     unused_server_interface_list.pop_back();
@@ -125,17 +121,14 @@ SMInterface* SpdySM::FindOrMakeNewSMConnectionInterface(
   return sm_http_interface;
 }
 
-int SpdySM::SpdyHandleNewStream(
-    SpdyStreamId stream_id,
-    SpdyPriority priority,
-    const SpdyHeaderBlock& headers,
-    std::string &http_data,
-    bool* is_https_scheme) {
+int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
+                                SpdyPriority priority,
+                                const SpdyHeaderBlock& headers,
+                                std::string& http_data,
+                                bool* is_https_scheme) {
   *is_https_scheme = false;
-  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSyn("
-          << stream_id << ")";
-  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: # headers: "
-          << headers.size();
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSyn(" << stream_id << ")";
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: # headers: " << headers.size();
 
   SpdyHeaderBlock supplement;
   SpdyHeaderBlock::const_iterator method = headers.end();
@@ -254,8 +247,8 @@ void SpdySM::OnSynStream(SpdyStreamId stream_id,
                          const SpdyHeaderBlock& headers) {
   std::string http_data;
   bool is_https_scheme;
-  int ret = SpdyHandleNewStream(stream_id, priority, headers, http_data,
-                                &is_https_scheme);
+  int ret = SpdyHandleNewStream(
+      stream_id, priority, headers, http_data, &is_https_scheme);
   if (!ret) {
     LOG(ERROR) << "SpdySM: Could not convert spdy into http.";
     return;
@@ -278,8 +271,7 @@ void SpdySM::OnSynStream(SpdyStreamId stream_id,
         FindOrMakeNewSMConnectionInterface(server_ip, server_port);
     stream_to_smif_[stream_id] = sm_http_interface;
     sm_http_interface->SetStreamID(stream_id);
-    sm_http_interface->ProcessWriteInput(http_data.c_str(),
-                                         http_data.size());
+    sm_http_interface->ProcessWriteInput(http_data.c_str(), http_data.size());
   }
 }
 
@@ -288,21 +280,18 @@ void SpdySM::OnSynReply(SpdyStreamId stream_id,
                         const SpdyHeaderBlock& headers) {
   // TODO(willchan): if there is an error parsing headers, we
   // should send a RST_STREAM.
-  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSynReply("
-          << stream_id << ")";
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSynReply(" << stream_id << ")";
 }
 
 void SpdySM::OnHeaders(SpdyStreamId stream_id,
                        bool fin,
                        const SpdyHeaderBlock& headers) {
-  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnHeaders("
-          << stream_id << ")";
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnHeaders(" << stream_id << ")";
 }
 
-void SpdySM::OnRstStream(SpdyStreamId stream_id,
-                         SpdyRstStreamStatus status) {
-  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnRstStream("
-          << stream_id << ")";
+void SpdySM::OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) {
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnRstStream(" << stream_id
+          << ")";
   client_output_ordering_.RemoveStreamId(stream_id);
 }
 
@@ -310,9 +299,7 @@ size_t SpdySM::ProcessReadInput(const char* data, size_t len) {
   return buffered_spdy_framer_->ProcessInput(data, len);
 }
 
-size_t SpdySM::ProcessWriteInput(const char* data, size_t len) {
-  return 0;
-}
+size_t SpdySM::ProcessWriteInput(const char* data, size_t len) { return 0; }
 
 bool SpdySM::MessageFullyRead() const {
   return buffered_spdy_framer_->MessageFullyRead();
@@ -348,8 +335,7 @@ int SpdySM::PostAcceptHook() {
   SettingsMap settings;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 100);
-  SpdyFrame* settings_frame =
-      buffered_spdy_framer_->CreateSettings(settings);
+  SpdyFrame* settings_frame = buffered_spdy_framer_->CreateSettings(settings);
 
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Sending Settings Frame";
   EnqueueDataFrame(new SpdyFrameDataFrame(settings_frame));
@@ -382,9 +368,7 @@ void SpdySM::AddToOutputOrder(const MemCacheIter& mci) {
   client_output_ordering_.AddToOutputOrder(mci);
 }
 
-void SpdySM::SendEOF(uint32 stream_id) {
-  SendEOFImpl(stream_id);
-}
+void SpdySM::SendEOF(uint32 stream_id) { SendEOFImpl(stream_id); }
 
 void SpdySM::SendErrorNotFound(uint32 stream_id) {
   SendErrorNotFoundImpl(stream_id);
@@ -398,8 +382,11 @@ size_t SpdySM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
   return SendSynReplyImpl(stream_id, headers);
 }
 
-void SpdySM::SendDataFrame(uint32 stream_id, const char* data, int64 len,
-                           uint32 flags, bool compress) {
+void SpdySM::SendDataFrame(uint32 stream_id,
+                           const char* data,
+                           int64 len,
+                           uint32 flags,
+                           bool compress) {
   SpdyDataFlags spdy_flags = static_cast<SpdyDataFlags>(flags);
   SendDataFrameImpl(stream_id, data, len, spdy_flags, compress);
 }
@@ -440,15 +427,14 @@ void SpdySM::CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers) {
     if (fhi == dest.end()) {
       dest[key] = hi->second.as_string();
     } else {
-      dest[key] = (
-          std::string(fhi->second.data(), fhi->second.size()) + "\0" +
-          std::string(hi->second.data(), hi->second.size()));
+      dest[key] = (std::string(fhi->second.data(), fhi->second.size()) + "\0" +
+                   std::string(hi->second.data(), hi->second.size()));
     }
   }
 
   // These headers have no value
   dest.erase("X-Associated-Content");  // TODO(mbelshe): case-sensitive
-  dest.erase("X-Original-Url");  // TODO(mbelshe): case-sensitive
+  dest.erase("X-Original-Url");        // TODO(mbelshe): case-sensitive
 }
 
 size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
@@ -516,14 +502,17 @@ size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
   return df_size;
 }
 
-void SpdySM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
-                               SpdyDataFlags flags, bool compress) {
+void SpdySM::SendDataFrameImpl(uint32 stream_id,
+                               const char* data,
+                               int64 len,
+                               SpdyDataFlags flags,
+                               bool compress) {
   // TODO(mbelshe):  We can't compress here - before going into the
   //                 priority queue.  Compression needs to be done
   //                 with late binding.
   if (len == 0) {
-    SpdyFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
-        stream_id, data, len, flags);
+    SpdyFrame* fdf =
+        buffered_spdy_framer_->CreateDataFrame(stream_id, data, len, flags);
     EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
     return;
   }
@@ -575,9 +564,8 @@ void SpdySM::GetOutput() {
         headers.CopyFrom(*(mci->file_data->headers()));
         headers.ReplaceOrAppendHeader("status", "200");
         headers.ReplaceOrAppendHeader("version", "http/1.1");
-        headers.SetRequestFirstlineFromStringPieces("PUSH",
-                                                    mci->file_data->filename(),
-                                                    "");
+        headers.SetRequestFirstlineFromStringPieces(
+            "PUSH", mci->file_data->filename(), "");
         mci->bytes_sent = SendSynStream(mci->stream_id, headers);
       } else {
         BalsaHeaders headers;
@@ -609,7 +597,9 @@ void SpdySM::GetOutput() {
 
     SendDataFrame(mci->stream_id,
                   mci->file_data->body().data() + mci->body_bytes_consumed,
-                  num_to_write, 0, should_compress);
+                  num_to_write,
+                  0,
+                  should_compress);
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: GetOutput SendDataFrame["
             << mci->stream_id << "]: " << num_to_write;
     mci->body_bytes_consumed += num_to_write;

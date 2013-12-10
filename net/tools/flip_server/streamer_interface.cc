@@ -57,9 +57,14 @@ void StreamerSM::InitSMConnection(SMConnectionPoolInterface* connection_pool,
                                   bool use_ssl) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "StreamerSM: Initializing server "
           << "connection.";
-  connection_->InitSMConnection(connection_pool, sm_interface,
-                                epoll_server, fd, server_ip,
-                                server_port, remote_ip, use_ssl);
+  connection_->InitSMConnection(connection_pool,
+                                sm_interface,
+                                epoll_server,
+                                fd,
+                                server_ip,
+                                server_port,
+                                remote_ip,
+                                use_ssl);
 }
 
 size_t StreamerSM::ProcessReadInput(const char* data, size_t len) {
@@ -72,23 +77,19 @@ size_t StreamerSM::ProcessReadInput(const char* data, size_t len) {
 }
 
 size_t StreamerSM::ProcessWriteInput(const char* data, size_t len) {
-  char * dataPtr = new char[len];
+  char* dataPtr = new char[len];
   memcpy(dataPtr, data, len);
   DataFrame* df = new DataFrame;
-  df->data = (const char *)dataPtr;
+  df->data = (const char*)dataPtr;
   df->size = len;
   df->delete_when_done = true;
   connection_->EnqueueDataFrame(df);
   return len;
 }
 
-bool StreamerSM::Error() const {
-  return false;
-}
+bool StreamerSM::Error() const { return false; }
 
-const char* StreamerSM::ErrorAsString() const {
-  return "(none)";
-}
+const char* StreamerSM::ErrorAsString() const { return "(none)"; }
 
 bool StreamerSM::MessageFullyRead() const {
   if (is_request_) {
@@ -116,17 +117,16 @@ void StreamerSM::Cleanup() {
 
 int StreamerSM::PostAcceptHook() {
   if (!sm_other_interface_) {
-    SMConnection *server_connection =
-      SMConnection::NewSMConnection(epoll_server_, NULL, NULL,
-                                    acceptor_, "server_conn: ");
+    SMConnection* server_connection = SMConnection::NewSMConnection(
+        epoll_server_, NULL, NULL, acceptor_, "server_conn: ");
     if (server_connection == NULL) {
       LOG(ERROR) << "StreamerSM: Could not create server conenction.";
       return 0;
     }
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "StreamerSM: Creating new server "
             << "connection.";
-    sm_other_interface_ = new StreamerSM(server_connection, this,
-                                         epoll_server_, acceptor_);
+    sm_other_interface_ =
+        new StreamerSM(server_connection, this, epoll_server_, acceptor_);
     sm_other_interface_->InitSMInterface(this, 0);
   }
   // The Streamer interface is used to stream HTTPS connections, so we
@@ -152,7 +152,7 @@ size_t StreamerSM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
   return 0;
 }
 
-void StreamerSM::ProcessBodyInput(const char *input, size_t size) {
+void StreamerSM::ProcessBodyInput(const char* input, size_t size) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT
           << "StreamerHttpSM: Process Body Input Data: "
           << "size " << size;
@@ -187,21 +187,14 @@ void StreamerSM::ProcessHeaders(const BalsaHeaders& headers) {
   sm_other_interface_->ProcessWriteInput(buffer, size);
 }
 
-void StreamerSM::HandleHeaderError(BalsaFrame* framer) {
-  HandleError();
-}
+void StreamerSM::HandleHeaderError(BalsaFrame* framer) { HandleError(); }
 
-void StreamerSM::HandleChunkingError(BalsaFrame* framer) {
-  HandleError();
-}
+void StreamerSM::HandleChunkingError(BalsaFrame* framer) { HandleError(); }
 
-void StreamerSM::HandleBodyError(BalsaFrame* framer) {
-  HandleError();
-}
+void StreamerSM::HandleBodyError(BalsaFrame* framer) { HandleError(); }
 
 void StreamerSM::HandleError() {
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Error detected";
 }
 
 }  // namespace net
-

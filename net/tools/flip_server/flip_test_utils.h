@@ -19,14 +19,15 @@ class MockSMInterface : public SMInterface {
   virtual ~MockSMInterface();
 
   MOCK_METHOD2(InitSMInterface, void(SMInterface*, int32));
-  MOCK_METHOD8(InitSMConnection, void(SMConnectionPoolInterface*,
-                                      SMInterface*,
-                                      EpollServer*,
-                                      int,
-                                      std::string,
-                                      std::string,
-                                      std::string,
-                                      bool));
+  MOCK_METHOD8(InitSMConnection,
+               void(SMConnectionPoolInterface*,
+                    SMInterface*,
+                    EpollServer*,
+                    int,
+                    std::string,
+                    std::string,
+                    std::string,
+                    bool));
   MOCK_METHOD2(ProcessReadInput, size_t(const char*, size_t));
   MOCK_METHOD2(ProcessWriteInput, size_t(const char*, size_t));
   MOCK_METHOD1(SetStreamID, void(uint32 stream_id));

@@ -47,7 +47,7 @@ class RingBuffer : public BufferInterface {
 
   // returns the number of characters written.
   // appends up-to-'size' bytes to the ringbuffer.
-  virtual int Write(const char * bytes, int size) OVERRIDE;
+  virtual int Write(const char* bytes, int size) OVERRIDE;
 
   // Stores a pointer into the ring buffer in *ptr,  and stores the number of
   // characters which are allowed to be written in *size.
@@ -110,4 +110,3 @@ class RingBuffer : public BufferInterface {
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_RING_BUFFER_H__
-

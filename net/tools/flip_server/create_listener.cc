@@ -4,17 +4,16 @@
 
 #include "net/tools/flip_server/create_listener.h"
 
-#include <arpa/inet.h>   // for inet_ntop
-#include <errno.h>       // for strerror
-#include <netdb.h>       // for getaddrinfo and getnameinfo
-#include <netinet/in.h>  // for IPPROTO_*, etc.
-#include <stdlib.h>      // for EXIT_FAILURE
-#include <netinet/tcp.h> // For TCP_NODELAY
-#include <sys/socket.h>  // for getaddrinfo and getnameinfo
-#include <sys/types.h>   // "
+#include <arpa/inet.h>
+#include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>      // for exit()
-#include <ostream>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 
@@ -24,19 +23,14 @@ namespace net {
 // alloc'd by getaddrinfo
 class AddrinfoGuard {
  protected:
-  struct addrinfo * addrinfo_ptr_;
+  struct addrinfo* addrinfo_ptr_;
+
  public:
+  explicit AddrinfoGuard(struct addrinfo* addrinfo_ptr)
+      : addrinfo_ptr_(addrinfo_ptr) {}
 
-  explicit AddrinfoGuard(struct addrinfo* addrinfo_ptr) :
-    addrinfo_ptr_(addrinfo_ptr) {}
-
-  ~AddrinfoGuard() {
-    freeaddrinfo(addrinfo_ptr_);
-  }
+  ~AddrinfoGuard() { freeaddrinfo(addrinfo_ptr_); }
 };
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 // Summary:
 //   Closes a socket, with option to attempt it multiple times.
@@ -53,7 +47,7 @@ class AddrinfoGuard {
 // Side-effects:
 //   sets *fd to -1 if socket was closed.
 //
-bool CloseSocket(int *fd, int tries) {
+bool CloseSocket(int* fd, int tries) {
   for (int i = 0; i < tries; ++i) {
     if (!close(*fd)) {
       *fd = -1;
@@ -63,32 +57,28 @@ bool CloseSocket(int *fd, int tries) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
 // Sets an FD to be nonblocking.
 void FlipSetNonBlocking(int fd) {
   DCHECK_GE(fd, 0);
 
   int fcntl_return = fcntl(fd, F_GETFL, 0);
-  CHECK_NE(fcntl_return, -1)
-    << "error doing fcntl(fd, F_GETFL, 0) fd: " << fd
-    << " errno=" << errno;
+  CHECK_NE(fcntl_return, -1) << "error doing fcntl(fd, F_GETFL, 0) fd: " << fd
+                             << " errno=" << errno;
 
   if (fcntl_return & O_NONBLOCK)
     return;
 
   fcntl_return = fcntl(fd, F_SETFL, fcntl_return | O_NONBLOCK);
   CHECK_NE(fcntl_return, -1)
-    << "error doing fcntl(fd, F_SETFL, fcntl_return) fd: " << fd
-    << " errno=" << errno;
+      << "error doing fcntl(fd, F_SETFL, fcntl_return) fd: " << fd
+      << " errno=" << errno;
 }
 
 int SetDisableNagle(int fd) {
   int on = 1;
   int rc;
-  rc = setsockopt(fd, IPPROTO_TCP,  TCP_NODELAY,
-                  reinterpret_cast<char*>(&on), sizeof(on));
+  rc = setsockopt(
+      fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&on), sizeof(on));
   if (rc < 0) {
     close(fd);
     LOG(FATAL) << "setsockopt() TCP_NODELAY: failed on fd " << fd;
@@ -106,17 +96,19 @@ int CreateListeningSocket(const std::string& host,
                           bool reuseport,
                           bool wait_for_iface,
                           bool disable_nagle,
-                          int * listen_fd ) {
+                          int* listen_fd) {
   // start out by assuming things will fail.
   *listen_fd = -1;
 
   const char* node = NULL;
   const char* service = NULL;
 
-  if (!host.empty()) node = host.c_str();
-  if (!port.empty()) service = port.c_str();
+  if (!host.empty())
+    node = host.c_str();
+  if (!port.empty())
+    service = port.c_str();
 
-  struct addrinfo *results = 0;
+  struct addrinfo* results = 0;
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
 
@@ -129,21 +121,21 @@ int CreateListeningSocket(const std::string& host,
   hints.ai_socktype = SOCK_STREAM;
 
   int err = 0;
-  if ((err=getaddrinfo(node, service, &hints, &results))) {
+  if ((err = getaddrinfo(node, service, &hints, &results))) {
     // gai_strerror -is- threadsafe, so we get to use it here.
-    LOG(ERROR) << "getaddrinfo " << " for (" << host << ":" << port
-                  << ") " << gai_strerror(err) << "\n";
+    LOG(ERROR) << "getaddrinfo "
+               << " for (" << host << ":" << port << ") " << gai_strerror(err)
+               << "\n";
     return -1;
   }
   // this will delete the addrinfo memory when we return from this function.
   AddrinfoGuard addrinfo_guard(results);
 
-  int sock = socket(results->ai_family,
-                    results->ai_socktype,
-                    results->ai_protocol);
+  int sock =
+      socket(results->ai_family, results->ai_socktype, results->ai_protocol);
   if (sock == -1) {
-    LOG(ERROR) << "Unable to create socket for (" << host << ":"
-      << port << "): " << strerror(errno) << "\n";
+    LOG(ERROR) << "Unable to create socket for (" << host << ":" << port
+               << "): " << strerror(errno) << "\n";
     return -1;
   }
 
@@ -151,8 +143,11 @@ int CreateListeningSocket(const std::string& host,
     // set SO_REUSEADDR on the listening socket.
     int on = 1;
     int rc;
-    rc = setsockopt(sock, SOL_SOCKET,  SO_REUSEADDR,
-                    reinterpret_cast<char *>(&on), sizeof(on));
+    rc = setsockopt(sock,
+                    SOL_SOCKET,
+                    SO_REUSEADDR,
+                    reinterpret_cast<char*>(&on),
+                    sizeof(on));
     if (rc < 0) {
       close(sock);
       LOG(FATAL) << "setsockopt() failed fd=" << listen_fd << "\n";
@@ -165,8 +160,11 @@ int CreateListeningSocket(const std::string& host,
     // set SO_REUSEADDR on the listening socket.
     int on = 1;
     int rc;
-    rc = setsockopt(sock, SOL_SOCKET,  SO_REUSEPORT,
-                    reinterpret_cast<char *>(&on), sizeof(on));
+    rc = setsockopt(sock,
+                    SOL_SOCKET,
+                    SO_REUSEPORT,
+                    reinterpret_cast<char*>(&on),
+                    sizeof(on));
     if (rc < 0) {
       close(sock);
       LOG(FATAL) << "setsockopt() failed fd=" << listen_fd << "\n";
@@ -177,21 +175,21 @@ int CreateListeningSocket(const std::string& host,
     // If we are waiting for the interface to be raised, such as in an
     // HA environment, ignore reporting any errors.
     int saved_errno = errno;
-    if ( !wait_for_iface || errno != EADDRNOTAVAIL) {
-      LOG(ERROR) << "Bind was unsuccessful for (" << host << ":"
-        << port << "): " << strerror(errno) << "\n";
+    if (!wait_for_iface || errno != EADDRNOTAVAIL) {
+      LOG(ERROR) << "Bind was unsuccessful for (" << host << ":" << port
+                 << "): " << strerror(errno) << "\n";
     }
     // if we knew that we were not multithreaded, we could do the following:
     // " : " << strerror(errno) << "\n";
     if (CloseSocket(&sock, 100)) {
-      if ( saved_errno == EADDRNOTAVAIL ) {
+      if (saved_errno == EADDRNOTAVAIL) {
         return -3;
       }
       return -2;
     } else {
       // couldn't even close the dang socket?!
       LOG(ERROR) << "Unable to close the socket.. Considering this a fatal "
-                      "error, and exiting\n";
+                    "error, and exiting\n";
       exit(EXIT_FAILURE);
       return -1;
     }
@@ -205,8 +203,8 @@ int CreateListeningSocket(const std::string& host,
 
   if (listen(sock, backlog)) {
     // listen was unsuccessful.
-    LOG(ERROR) << "Listen was unsuccessful for (" << host << ":"
-      << port << "): " << strerror(errno) << "\n";
+    LOG(ERROR) << "Listen was unsuccessful for (" << host << ":" << port
+               << "): " << strerror(errno) << "\n";
     // if we knew that we were not multithreaded, we could do the following:
     // " : " << strerror(errno) << "\n";
 
@@ -216,7 +214,7 @@ int CreateListeningSocket(const std::string& host,
     } else {
       // couldn't even close the dang socket?!
       LOG(FATAL) << "Unable to close the socket.. Considering this a fatal "
-                      "error, and exiting\n";
+                    "error, and exiting\n";
     }
   }
 
@@ -226,11 +224,11 @@ int CreateListeningSocket(const std::string& host,
   return 0;
 }
 
-int CreateConnectedSocket( int *connect_fd,
-                           const std::string& host,
-                           const std::string& port,
-                           bool is_numeric_host_address,
-                           bool disable_nagle ) {
+int CreateConnectedSocket(int* connect_fd,
+                          const std::string& host,
+                          const std::string& port,
+                          bool is_numeric_host_address,
+                          bool disable_nagle) {
   const char* node = NULL;
   const char* service = NULL;
 
@@ -240,7 +238,7 @@ int CreateConnectedSocket( int *connect_fd,
   if (!port.empty())
     service = port.c_str();
 
-  struct addrinfo *results = 0;
+  struct addrinfo* results = 0;
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
 
@@ -252,25 +250,24 @@ int CreateConnectedSocket( int *connect_fd,
   hints.ai_socktype = SOCK_STREAM;
 
   int err = 0;
-  if ((err=getaddrinfo(node, service, &hints, &results))) {
+  if ((err = getaddrinfo(node, service, &hints, &results))) {
     // gai_strerror -is- threadsafe, so we get to use it here.
-    LOG(ERROR) << "getaddrinfo for (" << node << ":" << service << "): "
-               << gai_strerror(err);
+    LOG(ERROR) << "getaddrinfo for (" << node << ":" << service
+               << "): " << gai_strerror(err);
     return -1;
   }
   // this will delete the addrinfo memory when we return from this function.
   AddrinfoGuard addrinfo_guard(results);
 
-  int sock = socket(results->ai_family,
-                    results->ai_socktype,
-                    results->ai_protocol);
+  int sock =
+      socket(results->ai_family, results->ai_socktype, results->ai_protocol);
   if (sock == -1) {
     LOG(ERROR) << "Unable to create socket for (" << node << ":" << service
-               << "): " << strerror( errno );
+               << "): " << strerror(errno);
     return -1;
   }
 
-  FlipSetNonBlocking( sock );
+  FlipSetNonBlocking(sock);
 
   if (disable_nagle) {
     if (!SetDisableNagle(sock)) {
@@ -279,11 +276,11 @@ int CreateConnectedSocket( int *connect_fd,
   }
 
   int ret_val = 0;
-  if ( connect( sock, results->ai_addr, results->ai_addrlen ) ) {
-    if ( errno != EINPROGRESS ) {
+  if (connect(sock, results->ai_addr, results->ai_addrlen)) {
+    if (errno != EINPROGRESS) {
       LOG(ERROR) << "Connect was unsuccessful for (" << node << ":" << service
                  << "): " << strerror(errno);
-      close( sock );
+      close(sock);
       return -1;
     }
   } else {

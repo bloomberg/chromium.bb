@@ -46,18 +46,19 @@ void HttpSM::ProcessBodyData(const char* input, size_t size) {
 void HttpSM::ProcessHeaders(const BalsaHeaders& headers) {
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_HTTP_SERVER) {
     std::string host =
-      UrlUtilities::GetUrlHost(headers.GetHeader("Host").as_string());
+        UrlUtilities::GetUrlHost(headers.GetHeader("Host").as_string());
     std::string method = headers.request_method().as_string();
-    VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Received Request: "
-            << headers.request_uri().as_string() << " " << method;
-    std::string filename = EncodeURL(headers.request_uri().as_string(),
-                                host, method);
+    VLOG(1) << ACCEPTOR_CLIENT_IDENT
+            << "Received Request: " << headers.request_uri().as_string() << " "
+            << method;
+    std::string filename =
+        EncodeURL(headers.request_uri().as_string(), host, method);
     NewStream(stream_id_, 0, filename);
     stream_id_ += 2;
   } else {
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Received Response from "
-            << connection_->server_ip_ << ":"
-            << connection_->server_port_ << " ";
+            << connection_->server_ip_ << ":" << connection_->server_port_
+            << " ";
     sm_spdy_interface_->SendSynReply(stream_id_, headers);
   }
 }
@@ -72,17 +73,11 @@ void HttpSM::MessageDone() {
   }
 }
 
-void HttpSM::HandleHeaderError(BalsaFrame* framer) {
-  HandleError();
-}
+void HttpSM::HandleHeaderError(BalsaFrame* framer) { HandleError(); }
 
-void HttpSM::HandleChunkingError(BalsaFrame* framer) {
-  HandleError();
-}
+void HttpSM::HandleChunkingError(BalsaFrame* framer) { HandleError(); }
 
-void HttpSM::HandleBodyError(BalsaFrame* framer) {
-  HandleError();
-}
+void HttpSM::HandleBodyError(BalsaFrame* framer) { HandleError(); }
 
 void HttpSM::HandleError() {
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Error detected";
@@ -92,8 +87,7 @@ void HttpSM::AddToOutputOrder(const MemCacheIter& mci) {
   output_ordering_.AddToOutputOrder(mci);
 }
 
-void HttpSM::InitSMInterface(SMInterface* sm_spdy_interface,
-                             int32 server_idx) {
+void HttpSM::InitSMInterface(SMInterface* sm_spdy_interface, int32 server_idx) {
   sm_spdy_interface_ = sm_spdy_interface;
   server_idx_ = server_idx;
 }
@@ -141,29 +135,24 @@ bool HttpSM::MessageFullyRead() const {
   return http_framer_->MessageFullyRead();
 }
 
-void HttpSM::SetStreamID(uint32 stream_id) {
-  stream_id_ = stream_id;
-}
+void HttpSM::SetStreamID(uint32 stream_id) { stream_id_ = stream_id; }
 
-bool HttpSM::Error() const {
-  return http_framer_->Error();
-}
+bool HttpSM::Error() const { return http_framer_->Error(); }
 
 const char* HttpSM::ErrorAsString() const {
   return BalsaFrameEnums::ErrorCodeToString(http_framer_->ErrorCode());
 }
 
 void HttpSM::Reset() {
-  VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Reset: stream "
-          << stream_id_;
+  VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Reset: stream " << stream_id_;
   http_framer_->Reset();
 }
 
 void HttpSM::ResetForNewConnection() {
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Server connection closing "
-      << "to: " << connection_->server_ip_ << ":"
-      << connection_->server_port_ << " ";
+            << "to: " << connection_->server_ip_ << ":"
+            << connection_->server_port_ << " ";
   }
   // Message has not been fully read, either it is incomplete or the
   // server is closing the connection to signal message end.
@@ -186,11 +175,10 @@ void HttpSM::Cleanup() {
   }
 }
 
-int HttpSM::PostAcceptHook() {
-  return 1;
-}
+int HttpSM::PostAcceptHook() { return 1; }
 
-void HttpSM::NewStream(uint32 stream_id, uint32 priority,
+void HttpSM::NewStream(uint32 stream_id,
+                       uint32 priority,
                        const std::string& filename) {
   MemCacheIter mci;
   mci.stream_id = stream_id;
@@ -223,8 +211,11 @@ size_t HttpSM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
   return SendSynReplyImpl(stream_id, headers);
 }
 
-void HttpSM::SendDataFrame(uint32 stream_id, const char* data, int64 len,
-                   uint32 flags, bool compress) {
+void HttpSM::SendDataFrame(uint32 stream_id,
+                           const char* data,
+                           int64 len,
+                           uint32 flags,
+                           bool compress) {
   SendDataFrameImpl(stream_id, data, len, flags, compress);
 }
 
@@ -283,8 +274,11 @@ size_t HttpSM::SendSynStreamImpl(uint32 stream_id,
   return df_size;
 }
 
-void HttpSM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
-                       uint32 flags, bool compress) {
+void HttpSM::SendDataFrameImpl(uint32 stream_id,
+                               const char* data,
+                               int64 len,
+                               uint32 flags,
+                               bool compress) {
   char chunk_buf[128];
   snprintf(chunk_buf, sizeof(chunk_buf), "%x\r\n", (unsigned int)len);
   std::string chunk_description(chunk_buf);
@@ -313,8 +307,8 @@ void HttpSM::GetOutput() {
     return;
   }
   if (!mci->transformed_header) {
-    mci->bytes_sent = SendSynReply(mci->stream_id,
-                                   *(mci->file_data->headers()));
+    mci->bytes_sent =
+        SendSynReply(mci->stream_id, *(mci->file_data->headers()));
     mci->transformed_header = true;
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: GetOutput transformed "
             << "header stream_id: [" << mci->stream_id << "]";
@@ -334,7 +328,9 @@ void HttpSM::GetOutput() {
 
   SendDataFrame(mci->stream_id,
                 mci->file_data->body().data() + mci->body_bytes_consumed,
-                num_to_write, 0, true);
+                num_to_write,
+                0,
+                true);
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: GetOutput SendDataFrame["
           << mci->stream_id << "]: " << num_to_write;
   mci->body_bytes_consumed += num_to_write;

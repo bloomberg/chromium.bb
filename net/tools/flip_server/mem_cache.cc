@@ -29,7 +29,7 @@ const char FLAGS_cache_base_dir[] = ".";
 
 namespace net {
 
-void StoreBodyAndHeadersVisitor::ProcessBodyData(const char *input,
+void StoreBodyAndHeadersVisitor::ProcessBodyData(const char* input,
                                                  size_t size) {
   body.append(input, size);
 }
@@ -53,8 +53,7 @@ void StoreBodyAndHeadersVisitor::HandleBodyError(BalsaFrame* framer) {
 FileData::FileData(const BalsaHeaders* headers,
                    const std::string& filename,
                    const std::string& body)
-    : filename_(filename)
-    , body_(body) {
+    : filename_(filename), body_(body) {
   if (headers) {
     headers_.reset(new BalsaHeaders);
     headers_->CopyFrom(*headers);
@@ -67,9 +66,7 @@ FileData::~FileData() {}
 
 MemoryCache::MemoryCache() : cwd_(FLAGS_cache_base_dir) {}
 
-MemoryCache::~MemoryCache() {
-  ClearFiles();
-}
+MemoryCache::~MemoryCache() { ClearFiles(); }
 
 void MemoryCache::CloneFrom(const MemoryCache& mc) {
   DCHECK_NE(this, &mc);
@@ -97,11 +94,10 @@ void MemoryCache::AddFiles() {
 
       if (current_dir) {
         VLOG(1) << "Succeeded opening";
-        for (struct dirent* dir_data = readdir(current_dir);
-             dir_data != NULL;
+        for (struct dirent* dir_data = readdir(current_dir); dir_data != NULL;
              dir_data = readdir(current_dir)) {
           std::string current_entry_name =
-            current_dir_name + "/" + dir_data->d_name;
+              current_dir_name + "/" + dir_data->d_name;
           if (dir_data->d_type == DT_REG) {
             VLOG(1) << "Found file: " << current_entry_name;
             ReadAndStoreFileContents(current_entry_name.c_str());
@@ -158,7 +154,7 @@ void MemoryCache::ReadAndStoreFileContents(const char* filename) {
                                filename_contents.size() - pos);
     if (framer.Error() || pos == old_pos) {
       LOG(ERROR) << "Unable to make forward progress, or error"
-        " framing file: " << filename;
+                    " framing file: " << filename;
       if (framer.Error()) {
         LOG(INFO) << "********************************************ERROR!";
         return;
@@ -180,9 +176,9 @@ void MemoryCache::ReadAndStoreFileContents(const char* filename) {
   visitor.headers.AppendHeader("transfer-encoding", "chunked");
   visitor.headers.AppendHeader("connection", "keep-alive");
 
-  // Experiment with changing headers for forcing use of cached
-  // versions of content.
-  // TODO(mbelshe) REMOVE ME
+// Experiment with changing headers for forcing use of cached
+// versions of content.
+// TODO(mbelshe) REMOVE ME
 #if 0
   // TODO(mbelshe) append current date.
   visitor.headers.RemoveAllOfHeader("date");
@@ -196,15 +192,14 @@ void MemoryCache::ReadAndStoreFileContents(const char* filename) {
   DCHECK_EQ(std::string(filename).substr(0, cwd_.size()), cwd_);
   DCHECK_EQ(filename[cwd_.size()], '/');
   std::string filename_stripped = std::string(filename).substr(cwd_.size() + 1);
-  LOG(INFO) << "Adding file (" << visitor.body.length() << " bytes): "
-            << filename_stripped;
+  LOG(INFO) << "Adding file (" << visitor.body.length()
+            << " bytes): " << filename_stripped;
   size_t slash_pos = filename_stripped.find('/');
   if (slash_pos == std::string::npos) {
     slash_pos = filename_stripped.size();
   }
-  InsertFile(&visitor.headers,
-             filename_stripped.substr(0, slash_pos),
-             visitor.body);
+  InsertFile(
+      &visitor.headers, filename_stripped.substr(0, slash_pos), visitor.body);
 }
 
 FileData* MemoryCache::GetFileData(const std::string& filename) {

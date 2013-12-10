@@ -16,15 +16,15 @@
 
 namespace net {
 
-class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
+class StoreBodyAndHeadersVisitor : public BalsaVisitorInterface {
  public:
   void HandleError() { error_ = true; }
 
   // BalsaVisitorInterface:
-  virtual void ProcessBodyInput(const char *input, size_t size) OVERRIDE {}
-  virtual void ProcessBodyData(const char *input, size_t size) OVERRIDE;
-  virtual void ProcessHeaderInput(const char *input, size_t size) OVERRIDE {}
-  virtual void ProcessTrailerInput(const char *input, size_t size) OVERRIDE {}
+  virtual void ProcessBodyInput(const char* input, size_t size) OVERRIDE {}
+  virtual void ProcessBodyData(const char* input, size_t size) OVERRIDE;
+  virtual void ProcessHeaderInput(const char* input, size_t size) OVERRIDE {}
+  virtual void ProcessTrailerInput(const char* input, size_t size) OVERRIDE {}
   virtual void ProcessHeaders(const BalsaHeaders& headers) OVERRIDE {
     // nothing to do here-- we're assuming that the BalsaFrame has
     // been handed our headers.
@@ -37,17 +37,17 @@ class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
                                        size_t request_uri_length,
                                        const char* version_input,
                                        size_t version_length) OVERRIDE {}
-  virtual void ProcessResponseFirstLine(const char *line_input,
+  virtual void ProcessResponseFirstLine(const char* line_input,
                                         size_t line_length,
-                                        const char *version_input,
+                                        const char* version_input,
                                         size_t version_length,
-                                        const char *status_input,
+                                        const char* status_input,
                                         size_t status_length,
-                                        const char *reason_input,
+                                        const char* reason_input,
                                         size_t reason_length) OVERRIDE {}
   virtual void ProcessChunkLength(size_t chunk_length) OVERRIDE {}
-  virtual void ProcessChunkExtensions(const char *input,
-                                      size_t size) OVERRIDE {}
+  virtual void ProcessChunkExtensions(const char* input, size_t size) OVERRIDE {
+  }
   virtual void HeaderDone() OVERRIDE {}
   virtual void MessageDone() OVERRIDE {}
   virtual void HandleHeaderError(BalsaFrame* framer) OVERRIDE;
@@ -60,7 +60,6 @@ class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
   bool error_;
 };
 
-////////////////////////////////////////////////////////////////////////////////
 class FileData {
  public:
   FileData();
@@ -83,26 +82,24 @@ class FileData {
   DISALLOW_COPY_AND_ASSIGN(FileData);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
 class MemCacheIter {
  public:
-  MemCacheIter() :
-      file_data(NULL),
-      priority(0),
-      transformed_header(false),
-      body_bytes_consumed(0),
-      stream_id(0),
-      max_segment_size(kInitialDataSendersThreshold),
-      bytes_sent(0) {}
-  explicit MemCacheIter(FileData* fd) :
-      file_data(fd),
-      priority(0),
-      transformed_header(false),
-      body_bytes_consumed(0),
-      stream_id(0),
-      max_segment_size(kInitialDataSendersThreshold),
-      bytes_sent(0) {}
+  MemCacheIter()
+      : file_data(NULL),
+        priority(0),
+        transformed_header(false),
+        body_bytes_consumed(0),
+        stream_id(0),
+        max_segment_size(kInitialDataSendersThreshold),
+        bytes_sent(0) {}
+  explicit MemCacheIter(FileData* fd)
+      : file_data(fd),
+        priority(0),
+        transformed_header(false),
+        body_bytes_consumed(0),
+        stream_id(0),
+        max_segment_size(kInitialDataSendersThreshold),
+        bytes_sent(0) {}
   FileData* file_data;
   int priority;
   bool transformed_header;
@@ -111,8 +108,6 @@ class MemCacheIter {
   uint32 max_segment_size;
   size_t bytes_sent;
 };
-
-////////////////////////////////////////////////////////////////////////////////
 
 class MemoryCache {
  public:

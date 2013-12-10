@@ -6,10 +6,8 @@
 
 namespace net {
 
-MockSMInterface::MockSMInterface() {
-}
+MockSMInterface::MockSMInterface() {}
 
-MockSMInterface::~MockSMInterface() {
-}
+MockSMInterface::~MockSMInterface() {}
 
 }  // namespace net

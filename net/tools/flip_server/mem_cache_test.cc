@@ -15,8 +15,8 @@ class MemoryCacheWithFakeReadToString : public MemoryCache {
  public:
   virtual ~MemoryCacheWithFakeReadToString() {}
 
-  virtual void ReadToString(const char* filename, std::string* output)
-      OVERRIDE {
+  virtual void ReadToString(const char* filename,
+                            std::string* output) OVERRIDE {
     *output = data_map_[filename];
   }
 
@@ -25,7 +25,7 @@ class MemoryCacheWithFakeReadToString : public MemoryCache {
 
 class FlipMemoryCacheTest : public ::testing::Test {
  public:
-  FlipMemoryCacheTest(): mem_cache_(new MemoryCacheWithFakeReadToString) {}
+  FlipMemoryCacheTest() : mem_cache_(new MemoryCacheWithFakeReadToString) {}
 
  protected:
   scoped_ptr<MemoryCacheWithFakeReadToString> mem_cache_;
@@ -44,7 +44,8 @@ TEST_F(FlipMemoryCacheTest, ReadAndStoreFileContents) {
   FileData* hello;
 
   mem_cache_->data_map_["./foo"] = "bar";
-  mem_cache_->data_map_["./hello"] = "HTTP/1.0 200 OK\r\n"
+  mem_cache_->data_map_["./hello"] =
+      "HTTP/1.0 200 OK\r\n"
       "key1: value1\r\n"
       "key2: value2\r\n\r\n"
       "body: body\r\n";
@@ -63,8 +64,9 @@ TEST_F(FlipMemoryCacheTest, ReadAndStoreFileContents) {
   ASSERT_EQ("HTTP/1.1", hello->headers()->response_version());
   ASSERT_EQ("200", hello->headers()->response_code());
   ASSERT_EQ("OK", hello->headers()->response_reason_phrase());
-  ASSERT_EQ(4, std::distance(hello->headers()->header_lines_begin(),
-                             hello->headers()->header_lines_end()));
+  ASSERT_EQ(4,
+            std::distance(hello->headers()->header_lines_begin(),
+                          hello->headers()->header_lines_end()));
   ASSERT_TRUE(hello->headers()->HasHeader("key1"));
   ASSERT_TRUE(hello->headers()->HasHeader("key2"));
   ASSERT_TRUE(hello->headers()->HasHeader("transfer-encoding"));
@@ -82,7 +84,8 @@ TEST_F(FlipMemoryCacheTest, ReadAndStoreFileContents) {
 TEST_F(FlipMemoryCacheTest, GetFileDataForHtmlFile) {
   FileData* hello_html;
 
-  mem_cache_->data_map_["./hello.http"] = "HTTP/1.0 200 OK\r\n"
+  mem_cache_->data_map_["./hello.http"] =
+      "HTTP/1.0 200 OK\r\n"
       "key1: value1\r\n"
       "key2: value2\r\n\r\n"
       "body: body\r\n";

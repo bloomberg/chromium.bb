@@ -19,12 +19,12 @@ namespace net {
   "\x08http/1.0"
 #define SSL_CIPHER_LIST "!aNULL:!ADH:!eNull:!LOW:!EXP:RC4+RSA:MEDIUM:HIGH"
 
-int ssl_set_npn_callback(SSL *s,
-                         const unsigned char **data,
-                         unsigned int *len,
-                         void *arg) {
-  VLOG(1) <<  "SSL NPN callback: advertising protocols.";
-  *data = (const unsigned char *) NEXT_PROTO_STRING;
+int ssl_set_npn_callback(SSL* s,
+                         const unsigned char** data,
+                         unsigned int* len,
+                         void* arg) {
+  VLOG(1) << "SSL NPN callback: advertising protocols.";
+  *data = (const unsigned char*)NEXT_PROTO_STRING;
   *len = strlen(NEXT_PROTO_STRING);
   return SSL_TLSEXT_ERR_OK;
 }
@@ -57,9 +57,8 @@ void InitSSL(SSLState* state,
     PrintSslError();
     LOG(FATAL) << "Unable to use cert.pem as SSL cert.";
   }
-  if (SSL_CTX_use_PrivateKey_file(state->ssl_ctx,
-                                  ssl_key_name.c_str(),
-                                  SSL_FILETYPE_PEM) <= 0) {
+  if (SSL_CTX_use_PrivateKey_file(
+          state->ssl_ctx, ssl_key_name.c_str(), SSL_FILETYPE_PEM) <= 0) {
     PrintSslError();
     LOG(FATAL) << "Unable to use key.pem as SSL key.";
   }
@@ -68,8 +67,8 @@ void InitSSL(SSLState* state,
     LOG(FATAL) << "The cert.pem and key.pem files don't match";
   }
   if (use_npn) {
-    SSL_CTX_set_next_protos_advertised_cb(state->ssl_ctx,
-                                          ssl_set_npn_callback, NULL);
+    SSL_CTX_set_next_protos_advertised_cb(
+        state->ssl_ctx, ssl_set_npn_callback, NULL);
   }
   VLOG(1) << "SSL CTX default cipher list: " << SSL_CIPHER_LIST;
   SSL_CTX_set_cipher_list(state->ssl_ctx, SSL_CIPHER_LIST);
@@ -86,7 +85,7 @@ void InitSSL(SSLState* state,
   // Proper methods to disable compression don't exist until 0.9.9+. For now
   // we must manipulate the stack of compression methods directly.
   if (disable_ssl_compression) {
-    STACK_OF(SSL_COMP) *ssl_comp_methods = SSL_COMP_get_compression_methods();
+    STACK_OF(SSL_COMP)* ssl_comp_methods = SSL_COMP_get_compression_methods();
     int num_methods = sk_SSL_COMP_num(ssl_comp_methods);
     int i;
     for (i = 0; i < num_methods; i++) {

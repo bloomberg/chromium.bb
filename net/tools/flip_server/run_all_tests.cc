@@ -5,6 +5,4 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 
-int main(int argc, char** argv) {
-  return base::TestSuite(argc, argv).Run();
-}
+int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }

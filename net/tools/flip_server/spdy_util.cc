@@ -31,4 +31,3 @@ std::string EncodeURL(std::string uri, std::string host, std::string method) {
 }
 
 }  // namespace net
-

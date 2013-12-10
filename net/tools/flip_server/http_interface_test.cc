@@ -40,14 +40,15 @@ class MockSMConnection : public SMConnection {
                      log_prefix) {}
 
   MOCK_METHOD0(Cleanup, void());
-  MOCK_METHOD8(InitSMConnection, void(SMConnectionPoolInterface*,
-                                      SMInterface*,
-                                      EpollServer*,
-                                      int,
-                                      std::string,
-                                      std::string,
-                                      std::string,
-                                      bool));
+  MOCK_METHOD8(InitSMConnection,
+               void(SMConnectionPoolInterface*,
+                    SMInterface*,
+                    EpollServer*,
+                    int,
+                    std::string,
+                    std::string,
+                    std::string,
+                    bool));
 };
 
 class FlipHttpSMTest : public ::testing::Test {
@@ -167,10 +168,11 @@ TEST_F(FlipHttpSMTest, InitSMConnection) {
 }
 
 TEST_F(FlipHttpSMTest, ProcessReadInput) {
-  std::string data = "HTTP/1.1 200 OK\r\n"
+  std::string data =
+      "HTTP/1.1 200 OK\r\n"
       "Content-Length: 14\r\n\r\n"
       "hello, world\r\n";
-  testing::MockFunction<void(int)> checkpoint;
+  testing::MockFunction<void(int)> checkpoint;  // NOLINT
   {
     InSequence s;
     EXPECT_CALL(*mock_another_interface_, SendSynReply(_, _));
@@ -205,7 +207,7 @@ TEST_F(FlipHttpSMTest, ProcessWriteInput) {
 
 TEST_F(FlipHttpSMTest, Reset) {
   std::string data = "HTTP/1.1 200 OK\r\n\r\n";
-  testing::MockFunction<void(int)> checkpoint;
+  testing::MockFunction<void(int)> checkpoint;  // NOLINT
   {
     InSequence s;
     EXPECT_CALL(*mock_another_interface_, SendSynReply(_, _));
@@ -228,7 +230,7 @@ TEST_F(FlipHttpSMTest, Reset) {
 
 TEST_F(FlipHttpSMTest, ResetForNewConnection) {
   std::string data = "HTTP/1.1 200 OK\r\n\r\n";
-  testing::MockFunction<void(int)> checkpoint;
+  testing::MockFunction<void(int)> checkpoint;  // NOLINT
   {
     InSequence s;
     EXPECT_CALL(*mock_another_interface_, SendSynReply(_, _));
@@ -264,7 +266,8 @@ TEST_F(FlipHttpSMTest, NewStream) {
 }
 
 TEST_F(FlipHttpSMTest, NewStreamError) {
-  std::string syn_reply = "HTTP/1.1 404 Not Found\r\n"
+  std::string syn_reply =
+      "HTTP/1.1 404 Not Found\r\n"
       "transfer-encoding: chunked\r\n\r\n";
   std::string body = "e\r\npage not found\r\n";
   uint32 stream_id = 4;
@@ -284,7 +287,8 @@ TEST_F(FlipHttpSMTest, NewStreamError) {
 }
 
 TEST_F(FlipHttpSMTest, SendErrorNotFound) {
-  std::string syn_reply = "HTTP/1.1 404 Not Found\r\n"
+  std::string syn_reply =
+      "HTTP/1.1 404 Not Found\r\n"
       "transfer-encoding: chunked\r\n\r\n";
   std::string body = "e\r\npage not found\r\n";
   uint32 stream_id = 13;
@@ -314,7 +318,8 @@ TEST_F(FlipHttpSMTest, SendErrorNotFound) {
 }
 
 TEST_F(FlipHttpSMTest, SendSynStream) {
-  std::string expected = "GET / HTTP/1.0\r\n"
+  std::string expected =
+      "GET / HTTP/1.0\r\n"
       "key1: value1\r\n\r\n";
   BalsaHeaders headers;
   headers.SetResponseFirstlineFromStringPieces("GET", "/path", "HTTP/1.0");
@@ -326,7 +331,8 @@ TEST_F(FlipHttpSMTest, SendSynStream) {
 }
 
 TEST_F(FlipHttpSMTest, SendSynReply) {
-  std::string expected = "HTTP/1.1 200 OK\r\n"
+  std::string expected =
+      "HTTP/1.1 200 OK\r\n"
       "key1: value1\r\n\r\n";
   BalsaHeaders headers;
   headers.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "OK");
@@ -409,9 +415,7 @@ TEST_F(FlipHttpSMHttpTest, ProcessHeaders) {
 
   BalsaHeaders headers;
   headers.AppendHeader("Host", "example.com");
-  headers.SetRequestFirstlineFromStringPieces("GET",
-                                              "/path/file",
-                                              "HTTP/1.0");
+  headers.SetRequestFirstlineFromStringPieces("GET", "/path/file", "HTTP/1.0");
   uint32 stream_id = 133;
   interface_->SetStreamID(stream_id);
   ASSERT_FALSE(HasStream(stream_id));

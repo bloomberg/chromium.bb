@@ -54,17 +54,14 @@ SMConnection::SMConnection(EpollServer* epoll_server,
       sm_interface_(NULL),
       log_prefix_(log_prefix),
       max_bytes_sent_per_dowrite_(4096),
-      ssl_(NULL) {
-}
+      ssl_(NULL) {}
 
 SMConnection::~SMConnection() {
   if (initialized())
     Reset();
 }
 
-EpollServer* SMConnection::epoll_server() {
-  return epoll_server_;
-}
+EpollServer* SMConnection::epoll_server() { return epoll_server_; }
 
 void SMConnection::ReadyToSend() {
   VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
@@ -104,11 +101,8 @@ void SMConnection::InitSMConnection(SMConnectionPoolInterface* connection_pool,
     // TODO(kelindsay): is_numeric_host_address value needs to be detected
     server_ip_ = server_ip;
     server_port_ = server_port;
-    int ret = CreateConnectedSocket(&fd_,
-                                    server_ip,
-                                    server_port,
-                                    true,
-                                    acceptor_->disable_nagle_);
+    int ret = CreateConnectedSocket(
+        &fd_, server_ip, server_port, true, acceptor_->disable_nagle_);
 
     if (ret < 0) {
       LOG(ERROR) << "-1 Could not create connected socket";
@@ -117,12 +111,12 @@ void SMConnection::InitSMConnection(SMConnectionPoolInterface* connection_pool,
       DCHECK_NE(-1, fd_);
       connection_complete_ = true;
       VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-              << "Connection complete to: " << server_ip_ << ":"
-              << server_port_ << " ";
+              << "Connection complete to: " << server_ip_ << ":" << server_port_
+              << " ";
     }
     VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-            << "Connecting to server: " << server_ip_ << ":"
-              << server_port_ << " ";
+            << "Connecting to server: " << server_ip_ << ":" << server_port_
+            << " ";
   } else {
     // If fd != -1 then we are initializing a connection that has just been
     // accepted from the listen socket.
@@ -132,7 +126,7 @@ void SMConnection::InitSMConnection(SMConnectionPoolInterface* connection_pool,
     }
     if (fd_ != -1) {
       VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-               << "Closing pre-existing fd";
+              << "Closing pre-existing fd";
       close(fd_);
       fd_ = -1;
     }
@@ -261,8 +255,8 @@ void SMConnection::Cleanup(const char* cleanup) {
 }
 
 void SMConnection::HandleEvents() {
-  VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "Received: "
-          << EpollServer::EventMaskToString(events_).c_str();
+  VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+          << "Received: " << EpollServer::EventMaskToString(events_).c_str();
 
   if (events_ & EPOLLIN) {
     if (!DoRead())
@@ -274,8 +268,8 @@ void SMConnection::HandleEvents() {
     if (connection_complete_ == false) {
       int sock_error;
       socklen_t sock_error_len = sizeof(sock_error);
-      int ret = getsockopt(fd_, SOL_SOCKET, SO_ERROR, &sock_error,
-                            &sock_error_len);
+      int ret =
+          getsockopt(fd_, SOL_SOCKET, SO_ERROR, &sock_error, &sock_error_len);
       if (ret != 0) {
         VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                 << "getsockopt error: " << errno << ": " << strerror(errno);
@@ -285,7 +279,7 @@ void SMConnection::HandleEvents() {
         connection_complete_ = true;
         VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                 << "Connection complete to " << server_ip_ << ":"
-              << server_port_ << " ";
+                << server_port_ << " ";
       } else if (sock_error == EINPROGRESS) {
         return;
       } else {
@@ -304,7 +298,7 @@ void SMConnection::HandleEvents() {
   }
   return;
 
-  handle_close_or_error:
+ handle_close_or_error:
   Cleanup("HandleEvents");
 }
 
@@ -316,25 +310,28 @@ bool SMConnection::WasSpdyNegotiated(SpdyMajorVersion* version_negotiated) {
 
   // If this is an SSL connection, check if NPN specifies SPDY.
   if (ssl_) {
-    const unsigned char *npn_proto;
+    const unsigned char* npn_proto;
     unsigned int npn_proto_len;
     SSL_get0_next_proto_negotiated(ssl_, &npn_proto, &npn_proto_len);
     if (npn_proto_len > 0) {
-      std::string npn_proto_str((const char *)npn_proto, npn_proto_len);
+      std::string npn_proto_str((const char*)npn_proto, npn_proto_len);
       VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
               << "NPN protocol detected: " << npn_proto_str;
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
-                   "spdy/2", npn_proto_len)) {
+                   "spdy/2",
+                   npn_proto_len)) {
         *version_negotiated = SPDY2;
         return true;
       }
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
-                   "spdy/3", npn_proto_len)) {
+                   "spdy/3",
+                   npn_proto_len)) {
         *version_negotiated = SPDY3;
         return true;
       }
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
-                   "spdy/4a2", npn_proto_len)) {
+                   "spdy/4a2",
+                   npn_proto_len)) {
         *version_negotiated = SPDY4;
         return true;
       }
@@ -363,55 +360,43 @@ bool SMConnection::SetupProtocolInterfaces() {
   }
 
   switch (acceptor_->flip_handler_type_) {
-    case FLIP_HANDLER_HTTP_SERVER:
-      {
-        DCHECK(!spdy_negotiated);
-        VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                << (sm_http_interface_ ? "Creating" : "Reusing")
-                << " HTTP interface.";
-        if (!sm_http_interface_)
-          sm_http_interface_ = new HttpSM(this,
-                                          NULL,
-                                          memory_cache_,
-                                          acceptor_);
-        sm_interface_ = sm_http_interface_;
-      }
+    case FLIP_HANDLER_HTTP_SERVER: {
+      DCHECK(!spdy_negotiated);
+      VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+              << (sm_http_interface_ ? "Creating" : "Reusing")
+              << " HTTP interface.";
+      if (!sm_http_interface_)
+        sm_http_interface_ = new HttpSM(this, NULL, memory_cache_, acceptor_);
+      sm_interface_ = sm_http_interface_;
       break;
-    case FLIP_HANDLER_PROXY:
-      {
-        VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                << (sm_streamer_interface_ ? "Creating" : "Reusing")
-                << " PROXY Streamer interface.";
-        if (!sm_streamer_interface_) {
-          sm_streamer_interface_ = new StreamerSM(this,
-                                                  NULL,
-                                                  epoll_server_,
-                                                  acceptor_);
-          sm_streamer_interface_->set_is_request();
-        }
-        sm_interface_ = sm_streamer_interface_;
-        // If spdy is not negotiated, the streamer interface will proxy all
-        // data to the origin server.
-        if (!spdy_negotiated)
-          break;
+    }
+    case FLIP_HANDLER_PROXY: {
+      VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+              << (sm_streamer_interface_ ? "Creating" : "Reusing")
+              << " PROXY Streamer interface.";
+      if (!sm_streamer_interface_) {
+        sm_streamer_interface_ =
+            new StreamerSM(this, NULL, epoll_server_, acceptor_);
+        sm_streamer_interface_->set_is_request();
       }
-      // Otherwise fall through into the case below.
-    case FLIP_HANDLER_SPDY_SERVER:
-      {
-        DCHECK(spdy_negotiated);
-        VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                << (sm_spdy_interface_ ? "Creating" : "Reusing")
-                << " SPDY interface.";
-        if (!sm_spdy_interface_)
-          sm_spdy_interface_ = new SpdySM(this,
-                                          NULL,
-                                          epoll_server_,
-                                          memory_cache_,
-                                          acceptor_,
-                                          version);
-        sm_interface_ = sm_spdy_interface_;
-      }
+      sm_interface_ = sm_streamer_interface_;
+      // If spdy is not negotiated, the streamer interface will proxy all
+      // data to the origin server.
+      if (!spdy_negotiated)
+        break;
+    }
+    // Otherwise fall through into the case below.
+    case FLIP_HANDLER_SPDY_SERVER: {
+      DCHECK(spdy_negotiated);
+      VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+              << (sm_spdy_interface_ ? "Creating" : "Reusing")
+              << " SPDY interface.";
+      if (!sm_spdy_interface_)
+        sm_spdy_interface_ = new SpdySM(
+            this, NULL, epoll_server_, memory_cache_, acceptor_, version);
+      sm_interface_ = sm_spdy_interface_;
       break;
+    }
   }
 
   CorkSocket();
@@ -469,12 +454,12 @@ bool SMConnection::DoRead() {
         default:
           VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                   << "While calling recv, got error: "
-                  << (ssl_?"(ssl error)":strerror(stored_errno));
+                  << (ssl_ ? "(ssl error)" : strerror(stored_errno));
           goto error_or_close;
       }
     } else if (bytes_read > 0) {
       VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "read " << bytes_read
-               << " bytes";
+              << " bytes";
       last_read_time_ = time(NULL);
       // If the protocol hasn't been detected yet, set up the handlers
       // we'll need.
@@ -498,7 +483,7 @@ bool SMConnection::DoRead() {
   VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "DoRead done!";
   return true;
 
-  error_or_close:
+ error_or_close:
   VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
           << "DoRead(): error_or_close. "
           << "Cleaning up, then returning false";
@@ -536,9 +521,7 @@ bool SMConnection::DoConsumeReadData() {
   return true;
 }
 
-void SMConnection::HandleResponseFullyRead() {
-  sm_interface_->Cleanup();
-}
+void SMConnection::HandleResponseFullyRead() { sm_interface_->Cleanup(); }
 
 bool SMConnection::DoWrite() {
   size_t bytes_sent = 0;
@@ -558,8 +541,8 @@ bool SMConnection::DoWrite() {
     }
   }
   while (!output_list_.empty()) {
-    VLOG(2) << log_prefix_ << "DoWrite: Items in output list: "
-            << output_list_.size();
+    VLOG(2) << log_prefix_
+            << "DoWrite: Items in output list: " << output_list_.size();
     if (bytes_sent >= max_bytes_sent_per_dowrite_) {
       VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
               << " byte sent >= max bytes sent per write: Setting EPOLLOUT: "
@@ -571,7 +554,7 @@ bool SMConnection::DoWrite() {
       sm_interface_->GetOutput();
     }
     DataFrame* data_frame = output_list_.front();
-    const char*  bytes = data_frame->data;
+    const char* bytes = data_frame->data;
     int size = data_frame->size;
     bytes += data_frame->index;
     size -= data_frame->index;
@@ -606,13 +589,13 @@ bool SMConnection::DoWrite() {
           continue;
         default:
           VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                  << "While calling send, got error: " << stored_errno
-                  << ": " << (ssl_?"":strerror(stored_errno));
+                  << "While calling send, got error: " << stored_errno << ": "
+                  << (ssl_ ? "" : strerror(stored_errno));
           goto error_or_close;
       }
     } else if (bytes_written > 0) {
-      VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "Wrote: "
-              << bytes_written << " bytes";
+      VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+              << "Wrote: " << bytes_written << " bytes";
       data_frame->index += bytes_written;
       bytes_sent += bytes_written;
       continue;
@@ -660,8 +643,7 @@ void SMConnection::Reset() {
   initialized_ = false;
   protocol_detected_ = false;
   events_ = 0;
-  for (std::list<DataFrame*>::iterator i =
-       output_list_.begin();
+  for (std::list<DataFrame*>::iterator i = output_list_.begin();
        i != output_list_.end();
        ++i) {
     delete *i;
@@ -671,12 +653,12 @@ void SMConnection::Reset() {
 
 // static
 SMConnection* SMConnection::NewSMConnection(EpollServer* epoll_server,
-                                            SSLState *ssl_state,
+                                            SSLState* ssl_state,
                                             MemoryCache* memory_cache,
-                                            FlipAcceptor *acceptor,
+                                            FlipAcceptor* acceptor,
                                             std::string log_prefix) {
-  return new SMConnection(epoll_server, ssl_state, memory_cache,
-                          acceptor, log_prefix);
+  return new SMConnection(
+      epoll_server, ssl_state, memory_cache, acceptor, log_prefix);
 }
 
 }  // namespace net

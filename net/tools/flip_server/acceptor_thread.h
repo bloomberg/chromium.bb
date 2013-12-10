@@ -28,25 +28,25 @@ struct SSLState;
 //    a bool cross threads - especially one which only is set once...
 class Notification {
  public:
-   explicit Notification(bool value) : value_(value) {}
+  explicit Notification(bool value) : value_(value) {}
 
-   void Notify() {
-     base::AutoLock al(lock_);
-     value_ = true;
-   }
-   bool HasBeenNotified() {
-     base::AutoLock al(lock_);
-     return value_;
-   }
-   bool value_;
-   base::Lock lock_;
+  void Notify() {
+    base::AutoLock al(lock_);
+    value_ = true;
+  }
+  bool HasBeenNotified() {
+    base::AutoLock al(lock_);
+    return value_;
+  }
+  bool value_;
+  base::Lock lock_;
 };
 
 class SMAcceptorThread : public base::SimpleThread,
                          public EpollCallbackInterface,
                          public SMConnectionPoolInterface {
  public:
-  SMAcceptorThread(FlipAcceptor *acceptor, MemoryCache* memory_cache);
+  SMAcceptorThread(FlipAcceptor* acceptor, MemoryCache* memory_cache);
   virtual ~SMAcceptorThread();
 
   // EpollCallbackInteface interface
@@ -65,7 +65,7 @@ class SMAcceptorThread : public base::SimpleThread,
   SMConnection* NewConnection();
   SMConnection* FindOrMakeNewSMConnection();
   void InitWorker();
-  void HandleConnection(int server_fd, struct sockaddr_in *remote_addr);
+  void HandleConnection(int server_fd, struct sockaddr_in* remote_addr);
   void AcceptFromListenFD();
 
   // Notify the Accept thread that it is time to terminate.

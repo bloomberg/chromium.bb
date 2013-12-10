@@ -46,9 +46,9 @@ class SMConnection : public SMConnectionInterface,
   virtual ~SMConnection();
 
   static SMConnection* NewSMConnection(EpollServer* epoll_server,
-                                       SSLState *ssl_state,
+                                       SSLState* ssl_state,
                                        MemoryCache* memory_cache,
-                                       FlipAcceptor *acceptor,
+                                       FlipAcceptor* acceptor,
                                        std::string log_prefix);
 
   // TODO(mbelshe): Make these private.
@@ -125,6 +125,7 @@ class SMConnection : public SMConnectionInterface,
                MemoryCache* memory_cache,
                FlipAcceptor* acceptor,
                std::string log_prefix);
+
  private:
   int fd_;
   int events_;
@@ -136,10 +137,10 @@ class SMConnection : public SMConnectionInterface,
 
   SMConnectionPoolInterface* connection_pool_;
 
-  EpollServer *epoll_server_;
-  SSLState *ssl_state_;
+  EpollServer* epoll_server_;
+  SSLState* ssl_state_;
   MemoryCache* memory_cache_;
-  FlipAcceptor *acceptor_;
+  FlipAcceptor* acceptor_;
   std::string client_ip_;
 
   RingBuffer read_buffer_;

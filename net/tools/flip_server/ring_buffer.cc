@@ -12,42 +12,19 @@ RingBuffer::RingBuffer(int buffer_size)
       buffer_size_(buffer_size),
       bytes_used_(0),
       read_idx_(0),
-      write_idx_(0) {
-}
+      write_idx_(0) {}
 
 RingBuffer::~RingBuffer() {}
 
-////////////////////////////////////////////////////////////////////////////////
+int RingBuffer::ReadableBytes() const { return bytes_used_; }
 
-int RingBuffer::ReadableBytes() const {
-  return bytes_used_;
-}
+int RingBuffer::BufferSize() const { return buffer_size_; }
 
-////////////////////////////////////////////////////////////////////////////////
+int RingBuffer::BytesFree() const { return BufferSize() - ReadableBytes(); }
 
-int RingBuffer::BufferSize() const {
-  return buffer_size_;
-}
+bool RingBuffer::Empty() const { return ReadableBytes() == 0; }
 
-////////////////////////////////////////////////////////////////////////////////
-
-int RingBuffer::BytesFree() const {
-  return BufferSize() - ReadableBytes();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool RingBuffer::Empty() const {
-  return ReadableBytes() == 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-bool RingBuffer::Full() const {
-  return ReadableBytes() == BufferSize();
-}
-
-////////////////////////////////////////////////////////////////////////////////
+bool RingBuffer::Full() const { return ReadableBytes() == BufferSize(); }
 
 // Returns the number of characters written.
 // Appends up-to-'size' bytes to the ringbuffer.
@@ -94,8 +71,6 @@ int RingBuffer::Write(const char* bytes, int size) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 // Sets *ptr to the beginning of writable memory, and sets *size to the size
 // available for writing using this pointer.
 void RingBuffer::GetWritablePtr(char** ptr, int* size) const {
@@ -110,8 +85,6 @@ void RingBuffer::GetWritablePtr(char** ptr, int* size) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 // Sets *ptr to the beginning of readable memory, and sets *size to the size
 // available for reading using this pointer.
 void RingBuffer::GetReadablePtr(char** ptr, int* size) const {
@@ -125,8 +98,6 @@ void RingBuffer::GetReadablePtr(char** ptr, int* size) const {
     *size = buffer_size_ - read_idx_;
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 // returns the number of bytes read into
 int RingBuffer::Read(char* bytes, int size) {
@@ -171,18 +142,14 @@ int RingBuffer::Read(char* bytes, int size) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 void RingBuffer::Clear() {
   bytes_used_ = 0;
   write_idx_ = 0;
   read_idx_ = 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 bool RingBuffer::Reserve(int size) {
-  DCHECK(size > 0);
+  DCHECK_GT(size, 0);
   char* write_ptr = NULL;
   int write_size = 0;
   GetWritablePtr(&write_ptr, &write_size);
@@ -197,8 +164,8 @@ bool RingBuffer::Reserve(int size) {
       // possible if the read_idx < write_idx. If write_idx < read_idx, then
       // the writeable region must be contiguous: [write_idx, read_idx). There
       // is no work to be done for the latter.
-      DCHECK(read_idx_ <= write_idx_);
-      DCHECK(read_size == ReadableBytes());
+      DCHECK_LE(read_idx_, write_idx_);
+      DCHECK_EQ(read_size, ReadableBytes());
       if (read_idx_ < write_idx_) {
         // Writeable area fragmented, consolidate it.
         memmove(buffer_.get(), read_ptr, read_size);
@@ -206,7 +173,7 @@ bool RingBuffer::Reserve(int size) {
         write_idx_ = read_size;
       } else if (read_idx_ == write_idx_) {
         // No unconsumed data in the buffer, simply reset the indexes.
-        DCHECK(ReadableBytes() == 0);
+        DCHECK_EQ(ReadableBytes(), 0);
         read_idx_ = 0;
         write_idx_ = 0;
       }
@@ -217,8 +184,6 @@ bool RingBuffer::Reserve(int size) {
   DCHECK_LE(size, buffer_size_ - write_idx_);
   return true;
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 void RingBuffer::AdvanceReadablePtr(int amount_to_consume) {
   CHECK_GE(amount_to_consume, 0);
@@ -231,8 +196,6 @@ void RingBuffer::AdvanceReadablePtr(int amount_to_consume) {
   bytes_used_ -= amount_to_consume;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 void RingBuffer::AdvanceWritablePtr(int amount_to_produce) {
   CHECK_GE(amount_to_produce, 0);
   CHECK_LE(amount_to_produce, BytesFree());
@@ -241,11 +204,10 @@ void RingBuffer::AdvanceWritablePtr(int amount_to_produce) {
   bytes_used_ += amount_to_produce;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 void RingBuffer::Resize(int buffer_size) {
   CHECK_GE(buffer_size, 0);
-  if (buffer_size == buffer_size_) return;
+  if (buffer_size == buffer_size_)
+    return;
 
   char* new_buffer = new char[buffer_size];
   if (buffer_size < bytes_used_) {
@@ -259,7 +221,8 @@ void RingBuffer::Resize(int buffer_size) {
     int size;
     char* ptr;
     GetReadablePtr(&ptr, &size);
-    if (size == 0) break;
+    if (size == 0)
+      break;
     if (size > buffer_size) {
       size = buffer_size;
     }
@@ -276,4 +239,3 @@ void RingBuffer::Resize(int buffer_size) {
 }
 
 }  // namespace net
-

@@ -4,10 +4,10 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <stdio.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -24,9 +24,6 @@
 #include "net/tools/flip_server/sm_interface.h"
 #include "net/tools/flip_server/spdy_interface.h"
 #include "net/tools/flip_server/streamer_interface.h"
-
-using std::cout;
-using std::cerr;
 
 // If true, then disables the nagle algorithm);
 bool FLAGS_disable_nagle = true;
@@ -55,20 +52,18 @@ double FLAGS_server_think_time_in_s = 0;
 
 net::FlipConfig g_proxy_config;
 
-////////////////////////////////////////////////////////////////////////////////
-
-std::vector<std::string> &split(const std::string &s,
+std::vector<std::string>& split(const std::string& s,
                                 char delim,
-                                std::vector<std::string> &elems) {
+                                std::vector<std::string>& elems) {
   std::stringstream ss(s);
   std::string item;
-  while(std::getline(ss, item, delim)) {
+  while (std::getline(ss, item, delim)) {
     elems.push_back(item);
   }
   return elems;
 }
 
-std::vector<std::string> split(const std::string &s, char delim) {
+std::vector<std::string> split(const std::string& s, char delim) {
   std::vector<std::string> elems;
   return split(s, delim, elems);
 }
@@ -85,8 +80,7 @@ bool GotQuitFromStdin() {
     VLOG(1) << "scanning string: \"" << maybequit << "\"";
   }
   return (maybequit.size() > 1 &&
-          (maybequit.c_str()[0] == 'q' ||
-           maybequit.c_str()[0] == 'Q'));
+          (maybequit.c_str()[0] == 'q' || maybequit.c_str()[0] == 'Q'));
 }
 
 const char* BoolToStr(bool b) {
@@ -95,13 +89,10 @@ const char* BoolToStr(bool b) {
   return "false";
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 static bool wantExit = false;
 static bool wantLogClose = false;
-void SignalHandler(int signum)
-{
-  switch(signum) {
+void SignalHandler(int signum) {
+  switch (signum) {
     case SIGTERM:
     case SIGINT:
       wantExit = true;
@@ -112,36 +103,39 @@ void SignalHandler(int signum)
   }
 }
 
-static int OpenPidFile(const char *pidfile)
-{
+static int OpenPidFile(const char* pidfile) {
   int fd;
   struct stat pid_stat;
   int ret;
 
   fd = open(pidfile, O_RDWR | O_CREAT, 0600);
   if (fd == -1) {
-      cerr << "Could not open pid file '" << pidfile << "' for reading.\n";
-      exit(1);
+    fprintf(stderr, "Could not open pid file '%s' for reading.\n", pidfile);
+    exit(1);
   }
 
   ret = flock(fd, LOCK_EX | LOCK_NB);
   if (ret == -1) {
     if (errno == EWOULDBLOCK) {
-      cerr << "Flip server is already running.\n";
+      fprintf(stderr, "Flip server is already running.\n");
     } else {
-      cerr << "Error getting lock on pid file: " << strerror(errno) << "\n";
+      perror("Error getting lock on pid file");
     }
     exit(1);
   }
 
   if (fstat(fd, &pid_stat) == -1) {
-    cerr << "Could not stat pid file '" << pidfile << "': " << strerror(errno)
-         << "\n";
+    fprintf(
+        stderr, "Could not stat pid file '%s': %s\n", pidfile, strerror(errno));
+    exit(1);
   }
   if (pid_stat.st_size != 0) {
     if (ftruncate(fd, pid_stat.st_size) == -1) {
-      cerr << "Could not truncate pid file '" << pidfile << "': "
-           << strerror(errno) << "\n";
+      fprintf(stderr,
+              "Could not truncate pid file '%s': %s\n",
+              pidfile,
+              strerror(errno));
+      exit(1);
     }
   }
 
@@ -149,7 +143,7 @@ static int OpenPidFile(const char *pidfile)
   snprintf(pid_str, sizeof(pid_str), "%d", getpid());
   int bytes = static_cast<int>(strlen(pid_str));
   if (write(fd, pid_str, strlen(pid_str)) != bytes) {
-    cerr << "Could not write pid file: " << strerror(errno) << "\n";
+    perror("Could not write pid file");
     close(fd);
     exit(1);
   }
@@ -157,8 +151,7 @@ static int OpenPidFile(const char *pidfile)
   return fd;
 }
 
-int main (int argc, char**argv)
-{
+int main(int argc, char** argv) {
   unsigned int i = 0;
   bool wait_for_iface = false;
   int pidfile_fd;
@@ -172,40 +165,41 @@ int main (int argc, char**argv)
   CommandLine cl(argc, argv);
 
   if (cl.HasSwitch("help") || argc < 2) {
-    cout << argv[0] << " <options>\n";
-    cout << "  Proxy options:\n";
-    cout << "\t--proxy<1..n>=\"<listen ip>,<listen port>,"
-         << "<ssl cert filename>,\n"
-         << "\t               <ssl key filename>,<http server ip>,"
-         << "<http server port>,\n"
-         << "\t               [https server ip],[https server port],"
-         << "<spdy only 0|1>\"\n";
-    cout << "\t  * The https server ip and port may be left empty if they are"
-         << " the same as\n"
-         << "\t    the http server fields.\n";
-    cout << "\t  * spdy only prevents non-spdy https connections from being"
-         << " passed\n"
-         << "\t    through the proxy listen ip:port.\n";
-    cout << "\t--forward-ip-header=<header name>\n";
-    cout << "\n  Server options:\n";
-    cout << "\t--spdy-server=\"<listen ip>,<listen port>,[ssl cert filename],"
-         << "\n\t               [ssl key filename]\"\n";
-    cout << "\t--http-server=\"<listen ip>,<listen port>,[ssl cert filename],"
-         << "\n\t               [ssl key filename]\"\n";
-    cout << "\t  * Leaving the ssl cert and key fields empty will disable ssl"
-         << " for the\n"
-         << "\t    http and spdy flip servers\n";
-    cout << "\n  Global options:\n";
-    cout << "\t--logdest=<file|system|both>\n";
-    cout << "\t--logfile=<logfile>\n";
-    cout << "\t--wait-for-iface\n";
-    cout << "\t  * The flip server will block until the listen ip has been"
-         << " raised.\n";
-    cout << "\t--ssl-session-expiry=<seconds> (default is 300)\n";
-    cout << "\t--ssl-disable-compression\n";
-    cout << "\t--idle-timeout=<seconds> (default is 300)\n";
-    cout << "\t--pidfile=<filepath> (default /var/run/flip-server.pid)\n";
-    cout << "\t--help\n";
+    printf("%s <options>\n", argv[0]);
+    printf("  Proxy options:\n");
+    printf(
+        "\t--proxy<1..n>=\"<listen ip>,<listen port>,"
+        "<ssl cert filename>,\n"
+        "\t               <ssl key filename>,<http server ip>,"
+        "<http server port>,\n"
+        "\t               [https server ip],[https server port],"
+        "<spdy only 0|1>\"\n"
+        "\t  * The https server ip and port may be left empty if they are"
+        " the same as\n"
+        "\t    the http server fields.\n"
+        "\t  * spdy only prevents non-spdy https connections from being"
+        " passed\n"
+        "\t    through the proxy listen ip:port.\n"
+        "\t--forward-ip-header=<header name>\n"
+        "\n  Server options:\n"
+        "\t--spdy-server=\"<listen ip>,<listen port>,[ssl cert filename],"
+        "\n\t               [ssl key filename]\"\n"
+        "\t--http-server=\"<listen ip>,<listen port>,[ssl cert filename],"
+        "\n\t               [ssl key filename]\"\n"
+        "\t  * Leaving the ssl cert and key fields empty will disable ssl"
+        " for the\n"
+        "\t    http and spdy flip servers\n"
+        "\n  Global options:\n"
+        "\t--logdest=<file|system|both>\n"
+        "\t--logfile=<logfile>\n"
+        "\t--wait-for-iface\n"
+        "\t  * The flip server will block until the listen ip has been"
+        " raised.\n"
+        "\t--ssl-session-expiry=<seconds> (default is 300)\n"
+        "\t--ssl-disable-compression\n"
+        "\t--idle-timeout=<seconds> (default is 300)\n"
+        "\t--pidfile=<filepath> (default /var/run/flip-server.pid)\n"
+        "\t--help\n");
     exit(0);
   }
 
@@ -263,7 +257,7 @@ int main (int argc, char**argv)
 
   if (cl.HasSwitch("idle-timeout")) {
     g_proxy_config.idle_socket_timeout_s_ =
-      atoi(cl.GetSwitchValueASCII("idle-timeout").c_str());
+        atoi(cl.GetSwitchValueASCII("idle-timeout").c_str());
   }
 
   if (cl.HasSwitch("force_spdy"))
@@ -279,17 +273,19 @@ int main (int argc, char**argv)
   LOG(INFO) << "Logging destination     : " << g_proxy_config.log_destination_;
   LOG(INFO) << "Log file                : " << g_proxy_config.log_filename_;
   LOG(INFO) << "Forward IP Header       : "
-            << (net::SpdySM::forward_ip_header().length() ?
-               net::SpdySM::forward_ip_header() : "<disabled>");
-  LOG(INFO) << "Wait for interfaces     : " << (wait_for_iface?"true":"false");
+            << (net::SpdySM::forward_ip_header().length()
+                    ? net::SpdySM::forward_ip_header()
+                    : "<disabled>");
+  LOG(INFO) << "Wait for interfaces     : " << (wait_for_iface ? "true"
+                                                               : "false");
   LOG(INFO) << "Accept backlog size     : " << FLAGS_accept_backlog_size;
   LOG(INFO) << "Accepts per wake        : " << FLAGS_accepts_per_wake;
-  LOG(INFO) << "Disable nagle           : "
-            << (FLAGS_disable_nagle?"true":"false");
-  LOG(INFO) << "Reuseport               : "
-            << (FLAGS_reuseport?"true":"false");
-  LOG(INFO) << "Force SPDY              : "
-            << (FLAGS_force_spdy?"true":"false");
+  LOG(INFO) << "Disable nagle           : " << (FLAGS_disable_nagle ? "true"
+                                                                    : "false");
+  LOG(INFO) << "Reuseport               : " << (FLAGS_reuseport ? "true"
+                                                                : "false");
+  LOG(INFO) << "Force SPDY              : " << (FLAGS_force_spdy ? "true"
+                                                                 : "false");
   LOG(INFO) << "SSL session expiry      : "
             << g_proxy_config.ssl_session_expiry_;
   LOG(INFO) << "SSL disable compression : "
@@ -312,10 +308,14 @@ int main (int argc, char**argv)
     // If wait_for_iface is enabled, then this call will block
     // indefinitely until the interface is raised.
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_PROXY,
-                               valueArgs[0], valueArgs[1],
-                               valueArgs[2], valueArgs[3],
-                               valueArgs[4], valueArgs[5],
-                               valueArgs[6], valueArgs[7],
+                               valueArgs[0],
+                               valueArgs[1],
+                               valueArgs[2],
+                               valueArgs[3],
+                               valueArgs[4],
+                               valueArgs[5],
+                               valueArgs[6],
+                               valueArgs[7],
                                spdy_only,
                                FLAGS_accept_backlog_size,
                                FLAGS_disable_nagle,
@@ -380,11 +380,10 @@ int main (int argc, char**argv)
   std::vector<net::SMAcceptorThread*> sm_worker_threads_;
 
   for (i = 0; i < g_proxy_config.acceptors_.size(); i++) {
-    net::FlipAcceptor *acceptor = g_proxy_config.acceptors_[i];
+    net::FlipAcceptor* acceptor = g_proxy_config.acceptors_[i];
 
-    sm_worker_threads_.push_back(
-        new net::SMAcceptorThread(acceptor,
-                                  (net::MemoryCache *)acceptor->memory_cache_));
+    sm_worker_threads_.push_back(new net::SMAcceptorThread(
+        acceptor, (net::MemoryCache*)acceptor->memory_cache_));
     // Note that spdy_memory_cache is not threadsafe, it is merely
     // thread compatible. Thus, if ever we are to spawn multiple threads,
     // we either must make the MemoryCache threadsafe, or use
@@ -400,7 +399,7 @@ int main (int argc, char**argv)
   while (!wantExit) {
     // Close logfile when HUP signal is received. Logging system will
     // automatically reopen on next log message.
-    if ( wantLogClose ) {
+    if (wantLogClose) {
       wantLogClose = false;
       VLOG(1) << "HUP received, reopening log file.";
       logging::CloseLogFile();
@@ -414,7 +413,7 @@ int main (int argc, char**argv)
       }
       break;
     }
-    usleep(1000*10);  // 10 ms
+    usleep(1000 * 10);  // 10 ms
   }
 
   unlink(PIDFILE);

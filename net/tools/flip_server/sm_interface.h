@@ -28,7 +28,7 @@ class SMInterface {
                                 std::string server_ip,
                                 std::string server_port,
                                 std::string remote_ip,
-                                bool use_ssl)  = 0;
+                                bool use_ssl) = 0;
   virtual size_t ProcessReadInput(const char* data, size_t len) = 0;
   virtual size_t ProcessWriteInput(const char* data, size_t len) = 0;
   virtual void SetStreamID(uint32 stream_id) = 0;
@@ -46,16 +46,20 @@ class SMInterface {
 
   virtual int PostAcceptHook() = 0;
 
-  virtual void NewStream(uint32 stream_id, uint32 priority,
+  virtual void NewStream(uint32 stream_id,
+                         uint32 priority,
                          const std::string& filename) = 0;
   virtual void SendEOF(uint32 stream_id) = 0;
   virtual void SendErrorNotFound(uint32 stream_id) = 0;
   virtual size_t SendSynStream(uint32 stream_id,
-                              const BalsaHeaders& headers) = 0;
+                               const BalsaHeaders& headers) = 0;
   virtual size_t SendSynReply(uint32 stream_id,
                               const BalsaHeaders& headers) = 0;
-  virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
-                             uint32 flags, bool compress) = 0;
+  virtual void SendDataFrame(uint32 stream_id,
+                             const char* data,
+                             int64 len,
+                             uint32 flags,
+                             bool compress) = 0;
   virtual void GetOutput() = 0;
   virtual void set_is_request() = 0;
 
@@ -64,9 +68,9 @@ class SMInterface {
 
 class SMConnectionInterface {
  public:
-   virtual ~SMConnectionInterface() {}
-   virtual void ReadyToSend() = 0;
-   virtual EpollServer* epoll_server() = 0;
+  virtual ~SMConnectionInterface() {}
+  virtual void ReadyToSend() = 0;
+  virtual EpollServer* epoll_server() = 0;
 };
 
 class SMConnectionPoolInterface {
@@ -78,4 +82,3 @@ class SMConnectionPoolInterface {
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_SM_INTERFACE_H_
-

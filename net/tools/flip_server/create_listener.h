@@ -44,9 +44,9 @@ int CreateListeningSocket(const std::string& host,
                           bool reuseport,
                           bool wait_for_iface,
                           bool disable_nagle,
-                          int * listen_fd);
+                          int* listen_fd);
 
-int CreateConnectedSocket(int *connect_fd,
+int CreateConnectedSocket(int* connect_fd,
                           const std::string& host,
                           const std::string& port,
                           bool is_numeric_host_address,

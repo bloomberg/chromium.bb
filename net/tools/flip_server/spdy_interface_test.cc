@@ -32,9 +32,7 @@ namespace {
 struct StringSaver {
  public:
   StringSaver() : data(NULL), size(0) {}
-  void Save() {
-    string = std::string(data, size);
-  }
+  void Save() { string = std::string(data, size); }
 
   const char* data;
   size_t size;
@@ -46,13 +44,14 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
   virtual ~SpdyFramerVisitor() {}
   MOCK_METHOD1(OnError, void(SpdyFramer::SpdyError));
   MOCK_METHOD2(OnStreamError, void(SpdyStreamId, const std::string&));
-  MOCK_METHOD7(OnSynStream, void(SpdyStreamId,
-                                 SpdyStreamId,
-                                 SpdyPriority,
-                                 uint8,
-                                 bool,
-                                 bool,
-                                 const SpdyHeaderBlock&));
+  MOCK_METHOD7(OnSynStream,
+               void(SpdyStreamId,
+                    SpdyStreamId,
+                    SpdyPriority,
+                    uint8,
+                    bool,
+                    bool,
+                    const SpdyHeaderBlock&));
   MOCK_METHOD3(OnSynStream, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
   MOCK_METHOD3(OnSynReply, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
   MOCK_METHOD3(OnHeaders, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
@@ -84,14 +83,15 @@ class FakeSMConnection : public SMConnection {
                      log_prefix) {}
 
   MOCK_METHOD0(Cleanup, void());
-  MOCK_METHOD8(InitSMConnection, void(SMConnectionPoolInterface*,
-                                      SMInterface*,
-                                      EpollServer*,
-                                      int,
-                                      std::string,
-                                      std::string,
-                                      std::string,
-                                      bool));
+  MOCK_METHOD8(InitSMConnection,
+               void(SMConnectionPoolInterface*,
+                    SMInterface*,
+                    EpollServer*,
+                    int,
+                    std::string,
+                    std::string,
+                    std::string,
+                    bool));
 };
 
 // This class is almost SpdySM, except one function.
@@ -100,11 +100,11 @@ class TestSpdySM : public SpdySM {
  public:
   virtual ~TestSpdySM() {}
   TestSpdySM(SMConnection* connection,
-                                   SMInterface* sm_http_interface,
-                                   EpollServer* epoll_server,
-                                   MemoryCache* memory_cache,
-                                   FlipAcceptor* acceptor,
-                                   SpdyMajorVersion version)
+             SMInterface* sm_http_interface,
+             EpollServer* epoll_server,
+             MemoryCache* memory_cache,
+             FlipAcceptor* acceptor,
+             SpdyMajorVersion version)
       : SpdySM(connection,
                sm_http_interface,
                epoll_server,
@@ -195,30 +195,22 @@ class SpdySMProxyTest : public SpdySMTestBase {
 
 class SpdySMServerTest : public SpdySMTestBase {
  public:
-  SpdySMServerTest(): SpdySMTestBase(FLIP_HANDLER_SPDY_SERVER) {}
+  SpdySMServerTest() : SpdySMTestBase(FLIP_HANDLER_SPDY_SERVER) {}
   virtual ~SpdySMServerTest() {}
 };
 
 INSTANTIATE_TEST_CASE_P(SpdySMProxyTest,
                         SpdySMProxyTest,
                         Values(SPDY2, SPDY3, SPDY4));
-INSTANTIATE_TEST_CASE_P(SpdySMServerTest,
-                        SpdySMServerTest,
-                        Values(SPDY2));
+INSTANTIATE_TEST_CASE_P(SpdySMServerTest, SpdySMServerTest, Values(SPDY2));
 
 TEST_P(SpdySMProxyTest, InitSMConnection) {
   {
     InSequence s;
     EXPECT_CALL(*connection_, InitSMConnection(_, _, _, _, _, _, _, _));
   }
-  interface_->InitSMConnection(NULL,
-                               NULL,
-                               epoll_server_.get(),
-                               -1,
-                               "",
-                               "",
-                               "",
-                               false);
+  interface_->InitSMConnection(
+      NULL, NULL, epoll_server_.get(), -1, "", "", "", false);
 }
 
 TEST_P(SpdySMProxyTest, OnSynStream_SPDY2) {
@@ -242,8 +234,7 @@ TEST_P(SpdySMProxyTest, OnSynStream_SPDY2) {
   StringSaver saver;
   {
     InSequence s;
-    EXPECT_CALL(*interface_,
-                FindOrMakeNewSMConnectionInterface(_, _))
+    EXPECT_CALL(*interface_, FindOrMakeNewSMConnectionInterface(_, _))
         .WillOnce(Return(mock_interface.get()));
     EXPECT_CALL(*mock_interface, SetStreamID(stream_id));
     EXPECT_CALL(*mock_interface, ProcessWriteInput(_, _))
@@ -310,8 +301,7 @@ TEST_P(SpdySMProxyTest, OnStreamFrameData_SPDY2) {
   block["version"] = "HTTP/1.0";
   {
     InSequence s;
-    EXPECT_CALL(*interface_,
-                FindOrMakeNewSMConnectionInterface(_, _))
+    EXPECT_CALL(*interface_, FindOrMakeNewSMConnectionInterface(_, _))
         .WillOnce(Return(mock_interface.get()));
     EXPECT_CALL(*mock_interface, SetStreamID(stream_id));
     EXPECT_CALL(*mock_interface, ProcessWriteInput(_, _)).Times(1);
@@ -420,8 +410,8 @@ TEST_P(SpdySMProxyTest, PostAcceptHook) {
   {
     InSequence s;
     EXPECT_CALL(*spdy_framer_visitor_, OnSettings(false));
-    EXPECT_CALL(*spdy_framer_visitor_, OnSetting(
-        SETTINGS_MAX_CONCURRENT_STREAMS, 0u, 100u));
+    EXPECT_CALL(*spdy_framer_visitor_,
+                OnSetting(SETTINGS_MAX_CONCURRENT_STREAMS, 0u, 100u));
   }
   spdy_framer_->ProcessInput(df->data, df->size);
 }
@@ -465,8 +455,7 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound_SPDY2) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnSynReply(stream_id, false, _))
+    EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
         .WillOnce(SaveArg<2>(&actual_header_block));
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
@@ -686,8 +675,7 @@ TEST_P(SpdySMProxyTest, SendDataFrame) {
                 OnDataFrameHeader(stream_id, _, false));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnStreamFrameData(stream_id, _, _, false))
-        .WillOnce(DoAll(SaveArg<1>(&actual_data),
-                        SaveArg<2>(&actual_size)));
+        .WillOnce(DoAll(SaveArg<1>(&actual_data), SaveArg<2>(&actual_size)));
   }
 
   spdy_framer_->ProcessInput(df->data, df->size);
@@ -701,10 +689,8 @@ TEST_P(SpdySMProxyTest, SendLongDataFrame) {
   const char* actual_data;
   size_t actual_size;
 
-  std::string data =
-      std::string(kSpdySegmentSize, 'a') +
-      std::string(kSpdySegmentSize, 'b') +
-      "c";
+  std::string data = std::string(kSpdySegmentSize, 'a') +
+                     std::string(kSpdySegmentSize, 'b') + "c";
   interface_->SendDataFrame(stream_id, data.data(), data.size(), flags, true);
 
   {
@@ -831,8 +817,7 @@ TEST_P(SpdySMServerTest, NewStreamError) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnSynReply(stream_id, false, _))
+    EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
         .WillOnce(SaveArg<2>(&actual_header_block));
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,

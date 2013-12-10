@@ -15,8 +15,7 @@ const int kSSLSegmentSize = (1 * kMSS) - kSSLOverhead;
 const int kSpdySegmentSize = kSSLSegmentSize - kSpdyOverhead;
 
 #define ACCEPTOR_CLIENT_IDENT \
-    acceptor_->listen_ip_ << ":" \
-    << acceptor_->listen_port_ << " "
+  acceptor_->listen_ip_ << ":" << acceptor_->listen_port_ << " "
 
 #define IPV4_PRINTABLE_FORMAT(IP) (((IP)>>0)&0xff), (((IP)>>8)&0xff), \
                                   (((IP)>>16)&0xff), (((IP)>>24)&0xff)

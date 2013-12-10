@@ -18,4 +18,3 @@ std::string EncodeURL(std::string uri, std::string host, std::string method);
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_SPDY_UTIL_H_
-
