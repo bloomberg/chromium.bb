@@ -248,9 +248,8 @@ bool MediaDrmBridge::CreateSession(uint32 session_id,
   ScopedJavaLocalRef<jbyteArray> j_pssh_data =
       base::android::ToJavaByteArray(env, &pssh_data[0], pssh_data.size());
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, type);
-  pending_key_request_session_ids_.push(session_id);
-  Java_MediaDrmBridge_generateKeyRequest(
-      env, j_media_drm_.obj(), j_pssh_data.obj(), j_mime.obj());
+  Java_MediaDrmBridge_createSession(
+      env, j_media_drm_.obj(), session_id, j_pssh_data.obj(), j_mime.obj());
   return true;
 }
 
@@ -261,19 +260,14 @@ void MediaDrmBridge::UpdateSession(uint32 session_id,
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_response =
       base::android::ToJavaByteArray(env, response, response_length);
-  ScopedJavaLocalRef<jstring> j_session_id =
-      ConvertUTF8ToJavaString(env, LookupWebSessionId(session_id));
-  // TODO(jrummell): Update Android names to match new functionality.
-  Java_MediaDrmBridge_addKey(
-      env, j_media_drm_.obj(), j_session_id.obj(), j_response.obj());
+  Java_MediaDrmBridge_updateSession(
+      env, j_media_drm_.obj(), session_id, j_response.obj());
 }
 
 void MediaDrmBridge::ReleaseSession(uint32 session_id) {
+  DVLOG(1) << __FUNCTION__;
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_session_id =
-      ConvertUTF8ToJavaString(env, LookupWebSessionId(session_id));
-  Java_MediaDrmBridge_cancelKeyRequest(
-      env, j_media_drm_.obj(), j_session_id.obj());
+  Java_MediaDrmBridge_releaseSession(env, j_media_drm_.obj(), session_id);
 }
 
 void MediaDrmBridge::SetMediaCryptoReadyCB(const base::Closure& closure) {
@@ -298,32 +292,46 @@ void MediaDrmBridge::OnMediaCryptoReady(JNIEnv* env, jobject) {
     base::ResetAndReturn(&media_crypto_ready_cb_).Run();
 }
 
-void MediaDrmBridge::OnKeyMessage(JNIEnv* env,
-                                  jobject j_media_drm,
-                                  jstring j_session_id,
-                                  jbyteArray j_message,
-                                  jstring j_destination_url) {
-  std::string web_session_id = ConvertJavaStringToUTF8(env, j_session_id);
-  uint32_t session_id = LookupSessionId(web_session_id);
+void MediaDrmBridge::OnSessionCreated(JNIEnv* env,
+                                      jobject j_media_drm,
+                                      jint j_session_id,
+                                      jstring j_web_session_id) {
+  uint32 session_id = j_session_id;
+  std::string web_session_id = ConvertJavaStringToUTF8(env, j_web_session_id);
+  manager_->OnSessionCreated(media_keys_id_, session_id, web_session_id);
+}
+
+void MediaDrmBridge::OnSessionMessage(JNIEnv* env,
+                                      jobject j_media_drm,
+                                      jint j_session_id,
+                                      jbyteArray j_message,
+                                      jstring j_destination_url) {
+  uint32 session_id = j_session_id;
   std::vector<uint8> message;
   JavaByteArrayToByteVector(env, j_message, &message);
   std::string destination_url = ConvertJavaStringToUTF8(env, j_destination_url);
-
-  manager_->OnSessionCreated(media_keys_id_, session_id, web_session_id);
   manager_->OnSessionMessage(
       media_keys_id_, session_id, message, destination_url);
 }
 
-void MediaDrmBridge::OnKeyAdded(JNIEnv* env, jobject, jstring j_session_id) {
-  std::string web_session_id = ConvertJavaStringToUTF8(env, j_session_id);
-  uint32_t session_id = LookupSessionId(web_session_id);
+void MediaDrmBridge::OnSessionReady(JNIEnv* env,
+                                    jobject j_media_drm,
+                                    jint j_session_id) {
+  uint32 session_id = j_session_id;
   manager_->OnSessionReady(media_keys_id_, session_id);
 }
 
-void MediaDrmBridge::OnKeyError(JNIEnv* env, jobject, jstring j_session_id) {
-  // |j_session_id| can be NULL, in which case we'll return an empty string.
-  std::string web_session_id = ConvertJavaStringToUTF8(env, j_session_id);
-  uint32 session_id = LookupSessionId(web_session_id);
+void MediaDrmBridge::OnSessionClosed(JNIEnv* env,
+                                     jobject j_media_drm,
+                                     jint j_session_id) {
+  uint32 session_id = j_session_id;
+  manager_->OnSessionClosed(media_keys_id_, session_id);
+}
+
+void MediaDrmBridge::OnSessionError(JNIEnv* env,
+                                    jobject j_media_drm,
+                                    jint j_session_id) {
+  uint32 session_id = j_session_id;
   manager_->OnSessionError(
       media_keys_id_, session_id, MediaKeys::kUnknownError, 0);
 }
@@ -362,37 +370,6 @@ void MediaDrmBridge::ResetDeviceCredentials(
 void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
     JNIEnv* env, jobject, bool success) {
   base::ResetAndReturn(&reset_credentials_cb_).Run(success);
-}
-
-uint32_t MediaDrmBridge::LookupSessionId(const std::string& session_id) {
-  for (SessionMap::iterator it = session_map_.begin();
-       it != session_map_.end();
-       ++it) {
-    if (it->second == session_id)
-      return it->first;
-  }
-
-  // There is no entry in the map; assume it came from the oldest
-  // GenerateKeyRequest() call.
-  DCHECK(!pending_key_request_session_ids_.empty());
-  uint32 session_reference_id = pending_key_request_session_ids_.front();
-  pending_key_request_session_ids_.pop();
-
-  // If this is a valid |session_id|, add it to the list. Otherwise, avoid
-  // adding empty string as a mapping to prevent future calls with an empty
-  // string from using the wrong session_reference_id.
-  if (!session_id.empty()) {
-    DCHECK(session_map_.find(session_reference_id) == session_map_.end());
-    session_map_[session_reference_id] = session_id;
-  }
-
-  return session_reference_id;
-}
-
-const std::string& MediaDrmBridge::LookupWebSessionId(uint32 session_id) {
-  // Session may not exist if error happens during GenerateKeyRequest().
-  SessionMap::iterator it = session_map_.find(session_id);
-  return (it != session_map_.end()) ? it->second : base::EmptyString();
 }
 
 }  // namespace media

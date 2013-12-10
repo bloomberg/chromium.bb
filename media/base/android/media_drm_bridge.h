@@ -79,17 +79,21 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   void SetMediaCryptoReadyCB(const base::Closure& closure);
 
   // Called after a MediaCrypto object is created.
-  void OnMediaCryptoReady(JNIEnv* env, jobject);
+  void OnMediaCryptoReady(JNIEnv* env, jobject j_media_drm);
 
-  // Called after we got the response for GenerateKeyRequest().
-  void OnKeyMessage(JNIEnv* env, jobject, jstring j_session_id,
-                    jbyteArray message, jstring destination_url);
-
-  // Called when key is added.
-  void OnKeyAdded(JNIEnv* env, jobject, jstring j_session_id);
-
-  // Called when error happens.
-  void OnKeyError(JNIEnv* env, jobject, jstring j_session_id);
+  // Callbacks for firing session events.
+  void OnSessionCreated(JNIEnv* env,
+                        jobject j_media_drm,
+                        jint j_session_id,
+                        jstring j_web_session_id);
+  void OnSessionMessage(JNIEnv* env,
+                        jobject j_media_drm,
+                        jint j_session_id,
+                        jbyteArray j_message,
+                        jstring j_destination_url);
+  void OnSessionReady(JNIEnv* env, jobject j_media_drm, jint j_session_id);
+  void OnSessionClosed(JNIEnv* env, jobject j_media_drm, jint j_session_id);
+  void OnSessionError(JNIEnv* env, jobject j_media_drm, jint j_session_id);
 
   // Reset the device credentials.
   void ResetDeviceCredentials(const ResetCredentialsCB& callback);
@@ -106,9 +110,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   GURL frame_url() const { return frame_url_; }
 
  private:
-  // Map between session_id and web_session_id.
-  typedef std::map<uint32_t, std::string> SessionMap;
-
   static bool IsSecureDecoderRequired(SecurityLevel security_level);
 
   MediaDrmBridge(int media_keys_id,
@@ -119,13 +120,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();
-
-  // Determine the corresponding session_id for |web_session_id|.
-  uint32_t LookupSessionId(const std::string& web_session_id);
-
-  // Determine the corresponding web_session_id for |session_id|. The returned
-  // value is only valid on the main thread, and should be stored by copy.
-  const std::string& LookupWebSessionId(uint32_t session_id);
 
   // ID of the MediaKeys object.
   int media_keys_id_;
@@ -145,14 +139,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   base::Closure media_crypto_ready_cb_;
 
   ResetCredentialsCB reset_credentials_cb_;
-
-  SessionMap session_map_;
-
-  // As the response from GenerateKeyRequest() will be asynchronous, add this
-  // request to a queue and assume that the subsequent responses come back in
-  // the order issued.
-  // TODO(jrummell): Remove once the Java interface supports session_id.
-  std::queue<uint32_t> pending_key_request_session_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };
