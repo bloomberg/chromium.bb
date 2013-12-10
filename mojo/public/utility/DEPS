@@ -1,0 +1,11 @@
+# Tests can include base.
+specific_include_rules = {
+  ".*unittest.cc": [
+    "+base",
+  ],
+}
+
+include_rules = [
+  # For OS_XXX.
+  "+build/build_config.h",
+]

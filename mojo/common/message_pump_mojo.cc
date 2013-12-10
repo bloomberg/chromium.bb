@@ -22,7 +22,6 @@ struct MessagePumpMojo::WaitState {
 };
 
 struct MessagePumpMojo::RunState {
- public:
   RunState() : should_quit(false) {
     CreateMessagePipe(&read_handle, &write_handle);
   }

@@ -32,6 +32,8 @@
         'mojo_system',
         'mojo_system_impl',
         'mojo_system_unittests',
+        'mojo_utility',
+        'mojo_utility_unittests',
         'sample_app',
       ],
     },

@@ -43,8 +43,7 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   struct RunState;
   struct WaitState;
 
-  // Creates a MessagePumpMojoHandler and the set of MojoWaitFlags it was
-  // registered with.
+  // Contains the data needed to track a request to AddHandler().
   struct Handler {
     Handler() : handler(NULL), wait_flags(MOJO_WAIT_FLAG_NONE), id(0) {}
 

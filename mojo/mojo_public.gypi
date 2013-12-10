@@ -131,5 +131,42 @@
         'sample_service',
       ],
     },
+    {
+      'target_name': 'mojo_utility',
+      'type': 'static_library',
+      'sources': [
+        'public/utility/bindings_support_impl.cc',
+        'public/utility/bindings_support_impl.h',
+        'public/utility/environment.cc',
+        'public/utility/environment.h',
+        'public/utility/run_loop.cc',
+        'public/utility/run_loop.h',
+        'public/utility/run_loop_handler.h',
+        'public/utility/thread_local.h',
+        'public/utility/thread_local_posix.cc',
+        'public/utility/thread_local_win.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+    },
+    {
+      'target_name': 'mojo_utility_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_bindings',
+        'mojo_public_test_support',
+        'mojo_run_all_unittests',
+        'mojo_system',
+        'mojo_utility',
+      ],
+      'sources': [
+        'public/utility/bindings_support_impl_unittest.cc',
+        'public/utility/run_loop_unittest.cc',
+        'public/utility/thread_local_unittest.cc',
+      ],
+    },
   ],
 }

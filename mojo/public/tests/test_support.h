@@ -13,6 +13,16 @@
 namespace mojo {
 namespace test {
 
+struct MessagePipe {
+  MessagePipe();
+  ~MessagePipe();
+
+  ScopedMessagePipeHandle handle_0;
+  ScopedMessagePipeHandle handle_1;
+
+  DISALLOW_COPY_AND_ASSIGN(MessagePipe);
+};
+
 bool WriteTextMessage(MessagePipeHandle handle, const std::string& text);
 bool ReadTextMessage(MessagePipeHandle handle, std::string* text);
 
@@ -21,6 +31,9 @@ bool ReadTextMessage(MessagePipeHandle handle, std::string* text);
 // amount of time and reports the number of iterations per unit time.)
 void IterateAndReportPerf(const char* test_name,
                           base::Callback<void()> single_iteration);
+
+MojoResult WriteEmptyMessage(const MessagePipeHandle& handle);
+MojoResult ReadEmptyMessage(const MessagePipeHandle& handle);
 
 }  // namespace test
 }  // namespace mojo

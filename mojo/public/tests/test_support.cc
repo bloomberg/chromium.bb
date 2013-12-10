@@ -10,6 +10,13 @@
 namespace mojo {
 namespace test {
 
+MessagePipe::MessagePipe() {
+  CreateMessagePipe(&handle_0, &handle_1);
+}
+
+MessagePipe::~MessagePipe() {
+}
+
 bool WriteTextMessage(MessagePipeHandle handle, const std::string& text) {
   MojoResult rv = WriteMessageRaw(handle,
                                   text.data(),
@@ -77,6 +84,16 @@ void IterateAndReportPerf(const char* test_name,
   base::LogPerfResult(test_name,
                       iterations / (end_time - start_time).InSecondsF(),
                       "iterations/second");
+}
+
+MojoResult WriteEmptyMessage(const MessagePipeHandle& handle) {
+  return WriteMessageRaw(handle, NULL, 0, NULL, 0,
+                         MOJO_WRITE_MESSAGE_FLAG_NONE);
+}
+
+MojoResult ReadEmptyMessage(const MessagePipeHandle& handle) {
+  return ReadMessageRaw(handle, NULL, NULL, NULL, NULL,
+                        MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
 }
 
 }  // namespace test
