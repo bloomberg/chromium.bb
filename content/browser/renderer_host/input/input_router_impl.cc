@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
+#include "content/common/input/touch_action.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -175,6 +176,9 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
+  if (touch_action_filter_.FilterGestureEvent(gesture_event.event))
+    return;
+
   HandleGestureScroll(gesture_event);
 
   if (!IsInOverscrollGesture() &&
@@ -249,6 +253,8 @@ bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
+    IPC_MESSAGE_HANDLER(InputHostMsg_SetTouchAction,
+                        OnSetTouchAction)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -466,6 +472,14 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   if (!has_handlers)
     touch_event_queue_->FlushQueue();
   client_->OnHasTouchEventHandlers(has_handlers);
+}
+
+void InputRouterImpl::OnSetTouchAction(
+    content::TouchAction touch_action) {
+  // Synthetic touchstart events should get filtered out in RenderWidget.
+  DCHECK(touch_event_queue_->IsPendingAckTouchStart());
+
+  touch_action_filter_.OnSetTouchAction(touch_action);
 }
 
 void InputRouterImpl::ProcessInputEventAck(

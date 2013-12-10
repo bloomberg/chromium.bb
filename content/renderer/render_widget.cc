@@ -356,6 +356,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       has_focus_(false),
       handling_input_event_(false),
       handling_ime_event_(false),
+      handling_touchstart_event_(false),
       closing_(false),
       is_swapped_out_(swapped_out),
       input_method_is_active_(false),
@@ -1104,12 +1105,17 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       input_event->type == WebInputEvent::GestureLongPress)
     resetInputMethod();
 
+  if (input_event->type == WebInputEvent::TouchStart)
+      handling_touchstart_event_ = true;
+
   bool processed = prevent_default;
   if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
     if (!processed && webwidget_)
       processed = webwidget_->handleInputEvent(*input_event);
   }
+
+  handling_touchstart_event_ = false;
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and
   // it's not processed by webkit, then we need to suppress the upcoming Char
@@ -2780,6 +2786,28 @@ bool RenderWidget::WillHandleGestureEvent(
 
 void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
   Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
+}
+
+void RenderWidget::setTouchAction(
+    blink::WebTouchAction web_touch_action) {
+
+  // Ignore setTouchAction calls that result from synthetic touch events (eg.
+  // when blink is emulating touch with mouse).
+  if (!handling_touchstart_event_)
+    return;
+
+  content::TouchAction content_touch_action;
+  switch(web_touch_action) {
+    case blink::WebTouchActionNone:
+      content_touch_action = content::TOUCH_ACTION_NONE;
+      break;
+    case blink::WebTouchActionAuto:
+      content_touch_action = content::TOUCH_ACTION_AUTO;
+      break;
+    default:
+      NOTREACHED();
+  }
+  Send(new InputHostMsg_SetTouchAction(routing_id_, content_touch_action));
 }
 
 bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {

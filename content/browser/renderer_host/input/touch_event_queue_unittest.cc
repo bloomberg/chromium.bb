@@ -127,6 +127,10 @@ class TouchEventQueueTest : public testing::Test,
     return count;
   }
 
+  bool IsPendingAckTouchStart() const {
+    return queue_->IsPendingAckTouchStart();
+  }
+
   void Flush() {
     queue_->FlushQueue();
   }
@@ -834,6 +838,56 @@ TEST_F(TouchEventQueueTest, NoTouchOnScroll) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
+// Tests that IsTouchStartPendingAck works correctly.
+TEST_F(TouchEventQueueTest, PendingStart) {
+
+  EXPECT_FALSE(IsPendingAckTouchStart());
+
+  // Send the touchstart for one point (#1).
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_TRUE(IsPendingAckTouchStart());
+
+  // Send a touchmove for that point (#2).
+  MoveTouchPoint(0, 5, 5);
+  SendTouchEvent();
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_TRUE(IsPendingAckTouchStart());
+
+  // Ack the touchstart (#1).
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_FALSE(IsPendingAckTouchStart());
+
+  // Send a touchstart for another point (#3).
+  PressTouchPoint(10, 10);
+  SendTouchEvent();
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_FALSE(IsPendingAckTouchStart());
+
+  // Ack the touchmove (#2).
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_TRUE(IsPendingAckTouchStart());
+
+  // Send a touchstart for a third point (#4).
+  PressTouchPoint(15, 15);
+  SendTouchEvent();
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_TRUE(IsPendingAckTouchStart());
+
+  // Ack the touchstart for the second point (#3).
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_TRUE(IsPendingAckTouchStart());
+
+  // Ack the touchstart for the third point (#4).
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_FALSE(IsPendingAckTouchStart());
 }
 
 }  // namespace content

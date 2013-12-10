@@ -425,6 +425,7 @@
         'browser/renderer_host/input/synthetic_gesture_controller_unittest.cc',
         'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
         'browser/renderer_host/input/touch_event_queue_unittest.cc',
+        'browser/renderer_host/input/touch_action_filter_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
         'browser/renderer_host/media/audio_mirroring_manager_unittest.cc',
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',

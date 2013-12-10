@@ -865,6 +865,8 @@
     'browser/renderer_host/input/tap_suppression_controller_client.h',
     'browser/renderer_host/input/touch_event_queue.cc',
     'browser/renderer_host/input/touch_event_queue.h',
+    'browser/renderer_host/input/touch_action_filter.cc',
+    'browser/renderer_host/input/touch_action_filter.h',
     'browser/renderer_host/input/touchpad_tap_suppression_controller_aura.cc',
     'browser/renderer_host/input/touchpad_tap_suppression_controller.cc',
     'browser/renderer_host/input/touchpad_tap_suppression_controller.h',

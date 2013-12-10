@@ -27,6 +27,7 @@
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
+#include "third_party/WebKit/public/web/WebTouchAction.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -536,6 +537,9 @@ class CONTENT_EXPORT RenderWidget
   // Check whether the WebWidget has any touch event handlers registered.
   virtual void hasTouchEventHandlers(bool has_handlers);
 
+  // Tell the browser about the actions permitted for a new touch point.
+  virtual void setTouchAction(blink::WebTouchAction touch_action);
+
   // Creates a 3D context associated with this view.
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes);
@@ -647,6 +651,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Are we currently handling an ime event?
   bool handling_ime_event_;
+
+  // Are we currently handling a touchstart event?
+  bool handling_touchstart_event_;
 
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.

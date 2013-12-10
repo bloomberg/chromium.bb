@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/input/input_router.h"
+#include "content/browser/renderer_host/input/touch_action_filter.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -122,6 +123,7 @@ private:
   void OnMsgMoveCaretAck();
   void OnSelectRangeAck();
   void OnHasTouchEventHandlers(bool has_handlers);
+  void OnSetTouchAction(content::TouchAction touch_action);
 
   // Indicates the source of an ack provided to |ProcessInputEventAck()|.
   // The source is tracked by |current_ack_source_|, which aids in ack routing.
@@ -240,6 +242,7 @@ private:
 
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
+  TouchActionFilter touch_action_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);
 };

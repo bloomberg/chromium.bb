@@ -201,6 +201,16 @@ void TouchEventQueue::FlushQueue() {
                           ui::LatencyInfo());
 }
 
+bool TouchEventQueue::IsPendingAckTouchStart() const {
+  DCHECK(!dispatching_touch_ack_);
+  if (touch_queue_.empty())
+    return false;
+
+  const blink::WebTouchEvent& event =
+      touch_queue_.front()->coalesced_event().event;
+  return (event.type == blink::WebInputEvent::TouchStart);
+}
+
 size_t TouchEventQueue::GetQueueSize() const {
   return touch_queue_.size();
 }

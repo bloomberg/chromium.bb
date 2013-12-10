@@ -62,6 +62,10 @@ class CONTENT_EXPORT TouchEventQueue {
   // events being sent to the renderer.
   void FlushQueue();
 
+  // Returns whether the currently pending touch event (waiting ACK) is for
+  // a touch start event.
+  bool IsPendingAckTouchStart() const;
+
   // Returns whether the event-queue is empty.
   bool empty() const WARN_UNUSED_RESULT {
     return touch_queue_.empty();
