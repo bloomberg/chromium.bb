@@ -105,7 +105,7 @@ xkb:sk::slo	sk	sk
 xkb:si::slv	si	sl login
 xkb:rs::srp	rs	sr
 xkb:tr::tur	tr	tr login
-xkb:ua::ukr	ua	uk login
+xkb:ua::ukr	ua	uk
 xkb:by::bel	by	be
 xkb:am:phonetic:arm	am	hy
 xkb:ge::geo	ge	ka
