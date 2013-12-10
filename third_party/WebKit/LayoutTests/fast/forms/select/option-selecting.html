@@ -26,6 +26,11 @@
         <option>Y</option>
         <option>Z</option>
     </select>
+    <select multiple name=multipleListBox2>
+        <option selected>X</option>
+        <option selected>Y</option>
+        <option>Z</option>
+    </select>
 </form>
 <script>
 description("Test the behavior of selecting and deselecting options in &lt;select&gt; elements.");
@@ -93,6 +98,11 @@ debug("Setting multipleListBox.options[2].selected = true");
 multipleListBox.options[2].selected = true;
 shouldBe("multipleListBox.options[1].selected", "true");
 shouldBe("multipleListBox.options[2].selected", "true");
+
+debug("Unselecting selected first option:");
+var multipleListBox2 = document.forms[0].elements.multipleListBox2;
+shouldBeTrue("multipleListBox2.options[0].selected");
+shouldBeFalse("multipleListBox2.options[0].selected = false; multipleListBox2.options[0].selected");
 
 </script>
 </body>

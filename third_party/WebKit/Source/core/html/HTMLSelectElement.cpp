@@ -814,7 +814,7 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
     ASSERT(option->ownerSelectElement() == this);
     if (optionIsSelected)
         selectOption(option->index());
-    else if (!usesMenuList())
+    else if (!usesMenuList() || multiple())
         selectOption(-1);
     else
         selectOption(nextSelectableListIndex(-1));

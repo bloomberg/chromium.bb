@@ -45,6 +45,9 @@ Setting multipleListBox.options[1].selected = true
 Setting multipleListBox.options[2].selected = true
 PASS multipleListBox.options[1].selected is true
 PASS multipleListBox.options[2].selected is true
+Unselecting selected first option:
+PASS multipleListBox2.options[0].selected is true
+PASS multipleListBox2.options[0].selected = false; multipleListBox2.options[0].selected is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
