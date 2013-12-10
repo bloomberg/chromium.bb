@@ -31,6 +31,8 @@
 #include "HTMLNames.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fetch/ImageResource.h"
+#include "core/fetch/ResourceLoadPriorityOptimizer.h"
+#include "core/fetch/ResourceLoader.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -569,6 +571,40 @@ void RenderImage::layout()
     LayoutRectRecorder recorder(*this);
     RenderReplaced::layout();
     updateInnerContentRect();
+}
+
+void RenderImage::didLayout(ResourceLoadPriorityOptimizer& optimizer)
+{
+    RenderReplaced::didLayout(optimizer);
+    updateImageLoadingPriority(optimizer);
+}
+
+void RenderImage::didScroll(ResourceLoadPriorityOptimizer& optimizer)
+{
+    RenderReplaced::didScroll(optimizer);
+    updateImageLoadingPriority(optimizer);
+}
+
+void RenderImage::updateImageLoadingPriority(ResourceLoadPriorityOptimizer& optimizer)
+{
+    if (!m_imageResource || !m_imageResource->cachedImage() || m_imageResource->cachedImage()->isLoaded())
+        return;
+
+    LayoutRect viewBounds = viewRect();
+    LayoutRect objectBounds = absoluteContentBox();
+
+    // The object bounds might be empty right now, so intersects will fail since it doesn't deal
+    // with empty rects. Use LayoutRect::contains in that case.
+    bool isVisible;
+    if (!objectBounds.isEmpty())
+        isVisible =  viewBounds.intersects(objectBounds);
+    else
+        isVisible = viewBounds.contains(objectBounds);
+
+    ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
+        ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
+
+    optimizer.notifyImageResourceVisibility(m_imageResource->cachedImage(), status);
 }
 
 void RenderImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const

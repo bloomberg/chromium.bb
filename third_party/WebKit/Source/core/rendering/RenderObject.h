@@ -67,6 +67,7 @@ class RenderSVGResourceContainer;
 class RenderTable;
 class RenderTheme;
 class RenderView;
+class ResourceLoadPriorityOptimizer;
 class TransformState;
 
 struct PaintInfo;
@@ -674,6 +675,8 @@ public:
 
     // Recursive function that computes the size and position of this object and all its descendants.
     virtual void layout();
+    virtual void didLayout(ResourceLoadPriorityOptimizer&);
+    virtual void didScroll(ResourceLoadPriorityOptimizer&);
 
     /* This function performs a layout only if one is needed. */
     void layoutIfNeeded() { if (needsLayout()) layout(); }

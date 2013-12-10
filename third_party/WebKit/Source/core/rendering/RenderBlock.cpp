@@ -32,6 +32,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
@@ -58,6 +59,8 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
+#include "core/rendering/style/ContentData.h"
+#include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -166,6 +169,19 @@ static void removeBlockFromDescendantAndContainerMaps(RenderBlock* block, Tracke
             if (containerSet->isEmpty())
                 containerMap->remove(it);
         }
+    }
+}
+
+static void appendImageIfNotNull(Vector<ImageResource*>& imageResources, const StyleImage* styleImage)
+{
+    if (styleImage && styleImage->cachedImage())
+        imageResources.append(styleImage->cachedImage());
+}
+
+static void appendLayers(Vector<ImageResource*>& images, const FillLayer* styleLayer)
+{
+    for (const FillLayer* layer = styleLayer; layer; layer = layer->next()) {
+        appendImageIfNotNull(images, layer->image());
     }
 }
 
@@ -1250,6 +1266,60 @@ void RenderBlock::layout()
         clearLayoutOverflow();
 
     invalidateBackgroundObscurationStatus();
+}
+
+void RenderBlock::didLayout(ResourceLoadPriorityOptimizer& optimizer)
+{
+    RenderBox::didLayout(optimizer);
+    updateStyleImageLoadingPriorities(optimizer);
+}
+
+void RenderBlock::didScroll(ResourceLoadPriorityOptimizer& optimizer)
+{
+    RenderBox::didScroll(optimizer);
+    updateStyleImageLoadingPriorities(optimizer);
+}
+
+void RenderBlock::updateStyleImageLoadingPriorities(ResourceLoadPriorityOptimizer& optimizer)
+{
+    RenderStyle* blockStyle = style();
+    if (!blockStyle)
+        return;
+
+    Vector<ImageResource*> images;
+
+    appendLayers(images, blockStyle->backgroundLayers());
+    appendLayers(images, blockStyle->maskLayers());
+
+    const ContentData* contentData = blockStyle->contentData();
+    if (contentData && contentData->isImage()) {
+        const ImageContentData* imageContentData = static_cast<const ImageContentData*>(contentData);
+        appendImageIfNotNull(images, imageContentData->image());
+    }
+    if (blockStyle->boxReflect())
+        appendImageIfNotNull(images, blockStyle->boxReflect()->mask().image());
+    appendImageIfNotNull(images, blockStyle->listStyleImage());
+    appendImageIfNotNull(images, blockStyle->borderImageSource());
+    appendImageIfNotNull(images, blockStyle->maskBoxImageSource());
+
+    if (images.isEmpty())
+        return;
+
+    LayoutRect viewBounds = viewRect();
+    LayoutRect objectBounds = absoluteContentBox();
+    // The object bounds might be empty right now, so intersects will fail since it doesn't deal
+    // with empty rects. Use LayoutRect::contains in that case.
+    bool isVisible;
+    if (!objectBounds.isEmpty())
+        isVisible =  viewBounds.intersects(objectBounds);
+    else
+        isVisible = viewBounds.contains(objectBounds);
+
+    ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
+        ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
+
+    for (Vector<ImageResource*>::iterator it = images.begin(), end = images.end(); it != end; ++it)
+        optimizer.notifyImageResourceVisibility(*it, status);
 }
 
 void RenderBlock::relayoutShapeDescendantIfMoved(RenderBlock* child, LayoutSize offset)

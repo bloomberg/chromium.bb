@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <script>
+            if (window.testRunner) {
+                testRunner.dumpResourceRequestPriorities();
+                testRunner.dumpAsText();
+            }
+        </script>
+        <script src="/js-test-resources/js-test.js"></script>
+    </head>
+    <body>
+        <div style="width: 100%">
+           <img src="../misc/resources/image-slow.pl"/>
+        </div>
+        <div style="height: 99999px; width: 100%" id="view_div"></div>
+        <div style="width: 100%">
+          <img src="../misc/resources/image-slow-out-of-viewport.pl">
+        </div>
+        <script>
+        document.body.offsetTop; // Force a layout.
+        </script>
+    </body>
+</html>
