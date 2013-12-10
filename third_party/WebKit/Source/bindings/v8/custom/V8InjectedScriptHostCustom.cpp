@@ -365,7 +365,7 @@ void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::Functi
 {
     v8::Handle<v8::Value> functionValue = info[0];
     int scopeIndex = info[1]->Int32Value();
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, variableName, info[2]);
+    String variableName = toWebCoreStringWithUndefinedOrNullCheck(info[2]);
     v8::Handle<v8::Value> newValue = info[3];
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
@@ -428,10 +428,9 @@ void V8InjectedScriptHost::monitorFunctionMethodCustom(const v8::FunctionCallbac
         if (!name->IsString() || !v8::Handle<v8::String>::Cast(name)->Length())
             name = function->GetInferredName();
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, nameResource, name);
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
-    host->monitorFunction(scriptId, lineNumber, columnNumber, nameResource);
+    host->monitorFunction(scriptId, lineNumber, columnNumber, toWebCoreStringWithUndefinedOrNullCheck(name));
 }
 
 void V8InjectedScriptHost::unmonitorFunctionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

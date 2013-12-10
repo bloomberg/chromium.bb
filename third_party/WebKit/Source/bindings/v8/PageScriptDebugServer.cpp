@@ -225,8 +225,8 @@ void PageScriptDebugServer::preprocessBeforeCompile(const v8::Debug::EventDetail
         return;
 
     // The name and source are in the JS event data.
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, scriptName, callDebuggerMethod("getScriptName", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, script, callDebuggerMethod("getScriptSource", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
+    String scriptName = toWebCoreStringWithUndefinedOrNullCheck(callDebuggerMethod("getScriptName", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
+    String script = toWebCoreStringWithUndefinedOrNullCheck(callDebuggerMethod("getScriptSource", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
 
     String preprocessedSource  = m_scriptPreprocessor->preprocessSourceCode(script, scriptName);
 

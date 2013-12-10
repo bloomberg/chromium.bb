@@ -97,8 +97,7 @@ String JavaScriptCallFrame::functionName() const
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
     v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "functionName"));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithUndefinedOrNullCheck>, name, result, String());
-    return name;
+    return toWebCoreStringWithUndefinedOrNullCheck(result);
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::scopeChain() const
@@ -126,8 +125,7 @@ String JavaScriptCallFrame::stepInPositions() const
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> stepInPositions = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "stepInPositions")));
     v8::Handle<v8::Value> result = stepInPositions->Call(callFrame, 0, 0);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithUndefinedOrNullCheck>, resultString, result, String());
-    return resultString;
+    return toWebCoreStringWithUndefinedOrNullCheck(result);
 }
 
 bool JavaScriptCallFrame::isAtReturn() const

@@ -364,9 +364,10 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, urlString, info[0]);
+    // FIXME: Handle exceptions properly.
+    String urlString = toWebCoreStringWithUndefinedOrNullCheck(info[0]);
     DialogHandler handler(info[1]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, dialogFeaturesString, info[2]);
+    String dialogFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(info[2]);
 
     impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(), firstDOMWindow(), setUpDialog, &handler);
 

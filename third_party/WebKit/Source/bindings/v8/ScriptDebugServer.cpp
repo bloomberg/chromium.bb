@@ -298,23 +298,13 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     // Compile error.
     case 1:
         {
-            V8StringResource<WithUndefinedOrNullCheck> message(resultTuple->Get(2));
-            if (!message.prepare()) {
-                *error = "Unknown error.";
-                return false;
-            }
             RefPtr<TypeBuilder::Debugger::SetScriptSourceError::CompileError> compileError =
                 TypeBuilder::Debugger::SetScriptSourceError::CompileError::create()
-                    .setMessage(message)
+                    .setMessage(toWebCoreStringWithUndefinedOrNullCheck(resultTuple->Get(2)))
                     .setLineNumber(resultTuple->Get(3)->ToInteger()->Value())
                     .setColumnNumber(resultTuple->Get(4)->ToInteger()->Value());
 
-            V8StringResource<WithUndefinedOrNullCheck> errorResource(resultTuple->Get(1));
-            if (!errorResource.prepare()) {
-                *error = "Unknown error.";
-                return false;
-            }
-            *error = errorResource;
+            *error = toWebCoreStringWithUndefinedOrNullCheck(resultTuple->Get(1));
             errorData = TypeBuilder::Debugger::SetScriptSourceError::create();
             errorData->setCompileError(compileError);
             return false;
@@ -394,10 +384,8 @@ void ScriptDebugServer::handleProgramBreak(v8::Handle<v8::Object> executionState
     Vector<String> breakpointIds;
     if (!hitBreakpointNumbers.IsEmpty()) {
         breakpointIds.resize(hitBreakpointNumbers->Length());
-        for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++) {
-            V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, hitBreakpointNumber, hitBreakpointNumbers->Get(i));
-            breakpointIds[i] = hitBreakpointNumber;
-        }
+        for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++)
+            breakpointIds[i] = toWebCoreStringWithUndefinedOrNullCheck(hitBreakpointNumbers->Get(i));
     }
 
     m_executionState.set(m_isolate, executionState);
@@ -501,15 +489,12 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
 
 void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8::Handle<v8::Object> object)
 {
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, sourceID, object->Get(v8AtomicString(m_isolate, "id")));
+    String sourceID = toWebCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "id")));
 
     ScriptDebugListener::Script script;
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, object->Get(v8AtomicString(m_isolate, "name")));
-    script.url = url;
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, source, object->Get(v8AtomicString(m_isolate, "source")));
-    script.source = source;
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, sourceMappingURL, object->Get(v8AtomicString(m_isolate, "sourceMappingURL")));
-    script.sourceMappingURL = sourceMappingURL;
+    script.url = toWebCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "name")));
+    script.source = toWebCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "source")));
+    script.sourceMappingURL = toWebCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceMappingURL")));
     script.startLine = object->Get(v8AtomicString(m_isolate, "startLine"))->ToInteger()->Value();
     script.startColumn = object->Get(v8AtomicString(m_isolate, "startColumn"))->ToInteger()->Value();
     script.endLine = object->Get(v8AtomicString(m_isolate, "endLine"))->ToInteger()->Value();
