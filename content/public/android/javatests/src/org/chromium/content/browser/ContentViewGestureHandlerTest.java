@@ -128,12 +128,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public boolean didUIStealScroll(float x, float y) {
-            // Not implemented.
-            return false;
-        }
-
-        @Override
         public void invokeZoomPicker() {
             // Not implemented.
         }
@@ -1168,12 +1162,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         public void sendActionAfterDoubleTapUMA(int type,
                 boolean clickDelayEnabled) {
             // Not implemented.
-        }
-
-        @Override
-        public boolean didUIStealScroll(float x, float y) {
-            // Not implemented.
-            return false;
         }
 
         @Override

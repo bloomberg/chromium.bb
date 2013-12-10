@@ -9,9 +9,7 @@ import android.view.ActionMode;
 import android.view.KeyEvent;
 
 import org.chromium.content.browser.ContentViewClient;
-import org.chromium.content.browser.SelectActionModeCallback;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
-import org.chromium.content.browser.test.util.TestContentViewClient;
 
 /**
  * Simplistic {@link TestContentViewClient} for browser tests.
@@ -43,11 +41,6 @@ public class TestContentViewClientWrapper extends TestContentViewClient {
     public void onImeEvent() {
         super.onImeEvent();
         mWrappedClient.onImeEvent();
-    }
-
-    @Override
-    public boolean shouldOverrideScroll(float deltaX, float deltaY, float currX, float currY) {
-        return mWrappedClient.shouldOverrideScroll(deltaX, deltaY, currX, currX);
     }
 
     @Override

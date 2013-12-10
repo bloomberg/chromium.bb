@@ -242,14 +242,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
         boolean sendGesture(int type, long timeMs, int x, int y, Bundle extraParams);
 
         /**
-         * Gives the UI the chance to override each scroll event.
-         * @param x The amount scrolled in the X direction.
-         * @param y The amount scrolled in the Y direction.
-         * @return Whether or not the UI consumed and handled this event.
-         */
-        boolean didUIStealScroll(float x, float y);
-
-        /**
          * Show the zoom picker UI.
          */
         public void invokeZoomPicker();
@@ -355,12 +347,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                             }
                         }
 
-                        boolean didUIStealScroll = mMotionEventDelegate.didUIStealScroll(
-                                e2.getRawX() - mLastRawX, e2.getRawY() - mLastRawY);
-
                         mLastRawX = e2.getRawX();
                         mLastRawY = e2.getRawY();
-                        if (didUIStealScroll) return true;
                         if (!mTouchScrolling) {
                             sendTapCancelIfNecessary(e1);
                             endFlingIfNecessary(e2.getEventTime());

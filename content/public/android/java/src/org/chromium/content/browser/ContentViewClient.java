@@ -103,20 +103,6 @@ public class ContentViewClient {
     public void onImeStateChangeRequested(boolean requestShow) {
     }
 
-    // TODO(dtrainor): Should expose getScrollX/Y from ContentView or make
-    // computeHorizontalScrollOffset()/computeVerticalScrollOffset() public.
-    /**
-     * Gives the UI the chance to override each scroll event.
-     * @param dx The amount scrolled in the X direction (in physical pixels).
-     * @param dy The amount scrolled in the Y direction (in physical pixels).
-     * @param scrollX The current X scroll offset (in physical pixels).
-     * @param scrollY The current Y scroll offset (in physical pixels).
-     * @return Whether or not the UI consumed and handled this event.
-     */
-    public boolean shouldOverrideScroll(float dx, float dy, float scrollX, float scrollY) {
-        return false;
-    }
-
     /**
      * Returns an ActionMode.Callback for in-page selection.
      */

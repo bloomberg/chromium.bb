@@ -1562,12 +1562,6 @@ public class ContentViewCore
         return mContentSettings;
     }
 
-    @Override
-    public boolean didUIStealScroll(float x, float y) {
-        return getContentViewClient().shouldOverrideScroll(
-                x, y, computeHorizontalScrollOffset(), computeVerticalScrollOffset());
-    }
-
     private void onRenderCoordinatesUpdated() {
         if (mContentViewGestureHandler == null) return;
 
