@@ -63,6 +63,16 @@ void SetNaClSwitchExpectations(struct NaClSignalContext *expected_regs) {
    * calling _start.
    */
   expected_regs->r0 = expected_regs->stack_ptr;
+#elif defined(__mips__)
+  /* The current implementation sets t9 to the return address. */
+  expected_regs->t9 = expected_regs->prog_ctr;
+  /*
+   * Value from the return register v0 is put in input register a0 when
+   * a new thread is started. For the start of a new thread, expected
+   * stack pointer value is put in these registers.
+   */
+  expected_regs->a0 = expected_regs->stack_ptr;
+  expected_regs->v0 = expected_regs->stack_ptr;
 #endif
 }
 
@@ -77,6 +87,10 @@ void CheckRegistersAfterSyscall(struct NaClSignalContext *regs) {
   g_expected_regs.rax = regs->rax;
 #elif defined(__arm__)
   g_expected_regs.r0 = regs->r0;
+#elif defined(__mips__)
+  g_expected_regs.v0 = regs->v0;
+  /* NaClSwitch sets registers a0 and v0 to the same value. */
+  g_expected_regs.a0 = regs->v0;
 #else
 # error Unsupported architecture
 #endif
@@ -138,6 +152,14 @@ void TestSyscall(uintptr_t syscall_addr) {
         &call_regs,
         "bic r1, r1, #0xf000000f\n"
         "bx r1\n");
+#elif defined(__mips__)
+    call_regs.t9 = syscall_addr;  /* Scratch register */
+    call_regs.return_addr = (uintptr_t) ContinueAfterSyscall;  /* Return */
+    ASM_WITH_REGS(
+        &call_regs,
+        "and $t9, $t9, $t6\n"
+        "jr $t9\n"
+        "nop\n");
 #else
 # error Unsupported architecture
 #endif
@@ -185,7 +207,7 @@ void TestInitialRegsAtThreadEntry(void) {
   /* By default, we expect registers to be initialised to zero. */
   memset(&expected_regs, 0, sizeof(expected_regs));
   expected_regs.prog_ctr = (uintptr_t) ThreadFuncWrapper;
-  expected_regs.stack_ptr = aligned_stack_top;
+  expected_regs.stack_ptr = aligned_stack_top - NACL_STACK_ARGS_SIZE;
   RegsApplySandboxConstraints(&expected_regs);
   SetNaClSwitchExpectations(&expected_regs);
 #if defined(__x86_64__)
