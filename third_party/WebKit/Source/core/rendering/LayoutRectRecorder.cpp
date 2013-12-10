@@ -39,13 +39,11 @@ bool LayoutRectRecorder::shouldRecordLayoutRects()
 {
     bool isTracing;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
-
     return RuntimeEnabledFeatures::repaintAfterLayoutEnabled() || isTracing;
 }
 
 LayoutRectRecorder::LayoutRectRecorder(RenderObject& object, bool skipRecording)
     : m_object(object)
-    , m_repaintContainer(0)
     , m_skipRecording(skipRecording)
 {
     if (!shouldRecordLayoutRects())
@@ -53,16 +51,14 @@ LayoutRectRecorder::LayoutRectRecorder(RenderObject& object, bool skipRecording)
     if (m_skipRecording)
         return;
 
+    if (!m_object.layoutDidGetCalled())
+        m_object.setOldRepaintRect(m_object.clippedOverflowRectForRepaint(m_object.containerForRepaint()));
+
+    // If should do repaint was set previously make sure we don't accidentally unset it.
+    if (!m_object.shouldDoFullRepaintAfterLayout())
+        m_object.setShouldDoFullRepaintAfterLayout(m_object.selfNeedsLayout());
+
     m_object.setLayoutDidGetCalled(true);
-
-    m_repaintContainer = m_object.containerForRepaint();
-
-    // FIXME: This will do more work then needed in some cases. The isEmpty will
-    // return true if width <=0 or height <=0 so if we have a 0x0 item it will
-    // set the old rect each time it comes through here until it's given a size.
-    if (m_object.everHadLayout() && m_object.oldRepaintRect().isEmpty()) {
-        m_object.setOldRepaintRect(m_object.clippedOverflowRectForRepaint(m_repaintContainer));
-    }
 }
 
 LayoutRectRecorder::~LayoutRectRecorder()
@@ -72,7 +68,8 @@ LayoutRectRecorder::~LayoutRectRecorder()
     if (m_skipRecording)
         return;
 
-    m_object.setNewRepaintRect(m_object.clippedOverflowRectForRepaint(m_repaintContainer));
+    // Note, we don't store the repaint container because it can change during layout.
+    m_object.setNewRepaintRect(m_object.clippedOverflowRectForRepaint(m_object.containerForRepaint()));
 }
 
 } // namespace WebCore

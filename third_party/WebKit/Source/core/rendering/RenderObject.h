@@ -827,7 +827,8 @@ public:
     void repaintRectangle(const LayoutRect&) const;
 
     // Repaint only if our old bounds and new bounds are different. The caller may pass in newBounds and newOutlineBox if they are known.
-    bool repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox, const LayoutRect* newBoundsPtr = 0, const LayoutRect* newOutlineBoxPtr = 0);
+    bool repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
+        const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox, const LayoutRect* newBoundsPtr = 0, const LayoutRect* newOutlineBoxPtr = 0);
 
     virtual void repaintOverflow();
 
@@ -990,16 +991,21 @@ public:
 
     bool isRelayoutBoundaryForInspector() const;
 
-    const LayoutRect& oldRepaintRect() const { return m_oldRepaintRect; }
-    void setOldRepaintRect(const LayoutRect& rect) { m_oldRepaintRect = rect; }
-
     const LayoutRect& newRepaintRect() const { return m_newRepaintRect; }
     void setNewRepaintRect(const LayoutRect& rect) { m_newRepaintRect = rect; }
 
+    const LayoutRect& oldRepaintRect() const { return m_oldRepaintRect; }
+    void setOldRepaintRect(const LayoutRect& rect) { m_oldRepaintRect = rect; }
+
+    bool shouldDoFullRepaintAfterLayout() const { return m_bitfields.shouldDoFullRepaintAfterLayout(); }
+    void setShouldDoFullRepaintAfterLayout(bool b) { m_bitfields.setShouldDoFullRepaintAfterLayout(b); }
+
     void clearRepaintRects()
     {
-        setOldRepaintRect(LayoutRect());
         setNewRepaintRect(LayoutRect());
+        setOldRepaintRect(LayoutRect());
+
+        setShouldDoFullRepaintAfterLayout(false);
         setLayoutDidGetCalled(false);
     }
 
@@ -1112,6 +1118,11 @@ private:
     public:
         RenderObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
+            // FIXME: shouldDoFullRepaintAfterLayout is needed because we reset
+            // the layout bits before repaint when doing repaintAfterLayout.
+            // Holding the layout bits until after repaint would remove the need
+            // for this flag.
+            , m_shouldDoFullRepaintAfterLayout(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
             , m_posChildNeedsLayout(false)
@@ -1134,6 +1145,7 @@ private:
             , m_ancestorLineBoxDirty(false)
             , m_childrenInline(false)
             , m_hasColumns(false)
+            , m_layoutDidGetCalled(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
@@ -1141,8 +1153,9 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 1 in the second.
+        // 32 bits have been used in the first word, and 2 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
+        ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintAfterLayout, ShouldDoFullRepaintAfterLayout);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
         ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);

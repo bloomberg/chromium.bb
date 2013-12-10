@@ -118,7 +118,7 @@ struct SameSizeAsRenderObject {
 #endif
     unsigned m_bitfields;
     unsigned m_bitfields2;
-    LayoutRect rects[2]; // Stores the old/new layout rectangles.
+    LayoutRect rects[2]; // Stores the old/new repaint rects.
 };
 
 COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObject_should_stay_small);
@@ -1465,7 +1465,9 @@ IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
     return pixelSnappedIntRect(absoluteClippedOverflowRect());
 }
 
-bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox, const LayoutRect* newBoundsPtr, const LayoutRect* newOutlineBoxRectPtr)
+bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
+    const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox,
+    const LayoutRect* newBoundsPtr, const LayoutRect* newOutlineBoxRectPtr)
 {
     RenderView* v = view();
     if (v->document().printing())
@@ -1476,7 +1478,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : clippedOverflowRectForRepaint(repaintContainer);
     LayoutRect newOutlineBox;
 
-    bool fullRepaint = selfNeedsLayout();
+    bool fullRepaint = wasSelfLayout;
     // Presumably a background or a border exists if border-fit:lines was specified.
     if (!fullRepaint && style()->borderFit() == BorderFitLines)
         fullRepaint = true;
@@ -2828,6 +2830,7 @@ void RenderObject::layout()
 void RenderObject::forceLayout()
 {
     setSelfNeedsLayout(true);
+    setShouldDoFullRepaintAfterLayout(true);
     layout();
 }
 

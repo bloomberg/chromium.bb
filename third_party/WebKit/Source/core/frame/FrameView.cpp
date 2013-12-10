@@ -116,6 +116,7 @@ static const unsigned maxUpdateWidgetsIterations = 2;
 static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullRepaint)
 {
     RenderLayer::UpdateLayerPositionsFlags flags = RenderLayer::defaultFlags;
+
     if (didFullRepaint) {
         flags &= ~RenderLayer::CheckForRepaint;
         flags |= RenderLayer::NeedsFullRepaintInBacking;
@@ -970,6 +971,10 @@ void FrameView::layout(bool allowSubtree)
     if (isPainting())
         return;
 
+    // Store the current maximal outline size to use when computing the old/new
+    // outline rects for repainting.
+    renderView()->setOldMaximalOutlineSize(renderView()->maximalOutlineSize());
+
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willLayout(m_frame.get());
 
     if (!allowSubtree && m_layoutRoot) {
@@ -1084,19 +1089,21 @@ void FrameView::layout(bool allowSubtree)
         // FIXME: Can this scope just encompass this entire function?
         FrameView::DeferredRepaintScope deferRepaints(*this);
 
-        if (m_doFullRepaint) {
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+            if (m_doFullRepaint)
+                renderView()->setShouldDoFullRepaintAfterLayout(true);
+
+            if (m_doFullRepaint || !partialLayout().isStopping())
+                repaintTree(rootForThisLayout);
+
+        } else if (m_doFullRepaint) {
             // FIXME: This isn't really right, since the RenderView doesn't fully encompass
             // the visibleContentRect(). It just happens to work out most of the time,
             // since first layouts and printing don't have you scrolled anywhere.
-            rootForThisLayout->view()->repaint();
-
-        } else if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && !partialLayout().isStopping()) {
-            repaintTree(rootForThisLayout);
+            renderView()->repaint();
         }
-
         layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
     }
-
     updateCompositingLayersAfterLayout();
 
     m_layoutCount++;
@@ -1148,15 +1155,31 @@ void FrameView::repaintTree(RenderObject* root)
     ASSERT(!root->needsLayout());
 
     for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
-        const LayoutRect& oldRect = renderer->oldRepaintRect();
-        const LayoutRect& newRect = renderer->newRepaintRect();
+        const LayoutRect& oldRepaintRect = renderer->oldRepaintRect();
+        const LayoutRect& newRepaintRect = renderer->newRepaintRect();
 
-        if (oldRect != newRect) {
-            // FIXME: do repaint here.
+        LayoutRect oldOutlineRect = oldRepaintRect;
+        oldOutlineRect.inflate(renderView()->oldMaximalOutlineSize());
+
+        LayoutRect newOutlineRect = newRepaintRect;
+        newOutlineRect.inflate(renderView()->maximalOutlineSize());
+
+        // FIXME: Currently renderers with layers will get repainted when we call updateLayerPositionsAfterLayout.
+        // That call should be broken apart to position the layers be done before
+        // the repaintTree call so this will repaint everything.
+        if (!renderer->hasLayer()) {
+            if (!renderer->layoutDidGetCalled()) {
+                if (renderer->shouldDoFullRepaintAfterLayout())
+                    renderer->repaint();
+
+            } else {
+                renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(), renderer->shouldDoFullRepaintAfterLayout(),
+                    oldRepaintRect, oldOutlineRect, &newRepaintRect, &newOutlineRect);
+            }
         }
-
         renderer->clearRepaintRects();
     }
+    renderView()->setOldMaximalOutlineSize(0);
 }
 
 void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)

@@ -1154,14 +1154,21 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState, bool has
     // determineStartPosition can change the fullLayout flag we have to do this here. Failure to call
     // determineStartPosition first will break fast/repaint/line-flow-with-floats-9.html.
     if (layoutState.isFullLayout() && hasInlineChild && !selfNeedsLayout()) {
-        setNeedsLayout(MarkOnlyThis); // Mark as needing a full layout to force us to repaint.
-        RenderView* v = view();
-        if (v && !v->doingFullRepaint() && hasLayer()) {
-            // Because we waited until we were already inside layout to discover
-            // that the block really needed a full layout, we missed our chance to repaint the layer
-            // before layout started.  Luckily the layer has cached the repaint rect for its original
-            // position and size, and so we can use that to make a repaint happen now.
-            repaintUsingContainer(containerForRepaint(), pixelSnappedIntRect(layer()->repainter().repaintRect()));
+        // Mark as needing a full layout to force us to repaint. Allow regions
+        // to reflow as needed.
+        setNeedsLayout(MarkOnlyThis);
+
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+            setShouldDoFullRepaintAfterLayout(true);
+        } else {
+            RenderView* v = view();
+            if (v && !v->doingFullRepaint() && hasLayer()) {
+                // Because we waited until we were already inside layout to discover
+                // that the block really needed a full layout, we missed our chance to repaint the layer
+                // before layout started. Luckily the layer has cached the repaint rect for its original
+                // position and size, and so we can use that to make a repaint happen now.
+                repaintUsingContainer(containerForRepaint(), pixelSnappedIntRect(layer()->repainter().repaintRect()));
+            }
         }
     }
 
@@ -1690,8 +1697,12 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
     for (size_t i = 0; i < floatCount; ++i) {
         if (!floats[i].everHadLayout) {
             RenderBox* f = floats[i].object;
-            if (!f->x() && !f->y() && f->checkForRepaintDuringLayout())
-                f->repaint();
+            if (!f->x() && !f->y() && f->checkForRepaintDuringLayout()) {
+                if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+                    f->setShouldDoFullRepaintAfterLayout(true);
+                else
+                    f->repaint();
+            }
         }
     }
 }

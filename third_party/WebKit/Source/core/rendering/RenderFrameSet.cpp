@@ -442,7 +442,7 @@ void RenderFrameSet::layout()
     ASSERT(needsLayout());
 
     LayoutRectRecorder recorder(*this);
-    bool doFullRepaint = selfNeedsLayout() && checkForRepaintDuringLayout();
+    bool doFullRepaint = !RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && selfNeedsLayout() && checkForRepaintDuringLayout();
     LayoutRect oldBounds;
     RenderLayerModelObject* repaintContainer = 0;
     if (doFullRepaint) {

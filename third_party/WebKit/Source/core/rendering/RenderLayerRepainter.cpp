@@ -81,7 +81,7 @@ void RenderLayerRepainter::repaintAfterLayout(RenderGeometryMap* geometryMap, bo
                     if (m_repaintRect != oldRepaintRect)
                         m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect));
                 } else if (shouldRepaintAfterLayout()) {
-                    m_renderer->repaintAfterLayoutIfNeeded(repaintContainer, oldRepaintRect, oldOutlineBox, &m_repaintRect, &m_outlineBox);
+                    m_renderer->repaintAfterLayoutIfNeeded(repaintContainer, m_renderer->selfNeedsLayout(), oldRepaintRect, oldOutlineBox, &m_repaintRect, &m_outlineBox);
                 }
             }
         }

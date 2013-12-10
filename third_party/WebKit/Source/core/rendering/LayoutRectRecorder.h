@@ -49,8 +49,7 @@ public:
 
 private:
     RenderObject& m_object;
-    RenderLayerModelObject* m_repaintContainer;
-    unsigned m_skipRecording : 1;
+    bool m_skipRecording;
 };
 
 } // namespace WebCore

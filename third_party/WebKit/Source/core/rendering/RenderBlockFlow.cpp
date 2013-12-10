@@ -33,6 +33,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/rendering/HitTestLocation.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/LineWidth.h"
 #include "core/rendering/RenderLayer.h"
@@ -510,12 +511,15 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
         // If the child moved, we have to repaint it as well as any floating/positioned
         // descendants. An exception is if we need a layout. In this case, we know we're going to
         // repaint ourselves (and the child) anyway.
-        if (childHadLayout && !selfNeedsLayout() && child->checkForRepaintDuringLayout())
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && childHadLayout && !selfNeedsLayout())
+            child->repaintOverhangingFloats(true);
+        else if (childHadLayout && !selfNeedsLayout() && child->checkForRepaintDuringLayout())
             child->repaintDuringLayoutIfMoved(oldRect);
     }
 
     if (!childHadLayout && child->checkForRepaintDuringLayout()) {
-        child->repaint();
+        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+            child->repaint();
         child->repaintOverhangingFloats(true);
     }
 
@@ -782,6 +786,8 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, LayoutUnit& max
     while (next) {
         RenderBox* child = next;
         next = child->nextSiblingBox();
+
+        LayoutRectRecorder recorder(*child);
 
         if (childToExclude == child)
             continue; // Skip this child, since it will be positioned by the specialized subclass (fieldsets and ruby runs).
@@ -1798,8 +1804,15 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
         if (logicalBottomForFloat(floatingObject) > logicalHeight()
             && !floatingObject->renderer()->hasSelfPaintingLayer()
             && (floatingObject->shouldPaint() || (paintAllDescendants && floatingObject->renderer()->isDescendantOf(this)))) {
-            floatingObject->renderer()->repaint();
-            floatingObject->renderer()->repaintOverhangingFloats(false);
+
+            RenderBox* floatingRenderer = floatingObject->renderer();
+            LayoutRectRecorder recorder(*floatingRenderer);
+            if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+                floatingRenderer->setShouldDoFullRepaintAfterLayout(true);
+            else
+                floatingRenderer->repaint();
+
+            floatingRenderer->repaintOverhangingFloats(false);
         }
     }
 }

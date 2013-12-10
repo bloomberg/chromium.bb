@@ -35,6 +35,9 @@ LayoutRepainter::LayoutRepainter(RenderObject& object, bool checkForRepaint)
     , m_repaintContainer(0)
     , m_checkForRepaint(checkForRepaint)
 {
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+        return;
+
     if (m_checkForRepaint) {
         m_repaintContainer = m_object.containerForRepaint();
         m_oldBounds = m_object.clippedOverflowRectForRepaint(m_repaintContainer);
@@ -44,7 +47,10 @@ LayoutRepainter::LayoutRepainter(RenderObject& object, bool checkForRepaint)
 
 bool LayoutRepainter::repaintAfterLayout()
 {
-    return m_checkForRepaint ? m_object.repaintAfterLayoutIfNeeded(m_repaintContainer, m_oldBounds, m_oldOutlineBox) : false;
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+        return false;
+
+    return m_checkForRepaint ? m_object.repaintAfterLayoutIfNeeded(m_repaintContainer, m_object.selfNeedsLayout(), m_oldBounds, m_oldOutlineBox) : false;
 }
 
 } // namespace WebCore
