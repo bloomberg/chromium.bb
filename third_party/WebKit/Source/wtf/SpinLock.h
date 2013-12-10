@@ -57,4 +57,4 @@ ALWAYS_INLINE void spinLockUnlock(int volatile* lock)
 using WTF::spinLockLock;
 using WTF::spinLockUnlock;
 
-#endif // WTF_PartitionAlloc_h
+#endif // WTF_SpinLock_h

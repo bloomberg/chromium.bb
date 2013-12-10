@@ -31,6 +31,7 @@
 #include "config.h"
 #include "wtf/PartitionAlloc.h"
 
+#include "wtf/BitwiseOperations.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
@@ -687,6 +688,31 @@ TEST(WTF_PartitionAlloc, MappingCollision)
     }
 
     TestShutdown();
+}
+
+// Tests that the countLeadingZeros() functions work to our satisfaction.
+// It doesn't seem worth the overhead of a whole new file for these tests, so
+// we'll put them here since partitionAllocGeneric will depend heavily on these
+// functions working correctly.
+TEST(WTF_PartitionAlloc, CLZWorks)
+{
+    EXPECT_EQ(32u, WTF::countLeadingZeros32(0));
+    EXPECT_EQ(31u, WTF::countLeadingZeros32(1));
+    EXPECT_EQ(1u, WTF::countLeadingZeros32(1 << 30));
+    EXPECT_EQ(0u, WTF::countLeadingZeros32(1 << 31));
+
+#if CPU(64BIT)
+    EXPECT_EQ(64u, WTF::countLeadingZerosSizet(0ull));
+    EXPECT_EQ(63u, WTF::countLeadingZerosSizet(1ull));
+    EXPECT_EQ(32u, WTF::countLeadingZerosSizet(1ull << 31));
+    EXPECT_EQ(1u, WTF::countLeadingZerosSizet(1ull << 62));
+    EXPECT_EQ(0u, WTF::countLeadingZerosSizet(1ull << 63));
+#else
+    EXPECT_EQ(32u, WTF::countLeadingZerosSizet(0));
+    EXPECT_EQ(31u, WTF::countLeadingZerosSizet(1));
+    EXPECT_EQ(1u, WTF::countLeadingZerosSizet(1 << 30));
+    EXPECT_EQ(0u, WTF::countLeadingZerosSizet(1 << 31));
+#endif
 }
 
 } // namespace

@@ -20,6 +20,7 @@
             'BitArray.h',
             'BitVector.cpp',
             'BitVector.h',
+            'BitwiseOperations.h',
             'BloomFilter.h',
             'ByteOrder.h',
             'ByteSwap.h',
