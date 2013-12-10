@@ -1,4 +1,6 @@
 FileIDStripTest.StripSelf
+# crbug.com/303960
+ExceptionHandlerTest.InstructionPointerMemoryNullPointer
 # crbug.com/171419
 MinidumpWriterTest.MappingInfoContained
 # crbug.com/310088
