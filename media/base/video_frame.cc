@@ -181,6 +181,23 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
 }
 
 // static
+scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
+      const scoped_refptr<VideoFrame>& frame,
+      const base::Closure& no_longer_needed_cb) {
+  scoped_refptr<VideoFrame> wrapped_frame(new VideoFrame(
+      frame->format(), frame->coded_size(), frame->visible_rect(),
+      frame->natural_size(), frame->GetTimestamp(), frame->end_of_stream()));
+
+  for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
+    wrapped_frame->strides_[i] = frame->stride(i);
+    wrapped_frame->data_[i] = frame->data(i);
+  }
+
+  wrapped_frame->no_longer_needed_cb_ = no_longer_needed_cb;
+  return wrapped_frame;
+}
+
+// static
 scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
   return new VideoFrame(VideoFrame::UNKNOWN,
                         gfx::Size(),

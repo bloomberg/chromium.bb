@@ -11,6 +11,7 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_pool.h"
 
 struct vpx_codec_ctx;
 struct vpx_image;
@@ -79,6 +80,8 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   vpx_codec_ctx* vpx_codec_;
   vpx_codec_ctx* vpx_codec_alpha_;
+
+  VideoFramePool frame_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(VpxVideoDecoder);
 };

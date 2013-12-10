@@ -342,7 +342,7 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
 
   gfx::Size size(vpx_image->d_w, vpx_image->d_h);
 
-  *video_frame = VideoFrame::CreateFrame(
+  *video_frame = frame_pool_.CreateFrame(
       vpx_codec_alpha_ ? VideoFrame::YV12A : VideoFrame::YV12,
       size,
       gfx::Rect(size),

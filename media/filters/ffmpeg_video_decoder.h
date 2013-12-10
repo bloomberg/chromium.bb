@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame_pool.h"
 
 struct AVCodecContext;
 struct AVFrame;
@@ -84,6 +85,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   VideoDecoderConfig config_;
+
+  VideoFramePool frame_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecoder);
 };

@@ -92,8 +92,8 @@ int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
     return AVERROR(EINVAL);
 
   scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::CreateFrame(format, size, gfx::Rect(size), natural_size,
-                              kNoTimestamp());
+      frame_pool_.CreateFrame(format, size, gfx::Rect(size),
+                              natural_size, kNoTimestamp());
 
   for (int i = 0; i < 3; i++) {
     frame->base[i] = video_frame->data(i);
