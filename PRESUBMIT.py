@@ -976,6 +976,21 @@ def _CheckCygwinShell(input_api, output_api):
   return []
 
 
+def _CheckJavaStyle(input_api, output_api):
+  """Runs checkstyle on changed java files and returns errors if any exist."""
+  original_sys_path = sys.path
+  try:
+    sys.path = sys.path + [input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'tools', 'android', 'checkstyle')]
+    import checkstyle
+  finally:
+    # Restore sys.path to what it was before.
+    sys.path = original_sys_path
+
+  return checkstyle.RunCheckstyle(
+      input_api, output_api, 'tools/android/checkstyle/chromium-style-5.0.xml')
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -983,7 +998,7 @@ def _CommonChecks(input_api, output_api):
       input_api, output_api, excluded_paths=_EXCLUDED_PATHS))
   results.extend(_CheckAuthorizedAuthor(input_api, output_api))
   results.extend(
-    _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
+      _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
   results.extend(_CheckNoUNIT_TESTInSourceFiles(input_api, output_api))
   results.extend(_CheckNoNewWStrings(input_api, output_api))
@@ -1009,6 +1024,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckSpamLogging(input_api, output_api))
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckCygwinShell(input_api, output_api))
+  results.extend(_CheckJavaStyle(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
