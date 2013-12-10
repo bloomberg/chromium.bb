@@ -170,6 +170,9 @@ void OmniboxViewViews::Init() {
   if (popup_window_mode_)
     SetReadOnly(true);
 
+  if (chrome::ShouldDisplayOriginChip())
+    set_placeholder_text(l10n_util::GetStringUTF16(IDS_OMNIBOX_EMPTY_HINT));
+
   // Initialize the popup view using the same font.
   popup_view_.reset(OmniboxPopupContentsView::Create(
       font_list(), this, model(), location_bar_view_));
