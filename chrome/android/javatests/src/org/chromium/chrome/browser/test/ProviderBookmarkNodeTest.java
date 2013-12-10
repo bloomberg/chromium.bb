@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,6 @@ import java.util.Random;
  * Tests parceling of bookmark node hierarchies used by the provider client API.
  */
 public class ProviderBookmarkNodeTest extends ChromiumTestShellTestBase {
-    private static final String TAG = "ProviderBookmarkNodeTest";
-
     Random mGenerator = new Random();
     byte[][] mImageBlobs = null;
 

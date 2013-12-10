@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,7 +164,7 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
                 cursor.getString(Browser.SEARCHES_PROJECTION_SEARCH_INDEX));
         assertEquals(createDate,
                 cursor.getLong(Browser.SEARCHES_PROJECTION_DATE_INDEX));
-        int Id = cursor.getInt(ID_INDEX);
+        int id = cursor.getInt(ID_INDEX);
         cursor.close();
 
         // Test: update
@@ -174,22 +174,22 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
         value.put(SearchColumns.DATE, updateDate);
 
         getContentResolver().update(mSearchesUri, value,
-                SearchColumns._ID + " = " + Id, null);
+                SearchColumns._ID + " = " + id, null);
         cursor = getContentResolver().query(mSearchesUri,
                 Browser.SEARCHES_PROJECTION,
-                SearchColumns._ID + " = " + Id, null, null);
+                SearchColumns._ID + " = " + id, null, null);
         assertTrue(cursor.moveToNext());
         assertEquals(updateSearch,
                 cursor.getString(Browser.SEARCHES_PROJECTION_SEARCH_INDEX));
         assertEquals(updateDate,
                 cursor.getLong(Browser.SEARCHES_PROJECTION_DATE_INDEX));
-        assertEquals(Id, cursor.getInt(ID_INDEX));
+        assertEquals(id, cursor.getInt(ID_INDEX));
 
         // Test: delete
         getContentResolver().delete(insertUri, null, null);
         cursor = getContentResolver().query(mSearchesUri,
                 Browser.SEARCHES_PROJECTION,
-                SearchColumns._ID + " = " + Id, null, null);
+                SearchColumns._ID + " = " + id, null, null);
         assertEquals(0, cursor.getCount());
     }
 }

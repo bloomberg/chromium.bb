@@ -19,13 +19,13 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import java.util.List;
 
 public class InfoBarTest extends ChromiumTestShellTestBase {
-    private final static int MAX_TIMEOUT = 2000;
-    private final static int CHECK_INTERVAL = 500;
-    private final static String GEOLOCATION_PAGE =
+    private static final int MAX_TIMEOUT = 2000;
+    private static final int CHECK_INTERVAL = 500;
+    private static final String GEOLOCATION_PAGE =
             "chrome/test/data/geolocation/geolocation_on_load.html";
-    private final static String POPUP_PAGE =
+    private static final String POPUP_PAGE =
             "chrome/test/data/popup_blocker/popup-window-open.html";
-    public final static String HELLO_WORLD_URL = UrlUtils.encodeHtmlDataUri(
+    public static final String HELLO_WORLD_URL = UrlUtils.encodeHtmlDataUri(
             "<html>" +
             "<head><title>Hello, World!</title></head>" +
             "<body>Hello, World!</body>" +

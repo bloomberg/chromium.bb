@@ -77,7 +77,7 @@ public class TranslateInfoBarTest extends ChromiumTestShellTestBase {
         infoBar = infoBars.get(0);
         assertTrue(InfoBarUtil.clickCloseButton(this, infoBar));
 
-       assertTrue("Never Panel not opened.",
-           TranslateUtil.verifyInfoBarText(infoBar, NEVER_TRANSLATE_MESSAGE));
+        assertTrue("Never Panel not opened.",
+                TranslateUtil.verifyInfoBarText(infoBar, NEVER_TRANSLATE_MESSAGE));
     }
 }

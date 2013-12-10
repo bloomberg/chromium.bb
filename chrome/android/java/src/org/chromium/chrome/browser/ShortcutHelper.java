@@ -27,9 +27,8 @@ public class ShortcutHelper {
     private static String sFullScreenAction;
 
     /**
-     * Sets the class names used when launching the shortcuts.
-     * @param browserName Class name of the browser Activity.
-     * @param fullScreenName Class name of the fullscreen Activity.
+     * Sets the class name used when launching the shortcuts.
+     * @param fullScreenAction Class name of the fullscreen Activity.
      */
     public static void setFullScreenAction(String fullScreenAction) {
         sFullScreenAction = fullScreenAction;

@@ -40,11 +40,11 @@ class RepostFormWarningDialog extends DialogFragment {
                 })
                 .setPositiveButton(R.string.http_post_warning_resend,
                         new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        mContinueCallback.run();
-                    }
-                });
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                mContinueCallback.run();
+                            }
+                        });
 
         assert getCurrentDialog() == null;
         Dialog dialog = builder.create();

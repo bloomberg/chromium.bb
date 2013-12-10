@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,7 +170,7 @@ public abstract class TabBase implements NavigationClient {
 
         @Override
         public void toggleFullscreenModeForTab(boolean enableFullscreen) {
-            for (TabObserver observer: mObservers) {
+            for (TabObserver observer : mObservers) {
                 observer.onToggleFullscreenMode(TabBase.this, enableFullscreen);
             }
         }

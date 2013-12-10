@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,10 +34,10 @@ import java.util.concurrent.TimeoutException;
  * Test suite for displaying and functioning of modal dialogs.
  */
 public class ModalDialogTest extends ChromiumTestShellTestBase {
-    private final static String TAG = "ModalDialogTest";
-    private final static String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
+    private static final String TAG = "ModalDialogTest";
+    private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
-    private final static String BEFORE_UNLOAD_URL = UrlUtils.encodeHtmlDataUri(
+    private static final String BEFORE_UNLOAD_URL = UrlUtils.encodeHtmlDataUri(
             "<html>" +
             "<head><script>window.onbeforeunload=function() {" +
             "return 'Are you sure?';" +
