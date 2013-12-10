@@ -234,9 +234,15 @@ FileSystemURL ExternalMountPoints::CreateExternalFileSystemURL(
 }
 
 void ExternalMountPoints::RevokeAllFileSystems() {
-  base::AutoLock locker(lock_);
-  instance_map_.clear();
-  path_to_name_map_.clear();
+  NameToInstance instance_map_copy;
+  {
+    base::AutoLock locker(lock_);
+    instance_map_copy = instance_map_;
+    instance_map_.clear();
+    path_to_name_map_.clear();
+  }
+  STLDeleteContainerPairSecondPointers(instance_map_copy.begin(),
+                                       instance_map_copy.end());
 }
 
 ExternalMountPoints::ExternalMountPoints() {}
