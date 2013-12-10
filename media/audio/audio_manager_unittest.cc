@@ -115,6 +115,9 @@ class AudioManagerTest
 #if defined(USE_ALSA) || defined(USE_PULSEAUDIO)
   template <class T>
   void CreateAudioManagerForTesting() {
+    // Only one AudioManager may exist at a time, so destroy the one we're
+    // currently holding before creating a new one.
+    audio_manager_.reset();
     audio_manager_.reset(T::Create(&fake_audio_log_factory_));
   }
 #endif
