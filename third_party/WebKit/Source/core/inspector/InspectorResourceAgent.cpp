@@ -353,11 +353,11 @@ void InspectorResourceAgent::didReceiveResourceResponse(Frame*, unsigned long id
     }
 
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
-    if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::XHRResource)
-        type = InspectorPageAgent::XHRResource;
-    else if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::ScriptResource)
+    // Workaround for worker scripts that use RawResources for loading.
+    if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::ScriptResource)
         type = InspectorPageAgent::ScriptResource;
-    else if (equalIgnoringFragmentIdentifier(response.url(), loader->url()) && !loader->isCommitted())
+    // Workaround for background: url() in inline style.
+    if (equalIgnoringFragmentIdentifier(response.url(), loader->url()) && !loader->isCommitted())
         type = InspectorPageAgent::DocumentResource;
 
     m_resourcesData->responseReceived(requestId, m_pageAgent->frameId(loader->frame()), response);
@@ -456,11 +456,6 @@ void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest*, ThreadableLoader
 void InspectorResourceAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned)
 {
     m_pendingXHRReplayData.remove(client);
-}
-
-void InspectorResourceAgent::didReceiveXHRResponse(unsigned long identifier)
-{
-    m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier), InspectorPageAgent::XHRResource);
 }
 
 void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)

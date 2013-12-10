@@ -104,7 +104,6 @@ public:
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didFailXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*);
     void didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned);
-    void didReceiveXHRResponse(unsigned long identifier);
 
     void willDestroyResource(Resource*);
 

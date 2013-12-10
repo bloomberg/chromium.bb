@@ -1298,8 +1298,6 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
 {
     WTF_LOG(Network, "XMLHttpRequest %p didReceiveResponse(%lu)", this, identifier);
 
-    InspectorInstrumentation::didReceiveXHRResponse(executionContext(), identifier);
-
     m_response = response;
     if (!m_mimeTypeOverride.isEmpty()) {
         m_response.setHTTPHeaderField("Content-Type", m_mimeTypeOverride);

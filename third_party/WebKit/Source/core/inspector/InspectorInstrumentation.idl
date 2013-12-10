@@ -319,9 +319,6 @@ interface InspectorInstrumentation {
     void didFinishXHRLoading(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String& url, const String& sendURL, unsigned sendLineNumber);
 
     [Resource]
-    void didReceiveXHRResponse(ExecutionContext*, unsigned long identifier);
-
-    [Resource]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
 
     [Debugger]
