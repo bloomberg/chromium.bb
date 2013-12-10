@@ -109,7 +109,7 @@ void MIDIManagerMac::DispatchSendMIDIData(MIDIManagerClient* client,
                                           uint32 port_index,
                                           const std::vector<uint8>& data,
                                           double timestamp) {
-  if (send_thread_.IsRunning())
+  if (!send_thread_.IsRunning())
     send_thread_.Start();
 
   // OK to use base::Unretained(this) since we join to thread in dtor().
