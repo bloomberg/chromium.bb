@@ -15,8 +15,14 @@ namespace cc {
 
 class CC_EXPORT ETC1PixelRef : public SkPixelRef {
  public:
-  // Takes ownership of pixels.
+#ifdef SK_SUPPORT_LEGACY_PIXELREF_CONSTRUCTOR
+  // DEPRECATED -- will remove once blink updates to pass info
+  // TODO(reed)
   explicit ETC1PixelRef(scoped_ptr<uint8_t[]> pixels);
+#endif
+
+  // Takes ownership of pixels.
+  ETC1PixelRef(const SkImageInfo& info, scoped_ptr<uint8_t[]> pixels);
   virtual ~ETC1PixelRef();
 
   // SK_DECLARE_UNFLATTENABLE_OBJECT

@@ -14,7 +14,12 @@ namespace skia {
 // thread.
 class SK_API LazyPixelRef : public SkPixelRef {
  public:
+#ifdef SK_SUPPORT_LEGACY_PIXELREF_CONSTRUCTOR
+  // DEPRECATED -- will remove once blink updates to pass info
   LazyPixelRef();
+#endif
+
+  explicit LazyPixelRef(const SkImageInfo& info);
   virtual ~LazyPixelRef();
 
   struct PrepareParams {

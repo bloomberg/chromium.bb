@@ -480,13 +480,17 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
       skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
           backend_texture_description));
 
+  SkImageInfo info = {
+    source_texture_resource->size().width(),
+    source_texture_resource->size().height(),
+    kPMColor_SkColorType,
+    kPremul_SkAlphaType
+  };
   // Place the platform texture inside an SkBitmap.
   SkBitmap source;
-  source.setConfig(SkBitmap::kARGB_8888_Config,
-                   source_texture_resource->size().width(),
-                   source_texture_resource->size().height());
+  source.setConfig(info);
   skia::RefPtr<SkGrPixelRef> pixel_ref =
-      skia::AdoptRef(new SkGrPixelRef(texture.get()));
+      skia::AdoptRef(new SkGrPixelRef(info, texture.get()));
   source.setPixelRef(pixel_ref.get());
 
   // Create a scratch texture for backing store.
@@ -591,20 +595,31 @@ static SkBitmap ApplyBlendModeWithBackdrop(
       skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
           backend_texture_description));
 
+  SkImageInfo source_info = {
+    source_size.width(),
+    source_size.height(),
+    kPMColor_SkColorType,
+    kPremul_SkAlphaType
+  };
   // Place the platform texture inside an SkBitmap.
   SkBitmap source;
-  source.setConfig(
-      SkBitmap::kARGB_8888_Config, source_size.width(), source_size.height());
+  source.setConfig(source_info);
   skia::RefPtr<SkGrPixelRef> source_pixel_ref =
-      skia::AdoptRef(new SkGrPixelRef(source_texture.get()));
+      skia::AdoptRef(new SkGrPixelRef(source_info, source_texture.get()));
   source.setPixelRef(source_pixel_ref.get());
 
+  SkImageInfo background_info = {
+    background_size.width(),
+    background_size.height(),
+    kPMColor_SkColorType,
+    kPremul_SkAlphaType
+  };
+
   SkBitmap background;
-  background.setConfig(SkBitmap::kARGB_8888_Config,
-                       background_size.width(),
-                       background_size.height());
+  background.setConfig(background_info);
   skia::RefPtr<SkGrPixelRef> background_pixel_ref =
-      skia::AdoptRef(new SkGrPixelRef(background_texture.get()));
+      skia::AdoptRef(new SkGrPixelRef(
+          background_info, background_texture.get()));
   background.setPixelRef(background_pixel_ref.get());
 
   // Create a scratch texture for backing store.
