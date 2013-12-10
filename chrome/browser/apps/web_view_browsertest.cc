@@ -1840,3 +1840,20 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
   TestHelper("testPluginLoadPermission", "web_view/shim", NO_TEST_SERVER);
 }
 #endif  // defined(ENABLE_PLUGINS)
+
+// Taking a screenshot does not work with threaded compositing, so disable
+// threaded compositing for this test (http://crbug.com/326756).
+class WebViewWithoutThreadedCompositingTest : public WebViewTest {
+ public:
+  WebViewWithoutThreadedCompositingTest() {}
+  virtual ~WebViewWithoutThreadedCompositingTest() {}
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kDisableThreadedCompositing);
+    WebViewTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebViewWithoutThreadedCompositingTest,
+                       Shim_ScreenshotCapture) {
+  TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
+}

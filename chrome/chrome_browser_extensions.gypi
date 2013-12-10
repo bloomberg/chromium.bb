@@ -153,6 +153,8 @@
         'browser/extensions/api/braille_display_private/stub_braille_controller.h',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
+        'browser/extensions/api/capture_web_contents_function.cc',
+        'browser/extensions/api/capture_web_contents_function.h',
         'browser/extensions/api/cast_channel/cast_auth_util.h',
         'browser/extensions/api/cast_channel/cast_auth_util_nss.cc',
         'browser/extensions/api/cast_channel/cast_auth_util_openssl.cc',

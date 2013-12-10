@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/error_utils.h"
 
+using content::WebContents;
 using extensions::api::tabs::InjectDetails;
 using extensions::api::webview::SetPermission::Params;
 namespace webview = extensions::api::webview;
@@ -207,6 +208,30 @@ WebviewInsertCSSFunction::WebviewInsertCSSFunction() {
 
 bool WebviewInsertCSSFunction::ShouldInsertCSS() const {
   return true;
+}
+
+WebviewCaptureVisibleRegionFunction::WebviewCaptureVisibleRegionFunction() {
+  content::RecordAction(
+      content::UserMetricsAction("WebView.CaptureVisibleRegion"));
+}
+
+WebviewCaptureVisibleRegionFunction::~WebviewCaptureVisibleRegionFunction() {
+}
+
+bool WebviewCaptureVisibleRegionFunction::IsScreenshotEnabled() {
+  return true;
+}
+
+WebContents* WebviewCaptureVisibleRegionFunction::GetWebContentsForID(
+    int instance_id) {
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  return guest ? guest->guest_web_contents() : NULL;
+}
+
+void WebviewCaptureVisibleRegionFunction::OnCaptureFailure(
+    FailureReason reason) {
+  SendResponse(false);
 }
 
 WebviewGoFunction::WebviewGoFunction() {

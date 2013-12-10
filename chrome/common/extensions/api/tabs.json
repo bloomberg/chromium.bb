@@ -612,25 +612,9 @@
             "description": "The target window. Defaults to the <a href='windows.html#current-window'>current window</a>."
           },
           {
-            "type": "object",
+            "$ref": "capture_web_contents_private.ImageDetails",
             "name": "options",
-            "optional": true,
-            "description": "Set parameters of image capture, such as the format of the resulting image.",
-            "properties": {
-              "format": {
-                "type": "string",
-                "optional": true,
-                "enum": ["jpeg", "png"],
-                "description": "The format of the resulting image.  Default is jpeg."
-              },
-              "quality": {
-                "type": "integer",
-                "optional": true,
-                "minimum": 0,
-                "maximum": 100,
-                "description": "When format is 'jpeg', controls the quality of the resulting image.  This value is ignored for PNG images.  As quality is decreased, the resulting image will have more visual artifacts, and the number of bytes needed to store it will decrease."
-              }
-            }
+            "optional": true
           },
           {
             "type": "function", "name": "callback", "parameters": [

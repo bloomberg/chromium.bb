@@ -203,6 +203,7 @@
 0xd7e4d61883121c76	BadMessageTerminate_NC
 0x448f44d226b839b7	BadMessageTerminate_NC17
 0xd267646495d87640	BadMessageTerminate_RDH
+0x90d4be9ff70af550	BadMessageTerminate_RFH
 0xce2d3186346ab161	BadMessageTerminate_RVD
 0xf845124429e7aa80	BadMessageTerminate_RVH
 0xcb59a352ad13dc91	BadMessageTerminate_RWH
@@ -1772,6 +1773,7 @@
 0x91586aefc4a53dc7	VirtualKeyboardLoaded
 0x6932875212d36f57	WP_EditImage
 0x34a770eb3bbf5632	WP_Gallery
+0xe56fc587145f9d39	WebView.CaptureVisibleRegion
 0x462194a5096cab5e	WebView.ClearData
 0x1058b3af68275a1d	WebView.ExecuteScript
 0xbe313bfe6325dad0	WebView.Go

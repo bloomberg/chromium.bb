@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_
 
+#include "chrome/browser/extensions/api/capture_web_contents_function.h"
 #include "chrome/browser/extensions/api/execute_code_function.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
@@ -114,6 +115,25 @@ class WebviewInsertCSSFunction : public WebviewExecuteCodeFunction {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewInsertCSSFunction);
+};
+
+class WebviewCaptureVisibleRegionFunction
+    : public extensions::CaptureWebContentsFunction {
+  DECLARE_EXTENSION_FUNCTION("webview.captureVisibleRegion",
+                             WEBVIEW_CAPTUREVISIBLEREGION);
+
+  WebviewCaptureVisibleRegionFunction();
+
+ protected:
+  virtual ~WebviewCaptureVisibleRegionFunction();
+
+ private:
+  // extensions::CaptureWebContentsFunction implementation.
+  virtual bool IsScreenshotEnabled() OVERRIDE;
+  virtual content::WebContents* GetWebContentsForID(int id) OVERRIDE;
+  virtual void OnCaptureFailure(FailureReason reason) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewCaptureVisibleRegionFunction);
 };
 
 class WebviewGoFunction : public WebviewExtensionFunction {

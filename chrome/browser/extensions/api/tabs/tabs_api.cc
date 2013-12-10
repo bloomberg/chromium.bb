@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "apps/shell_window.h"
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -20,7 +19,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -86,8 +84,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/codec/jpeg_codec.h"
-#include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
@@ -105,20 +101,15 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
-using content::RenderViewHost;
 using content::WebContents;
 
 namespace extensions {
 
 namespace windows = api::windows;
-namespace errors = manifest_errors;
 namespace keys = tabs_constants;
 namespace tabs = api::tabs;
-typedef tabs::CaptureVisibleTab::Params::Options FormatEnum;
 
 using api::tabs::InjectDetails;
-
-const int TabsCaptureVisibleTabFunction::kDefaultQuality = 90;
 
 namespace {
 
@@ -1665,55 +1656,24 @@ bool TabsRemoveFunction::RemoveTab(int tab_id) {
   return true;
 }
 
-bool TabsCaptureVisibleTabFunction::GetTabToCapture(
-    WebContents** web_contents) {
-  scoped_ptr<tabs::CaptureVisibleTab::Params> params(
-      tabs::CaptureVisibleTab::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  Browser* browser = NULL;
-  // windowId defaults to "current" window.
-  int window_id = extension_misc::kCurrentWindowId;
-
-  if (params->window_id.get())
-    window_id = *params->window_id;
-
-  if (!GetBrowserFromWindowID(this, window_id, &browser))
-    return false;
-
-  *web_contents = browser->tab_strip_model()->GetActiveWebContents();
-  if (*web_contents == NULL) {
-    error_ = keys::kInternalVisibleTabCaptureError;
-    return false;
-  }
-
-  return true;
-};
-
-bool TabsCaptureVisibleTabFunction::RunImpl() {
-  scoped_ptr<tabs::CaptureVisibleTab::Params> params(
-      tabs::CaptureVisibleTab::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
+bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled() {
   PrefService* service = GetProfile()->GetPrefs();
   if (service->GetBoolean(prefs::kDisableScreenshots)) {
     error_ = keys::kScreenshotsDisabled;
     return false;
   }
+  return true;
+}
 
-  WebContents* web_contents = NULL;
-  if (!GetTabToCapture(&web_contents))
-    return false;
+WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
+  Browser* browser = NULL;
+  if (!GetBrowserFromWindowID(this, window_id, &browser))
+    return NULL;
 
-  image_format_ = FormatEnum::FORMAT_JPEG;  // Default format is JPEG.
-  image_quality_ = kDefaultQuality;  // Default quality setting.
-
-  if (params->options.get()) {
-    if (params->options->format != FormatEnum::FORMAT_NONE)
-      image_format_ = params->options->format;
-
-    if (params->options->quality.get())
-      image_quality_ = *params->options->quality;
+  WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
+  if (!contents) {
+    error_ = keys::kInternalVisibleTabCaptureError;
+    return NULL;
   }
 
   // Use the last committed URL rather than the active URL for permissions
@@ -1725,126 +1685,21 @@ bool TabsCaptureVisibleTabFunction::RunImpl() {
   // TODO(creis): Use WebContents::GetLastCommittedURL instead.
   // http://crbug.com/237908.
   NavigationEntry* last_committed_entry =
-      web_contents->GetController().GetLastCommittedEntry();
+      contents->GetController().GetLastCommittedEntry();
   GURL last_committed_url = last_committed_entry ?
       last_committed_entry->GetURL() : GURL();
-  if (!PermissionsData::CanCaptureVisiblePage(
-          GetExtension(),
-          last_committed_url,
-          SessionID::IdForTab(web_contents),
-          &error_)) {
-    return false;
+  if (!PermissionsData::CanCaptureVisiblePage(GetExtension(),
+                                              last_committed_url,
+                                              SessionID::IdForTab(contents),
+                                              &error_)) {
+    return NULL;
   }
-
-  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
-  content::RenderWidgetHostView* view = render_view_host->GetView();
-  if (!view) {
-    error_ = keys::kInternalVisibleTabCaptureError;
-    return false;
-  }
-  render_view_host->CopyFromBackingStore(
-      gfx::Rect(),
-      view->GetViewBounds().size(),
-      base::Bind(&TabsCaptureVisibleTabFunction::CopyFromBackingStoreComplete,
-                 this));
-  return true;
+  return contents;
 }
 
-void TabsCaptureVisibleTabFunction::CopyFromBackingStoreComplete(
-    bool succeeded,
-    const SkBitmap& bitmap) {
-  if (succeeded) {
-    VLOG(1) << "captureVisibleTab() got image from backing store.";
-    SendResultFromBitmap(bitmap);
-    return;
-  }
-
-  WebContents* web_contents = NULL;
-  if (!GetTabToCapture(&web_contents)) {
-    SendInternalError();
-    return;
-  }
-
-  // Ask the renderer for a snapshot of the tab.
-  content::RenderWidgetHost* render_widget_host =
-      web_contents->GetRenderViewHost();
-  if (!render_widget_host) {
-    SendInternalError();
-    return;
-  }
-
-  render_widget_host->GetSnapshotFromRenderer(
-      gfx::Rect(),
-      base::Bind(
-          &TabsCaptureVisibleTabFunction::GetSnapshotFromRendererComplete,
-          this));
-}
-
-// If a backing store was not available in
-// TabsCaptureVisibleTabFunction::RunImpl, than the renderer was asked for a
-// snapshot.
-void TabsCaptureVisibleTabFunction::GetSnapshotFromRendererComplete(
-    bool succeeded,
-    const SkBitmap& bitmap) {
-  if (!succeeded) {
-    SendInternalError();
-  } else {
-    VLOG(1) << "captureVisibleTab() got image from renderer.";
-    SendResultFromBitmap(bitmap);
-  }
-}
-
-void TabsCaptureVisibleTabFunction::SendInternalError() {
+void TabsCaptureVisibleTabFunction::OnCaptureFailure(FailureReason reason) {
   error_ = keys::kInternalVisibleTabCaptureError;
   SendResponse(false);
-}
-
-// Turn a bitmap of the screen into an image, set that image as the result,
-// and call SendResponse().
-void TabsCaptureVisibleTabFunction::SendResultFromBitmap(
-    const SkBitmap& screen_capture) {
-  std::vector<unsigned char> data;
-  SkAutoLockPixels screen_capture_lock(screen_capture);
-  bool encoded = false;
-  std::string mime_type;
-  switch (image_format_) {
-    case FormatEnum::FORMAT_JPEG:
-      encoded = gfx::JPEGCodec::Encode(
-          reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_SkBitmap,
-          screen_capture.width(),
-          screen_capture.height(),
-          static_cast<int>(screen_capture.rowBytes()),
-          image_quality_,
-          &data);
-      mime_type = keys::kMimeTypeJpeg;
-      break;
-    case FormatEnum::FORMAT_PNG:
-      encoded = gfx::PNGCodec::EncodeBGRASkBitmap(
-          screen_capture,
-          true,  // Discard transparency.
-          &data);
-      mime_type = keys::kMimeTypePng;
-      break;
-    default:
-      NOTREACHED() << "Invalid image format.";
-  }
-
-  if (!encoded) {
-    error_ = keys::kInternalVisibleTabCaptureError;
-    SendResponse(false);
-    return;
-  }
-
-  std::string base64_result;
-  base::StringPiece stream_as_string(
-      reinterpret_cast<const char*>(vector_as_array(&data)), data.size());
-
-  base::Base64Encode(stream_as_string, &base64_result);
-  base64_result.insert(0, base::StringPrintf("data:%s;base64,",
-                                             mime_type.c_str()));
-  SetResult(new StringValue(base64_result));
-  SendResponse(true);
 }
 
 void TabsCaptureVisibleTabFunction::RegisterProfilePrefs(

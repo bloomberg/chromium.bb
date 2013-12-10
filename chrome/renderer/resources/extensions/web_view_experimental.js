@@ -160,6 +160,11 @@ WebViewInternal.prototype.setUserAgentOverride_ = function(userAgentOverride) {
   WebView.overrideUserAgent(this.instanceId_, userAgentOverride);
 };
 
+/** @private */
+WebViewInternal.prototype.captureVisibleRegion_ = function(spec, callback) {
+  WebView.captureVisibleRegion(this.instanceId_, spec, callback);
+};
+
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto, secret) {
   proto.clearData = function(var_args) {
     var internal = this.internal_(secret);
@@ -176,5 +181,9 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto, secret) {
 
   proto.setUserAgentOverride = function(userAgentOverride) {
     this.internal_(secret).setUserAgentOverride_(userAgentOverride);
+  };
+
+  proto.captureVisibleRegion = function(spec, callback) {
+    this.internal_(secret).captureVisibleRegion_(spec, callback);
   };
 };

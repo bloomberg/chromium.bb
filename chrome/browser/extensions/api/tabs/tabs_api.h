@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/api/capture_web_contents_function.h"
 #include "chrome/browser/extensions/api/execute_code_function.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/tabs.h"
@@ -190,37 +191,19 @@ class TabsDetectLanguageFunction : public ChromeAsyncExtensionFunction,
   content::NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION("tabs.detectLanguage", TABS_DETECTLANGUAGE)
 };
-class TabsCaptureVisibleTabFunction : public ChromeAsyncExtensionFunction {
+class TabsCaptureVisibleTabFunction
+    : public extensions::CaptureWebContentsFunction {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
-  typedef api::tabs::CaptureVisibleTab::Params::Options::Format ImageFormat;
-
-  // The default quality setting used when encoding jpegs.
-  static const int kDefaultQuality;
-
   virtual ~TabsCaptureVisibleTabFunction() {}
-  virtual bool RunImpl() OVERRIDE;
-  virtual bool GetTabToCapture(content::WebContents** web_contents);
-  void SendResultFromBitmap(const SkBitmap& screen_capture);
 
  private:
-  // Callback for the RWH::CopyFromBackingStore call.
-  void CopyFromBackingStoreComplete(bool succeeded,
-                                    const SkBitmap& bitmap);
-
-  // Callback for the RWH::GetSnapshotFromRenderer call. This path is used if
-  // CopyFromBackingStore fails for some reason.
-  void GetSnapshotFromRendererComplete(bool succeeded,
-                                       const SkBitmap& bitmap);
-  void SendInternalError();
-
-  // The format (JPEG vs PNG) of the resulting image.  Set in RunImpl().
-  ImageFormat image_format_;
-
-  // Quality setting to use when encoding jpegs.  Set in RunImpl().
-  int image_quality_;
+  // extensions::CaptureWebContentsFunction:
+  virtual bool IsScreenshotEnabled() OVERRIDE;
+  virtual content::WebContents* GetWebContentsForID(int id) OVERRIDE;
+  virtual void OnCaptureFailure(FailureReason reason) OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION("tabs.captureVisibleTab", TABS_CAPTUREVISIBLETAB)
 };
