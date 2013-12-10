@@ -70,12 +70,11 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    if (TestEnded()) {
+    if (TestEnded() || CleanUpStarted())
       return;
-    }
     draw_timer_.NextLap();
     if (draw_timer_.HasTimeLimitExpired()) {
-      EndTest();
+      CleanUpAndEndTest(impl);
       return;
     }
     if (!animation_driven_drawing_)
@@ -83,6 +82,10 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     if (full_damage_each_frame_)
       impl->SetFullRootLayerDamage();
   }
+
+  virtual void CleanUpAndEndTest(LayerTreeHostImpl* host_impl) { EndTest(); }
+
+  virtual bool CleanUpStarted() { return false; }
 
   virtual void BuildTree() {}
 
@@ -250,8 +253,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     : public LayerTreeHostPerfTestJsonReader {
  public:
   BrowserCompositorInvalidateLayerTreePerfTest()
-      : next_sync_point_(1) {
-  }
+      : next_sync_point_(1), clean_up_started_(false) {}
 
   virtual void BuildTree() OVERRIDE {
     LayerTreeHostPerfTestJsonReader::BuildTree();
@@ -262,14 +264,12 @@ class BrowserCompositorInvalidateLayerTreePerfTest
                                              children()[0]->
                                              children()[0].get());
     ASSERT_TRUE(tab_contents_.get());
-  }
 
-  virtual void Layout() OVERRIDE {
     gpu::Mailbox gpu_mailbox;
     std::ostringstream name_stream;
     name_stream << "name" << next_sync_point_;
-    const char* name = name_stream.str().c_str();
-    memcpy(gpu_mailbox.name, name, strlen(name) + 1);
+    gpu_mailbox.SetName(
+        reinterpret_cast<const int8*>(name_stream.str().c_str()));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(&EmptyReleaseCallback));
     TextureMailbox mailbox(gpu_mailbox, next_sync_point_);
@@ -278,9 +278,31 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     tab_contents_->SetTextureMailbox(mailbox, callback.Pass());
   }
 
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    if (CleanUpStarted())
+      EndTest();
+  }
+
+  virtual void CleanUpAndEndTest(LayerTreeHostImpl* host_impl) OVERRIDE {
+    clean_up_started_ = true;
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserCompositorInvalidateLayerTreePerfTest::
+                        CleanUpAndEndTestOnMainThread,
+                   base::Unretained(this)));
+  }
+
+  void CleanUpAndEndTestOnMainThread() {
+    tab_contents_->SetTextureMailbox(TextureMailbox(),
+                                     scoped_ptr<SingleReleaseCallback>());
+  }
+
+  virtual bool CleanUpStarted() OVERRIDE { return clean_up_started_; }
+
  private:
   scoped_refptr<TextureLayer> tab_contents_;
   unsigned next_sync_point_;
+  bool clean_up_started_;
 };
 
 TEST_F(BrowserCompositorInvalidateLayerTreePerfTest, DenseBrowserUI) {
