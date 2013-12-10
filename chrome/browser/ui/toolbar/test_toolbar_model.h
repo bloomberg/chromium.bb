@@ -29,8 +29,12 @@ class TestToolbarModel : public ToolbarModel {
 
   void set_text(const base::string16& text) { text_ = text; }
   void set_url(const GURL& url) { url_ = url;}
-  void set_replace_search_url_with_search_terms(bool should_replace_url) {
-    should_replace_url_ = should_replace_url;
+  void set_omit_url_due_to_origin_chip(bool omit_url_due_to_origin_chip) {
+    omit_url_due_to_origin_chip_ = omit_url_due_to_origin_chip;
+  }
+  void set_perform_search_term_replacement(
+      bool perform_search_term_replacement) {
+    perform_search_term_replacement_ = perform_search_term_replacement;
   }
   void set_security_level(SecurityLevel security_level) {
     security_level_ = security_level;
@@ -44,9 +48,12 @@ class TestToolbarModel : public ToolbarModel {
   }
 
  private:
+  virtual bool WouldOmitURLDueToOriginChip() const OVERRIDE;
+
   base::string16 text_;
   GURL url_;
-  bool should_replace_url_;
+  bool omit_url_due_to_origin_chip_;
+  bool perform_search_term_replacement_;
   SecurityLevel security_level_;
   int icon_;
   base::string16 ev_cert_name_;

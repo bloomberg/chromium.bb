@@ -455,8 +455,8 @@ void OmniboxViewGtk::Update() {
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
   if (model()->UpdatePermanentText()) {
-    // Something visibly changed.  Re-enable search term replacement.
-    controller()->GetToolbarModel()->set_search_term_replacement_enabled(true);
+    // Something visibly changed.  Re-enable URL replacement.
+    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
     model()->UpdatePermanentText();
 
     RevertAll();
@@ -1243,8 +1243,7 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
                      G_CALLBACK(HandleShowURLThunk), this);
     gtk_widget_set_sensitive(
         show_url_menuitem,
-        controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
-            false));
+        controller()->GetToolbarModel()->WouldReplaceURL());
     gtk_widget_show(show_url_menuitem);
   }
 

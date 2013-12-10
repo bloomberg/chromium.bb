@@ -248,12 +248,11 @@ bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
 void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   views::Textfield::OnMouseReleased(event);
   // When the user has clicked and released to give us focus, select all unless
-  // we're doing search term replacement (in which case refining the existing
-  // query is common enough that we do click-to-place-cursor).
+  // we're omitting the URL (in which case refining an existing query is common
+  // enough that we do click-to-place-cursor).
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_ &&
-      !controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
-          false)) {
+      !controller()->GetToolbarModel()->WouldReplaceURL()) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
     SelectAll(true);
@@ -441,8 +440,8 @@ void OmniboxViewViews::Update() {
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
   if (model()->UpdatePermanentText()) {
-    // Something visibly changed.  Re-enable search term replacement.
-    controller()->GetToolbarModel()->set_search_term_replacement_enabled(true);
+    // Something visibly changed.  Re-enable URL replacement.
+    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
     model()->UpdatePermanentText();
 
     // Tweak: if the user had all the text selected, select all the new text.
@@ -833,7 +832,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (chrome::IsQueryExtractionEnabled()) {
+  if (chrome::IsQueryExtractionEnabled() || chrome::ShouldDisplayOriginChip()) {
     int select_all_position = menu_contents->GetIndexOfCommandId(
         IDS_APP_SELECT_ALL);
     DCHECK_GE(select_all_position, 0);
@@ -853,10 +852,9 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
     return !read_only() && !GetClipboardText().empty();
   if (command_id == IDS_PASTE_AND_GO)
     return !read_only() && model()->CanPasteAndGo(GetClipboardText());
-  if (command_id != IDS_SHOW_URL)
-    return command_updater()->IsCommandEnabled(command_id);
-  return controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
-      false);
+  if (command_id == IDS_SHOW_URL)
+    return controller()->GetToolbarModel()->WouldReplaceURL();
+  return command_updater()->IsCommandEnabled(command_id);
 }
 
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {

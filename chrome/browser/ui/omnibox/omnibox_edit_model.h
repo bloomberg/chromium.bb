@@ -57,7 +57,7 @@ class OmniboxEditModel {
           const string16& gray_text,
           const string16& keyword,
           bool is_keyword_hint,
-          bool search_term_replacement_enabled,
+          bool url_replacement_enabled,
           OmniboxFocusState focus_state,
           FocusSource focus_source);
     ~State();
@@ -67,7 +67,7 @@ class OmniboxEditModel {
     const string16 gray_text;
     const string16 keyword;
     const bool is_keyword_hint;
-    bool search_term_replacement_enabled;
+    bool url_replacement_enabled;
     OmniboxFocusState focus_state;
     FocusSource focus_source;
   };

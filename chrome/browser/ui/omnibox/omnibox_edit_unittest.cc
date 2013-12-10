@@ -206,7 +206,7 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
     toolbar_model()->set_text(ASCIIToUTF16(input[i].perm_text));
     model.UpdatePermanentText();
 
-    toolbar_model()->set_replace_search_url_with_search_terms(
+    toolbar_model()->set_perform_search_term_replacement(
         input[i].extracted_search_terms);
 
     base::string16 result = ASCIIToUTF16(input[i].input);

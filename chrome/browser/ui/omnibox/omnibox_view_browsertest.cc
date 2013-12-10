@@ -1770,16 +1770,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CtrlArrowAfterArrowSuggestions) {
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
                        PersistSearchReplacementAcrossTabSwitch) {
-  EXPECT_TRUE(browser()->toolbar_model()->search_term_replacement_enabled());
-  browser()->toolbar_model()->set_search_term_replacement_enabled(false);
+  EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
+  browser()->toolbar_model()->set_url_replacement_enabled(false);
 
   // Create a new tab.
   chrome::NewTab(browser());
-  EXPECT_TRUE(browser()->toolbar_model()->search_term_replacement_enabled());
+  EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
 
   // Switch back to the first tab.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_FALSE(browser()->toolbar_model()->search_term_replacement_enabled());
+  EXPECT_FALSE(browser()->toolbar_model()->url_replacement_enabled());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
@@ -1798,16 +1798,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   omnibox_view->Update();
   EXPECT_EQ(url_a, omnibox_view->GetText());
 
-  // Disable search term replacement and update.  Because the omnibox has focus,
-  // the visible text shouldn't change; see comments in
+  // Disable URL replacement and update.  Because the omnibox has focus, the
+  // visible text shouldn't change; see comments in
   // OmniboxEditModel::UpdatePermanentText().
-  browser()->toolbar_model()->set_search_term_replacement_enabled(false);
+  browser()->toolbar_model()->set_url_replacement_enabled(false);
   test_toolbar_model->set_text(url_b);
   omnibox_view->Update();
   EXPECT_EQ(url_a, omnibox_view->GetText());
 
-  // Re-enable search term replacement and ensure updating changes the text.
-  browser()->toolbar_model()->set_search_term_replacement_enabled(true);
+  // Re-enable URL replacement and ensure updating changes the text.
+  browser()->toolbar_model()->set_url_replacement_enabled(true);
   // We have to change the toolbar model text here, or Update() will do nothing.
   // This is because the previous update already updated the permanent text.
   test_toolbar_model->set_text(url_c);
@@ -1818,7 +1818,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   test_toolbar_model->set_text(url_a);
   omnibox_view->Update();
   EXPECT_EQ(url_a, omnibox_view->GetText());
-  browser()->toolbar_model()->set_search_term_replacement_enabled(false);
+  browser()->toolbar_model()->set_url_replacement_enabled(false);
   test_toolbar_model->set_text(url_b);
   omnibox_view->Update();
   EXPECT_EQ(url_a, omnibox_view->GetText());
@@ -1830,8 +1830,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, InputResetsSearchTermReplacement) {
-  browser()->toolbar_model()->set_search_term_replacement_enabled(false);
+  browser()->toolbar_model()->set_url_replacement_enabled(false);
   chrome::FocusLocationBar(browser());
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
-  EXPECT_TRUE(browser()->toolbar_model()->search_term_replacement_enabled());
+  EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
 }

@@ -116,7 +116,7 @@ void OmniboxView::SetUserText(const string16& text,
 }
 
 void OmniboxView::RevertAll() {
-  controller_->GetToolbarModel()->set_search_term_replacement_enabled(true);
+  controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   RevertWithoutResettingSearchTermReplacement();
 }
 
@@ -162,7 +162,7 @@ void OmniboxView::TextChanged() {
 }
 
 void OmniboxView::ShowURL() {
-  controller_->GetToolbarModel()->set_search_term_replacement_enabled(false);
+  controller_->GetToolbarModel()->set_url_replacement_enabled(false);
   model_->UpdatePermanentText();
   RevertWithoutResettingSearchTermReplacement();
   SelectAll(true);

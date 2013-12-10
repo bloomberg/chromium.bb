@@ -100,6 +100,9 @@ base::string16 ToolbarModelImpl::GetText() const {
   if (!search_terms.empty())
     return search_terms;
 
+  if (WouldOmitURLDueToOriginChip())
+    return string16();
+
   std::string languages;  // Empty if we don't have a |navigation_controller|.
   Profile* profile = GetProfile();
   if (profile)
@@ -146,6 +149,11 @@ GURL ToolbarModelImpl::GetURL() const {
   }
 
   return GURL(content::kAboutBlankURL);
+}
+
+bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
+  return chrome::ShouldDisplayOriginChip() && ShouldDisplayURL() &&
+      url_replacement_enabled();
 }
 
 bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
@@ -256,8 +264,7 @@ Profile* ToolbarModelImpl::GetProfile() const {
 }
 
 base::string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
-  if (!search_term_replacement_enabled() ||
-      (input_in_progress() && !ignore_editing))
+  if (!url_replacement_enabled() || (input_in_progress() && !ignore_editing))
     return base::string16();
 
   const WebContents* web_contents = delegate_->GetActiveWebContents();

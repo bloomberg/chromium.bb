@@ -29,15 +29,16 @@ class ToolbarModel {
 #undef DEFINE_TOOLBAR_MODEL_SECURITY_LEVEL
   };
 
-  virtual ~ToolbarModel() {}
+  virtual ~ToolbarModel();
 
   // Returns the text for the current page's URL. This will have been formatted
   // for display to the user:
   //   - Some characters may be unescaped.
   //   - The scheme and/or trailing slash may be dropped.
   //   - If the current page's URL is a search URL for the user's default search
-  //     engine, the query will be extracted and returned.
-  virtual base::string16 GetText() const = 0;
+  //     engine, the query will be extracted and returned for display instead
+  //     of the URL.
+  virtual string16 GetText() const = 0;
 
   // Some search URLs bundle a special "corpus" param that we can extract and
   // display next to users' search terms in cases where we'd show the search
@@ -54,6 +55,11 @@ class ToolbarModel {
   // underlying state of the page without regard to any user edits that may be
   // in progress in the omnibox.
   virtual bool WouldPerformSearchTermReplacement(bool ignore_editing) const = 0;
+
+  // Returns true if a call to GetText() would return something other than the
+  // URL because of either search term replacement or URL omission in favor of
+  // the origin chip.
+  bool WouldReplaceURL() const;
 
   // Returns the security level that the toolbar should display.  If
   // |ignore_editing| is true, the result reflects the underlying state of the
@@ -85,22 +91,26 @@ class ToolbarModel {
   }
   bool input_in_progress() const { return input_in_progress_; }
 
-  // Whether search term replacement should be enabled.
-  void set_search_term_replacement_enabled(bool enabled) {
-    search_term_replacement_enabled_ = enabled;
+  // Whether URL replacement should be enabled.
+  void set_url_replacement_enabled(bool enabled) {
+    url_replacement_enabled_ = enabled;
   }
-  bool search_term_replacement_enabled() const {
-    return search_term_replacement_enabled_;
+  bool url_replacement_enabled() const {
+    return url_replacement_enabled_;
   }
 
  protected:
-  ToolbarModel()
-      : input_in_progress_(false),
-        search_term_replacement_enabled_(true) {}
+  ToolbarModel();
 
  private:
+  // Returns true if a call to GetText() would return an empty string instead of
+  // the URL that would have otherwise been displayed because the host/origin is
+  // instead being displayed in the origin chip.  This returns false when we
+  // wouldn't have displayed a URL to begin with (e.g. for the NTP).
+  virtual bool WouldOmitURLDueToOriginChip() const = 0;
+
   bool input_in_progress_;
-  bool search_term_replacement_enabled_;
+  bool url_replacement_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModel);
 };

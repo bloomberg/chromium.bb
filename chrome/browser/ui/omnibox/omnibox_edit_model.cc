@@ -107,7 +107,7 @@ const char kFocusToOpenTimeHistogram[] = "Omnibox.FocusToOpenTime";
 
 void RecordPercentageMatchHistogram(const string16& old_text,
                                     const string16& new_text,
-                                    bool search_term_replacement_active,
+                                    bool url_replacement_active,
                                     content::PageTransition transition) {
   size_t avg_length = (old_text.length() + new_text.length()) / 2;
 
@@ -121,7 +121,7 @@ void RecordPercentageMatchHistogram(const string16& old_text,
     percent = static_cast<float>(matching_characters) / avg_length * 100;
   }
 
-  if (search_term_replacement_active) {
+  if (url_replacement_active) {
     if (transition == content::PAGE_TRANSITION_TYPED) {
       UMA_HISTOGRAM_PERCENTAGE(
           "InstantExtended.PercentageMatchV2_QuerytoURL", percent);
@@ -150,7 +150,7 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& gray_text,
                                const string16& keyword,
                                bool is_keyword_hint,
-                               bool search_term_replacement_enabled,
+                               bool url_replacement_enabled,
                                OmniboxFocusState focus_state,
                                FocusSource focus_source)
     : user_input_in_progress(user_input_in_progress),
@@ -158,7 +158,7 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
       gray_text(gray_text),
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
-      search_term_replacement_enabled(search_term_replacement_enabled),
+      url_replacement_enabled(url_replacement_enabled),
       focus_state(focus_state),
       focus_source(focus_source) {
 }
@@ -214,15 +214,15 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
   return State(
       user_input_in_progress_, user_text_, view_->GetGrayTextAutocompletion(),
       keyword_, is_keyword_hint_,
-      controller_->GetToolbarModel()->search_term_replacement_enabled(),
+      controller_->GetToolbarModel()->url_replacement_enabled(),
       focus_state_, focus_source_);
 }
 
 void OmniboxEditModel::RestoreState(const State* state) {
   // We need to update the permanent text correctly and revert the view
   // regardless of whether there is saved state.
-  controller_->GetToolbarModel()->set_search_term_replacement_enabled(
-      !state || state->search_term_replacement_enabled);
+  controller_->GetToolbarModel()->set_url_replacement_enabled(
+      !state || state->url_replacement_enabled);
   permanent_text_ = controller_->GetToolbarModel()->GetText();
   // Don't muck with the search term replacement state, as we've just set it
   // correctly.
@@ -290,7 +290,7 @@ bool OmniboxEditModel::UpdatePermanentText() {
       (!has_focus() ||
        (!user_input_in_progress_ &&
         !(popup_model() && popup_model()->IsOpen()) &&
-        controller_->GetToolbarModel()->search_term_replacement_enabled())) &&
+        controller_->GetToolbarModel()->url_replacement_enabled())) &&
       (gray_text.empty() ||
        new_permanent_text != user_text_ + gray_text);
 
@@ -389,7 +389,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(false))
+  if (controller_->GetToolbarModel()->WouldReplaceURL())
     return false;
 
   // If current text is not composed of replaced search terms and
@@ -415,9 +415,8 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   *write_url = false;
 
   // Do not adjust if selection did not start at the beginning of the field, or
-  // if the URL was replaced by search terms.
-  if ((sel_min != 0) ||
-      controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(false))
+  // if the URL was omitted.
+  if ((sel_min != 0) || controller_->GetToolbarModel()->WouldReplaceURL())
     return;
 
   if (!user_input_in_progress_ && is_all_selected) {
@@ -471,10 +470,10 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     time_user_first_modified_omnibox_ = base::TimeTicks::Now();
     content::RecordAction(content::UserMetricsAction("OmniboxInputInProgress"));
     autocomplete_controller()->ResetSession();
-    // Once the user starts editing, re-enable search term replacement, so that
-    // it will kick in if applicable once the edit is committed or reverted.
-    // (While the edit is in progress, this won't have a visible effect.)
-    controller_->GetToolbarModel()->set_search_term_replacement_enabled(true);
+    // Once the user starts editing, re-enable URL replacement, so that it will
+    // kick in if applicable once the edit is committed or reverted. (While the
+    // edit is in progress, this won't have a visible effect.)
+    controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   }
 
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);
@@ -777,8 +776,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   } else {
     RecordPercentageMatchHistogram(
         permanent_text_, current_text,
-        controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(
-            false),
+        controller_->GetToolbarModel()->WouldReplaceURL(),
         match.transition);
 
     // Track whether the destination URL sends us to a search results page

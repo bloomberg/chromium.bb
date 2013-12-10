@@ -8,7 +8,8 @@
 
 TestToolbarModel::TestToolbarModel()
     : ToolbarModel(),
-      should_replace_url_(false),
+      omit_url_due_to_origin_chip_(false),
+      perform_search_term_replacement_(false),
       security_level_(NONE),
       icon_(IDR_LOCATION_BAR_HTTP),
       should_display_url_(true) {}
@@ -27,9 +28,13 @@ GURL TestToolbarModel::GetURL() const {
   return url_;
 }
 
+bool TestToolbarModel::WouldOmitURLDueToOriginChip() const {
+  return omit_url_due_to_origin_chip_;
+}
+
 bool TestToolbarModel::WouldPerformSearchTermReplacement(
     bool ignore_editing) const {
-  return should_replace_url_;
+  return perform_search_term_replacement_;
 }
 
 ToolbarModel::SecurityLevel TestToolbarModel::GetSecurityLevel(
