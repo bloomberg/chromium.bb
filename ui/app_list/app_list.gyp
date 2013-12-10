@@ -215,6 +215,7 @@
         'cocoa/signin_view_controller_unittest.mm',
         'cocoa/test/apps_grid_controller_test_helper.h',
         'cocoa/test/apps_grid_controller_test_helper.mm',
+        'views/app_list_main_view_unittest.cc',
         'views/apps_grid_view_unittest.cc',
         'views/test/apps_grid_view_test_api.cc',
         'views/test/apps_grid_view_test_api.h',

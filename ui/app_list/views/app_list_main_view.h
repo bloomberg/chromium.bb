@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/app_list/views/apps_grid_view_delegate.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/app_list/views/search_result_list_view_delegate.h"
@@ -31,10 +32,10 @@ class SearchBoxView;
 
 // AppListMainView contains the normal view of the app list, which is shown
 // when the user is signed in.
-class AppListMainView : public views::View,
-                        public AppsGridViewDelegate,
-                        public SearchBoxViewDelegate,
-                        public SearchResultListViewDelegate {
+class APP_LIST_EXPORT AppListMainView : public views::View,
+                                        public AppsGridViewDelegate,
+                                        public SearchBoxViewDelegate,
+                                        public SearchResultListViewDelegate {
  public:
   // Takes ownership of |delegate|.
   explicit AppListMainView(AppListViewDelegate* delegate,
@@ -48,6 +49,8 @@ class AppListMainView : public views::View,
 
   void Prerender();
 
+  void ModelChanged();
+
   SearchBoxView* search_box_view() const { return search_box_view_; }
 
   // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
@@ -60,10 +63,11 @@ class AppListMainView : public views::View,
  private:
   class IconLoader;
 
-  // Loads icon image for the apps in the selected page of |pagination_model|.
+  void AddContentsView();
+
+  // Loads icon image for the apps in the selected page of |pagination_model_|.
   // |parent| is used to determine the image scale factor to use.
-  void PreloadIcons(PaginationModel* pagination_model,
-                    gfx::NativeView parent);
+  void PreloadIcons(gfx::NativeView parent);
 
   // Invoked when |icon_loading_wait_timer_| fires.
   void OnIconLoadingWaitTimer();
@@ -89,7 +93,8 @@ class AppListMainView : public views::View,
   virtual void OnResultInstalled(SearchResult* result) OVERRIDE;
   virtual void OnResultUninstalled(SearchResult* result) OVERRIDE;
 
-  AppListViewDelegate* delegate_;  // Owned by parent (AppListView)
+  AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
+  PaginationModel* pagination_model_;  // Owned by AppListController.
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.
 
   SearchBoxView* search_box_view_;  // Owned by views hierarchy.

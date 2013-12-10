@@ -41,16 +41,14 @@ const int kMenuXOffsetFromButton = -7;
 }  // namespace
 
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
-                             AppListViewDelegate* view_delegate,
-                             AppListModel* model)
+                             AppListViewDelegate* view_delegate)
     : delegate_(delegate),
       view_delegate_(view_delegate),
-      model_(model),
+      model_(NULL),
       icon_view_(new views::ImageView),
       speech_button_(NULL),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
-  DCHECK(model_);
   AddChildView(icon_view_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -71,14 +69,23 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   search_box_->SetController(this);
   AddChildView(search_box_);
 
-  model_->search_box()->AddObserver(this);
-  IconChanged();
-  SpeechRecognitionButtonPropChanged();
-  HintTextChanged();
+  ModelChanged();
 }
 
 SearchBoxView::~SearchBoxView() {
   model_->search_box()->RemoveObserver(this);
+}
+
+void SearchBoxView::ModelChanged() {
+  if (model_)
+    model_->search_box()->RemoveObserver(this);
+
+  model_ = view_delegate_->GetModel();
+  DCHECK(model_);
+  model_->search_box()->AddObserver(this);
+  IconChanged();
+  SpeechRecognitionButtonPropChanged();
+  HintTextChanged();
 }
 
 bool SearchBoxView::HasSearch() const {

@@ -42,13 +42,13 @@ ExtensionAppModelBuilder::ExtensionAppModelBuilder(
     Profile* profile,
     app_list::AppListModel* model,
     AppListControllerDelegate* controller)
-    : profile_(NULL),
+    : profile_(profile),
       controller_(controller),
       model_(model),
       highlighted_app_pending_(false),
       tracker_(NULL) {
   model_->item_list()->AddObserver(this);
-  SwitchProfile(profile);  // Builds the model.
+  BuildModel();
 }
 
 ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
@@ -148,11 +148,7 @@ void ExtensionAppModelBuilder::AddApps(const ExtensionSet* extensions,
   }
 }
 
-void ExtensionAppModelBuilder::SwitchProfile(Profile* profile) {
-  if (profile_ == profile)
-    return;
-  profile_ = profile;
-
+void ExtensionAppModelBuilder::BuildModel() {
   // Delete any extension apps.
   model_->item_list()->DeleteItemsByType(ExtensionAppItem::kAppType);
 

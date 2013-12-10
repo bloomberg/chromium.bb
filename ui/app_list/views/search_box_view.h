@@ -38,10 +38,10 @@ class SearchBoxView : public views::View,
                       public SearchBoxModelObserver {
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
-                AppListViewDelegate* view_delegate,
-                AppListModel* model);
+                AppListViewDelegate* view_delegate);
   virtual ~SearchBoxView();
 
+  void ModelChanged();
   bool HasSearch() const;
   void ClearSearch();
   void InvalidateMenu();
@@ -87,7 +87,7 @@ class SearchBoxView : public views::View,
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
-  AppListModel* model_;  // Owned by AppListView.
+  AppListModel* model_;  // Owned by the profile-keyed service.
 
   scoped_ptr<AppListMenuViews> menu_;
 

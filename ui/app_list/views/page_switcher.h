@@ -50,7 +50,7 @@ class PageSwitcher : public views::View,
   virtual void TransitionStarted() OVERRIDE;
   virtual void TransitionChanged() OVERRIDE;
 
-  PaginationModel* model_;  // Owned by parent AppListView.
+  PaginationModel* model_;  // Owned by AppListController.
   views::View* buttons_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(PageSwitcher);

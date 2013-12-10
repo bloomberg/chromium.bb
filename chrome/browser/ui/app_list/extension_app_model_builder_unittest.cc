@@ -146,6 +146,7 @@ class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
 
 TEST_F(ExtensionAppModelBuilderTest, Build) {
   // The apps list would have 3 extension apps in the profile.
+  EXPECT_EQ(kDefaultAppCount, model_->item_list()->item_count());
   EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 }
 
@@ -313,21 +314,4 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
   // By default, conflicted items are sorted by their app ids (= order added).
   EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
             GetModelContent(model_.get()));
-}
-
-TEST_F(ExtensionAppModelBuilderTest, SwitchProfile) {
-  EXPECT_EQ(kDefaultAppCount, model_->item_list()->item_count());
-
-  // Switch to a profile with no apps, ensure all apps are removed.
-  ExtensionServiceInitParams params =
-      CreateDefaultInitParamsInTempDir(&second_profile_temp_dir_);
-  scoped_ptr<TestingProfile> profile2 = CreateTestingProfile(params);
-  InitializeExtensionServiceForProfile(params, profile2.get());
-
-  builder_->SwitchProfile(profile2.get());
-  EXPECT_EQ(0u, model_->item_list()->item_count());
-
-  // Switch back to the main profile, ensure apps are restored.
-  builder_->SwitchProfile(profile_.get());
-  EXPECT_EQ(kDefaultAppCount, model_->item_list()->item_count());
 }

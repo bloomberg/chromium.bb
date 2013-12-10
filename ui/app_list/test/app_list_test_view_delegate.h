@@ -69,6 +69,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
 
+  AppListTestModel* ReleaseTestModel() { return model_.release(); }
   AppListTestModel* GetTestModel() { return model_.get(); }
 
  private:
@@ -79,6 +80,8 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   scoped_ptr<AppListTestModel> model_;
   ObserverList<AppListViewDelegateObserver> observers_;
   SpeechUIModel speech_ui_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
 };
 
 }  // namespace test

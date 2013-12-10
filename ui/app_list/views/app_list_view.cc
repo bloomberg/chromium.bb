@@ -217,6 +217,7 @@ void AppListView::OnProfilesChanged() {
 
 void AppListView::SetProfileByPath(const base::FilePath& profile_path) {
   delegate_->SetProfileByPath(profile_path);
+  app_list_main_view_->ModelChanged();
 }
 
 void AppListView::AddObserver(AppListViewObserver* observer) {

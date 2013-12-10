@@ -81,26 +81,30 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                  PaginationModel* pagination_model,
                                  gfx::NativeView parent)
     : delegate_(delegate),
+      pagination_model_(pagination_model),
       model_(delegate->GetModel()),
       search_box_view_(NULL),
       contents_view_(NULL),
       weak_ptr_factory_(this) {
   // Starts icon loading early.
-  PreloadIcons(pagination_model, parent);
+  PreloadIcons(parent);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kInnerPadding,
                                         kInnerPadding,
                                         kInnerPadding));
 
-  search_box_view_ = new SearchBoxView(this, delegate, model_);
+  search_box_view_ = new SearchBoxView(this, delegate);
   AddChildView(search_box_view_);
+  AddContentsView();
+}
 
+void AppListMainView::AddContentsView() {
   contents_view_ =
       new ContentsView(this,
-                       pagination_model,
+                       pagination_model_,
                        model_,
-                       delegate ? delegate->GetStartPageContents() : NULL);
+                       delegate_ ? delegate_->GetStartPageContents() : NULL);
   AddChildView(contents_view_);
 
   search_box_view_->set_contents_view(contents_view_);
@@ -141,13 +145,23 @@ void AppListMainView::Prerender() {
   contents_view_->Prerender();
 }
 
+void AppListMainView::ModelChanged() {
+  pending_icon_loaders_.clear();
+  model_ = delegate_->GetModel();
+  search_box_view_->ModelChanged();
+  delete contents_view_;
+  contents_view_ = NULL;
+  pagination_model_->SelectPage(0, false /* animate */);
+  AddContentsView();
+  Layout();
+}
+
 void AppListMainView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
-void AppListMainView::PreloadIcons(PaginationModel* pagination_model,
-                                   gfx::NativeView parent) {
+void AppListMainView::PreloadIcons(gfx::NativeView parent) {
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
   if (parent)
     scale_factor = ui::GetScaleFactorForNativeView(parent);
@@ -155,7 +169,7 @@ void AppListMainView::PreloadIcons(PaginationModel* pagination_model,
   float scale = ui::GetImageScale(scale_factor);
   // |pagination_model| could have -1 as the initial selected page and
   // assumes first page (i.e. index 0) will be used in this case.
-  const int selected_page = std::max(0, pagination_model->selected_page());
+  const int selected_page = std::max(0, pagination_model_->selected_page());
 
   const int tiles_per_page = kPreferredCols * kPreferredRows;
   const int start_model_index = selected_page * tiles_per_page;

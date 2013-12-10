@@ -37,11 +37,11 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
                            AppListControllerDelegate* controller);
   virtual ~ExtensionAppModelBuilder();
 
-  // Rebuilds the model with the given profile.
-  void SwitchProfile(Profile* profile);
-
  private:
   typedef std::vector<ExtensionAppItem*> ExtensionAppList;
+
+  // Builds the model with the current profile.
+  void BuildModel();
 
   // extensions::InstallObserver
   virtual void OnBeginExtensionInstall(
