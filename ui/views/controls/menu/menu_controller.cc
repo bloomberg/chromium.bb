@@ -46,6 +46,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -384,6 +385,27 @@ MenuItemView* MenuController::Run(Widget* parent,
   // Close any open menus.
   SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
+#if defined(OS_WIN) && defined(USE_AURA)
+  // On Windows, if we select the menu item by touch and if the window at the
+  // location is another window on the same thread, that window gets a
+  // WM_MOUSEACTIVATE message and ends up activating itself, which is not
+  // correct. We workaround this by setting a property on the window at the
+  // current cursor location. We check for this property in our
+  // WM_MOUSEACTIVATE handler and don't activate the window if the property is
+  // set.
+  if (item_selected_by_touch_) {
+    item_selected_by_touch_ = false;
+    POINT cursor_pos;
+    ::GetCursorPos(&cursor_pos);
+     HWND window = ::WindowFromPoint(cursor_pos);
+     if (::GetWindowThreadProcessId(window, NULL) ==
+                                    ::GetCurrentThreadId()) {
+       ::SetProp(window, views::kIgnoreTouchMouseActivateForWindow,
+                 reinterpret_cast<HANDLE>(true));
+     }
+  }
+#endif
+
   if (nested_menu) {
     DCHECK(!menu_stack_.empty());
     // We're running from within a menu, restore the previous state.
@@ -425,7 +447,6 @@ MenuItemView* MenuController::Run(Widget* parent,
     menu_button_->SetState(CustomButton::STATE_NORMAL);
     menu_button_->SchedulePaint();
   }
-
   return result;
 }
 
@@ -600,6 +621,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
       if (part.menu->GetDelegate()->IsTriggerableEvent(
           part.menu, *event)) {
         Accept(part.menu, event->flags());
+        item_selected_by_touch_ = true;
       }
       event->StopPropagation();
     } else if (part.type == MenuPart::MENU_ITEM) {
@@ -1169,7 +1191,8 @@ MenuController::MenuController(ui::NativeTheme* theme,
       menu_config_(theme),
       closing_event_time_(base::TimeDelta()),
       menu_start_time_(base::TimeTicks()),
-      accept_on_f4_(false) {
+      accept_on_f4_(false),
+      item_selected_by_touch_(false) {
   active_instance_ = this;
 }
 

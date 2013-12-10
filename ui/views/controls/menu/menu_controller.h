@@ -587,6 +587,9 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
   // Whether the menu should accept on F4, like Windows native Combobox menus.
   bool accept_on_f4_;
 
+  // Set to true if the menu item was selected by touch.
+  bool item_selected_by_touch_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };
 

@@ -1479,6 +1479,17 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
 #if defined(USE_AURA)
+  // On Windows, if we select the menu item by touch and if the window at the
+  // location is another window on the same thread, that window gets a
+  // WM_MOUSEACTIVATE message and ends up activating itself, which is not
+  // correct. We workaround this by setting a property on the window at the
+  // current cursor location. We check for this property in our
+  // WM_MOUSEACTIVATE handler and don't activate the window if the property is
+  // set.
+  if (::GetProp(hwnd(), kIgnoreTouchMouseActivateForWindow)) {
+    ::RemoveProp(hwnd(), kIgnoreTouchMouseActivateForWindow);
+    return MA_NOACTIVATE;
+  }
   // A child window activation should be treated as if we lost activation.
   POINT cursor_pos = {0};
   ::GetCursorPos(&cursor_pos);

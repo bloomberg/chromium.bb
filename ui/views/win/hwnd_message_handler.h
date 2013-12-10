@@ -530,6 +530,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
 
+// This window property if set on the window does not activate the window for a
+// touch based WM_MOUSEACTIVATE message.
+const wchar_t kIgnoreTouchMouseActivateForWindow[] =
+    L"Chrome.IgnoreMouseActivate";
+
 }  // namespace views
 
 #endif  // UI_VIEWS_WIN_HWND_MESSAGE_HANDLER_H_
