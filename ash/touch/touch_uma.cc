@@ -299,7 +299,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
     if (details->last_start_time_.count(event.touch_id())) {
       base::TimeDelta duration = event.time_stamp() -
                                  details->last_start_time_[event.touch_id()];
-      UMA_HISTOGRAM_COUNTS_100("Ash.TouchDuration", duration.InMilliseconds());
+      UMA_HISTOGRAM_TIMES("Ash.TouchDuration", duration);
 
       // Look for touches that were [almost] stationary for a long time.
       const double kLongStationaryTouchDuration = 10;
