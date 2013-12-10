@@ -1192,20 +1192,24 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
     return layerChanged;
 }
 
+static void updateScrollParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer* topmostLayer, RenderLayer* scrollParent, ScrollingCoordinator* scrollingCoordinator)
+{
+    if (!layer)
+        return;
+
+    // Only the topmost layer has a scroll parent. All other layers have a null scroll parent.
+    if (layer != topmostLayer)
+        scrollParent = 0;
+
+    scrollingCoordinator->updateScrollParentForGraphicsLayer(layer, scrollParent);
+}
+
 void CompositedLayerMapping::updateScrollParent(RenderLayer* scrollParent)
 {
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
-        if (m_ancestorClippingLayer) {
-            ASSERT(childForSuperlayers() == m_ancestorClippingLayer.get());
-            // If we have an ancestor clipping layer, it is the scroll child. The other layer that may have
-            // been the scroll child is the graphics layer. We will ensure that we clear its association
-            // with a scroll parent if it had one.
-            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_ancestorClippingLayer.get(), scrollParent);
-            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), 0);
-        } else {
-            ASSERT(childForSuperlayers() == m_graphicsLayer.get());
-            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), scrollParent);
-        }
+        GraphicsLayer* topmostLayer = childForSuperlayers();
+        updateScrollParentForGraphicsLayer(m_ancestorClippingLayer.get(), topmostLayer, scrollParent, scrollingCoordinator);
+        updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), topmostLayer, scrollParent, scrollingCoordinator);
     }
 }
 
