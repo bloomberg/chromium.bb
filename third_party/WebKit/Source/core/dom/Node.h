@@ -298,8 +298,6 @@ public:
     // Knows about all kinds of hosts.
     ContainerNode* parentOrShadowHostOrTemplateHostNode() const;
 
-    // Use when it's guaranteed to that shadowHost is 0.
-    ContainerNode* parentNodeGuaranteedHostFree() const;
     // Returns the parent node, but 0 if the parent node is a ShadowRoot.
     ContainerNode* nonShadowBoundaryParentNode() const;
 
@@ -888,12 +886,6 @@ inline ContainerNode* Node::parentOrShadowHostNode() const
 inline ContainerNode* Node::parentNode() const
 {
     return isShadowRoot() ? 0 : parentOrShadowHostNode();
-}
-
-inline ContainerNode* Node::parentNodeGuaranteedHostFree() const
-{
-    ASSERT(!isShadowRoot());
-    return parentOrShadowHostNode();
 }
 
 inline void Node::lazyReattachIfAttached()

@@ -378,7 +378,8 @@ PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionS
     ASSERT(rangeCount() == 1);
 
     if (Node* shadowAncestor = selectionShadowAncestor(m_frame)) {
-        ContainerNode* container = shadowAncestor->parentNodeGuaranteedHostFree();
+        ASSERT(!shadowAncestor->isShadowRoot());
+        ContainerNode* container = shadowAncestor->parentOrShadowHostNode();
         int offset = shadowAncestor->nodeIndex();
         return Range::create(shadowAncestor->document(), container, offset, container, offset);
     }
@@ -521,7 +522,8 @@ Node* DOMSelection::shadowAdjustedNode(const Position& position) const
     if (containerNode == adjustedNode)
         return containerNode;
 
-    return adjustedNode->parentNodeGuaranteedHostFree();
+    ASSERT(!adjustedNode->isShadowRoot());
+    return adjustedNode->parentOrShadowHostNode();
 }
 
 int DOMSelection::shadowAdjustedOffset(const Position& position) const

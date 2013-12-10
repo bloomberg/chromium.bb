@@ -1165,7 +1165,7 @@ Node* Node::nonBoundaryShadowTreeRootNode()
     while (root) {
         if (root->isShadowRoot())
             return root;
-        Node* parent = root->parentNodeGuaranteedHostFree();
+        Node* parent = root->parentOrShadowHostNode();
         if (parent && parent->isShadowRoot())
             return root;
         root = parent;
