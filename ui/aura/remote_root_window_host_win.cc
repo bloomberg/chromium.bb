@@ -179,6 +179,8 @@ void RemoteRootWindowHostWin::Connected(IPC::Sender* host, HWND remote_window) {
 void RemoteRootWindowHostWin::Disconnected() {
   // Don't CHECK here, Disconnected is called on a channel error which can
   // happen before we're successfully Connected.
+  if (!host_)
+    return;
   ui::RemoteInputMethodPrivateWin* remote_input_method_private =
       GetRemoteInputMethodPrivate();
   if (remote_input_method_private)
