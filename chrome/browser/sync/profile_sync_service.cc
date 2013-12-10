@@ -72,6 +72,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/configure_reason.h"
+#include "sync/internal_api/public/http_bridge_network_resources.h"
+#include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
@@ -182,7 +184,8 @@ ProfileSyncService::ProfileSyncService(
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       weak_factory_(this),
       connection_status_(syncer::CONNECTION_NOT_ATTEMPTED),
-      last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()) {
+      last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()),
+      network_resources_(new syncer::HttpBridgeNetworkResources) {
   DCHECK(profile);
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
@@ -548,7 +551,8 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       scoped_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory).Pass(),
       backend_unrecoverable_error_handler.Pass(),
-      &browser_sync::ChromeReportUnrecoverableError);
+      &browser_sync::ChromeReportUnrecoverableError,
+      network_resources_.get());
 }
 
 void ProfileSyncService::CreateBackend() {
@@ -2269,4 +2273,9 @@ ProfileSyncService::GetSyncTokenStatus() const {
   if (request_access_token_retry_timer_.IsRunning())
     status.next_token_request_time = next_token_request_time_;
   return status;
+}
+
+void ProfileSyncService::OverrideNetworkResourcesForTest(
+    scoped_ptr<syncer::NetworkResources> network_resources) {
+  network_resources_ = network_resources.Pass();
 }

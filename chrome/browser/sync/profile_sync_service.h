@@ -71,6 +71,7 @@ class SyncSessionSnapshot;
 
 namespace syncer {
 class BaseTransaction;
+class NetworkResources;
 struct SyncCredentials;
 struct UserShare;
 }  // namespace syncer
@@ -699,6 +700,11 @@ class ProfileSyncService
 
   browser_sync::FaviconCache* GetFaviconCache();
 
+  // Overrides the NetworkResources used for Sync connections.
+  // This function takes ownership of |network_resources|.
+  void OverrideNetworkResourcesForTest(
+      scoped_ptr<syncer::NetworkResources> network_resources);
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
@@ -1041,6 +1047,8 @@ class ProfileSyncService
   base::Time next_token_request_time_;
 
   scoped_ptr<SessionsSyncManager> sessions_sync_manager_;
+
+  scoped_ptr<syncer::NetworkResources> network_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -22,6 +21,7 @@
 #include "sync/internal_api/public/base/cancelation_observer.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
+#include "sync/internal_api/public/network_time_update_callback.h"
 #include "url/gurl.h"
 
 class HttpBridgeTest;
@@ -39,15 +39,6 @@ class URLFetcher;
 namespace syncer {
 
 class CancelationSignal;
-
-// Callback for updating the network time.
-// Params:
-// const base::Time& network_time - the new network time.
-// const base::TimeDelta& resolution - how precise the reading is.
-// const base::TimeDelta& latency - the http request's latency.
-typedef base::Callback<void(const base::Time&,
-                            const base::TimeDelta&,
-                            const base::TimeDelta&)> NetworkTimeUpdateCallback;
 
 // A bridge between the syncer and Chromium HTTP layers.
 // Provides a way for the sync backend to use Chromium directly for HTTP

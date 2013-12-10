@@ -28,6 +28,8 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/http_bridge_network_resources.h"
+#include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -157,6 +159,8 @@ class SyncBackendHostTest : public testing::Test {
     enabled_types_.Put(syncer::SEARCH_ENGINES);
     enabled_types_.Put(syncer::AUTOFILL);
     enabled_types_.Put(syncer::EXPERIMENTS);
+
+    network_resources_.reset(new syncer::HttpBridgeNetworkResources());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -189,7 +193,8 @@ class SyncBackendHostTest : public testing::Test {
         fake_manager_factory_.PassAs<syncer::SyncManagerFactory>(),
         scoped_ptr<syncer::UnrecoverableErrorHandler>(
             new syncer::TestUnrecoverableErrorHandler).Pass(),
-        NULL);
+        NULL,
+        network_resources_.get());
     base::RunLoop run_loop;
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                    run_loop.QuitClosure(),
@@ -256,6 +261,7 @@ class SyncBackendHostTest : public testing::Test {
   scoped_ptr<FakeSyncManagerFactory> fake_manager_factory_;
   FakeSyncManager* fake_manager_;
   syncer::ModelTypeSet enabled_types_;
+  scoped_ptr<syncer::NetworkResources> network_resources_;
 };
 
 // Test basic initialization with no initial types (first time initialization).

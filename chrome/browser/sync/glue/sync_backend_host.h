@@ -29,6 +29,7 @@ class MessageLoop;
 }
 
 namespace syncer {
+class NetworkResources;
 class SyncManagerFactory;
 }
 
@@ -66,7 +67,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function) = 0;
+          report_unrecoverable_error_function,
+      syncer::NetworkResources* network_resources) = 0;
 
   // Called on the frontend's thread to update SyncCredentials.
   virtual void UpdateCredentials(

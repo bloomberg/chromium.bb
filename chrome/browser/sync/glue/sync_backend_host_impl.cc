@@ -22,6 +22,7 @@
 #include "sync/internal_api/public/http_bridge.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/internal_components_factory_impl.h"
+#include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -79,7 +80,8 @@ void SyncBackendHostImpl::Initialize(
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
-        report_unrecoverable_error_function) {
+        report_unrecoverable_error_function,
+    syncer::NetworkResources* network_resources) {
   registrar_.reset(new browser_sync::SyncBackendRegistrar(name_,
                                             profile_,
                                             sync_thread.Pass()));
@@ -116,11 +118,10 @@ void SyncBackendHostImpl::Initialize(
       extensions_activity_monitor_.GetExtensionsActivity(),
       event_handler,
       sync_service_url,
-      scoped_ptr<syncer::HttpPostProviderFactory>(
-          new syncer::HttpBridgeFactory(
-              make_scoped_refptr(profile_->GetRequestContext()),
-              NetworkTimeTracker::BuildNotifierUpdateCallback(),
-              core_->GetRequestContextCancelationSignal())),
+      network_resources->GetHttpPostProviderFactory(
+          make_scoped_refptr(profile_->GetRequestContext()),
+          NetworkTimeTracker::BuildNotifierUpdateCallback(),
+          core_->GetRequestContextCancelationSignal()),
       credentials,
       invalidator_->GetInvalidatorClientId(),
       sync_manager_factory.Pass(),

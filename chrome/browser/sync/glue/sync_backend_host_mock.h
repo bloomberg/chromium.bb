@@ -35,7 +35,8 @@ class SyncBackendHostMock : public SyncBackendHost {
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function) OVERRIDE;
+          report_unrecoverable_error_function,
+      syncer::NetworkResources* network_resources) OVERRIDE;
 
   virtual void UpdateCredentials(
       const syncer::SyncCredentials& credentials) OVERRIDE;
