@@ -19,8 +19,9 @@ class CastUdpTransport {
   explicit CastUdpTransport(const scoped_refptr<CastSession>& session);
   ~CastUdpTransport();
 
-  // Specify the remote IP address.
-  void Start(const net::HostPortPair& remote_address);
+  // Begin the transport by specifying the remote IP address.
+  // The transport will use UDP.
+  void Start(const net::IPEndPoint& remote_address);
 
  private:
   const scoped_refptr<CastSession> cast_session_;

@@ -324,7 +324,13 @@ void CastStreamingNativeHandler::StartCastUdpTransport(
         v8::String::NewFromUtf8(args.GetIsolate(), kInvalidUdpParams)));
     return;
   }
-  transport->Start(net::HostPortPair(udp_params->address, udp_params->port));
+  net::IPAddressNumber ip;
+  if (!net::ParseIPLiteralToNumber(udp_params->address, &ip)) {
+    args.GetIsolate()->ThrowException(v8::Exception::TypeError(
+        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidUdpParams)));
+    return;
+  }
+  transport->Start(net::IPEndPoint(ip, udp_params->port));
 }
 
 CastRtpStream* CastStreamingNativeHandler::GetRtpStreamOrThrow(

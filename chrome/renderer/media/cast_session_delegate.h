@@ -10,27 +10,30 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/renderer/media/cast_session.h"
+#include "content/public/renderer/p2p_socket_client.h"
+#include "content/public/renderer/p2p_socket_client_delegate.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_sender.h"
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
-namespace media {
-namespace cast {
-class CastEnvironment;
-class CastSender;
-}  // namespace cast
-}  // namespace media
-
 // This class hosts CastSender and connects it to audio/video frame input
 // and network socket.
 // This class is created on the render thread and destroyed on the IO
 // thread. All methods are accessible only on the IO thread.
-class CastSessionDelegate {
+class CastSessionDelegate
+    : public media::cast::PacketSender,
+      public content::P2PSocketClientDelegate {
  public:
   CastSessionDelegate();
-  ~CastSessionDelegate();
+  virtual ~CastSessionDelegate();
+
+  void SetSocketFactory(
+      scoped_ptr<CastSession::P2PSocketFactory> socket_factory,
+      const net::IPEndPoint& remote_address);
 
   // After calling StartAudio() and StartVideo() with configuration encoding
   // will begin.
@@ -45,9 +48,26 @@ class CastSessionDelegate {
   // If both audio and video are configured properly then start CastSender.
   void MaybeStartSending();
 
+  // media::cast::PacketSender Implementation
+  virtual bool SendPacket(const media::cast::Packet& packet) OVERRIDE;
+  virtual bool SendPackets(const media::cast::PacketList& packets) OVERRIDE;
+
+  // content::P2PSocketClient::Delegate Implementation
+  virtual void OnOpen(const net::IPEndPoint& address) OVERRIDE;
+  virtual void OnIncomingTcpConnection(
+      const net::IPEndPoint& address,
+      content::P2PSocketClient* client) OVERRIDE;
+  virtual void OnSendComplete() OVERRIDE;
+  virtual void OnError() OVERRIDE;
+  virtual void OnDataReceived(const net::IPEndPoint& address,
+                              const std::vector<char>& data) OVERRIDE;
+ private:
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   scoped_ptr<media::cast::CastSender> cast_sender_;
+  scoped_ptr<CastSession::P2PSocketFactory> socket_factory_;
+  net::IPEndPoint remote_address_;
+  scoped_refptr<content::P2PSocketClient> socket_;
 
   // Utilities threads owned by this class. They are used by CastSender for
   // encoding.

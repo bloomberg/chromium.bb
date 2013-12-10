@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/ip_endpoint.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -19,6 +20,10 @@ struct AudioSenderConfig;
 struct VideoSenderConfig;
 }  // namespace cast
 }  // namespace media
+
+namespace content{
+class P2PSocketClient;
+}  // namespace content
 
 class CastSessionDelegate;
 
@@ -32,6 +37,24 @@ class CastSession : public base::RefCounted<CastSession> {
   // Start encoding of audio and video using the provided configuration.
   void StartAudio(const media::cast::AudioSenderConfig& config);
   void StartVideo(const media::cast::VideoSenderConfig& config);
+
+  class P2PSocketFactory {
+   public:
+    virtual ~P2PSocketFactory();
+
+    // Called on IO thread.
+    virtual scoped_refptr<content::P2PSocketClient> Create() = 0;
+  };
+
+  // Send the socket factory to the delegate, where create will be
+  // called. The delegate will then delete the socket factory on the
+  // IO thread. We do it this way because the P2P socket needs to
+  // be created on the same thread that the callbacks will be called on.
+  // The |remote_endpoint| is the address will be used when calling
+  // SendWithDscp on the P2PSocketClient.
+  // Takes ownership of socket_factory.
+  void SetSocketFactory(scoped_ptr<P2PSocketFactory> socket_factory,
+                        const net::IPEndPoint& remote_address);
 
  private:
   friend class base::RefCounted<CastSession>;
