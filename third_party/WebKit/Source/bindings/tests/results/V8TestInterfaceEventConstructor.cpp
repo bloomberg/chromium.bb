@@ -36,6 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -174,7 +175,10 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
             info.Holder()->SetHiddenValue(V8HiddenPropertyName::initializedByEventConstructorReadonlyAnyAttribute(info.GetIsolate()), initializedByEventConstructorReadonlyAnyAttribute);
     }
-    RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit);
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     if (isolatedWorldForIsolate(info.GetIsolate())) {
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
             event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(initializedByEventConstructorReadonlyAnyAttribute, info.GetIsolate()));

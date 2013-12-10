@@ -2923,6 +2923,7 @@ END
     my $exceptionStateArgument = "";
     if ($constructorRaisesException) {
         ${exceptionStateArgument} = ", exceptionState";
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
         $implementation{nameSpaceInternal}->add(<<END);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
 END

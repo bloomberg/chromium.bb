@@ -28,6 +28,7 @@
 
 [
     EventConstructor,
+    RaisesException=Constructor,
 ] interface TestInterfaceEventConstructor : Event {
     readonly attribute DOMString readonlyStringAttribute;
     [InitializedByEventConstructor] readonly attribute DOMString initializedByEventConstructorReadonlyStringAttribute;

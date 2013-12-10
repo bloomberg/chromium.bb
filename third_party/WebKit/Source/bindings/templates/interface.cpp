@@ -188,7 +188,14 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
             info.Holder()->SetHiddenValue(V8HiddenPropertyName::{{attribute.name}}(info.GetIsolate()), {{attribute.name}});
         {% endfor %}
     }
+    {% if is_constructor_raises_exception %}
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    {% else %}
     RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
+    {% endif %}
     {% if has_any_type_attributes %}
     {# If we're in an isolated world, create a SerializedScriptValue and store
        it in the event for later cloning if the property is accessed from
