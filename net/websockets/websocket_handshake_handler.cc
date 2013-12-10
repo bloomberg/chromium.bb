@@ -351,8 +351,7 @@ void ComputeSecWebSocketAccept(const std::string& key,
 
   std::string hash =
       base::SHA1HashString(key + websockets::kWebSocketGuid);
-  bool encode_success = base::Base64Encode(hash, accept);
-  DCHECK(encode_success);
+  base::Base64Encode(hash, accept);
 }
 
 bool WebSocketHandshakeResponseHandler::ParseResponseInfo(
@@ -405,8 +404,7 @@ bool WebSocketHandshakeResponseHandler::ParseResponseHeaderBlock(
   std::string hash =
       base::SHA1HashString(challenge + websockets::kWebSocketGuid);
   std::string websocket_accept;
-  bool encode_success = base::Base64Encode(hash, &websocket_accept);
-  DCHECK(encode_success);
+  base::Base64Encode(hash, &websocket_accept);
 
   std::string response_message = base::StringPrintf(
       "%s %s\r\n", websockets::kHttpProtocolVersion, status->second.c_str());

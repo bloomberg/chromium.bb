@@ -122,8 +122,7 @@ std::vector<uint8> RsaPad(size_t rsa_key_size,
 // needed.  Call the standard Base64 encoder/decoder and then apply fixups.
 std::string UrlSafeB64Encode(const std::vector<uint8>& data) {
   std::string result;
-  if (!base::Base64Encode(ByteVectorToSP(data), &result))
-    return std::string();
+  base::Base64Encode(ByteVectorToSP(data), &result);
 
   // Do an tr|+/|-_| on the output, and strip any '=' padding.
   for (std::string::iterator it = result.begin(); it != result.end(); ++it) {
@@ -302,4 +301,3 @@ bool ClientUpdateProtocol::DeriveSharedKey(const std::vector<uint8>& source) {
 
   return true;
 }
-

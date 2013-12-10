@@ -665,8 +665,7 @@ bool X509Certificate::GetPEMEncodedFromDER(const std::string& der_encoded,
   if (der_encoded.empty())
     return false;
   std::string b64_encoded;
-  if (!base::Base64Encode(der_encoded, &b64_encoded) || b64_encoded.empty())
-    return false;
+  base::Base64Encode(der_encoded, &b64_encoded);
   *pem_encoded = "-----BEGIN CERTIFICATE-----\n";
 
   // Divide the Base-64 encoded data into 64-character chunks, as per

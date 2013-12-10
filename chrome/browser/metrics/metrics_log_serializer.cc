@@ -141,10 +141,7 @@ void MetricsLogSerializer::WriteLogsToPrefList(
        it != local_list.end(); ++it) {
     // We encode the compressed log as Value::CreateStringValue() expects to
     // take a valid UTF8 string.
-    if (!base::Base64Encode(it->log_text(), &encoded_log)) {
-      list->Clear();
-      return;
-    }
+    base::Base64Encode(it->log_text(), &encoded_log);
     base::MD5Update(&ctx, encoded_log);
     list->Append(Value::CreateStringValue(encoded_log));
   }

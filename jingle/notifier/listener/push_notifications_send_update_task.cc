@@ -71,20 +71,14 @@ buzz::XmlElement* PushNotificationsSendUpdateTask::MakeUpdateMessage(
     recipient_element->AddAttr(buzz::QN_TO, recipient.to);
     if (!recipient.user_specific_data.empty()) {
       std::string base64_data;
-      if (!base::Base64Encode(recipient.user_specific_data, &base64_data)) {
-        DLOG(WARNING) << "Could not encode data "
-                      << recipient.user_specific_data;
-      } else {
-        recipient_element->SetBodyText(base64_data);
-      }
+      base::Base64Encode(recipient.user_specific_data, &base64_data);
+      recipient_element->SetBodyText(base64_data);
     }
   }
 
   buzz::XmlElement* data = new buzz::XmlElement(kQnData, true);
   std::string base64_data;
-  if (!base::Base64Encode(notification.data, &base64_data)) {
-    DLOG(WARNING) << "Could not encode data " << notification.data;
-  }
+  base::Base64Encode(notification.data, &base64_data);
   data->SetBodyText(base64_data);
   push->AddElement(data);
 

@@ -2611,8 +2611,7 @@ void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
 
   std::string proto_data;
   fingerprint->SerializeToString(&proto_data);
-  bool success = base::Base64Encode(proto_data, &risk_data_);
-  DCHECK(success);
+  base::Base64Encode(proto_data, &risk_data_);
 
   SubmitWithWallet();
 }

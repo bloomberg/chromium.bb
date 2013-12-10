@@ -87,8 +87,9 @@ const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
 
 // Same encoding as ResourceCache does for its keys.
 bool Base64Encode(const std::string& value, std::string* encoded) {
-  if (value.empty() || !base::Base64Encode(value, encoded))
+  if (value.empty())
     return false;
+  base::Base64Encode(value, encoded);
   base::ReplaceChars(*encoded, "+", "-", encoded);
   base::ReplaceChars(*encoded, "/", "_", encoded);
   return true;

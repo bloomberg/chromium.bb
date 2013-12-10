@@ -392,7 +392,7 @@ class SuffixGenerator {
     // random anyway.
     std::string input = cache_guid_ + base::Int64ToString(next_id_--);
     std::string output;
-    CHECK(base::Base64Encode(base::SHA1HashString(input), &output));
+    base::Base64Encode(base::SHA1HashString(input), &output);
     return output;
   }
 

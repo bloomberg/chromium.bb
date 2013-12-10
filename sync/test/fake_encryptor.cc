@@ -12,7 +12,8 @@ FakeEncryptor::~FakeEncryptor() {}
 
 bool FakeEncryptor::EncryptString(const std::string& plaintext,
                                   std::string* ciphertext) {
-  return base::Base64Encode(plaintext, ciphertext);
+  base::Base64Encode(plaintext, ciphertext);
+  return true;
 }
 
 bool FakeEncryptor::DecryptString(const std::string& ciphertext,

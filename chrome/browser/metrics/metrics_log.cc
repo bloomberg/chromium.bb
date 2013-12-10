@@ -803,8 +803,8 @@ void MetricsLog::RecordEnvironment(
 
   std::string serialied_system_profile;
   std::string base64_system_profile;
-  if (system_profile->SerializeToString(&serialied_system_profile) &&
-      base::Base64Encode(serialied_system_profile, &base64_system_profile)) {
+  if (system_profile->SerializeToString(&serialied_system_profile)) {
+    base::Base64Encode(serialied_system_profile, &base64_system_profile);
     PrefService* local_state = GetPrefService();
     local_state->SetString(prefs::kStabilitySavedSystemProfile,
                            base64_system_profile);

@@ -481,11 +481,7 @@ bool VariationsService::StoreSeedData(const std::string& seed_data,
   }
 
   std::string base64_seed_data;
-  if (!base::Base64Encode(seed_data, &base64_seed_data)) {
-    VLOG(1) << "Variations Seed data from server fails Base64Encode, rejecting "
-            << "the seed.";
-    return false;
-  }
+  base::Base64Encode(seed_data, &base64_seed_data);
 
   local_state_->SetString(prefs::kVariationsSeed, base64_seed_data);
   local_state_->SetString(prefs::kVariationsSeedHash, HashSeed(seed_data));

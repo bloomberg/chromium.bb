@@ -211,10 +211,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
     }
 
     std::string result;
-    if (!base::Base64Encode(spkac, &result)) {
-      LOG(ERROR) << "Keygen failed: Couldn't convert signed key into base64";
-      return std::string();
-    }
+    base::Base64Encode(spkac, &result);
 
     VLOG(1) << "Keygen succeeded";
     return result;

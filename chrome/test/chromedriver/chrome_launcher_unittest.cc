@@ -40,8 +40,7 @@ bool AddExtensionForInstall(const std::string& relative_path,
     return false;
 
   std::string crx_encoded;
-  if (!base::Base64Encode(crx_contents, &crx_encoded))
-    return false;
+  base::Base64Encode(crx_contents, &crx_encoded);
   extensions->push_back(crx_encoded);
   return true;
 }

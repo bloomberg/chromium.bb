@@ -79,10 +79,7 @@ class CryptoVerifyImpl : public NetworkingPrivateServiceClient::CryptoVerify {
       return;
     }
 
-    if (!base::Base64Encode(ciphertext, base64_encoded_ciphertext)) {
-      *error = "EncodeError";
-      return;
-    }
+    base::Base64Encode(ciphertext, base64_encoded_ciphertext);
   }
 };
 

@@ -21,8 +21,9 @@ namespace {
 // which is safe to use as a file name on all platforms.
 bool Base64Encode(const std::string& value, std::string* encoded) {
   DCHECK(!value.empty());
-  if (value.empty() || !base::Base64Encode(value, encoded))
+  if (value.empty())
     return false;
+  base::Base64Encode(value, encoded);
   base::ReplaceChars(*encoded, "+", "-", encoded);
   base::ReplaceChars(*encoded, "/", "_", encoded);
   return true;

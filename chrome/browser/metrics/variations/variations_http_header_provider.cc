@@ -163,16 +163,12 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
   proto.SerializeToString(&serialized);
 
   std::string hashed;
-  if (base::Base64Encode(serialized, &hashed)) {
-    // If successful, swap the header value with the new one.
-    // Note that the list of IDs and the header could be temporarily out of sync
-    // if IDs are added as the header is recreated. The receiving servers are OK
-    // with such discrepancies.
-    variation_ids_header_ = hashed;
-  } else {
-    NOTREACHED() << "Failed to base64 encode Variation IDs value: "
-                 << serialized;
-  }
+  base::Base64Encode(serialized, &hashed);
+  // If successful, swap the header value with the new one.
+  // Note that the list of IDs and the header could be temporarily out of sync
+  // if IDs are added as the header is recreated. The receiving servers are OK
+  // with such discrepancies.
+  variation_ids_header_ = hashed;
 }
 
 // static

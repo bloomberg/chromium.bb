@@ -371,11 +371,7 @@ void EPKPChallengeMachineKey::SignChallengeCallback(
   }
 
   std::string encoded_response;
-  if (!base::Base64Encode(response, &encoded_response)) {
-    SetError(kResponseBadBase64Error);
-    SendResponse(false);
-    return;
-  }
+  base::Base64Encode(response, &encoded_response);
 
   results_ = api_epkp::ChallengeMachineKey::Results::Create(encoded_response);
   SendResponse(true);
@@ -544,11 +540,7 @@ void EPKPChallengeUserKey::RegisterKeyCallback(
   }
 
   std::string encoded_response;
-  if (!base::Base64Encode(response, &encoded_response)) {
-    SetError(kResponseBadBase64Error);
-    SendResponse(false);
-    return;
-  }
+  base::Base64Encode(response, &encoded_response);
 
   results_ = api_epkp::ChallengeUserKey::Results::Create(encoded_response);
   SendResponse(true);

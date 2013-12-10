@@ -497,8 +497,7 @@ Status ProcessExtension(const std::string& extension,
   if (key_len != public_key.size())
     return Status(kUnknownError, "invalid public key length");
   std::string public_key_base64;
-  if (!base::Base64Encode(public_key, &public_key_base64))
-    return Status(kUnknownError, "cannot base64 encode public key");
+  base::Base64Encode(public_key, &public_key_base64);
   std::string id = GenerateExtensionId(public_key);
 
   // Unzip the crx file.
