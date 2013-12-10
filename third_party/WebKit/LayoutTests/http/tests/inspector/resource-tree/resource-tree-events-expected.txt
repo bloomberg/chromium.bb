@@ -1,6 +1,10 @@
 Tests top frame navigation events.
 
 
+Navigating root frame
+    FrameNavigated : root1
+    MainFrameNavigated : root1
+    SecurityOriginAdded : http://frame/root1.html
 Navigating child frame 1
     FrameAdded : child1
     FrameNavigated : child1

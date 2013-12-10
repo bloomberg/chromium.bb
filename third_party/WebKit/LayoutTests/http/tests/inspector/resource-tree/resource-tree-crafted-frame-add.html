@@ -20,7 +20,7 @@ function test()
 
     function step1()
     {
-        InspectorTest.addSniffer(WebInspector.resourceTreeModel, "_frameNavigated", InspectorTest.completeTest);
+        InspectorTest.addSniffer(WebInspector.resourceTreeModel, "_frameAttached", InspectorTest.completeTest);
         InspectorTest.evaluateInPage("createCraftedIframe()");
     }
 }

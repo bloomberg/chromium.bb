@@ -135,7 +135,6 @@ public:
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
-    void childDocumentOpened(Document*);
     void didCommitLoad(Frame*, DocumentLoader*);
     void frameAttachedToParent(Frame*);
     void frameDetachedFromParent(Frame*);
