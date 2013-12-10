@@ -43,11 +43,13 @@ class WorkerThread;
 
 namespace blink {
 
+class ServiceWorkerGlobalScopeProxy;
 class WebView;
 
 class WebEmbeddedWorkerImpl :
     public WebEmbeddedWorker,
     public WebFrameClient {
+    WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 public:
     WebEmbeddedWorkerImpl(
         PassOwnPtr<WebServiceWorkerContextClient>,
@@ -60,6 +62,7 @@ public:
 
 private:
     class Loader;
+    class LoaderProxy;
 
     void prepareShadowPageForLoader();
     void onScriptLoaderFinished();
@@ -78,6 +81,8 @@ private:
     OwnPtr<Loader> m_mainScriptLoader;
 
     RefPtr<WebCore::WorkerThread> m_workerThread;
+    OwnPtr<LoaderProxy> m_loaderProxy;
+    OwnPtr<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
 
     // 'shadow page' - created to proxy loading requests from the worker.
     // Both WebView and WebFrame objects are close()'ed (where they're

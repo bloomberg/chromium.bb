@@ -33,6 +33,8 @@
 
 namespace blink {
 
+class WebString;
+
 // A proxy interface to talk to the worker's GlobalScope implementation.
 // All methods of this class must be called on the worker thread.
 class WebServiceWorkerContextProxy {

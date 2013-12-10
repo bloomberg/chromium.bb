@@ -31,6 +31,7 @@
 #include "config.h"
 #include "WebEmbeddedWorkerImpl.h"
 
+#include "ServiceWorkerGlobalScopeProxy.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrameImpl.h"
 #include "WebServiceWorkerContextClient.h"
@@ -41,9 +42,11 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/SubstituteData.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/NotImplemented.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/Functional.h"
@@ -76,6 +79,7 @@ public:
     }
 
     bool failed() const { return m_scriptLoader->failed(); }
+    const KURL& url() const { return m_scriptLoader->responseURL(); }
     String script() const { return m_scriptLoader->script(); }
 
 private:
@@ -90,6 +94,35 @@ private:
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     Closure m_callback;
+};
+
+class WebEmbeddedWorkerImpl::LoaderProxy : public WorkerLoaderProxy {
+public:
+    static PassOwnPtr<LoaderProxy> create(WebEmbeddedWorkerImpl& embeddedWorker)
+    {
+        return adoptPtr(new LoaderProxy(embeddedWorker));
+    }
+
+    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask> task) OVERRIDE
+    {
+        m_embeddedWorker.m_loadingContext->postTask(task);
+    }
+
+    virtual bool postTaskForModeToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task, const String& mode) OVERRIDE
+    {
+        if (m_embeddedWorker.m_askedToTerminate || !m_embeddedWorker.m_workerThread)
+            return false;
+        return m_embeddedWorker.m_workerThread->runLoop().postTaskForMode(task, mode);
+    }
+
+private:
+    explicit LoaderProxy(WebEmbeddedWorkerImpl& embeddedWorker)
+        : m_embeddedWorker(embeddedWorker)
+    {
+    }
+
+    // Not owned, embedded worker owns this.
+    WebEmbeddedWorkerImpl& m_embeddedWorker;
 };
 
 WebEmbeddedWorker* WebEmbeddedWorker::create(
@@ -188,12 +221,31 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
         return;
     }
 
-    // FIXME: Create WorkerReportingProxy, set up WorkerThreadStartupData,
-    // create ServiceWorkerThread and start it with m_scripLoader->script().
+    WorkerThreadStartMode startMode =
+        (m_workerStartData.startMode == WebEmbeddedWorkerStartModePauseOnStart)
+        ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
+
+    OwnPtr<WorkerClients> workerClients = WorkerClients::create();
+    providePermissionClientToWorker(workerClients.get(), m_permissionClient.release());
+
+    OwnPtr<WorkerThreadStartupData> startupData =
+        WorkerThreadStartupData::create(
+            m_mainScriptLoader->url(),
+            m_workerStartData.userAgent,
+            m_mainScriptLoader->script(),
+            startMode,
+            // FIXME: fill appropriate CSP info and policy type.
+            String(),
+            ContentSecurityPolicy::Enforce,
+            workerClients.release());
 
     m_mainScriptLoader.clear();
 
-    notImplemented();
+    m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *m_loadingContext, m_workerContextClient.release());
+    m_loaderProxy = LoaderProxy::create(*this);
+
+    m_workerThread = ServiceWorkerThread::create(*m_loaderProxy, *m_workerGlobalScopeProxy, startupData.release());
+    m_workerThread->start();
 }
 
 } // namespace blink
