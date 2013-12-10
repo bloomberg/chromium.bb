@@ -62,6 +62,7 @@ class CONTENT_EXPORT InputRouterImpl
       const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
   virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const OVERRIDE;
   virtual bool ShouldForwardTouchEvent() const OVERRIDE;
+  virtual void OnViewUpdated(int view_flags) OVERRIDE;
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -169,8 +170,6 @@ private:
   void ProcessAckForOverscroll(const blink::WebInputEvent& event,
                                InputEventAckState ack_result);
 
-  void HandleGestureScroll(const GestureEventWithLatencyInfo& gesture_event);
-
   void SimulateTouchGestureWithMouse(
       const MouseEventWithLatencyInfo& mouse_event);
 
@@ -235,6 +234,10 @@ private:
   // then touch events are sent to the renderer. Otherwise, the touch events are
   // not sent to the renderer.
   bool has_touch_handler_;
+
+  // Whether touch ack timeout handling has been enabled via the command line.
+  bool touch_ack_timeout_enabled_;
+  size_t touch_ack_timeout_delay_ms_;
 
   // The source of the ack within the scope of |ProcessInputEventAck()|.
   // Defaults to ACK_SOURCE_NONE.

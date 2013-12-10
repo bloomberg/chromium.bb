@@ -856,6 +856,10 @@ const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
+// Enable timeout-based touch event cancellation if a touch ack is delayed.
+// If unspecified, touch timeout behavior will be disabled.
+const char kTouchAckTimeoutDelayMs[]        = "touch-ack-timeout-delay-ms";
+
 // Causes TRACE_EVENT flags to be recorded beginning with shutdown. Optionally,
 // can specify the specific trace categories to include (e.g.
 // --trace-shutdown=base,net) otherwise, all events are recorded.

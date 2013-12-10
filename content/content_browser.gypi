@@ -863,6 +863,8 @@
     'browser/renderer_host/input/tap_suppression_controller.cc',
     'browser/renderer_host/input/tap_suppression_controller.h',
     'browser/renderer_host/input/tap_suppression_controller_client.h',
+    'browser/renderer_host/input/timeout_monitor.cc',
+    'browser/renderer_host/input/timeout_monitor.h',
     'browser/renderer_host/input/touch_event_queue.cc',
     'browser/renderer_host/input/touch_event_queue.h',
     'browser/renderer_host/input/touch_action_filter.cc',

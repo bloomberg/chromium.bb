@@ -54,6 +54,15 @@ class InputRouter : public IPC::Listener {
   // router.  When |false|, the caller can forego sending touch events, and
   // instead consume them directly.
   virtual bool ShouldForwardTouchEvent() const = 0;
+
+  // Allow the router to make more informed input handling decisions based on
+  // the current view.
+  enum ViewFlags {
+    VIEW_FLAGS_NONE   = 0,
+    FIXED_PAGE_SCALE  = 1 << 0,
+    MOBILE_VIEWPORT   = 1 << 1
+  };
+  virtual void OnViewUpdated(int view_flags) = 0;
 };
 
 }  // namespace content

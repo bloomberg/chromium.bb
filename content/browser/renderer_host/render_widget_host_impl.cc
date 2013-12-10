@@ -34,6 +34,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -233,6 +234,13 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
   SetOverscrollControllerEnabled(overscroll_enabled);
 #endif
+
+  if (GetProcess()->IsGuest() || !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHangMonitor)) {
+    hang_monitor_timeout_.reset(new TimeoutMonitor(
+        base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
+                   weak_factory_.GetWeakPtr())));
+  }
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
@@ -897,53 +905,21 @@ bool RenderWidgetHostImpl::ScheduleComposite() {
   return true;
 }
 
-void RenderWidgetHostImpl::StartHangMonitorTimeout(TimeDelta delay) {
-  if (!GetProcess()->IsGuest() && CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHangMonitor)) {
-    return;
-  }
-
-  // Set time_when_considered_hung_ if it's null. Also, update
-  // time_when_considered_hung_ if the caller's request is sooner than the
-  // existing one. This will have the side effect that the existing timeout will
-  // be forgotten.
-  Time requested_end_time = Time::Now() + delay;
-  if (time_when_considered_hung_.is_null() ||
-      time_when_considered_hung_ > requested_end_time)
-    time_when_considered_hung_ = requested_end_time;
-
-  // If we already have a timer with the same or shorter duration, then we can
-  // wait for it to finish.
-  if (hung_renderer_timer_.IsRunning() &&
-      hung_renderer_timer_.GetCurrentDelay() <= delay) {
-    // If time_when_considered_hung_ was null, this timer may fire early.
-    // CheckRendererIsUnresponsive handles that by calling
-    // StartHangMonitorTimeout with the remaining time.
-    // If time_when_considered_hung_ was non-null, it means we still haven't
-    // heard from the renderer so we leave time_when_considered_hung_ as is.
-    return;
-  }
-
-  // Either the timer is not yet running, or we need to adjust the timer to
-  // fire sooner.
-  time_when_considered_hung_ = requested_end_time;
-  hung_renderer_timer_.Stop();
-  hung_renderer_timer_.Start(FROM_HERE, delay, this,
-      &RenderWidgetHostImpl::CheckRendererIsUnresponsive);
+void RenderWidgetHostImpl::StartHangMonitorTimeout(base::TimeDelta delay) {
+  if (hang_monitor_timeout_)
+    hang_monitor_timeout_->Start(delay);
 }
 
 void RenderWidgetHostImpl::RestartHangMonitorTimeout() {
-  // Setting to null will cause StartHangMonitorTimeout to restart the timer.
-  time_when_considered_hung_ = Time();
-  StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
+  if (hang_monitor_timeout_)
+    hang_monitor_timeout_->Restart(
+        base::TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
 }
 
 void RenderWidgetHostImpl::StopHangMonitorTimeout() {
-  time_when_considered_hung_ = Time();
+  if (hang_monitor_timeout_)
+    hang_monitor_timeout_->Stop();
   RendererIsResponsive();
-  // We do not bother to stop the hung_renderer_timer_ here in case it will be
-  // started again shortly, which happens to be the common use case.
 }
 
 void RenderWidgetHostImpl::EnableFullAccessibilityMode() {
@@ -1398,19 +1374,7 @@ void RenderWidgetHostImpl::Destroy() {
   delete this;
 }
 
-void RenderWidgetHostImpl::CheckRendererIsUnresponsive() {
-  // If we received a call to StopHangMonitorTimeout.
-  if (time_when_considered_hung_.is_null())
-    return;
-
-  // If we have not waited long enough, then wait some more.
-  Time now = Time::Now();
-  if (now < time_when_considered_hung_) {
-    StartHangMonitorTimeout(time_when_considered_hung_ - now);
-    return;
-  }
-
-  // OK, looks like we have a hung renderer!
+void RenderWidgetHostImpl::RendererIsUnresponsive() {
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_HANG,
       Source<RenderWidgetHost>(this),
@@ -1536,6 +1500,13 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   uint32 output_surface_id = param.a;
   param.b.AssignTo(frame.get());
+
+  bool fixed_page_scale =
+      frame->metadata.min_page_scale_factor ==
+          frame->metadata.max_page_scale_factor;
+  int updated_view_flags = fixed_page_scale ? InputRouter::FIXED_PAGE_SCALE
+                                            : InputRouter::VIEW_FLAGS_NONE;
+  input_router_->OnViewUpdated(updated_view_flags);
 
   if (view_) {
     view_->OnSwapCompositorFrame(output_surface_id, frame.Pass());

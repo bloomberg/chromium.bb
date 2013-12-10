@@ -278,67 +278,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verify the behavior of touch event timeout handler.
-     * @throws Exception
-     */
-    @SmallTest
-    @Feature({"Gestures"})
-    public void testTouchEventTimeoutHandler() throws Exception {
-        final long downTime = SystemClock.uptimeMillis();
-        final long eventTime = SystemClock.uptimeMillis();
-
-        mGestureHandler.hasTouchEventHandlers(true);
-
-        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
-        assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-
-        // Queue a touch move event.
-        event = MotionEvent.obtain(
-                downTime, eventTime + 50, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
-        assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-
-        mGestureHandler.mockTouchEventTimeout();
-        // On timeout, the pending queue should be cleared.
-        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-
-        // No new touch events should be sent to the touch handler before the timed-out event
-        // gets ACK'ed.
-        event = MotionEvent.obtain(
-                downTime, eventTime + 200, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
-        mGestureHandler.onTouchEvent(event);
-        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-
-        // When the timed-out event gets ACK'ed, a cancel event should be sent.
-        mGestureHandler.confirmTouchEvent(ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
-        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-        assertEquals(TouchPoint.TOUCH_EVENT_TYPE_CANCEL, mMockMotionEventDelegate.mLastTouchAction);
-
-        // No new touch events should be sent to the touch handler before the cancel event
-        // gets ACK'ed.
-        event = MotionEvent.obtain(
-                downTime, eventTime + 300, MotionEvent.ACTION_UP,
-                FAKE_COORD_X * 20, FAKE_COORD_Y * 20, 0);
-        mGestureHandler.onTouchEvent(event);
-        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-
-        mGestureHandler.confirmTouchEvent(
-                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-        // After cancel event is ACK'ed, the handler should return to normal state.
-        event = MotionEvent.obtain(
-                downTime + 400, eventTime + 400, MotionEvent.ACTION_DOWN,
-                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
-        assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-        mGestureHandler.confirmTouchEvent(ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
-        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-    }
-
-    /**
      * Verify that after a touch event handlers starts handling a gesture, even though some event
      * in the middle of the gesture returns with NOT_CONSUMED, we don't send that to the gesture
      * detector to avoid falling to a faulty state.
@@ -1815,11 +1754,10 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         mMockMotionEventDelegate.disableSynchronousConfirmTouchEvent();
 
-        // Queue an asynchronously handled event; this should schedule a touch timeout.
+        // Queue an asynchronously handled event.
         MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-        assertTrue(mGestureHandler.hasScheduledTouchTimeoutEventForTesting());
 
         // Queue another event; this will remain in the queue until the first event is confirmed.
         event = MotionEvent.obtain(
@@ -1833,12 +1771,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 mGestureHandler, ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
 
         // Confirm the original event; this should dispatch the second event and confirm it
-        // synchronously, without scheduling a touch timeout.
+        // synchronously.
         mGestureHandler.confirmTouchEvent(
                 ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-        assertFalse(mGestureHandler.hasScheduledTouchTimeoutEventForTesting());
         assertEquals(TouchPoint.TOUCH_EVENT_TYPE_MOVE, mMockMotionEventDelegate.mLastTouchAction);
 
         // Adding events to any empty queue will trigger synchronous dispatch and confirmation.
@@ -1847,7 +1784,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-        assertFalse(mGestureHandler.hasScheduledTouchTimeoutEventForTesting());
    }
 
     /**

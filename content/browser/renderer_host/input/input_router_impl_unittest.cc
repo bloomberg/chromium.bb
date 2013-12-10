@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
@@ -16,6 +17,7 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -260,12 +262,12 @@ class InputRouterImplTest : public testing::Test {
     return input_router_.get();
   }
 
-  bool no_touch_to_renderer() {
-    return input_router()->touch_event_queue_->no_touch_to_renderer();
-  }
-
   bool TouchEventQueueEmpty() const {
     return input_router()->touch_event_queue_->empty();
+  }
+
+  bool TouchEventTimeoutEnabled() const {
+    return input_router()->touch_event_queue_->ack_timeout_enabled();
   }
 
   size_t GetSentMessageCountAndResetSink() {
@@ -848,6 +850,33 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   // synthetics acks, and fire immediately.
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(3U, ack_handler_->GetAndResetAckCount());
+}
+
+// Test that touch ack timeout behavior is properly configured via the command
+// line, and toggled by the view update flags.
+TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kTouchAckTimeoutDelayMs, "5");
+  TearDown();
+  SetUp();
+  ASSERT_TRUE(TouchEventTimeoutEnabled());
+
+  // A fixed page scale or mobile viewport should disable the touch timeout.
+  input_router()->OnViewUpdated(InputRouter::FIXED_PAGE_SCALE);
+  EXPECT_FALSE(TouchEventTimeoutEnabled());
+
+  input_router()->OnViewUpdated(InputRouter::VIEW_FLAGS_NONE);
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
+
+  input_router()->OnViewUpdated(InputRouter::MOBILE_VIEWPORT);
+  EXPECT_FALSE(TouchEventTimeoutEnabled());
+
+  input_router()->OnViewUpdated(InputRouter::MOBILE_VIEWPORT |
+                                InputRouter::FIXED_PAGE_SCALE);
+  EXPECT_FALSE(TouchEventTimeoutEnabled());
+
+  input_router()->OnViewUpdated(InputRouter::VIEW_FLAGS_NONE);
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
 }
 
 }  // namespace content

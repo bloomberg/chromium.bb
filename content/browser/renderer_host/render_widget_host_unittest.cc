@@ -166,6 +166,7 @@ class MockInputRouter : public InputRouter {
     return NULL;
   }
   virtual bool ShouldForwardTouchEvent() const OVERRIDE { return true; }
+  virtual void OnViewUpdated(int view_flags) OVERRIDE {}
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {

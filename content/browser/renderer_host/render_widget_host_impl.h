@@ -83,6 +83,7 @@ class OverscrollController;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SyntheticGestureController;
+class TimeoutMonitor;
 struct EditCommand;
 
 // This implements the RenderWidgetHost interface that is exposed to
@@ -636,9 +637,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Tell this object to destroy itself.
   void Destroy();
 
-  // Checks whether the renderer is hung and calls NotifyRendererUnresponsive
-  // if it is.
-  void CheckRendererIsUnresponsive();
+  // Called by |hang_timeout_monitor_| on delayed response from the renderer.
+  void RendererIsUnresponsive();
 
   // Called if we know the renderer is responsive. When we currently think the
   // renderer is unresponsive, this will clear that state and call
@@ -909,6 +909,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   scoped_ptr<InputRouter> input_router_;
 
   scoped_ptr<OverscrollController> overscroll_controller_;
+
+  scoped_ptr<TimeoutMonitor> hang_monitor_timeout_;
 
 #if defined(OS_WIN)
   std::list<HWND> dummy_windows_for_activation_;

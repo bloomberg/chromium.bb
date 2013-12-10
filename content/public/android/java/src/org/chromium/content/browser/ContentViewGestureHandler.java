@@ -214,93 +214,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int DOUBLE_TAP_MODE_DRAG_ZOOM = 2;
     static final int DOUBLE_TAP_MODE_DISABLED = 3;
 
-    private class TouchEventTimeoutHandler implements Runnable {
-        private static final int TOUCH_EVENT_TIMEOUT = 200;
-        private static final int PENDING_ACK_NONE = 0;
-        private static final int PENDING_ACK_ORIGINAL_EVENT = 1;
-        private static final int PENDING_ACK_CANCEL_EVENT = 2;
-
-        private long mEventTime;
-        private TouchPoint[] mTouchPoints;
-        private final Handler mHandler = new Handler();
-        private int mPendingAckState;
-
-        public void start(long eventTime, TouchPoint[] pts) {
-            assert mTouchPoints == null;
-            assert mPendingAckState == PENDING_ACK_NONE;
-            mEventTime = eventTime;
-            mTouchPoints = pts;
-            mHandler.postDelayed(this, TOUCH_EVENT_TIMEOUT);
-        }
-
-        @Override
-        public void run() {
-            TraceEvent.begin("TouchEventTimeout");
-            while (!mPendingMotionEvents.isEmpty()) {
-                MotionEvent nextEvent = mPendingMotionEvents.removeFirst();
-                processTouchEvent(nextEvent);
-                recycleEvent(nextEvent);
-            }
-            // We are waiting for 2 ACKs: one for the timed-out event, the other for
-            // the touchcancel event injected when the timed-out event is ACK'ed.
-            mPendingAckState = PENDING_ACK_ORIGINAL_EVENT;
-            TraceEvent.end();
-        }
-
-        public boolean hasTimeoutEvent() {
-            return mPendingAckState != PENDING_ACK_NONE;
-        }
-
-        /**
-         * @return Whether the ACK is consumed in this method.
-         */
-        public boolean confirmTouchEvent() {
-            switch (mPendingAckState) {
-                case PENDING_ACK_NONE:
-                    // The ACK to the original event is received before timeout.
-                    mHandler.removeCallbacks(this);
-                    mTouchPoints = null;
-                    return false;
-                case PENDING_ACK_ORIGINAL_EVENT:
-                    TraceEvent.instant("TouchEventTimeout:ConfirmOriginalEvent");
-                    // The ACK to the original event is received after timeout.
-                    // Inject a touchcancel event.
-                    mPendingAckState = PENDING_ACK_CANCEL_EVENT;
-                    final TouchPoint[] touchPoints = mTouchPoints;
-                    mTouchPoints = null;
-                    mMotionEventDelegate.sendTouchEvent(mEventTime + TOUCH_EVENT_TIMEOUT,
-                            TouchPoint.TOUCH_EVENT_TYPE_CANCEL, touchPoints);
-                    return true;
-                case PENDING_ACK_CANCEL_EVENT:
-                    TraceEvent.instant("TouchEventTimeout:ConfirmCancelEvent");
-                    // The ACK to the injected touchcancel event is received.
-                    mPendingAckState = PENDING_ACK_NONE;
-                    drainAllPendingEventsUntilNextDown();
-                    return true;
-                default:
-                    assert false : "Never reached";
-                    return false;
-            }
-        }
-
-        public void mockTimeout() {
-            assert !hasTimeoutEvent();
-            mHandler.removeCallbacks(this);
-            run();
-        }
-
-        /**
-         * This is for testing only.
-         * @return Whether a timeout event has been scheduled but not yet run.
-         */
-        public boolean hasScheduledTimeoutEventForTesting() {
-            return mTouchPoints != null && mPendingAckState == PENDING_ACK_NONE;
-        }
-    }
-
-    private final TouchEventTimeoutHandler mTouchEventTimeoutHandler =
-            new TouchEventTimeoutHandler();
-
     /**
      * This is an interface to handle MotionEvent related communication with the native side also
      * access some ContentView specific parameters.
@@ -1001,8 +914,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
             mTouchHandlingState = HAS_TOUCH_HANDLER;
         }
 
-        if (mTouchEventTimeoutHandler.hasTimeoutEvent()) return EVENT_NOT_FORWARDED;
-
         mLongPressDetector.onOfferTouchEventToJavaScript(event);
 
         if (mTouchHandlingState == NO_TOUCH_HANDLER_FOR_GESTURE) return EVENT_NOT_FORWARDED;
@@ -1025,17 +936,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
         if (!mTouchScrolling && !mPinchInProgress) {
             if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
-                // If confirmTouchEvent() is called synchronously with respect to sendTouchEvent(),
-                // then |event| will have been recycled. Only start the timer if the sent event has
-                // not yet been confirmed.
-                if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
-                        && !mShouldDisableDoubleTap
-                        && event == mPendingMotionEvents.peekFirst()
-                        && event.getAction() != MotionEvent.ACTION_UP
-                        && event.getAction() != MotionEvent.ACTION_CANCEL) {
-                    TraceEvent.instant("TouchEventTimeout:StartTimeoutHandler");
-                    mTouchEventTimeoutHandler.start(event.getEventTime(), pts);
-                }
                 return EVENT_FORWARDED_TO_NATIVE;
             }
         }
@@ -1081,13 +981,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     /**
-     * For testing to simulate a timeout of a touch event handler.
-     */
-    void mockTouchEventTimeout() {
-        mTouchEventTimeoutHandler.mockTimeout();
-    }
-
-    /**
      * Respond to a MotionEvent being returned from the native side.
      * @param ackResult The status acknowledgment code.
      */
@@ -1095,7 +988,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
         try {
             TraceEvent.begin("confirmTouchEvent");
 
-            if (mTouchEventTimeoutHandler.confirmTouchEvent()) return;
             if (mPendingMotionEvents.isEmpty()) {
                 Log.w(TAG, "confirmTouchEvent with Empty pending list!");
                 return;
@@ -1254,14 +1146,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
     void sendShowPressedStateGestureForTesting() {
         if (mCurrentDownEvent == null) return;
         mListener.onShowPress(mCurrentDownEvent);
-    }
-
-    /**
-     * This is for testing only.
-     * @return Whether a touch timeout event has been scheduled.
-     */
-    boolean hasScheduledTouchTimeoutEventForTesting() {
-        return mTouchEventTimeoutHandler.hasScheduledTimeoutEventForTesting();
     }
 
     /**

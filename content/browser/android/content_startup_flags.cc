@@ -66,6 +66,8 @@ void SetContentCommandLineFlags(int max_render_process_count,
   parsed_command_line->AppendSwitch(switches::kEnableOverlayFullscreenVideo);
   parsed_command_line->AppendSwitch(switches::kEnableOverlayScrollbars);
   parsed_command_line->AppendSwitch(switches::kEnableOverscrollNotifications);
+  parsed_command_line->AppendSwitchASCII(switches::kTouchAckTimeoutDelayMs,
+                                         "200");
 
   // Run the GPU service as a thread in the browser instead of as a
   // standalone process.

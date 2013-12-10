@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -39,6 +40,21 @@ using blink::WebMouseWheelEvent;
 
 namespace content {
 namespace {
+
+bool GetTouchAckTimeoutDelayMs(size_t* touch_ack_timeout_delay_ms) {
+  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
+  if (!parsed_command_line->HasSwitch(switches::kTouchAckTimeoutDelayMs))
+    return false;
+
+  std::string timeout_string = parsed_command_line->GetSwitchValueASCII(
+      switches::kTouchAckTimeoutDelayMs);
+  size_t timeout_value;
+  if (!base::StringToSizeT(timeout_string, &timeout_value))
+    return false;
+
+  *touch_ack_timeout_delay_ms = timeout_value;
+  return true;
+}
 
 GestureEventWithLatencyInfo MakeGestureEvent(WebInputEvent::Type type,
                                              double timestamp_seconds,
@@ -85,12 +101,18 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
       has_touch_handler_(false),
+      touch_ack_timeout_enabled_(false),
+      touch_ack_timeout_delay_ms_(std::numeric_limits<size_t>::max()),
       current_ack_source_(ACK_SOURCE_NONE),
-      touch_event_queue_(new TouchEventQueue(this)),
       gesture_event_filter_(new GestureEventFilter(this, this)) {
   DCHECK(sender);
   DCHECK(client);
   DCHECK(ack_handler);
+  touch_event_queue_.reset(new TouchEventQueue(this));
+  touch_ack_timeout_enabled_ =
+      GetTouchAckTimeoutDelayMs(&touch_ack_timeout_delay_ms_);
+  touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled_,
+                                           touch_ack_timeout_delay_ms_);
 }
 
 InputRouterImpl::~InputRouterImpl() {}
@@ -179,7 +201,7 @@ void InputRouterImpl::SendGestureEvent(
   if (touch_action_filter_.FilterGestureEvent(gesture_event.event))
     return;
 
-  HandleGestureScroll(gesture_event);
+  touch_event_queue_->OnGestureScrollEvent(gesture_event);
 
   if (!IsInOverscrollGesture() &&
       !gesture_event_filter_->ShouldForward(gesture_event)) {
@@ -226,7 +248,6 @@ void InputRouterImpl::SendTouchEventImmediately(
 
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
-  HandleGestureScroll(gesture_event);
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
 }
 
@@ -242,6 +263,14 @@ bool InputRouterImpl::ShouldForwardTouchEvent() const {
   // still events in the touch-queue. In such cases, the new events should still
   // get into the queue.
   return has_touch_handler_ || !touch_event_queue_->empty();
+}
+
+void InputRouterImpl::OnViewUpdated(int view_flags) {
+  bool fixed_page_scale = (view_flags & FIXED_PAGE_SCALE) != 0;
+  bool mobile_viewport = (view_flags & MOBILE_VIEWPORT) != 0;
+  touch_event_queue_->SetAckTimeoutEnabled(
+      touch_ack_timeout_enabled_ && !(fixed_page_scale || mobile_viewport),
+      touch_ack_timeout_delay_ms_);
 }
 
 bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
@@ -607,11 +636,6 @@ void InputRouterImpl::ProcessAckForOverscroll(const WebInputEvent& event,
 
   controller->ReceivedEventACK(
       event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
-}
-
-void InputRouterImpl::HandleGestureScroll(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  touch_event_queue_->OnGestureScrollEvent(gesture_event);
 }
 
 void InputRouterImpl::SimulateTouchGestureWithMouse(
