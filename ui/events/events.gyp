@@ -194,7 +194,7 @@
         'gestures/velocity_calculator_unittest.cc',
         'keycodes/dom4/keycode_converter_unittest.cc',
         'latency_info_unittest.cc',
-        'test/events_unittests.cc',
+        'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
         'ozone/evdev/key_event_converter_unittest.cc',
