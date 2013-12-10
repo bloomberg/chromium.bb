@@ -3165,6 +3165,7 @@
           'dependencies': [
             '../ui/ui.gyp:ui_cocoa_third_party_toolkits',
             '../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',
+            '../third_party/molokocacao/molokocacao.gyp:molokocacao',
             '../third_party/mozilla/mozilla.gyp:mozilla',
           ],
           'include_dirs': [
