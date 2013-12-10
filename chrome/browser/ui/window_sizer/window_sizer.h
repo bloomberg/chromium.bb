@@ -32,14 +32,18 @@ class Screen;
 class WindowSizer {
  public:
   class StateProvider;
+  class TargetDisplayProvider;
 
-  // WindowSizer owns |state_provider| and will create a default
-  // MonitorInfoProvider using the physical screen.
-  WindowSizer(StateProvider* state_provider, const Browser* browser);
+  // WindowSizer owns |state_provider| and |target_display_provider|,
+  // and will use the platforms's gfx::Screen.
+  WindowSizer(scoped_ptr<StateProvider> state_provider,
+              scoped_ptr<TargetDisplayProvider> target_display_provider,
+              const Browser* browser);
 
-  // WindowSizer owns |state_provider| and will use the supplied |screen|.
-  // Used only for testing.
-  WindowSizer(StateProvider* state_provider,
+  // WindowSizer owns |state_provider| and |target_display_provider|,
+  // and will use the supplied |screen|. Used only for testing.
+  WindowSizer(scoped_ptr<StateProvider> state_provider,
+              scoped_ptr<TargetDisplayProvider> target_display_provider,
               gfx::Screen* screen,
               const Browser* browser);
 
@@ -67,6 +71,15 @@ class WindowSizer {
     virtual bool GetLastActiveWindowState(
         gfx::Rect* bounds,
         ui::WindowShowState* show_state) const = 0;
+  };
+
+  // An interface implemented by an object to identify on which
+  // display a new window should be located.
+  class TargetDisplayProvider {
+    public:
+      virtual ~TargetDisplayProvider() {}
+      virtual gfx::Display GetTargetDisplay(const gfx::Screen* screen,
+                                            const gfx::Rect& bounds) const = 0;
   };
 
   // Determines the position and size for a window as it is created as well
@@ -106,12 +119,12 @@ class WindowSizer {
   // The edge of the screen to check for out-of-bounds.
   enum Edge { TOP, LEFT, BOTTOM, RIGHT };
 
-  // Gets the size and placement of the last window. Returns true if this data
-  // is valid, false if there is no last window and the application should
+  // Gets the size and placement of the last active window. Returns true if this
+  // data is valid, false if there is no last window and the application should
   // restore saved state from preferences using RestoreWindowPosition.
   // |show_state| will only be changed if it was set to SHOW_STATE_DEFAULT.
-  bool GetLastWindowBounds(gfx::Rect* bounds,
-                           ui::WindowShowState* show_state) const;
+  bool GetLastActiveWindowBounds(gfx::Rect* bounds,
+                                 ui::WindowShowState* show_state) const;
 
   // Gets the size and placement of the last window in the last session, saved
   // in local state preferences. Returns true if local state exists containing
@@ -129,17 +142,22 @@ class WindowSizer {
                               gfx::Rect* default_bounds) const;
 
   // Adjusts |bounds| to be visible on-screen, biased toward the work area of
-  // the monitor containing |other_bounds|.  Despite the name, this doesn't
-  // guarantee the bounds are fully contained within this monitor's work rect;
+  // the |display|.  Despite the name, this doesn't
+  // guarantee the bounds are fully contained within this display's work rect;
   // it just tried to ensure the edges are visible on _some_ work rect.
   // If |saved_work_area| is non-empty, it is used to determine whether the
   // monitor configuration has changed. If it has, bounds are repositioned and
   // resized if necessary to make them completely contained in the current work
   // area.
-  void AdjustBoundsToBeVisibleOnMonitorContaining(
-      const gfx::Rect& other_bounds,
+  void AdjustBoundsToBeVisibleOnDisplay(
+      const gfx::Display& display,
       const gfx::Rect& saved_work_area,
       gfx::Rect* bounds) const;
+
+  // Determine the target display for a new window based on
+  // |bounds|. On ash environment, this returns the display containing
+  // ash's the target root window.
+  gfx::Display GetTargetDisplay(const gfx::Rect& bounds) const;
 
 #if defined(USE_ASH)
   // Determines the position and size for a tabbed browser window in
@@ -161,6 +179,7 @@ class WindowSizer {
 
   // Providers for persistent storage and monitor metrics.
   scoped_ptr<StateProvider> state_provider_;
+  scoped_ptr<TargetDisplayProvider> target_display_provider_;
   gfx::Screen* screen_;  // not owned.
 
   // Note that this browser handle might be NULL.

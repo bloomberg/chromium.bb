@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
+#include "ash/shell.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,11 +24,16 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
   ui::WindowShowState passed_show_state = *show_state;
 
   bool is_saved_bounds = GetSavedWindowBounds(bounds_in_screen, show_state);
-  // If there is no saved bounds (hence bounds_in_screen is empty), the
-  // |display| will be the primary display.
-  const gfx::Display& display = screen_->GetDisplayMatching(*bounds_in_screen);
-  if (!is_saved_bounds)
+  gfx::Display display;
+  if (is_saved_bounds) {
+    display = screen_->GetDisplayMatching(*bounds_in_screen);
+  } else {
+    // If there is no saved bounds (hence bounds_in_screen is empty), use the
+    // target display.
+    display = target_display_provider_->GetTargetDisplay(screen_,
+                                                         *bounds_in_screen);
     *bounds_in_screen = ash::WindowPositioner::GetDefaultWindowBounds(display);
+  }
 
   if (browser_->is_session_restore()) {
     // This is a fall-through case when there is no bounds recorded

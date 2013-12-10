@@ -4,6 +4,7 @@
 #ifndef ASH_SCOPED_TARGET_ROOT_WINDOW_H_
 #define ASH_SCOPED_TARGET_ROOT_WINDOW_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 
 namespace aura {
@@ -18,7 +19,7 @@ namespace internal {
 // in the same window where a user interaction happened.
 // An example usage is to specify the target root window when creating
 // a new window using launcher's icon.
-class ScopedTargetRootWindow {
+class ASH_EXPORT ScopedTargetRootWindow {
  public:
   explicit ScopedTargetRootWindow(aura::Window* root_window);
   ~ScopedTargetRootWindow();

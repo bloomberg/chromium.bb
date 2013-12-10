@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 #endif
 
+namespace {
+
 // Minimum height of the visible part of a window.
 const int kMinVisibleHeight = 30;
 // Minimum width of the visible part of a window.
@@ -135,20 +137,53 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   DISALLOW_COPY_AND_ASSIGN(DefaultStateProvider);
 };
 
+class DefaultTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
+ public:
+  DefaultTargetDisplayProvider() {}
+  virtual ~DefaultTargetDisplayProvider() {}
+
+  virtual gfx::Display GetTargetDisplay(
+      const gfx::Screen* screen,
+      const gfx::Rect& bounds) const OVERRIDE {
+#if defined(USE_ASH)
+    // Use the target display on ash.
+    if (chrome::ShouldOpenAshOnStartup()) {
+      aura::Window* target = ash::Shell::GetTargetRootWindow();
+      return screen->GetDisplayNearestWindow(target);
+    }
+#endif
+    // Find the size of the work area of the monitor that intersects the bounds
+    // of the anchor window.
+    return screen->GetDisplayMatching(bounds);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultTargetDisplayProvider);
+};
+
+}  // namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
 
-WindowSizer::WindowSizer(StateProvider* state_provider, const Browser* browser)
-    : state_provider_(state_provider),
+WindowSizer::WindowSizer(
+    scoped_ptr<StateProvider> state_provider,
+    scoped_ptr<TargetDisplayProvider> target_display_provider,
+    const Browser* browser)
+    : state_provider_(state_provider.Pass()),
+      target_display_provider_(target_display_provider.Pass()),
       // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
       screen_(gfx::Screen::GetNativeScreen()),
       browser_(browser) {
 }
 
-WindowSizer::WindowSizer(StateProvider* state_provider,
-                         gfx::Screen* screen,
-                         const Browser* browser)
-    : state_provider_(state_provider),
+WindowSizer::WindowSizer(
+    scoped_ptr<StateProvider> state_provider,
+    scoped_ptr<TargetDisplayProvider> target_display_provider,
+    gfx::Screen* screen,
+    const Browser* browser)
+    : state_provider_(state_provider.Pass()),
+      target_display_provider_(target_display_provider.Pass()),
       screen_(screen),
       browser_(browser) {
   DCHECK(screen_);
@@ -164,7 +199,13 @@ void WindowSizer::GetBrowserWindowBoundsAndShowState(
     const Browser* browser,
     gfx::Rect* window_bounds,
     ui::WindowShowState* show_state) {
-  const WindowSizer sizer(new DefaultStateProvider(app_name, browser), browser);
+  scoped_ptr<StateProvider> state_provider(
+      new DefaultStateProvider(app_name, browser));
+  scoped_ptr<TargetDisplayProvider> target_display_provider(
+      new DefaultTargetDisplayProvider);
+  const WindowSizer sizer(state_provider.Pass(),
+                          target_display_provider.Pass(),
+                          browser);
   sizer.DetermineWindowBoundsAndShowState(specified_bounds,
                                           window_bounds,
                                           show_state);
@@ -196,14 +237,14 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     }
 #endif
     // See if there's last active window's placement information.
-    if (GetLastWindowBounds(bounds, show_state))
+    if (GetLastActiveWindowBounds(bounds, show_state))
       return;
     // See if there's saved placement information.
     if (GetSavedWindowBounds(bounds, show_state))
       return;
     // No saved placement, figure out some sensible default size based on
     // the user's screen size.
-    GetDefaultWindowBounds(screen_->GetPrimaryDisplay(), bounds);
+    GetDefaultWindowBounds(GetTargetDisplay(gfx::Rect()), bounds);
   } else {
 #if defined(USE_ASH)
     // In case of a popup with an 'unspecified' location in ash, we are
@@ -227,8 +268,9 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
   }
 }
 
-bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds,
-                                      ui::WindowShowState* show_state) const {
+bool WindowSizer::GetLastActiveWindowBounds(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
   DCHECK(bounds);
   DCHECK(show_state);
   if (!state_provider_.get() ||
@@ -236,9 +278,9 @@ bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds,
     return false;
   gfx::Rect last_window_bounds = *bounds;
   bounds->Offset(kWindowTilePixels, kWindowTilePixels);
-  AdjustBoundsToBeVisibleOnMonitorContaining(last_window_bounds,
-                                             gfx::Rect(),
-                                             bounds);
+  AdjustBoundsToBeVisibleOnDisplay(screen_->GetDisplayMatching(*bounds),
+                                   gfx::Rect(),
+                                   bounds);
   return true;
 }
 
@@ -252,7 +294,9 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds,
                                            &saved_work_area,
                                            show_state))
     return false;
-  AdjustBoundsToBeVisibleOnMonitorContaining(*bounds, saved_work_area, bounds);
+  AdjustBoundsToBeVisibleOnDisplay(GetTargetDisplay(*bounds),
+                                   saved_work_area,
+                                   bounds);
   return true;
 }
 
@@ -262,8 +306,7 @@ void WindowSizer::GetDefaultWindowBounds(const gfx::Display& display,
 #if defined(USE_ASH)
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
   if (chrome::ShouldOpenAshOnStartup()) {
-    *default_bounds = ash::WindowPositioner::GetDefaultWindowBounds(
-        display);
+    *default_bounds = ash::WindowPositioner::GetDefaultWindowBounds(display);
     return;
   }
 #endif
@@ -297,23 +340,21 @@ void WindowSizer::GetDefaultWindowBounds(const gfx::Display& display,
                           default_width, default_height);
 }
 
-void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
-    const gfx::Rect& other_bounds,
+void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
+    const gfx::Display& display,
     const gfx::Rect& saved_work_area,
     gfx::Rect* bounds) const {
   DCHECK(bounds);
 
-  // Find the size of the work area of the monitor that intersects the bounds
-  // of the anchor window.
-  gfx::Display display = screen_->GetDisplayMatching(other_bounds);
-
-  // If height or width are 0, reset to the default size.
-  gfx::Rect default_bounds;
-  GetDefaultWindowBounds(display, &default_bounds);
-  if (bounds->height() <= 0)
-    bounds->set_height(default_bounds.height());
-  if (bounds->width() <= 0)
-    bounds->set_width(default_bounds.width());
+  // If |bounds| is empty, reset to the default size.
+  if (bounds->IsEmpty()) {
+    gfx::Rect default_bounds;
+    GetDefaultWindowBounds(display, &default_bounds);
+    if (bounds->height() <= 0)
+      bounds->set_height(default_bounds.height());
+    if (bounds->width() <= 0)
+      bounds->set_width(default_bounds.width());
+  }
 
   // Ensure the minimum height and width.
   bounds->set_height(std::max(kMinVisibleHeight, bounds->height()));
@@ -368,6 +409,10 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
   bounds->set_y(std::max(min_y, std::min(max_y, bounds->y())));
   bounds->set_x(std::max(min_x, std::min(max_x, bounds->x())));
 #endif  // defined(OS_MACOSX)
+}
+
+gfx::Display WindowSizer::GetTargetDisplay(const gfx::Rect& bounds) const {
+  return target_display_provider_->GetTargetDisplay(screen_, bounds);
 }
 
 ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/scoped_target_root_window.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -10,6 +11,7 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 #include "chrome/common/chrome_switches.h"
@@ -854,4 +856,44 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
                                BOTH,
                                browser_popup->browser(),
                                p1600x1200), ui::SHOW_STATE_NORMAL);
+}
+
+// Test that the target root window is used as the destionation of
+// the non browser window. This differ from PersistedBoundsCase
+// in that this uses real ash shell implementations + StateProvider
+// TargetDisplayProvider, rather than mocks.
+TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
+  if (!SupportsMultipleDisplays() || !chrome::ShouldOpenAshOnStartup())
+    return;
+  UpdateDisplay("500x500,600x600");
+  {
+    aura::Window* first_root =
+        ash::Shell::GetAllRootWindows()[0];
+    ash::internal::ScopedTargetRootWindow tmp(
+        first_root);
+    gfx::Rect bounds;
+    ui::WindowShowState show_state;
+    WindowSizer::GetBrowserWindowBoundsAndShowState(
+        std::string(),
+        gfx::Rect(),
+        NULL,
+        &bounds,
+        &show_state);
+    EXPECT_TRUE(first_root->GetBoundsInScreen().Contains(bounds));
+  }
+  {
+    aura::Window* second_root =
+        ash::Shell::GetAllRootWindows()[1];
+    ash::internal::ScopedTargetRootWindow tmp(
+        second_root);
+    gfx::Rect bounds;
+    ui::WindowShowState show_state;
+    WindowSizer::GetBrowserWindowBoundsAndShowState(
+        std::string(),
+        gfx::Rect(),
+        NULL,
+        &bounds,
+        &show_state);
+    EXPECT_TRUE(second_root->GetBoundsInScreen().Contains(bounds));
+  }
 }

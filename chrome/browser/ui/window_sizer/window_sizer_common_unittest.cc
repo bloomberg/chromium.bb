@@ -112,6 +112,23 @@ class TestScreen : public gfx::Screen {
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
 
+class TestTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
+public:
+  TestTargetDisplayProvider() {}
+  virtual ~TestTargetDisplayProvider() {}
+
+  virtual gfx::Display GetTargetDisplay(
+      const gfx::Screen* screen,
+      const gfx::Rect& bounds) const OVERRIDE {
+    // On ash, the bounds is used as a indicator to specify
+    // the target display.
+    return screen->GetDisplayMatching(bounds);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestTargetDisplayProvider);
+};
+
 }  // namespace
 
 TestStateProvider::TestStateProvider():
@@ -182,13 +199,16 @@ void GetWindowBoundsAndShowState(
   test_screen.AddDisplay(monitor1_bounds, monitor1_work_area);
   if (!monitor2_bounds.IsEmpty())
     test_screen.AddDisplay(monitor2_bounds, monitor2_bounds);
-  TestStateProvider* sp = new TestStateProvider;
+  scoped_ptr<TestStateProvider> sp(new TestStateProvider);
   if (source == PERSISTED || source == BOTH)
     sp->SetPersistentState(bounds, work_area, show_state_persisted, true);
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
+  scoped_ptr<WindowSizer::TargetDisplayProvider> tdp(
+      new TestTargetDisplayProvider);
 
-  WindowSizer sizer(sp, &test_screen, browser);
+  WindowSizer sizer(sp.PassAs<WindowSizer::StateProvider>(),
+                    tdp.Pass(), &test_screen, browser);
   sizer.DetermineWindowBoundsAndShowState(passed_in,
                                           out_bounds,
                                           out_show_state);
@@ -220,13 +240,16 @@ ui::WindowShowState GetWindowShowState(
   gfx::Rect work_area = display_config;
   TestScreen test_screen;
   test_screen.AddDisplay(display_config, display_config);
-  TestStateProvider* sp = new TestStateProvider;
+  scoped_ptr<TestStateProvider> sp(new TestStateProvider);
   if (source == PERSISTED || source == BOTH)
     sp->SetPersistentState(bounds, work_area, show_state_persisted, true);
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
+  scoped_ptr<WindowSizer::TargetDisplayProvider> tdp(
+      new TestTargetDisplayProvider);
 
-  WindowSizer sizer(sp, &test_screen, browser);
+  WindowSizer sizer(sp.PassAs<WindowSizer::StateProvider>(),
+                    tdp.Pass(), &test_screen, browser);
 
   ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
   gfx::Rect out_bounds;
@@ -238,7 +261,8 @@ ui::WindowShowState GetWindowShowState(
 }
 
 #if !defined(OS_MACOSX)
-TEST(WindowSizerTestCommon, PersistedWindowOffscreenWithNonAggressiveRepositioning) {
+TEST(WindowSizerTestCommon,
+     PersistedWindowOffscreenWithNonAggressiveRepositioning) {
   { // off the left but the minimum visibility condition is barely satisfied
     // without relocaiton.
     gfx::Rect initial_bounds(-470, 50, 500, 400);
