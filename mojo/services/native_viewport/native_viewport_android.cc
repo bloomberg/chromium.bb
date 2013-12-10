@@ -112,6 +112,14 @@ gfx::Size NativeViewportAndroid::GetSize() {
   return size_;
 }
 
+void NativeViewportAndroid::SetCapture() {
+  NOTIMPLEMENTED();
+}
+
+void NativeViewportAndroid::ReleaseCapture() {
+  NOTIMPLEMENTED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewportAndroid, private:
 

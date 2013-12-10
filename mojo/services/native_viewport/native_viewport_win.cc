@@ -39,6 +39,16 @@ class NativeViewportWin : public gfx::WindowImpl,
     DestroyWindow(hwnd());
   }
 
+  virtual void SetCapture() OVERRIDE {
+    DCHECK(::GetCapture() != hwnd());
+    ::SetCapture(hwnd());
+  }
+
+  virtual void ReleaseCapture() OVERRIDE {
+    if (::GetCapture() == hwnd())
+      ::ReleaseCapture();
+  }
+
   BEGIN_MSG_MAP_EX(NativeViewportWin)
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
 

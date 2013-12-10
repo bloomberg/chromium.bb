@@ -65,6 +65,14 @@ class NativeViewportX11 : public NativeViewport,
     delegate_->OnDestroyed();
   }
 
+  virtual void SetCapture() OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
+  virtual void ReleaseCapture() OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
   // Overridden from base::MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE {
     return true;

@@ -50,6 +50,14 @@ class NativeViewportMac : public NativeViewport {
     delegate_->OnDestroyed();
   }
 
+  virtual void SetCapture() OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
+  virtual void ReleaseCapture() OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
   NativeViewportDelegate* delegate_;
   NSWindow* window_;
   gfx::Rect rect_;

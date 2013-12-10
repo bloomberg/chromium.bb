@@ -25,6 +25,7 @@ interface NativeViewport {
   void Open();
   void Close();
   void CreateGLES2Context(handle<message_pipe> gles2_client);
+  void AckEvent(Event event);
 };
 
 [Peer=NativeViewport]

@@ -27,10 +27,12 @@ class NativeViewportImpl : public NativeViewportStub,
                      ScopedMessagePipeHandle pipe);
   virtual ~NativeViewportImpl();
 
+  // Overridden from NativeViewportStub:
   virtual void Open() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CreateGLES2Context(
       ScopedMessagePipeHandle gles2_client) OVERRIDE;
+  virtual void AckEvent(const Event& event) OVERRIDE;
 
  private:
   // Overridden from services::NativeViewportDelegate:
@@ -46,6 +48,8 @@ class NativeViewportImpl : public NativeViewportStub,
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
   scoped_ptr<GLES2Impl> gles2_;
+  bool waiting_for_event_ack_;
+  int64 pending_event_timestamp_;
 
   RemotePtr<NativeViewportClient> client_;
 

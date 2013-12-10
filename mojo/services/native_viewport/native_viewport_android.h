@@ -42,6 +42,8 @@ class NativeViewportAndroid : public NativeViewport {
   virtual void Init() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
+  virtual void SetCapture() OVERRIDE;
+  virtual void ReleaseCapture() OVERRIDE;
 
   void ReleaseWindow();
 

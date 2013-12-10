@@ -5,10 +5,13 @@
 #ifndef MOJO_EXAMPLES_SAMPLE_APP_GLES2_CLIENT_IMPL_H_
 #define MOJO_EXAMPLES_SAMPLE_APP_GLES2_CLIENT_IMPL_H_
 
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/examples/sample_app/spinning_cube.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojom/gles2.h"
+#include "mojom/native_viewport.h"
+#include "ui/gfx/point_f.h"
 
 namespace mojo {
 namespace examples {
@@ -18,6 +21,8 @@ class GLES2ClientImpl : public GLES2ClientStub {
   explicit GLES2ClientImpl(ScopedMessagePipeHandle pipe);
   virtual ~GLES2ClientImpl();
 
+  void HandleInputEvent(const Event& event);
+
  private:
   virtual void DidCreateContext(uint64_t encoded,
                                 uint32_t width,
@@ -25,10 +30,14 @@ class GLES2ClientImpl : public GLES2ClientStub {
   virtual void ContextLost() MOJO_OVERRIDE;
 
   void Draw();
+  void StartTimer();
 
   base::Time last_time_;
   base::RepeatingTimer<GLES2ClientImpl> timer_;
   SpinningCube cube_;
+  gfx::PointF capture_point_;
+  gfx::PointF last_drag_point_;
+  base::Time drag_start_time_;
 
   RemotePtr<GLES2> service_;
 
