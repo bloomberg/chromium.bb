@@ -82,7 +82,8 @@ function addCookie(cookie) {
 
   var newCookie = name + '=' + value;
   newCookie += '; path=' + (path || '/');
-  newCookie += '; domain=' + (domain || document.domain);
+  if (domain)
+    newCookie += '; domain=' + domain;
   if (cookie['expiry']) {
     var expiredDate = new Date(cookie['expiry'] * 1000);
     newCookie += '; expires=' + expiredDate.toUTCString();
