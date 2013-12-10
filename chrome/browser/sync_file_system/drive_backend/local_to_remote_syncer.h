@@ -32,6 +32,7 @@ class RemoteChangeProcessor;
 namespace drive_backend {
 
 class FileTracker;
+class FolderCreator;
 class MetadataDatabase;
 class SyncEngineContext;
 
@@ -87,16 +88,8 @@ class LocalToRemoteSyncer : public SyncTask {
 
   void CreateRemoteFolder(const SyncStatusCallback& callback);
   void DidCreateRemoteFolder(const SyncStatusCallback& callback,
-                             google_apis::GDataErrorCode error,
-                             scoped_ptr<google_apis::ResourceEntry> entry);
-  void DidListFolderForEnsureUniqueness(
-      const SyncStatusCallback& callback,
-      ScopedVector<google_apis::ResourceEntry> candidates,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceList> resource_list);
-  void DidUpdateDatabaseForCreateNewFolder(const SyncStatusCallback& callback,
-                                           const std::string& file_id,
-                                           SyncStatusCode status);
+                             const std::string& file_id,
+                             SyncStatusCode status);
   void DidDetachResourceForCreationConflict(const SyncStatusCallback& callback,
                                             google_apis::GDataErrorCode error);
 
@@ -115,6 +108,8 @@ class LocalToRemoteSyncer : public SyncTask {
   scoped_ptr<FileTracker> remote_file_tracker_;
   scoped_ptr<FileTracker> remote_parent_folder_tracker_;
   base::FilePath target_path_;
+
+  scoped_ptr<FolderCreator> folder_creator_;
 
   base::WeakPtrFactory<LocalToRemoteSyncer> weak_ptr_factory_;
 

@@ -16,6 +16,7 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/folder_creator.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
@@ -493,82 +494,27 @@ void LocalToRemoteSyncer::DidUploadNewFile(
 
 void LocalToRemoteSyncer::CreateRemoteFolder(
     const SyncStatusCallback& callback) {
-  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
   DCHECK(remote_parent_folder_tracker_);
+
+  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
   sync_action_ = SYNC_ACTION_ADDED;
-  drive_service()->AddNewDirectory(
+
+  DCHECK(!folder_creator_);
+  folder_creator_.reset(new FolderCreator(
+      drive_service(), metadata_database(),
       remote_parent_folder_tracker_->file_id(),
-      title.AsUTF8Unsafe(),
-      base::Bind(&LocalToRemoteSyncer::DidCreateRemoteFolder,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      title.AsUTF8Unsafe()));
+  folder_creator_->Run(base::Bind(
+      &LocalToRemoteSyncer::DidCreateRemoteFolder,
+      weak_ptr_factory_.GetWeakPtr(),
+      callback));
 }
 
 void LocalToRemoteSyncer::DidCreateRemoteFolder(
     const SyncStatusCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (error != google_apis::HTTP_SUCCESS &&
-      error != google_apis::HTTP_CREATED) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
-    return;
-  }
-
-  drive_service()->SearchByTitle(
-      entry->title(), remote_parent_folder_tracker_->file_id(),
-      base::Bind(&LocalToRemoteSyncer::DidListFolderForEnsureUniqueness,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Passed(ScopedVector<google_apis::ResourceEntry>())));
-}
-
-void LocalToRemoteSyncer::DidListFolderForEnsureUniqueness(
-    const SyncStatusCallback& callback,
-    ScopedVector<google_apis::ResourceEntry> candidates,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceList> resource_list) {
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
-    return;
-  }
-
-  candidates.reserve(candidates.size() + resource_list->entries().size());
-  candidates.insert(candidates.end(),
-                    resource_list->entries().begin(),
-                    resource_list->entries().end());
-  resource_list->mutable_entries()->weak_clear();
-
-  GURL next_feed;
-  if (resource_list->GetNextFeedURL(&next_feed)) {
-    drive_service()->GetRemainingFileList(
-        next_feed,
-        base::Bind(&LocalToRemoteSyncer::DidListFolderForEnsureUniqueness,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   base::Passed(&candidates)));
-    return;
-  }
-
-  ScopedVector<google_apis::FileResource> files;
-  files.reserve(candidates.size());
-  for (size_t i = 0; i < candidates.size(); ++i) {
-    files.push_back(drive::util::ConvertResourceEntryToFileResource(
-        *candidates[i]).release());
-  }
-
-  scoped_ptr<google_apis::ResourceEntry> oldest =
-      GetOldestCreatedFolderResource(candidates.Pass());
-  std::string file_id = oldest->resource_id();
-
-  metadata_database()->UpdateByFileResourceList(
-      files.Pass(),
-      base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForCreateNewFolder,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback, file_id));
-}
-
-void LocalToRemoteSyncer::DidUpdateDatabaseForCreateNewFolder(
-    const SyncStatusCallback& callback,
     const std::string& file_id,
     SyncStatusCode status) {
+  scoped_ptr<FolderCreator> deleter = folder_creator_.Pass();
   if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;

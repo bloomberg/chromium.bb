@@ -2297,6 +2297,8 @@
         'browser/sync_file_system/drive_backend/drive_backend_constants.h',
         'browser/sync_file_system/drive_backend/drive_backend_util.cc',
         'browser/sync_file_system/drive_backend/drive_backend_util.h',
+        'browser/sync_file_system/drive_backend/folder_creator.cc',
+        'browser/sync_file_system/drive_backend/folder_creator.h',
         'browser/sync_file_system/drive_backend/list_changes_task.cc',
         'browser/sync_file_system/drive_backend/list_changes_task.h',
         'browser/sync_file_system/drive_backend/local_to_remote_syncer.cc',
