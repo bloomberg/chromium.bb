@@ -504,7 +504,7 @@ void MobileActivator::ForceReconnect(const NetworkState* network,
   post_reconnect_state_ = next_state;
   UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetry", 1);
   // First, disconnect...
-  LOG(INFO) << "Disconnecting from " << network->path();
+  VLOG(1) << "Disconnecting from " << network->path();
   // Explicit service Disconnect()s disable autoconnect on the service until
   // Connect() is called on the service again.  Hence this dance to explicitly
   // call Connect().
@@ -554,7 +554,7 @@ void MobileActivator::ContinueConnecting() {
   } else {
     LOG(WARNING) << "Connect failed, will try again in a little bit.";
     if (network) {
-      LOG(INFO) << "Connecting to: " << network->path();
+      VLOG(1) << "Connecting to: " << network->path();
       ash::network_connect::ConnectToNetwork(
           network->path(), NULL /* no parent window */);
     }
@@ -693,7 +693,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOfflineState(
       }
       break;
     default:
-      LOG(INFO) << "Waiting for cellular service to connect.";
+      VLOG(1) << "Waiting for cellular service to connect.";
       break;
   }
   return new_state;
@@ -732,7 +732,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
       break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION: {
       if (pending_activation_request_) {
-        LOG(INFO) << "Waiting for pending activation attempt to finish";
+        VLOG(1) << "Waiting for pending activation attempt to finish";
       } else if (activation == shill::kActivationStateActivated ||
                  activation == shill::kActivationStatePartiallyActivated) {
         new_state = PLAN_ACTIVATION_START;
@@ -747,11 +747,11 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
     case PLAN_ACTIVATION_OTASP:
     case PLAN_ACTIVATION_TRYING_OTASP:
       if (pending_activation_request_) {
-        LOG(INFO) << "Waiting for pending activation attempt to finish";
+        VLOG(1) << "Waiting for pending activation attempt to finish";
       } else if (activation == shill::kActivationStateNotActivated ||
                  activation == shill::kActivationStateActivating) {
-        LOG(INFO) << "Waiting for the OTASP to finish and the service to "
-                  << "come back online";
+        VLOG(1) << "Waiting for the OTASP to finish and the service to "
+                << "come back online";
       } else if (activation == shill::kActivationStateActivated) {
         new_state = PLAN_ACTIVATION_DONE;
       } else {
@@ -880,13 +880,13 @@ void MobileActivator::ChangeState(const NetworkState* network,
                                   PlanActivationState new_state,
                                   const std::string& error_description) {
   static bool first_time = true;
-  LOG(INFO) << "Activation state flip old = "
-            << GetStateDescription(state_)
-            << ", new = " << GetStateDescription(new_state);
+  VLOG(1) << "Activation state flip old = "
+          << GetStateDescription(state_)
+          << ", new = " << GetStateDescription(new_state);
   if (state_ == new_state && !first_time)
     return;
   first_time = false;
-  LOG(INFO) << "Transitioning...";
+  VLOG(1) << "Transitioning...";
 
   // Kill all the possible timers and callbacks we might have outstanding.
   state_duration_timer_.Stop();
