@@ -295,8 +295,17 @@ bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& opt
     {# FIXME: implement [DeprecateAs] #}
     {# FIXME: special-case any #}
     {# FIXME: implement withPropertyAttributes #}
+    {% if attribute.deprecate_as %}
+    if (options.convert(conversionContext, "{{attribute.name}}", eventInit.{{attribute.name}})) {
+        if (options.hasProperty("{{attribute.name}}"))
+            UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
+    } else {
+        return false;
+    }
+    {% else %}
     if (!options.convert(conversionContext, "{{attribute.name}}", eventInit.{{attribute.name}}))
         return false;
+    {% endif %}
     {% endfor %}
     return true;
 }

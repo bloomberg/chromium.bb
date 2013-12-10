@@ -2984,7 +2984,6 @@ END
             if ($attribute->type ne "any") {
                 my $attributeName = $attribute->name;
                 my $attributeImplName = GetImplName($attribute);
-                my $deprecation = $attribute->extendedAttributes->{"DeprecateAs"};
 
                 # Construct the arguments to the corresponding Dictionary.convert() method.
                 my @convertArguments = ();
@@ -3009,10 +3008,11 @@ END
                 }
 
                 my $dictionaryGetter = "options.convert(conversionContext${withPropertyAttributes}, \"$attributeName\", eventInit.$attributeImplName)";
-                if ($attribute->extendedAttributes->{"DeprecateAs"}) {
+                my $deprecation = $attribute->extendedAttributes->{"DeprecateAs"};
+                if ($deprecation) {
                     $code .= "    if ($dictionaryGetter) {\n";
                     $code .= "        if (options.hasProperty(\"$attributeName\"))\n";
-                    $code .= "        " . GenerateDeprecationNotification($attribute->extendedAttributes->{"DeprecateAs"});
+                    $code .= "        " . GenerateDeprecationNotification($deprecation);
                     $code .= "    } else {\n";
                     $code .= "        return false;\n";
                     $code .= "    }\n";
