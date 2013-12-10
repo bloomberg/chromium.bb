@@ -46,6 +46,7 @@
       ],
       'sources': [
         'chromium/json.cc',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/address_data.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_field.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_ui_component.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_ui.h',
