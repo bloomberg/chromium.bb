@@ -25,18 +25,22 @@ class SampleFactoryImpl : public sample::FactoryStub {
   virtual void DoStuff(const sample::Request& request,
                        ScopedMessagePipeHandle pipe) MOJO_OVERRIDE {
     std::string text1;
-    EXPECT_TRUE(ReadTextMessage(pipe.get(), &text1));
+    if (pipe.is_valid())
+      EXPECT_TRUE(ReadTextMessage(pipe.get(), &text1));
 
     std::string text2;
-    EXPECT_TRUE(ReadTextMessage(request.pipe().get(), &text2));
+    if (request.pipe().is_valid()) {
+      EXPECT_TRUE(ReadTextMessage(request.pipe().get(), &text2));
 
-    // Ensure that simply accessing request.pipe() does not close it.
-    EXPECT_TRUE(request.pipe().is_valid());
+      // Ensure that simply accessing request.pipe() does not close it.
+      EXPECT_TRUE(request.pipe().is_valid());
+    }
 
     ScopedMessagePipeHandle pipe0;
-    CreateMessagePipe(&pipe0, &pipe1_);
-
-    EXPECT_TRUE(WriteTextMessage(pipe1_.get(), text2));
+    if (!text2.empty()) {
+      CreateMessagePipe(&pipe0, &pipe1_);
+      EXPECT_TRUE(WriteTextMessage(pipe1_.get(), text2));
+    }
 
     AllocationScope scope;
     sample::Response::Builder response;
@@ -59,6 +63,8 @@ class SampleFactoryClientImpl : public sample::FactoryClientStub {
   }
 
   void Start() {
+    expected_text_reply_ = kText1;
+
     ScopedMessagePipeHandle pipe0;
     CreateMessagePipe(&pipe0, &pipe1_);
 
@@ -76,26 +82,37 @@ class SampleFactoryClientImpl : public sample::FactoryClientStub {
     factory_->DoStuff(request.Finish(), pipe0.Pass());
   }
 
+  void StartNoPipes() {
+    expected_text_reply_.clear();
+
+    AllocationScope scope;
+    sample::Request::Builder request;
+    request.set_x(1);
+    factory_->DoStuff(request.Finish(), ScopedMessagePipeHandle().Pass());
+  }
+
   bool got_response() const {
     return got_response_;
   }
 
   virtual void DidStuff(const sample::Response& response,
-                        const String& text1) MOJO_OVERRIDE {
-    EXPECT_EQ(std::string(kText1), text1.To<std::string>());
+                        const String& text_reply) MOJO_OVERRIDE {
+    EXPECT_EQ(expected_text_reply_, text_reply.To<std::string>());
 
-    std::string text2;
-    EXPECT_TRUE(ReadTextMessage(response.pipe().get(), &text2));
+    if (response.pipe().is_valid()) {
+      std::string text2;
+      EXPECT_TRUE(ReadTextMessage(response.pipe().get(), &text2));
 
-    // Ensure that simply accessing response.pipe() does not close it.
-    EXPECT_TRUE(response.pipe().is_valid());
+      // Ensure that simply accessing response.pipe() does not close it.
+      EXPECT_TRUE(response.pipe().is_valid());
 
-    EXPECT_EQ(std::string(kText2), text2);
+      EXPECT_EQ(std::string(kText2), text2);
 
-    // Do some more tests of handle passing:
-    ScopedMessagePipeHandle p = response.pipe().Pass();
-    EXPECT_TRUE(p.is_valid());
-    EXPECT_FALSE(response.pipe().is_valid());
+      // Do some more tests of handle passing:
+      ScopedMessagePipeHandle p = response.pipe().Pass();
+      EXPECT_TRUE(p.is_valid());
+      EXPECT_FALSE(response.pipe().is_valid());
+    }
 
     got_response_ = true;
   }
@@ -104,6 +121,7 @@ class SampleFactoryClientImpl : public sample::FactoryClientStub {
   RemotePtr<sample::Factory> factory_;
   ScopedMessagePipeHandle pipe1_;
   ScopedMessagePipeHandle pipe3_;
+  std::string expected_text_reply_;
   bool got_response_;
 };
 
@@ -128,6 +146,23 @@ TEST_F(BindingsHandlePassingTest, Basic) {
   SampleFactoryClientImpl factory_client(pipe1.Pass());
 
   factory_client.Start();
+
+  EXPECT_FALSE(factory_client.got_response());
+
+  PumpMessages();
+
+  EXPECT_TRUE(factory_client.got_response());
+}
+
+TEST_F(BindingsHandlePassingTest, PassInvalid) {
+  ScopedMessagePipeHandle pipe0;
+  ScopedMessagePipeHandle pipe1;
+  CreateMessagePipe(&pipe0, &pipe1);
+
+  SampleFactoryImpl factory(pipe0.Pass());
+  SampleFactoryClientImpl factory_client(pipe1.Pass());
+
+  factory_client.StartNoPipes();
 
   EXPECT_FALSE(factory_client.got_response());
 

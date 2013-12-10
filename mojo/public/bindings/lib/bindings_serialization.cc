@@ -45,11 +45,21 @@ bool ValidatePointer(const void* ptr, const Message& message) {
 }
 
 void EncodeHandle(Handle* handle, std::vector<Handle>* handles) {
-  handles->push_back(*handle);
-  handle->set_value(static_cast<MojoHandle>(handles->size() - 1));
+  if (handle->is_valid()) {
+    handles->push_back(*handle);
+    handle->set_value(static_cast<MojoHandle>(handles->size() - 1));
+  } else {
+    // Encode -1 to mean the invalid handle.
+    handle->set_value(static_cast<MojoHandle>(-1));
+  }
 }
 
 bool DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
+  // Decode -1 to mean the invalid handle.
+  if (handle->value() == static_cast<MojoHandle>(-1)) {
+    *handle = Handle();
+    return true;
+  }
   if (handle->value() >= handles->size())
     return false;
   // Just leave holes in the vector so we don't screw up other indices.
