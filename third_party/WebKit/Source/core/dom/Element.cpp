@@ -2295,6 +2295,69 @@ void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
         mergeWithNextTextNode(prev.release(), exceptionState);
 }
 
+Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionState& exceptionState)
+{
+    if (equalIgnoringCase(where, "beforeBegin")) {
+        if (ContainerNode* parent = this->parentNode()) {
+            parent->insertBefore(newChild, this, exceptionState);
+            if (!exceptionState.hadException())
+                return newChild;
+        }
+        return 0;
+    }
+
+    if (equalIgnoringCase(where, "afterBegin")) {
+        insertBefore(newChild, firstChild(), exceptionState);
+        return exceptionState.hadException() ? 0 : newChild;
+    }
+
+    if (equalIgnoringCase(where, "beforeEnd")) {
+        appendChild(newChild, exceptionState);
+        return exceptionState.hadException() ? 0 : newChild;
+    }
+
+    if (equalIgnoringCase(where, "afterEnd")) {
+        if (ContainerNode* parent = this->parentNode()) {
+            parent->insertBefore(newChild, nextSibling(), exceptionState);
+            if (!exceptionState.hadException())
+                return newChild;
+        }
+        return 0;
+    }
+
+    exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
+    return 0;
+}
+
+// Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
+static Element* contextElementForInsertion(const String& where, Element* element, ExceptionState& exceptionState)
+{
+    if (equalIgnoringCase(where, "beforeBegin") || equalIgnoringCase(where, "afterEnd")) {
+        ContainerNode* parent = element->parentNode();
+        if (!parent || !parent->isElementNode()) {
+            exceptionState.throwDOMException(NoModificationAllowedError, "The element has no parent.");
+            return 0;
+        }
+        return toElement(parent);
+    }
+    if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
+        return element;
+    exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
+    return 0;
+}
+
+void Element::insertAdjacentHTML(const String& where, const String& markup, ExceptionState& exceptionState)
+{
+    RefPtr<Element> contextElement = contextElementForInsertion(where, this, exceptionState);
+    if (!contextElement)
+        return;
+
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement.get(), AllowScriptingContent, "insertAdjacentHTML", exceptionState);
+    if (!fragment)
+        return;
+    insertAdjacent(where, fragment.get(), exceptionState);
+}
+
 String Element::innerText()
 {
     // We need to update layout, since plainText uses line boxes in the render tree.

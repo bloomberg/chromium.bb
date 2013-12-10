@@ -82,11 +82,6 @@ public:
     static PassRefPtr<Element> create(const QualifiedName&, Document*);
     virtual ~Element();
 
-    String innerHTML() const;
-    String outerHTML() const;
-    void setInnerHTML(const String&, ExceptionState&);
-    void setOuterHTML(const String&, ExceptionState&);
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste);
@@ -400,6 +395,11 @@ public:
 
     String innerText();
     String outerText();
+    String innerHTML() const;
+    String outerHTML() const;
+    void setInnerHTML(const String&, ExceptionState&);
+    void setOuterHTML(const String&, ExceptionState&);
+    void insertAdjacentHTML(const String& where, const String& html, ExceptionState&);
 
     String textFromChildren();
 
@@ -566,6 +566,8 @@ protected:
     void classAttributeChanged(const AtomicString& newClassString);
 
     PassRefPtr<RenderStyle> originalStyleForRenderer();
+
+    Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
 
 private:
     void styleAttributeChanged(const AtomicString& newStyleString, AttributeModificationReason);

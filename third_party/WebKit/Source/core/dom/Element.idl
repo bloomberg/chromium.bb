@@ -92,6 +92,7 @@
     NodeList getElementsByClassName([Default=Undefined] optional DOMString name);
     [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
+    [CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString where, DOMString html);
 
     [Reflect=class, PerWorldBindings] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;

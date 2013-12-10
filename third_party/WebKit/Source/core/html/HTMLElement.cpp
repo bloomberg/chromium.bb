@@ -452,48 +452,6 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionStat
         mergeWithNextTextNode(prev.release(), exceptionState);
 }
 
-Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, ExceptionState& exceptionState)
-{
-    // In Internet Explorer if the element has no parent and where is "beforeBegin" or "afterEnd",
-    // a document fragment is created and the elements appended in the correct order. This document
-    // fragment isn't returned anywhere.
-    //
-    // This is impossible for us to implement as the DOM tree does not allow for such structures,
-    // Opera also appears to disallow such usage.
-
-    if (equalIgnoringCase(where, "beforeBegin")) {
-        if (ContainerNode* parent = this->parentNode()) {
-            parent->insertBefore(newChild, this, exceptionState);
-            if (!exceptionState.hadException())
-                return newChild;
-        }
-        return 0;
-    }
-
-    if (equalIgnoringCase(where, "afterBegin")) {
-        insertBefore(newChild, firstChild(), exceptionState);
-        return exceptionState.hadException() ? 0 : newChild;
-    }
-
-    if (equalIgnoringCase(where, "beforeEnd")) {
-        appendChild(newChild, exceptionState);
-        return exceptionState.hadException() ? 0 : newChild;
-    }
-
-    if (equalIgnoringCase(where, "afterEnd")) {
-        if (ContainerNode* parent = this->parentNode()) {
-            parent->insertBefore(newChild, nextSibling(), exceptionState);
-            if (!exceptionState.hadException())
-                return newChild;
-        }
-        return 0;
-    }
-
-    // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-    exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
-    return 0;
-}
-
 Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChild, ExceptionState& exceptionState)
 {
     if (!newChild) {
@@ -504,35 +462,6 @@ Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChi
 
     Node* returnValue = insertAdjacent(where, newChild, exceptionState);
     return toElement(returnValue);
-}
-
-// Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
-static Element* contextElementForInsertion(const String& where, Element* element, ExceptionState& exceptionState)
-{
-    if (equalIgnoringCase(where, "beforeBegin") || equalIgnoringCase(where, "afterEnd")) {
-        ContainerNode* parent = element->parentNode();
-        if (!parent || !parent->isElementNode()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The element has no parent.");
-            return 0;
-        }
-        return toElement(parent);
-    }
-    if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
-        return element;
-    exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
-    return 0;
-}
-
-void HTMLElement::insertAdjacentHTML(const String& where, const String& markup, ExceptionState& exceptionState)
-{
-    RefPtr<Element> contextElement = contextElementForInsertion(where, this, exceptionState);
-    if (!contextElement)
-        return;
-
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement.get(), AllowScriptingContent, "insertAdjacentHTML", exceptionState);
-    if (!fragment)
-        return;
-    insertAdjacent(where, fragment.get(), exceptionState);
 }
 
 void HTMLElement::insertAdjacentText(const String& where, const String& text, ExceptionState& exceptionState)
