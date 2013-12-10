@@ -480,6 +480,11 @@ void ContentSettingsHandler::InitializeHandler() {
       prefs::kVideoCaptureAllowed,
       base::Bind(&ContentSettingsHandler::UpdateMediaSettingsView,
                  base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kEnableDRM,
+      base::Bind(
+          &ContentSettingsHandler::UpdateProtectedContentExceptionsButton,
+          base::Unretained(this)));
 
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, profile));
 }
@@ -490,6 +495,7 @@ void ContentSettingsHandler::InitializePage() {
 
   UpdateHandlersEnabledRadios();
   UpdateAllExceptionsViewsFromModel();
+  UpdateProtectedContentExceptionsButton();
 }
 
 void ContentSettingsHandler::Observe(
@@ -1453,6 +1459,15 @@ void ContentSettingsHandler::UpdateFlashMediaLinksVisibility() {
       ShowFlashMediaLink(EXCEPTIONS, true);
     }
   }
+}
+
+void ContentSettingsHandler::UpdateProtectedContentExceptionsButton() {
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  // Exceptions apply only when the feature is enabled.
+  bool enable_exceptions = prefs->GetBoolean(prefs::kEnableDRM);
+  web_ui()->CallJavascriptFunction(
+      "ContentSettings.enableProtectedContentExceptions",
+      base::FundamentalValue(enable_exceptions));
 }
 
 }  // namespace options

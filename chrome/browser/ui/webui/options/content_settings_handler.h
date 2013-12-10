@@ -185,6 +185,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   void UpdateFlashMediaLinksVisibility();
 
+  void UpdateProtectedContentExceptionsButton();
+
   // Member variables ---------------------------------------------------------
 
   content::NotificationRegistrar notification_registrar_;
