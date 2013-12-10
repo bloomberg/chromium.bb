@@ -237,8 +237,9 @@ Authenticator.prototype = {
                 {method: 'noPassword', email: this.email_},
                 this.parentPage_);
           } else {
-            window.parent.postMessage({method: 'confirmPassword'},
-                                      this.parentPage_);
+            window.parent.postMessage(
+                {method: 'confirmPassword', email: this.email_},
+                this.parentPage_);
           }
         }.bind(this));
   },
@@ -253,8 +254,9 @@ Authenticator.prototype = {
               return;
             }
           }
-          window.parent.postMessage({method: 'confirmPassword'},
-                                    this.parentPage_);
+          window.parent.postMessage(
+              {method: 'confirmPassword', email: this.email_},
+              this.parentPage_);
         }.bind(this));
   },
 

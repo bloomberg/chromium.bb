@@ -291,8 +291,16 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @param {Object} m HTML5 message.
      */
     onMessage_: function(m) {
+      if (!this.isSigninMessage_(m))
+        return;
+
       var msg = m.data;
-      if (msg.method == 'completeLogin' && this.isSigninMessage_(m))
+
+      // 'completeLogin' for full gaia signin flow. For SAML case,
+      // 'confirmPassword' is sent after authentication. Since enrollment
+      // does not need the actual password, this is treated the same as
+      // 'completeLogin'.
+      if (msg.method == 'completeLogin' || msg.method == 'confirmPassword')
         chrome.send('oauthEnrollCompleteLogin', [msg.email]);
     }
   };
