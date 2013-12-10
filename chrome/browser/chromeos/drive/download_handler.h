@@ -77,13 +77,6 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
   // Removes the download.
   void RemoveDownload(int id);
 
-  // Callback for FileSystem::GetResourceEntryByPath().
-  // Used to implement SubstituteDriveDownloadPath().
-  void OnEntryFound(const base::FilePath& drive_dir_path,
-                    const SubstituteDriveDownloadPathCallback& callback,
-                    FileError error,
-                    scoped_ptr<ResourceEntry> entry);
-
   // Callback for FileSystem::CreateDirectory().
   // Used to implement SubstituteDriveDownloadPath().
   void OnCreateDirectory(const SubstituteDriveDownloadPathCallback& callback,

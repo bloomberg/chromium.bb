@@ -147,20 +147,13 @@ void DownloadHandler::SubstituteDriveDownloadPath(
   SetDownloadParams(drive_path, download);
 
   if (util::IsUnderDriveMountPoint(drive_path)) {
-    // Can't access drive if the directory does not exist on Drive.
-    // We set off a chain of callbacks as follows:
-    // FileSystem::GetResourceEntryByPath
-    //   OnEntryFound calls FileSystem::CreateDirectory (if necessary)
-    //     OnCreateDirectory calls SubstituteDriveDownloadPathInternal
-    const base::FilePath drive_dir_path =
-        util::ExtractDrivePath(drive_path.DirName());
-    // Check if the directory exists, and create it if the directory does not
-    // exist.
-    file_system_->GetResourceEntry(
-        drive_dir_path,
-        base::Bind(&DownloadHandler::OnEntryFound,
+    // Prepare the destination directory.
+    const bool is_exclusive = false, is_recursive = true;
+    file_system_->CreateDirectory(
+        util::ExtractDrivePath(drive_path.DirName()),
+        is_exclusive, is_recursive,
+        base::Bind(&DownloadHandler::OnCreateDirectory,
                    weak_ptr_factory_.GetWeakPtr(),
-                   drive_dir_path,
                    callback));
   } else {
     callback.Run(drive_path);
@@ -268,30 +261,6 @@ void DownloadHandler::OnDownloadUpdated(
 
     default:
       NOTREACHED();
-  }
-}
-
-void DownloadHandler::OnEntryFound(
-    const base::FilePath& drive_dir_path,
-    const SubstituteDriveDownloadPathCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  if (error == FILE_ERROR_NOT_FOUND) {
-    // Destination Drive directory doesn't exist, so create it.
-    const bool is_exclusive = false, is_recursive = true;
-    file_system_->CreateDirectory(
-        drive_dir_path, is_exclusive, is_recursive,
-        base::Bind(&DownloadHandler::OnCreateDirectory,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-  } else if (error == FILE_ERROR_OK) {
-    // Directory is already ready.
-    OnCreateDirectory(callback, FILE_ERROR_OK);
-  } else {
-    LOG(WARNING) << "Failed to get resource entry for path: "
-                 << drive_dir_path.value() << ", error = "
-                 << FileErrorToString(error);
-    callback.Run(base::FilePath());
   }
 }
 
