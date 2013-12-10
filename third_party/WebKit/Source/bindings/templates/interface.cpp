@@ -338,7 +338,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
 {
     functionTemplate->ReadOnlyPrototype();
 
-    v8::Local<v8::Signature> ALLOW_UNUSED defaultSignature;
+    v8::Local<v8::Signature> defaultSignature;
     {% set parent_template =
            'V8%s::domTemplate(isolate, currentWorldType)' % parent_interface
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
