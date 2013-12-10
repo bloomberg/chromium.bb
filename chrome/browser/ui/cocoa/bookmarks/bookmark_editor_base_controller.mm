@@ -201,7 +201,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                        url:(const GURL&)url
-                     title:(const string16&)title
+                     title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration {
   NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:nibName
@@ -339,7 +339,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   return url_;
 }
 
-- (const string16&)title{
+- (const base::string16&)title{
   return title_;
 }
 

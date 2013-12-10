@@ -466,7 +466,7 @@ class ExtensionLoadedNotificationObserver
   }
 
   // First part of extension installed message, the heading.
-  string16 extension_name = UTF8ToUTF16(extension_->name().c_str());
+  base::string16 extension_name = UTF8ToUTF16(extension_->name().c_str());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
   [heading_ setStringValue:l10n_util::GetNSStringF(
       IDS_EXTENSION_INSTALLED_HEADING, extension_name)];
@@ -548,7 +548,7 @@ class ExtensionLoadedNotificationObserver
 - (NSInteger)addExtensionList:(NSTextField*)headingMsg
                      itemsMsg:(NSTextField*)itemsMsg
                         state:(BundleInstaller::Item::State)state {
-  string16 heading = bundle_->GetHeadingTextFor(state);
+  base::string16 heading = bundle_->GetHeadingTextFor(state);
   bool hidden = heading.empty();
   [headingMsg setHidden:hidden];
   [itemsMsg setHidden:hidden];

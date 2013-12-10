@@ -60,12 +60,13 @@ const int kIconPreviewSizePixels = 32;
 // AppInfoView shows the application icon and title.
 class AppInfoView : public views::View {
  public:
-  AppInfoView(const string16& title,
-              const string16& description,
+  AppInfoView(const base::string16& title,
+              const base::string16& description,
               const gfx::ImageFamily& icon);
 
   // Updates the title/description of the web app.
-  void UpdateText(const string16& title, const string16& description);
+  void UpdateText(const base::string16& title,
+                  const base::string16& description);
 
   // Updates the icon of the web app.
   void UpdateIcon(const gfx::ImageFamily& image);
@@ -75,11 +76,11 @@ class AppInfoView : public views::View {
 
  private:
   // Initializes the controls
-  void Init(const string16& title,
-            const string16& description, const gfx::ImageFamily& icon);
+  void Init(const base::string16& title,
+            const base::string16& description, const gfx::ImageFamily& icon);
 
   // Creates or updates description label.
-  void PrepareDescriptionLabel(const string16& description);
+  void PrepareDescriptionLabel(const base::string16& description);
 
   // Sets up layout manager.
   void SetupLayout();
@@ -89,8 +90,8 @@ class AppInfoView : public views::View {
   views::Label* description_;
 };
 
-AppInfoView::AppInfoView(const string16& title,
-                         const string16& description,
+AppInfoView::AppInfoView(const base::string16& title,
+                         const base::string16& description,
                          const gfx::ImageFamily& icon)
     : icon_(NULL),
       title_(NULL),
@@ -98,8 +99,8 @@ AppInfoView::AppInfoView(const string16& title,
   Init(title, description, icon);
 }
 
-void AppInfoView::Init(const string16& title_text,
-                       const string16& description_text,
+void AppInfoView::Init(const base::string16& title_text,
+                       const base::string16& description_text,
                        const gfx::ImageFamily& icon) {
   icon_ = new views::ImageView();
   UpdateIcon(icon);
@@ -117,15 +118,15 @@ void AppInfoView::Init(const string16& title_text,
   SetupLayout();
 }
 
-void AppInfoView::PrepareDescriptionLabel(const string16& description) {
+void AppInfoView::PrepareDescriptionLabel(const base::string16& description) {
   // Do not make space for the description if it is empty.
   if (description.empty())
     return;
 
   const size_t kMaxLength = 200;
-  const string16 kEllipsis(ASCIIToUTF16(" ... "));
+  const base::string16 kEllipsis(ASCIIToUTF16(" ... "));
 
-  string16 text = description;
+  base::string16 text = description;
   if (text.length() > kMaxLength) {
     text = text.substr(0, kMaxLength);
     text += kEllipsis;
@@ -163,8 +164,8 @@ void AppInfoView::SetupLayout() {
   }
 }
 
-void AppInfoView::UpdateText(const string16& title,
-                             const string16& description) {
+void AppInfoView::UpdateText(const base::string16& title,
+                             const base::string16& description) {
   title_->SetText(title);
   PrepareDescriptionLabel(description);
 
@@ -393,7 +394,7 @@ bool CreateApplicationShortcutView::Accept() {
 }
 
 views::Checkbox* CreateApplicationShortcutView::AddCheckbox(
-    const string16& text, bool checked) {
+    const base::string16& text, bool checked) {
   views::Checkbox* checkbox = new views::Checkbox(text);
   checkbox->SetChecked(checked);
   checkbox->set_listener(this);

@@ -117,7 +117,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int64 source_frame_id,
-                                  const string16& frame_name,
+                                  const base::string16& frame_name,
                                   const GURL& target_url,
                                   content::WebContents* new_contents) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(
@@ -157,7 +157,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual void RegisterProtocolHandler(content::WebContents* tab,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const string16& title,
+                                       const base::string16& title,
                                        bool user_gesture) OVERRIDE;
   virtual void FindReply(content::WebContents* tab,
                          int request_id,
@@ -184,11 +184,11 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
-      const string16& frame_unique_name,
+      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const string16& error_description,
+      const base::string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Message handlers

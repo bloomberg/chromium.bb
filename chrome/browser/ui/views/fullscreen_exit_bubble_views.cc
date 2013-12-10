@@ -64,12 +64,12 @@ ButtonView::ButtonView(views::ButtonListener* listener,
                        int between_button_spacing)
     : accept_button_(NULL),
       deny_button_(NULL) {
-  accept_button_ = new views::LabelButton(listener, string16());
+  accept_button_ = new views::LabelButton(listener, base::string16());
   accept_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   accept_button_->set_focusable(false);
   AddChildView(accept_button_);
 
-  deny_button_ = new views::LabelButton(listener, string16());
+  deny_button_ = new views::LabelButton(listener, base::string16());
   deny_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   deny_button_->set_focusable(false);
   AddChildView(deny_button_);
@@ -93,7 +93,7 @@ class FullscreenExitBubbleViews::FullscreenExitView
       public views::LinkListener {
  public:
   FullscreenExitView(FullscreenExitBubbleViews* bubble,
-                     const string16& accelerator,
+                     const base::string16& accelerator,
                      const GURL& url,
                      FullscreenExitBubbleType bubble_type);
   virtual ~FullscreenExitView();
@@ -117,14 +117,14 @@ class FullscreenExitBubbleViews::FullscreenExitView
   // Informational label: 'www.foo.com has gone fullscreen'.
   views::Label* message_label_;
   ButtonView* button_view_;
-  const string16 browser_fullscreen_exit_accelerator_;
+  const base::string16 browser_fullscreen_exit_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenExitView);
 };
 
 FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
     FullscreenExitBubbleViews* bubble,
-    const string16& accelerator,
+    const base::string16& accelerator,
     const GURL& url,
     FullscreenExitBubbleType bubble_type)
     : bubble_(bubble),
@@ -228,7 +228,7 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
     button_view_->deny_button()->set_min_size(gfx::Size());
   } else {
     bool link_visible = true;
-    string16 accelerator;
+    base::string16 accelerator;
     if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
         bubble_type == FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = browser_fullscreen_exit_accelerator_;

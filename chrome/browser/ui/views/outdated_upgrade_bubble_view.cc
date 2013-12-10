@@ -91,7 +91,8 @@ void OutdatedUpgradeBubbleView::WindowClosing() {
 }
 
 void OutdatedUpgradeBubbleView::Init() {
-  string16 product_name(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  base::string16 product_name(
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   reinstall_button_ = new views::LabelButton(
       this, l10n_util::GetStringFUTF16(IDS_REINSTALL_APP, product_name));

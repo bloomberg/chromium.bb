@@ -73,7 +73,7 @@ class ScreenCaptureNotificationUIViews
       public views::WidgetDelegateView,
       public views::ButtonListener {
  public:
-  explicit ScreenCaptureNotificationUIViews(const string16& text);
+  explicit ScreenCaptureNotificationUIViews(const base::string16& text);
   virtual ~ScreenCaptureNotificationUIViews();
 
   // ScreenCaptureNotificationUI interface.
@@ -89,7 +89,7 @@ class ScreenCaptureNotificationUIViews
   virtual views::ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual bool ShouldShowCloseButton() const OVERRIDE;
 
@@ -101,7 +101,7 @@ class ScreenCaptureNotificationUIViews
   // Helper to call |stop_callback_|.
   void NotifyStopped();
 
-  const string16 text_;
+  const base::string16 text_;
   base::Closure stop_callback_;
   NotificationBarClientView* client_view_;
   views::ImageView* gripper_;
@@ -112,7 +112,7 @@ class ScreenCaptureNotificationUIViews
 };
 
 ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
-    const string16& text)
+    const base::string16& text)
     : text_(text),
       client_view_(NULL),
       gripper_(NULL),
@@ -132,7 +132,7 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
   label_ = new views::Label();
   AddChildView(label_);
 
-  string16 stop_text =
+  base::string16 stop_text =
       l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP);
   stop_button_ = new views::BlueButton(this, stop_text);
   AddChildView(stop_button_);
@@ -275,7 +275,7 @@ void ScreenCaptureNotificationUIViews::NotifyStopped() {
 }  // namespace
 
 scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
-    const string16& text) {
+    const base::string16& text) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIViews(text));
 }

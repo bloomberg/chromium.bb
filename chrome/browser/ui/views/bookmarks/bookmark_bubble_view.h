@@ -73,7 +73,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
                      bool newly_bookmarked);
 
   // Returns the title to display.
-  string16 GetTitle();
+  base::string16 GetTitle();
 
   // Overridden from views::View:
   virtual gfx::Size GetMinimumSize() OVERRIDE;

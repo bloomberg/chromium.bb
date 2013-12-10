@@ -39,7 +39,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
     : app_modal_(app_modal),
       callback_(callback),
       message_box_view_(NULL) {
-  string16 explanation_text;
+  base::string16 explanation_text;
   switch (dialog_type) {
     case Browser::DOWNLOAD_CLOSE_BROWSER_SHUTDOWN:
       if (download_count == 1) {

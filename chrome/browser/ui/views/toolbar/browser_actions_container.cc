@@ -90,7 +90,7 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
   resize_area_ = new views::ResizeArea(this);
   AddChildView(resize_area_);
 
-  chevron_ = new views::MenuButton(NULL, string16(), this, false);
+  chevron_ = new views::MenuButton(NULL, base::string16(), this, false);
   chevron_->set_border(NULL);
   chevron_->EnableCanvasFlippingForRTLUI(true);
   chevron_->SetAccessibleName(

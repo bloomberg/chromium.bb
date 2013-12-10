@@ -90,7 +90,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     SimpleAlertInfoBarDelegate::Create(
         InfoBarService::FromWebContents(
             browser->tab_strip_model()->GetActiveWebContents()),
-        0, string16(), false);
+        0, base::string16(), false);
   }
 
   NSView* GetViewWithID(ViewID view_id) const {
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
       profile_manager->user_data_dir().Append("test"),
       create_callback,
       ASCIIToUTF16("avatar_test"),
-      string16(),
+      base::string16(),
       std::string());
 
   run_loop.Run();

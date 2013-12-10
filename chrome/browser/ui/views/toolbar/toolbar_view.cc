@@ -783,7 +783,7 @@ void ToolbarView::ShowOutdatedInstallNotification() {
 }
 
 void ToolbarView::UpdateAppMenuState() {
-  string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
+  base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
   if (ShouldShowUpgradeRecommended()) {
     accname_app = l10n_util::GetStringFUTF16(
         IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);

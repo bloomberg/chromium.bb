@@ -27,7 +27,7 @@ class OneClickSigninDialogController : public ConstrainedWindowMacDelegate {
   OneClickSigninDialogController(
       content::WebContents* web_contents,
       const BrowserWindow::StartSyncCallback& sync_callback,
-      const string16& email);
+      const base::string16& email);
   virtual ~OneClickSigninDialogController();
 
   // ConstrainedWindowMacDelegate implementation.

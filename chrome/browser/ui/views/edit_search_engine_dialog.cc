@@ -72,7 +72,7 @@ ui::ModalType EditSearchEngineDialog::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-string16 EditSearchEngineDialog::GetWindowTitle() const {
+base::string16 EditSearchEngineDialog::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(controller_->template_url() ?
       IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE :
       IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE);
@@ -99,8 +99,9 @@ bool EditSearchEngineDialog::Accept() {
   return true;
 }
 
-void EditSearchEngineDialog::ContentsChanged(Textfield* sender,
-                                             const string16& new_contents) {
+void EditSearchEngineDialog::ContentsChanged(
+    Textfield* sender,
+    const base::string16& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();
   UpdateImageViews();
 }
@@ -123,9 +124,9 @@ void EditSearchEngineDialog::Init() {
     // occasionally we need to update the URL of prepopulated TemplateURLs.
     url_tf_->SetReadOnly(controller_->template_url()->prepopulate_id() != 0);
   } else {
-    title_tf_ = CreateTextfield(string16(), false);
-    keyword_tf_ = CreateTextfield(string16(), true);
-    url_tf_ = CreateTextfield(string16(), false);
+    title_tf_ = CreateTextfield(base::string16(), false);
+    keyword_tf_ = CreateTextfield(base::string16(), true);
+    url_tf_ = CreateTextfield(base::string16(), false);
   }
   title_iv_ = new views::ImageView();
   keyword_iv_ = new views::ImageView();
@@ -195,14 +196,14 @@ void EditSearchEngineDialog::Init() {
   // In order to fix this problem we transform the substring "%s" so that it
   // is displayed correctly when rendered in an RTL context.
   layout->StartRowWithPadding(0, 2, 0, unrelated_y);
-  string16 description = l10n_util::GetStringUTF16(
+  base::string16 description = l10n_util::GetStringUTF16(
       IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL);
   if (base::i18n::IsRTL()) {
-    const string16 reversed_percent(ASCIIToUTF16("s%"));
-    string16::size_type percent_index =
+    const base::string16 reversed_percent(ASCIIToUTF16("s%"));
+    base::string16::size_type percent_index =
         description.find(ASCIIToUTF16("%s"),
-                         static_cast<string16::size_type>(0));
-    if (percent_index != string16::npos)
+                         static_cast<base::string16::size_type>(0));
+    if (percent_index != base::string16::npos)
       description.replace(percent_index,
                           reversed_percent.length(),
                           reversed_percent);
@@ -222,7 +223,7 @@ views::Label* EditSearchEngineDialog::CreateLabel(int message_id) {
   return label;
 }
 
-Textfield* EditSearchEngineDialog::CreateTextfield(const string16& text,
+Textfield* EditSearchEngineDialog::CreateTextfield(const base::string16& text,
                                                    bool lowercase) {
   Textfield* text_field = new Textfield(
       lowercase ? Textfield::STYLE_LOWERCASE : Textfield::STYLE_DEFAULT);
@@ -246,7 +247,7 @@ void EditSearchEngineDialog::UpdateImageView(views::ImageView* image_view,
                                              int invalid_message_id) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (is_valid) {
-    image_view->SetTooltipText(string16());
+    image_view->SetTooltipText(base::string16());
     image_view->SetImage(rb.GetImageSkiaNamed(IDR_INPUT_GOOD));
   } else {
     image_view->SetTooltipText(l10n_util::GetStringUTF16(invalid_message_id));

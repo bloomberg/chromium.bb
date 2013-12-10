@@ -55,7 +55,7 @@
         contextInfo:(void*)contextInfo {
   scoped_ptr<JavaScriptAppModalDialogCocoa> native_dialog(
       reinterpret_cast<JavaScriptAppModalDialogCocoa*>(contextInfo));
-  string16 input;
+  base::string16 input;
   if (textField_)
     input = base::SysNSStringToUTF16([textField_ stringValue]);
   bool shouldSuppress = false;

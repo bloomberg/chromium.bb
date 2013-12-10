@@ -92,13 +92,14 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(
   }
 
   size_t offset = 0;
-  string16 text(l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE,
-                                           string16(), &offset));
+  base::string16 text(
+      l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE,
+                                 base::string16(), &offset));
 
   label_1_ = CreateLabel(text.substr(0, offset));
   AddChildView(label_1_);
 
-  language_menu_button_ = CreateMenuButton(string16(), this);
+  language_menu_button_ = CreateMenuButton(base::string16(), this);
   TranslateInfoBarDelegate* delegate = GetDelegate();
   language_menu_model_.reset(new TranslateLanguageMenuModel(
       TranslateLanguageMenuModel::ORIGINAL, delegate, this,
@@ -116,7 +117,7 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_DENY), false);
   AddChildView(deny_button_);
 
-  const string16& language(
+  const base::string16& language(
       delegate->language_name_at(delegate->original_language_index()));
   if (delegate->ShouldShowNeverTranslateShortcut()) {
     DCHECK(!delegate->ShouldShowAlwaysTranslateShortcut());

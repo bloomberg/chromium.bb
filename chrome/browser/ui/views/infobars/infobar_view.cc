@@ -70,7 +70,7 @@ InfoBarView::~InfoBarView() {
   DCHECK(!menu_runner_.get());
 }
 
-views::Label* InfoBarView::CreateLabel(const string16& text) const {
+views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::Label* label = new views::Label(text,
       rb.GetFont(ui::ResourceBundle::MediumFont));
@@ -80,7 +80,7 @@ views::Label* InfoBarView::CreateLabel(const string16& text) const {
   return label;
 }
 
-views::Link* InfoBarView::CreateLink(const string16& text,
+views::Link* InfoBarView::CreateLink(const base::string16& text,
                                      views::LinkListener* listener) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::Link* link = new views::Link;
@@ -95,7 +95,7 @@ views::Link* InfoBarView::CreateLink(const string16& text,
 
 // static
 views::MenuButton* InfoBarView::CreateMenuButton(
-    const string16& text,
+    const base::string16& text,
     views::MenuButtonListener* menu_button_listener) {
   scoped_ptr<views::TextButtonDefaultBorder> menu_button_border(
       new views::TextButtonDefaultBorder());
@@ -126,7 +126,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
 // static
 views::LabelButton* InfoBarView::CreateLabelButton(
     views::ButtonListener* listener,
-    const string16& text,
+    const base::string16& text,
     bool needs_elevation) {
   scoped_ptr<views::LabelButtonBorder> label_button_border(
       new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));

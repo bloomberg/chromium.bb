@@ -199,9 +199,9 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     bool permitted,
     views::View* container,
     int trailing_vertical_space) {
-  string16 label = gallery.GetGalleryDisplayName();
-  string16 tooltip_text = gallery.GetGalleryTooltip();
-  string16 details = gallery.GetGalleryAdditionalDetails();
+  base::string16 label = gallery.GetGalleryDisplayName();
+  base::string16 tooltip_text = gallery.GetGalleryTooltip();
+  base::string16 details = gallery.GetGalleryAdditionalDetails();
 
   CheckboxMap::iterator iter = checkbox_map_.find(gallery.pref_id);
   if (iter != checkbox_map_.end() &&

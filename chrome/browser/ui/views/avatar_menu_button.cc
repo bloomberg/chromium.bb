@@ -29,7 +29,7 @@ static inline int Round(double x) {
 const char AvatarMenuButton::kViewClassName[] = "AvatarMenuButton";
 
 AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
-    : MenuButton(NULL, string16(), this, false),
+    : MenuButton(NULL, base::string16(), this, false),
       browser_(browser),
       disabled_(disabled),
       is_rectangle_(false),

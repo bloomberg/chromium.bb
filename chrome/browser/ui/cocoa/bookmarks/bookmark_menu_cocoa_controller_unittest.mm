@@ -28,7 +28,7 @@
 
 - (id)initWithProfile:(Profile*)profile {
   if ((self = [super init])) {
-    string16 empty;
+    base::string16 empty;
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
     const BookmarkNode* bookmark_bar = model->bookmark_bar_node();
     nodes_[0] = model->AddURL(bookmark_bar, 0, empty, GURL("http://0.com"));

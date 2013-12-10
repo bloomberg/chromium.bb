@@ -56,8 +56,8 @@ class SadTabView : public chrome::SadTab,
   virtual void Show() OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  views::Label* CreateLabel(const string16& text);
-  views::Link* CreateLink(const string16& text);
+  views::Label* CreateLabel(const base::string16& text);
+  views::Link* CreateLink(const base::string16& text);
 
   content::WebContents* web_contents_;
   chrome::SadTabKind kind_;

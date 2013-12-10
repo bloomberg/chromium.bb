@@ -65,7 +65,7 @@ void CookieInfoView::SetCookie(const std::string& domain,
   created_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(cookie.CreationDate()));
 
-  string16 expire_text = cookie.IsPersistent() ?
+  base::string16 expire_text = cookie.IsPersistent() ?
       base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate()) :
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
 
@@ -86,7 +86,7 @@ void CookieInfoView::SetCookieString(const GURL& url,
 
 
 void CookieInfoView::ClearCookieDisplay() {
-  string16 no_cookie_string =
+  base::string16 no_cookie_string =
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED);
   name_value_field_->SetText(no_cookie_string);
   content_value_field_->SetText(no_cookie_string);

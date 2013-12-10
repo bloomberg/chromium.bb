@@ -34,7 +34,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
     bookmark_utils::AddIfNotBookmarked(
         BookmarkModelFactory::GetForProfile(profile()),
         GURL(kTestBookmarkURL),
-        string16());
+        base::string16());
   }
 
   virtual void TearDown() OVERRIDE {

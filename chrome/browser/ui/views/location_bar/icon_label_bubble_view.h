@@ -39,7 +39,7 @@ class IconLabelBubbleView : public views::View {
                       bool elide_in_middle);
   virtual ~IconLabelBubbleView();
 
-  void SetLabel(const string16& label);
+  void SetLabel(const base::string16& label);
   void SetImage(const gfx::ImageSkia& image);
   void set_is_extension_icon(bool is_extension_icon) {
     is_extension_icon_ = is_extension_icon;

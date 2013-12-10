@@ -150,7 +150,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     }
 
     dialog_->SelectFile(dialog_type,
-                        string16() /* title */,
+                        base::string16() /* title */,
                         file_path,
                         NULL /* file_types */,
                          0 /* file_type_index */,
@@ -181,7 +181,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     // At the moment we don't really care about dialog type, but we have to put
     // some dialog type.
     second_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
-                               string16() /* title */,
+                               base::string16() /* title */,
                                base::FilePath() /* default_path */,
                                NULL /* file_types */,
                                0 /* file_type_index */,
@@ -198,11 +198,11 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
         content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
         content::NotificationService::AllSources());
     content::RenderViewHost* host = dialog_->GetRenderViewHost();
-    string16 main_frame;
+    base::string16 main_frame;
     std::string button_class =
         (button_type == DIALOG_BTN_OK) ? ".button-panel .ok" :
                                          ".button-panel .cancel";
-    string16 script = ASCIIToUTF16(
+    base::string16 script = ASCIIToUTF16(
         "console.log(\'Test JavaScript injected.\');"
         "document.querySelector(\'" + button_class + "\').click();");
     // The file selection handler closes the dialog and does not return control

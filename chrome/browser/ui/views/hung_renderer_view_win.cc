@@ -84,13 +84,13 @@ void HungRendererDialogMetro::Show(WebContents* contents) {
           (::GetProcAddress(metro_dll, "ShowDialogBox"));
       DCHECK(show_dialog_box);
       if (show_dialog_box) {
-        string16 dialog_box_title =
+        base::string16 dialog_box_title =
             l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE);
 
-        string16 kill_button_label =
+        base::string16 kill_button_label =
             l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END);
 
-        string16 wait_button_label =
+        base::string16 wait_button_label =
             l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
 
         contents_ = contents;

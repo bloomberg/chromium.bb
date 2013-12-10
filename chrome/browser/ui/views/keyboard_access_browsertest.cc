@@ -418,14 +418,14 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, BackForwardKeys) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://version/"));
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://about/"));
 
-  string16 before_back;
+  base::string16 before_back;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &before_back));
 
   // Navigate back.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_BROWSER_BACK, false, false, false, false));
 
-  string16 after_back;
+  base::string16 after_back;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &after_back));
 
   EXPECT_NE(before_back, after_back);
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, BackForwardKeys) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_BROWSER_FORWARD, false, false, false, false));
 
-  string16 after_forward;
+  base::string16 after_forward;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &after_forward));
 
   EXPECT_EQ(before_back, after_forward);

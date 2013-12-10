@@ -46,7 +46,7 @@ class SpeechRecognitionBubbleView : public views::BubbleDelegateView,
                               WebContents* web_contents);
 
   void UpdateLayout(SpeechRecognitionBubbleBase::DisplayMode mode,
-                    const string16& message_text,
+                    const base::string16& message_text,
                     const gfx::ImageSkia& image);
   void SetImage(const gfx::ImageSkia& image);
 
@@ -170,7 +170,7 @@ void SpeechRecognitionBubbleView::Init() {
 
 void SpeechRecognitionBubbleView::UpdateLayout(
     SpeechRecognitionBubbleBase::DisplayMode mode,
-    const string16& message_text,
+    const base::string16& message_text,
     const gfx::ImageSkia& image) {
   display_mode_ = mode;
   bool is_message = (mode == SpeechRecognitionBubbleBase::DISPLAY_MODE_MESSAGE);

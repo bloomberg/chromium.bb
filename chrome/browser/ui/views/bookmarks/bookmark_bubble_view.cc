@@ -285,7 +285,7 @@ string16 BookmarkBubbleView::GetTitle() {
     return node->GetTitle();
   else
     NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 gfx::Size BookmarkBubbleView::GetMinimumSize() {
@@ -353,7 +353,7 @@ void BookmarkBubbleView::ApplyEdits() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
   if (node) {
-    const string16 new_title = title_tf_->text();
+    const base::string16 new_title = title_tf_->text();
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
       content::RecordAction(

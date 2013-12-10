@@ -231,8 +231,9 @@ void PasswordGenerationBubbleView::ButtonPressed(views::Button* sender,
   }
 }
 
-void PasswordGenerationBubbleView::ContentsChanged(views::Textfield* sender,
-                                                   const string16& contents) {
+void PasswordGenerationBubbleView::ContentsChanged(
+    views::Textfield* sender,
+    const base::string16& contents) {
   actions_.password_edited = true;
 }
 

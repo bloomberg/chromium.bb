@@ -18,7 +18,7 @@ class StatusTrayLinux : public StatusTray {
   virtual StatusIcon* CreatePlatformStatusIcon(
       StatusIconType type,
       const gfx::ImageSkia& image,
-      const string16& tool_tip) OVERRIDE;
+      const base::string16& tool_tip) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusTrayLinux);

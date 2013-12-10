@@ -31,13 +31,14 @@ class DownloadInProgressDialogView : public views::DialogDelegate {
 
   // views::DialogDelegate:
   virtual int GetDefaultDialogButton() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
   // views::WidgetDelegate:
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
@@ -47,9 +48,9 @@ class DownloadInProgressDialogView : public views::DialogDelegate {
   const base::Callback<void(bool)> callback_;
   views::MessageBoxView* message_box_view_;
 
-  string16 title_text_;
-  string16 ok_button_text_;
-  string16 cancel_button_text_;
+  base::string16 title_text_;
+  base::string16 ok_button_text_;
+  base::string16 cancel_button_text_;
 
   gfx::Size dialog_dimensions_;
 

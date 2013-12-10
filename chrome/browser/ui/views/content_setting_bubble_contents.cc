@@ -207,7 +207,7 @@ void ContentSettingBubbleContents::Init() {
     PluginFinder* finder = PluginFinder::GetInstance();
     for (std::set<std::string>::const_iterator i(plugins.begin());
          i != plugins.end(); ++i) {
-      string16 name = finder->FindPluginNameWithIdentifier(*i);
+      base::string16 name = finder->FindPluginNameWithIdentifier(*i);
       layout->StartRow(0, kSingleColumnSetId);
       layout->AddView(new views::Label(name));
       bubble_content_empty = false;
@@ -462,7 +462,7 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
 int ContentSettingBubbleContents::GetPreferredMediaMenuWidth(
     views::MenuButton* button,
     ui::SimpleMenuModel* menu_model) {
-  string16 title = button->text();
+  base::string16 title = button->text();
 
   int width = button->GetPreferredSize().width();
   for (int i = 0; i < menu_model->GetItemCount(); ++i) {

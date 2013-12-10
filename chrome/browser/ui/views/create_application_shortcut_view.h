@@ -50,10 +50,11 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from views::DialogDelegate:
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
   // Overridden from views::ButtonListener:
@@ -62,7 +63,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
 
  protected:
   // Adds a new check-box as a child to the view.
-  views::Checkbox* AddCheckbox(const string16& text, bool checked);
+  views::Checkbox* AddCheckbox(const base::string16& text, bool checked);
 
   // Profile in which the shortcuts will be created.
   Profile* profile_;

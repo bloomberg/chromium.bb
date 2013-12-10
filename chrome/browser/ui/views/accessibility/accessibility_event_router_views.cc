@@ -80,8 +80,8 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
 }
 
 void AccessibilityEventRouterViews::HandleMenuItemFocused(
-    const string16& menu_name,
-    const string16& menu_item_name,
+    const base::string16& menu_name,
+    const base::string16& menu_item_name,
     int item_index,
     int item_count,
     bool has_submenu) {

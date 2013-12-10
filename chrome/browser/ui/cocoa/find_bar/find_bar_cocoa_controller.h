@@ -91,7 +91,7 @@ class FindNotificationDetails;
 
 - (void)clearResults:(const FindNotificationDetails&)results;
 - (void)updateUIForFindResult:(const FindNotificationDetails&)results
-                     withText:(const string16&)findText;
+                     withText:(const base::string16&)findText;
 - (BOOL)isFindBarVisible;
 - (BOOL)isFindBarAnimating;
 

@@ -54,7 +54,7 @@ void FindBarBridge::ClearResults(const FindNotificationDetails& results) {
 }
 
 void FindBarBridge::SetFindTextAndSelectedRange(
-    const string16& find_text,
+    const base::string16& find_text,
     const gfx::Range& selected_range) {
   [cocoa_controller_ setFindText:base::SysUTF16ToNSString(find_text)
                    selectedRange:selected_range.ToNSRange()];
@@ -69,7 +69,7 @@ gfx::Range FindBarBridge::GetSelectedRange() {
 }
 
 void FindBarBridge::UpdateUIForFindResult(const FindNotificationDetails& result,
-                                          const string16& find_text) {
+                                          const base::string16& find_text) {
   [cocoa_controller_ updateUIForFindResult:result withText:find_text];
 }
 
@@ -124,7 +124,7 @@ bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
 string16 FindBarBridge::GetFindSelectedText() {
   // This function is currently only used in Views.
   NOTIMPLEMENTED();
-  return string16();
+  return base::string16();
 }
 
 string16 FindBarBridge::GetMatchCountText() {

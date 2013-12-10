@@ -387,7 +387,7 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)updateUIForFindResult:(const FindNotificationDetails&)result
-                     withText:(const string16&)findText {
+                     withText:(const base::string16&)findText {
   // If we don't have any results and something was passed in, then
   // that means someone pressed Cmd-G while the Find box was
   // closed. In that case we need to repopulate the Find box with what

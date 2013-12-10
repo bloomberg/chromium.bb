@@ -1407,7 +1407,7 @@ void TabStrip::OnDragEntered(const DropTargetEvent& event) {
   UpdateDropIndex(event);
 
   GURL url;
-  string16 title;
+  base::string16 title;
 
   // Check whether the event data includes supported drop data.
   if (event.data().GetURLAndTitle(&url, &title) && url.is_valid()) {
@@ -1448,7 +1448,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   // Do nothing if the file was unsupported or the URL is invalid. The URL may
   // have been changed after |drop_info_| was created.
   GURL url;
-  string16 title;
+  base::string16 title;
   if (!file_supported ||
       !event.data().GetURLAndTitle(&url, &title) || !url.is_valid())
     return ui::DragDropTypes::DRAG_NONE;

@@ -111,7 +111,7 @@ string16 BookmarkMenuDelegate::GetTooltipText(
   // When removing bookmarks it may be possible to end up here without a node.
   if (i == menu_id_to_node_map_.end()) {
     DCHECK(is_mutating_model_);
-    return string16();
+    return base::string16();
   }
 
   const BookmarkNode* node = i->second;
@@ -119,7 +119,7 @@ string16 BookmarkMenuDelegate::GetTooltipText(
     return BookmarkBarView::CreateToolTipForURLAndTitle(
         parent_, screen_loc, node->url(), node->GetTitle(), profile_);
   }
-  return string16();
+  return base::string16();
 }
 
 bool BookmarkMenuDelegate::IsTriggerableEvent(views::MenuItemView* menu,

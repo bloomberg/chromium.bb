@@ -39,8 +39,8 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // will be placed visually beneath |anchor_view|.  |start_sync| is called
   // to start sync.
   static void ShowBubble(BrowserWindow::OneClickSigninBubbleType type,
-                         const string16& email,
-                         const string16& error_message,
+                         const base::string16& email,
+                         const base::string16& error_message,
                          scoped_ptr<OneClickSigninBubbleDelegate> delegate,
                          views::View* anchor_view,
                          const BrowserWindow::StartSyncCallback& start_sync);
@@ -56,8 +56,8 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
  protected:
   // Creates a OneClickSigninBubbleView.
   OneClickSigninBubbleView(
-      const string16& error_message,
-      const string16& email,
+      const base::string16& error_message,
+      const base::string16& email,
       scoped_ptr<OneClickSigninBubbleDelegate> delegate,
       views::View* anchor_view,
       const BrowserWindow::StartSyncCallback& start_sync_callback,
@@ -115,10 +115,10 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   scoped_ptr<OneClickSigninBubbleDelegate> delegate_;
 
   // Alternate error message to be displayed.
-  const string16 error_message_;
+  const base::string16 error_message_;
 
   // The user's email address to be used for sync.
-  const string16 email_;
+  const base::string16 email_;
 
   // This callback is nulled once its called, so that it is called only once.
   // It will be called when the bubble is closed if it has not been called

@@ -185,7 +185,7 @@ void SuspiciousExtensionBubbleView::Init() {
   }
 
   if (i > kMaxExtensionsToShow) {
-    string16 difference = base::IntToString16(i - kMaxExtensionsToShow);
+    base::string16 difference = base::IntToString16(i - kMaxExtensionsToShow);
     extension_list.push_back(bullet_point + ASCIIToUTF16(" ") +
         controller_->GetOverflowText(difference));
   }

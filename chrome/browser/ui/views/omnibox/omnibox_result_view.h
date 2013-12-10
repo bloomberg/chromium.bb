@@ -81,7 +81,7 @@ class OmniboxResultView : public views::View,
   // added to all of the classifications. Returns the x position to the right
   // of the string.
   int DrawString(gfx::Canvas* canvas,
-                 const string16& text,
+                 const base::string16& text,
                  const ACMatchClassifications& classifications,
                  bool force_dim,
                  int x,

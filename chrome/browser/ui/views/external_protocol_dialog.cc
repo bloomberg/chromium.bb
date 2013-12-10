@@ -132,13 +132,13 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
       creation_time_(base::TimeTicks::Now()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   const int kMaxCommandSize = 256;
-  string16 elided_url_without_scheme;
-  string16 elided_command;
+  base::string16 elided_url_without_scheme;
+  base::string16 elided_command;
   gfx::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
   gfx::ElideString(WideToUTF16Hack(command), kMaxCommandSize, &elided_command);
 
-  string16 message_text = l10n_util::GetStringFUTF16(
+  base::string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToUTF16(url.scheme() + ":"),
       elided_url_without_scheme) + ASCIIToUTF16("\n\n");

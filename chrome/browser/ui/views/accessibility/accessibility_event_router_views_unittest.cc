@@ -86,7 +86,7 @@ class AccessibilityWindowDelegate : public views::WidgetDelegate {
 
 class ViewWithNameAndRole : public views::View {
  public:
-  explicit ViewWithNameAndRole(const string16& name,
+  explicit ViewWithNameAndRole(const base::string16& name,
                                ui::AccessibilityTypes::Role role)
       : name_(name),
         role_(role) {
@@ -98,10 +98,10 @@ class ViewWithNameAndRole : public views::View {
     state->role = role_;
   }
 
-  void set_name(const string16& name) { name_ = name; }
+  void set_name(const base::string16& name) { name_ = name; }
 
  private:
-  string16 name_;
+  base::string16 name_;
   ui::AccessibilityTypes::Role role_;
   DISALLOW_COPY_AND_ASSIGN(ViewWithNameAndRole);
 };
@@ -291,7 +291,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
 
   // Create an alert with static text and a button, similar to an infobar.
   views::View* contents = new ViewWithNameAndRole(
-      string16(),
+      base::string16(),
       ui::AccessibilityTypes::ROLE_ALERT);
   views::Label* label = new views::Label(ASCIIToUTF16(kAlertTextASCII));
   contents->AddChildView(label);

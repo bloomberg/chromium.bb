@@ -47,7 +47,7 @@ class ExtensionDialog : public views::DialogDelegate,
                                int height,
                                int min_width,
                                int min_height,
-                               const string16& title,
+                               const base::string16& title,
                                ExtensionDialogObserver* observer);
 
   // Notifies the dialog that the observer has been destroyed and should not
@@ -58,7 +58,7 @@ class ExtensionDialog : public views::DialogDelegate,
   void MaybeFocusRenderView();
 
   // Sets the window title.
-  void set_title(const string16& title) { window_title_ = title; }
+  void set_title(const base::string16& title) { window_title_ = title; }
 
   // Sets minimum contents size in pixels and makes the window resizable.
   void SetMinimumContentsSize(int width, int height);
@@ -70,7 +70,7 @@ class ExtensionDialog : public views::DialogDelegate,
   virtual bool CanResize() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
@@ -96,7 +96,7 @@ class ExtensionDialog : public views::DialogDelegate,
   void InitWindow(ui::BaseWindow* base_window, int width, int height);
 
   // Window Title
-  string16 window_title_;
+  base::string16 window_title_;
 
   // The contained host for the view.
   scoped_ptr<extensions::ExtensionViewHost> host_;

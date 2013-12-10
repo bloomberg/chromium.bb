@@ -150,10 +150,10 @@ class BookmarkBarView : public DetachableToolbarView,
   //
   // Note that we adjust the direction of both the URL and the title based on
   // the locale so that pure LTR strings are displayed properly in RTL locales.
-  static string16 CreateToolTipForURLAndTitle(const views::Widget* widget,
+  static base::string16 CreateToolTipForURLAndTitle(const views::Widget* widget,
                                               const gfx::Point& screen_loc,
                                               const GURL& url,
-                                              const string16& title,
+                                              const base::string16& title,
                                               Profile* profile);
 
   // DetachableToolbarView methods:

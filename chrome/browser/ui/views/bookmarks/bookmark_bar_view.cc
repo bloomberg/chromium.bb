@@ -148,7 +148,7 @@ bool animations_enabled = true;
 class BookmarkButtonBase : public views::TextButton {
  public:
   BookmarkButtonBase(views::ButtonListener* listener,
-                     const string16& title)
+                     const base::string16& title)
       : TextButton(listener, title) {
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -183,7 +183,7 @@ class BookmarkButton : public BookmarkButtonBase {
 
   BookmarkButton(views::ButtonListener* listener,
                  const GURL& url,
-                 const string16& title,
+                 const base::string16& title,
                  Profile* profile)
       : BookmarkButtonBase(listener, title),
         url_(url),
@@ -191,7 +191,7 @@ class BookmarkButton : public BookmarkButtonBase {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE {
+                              base::string16* tooltip) const OVERRIDE {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
     *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(
@@ -223,7 +223,7 @@ class ShortcutButton : public BookmarkButtonBase {
   static const char kViewClassName[];
 
   ShortcutButton(views::ButtonListener* listener,
-                 const string16& title)
+                 const base::string16& title)
       : BookmarkButtonBase(listener, title) {
   }
 
@@ -246,7 +246,7 @@ const char ShortcutButton::kViewClassName[] = "ShortcutButton";
 class BookmarkFolderButton : public views::MenuButton {
  public:
   BookmarkFolderButton(views::ButtonListener* listener,
-                       const string16& title,
+                       const base::string16& title,
                        views::MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
       : MenuButton(listener, title, menu_button_listener, show_menu_marker) {
@@ -261,7 +261,7 @@ class BookmarkFolderButton : public views::MenuButton {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE {
+                              base::string16* tooltip) const OVERRIDE {
     if (text_size_.width() > GetTextBounds().width())
       *tooltip = text_;
     return !tooltip->empty();
@@ -296,7 +296,7 @@ class BookmarkFolderButton : public views::MenuButton {
 class OverFlowButton : public views::MenuButton {
  public:
   explicit OverFlowButton(BookmarkBarView* owner)
-      : MenuButton(NULL, string16(), owner, false),
+      : MenuButton(NULL, base::string16(), owner, false),
         owner_(owner) {}
 
   virtual bool OnMousePressed(const ui::MouseEvent& e) OVERRIDE {
@@ -594,22 +594,22 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
 }
 
 // static
-string16 BookmarkBarView::CreateToolTipForURLAndTitle(
+base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     const views::Widget* widget,
     const gfx::Point& screen_loc,
     const GURL& url,
-    const string16& title,
+    const base::string16& title,
     Profile* profile) {
   int max_width = views::TooltipManager::GetMaxWidth(
       screen_loc.x(),
       screen_loc.y(),
       widget->GetNativeView());
   const gfx::FontList tt_fonts = widget->GetTooltipManager()->GetFontList();
-  string16 result;
+  base::string16 result;
 
   // First the title.
   if (!title.empty()) {
-    string16 localized_title = title;
+    base::string16 localized_title = title;
     base::i18n::AdjustStringForLocaleDirection(&localized_title);
     result.append(gfx::ElideText(localized_title, tt_fonts, max_width,
                                 gfx::ELIDE_AT_END));
@@ -628,7 +628,8 @@ string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     // default.
     std::string languages = profile->GetPrefs()->GetString(
         prefs::kAcceptLanguages);
-    string16 elided_url(gfx::ElideUrl(url, tt_fonts, max_width, languages));
+    base::string16 elided_url(
+        gfx::ElideUrl(url, tt_fonts, max_width, languages));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(elided_url);
   }
@@ -1326,7 +1327,8 @@ int BookmarkBarView::GetFirstHiddenNodeIndex() {
 
 MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   // Title is set in Loaded.
-  MenuButton* button = new BookmarkFolderButton(this, string16(), this, false);
+  MenuButton* button =
+      new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
   button->SetIcon(GetFolderIcon());
   button->set_context_menu_controller(this);

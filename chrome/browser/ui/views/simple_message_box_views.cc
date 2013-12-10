@@ -40,22 +40,23 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
                               public base::MessageLoop::Dispatcher,
                               public base::RefCounted<SimpleMessageBoxViews> {
  public:
-  SimpleMessageBoxViews(const string16& title,
-                        const string16& message,
+  SimpleMessageBoxViews(const base::string16& title,
+                        const base::string16& message,
                         MessageBoxType type,
-                        const string16& yes_text,
-                        const string16& no_text);
+                        const base::string16& yes_text,
+                        const base::string16& no_text);
 
   MessageBoxResult result() const { return result_; }
 
   // Overridden from views::DialogDelegate:
   virtual int GetDialogButtons() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
@@ -69,10 +70,10 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   friend class base::RefCounted<SimpleMessageBoxViews>;
   virtual ~SimpleMessageBoxViews();
 
-  const string16 window_title_;
+  const base::string16 window_title_;
   const MessageBoxType type_;
-  string16 yes_text_;
-  string16 no_text_;
+  base::string16 yes_text_;
+  base::string16 no_text_;
   MessageBoxResult result_;
   views::MessageBoxView* message_box_view_;
 
@@ -86,11 +87,11 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, public:
 
-SimpleMessageBoxViews::SimpleMessageBoxViews(const string16& title,
-                                             const string16& message,
+SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
+                                             const base::string16& message,
                                              MessageBoxType type,
-                                             const string16& yes_text,
-                                             const string16& no_text)
+                                             const base::string16& yes_text,
+                                             const base::string16& no_text)
     : window_title_(title),
       type_(type),
       yes_text_(yes_text),
@@ -129,7 +130,7 @@ int SimpleMessageBoxViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-string16 SimpleMessageBoxViews::GetDialogButtonLabel(
+base::string16 SimpleMessageBoxViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_CANCEL)
     return no_text_;
@@ -148,7 +149,7 @@ bool SimpleMessageBoxViews::Accept() {
   return true;
 }
 
-string16 SimpleMessageBoxViews::GetWindowTitle() const {
+base::string16 SimpleMessageBoxViews::GetWindowTitle() const {
   return window_title_;
 }
 
@@ -189,11 +190,11 @@ SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
 MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
-                                    const string16& title,
-                                    const string16& message,
+                                    const base::string16& title,
+                                    const base::string16& message,
                                     MessageBoxType type,
-                                    const string16& yes_text,
-                                    const string16& no_text) {
+                                    const base::string16& yes_text,
+                                    const base::string16& no_text) {
 
 #if defined(USE_AURA) && defined(OS_WIN)
   // If we're very early, we can't show a GPU-based dialog, so fallback to
@@ -232,19 +233,19 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
 }  // namespace
 
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const string16& title,
-                                const string16& message,
+                                const base::string16& title,
+                                const base::string16& message,
                                 MessageBoxType type) {
   return ShowMessageBoxImpl(
-      parent, title, message, type, string16(), string16());
+      parent, title, message, type, base::string16(), base::string16());
 }
 
 #if defined(USE_AURA)
 MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,
-                                              const string16& title,
-                                              const string16& message,
-                                              const string16& yes_text,
-                                              const string16& no_text) {
+                                              const base::string16& title,
+                                              const base::string16& message,
+                                              const base::string16& yes_text,
+                                              const base::string16& no_text) {
   return ShowMessageBoxImpl(
       parent, title, message, MESSAGE_BOX_TYPE_QUESTION, yes_text, no_text);
 }

@@ -50,8 +50,8 @@ OneClickSigninBubbleView* OneClickSigninBubbleView::bubble_view_ = NULL;
 // static
 void OneClickSigninBubbleView::ShowBubble(
     BrowserWindow::OneClickSigninBubbleType type,
-    const string16& email,
-    const string16& error_message,
+    const base::string16& email,
+    const base::string16& error_message,
     scoped_ptr<OneClickSigninBubbleDelegate> delegate,
     views::View* anchor_view,
     const BrowserWindow::StartSyncCallback& start_sync) {
@@ -61,17 +61,17 @@ void OneClickSigninBubbleView::ShowBubble(
   switch (type) {
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE:
       bubble_view_ = new OneClickSigninBubbleView(
-          error_message, string16(), delegate.Pass(),
+          error_message, base::string16(), delegate.Pass(),
           anchor_view, start_sync, false);
       break;
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG:
       bubble_view_ = new OneClickSigninBubbleView(
-          string16(), string16(), delegate.Pass(),
+          base::string16(), base::string16(), delegate.Pass(),
           anchor_view, start_sync, true);
       break;
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG:
       bubble_view_ = new OneClickSigninBubbleView(
-          string16(), email, delegate.Pass(),
+          base::string16(), email, delegate.Pass(),
           anchor_view, start_sync, true);
       break;
   }
@@ -91,8 +91,8 @@ void OneClickSigninBubbleView::Hide() {
 }
 
 OneClickSigninBubbleView::OneClickSigninBubbleView(
-    const string16& error_message,
-    const string16& email,
+    const base::string16& error_message,
+    const base::string16& email,
     scoped_ptr<OneClickSigninBubbleDelegate> delegate,
     views::View* anchor_view,
     const BrowserWindow::StartSyncCallback& start_sync_callback,
@@ -257,22 +257,22 @@ void OneClickSigninBubbleView::InitButtons(views::GridLayout* layout) {
 
 void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
                                           views::LabelButton** undo_button) {
-  *ok_button = new views::LabelButton(this, string16());
+  *ok_button = new views::LabelButton(this, base::string16());
   (*ok_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
 
   // The default size of the buttons is too large.  To allow them to be smaller
   // ignore the minimum default size.,
   (*ok_button)->set_min_size(gfx::Size());
 
-  string16 ok_label;
+  base::string16 ok_label;
 
   if (is_sync_dialog_) {
-    *undo_button = new views::LabelButton(this, string16());
+    *undo_button = new views::LabelButton(this, base::string16());
     (*undo_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     (*undo_button)->set_min_size(gfx::Size());
 
     ok_label = l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);
-    string16 undo_label =
+    base::string16 undo_label =
         l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON);
 
     // To make sure they are the same size, SetText() is called

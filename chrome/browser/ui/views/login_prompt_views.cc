@@ -46,21 +46,22 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   // LoginModelObserver implementation.
-  virtual void OnAutofillDataAvailable(const string16& username,
-                                       const string16& password) OVERRIDE {
+  virtual void OnAutofillDataAvailable(
+      const base::string16& username,
+      const base::string16& password) OVERRIDE {
     // Nothing to do here since LoginView takes care of autofill for win.
   }
   virtual void OnLoginModelDestroying() OVERRIDE {}
 
   // views::DialogDelegate methods:
-  virtual string16 GetDialogButtonLabel(
+  virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE {
     if (button == ui::DIALOG_BUTTON_OK)
       return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
     return DialogDelegate::GetDialogButtonLabel(button);
   }
 
-  virtual string16 GetWindowTitle() const OVERRIDE {
+  virtual base::string16 GetWindowTitle() const OVERRIDE {
     return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE);
   }
 
@@ -136,7 +137,7 @@ class LoginHandlerViews : public LoginHandler,
 
   virtual void BuildViewForPasswordManager(
       PasswordManager* manager,
-      const string16& explanation) OVERRIDE {
+      const base::string16& explanation) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // Create a new LoginView and set the model for it.  The model (password

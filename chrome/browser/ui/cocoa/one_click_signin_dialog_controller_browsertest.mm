@@ -27,7 +27,7 @@ class OneClickSigninDialogControllerTest : public InProcessBrowserTest {
         &OneClickSigninDialogControllerTest::OnStartSyncCallback,
         base::Unretained(this));
     controller_ = new OneClickSigninDialogController(
-        web_contents, callback, string16());
+        web_contents, callback, base::string16());
     EXPECT_NSEQ(@"OneClickSigninDialog",
                 [controller_->view_controller() nibName]);
   }

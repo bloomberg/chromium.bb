@@ -121,7 +121,7 @@ class InstalledBubbleContent : public views::View,
     // First figure out the keybinding situation.
     extensions::Command command;
     bool has_keybinding = GetKeybinding(&command);
-    string16 key;  // Keyboard shortcut or keyword to display in the bubble.
+    base::string16 key;  // Keyboard shortcut or keyword to display in bubble.
 
     if (extensions::sync_helper::IsSyncableExtension(extension) &&
         SyncPromoUI::ShouldShowSyncPromo(browser->profile()))
@@ -174,7 +174,7 @@ class InstalledBubbleContent : public views::View,
     AddChildView(icon_);
 
     // Add the heading (for all flavors).
-    string16 extension_name = UTF8ToUTF16(extension->name());
+    base::string16 extension_name = UTF8ToUTF16(extension->name());
     base::i18n::AdjustStringForLocaleDirection(&extension_name);
     heading_ = new views::Label(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_INSTALLED_HEADING, extension_name));
@@ -293,7 +293,7 @@ class InstalledBubbleContent : public views::View,
     }
   }
 
-  string16 GetHowToUseDescription(const string16& key) {
+  base::string16 GetHowToUseDescription(const base::string16& key) {
     switch (type_) {
       case ExtensionInstalledBubble::BROWSER_ACTION:
         if (!key.empty()) {
@@ -321,7 +321,7 @@ class InstalledBubbleContent : public views::View,
         NOTREACHED();
         break;
     }
-    return string16();
+    return base::string16();
   }
 
   // Layout the signin promo at coordinates |offset_x| and |offset_y|. Returns
@@ -334,7 +334,7 @@ class InstalledBubbleContent : public views::View,
       return height;
     contents_area.set_width(kRightColumnWidth);
 
-    string16 full_text = signin_promo_link_text_ + signin_promo_text_;
+    base::string16 full_text = signin_promo_link_text_ + signin_promo_text_;
 
     // The link is the first item in the text.
     const gfx::Size link_size = sign_in_link_->GetPreferredSize();
@@ -343,7 +343,7 @@ class InstalledBubbleContent : public views::View,
 
     // Word-wrap the full label text.
     const gfx::FontList font_list;
-    std::vector<string16> lines;
+    std::vector<base::string16> lines;
     gfx::ElideRectangleText(full_text, font_list, contents_area.width(),
                             contents_area.height(), gfx::ELIDE_LONG_WORDS,
                             &lines);
@@ -357,7 +357,7 @@ class InstalledBubbleContent : public views::View,
     }
 
     // Loop through the lines, creating a renderer for each.
-    for (std::vector<string16>::const_iterator it = lines.begin();
+    for (std::vector<base::string16>::const_iterator it = lines.begin();
          it != lines.end(); ++it) {
       gfx::RenderText* line = gfx::RenderText::CreateInstance();
       line->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_UI);
@@ -490,9 +490,9 @@ class InstalledBubbleContent : public views::View,
 
   // The string that contains the link text at the beginning of the sign-in
   // promo text.
-  string16 signin_promo_link_text_;
+  base::string16 signin_promo_link_text_;
   // The remaining text of the sign-in promo text.
-  string16 signin_promo_text_;
+  base::string16 signin_promo_text_;
 
   // A vector of RenderText objects representing the full sign-in promo
   // paragraph as layed out within the bubble, but has the text of the link

@@ -64,7 +64,7 @@ class DesktopMediaSourceView : public views::View {
   virtual ~DesktopMediaSourceView();
 
   // Updates thumbnail and title from |source|.
-  void SetName(const string16& name);
+  void SetName(const base::string16& name);
   void SetThumbnail(const gfx::ImageSkia& thumbnail);
 
   // Id for the source shown by this View.
@@ -146,7 +146,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   DesktopMediaPickerDialogView(gfx::NativeWindow context,
                                gfx::NativeWindow parent_window,
                                DesktopMediaPickerViews* parent,
-                               const string16& app_name,
+                               const base::string16& app_name,
                                scoped_ptr<DesktopMediaList> media_list);
   virtual ~DesktopMediaPickerDialogView();
 
@@ -169,7 +169,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
 
  private:
   DesktopMediaPickerViews* parent_;
-  string16 app_name_;
+  base::string16 app_name_;
 
   views::Label* label_;
   views::ScrollView* scroll_view_;
@@ -189,7 +189,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   // DesktopMediaPicker overrides.
   virtual void Show(gfx::NativeWindow context,
                     gfx::NativeWindow parent,
-                    const string16& app_name,
+                    const base::string16& app_name,
                     scoped_ptr<DesktopMediaList> media_list,
                     const DoneCallback& done_callback) OVERRIDE;
 
@@ -219,7 +219,7 @@ DesktopMediaSourceView::DesktopMediaSourceView(
 
 DesktopMediaSourceView::~DesktopMediaSourceView() {}
 
-void DesktopMediaSourceView::SetName(const string16& name) {
+void DesktopMediaSourceView::SetName(const base::string16& name) {
   label_->SetText(name);
 }
 
@@ -473,7 +473,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     gfx::NativeWindow context,
     gfx::NativeWindow parent_window,
     DesktopMediaPickerViews* parent,
-    const string16& app_name,
+    const base::string16& app_name,
     scoped_ptr<DesktopMediaList> media_list)
     : parent_(parent),
       app_name_(app_name),
@@ -598,7 +598,7 @@ DesktopMediaPickerViews::~DesktopMediaPickerViews() {
 
 void DesktopMediaPickerViews::Show(gfx::NativeWindow context,
                                    gfx::NativeWindow parent,
-                                   const string16& app_name,
+                                   const base::string16& app_name,
                                    scoped_ptr<DesktopMediaList> media_list,
                                    const DoneCallback& done_callback) {
   callback_ = done_callback;

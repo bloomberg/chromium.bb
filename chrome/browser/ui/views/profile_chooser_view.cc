@@ -112,7 +112,7 @@ class BackgroundColorHoverButton : public views::TextButton {
 
 BackgroundColorHoverButton::BackgroundColorHoverButton(
     views::ButtonListener* listener,
-    const string16& text,
+    const base::string16& text,
     const gfx::ImageSkia& normal_icon,
     const gfx::ImageSkia& hover_icon)
     : views::TextButton(listener, text) {

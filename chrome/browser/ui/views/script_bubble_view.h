@@ -47,7 +47,7 @@ class ScriptBubbleView : public views::BubbleDelegateView,
     ScriptEntry();
 
     std::string extension_id;
-    string16 extension_name;
+    base::string16 extension_name;
     views::ImageView* extension_imageview;
   };
 

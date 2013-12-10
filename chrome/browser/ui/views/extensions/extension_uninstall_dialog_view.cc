@@ -80,7 +80,8 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
  private:
   // views::DialogDelegate:
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE {
     return ui::DIALOG_BUTTON_CANCEL;
   }
@@ -91,7 +92,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   virtual ui::ModalType GetModalType() const OVERRIDE {
     return ui::MODAL_TYPE_WINDOW;
   }
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
 
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -174,7 +175,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
 ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
 }
 
-string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
+base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
       IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON : IDS_CANCEL);
@@ -192,7 +193,7 @@ bool ExtensionUninstallDialogDelegateView::Cancel() {
   return true;
 }
 
-string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
+base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
 }
 

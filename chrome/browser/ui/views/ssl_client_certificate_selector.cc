@@ -55,7 +55,7 @@ class CertificateSelectorTableModel : public ui::TableModel {
 
   // ui::TableModel implementation:
   virtual int RowCount() OVERRIDE;
-  virtual string16 GetText(int index, int column_id) OVERRIDE;
+  virtual base::string16 GetText(int index, int column_id) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
  private:
@@ -68,7 +68,7 @@ CertificateSelectorTableModel::CertificateSelectorTableModel(
     net::SSLCertRequestInfo* cert_request_info) {
   for (size_t i = 0; i < cert_request_info->client_certs.size(); ++i) {
     net::X509Certificate* cert = cert_request_info->client_certs[i].get();
-    string16 text = l10n_util::GetStringFUTF16(
+    base::string16 text = l10n_util::GetStringFUTF16(
         IDS_CERT_SELECTOR_TABLE_CERT_FORMAT,
         UTF8ToUTF16(cert->subject().GetDisplayName()),
         UTF8ToUTF16(cert->issuer().GetDisplayName()));
@@ -124,7 +124,7 @@ void SSLClientCertificateSelector::Init() {
       1, views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, column_set_id);
-  string16 text = l10n_util::GetStringFUTF16(
+  base::string16 text = l10n_util::GetStringFUTF16(
       IDS_CLIENT_CERT_DIALOG_TEXT,
       ASCIIToUTF16(cert_request_info()->host_and_port));
   views::Label* label = new views::Label(text);

@@ -85,7 +85,7 @@ class DownloadItemView : public views::ButtonListener,
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
 
@@ -242,13 +242,13 @@ class DownloadItemView : public views::ButtonListener,
   DownloadShelfView* shelf_;
 
   // Elements of our particular download
-  string16 status_text_;
+  base::string16 status_text_;
 
   // The font list used to print the file name and status.
   gfx::FontList font_list_;
 
   // The tooltip.  Only displayed when not showing a warning dialog.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   // The current state (normal, hot or pushed) of the body and drop-down.
   State body_state_;
@@ -328,7 +328,7 @@ class DownloadItemView : public views::ButtonListener,
   scoped_ptr<DownloadShelfContextMenuView> context_menu_;
 
   // The name of this view as reported to assistive technology.
-  string16 accessible_name_;
+  base::string16 accessible_name_;
 
   // The icon loaded in the download shelf is based on the file path of the
   // item.  Store the path used, so that we can detect a change in the path

@@ -104,7 +104,7 @@ void StatusIconWin::SetPressedImage(const gfx::ImageSkia& image) {
   // pressed status icons.
 }
 
-void StatusIconWin::SetToolTip(const string16& tool_tip) {
+void StatusIconWin::SetToolTip(const base::string16& tool_tip) {
   // Create the icon.
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
@@ -116,8 +116,8 @@ void StatusIconWin::SetToolTip(const string16& tool_tip) {
 }
 
 void StatusIconWin::DisplayBalloon(const gfx::ImageSkia& icon,
-                                   const string16& title,
-                                   const string16& contents) {
+                                   const base::string16& title,
+                                   const base::string16& contents) {
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
   icon_data.uFlags = NIF_INFO;
@@ -187,14 +187,14 @@ void StatusIconMetro::SetPressedImage(const gfx::ImageSkia& image) {
   DVLOG(1) << __FUNCTION__;
 }
 
-void StatusIconMetro::SetToolTip(const string16& tool_tip) {
+void StatusIconMetro::SetToolTip(const base::string16& tool_tip) {
   DVLOG(1) << __FUNCTION__;
   tool_tip_ = tool_tip;
 }
 
 void StatusIconMetro::DisplayBalloon(const gfx::ImageSkia& icon,
-                                     const string16& title,
-                                     const string16& contents) {
+                                     const base::string16& title,
+                                     const base::string16& contents) {
   DVLOG(1) << __FUNCTION__;
 
   HMODULE metro_module = base::win::GetMetroModule();

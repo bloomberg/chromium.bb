@@ -46,7 +46,7 @@ class AboutIPCDialog : public views::DialogDelegateView,
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // IPC::Logging::Consumer implementation.

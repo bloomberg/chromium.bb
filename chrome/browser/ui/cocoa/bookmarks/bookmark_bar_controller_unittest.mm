@@ -758,13 +758,13 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   // narrow.
   // TODO(viettrungluu): make the test independent of window/view size, font
   // metrics, button size and spacing, and everything else.
-  string16 title1(ASCIIToUTF16("x"));
+  base::string16 title1(ASCIIToUTF16("x"));
   bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
   EXPECT_EQ(1U, [[bar_ buttons] count]);
   EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl2("http://legion-of-doom.gov");
-  string16 title2(ASCIIToUTF16("y"));
+  base::string16 title2(ASCIIToUTF16("y"));
   bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
   EXPECT_EQ(2U, [[bar_ buttons] count]);
   EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
@@ -855,11 +855,11 @@ TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
   WithNoAnimation at_all; // Turn off Cocoa auto animation in this scope.
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com");
-  string16 title1(ASCIIToUTF16("x"));
+  base::string16 title1(ASCIIToUTF16("x"));
   bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
 
   GURL gurl2("http://www.google.com/blah");
-  string16 title2(ASCIIToUTF16("y"));
+  base::string16 title2(ASCIIToUTF16("y"));
   bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
 
   EXPECT_EQ(2U, [[bar_ buttons] count]);
@@ -938,7 +938,7 @@ TEST_F(BookmarkBarControllerTest, Display) {
 TEST_F(BookmarkBarControllerTest, MiddleClick) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com/");
-  string16 title1(ASCIIToUTF16("x"));
+  base::string16 title1(ASCIIToUTF16("x"));
   bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
 
   EXPECT_EQ(1U, [[bar_ buttons] count]);
@@ -1035,9 +1035,9 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   GURL gurls[] = { GURL("http://www.google.com/a"),
                    GURL("http://www.google.com/b"),
                    GURL("http://www.google.com/c") };
-  string16 titles[] = { ASCIIToUTF16("a"),
-                        ASCIIToUTF16("b"),
-                        ASCIIToUTF16("c") };
+  base::string16 titles[] = { ASCIIToUTF16("a"),
+                              ASCIIToUTF16("b"),
+                              ASCIIToUTF16("c") };
   for (unsigned i = 0; i < arraysize(titles); i++)
     bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
 
@@ -1088,7 +1088,8 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_EQ(1, folder->child_count());
   x = NSMidX([[[bar_ buttons] objectAtIndex:0] frame]);
   x += [[bar_ view] frame].origin.x;
-  string16 title = [[[bar_ buttons] objectAtIndex:2] bookmarkNode]->GetTitle();
+  base::string16 title =
+      [[[bar_ buttons] objectAtIndex:2] bookmarkNode]->GetTitle();
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
                 to:NSMakePoint(x, 0)
               copy:NO];
@@ -1106,9 +1107,9 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
   GURL gurls[] = { GURL("http://www.google.com/a"),
                    GURL("http://www.google.com/b"),
                    GURL("http://www.google.com/c") };
-  string16 titles[] = { ASCIIToUTF16("a"),
-                        ASCIIToUTF16("b"),
-                        ASCIIToUTF16("c") };
+  base::string16 titles[] = { ASCIIToUTF16("a"),
+                              ASCIIToUTF16("b"),
+                              ASCIIToUTF16("c") };
   for (unsigned i = 0; i < arraysize(titles); i++)
     bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
 
@@ -1161,9 +1162,9 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
   GURL gurls[] = { GURL("http://www.foo.com/"),
                    GURL("http://www.bar.com/"),
                    GURL("http://www.baz.com/") };
-  string16 titles[] = { ASCIIToUTF16("a"),
-                        ASCIIToUTF16("b"),
-                        ASCIIToUTF16("c") };
+  base::string16 titles[] = { ASCIIToUTF16("a"),
+                              ASCIIToUTF16("b"),
+                              ASCIIToUTF16("c") };
   for (size_t i = 0; i < arraysize(titles); i++)
     bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
 

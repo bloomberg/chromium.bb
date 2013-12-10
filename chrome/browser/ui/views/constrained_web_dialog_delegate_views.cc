@@ -123,8 +123,8 @@ class ConstrainedWebDialogDelegateViewViews
   virtual const views::Widget* GetWidget() const OVERRIDE {
     return View::GetWidget();
   }
-  virtual string16 GetWindowTitle() const OVERRIDE {
-    return impl_->closed_via_webui() ? string16() :
+  virtual base::string16 GetWindowTitle() const OVERRIDE {
+    return impl_->closed_via_webui() ? base::string16() :
         GetWebDialogDelegate()->GetDialogTitle();
   }
   virtual views::View* GetContentsView() OVERRIDE {

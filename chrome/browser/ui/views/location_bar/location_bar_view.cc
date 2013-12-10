@@ -278,7 +278,7 @@ void LocationBarView::Init() {
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
-  ime_inline_autocomplete_view_ = new views::Label(string16(), font_list);
+  ime_inline_autocomplete_view_ = new views::Label(base::string16(), font_list);
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
   ime_inline_autocomplete_view_->set_background(
@@ -295,7 +295,7 @@ void LocationBarView::Init() {
       bubble_font_list, text_color, background_color, profile_);
   AddChildView(selected_keyword_view_);
 
-  suggested_text_view_ = new views::Label(string16(), font_list);
+  suggested_text_view_ = new views::Label(base::string16(), font_list);
   suggested_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   suggested_text_view_->SetAutoColorReadabilityEnabled(false);
   suggested_text_view_->SetEnabledColor(GetColor(
@@ -642,12 +642,12 @@ gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
   return origin;
 }
 
-void LocationBarView::SetImeInlineAutocompletion(const string16& text) {
+void LocationBarView::SetImeInlineAutocompletion(const base::string16& text) {
   ime_inline_autocomplete_view_->SetText(text);
   ime_inline_autocomplete_view_->SetVisible(!text.empty());
 }
 
-void LocationBarView::SetGrayTextAutocompletion(const string16& text) {
+void LocationBarView::SetGrayTextAutocompletion(const base::string16& text) {
   if (suggested_text_view_->text() != text) {
     suggested_text_view_->SetText(text);
     suggested_text_view_->SetVisible(!text.empty());
@@ -656,8 +656,9 @@ void LocationBarView::SetGrayTextAutocompletion(const string16& text) {
   }
 }
 
-string16 LocationBarView::GetGrayTextAutocompletion() const {
-  return HasValidSuggestText() ? suggested_text_view_->text() : string16();
+base::string16 LocationBarView::GetGrayTextAutocompletion() const {
+  return HasValidSuggestText() ? suggested_text_view_->text()
+                               : base::string16();
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -689,7 +690,7 @@ void LocationBarView::Layout() {
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
                                          item_padding);
 
-  const string16 keyword(omnibox_view_->model()->keyword());
+  const base::string16 keyword(omnibox_view_->model()->keyword());
   const bool is_keyword_hint(omnibox_view_->model()->is_keyword_hint());
   const int bubble_location_y = vertical_edge_thickness() + kBubblePadding;
   // In some cases (e.g. fullscreen mode) we may have 0 height.  We still want
@@ -1087,8 +1088,8 @@ void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
   state->value = omnibox_view_->GetText();
 
-  string16::size_type entry_start;
-  string16::size_type entry_end;
+  base::string16::size_type entry_start;
+  base::string16::size_type entry_end;
   omnibox_view_->GetSelectionBounds(&entry_start, &entry_end);
   state->selection_start = entry_start;
   state->selection_end = entry_end;
@@ -1548,6 +1549,6 @@ void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
   }
 }
 
-void LocationBarView::AccessibilitySetValue(const string16& new_value) {
+void LocationBarView::AccessibilitySetValue(const base::string16& new_value) {
   omnibox_view_->SetUserText(new_value, new_value, true);
 }

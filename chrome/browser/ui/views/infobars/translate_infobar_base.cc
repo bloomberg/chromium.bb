@@ -36,8 +36,9 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
 // static
 const int TranslateInfoBarBase::kButtonInLabelSpacing = 5;
 
-void TranslateInfoBarBase::UpdateLanguageButtonText(views::MenuButton* button,
-                                                    const string16& text) {
+void TranslateInfoBarBase::UpdateLanguageButtonText(
+    views::MenuButton* button,
+    const base::string16& text) {
   DCHECK(button);
   button->SetText(text);
   button->ClearMaxTextSize();

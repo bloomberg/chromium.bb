@@ -627,7 +627,7 @@ void NativeAppWindowCocoa::UpdateWindowIcon() {
 }
 
 void NativeAppWindowCocoa::UpdateWindowTitle() {
-  string16 title = shell_window_->GetTitle();
+  base::string16 title = shell_window_->GetTitle();
   [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 

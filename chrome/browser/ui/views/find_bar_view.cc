@@ -167,7 +167,7 @@ FindBarView::~FindBarView() {
 }
 
 void FindBarView::SetFindTextAndSelectedRange(
-    const string16& find_text,
+    const base::string16& find_text,
     const gfx::Range& selected_range) {
   find_text_->SetText(find_text);
   find_text_->SelectRange(selected_range);
@@ -190,7 +190,7 @@ string16 FindBarView::GetMatchCountText() const {
 }
 
 void FindBarView::UpdateForResult(const FindNotificationDetails& result,
-                                  const string16& find_text) {
+                                  const base::string16& find_text) {
   bool have_valid_range =
       result.number_of_matches() != -1 && result.active_match_ordinal() != -1;
 
@@ -412,7 +412,7 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
 
   if (key_event.key_code() == ui::VKEY_RETURN) {
     // Pressing Return/Enter starts the search (unless text box is empty).
-    string16 find_string = find_text_->text();
+    base::string16 find_string = find_text_->text();
     if (!find_string.empty()) {
       FindBarController* controller = find_bar_host()->GetFindBarController();
       FindTabHelper* find_tab_helper =
@@ -442,7 +442,7 @@ void FindBarView::OnAfterPaste() {
   last_searched_text_.clear();
 }
 
-void FindBarView::Find(const string16& search_text) {
+void FindBarView::Find(const base::string16& search_text) {
   FindBarController* controller = find_bar_host()->GetFindBarController();
   DCHECK(controller);
   content::WebContents* web_contents = controller->web_contents();
@@ -463,7 +463,7 @@ void FindBarView::Find(const string16& search_text) {
     find_tab_helper->StartFinding(search_text, true, false);
   } else {
     find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
-    UpdateForResult(find_tab_helper->find_result(), string16());
+    UpdateForResult(find_tab_helper->find_result(), base::string16());
     find_bar_host()->MoveWindowIfNecessary(gfx::Rect(), false);
 
     // Clearing the text box should clear the prepopulate state so that when

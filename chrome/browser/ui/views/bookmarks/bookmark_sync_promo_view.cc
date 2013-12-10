@@ -40,8 +40,9 @@ BookmarkSyncPromoView::BookmarkSyncPromoView(BookmarkBubbleDelegate* delegate)
                                                    0,
                                                    kBorderColor));
   size_t offset;
-  string16 link_text = l10n_util::GetStringUTF16(IDS_BOOKMARK_SYNC_PROMO_LINK);
-  string16 promo_text = l10n_util::GetStringFUTF16(
+  base::string16 link_text =
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_SYNC_PROMO_LINK);
+  base::string16 promo_text = l10n_util::GetStringFUTF16(
       IDS_BOOKMARK_SYNC_PROMO_MESSAGE,
       link_text,
       &offset);

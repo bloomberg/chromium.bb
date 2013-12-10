@@ -26,13 +26,13 @@ void StatusIconLinuxWrapper::SetPressedImage(const gfx::ImageSkia& image) {
   status_icon_->SetPressedImage(image);
 }
 
-void StatusIconLinuxWrapper::SetToolTip(const string16& tool_tip) {
+void StatusIconLinuxWrapper::SetToolTip(const base::string16& tool_tip) {
   status_icon_->SetToolTip(tool_tip);
 }
 
 void StatusIconLinuxWrapper::DisplayBalloon(const gfx::ImageSkia& icon,
-                                            const string16& title,
-                                            const string16& contents) {
+                                            const base::string16& title,
+                                            const base::string16& contents) {
   notification_.DisplayBalloon(icon, title, contents);
 }
 
@@ -50,7 +50,7 @@ void StatusIconLinuxWrapper::OnMenuStateChanged() {
 
 StatusIconLinuxWrapper* StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
-    const string16& tool_tip) {
+    const base::string16& tool_tip) {
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
     scoped_ptr<views::StatusIconLinux> status_icon =

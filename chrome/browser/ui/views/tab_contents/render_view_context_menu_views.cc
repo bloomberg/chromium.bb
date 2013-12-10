@@ -193,7 +193,7 @@ void RenderViewContextMenuViews::AppendPlatformEditableItems() {
 void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
                                                 bool enabled,
                                                 bool hidden,
-                                                const string16& title) {
+                                                const base::string16& title) {
   views::MenuItemView* item =
       menu_runner_->GetMenu()->GetMenuItemByID(command_id);
   if (!item)

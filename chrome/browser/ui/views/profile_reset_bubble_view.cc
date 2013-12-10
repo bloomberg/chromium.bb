@@ -105,11 +105,11 @@ class FeedbackView : public views::View {
       if (!feedback.GetDictionary(i, &dictionary) || !dictionary)
         continue;
 
-      string16 key;
+      base::string16 key;
       if (!dictionary->GetString("key", &key))
         continue;
 
-      string16 value;
+      base::string16 value;
       if (!dictionary->GetString("value", &value))
         continue;
 
@@ -202,7 +202,8 @@ void ProfileResetBubbleView::Init() {
 void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
   ResetAllChildren();
 
-  string16 product_name(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  base::string16 product_name(
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Bubble title label.

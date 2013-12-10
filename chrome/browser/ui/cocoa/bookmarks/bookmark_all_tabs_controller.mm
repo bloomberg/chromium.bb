@@ -23,7 +23,7 @@ using content::WebContents;
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                        url:(const GURL&)url
-                     title:(const string16&)title
+                     title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration {
   NSString* nibName = @"BookmarkAllTabs";
   if ((self = [super initWithParentWindow:parentWindow
@@ -66,7 +66,7 @@ using content::WebContents;
   int newIndex = newParentNode->child_count();
   // Create the new folder which will contain all of the tab URLs.
   NSString* newFolderName = [self displayName];
-  string16 newFolderString = base::SysNSStringToUTF16(newFolderName);
+  base::string16 newFolderString = base::SysNSStringToUTF16(newFolderName);
   BookmarkModel* model = [self bookmarkModel];
   const BookmarkNode* newFolder = model->AddFolder(newParentNode, newIndex,
                                                    newFolderString);

@@ -131,8 +131,9 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
 
     if (kind_ == chrome::SAD_TAB_KIND_CRASHED) {
       size_t offset = 0;
-      string16 help_text(l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE,
-                                                    string16(), &offset));
+      base::string16 help_text(
+          l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE,
+                                     base::string16(), &offset));
       views::Label* help_prefix = CreateLabel(help_text.substr(0, offset));
       views::Label* help_suffix = CreateLabel(help_text.substr(offset));
 
@@ -261,14 +262,14 @@ void SadTabView::Close() {
     GetWidget()->Close();
 }
 
-views::Label* SadTabView::CreateLabel(const string16& text) {
+views::Label* SadTabView::CreateLabel(const base::string16& text) {
   views::Label* label = new views::Label(text);
   label->SetBackgroundColor(background()->get_color());
   label->SetEnabledColor(kTextColor);
   return label;
 }
 
-views::Link* SadTabView::CreateLink(const string16& text) {
+views::Link* SadTabView::CreateLink(const base::string16& text) {
   views::Link* link = new views::Link(text);
   link->SetBackgroundColor(background()->get_color());
   link->SetEnabledColor(kTextColor);

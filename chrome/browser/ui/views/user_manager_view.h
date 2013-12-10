@@ -41,7 +41,7 @@ class UserManagerView : public views::DialogDelegateView {
   // views::DialogDelegateView:
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual bool UseNewStyleForThisDialog() const OVERRIDE;

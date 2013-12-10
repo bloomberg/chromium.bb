@@ -35,7 +35,7 @@
                     parent:(const BookmarkNode*)parent
                       node:(const BookmarkNode*)node
                        url:(const GURL&)url
-                     title:(const string16&)title
+                     title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration {
   if ((self = [super initWithParentWindow:parentWindow
                                   nibName:@"BookmarkEditor"
@@ -72,7 +72,7 @@
     PrefService* prefs = [self profile] ?
         user_prefs::UserPrefs::Get([self profile]) :
         NULL;
-    string16 urlString =
+    base::string16 urlString =
         chrome::FormatBookmarkURLForDisplay(node_->url(), prefs);
     initialUrl_.reset([base::SysUTF16ToNSString(urlString) retain]);
   } else {
@@ -129,7 +129,7 @@
 - (NSNumber*)didCommit {
   NSString* name = [[self displayName] stringByTrimmingCharactersInSet:
                     [NSCharacterSet newlineCharacterSet]];
-  string16 newTitle = base::SysNSStringToUTF16(name);
+  base::string16 newTitle = base::SysNSStringToUTF16(name);
   const BookmarkNode* newParentNode = [self selectedNode];
   GURL newURL = [self GURLFromUrlField];
   if (!newURL.is_valid()) {

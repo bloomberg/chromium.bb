@@ -58,8 +58,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     return 1000;
   }
 
-  virtual string16 GetLanguageNameAt(int index) const OVERRIDE {
-    return string16();
+  virtual base::string16 GetLanguageNameAt(int index) const OVERRIDE {
+    return base::string16();
   }
 
   virtual int GetOriginalLanguageIndex() const OVERRIDE {

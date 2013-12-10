@@ -52,8 +52,8 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
 
     OneClickSigninBubbleView::ShowBubble(
         bubble_type,
-        string16(),
-        string16(),
+        base::string16(),
+        base::string16(),
         delegate.Pass(),
         anchor_widget_->GetContentsView(),
         base::Bind(&OneClickSigninBubbleViewTest::OnStartSync,

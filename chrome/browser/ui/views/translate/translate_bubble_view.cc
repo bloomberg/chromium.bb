@@ -39,7 +39,7 @@
 namespace {
 
 views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
-                                      const string16& label, int id) {
+                                      const base::string16& label, int id) {
   views::LabelButton* button = new views::LabelButton(listener, label);
   button->set_id(id);
   button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
@@ -92,7 +92,7 @@ class TranslateDenialComboboxModel : public ui::ComboboxModel {
   };
 
   explicit TranslateDenialComboboxModel(
-      const string16& original_language_name) {
+      const base::string16& original_language_name) {
     items_.push_back(l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY));
     items_.push_back(string16());
     items_.push_back(l10n_util::GetStringFUTF16(
@@ -109,7 +109,7 @@ class TranslateDenialComboboxModel : public ui::ComboboxModel {
   virtual int GetItemCount() const OVERRIDE {
     return items_.size();
   }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual base::string16 GetItemAt(int index) OVERRIDE {
     return items_[index];
   }
   virtual bool IsItemSeparatorAt(int index) OVERRIDE {
@@ -471,7 +471,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   views::Label* message_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE));
 
-  string16 original_language_name =
+  base::string16 original_language_name =
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
   denial_combobox_ = new views::Combobox(
       new TranslateDenialComboboxModel(original_language_name));
@@ -524,7 +524,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
 }
 
 views::View* TranslateBubbleView::CreateViewTranslating() {
-  string16 target_language_name =
+  base::string16 target_language_name =
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATING));
@@ -772,9 +772,9 @@ void TranslateBubbleView::UpdateAdvancedView() {
   DCHECK(target_language_combobox_);
   DCHECK(advanced_done_button_);
 
-  string16 source_language_name =
+  base::string16 source_language_name =
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
-  string16 target_language_name =
+  base::string16 target_language_name =
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
 
   // "Always translate" checkbox doesn't exist in an incognito window.
@@ -785,7 +785,7 @@ void TranslateBubbleView::UpdateAdvancedView() {
         model_->ShouldAlwaysTranslate());
   }
 
-  string16 label;
+  base::string16 label;
   if (model_->IsPageTranslatedInCurrentLanguages())
     label = l10n_util::GetStringUTF16(IDS_DONE);
   else

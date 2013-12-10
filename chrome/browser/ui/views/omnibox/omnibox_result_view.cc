@@ -118,7 +118,7 @@ OmniboxResultView::OmniboxResultView(OmniboxResultViewModel* model,
           std::max(font_list.GetHeight(),
                    font_list.DeriveFontList(gfx::Font::BOLD).GetHeight())),
       ellipsis_width_(font_list.GetPrimaryFont().GetStringWidth(
-          string16(kEllipsis))),
+          base::string16(kEllipsis))),
       mirroring_context_(new MirroringContext()),
       keyword_icon_(new views::ImageView()),
       animation_(new gfx::SlideAnimation(this)) {
@@ -239,7 +239,7 @@ void OmniboxResultView::PaintMatch(gfx::Canvas* canvas,
   // would also let us use a more properly-localizable string than we get with
   // just the IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR.
   if (!match.description.empty()) {
-    string16 separator =
+    base::string16 separator =
         l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
     ACMatchClassifications classifications;
     classifications.push_back(
@@ -338,7 +338,7 @@ const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
 
 int OmniboxResultView::DrawString(
     gfx::Canvas* canvas,
-    const string16& text,
+    const base::string16& text,
     const ACMatchClassifications& classifications,
     bool force_dim,
     int x,
@@ -515,7 +515,7 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
       gfx::Font font((*j)->GetStyle(gfx::BOLD) ?
           (*j)->GetPrimaryFont().DeriveFont(0, gfx::Font::BOLD) :
           (*j)->GetPrimaryFont());
-      string16 elided_text(
+      base::string16 elided_text(
           gfx::ElideText((*j)->text(), font, remaining_width,
           gfx::ELIDE_AT_END));
       Classifications::reverse_iterator prior(j + 1);

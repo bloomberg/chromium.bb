@@ -86,7 +86,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
       AddChildView(cancel_button_);
     }
 
-    string16 link_text(delegate->GetLinkText());
+    base::string16 link_text(delegate->GetLinkText());
     if (!link_text.empty()) {
       link_ = CreateLink(link_text, this);
       AddChildView(link_);

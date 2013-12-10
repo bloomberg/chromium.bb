@@ -45,8 +45,9 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   virtual ~ProfileSigninConfirmationDialogViews();
 
   // views::DialogDelegateView:
-  virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Accept() OVERRIDE;

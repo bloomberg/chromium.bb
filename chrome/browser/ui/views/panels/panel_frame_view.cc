@@ -277,7 +277,8 @@ void PanelFrameView::Init() {
                           rb.GetImageSkiaNamed(IDR_PANEL_CLOSE_C));
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
-  string16 tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_CLOSE_TOOLTIP);
+  base::string16 tooltip_text =
+      l10n_util::GetStringUTF16(IDS_PANEL_CLOSE_TOOLTIP);
   close_button_->SetTooltipText(tooltip_text);
   AddChildView(close_button_);
 

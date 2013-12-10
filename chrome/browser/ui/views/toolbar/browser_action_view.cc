@@ -111,7 +111,7 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
 BrowserActionButton::BrowserActionButton(const Extension* extension,
                                          Browser* browser,
                                          BrowserActionView::Delegate* delegate)
-    : MenuButton(this, string16(), NULL, false),
+    : MenuButton(this, base::string16(), NULL, false),
       browser_(browser),
       browser_action_(
           extensions::ExtensionActionManager::Get(browser->profile())->
@@ -251,8 +251,9 @@ void BrowserActionButton::UpdateState() {
 
   // If the browser action name is empty, show the extension name instead.
   std::string title = browser_action()->GetTitle(tab_id);
-  string16 name = UTF8ToUTF16(title.empty() ? extension()->name() : title);
-  SetTooltipText(delegate_->NeedToShowTooltip() ? name : string16());
+  base::string16 name =
+      UTF8ToUTF16(title.empty() ? extension()->name() : title);
+  SetTooltipText(delegate_->NeedToShowTooltip() ? name : base::string16());
   SetAccessibleName(name);
 
   parent()->SchedulePaint();

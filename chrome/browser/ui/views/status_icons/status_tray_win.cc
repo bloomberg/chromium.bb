@@ -128,7 +128,7 @@ StatusTrayWin::~StatusTrayWin() {
 StatusIcon* StatusTrayWin::CreatePlatformStatusIcon(
     StatusTray::StatusIconType type,
     const gfx::ImageSkia& image,
-    const string16& tool_tip) {
+    const base::string16& tool_tip) {
   UINT next_icon_id;
   if (type == StatusTray::OTHER_ICON)
     next_icon_id = NextIconId();

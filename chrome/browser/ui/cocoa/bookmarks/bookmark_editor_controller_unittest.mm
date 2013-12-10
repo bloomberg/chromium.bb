@@ -21,7 +21,7 @@ class BookmarkEditorControllerTest : public CocoaProfileTest {
   const BookmarkNode* default_node_;
   const BookmarkNode* default_parent_;
   const char* default_name_;
-  string16 default_title_;
+  base::string16 default_title_;
   BookmarkEditorController* controller_;
 
   virtual void SetUp() OVERRIDE {
@@ -171,7 +171,7 @@ TEST_F(BookmarkEditorControllerNoNodeTest, NoNodeNoTree) {
 
 class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
  public:
-  string16 default_title_;
+  base::string16 default_title_;
   BookmarkEditorController* controller_;
 
   virtual void SetUp() OVERRIDE {
@@ -222,7 +222,7 @@ class BookmarkEditorControllerUtf8NodeTest : public CocoaProfileTest {
 
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     const BookmarkNode* parent = model->bookmark_bar_node();
-    string16 title = ASCIIToUTF16("wooh title");
+    base::string16 title = ASCIIToUTF16("wooh title");
     const char* url_name = "http://www.foobar.com/心得寫作";
     const BookmarkNode* node = model->AddURL(parent, 0, title, GURL(url_name));
     controller_ = [[BookmarkEditorController alloc]

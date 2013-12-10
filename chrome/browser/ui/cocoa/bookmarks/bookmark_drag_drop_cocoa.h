@@ -16,7 +16,7 @@ class NSImage;
 namespace chrome {
 
 // Returns a drag image for a bookmark.
-NSImage* DragImageForBookmark(NSImage* favicon, const string16& title);
+NSImage* DragImageForBookmark(NSImage* favicon, const base::string16& title);
 
 }  // namespace chrome
 

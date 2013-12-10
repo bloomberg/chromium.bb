@@ -31,14 +31,14 @@ class SelectedKeywordView : public IconLabelBubbleView {
   virtual void Layout() OVERRIDE;
 
   // The current keyword, or an empty string if no keyword is displayed.
-  void SetKeyword(const string16& keyword);
-  const string16& keyword() const { return keyword_; }
+  void SetKeyword(const base::string16& keyword);
+  const base::string16& keyword() const { return keyword_; }
 
  private:
   // The keyword we're showing. If empty, no keyword is selected.
   // NOTE: we don't cache the TemplateURL as it is possible for it to get
   // deleted out from under us.
-  string16 keyword_;
+  base::string16 keyword_;
 
   // These labels are never visible.  They are used to size the view.  One
   // label contains the complete description of the keyword, the second

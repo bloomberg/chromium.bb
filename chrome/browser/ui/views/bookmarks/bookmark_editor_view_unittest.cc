@@ -69,11 +69,11 @@ class BookmarkEditorViewTest : public testing::Test {
                                          configuration));
   }
 
-  void SetTitleText(const string16& title) {
+  void SetTitleText(const base::string16& title) {
     editor_->title_tf_->SetText(title);
   }
 
-  void SetURLText(const string16& text) {
+  void SetURLText(const base::string16& text) {
     if (editor_->details_.type != BookmarkEditor::EditDetails::NEW_FOLDER)
       editor_->url_tf_->SetText(text);
   }
@@ -152,7 +152,7 @@ class BookmarkEditorViewTest : public testing::Test {
 TEST_F(BookmarkEditorViewTest, ModelsMatch) {
   CreateEditor(profile_.get(), NULL,
                BookmarkEditor::EditDetails::AddNodeInFolder(
-                   NULL, -1, GURL(), string16()),
+                   NULL, -1, GURL(), base::string16()),
                BookmarkEditorView::SHOW_TREE);
   BookmarkEditorView::EditorNode* editor_root = editor_tree_model()->GetRoot();
   // The root should have two or three children: bookmark bar, other bookmarks
@@ -289,7 +289,7 @@ TEST_F(BookmarkEditorViewTest, NewURL) {
 
   CreateEditor(profile_.get(), bb_node,
                BookmarkEditor::EditDetails::AddNodeInFolder(
-                   bb_node, 1, GURL(), string16()),
+                   bb_node, 1, GURL(), base::string16()),
                BookmarkEditorView::SHOW_TREE);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
@@ -414,7 +414,7 @@ TEST_F(BookmarkEditorViewTest, NewFolderTitleUpdatedOnCommit) {
 
   CreateEditor(profile_.get(), parent,
                BookmarkEditor::EditDetails::AddNodeInFolder(
-                   parent, 1, GURL(), string16()),
+                   parent, 1, GURL(), base::string16()),
                BookmarkEditorView::SHOW_TREE);
   ExpandAndSelect();
 

@@ -36,17 +36,17 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   // views::WidgetDelegate:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
 
   // views::DialogDelegate:
-  virtual string16 GetDialogButtonLabel(
+  virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& keystroke) OVERRIDE;
 

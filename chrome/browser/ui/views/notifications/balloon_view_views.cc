@@ -297,13 +297,14 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   balloon_ = balloon;
 
-  const string16 source_label_text = l10n_util::GetStringFUTF16(
+  const base::string16 source_label_text = l10n_util::GetStringFUTF16(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
       balloon->notification().display_source());
 
   source_label_ = new views::Label(source_label_text);
   AddChildView(source_label_);
-  options_menu_button_ = new views::MenuButton(NULL, string16(), this, false);
+  options_menu_button_ =
+      new views::MenuButton(NULL, base::string16(), this, false);
   AddChildView(options_menu_button_);
 #if defined(OS_CHROMEOS)
   // Disable and hide the options menu on ChromeOS. This is a short term fix

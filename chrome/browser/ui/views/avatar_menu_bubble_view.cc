@@ -150,7 +150,7 @@ class HighlightDelegate {
 // the mouse is over this link.
 class EditProfileLink : public views::Link {
  public:
-  explicit EditProfileLink(const string16& title,
+  explicit EditProfileLink(const base::string16& title,
                            HighlightDelegate* delegate);
 
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
@@ -165,7 +165,7 @@ class EditProfileLink : public views::Link {
   views::CustomButton::ButtonState state_;
 };
 
-EditProfileLink::EditProfileLink(const string16& title,
+EditProfileLink::EditProfileLink(const base::string16& title,
                                  HighlightDelegate* delegate)
     : views::Link(title),
       delegate_(delegate),

@@ -26,7 +26,7 @@ void BubbleIconView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 bool BubbleIconView::GetTooltipText(const gfx::Point& p,
-                                    string16* tooltip) const {
+                                    base::string16* tooltip) const {
   if (IsBubbleShowing())
     return false;
 

@@ -59,12 +59,12 @@ class FindBarBridge : public FindBar,
   virtual void ClearResults(const FindNotificationDetails& results) OVERRIDE;
   virtual void StopAnimation() OVERRIDE;
   virtual void SetFindTextAndSelectedRange(
-      const string16& find_text,
+      const base::string16& find_text,
       const gfx::Range& selected_range) OVERRIDE;
-  virtual string16 GetFindText() OVERRIDE;
+  virtual base::string16 GetFindText() OVERRIDE;
   virtual gfx::Range GetSelectedRange() OVERRIDE;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
-                                     const string16& find_text) OVERRIDE;
+                                     const base::string16& find_text) OVERRIDE;
   virtual void AudibleAlert() OVERRIDE;
   virtual bool IsFindBarVisible() OVERRIDE;
   virtual void RestoreSavedFocus() OVERRIDE;
@@ -76,8 +76,8 @@ class FindBarBridge : public FindBar,
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible) OVERRIDE;
-  virtual string16 GetFindSelectedText() OVERRIDE;
-  virtual string16 GetMatchCountText() OVERRIDE;
+  virtual base::string16 GetFindSelectedText() OVERRIDE;
+  virtual base::string16 GetMatchCountText() OVERRIDE;
   virtual int GetWidth() OVERRIDE;
 
   // Used to disable find bar animations when testing.

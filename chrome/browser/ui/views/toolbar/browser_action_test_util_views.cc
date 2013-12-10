@@ -63,7 +63,7 @@ std::string BrowserActionTestUtil::GetExtensionId(int index) {
 }
 
 std::string BrowserActionTestUtil::GetTooltip(int index) {
-  string16 text;
+  base::string16 text;
   GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
     GetTooltipText(gfx::Point(), &text);
   return UTF16ToUTF8(text);

@@ -209,13 +209,13 @@ class LocationBarView : public LocationBar,
   // Shows |text| as an inline autocompletion.  This is useful for IMEs, where
   // we can't show the autocompletion inside the actual OmniboxView.  See
   // comments on |ime_inline_autocomplete_view_|.
-  void SetImeInlineAutocompletion(const string16& text);
+  void SetImeInlineAutocompletion(const base::string16& text);
 
   // Invoked from OmniboxViewWin to show gray text autocompletion.
-  void SetGrayTextAutocompletion(const string16& text);
+  void SetGrayTextAutocompletion(const base::string16& text);
 
   // Returns the current gray text autocompletion.
-  string16 GetGrayTextAutocompletion() const;
+  base::string16 GetGrayTextAutocompletion() const;
 
   // Sizing functions
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -415,7 +415,7 @@ class LocationBarView : public LocationBar,
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers
   // don't normally use this). Sets the value and clears the selection.
-  void AccessibilitySetValue(const string16& new_value);
+  void AccessibilitySetValue(const base::string16& new_value);
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser

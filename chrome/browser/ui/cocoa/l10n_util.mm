@@ -67,7 +67,7 @@ CGFloat VerticallyReflowGroup(NSArray* views) {
 }
 
 NSString* ReplaceNSStringPlaceholders(NSString* formatString,
-                                      const string16& a,
+                                      const base::string16& a,
                                       size_t* offset) {
   return base::SysUTF16ToNSString(
       ReplaceStringPlaceholders(base::SysNSStringToUTF16(formatString),

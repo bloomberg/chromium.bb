@@ -111,13 +111,13 @@ class InfobarView : public views::View {
   // |setting| on |domain_name| was created.
   void UpdateVisibility(bool is_visible,
                         ContentSetting setting,
-                        const string16& domain_name) {
+                        const base::string16& domain_name) {
     if (!is_visible) {
       SetVisible(false);
       return;
     }
 
-    string16 label;
+    base::string16 label;
     switch (setting) {
       case CONTENT_SETTING_BLOCK:
         label = l10n_util::GetStringFUTF16(
@@ -153,7 +153,7 @@ class InfobarView : public views::View {
                              views::kRelatedControlSmallHorizontalSpacing));
     content_->AddChildView(info_image_);
     content_->AddChildView(label_);
-    UpdateVisibility(false, CONTENT_SETTING_BLOCK, string16());
+    UpdateVisibility(false, CONTENT_SETTING_BLOCK, base::string16());
   }
 
   // views::View overrides.
@@ -333,9 +333,9 @@ void CollectedCookiesViews::Init() {
 
   layout->AddView(tabbed_pane);
   // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
-  string16 label_allowed = l10n_util::GetStringUTF16(
+  base::string16 label_allowed = l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL);
-  string16 label_blocked = l10n_util::GetStringUTF16(
+  base::string16 label_blocked = l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL);
   tabbed_pane->AddTab(label_allowed, CreateAllowedPane());
   tabbed_pane->AddTab(label_blocked, CreateBlockedPane());

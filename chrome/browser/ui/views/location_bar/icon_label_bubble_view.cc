@@ -72,7 +72,7 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
 IconLabelBubbleView::~IconLabelBubbleView() {
 }
 
-void IconLabelBubbleView::SetLabel(const string16& label) {
+void IconLabelBubbleView::SetLabel(const base::string16& label) {
   label_->SetText(label);
 }
 

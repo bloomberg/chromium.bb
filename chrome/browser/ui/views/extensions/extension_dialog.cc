@@ -54,7 +54,7 @@ ExtensionDialog* ExtensionDialog::Show(
     int height,
     int min_width,
     int min_height,
-    const string16& title,
+    const base::string16& title,
     ExtensionDialogObserver* observer) {
   extensions::ExtensionViewHost* host =
       extensions::ExtensionViewHostFactory::CreateDialogHost(url, profile);

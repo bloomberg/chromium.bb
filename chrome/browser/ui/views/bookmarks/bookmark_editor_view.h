@@ -64,7 +64,7 @@ class BookmarkEditorView : public BookmarkEditor,
         : ui::TreeNodeModel<EditorNode>(root) {}
 
     virtual void SetTitle(ui::TreeModelNode* node,
-                          const string16& title) OVERRIDE;
+                          const base::string16& title) OVERRIDE;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(EditorTreeModel);
@@ -78,12 +78,13 @@ class BookmarkEditorView : public BookmarkEditor,
   virtual ~BookmarkEditorView();
 
   // views::DialogDelegateView:
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool CanResize() const  OVERRIDE;
-  virtual string16 GetWindowTitle() const  OVERRIDE;
+  virtual base::string16 GetWindowTitle() const  OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
   // views::View:
@@ -97,7 +98,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
 

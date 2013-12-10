@@ -122,7 +122,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(
       GetDelegate()->extension_view_host();
 
   if (extension_view_host->extension()->ShowConfigureContextMenus()) {
-    icon_as_menu_ = new views::MenuButton(NULL, string16(), this, false);
+    icon_as_menu_ = new views::MenuButton(NULL, base::string16(), this, false);
     icon_as_menu_->set_focusable(true);
     infobar_icon_ = icon_as_menu_;
   } else {

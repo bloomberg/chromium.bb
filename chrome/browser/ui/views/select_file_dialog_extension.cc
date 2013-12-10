@@ -258,7 +258,7 @@ bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
 
 void SelectFileDialogExtension::SelectFileImpl(
     Type type,
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
@@ -376,7 +376,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       file_manager::util::GetSelectFileDialogTitle(type),
 #else
       // HTML-based header used.
-      string16(),
+      base::string16(),
 #endif
       this /* ExtensionDialog::Observer */);
   if (!dialog) {

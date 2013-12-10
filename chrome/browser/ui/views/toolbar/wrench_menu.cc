@@ -330,10 +330,11 @@ class MenuButtonBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(MenuButtonBackground);
 };
 
-string16 GetAccessibleNameForWrenchMenuItem(
+base::string16 GetAccessibleNameForWrenchMenuItem(
       MenuModel* model, int item_index, int accessible_string_id) {
-  string16 accessible_name = l10n_util::GetStringUTF16(accessible_string_id);
-  string16 accelerator_text;
+  base::string16 accessible_name =
+      l10n_util::GetStringUTF16(accessible_string_id);
+  base::string16 accelerator_text;
 
   ui::Accelerator menu_accelerator;
   if (model->GetAcceleratorAt(item_index, &menu_accelerator)) {
@@ -1012,10 +1013,10 @@ bool WrenchMenu::GetForegroundColor(int command_id,
   return false;
 }
 
-string16 WrenchMenu::GetTooltipText(int command_id,
-                                    const gfx::Point& p) const {
+base::string16 WrenchMenu::GetTooltipText(int command_id,
+                                          const gfx::Point& p) const {
   return IsBookmarkCommand(command_id) ?
-      bookmark_menu_delegate_->GetTooltipText(command_id, p) : string16();
+      bookmark_menu_delegate_->GetTooltipText(command_id, p) : base::string16();
 }
 
 bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,

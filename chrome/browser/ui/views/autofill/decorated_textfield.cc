@@ -139,7 +139,7 @@ void DecoratedTextfield::OnBlur() {
 
 gfx::Size DecoratedTextfield::GetPreferredSize() {
   int w = views::Textfield::GetPreferredSize().width();
-  views::LabelButton button(NULL, string16());
+  views::LabelButton button(NULL, base::string16());
   button.SetStyle(views::Button::STYLE_BUTTON);
   int h = button.GetPreferredSize().height();
   return gfx::Size(w, h - kMagicInsetNumber);

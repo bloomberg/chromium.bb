@@ -102,7 +102,7 @@ void FindBarHost::SetFocusAndSelection() {
 }
 
 void FindBarHost::ClearResults(const FindNotificationDetails& results) {
-  find_bar_view()->UpdateForResult(results, string16());
+  find_bar_view()->UpdateForResult(results, base::string16());
 }
 
 void FindBarHost::StopAnimation() {
@@ -131,7 +131,7 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
 }
 
 void FindBarHost::SetFindTextAndSelectedRange(
-    const string16& find_text,
+    const base::string16& find_text,
     const gfx::Range& selected_range) {
   find_bar_view()->SetFindTextAndSelectedRange(find_text, selected_range);
 }
@@ -145,7 +145,7 @@ gfx::Range FindBarHost::GetSelectedRange() {
 }
 
 void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
-                                        const string16& find_text) {
+                                        const base::string16& find_text) {
   // Make sure match count is clear. It may get set again in UpdateForResult
   // if enough data is available.
   find_bar_view()->ClearMatchCount();

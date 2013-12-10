@@ -101,7 +101,7 @@ void ReloadButton::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 bool ReloadButton::GetTooltipText(const gfx::Point& p,
-                                  string16* tooltip) const {
+                                  base::string16* tooltip) const {
   int reload_tooltip = menu_enabled_ ?
       IDS_TOOLTIP_RELOAD_WITH_MENU : IDS_TOOLTIP_RELOAD;
   int text_id = (visible_mode_ == MODE_RELOAD) ?

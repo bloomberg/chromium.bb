@@ -55,21 +55,21 @@ string16 CryptoModulePasswordDialogView::GetDialogButtonLabel(
 
 bool CryptoModulePasswordDialogView::Cancel() {
   callback_.Run(static_cast<const char*>(NULL));
-  const string16 empty;
+  const base::string16 empty;
   password_entry_->SetText(empty);
   return true;
 }
 
 bool CryptoModulePasswordDialogView::Accept() {
   callback_.Run(UTF16ToUTF8(password_entry_->text()).c_str());
-  const string16 empty;
+  const base::string16 empty;
   password_entry_->SetText(empty);
   return true;
 }
 
 void CryptoModulePasswordDialogView::ContentsChanged(
     views::Textfield* sender,
-    const string16& new_contents) {
+    const base::string16& new_contents) {
 }
 
 bool CryptoModulePasswordDialogView::HandleKeyEvent(
@@ -83,8 +83,8 @@ void CryptoModulePasswordDialogView::Init(const std::string& server,
                                           CryptoModulePasswordReason reason) {
   // Select an appropriate text for the reason.
   std::string text;
-  const string16& server16 = UTF8ToUTF16(server);
-  const string16& slot16 = UTF8ToUTF16(slot_name);
+  const base::string16& server16 = UTF8ToUTF16(server);
+  const base::string16& slot16 = UTF8ToUTF16(slot_name);
   switch (reason) {
     case chrome::kCryptoModulePasswordKeygen:
       text = l10n_util::GetStringFUTF8(

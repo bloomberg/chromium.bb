@@ -41,7 +41,7 @@ KeywordHintView::KeywordHintView(Profile* profile,
 KeywordHintView::~KeywordHintView() {
 }
 
-void KeywordHintView::SetKeyword(const string16& keyword) {
+void KeywordHintView::SetKeyword(const base::string16& keyword) {
   keyword_ = keyword;
   if (keyword_.empty())
     return;
@@ -53,12 +53,12 @@ void KeywordHintView::SetKeyword(const string16& keyword) {
 
   std::vector<size_t> content_param_offsets;
   bool is_extension_keyword;
-  string16 short_name(
+  base::string16 short_name(
       url_service->GetKeywordShortName(keyword, &is_extension_keyword));
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
-  const string16 keyword_hint = l10n_util::GetStringFUTF16(
-      message_id, string16(), short_name, &content_param_offsets);
+  const base::string16 keyword_hint = l10n_util::GetStringFUTF16(
+      message_id, base::string16(), short_name, &content_param_offsets);
   DCHECK_EQ(2U, content_param_offsets.size());
   leading_label_->SetText(
       keyword_hint.substr(0, content_param_offsets.front()));

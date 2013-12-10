@@ -63,7 +63,7 @@ class WrenchMenu : public views::MenuDelegate,
   virtual bool GetForegroundColor(int command_id,
                                   bool is_hovered,
                                   SkColor* override_color) const OVERRIDE;
-  virtual string16 GetTooltipText(int command_id,
+  virtual base::string16 GetTooltipText(int command_id,
                                   const gfx::Point& p) const OVERRIDE;
   virtual bool IsTriggerableEvent(views::MenuItemView* menu,
                                   const ui::Event& e) OVERRIDE;

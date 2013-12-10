@@ -34,7 +34,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 @implementation BookmarkMenuCocoaController
 
 + (NSString*)menuTitleForNode:(const BookmarkNode*)node {
-  string16 title = [MenuController elideMenuTitle:node->GetTitle()
+  base::string16 title = [MenuController elideMenuTitle:node->GetTitle()
                                           toWidth:kMaximumMenuPixelsWide];
   return base::SysUTF16ToNSString(title);
 }

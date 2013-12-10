@@ -120,12 +120,12 @@ string16 GetAppListIconPath() {
   base::FilePath icon_path;
   if (!PathService::Get(base::FILE_EXE, &icon_path)) {
     NOTREACHED();
-    return string16();
+    return base::string16();
   }
 
   std::stringstream ss;
   ss << "," << GetAppListIconIndex();
-  string16 result = icon_path.value();
+  base::string16 result = icon_path.value();
   result.append(UTF8ToUTF16(ss.str()));
   return result;
 }
@@ -203,7 +203,7 @@ void SetDidRunForNDayActiveStats() {
 // fiddle with the same shortcuts could cause race issues.
 void CreateAppListShortcuts(
     const base::FilePath& user_data_dir,
-    const string16& app_model_id,
+    const base::string16& app_model_id,
     const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -225,9 +225,9 @@ void CreateAppListShortcuts(
     return;
   }
 
-  string16 app_list_shortcut_name = GetAppListShortcutName();
+  base::string16 app_list_shortcut_name = GetAppListShortcutName();
 
-  string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
+  base::string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
 
   base::win::ShortcutProperties shortcut_properties;
   shortcut_properties.set_target(chrome_exe);
@@ -285,11 +285,11 @@ void SetWindowAttributes(HWND hwnd) {
 
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
   CommandLine relaunch = GetAppListCommandLine();
-  string16 app_name(GetAppListShortcutName());
+  base::string16 app_name(GetAppListShortcutName());
   ui::win::SetRelaunchDetailsForWindow(
       relaunch.GetCommandLineString(), app_name, hwnd);
   ::SetWindowText(hwnd, app_name.c_str());
-  string16 icon_path = GetAppListIconPath();
+  base::string16 icon_path = GetAppListIconPath();
   ui::win::SetAppIconForWindow(icon_path, hwnd);
 }
 

@@ -39,7 +39,7 @@ views::TextButtonDefaultBorder* CreateBorder(const int normal_image_set[],
   return border;
 }
 
-string16 GetElidedText(const string16& original_text) {
+string16 GetElidedText(const base::string16& original_text) {
   // Maximum characters the button can be before the text will get elided.
   const int kMaxCharactersToDisplay = 15;
 
@@ -56,7 +56,7 @@ string16 GetElidedText(const string16& original_text) {
 
 NewAvatarButton::NewAvatarButton(
     views::ButtonListener* listener,
-    const string16& profile_name,
+    const base::string16& profile_name,
     AvatarButtonStyle button_style,
     Browser* browser)
     : MenuButton(listener, GetElidedText(profile_name), NULL, true),

@@ -40,7 +40,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
 
   gfx::ImageSkia favicon;
   NetworkState network_state;
-  string16 title;
+  base::string16 title;
   GURL url;
   bool loading;
   base::TerminationStatus crashed_status;

@@ -87,12 +87,12 @@ void ProfileSigninConfirmationDialogViews::Show(bool prompt_for_new_profile) {
       this, browser_->window()->GetNativeWindow())->Show();
 }
 
-string16 ProfileSigninConfirmationDialogViews::GetWindowTitle() const {
+base::string16 ProfileSigninConfirmationDialogViews::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_ENTERPRISE_SIGNIN_TITLE_NEW_STYLE);
 }
 
-string16 ProfileSigninConfirmationDialogViews::GetDialogButtonLabel(
+base::string16 ProfileSigninConfirmationDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
     // If we're giving the option to create a new profile, then OK is
@@ -111,7 +111,7 @@ int ProfileSigninConfirmationDialogViews::GetDefaultDialogButton() const {
 
 views::View* ProfileSigninConfirmationDialogViews::CreateExtraView() {
   if (prompt_for_new_profile_) {
-    const string16 continue_signin_text =
+    const base::string16 continue_signin_text =
         l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE);
     continue_signin_button_ =
         new views::LabelButton(this, continue_signin_text);
@@ -159,9 +159,10 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Create the prompt label.
   size_t offset;
-  const string16 domain = ASCIIToUTF16(gaia::ExtractDomainName(username_));
-  const string16 username = ASCIIToUTF16(username_);
-  const string16 prompt_text =
+  const base::string16 domain =
+      ASCIIToUTF16(gaia::ExtractDomainName(username_));
+  const base::string16 username = ASCIIToUTF16(username_);
+  const base::string16 prompt_text =
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE,
           domain, &offset);
@@ -185,10 +186,10 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Create the explanation label.
   std::vector<size_t> offsets;
-  const string16 learn_more_text =
+  const base::string16 learn_more_text =
       l10n_util::GetStringUTF16(
           IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
-  const string16 signin_explanation_text =
+  const base::string16 signin_explanation_text =
       l10n_util::GetStringFUTF16(prompt_for_new_profile_ ?
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION_NEW_STYLE :
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION_NEW_STYLE,

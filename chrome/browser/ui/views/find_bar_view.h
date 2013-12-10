@@ -44,21 +44,21 @@ class FindBarView : public DropdownBarView,
   virtual ~FindBarView();
 
   // Accessors for the text and selection displayed in the text box.
-  void SetFindTextAndSelectedRange(const string16& find_text,
+  void SetFindTextAndSelectedRange(const base::string16& find_text,
                                    const gfx::Range& selected_range);
-  string16 GetFindText() const;
+  base::string16 GetFindText() const;
   gfx::Range GetSelectedRange() const;
 
   // Gets the selected text in the text box.
-  string16 GetFindSelectedText() const;
+  base::string16 GetFindSelectedText() const;
 
   // Gets the match count text displayed in the text box.
-  string16 GetMatchCountText() const;
+  base::string16 GetMatchCountText() const;
 
   // Updates the label inside the Find text box that shows the ordinal of the
   // active item and how many matches were found.
   void UpdateForResult(const FindNotificationDetails& result,
-                       const string16& find_text);
+                       const base::string16& find_text);
 
   // Clears the current Match Count value in the Find text box.
   void ClearMatchCount();
@@ -85,7 +85,7 @@ class FindBarView : public DropdownBarView,
 
  private:
   // Starts finding |search_text|.  If the text is empty, stops finding.
-  void Find(const string16& search_text);
+  void Find(const base::string16& search_text);
 
   // Updates the appearance for the match count label.
   void UpdateMatchCountAppearance(bool no_match);
@@ -119,7 +119,7 @@ class FindBarView : public DropdownBarView,
 
   // Used to detect if the input text, not including the IME composition text,
   // has changed or not.
-  string16 last_searched_text_;
+  base::string16 last_searched_text_;
 
   // The controls in the window.
   views::Textfield* find_text_;

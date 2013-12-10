@@ -37,7 +37,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
                               bool hidden,
-                              const string16& title) OVERRIDE;
+                              const base::string16& title) OVERRIDE;
 
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 

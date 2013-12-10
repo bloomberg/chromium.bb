@@ -21,7 +21,7 @@
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener,
                              ui::MenuModel* model)
-    : views::LabelButton(listener, string16()),
+    : views::LabelButton(listener, base::string16()),
       model_(model),
       menu_showing_(false),
       y_position_on_lbuttondown_(0),

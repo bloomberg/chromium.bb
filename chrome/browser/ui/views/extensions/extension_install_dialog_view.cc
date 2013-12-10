@@ -77,7 +77,7 @@ const int kBundleLeftColumnWidth = 300;
 // this case, so make it wider than normal.
 const int kExternalInstallLeftColumnWidth = 350;
 
-typedef std::vector<string16> PermissionDetails;
+typedef std::vector<base::string16> PermissionDetails;
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
@@ -88,7 +88,8 @@ void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
 
 // Creates a string for displaying |message| to the user. If it has to look
 // like a entry in a bullet point list, one is added.
-string16 PrepareForDisplay(const string16& message, bool bullet_point) {
+base::string16 PrepareForDisplay(const base::string16& message,
+                                 bool bullet_point) {
   return bullet_point ? l10n_util::GetStringFUTF16(
       IDS_EXTENSION_PERMISSION_LINE,
       message) : message;
@@ -121,12 +122,13 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
  private:
   // views::DialogDelegateView:
   virtual int GetDialogButtons() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
@@ -188,7 +190,7 @@ BulletedView::BulletedView(views::View* view) {
                          0,  // no fixed width
                          0);
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(PrepareForDisplay(string16(), true)));
+  layout->AddView(new views::Label(PrepareForDisplay(base::string16(), true)));
   layout->AddView(view);
 }
 
@@ -199,7 +201,7 @@ class ExpandableContainerView : public views::View,
                                 public gfx::AnimationDelegate {
  public:
   ExpandableContainerView(ExtensionInstallDialogView* owner,
-                          const string16& description,
+                          const base::string16& description,
                           const PermissionDetails& details,
                           int horizontal_space,
                           bool parent_bulleted);
@@ -229,7 +231,7 @@ class ExpandableContainerView : public views::View,
     // views::View:
     virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-    void AddDetail(const string16& detail);
+    void AddDetail(const base::string16& detail);
 
     // Animates this to be a height proportional to |state|.
     void AnimateToState(double state);
@@ -466,7 +468,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     BundleInstaller::ItemList items = prompt.bundle()->GetItemsWithState(
         BundleInstaller::Item::STATE_PENDING);
     for (size_t i = 0; i < items.size(); ++i) {
-      string16 extension_name = UTF8ToUTF16(items[i].localized_name);
+      base::string16 extension_name = UTF8ToUTF16(items[i].localized_name);
       base::i18n::AdjustStringForLocaleDirection(&extension_name);
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, column_set_id);
@@ -525,7 +527,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
               PrepareForDisplay(prompt.GetPermissionsDetails(i), false));
           ExpandableContainerView* details_container =
               new ExpandableContainerView(
-                  this, string16(), details, left_column_width, true);
+                  this, base::string16(), details, left_column_width, true);
           layout->AddView(details_container);
         }
       }
@@ -615,7 +617,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       details.push_back(prompt.GetRetainedFile(i));
     ExpandableContainerView* issue_advice_view =
         new ExpandableContainerView(
-            this, string16(), details, space_for_files, false);
+            this, base::string16(), details, space_for_files, false);
     layout->AddView(issue_advice_view);
   }
 
@@ -640,7 +642,7 @@ int ExtensionInstallDialogView::GetDialogButtons() const {
   return buttons;
 }
 
-string16 ExtensionInstallDialogView::GetDialogButtonLabel(
+base::string16 ExtensionInstallDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
@@ -651,7 +653,7 @@ string16 ExtensionInstallDialogView::GetDialogButtonLabel(
           l10n_util::GetStringUTF16(IDS_CANCEL);
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
@@ -673,7 +675,7 @@ ui::ModalType ExtensionInstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-string16 ExtensionInstallDialogView::GetWindowTitle() const {
+base::string16 ExtensionInstallDialogView::GetWindowTitle() const {
   return prompt_.GetDialogTitle();
 }
 
@@ -727,7 +729,8 @@ ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
                         0);
 }
 
-void ExpandableContainerView::DetailsView::AddDetail(const string16& detail) {
+void ExpandableContainerView::DetailsView::AddDetail(
+    const base::string16& detail) {
   layout_->StartRowWithPadding(0, 0,
                                0, views::kRelatedControlSmallVerticalSpacing);
   views::Label* detail_label =
@@ -752,7 +755,7 @@ void ExpandableContainerView::DetailsView::AnimateToState(double state) {
 
 ExpandableContainerView::ExpandableContainerView(
     ExtensionInstallDialogView* owner,
-    const string16& description,
+    const base::string16& description,
     const PermissionDetails& details,
     int horizontal_space,
     bool parent_bulleted)

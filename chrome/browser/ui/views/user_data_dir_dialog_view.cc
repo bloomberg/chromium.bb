@@ -43,7 +43,7 @@ string16 UserDataDirDialogView::GetDialogButtonLabel(
     default:
       NOTREACHED();
   }
-  return string16();
+  return base::string16();
 }
 
 string16 UserDataDirDialogView::GetWindowTitle() const {

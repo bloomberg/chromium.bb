@@ -75,7 +75,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   scoped_ptr<views::ImageView> image_view(new views::ImageView());
   image_view->SetImage(image.ToImageSkia());
 
-  string16 title_string(error_->GetBubbleViewTitle());
+  base::string16 title_string(error_->GetBubbleViewTitle());
   scoped_ptr<views::Label> title_label(new views::Label(title_string));
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -91,14 +91,14 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     message_labels.push_back(message_label);
   }
 
-  string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
+  base::string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::LabelButton> accept_button(
       new views::LabelButton(this, accept_string));
   accept_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   accept_button->SetIsDefault(true);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
 
-  string16 cancel_string(error_->GetBubbleViewCancelButtonLabel());
+  base::string16 cancel_string(error_->GetBubbleViewCancelButtonLabel());
   scoped_ptr<views::LabelButton> cancel_button;
   if (!cancel_string.empty()) {
     cancel_button.reset(new views::LabelButton(this, cancel_string));

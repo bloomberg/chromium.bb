@@ -82,7 +82,7 @@ void DrawTruncatedTitle(NSAttributedString* title, NSRect frame) {
 
 }  // namespace
 
-NSImage* DragImageForBookmark(NSImage* favicon, const string16& title) {
+NSImage* DragImageForBookmark(NSImage* favicon, const base::string16& title) {
   // If no favicon, use a default.
   if (!favicon) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

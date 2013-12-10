@@ -86,7 +86,7 @@ BookmarkEditorView::~BookmarkEditorView() {
   bb_model_->RemoveObserver(this);
 }
 
-string16 BookmarkEditorView::GetDialogButtonLabel(
+base::string16 BookmarkEditorView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_SAVE);
@@ -116,7 +116,7 @@ bool BookmarkEditorView::CanResize() const {
   return true;
 }
 
-string16 BookmarkEditorView::GetWindowTitle() const {
+base::string16 BookmarkEditorView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(details_.GetWindowTitleId());
 }
 
@@ -155,7 +155,7 @@ bool BookmarkEditorView::CanEdit(views::TreeView* tree_view,
 }
 
 void BookmarkEditorView::ContentsChanged(views::Textfield* sender,
-                                         const string16& new_contents) {
+                                         const base::string16& new_contents) {
   UserInputChanged();
 }
 
@@ -265,7 +265,7 @@ void BookmarkEditorView::Init() {
   title_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NAME_LABEL));
 
-  string16 title;
+  base::string16 title;
   GURL url;
   if (details_.type == EditDetails::EXISTING_NODE) {
     title = details_.existing_node->GetTitle();
@@ -482,7 +482,7 @@ void BookmarkEditorView::ExpandAndSelect() {
 }
 
 BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
-  EditorNode* root_node = new EditorNode(string16(), 0);
+  EditorNode* root_node = new EditorNode(base::string16(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node);
   DCHECK(root_node->child_count() >= 2 && root_node->child_count() <= 3);
@@ -543,7 +543,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   bb_model_->RemoveObserver(this);
 
   GURL new_url(GetInputURL());
-  string16 new_title(title_tf_->text());
+  base::string16 new_title(title_tf_->text());
 
   if (!show_tree_) {
     BookmarkEditor::ApplyEditsWithNoFolderChange(
@@ -625,8 +625,9 @@ ui::SimpleMenuModel* BookmarkEditorView::GetMenuModel() {
   return context_menu_model_.get();
 }
 
-void BookmarkEditorView::EditorTreeModel::SetTitle(ui::TreeModelNode* node,
-                                                   const string16& title) {
+void BookmarkEditorView::EditorTreeModel::SetTitle(
+    ui::TreeModelNode* node,
+    const base::string16& title) {
   if (!title.empty())
     ui::TreeNodeModel<EditorNode>::SetTitle(node, title);
 }

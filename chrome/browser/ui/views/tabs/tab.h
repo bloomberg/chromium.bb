@@ -178,7 +178,7 @@ class Tab : public gfx::AnimationDelegate,
   virtual void GetHitTestMask(HitTestSource source,
                               gfx::Path* path) const OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,
                                     gfx::Point* origin) const OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;

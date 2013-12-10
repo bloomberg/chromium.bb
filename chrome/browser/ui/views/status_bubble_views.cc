@@ -121,7 +121,7 @@ class StatusBubbleViews::StatusView : public views::Label,
   // Set the bubble text to a certain value, hides the bubble if text is
   // an empty string.  Trigger animation sequence to display if
   // |should_animate_open|.
-  void SetText(const string16& text, bool should_animate_open);
+  void SetText(const base::string16& text, bool should_animate_open);
 
   BubbleStage GetState() const { return stage_; }
 
@@ -173,7 +173,7 @@ class StatusBubbleViews::StatusView : public views::Label,
   views::Widget* popup_;
 
   // The currently-displayed text.
-  string16 text_;
+  base::string16 text_;
 
   // Start and end opacities for the current transition - note that as a
   // fade-in can easily turn into a fade out, opacity_start_ is sometimes
@@ -185,7 +185,7 @@ class StatusBubbleViews::StatusView : public views::Label,
   ui::ThemeProvider* theme_service_;
 };
 
-void StatusBubbleViews::StatusView::SetText(const string16& text,
+void StatusBubbleViews::StatusView::SetText(const base::string16& text,
                                             bool should_animate_open) {
   if (text.empty()) {
     // The string was empty.
@@ -472,7 +472,7 @@ class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
   }
 
   // Manage the expansion of the bubble.
-  void StartExpansion(const string16& expanded_text,
+  void StartExpansion(const base::string16& expanded_text,
                       int current_width,
                       int expansion_end);
 
@@ -493,7 +493,7 @@ class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
   StatusView* status_view_;
 
   // Text elided (if needed) to fit maximum status bar width.
-  string16 expanded_text_;
+  base::string16 expanded_text_;
 
   // Widths at expansion start and end.
   int expansion_start_;
@@ -511,7 +511,7 @@ void StatusBubbleViews::StatusViewExpander::AnimationEnded(
 }
 
 void StatusBubbleViews::StatusViewExpander::StartExpansion(
-    const string16& expanded_text,
+    const base::string16& expanded_text,
     int expansion_start,
     int expansion_end) {
   expanded_text_ = expanded_text;
@@ -609,7 +609,7 @@ void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
     AvoidMouse(last_mouse_moved_location_);
 }
 
-void StatusBubbleViews::SetStatus(const string16& status_text) {
+void StatusBubbleViews::SetStatus(const base::string16& status_text) {
   if (size_.IsEmpty())
     return;  // We have no bounds, don't attempt to show the popup.
 
@@ -642,7 +642,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
   // If we want to clear a displayed URL but there is a status still to
   // display, display that status instead.
   if (url.is_empty() && !status_text_.empty()) {
-    url_text_ = string16();
+    url_text_ = base::string16();
     if (IsFrameVisible())
       view_->SetText(status_text_, true);
     return;
@@ -686,8 +686,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
 }
 
 void StatusBubbleViews::Hide() {
-  status_text_ = string16();
-  url_text_ = string16();
+  status_text_ = base::string16();
+  url_text_ = base::string16();
   if (view_)
     view_->Hide();
 }

@@ -46,7 +46,8 @@ void ZoomView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
-bool ZoomView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+bool ZoomView::GetTooltipText(const gfx::Point& p,
+                              base::string16* tooltip) const {
   // Don't show tooltip if the zoom bubble is displayed.
   return !ZoomBubbleView::IsShowing() && ImageView::GetTooltipText(p, tooltip);
 }

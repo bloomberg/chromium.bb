@@ -99,8 +99,8 @@ HRESULT GetFilesInJob(IBackgroundCopyJob* job,
 // Returns the file name, the url, and some per-file progress information.
 // The function out parameters can be NULL if that data is not requested.
 HRESULT GetJobFileProperties(IBackgroundCopyFile* file,
-                             string16* local_name,
-                             string16* remote_name,
+                             base::string16* local_name,
+                             base::string16* remote_name,
                              BG_FILE_PROGRESS* progress) {
   HRESULT hr = S_OK;
 
@@ -131,7 +131,7 @@ HRESULT GetJobFileProperties(IBackgroundCopyFile* file,
   return hr;
 }
 
-HRESULT GetJobDescription(IBackgroundCopyJob* job, const string16* name) {
+HRESULT GetJobDescription(IBackgroundCopyJob* job, const base::string16* name) {
   ScopedCoMem<char16> description;
   return job->GetDescription(&description);
 }
@@ -159,7 +159,7 @@ HRESULT FindBitsJobIf(Predicate pred,
     ScopedComPtr<IBackgroundCopyJob> current_job;
     if (enum_jobs->Next(1, current_job.Receive(), NULL) == S_OK &&
         pred(current_job)) {
-      string16 job_description;
+      base::string16 job_description;
       hr = GetJobDescription(current_job, &job_description);
       if (job_description.compare(kJobDescription) == 0)
         jobs->push_back(current_job);
@@ -192,12 +192,14 @@ bool JobCreationOlderThanDays::operator()(IBackgroundCopyJob* job,
 // Compares the url of a file in a job and returns true if the remote name
 // of any file in a job matches the argument.
 struct JobFileUrlEqual
-    : public std::binary_function<IBackgroundCopyJob*, const string16&, bool> {
-  bool operator()(IBackgroundCopyJob* job, const string16& remote_name) const;
+    : public std::binary_function<IBackgroundCopyJob*, const base::string16&,
+                                  bool> {
+  bool operator()(IBackgroundCopyJob* job,
+                  const base::string16& remote_name) const;
 };
 
 bool JobFileUrlEqual::operator()(IBackgroundCopyJob* job,
-                                 const string16& remote_name) const {
+                                 const base::string16& remote_name) const {
   std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
   HRESULT hr = GetFilesInJob(job, &files);
   if (FAILED(hr))
@@ -344,7 +346,7 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
     GetFilesInJob(job_, &files);
     DCHECK(files.size() == 1);
-    string16 local_name;
+    base::string16 local_name;
     BG_FILE_PROGRESS progress = {0};
     hr = GetJobFileProperties(files[0], &local_name, NULL, &progress);
     if (SUCCEEDED(hr)) {
@@ -468,7 +470,7 @@ HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url) {
 }
 
 HRESULT BackgroundDownloader::InitializeNewJob(const GURL& url) {
-  const string16 filename(base::SysUTF8ToWide(url.ExtractFileName()));
+  const base::string16 filename(base::SysUTF8ToWide(url.ExtractFileName()));
 
   base::FilePath tempdir;
   if (!base::CreateNewTempDirectory(

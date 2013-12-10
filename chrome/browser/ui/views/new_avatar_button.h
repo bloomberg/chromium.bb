@@ -20,7 +20,7 @@ class NewAvatarButton : public views::MenuButton,
   };
 
   NewAvatarButton(views::ButtonListener* listener,
-                  const string16& profile_name,
+                  const base::string16& profile_name,
                   AvatarButtonStyle button_style,
                   Browser* browser);
   virtual ~NewAvatarButton();

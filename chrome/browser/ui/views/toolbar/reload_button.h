@@ -51,7 +51,7 @@ class ReloadButton : public ToolbarButton,
   // ToolbarButton:
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
+                              base::string16* tooltip) const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool ShouldShowMenu() OVERRIDE;

@@ -76,12 +76,12 @@ const int kFontSize = 11;
 
   // Add the sync promo text.
   size_t offset;
-  const string16 linkText = l10n_util::GetStringUTF16(
+  const base::string16 linkText = l10n_util::GetStringUTF16(
       IDS_BOOKMARK_SYNC_PROMO_LINK);
-  const string16 promoText =  l10n_util::GetStringFUTF16(
+  const base::string16 promoText =  l10n_util::GetStringFUTF16(
       IDS_BOOKMARK_SYNC_PROMO_MESSAGE,
       linkText, &offset);
-  const string16 promoTextWithoutLink =
+  const base::string16 promoTextWithoutLink =
       promoText.substr(0, offset) +
       promoText.substr(offset + linkText.size());
 

@@ -66,9 +66,9 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
  private:
   void AddContent(GridLayout* layout, const BundleInstaller* bundle) {
-    string16 installed_heading = bundle->GetHeadingTextFor(
+    base::string16 installed_heading = bundle->GetHeadingTextFor(
         BundleInstaller::Item::STATE_INSTALLED);
-    string16 failed_heading = bundle->GetHeadingTextFor(
+    base::string16 failed_heading = bundle->GetHeadingTextFor(
         BundleInstaller::Item::STATE_FAILED);
 
     // Insert the list of installed items.
@@ -104,7 +104,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
   void AddItemList(GridLayout* layout, const BundleInstaller::ItemList& items) {
     for (size_t i = 0; i < items.size(); ++i) {
-      string16 extension_name = UTF8ToUTF16(items[i].localized_name);
+      base::string16 extension_name = UTF8ToUTF16(items[i].localized_name);
       base::i18n::AdjustStringForLocaleDirection(&extension_name);
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, kColumnSetId);
@@ -131,7 +131,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
     layout->AddView(button);
   }
 
-  void AddHeading(GridLayout* layout, const string16& heading) {
+  void AddHeading(GridLayout* layout, const base::string16& heading) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     views::Label* heading_label = new views::Label(
         heading, rb.GetFont(ui::ResourceBundle::MediumFont));

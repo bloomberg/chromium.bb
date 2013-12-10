@@ -33,7 +33,7 @@ class BookmarkModel;
   Profile* profile_;  // weak
   const BookmarkNode* parentNode_;  // weak; owned by the model
   GURL url_;  // This and title_ are only used for new urls.
-  string16 title_;
+  base::string16 title_;
   BookmarkEditor::Configuration configuration_;
   NSString* initialName_;
   NSString* displayName_;  // Bound to a text field in the dialog.
@@ -62,7 +62,7 @@ class BookmarkModel;
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                        url:(const GURL&)url
-                     title:(const string16&)title
+                     title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration;
 
 // Run the bookmark editor as a modal sheet.  Does not block.
@@ -118,7 +118,7 @@ class BookmarkModel;
 - (Profile*)profile;
 - (const BookmarkNode*)parentNode;
 - (const GURL&)url;
-- (const string16&)title;
+- (const base::string16&)title;
 
 @end
 

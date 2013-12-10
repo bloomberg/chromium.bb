@@ -48,8 +48,9 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   virtual void InvokeActionForTesting(Action action) OVERRIDE;
 
   // views::DialogDelegate methods:
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -68,11 +69,11 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
 
  private:
-  string16 GetAcceptButtonTitle() const;
-  string16 GetCancelButtonTitle() const;
+  base::string16 GetAcceptButtonTitle() const;
+  base::string16 GetCancelButtonTitle() const;
   // The message lead is separated from the main text and is bolded.
-  string16 GetMessageLead() const;
-  string16 GetMessageBody() const;
+  base::string16 GetMessageLead() const;
+  base::string16 GetMessageBody() const;
   void RunDone(Action action);
 
   content::DownloadItem* download_;
@@ -105,7 +106,7 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, kMessageWidth, 0);
 
-  const string16 message_lead = GetMessageLead();
+  const base::string16 message_lead = GetMessageLead();
 
   if (!message_lead.empty()) {
     views::Label* message_lead_label = new views::Label(message_lead);
@@ -150,7 +151,7 @@ void DownloadDangerPromptViews::InvokeActionForTesting(Action action) {
 }
 
 // views::DialogDelegate methods:
-string16 DownloadDangerPromptViews::GetDialogButtonLabel(
+base::string16 DownloadDangerPromptViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
@@ -164,7 +165,7 @@ string16 DownloadDangerPromptViews::GetDialogButtonLabel(
   };
 }
 
-string16 DownloadDangerPromptViews::GetWindowTitle() const {
+base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
   else
@@ -242,7 +243,7 @@ void DownloadDangerPromptViews::OnDownloadUpdated(
   }
 }
 
-string16 DownloadDangerPromptViews::GetAcceptButtonTitle() const {
+base::string16 DownloadDangerPromptViews::GetAcceptButtonTitle() const {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD);
   switch (download_->GetDangerType()) {
@@ -256,7 +257,7 @@ string16 DownloadDangerPromptViews::GetAcceptButtonTitle() const {
   }
 }
 
-string16 DownloadDangerPromptViews::GetCancelButtonTitle() const {
+base::string16 DownloadDangerPromptViews::GetCancelButtonTitle() const {
   if (show_context_)
     return l10n_util::GetStringUTF16(IDS_CANCEL);
   switch (download_->GetDangerType()) {
@@ -270,7 +271,7 @@ string16 DownloadDangerPromptViews::GetCancelButtonTitle() const {
   }
 }
 
-string16 DownloadDangerPromptViews::GetMessageLead() const {
+base::string16 DownloadDangerPromptViews::GetMessageLead() const {
   if (!show_context_) {
     switch (download_->GetDangerType()) {
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
@@ -284,10 +285,10 @@ string16 DownloadDangerPromptViews::GetMessageLead() const {
     }
   }
 
-  return string16();
+  return base::string16();
 }
 
-string16 DownloadDangerPromptViews::GetMessageBody() const {
+base::string16 DownloadDangerPromptViews::GetMessageBody() const {
   if (show_context_) {
     switch (download_->GetDangerType()) {
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: {
@@ -334,7 +335,7 @@ string16 DownloadDangerPromptViews::GetMessageBody() const {
     }
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 void DownloadDangerPromptViews::RunDone(Action action) {

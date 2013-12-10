@@ -40,17 +40,18 @@ class UninstallView : public views::ButtonListener,
   // Overridden from views::DialogDelegateView:
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
 
  private:
-  typedef std::map<string16, string16> BrowsersMap;
+  typedef std::map<string16, base::string16> BrowsersMap;
 
   // Initializes the controls on the dialog.
   void SetupControls();

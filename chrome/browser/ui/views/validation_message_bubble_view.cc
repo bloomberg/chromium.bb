@@ -19,8 +19,8 @@ class ValidationMessageBubbleImpl
  public:
   ValidationMessageBubbleImpl(content::RenderWidgetHost* widget_host,
                               const gfx::Rect& anchor_in_screen,
-                              const string16& main_text,
-                              const string16& sub_text);
+                              const base::string16& main_text,
+                              const base::string16& sub_text);
 
   virtual ~ValidationMessageBubbleImpl() {
     if (delegate_ != NULL)
@@ -50,8 +50,8 @@ class ValidationMessageBubbleImpl
 ValidationMessageBubbleImpl::ValidationMessageBubbleImpl(
     content::RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_screen,
-    const string16& main_text,
-    const string16& sub_text) {
+    const base::string16& main_text,
+    const base::string16& sub_text) {
   delegate_ = new ValidationMessageBubbleDelegate(
       anchor_in_screen, main_text, sub_text, this);
   delegate_->set_parent_window(platform_util::GetTopLevel(
@@ -67,8 +67,8 @@ namespace chrome {
 scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
     content::RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view,
-    const string16& main_text,
-    const string16& sub_text) {
+    const base::string16& main_text,
+    const base::string16& sub_text) {
   const gfx::Rect anchor_in_screen = anchor_in_root_view
       + widget_host->GetView()->GetViewBounds().origin().OffsetFromOrigin();
   scoped_ptr<ValidationMessageBubble> bubble(new ValidationMessageBubbleImpl(

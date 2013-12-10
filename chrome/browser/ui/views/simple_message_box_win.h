@@ -10,8 +10,8 @@
 namespace chrome {
 
 MessageBoxResult NativeShowMessageBox(HWND parent,
-                                      const string16& title,
-                                      const string16& message,
+                                      const base::string16& title,
+                                      const base::string16& message,
                                       MessageBoxType type);
 
 }  // namespace chrome

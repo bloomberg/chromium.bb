@@ -24,8 +24,8 @@ class ValidationMessageBubbleDelegate : public views::BubbleDelegateView {
   static const int kWindowMaxWidth;
 
   ValidationMessageBubbleDelegate(const gfx::Rect& anchor_in_screen,
-                                  const string16& main_text,
-                                  const string16& sub_text,
+                                  const base::string16& main_text,
+                                  const base::string16& sub_text,
                                   Observer* observer);
   virtual ~ValidationMessageBubbleDelegate();
 

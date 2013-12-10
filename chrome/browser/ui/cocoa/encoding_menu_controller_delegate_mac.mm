@@ -45,7 +45,7 @@ void EncodingMenuControllerDelegate::BuildEncodingMenu(Profile *profile,
        it != menuItems.end();
        ++it) {
     int item_id = it->first;
-    string16 &localized_title_string16 = it->second;
+    base::string16 &localized_title_string16 = it->second;
 
     if (item_id == 0) {
       AddSeparatorToMenu(encoding_menu);

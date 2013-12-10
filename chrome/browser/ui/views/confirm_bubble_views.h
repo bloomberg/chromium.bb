@@ -30,7 +30,8 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
   virtual ~ConfirmBubbleViews();
 
   // views::DialogDelegate implementation.
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -38,7 +39,7 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
 
   // views::WidgetDelegate implementation.
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
 
   // views::LinkListener implementation.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

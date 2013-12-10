@@ -28,7 +28,7 @@ typedef std::vector<ActiveTabNameURLPair> ActiveTabsNameURLPairVector;
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                        url:(const GURL&)url
-                     title:(const string16&)title
+                     title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration;
 
 @end

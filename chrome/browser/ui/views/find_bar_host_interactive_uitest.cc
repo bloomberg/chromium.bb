@@ -38,12 +38,12 @@ class FindInPageTest : public InProcessBrowserTest {
     FindBarHost::disable_animations_during_testing_ = true;
   }
 
-  string16 GetFindBarText() {
+  base::string16 GetFindBarText() {
     FindBar* find_bar = browser()->GetFindBarController()->find_bar();
     return find_bar->GetFindText();
   }
 
-  string16 GetFindBarSelectedText() {
+  base::string16 GetFindBarSelectedText() {
     FindBarTesting* find_bar =
         browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetFindSelectedText();
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_C, true, false, false, false));
 
-  string16 str;
+  base::string16 str;
   ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
                                                  &str);
 

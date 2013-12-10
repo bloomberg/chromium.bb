@@ -48,7 +48,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
       views::kUnrelatedControlVerticalSpacing;
   message_box_view_ = new views::MessageBoxView(init_params);
 
-  string16 link_text(delegate->GetLinkText());
+  base::string16 link_text(delegate->GetLinkText());
   if (!link_text.empty())
     message_box_view_->SetLink(link_text, this);
 
@@ -99,7 +99,7 @@ string16 TabModalConfirmDialogViews::GetDialogButtonLabel(
     return delegate_->GetAcceptButtonTitle();
   if (button == ui::DIALOG_BUTTON_CANCEL)
     return delegate_->GetCancelButtonTitle();
-  return string16();
+  return base::string16();
 }
 
 bool TabModalConfirmDialogViews::Cancel() {

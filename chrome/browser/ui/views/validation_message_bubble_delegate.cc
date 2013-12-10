@@ -20,8 +20,8 @@ static const int kTextVerticalMargin = 4;
 
 ValidationMessageBubbleDelegate::ValidationMessageBubbleDelegate(
     const gfx::Rect& anchor_in_screen,
-    const string16& main_text,
-    const string16& sub_text,
+    const base::string16& main_text,
+    const base::string16& sub_text,
     Observer* observer)
     : observer_(observer), width_(0), height_(0) {
   set_use_focusless(true);

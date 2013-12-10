@@ -102,7 +102,7 @@ void BrowserViewsAccessibilityTest::TestAccessibilityInfo(IAccessible* acc_obj,
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   base::win::ScopedBstr acc_name;
   ASSERT_EQ(S_OK, acc_obj->get_accName(childid_self, acc_name.Receive()));
-  EXPECT_EQ(name, string16(acc_name));
+  EXPECT_EQ(name, base::string16(acc_name));
 
   // Verify MSAA Role property.
   base::win::ScopedVariant acc_role;
