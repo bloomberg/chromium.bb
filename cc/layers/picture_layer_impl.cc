@@ -1101,7 +1101,10 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   }
 
   for (size_t i = 0; i < to_remove.size(); ++i) {
-    if (twin)
+    const PictureLayerTiling* twin_tiling = GetTwinTiling(to_remove[i]);
+    // Only remove tilings from the twin layer if they have
+    // NON_IDEAL_RESOLUTION.
+    if (twin_tiling && twin_tiling->resolution() == NON_IDEAL_RESOLUTION)
       twin->RemoveTiling(to_remove[i]->contents_scale());
     tilings_->Remove(to_remove[i]);
   }
