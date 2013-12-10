@@ -22,6 +22,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
                                  const IPC::Message& message);
 
+  // Informs the delegate whenever a RenderFrameHost is created.
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) {}
+
+  // Informs the delegate whenever a RenderFrameHost is deleted.
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

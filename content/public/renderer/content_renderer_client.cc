@@ -43,7 +43,7 @@ bool ContentRendererClient::ShouldSuppressErrorPage(const GURL& url) {
   return false;
 }
 
-void ContentRendererClient::DeferMediaLoad(RenderView* render_view,
+void ContentRendererClient::DeferMediaLoad(RenderFrame* render_frame,
                                            const base::Closure& closure) {
   closure.Run();
 }
@@ -144,7 +144,7 @@ ContentRendererClient::GetPrescientNetworking() {
 }
 
 bool ContentRendererClient::ShouldOverridePageVisibilityState(
-    const RenderView* render_view,
+    const RenderFrame* render_frame,
     blink::WebPageVisibilityState* override_state) {
   return false;
 }

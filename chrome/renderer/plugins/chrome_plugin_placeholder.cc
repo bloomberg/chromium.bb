@@ -13,6 +13,7 @@
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -47,6 +48,29 @@ const plugins::PluginPlaceholder* g_last_active_menu = NULL;
 const char ChromePluginPlaceholder::kPluginPlaceholderDataURL[] =
     "chrome://pluginplaceholderdata/";
 
+class ChromePluginPlaceholder::RenderFrameObserver
+    : public content::RenderFrameObserver {
+ public:
+  explicit RenderFrameObserver(ChromePluginPlaceholder* placeholder)
+      : content::RenderFrameObserver(placeholder->GetRenderFrame()),
+        placeholder_(placeholder) {}
+
+  // content::RenderFrameObserver implementation:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    // We don't swallow these messages because multiple blocked plugins and
+    // other objects have an interest in them.
+    IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
+      IPC_MESSAGE_FORWARD(PrerenderMsg_SetIsPrerendering, placeholder_,
+                          ChromePluginPlaceholder::OnSetIsPrerendering)
+    IPC_END_MESSAGE_MAP()
+
+    return false;
+  }
+
+ private:
+  ChromePluginPlaceholder* placeholder_;
+};
+
 ChromePluginPlaceholder::ChromePluginPlaceholder(
     content::RenderView* render_view,
     content::RenderFrame* render_frame,
@@ -68,6 +92,8 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
       has_host_(false),
       context_menu_request_id_(0) {
   RenderThread::Get()->AddObserver(this);
+
+  frame_observer_.reset(new RenderFrameObserver(this));
 }
 
 ChromePluginPlaceholder::~ChromePluginPlaceholder() {
@@ -209,11 +235,10 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
     return true;
 #endif
 
-  // We don't swallow these messages because multiple blocked plugins have an
-  // interest in them.
+  // We don't swallow these messages because multiple blocked plugins and other
+  // objects have an interest in them.
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
   IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
-  IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
 
   return false;

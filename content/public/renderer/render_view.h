@@ -34,6 +34,7 @@ class Size;
 namespace content {
 
 class ContextMenuClient;
+class RenderFrame;
 class RenderViewVisitor;
 struct ContextMenuParams;
 struct SSLStatus;
@@ -49,6 +50,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
   static void ForEach(RenderViewVisitor* visitor);
+
+  // Returns the main RenderFrame.
+  virtual RenderFrame* GetMainRenderFrame() = 0;
 
   // Get the routing ID of the view.
   virtual int GetRoutingID() const = 0;

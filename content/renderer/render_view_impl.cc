@@ -2981,6 +2981,15 @@ void RenderViewImpl::initializeLayerTreeView() {
 
 WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     WebFrame* frame, const blink::WebURL& url, WebMediaPlayerClient* client) {
+  NOTREACHED();
+  return NULL;
+}
+
+blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
+    RenderFrame* render_frame,
+    blink::WebFrame* frame,
+    const blink::WebURL& url,
+    blink::WebMediaPlayerClient* client) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
@@ -3003,7 +3012,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
-                 static_cast<RenderView*>(this)),
+                 static_cast<RenderFrame*>(render_frame)),
       sink,
       RenderThreadImpl::current()->GetGpuFactories(),
       new RenderMediaLog());
@@ -4230,6 +4239,10 @@ void RenderViewImpl::didSerializeDataForFrame(
 
 bool RenderViewImpl::Send(IPC::Message* message) {
   return RenderWidget::Send(message);
+}
+
+RenderFrame* RenderViewImpl::GetMainRenderFrame() {
+  return main_render_frame_.get();
 }
 
 int RenderViewImpl::GetRoutingID() const {
@@ -6020,8 +6033,9 @@ blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
       blink::WebPageVisibilityStateHidden :
       blink::WebPageVisibilityStateVisible;
   blink::WebPageVisibilityState override_state = current_state;
+  // TODO(jam): move this method to WebFrameClient.
   if (GetContentClient()->renderer()->
-          ShouldOverridePageVisibilityState(this,
+          ShouldOverridePageVisibilityState(main_render_frame_.get(),
                                             &override_state))
     return override_state;
   return current_state;

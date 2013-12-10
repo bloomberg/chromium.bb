@@ -282,6 +282,8 @@ class CONTENT_EXPORT WebContentsImpl
   // RenderFrameHostDelegate ---------------------------------------------------
   virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
                                  const IPC::Message& message) OVERRIDE;
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;

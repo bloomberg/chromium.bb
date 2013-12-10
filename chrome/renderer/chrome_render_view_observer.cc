@@ -28,6 +28,7 @@
 #include "chrome/renderer/webview_color_overlay.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/stack_frame.h"
@@ -320,11 +321,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetWindowFeatures, OnSetWindowFeatures)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  // Filter only.
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering);
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -763,15 +759,6 @@ void ChromeRenderViewObserver::didNotAllowScript(WebFrame* frame) {
   content_settings_->DidNotAllowScript();
 }
 
-void ChromeRenderViewObserver::OnSetIsPrerendering(bool is_prerendering) {
-  if (is_prerendering) {
-    DCHECK(!prerender::PrerenderHelper::Get(render_view()));
-    // The PrerenderHelper will destroy itself either after recording histograms
-    // or on destruction of the RenderView.
-    new prerender::PrerenderHelper(render_view());
-  }
-}
-
 void ChromeRenderViewObserver::DidStartLoading() {
   if ((render_view()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
       webui_javascript_.get()) {
@@ -878,8 +865,10 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
     return;
 
   // Don't index/capture pages that are being prerendered.
-  if (prerender::PrerenderHelper::IsPrerendering(render_view()))
+  if (prerender::PrerenderHelper::IsPrerendering(
+          render_view()->GetMainRenderFrame())) {
     return;
+  }
 
   // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
   // translate helper for language detection and possible translation.

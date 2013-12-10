@@ -74,10 +74,10 @@ class CONTENT_EXPORT FrameTree {
 
   // Frame tree manipulation routines.
   // TODO(creis): These should take in RenderFrameHost routing IDs.
-  void AddFrame(int render_frame_host_id,
-                int64 parent_frame_tree_node_id,
-                int64 frame_id,
-                const std::string& frame_name);
+  RenderFrameHostImpl* AddFrame(int render_frame_host_id,
+                                int64 parent_frame_tree_node_id,
+                                int64 frame_id,
+                                const std::string& frame_name);
   void RemoveFrame(RenderFrameHostImpl* render_frame_host,
                    int64 parent_frame_id,
                    int64 frame_id);

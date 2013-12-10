@@ -6,14 +6,13 @@
 
 #include "base/callback_helpers.h"
 #include "chrome/common/prerender_messages.h"
-#include "content/public/renderer/render_view.h"
 
 namespace prerender {
 
 PrerenderMediaLoadDeferrer::PrerenderMediaLoadDeferrer(
-    content::RenderView* render_view,
+    content::RenderFrame* render_frame,
     const base::Closure& closure)
-    : RenderViewObserver(render_view),
+    : RenderFrameObserver(render_frame),
       is_prerendering_(true),
       continue_loading_cb_(closure) {
   DCHECK(!continue_loading_cb_.is_null());
@@ -31,7 +30,7 @@ bool PrerenderMediaLoadDeferrer::OnMessageReceived(
 }
 
 void PrerenderMediaLoadDeferrer::OnSetIsPrerendering(bool is_prerendering) {
-  // Prerendering can only be enabled prior to a RenderView's first
+  // Prerendering can only be enabled prior to a RenderFrame's first
   // navigation, so no PrerenderMediaLoadDeferrer should see the notification
   // that enables prerendering.
   DCHECK(!is_prerendering);

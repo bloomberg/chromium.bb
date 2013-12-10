@@ -16,6 +16,7 @@ struct WebPluginParams;
 }
 
 namespace content {
+class RenderView;
 struct WebPluginInfo;
 
 // This interface wraps functionality, which is specific to frames, such as
@@ -24,6 +25,9 @@ struct WebPluginInfo;
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                    public IPC::Sender {
  public:
+  // Returns the RenderView associated with this frame.
+  virtual RenderView* GetRenderView() = 0;
+
   // Get the routing ID of the frame.
   virtual int GetRoutingID() = 0;
 

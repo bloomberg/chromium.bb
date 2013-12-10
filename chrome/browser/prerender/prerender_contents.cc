@@ -26,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
@@ -162,6 +163,12 @@ void PrerenderContents::AddPendingPrerender(
 }
 
 void PrerenderContents::PrepareForUse() {
+  for (std::set<content::RenderFrameHost*>::iterator i =
+           render_frame_hosts_.begin(); i != render_frame_hosts_.end(); ++i) {
+    (*i)->Send(new PrerenderMsg_SetIsPrerendering((*i)->GetRoutingID(), false));
+  }
+  render_frame_hosts_.clear();
+
   NotifyPrerenderStop();
 
   SessionStorageNamespace* session_storage_namespace = NULL;
@@ -401,16 +408,6 @@ void PrerenderContents::Observe(int type,
         content::Details<RenderViewHost> new_render_view_host(details);
         OnRenderViewHostCreated(new_render_view_host.ptr());
 
-        // When a new RenderView is created for a prerendering WebContents,
-        // tell the new RenderView it's being used for prerendering before any
-        // navigations occur.  Note that this is always triggered before the
-        // first navigation, so there's no need to send the message just after
-        // the WebContents is created.
-        new_render_view_host->Send(
-            new PrerenderMsg_SetIsPrerendering(
-                new_render_view_host->GetRoutingID(),
-                true));
-
         // Make sure the size of the RenderViewHost has been passed to the new
         // RenderView.  Otherwise, the size may not be sent until the
         // RenderViewReady event makes it from the render process to the UI
@@ -546,6 +543,22 @@ bool PrerenderContents::Matches(
 
 void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
+}
+
+void PrerenderContents::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  render_frame_hosts_.insert(render_frame_host);
+  // When a new RenderFrame is created for a prerendering WebContents, tell the
+  // new RenderFrame it's being used for prerendering before any navigations
+  // occur.  Note that this is always triggered before the first navigation, so
+  // there's no need to send the message just after the WebContents is created.
+  render_frame_host->Send(new PrerenderMsg_SetIsPrerendering(
+      render_frame_host->GetRoutingID(), true));
+}
+
+void PrerenderContents::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  render_frame_hosts_.erase(render_frame_host);
 }
 
 void PrerenderContents::DidStopLoading(

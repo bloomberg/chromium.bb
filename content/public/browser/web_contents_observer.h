@@ -17,6 +17,7 @@
 namespace content {
 
 class NavigationEntry;
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 class WebContentsImpl;
@@ -44,6 +45,13 @@ struct ResourceRequestDetails;
 class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                            public IPC::Sender {
  public:
+  // Called when a RenderFrameHost associated with this WebContents is created.
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) {}
+
+  // Called whenever a RenderFrameHost associated with this WebContents is
+  // deleted.
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
+
   // Only one of the two methods below will be called when a RVH is created for
   // a WebContents, depending on whether it's for an interstitial or not.
   virtual void RenderViewCreated(RenderViewHost* render_view_host) {}

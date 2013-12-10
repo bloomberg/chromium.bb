@@ -101,6 +101,11 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   int context_menu_request_id_;  // Nonzero when request pending.
   base::string16 plugin_name_;
 
+  // TODO(jam): remove this class, it's temporary until PluginPlaceholder is a
+  // RenderFrameObserver.
+  class RenderFrameObserver;
+  scoped_ptr<RenderFrameObserver> frame_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromePluginPlaceholder);
 };
 

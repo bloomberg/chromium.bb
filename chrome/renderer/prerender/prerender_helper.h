@@ -7,22 +7,22 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 
 namespace prerender {
 
-// Helper class to track whether its RenderView is currently being prerendered.
+// Helper class to track whether its RenderFrame is currently being prerendered.
 // Created when prerendering starts and deleted as soon as it stops.
 class PrerenderHelper
-    : public content::RenderViewObserver,
-      public content::RenderViewObserverTracker<PrerenderHelper> {
+    : public content::RenderFrameObserver,
+      public content::RenderFrameObserverTracker<PrerenderHelper> {
  public:
-  explicit PrerenderHelper(content::RenderView* render_view);
+  explicit PrerenderHelper(content::RenderFrame* render_frame);
   virtual ~PrerenderHelper();
 
   // Returns true if |render_view| is currently prerendering.
-  static bool IsPrerendering(const content::RenderView* render_view);
+  static bool IsPrerendering(const content::RenderFrame* render_frame);
 
  private:
   // RenderViewObserver implementation

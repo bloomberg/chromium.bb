@@ -151,6 +151,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // RenderFrame implementation:
+  virtual RenderView* GetRenderView() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
   virtual blink::WebPlugin* CreatePlugin(
       blink::WebFrame* frame,

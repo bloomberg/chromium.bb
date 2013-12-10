@@ -628,12 +628,6 @@ WebContents* PrerenderManager::SwapInternal(
   histograms_->RecordUsedPrerender(prerender_contents->origin());
   prerender_contents->SetFinalStatus(FINAL_STATUS_USED);
 
-  RenderViewHost* new_render_view_host =
-      prerender_contents->prerender_contents()->GetRenderViewHost();
-  new_render_view_host->Send(
-      new PrerenderMsg_SetIsPrerendering(new_render_view_host->GetRoutingID(),
-                                         false));
-
   // Start pending prerender requests from the PrerenderContents, if there are
   // any.
   prerender_contents->PrepareForUse();

@@ -459,6 +459,10 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
+RenderView* RenderFrameImpl::GetRenderView() {
+  return render_view_;
+}
+
 int RenderFrameImpl::GetRoutingID() {
   return routing_id_;
 }
@@ -532,7 +536,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   // TODO(nasko): Moving the implementation here involves moving a few media
   // related client objects here or referencing them in the RenderView. Needs
   // more work to understand where the proper place for those objects is.
-  return render_view_->createMediaPlayer(frame, url, client);
+  return render_view_->CreateMediaPlayer(this, frame, url, client);
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(

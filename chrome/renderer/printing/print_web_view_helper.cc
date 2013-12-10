@@ -20,6 +20,7 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/web_preferences.h"
@@ -757,7 +758,8 @@ void PrintWebViewHelper::PrintPage(blink::WebFrame* frame,
   DCHECK(frame);
 
   // Allow Prerendering to cancel this print request if necessary.
-  if (prerender::PrerenderHelper::IsPrerendering(render_view())) {
+  if (prerender::PrerenderHelper::IsPrerendering(
+          render_view()->GetMainRenderFrame())) {
     Send(new ChromeViewHostMsg_CancelPrerenderForPrinting(routing_id()));
     return;
   }

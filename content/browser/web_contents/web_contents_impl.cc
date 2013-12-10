@@ -2738,6 +2738,20 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
   return OnMessageReceived(NULL, render_frame_host, message);
 }
 
+void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
+  // Note this is only for subframes, the notification for the main frame
+  // happens in RenderViewCreated.
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    RenderFrameCreated(render_frame_host));
+}
+
+void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    RenderFrameDeleted(render_frame_host));
+}
+
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
   return render_view_host_delegate_view_;
 }
@@ -2798,6 +2812,13 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
 
   FOR_EACH_OBSERVER(
       WebContentsObserver, observers_, RenderViewCreated(render_view_host));
+
+  // We tell the observers now instead of when the main RenderFrameHostImpl is
+  // constructed because otherwise it would be too early (i.e. IPCs sent to the
+  // frame would be dropped because it's not created yet).
+  RenderFrameHost* main_frame = GetMainFrame();
+  FOR_EACH_OBSERVER(
+      WebContentsObserver, observers_, RenderFrameCreated(main_frame));
 }
 
 void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {

@@ -27,6 +27,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/benchmarking_extension.h"
+#include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
@@ -352,6 +353,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
 void ChromeContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
+  new ChromeRenderFrameObserver(render_frame);
 #if defined(ENABLE_PLUGINS)
   new PepperHelper(render_frame);
 #endif
@@ -473,20 +475,20 @@ WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
 }
 
 void ChromeContentRendererClient::DeferMediaLoad(
-    content::RenderView* render_view,
+    content::RenderFrame* render_frame,
     const base::Closure& closure) {
 #if defined(OS_ANDROID)
   // Chromium for Android doesn't support prerender yet.
   closure.Run();
   return;
 #else
-  if (!prerender::PrerenderHelper::IsPrerendering(render_view)) {
+  if (!prerender::PrerenderHelper::IsPrerendering(render_frame)) {
     closure.Run();
     return;
   }
 
-  // Lifetime is tied to |render_view| via content::RenderViewObserver.
-  new prerender::PrerenderMediaLoadDeferrer(render_view, closure);
+  // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
+  new prerender::PrerenderMediaLoadDeferrer(render_frame, closure);
 #endif
 }
 
@@ -662,7 +664,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         // TODO(mmenke):  In the case of prerendering, feed into
         //                ChromeContentRendererClient::CreatePlugin instead, to
         //                reduce the chance of future regressions.
-        if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
+        if (prerender::PrerenderHelper::IsPrerendering(render_frame)) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
               render_view,
               render_frame,
@@ -1169,9 +1171,9 @@ ChromeContentRendererClient::GetPrescientNetworking() {
 }
 
 bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
-    const content::RenderView* render_view,
+    const content::RenderFrame* render_frame,
     blink::WebPageVisibilityState* override_state) {
-  if (!prerender::PrerenderHelper::IsPrerendering(render_view))
+  if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
     return false;
 
   *override_state = blink::WebPageVisibilityStatePrerender;

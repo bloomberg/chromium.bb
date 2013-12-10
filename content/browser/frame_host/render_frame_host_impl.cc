@@ -58,7 +58,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
-
+  if (delegate_)
+    delegate_->RenderFrameDeleted(this);
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -105,8 +106,10 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_frame_routing_id,
                                              int64 parent_frame_id,
                                              int64 frame_id,
                                              const std::string& frame_name) {
-  frame_tree_->AddFrame(new_frame_routing_id, parent_frame_id, frame_id,
-                        frame_name);
+  RenderFrameHostImpl* new_frame = frame_tree_->AddFrame(
+      new_frame_routing_id, parent_frame_id, frame_id, frame_name);
+  if (delegate_)
+    delegate_->RenderFrameCreated(new_frame);
 }
 
 void RenderFrameHostImpl::OnDetach(int64 parent_frame_id, int64 frame_id) {

@@ -94,18 +94,21 @@ void FrameTree::OnFirstNavigationAfterSwap(int main_frame_id) {
   root_->set_frame_id(main_frame_id);
 }
 
-void FrameTree::AddFrame(int render_frame_host_id,
-                         int64 parent_frame_id,
-                         int64 frame_id,
-                         const std::string& frame_name) {
+RenderFrameHostImpl* FrameTree::AddFrame(int render_frame_host_id,
+                                         int64 parent_frame_id,
+                                         int64 frame_id,
+                                         const std::string& frame_name) {
   FrameTreeNode* parent = FindByFrameID(parent_frame_id);
   // TODO(ajwong): Should the renderer be killed here? Would there be a race on
   // shutdown that might make this case possible?
   if (!parent)
-    return;
+    return NULL;
 
-  parent->AddChild(
-      CreateNode(frame_id, frame_name, render_frame_host_id, parent));
+  scoped_ptr<FrameTreeNode> node(CreateNode(
+      frame_id, frame_name, render_frame_host_id, parent));
+  RenderFrameHostImpl* render_frame = node->render_frame_host();
+  parent->AddChild(node.Pass());
+  return render_frame;
 }
 
 void FrameTree::RemoveFrame(RenderFrameHostImpl* render_frame_host,

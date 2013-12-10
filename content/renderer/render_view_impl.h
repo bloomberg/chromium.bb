@@ -326,6 +326,14 @@ class CONTENT_EXPORT RenderViewImpl
   // periodic timer so we don't send too many messages.
   void SyncNavigationState();
 
+  // Temporary call until all this media code moves to RenderFrame.
+  // TODO(jam): remove me
+  blink::WebMediaPlayer* CreateMediaPlayer(
+      RenderFrame* render_frame,
+      blink::WebFrame* frame,
+      const blink::WebURL& url,
+      blink::WebMediaPlayerClient* client);
+
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
   // RenderView is the currently active RenderView of a WebContents.
@@ -619,6 +627,7 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderView implementation -------------------------------------------------
 
   virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual RenderFrame* GetMainRenderFrame() OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual int GetPageId() const OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;

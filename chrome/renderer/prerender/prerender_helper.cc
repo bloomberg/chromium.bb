@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/common/prerender_messages.h"
 #include "content/public/renderer/document_state.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -16,11 +17,14 @@ using content::DocumentState;
 
 namespace {
 
-// Updates the visibility state of the RenderView.  Must be called whenever
+// Updates the visibility state of the RenderFrame.  Must be called whenever
 // prerendering starts or finishes and the page is about to be show.  At both
-// those times, the RenderView is hidden.
-void UpdateVisibilityState(content::RenderView* render_view) {
-  if (render_view->GetWebView()) {
+// those times, the RenderFrame is hidden.
+void UpdateVisibilityState(content::RenderFrame* render_frame) {
+  // TODO(jam): until the prerendering code works on frames instead of views, we
+  // have to do this awkward check.
+  content::RenderView* render_view = render_frame->GetRenderView();
+  if (render_view->GetMainRenderFrame() == render_frame) {
     render_view->GetWebView()->setVisibilityState(
         render_view->GetVisibilityState(), false);
   }
@@ -30,18 +34,18 @@ void UpdateVisibilityState(content::RenderView* render_view) {
 
 namespace prerender {
 
-PrerenderHelper::PrerenderHelper(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view),
-      content::RenderViewObserverTracker<PrerenderHelper>(render_view) {
-  UpdateVisibilityState(render_view);
+PrerenderHelper::PrerenderHelper(content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<PrerenderHelper>(render_frame) {
+  UpdateVisibilityState(render_frame);
 }
 
 PrerenderHelper::~PrerenderHelper() {
 }
 
 // static.
-bool PrerenderHelper::IsPrerendering(const content::RenderView* render_view) {
-  return PrerenderHelper::Get(render_view) != NULL;
+bool PrerenderHelper::IsPrerendering(const content::RenderFrame* render_frame) {
+  return PrerenderHelper::Get(render_frame) != NULL;
 }
 
 bool PrerenderHelper::OnMessageReceived(
@@ -60,13 +64,13 @@ void PrerenderHelper::OnSetIsPrerendering(bool is_prerendering) {
   if (is_prerendering)
     return;
 
-  content::RenderView* view = render_view();
+  content::RenderFrame* frame = render_frame();
   // |this| must be deleted so PrerenderHelper::IsPrerendering returns false
   // when the visibility state is updated, so the visibility state string will
   // not be "prerendered".
   delete this;
 
-  UpdateVisibilityState(view);
+  UpdateVisibilityState(frame);
 }
 
 }  // namespace prerender

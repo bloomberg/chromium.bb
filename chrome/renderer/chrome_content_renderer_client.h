@@ -91,7 +91,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const std::string& accept_languages,
       std::string* error_html,
       base::string16* error_description) OVERRIDE;
-  virtual void DeferMediaLoad(content::RenderView* render_view,
+  virtual void DeferMediaLoad(content::RenderFrame* render_frame,
                               const base::Closure& closure) OVERRIDE;
   virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;
   virtual bool AllowPopup() OVERRIDE;
@@ -119,7 +119,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
   virtual blink::WebPrescientNetworking* GetPrescientNetworking() OVERRIDE;
   virtual bool ShouldOverridePageVisibilityState(
-      const content::RenderView* render_view,
+      const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) OVERRIDE;
   virtual bool HandleGetCookieRequest(content::RenderView* sender,
                                       const GURL& url,

@@ -130,7 +130,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to control when media resources are loaded. Embedders
   // can run |closure| immediately if they don't wish to defer media resource
   // loading.
-  virtual void DeferMediaLoad(RenderView* render_view,
+  virtual void DeferMediaLoad(RenderFrame* render_frame,
                               const base::Closure& closure);
 
   // Allows the embedder to override creating a WebMediaStreamCenter. If it
@@ -229,7 +229,7 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool IsLinkVisited(unsigned long long link_hash);
   virtual blink::WebPrescientNetworking* GetPrescientNetworking();
   virtual bool ShouldOverridePageVisibilityState(
-      const RenderView* render_view,
+      const RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state);
 
   // Return true if the GetCookie request will be handled by the embedder.
