@@ -1975,7 +1975,7 @@ class ValidationPool(object):
     self.SendNotification(failure.patch, msg, failure=failure)
     self.RemoveCommitReady(failure.patch)
 
-  def HandleValidationTimeout(self, changes=None):
+  def HandleValidationTimeout(self, changes=None, sanity=True):
     """Handles changes that timed out.
 
     This handler removes the commit ready bit from the specified changes and
@@ -1984,20 +1984,31 @@ class ValidationPool(object):
     Args:
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
         By default, mark all of the changes as failed.
+      sanity: A boolean indicating whether the build was considered sane by
+              any relevant sanity check builders (True = sane). If not sane,
+              none of the changes will have their CommitReady bit modified.
+
     """
     if changes is None:
       changes = self.changes
 
     logging.info('Validation timed out for all changes.')
+    msg = ('%(queue)s timed out while verifying your change in '
+           '%(build_log)s . This means that a supporting builder did not '
+           'finish building your change within the specified timeout.')
+    if sanity:
+      msg += ('If you believe this happened in error, just re-mark your '
+              'commit as ready. Your change will then get automatically '
+              'retried.')
+    else:
+      msg += ('The sanity check builder in this run failed, so no changes '
+              'will be blamed for the failure.')
+
     for change in changes:
       logging.info('Validation timed out for change %s.', change)
-      self.SendNotification(change,
-          '%(queue)s timed out while verifying your change in '
-          '%(build_log)s . This means that a supporting builder did not '
-          'finish building your change within the specified timeout. If you '
-          'believe this happened in error, just re-mark your commit as ready. '
-          'Your change will then get automatically retried.')
-      self.RemoveCommitReady(change)
+      self.SendNotification(change, msg)
+      if sanity:
+        self.RemoveCommitReady(change)
 
   def SendNotification(self, change, msg, **kwargs):
     d = dict(build_log=self.build_log, queue=self.queue, **kwargs)
@@ -2039,7 +2050,8 @@ class ValidationPool(object):
     self.RemoveCommitReady(change)
 
   @staticmethod
-  def _CreateValidationFailureMessage(pre_cq, change, suspects, messages):
+  def _CreateValidationFailureMessage(pre_cq, change, suspects, messages,
+                                      sanity=True):
     """Create a message explaining why a validation failure occurred.
 
     Args:
@@ -2047,6 +2059,9 @@ class ValidationPool(object):
       change: The change we want to create a message for.
       suspects: The set of suspect changes that we think broke the build.
       messages: A list of build failure messages from supporting builders.
+      sanity: A boolean indicating whether the build was considered sane by
+              any relevant sanity check builders (True = sane). If not sane,
+              none of the changes will have their CommitReady bit modified.
     """
     # Build a list of error messages. We don't want to build a ridiculously
     # long comment, as Gerrit will reject it. See http://crbug.com/236831
@@ -2069,7 +2084,14 @@ class ValidationPool(object):
       other_suspects_str = ('%d other changes. See the blamelist for more '
                             'details.' % (len(other_suspects),))
 
-    if change in suspects:
+    will_retry_automatically = False
+    if not sanity:
+      msg.append('The sanity check builder in this run failed, implying that '
+                 'either ToT or the build infrastructure itself was broken '
+                 'even without the tested patches. Thus, no changes will be '
+                 'blamed for the failure.')
+      will_retry_automatically = True
+    elif change in suspects:
       if other_suspects_str:
         msg.append('Your change may have caused this failure. There are '
                    'also other changes that may be at fault: %s'
@@ -2087,13 +2109,15 @@ class ValidationPool(object):
         msg.append('One of the following changes is probably at fault: %s'
                    % other_suspects_str)
 
-      if not pre_cq:
-        msg.insert(
-            0, 'NOTE: The Commit Queue will retry your change automatically.')
+      will_retry_automatically = not pre_cq
+
+    if will_retry_automatically:
+      msg.insert(
+          0, 'NOTE: The Commit Queue will retry your change automatically.')
 
     return '\n\n'.join(msg)
 
-  def HandleValidationFailure(self, messages, changes=None):
+  def HandleValidationFailure(self, messages, changes=None, sanity=True):
     """Handles a list of validation failure messages from slave builders.
 
     This handler parses a list of failure messages from our list of builders
@@ -2106,6 +2130,9 @@ class ValidationPool(object):
           These must be ValidationFailedMessage objects.
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
         By default, mark all of the changes as failed.
+      sanity: A boolean indicating whether the build was considered sane by
+              any relevant sanity check builders (True = sane). If not sane,
+              none of the changes will have their CommitReady bit modified.
     """
     if changes is None:
       changes = self.changes
@@ -2123,15 +2150,16 @@ class ValidationPool(object):
     # Send out failure notifications for each change.
     for change in candidates:
       msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
-                                                 messages)
+                                                 messages, sanity)
       self.SendNotification(change, '%(details)s', details=msg)
-      if change in suspects:
-        self.RemoveCommitReady(change)
+      if sanity:
+        if change in suspects:
+          self.RemoveCommitReady(change)
 
-      # Mark the change as failed. If the Ready bit is still set, the change
-      # will be retried automatically.
-      self.UpdateCLStatus(self.bot, change, self.STATUS_FAILED,
-                          dry_run=self.dryrun)
+        # Mark the change as failed. If the Ready bit is still set, the change
+        # will be retried automatically.
+        self.UpdateCLStatus(self.bot, change, self.STATUS_FAILED,
+                            dry_run=self.dryrun)
 
   def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated."""

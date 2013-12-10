@@ -407,6 +407,43 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
+class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
+  """Test partial functionality of CommitQueueCompletionStage."""
+
+  def testSanityDetection(self):
+    """Test the _WasBuildSane function."""
+    sanity_slaves = ['sanity_1', 'sanity_2']
+
+    passed = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_PASSED, '')
+    failed = manifest_version.BuilderStatus(
+        manifest_version.BuilderStatus.STATUS_FAILED, '')
+
+    # If any sanity builder failed, build was not sane.
+    slave_statuses = {'builder_a': passed,
+                      'sanity_1' : passed,
+                      'sanity_2' : failed}
+    self.assertFalse(
+        stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
+                                                        slave_statuses))
+
+    # If any sanity builder did not report a status, build was not sane.
+    slave_statuses = {'builder_a': passed,
+                      'sanity_2' : passed}
+
+    self.assertFalse(
+        stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
+                                                        slave_statuses))
+
+    # If all sanity builders passed, build was sane.
+    slave_statuses = {'builder_a': failed,
+                      'sanity_1' : passed,
+                      'sanity_2' : passed}
+    self.assertTrue(
+        stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
+                                                        slave_statuses))
+
+
 class MasterSlaveSyncCompletionStage(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.

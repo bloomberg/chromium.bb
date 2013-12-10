@@ -1328,13 +1328,14 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     fails:
       - Abort the HWTests if necessary.
       - Push any CLs that indicate that they don't care about this failure.
-      - Reject the rest of the changes.
+      - Reject the rest of the changes, but only if the sanity check builders
+        did NOT fail.
 
     See MasterSlaveSyncCompletionStage.HandleFailure.
 
     Args:
-      failing: Status objects for the builders that failed.
-      inflight: Status objects for the builders that timed out.
+      failing: Names of the builders that failed.
+      inflight: Names of the builders that timed out.
     """
     # Print out the status about what builds failed or not.
     MasterSlaveSyncCompletionStage.HandleFailure(self, failing, inflight)
@@ -1366,10 +1367,22 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
           rejected = self.sync_stage.pool.SubmitPartialPool(tracebacks)
           self.sync_stage.pool.changes = rejected
 
+      sanity = self._WasBuildSane(
+          self._run.config.sanity_check_slaves, self._slave_statuses)
+      if not sanity:
+        logging.info('Detected that a sanity-check builder failed. Will not '
+                     'reject patches.')
       if failing:
-        self.sync_stage.pool.HandleValidationFailure(messages)
+        self.sync_stage.pool.HandleValidationFailure(messages, sanity=sanity)
       elif inflight:
-        self.sync_stage.pool.HandleValidationTimeout()
+        self.sync_stage.pool.HandleValidationTimeout(sanity=sanity)
+
+  @staticmethod
+  def _WasBuildSane(sanity_check_slaves, slave_statuses):
+    """Determines weather any of the sanity check slaves did not pass."""
+    sanity_check_slaves = sanity_check_slaves or []
+    return all([slave_statuses.has_key(x) and slave_statuses[x].Passed()
+                for x in sanity_check_slaves])
 
   def PerformStage(self):
     if not self.success and self._run.config.important:

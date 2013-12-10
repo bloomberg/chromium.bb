@@ -726,6 +726,11 @@ class ValidationFailureOrTimeout(MoxBase):
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
     self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
 
+  def testPatchesWereNotRejectedByInsaneFailure(self):
+    self._pool.HandleValidationFailure([self._BUILD_MESSAGE], sanity=False)
+    self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
+
+
 class TestCoreLogic(MoxBase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
@@ -1193,16 +1198,17 @@ class SimplePatch(object):
 class TestCreateValidationFailureMessage(Base):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
 
-  def _AssertMessage(self, change, suspects, messages):
+  def _AssertMessage(self, change, suspects, messages, sanity=True):
     """Call the _CreateValidationFailureMessage method.
 
     Args:
       change: The change we are commenting on.
       suspects: List of suspected changes.
       messages: List of messages to include in comment.
+      sanity: Bool indicating sanity of build, default: True.
     """
     msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
-      False, change, set(suspects), messages)
+      False, change, set(suspects), messages, sanity=sanity)
     for x in messages:
       self.assertTrue(x in msg)
     return msg
@@ -1238,6 +1244,12 @@ class TestCreateValidationFailureMessage(Base):
     patch1 = self.GetPatches(1)
     self._AssertMessage(patch1, [patch1], [])
 
+  def testInsaneBuild(self):
+    patches = self.GetPatches(3)
+    self._AssertMessage(
+        patches[0], patches, ['sanity check builder',
+                              'retry your change automatically'],
+        sanity=False)
 
 class TestCreateDisjointTransactions(Base):
   """Test the CreateDisjointTransactions function."""
