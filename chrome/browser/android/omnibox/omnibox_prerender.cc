@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
@@ -64,7 +65,7 @@ void OmniboxPrerender::PrerenderMaybe(JNIEnv* env,
                                       jstring j_current_url,
                                       jint jsource_match,
                                       jobject j_profile_android,
-                                      jint native_web_contents) {
+                                      jobject j_tab) {
   AutocompleteResult* autocomplete_result =
       reinterpret_cast<AutocompleteResult*>(jsource_match);
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
@@ -73,7 +74,7 @@ void OmniboxPrerender::PrerenderMaybe(JNIEnv* env,
   base::string16 current_url_string =
       base::android::ConvertJavaStringToUTF16(env, j_current_url);
   content::WebContents* web_contents =
-      reinterpret_cast<content::WebContents*>(native_web_contents);
+      TabAndroid::GetNativeTab(env, j_tab)->web_contents();
   // TODO(apiccion) Use a delegate for communicating with web_contents.
   // This can happen in OmniboxTests since the results are generated
   // in Java only.

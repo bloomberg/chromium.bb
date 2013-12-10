@@ -52,7 +52,7 @@ class OmniboxPrerender {
                       jstring j_current_url,
                       jint jsource_match,
                       jobject j_profile_android,
-                      jint native_web_contents);
+                      jobject j_tab);
 
  private:
 
