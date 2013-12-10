@@ -70,10 +70,16 @@ const char kDevSwitchBootMode[] = "devsw_boot";
 const char kHardwareClassKey[] = "hardware_class";
 const char kOffersCouponCodeKey[] = "ubind_attribute";
 const char kOffersGroupCodeKey[] = "gbind_attribute";
+
+// OEM specific statistics. Must be prefixed with "oem_".
 const char kOemCanExitEnterpriseEnrollmentKey[] = "oem_can_exit_enrollment";
 const char kOemDeviceRequisitionKey[] = "oem_device_requisition";
 const char kOemIsEnterpriseManagedKey[] = "oem_enterprise_managed";
 const char kOemKeyboardDrivenOobeKey[] = "oem_keyboard_driven_oobe";
+
+bool HasOemPrefix(const std::string& name) {
+  return name.substr(0, 4) == "oem_";
+}
 
 // The StatisticsProvider implementation used in production.
 class StatisticsProviderImpl : public StatisticsProvider {
@@ -112,6 +118,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
   base::CancellationFlag cancellation_flag_;
   // |on_statistics_loaded_| protects |machine_info_| and |machine_flags_|.
   base::WaitableEvent on_statistics_loaded_;
+  bool oem_manifest_loaded_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatisticsProviderImpl);
@@ -150,8 +157,10 @@ bool StatisticsProviderImpl::GetMachineStatistic(const std::string& name,
 
   NameValuePairsParser::NameValueMap::iterator iter = machine_info_.find(name);
   if (iter == machine_info_.end()) {
-    if (base::SysInfo::IsRunningOnChromeOS())
+    if (base::SysInfo::IsRunningOnChromeOS() &&
+        (oem_manifest_loaded_ || !HasOemPrefix(name))) {
       LOG(WARNING) << "Requested statistic not found: " << name;
+    }
     return false;
   }
   *result = iter->second;
@@ -168,8 +177,10 @@ bool StatisticsProviderImpl::GetMachineFlag(const std::string& name,
 
   MachineFlags::const_iterator iter = machine_flags_.find(name);
   if (iter == machine_flags_.end()) {
-    if (base::SysInfo::IsRunningOnChromeOS())
+    if (base::SysInfo::IsRunningOnChromeOS() &&
+        (oem_manifest_loaded_ || !HasOemPrefix(name))) {
       LOG(WARNING) << "Requested machine flag not found: " << name;
+    }
     return false;
   }
   *result = iter->second;
@@ -183,7 +194,8 @@ void StatisticsProviderImpl::Shutdown() {
 StatisticsProviderImpl::StatisticsProviderImpl()
     : load_statistics_started_(false),
       on_statistics_loaded_(true  /* manual_reset */,
-                            false /* initially_signaled */) {
+                            false /* initially_signaled */),
+      oem_manifest_loaded_(false) {
 }
 
 StatisticsProviderImpl::~StatisticsProviderImpl() {
@@ -251,6 +263,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     } else if (base::SysInfo::IsRunningOnChromeOS()) {
       LoadOemManifestFromFile(base::FilePath(kOemManifestFilePath));
     }
+    oem_manifest_loaded_ = true;
   }
 
   // Finished loading the statistics.
