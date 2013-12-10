@@ -582,6 +582,27 @@ TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 }
 
+TEST_F(FileSystemTest, CreateDirectoryRecursively) {
+  // Intentionally *not* calling LoadFullResourceList(), for testing that
+  // CreateDirectory ensures the resource list is loaded before it runs.
+
+  base::FilePath new_directory(
+      FILE_PATH_LITERAL("drive/root/Directory 1/a/b/c/d"));
+  FileError error = FILE_ERROR_FAILED;
+  file_system_->CreateDirectory(
+      new_directory,
+      true,  // is_exclusive
+      true,  // is_recursive
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  scoped_ptr<ResourceEntry> entry(GetResourceEntrySync(new_directory));
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->file_info().is_directory());
+}
+
 TEST_F(FileSystemTest, PinAndUnpin) {
   ASSERT_TRUE(LoadFullResourceList());
 

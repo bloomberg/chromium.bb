@@ -434,13 +434,15 @@ void FileSystem::CreateDirectoryAfterLoad(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (load_error != FILE_ERROR_OK) {
-    callback.Run(load_error);
-    return;
+  switch (load_error) {
+    case FILE_ERROR_OK:
+    case FILE_ERROR_NOT_FOUND:
+      create_directory_operation_->CreateDirectory(
+          directory_path, is_exclusive, is_recursive, callback);
+      break;
+    default:
+      callback.Run(load_error);
   }
-
-  create_directory_operation_->CreateDirectory(
-      directory_path, is_exclusive, is_recursive, callback);
 }
 
 void FileSystem::CreateFile(const base::FilePath& file_path,
