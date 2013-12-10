@@ -82,16 +82,6 @@ void MediaStreamDispatcherHost::DeviceOpened(
   DVLOG(1) << "MediaStreamDispatcherHost::DeviceOpened("
            << ", {label = " << label <<  "})";
 
-  // TODO(perkj): Checking for StreamRequest here is a temporary fix to avoid
-  // an Assert in PopRequest. Remove this once the real problem is solved.
-  // crbug/316396.
-  StreamMap::iterator it = streams_.find(label);
-  DCHECK(it != streams_.end());
-  if (it == streams_.end()) {
-    LOG(ERROR) << "DeviceOpened but there is no request for the device.";
-    return;
-  }
-
   StreamRequest request = PopRequest(label);
 
   Send(new MediaStreamMsg_DeviceOpened(
