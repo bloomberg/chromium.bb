@@ -13,7 +13,7 @@
 #include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
-namespace playground2 {
+namespace sandbox {
 
 typedef std::vector<Instruction*> Instructions;
 typedef std::vector<BasicBlock*> BasicBlocks;
@@ -28,7 +28,7 @@ typedef std::map<const BasicBlock*, int> IncomingBranches;
 //
 // Callers would typically create a new CodeGen object and then use it to
 // build a DAG of Instructions. They'll eventually call Compile() to convert
-// this DAG to a Sandbox::Program.
+// this DAG to a SandboxBPF::Program.
 //
 // Instructions can be chained at the time when they are created, or they
 // can be joined later by calling JoinInstructions().
@@ -46,7 +46,7 @@ typedef std::map<const BasicBlock*, int> IncomingBranches;
 //
 //   // Simplified code follows; in practice, it is important to avoid calling
 //   // any C++ destructors after starting the sandbox.
-//   Sandbox::Program program;
+//   SandboxBPF::Program program;
 //   gen.Compile(dag, program);
 //   const struct sock_fprog prog = {
 //     static_cast<unsigned short>(program->size()), &program[0] };
@@ -59,7 +59,7 @@ class CodeGen {
 
   // This is a helper method that can be used for debugging purposes. It is
   // not normally called.
-  static void PrintProgram(const Sandbox::Program& program);
+  static void PrintProgram(const SandboxBPF::Program& program);
 
   // Create a new instruction. Instructions form a DAG. The instruction objects
   // are owned by the CodeGen object. They do not need to be explicitly
@@ -90,7 +90,7 @@ class CodeGen {
   // Compiles the graph of instructions into a BPF program that can be passed
   // to the kernel. Please note that this function modifies the graph in place
   // and must therefore only be called once per graph.
-  void Compile(Instruction* instructions, Sandbox::Program* program);
+  void Compile(Instruction* instructions, SandboxBPF::Program* program);
 
  private:
   friend class CodeGenUnittestHelper;
@@ -140,7 +140,7 @@ class CodeGen {
 
   // Concatenate instructions from all basic blocks into a BPF program that
   // can be passed to the kernel.
-  void ConcatenateBasicBlocks(const BasicBlocks&, Sandbox::Program* program);
+  void ConcatenateBasicBlocks(const BasicBlocks&, SandboxBPF::Program* program);
 
   // We stick all instructions and basic blocks into pools that get destroyed
   // when the CodeGen object is destroyed. This way, we neither need to worry
@@ -154,6 +154,6 @@ class CodeGen {
   bool compiled_;
 };
 
-}  // namespace
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_CODEGEN_H__

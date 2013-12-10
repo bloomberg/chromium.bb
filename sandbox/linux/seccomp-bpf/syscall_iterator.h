@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 
-namespace playground2 {
+namespace sandbox {
 
 // Iterates over the entire system call range from 0..0xFFFFFFFFu. This
 // iterator is aware of how system calls look like and will skip quickly
@@ -50,6 +50,6 @@ class SyscallIterator {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyscallIterator);
 };
 
-}  // namespace playground2
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_SYSCALL_ITERATOR_H__

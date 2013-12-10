@@ -6,7 +6,7 @@
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
-using namespace playground2;
+namespace sandbox {
 
 namespace {
 
@@ -132,3 +132,5 @@ SANDBOX_TEST(SyscallIterator, InvalidOnly) {
 }
 
 }  // namespace
+
+}  // namespace sandbox

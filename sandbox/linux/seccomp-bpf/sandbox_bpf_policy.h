@@ -7,29 +7,29 @@
 
 #include "base/basictypes.h"
 
-namespace playground2 {
+namespace sandbox {
 
 class ErrorCode;
-class Sandbox;
+class SandboxBPF;
 
 // This is the interface to implement to define a BPF sandbox policy.
-class SandboxBpfPolicy {
+class SandboxBPFPolicy {
  public:
-  SandboxBpfPolicy() {}
-  virtual ~SandboxBpfPolicy() {}
+  SandboxBPFPolicy() {}
+  virtual ~SandboxBPFPolicy() {}
 
   // The EvaluateSyscall method is called with the system call number. It can
   // decide to allow the system call unconditionally by returning ERR_ALLOWED;
   // it can deny the system call unconditionally by returning an appropriate
   // "errno" value; or it can request inspection of system call argument(s) by
   // returning a suitable ErrorCode.
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SandboxBpfPolicy);
+  DISALLOW_COPY_AND_ASSIGN(SandboxBPFPolicy);
 };
 
-}  // namespace playground2
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_POLICY_H_

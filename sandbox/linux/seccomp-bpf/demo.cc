@@ -30,9 +30,9 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
-using playground2::arch_seccomp_data;
-using playground2::ErrorCode;
-using playground2::Sandbox;
+using sandbox::ErrorCode;
+using sandbox::SandboxBPF;
+using sandbox::arch_seccomp_data;
 
 #define ERR EPERM
 
@@ -237,7 +237,7 @@ intptr_t DefaultHandler(const struct arch_seccomp_data& data, void *) {
   return -ERR;
 }
 
-ErrorCode Evaluator(Sandbox *sandbox, int sysno, void *) {
+ErrorCode Evaluator(SandboxBPF* sandbox, int sysno, void *) {
   switch (sysno) {
 #if defined(__NR_accept)
   case __NR_accept: case __NR_accept4:
@@ -413,12 +413,12 @@ int main(int argc, char *argv[]) {
   if (argc) { }
   if (argv) { }
   int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
-  if (Sandbox::SupportsSeccompSandbox(proc_fd) !=
-      Sandbox::STATUS_AVAILABLE) {
+  if (SandboxBPF::SupportsSeccompSandbox(proc_fd) !=
+      SandboxBPF::STATUS_AVAILABLE) {
     perror("sandbox");
     _exit(1);
   }
-  Sandbox sandbox;
+  SandboxBPF sandbox;
   sandbox.set_proc_fd(proc_fd);
   sandbox.SetSandboxPolicyDeprecated(Evaluator, NULL);
   sandbox.StartSandbox();

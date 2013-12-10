@@ -33,10 +33,6 @@
 #define MAP_STACK 0x20000  // Daisy build environment has old headers.
 #endif
 
-using playground2::arch_seccomp_data;
-using playground2::ErrorCode;
-using playground2::Sandbox;
-
 namespace {
 
 inline bool RunningOnASAN() {
@@ -67,7 +63,7 @@ inline bool IsArchitectureI386() {
 
 namespace sandbox {
 
-ErrorCode RestrictCloneToThreadsAndEPERMFork(Sandbox* sandbox) {
+ErrorCode RestrictCloneToThreadsAndEPERMFork(SandboxBPF* sandbox) {
   // Glibc's pthread.
   if (!RunningOnASAN()) {
     return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
@@ -88,7 +84,7 @@ ErrorCode RestrictCloneToThreadsAndEPERMFork(Sandbox* sandbox) {
   }
 }
 
-ErrorCode RestrictPrctl(Sandbox* sandbox) {
+ErrorCode RestrictPrctl(SandboxBPF* sandbox) {
   // Will need to add seccomp compositing in the future. PR_SET_PTRACER is
   // used by breakpad but not needed anymore.
   return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
@@ -100,7 +96,7 @@ ErrorCode RestrictPrctl(Sandbox* sandbox) {
          sandbox->Trap(SIGSYSPrctlFailure, NULL))));
 }
 
-ErrorCode RestrictIoctl(Sandbox* sandbox) {
+ErrorCode RestrictIoctl(SandboxBPF* sandbox) {
   return sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, TCGETS,
                        ErrorCode(ErrorCode::ERR_ALLOWED),
          sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, FIONREAD,
@@ -108,7 +104,7 @@ ErrorCode RestrictIoctl(Sandbox* sandbox) {
                        sandbox->Trap(SIGSYSIoctlFailure, NULL)));
 }
 
-ErrorCode RestrictMmapFlags(Sandbox* sandbox) {
+ErrorCode RestrictMmapFlags(SandboxBPF* sandbox) {
   // The flags you see are actually the allowed ones, and the variable is a
   // "denied" mask because of the negation operator.
   // Significantly, we don't permit MAP_HUGETLB, or the newer flags such as
@@ -123,7 +119,7 @@ ErrorCode RestrictMmapFlags(Sandbox* sandbox) {
                        ErrorCode(ErrorCode::ERR_ALLOWED));
 }
 
-ErrorCode RestrictMprotectFlags(Sandbox* sandbox) {
+ErrorCode RestrictMprotectFlags(SandboxBPF* sandbox) {
   // The flags you see are actually the allowed ones, and the variable is a
   // "denied" mask because of the negation operator.
   // Significantly, we don't permit weird undocumented flags such as
@@ -135,7 +131,7 @@ ErrorCode RestrictMprotectFlags(Sandbox* sandbox) {
                        ErrorCode(ErrorCode::ERR_ALLOWED));
 }
 
-ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
+ErrorCode RestrictFcntlCommands(SandboxBPF* sandbox) {
   // We also restrict the flags in F_SETFL. We don't want to permit flags with
   // a history of trouble such as O_DIRECT. The flags you see are actually the
   // allowed ones, and the variable is a "denied" mask because of the negation
@@ -190,7 +186,7 @@ ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
 }
 
 #if defined(__i386__)
-ErrorCode RestrictSocketcallCommand(Sandbox* sandbox) {
+ErrorCode RestrictSocketcallCommand(SandboxBPF* sandbox) {
   // Unfortunately, we are unable to restrict the first parameter to
   // socketpair(2). Whilst initially sounding bad, it's noteworthy that very
   // few protocols actually support socketpair(2). The scary call that we're

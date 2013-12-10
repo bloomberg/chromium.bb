@@ -21,7 +21,7 @@
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
-namespace playground2 {
+namespace sandbox {
 
 struct arch_seccomp_data {
   int nr;
@@ -37,11 +37,11 @@ struct arch_sigsys {
 };
 
 class CodeGen;
+class SandboxBPFPolicy;
 class SandboxUnittestHelper;
-class SandboxBpfPolicy;
 struct Instruction;
 
-class Sandbox {
+class SandboxBPF {
  public:
   enum SandboxStatus {
     STATUS_UNKNOWN,      // Status prior to calling supportsSeccompSandbox()
@@ -56,7 +56,7 @@ class Sandbox {
   // policy each time a call is made through an EvaluateSyscall function
   // pointer.  One common use case would be to pass the "aux" pointer as an
   // argument to Trap() functions.
-  typedef ErrorCode (*EvaluateSyscall)(Sandbox* sandbox_compiler,
+  typedef ErrorCode (*EvaluateSyscall)(SandboxBPF* sandbox_compiler,
                                        int system_call_number,
                                        void* aux);
   typedef std::vector<std::pair<EvaluateSyscall, void*> > Evaluators;
@@ -74,8 +74,8 @@ class Sandbox {
   //       should be noted that during its lifetime, the object probably made
   //       irreversible state changes to the runtime environment. These changes
   //       stay in effect even after the destructor has been run.
-  Sandbox();
-  ~Sandbox();
+  SandboxBPF();
+  ~SandboxBPF();
 
   // Checks whether a particular system call number is valid on the current
   // architecture. E.g. on ARM there's a non-contiguous range of private
@@ -112,7 +112,7 @@ class Sandbox {
 
   // Set the BPF policy as |policy|. Ownership of |policy| is transfered here
   // to the sandbox object.
-  void SetSandboxPolicy(SandboxBpfPolicy* policy);
+  void SetSandboxPolicy(SandboxBPFPolicy* policy);
 
   // We can use ErrorCode to request calling of a trap handler. This method
   // performs the required wrapping of the callback function into an
@@ -224,7 +224,7 @@ class Sandbox {
   bool KernelSupportSeccompBPF();
 
   // Verify that the current policy passes some basic sanity checks.
-  void PolicySanityChecks(SandboxBpfPolicy* policy);
+  void PolicySanityChecks(SandboxBPFPolicy* policy);
 
   // Assembles and installs a filter based on the policy that has previously
   // been configured with SetSandboxPolicy().
@@ -264,13 +264,13 @@ class Sandbox {
 
   bool quiet_;
   int proc_fd_;
-  scoped_ptr<const SandboxBpfPolicy> policy_;
+  scoped_ptr<const SandboxBPFPolicy> policy_;
   Conds* conds_;
   bool sandbox_has_started_;
 
-  DISALLOW_COPY_AND_ASSIGN(Sandbox);
+  DISALLOW_COPY_AND_ASSIGN(SandboxBPF);
 };
 
-}  // namespace
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_H__

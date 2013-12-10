@@ -7,7 +7,7 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
-using namespace playground2;
+namespace sandbox {
 
 namespace {
 
@@ -21,13 +21,13 @@ SANDBOX_TEST(ErrorCode, ErrnoConstructor) {
   ErrorCode e2(EPERM);
   SANDBOX_ASSERT(e2.err() == SECCOMP_RET_ERRNO + EPERM);
 
-  Sandbox sandbox;
+  SandboxBPF sandbox;
   ErrorCode e3 = sandbox.Trap(NULL, NULL);
   SANDBOX_ASSERT((e3.err() & SECCOMP_RET_ACTION)  == SECCOMP_RET_TRAP);
 }
 
 SANDBOX_TEST(ErrorCode, Trap) {
-  Sandbox sandbox;
+  SandboxBPF sandbox;
   ErrorCode e0 = sandbox.Trap(NULL, "a");
   ErrorCode e1 = sandbox.Trap(NULL, "b");
   SANDBOX_ASSERT((e0.err() & SECCOMP_RET_DATA) + 1 ==
@@ -48,7 +48,7 @@ SANDBOX_TEST(ErrorCode, Equals) {
   ErrorCode e3(EPERM);
   SANDBOX_ASSERT(!e1.Equals(e3));
 
-  Sandbox sandbox;
+  SandboxBPF sandbox;
   ErrorCode e4 = sandbox.Trap(NULL, "a");
   ErrorCode e5 = sandbox.Trap(NULL, "b");
   ErrorCode e6 = sandbox.Trap(NULL, "a");
@@ -69,7 +69,7 @@ SANDBOX_TEST(ErrorCode, LessThan) {
   SANDBOX_ASSERT(!e1.LessThan(e3));
   SANDBOX_ASSERT( e3.LessThan(e1));
 
-  Sandbox sandbox;
+  SandboxBPF sandbox;
   ErrorCode e4 = sandbox.Trap(NULL, "a");
   ErrorCode e5 = sandbox.Trap(NULL, "b");
   ErrorCode e6 = sandbox.Trap(NULL, "a");
@@ -81,3 +81,5 @@ SANDBOX_TEST(ErrorCode, LessThan) {
 }
 
 }  // namespace
+
+}  // namespace sandbox

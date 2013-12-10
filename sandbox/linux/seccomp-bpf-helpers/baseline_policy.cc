@@ -81,7 +81,7 @@ bool IsBaselinePolicyWatched(int sysno) {
 }
 
 // |fs_denied_errno| is the errno return for denied filesystem access.
-ErrorCode EvaluateSyscallImpl(int fs_denied_errno, Sandbox* sandbox,
+ErrorCode EvaluateSyscallImpl(int fs_denied_errno, SandboxBPF* sandbox,
                               int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
@@ -167,12 +167,13 @@ BaselinePolicy::BaselinePolicy(int fs_denied_errno)
 
 BaselinePolicy::~BaselinePolicy() {}
 
-ErrorCode BaselinePolicy::EvaluateSyscall(Sandbox* sandbox, int sysno) const {
+ErrorCode BaselinePolicy::EvaluateSyscall(SandboxBPF* sandbox,
+                                          int sysno) const {
   return EvaluateSyscallImpl(fs_denied_errno_, sandbox, sysno);
 }
 
 // TODO(jln): Migrate NaCl and remove.
-ErrorCode BaselinePolicy::BaselinePolicyDeprecated(Sandbox* sandbox,
+ErrorCode BaselinePolicy::BaselinePolicyDeprecated(SandboxBPF* sandbox,
                                                    int sysno,
                                                    void* aux) {
   DCHECK(!aux);

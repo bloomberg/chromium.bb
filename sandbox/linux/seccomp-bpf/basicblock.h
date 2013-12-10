@@ -9,7 +9,7 @@
 
 #include "sandbox/linux/seccomp-bpf/instruction.h"
 
-namespace playground2 {
+namespace sandbox {
 
 struct BasicBlock {
   BasicBlock();
@@ -44,6 +44,6 @@ struct BasicBlock {
   int offset;
 };
 
-}  // namespace playground2
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_BASICBLOCK_H__

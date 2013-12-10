@@ -69,7 +69,7 @@ class LinuxSandbox {
   // Check the policy and eventually start the seccomp-bpf sandbox. This should
   // never be called with threads started. If we detect that threads have
   // started we will crash.
-  bool StartSeccompBpf(const std::string& process_type);
+  bool StartSeccompBPF(const std::string& process_type);
 
   // Limit the address space of the current process (and its children).
   // to make some vulnerabilities harder to exploit.

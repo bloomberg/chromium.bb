@@ -108,8 +108,8 @@ void LinuxSandbox::PreinitializeSandbox() {
   CHECK_GE(proc_fd_, 0);
 #endif  // !defined(NDEBUG)
   // We "pre-warm" the code that detects supports for seccomp BPF.
-  if (SandboxSeccompBpf::IsSeccompBpfDesired()) {
-    if (!SandboxSeccompBpf::SupportsSandbox()) {
+  if (SandboxSeccompBPF::IsSeccompBPFDesired()) {
+    if (!SandboxSeccompBPF::SupportsSandbox()) {
       VLOG(1) << "Lacking support for seccomp-bpf sandbox.";
     } else {
       seccomp_bpf_supported_ = true;
@@ -154,7 +154,7 @@ bool LinuxSandbox::InitializeSandbox() {
   linux_sandbox->LimitAddressSpace(process_type);
 
   // First, try to enable seccomp-bpf.
-  seccomp_bpf_started = linux_sandbox->StartSeccompBpf(process_type);
+  seccomp_bpf_started = linux_sandbox->StartSeccompBPF(process_type);
 
   return seccomp_bpf_started;
 }
@@ -171,10 +171,10 @@ int LinuxSandbox::GetStatus() const {
   }
 
   if (seccomp_bpf_supported() &&
-      SandboxSeccompBpf::ShouldEnableSeccompBpf(switches::kRendererProcess)) {
+      SandboxSeccompBPF::ShouldEnableSeccompBPF(switches::kRendererProcess)) {
     // We report whether the sandbox will be activated when renderers go
     // through sandbox initialization.
-    sandbox_flags |= kSandboxLinuxSeccompBpf;
+    sandbox_flags |= kSandboxLinuxSeccompBPF;
   }
 
   return sandbox_flags;
@@ -224,13 +224,13 @@ sandbox::SetuidSandboxClient*
   return setuid_sandbox_client_.get();
 }
 
-// For seccomp-bpf, we use the SandboxSeccompBpf class.
-bool LinuxSandbox::StartSeccompBpf(const std::string& process_type) {
+// For seccomp-bpf, we use the SandboxSeccompBPF class.
+bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
   CHECK(!seccomp_bpf_started_);
   if (!pre_initialized_)
     PreinitializeSandbox();
   if (seccomp_bpf_supported())
-    seccomp_bpf_started_ = SandboxSeccompBpf::StartSandbox(process_type);
+    seccomp_bpf_started_ = SandboxSeccompBPF::StartSandbox(process_type);
 
   if (seccomp_bpf_started_)
     LogSandboxStarted("seccomp-bpf");

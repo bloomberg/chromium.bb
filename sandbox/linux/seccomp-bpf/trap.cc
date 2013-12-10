@@ -65,7 +65,7 @@ bool IsDefaultSignalAction(const struct sigaction& sa) {
 
 }  // namespace
 
-namespace playground2 {
+namespace sandbox {
 
 Trap::Trap()
     : trap_array_(NULL),
@@ -351,4 +351,4 @@ ErrorCode Trap::ErrorCodeFromTrapId(uint16_t id) {
 
 Trap* Trap::global_trap_;
 
-}  // namespace playground2
+}  // namespace sandbox

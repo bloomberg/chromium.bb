@@ -18,7 +18,7 @@
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace playground2;
+namespace sandbox {
 
 namespace {
 
@@ -78,8 +78,8 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
   return -ENOMEM;
 }
 
-ErrorCode CopyAllArgsOnUnamePolicy(Sandbox* sandbox, int sysno, void* aux) {
-  if (!Sandbox::IsValidSyscallNumber(sysno)) {
+ErrorCode CopyAllArgsOnUnamePolicy(SandboxBPF* sandbox, int sysno, void* aux) {
+  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
     return ErrorCode(ENOSYS);
   }
   if (sysno == __NR_uname) {
@@ -197,3 +197,5 @@ TEST(Syscall, ComplexSyscallSixArgs) {
 }
 
 }  // namespace
+
+}  // namespace sandbox

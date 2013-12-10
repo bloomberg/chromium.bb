@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(SandboxLinuxTest, MAYBE_SandboxStatus) {
                      status & content::kSandboxLinuxPIDNS &&
                      status & content::kSandboxLinuxNetNS;
   // A second-layer sandbox is also required to be adequately sandboxed.
-  bool good_layer2 = status & content::kSandboxLinuxSeccompBpf;
+  bool good_layer2 = status & content::kSandboxLinuxSeccompBPF;
 
   EXPECT_TRUE(good_layer1);
   EXPECT_TRUE(good_layer2);

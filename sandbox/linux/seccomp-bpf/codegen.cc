@@ -9,8 +9,8 @@
 namespace {
 
 // Helper function for Traverse().
-void TraverseRecursively(std::set<playground2::Instruction*>* visited,
-                         playground2::Instruction* instruction) {
+void TraverseRecursively(std::set<sandbox::Instruction*>* visited,
+                         sandbox::Instruction* instruction) {
   if (visited->find(instruction) == visited->end()) {
     visited->insert(instruction);
     switch (BPF_CLASS(instruction->code)) {
@@ -31,7 +31,7 @@ void TraverseRecursively(std::set<playground2::Instruction*>* visited,
 
 }  // namespace
 
-namespace playground2 {
+namespace sandbox {
 
 CodeGen::CodeGen() : compiled_(false) {}
 
@@ -48,8 +48,8 @@ CodeGen::~CodeGen() {
   }
 }
 
-void CodeGen::PrintProgram(const Sandbox::Program& program) {
-  for (Sandbox::Program::const_iterator iter = program.begin();
+void CodeGen::PrintProgram(const SandboxBPF::Program& program) {
+  for (SandboxBPF::Program::const_iterator iter = program.begin();
        iter != program.end();
        ++iter) {
     int ip = (int)(iter - program.begin());
@@ -706,7 +706,7 @@ void CodeGen::ComputeRelativeJumps(BasicBlocks* basic_blocks,
 }
 
 void CodeGen::ConcatenateBasicBlocks(const BasicBlocks& basic_blocks,
-                                     Sandbox::Program* program) {
+                                     SandboxBPF::Program* program) {
   // Our basic blocks have been sorted and relative jump offsets have been
   // computed. The last remaining step is for all the instructions in our
   // basic blocks to be concatenated into a BPF program.
@@ -726,7 +726,7 @@ void CodeGen::ConcatenateBasicBlocks(const BasicBlocks& basic_blocks,
   return;
 }
 
-void CodeGen::Compile(Instruction* instructions, Sandbox::Program* program) {
+void CodeGen::Compile(Instruction* instructions, SandboxBPF::Program* program) {
   if (compiled_) {
     SANDBOX_DIE(
         "Cannot call Compile() multiple times. Create a new code "
@@ -747,4 +747,4 @@ void CodeGen::Compile(Instruction* instructions, Sandbox::Program* program) {
   return;
 }
 
-}  // namespace
+}  // namespace sandbox

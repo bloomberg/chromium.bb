@@ -10,12 +10,12 @@
 
 namespace content {
 
-bool InitializeSandbox(scoped_ptr<playground2::SandboxBpfPolicy> policy) {
-  return SandboxSeccompBpf::StartSandboxWithExternalPolicy(policy.Pass());
+bool InitializeSandbox(scoped_ptr<sandbox::SandboxBPFPolicy> policy) {
+  return SandboxSeccompBPF::StartSandboxWithExternalPolicy(policy.Pass());
 }
 
-scoped_ptr<playground2::SandboxBpfPolicy> GetBpfSandboxBaselinePolicy() {
-  return SandboxSeccompBpf::GetBaselinePolicy().Pass();
+scoped_ptr<sandbox::SandboxBPFPolicy> GetBPFSandboxBaselinePolicy() {
+  return SandboxSeccompBPF::GetBaselinePolicy().Pass();
 }
 
 }  // namespace content

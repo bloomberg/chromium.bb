@@ -7,18 +7,18 @@
 
 #include "base/basictypes.h"
 
-namespace playground2 {
+namespace sandbox {
 
 // This is the main API for using this file. Prints a error message and
 // exits with a fatal error. This is not async-signal safe.
-#define SANDBOX_DIE(m) playground2::Die::SandboxDie(m, __FILE__, __LINE__)
+#define SANDBOX_DIE(m) sandbox::Die::SandboxDie(m, __FILE__, __LINE__)
 
 // An async signal safe version of the same API. Won't print the filename
 // and line numbers.
-#define RAW_SANDBOX_DIE(m) playground2::Die::RawSandboxDie(m)
+#define RAW_SANDBOX_DIE(m) sandbox::Die::RawSandboxDie(m)
 
 // Adds an informational message to the log file or stderr as appropriate.
-#define SANDBOX_INFO(m) playground2::Die::SandboxInfo(m, __FILE__, __LINE__)
+#define SANDBOX_INFO(m) sandbox::Die::SandboxInfo(m, __FILE__, __LINE__)
 
 class Die {
  public:
@@ -62,6 +62,6 @@ class Die {
   DISALLOW_IMPLICIT_CONSTRUCTORS(Die);
 };
 
-}  // namespace
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_DIE_H__

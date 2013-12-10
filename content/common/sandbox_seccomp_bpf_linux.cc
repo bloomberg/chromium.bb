@@ -46,18 +46,18 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
-using playground2::arch_seccomp_data;
-using playground2::ErrorCode;
-using playground2::Sandbox;
-using sandbox::BrokerProcess;
 using sandbox::BaselinePolicy;
+using sandbox::BrokerProcess;
+using sandbox::ErrorCode;
+using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
+using sandbox::arch_seccomp_data;
 
 namespace content {
 
 namespace {
 
-void StartSandboxWithPolicy(playground2::SandboxBpfPolicy* policy);
+void StartSandboxWithPolicy(sandbox::SandboxBPFPolicy* policy);
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -141,13 +141,13 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
   }
 }
 
-class GpuProcessPolicy : public SandboxBpfBasePolicy {
+class GpuProcessPolicy : public SandboxBPFBasePolicy {
  public:
   explicit GpuProcessPolicy(void* broker_process)
       : broker_process_(broker_process) {}
   virtual ~GpuProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
@@ -156,7 +156,8 @@ class GpuProcessPolicy : public SandboxBpfBasePolicy {
 };
 
 // Main policy for x86_64/i386. Extended by ArmGpuProcessPolicy.
-ErrorCode GpuProcessPolicy::EvaluateSyscall(Sandbox* sandbox, int sysno) const {
+ErrorCode GpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
+                                            int sysno) const {
   switch (sysno) {
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
@@ -180,7 +181,7 @@ ErrorCode GpuProcessPolicy::EvaluateSyscall(Sandbox* sandbox, int sysno) const {
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
       // Default on the baseline policy.
-      return SandboxBpfBasePolicy::EvaluateSyscall(sandbox, sysno);
+      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
@@ -189,7 +190,7 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
   GpuBrokerProcessPolicy() : GpuProcessPolicy(NULL) {}
   virtual ~GpuBrokerProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
@@ -199,7 +200,7 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
 // x86_64/i386.
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode GpuBrokerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+ErrorCode GpuBrokerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                                   int sysno) const {
   switch (sysno) {
     case __NR_access:
@@ -217,7 +218,7 @@ class ArmGpuProcessPolicy : public GpuProcessPolicy {
       : GpuProcessPolicy(broker_process), allow_shmat_(allow_shmat) {}
   virtual ~ArmGpuProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
@@ -226,7 +227,7 @@ class ArmGpuProcessPolicy : public GpuProcessPolicy {
 };
 
 // Generic ARM GPU process sandbox, inheriting from GpuProcessPolicy.
-ErrorCode ArmGpuProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+ErrorCode ArmGpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                                int sysno) const {
 #if defined(__arm__)
   if (allow_shmat_ && sysno == __NR_shmat)
@@ -265,7 +266,7 @@ class ArmGpuBrokerProcessPolicy : public ArmGpuProcessPolicy {
   ArmGpuBrokerProcessPolicy() : ArmGpuProcessPolicy(NULL, false) {}
   virtual ~ArmGpuBrokerProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
@@ -274,7 +275,7 @@ class ArmGpuBrokerProcessPolicy : public ArmGpuProcessPolicy {
 
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode ArmGpuBrokerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+ErrorCode ArmGpuBrokerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                                      int sysno) const {
   switch (sysno) {
     case __NR_access:
@@ -289,19 +290,19 @@ ErrorCode ArmGpuBrokerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
 // Policy for renderer and worker processes.
 // TODO(jln): move to renderer/
 
-class RendererOrWorkerProcessPolicy : public SandboxBpfBasePolicy {
+class RendererOrWorkerProcessPolicy : public SandboxBPFBasePolicy {
  public:
   RendererOrWorkerProcessPolicy() {}
   virtual ~RendererOrWorkerProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererOrWorkerProcessPolicy);
 };
 
-ErrorCode RendererOrWorkerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+ErrorCode RendererOrWorkerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                                          int sysno) const {
   switch (sysno) {
     case __NR_clone:
@@ -349,25 +350,25 @@ ErrorCode RendererOrWorkerProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
       }
 
       // Default on the content baseline policy.
-      return SandboxBpfBasePolicy::EvaluateSyscall(sandbox, sysno);
+      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
 // Policy for PPAPI plugins.
 // TODO(jln): move to ppapi_plugin/.
-class FlashProcessPolicy : public SandboxBpfBasePolicy {
+class FlashProcessPolicy : public SandboxBPFBasePolicy {
  public:
   FlashProcessPolicy() {}
   virtual ~FlashProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashProcessPolicy);
 };
 
-ErrorCode FlashProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
+ErrorCode FlashProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                               int sysno) const {
   switch (sysno) {
     case __NR_clone:
@@ -397,25 +398,25 @@ ErrorCode FlashProcessPolicy::EvaluateSyscall(Sandbox* sandbox,
       }
 
       // Default on the baseline policy.
-      return SandboxBpfBasePolicy::EvaluateSyscall(sandbox, sysno);
+      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
   }
 }
 
-class BlacklistDebugAndNumaPolicy : public SandboxBpfBasePolicy {
+class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
  public:
   BlacklistDebugAndNumaPolicy() {}
   virtual ~BlacklistDebugAndNumaPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlacklistDebugAndNumaPolicy);
 };
 
-ErrorCode BlacklistDebugAndNumaPolicy::EvaluateSyscall(Sandbox* sandbox,
+ErrorCode BlacklistDebugAndNumaPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                                        int sysno) const {
-  if (!Sandbox::IsValidSyscallNumber(sysno)) {
+  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   }
@@ -425,12 +426,12 @@ ErrorCode BlacklistDebugAndNumaPolicy::EvaluateSyscall(Sandbox* sandbox,
   return ErrorCode(ErrorCode::ERR_ALLOWED);
 }
 
-class AllowAllPolicy : public SandboxBpfBasePolicy {
+class AllowAllPolicy : public SandboxBPFBasePolicy {
  public:
   AllowAllPolicy() {}
   virtual ~AllowAllPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
@@ -440,8 +441,8 @@ class AllowAllPolicy : public SandboxBpfBasePolicy {
 // Allow all syscalls.
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
-ErrorCode AllowAllPolicy::EvaluateSyscall(Sandbox*, int sysno) const {
-  if (!Sandbox::IsValidSyscallNumber(sysno)) {
+ErrorCode AllowAllPolicy::EvaluateSyscall(SandboxBPF*, int sysno) const {
+  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   } else {
@@ -469,7 +470,7 @@ void RunSandboxSanityChecks(const std::string& process_type) {
     // open() must be restricted.
     syscall_ret = open("/etc/passwd", O_RDONLY);
     CHECK_EQ(-1, syscall_ret);
-    CHECK_EQ(SandboxBpfBasePolicy::GetFSDeniedErrno(), errno);
+    CHECK_EQ(SandboxBPFBasePolicy::GetFSDeniedErrno(), errno);
 
     // We should never allow the creation of netlink sockets.
     syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
@@ -588,7 +589,7 @@ void InitGpuBrokerProcess(bool for_chromeos_arm,
     sandbox_callback = EnableGpuBrokerPolicyCallback;
   }
 
-  *broker_process = new BrokerProcess(SandboxBpfBasePolicy::GetFSDeniedErrno(),
+  *broker_process = new BrokerProcess(SandboxBPFBasePolicy::GetFSDeniedErrno(),
                                       read_whitelist,
                                       write_whitelist);
   // Initialize the broker process and give it a sandbox callback.
@@ -664,7 +665,7 @@ void StartGpuProcessSandbox(const CommandLine& command_line,
   // eventually start a broker process.
   WarmupPolicy(chromeos_arm_gpu, &broker_process);
 
-  scoped_ptr<SandboxBpfBasePolicy> gpu_policy;
+  scoped_ptr<SandboxBPFBasePolicy> gpu_policy;
   if (chromeos_arm_gpu) {
     gpu_policy.reset(new ArmGpuProcessPolicy(broker_process, allow_sysv_shm));
   } else {
@@ -674,19 +675,19 @@ void StartGpuProcessSandbox(const CommandLine& command_line,
 }
 
 // This function takes ownership of |policy|.
-void StartSandboxWithPolicy(playground2::SandboxBpfPolicy* policy) {
+void StartSandboxWithPolicy(sandbox::SandboxBPFPolicy* policy) {
   // Starting the sandbox is a one-way operation. The kernel doesn't allow
   // us to unload a sandbox policy after it has been started. Nonetheless,
   // in order to make the use of the "Sandbox" object easier, we allow for
   // the object to be destroyed after the sandbox has been started. Note that
   // doing so does not stop the sandbox.
-  Sandbox sandbox;
+  SandboxBPF sandbox;
   sandbox.SetSandboxPolicy(policy);
   sandbox.StartSandbox();
 }
 
 void StartNonGpuSandbox(const std::string& process_type) {
-  scoped_ptr<SandboxBpfBasePolicy> policy;
+  scoped_ptr<SandboxBPFBasePolicy> policy;
 
   if (process_type == switches::kRendererProcess ||
       process_type == switches::kWorkerProcess) {
@@ -704,7 +705,7 @@ void StartNonGpuSandbox(const std::string& process_type) {
 }
 
 // Initialize the seccomp-bpf sandbox.
-bool StartBpfSandbox(const CommandLine& command_line,
+bool StartBPFSandbox(const CommandLine& command_line,
                      const std::string& process_type) {
 
   if (process_type == switches::kGpuProcess) {
@@ -722,7 +723,7 @@ bool StartBpfSandbox(const CommandLine& command_line,
 #endif  // SECCOMP_BPF_SANDBOX
 
 // Is seccomp BPF globally enabled?
-bool SandboxSeccompBpf::IsSeccompBpfDesired() {
+bool SandboxSeccompBPF::IsSeccompBPFDesired() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kNoSandbox) &&
       !command_line.HasSwitch(switches::kDisableSeccompFilterSandbox)) {
@@ -732,7 +733,7 @@ bool SandboxSeccompBpf::IsSeccompBpfDesired() {
   }
 }
 
-bool SandboxSeccompBpf::ShouldEnableSeccompBpf(
+bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
     const std::string& process_type) {
 #if defined(SECCOMP_BPF_SANDBOX)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -744,33 +745,33 @@ bool SandboxSeccompBpf::ShouldEnableSeccompBpf(
   return false;
 }
 
-bool SandboxSeccompBpf::SupportsSandbox() {
+bool SandboxSeccompBPF::SupportsSandbox() {
 #if defined(SECCOMP_BPF_SANDBOX)
   // TODO(jln): pass the saved proc_fd_ from the LinuxSandbox singleton
   // here.
-  Sandbox::SandboxStatus bpf_sandbox_status =
-      Sandbox::SupportsSeccompSandbox(-1);
+  SandboxBPF::SandboxStatus bpf_sandbox_status =
+      SandboxBPF::SupportsSeccompSandbox(-1);
   // Kernel support is what we are interested in here. Other status
   // such as STATUS_UNAVAILABLE (has threads) still indicate kernel support.
   // We make this a negative check, since if there is a bug, we would rather
   // "fail closed" (expect a sandbox to be available and try to start it).
-  if (bpf_sandbox_status != Sandbox::STATUS_UNSUPPORTED) {
+  if (bpf_sandbox_status != SandboxBPF::STATUS_UNSUPPORTED) {
     return true;
   }
 #endif
   return false;
 }
 
-bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
+bool SandboxSeccompBPF::StartSandbox(const std::string& process_type) {
 #if defined(SECCOMP_BPF_SANDBOX)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (IsSeccompBpfDesired() &&  // Global switches policy.
-      ShouldEnableSeccompBpf(process_type) &&  // Process-specific policy.
+  if (IsSeccompBPFDesired() &&  // Global switches policy.
+      ShouldEnableSeccompBPF(process_type) &&  // Process-specific policy.
       SupportsSandbox()) {
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
-    bool started_sandbox = StartBpfSandbox(command_line, process_type);
+    bool started_sandbox = StartBPFSandbox(command_line, process_type);
     CHECK(started_sandbox);
     return true;
   }
@@ -778,10 +779,10 @@ bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
   return false;
 }
 
-bool SandboxSeccompBpf::StartSandboxWithExternalPolicy(
-    scoped_ptr<playground2::SandboxBpfPolicy> policy) {
+bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
+    scoped_ptr<sandbox::SandboxBPFPolicy> policy) {
 #if defined(SECCOMP_BPF_SANDBOX)
-  if (IsSeccompBpfDesired() && SupportsSandbox()) {
+  if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
     StartSandboxWithPolicy(policy.release());
     return true;
@@ -790,12 +791,12 @@ bool SandboxSeccompBpf::StartSandboxWithExternalPolicy(
   return false;
 }
 
-scoped_ptr<playground2::SandboxBpfPolicy>
-SandboxSeccompBpf::GetBaselinePolicy() {
+scoped_ptr<sandbox::SandboxBPFPolicy>
+SandboxSeccompBPF::GetBaselinePolicy() {
 #if defined(SECCOMP_BPF_SANDBOX)
-  return scoped_ptr<playground2::SandboxBpfPolicy>(new BaselinePolicy);
+  return scoped_ptr<sandbox::SandboxBPFPolicy>(new BaselinePolicy);
 #else
-  return scoped_ptr<playground2::SandboxBpfPolicy>();
+  return scoped_ptr<sandbox::SandboxBPFPolicy>();
 #endif  // defined(SECCOMP_BPF_SANDBOX)
 }
 

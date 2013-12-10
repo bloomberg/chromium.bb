@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-namespace playground2 {
+namespace sandbox {
 
 // We have to make sure that we have a single "magic" return address for
 // our system calls, which we can check from within a BPF filter. This
@@ -133,6 +133,6 @@ inline intptr_t SandboxSyscall(int nr) {
 
 #endif  // Pre-C++11
 
-}  // namespace
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_SYSCALL_H__

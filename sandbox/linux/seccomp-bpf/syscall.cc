@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 
-namespace playground2 {
+namespace sandbox {
 
   asm(      // We need to be able to tell the kernel exactly where we made a
             // system call. The C++ compiler likes to sometimes clone or
@@ -240,4 +240,4 @@ intptr_t SandboxSyscall(int nr,
   return ret;
 }
 
-}  // namespace
+}  // namespace sandbox

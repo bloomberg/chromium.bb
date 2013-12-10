@@ -52,7 +52,7 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
   // don't need zygote FD any more
   if (IGNORE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
-  bool sandbox_initialized = InitializeBpfSandbox();
+  bool sandbox_initialized = InitializeBPFSandbox();
   if (!sandbox_initialized) {
     LOG(ERROR) << "Could not initialize NaCl's second "
       << "layer sandbox (seccomp-bpf).";

@@ -18,18 +18,18 @@ static const int kFSDeniedErrno = EPERM;
 
 }  // namespace.
 
-SandboxBpfBasePolicy::SandboxBpfBasePolicy()
+SandboxBPFBasePolicy::SandboxBPFBasePolicy()
     : baseline_policy_(new sandbox::BaselinePolicy(kFSDeniedErrno)) {}
-SandboxBpfBasePolicy::~SandboxBpfBasePolicy() {}
+SandboxBPFBasePolicy::~SandboxBPFBasePolicy() {}
 
-ErrorCode SandboxBpfBasePolicy::EvaluateSyscall(Sandbox* sandbox_compiler,
+ErrorCode SandboxBPFBasePolicy::EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                                 int system_call_number) const {
   DCHECK(baseline_policy_);
   return baseline_policy_->EvaluateSyscall(sandbox_compiler,
                                            system_call_number);
 }
 
-int SandboxBpfBasePolicy::GetFSDeniedErrno() {
+int SandboxBPFBasePolicy::GetFSDeniedErrno() {
   return kFSDeniedErrno;
 }
 

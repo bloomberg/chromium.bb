@@ -4,10 +4,10 @@
 
 #include "sandbox/linux/seccomp-bpf/basicblock.h"
 
-namespace playground2 {
+namespace sandbox {
 
 BasicBlock::BasicBlock() {}
 
 BasicBlock::~BasicBlock() {}
 
-}  // namespace
+}  // namespace sandbox

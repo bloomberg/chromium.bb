@@ -5,7 +5,7 @@
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 
-namespace playground2 {
+namespace sandbox {
 
 ErrorCode::ErrorCode(int err) {
   switch (err) {
@@ -101,4 +101,4 @@ bool ErrorCode::LessThan(const ErrorCode& err) const {
   }
 }
 
-}  // namespace
+}  // namespace sandbox

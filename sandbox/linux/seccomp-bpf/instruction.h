@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-namespace playground2 {
+namespace sandbox {
 
 // The fields in this structure have the same meaning as the corresponding
 // fields in "struct sock_filter". See <linux/filter.h> for a lot more
@@ -57,6 +57,6 @@ struct Instruction {
   uint32_t k;
 };
 
-}  // namespace
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_INSTRUCTION_H__

@@ -12,11 +12,11 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
-namespace playground2 {
+namespace sandbox {
 
-class SandboxUnittestHelper : public Sandbox {
+class SandboxUnittestHelper : public SandboxBPF {
  public:
-  typedef Sandbox::Program Program;
+  typedef SandboxBPF::Program Program;
 };
 
 // We want to access some of the private methods in the code generator. We
@@ -444,4 +444,4 @@ SANDBOX_TEST(CodeGen, All) {
   ForAllPrograms(CompileAndCompare);
 }
 
-}  // namespace playground2
+}  // namespace sandbox

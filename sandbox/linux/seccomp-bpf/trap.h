@@ -13,7 +13,7 @@
 
 #include "base/basictypes.h"
 
-namespace playground2 {
+namespace sandbox {
 
 class ErrorCode;
 
@@ -111,6 +111,6 @@ class Trap {
   DISALLOW_IMPLICIT_CONSTRUCTORS(Trap);
 };
 
-}  // namespace playground2
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_TRAP_H__

@@ -823,7 +823,7 @@ std::string AboutSandbox() {
   AboutSandboxRow(&data,
                   std::string(),
                   IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX,
-                  status & content::kSandboxLinuxSeccompBpf);
+                  status & content::kSandboxLinuxSeccompBPF);
 
   data.append("</table>");
 
@@ -832,7 +832,7 @@ std::string AboutSandbox() {
                      status & content::kSandboxLinuxPIDNS &&
                      status & content::kSandboxLinuxNetNS;
   // A second-layer sandbox is also required to be adequately sandboxed.
-  bool good_layer2 = status & content::kSandboxLinuxSeccompBpf;
+  bool good_layer2 = status & content::kSandboxLinuxSeccompBPF;
   bool good = good_layer1 && good_layer2;
 
   if (good) {

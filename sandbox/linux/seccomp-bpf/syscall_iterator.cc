@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
-namespace playground2 {
+namespace sandbox {
 
 uint32_t SyscallIterator::Next() {
   if (done_) {
@@ -89,4 +89,4 @@ bool SyscallIterator::IsArmPrivate(uint32_t num) {
 bool SyscallIterator::IsArmPrivate(uint32_t) { return false; }
 #endif
 
-}  // namespace
+}  // namespace sandbox

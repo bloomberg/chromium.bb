@@ -21,13 +21,13 @@ namespace sandbox {
 // A BPF_DEATH_TEST is always disabled under ThreadSanitizer, see
 // crbug.com/243968.
 #define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux...) \
-  void BPF_TEST_##test_name(sandbox::BpfTests<aux>::AuxType& BPF_AUX);   \
+  void BPF_TEST_##test_name(sandbox::BPFTests<aux>::AuxType& BPF_AUX);   \
   TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                     \
-    sandbox::BpfTests<aux>::TestArgs arg(BPF_TEST_##test_name, policy);  \
-    sandbox::BpfTests<aux>::RunTestInProcess(                            \
-        sandbox::BpfTests<aux>::TestWrapper, &arg, death);               \
+    sandbox::BPFTests<aux>::TestArgs arg(BPF_TEST_##test_name, policy);  \
+    sandbox::BPFTests<aux>::RunTestInProcess(                            \
+        sandbox::BPFTests<aux>::TestWrapper, &arg, death);               \
   }                                                                      \
-  void BPF_TEST_##test_name(sandbox::BpfTests<aux>::AuxType& BPF_AUX)
+  void BPF_TEST_##test_name(sandbox::BPFTests<aux>::AuxType& BPF_AUX)
 
 // BPF_TEST() is a special version of SANDBOX_TEST(). It turns into a no-op,
 // if the host does not have kernel support for running BPF filters.
@@ -37,7 +37,7 @@ namespace sandbox {
 // BPF_TEST() takes a C++ data type as an optional fourth parameter. If
 // present, this sets up a variable that can be accessed as "BPF_AUX". This
 // variable will be passed as an argument to the "policy" function. Policies
-// would typically use it as an argument to Sandbox::Trap(), if they want to
+// would typically use it as an argument to SandboxBPF::Trap(), if they want to
 // communicate data between the BPF_TEST() and a Trap() function.
 #define BPF_TEST(test_case_name, test_name, policy, aux...) \
   BPF_DEATH_TEST(test_case_name, test_name, DEATH_SUCCESS(), policy, aux)
@@ -49,42 +49,42 @@ namespace sandbox {
 // the caller doesn't provide any type, all the BPF_AUX related data compiles
 // to nothing.
 template <class Aux = int[0]>
-class BpfTests : public UnitTests {
+class BPFTests : public UnitTests {
  public:
   typedef Aux AuxType;
 
   class TestArgs {
    public:
-    TestArgs(void (*t)(AuxType&), playground2::Sandbox::EvaluateSyscall p)
+    TestArgs(void (*t)(AuxType&), sandbox::SandboxBPF::EvaluateSyscall p)
         : test_(t), policy_(p), aux_() {}
 
     void (*test() const)(AuxType&) { return test_; }
-    playground2::Sandbox::EvaluateSyscall policy() const { return policy_; }
+    sandbox::SandboxBPF::EvaluateSyscall policy() const { return policy_; }
 
    private:
-    friend class BpfTests;
+    friend class BPFTests;
 
     void (*test_)(AuxType&);
-    playground2::Sandbox::EvaluateSyscall policy_;
+    sandbox::SandboxBPF::EvaluateSyscall policy_;
     AuxType aux_;
   };
 
   static void TestWrapper(void* void_arg) {
     TestArgs* arg = reinterpret_cast<TestArgs*>(void_arg);
-    playground2::Die::EnableSimpleExit();
-    if (playground2::Sandbox::SupportsSeccompSandbox(-1) ==
-        playground2::Sandbox::STATUS_AVAILABLE) {
+    sandbox::Die::EnableSimpleExit();
+    if (sandbox::SandboxBPF::SupportsSeccompSandbox(-1) ==
+        sandbox::SandboxBPF::STATUS_AVAILABLE) {
       // Ensure the the sandbox is actually available at this time
       int proc_fd;
       BPF_ASSERT((proc_fd = open("/proc", O_RDONLY | O_DIRECTORY)) >= 0);
-      BPF_ASSERT(playground2::Sandbox::SupportsSeccompSandbox(proc_fd) ==
-                 playground2::Sandbox::STATUS_AVAILABLE);
+      BPF_ASSERT(sandbox::SandboxBPF::SupportsSeccompSandbox(proc_fd) ==
+                 sandbox::SandboxBPF::STATUS_AVAILABLE);
 
       // Initialize and then start the sandbox with our custom policy
-      playground2::Sandbox sandbox;
+      sandbox::SandboxBPF sandbox;
       sandbox.set_proc_fd(proc_fd);
       sandbox.SetSandboxPolicyDeprecated(arg->policy(), &arg->aux_);
-      sandbox.Sandbox::StartSandbox();
+      sandbox.SandboxBPF::StartSandbox();
 
       arg->test()(arg->aux_);
     } else {
@@ -98,9 +98,9 @@ class BpfTests : public UnitTests {
       }
       // Call the compiler and verify the policy. That's the least we can do,
       // if we don't have kernel support.
-      playground2::Sandbox sandbox;
+      sandbox::SandboxBPF sandbox;
       sandbox.SetSandboxPolicyDeprecated(arg->policy(), &arg->aux_);
-      playground2::Sandbox::Program* program =
+      sandbox::SandboxBPF::Program* program =
           sandbox.AssembleFilter(true /* force_verification */);
       delete program;
       sandbox::UnitTests::IgnoreThisTest();
@@ -108,9 +108,9 @@ class BpfTests : public UnitTests {
   }
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BpfTests);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(BPFTests);
 };
 
-}  // namespace
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__

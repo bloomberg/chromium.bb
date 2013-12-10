@@ -10,21 +10,21 @@
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 
-using playground2::ErrorCode;
-using playground2::Sandbox;
+using sandbox::ErrorCode;
+using sandbox::SandboxBPF;
 
 namespace content {
 
 // The "baseline" BPF policy for content/. Any content/ seccomp-bpf policy
 // should inherit from it.
-// It implements the main SandboxBpfPolicy interface. Due to its nature
+// It implements the main SandboxBPFPolicy interface. Due to its nature
 // as a "kernel attack surface reduction" layer, it's implementation-defined.
-class SandboxBpfBasePolicy : public playground2::SandboxBpfPolicy {
+class SandboxBPFBasePolicy : public sandbox::SandboxBPFPolicy {
  public:
-  SandboxBpfBasePolicy();
-  virtual ~SandboxBpfBasePolicy();
+  SandboxBPFBasePolicy();
+  virtual ~SandboxBPFBasePolicy();
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
   // Get the errno(3) to return for filesystem errors.
   static int GetFSDeniedErrno();
@@ -32,7 +32,7 @@ class SandboxBpfBasePolicy : public playground2::SandboxBpfPolicy {
  private:
   // Compose the BaselinePolicy from sandbox/.
   scoped_ptr<sandbox::BaselinePolicy> baseline_policy_;
-  DISALLOW_COPY_AND_ASSIGN(SandboxBpfBasePolicy);
+  DISALLOW_COPY_AND_ASSIGN(SandboxBPFBasePolicy);
 };
 
 }  // namespace content

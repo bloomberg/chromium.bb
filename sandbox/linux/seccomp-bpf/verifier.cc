@@ -9,12 +9,10 @@
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
-namespace {
 
-using playground2::ErrorCode;
-using playground2::Sandbox;
-using playground2::Verifier;
-using playground2::arch_seccomp_data;
+namespace sandbox {
+
+namespace {
 
 struct State {
   State(const std::vector<struct sock_filter>& p,
@@ -30,7 +28,7 @@ struct State {
   DISALLOW_IMPLICIT_CONSTRUCTORS(State);
 };
 
-uint32_t EvaluateErrorCode(Sandbox* sandbox,
+uint32_t EvaluateErrorCode(SandboxBPF* sandbox,
                            const ErrorCode& code,
                            const struct arch_seccomp_data& data) {
   if (code.error_type() == ErrorCode::ET_SIMPLE ||
@@ -78,7 +76,7 @@ uint32_t EvaluateErrorCode(Sandbox* sandbox,
   }
 }
 
-bool VerifyErrorCode(Sandbox* sandbox,
+bool VerifyErrorCode(SandboxBPF* sandbox,
                      const std::vector<struct sock_filter>& program,
                      struct arch_seccomp_data* data,
                      const ErrorCode& root_code,
@@ -362,11 +360,9 @@ void Alu(State* state, const struct sock_filter& insn, const char** err) {
 
 }  // namespace
 
-namespace playground2 {
-
-bool Verifier::VerifyBPF(Sandbox* sandbox,
+bool Verifier::VerifyBPF(SandboxBPF* sandbox,
                          const std::vector<struct sock_filter>& program,
-                         const SandboxBpfPolicy& policy,
+                         const SandboxBPFPolicy& policy,
                          const char** err) {
   *err = NULL;
   for (SyscallIterator iter(false); !iter.Done();) {
@@ -447,4 +443,4 @@ uint32_t Verifier::EvaluateBPF(const std::vector<struct sock_filter>& program,
   return 0;
 }
 
-}  // namespace
+}  // namespace sandbox

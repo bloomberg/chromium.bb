@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace playground2 {
-class SandboxBpfPolicy;
+namespace sandbox {
+class SandboxBPFPolicy;
 }
 
 namespace content {
@@ -19,16 +19,16 @@ namespace content {
 // This class has two main sets of APIs. One can be used to start the sandbox
 // for internal content process types, the other is indirectly exposed as
 // a public content/ API and uses a supplied policy.
-class SandboxSeccompBpf {
+class SandboxSeccompBPF {
  public:
   // This is the API to enable a seccomp-bpf sandbox for content/
   // process-types:
   // Is the sandbox globally enabled, can anything use it at all ?
   // This looks at global command line flags to see if the sandbox
   // should be enabled at all.
-  static bool IsSeccompBpfDesired();
+  static bool IsSeccompBPFDesired();
   // Should the sandbox be enabled for process_type ?
-  static bool ShouldEnableSeccompBpf(const std::string& process_type);
+  static bool ShouldEnableSeccompBPF(const std::string& process_type);
   // Check if the kernel supports this sandbox. It's useful to "prewarm"
   // this, part of the result will be cached.
   static bool SupportsSandbox();
@@ -39,12 +39,12 @@ class SandboxSeccompBpf {
   // This is the API to enable a seccomp-bpf sandbox by using an
   // external policy.
   static bool StartSandboxWithExternalPolicy(
-      scoped_ptr<playground2::SandboxBpfPolicy> policy);
+      scoped_ptr<sandbox::SandboxBPFPolicy> policy);
   // The "baseline" policy can be a useful base to build a sandbox policy.
-  static scoped_ptr<playground2::SandboxBpfPolicy> GetBaselinePolicy();
+  static scoped_ptr<sandbox::SandboxBPFPolicy> GetBaselinePolicy();
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxSeccompBpf);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxSeccompBPF);
 };
 
 }  // namespace content

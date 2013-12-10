@@ -12,13 +12,9 @@
 // guaranteed to be async-signal safe.
 // See sandbox/linux/seccomp-bpf/trap.h to see how they work.
 
-namespace playground2 {
-struct arch_seccomp_data;
-}
-
-using playground2::arch_seccomp_data;
-
 namespace sandbox {
+
+struct arch_seccomp_data;
 
 // This handler will crash the currently running process. The crashing address
 // will be the number of the current system call, extracted from |args|.

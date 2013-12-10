@@ -18,9 +18,9 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
-using playground2::ErrorCode;
-using playground2::Sandbox;
-using playground2::SandboxBpfPolicy;
+using sandbox::ErrorCode;
+using sandbox::SandboxBPF;
+using sandbox::SandboxBPFPolicy;
 
 namespace {
 
@@ -52,22 +52,22 @@ bool IsSystemVIpc(int sysno) {
 }
 #endif
 
-class NaClBpfSandboxPolicy : public SandboxBpfPolicy {
+class NaClBPFSandboxPolicy : public SandboxBPFPolicy {
  public:
-  NaClBpfSandboxPolicy()
-      : baseline_policy_(content::GetBpfSandboxBaselinePolicy()) {}
-  virtual ~NaClBpfSandboxPolicy() {}
+  NaClBPFSandboxPolicy()
+      : baseline_policy_(content::GetBPFSandboxBaselinePolicy()) {}
+  virtual ~NaClBPFSandboxPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
 
  private:
-  scoped_ptr<SandboxBpfPolicy> baseline_policy_;
-  DISALLOW_COPY_AND_ASSIGN(NaClBpfSandboxPolicy);
+  scoped_ptr<SandboxBPFPolicy> baseline_policy_;
+  DISALLOW_COPY_AND_ASSIGN(NaClBPFSandboxPolicy);
 };
 
-ErrorCode NaClBpfSandboxPolicy::EvaluateSyscall(
-    playground2::Sandbox* sb, int sysno) const {
+ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
+    sandbox::SandboxBPF* sb, int sysno) const {
   DCHECK(baseline_policy_);
   switch (sysno) {
     // TODO(jln): NaCl's GDB debug stub uses the following socket system calls,
@@ -151,9 +151,9 @@ void RunSandboxSanityChecks() {
 
 }  // namespace
 
-bool InitializeBpfSandbox() {
+bool InitializeBPFSandbox() {
   bool sandbox_is_initialized = content::InitializeSandbox(
-      scoped_ptr<SandboxBpfPolicy>(new NaClBpfSandboxPolicy()));
+      scoped_ptr<SandboxBPFPolicy>(new NaClBPFSandboxPolicy()));
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
     return true;

@@ -14,7 +14,7 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 
-namespace playground2 {
+namespace sandbox {
 
 void Die::ExitGroup() {
   // exit_group() should exit our program. After all, it is defined as a
@@ -82,4 +82,4 @@ void Die::LogToStderr(const char* msg, const char* file, int line) {
 bool Die::simple_exit_ = false;
 bool Die::suppress_info_ = false;
 
-}  // namespace
+}  // namespace sandbox

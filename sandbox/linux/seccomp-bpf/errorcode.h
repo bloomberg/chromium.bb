@@ -8,7 +8,7 @@
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 
-namespace playground2 {
+namespace sandbox {
 
 struct arch_seccomp_data;
 
@@ -46,7 +46,7 @@ class ErrorCode {
   // access 64bit quantities. But policies are still advised to specify whether
   // a system call expects a 32bit or a 64bit quantity.
   enum ArgType {
-    // When passed as an argument to Sandbox::Cond(), TP_32BIT requests that
+    // When passed as an argument to SandboxBPF::Cond(), TP_32BIT requests that
     // the conditional test should operate on the 32bit part of the system call
     // argument.
     // On 64bit architectures, this verifies that user space did not pass
@@ -64,7 +64,7 @@ class ErrorCode {
     // having been sign extended.
     TP_32BIT,
 
-    // When passed as an argument to Sandbox::Cond(), TP_64BIT requests that
+    // When passed as an argument to SandboxBPF::Cond(), TP_64BIT requests that
     // the conditional test should operate on the full 64bit argument. It is
     // generally harmless to perform a 64bit test on 32bit systems, as the
     // kernel will always see the top 32 bits of all arguments as zero'd out.
@@ -148,7 +148,7 @@ class ErrorCode {
 
  private:
   friend class CodeGen;
-  friend class Sandbox;
+  friend class SandboxBPF;
   friend class Trap;
 
   // If we are wrapping a callback, we must assign a unique id. This id is
@@ -192,6 +192,6 @@ class ErrorCode {
   uint32_t err_;
 };
 
-}  // namespace
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
