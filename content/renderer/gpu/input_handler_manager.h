@@ -5,8 +5,7 @@
 #ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_
 #define CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_
 
-#include <map>
-
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -66,8 +65,8 @@ class InputHandlerManager {
       const base::WeakPtr<cc::InputHandler>& input_handler,
       const base::WeakPtr<RenderViewImpl>& render_view_impl);
 
-  typedef std::map<int,  // routing_id
-                   scoped_refptr<InputHandlerWrapper> > InputHandlerMap;
+  typedef base::ScopedPtrHashMap<int,  // routing_id
+                                 InputHandlerWrapper> InputHandlerMap;
   InputHandlerMap input_handlers_;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;

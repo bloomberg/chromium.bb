@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_WRAPPER_H_
 #define CONTENT_RENDERER_GPU_INPUT_HANDLER_WRAPPER_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/gpu/input_handler_proxy.h"
@@ -14,15 +13,14 @@
 namespace content {
 
 // This class lives on the compositor thread.
-class InputHandlerWrapper
-    : public InputHandlerProxyClient,
-      public base::RefCountedThreadSafe<InputHandlerWrapper> {
+class InputHandlerWrapper : public InputHandlerProxyClient {
  public:
   InputHandlerWrapper(InputHandlerManager* input_handler_manager,
                       int routing_id,
                       const scoped_refptr<base::MessageLoopProxy>& main_loop,
                       const base::WeakPtr<cc::InputHandler>& input_handler,
                       const base::WeakPtr<RenderViewImpl>& render_view_impl);
+  virtual ~InputHandlerWrapper();
 
   int routing_id() const { return routing_id_; }
   InputHandlerProxy* input_handler_proxy() { return &input_handler_proxy_; }
@@ -38,10 +36,6 @@ class InputHandlerWrapper
   virtual void DidOverscroll(const cc::DidOverscrollParams& params) OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<InputHandlerWrapper>;
-
-  virtual ~InputHandlerWrapper();
-
   InputHandlerManager* input_handler_manager_;
   int routing_id_;
   InputHandlerProxy input_handler_proxy_;

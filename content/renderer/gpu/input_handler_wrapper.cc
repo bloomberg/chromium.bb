@@ -22,6 +22,7 @@ InputHandlerWrapper::InputHandlerWrapper(
       input_handler_proxy_(input_handler.get()),
       main_loop_(main_loop),
       render_view_impl_(render_view_impl) {
+  DCHECK(input_handler);
   input_handler_proxy_.SetClient(this);
 }
 
