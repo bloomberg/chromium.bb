@@ -948,7 +948,17 @@ cr.define('login', function() {
 
     /** @override */
     activate: function() {
-      Oobe.launchUser(this.user.emailAddress, this.user.displayName);
+      if (this.passwordElement.hidden) {
+        Oobe.launchUser(this.user.emailAddress, this.user.displayName);
+      } else if (!this.passwordElement.value) {
+        return false;
+      } else {
+        chrome.send('authenticatedLaunchUser',
+                    [this.user.emailAddress,
+                     this.user.displayName,
+                     this.passwordElement.value]);
+      }
+      this.passwordElement.value = '';
       return true;
     },
 

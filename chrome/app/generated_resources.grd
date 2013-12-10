@@ -14637,6 +14637,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_SCREEN_LOCK_ACTIVE_USER">
         Currently signed in
       </message>
+      <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
+        Sorry, your password could not be verified. Please try again.
+      </message>
       <message name="IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT" desc="Text to display in the password field for user pod when no password has been entered.">
         Enter password
       </message>

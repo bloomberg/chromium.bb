@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -52,6 +53,7 @@ const char kKeyNeedsSignin[] = "needsSignin";
 // JS API callback names.
 const char kJsApiUserManagerInitialize[] = "userManagerInitialize";
 const char kJsApiUserManagerAddUser[] = "addUser";
+const char kJsApiUserManagerAuthLaunchUser[] = "authenticatedLaunchUser";
 const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
 const char kJsApiUserManagerLaunchUser[] = "launchUser";
 const char kJsApiUserManagerRemoveUser[] = "removeUser";
@@ -87,6 +89,18 @@ std::string GetAvatarImageAtIndex(
       info_cache.GetAvatarIconOfProfileAtIndex(index),
       is_gaia_picture, kAvatarIconSize, kAvatarIconSize);
   return webui::GetBitmapDataUrl(icon.AsBitmap());
+}
+
+size_t GetIndexOfProfileWithEmailAndName(const ProfileInfoCache& info_cache,
+                                         const string16& email,
+                                         const string16& name) {
+  for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
+    if (info_cache.GetUserNameOfProfileAtIndex(i) == email &&
+        info_cache.GetNameOfProfileAtIndex(i) == name) {
+      return i;
+    }
+  }
+  return std::string::npos;
 }
 
 } // namespace
@@ -172,6 +186,45 @@ void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
                                         base::Bind(&chrome::HideUserManager));
 }
 
+void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
+    const base::ListValue* args) {
+  string16 email_address;
+  if (!args->GetString(0, &email_address))
+    return;
+
+  string16 display_name;
+  if (!args->GetString(1, &display_name))
+    return;
+
+  std::string password;
+  if (!args->GetString(2, &password))
+    return;
+
+  ProfileInfoCache& info_cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = GetIndexOfProfileWithEmailAndName(
+      info_cache, email_address, display_name);
+  if (profile_index >= info_cache.GetNumberOfProfiles()) {
+    NOTREACHED();
+    return;
+  }
+  if (!chrome::ValidateLocalAuthCredentials(profile_index, password)) {
+    web_ui()->CallJavascriptFunction(
+        "cr.ui.Oobe.showSignInError",
+        base::FundamentalValue(0),
+        base::StringValue(
+            l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_AUTHENTICATING)),
+        base::StringValue(""),
+        base::FundamentalValue(0));
+    return;
+  }
+
+  info_cache.SetProfileSigninRequiredAtIndex(profile_index, false);
+  base::FilePath path = info_cache.GetPathOfProfileAtIndex(profile_index);
+  profiles::SwitchToProfile(path, desktop_type_, true,
+                            base::Bind(&chrome::HideUserManager));
+}
+
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   DCHECK(args);
   const Value* profile_path_value;
@@ -212,16 +265,25 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
 
   ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = GetIndexOfProfileWithEmailAndName(
+      info_cache, emailAddress, displayName);
 
-  for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
-    if (info_cache.GetUserNameOfProfileAtIndex(i) == emailAddress &&
-        info_cache.GetNameOfProfileAtIndex(i) == displayName) {
-      base::FilePath path = info_cache.GetPathOfProfileAtIndex(i);
-      profiles::SwitchToProfile(path, chrome::GetActiveDesktop(), true,
-                                base::Bind(&chrome::HideUserManager));
-      break;
-    }
+  if (profile_index >= info_cache.GetNumberOfProfiles()) {
+    NOTREACHED();
+    return;
   }
+
+  // It's possible that a user breaks into the user-manager page using the
+  // JavaScript Inspector and causes a "locked" profile to call this
+  // unauthenticated version of "launch" instead of the proper one.  Thus,
+  // we have to validate in (secure) C++ code that it really is a profile
+  // not needing authentication.  If it is, just ignore the "launch" request.
+  if (info_cache.ProfileIsSigninRequiredAtIndex(profile_index))
+    return;
+
+  base::FilePath path = info_cache.GetPathOfProfileAtIndex(profile_index);
+  profiles::SwitchToProfile(
+      path, desktop_type_, true, base::Bind(&chrome::HideUserManager));
 }
 
 void UserManagerScreenHandler::RegisterMessages() {
@@ -230,6 +292,9 @@ void UserManagerScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerAddUser,
       base::Bind(&UserManagerScreenHandler::HandleAddUser,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerAuthLaunchUser,
+      base::Bind(&UserManagerScreenHandler::HandleAuthenticatedLaunchUser,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerLaunchGuest,
       base::Bind(&UserManagerScreenHandler::HandleLaunchGuest,
