@@ -17,16 +17,16 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   ProfileChooserControllerTest() {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
 
     testing_profile_manager()->
         CreateTestingProfile("test1", scoped_ptr<PrefServiceSyncable>(),
-                             ASCIIToUTF16("Test 1"), 1, std::string(),
+                             ASCIIToUTF16("Test 1"), 0, std::string(),
                              TestingProfile::TestingFactories());
     testing_profile_manager()->
         CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
-                             ASCIIToUTF16("Test 2"), 0, std::string(),
+                             ASCIIToUTF16("Test 2"), 1, std::string(),
                              TestingProfile::TestingFactories());
 
     menu_ = new AvatarMenu(testing_profile_manager()->profile_info_cache(),
@@ -35,11 +35,19 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
 
     // There should be the default profile + two profiles we created.
     EXPECT_EQ(3U, menu_->GetNumberOfItems());
+  }
 
+  virtual void TearDown() OVERRIDE {
+    [controller() close];
+    CocoaProfileTest::TearDown();
+  }
+
+  void StartProfileChooserController() {
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
     controller_ = [[ProfileChooserController alloc] initWithBrowser:browser()
                                                          anchoredAt:point];
+    [controller() showWindow:nil];
   }
 
   ProfileChooserController* controller() { return controller_; }
@@ -56,7 +64,7 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(ProfileChooserControllerTest, InitialLayout) {
-  [controller() showWindow:nil];
+  StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
 
   // Three profiles means we shoud have one active card, two "other" profiles,
@@ -89,18 +97,54 @@ TEST_F(ProfileChooserControllerTest, InitialLayout) {
     EXPECT_EQ(controller(), [button target]);
   }
 
-  // There should be a profile avatar and a name in the active card view.
+  // There should be at least profile avatar and a name in the active card view.
+  // The links displayed in this subview are checked in separate tests.
   NSArray* activeCardSubviews = [[subviews objectAtIndex:4] subviews];
-  EXPECT_EQ(2U, [activeCardSubviews count]);
+  EXPECT_TRUE([activeCardSubviews count] > 2);
 
   NSView* activeProfileImage = [activeCardSubviews objectAtIndex:0];
   EXPECT_TRUE([activeProfileImage isKindOfClass:[NSImageView class]]);
 
-  NSView* activeProfileName = [activeCardSubviews objectAtIndex:1];
+  // There are some links in between. The profile name is added last.
+  CGFloat index = [activeCardSubviews count] - 1;
+  NSView* activeProfileName = [activeCardSubviews objectAtIndex:index];
   EXPECT_TRUE([activeProfileName isKindOfClass:[NSTextField class]]);
   EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
       [static_cast<NSTextField*>(activeProfileName) stringValue]));
+}
 
-  [controller() close];
+TEST_F(ProfileChooserControllerTest, LocalProfileActiveCardLinks) {
+  StartProfileChooserController();
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  NSArray* activeCardSubviews = [[subviews objectAtIndex:4] subviews];
+
+  // There are 2 items for the profile name/photo, and a "sign in" link.
+  EXPECT_EQ(3U, [activeCardSubviews count]);
+  NSButton* signinLink =
+      static_cast<NSButton*>([activeCardSubviews objectAtIndex:1]);
+  EXPECT_EQ(@selector(showSigninPage:), [signinLink action]);
+  EXPECT_EQ(controller(), [signinLink target]);
+}
+
+TEST_F(ProfileChooserControllerTest, SignedInProfileActiveCardLinks) {
+  // Sign in the first profile.
+  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
+  cache->SetUserNameOfProfileAtIndex(0, ASCIIToUTF16("user_name"));
+
+  StartProfileChooserController();
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  NSArray* activeCardSubviews = [[subviews objectAtIndex:4] subviews];
+
+  // There are 2 items for the profile name/photo, and two links.
+  EXPECT_EQ(4U, [activeCardSubviews count]);
+  NSButton* manageAccountsLink =
+      static_cast<NSButton*>([activeCardSubviews objectAtIndex:1]);
+  EXPECT_EQ(@selector(showAccountManagement:), [manageAccountsLink action]);
+  EXPECT_EQ(controller(), [manageAccountsLink target]);
+
+  NSButton* lockLink =
+      static_cast<NSButton*>([activeCardSubviews objectAtIndex:2]);
+  EXPECT_EQ(@selector(lockProfile:), [lockLink action]);
+  EXPECT_EQ(controller(), [lockLink target]);
 }
 

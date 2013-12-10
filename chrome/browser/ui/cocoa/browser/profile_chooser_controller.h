@@ -41,6 +41,15 @@ class Browser;
 // Closes all guest browser windows.
 - (IBAction)exitGuestProfile:(id)sender;
 
+// Shows the account management view.
+- (IBAction)showAccountManagement:(id)sender;
+
+// Locks the active profile.
+- (IBAction)lockProfile:(id)sender;
+
+// Shows the signin page.
+- (IBAction)showSigninPage:(id)sender;
+
 @end
 
 // Testing API /////////////////////////////////////////////////////////////////
