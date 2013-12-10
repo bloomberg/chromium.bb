@@ -54,7 +54,7 @@ namespace WebCore {
 
 // Return a typeface associated with the hfont, and return its size and
 // lfQuality from the hfont's LOGFONT.
-PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT, int* size, int* paintTextFlags);
+PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT, int* size);
 
 class FontDescription;
 class GraphicsContext;
@@ -95,7 +95,7 @@ public:
 #endif
     SkTypeface* typeface() const { return m_typeface.get(); }
     SkFontID uniqueID() const { return m_typeface->uniqueID(); }
-    int paintTextFlags() const { return m_paintTextFlags; }
+    int paintTextFlags() const;
 
     String fontFamilyName() const;
 
@@ -171,7 +171,6 @@ private:
     bool m_fakeItalic;
 
     RefPtr<SkTypeface> m_typeface;
-    int m_paintTextFlags;
 
 #if USE(HARFBUZZ)
     mutable RefPtr<HarfBuzzFace> m_harfBuzzFace;
