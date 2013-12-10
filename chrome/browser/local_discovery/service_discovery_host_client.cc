@@ -7,9 +7,11 @@
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "net/dns/mdns_client.h"
 #include "net/socket/socket_descriptor.h"
 
 #if defined(OS_POSIX)
+#include <netinet/in.h>
 #include "base/file_descriptor_posix.h"
 #endif  // OS_POSIX
 
@@ -17,6 +19,37 @@ namespace local_discovery {
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
+
+namespace {
+
+#if defined(OS_POSIX)
+SocketInfoList GetSocketsOnFileThread() {
+  net::InterfaceIndexFamilyList interfaces(net::GetMDnsInterfacesToBind());
+  SocketInfoList sockets;
+  for (size_t i = 0; i < interfaces.size(); ++i) {
+    DCHECK(interfaces[i].second == net::ADDRESS_FAMILY_IPV4 ||
+           interfaces[i].second == net::ADDRESS_FAMILY_IPV6);
+    base::FileDescriptor socket_descriptor(
+        net::CreatePlatformSocket(
+            net::ConvertAddressFamily(interfaces[i].second), SOCK_DGRAM,
+                                      IPPROTO_UDP),
+        true);
+    LOG_IF(ERROR, socket_descriptor.fd == net::kInvalidSocket)
+        << "Can't create socket, family=" << interfaces[i].second;
+    if (socket_descriptor.fd != net::kInvalidSocket) {
+      LocalDiscoveryMsg_SocketInfo socket;
+      socket.descriptor = socket_descriptor;
+      socket.interface_index = interfaces[i].first;
+      socket.address_family = interfaces[i].second;
+      sockets.push_back(socket);
+    }
+  }
+
+  return sockets;
+}
+#endif  // OS_POSIX
+
+}  // namespace
 
 class ServiceDiscoveryHostClient::ServiceWatcherProxy : public ServiceWatcher {
  public:
@@ -229,31 +262,54 @@ void ServiceDiscoveryHostClient::Shutdown() {
       base::Bind(&ServiceDiscoveryHostClient::ShutdownOnIOThread, this));
 }
 
+#if defined(OS_POSIX)
+
+void ServiceDiscoveryHostClient::StartOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!utility_host_);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&GetSocketsOnFileThread),
+      base::Bind(&ServiceDiscoveryHostClient::OnSocketsReady, this));
+}
+
+void ServiceDiscoveryHostClient::OnSocketsReady(const SocketInfoList& sockets) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!utility_host_);
+  utility_host_ = UtilityProcessHost::Create(
+      this, base::MessageLoopProxy::current().get())->AsWeakPtr();
+  if (!utility_host_)
+    return;
+  utility_host_->EnableMDns();
+  utility_host_->StartBatchMode();
+  if (sockets.empty()) {
+    ShutdownOnIOThread();
+    return;
+  }
+  utility_host_->Send(new LocalDiscoveryMsg_SetSockets(sockets));
+  // Send messages for requests made during network enumeration.
+  for (size_t i = 0; i < delayed_messages_.size(); ++i)
+    utility_host_->Send(delayed_messages_[i]);
+  delayed_messages_.weak_clear();
+}
+
+#else  // OS_POSIX
+
 void ServiceDiscoveryHostClient::StartOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!utility_host_);
   utility_host_ = UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current().get())->AsWeakPtr();
-  if (utility_host_) {
-    utility_host_->EnableMDns();
-    utility_host_->StartBatchMode();
-
-#if defined(OS_POSIX)
-    base::FileDescriptor v4(net::CreatePlatformSocket(AF_INET, SOCK_DGRAM, 0),
-                            true);
-    base::FileDescriptor v6(net::CreatePlatformSocket(AF_INET6, SOCK_DGRAM, 0),
-                            true);
-    LOG_IF(ERROR, v4.fd == net::kInvalidSocket) << "Can't create IPv4 socket.";
-    LOG_IF(ERROR, v6.fd == net::kInvalidSocket) << "Can't create IPv6 socket.";
-    if (v4.fd == net::kInvalidSocket &&
-        v6.fd == net::kInvalidSocket) {
-      ShutdownOnIOThread();
-    } else {
-      utility_host_->Send(new LocalDiscoveryMsg_SetSockets(v4, v6));
-    }
-#endif  // OS_POSIX
-  }
+  if (!utility_host_)
+    return;
+  utility_host_->EnableMDns();
+  utility_host_->StartBatchMode();
+  // Windows does not enumerate networks here.
+  DCHECK(delayed_messages_.empty());
 }
+
+#endif  // OS_POSIX
 
 void ServiceDiscoveryHostClient::ShutdownOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -277,7 +333,7 @@ void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
   if (utility_host_) {
     utility_host_->Send(msg);
   } else {
-    delete msg;
+    delayed_messages_.push_back(msg);
   }
 }
 

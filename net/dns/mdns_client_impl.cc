@@ -27,43 +27,20 @@ namespace {
 
 const unsigned MDnsTransactionTimeoutSeconds = 3;
 
-int Bind(const IPEndPoint& multicast_addr, DatagramServerSocket* socket) {
-  IPAddressNumber address_any(multicast_addr.address().size());
-  IPEndPoint bind_endpoint(address_any, multicast_addr.port());
-
-  socket->AllowAddressReuse();
-  int rv = socket->Listen(bind_endpoint);
-  if (rv < OK)
-    return rv;
-
-  socket->SetMulticastLoopbackMode(false);
-  return socket->JoinGroup(multicast_addr.address());
-}
-
-void CreateAndBindSocket(AddressFamily address_family,
-                         ScopedVector<DatagramServerSocket>* sockets) {
-  scoped_ptr<DatagramServerSocket> socket(
-      new UDPServerSocket(NULL, NetLog::Source()));
-
-  IPEndPoint multicast_addr = GetMDnsIPEndPoint(address_family);
-  int rv = Bind(multicast_addr, socket.get());
-  if (rv == OK) {
-    sockets->push_back(socket.release());
-  } else {
-    VLOG(1) << "Bind failed, endpoint=" << multicast_addr.ToStringWithoutPort()
-            << ", error=" << rv;
-  }
-}
-
 }  // namespace
 
 void MDnsSocketFactoryImpl::CreateSockets(
     ScopedVector<DatagramServerSocket>* sockets) {
-  CreateAndBindSocket(ADDRESS_FAMILY_IPV4, sockets);
-  CreateAndBindSocket(ADDRESS_FAMILY_IPV6, sockets);
+  InterfaceIndexFamilyList interfaces(GetMDnsInterfacesToBind());
+  for (size_t i = 0; i < interfaces.size(); ++i) {
+    DCHECK(interfaces[i].second == net::ADDRESS_FAMILY_IPV4 ||
+           interfaces[i].second == net::ADDRESS_FAMILY_IPV6);
+    scoped_ptr<DatagramServerSocket> socket(
+        CreateAndBindMDnsSocket(interfaces[i].second, interfaces[i].first));
+    if (socket)
+      sockets->push_back(socket.release());
+  }
 }
-
-
 
 MDnsConnection::SocketHandler::SocketHandler(
     scoped_ptr<DatagramServerSocket> socket,

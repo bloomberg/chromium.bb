@@ -7,9 +7,13 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/utility_process_host_client.h"
+
+struct LocalDiscoveryMsg_SocketInfo;
 
 namespace base {
 class TaskRunner;
@@ -20,6 +24,10 @@ class UtilityProcessHost;
 }
 
 namespace local_discovery {
+
+#if defined(OS_POSIX)
+typedef std::vector<LocalDiscoveryMsg_SocketInfo> SocketInfoList;
+#endif  // OS_POSIX
 
 // Implementation of ServiceDiscoveryClient that delegates all functionality to
 // utility process.
@@ -68,6 +76,10 @@ class ServiceDiscoveryHostClient
 
   void StartOnIOThread();
   void ShutdownOnIOThread();
+
+#if defined(OS_POSIX)
+  void OnSocketsReady(const SocketInfoList& interfaces);
+#endif  // OS_POSIX
 
   void InvalidateWatchers();
 
@@ -124,6 +136,7 @@ class ServiceDiscoveryHostClient
   DomainResolverCallbacks domain_resolver_callbacks_;
   scoped_refptr<base::TaskRunner> callback_runner_;
   scoped_refptr<base::TaskRunner> io_runner_;
+  ScopedVector<IPC::Message> delayed_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryHostClient);
 };

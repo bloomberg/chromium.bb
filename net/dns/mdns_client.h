@@ -165,7 +165,20 @@ class NET_EXPORT MDnsClient {
   static scoped_ptr<MDnsClient> CreateDefault();
 };
 
-IPEndPoint NET_EXPORT GetMDnsIPEndPoint(AddressFamily address_family);
+NET_EXPORT IPEndPoint GetMDnsIPEndPoint(AddressFamily address_family);
+
+typedef std::vector<std::pair<uint32, AddressFamily> > InterfaceIndexFamilyList;
+// Returns pairs of interface and address family to bind. Current
+// implementation returns unique list of all available interfaces.
+NET_EXPORT InterfaceIndexFamilyList GetMDnsInterfacesToBind();
+
+// Create sockets, binds socket to MDns endpoint, and sets multicast interface
+// and joins multicast group on for |interface_index|.
+// Returns NULL if failed.
+NET_EXPORT scoped_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
+    AddressFamily address_family,
+    uint32 interface_index);
 
 }  // namespace net
+
 #endif  // NET_DNS_MDNS_CLIENT_H_

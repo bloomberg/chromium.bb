@@ -11,6 +11,7 @@
 #include "chrome/utility/local_discovery/service_discovery_client_impl.h"
 #include "content/public/utility/utility_thread.h"
 #include "net/socket/socket_descriptor.h"
+#include "net/udp/datagram_server_socket.h"
 
 namespace local_discovery {
 
@@ -18,75 +19,91 @@ namespace {
 
 void ClosePlatformSocket(net::SocketDescriptor socket);
 
-class SocketFactory : public net::PlatformSocketFactory {
+// Sets socket factory used by |net::CreatePlatformSocket|. Implemetation
+// keeps single socket that will be returned to the first call to
+// |net::CreatePlatformSocket| during object lifetime.
+class ScopedSocketFactory : public net::PlatformSocketFactory {
  public:
-  SocketFactory()
-      : socket_v4_(net::kInvalidSocket),
-        socket_v6_(net::kInvalidSocket) {
+  explicit ScopedSocketFactory(net::SocketDescriptor socket) : socket_(socket) {
+    net::PlatformSocketFactory::SetInstance(this);
   }
 
-  void SetSockets(net::SocketDescriptor socket_v4,
-                  net::SocketDescriptor socket_v6) {
-    Reset();
-    socket_v4_ = socket_v4;
-    socket_v6_ = socket_v6;
-    VLOG(1) << "SetSockets: " << socket_v4_ << " " << socket_v6_;
+  virtual ~ScopedSocketFactory() {
+    net::PlatformSocketFactory::SetInstance(NULL);
+    ClosePlatformSocket(socket_);
+    socket_ = net::kInvalidSocket;
   }
 
-  void Reset() {
-    if (socket_v4_ != net::kInvalidSocket) {
-      ClosePlatformSocket(socket_v4_);
-      socket_v4_ = net::kInvalidSocket;
-    }
-    if (socket_v6_ != net::kInvalidSocket) {
-      ClosePlatformSocket(socket_v6_);
-      socket_v6_ = net::kInvalidSocket;
-    }
-  }
-
-  virtual ~SocketFactory() {
-    Reset();
-  }
-
- protected:
   virtual net::SocketDescriptor CreateSocket(int family, int type,
                                              int protocol) OVERRIDE {
+    DCHECK_EQ(type, SOCK_DGRAM);
+    DCHECK(family == AF_INET || family == AF_INET6);
     net::SocketDescriptor result = net::kInvalidSocket;
-    if (type != SOCK_DGRAM) {
-      NOTREACHED();
-    } else if (family == AF_INET) {
-      std::swap(result, socket_v4_);
-    } else if (family == AF_INET6) {
-      std::swap(result, socket_v6_);
-    }
+    std::swap(result, socket_);
     return result;
   }
 
  private:
-  net::SocketDescriptor socket_v4_;
-  net::SocketDescriptor socket_v6_;
-
-  DISALLOW_COPY_AND_ASSIGN(SocketFactory);
+  net::SocketDescriptor socket_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedSocketFactory);
 };
 
-base::LazyInstance<SocketFactory>
-    g_local_discovery_socket_factory = LAZY_INSTANCE_INITIALIZER;
+struct SocketInfo {
+  SocketInfo(net::SocketDescriptor socket,
+             net::AddressFamily address_family,
+             uint32 interface_index)
+      : socket(socket),
+        address_family(address_family),
+        interface_index(interface_index) {
+  }
+  net::SocketDescriptor socket;
+  net::AddressFamily address_family;
+  uint32 interface_index;
+};
 
-class ScopedSocketFactorySetter {
+// Returns list of sockets preallocated before.
+class PreCreatedMDnsSocketFactory : public net::MDnsSocketFactory {
  public:
-  ScopedSocketFactorySetter() {
-    net::PlatformSocketFactory::SetInstance(
-        &g_local_discovery_socket_factory.Get());
+  PreCreatedMDnsSocketFactory() {}
+  virtual ~PreCreatedMDnsSocketFactory() {
+    Reset();
   }
 
-  ~ScopedSocketFactorySetter() {
-    net::PlatformSocketFactory::SetInstance(NULL);
-    g_local_discovery_socket_factory.Get().Reset();
+  // net::MDnsSocketFactory implementation:
+  virtual void CreateSockets(
+      ScopedVector<net::DatagramServerSocket>* sockets) OVERRIDE {
+    for (size_t i = 0; i < sockets_.size(); ++i) {
+      // Takes ownership of sockets_[i].socket;
+      ScopedSocketFactory platform_factory(sockets_[i].socket);
+      scoped_ptr<net::DatagramServerSocket> socket(
+          net::CreateAndBindMDnsSocket(sockets_[i].address_family,
+                                       sockets_[i].interface_index));
+      if (socket)
+        sockets->push_back(socket.release());
+    }
+    sockets_.clear();
+  }
+
+  void AddSocket(const SocketInfo& socket) {
+    sockets_.push_back(socket);
+  }
+
+  void Reset() {
+    for (size_t i = 0; i < sockets_.size(); ++i) {
+      if (sockets_[i].socket != net::kInvalidSocket)
+        ClosePlatformSocket(sockets_[i].socket);
+    }
+    sockets_.clear();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedSocketFactorySetter);
+  std::vector<SocketInfo> sockets_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreCreatedMDnsSocketFactory);
 };
+
+base::LazyInstance<PreCreatedMDnsSocketFactory>
+    g_local_discovery_socket_factory = LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_WIN)
 
@@ -95,9 +112,17 @@ void ClosePlatformSocket(net::SocketDescriptor socket) {
 }
 
 void StaticInitializeSocketFactory() {
-  g_local_discovery_socket_factory.Get().SetSockets(
-      net::CreatePlatformSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP),
-      net::CreatePlatformSocket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP));
+  net::InterfaceIndexFamilyList interfaces(net::GetMDnsInterfacesToBind());
+  for (size_t i = 0; i < interfaces.size(); ++i) {
+    DCHECK(interfaces[i].second == net::ADDRESS_FAMILY_IPV4 ||
+           interfaces[i].second == net::ADDRESS_FAMILY_IPV6);
+    net::SocketDescriptor descriptor =
+        net::CreatePlatformSocket(
+            net::ConvertAddressFamily(interfaces[i].second), SOCK_DGRAM,
+                                      IPPROTO_UDP);
+    g_local_discovery_socket_factory.Get().AddSocket(
+        SocketInfo(descriptor, interfaces[i].second, interfaces[i].first));
+  }
 }
 
 #else  // OS_WIN
@@ -159,16 +184,14 @@ void ServiceDiscoveryMessageHandler::InitializeMdns() {
     return;
 
   mdns_client_ = net::MDnsClient::CreateDefault();
-  {
-    // Temporarily redirect network code to use pre-created sockets.
-    ScopedSocketFactorySetter socket_factory_setter;
-    scoped_ptr<net::MDnsSocketFactory> mdns_sockets =
-        net::MDnsSocketFactory::CreateDefault();
-    if (!mdns_client_->StartListening(mdns_sockets.get())) {
-      VLOG(1) << "Failed to start MDnsClient";
-      Send(new LocalDiscoveryHostMsg_Error());
-      return;
-    }
+  bool result =
+      mdns_client_->StartListening(g_local_discovery_socket_factory.Pointer());
+  // Close unused sockets.
+  g_local_discovery_socket_factory.Get().Reset();
+  if (!result) {
+    VLOG(1) << "Failed to start MDnsClient";
+    Send(new LocalDiscoveryHostMsg_Error());
+    return;
   }
 
   service_discovery_client_.reset(
@@ -225,9 +248,12 @@ void ServiceDiscoveryMessageHandler::PostTask(
 
 #if defined(OS_POSIX)
 void ServiceDiscoveryMessageHandler::OnSetSockets(
-    const base::FileDescriptor& socket_v4,
-    const base::FileDescriptor& socket_v6) {
-  g_local_discovery_socket_factory.Get().SetSockets(socket_v4.fd, socket_v6.fd);
+    const std::vector<LocalDiscoveryMsg_SocketInfo>& sockets) {
+  for (size_t i = 0; i < sockets.size(); ++i) {
+    g_local_discovery_socket_factory.Get().AddSocket(
+        SocketInfo(sockets[i].descriptor.fd, sockets[i].address_family,
+                   sockets[i].interface_index));
+  }
 }
 #endif  // OS_POSIX
 
