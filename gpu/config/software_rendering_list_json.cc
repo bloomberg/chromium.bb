@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.18",
+  "version": "6.19",
   "entries": [
     {
       "id": 1,
@@ -217,21 +217,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "vendor_id": "0x10de",
       "device_id": ["0x029e"],
-      "features": [
-        "all"
-      ]
-    },
-    {
-      "id": 19,
-      "description": "GPU acceleration is no longer supported in Leopard",
-      "cr_bugs": [87157, 130495],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "=",
-          "value": "10.5"
-        }
-      },
       "features": [
         "all"
       ]
