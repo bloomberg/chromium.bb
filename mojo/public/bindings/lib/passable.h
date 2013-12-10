@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_BINDINGS_LIB_PASSABLE_H_
 #define MOJO_PUBLIC_BINDINGS_LIB_PASSABLE_H_
 
+#include "mojo/public/system/core_cpp.h"
+
 namespace mojo {
 
 template <typename HandleType>
@@ -54,8 +56,8 @@ class AssignableAndPassable : public Passable<HandleType> {
   }
 
   void reset(HandleType obj = HandleType()) {
-    ScopedHandleBase<HandleType>(*ptr_);
-    *ptr_ = obj;
+    ScopedHandleBase<HandleType>(*this->ptr_);
+    this->ptr_->set_value(obj.value());
   }
 };
 

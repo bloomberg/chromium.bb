@@ -26,11 +26,11 @@
         'mojo_system',
       ],
       'sources': [
+        'public/tests/bindings_array_unittest.cc',
         'public/tests/bindings_connector_unittest.cc',
         'public/tests/bindings_handle_passing_unittest.cc',
         'public/tests/bindings_remote_ptr_unittest.cc',
         'public/tests/bindings_type_conversion_unittest.cc',
-        'public/tests/bindings_unittest.cc',
         'public/tests/buffer_unittest.cc',
         'public/tests/math_calculator.mojom',
         'public/tests/sample_factory.mojom',
@@ -61,9 +61,11 @@
         '..'
       ],
       'sources': [
-        'public/bindings/lib/bindings.cc',
+        'public/bindings/lib/array.cc',
+        'public/bindings/lib/array.h',
+        'public/bindings/lib/array_internal.h',
+        'public/bindings/lib/array_internal.cc',
         'public/bindings/lib/bindings.h',
-        'public/bindings/lib/bindings_internal.cc',
         'public/bindings/lib/bindings_internal.h',
         'public/bindings/lib/bindings_serialization.cc',
         'public/bindings/lib/bindings_serialization.h',

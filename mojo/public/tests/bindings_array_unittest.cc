@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/lib/bindings.h"
+#include "mojo/public/bindings/lib/array.h"
 #include "mojo/public/tests/simple_bindings_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -10,7 +10,7 @@ namespace mojo {
 namespace test {
 
 // Tests that basic Array operations work.
-TEST(ArrayTest, Basic) {
+TEST(BindingsArrayTest, Basic) {
   SimpleBindingsSupport bindings_support;
 
   // 8 bytes for the array, with 8 bytes left over for elements.
@@ -33,7 +33,7 @@ TEST(ArrayTest, Basic) {
 
 // Tests that basic Array<bool> operations work, and that it's packed into 1
 // bit per element.
-TEST(ArrayTest, Bool) {
+TEST(BindingsArrayTest, Bool) {
   SimpleBindingsSupport bindings_support;
 
   // 8 bytes for the array header, with 8 bytes left over for elements.
@@ -53,6 +53,31 @@ TEST(ArrayTest, Bool) {
     bool val = i % 3 == 0;
     EXPECT_EQ(val, array[i]);
   }
+}
+
+// Tests that Array<Handle> supports transferring handles.
+TEST(BindingsArrayTest, Handle) {
+  SimpleBindingsSupport bindings_support;
+
+  AllocationScope scope;
+
+  ScopedMessagePipeHandle pipe0, pipe1;
+  CreateMessagePipe(&pipe0, &pipe1);
+
+  Array<MessagePipeHandle>::Builder handles_builder(2);
+  handles_builder[0] = pipe0.Pass();
+  handles_builder[1].reset(pipe1.release());
+
+  EXPECT_FALSE(pipe0.is_valid());
+  EXPECT_FALSE(pipe1.is_valid());
+
+  Array<MessagePipeHandle> handles = handles_builder.Finish();
+  EXPECT_TRUE(handles[0].is_valid());
+  EXPECT_TRUE(handles[1].is_valid());
+
+  pipe0 = handles[0].Pass();
+  EXPECT_TRUE(pipe0.is_valid());
+  EXPECT_FALSE(handles[0].is_valid());
 }
 
 }  // namespace test
