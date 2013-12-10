@@ -122,7 +122,7 @@ def GetGomaConfig(gomadir, osname, arch, toolname, is_pnacl_toolchain):
   """Returns full-path of gomacc if goma is available or None."""
   # Start goma support from os/arch/toolname that have been tested.
   # Set NO_NACL_GOMA=true to force to avoid using goma.
-  if (osname != 'linux' or arch not in ['x86-32', 'x86-64']
+  if (osname not in ['linux', 'mac'] or arch not in ['x86-32', 'x86-64']
       or toolname not in ['newlib', 'glibc']
       or IsEnvFlagTrue('NO_NACL_GOMA', default=False)):
     return {}
