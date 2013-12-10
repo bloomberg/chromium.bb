@@ -502,7 +502,7 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
     m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_colorBuffer);
     m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GraphicsContext3D::UNSIGNED_BYTE);
     if (m_lastColorBuffer)
-        m_lastColorBuffer->size = m_size;
+        m_lastColorBuffer->size = size;
 
     m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
 
