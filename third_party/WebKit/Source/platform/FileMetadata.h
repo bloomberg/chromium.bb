@@ -32,7 +32,7 @@
 #define FileMetadata_h
 
 #include "platform/PlatformExport.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 #include <time.h>
