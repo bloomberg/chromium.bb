@@ -42,6 +42,9 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue
     if (fraction <= 0 || fraction >= 1)
         return defaultInterpolateTo(this, value, fraction);
     RefPtr<CSSValue> fromValue = this->toCSSValue();
+    // FIXME: Once cross-fade works on generated image types, remove this check.
+    if (fromValue->isImageGeneratorValue())
+        return defaultInterpolateTo(this, value, fraction);
     if (!fromValue->isImageValue() && !fromValue->isImageGeneratorValue()) {
         if (!m_image->isImageResource())
             return defaultInterpolateTo(this, value, fraction);
@@ -50,6 +53,9 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue
     }
     const AnimatableImage* image = toAnimatableImage(value);
     RefPtr<CSSValue> toValue = image->toCSSValue();
+    // FIXME: Once cross-fade works on generated image types, remove this check.
+    if (toValue->isImageGeneratorValue())
+        return defaultInterpolateTo(this, value, fraction);
     if (!toValue->isImageValue() && !toValue->isImageGeneratorValue()) {
         if (!image->m_image->isImageResource())
             return defaultInterpolateTo(this, value, fraction);
