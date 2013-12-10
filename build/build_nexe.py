@@ -118,13 +118,16 @@ def IsEnvFlagTrue(flag_name, default=False):
   return bool(re.search(flag_value, r'^([tTyY]|1:?)'))
 
 
-def GetGomaConfig(gomadir, osname, arch, toolname):
+def GetGomaConfig(gomadir, osname, arch, toolname, is_pnacl_toolchain):
   """Returns full-path of gomacc if goma is available or None."""
   # Start goma support from os/arch/toolname that have been tested.
   # Set NO_NACL_GOMA=true to force to avoid using goma.
   if (osname != 'linux' or arch not in ['x86-32', 'x86-64']
       or toolname not in ['newlib', 'glibc']
       or IsEnvFlagTrue('NO_NACL_GOMA', default=False)):
+    return {}
+  # TODO(yyanagisawa): should fix ambiguous executable selection on pnacl-clang.
+  if is_pnacl_toolchain:
     return {}
 
   goma_config = {}
@@ -267,7 +270,8 @@ class Builder(object):
     self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
     self.finalize_pexe = options.finalize_pexe and arch == 'pnacl'
-    goma_config = GetGomaConfig(options.gomadir, self.osname, arch, toolname)
+    goma_config = GetGomaConfig(options.gomadir, self.osname, arch, toolname,
+                                self.is_pnacl_toolchain)
     self.gomacc = goma_config.get('gomacc', '')
     self.goma_burst = goma_config.get('burst', False)
 
