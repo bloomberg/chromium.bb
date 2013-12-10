@@ -123,7 +123,7 @@ const char kDisableAudio[]                  = "disable-audio";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
-// Enables browser plugin compositing experiment.
+// Disable browser plugin compositing experiment.
 const char kDisableBrowserPluginCompositing[] =
     "disable-browser-plugin-compositing";
 
