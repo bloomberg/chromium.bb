@@ -62,8 +62,6 @@ RenderEmbeddedObject::RenderEmbeddedObject(Element* element)
 
 RenderEmbeddedObject::~RenderEmbeddedObject()
 {
-    if (frameView())
-        frameView()->removeWidgetToUpdate(this);
 }
 
 bool RenderEmbeddedObject::requiresLayer() const
@@ -210,7 +208,7 @@ void RenderEmbeddedObject::layout()
     updateLayerTransform();
 
     if (!widget() && frameView())
-        frameView()->addWidgetToUpdate(this);
+        frameView()->addWidgetToUpdate(*this);
 
     clearNeedsLayout();
 

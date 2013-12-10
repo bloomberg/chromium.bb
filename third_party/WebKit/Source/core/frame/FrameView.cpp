@@ -1201,25 +1201,14 @@ RenderBox* FrameView::embeddedContentBox() const
     return 0;
 }
 
-void FrameView::addWidgetToUpdate(RenderObject* object)
+void FrameView::addWidgetToUpdate(RenderEmbeddedObject& object)
 {
-    if (!m_widgetUpdateSet)
-        m_widgetUpdateSet = adoptPtr(new RenderObjectSet);
-
     // Tell the DOM element that it needs a widget update.
-    Node* node = object->node();
+    Node* node = object.node();
     if (node->hasTagName(objectTag) || node->hasTagName(embedTag))
         toHTMLPlugInElement(node)->setNeedsWidgetUpdate(true);
 
-    m_widgetUpdateSet->add(object);
-}
-
-void FrameView::removeWidgetToUpdate(RenderObject* object)
-{
-    if (!m_widgetUpdateSet)
-        return;
-
-    m_widgetUpdateSet->remove(object);
+    m_widgetUpdateSet.add(&object);
 }
 
 void FrameView::setMediaType(const AtomicString& mediaType)
@@ -2152,73 +2141,38 @@ void FrameView::scrollToAnchor()
     m_maintainScrollPositionAnchor = anchorNode;
 }
 
-void FrameView::updateWidget(RenderObject* object)
-{
-    ASSERT(!object->node() || object->node()->isElementNode());
-    Element* ownerElement = toElement(object->node());
-    // The object may have already been destroyed (thus node cleared),
-    // but FrameView holds a manual ref, so it won't have been deleted.
-    ASSERT(m_widgetUpdateSet->contains(object));
-    if (!ownerElement)
-        return;
-
-    if (object->isEmbeddedObject()) {
-        RenderEmbeddedObject* embeddedObject = static_cast<RenderEmbeddedObject*>(object);
-        // No need to update if it's already crashed or known to be missing.
-        if (embeddedObject->showsUnavailablePluginIndicator())
-            return;
-
-        // FIXME: This could turn into a real virtual dispatch if we defined
-        // updateWidget(PluginCreationOption) on HTMLElement.
-        if (ownerElement->isPluginElement()) {
-            HTMLPlugInElement* pluginElement = toHTMLPlugInElement(ownerElement);
-            if (pluginElement->needsWidgetUpdate())
-                pluginElement->updateWidget();
-        } else {
-            ASSERT_NOT_REACHED();
-        }
-
-        // Caution: it's possible the object was destroyed again, since loading a
-        // plugin may run any arbitrary JavaScript.
-        embeddedObject->updateWidgetPosition();
-    }
-}
-
 bool FrameView::updateWidgets()
 {
-    if (m_nestedLayoutCount > 1 || !m_widgetUpdateSet || m_widgetUpdateSet->isEmpty())
+    if (m_nestedLayoutCount > 1 || m_widgetUpdateSet.isEmpty())
         return true;
 
-    size_t size = m_widgetUpdateSet->size();
+    // Need to swap because script will run inside the below loop and invalidate the iterator.
+    EmbeddedObjectSet objects;
+    objects.swap(m_widgetUpdateSet);
 
-    Vector<RenderObject*> objects;
-    objects.reserveInitialCapacity(size);
+    for (EmbeddedObjectSet::iterator it = objects.begin(); it != objects.end(); ++it) {
+        RenderEmbeddedObject& object = **it;
+        HTMLPlugInElement* element = toHTMLPlugInElement(object.node());
 
-    RenderObjectSet::const_iterator end = m_widgetUpdateSet->end();
-    for (RenderObjectSet::const_iterator it = m_widgetUpdateSet->begin(); it != end; ++it) {
-        RenderObject* object = *it;
-        objects.uncheckedAppend(object);
-        if (object->isEmbeddedObject()) {
-            RenderEmbeddedObject* embeddedObject = static_cast<RenderEmbeddedObject*>(object);
-            embeddedObject->ref();
-        }
+        // The object may have already been destroyed (thus node cleared),
+        // but FrameView holds a manual ref, so it won't have been deleted.
+        if (!element)
+            continue;
+
+        // No need to update if it's already crashed or known to be missing.
+        if (object.showsUnavailablePluginIndicator())
+            continue;
+
+        if (element->needsWidgetUpdate())
+            element->updateWidget();
+        object.updateWidgetPosition();
+
+        // Prevent plugins from causing infinite updates of themselves.
+        // FIXME: Do we really need to prevent this?
+        m_widgetUpdateSet.remove(&object);
     }
 
-    for (size_t i = 0; i < size; ++i) {
-        RenderObject* object = objects[i];
-        updateWidget(object);
-        m_widgetUpdateSet->remove(object);
-    }
-
-    for (size_t i = 0; i < size; ++i) {
-        RenderObject* object = objects[i];
-        if (object->isEmbeddedObject()) {
-            RenderEmbeddedObject* embeddedObject = static_cast<RenderEmbeddedObject*>(object);
-            embeddedObject->deref();
-        }
-    }
-
-    return m_widgetUpdateSet->isEmpty();
+    return m_widgetUpdateSet.isEmpty();
 }
 
 void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
