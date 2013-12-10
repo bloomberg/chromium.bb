@@ -194,7 +194,7 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
     if (m_document) {
         InspectorInstrumentation::didReceiveWebSocketFrameError(m_document, m_identifier, reason);
         const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: " + reason;
-        static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
+        m_document->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
     }
     // Hybi-10 specification explicitly states we must not continue to handle incoming data
     // once the WebSocket connection is failed (section 7.1.7).
@@ -271,7 +271,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
     // during opening handshake.
     if (!m_hasCalledDisconnectOnHandle && m_handshake->mode() == WebSocketHandshake::Incomplete && m_document) {
         const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: Connection closed before receiving a handshake response";
-        static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
+        m_document->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
     }
 
     m_state = ChannelClosed;
@@ -437,7 +437,7 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
 
             if (m_deflateFramer.enabled() && m_document) {
                 const String message = "WebSocket extension \"x-webkit-deflate-frame\" is deprecated";
-                static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
+                m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
             }
 
             if (!m_handshake->serverSetCookie().isEmpty()) {

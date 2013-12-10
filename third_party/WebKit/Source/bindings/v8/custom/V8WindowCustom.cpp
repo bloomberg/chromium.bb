@@ -82,9 +82,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
         return;
 
     DOMWindow* imp = V8Window::toNative(info.Holder());
-    ExecutionContext* scriptContext = static_cast<ExecutionContext*>(imp->document());
-
-    if (!scriptContext) {
+    if (!imp->document()) {
         exceptionState.throwDOMException(InvalidAccessError, "No script context is available in which to execute the script.");
         return;
     }
