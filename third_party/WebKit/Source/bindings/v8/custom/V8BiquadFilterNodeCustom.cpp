@@ -45,7 +45,7 @@ void V8BiquadFilterNode::typeAttributeSetterCustom(v8::Local<v8::Value> value, c
     }
 
     if (value->IsString()) {
-        String type = toWebCoreString(value);
+        String type = toWebCoreString(value.As<v8::String>());
         if (type == "lowpass" || type == "highpass" || type == "bandpass" || type == "lowshelf" || type == "highshelf" || type == "peaking" || type == "notch" || type == "allpass") {
             imp->setType(type);
             return;

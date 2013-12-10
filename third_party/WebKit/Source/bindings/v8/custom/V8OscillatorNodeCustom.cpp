@@ -45,7 +45,7 @@ void V8OscillatorNode::typeAttributeSetterCustom(v8::Local<v8::Value> value, con
     }
 
     if (value->IsString()) {
-        String type = toWebCoreString(value);
+        String type = toWebCoreString(value.As<v8::String>());
         if (type == "sine" || type == "square" || type == "sawtooth" || type == "triangle") {
             imp->setType(type);
             return;

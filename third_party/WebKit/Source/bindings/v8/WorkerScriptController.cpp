@@ -174,7 +174,8 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->errorMessage = toWebCoreString(message->Get());
         state->lineNumber = message->GetLineNumber();
         state->columnNumber = message->GetStartColumn() + 1;
-        state->sourceURL = toWebCoreString(message->GetScriptResourceName());
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, sourceURL, message->GetScriptResourceName(), ScriptValue());
+        state->sourceURL = sourceURL;
         state->exception = ScriptValue(block.Exception(), isolate());
         block.Reset();
     } else

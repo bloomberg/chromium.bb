@@ -95,7 +95,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
         if (function->IsString()) {
             functionString = toWebCoreString(function.As<v8::String>());
         } else {
-            v8::Handle<v8::Value> v8String = function->ToString();
+            v8::Handle<v8::String> v8String = function->ToString();
 
             // Bail out if string conversion failed.
             if (v8String.IsEmpty())
