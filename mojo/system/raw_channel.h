@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/limits.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace base {
 class MessageLoop;
@@ -40,13 +40,13 @@ struct PlatformChannelHandle;
 //
 // With the exception of |WriteMessage()|, this class is thread-unsafe (and in
 // general its methods should only be used on the I/O thread).
-class MOJO_SYSTEM_EXPORT RawChannel {
+class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
  public:
   virtual ~RawChannel() {}
 
   // The |Delegate| is only accessed on the same thread as the message loop
   // (passed in on creation).
-  class MOJO_SYSTEM_EXPORT Delegate {
+  class MOJO_SYSTEM_IMPL_EXPORT Delegate {
    public:
     enum FatalError {
       FATAL_ERROR_UNKNOWN = 0,

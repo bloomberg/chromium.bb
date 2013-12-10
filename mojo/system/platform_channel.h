@@ -11,15 +11,15 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/platform_channel_handle.h"
+#include "mojo/system/system_impl_export.h"
 
 class CommandLine;
 
 namespace mojo {
 namespace system {
 
-class MOJO_SYSTEM_EXPORT PlatformChannel {
+class MOJO_SYSTEM_IMPL_EXPORT PlatformChannel {
  public:
   virtual ~PlatformChannel();
 
@@ -53,7 +53,7 @@ class PlatformClientChannel;
 //  - In both these cases, "ownership" of the client channel is transferred (to
 //    the |PlatformClientChannel| or the child process).
 // TODO(vtl): Add ways of passing it to other existing processes.
-class MOJO_SYSTEM_EXPORT PlatformServerChannel : public PlatformChannel {
+class MOJO_SYSTEM_IMPL_EXPORT PlatformServerChannel : public PlatformChannel {
  public:
   virtual ~PlatformServerChannel() {}
 
@@ -85,7 +85,7 @@ class MOJO_SYSTEM_EXPORT PlatformServerChannel : public PlatformChannel {
   DISALLOW_COPY_AND_ASSIGN(PlatformServerChannel);
 };
 
-class MOJO_SYSTEM_EXPORT PlatformClientChannel : public PlatformChannel {
+class MOJO_SYSTEM_IMPL_EXPORT PlatformClientChannel : public PlatformChannel {
  public:
   virtual ~PlatformClientChannel() {}
 

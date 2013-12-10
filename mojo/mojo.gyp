@@ -30,6 +30,7 @@
         'mojo_shell',
         'mojo_shell_lib',
         'mojo_system',
+        'mojo_system_impl',
         'mojo_system_unittests',
         'sample_app',
       ],
@@ -42,6 +43,7 @@
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         'mojo_system',
+        'mojo_system_impl',
       ],
       'sources': [
         'common/test/multiprocess_test_base.cc',
@@ -55,24 +57,25 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         'mojo_system',
+        'mojo_system_impl',
       ],
       'sources': [
         'common/test/run_all_perftests.cc',
       ],
     },
     {
-      'target_name': 'mojo_system',
+      'target_name': 'mojo_system_impl',
       'type': '<(component)',
       'dependencies': [
+        'mojo_system',
         '../base/base.gyp:base',
       ],
       'defines': [
-        'MOJO_SYSTEM_IMPLEMENTATION',
+        'MOJO_SYSTEM_IMPL_IMPLEMENTATION',
       ],
       'sources': [
         'system/channel.cc',
         'system/channel.h',
-        'system/core.cc',
         'system/core_impl.cc',
         'system/core_impl.h',
         'system/dispatcher.cc',
@@ -107,11 +110,6 @@
         'system/waiter_list.cc',
         'system/waiter_list.h',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-      },
     },
     {
       'target_name': 'mojo_system_unittests',
@@ -120,6 +118,7 @@
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
         'mojo_system',
+        'mojo_system_impl',
       ],
       'sources': [
         'system/core_impl_unittest.cc',
@@ -195,6 +194,7 @@
         'mojo_public_test_support',
         'mojo_run_all_unittests',
         'mojo_system',
+        'mojo_system_impl',
       ],
       'sources': [
         'common/common_type_converters_unittest.cc',
@@ -220,6 +220,7 @@
         '../url/url.gyp:url_lib',
         'mojo_bindings',
         'mojo_system',
+        'mojo_system_impl',
         'mojo_native_viewport_service',
       ],
       'sources': [
@@ -263,6 +264,7 @@
         'mojo_common_lib',
         'mojo_shell_lib',
         'mojo_system',
+        'mojo_system_impl',
       ],
       'sources': [
         'shell/desktop/mojo_main.cc',

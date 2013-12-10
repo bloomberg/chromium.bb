@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/system/system_export.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -24,7 +24,7 @@ class Waiter;
 // object is thread-safe, with its state being protected by a single lock
 // |lock_|, which is also made available to implementation subclasses (via the
 // |lock()| method).
-class MOJO_SYSTEM_EXPORT Dispatcher :
+class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     public base::RefCountedThreadSafe<Dispatcher> {
  public:
   // These methods implement the various primitives named |Mojo...()|. These

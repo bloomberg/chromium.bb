@@ -6,10 +6,12 @@
 #define MOJO_SYSTEM_CORE_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/system/core.h"
+#include "mojo/public/system/core_private.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -25,38 +27,39 @@ class CoreTestBase;
 // the (obvious) exception of |Init()|, which must be called first (and the call
 // completed) before making any other calls, all the public methods are
 // thread-safe.
-class MOJO_SYSTEM_EXPORT CoreImpl {
+class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
  public:
   static void Init();
 
-  static CoreImpl* Get() {
-    return singleton_;
-  }
+  virtual MojoResult Close(MojoHandle handle) OVERRIDE;
 
-  MojoResult Close(MojoHandle handle);
+  virtual MojoResult Wait(MojoHandle handle,
+                          MojoWaitFlags flags,
+                          MojoDeadline deadline) OVERRIDE;
 
-  MojoResult Wait(MojoHandle handle,
-                  MojoWaitFlags flags,
-                  MojoDeadline deadline);
+  virtual MojoResult WaitMany(const MojoHandle* handles,
+                              const MojoWaitFlags* flags,
+                              uint32_t num_handles,
+                              MojoDeadline deadline) OVERRIDE;
 
-  MojoResult WaitMany(const MojoHandle* handles,
-                      const MojoWaitFlags* flags,
-                      uint32_t num_handles,
-                      MojoDeadline deadline);
+  virtual MojoResult CreateMessagePipe(MojoHandle* handle_0,
+                                       MojoHandle* handle_1) OVERRIDE;
 
-  MojoResult CreateMessagePipe(MojoHandle* handle_0, MojoHandle* handle_1);
+  virtual MojoResult WriteMessage(MojoHandle handle,
+                                  const void* bytes,
+                                  uint32_t num_bytes,
+                                  const MojoHandle* handles,
+                                  uint32_t num_handles,
+                                  MojoWriteMessageFlags flags) OVERRIDE;
 
-  MojoResult WriteMessage(MojoHandle handle,
-                          const void* bytes, uint32_t num_bytes,
-                          const MojoHandle* handles, uint32_t num_handles,
-                          MojoWriteMessageFlags flags);
+  virtual MojoResult ReadMessage(MojoHandle handle,
+                                 void* bytes,
+                                 uint32_t* num_bytes,
+                                 MojoHandle* handles,
+                                 uint32_t* num_handles,
+                                 MojoReadMessageFlags flags) OVERRIDE;
 
-  MojoResult ReadMessage(MojoHandle handle,
-                         void* bytes, uint32_t* num_bytes,
-                         MojoHandle* handles, uint32_t* num_handles,
-                         MojoReadMessageFlags flags);
-
-  MojoTimeTicks GetTimeTicksNow();
+  virtual MojoTimeTicks GetTimeTicksNow() OVERRIDE;
 
  private:
   friend class test::CoreTestBase;
@@ -97,7 +100,7 @@ class MOJO_SYSTEM_EXPORT CoreImpl {
   typedef base::hash_map<MojoHandle, HandleTableEntry> HandleTableMap;
 
   CoreImpl();
-  ~CoreImpl();
+  virtual ~CoreImpl();
 
   // Looks up the dispatcher for the given handle. Returns null if the handle is
   // invalid.
@@ -114,10 +117,6 @@ class MOJO_SYSTEM_EXPORT CoreImpl {
                               const MojoWaitFlags* flags,
                               uint32_t num_handles,
                               MojoDeadline deadline);
-
-  // ---------------------------------------------------------------------------
-
-  static CoreImpl* singleton_;
 
   // ---------------------------------------------------------------------------
 

@@ -9,14 +9,14 @@
 #include <stdlib.h>  // For |free()|.
 
 #include "base/basictypes.h"
-#include "mojo/public/system/system_export.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
 
 // This class is used to represent data in transit. It is thread-unsafe.
 // Note: This class is POD.
-class MOJO_SYSTEM_EXPORT MessageInTransit {
+class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
   typedef uint16_t Type;
   // Messages that are forwarded to |MessagePipeEndpoint|s.

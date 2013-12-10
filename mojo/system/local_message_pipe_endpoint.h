@@ -11,14 +11,15 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/message_pipe_endpoint.h"
+#include "mojo/system/system_impl_export.h"
 #include "mojo/system/waiter_list.h"
 
 namespace mojo {
 namespace system {
 
-class MOJO_SYSTEM_EXPORT LocalMessagePipeEndpoint : public MessagePipeEndpoint {
+class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
+    : public MessagePipeEndpoint {
  public:
   LocalMessagePipeEndpoint();
   virtual ~LocalMessagePipeEndpoint();

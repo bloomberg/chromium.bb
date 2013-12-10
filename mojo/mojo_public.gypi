@@ -1,6 +1,29 @@
 {
   'targets': [
     {
+      'target_name': 'mojo_system',
+      'type': 'shared_library',
+      'defines': [
+        'MOJO_SYSTEM_IMPLEMENTATION',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
+      'sources': [
+        'public/system/core.h',
+        'public/system/core_cpp.h',
+        'public/system/core_private.cc',
+        'public/system/core_private.h',
+        'public/system/macros.h',
+        'public/system/system_export.h',
+      ],
+    },
+    {
       'target_name': 'mojo_public_test_support',
       'type': 'static_library',
       'dependencies': [

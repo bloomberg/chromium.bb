@@ -23,9 +23,9 @@ bool VerifyUserPointerForSize(const void* pointer, size_t count) {
 }
 
 // Explicitly instantiate the sizes we need. Add instantiations as needed.
-template MOJO_SYSTEM_EXPORT bool VerifyUserPointerForSize<1>(
+template MOJO_SYSTEM_IMPL_EXPORT bool VerifyUserPointerForSize<1>(
     const void*, size_t);
-template MOJO_SYSTEM_EXPORT bool VerifyUserPointerForSize<4>(
+template MOJO_SYSTEM_IMPL_EXPORT bool VerifyUserPointerForSize<4>(
     const void*, size_t);
 
 }  // namespace system

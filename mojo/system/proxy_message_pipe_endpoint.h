@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_endpoint.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -37,7 +37,8 @@ class Channel;
 //    before destruction; this is done inside |Close()|.
 //  - When attached, a |ProxyMessagePipeEndpoint| starts out not running. When
 //    run, it gets a remote ID.
-class MOJO_SYSTEM_EXPORT ProxyMessagePipeEndpoint : public MessagePipeEndpoint {
+class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
+    : public MessagePipeEndpoint {
  public:
   ProxyMessagePipeEndpoint();
   virtual ~ProxyMessagePipeEndpoint();

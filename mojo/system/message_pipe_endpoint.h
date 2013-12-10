@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/message_in_transit.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -30,7 +30,7 @@ class Waiter;
 // |MessagePipeEndpoint| also implements the functionality required by the
 // dispatcher, e.g., to read messages and to wait. Implementations of this class
 // are not thread-safe; instances are protected by |MesssagePipe|'s lock.
-class MOJO_SYSTEM_EXPORT MessagePipeEndpoint {
+class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
  public:
   virtual ~MessagePipeEndpoint() {}
 

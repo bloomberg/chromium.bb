@@ -16,7 +16,7 @@
 #define MOJO_GLES2_EXPORT __declspec(dllexport)
 #else
 #define MOJO_GLES2_EXPORT __declspec(dllimport)
-#endif  // defined(GFX_IMPLEMENTATION)
+#endif  // defined(MOJO_GLES2_IMPLEMENTATION)
 
 #else  // defined(WIN32)
 #if defined(MOJO_GLES2_IMPLEMENTATION)

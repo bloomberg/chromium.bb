@@ -16,10 +16,10 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/raw_channel.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace base {
 class MessageLoop;
@@ -52,8 +52,9 @@ namespace system {
 // by |Channel| must be removed by calling |DetachMessagePipeEndpoint()| (which
 // is done by |MessagePipe|/|ProxyMessagePipeEndpoint|, which simultaneously
 // removes its reference to |Channel|).
-class MOJO_SYSTEM_EXPORT Channel : public base::RefCountedThreadSafe<Channel>,
-                                   public RawChannel::Delegate {
+class MOJO_SYSTEM_IMPL_EXPORT Channel
+    : public base::RefCountedThreadSafe<Channel>,
+      public RawChannel::Delegate {
  public:
   // The first message pipe endpoint attached will have this as its local ID.
   static const MessageInTransit::EndpointId kBootstrapEndpointId = 1;

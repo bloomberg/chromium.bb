@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -18,7 +18,7 @@ class MessagePipe;
 
 // This is the |Dispatcher| implementation for message pipes (created by the
 // Mojo primitive |MojoCreateMessagePipe()|). This class is thread-safe.
-class MOJO_SYSTEM_EXPORT MessagePipeDispatcher : public Dispatcher {
+class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
  public:
   MessagePipeDispatcher();
 

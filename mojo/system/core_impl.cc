@@ -82,12 +82,8 @@ CoreImpl::HandleTableEntry::~HandleTableEntry() {
 }
 
 // static
-CoreImpl* CoreImpl::singleton_ = NULL;
-
-// static
 void CoreImpl::Init() {
-  CHECK(!singleton_);
-  singleton_ = new CoreImpl();
+  Core::Init(new CoreImpl());
 }
 
 MojoResult CoreImpl::Close(MojoHandle handle) {

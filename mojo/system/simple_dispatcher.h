@@ -8,8 +8,8 @@
 #include <list>
 
 #include "base/basictypes.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/system_impl_export.h"
 #include "mojo/system/waiter_list.h"
 
 namespace mojo {
@@ -19,7 +19,7 @@ namespace system {
 // correspondence between handles and dispatchers (see the explanatory comment
 // in core_impl.cc). This class implements the standard waiter-signalling
 // mechanism in that case.
-class MOJO_SYSTEM_EXPORT SimpleDispatcher : public Dispatcher {
+class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
  protected:
   SimpleDispatcher();
 

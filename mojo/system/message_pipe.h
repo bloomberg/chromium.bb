@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/system/system_export.h"
 #include "mojo/system/message_in_transit.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -28,7 +28,7 @@ class Waiter;
 // explanatory comment in core_impl.cc). It is typically owned by the
 // dispatcher(s) corresponding to the local endpoints. This class is
 // thread-safe.
-class MOJO_SYSTEM_EXPORT MessagePipe :
+class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
     public base::RefCountedThreadSafe<MessagePipe> {
  public:
   MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint_0,

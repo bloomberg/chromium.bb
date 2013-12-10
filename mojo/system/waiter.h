@@ -9,7 +9,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
-#include "mojo/public/system/system_export.h"
+#include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -18,7 +18,7 @@ namespace system {
 // under other locks, in particular, |Dispatcher::lock_|s, so |Waiter| methods
 // must never call out to other objects (in particular, |Dispatcher|s). This
 // class is thread-safe.
-class MOJO_SYSTEM_EXPORT Waiter {
+class MOJO_SYSTEM_IMPL_EXPORT Waiter {
  public:
   Waiter();
   ~Waiter();
