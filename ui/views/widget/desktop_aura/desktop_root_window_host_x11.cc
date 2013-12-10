@@ -135,13 +135,16 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
       content_window_(NULL),
-      window_parent_(NULL) {
+      window_parent_(NULL),
+      custom_window_shape_(NULL) {
 }
 
 DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
   root_window_->window()->ClearProperty(kHostForRootWindow);
   aura::client::SetWindowMoveClient(root_window_->window(), NULL);
   desktop_native_widget_aura_->OnDesktopRootWindowHostDestroyed(root_window_);
+  if (custom_window_shape_)
+    XDestroyRegion(custom_window_shape_);
 }
 
 // static
@@ -449,15 +452,10 @@ gfx::Rect DesktopRootWindowHostX11::GetWorkAreaBoundsInScreen() const {
 }
 
 void DesktopRootWindowHostX11::SetShape(gfx::NativeRegion native_region) {
-  if (native_region) {
-    Region region = gfx::CreateRegionFromSkRegion(*native_region);
-    XShapeCombineRegion(
-        xdisplay_, xwindow_, ShapeBounding, 0, 0, region, false);
-    XDestroyRegion(region);
-  } else {
-    ResetWindowRegion();
-  }
-
+  if (custom_window_shape_)
+    XDestroyRegion(custom_window_shape_);
+  custom_window_shape_ = gfx::CreateRegionFromSkRegion(*native_region);
+  ResetWindowRegion();
   delete native_region;
 }
 
@@ -1133,6 +1131,13 @@ void DesktopRootWindowHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
 }
 
 void DesktopRootWindowHostX11::ResetWindowRegion() {
+  // If a custom window shape was supplied then apply it.
+  if (custom_window_shape_) {
+    XShapeCombineRegion(
+        xdisplay_, xwindow_, ShapeBounding, 0, 0, custom_window_shape_, false);
+    return;
+  }
+
   if (!IsMaximized()) {
     gfx::Path window_mask;
     views::Widget* widget = native_widget_delegate_->AsWidget();

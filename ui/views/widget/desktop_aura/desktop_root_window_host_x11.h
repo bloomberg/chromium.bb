@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_X11_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_X11_H_
 
+#include <X11/extensions/shape.h>
 #include <X11/Xlib.h>
 
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
@@ -265,6 +266,9 @@ private:
   std::set<DesktopRootWindowHostX11*> window_children_;
 
   ObserverList<DesktopRootWindowHostObserverX11> observer_list_;
+
+  // Copy of custom window shape specified via SetShape(), if any.
+  ::Region custom_window_shape_;
 
   // The current root window host that has capture. While X11 has something
   // like Windows SetCapture()/ReleaseCapture(), it is entirely implicit and
