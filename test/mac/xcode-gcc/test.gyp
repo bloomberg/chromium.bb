@@ -2,11 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'make_global_settings': [
-    ['CC', '/usr/bin/gcc'],
-    ['CXX', '/usr/bin/g++'],
-  ],
-
   'target_defaults': {
     'xcode_settings': {
       'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',
