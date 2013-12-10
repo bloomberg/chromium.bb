@@ -221,10 +221,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Initialize touch HUDs if necessary.
   void InitTouchHuds();
 
-  // Returns the window, if any, which is in fullscreen mode. If multiple
-  // windows are in fullscreen state, the topmost one is preferred.
-  const aura::Window* GetTopmostFullscreenWindow() const;
-  aura::Window* GetTopmostFullscreenWindow();
+  // Returns the topmost window or one of its transient parents, if any of them
+  // are in fullscreen mode.
+  const aura::Window* GetWindowForFullscreenMode() const;
 
   // Activate virtual keyboard on current root window controller.
   void ActivateKeyboard(keyboard::KeyboardController* keyboard_controller);

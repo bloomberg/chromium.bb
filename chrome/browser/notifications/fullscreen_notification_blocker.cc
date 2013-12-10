@@ -33,7 +33,7 @@ bool DoesFullscreenModeBlockNotifications() {
     // Block notifications if the shelf is hidden because of a fullscreen
     // window.
     const aura::Window* fullscreen_window =
-        controller->GetTopmostFullscreenWindow();
+        controller->GetWindowForFullscreenMode();
     if (!fullscreen_window)
       return false;
     return ash::wm::GetWindowState(fullscreen_window)->

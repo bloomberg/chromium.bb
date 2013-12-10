@@ -284,12 +284,13 @@ TEST_F(WindowSelectorTest, FullscreenWindow) {
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
   EXPECT_FALSE(panel1->IsVisible());
 
-  // Entering overview and selecting another window should exit fullscreen.
+  // Entering overview and selecting another window, the previous window remains
+  // fullscreen.
   // TODO(flackr): Currently the panel remains hidden, but should become visible
   // again.
   ToggleOverview();
   ClickWindow(window2.get());
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
 }
 
 // Tests that the shelf dimming state is removed while in overview and restored

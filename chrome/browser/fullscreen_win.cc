@@ -106,7 +106,7 @@ bool IsFullScreenMode() {
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
     ash::internal::RootWindowController* controller =
         ash::internal::RootWindowController::ForTargetRootWindow();
-    return controller && controller->GetTopmostFullscreenWindow();
+    return controller && controller->GetWindowForFullscreenMode();
   }
 #endif
   return IsPlatformFullScreenMode() ||

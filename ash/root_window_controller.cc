@@ -518,21 +518,25 @@ void RootWindowController::UpdateShelfVisibility() {
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
-const aura::Window* RootWindowController::GetTopmostFullscreenWindow() const {
+const aura::Window* RootWindowController::GetWindowForFullscreenMode() const {
   const aura::Window::Windows& windows =
       GetContainer(kShellWindowId_DefaultContainer)->children();
+  const aura::Window* topmost_window = NULL;
   for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
        iter != windows.rend(); ++iter) {
-    if (wm::GetWindowState(*iter)->IsFullscreen())
-      return *iter;
+    if (((*iter)->type() == aura::client::WINDOW_TYPE_NORMAL ||
+         (*iter)->type() == aura::client::WINDOW_TYPE_PANEL) &&
+        (*iter)->layer()->GetTargetVisibility()) {
+      topmost_window = *iter;
+      break;
+    }
+  }
+  while (topmost_window) {
+    if (wm::GetWindowState(topmost_window)->IsFullscreen())
+      return topmost_window;
+    topmost_window = topmost_window->transient_parent();
   }
   return NULL;
-}
-
-aura::Window* RootWindowController::GetTopmostFullscreenWindow() {
-  return const_cast<aura::Window*>(
-      const_cast<const RootWindowController*>(this)->
-          GetTopmostFullscreenWindow());
 }
 
 void RootWindowController::ActivateKeyboard(

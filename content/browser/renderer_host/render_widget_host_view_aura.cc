@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -450,6 +451,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
     : host_(RenderWidgetHostImpl::From(host)),
       window_(new aura::Window(this)),
       in_shutdown_(false),
+      in_bounds_changed_(false),
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
       popup_child_host_view_(NULL),
@@ -1166,7 +1168,10 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (HasDisplayPropertyChanged(window_))
     host_->InvalidateScreenInfo();
 
-  window_->SetBounds(rect);
+  // Don't recursively call SetBounds if this bounds update is the result of
+  // a Window::SetBoundsInternal call.
+  if (!in_bounds_changed_)
+    window_->SetBounds(rect);
   host_->WasResized();
   MaybeCreateResizeLock();
   if (touch_editing_client_) {
@@ -2475,6 +2480,7 @@ gfx::Size RenderWidgetHostViewAura::GetMaximumSize() const {
 
 void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
+  base::AutoReset<bool> in_bounds_changed(&in_bounds_changed_, true);
   // We care about this only in fullscreen mode, where there is no
   // WebContentsViewAura. We are sized via SetSize() or SetBounds() by
   // WebContentsViewAura in other cases.

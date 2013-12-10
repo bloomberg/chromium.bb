@@ -318,8 +318,11 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
     WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
     switch (window_state) {
-      case WORKSPACE_WINDOW_STATE_FULL_SCREEN:
-        if (FullscreenWithHiddenShelf()) {
+      case WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
+        const aura::Window* fullscreen_window = GetRootWindowController(
+            root_window_)->GetWindowForFullscreenMode();
+        if (fullscreen_window && wm::GetWindowState(fullscreen_window)->
+                hide_shelf_when_fullscreen()) {
           SetState(SHELF_HIDDEN);
         } else {
           // The shelf is sometimes not hidden when in immersive fullscreen.
@@ -327,9 +330,12 @@ void ShelfLayoutManager::UpdateVisibilityState() {
           SetState(SHELF_AUTO_HIDE);
         }
         break;
+      }
+
       case WORKSPACE_WINDOW_STATE_MAXIMIZED:
         SetState(CalculateShelfVisibility());
         break;
+
       case WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
       case WORKSPACE_WINDOW_STATE_DEFAULT:
         SetState(CalculateShelfVisibility());
@@ -535,16 +541,6 @@ void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
   return GetAlignment() == SHELF_ALIGNMENT_BOTTOM ||
          GetAlignment() == SHELF_ALIGNMENT_TOP;
-}
-
-bool ShelfLayoutManager::FullscreenWithHiddenShelf() const {
-  RootWindowController* controller = GetRootWindowController(root_window_);
-  if (!controller)
-    return false;
-  const aura::Window* window = controller->GetTopmostFullscreenWindow();
-  if (!window)
-    return false;
-  return wm::GetWindowState(window)->hide_shelf_when_fullscreen();
 }
 
 // static

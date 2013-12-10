@@ -584,6 +584,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // after requesting shutdown for another reason (e.g. Escape key).
   bool in_shutdown_;
 
+  // True if in the process of handling a window bounds changed notification.
+  bool in_bounds_changed_;
+
   // Is this a fullscreen view?
   bool is_fullscreen_;
 

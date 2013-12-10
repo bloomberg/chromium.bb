@@ -43,7 +43,7 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   ShelfLayoutManager* shelf = controller->GetShelfLayoutManager();
 
-  const aura::Window* fullscreen = controller->GetTopmostFullscreenWindow();
+  const aura::Window* fullscreen = controller->GetWindowForFullscreenMode();
   if (fullscreen &&
       ash::wm::GetWindowState(fullscreen)->hide_shelf_when_fullscreen()) {
     return false;

@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace_controller.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -66,6 +67,12 @@ WorkspaceController::~WorkspaceController() {
 WorkspaceWindowState WorkspaceController::GetWindowState() const {
   if (!shelf_)
     return WORKSPACE_WINDOW_STATE_DEFAULT;
+  const aura::Window* topmost_fullscreen_window = GetRootWindowController(
+      viewport_->GetRootWindow())->GetWindowForFullscreenMode();
+  if (topmost_fullscreen_window &&
+      !wm::GetWindowState(topmost_fullscreen_window)->ignored_by_shelf()) {
+    return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+  }
 
   // These are the container ids of containers which may contain windows that
   // may overlap the launcher shelf and affect its transparency.
@@ -75,7 +82,6 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
   };
   const gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
   bool window_overlaps_launcher = false;
-  bool has_maximized_window = false;
   for (size_t idx = 0; idx < arraysize(kWindowContainerIds); idx++) {
     const aura::Window* container = Shell::GetContainer(
         viewport_->GetRootWindow(), kWindowContainerIds[idx]);
@@ -86,15 +92,10 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
       if (window_state->ignored_by_shelf())
         continue;
       ui::Layer* layer = (*i)->layer();
-      if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
+      if (!layer->GetTargetVisibility())
         continue;
-      if (window_state->IsMaximized()) {
-        // An untracked window may still be fullscreen so we keep iterating when
-        // we hit a maximized window.
-        has_maximized_window = true;
-      } else if (window_state->IsFullscreen()) {
-        return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
-      }
+      if (window_state->IsMaximized())
+        return WORKSPACE_WINDOW_STATE_MAXIMIZED;
       if (!window_overlaps_launcher &&
           ((*i)->bounds().Intersects(shelf_bounds) ||
            IsDockedAndVisible(*i))) {
@@ -102,8 +103,6 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
       }
     }
   }
-  if (has_maximized_window)
-    return WORKSPACE_WINDOW_STATE_MAXIMIZED;
 
   return window_overlaps_launcher ?
       WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF :

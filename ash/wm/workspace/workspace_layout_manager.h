@@ -55,6 +55,7 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
+  virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
   // WindowStateObserver overrides:
   virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
@@ -72,7 +73,12 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
 
   void AdjustWindowBoundsWhenAdded(wm::WindowState* window_state);
 
-  void UpdateDesktopVisibility();
+  // Updates the visibility state of the shelf.
+  void UpdateShelfVisibility();
+
+  // Updates the fullscreen state of the workspace and notifies Shell if it
+  // has changed.
+  void UpdateFullscreenState();
 
   // Updates the bounds of the window for a show state change from
   // |last_show_state|.
@@ -96,6 +102,9 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   // The work area. Cached to avoid unnecessarily moving windows during a
   // workspace switch.
   gfx::Rect work_area_in_parent_;
+
+  // True if this workspace is currently in fullscreen mode.
+  bool is_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };

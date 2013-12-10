@@ -72,7 +72,9 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
       shelf_(NULL),
       window_(window),
       work_area_in_parent_(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
-          window->parent())) {
+          window->parent())),
+      is_fullscreen_(GetRootWindowController(
+          window->GetRootWindow())->GetWindowForFullscreenMode() != NULL) {
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
@@ -85,7 +87,8 @@ void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   AdjustWindowBoundsWhenAdded(wm::GetWindowState(child));
   BaseLayoutManager::OnWindowAddedToLayout(child);
-  UpdateDesktopVisibility();
+  UpdateShelfVisibility();
+  UpdateFullscreenState();
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
 }
 
@@ -97,7 +100,8 @@ void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
 
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
   BaseLayoutManager::OnWindowRemovedFromLayout(child);
-  UpdateDesktopVisibility();
+  UpdateShelfVisibility();
+  UpdateFullscreenState();
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
@@ -106,13 +110,11 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
   if (child->TargetVisibility()) {
     WindowPositioner::RearrangeVisibleWindowOnShow(child);
   } else {
-    if (wm::GetWindowState(child)->IsFullscreen()) {
-      ash::Shell::GetInstance()->NotifyFullscreenStateChange(
-          false, child->GetRootWindow());
-    }
+    if (wm::GetWindowState(child)->IsFullscreen())
+      UpdateFullscreenState();
     WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
   }
-  UpdateDesktopVisibility();
+  UpdateShelfVisibility();
 }
 
 void WorkspaceLayoutManager::SetChildBounds(
@@ -133,7 +135,7 @@ void WorkspaceLayoutManager::SetChildBounds(
     AdjustSnappedBounds(window_state, &child_bounds);
     SetChildBoundsDirect(child, child_bounds);
   }
-  UpdateDesktopVisibility();
+  UpdateShelfVisibility();
 }
 
 void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
@@ -153,6 +155,12 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
     GetRootWindowController(window->GetRootWindow())->
         always_on_top_controller()->GetContainer(window)->AddChild(window);
   }
+}
+
+void WorkspaceLayoutManager::OnWindowStackingChanged(aura::Window* window) {
+  BaseLayoutManager::OnWindowStackingChanged(window);
+  UpdateShelfVisibility();
+  UpdateFullscreenState();
 }
 
 void WorkspaceLayoutManager::OnWindowShowTypeChanged(
@@ -183,9 +191,7 @@ void WorkspaceLayoutManager::OnWindowShowTypeChanged(
   if (old_state != new_state &&
       (new_state == ui::SHOW_STATE_FULLSCREEN ||
        old_state == ui::SHOW_STATE_FULLSCREEN)) {
-    ash::Shell::GetInstance()->NotifyFullscreenStateChange(
-        new_state == ui::SHOW_STATE_FULLSCREEN,
-        window_state->window()->GetRootWindow());
+    UpdateFullscreenState();
   }
 
   UpdateBoundsFromShowState(window_state, old_state);
@@ -200,7 +206,7 @@ void WorkspaceLayoutManager::ShowStateChanged(
     wm::WindowState* state,
     ui::WindowShowState last_show_state) {
   BaseLayoutManager::ShowStateChanged(state, last_show_state);
-  UpdateDesktopVisibility();
+  UpdateShelfVisibility();
 }
 
 void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
@@ -281,9 +287,19 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
     window->SetBounds(bounds);
 }
 
-void WorkspaceLayoutManager::UpdateDesktopVisibility() {
+void WorkspaceLayoutManager::UpdateShelfVisibility() {
   if (shelf_)
     shelf_->UpdateVisibilityState();
+}
+
+void WorkspaceLayoutManager::UpdateFullscreenState() {
+  bool is_fullscreen = GetRootWindowController(
+      window_->GetRootWindow())->GetWindowForFullscreenMode() != NULL;
+  if (is_fullscreen != is_fullscreen_) {
+    ash::Shell::GetInstance()->NotifyFullscreenStateChange(
+        is_fullscreen, window_->GetRootWindow());
+    is_fullscreen_ = is_fullscreen;
+  }
 }
 
 void WorkspaceLayoutManager::UpdateBoundsFromShowState(

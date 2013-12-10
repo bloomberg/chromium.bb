@@ -1326,6 +1326,68 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 }
 
+// Tests that the shelf is only hidden for a fullscreen window at the front and
+// toggles visibility when another window is activated.
+TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+
+  // Create a window and make it full screen.
+  aura::Window* window1 = CreateTestWindow();
+  window1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window1->Show();
+
+  aura::Window* window2 = CreateTestWindow();
+  window2->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window2->Show();
+
+  wm::GetWindowState(window1)->Activate();
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+
+  wm::GetWindowState(window2)->Activate();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+
+  wm::GetWindowState(window1)->Activate();
+  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+}
+
+// Test the behavior of the shelf when a window on one display is fullscreen
+// but the other display has the active window.
+TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("800x600,800x600");
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowControllerList root_window_controllers =
+      Shell::GetAllRootWindowControllers();
+
+  // Create windows on either display.
+  aura::Window* window1 = CreateTestWindow();
+  window1->SetBoundsInScreen(
+      gfx::Rect(0, 0, 100, 100),
+      display_manager->GetDisplayAt(0));
+  window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window1->Show();
+
+  aura::Window* window2 = CreateTestWindow();
+  window2->SetBoundsInScreen(
+      gfx::Rect(800, 0, 100, 100),
+      display_manager->GetDisplayAt(1));
+  window2->Show();
+
+  EXPECT_EQ(root_windows[0], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+
+  wm::GetWindowState(window2)->Activate();
+  EXPECT_EQ(SHELF_HIDDEN,
+      root_window_controllers[0]->GetShelfLayoutManager()->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE,
+      root_window_controllers[1]->GetShelfLayoutManager()->visibility_state());
+}
+
+
 #if defined(OS_WIN)
 // RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
 #define MAYBE_SetAlignment DISABLED_SetAlignment

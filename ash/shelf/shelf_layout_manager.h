@@ -215,10 +215,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // Is the shelf's alignment horizontal?
   bool IsHorizontalAlignment() const;
 
-  // Returns true if there is a fullscreen window and the shelf needs to be
-  // hidden for the topmost fullscreen window.
-  bool FullscreenWithHiddenShelf() const;
-
   // Returns a ShelfLayoutManager on the display which has a launcher for
   // given |window|. See RootWindowController::ForLauncher for more info.
   static ShelfLayoutManager* ForLauncher(aura::Window* window);
