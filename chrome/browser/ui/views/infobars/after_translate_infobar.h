@@ -36,6 +36,12 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
 
+  // The original and target language buttons can appear in either order, so
+  // this function provides a convenient way to just obtain the two in the
+  // correct visual order, as opposed to adding conditionals in multiple places.
+  void GetButtons(views::MenuButton** first_button,
+                  views::MenuButton** second_button) const;
+
   // The text displayed in the infobar is something like:
   // "Translated from <lang1> to <lang2> [more text in some languages]"
   // ...where <lang1> and <lang2> are comboboxes.  So the text is split in 3
