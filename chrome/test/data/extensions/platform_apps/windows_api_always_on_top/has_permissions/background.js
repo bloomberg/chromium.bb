@@ -16,11 +16,16 @@ function testAlwaysOnTop(testId, initValue, setOption) {
     chrome.test.assertEq(initValue, win.isAlwaysOnTop());
 
     // Toggle the current value.
-    // TODO(tmdiep): The new value of isAlwaysOnTop() should be checked
-    // asynchronously, but we need a non-flaky way to do this.
     win.setAlwaysOnTop(!initValue);
 
-    win.contentWindow.close();
+    // setAlwaysOnTop is synchronous in the browser, so send an async request to
+    // ensure we get the updated value of isAlwaysOnTop.
+    chrome.runtime.getPlatformInfo(callbackPass(function(platformInfo) {
+      // Check that isAlwaysOnTop() returns the new value.
+      chrome.test.assertEq(!initValue, win.isAlwaysOnTop());
+
+      win.contentWindow.close();
+    }));
   }));
 }
 

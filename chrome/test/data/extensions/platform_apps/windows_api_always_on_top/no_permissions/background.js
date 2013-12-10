@@ -19,11 +19,16 @@ function testAlwaysOnTop(testId, value) {
 
     // Attempt to use setAlwaysOnTop() to change the property. But this should
     // also fail.
-    // TODO(tmdiep): The new value of isAlwaysOnTop() should be checked
-    // asynchronously, but we need a non-flaky way to do this.
     win.setAlwaysOnTop(value);
 
-    win.contentWindow.close();
+    // setAlwaysOnTop is synchronous in the browser, so send an async request to
+    // ensure we get the updated value of isAlwaysOnTop.
+    chrome.runtime.getPlatformInfo(callbackPass(function(platformInfo) {
+      // Check that isAlwaysOnTop() returns false.
+      chrome.test.assertEq(false, win.isAlwaysOnTop());
+
+      win.contentWindow.close();
+    }));
   }));
 }
 
