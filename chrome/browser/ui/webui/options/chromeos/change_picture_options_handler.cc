@@ -225,7 +225,7 @@ void ChangePictureOptionsHandler::HandlePageShown(const base::ListValue* args) {
 }
 
 void ChangePictureOptionsHandler::SendSelectedImage() {
-  const User* user = UserManager::Get()->GetLoggedInUser();
+  const User* user = GetUser();
   DCHECK(!user->email().empty());
 
   previous_image_index_ = user->image_index();
@@ -298,7 +298,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   DCHECK(!image_url.empty());
   DCHECK(!image_type.empty());
 
-  const User* user = UserManager::Get()->GetLoggedInUser();
+  const User* user = GetUser();
   UserImageManager* user_image_manager =
       UserManager::Get()->GetUserImageManager();
   int image_index = User::kInvalidImageIndex;
@@ -367,11 +367,10 @@ void ChangePictureOptionsHandler::FileSelected(const base::FilePath& path,
                                                int index,
                                                void* params) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->GetUserImageManager()->SaveUserImageFromFile(
-      user_manager->GetLoggedInUser()->email(), path);
-  UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                            kHistogramImageFromFile,
-                            kHistogramImagesCount);
+  user_manager->GetUserImageManager()->SaveUserImageFromFile(GetUser()->email(),
+                                                             path);
+  UMA_HISTOGRAM_ENUMERATION(
+      "UserImage.ChangeChoice", kHistogramImageFromFile, kHistogramImagesCount);
   VLOG(1) << "Selected image from file";
 }
 
@@ -379,8 +378,7 @@ void ChangePictureOptionsHandler::SetImageFromCamera(
     const gfx::ImageSkia& photo) {
   UserManager* user_manager = UserManager::Get();
   user_manager->GetUserImageManager()->SaveUserImage(
-      user_manager->GetLoggedInUser()->email(),
-      UserImage::CreateAndEncode(photo));
+      GetUser()->email(), UserImage::CreateAndEncode(photo));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);
@@ -439,6 +437,14 @@ void ChangePictureOptionsHandler::OnImageDecoded(
 void ChangePictureOptionsHandler::OnDecodeImageFailed(
     const ImageDecoder* decoder) {
   NOTREACHED() << "Failed to decode PNG image from WebUI";
+}
+
+User* ChangePictureOptionsHandler::GetUser() const {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  User* user = UserManager::Get()->GetUserByProfile(profile);
+  if (!user)
+    return UserManager::Get()->GetActiveUser();
+  return user;
 }
 
 }  // namespace options

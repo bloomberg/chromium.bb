@@ -19,6 +19,9 @@ class ListValue;
 }
 
 namespace chromeos {
+
+class User;
+
 namespace options {
 
 // ChromeOS user image options page UI handler.
@@ -104,6 +107,10 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   virtual void OnImageDecoded(const ImageDecoder* decoder,
                               const SkBitmap& decoded_image) OVERRIDE;
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+
+  // Returns user related to current WebUI. If this user doesn't exist,
+  // returns active user.
+  User* GetUser() const;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
