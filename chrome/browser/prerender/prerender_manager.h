@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/cancelable_callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -429,17 +428,17 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // delayed, and handles all conditions which would cancel a pending swap.
   class PendingSwap : public content::WebContentsObserver {
    public:
-    PendingSwap(PrerenderTracker* prerender_tracker,
+    PendingSwap(PrerenderManager* manager,
                 content::WebContents* target_contents,
                 PrerenderData* prerender_data,
-                const GURL& url,
-                const base::Closure& timeout_cb,
-                const content::SessionStorageNamespace::MergeResultCallback&
-                merge_result_cb);
+                const GURL& url);
     virtual ~PendingSwap();
-    const base::Closure& GetTimeoutCallback();
-    const content::SessionStorageNamespace::MergeResultCallback&
-    GetMergeResultCallback();
+
+    void set_swap_successful(bool swap_successful) {
+      swap_successful_ = swap_successful;
+    }
+
+    void BeginSwap();
 
     // content::WebContentsObserver implementation.
     virtual void ProvisionalChangeToMainFrameUrl(
@@ -465,21 +464,22 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     virtual void WebContentsDestroyed(content::WebContents* web_contents)
         OVERRIDE;
 
-    base::TimeDelta GetElapsedTime();
-    void SwapSuccessful();
-    const GURL& url() const { return url_; }
-    content::WebContents* target_contents() const { return target_contents_; }
-
    private:
-    PrerenderTracker* prerender_tracker_;
+    void RecordEvent(PrerenderEvent event) const;
+
+    void OnMergeCompleted(content::SessionStorageNamespace::MergeResult result);
+    void OnMergeTimeout();
+
+    PrerenderManager* manager_;
     content::WebContents* target_contents_;
     PrerenderData* prerender_data_;
     GURL url_;
-    base::CancelableClosure timeout_cb_;
-    base::CancelableCallback<
-      void(content::SessionStorageNamespace::MergeResult)> merge_result_cb_;
     base::TimeTicks start_time_;
     std::vector<PrerenderTracker::ChildRouteIdPair> rvh_ids_;
+    base::OneShotTimer<PendingSwap> merge_timeout_;
+    bool swap_successful_;
+
+    base::WeakPtrFactory<PendingSwap> weak_factory_;
   };
 
   void SetPrerenderContentsFactory(
@@ -656,23 +656,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                                                bool cookies_exist);
   void LoggedInPredictorDataReceived(scoped_ptr<LoggedInStateMap> new_map);
 
-  void ProcessMergeResult(PrerenderData* prerender_data,
-                          bool timed_out,
-                          content::SessionStorageNamespace::MergeResult result);
-
   void RecordEvent(PrerenderContents* contents, PrerenderEvent event) const;
 
-  // Swaps a prerender for |url| into the tab, replacing |web_contents|.
-  // Returns the new WebContents that was swapped in, or NULL if a swap-in
-  // was not possible. Optionally, a |swap_candidate| can be specified.
-  // Must be supplied if a merge has completed and we retry swap.
-  // That's because we must skip the check whether a PrerenderData object that
-  // could be swapped in is used for a pending merge, if the PrerenderData
-  // object being considered is the one for which the merge has just completed
-  // and which is intended to be swapped in.
+  // Swaps a prerender |prerender_data| for |url| into the tab, replacing
+  // |web_contents|.  Returns the new WebContents that was swapped in, or NULL
+  // if a swap-in was not possible.
   content::WebContents* SwapInternal(const GURL& url,
                                      content::WebContents* web_contents,
-                                     PrerenderData* swap_candidate);
+                                     PrerenderData* prerender_data);
 
   // The configuration.
   Config config_;
