@@ -107,12 +107,21 @@ base::string16 GetAllDisplayInfo() {
 }
 
 void OpenSettings() {
-  user::LoginStatus login_status =
-      Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
-  if (login_status == user::LOGGED_IN_USER ||
-      login_status == user::LOGGED_IN_OWNER ||
-      login_status == user::LOGGED_IN_GUEST) {
-    Shell::GetInstance()->system_tray_delegate()->ShowDisplaySettings();
+  // switch is intentionally introduced without default, to cause an error when
+  // a new type of login status is introduced.
+  switch (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus()) {
+    case user::LOGGED_IN_NONE:
+    case user::LOGGED_IN_LOCKED:
+      return;
+
+    case user::LOGGED_IN_USER:
+    case user::LOGGED_IN_OWNER:
+    case user::LOGGED_IN_GUEST:
+    case user::LOGGED_IN_RETAIL_MODE:
+    case user::LOGGED_IN_PUBLIC:
+    case user::LOGGED_IN_LOCALLY_MANAGED:
+    case user::LOGGED_IN_KIOSK_APP:
+      Shell::GetInstance()->system_tray_delegate()->ShowDisplaySettings();
   }
 }
 
