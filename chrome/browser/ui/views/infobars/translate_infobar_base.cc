@@ -40,7 +40,8 @@ void TranslateInfoBarBase::UpdateLanguageButtonText(views::MenuButton* button,
                                                     const string16& text) {
   DCHECK(button);
   button->SetText(text);
-  // The button may have to grow to show the new text.
+  button->ClearMaxTextSize();
+  button->SizeToPreferredSize();
   Layout();
   SchedulePaint();
 }
