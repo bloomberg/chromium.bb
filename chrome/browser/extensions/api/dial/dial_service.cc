@@ -54,7 +54,10 @@ const int kDialMaxRequests = 4;
 // The interval to wait between successive requests.
 const int kDialRequestIntervalMillis = 1000;
 
-// The timeout (MX) set for responses.
+// The maximum delay a device may wait before responding (MX).
+const int kDialMaxResponseDelaySecs = 1;
+
+// The maximum time a response is expected after a M-SEARCH request.
 const int kDialResponseTimeoutSecs = 2;
 
 // The multicast IP address for discovery.
@@ -87,15 +90,15 @@ std::string BuildRequest() {
   chrome::VersionInfo version;
   std::string request(base::StringPrintf(
       "M-SEARCH * HTTP/1.1\r\n"
-      "HOST:%s:%i\r\n"
-      "MAN:\"ssdp:discover\"\r\n"
-      "MX:%d\r\n"
-      "ST:%s\r\n"
-      "USER-AGENT:%s/%s %s\r\n"
+      "HOST: %s:%i\r\n"
+      "MAN: \"ssdp:discover\"\r\n"
+      "MX: %d\r\n"
+      "ST: %s\r\n"
+      "USER-AGENT: %s/%s %s\r\n"
       "\r\n",
       kDialRequestAddress,
       kDialRequestPort,
-      kDialResponseTimeoutSecs,
+      kDialMaxResponseDelaySecs,
       kDialSearchType,
       version.Name().c_str(),
       version.Version().c_str(),
