@@ -33,14 +33,6 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   class Delegate {
    public:
     virtual ~Delegate() {}
-
-    // Invoked during exchange of OAuth2 refresh token for GAIA service token.
-    virtual void OnOAuthLoginSuccess(
-        const ClientLoginResult& gaia_credentials) = 0;
-
-    // Invoked when provided OAuth2 refresh token is invalid.
-    virtual void OnOAuthLoginFailure(bool connection_error) = 0;
-
     // Invoked when cookie session is successfully merged.
     virtual void OnSessionMergeSuccess() = 0;
 
@@ -74,9 +66,6 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   virtual void OnUberAuthTokenSuccess(const std::string& token) OVERRIDE;
   virtual void OnUberAuthTokenFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
-  virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE;
   virtual void OnMergeSessionFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
@@ -96,9 +85,6 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
 
   // Starts OAuthLogin request for GAIA uber-token.
   void StartOAuthLoginForUberToken();
-
-  // Starts OAuthLogin request.
-  void StartOAuthLoginForGaiaCredentials();
 
   // Attempts to merge session from present |gaia_token_|.
   void StartMergeSession();

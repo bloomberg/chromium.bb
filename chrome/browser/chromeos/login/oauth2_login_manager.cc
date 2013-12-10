@@ -35,8 +35,7 @@ static const int kMaxRetries = 5;
 OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
     : user_profile_(user_profile),
       restore_strategy_(RESTORE_FROM_COOKIE_JAR),
-      state_(SESSION_RESTORE_NOT_STARTED),
-      loading_reported_(false) {
+      state_(SESSION_RESTORE_NOT_STARTED) {
   GetTokenService()->AddObserver(this);
   if (CommandLine::ForCurrentProcess()->
           HasSwitch(chromeos::switches::kOobeSkipPostLogin)) {
@@ -89,7 +88,19 @@ void OAuth2LoginManager::ContinueSessionRestore() {
   }
 
   DCHECK(restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN);
-  GetTokenService()->LoadCredentials();
+  RestoreSessionFromSavedTokens();
+}
+
+void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
+  ProfileOAuth2TokenService* token_service = GetTokenService();
+  if (token_service->RefreshTokenIsAvailable(
+          token_service->GetPrimaryAccountId())) {
+    LOG(WARNING) << "OAuth2 refresh token is already loaded.";
+    RestoreSessionCookies();
+  } else {
+    LOG(WARNING) << "Loading OAuth2 refresh token from database.";
+    token_service->LoadCredentials();
+  }
 }
 
 void OAuth2LoginManager::Stop() {
@@ -104,11 +115,14 @@ bool OAuth2LoginManager::ShouldBlockTabLoading() {
 
 void OAuth2LoginManager::OnRefreshTokenAvailable(
     const std::string& account_id) {
+  LOG(WARNING) << "OnRefreshTokenAvailable";
+
   if (state_ == SESSION_RESTORE_NOT_STARTED)
     return;
+
   // TODO(fgorski): Once ProfileOAuth2TokenService supports multi-login, make
   // sure to restore session cookies in the context of the correct account_id.
-  VLOG(1) << "OnRefreshTokenAvailable";
+
   // Do not validate tokens for supervised users, as they don't actually have
   // oauth2 token.
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
@@ -230,25 +244,6 @@ void OAuth2LoginManager::Shutdown() {
   GetTokenService()->RemoveObserver(this);
   login_verifier_.reset();
   oauth2_token_fetcher_.reset();
-}
-
-void OAuth2LoginManager::OnOAuthLoginSuccess(
-    const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) {
-  VLOG(1) << "OAuth2 refresh token successfully exchanged for GAIA token.";
-
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnSessionAuthenticated(user_profile_));
-}
-
-void OAuth2LoginManager::OnOAuthLoginFailure(bool connection_error) {
-  LOG(ERROR) << "OAuth2 refresh token verification failed!"
-             << " connection_error: " << connection_error;
-  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
-                            SESSION_RESTORE_OAUTHLOGIN_FAILED,
-                            SESSION_RESTORE_COUNT);
-  SetSessionRestoreState(connection_error ?
-      OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED :
-      OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {

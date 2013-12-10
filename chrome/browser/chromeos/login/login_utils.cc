@@ -54,8 +54,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
@@ -142,7 +140,6 @@ class LoginUtilsImpl
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
   virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) OVERRIDE;
-  virtual void OnSessionAuthenticated(Profile* user_profile) OVERRIDE;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
   virtual void OnConnectionTypeChanged(
@@ -197,9 +194,6 @@ class LoginUtilsImpl
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlz(Profile* user_profile, bool disabled);
-
-  // Starts signing related services. Initiates token retrieval.
-  void StartSignedInServices(Profile* profile);
 
   // Attempts exiting browser process and esures this does not happen
   // while we are still fetching new OAuth refresh tokens.
@@ -644,39 +638,6 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
 #endif
 }
 
-void LoginUtilsImpl::StartSignedInServices(Profile* user_profile) {
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(user_profile);
-  DCHECK(signin);
-  // Make sure SigninManager is connected to our current user (this should
-  // happen automatically because we set kGoogleServicesUsername in
-  // OnProfileCreated()).
-  DCHECK_EQ(UserManager::Get()->GetLoggedInUser()->display_email(),
-            signin->GetAuthenticatedUsername());
-  static bool initialized = false;
-  if (!initialized) {
-    initialized = true;
-    // Notify the sync service that signin was successful. Note: Since the sync
-    // service is lazy-initialized, we need to make sure it has been created.
-    ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(user_profile);
-    // We may not always have a passphrase (for example, on a restart after a
-    // browser crash). Only notify the sync service if we have a passphrase,
-    // so it can do any required re-encryption.
-    if (!user_context_.password.empty() && sync_service) {
-      GoogleServiceSigninSuccessDetails details(
-          signin->GetAuthenticatedUsername(),
-          user_context_.password);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-          content::Source<Profile>(user_profile),
-          content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-    }
-  }
-  user_context_.password.clear();
-  user_context_.auth_code.clear();
-}
-
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   VLOG(1) << "Completing incognito login";
 
@@ -809,6 +770,7 @@ void LoginUtilsImpl::OnSessionRestoreStateChanged(
         UserManager::Get()->GetLoggedInUser()->email(),
         user_status);
   }
+
   login_manager->RemoveObserver(this);
 }
 
@@ -830,10 +792,6 @@ void LoginUtilsImpl::OnNewRefreshTokenAvaiable(Profile* user_profile) {
   // We need to exit cleanly in this case to make sure OAuth2 RT is actually
   // saved.
   chrome::ExitCleanly();
-}
-
-void LoginUtilsImpl::OnSessionAuthenticated(Profile* user_profile) {
-  StartSignedInServices(user_profile);
 }
 
 void LoginUtilsImpl::OnConnectionTypeChanged(

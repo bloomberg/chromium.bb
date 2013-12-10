@@ -98,6 +98,9 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // Continues session restore after transient network errors.
   void ContinueSessionRestore();
 
+  // Start resporting session from saved OAuth2 refresh token.
+  void RestoreSessionFromSavedTokens();
+
   // Stops all background authentication requests.
   void Stop();
 
@@ -149,9 +152,6 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   virtual void OnNetworkError(int response_code) OVERRIDE;
 
   // OAuth2LoginVerifier::Delegate overrides.
-  virtual void OnOAuthLoginSuccess(
-      const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) OVERRIDE;
-  virtual void OnOAuthLoginFailure(bool connection_error) OVERRIDE;
   virtual void OnSessionMergeSuccess() OVERRIDE;
   virtual void OnSessionMergeFailure(bool connection_error) OVERRIDE;
   virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
@@ -210,8 +210,6 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   scoped_refptr<net::URLRequestContextGetter> auth_request_context_;
   SessionRestoreStrategy restore_strategy_;
   SessionRestoreState state_;
-
-  bool loading_reported_;
 
   scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<OAuth2LoginVerifier> login_verifier_;
