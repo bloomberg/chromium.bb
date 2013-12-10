@@ -999,6 +999,7 @@ public:
 
     bool shouldDoFullRepaintAfterLayout() const { return m_bitfields.shouldDoFullRepaintAfterLayout(); }
     void setShouldDoFullRepaintAfterLayout(bool b) { m_bitfields.setShouldDoFullRepaintAfterLayout(b); }
+    bool shouldRepaintOverflowIfNeeded() const { return m_bitfields.shouldRepaintOverflowIfNeeded(); }
 
     void clearRepaintRects()
     {
@@ -1006,6 +1007,7 @@ public:
         setOldRepaintRect(LayoutRect());
 
         setShouldDoFullRepaintAfterLayout(false);
+        setShouldRepaintOverflowIfNeeded(false);
         setLayoutDidGetCalled(false);
     }
 
@@ -1123,6 +1125,7 @@ private:
             // Holding the layout bits until after repaint would remove the need
             // for this flag.
             , m_shouldDoFullRepaintAfterLayout(false)
+            , m_shouldRepaintOverflowIfNeeded(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
             , m_posChildNeedsLayout(false)
@@ -1156,6 +1159,7 @@ private:
         // 32 bits have been used in the first word, and 2 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintAfterLayout, ShouldDoFullRepaintAfterLayout);
+        ADD_BOOLEAN_BITFIELD(shouldRepaintOverflowIfNeeded, ShouldRepaintOverflowIfNeeded);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
         ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);
@@ -1226,6 +1230,7 @@ private:
     void setNeedsSimplifiedNormalFlowLayout(bool b) { m_bitfields.setNeedsSimplifiedNormalFlowLayout(b); }
     void setIsDragging(bool b) { m_bitfields.setIsDragging(b); }
     void setEverHadLayout(bool b) { m_bitfields.setEverHadLayout(b); }
+    void setShouldRepaintOverflowIfNeeded(bool b) { m_bitfields.setShouldRepaintOverflowIfNeeded(b); }
 
 private:
     // Store state between styleWillChange and styleDidChange

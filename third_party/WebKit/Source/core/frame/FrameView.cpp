@@ -1167,16 +1167,21 @@ void FrameView::repaintTree(RenderObject* root)
         // FIXME: Currently renderers with layers will get repainted when we call updateLayerPositionsAfterLayout.
         // That call should be broken apart to position the layers be done before
         // the repaintTree call so this will repaint everything.
+        bool didFullRepaint = false;
         if (!renderer->hasLayer()) {
             if (!renderer->layoutDidGetCalled()) {
-                if (renderer->shouldDoFullRepaintAfterLayout())
+                if (renderer->shouldDoFullRepaintAfterLayout()) {
                     renderer->repaint();
+                    didFullRepaint = true;
+                }
 
             } else {
-                renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(), renderer->shouldDoFullRepaintAfterLayout(),
+                didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(), renderer->shouldDoFullRepaintAfterLayout(),
                     oldRepaintRect, oldOutlineRect, &newRepaintRect, &newOutlineRect);
             }
         }
+        if (!didFullRepaint && renderer->shouldRepaintOverflowIfNeeded())
+            renderer->repaintOverflow();
         renderer->clearRepaintRects();
     }
     renderView()->setOldMaximalOutlineSize(0);
