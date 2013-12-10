@@ -1449,6 +1449,7 @@ internal_paladin.add_config('stout-paladin',
 internal_paladin.add_config('stout32-paladin',
   boards=['stout32'],
   paladin_builder_name='stout32 paladin',
+  important=False,
 )
 
 internal_paladin.add_config('stumpy-paladin',
