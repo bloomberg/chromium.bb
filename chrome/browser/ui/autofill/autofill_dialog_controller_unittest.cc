@@ -535,18 +535,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
   }
 
-  bool ReadSetVisuallyDeemphasizedIpc() {
-    EXPECT_EQ(1U, process()->sink().message_count());
-    uint32 kMsgID = ChromeViewMsg_SetVisuallyDeemphasized::ID;
-    const IPC::Message* message =
-        process()->sink().GetFirstMessageMatching(kMsgID);
-    EXPECT_TRUE(message);
-    Tuple1<bool> payload;
-    ChromeViewMsg_SetVisuallyDeemphasized::Read(message, &payload);
-    process()->sink().ClearMessages();
-    return payload.a;
-  }
-
   // Returns true if the given |section| contains a field of the given |type|.
   bool SectionContainsField(DialogSection section, ServerFieldType type) {
     const DetailInputs& inputs =
