@@ -117,7 +117,7 @@ public:
     void willComposite();
     void didComposite();
 
-    void processGPUEvent(double timestamp, int phase, bool foreign);
+    void processGPUEvent(double timestamp, int phase, bool foreign, size_t usedGPUMemoryBytes);
 
 private:
     InspectorController(Page*, InspectorClient*);

@@ -50,7 +50,7 @@ namespace WebCore {
         static PassRefPtr<JSONObject> createGenericRecord(double startTime, int maxCallStackDepth, const String& type);
         static PassRefPtr<JSONObject> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data = 0);
 
-        static PassRefPtr<JSONObject> createGCEventData(const size_t usedHeapSizeDelta);
+        static PassRefPtr<JSONObject> createGCEventData(size_t usedHeapSizeDelta);
 
         static PassRefPtr<JSONObject> createFunctionCallData(const String& scriptName, int scriptLine);
 
@@ -98,7 +98,7 @@ namespace WebCore {
 
         static PassRefPtr<JSONObject> createFrameData(int frameId);
 
-        static PassRefPtr<JSONObject> createGPUTaskData(bool foreign);
+        static PassRefPtr<JSONObject> createGPUTaskData(bool foreign, size_t usedGPUMemoryBytes);
 
         static void appendLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
 

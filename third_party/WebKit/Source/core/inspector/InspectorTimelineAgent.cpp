@@ -1022,7 +1022,7 @@ void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
 {
     double timelineTimestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp);
     if (event.phase == GPUEvent::PhaseBegin) {
-        m_pendingGPURecord = TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(event.foreign));
+        m_pendingGPURecord = TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(event.foreign, event.usedGPUMemoryBytes));
     } else if (m_pendingGPURecord) {
         m_pendingGPURecord->setNumber("endTime", timelineTimestamp);
         sendEvent(m_pendingGPURecord.release());

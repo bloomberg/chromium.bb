@@ -122,13 +122,15 @@ public:
     class GPUEvent {
     public:
         enum Phase { PhaseBegin, PhaseEnd };
-        GPUEvent(double timestamp, int phase, bool foreign) :
+        GPUEvent(double timestamp, int phase, bool foreign, size_t usedGPUMemoryBytes) :
             timestamp(timestamp),
             phase(static_cast<Phase>(phase)),
-            foreign(foreign) { }
+            foreign(foreign),
+            usedGPUMemoryBytes(usedGPUMemoryBytes) { }
         double timestamp;
         Phase phase;
         bool foreign;
+        size_t usedGPUMemoryBytes;
     };
 
     static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
@@ -234,7 +236,7 @@ public:
     void didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
     void didCloseWebSocket(Document*, unsigned long identifier);
 
-    void processGPUEvent(const class GPUEvent&);
+    void processGPUEvent(const GPUEvent&);
 
     // ScriptGCEventListener methods.
     virtual void didGC(double, double, size_t);

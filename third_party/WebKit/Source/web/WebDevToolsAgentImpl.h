@@ -94,8 +94,8 @@ public:
     virtual void setProcessId(long);
     virtual void setLayerTreeId(int);
     // FIXME: remove it once the client side stops firing these.
-    virtual void processGPUEvent(double timestamp, int phase, unsigned ownerPID) OVERRIDE;
     virtual void processGPUEvent(double timestamp, int phase, bool foreign) OVERRIDE;
+    virtual void processGPUEvent(const GPUEvent&) OVERRIDE;
 
     // InspectorClient implementation.
     virtual void highlight();
