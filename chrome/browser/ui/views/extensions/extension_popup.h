@@ -14,6 +14,10 @@
 #include "ui/views/focus/widget_focus_manager.h"
 #include "url/gurl.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/client/activation_change_observer.h"
+#endif
+
 class Browser;
 namespace views {
 class Widget;
@@ -28,6 +32,9 @@ class ExtensionViewHost;
 }
 
 class ExtensionPopup : public views::BubbleDelegateView,
+#if defined(USE_AURA)
+                       public aura::client::ActivationChangeObserver,
+#endif
                        public ExtensionViewViews::Container,
                        public content::NotificationObserver {
  public:
@@ -67,8 +74,15 @@ class ExtensionPopup : public views::BubbleDelegateView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // views::BubbleDelegateView overrides.
-  virtual void OnWidgetActivationChanged(views::Widget* widget, bool active)
-      OVERRIDE;
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) OVERRIDE;
+
+#if defined(USE_AURA)
+  // aura::client::ActivationChangeObserver overrides.
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE;
+#endif
 
   // The min/max height of popups.
   static const int kMinWidth;

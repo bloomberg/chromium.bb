@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -27,6 +28,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/corewm/window_animations.h"
 #endif
@@ -147,6 +149,16 @@ gfx::Size ExtensionPopup::GetPreferredSize() {
   return sz;
 }
 
+void ExtensionPopup::OnWidgetDestroying(views::Widget* widget) {
+  BubbleDelegateView::OnWidgetDestroying(widget);
+#if defined(USE_AURA)
+  aura::Window* bubble_window = GetWidget()->GetNativeWindow();
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(bubble_window->GetRootWindow());
+  activation_client->RemoveObserver(this);
+#endif
+}
+
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
   BubbleDelegateView::OnWidgetActivationChanged(widget, active);
@@ -161,6 +173,24 @@ void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
       !IsOwnerOf(activated_view, this_view))
     this_widget->Close();
 }
+
+#if defined(USE_AURA)
+void ExtensionPopup::OnWindowActivated(aura::Window* gained_active,
+                                       aura::Window* lost_active) {
+  // DesktopNativeWidgetAura does not trigger the expected browser widget
+  // [de]activation events when activating widgets in its own root window.
+  // This additional check handles those cases. See: http://crbug.com/320889
+  aura::Window* this_window = GetWidget()->GetNativeWindow();
+  aura::Window* anchor_window = anchor_widget()->GetNativeWindow();
+  chrome::HostDesktopType host_desktop_type =
+      chrome::GetHostDesktopTypeForNativeWindow(this_window);
+  if (!inspect_with_devtools_ && anchor_window == gained_active &&
+      host_desktop_type != chrome::HOST_DESKTOP_TYPE_ASH &&
+      this_window->GetRootWindow() == anchor_window->GetRootWindow() &&
+      gained_active->transient_parent() != this_window)
+    GetWidget()->Close();
+}
+#endif
 
 // static
 ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
@@ -188,6 +218,13 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
   // and not show.  This seems to happen in single-process mode.
   if (host->did_stop_loading())
     popup->ShowBubble();
+
+#if defined(USE_AURA)
+  aura::Window* bubble_window = popup->GetWidget()->GetNativeWindow();
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(bubble_window->GetRootWindow());
+  activation_client->AddObserver(popup);
+#endif
 
   return popup;
 }
