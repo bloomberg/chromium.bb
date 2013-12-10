@@ -170,7 +170,7 @@ camera.View.prototype.inactivate = function() {
   // are not focusable.
   var childElements = this.rootElement_.querySelectorAll('[tabindex]');
   var elementsArray = Array.prototype.slice.call(childElements);
-  if (this.rootElement_.getAttribute('tabindex') !== undefined)
+  if (this.rootElement_.getAttribute('tabindex') !== null)
     elementsArray.push(this.rootElement_);
   this.tabIndexes_ = [];
   for (var index = 0; index < elementsArray.length; index++) {

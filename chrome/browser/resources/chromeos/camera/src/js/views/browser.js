@@ -359,6 +359,8 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   this.pictures.push(new camera.views.GalleryBase.DOMPicture(picture, img));
 
   img.addEventListener('click', function(event) {
+    event.preventDefault();  // Prevent focusing.
+
     // If scrolled while clicking, then discard this selection, since another
     // one will be choosen in the onScrollEnded handler.
     if (this.scrollTracker_.scrolling &&
