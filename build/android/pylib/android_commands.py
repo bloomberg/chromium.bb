@@ -25,6 +25,8 @@ import constants
 import screenshot
 import system_properties
 
+from utils import host_path_finder
+
 try:
   from pylib import pexpect
 except:
@@ -1498,6 +1500,20 @@ class AndroidCommands(object):
         }
     logging.warning('Could not find disk IO stats.')
     return None
+
+  def PurgeUnpinnedAshmem(self):
+    """Purges the unpinned ashmem memory for the whole system.
+
+    This can be used to make memory measurements more stable in particular.
+    """
+    host_path = host_path_finder.GetMostRecentHostPath('purge_ashmem')
+    if not host_path:
+      raise Exception('Could not find the purge_ashmem binary.')
+    device_path = os.path.join(constants.TEST_EXECUTABLE_DIR, 'purge_ashmem')
+    self.PushIfNeeded(host_path, device_path)
+    if self.RunShellCommand(device_path, log_result=True):
+      return
+    raise Exception('Error while purging ashmem.')
 
   def GetMemoryUsageForPid(self, pid):
     """Returns the memory usage for given pid.
