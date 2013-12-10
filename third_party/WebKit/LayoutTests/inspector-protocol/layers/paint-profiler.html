@@ -1,0 +1,66 @@
+<html>
+<head>
+<style type="text/css">
+.composited {
+   position: absolute;
+   top: 25px;
+   left: 25px;
+   width: 50px;
+   height: 50px;
+   background-color: blue;
+   -webkit-transform: translateZ(10px);
+}
+</style>
+<script type="application/x-javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script type="application/x-javascript" src="layer-protocol-test.js"></script>
+<script type="application/x-javascript">
+
+function test()
+{
+    var documentNode;
+    var initialLayers;
+    var modifiedLayers;
+
+    InspectorTest.enableLayerTreeAgent(gotLayerTree);
+
+    function gotLayerTree(layers)
+    {
+        var matchingLayers = layers.filter(function(layer) { return !!(layer.nodeId && layer.transform); });
+        InspectorTest.assertEquals(1, matchingLayers.length);
+        var layerId = matchingLayers[0].layerId;
+
+        InspectorTest.sendCommand("LayerTree.makeSnapshot", {"layerId": layerId}, InspectorTest.wrapCallback(gotSnapshot));
+    }
+    var snapshotId;
+    function gotSnapshot(result)
+    {
+        snapshotId = result.snapshotId;
+        InspectorTest.sendCommand("LayerTree.profileSnapshot", {"snapshotId": snapshotId, "minRepeatCount":4, "minDuration": 0}, InspectorTest.wrapCallback(gotProfile));
+    }
+    function gotProfile(result)
+    {
+        var timings = result.timings;
+        InspectorTest.assertEquals(4, result.timings.length, "invalid profile array length");
+        for (var i = 0; i < result.timings.length; ++i) {
+            InspectorTest.assertEquals(result.timings[0].length, result.timings[i].length, "invalid profile subarray length");
+            for (var j = 0; j < result.timings[i].length; ++j)
+                InspectorTest.assert(result.timings[i][j] >= 0, "profile timing is not a number");
+        }
+        InspectorTest.sendCommand("LayerTree.replaySnapshot", {"snapshotId": snapshotId, "fromStep": 2, "toStep": result.timings[0].length - 2}, InspectorTest.wrapCallback(replayedSnapshot));
+    }
+    function replayedSnapshot(result)
+    {
+        InspectorTest.assert(/^data:image\/png;base64,/, "invalid image returned from LayerTree.replaySnapshot");
+        InspectorTest.log("DONE!");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+<body onload="runTest()">
+    <div class="composited">
+    Sanity test for DevTools Paint Profiler.
+    </div>
+</body>
+</html>
+

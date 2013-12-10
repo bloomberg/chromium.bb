@@ -1,0 +1,3 @@
+Sanity test for DevTools Paint Profiler.
+DONE!
+

@@ -47,6 +47,8 @@ class InstrumentingAgents;
 class Page;
 class RenderLayerCompositor;
 
+struct LayerSnapshot;
+
 typedef String ErrorString;
 
 class InspectorLayerTreeAgent : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
@@ -69,15 +71,22 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&);
+    virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId);
+    virtual void releaseSnapshot(ErrorString*, const String& snapshotId);
+    virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL);
+    virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&);
 
 private:
-    typedef HashMap<int, int> LayerIdToNodeIdMap;
+    static unsigned s_lastSnapshotId;
 
     InspectorLayerTreeAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorDOMAgent*, Page*);
 
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
+    const LayerSnapshot* snapshotById(ErrorString*, const String& snapshotId);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();
+
+    typedef HashMap<int, int> LayerIdToNodeIdMap;
     void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
     int idForNode(Node*);
 
@@ -85,7 +94,8 @@ private:
     Page* m_page;
     InspectorDOMAgent* m_domAgent;
 
-    HashMap<const RenderLayer*, String> m_documentLayerToIdMap;
+    typedef HashMap<String, LayerSnapshot> SnapshotById;
+    SnapshotById m_snapshotById;
 };
 
 } // namespace WebCore

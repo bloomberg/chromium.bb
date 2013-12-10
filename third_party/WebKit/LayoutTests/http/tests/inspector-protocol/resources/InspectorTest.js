@@ -58,11 +58,8 @@ InspectorTest.wrapCallback = function(callback)
      */
     function callbackWrapper(message)
     {
-        if (message.hasOwnProperty("error")) {
-            InspectorTest.log("Error " + message["error"].message);
-            InspectorTest.completeTest();
+        if (InspectorTest.completeTestIfError(message))
             return;
-        }
         if (!callback)
             return;
         try {
@@ -191,16 +188,6 @@ InspectorTest.completeTestIfError = function(messageObject)
     return false;
 }
 
-InspectorTest.completeTestIfError = function(messageObject)
-{
-    if (messageObject.error) {
-        InspectorTest.log(messageObject.error.message);
-        InspectorTest.completeTest();
-        return true;
-    }
-    return false;
-}
-
 InspectorTest.checkExpectation = function(fail, name, messageObject)
 {
     if (fail === !!messageObject.error) {
@@ -214,6 +201,21 @@ InspectorTest.checkExpectation = function(fail, name, messageObject)
 }
 InspectorTest.expectedSuccess = InspectorTest.checkExpectation.bind(null, false);
 InspectorTest.expectedError = InspectorTest.checkExpectation.bind(null, true);
+
+InspectorTest.assert = function(condition, message)
+{
+    if (condition)
+        return;
+    InspectorTest.log("FAIL: assertion failed: " + message);
+    InspectorTest.completeTest();
+}
+
+InspectorTest.assertEquals = function(expected, actual, message)
+{
+    if (expected === actual)
+        return;
+    InspectorTest,assert(false, "expected: `" + expected + "', actual: `" + actual + "'" + (message ? ", " + message : ""));
+}
 
 /**
  * @param {string} scriptName
