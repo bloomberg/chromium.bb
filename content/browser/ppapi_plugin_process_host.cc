@@ -117,6 +117,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const base::FilePath& profile_data_directory) {
   PpapiPluginProcessHost* plugin_host = new PpapiPluginProcessHost(
       info, profile_data_directory);
+  DCHECK(plugin_host);
   if (plugin_host->Init(info))
     return plugin_host;
 
@@ -253,8 +254,10 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   }
 
   std::string channel_id = process_->GetHost()->CreateChannel();
-  if (channel_id.empty())
+  if (channel_id.empty()) {
+    VLOG(1) << "Could not create pepper host channel.";
     return false;
+  }
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   CommandLine::StringType plugin_launcher =
@@ -267,8 +270,10 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
   base::FilePath exe_path = ChildProcessHost::GetChildPath(flags);
-  if (exe_path.empty())
+  if (exe_path.empty()) {
+    VLOG(1) << "Pepper plugin exe path is empty.";
     return false;
+  }
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType,
@@ -357,10 +362,12 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
 }
 
 void PpapiPluginProcessHost::OnProcessLaunched() {
+  VLOG(2) << "ppapi plugin process launched.";
   host_impl_->set_plugin_process_handle(process_->GetHandle());
 }
 
 void PpapiPluginProcessHost::OnProcessCrashed(int exit_code) {
+  VLOG(1) << "ppapi plugin process crashed.";
   PluginServiceImpl::GetInstance()->RegisterPluginCrash(plugin_path_);
 }
 
@@ -391,8 +398,8 @@ void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {
 // Called when the browser <--> plugin channel has an error. This normally
 // means the plugin has crashed.
 void PpapiPluginProcessHost::OnChannelError() {
-  DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
-           << "::OnChannelError()";
+  VLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
+          << "::OnChannelError()";
   // We don't need to notify the renderers that were communicating with the
   // plugin since they have their own channels which will go into the error
   // state at the same time. Instead, we just need to notify any renderers

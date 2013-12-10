@@ -478,10 +478,14 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
           pepper_module.get(), params, render_view_->AsWeakPtr(), this);
     }
   }
-
+#if defined(OS_CHROMEOS)
+  LOG(WARNING) << "Pepper module/plugin creation failed.";
+  return NULL;
+#else
   // TODO(jam): change to take RenderFrame.
   return new WebPluginImpl(frame, params, info.path, render_view_->AsWeakPtr(),
                            this);
+#endif
 #else
   return NULL;
 #endif

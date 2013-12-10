@@ -298,7 +298,12 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
                               START_NPAPI_FLASH_AT_LEAST_ONCE,
                               FLASH_USAGE_ENUM_COUNT);
   }
-
+#if defined(OS_CHROMEOS)
+  // TODO(ihf): Move to an earlier place once crbug.com/314301 is fixed. For now
+  // we still want Plugin.FlashUsage recorded if we end up here.
+  LOG(WARNING) << "Refusing to start npapi plugin on ChromeOS.";
+  return NULL;
+#endif
   // This plugin isn't loaded by any plugin process, so create a new process.
   scoped_ptr<PluginProcessHost> new_host(new PluginProcessHost());
   if (!new_host->Init(info)) {
@@ -314,8 +319,10 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     const base::FilePath& profile_data_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path))
+  if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path)) {
+    VLOG(1) << "Unable to load ppapi plugin: " << plugin_path.MaybeAsASCII();
     return NULL;
+  }
 
   PpapiPluginProcessHost* plugin_host =
       FindPpapiPluginProcess(plugin_path, profile_data_directory);
@@ -324,8 +331,11 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
 
   // Validate that the plugin is actually registered.
   PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
-  if (!info)
+  if (!info) {
+    VLOG(1) << "Unable to find ppapi plugin registration for: "
+            << plugin_path.MaybeAsASCII();
     return NULL;
+  }
 
   // Record when PPAPI Flash process is started for the first time.
   static bool counted = false;
@@ -337,8 +347,14 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   }
 
   // This plugin isn't loaded by any plugin process, so create a new process.
-  return PpapiPluginProcessHost::CreatePluginHost(
+  plugin_host = PpapiPluginProcessHost::CreatePluginHost(
       *info, profile_data_directory);
+  if (!plugin_host) {
+    VLOG(1) << "Unable to create ppapi plugin process for: "
+            << plugin_path.MaybeAsASCII();
+  }
+
+  return plugin_host;
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(

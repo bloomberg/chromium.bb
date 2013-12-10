@@ -262,9 +262,10 @@ void PreloadPepperPlugins() {
       std::string error;
       base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
                                                             &error);
-      DLOG_IF(WARNING, !library) << "Unable to load plugin "
-                                 << plugins[i].path.value() << " "
-                                 << error;
+      VLOG_IF(1, !library) << "Unable to load plugin "
+                           << plugins[i].path.value() << " "
+                           << error;
+
       (void)library;  // Prevent release-mode warning.
     }
   }
