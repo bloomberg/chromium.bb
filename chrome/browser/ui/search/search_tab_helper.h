@@ -102,6 +102,10 @@ class SearchTabHelper : public content::WebContentsObserver,
                            OnChromeIdentityCheckSignedOutMatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnChromeIdentityCheckSignedOutMismatch);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperWindowTest,
+                           OnProvisionalLoadFailRedirectNTPToLocal);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperWindowTest,
+                           OnProvisionalLoadFailDontRedirectNonNTP);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
