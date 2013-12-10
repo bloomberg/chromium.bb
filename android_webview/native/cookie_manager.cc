@@ -112,14 +112,13 @@ class CookieManager {
   ~CookieManager();
 
   typedef base::Callback<void(base::WaitableEvent*)> CookieTask;
-  void ExecCookieTask(const CookieTask& task,
-                      const bool wait_for_completion);
+  void ExecCookieTask(const CookieTask& task);
 
   void SetCookieAsyncHelper(
       const GURL& host,
       const std::string& value,
       base::WaitableEvent* completion);
-  void SetCookieCompleted(bool success);
+  void SetCookieCompleted(base::WaitableEvent* completion, bool success);
 
   void GetCookieValueAsyncHelper(
       const GURL& host,
@@ -131,7 +130,7 @@ class CookieManager {
 
   void RemoveSessionCookieAsyncHelper(base::WaitableEvent* completion);
   void RemoveAllCookieAsyncHelper(base::WaitableEvent* completion);
-  void RemoveCookiesCompleted(int num_deleted);
+  void RemoveCookiesCompleted(base::WaitableEvent* completion, int num_deleted);
 
   void FlushCookieStoreAsyncHelper(base::WaitableEvent* completion);
 
@@ -221,22 +220,19 @@ void CookieManager::EnsureCookieMonsterExistsLocked() {
 }
 
 // Executes the |task| on the |cookie_monster_proxy_| message loop.
-// |wait_for_completion| should only be true if the Java API method returns a
-// value or is explicitly stated to be synchronous.
-void CookieManager::ExecCookieTask(const CookieTask& task,
-                                   const bool wait_for_completion) {
+void CookieManager::ExecCookieTask(const CookieTask& task) {
   base::WaitableEvent completion(false, false);
   base::AutoLock lock(cookie_monster_lock_);
 
   EnsureCookieMonsterExistsLocked();
 
-  cookie_monster_proxy_->PostTask(FROM_HERE,
-      base::Bind(task, wait_for_completion ? &completion : NULL));
+  cookie_monster_proxy_->PostTask(FROM_HERE, base::Bind(task, &completion));
 
-  if (wait_for_completion) {
-    ScopedAllowWaitForLegacyWebViewApi wait;
-    completion.Wait();
-  }
+  // We always wait for the posted task to complete, even when it doesn't return
+  // a value, because previous versions of the CookieManager API were
+  // synchronous in most/all cases and the caller may be relying on this.
+  ScopedAllowWaitForLegacyWebViewApi wait;
+  completion.Wait();
 }
 
 scoped_refptr<net::CookieStore> CookieManager::CreateBrowserThreadCookieStore(
@@ -282,25 +278,28 @@ void CookieManager::SetCookie(const GURL& host,
   ExecCookieTask(base::Bind(&CookieManager::SetCookieAsyncHelper,
                             base::Unretained(this),
                             host,
-                            cookie_value), false);
+                            cookie_value));
 }
 
 void CookieManager::SetCookieAsyncHelper(
     const GURL& host,
     const std::string& value,
     base::WaitableEvent* completion) {
-  DCHECK(!completion);
   net::CookieOptions options;
   options.set_include_httponly();
 
   cookie_monster_->SetCookieWithOptionsAsync(
       host, value, options,
-      base::Bind(&CookieManager::SetCookieCompleted, base::Unretained(this)));
+      base::Bind(&CookieManager::SetCookieCompleted,
+                 base::Unretained(this),
+                 completion));
 }
 
-void CookieManager::SetCookieCompleted(bool success) {
+void CookieManager::SetCookieCompleted(base::WaitableEvent* completion,
+                                       bool success) {
   // The CookieManager API does not return a value for SetCookie,
   // so we don't need to propagate the |success| value back to the caller.
+  completion->Signal();
 }
 
 std::string CookieManager::GetCookie(const GURL& host) {
@@ -308,7 +307,7 @@ std::string CookieManager::GetCookie(const GURL& host) {
   ExecCookieTask(base::Bind(&CookieManager::GetCookieValueAsyncHelper,
                             base::Unretained(this),
                             host,
-                            &cookie_value), true);
+                            &cookie_value));
 
   return cookie_value;
 }
@@ -333,42 +332,41 @@ void CookieManager::GetCookieValueCompleted(base::WaitableEvent* completion,
                                             std::string* result,
                                             const std::string& value) {
   *result = value;
-  DCHECK(completion);
   completion->Signal();
 }
 
 void CookieManager::RemoveSessionCookie() {
   ExecCookieTask(base::Bind(&CookieManager::RemoveSessionCookieAsyncHelper,
-                            base::Unretained(this)), false);
+                            base::Unretained(this)));
 }
 
 void CookieManager::RemoveSessionCookieAsyncHelper(
     base::WaitableEvent* completion) {
-  DCHECK(!completion);
   cookie_monster_->DeleteSessionCookiesAsync(
       base::Bind(&CookieManager::RemoveCookiesCompleted,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 completion));
 }
 
-void CookieManager::RemoveCookiesCompleted(int num_deleted) {
+void CookieManager::RemoveCookiesCompleted(base::WaitableEvent* completion,
+                                           int num_deleted) {
   // The CookieManager API does not return a value for removeSessionCookie or
   // removeAllCookie, so we don't need to propagate the |num_deleted| value back
   // to the caller.
+  completion->Signal();
 }
 
 void CookieManager::RemoveAllCookie() {
   ExecCookieTask(base::Bind(&CookieManager::RemoveAllCookieAsyncHelper,
-                            base::Unretained(this)), false);
+                            base::Unretained(this)));
 }
 
-// TODO(kristianm): Pass a null callback so it will not be invoked
-// across threads.
 void CookieManager::RemoveAllCookieAsyncHelper(
     base::WaitableEvent* completion) {
-  DCHECK(!completion);
   cookie_monster_->DeleteAllAsync(
       base::Bind(&CookieManager::RemoveCookiesCompleted,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 completion));
 }
 
 void CookieManager::RemoveExpiredCookie() {
@@ -378,20 +376,20 @@ void CookieManager::RemoveExpiredCookie() {
 
 void CookieManager::FlushCookieStoreAsyncHelper(
     base::WaitableEvent* completion) {
-  DCHECK(!completion);
-  cookie_monster_->FlushStore(base::Bind(&base::DoNothing));
+  cookie_monster_->FlushStore(base::Bind(&base::WaitableEvent::Signal,
+                                         base::Unretained(completion)));
 }
 
 void CookieManager::FlushCookieStore() {
   ExecCookieTask(base::Bind(&CookieManager::FlushCookieStoreAsyncHelper,
-                            base::Unretained(this)), false);
+                            base::Unretained(this)));
 }
 
 bool CookieManager::HasCookies() {
   bool has_cookies;
   ExecCookieTask(base::Bind(&CookieManager::HasCookiesAsyncHelper,
                             base::Unretained(this),
-                            &has_cookies), true);
+                            &has_cookies));
   return has_cookies;
 }
 
@@ -410,7 +408,6 @@ void CookieManager::HasCookiesCompleted(base::WaitableEvent* completion,
                                         bool* result,
                                         const CookieList& cookies) {
   *result = cookies.size() != 0;
-  DCHECK(completion);
   completion->Signal();
 }
 
