@@ -145,19 +145,19 @@ class CC_EXPORT RenderSurfaceImpl {
 
   // Uses this surface's space.
   gfx::Rect content_rect_;
-  bool surface_property_changed_;
+  bool surface_property_changed_ : 1;
+  bool draw_opacity_is_animating_ : 1;
+  bool target_surface_transforms_are_animating_ : 1;
+  bool screen_space_transforms_are_animating_ : 1;
+
+  bool is_clipped_ : 1;
+  bool contributes_to_drawn_surface_ : 1;
 
   float draw_opacity_;
-  bool draw_opacity_is_animating_;
   gfx::Transform draw_transform_;
   gfx::Transform screen_space_transform_;
   gfx::Transform replica_draw_transform_;
   gfx::Transform replica_screen_space_transform_;
-  bool target_surface_transforms_are_animating_;
-  bool screen_space_transforms_are_animating_;
-
-  bool is_clipped_;
-  bool contributes_to_drawn_surface_;
 
   // Uses the space of the surface's target surface.
   gfx::Rect clip_rect_;

@@ -30,7 +30,6 @@
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
-
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
     : parent_(NULL),
       scroll_parent_(NULL),
@@ -47,14 +46,11 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       have_wheel_event_handlers_(false),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
-      background_color_(0),
       stacking_order_changed_(false),
       double_sided_(true),
       layer_property_changed_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
-      opacity_(1.0),
-      blend_mode_(SkXfermode::kSrcOver_Mode),
       is_root_for_isolated_group_(false),
       preserves_3d_(false),
       use_parent_backface_visibility_(false),
@@ -63,6 +59,9 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       hide_layer_and_subtree_(false),
       force_render_surface_(false),
       is_container_for_fixed_position_layers_(false),
+      background_color_(0),
+      opacity_(1.0),
+      blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_depth_(0.f),
       compositing_reasons_(kCompositingReasonUnknown),
       current_draw_mode_(DRAW_MODE_NONE),

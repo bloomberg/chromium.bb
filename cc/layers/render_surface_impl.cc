@@ -28,12 +28,12 @@ namespace cc {
 RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
     : owning_layer_(owning_layer),
       surface_property_changed_(false),
-      draw_opacity_(1),
       draw_opacity_is_animating_(false),
       target_surface_transforms_are_animating_(false),
       screen_space_transforms_are_animating_(false),
       is_clipped_(false),
       contributes_to_drawn_surface_(false),
+      draw_opacity_(1),
       nearest_occlusion_immune_ancestor_(NULL),
       target_render_surface_layer_index_history_(0),
       current_layer_index_history_(0) {

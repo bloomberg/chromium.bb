@@ -52,7 +52,6 @@ class QuadSink;
 class Renderer;
 class ScrollbarAnimationController;
 class ScrollbarLayerImplBase;
-class Layer;
 
 struct AppendQuadsData;
 
@@ -576,40 +575,40 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Size bounds_;
   gfx::Vector2d scroll_offset_;
   LayerScrollOffsetDelegate* scroll_offset_delegate_;
-  bool scrollable_;
-  bool should_scroll_on_main_thread_;
-  bool have_wheel_event_handlers_;
-  bool user_scrollable_horizontal_;
-  bool user_scrollable_vertical_;
+  bool scrollable_ : 1;
+  bool should_scroll_on_main_thread_ : 1;
+  bool have_wheel_event_handlers_ : 1;
+  bool user_scrollable_horizontal_ : 1;
+  bool user_scrollable_vertical_ : 1;
+  bool stacking_order_changed_ : 1;
+  // Whether the "back" of this layer should draw.
+  bool double_sided_ : 1;
+
+  // Tracks if drawing-related properties have changed since last redraw.
+  bool layer_property_changed_ : 1;
+
+  bool masks_to_bounds_ : 1;
+  bool contents_opaque_ : 1;
+  bool is_root_for_isolated_group_ : 1;
+  bool preserves_3d_ : 1;
+  bool use_parent_backface_visibility_ : 1;
+  bool draw_checkerboard_for_missing_tiles_ : 1;
+  bool draws_content_ : 1;
+  bool hide_layer_and_subtree_ : 1;
+  bool force_render_surface_ : 1;
+
+  // Set for the layer that other layers are fixed to.
+  bool is_container_for_fixed_position_layers_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   SkColor background_color_;
-  bool stacking_order_changed_;
 
-  // Whether the "back" of this layer should draw.
-  bool double_sided_;
-
-  // Tracks if drawing-related properties have changed since last redraw.
-  bool layer_property_changed_;
-
-  bool masks_to_bounds_;
-  bool contents_opaque_;
   float opacity_;
   SkXfermode::Mode blend_mode_;
-  bool is_root_for_isolated_group_;
   gfx::PointF position_;
-  bool preserves_3d_;
-  bool use_parent_backface_visibility_;
-  bool draw_checkerboard_for_missing_tiles_;
   gfx::Transform sublayer_transform_;
   gfx::Transform transform_;
 
-  bool draws_content_;
-  bool hide_layer_and_subtree_;
-  bool force_render_surface_;
-
-  // Set for the layer that other layers are fixed to.
-  bool is_container_for_fixed_position_layers_;
   // This property is effective when
   // is_container_for_fixed_position_layers_ == true,
   gfx::Vector2dF fixed_container_size_delta_;
