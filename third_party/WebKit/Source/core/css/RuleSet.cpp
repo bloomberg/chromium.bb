@@ -398,6 +398,7 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvalu
 {
     ASSERT(sheet);
 
+    addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | RuleCanUseFastCheckSelector);
     const Vector<RefPtr<StyleRuleImport> >& importRules = sheet->importRules();
     for (unsigned i = 0; i < importRules.size(); ++i) {
         StyleRuleImport* importRule = importRules[i].get();
@@ -405,7 +406,7 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvalu
             addRulesFromSheet(importRule->styleSheet(), medium, addRuleFlags);
     }
 
-    addChildRules(sheet->childRules(), medium, static_cast<AddRuleFlags>(addRuleFlags | RuleCanUseFastCheckSelector));
+    addChildRules(sheet->childRules(), medium, addRuleFlags);
 }
 
 void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)
