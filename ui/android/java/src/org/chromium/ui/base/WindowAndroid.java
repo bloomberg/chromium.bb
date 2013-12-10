@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ public class WindowAndroid {
     protected HashMap<Integer, String> mIntentErrors;
 
     /**
-     * @param context, the application context..
+     * @param context The application context.
      */
     public WindowAndroid(Context context) {
         assert context == context.getApplicationContext();
@@ -175,7 +175,7 @@ public class WindowAndroid {
 
     /**
      * Tests that an activity is available to handle the passed in intent.
-     * @param  Intent the intent to check.
+     * @param  intent The intent to check.
      * @return True if an activity is available to process this intent when started, meaning that
      *         Context.startActivity will not throw ActivityNotFoundException.
      */
