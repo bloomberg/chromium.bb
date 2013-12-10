@@ -1128,6 +1128,7 @@
         '../testing/perf/perf_test.gyp:perf_test',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gl/gl.gyp:gl',
+        '../ui/ui.gyp:ui',
       ],
       'sources': [
         'base/audio_bus_perftest.cc',
