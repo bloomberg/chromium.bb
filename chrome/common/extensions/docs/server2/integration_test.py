@@ -8,6 +8,7 @@
 import build_server
 build_server.main()
 
+import json
 import optparse
 import os
 import posixpath
@@ -18,16 +19,19 @@ import unittest
 from branch_utility import BranchUtility
 from chroot_file_system import ChrootFileSystem
 from extensions_paths import EXTENSIONS, PUBLIC_TEMPLATES
+from fake_fetchers import ConfigureFakeFetchers
+from handler import Handler
 from link_error_detector import LinkErrorDetector, StringifyBrokenLinks
 from local_file_system import LocalFileSystem
 from local_renderer import LocalRenderer
-from fake_fetchers import ConfigureFakeFetchers
-from handler import Handler
 from servlet import Request
 from test_util import EnableLogging, DisableLogging, ChromiumPath
 
 # Arguments set up if __main__ specifies them.
 _EXPLICIT_TEST_FILES = None
+_REBASE = False
+_VERBOSE = False
+
 
 def _ToPosixPath(os_path):
   return os_path.replace(os.sep, '/')
@@ -76,11 +80,46 @@ class IntegrationTest(unittest.TestCase):
         ('extensions/index.html', 'apps/about_apps.html'))
 
     broken_links = link_error_detector.GetBrokenLinks()
-    if broken_links:
-      # TODO(jshumway): Test should fail when broken links are detected.
-      print('Warning: Found %d broken links:' % (
-        len(broken_links)))
+    if broken_links and _VERBOSE:
+      print('The broken links are:')
       print(StringifyBrokenLinks(broken_links))
+
+    broken_links_set = set(broken_links)
+
+    known_broken_links_path = os.path.join(
+        sys.path[0], 'known_broken_links.json')
+    try:
+      with open(known_broken_links_path, 'r') as f:
+        # The JSON file converts tuples and sets into lists, and for this
+        # set union/difference logic they need to be converted back.
+        known_broken_links = set(tuple(item) for item in json.load(f))
+    except IOError:
+      known_broken_links = set()
+
+    newly_broken_links = broken_links_set - known_broken_links
+    fixed_links = known_broken_links - broken_links_set
+
+    if _REBASE:
+      print('Rebasing broken links with %s newly broken and %s fixed links.' %
+            (len(newly_broken_links), len(fixed_links)))
+      with open(known_broken_links_path, 'w') as f:
+        json.dump(broken_links, f,
+                  indent=2, separators=(',', ': '), sort_keys=True)
+    else:
+      if fixed_links or newly_broken_links:
+        print('Found %s broken links, and some have changed. '
+              'If this is acceptable or expected then run %s with the --rebase '
+              'option.' % (len(broken_links), os.path.split(__file__)[-1]))
+      elif broken_links:
+        print('Found %s broken links, but there were no changes.' %
+              len(broken_links))
+      if fixed_links:
+        print('%s broken links have been fixed:' % len(fixed_links))
+        print(StringifyBrokenLinks(fixed_links))
+      if newly_broken_links:
+        print('There are %s new broken links:' % len(newly_broken_links))
+        print(StringifyBrokenLinks(newly_broken_links))
+        self.fail('See logging for details.')
 
     print('Took %s seconds.' % (time.time() - start_time))
 
@@ -162,10 +201,18 @@ class IntegrationTest(unittest.TestCase):
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()
-  parser.add_option('-a', '--all', action='store_true', default=False)
+  parser.add_option('-a', '--all', action='store_true', default=False,
+                    help='Render all pages, not just the one specified')
+  parser.add_option('-r', '--rebase', action='store_true', default=False,
+                    help='Rewrites the known_broken_links.json file with '
+                         'the current set of broken links')
+  parser.add_option('-v', '--verbose', action='store_true', default=False,
+                    help='Show verbose output like currently broken links')
   (opts, args) = parser.parse_args()
   if not opts.all:
     _EXPLICIT_TEST_FILES = args
+  _REBASE = opts.rebase
+  _VERBOSE = opts.verbose
   # Kill sys.argv because we have our own flags.
   sys.argv = [sys.argv[0]]
   unittest.main()
