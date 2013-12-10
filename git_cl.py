@@ -1114,11 +1114,12 @@ def CMDstatus(parser, args):
   """Show status of changelists.
 
   Colors are used to tell the state of the CL unless --fast is used:
-    - Green   LGTM'ed
-    - Blue    waiting for review
-    - Yellow  waiting for you to reply to review
-    - Red     not sent for review or broken
-    - Cyan    was committed, branch can be deleted
+    - Red      not sent for review or broken
+    - Blue     waiting for review
+    - Yellow   waiting for you to reply to review
+    - Green    LGTM'ed
+    - Magenta  in the commit queue
+    - Cyan     was committed, branch can be deleted
 
   Also see 'git cl comments'.
   """
@@ -1185,6 +1186,9 @@ def CMDstatus(parser, args):
       elif props.get('closed'):
         # Issue is closed.
         color = Fore.CYAN
+      elif props.get('commit'):
+        # Issue is in the commit queue.
+        color = Fore.MAGENTA
       elif r:
         # Was LGTM'ed.
         color = Fore.GREEN
