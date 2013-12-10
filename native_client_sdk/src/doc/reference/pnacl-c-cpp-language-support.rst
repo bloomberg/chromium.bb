@@ -19,10 +19,10 @@ For information on using languages other than C/C++, see the :ref:`FAQ
 section on other languages <other_languages>`.
 
 As for the standard libraries, the PNaCl toolchain is currently based on
-``libstdc++`` version 4.6.1, and the ``newlib`` standard C library
-(version is available through the macro ``NEWLIB_VERSION``).
-Experimental ``libc++`` support is also included; see
-:ref:`building_cpp_libraries` for more details.
+``libc++``, and the ``newlib`` standard C library (version is available
+through the macro ``NEWLIB_VERSION``). ``libstdc++`` is also supported
+but its use is discouraged; see :ref:`building_cpp_libraries` for more
+details.
 
 Preprocessor definitions
 ------------------------
@@ -160,6 +160,19 @@ in `Memory Model and Atomics`_.
 PNaCl and NaCl support ``setjmp`` and ``longjmp`` without any
 restrictions beyond C's.
 
+C++ Exception Handling
+======================
+
+PNaCl currently supports C++ exception handling through ``setjmp()`` and
+``longjmp()``, which can be enabled with the ``--pnacl-exceptions=sjlj``
+linker flag. Exceptions are disabled by default so that faster and
+smaller code is generated, and ``throw`` statements are replaced with
+calls to ``abort()``. The usual ``-fno-exceptions`` flag is also
+supported. PNaCl will support full zero-cost exception handling in the
+future.
+
+NaCl supports full zero-cost C++ exception handling.
+
 Inline Assembly
 ===============
 
@@ -223,17 +236,6 @@ POSIX-style signal handling really consists of two different features:
 If PNaCl were to support either of these, the interaction of
 ``volatile`` and atomics with same-thread signal handling would need
 to be carefully detailed.
-
-C++ Exception Handling
-----------------------
-
-PNaCl currently doesn't support C++ exception handling. It supports
-the usual ``-fno-exceptions`` flag, and by default it transforms all
-``throw`` statements into ``abort()`` calls. We plan to add exception
-handling support in the very near future, and zero-cost exception
-handling soon thereafter.
-
-NaCl supports C++ exception handling.
 
 Computed ``goto``
 -----------------

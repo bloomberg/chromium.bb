@@ -55,23 +55,24 @@ technologies such as JavaScript: A developer can distribute a **pexe**
 as part of an application (along with HTML, CSS, and JavaScript),
 and the user's machine is simply able to run it.
 
-With PNaCl, a developer generates a single pexe from source code,
-rather than multiple platform-specific nexes. The pexe provides
-both architecture- and OS-independence. Since the pexe uses an abstract,
-architecture-independent format, it does not suffer from the portability problem
-described above. Future versions of hosting environments
-should have no problem executing the pexe, even on new architectures.
-Moreover, if an existing architecture is subsequently enhanced, the pexe
-doesn't even have to be recompiled---in some cases the client-side
-translation will automatically be able to take advantage of the new
-capabilities.
+With PNaCl, a developer generates a single **pexe** from source code,
+rather than multiple platform-specific nexes. The **pexe** provides both
+architecture- and OS-independence. Since the **pexe** uses an abstract,
+architecture-independent format, it does not suffer from the portability
+problem described above. Future versions of hosting environments should
+have no problem executing the **pexe**, even on new architectures.
+Moreover, if an existing architecture is subsequently enhanced, the
+**pexe** doesn't even have to be recompiled---in some cases the
+client-side translation will automatically be able to take advantage of
+the new capabilities.
 
 **In short, PNaCl combines the portability of existing web technologies with
 the performance and security benefits of Native Client.**
 
-With the advent of PNaCl, the distribution restriction of Native Client can be
-lifted. Specifically, a pexe module can be part of any web application---it
-does not have to be distributed through the Chrome Web Store.
+With the advent of PNaCl, the distribution restriction of Native Client
+can be lifted. Specifically, a **pexe** module can be part of any web
+application---it does not have to be distributed through the Chrome Web
+Store.
 
 PNaCl is a new technology, and as such it still has a few limitations
 as compared to NaCl. These limitations are described below.
@@ -85,10 +86,11 @@ of the narrow limitations described below
 (see :ref:`When to use NaCl<when-to-use-nacl>`), you should use PNaCl.
 
 Beginning with version 31, the Chrome browser supports translation of
-pexe modules and their use in web applications, without requiring
-any installation (either of a browser plugin or of the applications themselves).
-Native Client and PNaCl are open-source technologies, and our hope is that they
-will be added to other hosting platforms in the future.
+**pexe** modules and their use in web applications, without requiring
+any installation (either of a browser plugin or of the applications
+themselves). Native Client and PNaCl are open-source technologies, and
+our hope is that they will be added to other hosting platforms in the
+future.
 
 If controlled distribution through the Chrome Web Store is an important part
 of your product plan, the benefits of PNaCl are less critical for you. But
@@ -102,8 +104,8 @@ for all supported architectures.
 When to use NaCl
 ================
 
-The limitations below apply to the initial release of PNaCl. If
-any of these limitations are critical for your application, you should use
+The limitations below apply to the current release of PNaCl. If any of
+these limitations are critical for your application, you should use
 non-portable NaCl:
 
 * By its nature, PNaCl does not support architecture-specific instructions in
@@ -114,7 +116,7 @@ non-portable NaCl:
   C standard library (the Native Client SDK provides a PNaCl port of
   ``newlib``). Dynamic linking and ``glibc`` are not yet supported.
   Work is under way to enable dynamic linking in future versions of PNaCl.
-* In the initial release, PNaCl does not support C++ exception handling. 
 * In the initial release, PNaCl does not support vector types and SIMD.
-* In the initial release, PNaCl does not support some GNU extensions like
-  taking the address of a label for computed gotos, or nested functions.
+* In the initial release, PNaCl does not support some GNU extensions
+  like taking the address of a label for computed ``goto``, or nested
+  functions.

@@ -61,22 +61,23 @@ help you decide which to use.
 
 .. _building_cpp_libraries:
 
-C++ libraries
--------------
+C++ standard libraries
+----------------------
 
-The PNaCl SDK can use either `libstdc++ <http://gcc.gnu.org/libstdc++>`_ (the
-current default) or LLVM's `libc++ <http://libcxx.llvm.org/>`_ (experimental
-support).  The ``-stdlib=[libstdc++|libc++]`` command line argument can be used
-to choose which standard library to use.
+The PNaCl SDK can use either LLVM's `libc++ <http://libcxx.llvm.org/>`_
+(the current default) or GCC's `libstdc++
+<http://gcc.gnu.org/libstdc++>`_ (deprecated). The
+``-stdlib=[libc++|libstdc++]`` command line argument can be used to
+choose which standard library to use.
 
-The GCC-based Native Client SDK only has support for `libstdc++
+The GCC-based Native Client SDK only has support for GCC's `libstdc++
 <http://gcc.gnu.org/libstdc++>`_.
 
 C++11 library support is only complete in libc++ but other non-library
 language features should work regardless of which standard library is
 used. The ``-std=[c++98|c++11]`` command line argument can be used to
-indicate which C++ language standard to use (or ``-std=gnu++11`` with
-non-standard extensions).
+indicate which C++ language standard to use (or ``-std=gnu++11`` to
+access non-standard extensions).
 
 SDK toolchains
 --------------
