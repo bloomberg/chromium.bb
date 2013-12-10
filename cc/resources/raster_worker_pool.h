@@ -22,10 +22,6 @@ class LazyPixelRef;
 }
 
 namespace cc {
-class PicturePileImpl;
-class PixelBufferRasterWorkerPool;
-class ResourceProvider;
-
 namespace internal {
 
 class CC_EXPORT RasterWorkerPoolTask
