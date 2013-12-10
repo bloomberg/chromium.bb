@@ -181,7 +181,15 @@ class TouchInputBrowserTest : public ContentBrowserTest,
   scoped_refptr<InputEventMessageFilter> filter_;
 };
 
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchNoHandler) {
+// Touch input event tests don't work on Mac with the legacy software renderer.
+// These can be enabled when software compositing is enabled.
+// http://crbug.com/268038
+#if defined(OS_MACOSX)
+#define MAYBE_TouchNoHandler DISABLED_TouchNoHandler
+#else
+#define MAYBE_TouchNoHandler TouchNoHandler
+#endif
+IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 
@@ -207,7 +215,15 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchNoHandler) {
   touch.ResetPoints();
 }
 
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerNoConsume) {
+// Touch input event tests don't work on Mac with the legacy software renderer.
+// These can be enabled when software compositing is enabled.
+// http://crbug.com/268038
+#if defined(OS_MACOSX)
+#define MAYBE_TouchHandlerNoConsume DISABLED_TouchHandlerNoConsume
+#else
+#define MAYBE_TouchHandlerNoConsume TouchHandlerNoConsume
+#endif
+IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_TouchHandlerNoConsume) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 
@@ -224,7 +240,15 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerNoConsume) {
   touch.ResetPoints();
 }
 
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerConsume) {
+// Touch input event tests don't work on Mac with the legacy software renderer.
+// These can be enabled when software compositing is enabled.
+// http://crbug.com/268038
+#if defined(OS_MACOSX)
+#define MAYBE_TouchHandlerConsume DISABLED_TouchHandlerConsume
+#else
+#define MAYBE_TouchHandlerConsume TouchHandlerConsume
+#endif
+IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_TouchHandlerConsume) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 
@@ -240,7 +264,15 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerConsume) {
   filter()->WaitForAck(WebInputEvent::TouchEnd);
 }
 
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MultiPointTouchPress) {
+// Touch input event tests don't work on Mac with the legacy software renderer.
+// These can be enabled when software compositing is enabled.
+// http://crbug.com/268038
+#if defined(OS_MACOSX)
+#define MAYBE_MultiPointTouchPress DISABLED_MultiPointTouchPress
+#else
+#define MAYBE_MultiPointTouchPress MultiPointTouchPress
+#endif
+IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 

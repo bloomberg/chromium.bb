@@ -14,6 +14,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 
@@ -132,6 +133,10 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
 void BrowserGpuChannelHostFactory::EstablishRequest::Cancel() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   finished_ = true;
+}
+
+bool BrowserGpuChannelHostFactory::CanUseForTesting() {
+  return GpuDataManager::GetInstance()->GpuAccessAllowed(NULL);
 }
 
 void BrowserGpuChannelHostFactory::Initialize(bool establish_gpu_channel) {

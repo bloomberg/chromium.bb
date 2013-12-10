@@ -40,16 +40,25 @@ class SignalTest : public ContextTestBase {
 };
 
 CONTEXT_TEST_F(SignalTest, BasicSignalSyncPointTest) {
+  if (!context_)
+    return;
+
   TestSignalSyncPoint(context_->insertSyncPoint());
 };
 
 CONTEXT_TEST_F(SignalTest, InvalidSignalSyncPointTest) {
+  if (!context_)
+    return;
+
   // Signalling something that doesn't exist should run the callback
   // immediately.
   TestSignalSyncPoint(1297824234);
 };
 
 CONTEXT_TEST_F(SignalTest, BasicSignalQueryTest) {
+  if (!context_)
+    return;
+
   unsigned query = context_->createQueryEXT();
   context_->beginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query);
   context_->finish();
@@ -59,12 +68,18 @@ CONTEXT_TEST_F(SignalTest, BasicSignalQueryTest) {
 };
 
 CONTEXT_TEST_F(SignalTest, SignalQueryUnboundTest) {
+  if (!context_)
+    return;
+
   blink::WebGLId query = context_->createQueryEXT();
   TestSignalQuery(query);
   context_->deleteQueryEXT(query);
 };
 
 CONTEXT_TEST_F(SignalTest, InvalidSignalQueryUnboundTest) {
+  if (!context_)
+    return;
+
   // Signalling something that doesn't exist should run the callback
   // immediately.
   TestSignalQuery(928729087);

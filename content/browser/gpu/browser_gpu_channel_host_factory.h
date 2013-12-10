@@ -59,6 +59,9 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   GpuChannelHost* GetGpuChannel();
   int GetGpuChannelId() { return gpu_client_id_; }
 
+  // Used to skip GpuChannelHost tests when there can be no GPU process.
+  static bool CanUseForTesting();
+
  private:
   struct CreateRequest {
     CreateRequest();

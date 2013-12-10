@@ -954,7 +954,7 @@ LONG_STRING_CONST(
       },
       "vendor_id": "0x15ad",
       "features": [
-        "force_compositing_mode"
+        "all"
       ]
     },
     {

@@ -173,9 +173,18 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, Check3DExtension) {
       LoadExtensionFromDirName("require_3d"));
   ASSERT_TRUE(extension.get());
 
+  std::vector<std::string> expected_errors;
+
+  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL)) {
+    expected_errors.push_back(l10n_util::GetStringUTF8(
+        IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
+    expected_errors.push_back(l10n_util::GetStringUTF8(
+        IDS_EXTENSION_CSS3D_NOT_SUPPORTED));
+  }
+
   checker_.Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
-      base::Unretained(this), std::vector<std::string>()));
+      base::Unretained(this), expected_errors));
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 

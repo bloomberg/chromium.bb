@@ -93,6 +93,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -1138,6 +1139,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
+  // This test assumes Gpu access.
+  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
+    return;
+
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   // WebGL is enabled by default.
   content::WebContents* contents =

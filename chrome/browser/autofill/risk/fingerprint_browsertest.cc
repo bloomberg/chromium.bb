@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/geolocation_provider.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/geoposition.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -171,6 +172,11 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 
 // Test that getting a fingerprint works on some basic level.
 IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
+  // This test hangs when there is no GPU process.
+  // http://crbug.com/327272
+  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
+    return;
+
   content::Geoposition position;
   position.latitude = kLatitude;
   position.longitude = kLongitude;

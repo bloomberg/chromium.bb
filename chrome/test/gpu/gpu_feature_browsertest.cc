@@ -169,11 +169,13 @@ class GpuFeatureTest : public InProcessBrowserTest {
   std::string trace_events_json_;
 };
 
-#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(USE_AURA)
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(USE_AURA) || \
+    defined(OS_MACOSX)
 // This test is flaky on Windows. http://crbug.com/177113
 // Also fails under AddressSanitizer. http://crbug.com/185178
 // It fundamentally doesn't test the right thing on Aura.
 // http://crbug.com/280675
+// This does not work with software compositing on Mac. http://crbug.com/286038
 #define MAYBE_AcceleratedCompositingAllowed DISABLED_AcceleratedCompositingAllowed
 #else
 #define MAYBE_AcceleratedCompositingAllowed AcceleratedCompositingAllowed
@@ -298,8 +300,13 @@ IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
 #define MultisamplingAllowed DISABLED_MultisamplingAllowed
 #endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
-  EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_MULTISAMPLING));
+  bool expect_blacklisted = false;
+  if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
+    expect_blacklisted = true;
+
+  EXPECT_EQ(expect_blacklisted,
+            GpuDataManager::GetInstance()->IsFeatureBlacklisted(
+                gpu::GPU_FEATURE_TYPE_MULTISAMPLING));
 
   // Multisampling is not supported if running on top of osmesa.
   if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL)
@@ -380,6 +387,9 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
     expected_state = BLACKLISTED;
 #endif
 
+  if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
+    expected_state = BLACKLISTED;
+
 #if defined(USE_AURA)
   // Canvas 2D is always disabled in software compositing mode, make sure it is
   // marked as such if it wasn't blacklisted already.
@@ -434,6 +444,9 @@ IN_PROC_BROWSER_TEST_F(Canvas2DDisabledTest, Canvas2DDisabled) {
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
                        CanOpenPopupAndRenderWithWebGLCanvas) {
+  if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
+    return;
+
   const base::FilePath url(FILE_PATH_LITERAL("webgl_popup.html"));
   RunTest(url, "\"SUCCESS\"", false);
 }
@@ -506,6 +519,9 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_RafNoDamage) {
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   if (!IOSurfaceSupport::Initialize())
+    return;
+
+  if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
     return;
 
   const base::FilePath url(

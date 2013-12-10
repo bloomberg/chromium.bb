@@ -306,6 +306,12 @@ TEST_PPAPI_NACL(Graphics2D_BindNull)
 #define MAYBE_OUT_Graphics3D Graphics3D
 #define MAYBE_NACL_Graphics3D DISABLED_Graphics3D
 #endif  // defined(USE_AURA)
+#elif defined(OS_MACOSX)
+// These tests fail when using the legacy software mode. Reenable when the
+// software compositor is enabled crbug.com/286038
+#define MAYBE_IN_Graphics3D DISABLED_Graphics3D
+#define MAYBE_OUT_Graphics3D DISABLED_Graphics3D
+#define MAYBE_NACL_Graphics3D DISABLED_Graphics3D
 #else
 // The tests are failing in-process. crbug.com/280282
 #define MAYBE_IN_Graphics3D DISABLED_Graphics3D

@@ -116,6 +116,9 @@ class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
   // Check if this bot's config matches |config_data| or any of the |configs|.
   static bool CurrentConfigMatches(const std::string& config_data);
   static bool CurrentConfigMatches(const std::vector<std::string>& configs);
+
+  // Check if the bot has blacklisted all GPU features.
+  static bool GpuBlacklistedOnBot();
 };
 
 }  // namespace gpu
