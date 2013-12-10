@@ -14,6 +14,9 @@ BrowserIterator::BrowserIterator()
   NextBrowserListIfAtEnd();
 }
 
+BrowserIterator::~BrowserIterator() {
+}
+
 void BrowserIterator::Next() {
   ++current_iterator_;
   NextBrowserListIfAtEnd();

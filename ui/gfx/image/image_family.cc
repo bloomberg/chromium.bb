@@ -21,6 +21,8 @@ ImageFamily::const_iterator::const_iterator(
     const std::map<MapKey, gfx::Image>::const_iterator& other)
     : map_iterator_(other) {}
 
+ImageFamily::const_iterator::~const_iterator() {}
+
 ImageFamily::ImageFamily() {}
 ImageFamily::~ImageFamily() {}
 

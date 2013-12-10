@@ -14,6 +14,8 @@ namespace net {
 OutputOrdering::PriorityMapPointer::PriorityMapPointer()
     : ring(NULL), alarm_enabled(false) {}
 
+OutputOrdering::PriorityMapPointer::~PriorityMapPointer() {}
+
 // static
 double OutputOrdering::server_think_time_in_s_ = 0.0;
 

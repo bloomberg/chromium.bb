@@ -26,6 +26,7 @@ class CONTENT_EXPORT BrowserChildProcessHostIterator {
  public:
   BrowserChildProcessHostIterator();
   explicit BrowserChildProcessHostIterator(int type);
+  ~BrowserChildProcessHostIterator();
 
   // These methods work on the current iterator object. Only call them if
   // Done() returns false.

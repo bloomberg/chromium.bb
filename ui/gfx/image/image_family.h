@@ -48,6 +48,8 @@ class GFX_EXPORT ImageFamily {
 
     const_iterator(const const_iterator& other);
 
+    ~const_iterator();
+
     const_iterator& operator++() {
       ++map_iterator_;
       return *this;

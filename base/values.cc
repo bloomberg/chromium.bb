@@ -802,6 +802,8 @@ DictionaryValue::Iterator::Iterator(const DictionaryValue& target)
     : target_(target),
       it_(target.dictionary_.begin()) {}
 
+DictionaryValue::Iterator::~Iterator() {}
+
 DictionaryValue* DictionaryValue::DeepCopy() const {
   DictionaryValue* result = new DictionaryValue;
 

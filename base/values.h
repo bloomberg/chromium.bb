@@ -348,6 +348,7 @@ class BASE_EXPORT DictionaryValue : public Value {
   class BASE_EXPORT Iterator {
    public:
     explicit Iterator(const DictionaryValue& target);
+    ~Iterator();
 
     bool IsAtEnd() const { return it_ == target_.dictionary_.end(); }
     void Advance() { ++it_; }

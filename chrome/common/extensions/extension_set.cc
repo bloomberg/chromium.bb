@@ -24,6 +24,8 @@ ExtensionSet::const_iterator::const_iterator(ExtensionMap::const_iterator it)
     : it_(it) {
 }
 
+ExtensionSet::const_iterator::~const_iterator() {}
+
 ExtensionSet::ExtensionSet() {
 }
 

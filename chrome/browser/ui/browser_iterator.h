@@ -26,6 +26,7 @@ namespace chrome {
 class BrowserIterator {
  public:
   BrowserIterator();
+  ~BrowserIterator();
 
   // Returns true if this iterator is past the last Browser.
   bool done() const {

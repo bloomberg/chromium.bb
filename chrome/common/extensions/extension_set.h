@@ -34,6 +34,7 @@ class ExtensionSet {
     const_iterator();
     const_iterator(const const_iterator& other);
     explicit const_iterator(ExtensionMap::const_iterator it);
+    ~const_iterator();
     const_iterator& operator++() {
       ++it_;
       return *this;

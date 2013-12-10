@@ -26,6 +26,7 @@ class OutputOrdering {
 
   struct PriorityMapPointer {
     PriorityMapPointer();
+    ~PriorityMapPointer();
     PriorityRing* ring;
     PriorityRing::iterator it;
     bool alarm_enabled;

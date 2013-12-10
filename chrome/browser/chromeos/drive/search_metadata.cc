@@ -78,8 +78,12 @@ class ScopedPriorityQueue {
   void push(T* x) { queue_.push(x); }
 
   void pop() {
-    delete queue_.top();
+    // Keep top alive for the pop() call so that debug checks can access
+    // underlying data (e.g. validating heap property of the priority queue
+    // will call the comparator).
+    T* saved_top = queue_.top();
     queue_.pop();
+    delete saved_top;
   }
 
  private:

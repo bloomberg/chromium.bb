@@ -29,6 +29,9 @@ BrowserChildProcessHostIterator::BrowserChildProcessHostIterator(int type)
     ++(*this);
 }
 
+BrowserChildProcessHostIterator::~BrowserChildProcessHostIterator() {
+}
+
 bool BrowserChildProcessHostIterator::operator++() {
   CHECK(!Done());
   do {

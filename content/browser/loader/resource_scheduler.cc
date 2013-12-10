@@ -374,7 +374,10 @@ void ResourceScheduler::LoadAnyStartablePendingRequests(Client* client) {
       StartRequest(request, client);
 
       // StartRequest can modify the pending list, so we (re)start evaluation
-      // from the currently highest priority request.
+      // from the currently highest priority request. Avoid copying a singular
+      // iterator, which would trigger undefined behavior.
+      if (client->pending_requests.GetNextHighestIterator().is_null())
+        break;
       request_iter = client->pending_requests.GetNextHighestIterator();
     } else if (query_result == DO_NOT_START_REQUEST_AND_KEEP_SEARCHING) {
       ++request_iter;
