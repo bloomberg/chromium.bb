@@ -581,11 +581,6 @@ crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer.html [ Failure ]
 crbug.com/315514 [ Linux ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/315514 [ Linux ] storage/websql/test-authorizer.html [ Failure ]
 
-crbug.com/323639 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
-crbug.com/323639 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
-crbug.com/323639 css3/filters/effect-reference-subregion.html [ NeedsRebaseline ]
-crbug.com/323639 css3/filters/effect-reference.html [ NeedsRebaseline ]
-
 crbug.com/265699 editing/selection/3690703-2.html [ NeedsRebaseline ]
 crbug.com/265699 editing/selection/3690703.html [ NeedsRebaseline ]
 crbug.com/265699 editing/selection/3690719.html [ NeedsRebaseline ]
