@@ -33,6 +33,7 @@
 
 #include "V8Blob.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
@@ -68,7 +69,7 @@ void ParsedProperties::setDefaultLastModified()
     setLastModified(currentTime());
 }
 
-bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, v8::Isolate* isolate)
+bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
     ASSERT(m_endings == "transparent");
 
@@ -77,7 +78,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
     V8TRYCATCH_RETURN(bool, containsEndings, dictionary.get("endings", m_endings), false);
     if (containsEndings) {
         if (m_endings != "transparent" && m_endings != "native") {
-            throwTypeError(ExceptionMessages::failedToConstruct(blobClassName, "The \"endings\" property must be either \"transparent\" or \"native\"."), isolate);
+            exceptionState.throwTypeError("The 'endings' property must be either 'transparent' or 'native'.");
             return false;
         }
     }
@@ -85,7 +86,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
     V8TRYCATCH_RETURN(bool, containsType, dictionary.get("type", m_contentType), false);
     if (containsType) {
         if (!m_contentType.containsOnlyASCII()) {
-            throwError(v8SyntaxError, ExceptionMessages::failedToConstruct(blobClassName, "The \"type\" property must consist of ASCII characters."), isolate);
+            exceptionState.throwDOMException(SyntaxError, "The 'type' property must consist of ASCII characters.");
             return false;
         }
         m_contentType = m_contentType.lower();

@@ -101,8 +101,10 @@ static void keyLocationAttributeGetterCallback(v8::Local<v8::String>, const v8::
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestExtendedEvent", info.Holder(), info.GetIsolate());
     if (info.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestExtendedEvent", "An event name must be provided."), info.GetIsolate());
+        exceptionState.throwTypeError("An event name must be provided.");
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -110,7 +112,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     EventInit eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!initializeEvent(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;

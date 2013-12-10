@@ -42,36 +42,24 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
     if (!context || !context->isDocument()) {
         exceptionState.throwDOMException(
             NotSupportedError,
-            ExceptionMessages::failedToConstruct("OfflineAudioContext"));
+            "Workers are not supported.");
         return 0;
     }
 
     Document* document = toDocument(context);
 
     if (!numberOfFrames) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            ExceptionMessages::failedToConstruct(
-                "OfflineAudioContext",
-                "number of frames cannot be zero."));
+        exceptionState.throwDOMException(SyntaxError, "number of frames cannot be zero.");
         return 0;
     }
 
     if (numberOfChannels > 10) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            ExceptionMessages::failedToConstruct(
-                "OfflineAudioContext",
-                "number of channels (" + String::number(numberOfChannels) + ") exceeds maximum (10)."));
+        exceptionState.throwDOMException(SyntaxError, "number of channels (" + String::number(numberOfChannels) + ") exceeds maximum (10).");
         return 0;
     }
 
     if (!isSampleRateRangeGood(sampleRate)) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            ExceptionMessages::failedToConstruct(
-                "OfflineAudioContext",
-                "sample rate (" + String::number(sampleRate) + ") must be in the range 44100-96000 Hz."));
+        exceptionState.throwDOMException(SyntaxError, "sample rate (" + String::number(sampleRate) + ") must be in the range 44100-96000 Hz.");
         return 0;
     }
 

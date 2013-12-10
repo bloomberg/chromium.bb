@@ -14,7 +14,7 @@ PASS new RTCSessionDescription(); did not throw exception.
 PASS new RTCSessionDescription({}); did not throw exception.
 PASS new RTCSessionDescription(5); threw exception TypeError: Failed to construct 'RTCSessionDescription': parameter 1 ('descriptionInitDict') is not an object..
 PASS new RTCSessionDescription('foobar'); threw exception TypeError: Failed to construct 'RTCSessionDescription': parameter 1 ('descriptionInitDict') is not an object..
-PASS new RTCSessionDescription({type:'foobar', sdp:'x'}); threw exception TypeMismatchError: Illegal value of attribute 'type' : foobar.
+PASS new RTCSessionDescription({type:'foobar', sdp:'x'}); threw exception TypeMismatchError: Failed to construct 'RTCSessionDescription': Illegal value of attribute 'type' : foobar.
 PASS new RTCSessionDescription({type:'offer', sdp:''}); did not throw exception.
 PASS new RTCSessionDescription({type:'offer', sdp:'x'}); did not throw exception.
 PASS new RTCSessionDescription({type:'answer', sdp:'x'}); did not throw exception.

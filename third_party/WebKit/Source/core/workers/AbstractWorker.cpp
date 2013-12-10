@@ -53,18 +53,18 @@ KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionStat
     // FIXME: This should use the dynamic global scope (bug #27887)
     KURL scriptURL = executionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "Failed to create a worker: '" + url + "' is not a valid URL.");
+        exceptionState.throwDOMException(SyntaxError, "'" + url + "' is not a valid URL.");
         return KURL();
     }
 
     // We can safely expose the URL in the following exceptions, as these checks happen synchronously before redirection. JavaScript receives no new information.
     if (!executionContext()->securityOrigin()->canRequest(scriptURL)) {
-        exceptionState.throwSecurityError("Failed to create a worker: script at '" + scriptURL.elidedString() + "' cannot be accessed from origin '" + executionContext()->securityOrigin()->toString() + "'.");
+        exceptionState.throwSecurityError("Script at '" + scriptURL.elidedString() + "' cannot be accessed from origin '" + executionContext()->securityOrigin()->toString() + "'.");
         return KURL();
     }
 
     if (executionContext()->contentSecurityPolicy() && !executionContext()->contentSecurityPolicy()->allowScriptFromSource(scriptURL)) {
-        exceptionState.throwSecurityError("Failed to create a worker: access to the script at '" + scriptURL.elidedString() + "' is denied by the document's Content Security Policy.");
+        exceptionState.throwSecurityError("Access to the script at '" + scriptURL.elidedString() + "' is denied by the document's Content Security Policy.");
         return KURL();
     }
 

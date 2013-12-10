@@ -31,6 +31,7 @@
 #include "config.h"
 #include "V8Blob.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/custom/V8BlobCustomHelpers.h"
 #include "core/fileapi/BlobBuilder.h"
 
@@ -38,6 +39,7 @@ namespace WebCore {
 
 void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "Blob", info.Holder(), info.GetIsolate());
     if (!info.Length()) {
         RefPtr<Blob> blob = Blob::create();
         v8SetReturnValue(info, blob.release());
@@ -50,7 +52,8 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     } else {
         const int sequenceArgumentIndex = 0;
         if (toV8Sequence(info[sequenceArgumentIndex], length, info.GetIsolate()).IsEmpty()) {
-            throwTypeError(ExceptionMessages::failedToConstruct("Blob", ExceptionMessages::notAnArrayTypeArgumentOrValue(sequenceArgumentIndex + 1)), info.GetIsolate());
+            exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(sequenceArgumentIndex + 1));
+            exceptionState.throwIfNeeded();
             return;
         }
     }
@@ -58,12 +61,15 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8BlobCustomHelpers::ParsedProperties properties(false);
     if (info.Length() > 1) {
         if (!info[1]->IsObject()) {
-            throwTypeError(ExceptionMessages::failedToConstruct("Blob", "The 2nd argument is not of type Object."), info.GetIsolate());
+            exceptionState.throwTypeError("The 2nd argument is not of type Object.");
+            exceptionState.throwIfNeeded();
             return;
         }
 
-        if (!properties.parseBlobPropertyBag(info[1], "Blob", info.GetIsolate()))
+        if (!properties.parseBlobPropertyBag(info[1], "Blob", exceptionState, info.GetIsolate())) {
+            exceptionState.throwIfNeeded();
             return;
+        }
     }
 
     BlobBuilder blobBuilder;

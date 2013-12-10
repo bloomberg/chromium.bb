@@ -10,8 +10,8 @@ PASS (new File(['hello'], 'world.html', {type:'text/html'})) instanceof window.F
 PASS (new File(['hello'], 'world.html', {type:'text/html', endings:'native'})) instanceof window.File is true
 PASS (new File(['hello'], 'world.html', {type:'text/html', endings:'transparent'})) instanceof window.File is true
 PASS (new File([], 'world.html')) instanceof window.File is true
-PASS (new File()) threw exception TypeError: File constructor requires at least two arguments.
-PASS (new File([])) threw exception TypeError: File constructor requires at least two arguments.
+PASS (new File()) threw exception TypeError: Failed to construct 'File': 2 arguments required, but only 0 present..
+PASS (new File([])) threw exception TypeError: Failed to construct 'File': 2 arguments required, but only 1 present..
 PASS (new File([], null)) instanceof window.File is true
 PASS (new File([], 1)) instanceof window.File is true
 PASS (new File([], '')) instanceof window.File is true
@@ -41,10 +41,10 @@ PASS (new File([], document)).name is '[object HTMLDocument]'
 PASS (new File([], toStringingObj)).name is 'A string'
 PASS (new File([], throwingObj)).name threw exception Error.
 PASS (new File([], 'world.html', {unknownKey:'value'})) instanceof window.File is true
-PASS new File([], 'world.html', {endings:'illegalValue'}) threw exception TypeError: Failed to construct 'File': The "endings" property must be either "transparent" or "native"..
+PASS new File([], 'world.html', {endings:'illegalValue'}) threw exception TypeError: Failed to construct 'File': The 'endings' property must be either 'transparent' or 'native'..
 PASS new File([], 'world.html', {endings:throwingObj}) threw exception Error.
 PASS new File([], 'world.html', {type:throwingObj}) threw exception Error.
-PASS new File([], 'world.html', {type:'helloî'}) threw exception SyntaxError: Failed to construct 'File': The "type" property must consist of ASCII characters..
+PASS new File([], 'world.html', {type:'helloî'}) threw exception SyntaxError: Failed to construct 'File': The 'type' property must consist of ASCII characters..
 PASS (new File([], 'world.html', null)) instanceof window.File threw exception TypeError: Failed to construct 'File': The 3rd argument is not of type Object..
 PASS (new File([], 'world.html', undefined)) instanceof window.File threw exception TypeError: Failed to construct 'File': The 3rd argument is not of type Object..
 PASS (new File([], 'world.html', 123)) instanceof window.File threw exception TypeError: Failed to construct 'File': The 3rd argument is not of type Object..
@@ -99,7 +99,7 @@ PASS new File({length: 0}, 'world.txt').size is 0
 PASS new File({length: 1, 0: 'string'}, 'world.txt').size is 6
 PASS new File({length: 2, 0: new Uint8Array(100), 1: new Int16Array(100)}, 'world.txt').size is 300
 PASS new File({length: 1, 0: 'string'}, 'world.txt', {type: 'text/html'}).type is 'text/html'
-PASS new File({length: 0}, 'world.txt', {endings:'illegal'}) threw exception TypeError: Failed to construct 'File': The "endings" property must be either "transparent" or "native"..
+PASS new File({length: 0}, 'world.txt', {endings:'illegal'}) threw exception TypeError: Failed to construct 'File': The 'endings' property must be either 'transparent' or 'native'..
 PASS new File(throwingSequence, 'world.txt') threw exception Error: Misbehaving property.
 PASS successfullyParsed is true
 

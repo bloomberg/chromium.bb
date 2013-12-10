@@ -781,7 +781,7 @@ Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(boo
 void Dictionary::ConversionContext::throwTypeError(const String& detail)
 {
     if (forConstructor()) {
-        exceptionState().throwTypeError(ExceptionMessages::failedToConstruct(interfaceName(), detail));
+        exceptionState().throwTypeError(detail);
     } else {
         ASSERT(!methodName().isEmpty());
         exceptionState().throwTypeError(ExceptionMessages::failedToExecute(interfaceName(), methodName(), detail));

@@ -71,7 +71,7 @@ PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const S
     // We don't currently support nested workers, so workers can only be created from documents.
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers()) {
-        exceptionState.throwSecurityError("Failed to create 'SharedWorker': access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
+        exceptionState.throwSecurityError("Access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
         return 0;
     }
 

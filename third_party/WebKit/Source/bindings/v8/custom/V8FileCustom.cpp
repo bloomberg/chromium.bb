@@ -32,6 +32,7 @@
 #include "V8File.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/custom/V8BlobCustomHelpers.h"
 #include "core/fileapi/BlobBuilder.h"
 
@@ -39,13 +40,17 @@ namespace WebCore {
 
 void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "File", info.Holder(), info.GetIsolate());
+
     if (!RuntimeEnabledFeatures::fileConstructorEnabled()) {
-        throwTypeError("Illegal constructor", info.GetIsolate());
+        exceptionState.throwTypeError("Illegal constructor");
+        exceptionState.throwIfNeeded();
         return;
     }
 
     if (info.Length() < 2) {
-        throwTypeError("File constructor requires at least two arguments", info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -55,7 +60,8 @@ void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     } else {
         const int sequenceArgumentIndex = 0;
         if (toV8Sequence(info[sequenceArgumentIndex], length, info.GetIsolate()).IsEmpty()) {
-            throwTypeError(ExceptionMessages::failedToConstruct("File", ExceptionMessages::notAnArrayTypeArgumentOrValue(sequenceArgumentIndex + 1)), info.GetIsolate());
+            exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(sequenceArgumentIndex + 1));
+            exceptionState.throwIfNeeded();
             return;
         }
     }
@@ -65,12 +71,15 @@ void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8BlobCustomHelpers::ParsedProperties properties(true);
     if (info.Length() > 2) {
         if (!info[2]->IsObject()) {
-            throwTypeError(ExceptionMessages::failedToConstruct("File", "The 3rd argument is not of type Object."), info.GetIsolate());
+            exceptionState.throwTypeError("The 3rd argument is not of type Object.");
+            exceptionState.throwIfNeeded();
             return;
         }
 
-        if (!properties.parseBlobPropertyBag(info[2], "File", info.GetIsolate()))
+        if (!properties.parseBlobPropertyBag(info[2], "File", exceptionState, info.GetIsolate())) {
+            exceptionState.throwIfNeeded();
             return;
+        }
     } else {
         properties.setDefaultLastModified();
     }

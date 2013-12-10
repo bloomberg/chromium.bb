@@ -36,6 +36,7 @@
 namespace WebCore {
 
 class BlobBuilder;
+class ExceptionState;
 
 // Shared code between the custom constructor bindings for Blob and File.
 namespace V8BlobCustomHelpers {
@@ -65,7 +66,7 @@ public:
     // Extracts the "type" and "endings" properties out of the BlobPropertyBag passed to a Blob constructor.
     // http://www.w3.org/TR/FileAPI/#constructorParams
     // Returns true if everything went well, false if a JS exception was thrown.
-    bool parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, v8::Isolate*);
+    bool parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState&, v8::Isolate*);
 
 private:
     String m_contentType;

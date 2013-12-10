@@ -44,11 +44,11 @@ DOMURL::DOMURL(const String& url, const KURL& base, ExceptionState& exceptionSta
 {
     ScriptWrappable::init(this);
     if (!base.isValid())
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid base URL"));
+        exceptionState.throwDOMException(SyntaxError, "Invalid base URL");
 
     m_url = KURL(base, url);
     if (!m_url.isValid())
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToConstruct("URL", "Invalid URL"));
+        exceptionState.throwDOMException(SyntaxError, "Invalid URL");
 }
 
 void DOMURL::setInput(const String& value)

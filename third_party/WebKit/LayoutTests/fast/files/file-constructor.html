@@ -16,8 +16,8 @@ shouldBeTrue("(new File(['hello'], 'world.html', {type:'text/html', endings:'tra
 shouldBeTrue("(new File([], 'world.html')) instanceof window.File")
 
 // Verify that the file name argument is required.
-shouldThrow("(new File())", "'TypeError: File constructor requires at least two arguments'");
-shouldThrow("(new File([]))", "'TypeError: File constructor requires at least two arguments'");
+shouldThrow("(new File())", '"TypeError: Failed to construct \'File\': 2 arguments required, but only 0 present."');
+shouldThrow("(new File([]))", '"TypeError: Failed to construct \'File\': 2 arguments required, but only 1 present."');
 
 // Test valid file names.
 shouldBeTrue("(new File([], null)) instanceof window.File");
@@ -65,10 +65,10 @@ shouldThrow("(new File([], throwingObj)).name", "'Error'");
 
 // Test some invalid property bags.
 shouldBeTrue("(new File([], 'world.html', {unknownKey:'value'})) instanceof window.File");    // Ignore invalid keys
-shouldThrow("new File([], 'world.html', {endings:'illegalValue'})", "'TypeError: Failed to construct \\'File\\': The \"endings\" property must be either \"transparent\" or \"native\".'");
+shouldThrow("new File([], 'world.html', {endings:'illegalValue'})", "'TypeError: Failed to construct \\'File\\': The \\'endings\\' property must be either \\'transparent\\' or \\'native\\'.'");
 shouldThrow("new File([], 'world.html', {endings:throwingObj})", "'Error'");
 shouldThrow("new File([], 'world.html', {type:throwingObj})", "'Error'");
-shouldThrow("new File([], 'world.html', {type:'hello\u00EE'})", "'SyntaxError: Failed to construct \\'File\\': The \"type\" property must consist of ASCII characters.'");
+shouldThrow("new File([], 'world.html', {type:'hello\u00EE'})", "'SyntaxError: Failed to construct \\'File\\': The \\'type\\' property must consist of ASCII characters.'");
 
 // Test various non-object literals being used as property bags.
 shouldThrow("(new File([], 'world.html', null)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': The 3rd argument is not of type Object.'");
@@ -144,7 +144,7 @@ shouldBe("new File({length: 0}, 'world.txt').size", "0");
 shouldBe("new File({length: 1, 0: 'string'}, 'world.txt').size", "6");
 shouldBe("new File({length: 2, 0: new Uint8Array(100), 1: new Int16Array(100)}, 'world.txt').size", "300");
 shouldBe("new File({length: 1, 0: 'string'}, 'world.txt', {type: 'text/html'}).type", "'text/html'");
-shouldThrow("new File({length: 0}, 'world.txt', {endings:'illegal'})", "'TypeError: Failed to construct \\'File\\': The \"endings\" property must be either \"transparent\" or \"native\".'");
+shouldThrow("new File({length: 0}, 'world.txt', {endings:'illegal'})", "'TypeError: Failed to construct \\'File\\': The \\'endings\\' property must be either \\'transparent\\' or \\'native\\'.'");
 
 // Test passing blog parts in a sequence-like object that throws on property access.
 var throwingSequence = {length: 4, 0: 'hello', 3: 'world'};

@@ -2764,6 +2764,7 @@ sub GenerateSingleConstructorCallback
     my $interface = shift;
     my $function = shift;
 
+    my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $overloadedIndexString = "";
@@ -2789,7 +2790,7 @@ END
 
     if ($raisesExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 
     # FIXME: Currently [Constructor(...)] does not yet support optional arguments without [Default=...]
@@ -2905,6 +2906,7 @@ sub GenerateConstructor
 sub GenerateEventConstructor
 {
     my $interface = shift;
+
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
@@ -2926,8 +2928,10 @@ sub GenerateEventConstructor
     $implementation{nameSpaceInternal}->add(<<END);
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());
     if (info.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("$interfaceName", "An event name must be provided."), info.GetIsolate());
+        exceptionState.throwTypeError("An event name must be provided.");
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -2942,7 +2946,6 @@ END
     ${implClassName}Init eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!initialize${implClassName}(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -2965,10 +2968,6 @@ END
     my $exceptionStateArgument = "";
     if ($constructorRaisesException) {
         ${exceptionStateArgument} = ", exceptionState";
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $implementation{nameSpaceInternal}->add(<<END);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-END
     }
 
     $implementation{nameSpaceInternal}->add(<<END);
@@ -3080,6 +3079,7 @@ sub GenerateNamedConstructor
     my $function = shift;
     my $interface = shift;
 
+    my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
@@ -3127,7 +3127,6 @@ END
 
     if ($raisesExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        my $interfaceName = $interface->name;
         $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 

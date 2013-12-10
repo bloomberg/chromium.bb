@@ -43,11 +43,9 @@ DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTim
     if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
         exceptionState.throwDOMException(
             NotSupportedError,
-            ExceptionMessages::failedToConstruct(
-                "DelayNode",
-                "max delay time (" + String::number(maxDelayTime)
-                + ") must be between 0 and " + String::number(maximumAllowedDelayTime)
-                + ", exclusive."));
+            "max delay time (" + String::number(maxDelayTime)
+            + ") must be between 0 and " + String::number(maximumAllowedDelayTime)
+            + ", exclusive.");
         return;
     }
     m_processor = adoptPtr(new DelayProcessor(context, sampleRate, 1, maxDelayTime));

@@ -36,7 +36,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -156,8 +155,10 @@ static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAt
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceEventConstructor", info.Holder(), info.GetIsolate());
     if (info.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceEventConstructor", "An event name must be provided."), info.GetIsolate());
+        exceptionState.throwTypeError("An event name must be provided.");
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -166,7 +167,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceEventConstructorInit eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!initializeTestInterfaceEventConstructor(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -175,7 +175,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
             info.Holder()->SetHiddenValue(V8HiddenPropertyName::initializedByEventConstructorReadonlyAnyAttribute(info.GetIsolate()), initializedByEventConstructorReadonlyAnyAttribute);
     }
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
