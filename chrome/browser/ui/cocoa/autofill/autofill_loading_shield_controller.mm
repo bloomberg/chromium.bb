@@ -15,7 +15,12 @@
 namespace {
 
 // Horizontal spacing between the animated dots.
-const CGFloat kDotsHorizontalPadding = 3;
+// Using a negative spacing creates an ellipsis-like effect.
+// TODO(isherman): Consider using the recipe below instead:
+//   Create NSBezierPath
+//   -[NSBezierPath appendBezierPathWithGlyph:inFont:]
+//   -[NSBezierPath bounds]
+const CGFloat kDotsHorizontalPadding = -6;
 
 }  // namespace
 
