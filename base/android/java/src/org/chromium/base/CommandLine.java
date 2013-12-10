@@ -375,4 +375,4 @@ public abstract class CommandLine {
     private static native void nativeAppendSwitch(String switchString);
     private static native void nativeAppendSwitchWithValue(String switchString, String value);
     private static native void nativeAppendSwitchesAndArguments(String[] array);
-};
+}

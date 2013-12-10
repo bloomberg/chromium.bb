@@ -45,21 +45,21 @@ public class MemoryPressureListener {
     @CalledByNative
     private static void registerSystemCallback(Context context) {
         context.registerComponentCallbacks(
-            new ComponentCallbacks2() {
-                  @Override
-                  public void onTrimMemory(int level) {
-                      maybeNotifyMemoryPresure(level);
-                  }
+                new ComponentCallbacks2() {
+                    @Override
+                    public void onTrimMemory(int level) {
+                        maybeNotifyMemoryPresure(level);
+                    }
 
-                  @Override
-                  public void onLowMemory() {
-                      nativeOnMemoryPressure(MemoryPressureLevelList.MEMORY_PRESSURE_CRITICAL);
-                  }
+                    @Override
+                    public void onLowMemory() {
+                        nativeOnMemoryPressure(MemoryPressureLevelList.MEMORY_PRESSURE_CRITICAL);
+                    }
 
-                  @Override
-                  public void onConfigurationChanged(Configuration configuration) {
-                  }
-            });
+                    @Override
+                    public void onConfigurationChanged(Configuration configuration) {
+                    }
+                });
     }
 
     /**

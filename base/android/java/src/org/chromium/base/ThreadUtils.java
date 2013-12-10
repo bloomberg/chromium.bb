@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,8 +165,8 @@ public class ThreadUtils {
      *
      * @param task The Runnable to run
      */
-    public static void postOnUiThread(Runnable r) {
-        getUiThreadHandler().post(r);
+    public static void postOnUiThread(Runnable task) {
+        getUiThreadHandler().post(task);
     }
 
     /**
@@ -176,8 +176,8 @@ public class ThreadUtils {
      * @param task The Runnable to run
      * @param delayMillis The delay in milliseconds until the Runnable will be run
      */
-    public static void postOnUiThreadDelayed(Runnable r, long delayMillis) {
-        getUiThreadHandler().postDelayed(r, delayMillis);
+    public static void postOnUiThreadDelayed(Runnable task, long delayMillis) {
+        getUiThreadHandler().postDelayed(task, delayMillis);
     }
 
     /**
@@ -203,6 +203,6 @@ public class ThreadUtils {
      */
     @CalledByNative
     public static void setThreadPriorityAudio(int tid) {
-      Process.setThreadPriority(tid, Process.THREAD_PRIORITY_AUDIO);
+        Process.setThreadPriority(tid, Process.THREAD_PRIORITY_AUDIO);
     }
 }

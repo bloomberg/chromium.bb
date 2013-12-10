@@ -20,4 +20,4 @@ public abstract class BaseSwitches {
 
     // Prevent instantiation.
     private BaseSwitches() {}
-};
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,11 +32,11 @@ public class ActivityStatus {
     // Last activity that was shown (or null if none or it was destroyed).
     private static Activity sActivity;
 
-    private static final Map<Activity, Integer> sActivityStates
-            = new HashMap<Activity, Integer>();
+    private static final Map<Activity, Integer> sActivityStates =
+            new HashMap<Activity, Integer>();
 
-    private static final ObserverList<StateListener> sStateListeners
-            = new ObserverList<StateListener>();
+    private static final ObserverList<StateListener> sStateListeners =
+            new ObserverList<StateListener>();
 
     /**
      * Interface to be implemented by listeners.
