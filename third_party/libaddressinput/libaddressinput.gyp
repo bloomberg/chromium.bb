@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'variables': {
+    # TODO(rouslan): Use the src/ directory. http://crbug.com/327046
+    'libaddressinput_dir': 'chromium',
+  },
   'target_defaults': {
     'conditions': [
       ['OS=="mac" or OS=="ios"', {
@@ -22,7 +26,7 @@
         {
           'action_name': 'generate_messages',
           'variables': {
-            'grit_grd_file': 'src/cpp/res/messages.grd',
+            'grit_grd_file': '<(libaddressinput_dir)/cpp/res/messages.grd',
           },
           'includes': [
             '../../build/grit_action.gypi',
@@ -37,26 +41,25 @@
       'target_name': 'libaddressinput',
       'type': 'static_library',
       'include_dirs': [
-        'chromium/',
-        'src/cpp/include/',
+        '<(libaddressinput_dir)/cpp/include/',
         '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
       ],
       'sources': [
-        'chromium/util/json.cc',
-        'chromium/util/json.h',
-        'src/cpp/include/libaddressinput/address_field.h',
-        'src/cpp/include/libaddressinput/address_ui_component.h',
-        'src/cpp/include/libaddressinput/address_ui.h',
-        'src/cpp/include/libaddressinput/localization.h',
-        'src/cpp/src/address_field.cc',
-        'src/cpp/src/address_field_util.cc',
-        'src/cpp/src/address_field_util.h',
-        'src/cpp/src/address_ui.cc',
-        'src/cpp/src/localization.cc',
-        'src/cpp/src/region_data_constants.cc',
-        'src/cpp/src/region_data_constants.h',
-        'src/cpp/src/rule.cc',
-        'src/cpp/src/rule.h',
+        'chromium/json.cc',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/address_field.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/address_ui_component.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/address_ui.h',
+        '<(libaddressinput_dir)/cpp/include/libaddressinput/localization.h',
+        '<(libaddressinput_dir)/cpp/src/address_field.cc',
+        '<(libaddressinput_dir)/cpp/src/address_field_util.cc',
+        '<(libaddressinput_dir)/cpp/src/address_field_util.h',
+        '<(libaddressinput_dir)/cpp/src/address_ui.cc',
+        '<(libaddressinput_dir)/cpp/src/localization.cc',
+        '<(libaddressinput_dir)/cpp/src/region_data_constants.cc',
+        '<(libaddressinput_dir)/cpp/src/region_data_constants.h',
+        '<(libaddressinput_dir)/cpp/src/rule.cc',
+        '<(libaddressinput_dir)/cpp/src/rule.h',
+        '<(libaddressinput_dir)/cpp/src/util/json.h',
       ],
       'dependencies': [
         'generated_messages',
@@ -64,7 +67,7 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          'src/cpp/include/',
+          '<(libaddressinput_dir)/cpp/include/',
         ],
       },
     },
@@ -72,17 +75,17 @@
       'target_name': 'libaddressinput_unittests',
       'type': '<(gtest_target_type)',
       'include_dirs': [
-        'src/cpp/src',
+        '<(libaddressinput_dir)/cpp/src/',
         '<(DEPTH)/testing/gtest/include/',
         '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
       ],
       'sources': [
-        'src/cpp/test/address_field_util_test.cc',
-        'src/cpp/test/address_ui_test.cc',
-        'src/cpp/test/localization_test.cc',
-        'src/cpp/test/region_data_constants_test.cc',
-        'src/cpp/test/rule_test.cc',
-        'src/cpp/test/util/json_test.cc',
+        '<(libaddressinput_dir)/cpp/test/address_field_util_test.cc',
+        '<(libaddressinput_dir)/cpp/test/address_ui_test.cc',
+        '<(libaddressinput_dir)/cpp/test/localization_test.cc',
+        '<(libaddressinput_dir)/cpp/test/region_data_constants_test.cc',
+        '<(libaddressinput_dir)/cpp/test/rule_test.cc',
+        '<(libaddressinput_dir)/cpp/test/util/json_test.cc',
       ],
       'dependencies': [
         'libaddressinput',

@@ -200,7 +200,7 @@
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
     "includes": [29000],
   },
-  "third_party/libaddressinput/src/cpp/res/messages.grd": {
+  "third_party/libaddressinput/chromium/cpp/res/messages.grd": {
     "messages": [29050],
   },
   "components/component_strings.grd": {
