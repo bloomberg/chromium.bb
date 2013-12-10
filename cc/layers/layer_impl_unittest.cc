@@ -566,7 +566,9 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
   EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
 }
 
-TEST_F(LayerImplScrollTest, ScrollUserUnscrollableLayer) {
+// The user-scrollability breaks for zoomed-in pages. So disable this.
+// http://crbug.com/322223
+TEST_F(LayerImplScrollTest, DISABLED_ScrollUserUnscrollableLayer) {
   gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);

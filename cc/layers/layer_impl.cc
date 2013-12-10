@@ -358,16 +358,6 @@ void LayerImpl::SetSentScrollDelta(gfx::Vector2d sent_scroll_delta) {
 
 gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   DCHECK(scrollable());
-  gfx::Vector2dF scroll_hidden;
-  if (!user_scrollable_horizontal_) {
-    scroll_hidden.set_x(scroll.x());
-    scroll.set_x(0.f);
-  }
-  if (!user_scrollable_vertical_) {
-    scroll_hidden.set_y(scroll.y());
-    scroll.set_y(0.f);
-  }
-
   gfx::Vector2dF min_delta = -scroll_offset_;
   gfx::Vector2dF max_delta = max_scroll_offset_ - scroll_offset_;
   // Clamp new_delta so that position + delta stays within scroll bounds.
@@ -375,7 +365,7 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   new_delta.SetToMax(min_delta);
   new_delta.SetToMin(max_delta);
   gfx::Vector2dF unscrolled =
-      ScrollDelta() + scroll + scroll_hidden - new_delta;
+      ScrollDelta() + scroll - new_delta;
   SetScrollDelta(new_delta);
   return unscrolled;
 }
@@ -473,13 +463,6 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
-    return InputHandler::ScrollIgnored;
-  }
-
-  if (!user_scrollable_horizontal_ && !user_scrollable_vertical_) {
-    TRACE_EVENT0("cc",
-                 "LayerImpl::TryScroll: Ignored. User gesture is not allowed"
-                 " to scroll this layer.");
     return InputHandler::ScrollIgnored;
   }
 
