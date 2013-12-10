@@ -39,6 +39,7 @@
 #include "V8WebGLRenderingContext.h"
 #include "V8XPathNSResolver.h"
 #include "V8XPathResult.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -66,9 +67,11 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (V8Node::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())))
         contextNode = V8Node::toNative(v8::Handle<v8::Object>::Cast(info[1]));
 
-    RefPtr<XPathNSResolver> resolver = toXPathNSResolver(info[2], info.GetIsolate());
-    if (!resolver && !info[2]->IsNull() && !info[2]->IsUndefined()) {
-        setDOMException(TypeMismatchError, info.GetIsolate());
+    const int resolverArgumentIndex = 2;
+    RefPtr<XPathNSResolver> resolver = toXPathNSResolver(info[resolverArgumentIndex], info.GetIsolate());
+    if (!resolver && !isUndefinedOrNull(info[resolverArgumentIndex])) {
+        exceptionState.throwTypeError(ExceptionMessages::incorrectArgumentType(resolverArgumentIndex + 1, "is not a resolver function."));
+        exceptionState.throwIfNeeded();
         return;
     }
 

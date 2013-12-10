@@ -65,6 +65,11 @@ String ExceptionMessages::incorrectPropertyType(const String& property, const St
     return "The '" + property + "' property " + detail;
 }
 
+String ExceptionMessages::incorrectArgumentType(int argumentIndex, const String& detail)
+{
+    return "The " + ordinalNumber(argumentIndex) + " argument " + detail;
+}
+
 String ExceptionMessages::notAnArrayTypeArgumentOrValue(int argumentIndex)
 {
     String kind;
