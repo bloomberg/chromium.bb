@@ -203,6 +203,11 @@ void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(
 
 class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
  public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(
+        switches::kDisableHangMonitor);
+  }
+
   void CloseInspectedTab() {
     browser()->tab_strip_model()->CloseWebContentsAt(0,
         TabStripModel::CLOSE_NONE);
@@ -314,6 +319,11 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
     EXPECT_TRUE(native_dialog);
     return native_dialog;
   }
+};
+
+class DevToolsUnresponsiveBeforeUnloadTest: public DevToolsBeforeUnloadTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {}
 };
 
 void TimeoutCallback(const std::string& timeout_message) {
@@ -621,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // Tests that inspected tab gets closed if devtools renderer
 // becomes unresponsive during beforeunload event interception.
 // @see http://crbug.com/322380
-IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+IN_PROC_BROWSER_TEST_F(DevToolsUnresponsiveBeforeUnloadTest,
                        TestUndockedDevToolsUnresponsive) {
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
@@ -659,12 +669,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   CloseDevToolsPopupWindow(devtools_window);
 }
 
-// Flaky, see crbug.com/323847.
-//
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       DISABLED_TestDevToolsOnDevTools) {
+                       TestDevToolsOnDevTools) {
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
 
