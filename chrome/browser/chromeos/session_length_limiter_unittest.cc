@@ -717,7 +717,8 @@ TEST_F(SessionLengthLimiterTest, RunWithoutUserActivityWhileWaiting) {
 // wait for user activity. Verifies that the limiter starts a timer and that
 // when the session length reaches the limit, the session is terminated. Also
 // verifies that user activity does not affect the timer.
-TEST_F(SessionLengthLimiterTest, RunWithUserActivityWhileNotWaiting) {
+// Disabled, http://crbug.com/327445 .
+TEST_F(SessionLengthLimiterTest, DISABLED_RunWithUserActivityWhileNotWaiting) {
   base::ThreadTaskRunnerHandle runner_handler(runner_);
 
   // Set a 60 second session time limit.
