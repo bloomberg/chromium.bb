@@ -36,6 +36,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "platform/graphics/ImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -46,25 +47,17 @@
 
 class SkCanvas;
 
-namespace blink { class WebLayer; }
-
 namespace WebCore {
 
+class DrawingBuffer;
+class GraphicsContext3D;
 class Image;
 class IntPoint;
 class IntRect;
-class GraphicsContext3D;
 
 enum Multiply {
     Premultiplied,
     Unmultiplied
-};
-
-enum RenderingMode {
-    Unaccelerated,
-    UnacceleratedNonPlatformBuffer, // Use plain memory allocation rather than platform API to allocate backing store.
-    TextureBacked, // Allocate a texture-based SkBitmap for the backing store.
-    Accelerated, // Besides a texture-based SkBitmap for the backing store, allocate Canvas2DLayerBridge, etc as well for 2D Canvas drawing.
 };
 
 enum BackingStoreCopy {
@@ -77,34 +70,15 @@ enum ScaleBehavior {
     Unscaled
 };
 
-enum OpacityMode {
-    NonOpaque,
-    Opaque,
-};
-
 class PLATFORM_EXPORT ImageBuffer {
     WTF_MAKE_NONCOPYABLE(ImageBuffer); WTF_MAKE_FAST_ALLOCATED;
 public:
-    // Will return a null pointer on allocation failure.
-    static PassOwnPtr<ImageBuffer> create(const IntSize& size, float resolutionScale = 1, RenderingMode renderingMode = Unaccelerated, OpacityMode opacityMode = NonOpaque, int acceleratedMSAASampleCount = 0)
-    {
-        bool success = false;
-        OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, renderingMode, opacityMode, acceleratedMSAASampleCount, success));
-        if (!success)
-            return nullptr;
-        return buf.release();
-    }
-
-    static PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha);
-
-    // Tiles may need float-to-integer coordinate mapping.
-    static PassOwnPtr<ImageBuffer> createBufferForTile(const FloatSize& tileSize, const FloatSize& clampedTileSize, RenderingMode);
+    static PassOwnPtr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque);
+    static PassOwnPtr<ImageBuffer> create(PassOwnPtr<ImageBufferSurface>);
 
     ~ImageBuffer();
 
-    // The actual resolution of the backing store
-    const IntSize& internalSize() const { return m_size; }
-    const IntSize& logicalSize() const { return m_logicalSize; }
+    const IntSize& size() const { return m_surface->size(); }
 
     GraphicsContext* context() const;
 
@@ -113,14 +87,12 @@ public:
     // or return CopyBackingStore if it doesn't.
     static BackingStoreCopy fastCopyImageMode();
 
-    enum CoordinateSystem { LogicalCoordinateSystem, BackingStoreCoordinateSystem };
+    PassRefPtr<Uint8ClampedArray> getUnmultipliedImageData(const IntRect&) const;
+    PassRefPtr<Uint8ClampedArray> getPremultipliedImageData(const IntRect&) const;
 
-    PassRefPtr<Uint8ClampedArray> getUnmultipliedImageData(const IntRect&, CoordinateSystem = LogicalCoordinateSystem) const;
-    PassRefPtr<Uint8ClampedArray> getPremultipliedImageData(const IntRect&, CoordinateSystem = LogicalCoordinateSystem) const;
+    void putByteArray(Multiply multiplied, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint);
 
-    void putByteArray(Multiply multiplied, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint, CoordinateSystem = LogicalCoordinateSystem);
-
-    String toDataURL(const String& mimeType, const double* quality = 0, CoordinateSystem = LogicalCoordinateSystem) const;
+    String toDataURL(const String& mimeType, const double* quality = 0) const;
     AffineTransform baseTransform() const { return AffineTransform(); }
     void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
     blink::WebLayer* platformLayer() const;
@@ -136,6 +108,7 @@ public:
     void flush();
 
 private:
+    ImageBuffer(PassOwnPtr<ImageBufferSurface>);
     bool isValid() const;
 
     void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal, bool useLowQualityScale = false);
@@ -148,17 +121,8 @@ private:
     friend class GradientGeneratedImage;
     friend class SkiaImageFilterBuilder;
 
-    IntSize m_size;
-    IntSize m_logicalSize;
-    float m_resolutionScale;
-    RefPtr<SkCanvas> m_canvas;
+    OwnPtr<ImageBufferSurface> m_surface;
     OwnPtr<GraphicsContext> m_context;
-    Canvas2DLayerBridgePtr m_layerBridge;
-
-    // This constructor will place its success into the given out-variable
-    // so that create() knows when it should return failure.
-    ImageBuffer(const IntSize&, float resolutionScale, RenderingMode, OpacityMode, int acceleratedSampleCount, bool& success);
-    ImageBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha, bool& success);
 };
 
 struct ImageDataBuffer {

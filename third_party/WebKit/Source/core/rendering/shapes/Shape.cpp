@@ -218,10 +218,8 @@ PassOwnPtr<Shape> Shape::createShape(const StyleImage* styleImage, float thresho
 
     Image* image = styleImage->cachedImage()->image();
     const IntSize& imageSize = image->size();
-    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageSize);
-
     OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(imageSize.height()));
-
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageSize);
     if (imageBuffer) {
         GraphicsContext* graphicsContext = imageBuffer->context();
         graphicsContext->drawImage(image, IntPoint());

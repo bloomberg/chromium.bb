@@ -34,7 +34,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/win/TransparencyWin.h"
 #include "platform/transforms/AffineTransform.h"
-#include "skia/ext/platform_canvas.h"
 
 #include <windows.h>
 #include <gtest/gtest.h>
@@ -47,23 +46,6 @@ static FloatRect RECTToFloatRect(const RECT* rect)
                      static_cast<float>(rect->top),
                      static_cast<float>(rect->right - rect->left),
                      static_cast<float>(rect->bottom - rect->top));
-}
-
-static void drawNativeRect(GraphicsContext* context,
-                           int x, int y, int w, int h)
-{
-    SkCanvas* canvas = context->canvas();
-    HDC dc = skia::BeginPlatformPaint(canvas);
-
-    RECT innerRc;
-    innerRc.left = x;
-    innerRc.top = y;
-    innerRc.right = x + w;
-    innerRc.bottom = y + h;
-    FillRect(dc, &innerRc,
-             reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
-
-    skia::EndPlatformPaint(canvas);
 }
 
 static Color getPixelAt(GraphicsContext* context, int x, int y)
@@ -102,7 +84,7 @@ static std::ostream& operator<<(std::ostream& out, const Color& c)
 
 TEST(TransparencyWin, NoLayer)
 {
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(17, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(17, 16)));
 
     // KeepTransform
     {
@@ -141,7 +123,7 @@ TEST(TransparencyWin, NoLayer)
 
 TEST(TransparencyWin, WhiteLayer)
 {
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
 
     // KeepTransform
     {
@@ -193,7 +175,7 @@ TEST(TransparencyWin, WhiteLayer)
 
 TEST(TransparencyWin, TextComposite)
 {
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
 
     // KeepTransform is the only valid transform mode for TextComposite.
     {
@@ -212,7 +194,7 @@ TEST(TransparencyWin, TextComposite)
 
 TEST(TransparencyWin, OpaqueCompositeLayer)
 {
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
 
     // KeepTransform
     {
@@ -279,39 +261,13 @@ TEST(TransparencyWin, OpaqueCompositeLayer)
     src->context()->restore();
 }
 
-TEST(TransparencyWin, WhiteLayerPixelTest)
-{
-    // Make a total transparent buffer, and draw the white layer inset by 1 px.
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
-
-    {
-        TransparencyWin helper;
-        helper.init(src->context(),
-                    TransparencyWin::WhiteLayer,
-                    TransparencyWin::KeepTransform,
-                    IntRect(1, 1, 14, 14));
-
-        // Coordinates should be in the original space, not the layer.
-        drawNativeRect(helper.context(), 3, 3, 1, 1);
-        clearTopLayerAlphaChannel(helper.context());
-        helper.composite();
-    }
-
-    // The final image should be transparent around the edges for 1 px, white
-    // in the middle, with (3,3) (what we drew above) being opaque black.
-    EXPECT_EQ(Color(Color::transparent), getPixelAt(src->context(), 0, 0));
-    EXPECT_EQ(Color(Color::white), getPixelAt(src->context(), 2, 2));
-    EXPECT_EQ(Color(Color::black), getPixelAt(src->context(), 3, 3));
-    EXPECT_EQ(Color(Color::white), getPixelAt(src->context(), 4, 4));
-}
-
 TEST(TransparencyWin, OpaqueCompositeLayerPixel)
 {
     Color red(0xFFFF0000), darkRed(0xFFBF0000);
     Color green(0xFF00FF00);
 
     // Make a red bottom layer, followed by a half green next layer @ 50%.
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
 
     FloatRect fullRect(0, 0, 16, 16);
     src->context()->fillRect(fullRect, red);
@@ -364,7 +320,7 @@ TEST(TransparencyWin, OpaqueCompositeLayerPixel)
 TEST(TransparencyWin, TranslateOpaqueCompositeLayer)
 {
     // Fill with white.
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
     Color white(0xFFFFFFFF);
     FloatRect fullRect(0, 0, 16, 16);
     src->context()->fillRect(fullRect, white);
@@ -400,7 +356,7 @@ TEST(TransparencyWin, TranslateOpaqueCompositeLayer)
 static void testClippedLayerKeepTransform(TransparencyWin::LayerMode layerMode)
 {
     // Fill with white.
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
     Color white(0xFFFFFFFF);
     FloatRect fullRect(0, 0, 16, 16);
     src->context()->fillRect(fullRect, white);
@@ -461,7 +417,7 @@ TEST(TransparencyWin, ClippedKeepTransformWhiteLayer)
 // tests that the propert transform is applied to the copied layer.
 TEST(TransparencyWin, RotateOpaqueCompositeLayer)
 {
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
 
     // The background is white.
     Color white(0xFFFFFFFF);
@@ -540,7 +496,7 @@ TEST(TransparencyWin, RotateOpaqueCompositeLayer)
 
 TEST(TransparencyWin, DISABLED_TranslateScaleOpaqueCompositeLayer)
 {
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
 
     // The background is white on top with red on bottom.
     Color white(0xFFFFFFFF);
@@ -588,7 +544,7 @@ TEST(TransparencyWin, DISABLED_TranslateScaleOpaqueCompositeLayer)
 TEST(TransparencyWin, Scale)
 {
     // Create an opaque white buffer.
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
     FloatRect fullBuffer(0, 0, 16, 16);
     src->context()->fillRect(fullBuffer, Color::white);
 
@@ -641,7 +597,7 @@ TEST(TransparencyWin, Scale)
 TEST(TransparencyWin, ScaleTransparency)
 {
     // Create an opaque white buffer.
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
     FloatRect fullBuffer(0, 0, 16, 16);
     src->context()->fillRect(fullBuffer, Color::white);
 
@@ -699,7 +655,7 @@ TEST(TransparencyWin, ScaleTransparency)
 
 TEST(TransparencyWin, Text)
 {
-    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16), 1));
+    OwnPtr<ImageBuffer> src(ImageBuffer::create(IntSize(16, 16)));
 
     // Our text should end up 50% transparent blue-green.
     Color fullResult(0x80008080);

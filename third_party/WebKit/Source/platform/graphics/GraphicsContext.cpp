@@ -32,6 +32,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/DisplayList.h"
 #include "platform/graphics/Gradient.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
 #include "platform/weborigin/KURL.h"
@@ -44,6 +45,8 @@
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
+#include "third_party/skia/include/gpu/GrRenderTarget.h"
+#include "third_party/skia/include/gpu/GrTexture.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
@@ -55,6 +58,37 @@ using namespace std;
 using blink::WebBlendMode;
 
 namespace WebCore {
+
+namespace {
+
+class CompatibleImageBufferSurface : public ImageBufferSurface {
+    WTF_MAKE_NONCOPYABLE(CompatibleImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
+public:
+    CompatibleImageBufferSurface(PassRefPtr<SkBaseDevice> device, const IntSize& size, OpacityMode opacityMode)
+        : ImageBufferSurface(size, opacityMode)
+    {
+        m_canvas = adoptPtr(new SkCanvas(device.get())); // Takes a ref on device
+    }
+    virtual ~CompatibleImageBufferSurface() { }
+
+    virtual SkCanvas* canvas() const OVERRIDE { return m_canvas.get(); }
+    virtual bool isValid() const OVERRIDE { return m_canvas; }
+    virtual bool isAccelerated() const OVERRIDE { return isValid() && m_canvas->getTopDevice()->accessRenderTarget(); }
+    virtual Platform3DObject getBackingTexture() const OVERRIDE
+    {
+        ASSERT(isAccelerated());
+        GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();
+        if (renderTarget) {
+            return renderTarget->asTexture()->getTextureHandle();
+        }
+        return 0;
+    };
+
+private:
+    OwnPtr<SkCanvas> m_canvas;
+};
+
+} // unnamed namespace
 
 struct GraphicsContext::DeferredSaveState {
     DeferredSaveState(unsigned mask, int count) : m_flags(mask), m_restoreCount(count) { }
@@ -113,14 +147,6 @@ const SkBitmap* GraphicsContext::bitmap() const
 const SkBitmap& GraphicsContext::layerBitmap(AccessMode access) const
 {
     return m_canvas->getTopDevice()->accessBitmap(access == ReadWrite);
-}
-
-SkBaseDevice* GraphicsContext::createCompatibleDevice(const IntSize& size, bool hasAlpha) const
-{
-    if (paintingDisabled())
-        return 0;
-
-    return m_canvas->createCompatibleDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height(), !hasAlpha);
 }
 
 void GraphicsContext::save()
@@ -1125,14 +1151,14 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& p, Com
 {
     if (!image)
         return;
-    drawImageBuffer(image, FloatRect(IntRect(p, image->logicalSize())), FloatRect(FloatPoint(), FloatSize(image->logicalSize())), op, blendMode);
+    drawImageBuffer(image, FloatRect(IntRect(p, image->size())), FloatRect(FloatPoint(), FloatSize(image->size())), op, blendMode);
 }
 
 void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntRect& r, CompositeOperator op, WebBlendMode blendMode, bool useLowQualityScale)
 {
     if (!image)
         return;
-    drawImageBuffer(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->logicalSize())), op, blendMode, useLowQualityScale);
+    drawImageBuffer(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->size())), op, blendMode, useLowQualityScale);
 }
 
 void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& dest, const IntRect& srcRect, CompositeOperator op, WebBlendMode blendMode)
@@ -1149,7 +1175,7 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest)
 {
     if (!image)
         return;
-    drawImageBuffer(image, dest, FloatRect(IntRect(IntPoint(), image->logicalSize())));
+    drawImageBuffer(image, dest, FloatRect(IntRect(IntPoint(), image->size())));
 }
 
 void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode, bool useLowQualityScale)
@@ -1700,7 +1726,7 @@ void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2
     }
 }
 
-PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& size, bool hasAlpha) const
+PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& size, OpacityMode opacityMode) const
 {
     // Make the buffer larger if the context's transform is scaling it so we need a higher
     // resolution than one pixel per unit. Also set up a corresponding scale factor on the
@@ -1709,9 +1735,12 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
     AffineTransform transform = getCTM(DefinitelyIncludeDeviceScale);
     IntSize scaledSize(static_cast<int>(ceil(size.width() * transform.xScale())), static_cast<int>(ceil(size.height() * transform.yScale())));
 
-    OwnPtr<ImageBuffer> buffer = ImageBuffer::createCompatibleBuffer(scaledSize, 1, this, hasAlpha);
-    if (!buffer)
+    RefPtr<SkBaseDevice> device = adoptRef(m_canvas->getTopDevice()->createCompatibleDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height(), opacityMode == Opaque));
+    if (!device)
         return nullptr;
+    OwnPtr<ImageBufferSurface> surface = adoptPtr(new CompatibleImageBufferSurface(device.release(), scaledSize, opacityMode));
+    ASSERT(surface->isValid());
+    OwnPtr<ImageBuffer> buffer = adoptPtr(new ImageBuffer(surface.release()));
 
     buffer->context()->scale(FloatSize(static_cast<float>(scaledSize.width()) / size.width(),
         static_cast<float>(scaledSize.height()) / size.height()));

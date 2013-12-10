@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationTranslationUtil_h
-#define AnimationTranslationUtil_h
+#ifndef AcceleratedImageBufferSurface_h
+#define AcceleratedImageBufferSurface_h
 
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/transforms/TransformOperations.h"
-#include "public/platform/WebTransformOperations.h"
-#include "wtf/PassOwnPtr.h"
-
-namespace blink {
-class WebAnimation;
-class WebFilterOperations;
-}
+#include "platform/graphics/ImageBufferSurface.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
-class KeyframeValueList;
-class CSSAnimationData;
-class FloatSize;
+class PLATFORM_EXPORT AcceleratedImageBufferSurface : public ImageBufferSurface {
+    WTF_MAKE_NONCOPYABLE(AcceleratedImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
+public:
+    AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque, int msaaSampleCount = 0);
+    virtual ~AcceleratedImageBufferSurface() { }
+
+    virtual SkCanvas* canvas() const OVERRIDE { return m_canvas.get();}
+    virtual bool isValid() const OVERRIDE { return m_canvas; }
+    virtual bool isAccelerated() const OVERRIDE { return true; }
+    virtual Platform3DObject getBackingTexture() const OVERRIDE;
+
+private:
+    OwnPtr<SkCanvas> m_canvas;
+};
 
 
-// Translates WebCore animation data into a WebAnimation. If we are unable
-// to perform this translation, we return nullptr. This can happen if
-//   - a steps timing function is used,
-//   - a property other than AnimatedPropertyWebkitTransform, or AnimatedPropertyOpacity is animated, or
-//   - a transform animation involves a non-invertable transform.
-PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList&, const CSSAnimationData*, int animationId, double timeOffset, const FloatSize& boxSize);
-
-void toWebTransformOperations(const TransformOperations& inOperations, const FloatSize& boxSize, blink::WebTransformOperations* outOperations);
-
-bool toWebFilterOperations(const FilterOperations& inOperations, blink::WebFilterOperations* outOperations);
 } // namespace WebCore
 
-#endif // AnimationTranslationUtil_h
+#endif

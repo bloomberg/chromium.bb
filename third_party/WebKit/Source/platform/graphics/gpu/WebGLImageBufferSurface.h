@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationTranslationUtil_h
-#define AnimationTranslationUtil_h
+#ifndef WebGLImageBufferSurface_h
+#define WebGLImageBufferSurface_h
 
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/transforms/TransformOperations.h"
-#include "public/platform/WebTransformOperations.h"
-#include "wtf/PassOwnPtr.h"
-
-namespace blink {
-class WebAnimation;
-class WebFilterOperations;
-}
+#include "platform/graphics/ImageBufferSurface.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace WebCore {
 
-class KeyframeValueList;
-class CSSAnimationData;
-class FloatSize;
+// This is a GPU backed surface that has no canvas or render target.
+class PLATFORM_EXPORT WebGLImageBufferSurface : public ImageBufferSurface {
+    WTF_MAKE_NONCOPYABLE(WebGLImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
+public:
+    WebGLImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
+    virtual ~WebGLImageBufferSurface() { }
+
+    virtual SkCanvas* canvas() const OVERRIDE { return 0; }
+    virtual const SkBitmap& bitmap() const OVERRIDE { return m_bitmap; }
+    virtual bool isValid() const OVERRIDE { return m_bitmap.pixelRef(); }
+    virtual bool isAccelerated() const OVERRIDE { return true; }
+    virtual Platform3DObject getBackingTexture() const OVERRIDE;
+
+private:
+    SkBitmap m_bitmap;
+};
 
 
-// Translates WebCore animation data into a WebAnimation. If we are unable
-// to perform this translation, we return nullptr. This can happen if
-//   - a steps timing function is used,
-//   - a property other than AnimatedPropertyWebkitTransform, or AnimatedPropertyOpacity is animated, or
-//   - a transform animation involves a non-invertable transform.
-PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList&, const CSSAnimationData*, int animationId, double timeOffset, const FloatSize& boxSize);
-
-void toWebTransformOperations(const TransformOperations& inOperations, const FloatSize& boxSize, blink::WebTransformOperations* outOperations);
-
-bool toWebFilterOperations(const FilterOperations& inOperations, blink::WebFilterOperations* outOperations);
 } // namespace WebCore
 
-#endif // AnimationTranslationUtil_h
+#endif

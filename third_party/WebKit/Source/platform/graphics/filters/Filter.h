@@ -33,7 +33,7 @@ class FilterEffect;
 
 class PLATFORM_EXPORT Filter : public RefCounted<Filter> {
 public:
-    Filter(const AffineTransform& absoluteTransform) : m_renderingMode(Unaccelerated), m_absoluteTransform(absoluteTransform) { }
+    Filter(const AffineTransform& absoluteTransform) : m_isAccelerated(false), m_absoluteTransform(absoluteTransform) { }
     virtual ~Filter() { }
 
     void setSourceImage(PassOwnPtr<ImageBuffer> sourceImage) { m_sourceImage = sourceImage; }
@@ -46,8 +46,8 @@ public:
     void setAbsoluteTransform(const AffineTransform& absoluteTransform) { m_absoluteTransform = absoluteTransform; }
     FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint& point) const { return m_absoluteTransform.inverse().mapPoint(point); }
 
-    RenderingMode renderingMode() const { return m_renderingMode; }
-    void setRenderingMode(RenderingMode renderingMode) { m_renderingMode = renderingMode; }
+    bool isAccelerated() const { return m_isAccelerated; }
+    void setIsAccelerated(bool isAccelerated) { m_isAccelerated = isAccelerated; }
 
     virtual float applyHorizontalScale(float value) const
     {
@@ -73,7 +73,7 @@ public:
 private:
     OwnPtr<ImageBuffer> m_sourceImage;
     FloatSize m_filterResolution;
-    RenderingMode m_renderingMode;
+    bool m_isAccelerated;
     AffineTransform m_absoluteTransform;
     FloatRect m_absoluteFilterRegion;
     FloatRect m_filterRegion;

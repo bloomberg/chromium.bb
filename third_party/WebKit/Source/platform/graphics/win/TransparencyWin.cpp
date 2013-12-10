@@ -99,7 +99,7 @@ class TransparencyWin::OwnedBuffers {
 public:
     OwnedBuffers(const IntSize& size, bool needReferenceBuffer)
     {
-        m_destBitmap = ImageBuffer::create(size, 1);
+        m_destBitmap = ImageBuffer::create(size);
 
         if (needReferenceBuffer) {
             m_referenceBitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
@@ -117,7 +117,7 @@ public:
     // Returns whether the current layer will fix a buffer of the given size.
     bool canHandleSize(const IntSize& size) const
     {
-        return m_destBitmap->internalSize().width() >= size.width() && m_destBitmap->internalSize().height() >= size.height();
+        return m_destBitmap->size().width() >= size.width() && m_destBitmap->size().height() >= size.height();
     }
 
 private:

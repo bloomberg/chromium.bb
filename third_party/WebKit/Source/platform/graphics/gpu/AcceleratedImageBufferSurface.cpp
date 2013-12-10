@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationTranslationUtil_h
-#define AnimationTranslationUtil_h
+#include "config.h"
+#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/transforms/TransformOperations.h"
-#include "public/platform/WebTransformOperations.h"
-#include "wtf/PassOwnPtr.h"
-
-namespace blink {
-class WebAnimation;
-class WebFilterOperations;
-}
+#include "platform/graphics/gpu/SharedGraphicsContext3D.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
 
 namespace WebCore {
 
-class KeyframeValueList;
-class CSSAnimationData;
-class FloatSize;
+AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
+    : ImageBufferSurface(size, opacityMode)
+{
+    GrContext* grContext = SharedGraphicsContext3D::get()->grContext();
+    if (!grContext)
+        return;
+    RefPtr<SkGpuDevice> device = adoptRef(new SkGpuDevice(grContext, SkBitmap::kARGB_8888_Config, size.width(), size.height(), msaaSampleCount));
+    if (!device->accessRenderTarget())
+        return;
+    m_canvas = adoptPtr(new SkCanvas(device.get()));
+    clear();
+}
 
+Platform3DObject AcceleratedImageBufferSurface::getBackingTexture() const
+{
+    GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();
+    if (renderTarget) {
+        return renderTarget->asTexture()->getTextureHandle();
+    }
+    return 0;
+}
 
-// Translates WebCore animation data into a WebAnimation. If we are unable
-// to perform this translation, we return nullptr. This can happen if
-//   - a steps timing function is used,
-//   - a property other than AnimatedPropertyWebkitTransform, or AnimatedPropertyOpacity is animated, or
-//   - a transform animation involves a non-invertable transform.
-PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList&, const CSSAnimationData*, int animationId, double timeOffset, const FloatSize& boxSize);
-
-void toWebTransformOperations(const TransformOperations& inOperations, const FloatSize& boxSize, blink::WebTransformOperations* outOperations);
-
-bool toWebFilterOperations(const FilterOperations& inOperations, blink::WebFilterOperations* outOperations);
 } // namespace WebCore
-
-#endif // AnimationTranslationUtil_h

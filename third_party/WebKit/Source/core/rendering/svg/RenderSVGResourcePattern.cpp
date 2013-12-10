@@ -109,7 +109,7 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, unsign
     patternData->pattern = Pattern::create(copiedImage, true, true);
 
     // Compute pattern space transformation.
-    const IntSize tileImageSize = tileImage->logicalSize();
+    const IntSize tileImageSize = tileImage->size();
     patternData->transform.translate(tileBoundaries.x(), tileBoundaries.y());
     patternData->transform.scale(tileBoundaries.width() / tileImageSize.width(), tileBoundaries.height() / tileImageSize.height());
 
@@ -240,12 +240,17 @@ PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternA
 {
     clampedAbsoluteTileBoundaries = SVGRenderingContext::clampedAbsoluteTargetRect(absoluteTileBoundaries);
 
-    OwnPtr<ImageBuffer> tileImage = ImageBuffer::createBufferForTile(absoluteTileBoundaries.size(), clampedAbsoluteTileBoundaries.size(), Unaccelerated);
+    IntSize imageSize(roundedIntSize(clampedAbsoluteTileBoundaries.size()));
+    if (imageSize.isEmpty())
+        return nullptr;
+    OwnPtr<ImageBuffer> tileImage = ImageBuffer::create(imageSize);
     if (!tileImage)
         return nullptr;
 
     GraphicsContext* tileImageContext = tileImage->context();
     ASSERT(tileImageContext);
+    IntSize unclampedImageSize(roundedIntSize(absoluteTileBoundaries.size()));
+    tileImageContext->scale(FloatSize(unclampedImageSize.width() / absoluteTileBoundaries.width(), unclampedImageSize.height() / absoluteTileBoundaries.height()));
 
     // The image buffer represents the final rendered size, so the content has to be scaled (to avoid pixelation).
     tileImageContext->scale(FloatSize(clampedAbsoluteTileBoundaries.width() / tileBoundaries.width(),

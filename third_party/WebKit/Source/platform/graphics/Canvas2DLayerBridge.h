@@ -31,47 +31,27 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext3D.h"
+#include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "wtf/DoublyLinkedList.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 class WebGraphicsContext3D;
 }
 
+class Canvas2DLayerBridgeTest;
+
 namespace WebCore {
-
-class Canvas2DLayerBridge;
-class PassCanvas2DLayerBridgePtr;
-
-class PLATFORM_EXPORT Canvas2DLayerBridgePtr {
-public:
-    Canvas2DLayerBridgePtr() { }
-    Canvas2DLayerBridgePtr(const PassRefPtr<Canvas2DLayerBridge>& ptr) { m_ptr = ptr; }
-    ~Canvas2DLayerBridgePtr() { clear(); }
-    Canvas2DLayerBridge* operator->() const { return m_ptr.get(); }
-    Canvas2DLayerBridgePtr& operator=(const PassRefPtr<Canvas2DLayerBridge>&);
-    Canvas2DLayerBridge* get() const { return m_ptr.get(); }
-    operator bool () const { return m_ptr; }
-    void clear();
-    PassRefPtr<Canvas2DLayerBridge> release() WARN_UNUSED_RETURN { return m_ptr.release(); }
-private:
-    RefPtr<Canvas2DLayerBridge> m_ptr;
-};
 
 class PLATFORM_EXPORT Canvas2DLayerBridge : public blink::WebExternalTextureLayerClient, public SkDeferredCanvas::NotificationClient, public DoublyLinkedListNode<Canvas2DLayerBridge>, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
-    enum OpacityMode {
-        Opaque,
-        NonOpaque
-    };
-
-    static PassRefPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D>, const IntSize&, OpacityMode, int msaaSampleCount);
-
+    static PassRefPtr<Canvas2DLayerBridge> create(const IntSize&, OpacityMode, int msaaSampleCount);
     virtual ~Canvas2DLayerBridge();
 
     // blink::WebExternalTextureLayerClient implementation.
@@ -85,6 +65,14 @@ public:
     virtual void flushedDrawCommands() OVERRIDE;
     virtual void skippedPendingDrawCommands() OVERRIDE;
 
+    // ImageBufferSurface implementation
+    void willUse();
+    SkCanvas* canvas() const { return m_canvas.get(); }
+    bool isValid();
+    blink::WebLayer* layer() const;
+    Platform3DObject getBackingTexture();
+    bool isAccelerated() const { return true; }
+
     // Methods used by Canvas2DLayerManager
     virtual size_t freeMemoryIfPossible(size_t); // virtual for mocking
     virtual void flush(); // virtual for mocking
@@ -92,21 +80,13 @@ public:
     size_t bytesAllocated() const {return m_bytesAllocated;}
     void limitPendingFrames();
 
-    blink::WebLayer* layer();
-    void contextAcquired();
-    PassRefPtr<SkCanvas> getCanvas() { return PassRefPtr<SkCanvas>(m_canvas); }
-
-    unsigned backBufferTexture();
-
-    bool isValid();
+    void beginDestruction();
 
 protected:
-    void destroy();
-    friend class Canvas2DLayerBridgePtr;
-    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, PassRefPtr<SkDeferredCanvas>, int, OpacityMode);
+    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, PassOwnPtr<SkDeferredCanvas>, int, OpacityMode);
     void setRateLimitingEnabled(bool);
 
-    RefPtr<SkDeferredCanvas> m_canvas;
+    OwnPtr<SkDeferredCanvas> m_canvas;
     OwnPtr<blink::WebExternalTextureLayer> m_layer;
     RefPtr<GraphicsContext3D> m_context;
     int m_msaaSampleCount;
@@ -118,6 +98,7 @@ protected:
     bool m_rateLimitingEnabled;
 
     friend class WTF::DoublyLinkedListNode<Canvas2DLayerBridge>;
+    friend class ::Canvas2DLayerBridgeTest;
     Canvas2DLayerBridge* m_next;
     Canvas2DLayerBridge* m_prev;
 

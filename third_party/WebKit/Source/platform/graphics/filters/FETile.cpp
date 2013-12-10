@@ -27,7 +27,9 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Pattern.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -65,11 +67,20 @@ void FETile::applySoftware()
         tileRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
     }
 
-    OwnPtr<ImageBuffer> tileImage = ImageBuffer::createBufferForTile(tileRect.size(), tileRect.size(), filter()->renderingMode());
+    OwnPtr<ImageBufferSurface> surface;
+    IntSize intTileSize = roundedIntSize(tileRect.size());
+    if (filter()->isAccelerated()) {
+        surface = adoptPtr(new AcceleratedImageBufferSurface(intTileSize));
+    }
+    if (!surface || !surface->isValid()) {
+        surface = adoptPtr(new UnacceleratedImageBufferSurface(intTileSize));
+    }
+    OwnPtr<ImageBuffer> tileImage = ImageBuffer::create(surface.release());
     if (!tileImage)
         return;
 
     GraphicsContext* tileImageContext = tileImage->context();
+    tileImageContext->scale(FloatSize(intTileSize.width() / tileRect.width(), intTileSize.height() / tileRect.height()));
     tileImageContext->translate(-inMaxEffectLocation.x(), -inMaxEffectLocation.y());
     tileImageContext->drawImageBuffer(in->asImageBuffer(), in->absolutePaintRect().location());
 

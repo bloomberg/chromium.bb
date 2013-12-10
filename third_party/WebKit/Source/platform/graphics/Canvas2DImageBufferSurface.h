@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationTranslationUtil_h
-#define AnimationTranslationUtil_h
+#ifndef Canvas2DImageBufferSurface_h
+#define Canvas2DImageBufferSurface_h
 
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/transforms/TransformOperations.h"
-#include "public/platform/WebTransformOperations.h"
-#include "wtf/PassOwnPtr.h"
-
-namespace blink {
-class WebAnimation;
-class WebFilterOperations;
-}
+#include "platform/graphics/Canvas2DLayerBridge.h"
+#include "platform/graphics/ImageBufferSurface.h"
 
 namespace WebCore {
 
-class KeyframeValueList;
-class CSSAnimationData;
-class FloatSize;
+// This shim necessary because ImageBufferSurfaces are not allowed to be RefCounted
+class Canvas2DImageBufferSurface : public ImageBufferSurface {
+public:
+    Canvas2DImageBufferSurface(const IntSize& size, OpacityMode opacityMode = NonOpaque, int msaaSampleCount = 1)
+        : ImageBufferSurface(size, opacityMode)
+        , m_layerBridge(Canvas2DLayerBridge::create(size, opacityMode, msaaSampleCount))
+    {
+        clear();
+    }
 
+    virtual ~Canvas2DImageBufferSurface()
+    {
+        if (m_layerBridge)
+            m_layerBridge->beginDestruction();
+    }
 
-// Translates WebCore animation data into a WebAnimation. If we are unable
-// to perform this translation, we return nullptr. This can happen if
-//   - a steps timing function is used,
-//   - a property other than AnimatedPropertyWebkitTransform, or AnimatedPropertyOpacity is animated, or
-//   - a transform animation involves a non-invertable transform.
-PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList&, const CSSAnimationData*, int animationId, double timeOffset, const FloatSize& boxSize);
+    // ImageBufferSurface implementation
+    virtual void willUse() OVERRIDE { m_layerBridge->willUse(); }
+    virtual SkCanvas* canvas() const OVERRIDE { return m_layerBridge->canvas(); }
+    virtual bool isValid() const OVERRIDE { return m_layerBridge && m_layerBridge->isValid(); }
+    virtual blink::WebLayer* layer() const OVERRIDE { return m_layerBridge->layer(); }
+    virtual Platform3DObject getBackingTexture() const OVERRIDE { return m_layerBridge->getBackingTexture(); }
+    virtual bool isAccelerated() const { return m_layerBridge->isAccelerated(); }
 
-void toWebTransformOperations(const TransformOperations& inOperations, const FloatSize& boxSize, blink::WebTransformOperations* outOperations);
+private:
+    RefPtr<Canvas2DLayerBridge> m_layerBridge;
+};
 
-bool toWebFilterOperations(const FilterOperations& inOperations, blink::WebFilterOperations* outOperations);
-} // namespace WebCore
+}
 
-#endif // AnimationTranslationUtil_h
+#endif

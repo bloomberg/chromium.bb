@@ -37,6 +37,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "platform/graphics/media/MediaPlayer.h"
+#include "public/platform/WebLayer.h"
 
 namespace WebCore {
 

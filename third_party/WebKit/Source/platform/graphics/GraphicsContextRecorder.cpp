@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/graphics/GraphicsContextRecorder.h"
 
+#include "platform/graphics/ImageBuffer.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 
 namespace WebCore {
@@ -173,7 +174,7 @@ PassOwnPtr<GraphicsContextSnapshot::Timings> GraphicsContextSnapshot::profile(un
 
 PassOwnPtr<ImageBuffer> GraphicsContextSnapshot::createImageBuffer() const
 {
-    return ImageBuffer::create(IntSize(m_picture->width(), m_picture->height()), 1, UnacceleratedNonPlatformBuffer, m_isCertainlyOpaque ? Opaque : NonOpaque);
+    return ImageBuffer::create(IntSize(m_picture->width(), m_picture->height()), m_isCertainlyOpaque ? Opaque : NonOpaque);
 }
 
 }

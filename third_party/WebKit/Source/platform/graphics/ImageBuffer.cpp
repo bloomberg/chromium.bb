@@ -37,25 +37,18 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Extensions3D.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContext3D.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/SharedGraphicsContext3D.h"
-#include "platform/graphics/skia/GaneshUtils.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/skia/JPEGImageEncoder.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "platform/image-encoders/skia/WEBPImageEncoder.h"
 #include "public/platform/Platform.h"
-#include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
-#include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/SkGpuDevice.h"
-#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/WTFString.h"
@@ -64,144 +57,29 @@ using namespace std;
 
 namespace WebCore {
 
-static PassRefPtr<SkCanvas> createAcceleratedCanvas(const IntSize& size, Canvas2DLayerBridgePtr* outLayerBridge, OpacityMode opacityMode, int msaaSampleCount)
+PassOwnPtr<ImageBuffer> ImageBuffer::create(PassOwnPtr<ImageBufferSurface> surface)
 {
-    RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
-    if (!context3D)
-        return 0;
-    Canvas2DLayerBridge::OpacityMode bridgeOpacityMode = opacityMode == Opaque ? Canvas2DLayerBridge::Opaque : Canvas2DLayerBridge::NonOpaque;
-    *outLayerBridge = Canvas2DLayerBridge::create(context3D.release(), size, bridgeOpacityMode, msaaSampleCount);
-    // If canvas buffer allocation failed, debug build will have asserted
-    // For release builds, we must verify whether the device has a render target
-    return (*outLayerBridge) ? (*outLayerBridge)->getCanvas() : 0;
-}
-
-static PassRefPtr<SkCanvas> createTextureBackedCanvas(const IntSize& size)
-{
-    RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
-    if (!context3D)
-        return 0;
-    GrContext* gr = context3D->grContext();
-    if (!gr)
-        return 0;
-    SkBitmap* bitmap = new SkBitmap;
-    if (!bitmap || !ensureTextureBackedSkBitmap(gr, *bitmap, size, kDefault_GrSurfaceOrigin, kRGBA_8888_GrPixelConfig))
-        return 0;
-    return adoptRef(new SkCanvas(*bitmap));
-}
-
-static PassRefPtr<SkCanvas> createNonPlatformCanvas(const IntSize& size)
-{
-    SkAutoTUnref<SkBaseDevice> device(new SkBitmapDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height()));
-    SkPixelRef* pixelRef = device->accessBitmap(false).pixelRef();
-    return adoptRef(pixelRef ? new SkCanvas(device) : 0);
-}
-
-PassOwnPtr<ImageBuffer> ImageBuffer::createCompatibleBuffer(const IntSize& size, float resolutionScale, const GraphicsContext* context, bool hasAlpha)
-{
-    bool success = false;
-    OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, context, hasAlpha, success));
-    if (!success)
+    if (!surface->isValid())
         return nullptr;
-    return buf.release();
+    return adoptPtr(new ImageBuffer(surface));
 }
 
-PassOwnPtr<ImageBuffer> ImageBuffer::createBufferForTile(const FloatSize& tileSize, const FloatSize& clampedTileSize, RenderingMode renderingMode)
+PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opacityMode)
 {
-    IntSize imageSize(roundedIntSize(clampedTileSize));
-    IntSize unclampedImageSize(roundedIntSize(tileSize));
-
-    // Don't create empty ImageBuffers.
-    if (imageSize.isEmpty())
+    OwnPtr<ImageBufferSurface> surface = adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
+    if (!surface->isValid())
         return nullptr;
-
-    OwnPtr<ImageBuffer> image = ImageBuffer::create(imageSize, 1, renderingMode);
-    if (!image)
-        return nullptr;
-
-    GraphicsContext* imageContext = image->context();
-    ASSERT(imageContext);
-
-    // Compensate rounding effects, as the absolute target rect is using floating-point numbers and the image buffer size is integer.
-    imageContext->scale(FloatSize(unclampedImageSize.width() / tileSize.width(), unclampedImageSize.height() / tileSize.height()));
-
-    return image.release();
+    return adoptPtr(new ImageBuffer(surface.release()));
 }
 
-ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, const GraphicsContext* compatibleContext, bool hasAlpha, bool& success)
-    : m_size(size)
-    , m_logicalSize(size)
-    , m_resolutionScale(resolutionScale)
+ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
+    : m_surface(surface)
 {
-    if (!compatibleContext) {
-        success = false;
-        return;
+    if (m_surface->canvas()) {
+        m_context = adoptPtr(new GraphicsContext(m_surface->canvas()));
+        m_context->setCertainlyOpaque(m_surface->opacityMode() == Opaque);
+        m_context->setAccelerated(m_surface->isAccelerated());
     }
-
-    SkAutoTUnref<SkBaseDevice> device(compatibleContext->createCompatibleDevice(size, hasAlpha));
-    if (!device.get()) {
-        success = false;
-        return;
-    }
-
-    SkPixelRef* pixelRef = device->accessBitmap(false).pixelRef();
-    if (!pixelRef) {
-        success = false;
-        return;
-    }
-
-    m_canvas = adoptRef(new SkCanvas(device));
-    m_context = adoptPtr(new GraphicsContext(m_canvas.get()));
-    m_context->setCertainlyOpaque(!hasAlpha);
-    m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
-
-    success = true;
-}
-
-ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMode renderingMode, OpacityMode opacityMode, int acceleratedSampleCount, bool& success)
-    : m_size(size)
-    , m_logicalSize(size)
-    , m_resolutionScale(resolutionScale)
-{
-    if (renderingMode == Accelerated) {
-        m_canvas = createAcceleratedCanvas(size, &m_layerBridge, opacityMode, acceleratedSampleCount);
-        if (!m_canvas)
-            renderingMode = UnacceleratedNonPlatformBuffer;
-    }
-
-    if (renderingMode == TextureBacked) {
-        m_canvas = createTextureBackedCanvas(size);
-        if (!m_canvas)
-            renderingMode = UnacceleratedNonPlatformBuffer;
-    }
-
-    if (renderingMode == UnacceleratedNonPlatformBuffer)
-        m_canvas = createNonPlatformCanvas(size);
-
-    if (!m_canvas)
-        m_canvas = adoptRef(skia::TryCreateBitmapCanvas(size.width(), size.height(), false));
-
-    if (!m_canvas) {
-        success = false;
-        return;
-    }
-
-    m_context = adoptPtr(new GraphicsContext(m_canvas.get()));
-    m_context->setCertainlyOpaque(opacityMode == Opaque);
-    m_context->setAccelerated(renderingMode == Accelerated);
-    m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
-
-    // Clear the background transparent or opaque, as required. It would be nice if this wasn't
-    // required, but the canvas is currently filled with the magic transparency
-    // color. Can we have another way to manage this?
-    if (renderingMode != TextureBacked) {
-        if (opacityMode == Opaque)
-            m_canvas->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
-        else
-            m_canvas->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
-    }
-
-    success = true;
 }
 
 ImageBuffer::~ImageBuffer()
@@ -210,20 +88,14 @@ ImageBuffer::~ImageBuffer()
 
 GraphicsContext* ImageBuffer::context() const
 {
-    if (m_layerBridge) {
-        // We're using context acquisition as a signal that someone is about to render into our buffer and we need
-        // to be ready. This isn't logically const-correct, hence the cast.
-        const_cast<Canvas2DLayerBridge*>(m_layerBridge.get())->contextAcquired();
-    }
+    m_surface->willUse();
     return m_context.get();
 }
 
 
 bool ImageBuffer::isValid() const
 {
-    if (m_layerBridge)
-        return const_cast<Canvas2DLayerBridge*>(m_layerBridge.get())->isValid();
-    return true;
+    return m_surface->isValid();
 }
 
 static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
@@ -240,9 +112,8 @@ PassRefPtr<Image> ImageBuffer::copyImage(BackingStoreCopy copyBehavior, ScaleBeh
     if (!isValid())
         return BitmapImage::create(NativeImageSkia::create());
 
-    const SkBitmap& bitmap = *context()->bitmap();
-    // FIXME: Start honoring ScaleBehavior to scale 2x buffers down to 1x.
-    return BitmapImage::create(NativeImageSkia::create(copyBehavior == CopyBackingStore ? deepSkBitmapCopy(bitmap) : bitmap, m_resolutionScale));
+    const SkBitmap& bitmap = m_surface->bitmap();
+    return BitmapImage::create(NativeImageSkia::create(copyBehavior == CopyBackingStore ? deepSkBitmapCopy(bitmap) : bitmap));
 }
 
 BackingStoreCopy ImageBuffer::fastCopyImageMode()
@@ -252,15 +123,13 @@ BackingStoreCopy ImageBuffer::fastCopyImageMode()
 
 blink::WebLayer* ImageBuffer::platformLayer() const
 {
-    return m_layerBridge ? m_layerBridge->layer() : 0;
+    return m_surface->layer();
 }
 
 bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GC3Denum internalFormat, GC3Denum destType, GC3Dint level, bool premultiplyAlpha, bool flipY)
 {
-    if (!m_layerBridge || !platformLayer() || !isValid())
+    if (!m_surface->isAccelerated() || !platformLayer() || !isValid())
         return false;
-
-    Platform3DObject sourceTexture = m_layerBridge->backBufferTexture();
 
     if (!context.makeContextCurrent())
         return false;
@@ -275,8 +144,7 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
 
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
     context.pixelStorei(Extensions3D::UNPACK_FLIP_Y_CHROMIUM, !flipY);
-
-    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, sourceTexture, texture, level, internalFormat, destType);
+    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, getBackingTexture(), texture, level, internalFormat, destType);
 
     context.pixelStorei(Extensions3D::UNPACK_FLIP_Y_CHROMIUM, false);
     context.pixelStorei(Extensions3D::UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
@@ -286,17 +154,13 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
 
 static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
 {
+    ASSERT(dst);
     return (src == dst);
 }
 
 Platform3DObject ImageBuffer::getBackingTexture()
 {
-    if (!m_context || !m_context->bitmap())
-        return 0;
-    const SkBitmap& bitmap = *m_context->bitmap();
-    if (bitmap.getTexture())
-        return (bitmap.getTexture())->getTextureHandle();
-    return 0;
+    return m_surface->getBackingTexture();
 }
 
 bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBuffer)
@@ -304,7 +168,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     if (!drawingBuffer)
         return false;
     RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
-    Platform3DObject tex = getBackingTexture();
+    Platform3DObject tex = m_surface->getBackingTexture();
     if (!context3D || !tex)
         return false;
 
@@ -318,15 +182,15 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
     if (!isValid())
         return;
 
-    const SkBitmap& bitmap = *m_context->bitmap();
+    const SkBitmap& bitmap = m_surface->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
     context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation, useLowQualityScale);
 }
 
 void ImageBuffer::flush()
 {
-    if (m_canvas) {
-        m_canvas->flush();
+    if (m_surface->canvas()) {
+        m_surface->canvas()->flush();
     }
 }
 
@@ -336,7 +200,7 @@ void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect
     if (!isValid())
         return;
 
-    const SkBitmap& bitmap = *m_context->bitmap();
+    const SkBitmap& bitmap = m_surface->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
     image->drawPattern(context, srcRect, scale, phase, op, destRect, blendMode, repeatSpacing);
 }
@@ -387,7 +251,7 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
     if (context()->isAccelerated() || !isValid())
         return;
 
-    const SkBitmap& bitmap = *context()->bitmap();
+    const SkBitmap& bitmap = m_surface->bitmap();
     if (bitmap.isNull())
         return;
 
@@ -395,10 +259,11 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
         getLinearRgbLUT() : getDeviceRgbLUT();
 
     ASSERT(bitmap.config() == SkBitmap::kARGB_8888_Config);
+    IntSize size = m_surface->size();
     SkAutoLockPixels bitmapLock(bitmap);
-    for (int y = 0; y < m_size.height(); ++y) {
+    for (int y = 0; y < size.height(); ++y) {
         uint32_t* srcRow = bitmap.getAddr32(0, y);
-        for (int x = 0; x < m_size.width(); ++x) {
+        for (int x = 0; x < size.width(); ++x) {
             SkColor color = SkPMColorToColor(srcRow[x]);
             srcRow[x] = SkPreMultiplyARGB(
                 SkColorGetA(color),
@@ -460,21 +325,21 @@ PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext*
     return result.release();
 }
 
-PassRefPtr<Uint8ClampedArray> ImageBuffer::getUnmultipliedImageData(const IntRect& rect, CoordinateSystem) const
+PassRefPtr<Uint8ClampedArray> ImageBuffer::getUnmultipliedImageData(const IntRect& rect) const
 {
     if (!isValid())
         return Uint8ClampedArray::create(rect.width() * rect.height() * 4);
-    return getImageData<Unmultiplied>(rect, context(), m_size);
+    return getImageData<Unmultiplied>(rect, context(), m_surface->size());
 }
 
-PassRefPtr<Uint8ClampedArray> ImageBuffer::getPremultipliedImageData(const IntRect& rect, CoordinateSystem) const
+PassRefPtr<Uint8ClampedArray> ImageBuffer::getPremultipliedImageData(const IntRect& rect) const
 {
     if (!isValid())
         return Uint8ClampedArray::create(rect.width() * rect.height() * 4);
-    return getImageData<Premultiplied>(rect, context(), m_size);
+    return getImageData<Premultiplied>(rect, context(), m_surface->size());
 }
 
-void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint, CoordinateSystem)
+void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint)
 {
     if (!isValid())
         return;
@@ -485,24 +350,24 @@ void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, c
     int originX = sourceRect.x();
     int destX = destPoint.x() + sourceRect.x();
     ASSERT(destX >= 0);
-    ASSERT(destX < m_size.width());
+    ASSERT(destX < m_surface->size().width());
     ASSERT(originX >= 0);
     ASSERT(originX < sourceRect.maxX());
 
     int endX = destPoint.x() + sourceRect.maxX();
-    ASSERT(endX <= m_size.width());
+    ASSERT(endX <= m_surface->size().width());
 
     int numColumns = endX - destX;
 
     int originY = sourceRect.y();
     int destY = destPoint.y() + sourceRect.y();
     ASSERT(destY >= 0);
-    ASSERT(destY < m_size.height());
+    ASSERT(destY < m_surface->size().height());
     ASSERT(originY >= 0);
     ASSERT(originY < sourceRect.maxY());
 
     int endY = destPoint.y() + sourceRect.maxY();
-    ASSERT(endY <= m_size.height());
+    ASSERT(endY <= m_surface->size().height());
     int numRows = endY - destY;
 
     unsigned srcBytesPerRow = 4 * sourceSize.width();
@@ -545,12 +410,12 @@ static bool encodeImage(T& source, const String& mimeType, const double* quality
     return true;
 }
 
-String ImageBuffer::toDataURL(const String& mimeType, const double* quality, CoordinateSystem) const
+String ImageBuffer::toDataURL(const String& mimeType, const double* quality) const
 {
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 
     Vector<char> encodedImage;
-    if (!isValid() || !encodeImage(*context()->bitmap(), mimeType, quality, &encodedImage))
+    if (!isValid() || !encodeImage(m_surface->bitmap(), mimeType, quality, &encodedImage))
         return "data:,";
     Vector<char> base64Data;
     base64Encode(encodedImage, base64Data);

@@ -373,7 +373,7 @@ public:
     void addCompressedTextureFormat(GC3Denum);
     void removeAllCompressedTextureFormats();
 
-    PassRefPtr<Image> drawImageIntoBuffer(Image*, int width, int height, int deviceScaleFactor);
+    PassRefPtr<Image> drawImageIntoBuffer(Image*, int width, int height);
 
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy);
 

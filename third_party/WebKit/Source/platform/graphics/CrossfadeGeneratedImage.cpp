@@ -99,7 +99,7 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
 
 void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, blink::WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
-    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(m_size, 1, context->isAccelerated() ? Accelerated : Unaccelerated);
+    OwnPtr<ImageBuffer> imageBuffer = context->createCompatibleBuffer(m_size);
     if (!imageBuffer)
         return;
 

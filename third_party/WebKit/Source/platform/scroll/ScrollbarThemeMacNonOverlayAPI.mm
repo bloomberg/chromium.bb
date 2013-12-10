@@ -32,10 +32,11 @@
 #include "platform/scroll/ScrollbarThemeMacNonOverlayAPI.h"
 
 #include <Carbon/Carbon.h>
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
-#include "public/platform/mac/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/mac/WebThemeEngine.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace WebCore {

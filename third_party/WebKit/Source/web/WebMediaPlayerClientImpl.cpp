@@ -21,6 +21,7 @@
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/skia/GaneshUtils.h"
 #include "public/platform/WebAudioSourceProvider.h"

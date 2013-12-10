@@ -43,22 +43,7 @@ using blink::WebGraphicsContext3D;
 
 namespace WebCore {
 
-void Canvas2DLayerBridgePtr::clear()
-{
-    if (m_ptr) {
-        m_ptr->destroy();
-        m_ptr.clear();
-    }
-}
-
-Canvas2DLayerBridgePtr& Canvas2DLayerBridgePtr::operator=(const PassRefPtr<Canvas2DLayerBridge>& other)
-{
-    clear();
-    m_ptr = other;
-    return *this;
-}
-
-static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& size, int msaaSampleCount)
+static PassRefPtr<SkSurface> createSkSurface(GraphicsContext3D* context3D, const IntSize& size, int msaaSampleCount)
 {
     ASSERT(!context3D->webContext()->isContextLost());
     GrContext* gr = context3D->grContext();
@@ -70,22 +55,23 @@ static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& siz
     info.fHeight = size.height();
     info.fColorType = kPMColor_SkColorType;
     info.fAlphaType = kPremul_SkAlphaType;
-    return SkSurface::NewRenderTarget(gr, info,  msaaSampleCount);
+    return adoptRef(SkSurface::NewRenderTarget(gr, info,  msaaSampleCount));
 }
 
-PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsContext3D> context, const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
+PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
 {
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
-    SkAutoTUnref<SkSurface> surface(createSurface(context.get(), size, msaaSampleCount));
-    if (!surface.get()) {
-        return PassRefPtr<Canvas2DLayerBridge>();
-    }
-    RefPtr<SkDeferredCanvas> canvas = adoptRef(SkDeferredCanvas::Create(surface.get()));
-    RefPtr<Canvas2DLayerBridge> layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas.release(), msaaSampleCount, opacityMode));
+    RefPtr<GraphicsContext3D> context = SharedGraphicsContext3D::get();
+    RefPtr<SkSurface> surface(createSkSurface(context.get(), size, msaaSampleCount));
+    if (!surface)
+        return 0;
+    RefPtr<Canvas2DLayerBridge> layerBridge;
+    OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
+    layerBridge = adoptRef(new Canvas2DLayerBridge(context, canvas.release(), msaaSampleCount, opacityMode));
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, int msaaSampleCount, OpacityMode opacityMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassOwnPtr<SkDeferredCanvas> canvas, int msaaSampleCount, OpacityMode opacityMode)
     : m_canvas(canvas)
     , m_context(context)
     , m_msaaSampleCount(msaaSampleCount)
@@ -129,7 +115,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     m_mailboxes.clear();
 }
 
-void Canvas2DLayerBridge::destroy()
+void Canvas2DLayerBridge::beginDestruction()
 {
     ASSERT(!m_destructionInProgress);
     m_destructionInProgress = true;
@@ -232,7 +218,7 @@ void Canvas2DLayerBridge::flush()
     }
 }
 
-WebGraphicsContext3D* Canvas2DLayerBridge::context()
+blink::WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
     // Check on m_layer is necessary because context() may be called during
     // the destruction of m_layer
@@ -257,7 +243,7 @@ bool Canvas2DLayerBridge::isValid()
         } else {
             m_context = sharedContext;
             IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
-            SkAutoTUnref<SkSurface> surface(createSurface(m_context.get(), size, m_msaaSampleCount));
+            RefPtr<SkSurface> surface(createSkSurface(m_context.get(), size, m_msaaSampleCount));
             if (surface.get()) {
                 m_canvas->setSurface(surface.get());
                 m_surfaceIsValid = true;
@@ -385,28 +371,28 @@ void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox
     }
 }
 
-blink::WebLayer* Canvas2DLayerBridge::layer()
+blink::WebLayer* Canvas2DLayerBridge::layer() const
 {
     ASSERT(m_layer);
     return m_layer->layer();
 }
 
-void Canvas2DLayerBridge::contextAcquired()
+void Canvas2DLayerBridge::willUse()
 {
     ASSERT(!m_destructionInProgress);
     Canvas2DLayerManager::get().layerDidDraw(this);
     m_didRecordDrawCommand = true;
 }
 
-unsigned Canvas2DLayerBridge::backBufferTexture()
+Platform3DObject Canvas2DLayerBridge::getBackingTexture()
 {
     ASSERT(!m_destructionInProgress);
     if (!isValid())
         return 0;
-    contextAcquired();
+    willUse();
     m_canvas->flush();
     m_context->flush();
-    GrRenderTarget* renderTarget = reinterpret_cast<GrRenderTarget*>(m_canvas->getDevice()->accessRenderTarget());
+    GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();
     if (renderTarget) {
         return renderTarget->asTexture()->getTextureHandle();
     }

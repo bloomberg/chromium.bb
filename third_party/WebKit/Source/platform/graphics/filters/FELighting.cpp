@@ -455,7 +455,7 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* 
 bool FELighting::applySkia()
 {
     // For now, only use the skia implementation for accelerated rendering.
-    if (filter()->renderingMode() != Accelerated)
+    if (!filter()->isAccelerated())
         return false;
 
     ImageBuffer* resultImage = createImageBufferResult();

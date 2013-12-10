@@ -45,6 +45,7 @@ class HTMLCanvasElement;
 class Image;
 class ImageData;
 class ImageBuffer;
+class ImageBufferSurface;
 class IntSize;
 
 class CanvasObserver {
@@ -77,7 +78,7 @@ public:
 
     void setSize(const IntSize& newSize)
     {
-        if (newSize == size() && m_deviceScaleFactor == 1)
+        if (newSize == size())
             return;
         m_ignoreReset = true;
         setWidth(newSize.width());
@@ -122,8 +123,6 @@ public:
 
     bool shouldAccelerate(const IntSize&) const;
 
-    float deviceScaleFactor() const { return m_deviceScaleFactor; }
-
     InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
 private:
@@ -135,11 +134,11 @@ private:
 
     void reset();
 
+    PassOwnPtr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
     void createImageBuffer();
     void clearImageBuffer();
 
     void setSurfaceSize(const IntSize&);
-    IntSize convertLogicalToDevice(const IntSize&) const;
 
     bool paintsIntoCanvasBuffer() const;
 
@@ -159,7 +158,6 @@ private:
 
     intptr_t m_externallyAllocatedMemory;
 
-    float m_deviceScaleFactor; // FIXME: This is always 1 and should probable be deleted
     bool m_originClean;
 
     // It prevents HTMLCanvasElement::buffer() from continuously re-attempting to allocate an imageBuffer

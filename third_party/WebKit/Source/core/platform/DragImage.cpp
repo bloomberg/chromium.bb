@@ -163,9 +163,10 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     // fill the background
     IntSize scaledImageSize = imageSize;
     scaledImageSize.scale(deviceScaleFactor);
-    OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize, deviceScaleFactor));
+    OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize));
     if (!buffer)
         return nullptr;
+    buffer->context()->scale(FloatSize(deviceScaleFactor, deviceScaleFactor));
 
     const float DragLabelRadius = 5;
     const IntSize radii(DragLabelRadius, DragLabelRadius);

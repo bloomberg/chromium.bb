@@ -63,7 +63,9 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     IntRect srcRect = intersection(cropRect, videoRect);
     IntRect dstRect(IntPoint(), srcRect.size());
 
-    OwnPtr<ImageBuffer> buf = ImageBuffer::create(videoRect.size(), 1, UnacceleratedNonPlatformBuffer);
+    OwnPtr<ImageBuffer> buf = ImageBuffer::create(videoRect.size());
+    if (!buf)
+        return;
     GraphicsContext* c = buf->context();
     c->clip(dstRect);
     c->translate(-srcRect.x(), -srcRect.y());
@@ -97,7 +99,9 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
 
-    OwnPtr<ImageBuffer> buf = ImageBuffer::create(data->size(), 1, UnacceleratedNonPlatformBuffer);
+    OwnPtr<ImageBuffer> buf = ImageBuffer::create(data->size());
+    if (!buf)
+        return;
     if (srcRect.width() > 0 && srcRect.height() > 0)
         buf->putByteArray(Premultiplied, data->data(), data->size(), srcRect, IntPoint(min(0, -cropRect.x()), min(0, -cropRect.y())));
 

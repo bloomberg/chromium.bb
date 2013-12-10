@@ -202,13 +202,14 @@ public:
     PassRefPtr<ImageData> createImageData(PassRefPtr<ImageData>, ExceptionState&) const;
     PassRefPtr<ImageData> createImageData(float width, float height, ExceptionState&) const;
     PassRefPtr<ImageData> getImageData(float sx, float sy, float sw, float sh, ExceptionState&) const;
-    PassRefPtr<ImageData> webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionState&) const;
     void putImageData(ImageData*, float dx, float dy, ExceptionState&);
     void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
-    void webkitPutImageDataHD(ImageData*, float dx, float dy, ExceptionState&);
-    void webkitPutImageDataHD(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
 
-    float webkitBackingStorePixelRatio() const { return canvas()->deviceScaleFactor(); }
+    // Slated for deprecation:
+    void webkitPutImageDataHD(ImageData* image, float dx, float dy, ExceptionState& e) { putImageData(image, dx, dy, e); }
+    void webkitPutImageDataHD(ImageData* image, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState& e) { putImageData(image, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight, e); }
+    PassRefPtr<ImageData> webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionState&) const;
+    float webkitBackingStorePixelRatio() const { return 1; }
 
     void reset();
 
@@ -316,9 +317,6 @@ private:
 
     template<class T> void fullCanvasCompositedFill(const T&);
     template<class T> void fullCanvasCompositedDrawImage(T*, const FloatRect&, const FloatRect&, CompositeOperator);
-
-    PassRefPtr<ImageData> getImageData(ImageBuffer::CoordinateSystem, float sx, float sy, float sw, float sh, ExceptionState&) const;
-    void putImageData(ImageData*, ImageBuffer::CoordinateSystem, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
 
     bool focusRingCallIsValid(const Path&, Element*);
     void updateFocusRingAccessibility(const Path&, Element*);

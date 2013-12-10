@@ -26,7 +26,9 @@
 #include "platform/graphics/filters/FilterEffect.h"
 
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
 #if HAVE(ARM_NEON_INTRINSICS)
 #include <arm_neon.h>
@@ -243,7 +245,15 @@ ImageBuffer* FilterEffect::asImageBuffer()
         return 0;
     if (m_imageBufferResult)
         return m_imageBufferResult.get();
-    m_imageBufferResult = ImageBuffer::create(m_absolutePaintRect.size(), 1, m_filter->renderingMode());
+    OwnPtr<ImageBufferSurface> surface;
+    if (m_filter->isAccelerated())
+        surface = adoptPtr(new AcceleratedImageBufferSurface(m_absolutePaintRect.size()));
+    if (!m_filter->isAccelerated() || !surface->isValid())
+        surface = adoptPtr(new UnacceleratedImageBufferSurface(m_absolutePaintRect.size()));
+    m_imageBufferResult = ImageBuffer::create(surface.release());
+    if (!m_imageBufferResult)
+        return 0;
+
     IntRect destinationRect(IntPoint(), m_absolutePaintRect.size());
     if (m_premultipliedImageResult)
         m_imageBufferResult->putByteArray(Premultiplied, m_premultipliedImageResult.get(), destinationRect.size(), destinationRect, IntPoint());
@@ -377,13 +387,14 @@ void FilterEffect::copyPremultipliedImage(Uint8ClampedArray* destination, const 
 ImageBuffer* FilterEffect::createImageBufferResult()
 {
     // Only one result type is allowed.
-    ASSERT(!hasResult());
     if (m_absolutePaintRect.isEmpty())
         return 0;
-    m_imageBufferResult = ImageBuffer::create(m_absolutePaintRect.size(), 1, m_filter->renderingMode());
-    if (!m_imageBufferResult)
-        return 0;
-    ASSERT(m_imageBufferResult->context());
+    OwnPtr<ImageBufferSurface> surface;
+    if (m_filter->isAccelerated())
+        surface = adoptPtr(new AcceleratedImageBufferSurface(m_absolutePaintRect.size()));
+    if (!m_filter->isAccelerated() || !surface->isValid())
+        surface = adoptPtr(new UnacceleratedImageBufferSurface(m_absolutePaintRect.size()));
+    m_imageBufferResult = ImageBuffer::create(surface.release());
     return m_imageBufferResult.get();
 }
 

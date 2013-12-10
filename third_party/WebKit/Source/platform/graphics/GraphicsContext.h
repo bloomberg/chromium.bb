@@ -34,7 +34,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooper.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
@@ -89,8 +89,6 @@ public:
 
     const SkBitmap* bitmap() const;
     const SkBitmap& layerBitmap(AccessMode = ReadOnly) const;
-
-    SkBaseDevice* createCompatibleDevice(const IntSize&, bool hasAlpha) const;
 
     // ---------- State management methods -----------------
     void save();
@@ -368,7 +366,7 @@ public:
 
     // Create an image buffer compatible with this context, with suitable resolution
     // for drawing into the buffer and then into this context.
-    PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, bool hasAlpha = true) const;
+    PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, OpacityMode = NonOpaque) const;
 
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 

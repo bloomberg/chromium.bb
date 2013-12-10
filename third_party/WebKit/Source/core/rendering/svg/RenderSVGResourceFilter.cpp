@@ -29,8 +29,10 @@
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/filters/SourceAlpha.h"
 #include "platform/graphics/filters/SourceGraphic.h"
+#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 
 using namespace std;
 
@@ -115,16 +117,21 @@ bool RenderSVGResourceFilter::fitsInMaximumImageSize(const FloatSize& size, Floa
 }
 
 static bool createImageBuffer(const FloatRect& targetRect, const AffineTransform& absoluteTransform,
-    OwnPtr<ImageBuffer>& imageBuffer, RenderingMode renderingMode)
+    OwnPtr<ImageBuffer>& imageBuffer, bool accelerated)
 {
     IntRect paintRect = SVGRenderingContext::calculateImageBufferRect(targetRect, absoluteTransform);
     // Don't create empty ImageBuffers.
     if (paintRect.isEmpty())
         return false;
 
-    OwnPtr<ImageBuffer> image = ImageBuffer::create(paintRect.size(), 1, renderingMode);
-    if (!image)
+    OwnPtr<ImageBufferSurface> surface;
+    if (accelerated)
+        surface = adoptPtr(new AcceleratedImageBufferSurface(paintRect.size()));
+    if (!accelerated || !surface->isValid())
+        surface = adoptPtr(new UnacceleratedImageBufferSurface(paintRect.size()));
+    if (!surface->isValid())
         return false;
+    OwnPtr<ImageBuffer> image = ImageBuffer::create(surface.release());
 
     GraphicsContext* imageContext = image->context();
     ASSERT(imageContext);
@@ -230,8 +237,8 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     effectiveTransform.multiply(filterData->shearFreeAbsoluteTransform);
 
     OwnPtr<ImageBuffer> sourceGraphic;
-    RenderingMode renderingMode = object->document().settings()->acceleratedFiltersEnabled() ? Accelerated : Unaccelerated;
-    if (!createImageBuffer(filterData->drawingRegion, effectiveTransform, sourceGraphic, renderingMode)) {
+    bool isAccelerated = object->document().settings()->acceleratedFiltersEnabled();
+    if (!createImageBuffer(filterData->drawingRegion, effectiveTransform, sourceGraphic, isAccelerated)) {
         ASSERT(!m_filter.contains(object));
         filterData->savedContext = context;
         m_filter.set(object, filterData.release());
@@ -239,7 +246,7 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     }
 
     // Set the rendering mode from the page's settings.
-    filterData->filter->setRenderingMode(renderingMode);
+    filterData->filter->setIsAccelerated(isAccelerated);
 
     GraphicsContext* sourceGraphicContext = sourceGraphic->context();
     ASSERT(sourceGraphicContext);

@@ -53,16 +53,21 @@ public:
     MOCK_METHOD1(deleteTexture, void(unsigned));
 };
 
-class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
+class Canvas2DLayerBridgePtr {
 public:
-    static PassRefPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, OpacityMode opacityMode)
+    Canvas2DLayerBridgePtr(PassRefPtr<Canvas2DLayerBridge> layerBridge)
+        : m_layerBridge(layerBridge) { }
+
+    ~Canvas2DLayerBridgePtr()
     {
-        return adoptRef(static_cast<Canvas2DLayerBridge*>(new FakeCanvas2DLayerBridge(context, canvas, opacityMode)));
+        m_layerBridge->beginDestruction();
     }
-protected:
-    FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, OpacityMode opacityMode) :
-        Canvas2DLayerBridge(context, canvas, 0, opacityMode)
-    { }
+
+    Canvas2DLayerBridge* operator->() { return m_layerBridge.get(); }
+    Canvas2DLayerBridge* get() { return m_layerBridge.get(); }
+
+private:
+    RefPtr<Canvas2DLayerBridge> m_layerBridge;
 };
 
 } // namespace
@@ -75,21 +80,21 @@ protected:
 
         MockCanvasContext& mainMock = *static_cast<MockCanvasContext*>(mainContext->webContext());
 
-        RefPtr<SkDeferredCanvas> canvas = adoptRef(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
+        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        Canvas2DLayerBridgePtr bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), canvas.release(), Canvas2DLayerBridge::NonOpaque);
+        {
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainContext.release(), canvas.release(), 0, NonOpaque)));
 
-        ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+            ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        EXPECT_CALL(mainMock, flush());
-        unsigned textureId = bridge->backBufferTexture();
-        EXPECT_EQ(textureId, 0u);
+            EXPECT_CALL(mainMock, flush());
+            unsigned textureId = bridge->getBackingTexture();
+            EXPECT_EQ(textureId, 0u);
 
-        ::testing::Mock::VerifyAndClearExpectations(&mainMock);
-
-        bridge.clear();
+            ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+        } // bridge goes out of scope here
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
     }
