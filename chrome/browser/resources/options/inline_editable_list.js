@@ -132,8 +132,11 @@ cr.define('options', function() {
           if (focusElement.staticVersion &&
               focusElement.staticVersion.hasAttribute('tabindex')) {
             setTimeout(function() {
-              if (self.editing)
+              if (self.editing) {
+                if (focusElement.disabled)
+                  self.parentNode.focus();
                 self.focusAndMaybeSelect_(focusElement);
+              }
               focusElement.staticVersion.removeAttribute('tabindex');
             }, 0);
           } else {

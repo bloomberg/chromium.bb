@@ -1314,7 +1314,7 @@ cr.define('cr.ui', function() {
   function containsFocusableElement(start, root) {
     for (var element = start; element && element != root;
         element = element.parentElement) {
-      if (element.tabIndex >= 0)
+      if (element.tabIndex >= 0 && !element.disabled)
         return true;
     }
     return false;
