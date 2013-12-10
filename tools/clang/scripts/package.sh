@@ -76,9 +76,9 @@ if [ "$(uname -s)" = "Darwin" ]; then
   install_name_tool -id @executable_path/${ASAN_DYLIB_NAME} "${ASAN_DYLIB}"
 else
   # Keep only
-  # Release+Asserts/lib/clang/*/lib/linux/libclang_rt.{[atm]san,profile}-*.a
+  # Release+Asserts/lib/clang/*/lib/linux/libclang_rt.{[atm]san,profile,ubsan}-*.a
   find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' \
-       ! -name '*[atm]san*' ! -name '*profile*' | xargs rm
+       ! -name '*[atm]san*' ! -name '*profile*' ! -name '*ubsan*' | xargs rm
 fi
 
 cp -R "${LLVM_LIB_DIR}/clang" $PDIR/lib
