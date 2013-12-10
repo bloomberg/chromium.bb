@@ -85,18 +85,34 @@ cr.define('print_preview', function() {
   function PrivetDestinationParser() {}
 
   /**
-   * Parses a privet destination.
+   * Parses a privet destination as a local printer or printers.
    * @param {!Object} destinationInfo Object that describes a privet printer.
-   * @return {!print_preview.Destination} Parsed destination info.
+   * @return {!Array.<print_preview.Destination>} Parsed destination info.
    */
   PrivetDestinationParser.parse = function(destinationInfo) {
-    return new print_preview.Destination(
+    var returnedPrinters = [];
+
+    if (destinationInfo.hasLocalPrinting) {
+       returnedPrinters.push(new print_preview.Destination(
+           destinationInfo.serviceName,
+           print_preview.Destination.Type.LOCAL,
+           print_preview.Destination.Origin.PRIVET,
+           destinationInfo.name,
+           false /*isRecent*/,
+           print_preview.Destination.ConnectionStatus.ONLINE));
+    }
+
+    if (destinationInfo.isUnregistered) {
+      returnedPrinters.push(new print_preview.Destination(
         destinationInfo.serviceName,
-        print_preview.Destination.Type.LOCAL,
-        print_preview.Destination.Origin.PRIVET,
-        destinationInfo.name,
-        false /*isRecent*/,
-        print_preview.Destination.ConnectionStatus.ONLINE);
+          print_preview.Destination.Type.GOOGLE,
+          print_preview.Destination.Origin.PRIVET,
+          destinationInfo.name,
+          false /*isRecent*/,
+          print_preview.Destination.ConnectionStatus.UNREGISTERED));
+    }
+
+    return returnedPrinters;
   };
 
   // Export

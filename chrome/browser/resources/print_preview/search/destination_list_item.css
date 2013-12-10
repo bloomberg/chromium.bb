@@ -37,3 +37,7 @@
   font-size: 75%;
   opacity: 0.6;
 }
+
+.register-promo {
+  -webkit-margin-start: 1em;
+}

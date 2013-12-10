@@ -338,6 +338,10 @@ cr.define('print_preview', function() {
           this.destinationSearch_,
           print_preview.DestinationSearch.EventType.SIGN_IN,
           this.onCloudPrintSignInActivated_.bind(this));
+      this.tracker.add(
+          this.destinationSearch_,
+          print_preview.DestinationListItem.EventType.REGISTER_PROMO_CLICKED,
+          this.onCloudPrintRegisterPromoClick_.bind(this));
 
       // TODO(rltoscano): Move no-destinations-promo into its own component
       // instead being part of PrintPreview.
@@ -693,6 +697,15 @@ cr.define('print_preview', function() {
     onCancelButtonClick_: function() {
       this.close_();
     },
+
+    /**
+     * Called when the register promo for Cloud Print is clicked.
+     * @private
+     */
+     onCloudPrintRegisterPromoClick_: function(e) {
+       var devicesUrl = 'chrome://devices/';
+       this.nativeLayer_.startForceOpenNewTab(devicesUrl);
+     },
 
     /**
      * Consume escape key presses and ctrl + shift + p. Delegate everything else

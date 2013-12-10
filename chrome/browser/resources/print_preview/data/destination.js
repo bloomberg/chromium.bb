@@ -161,7 +161,8 @@ cr.define('print_preview', function() {
     DORMANT: 'DORMANT',
     OFFLINE: 'OFFLINE',
     ONLINE: 'ONLINE',
-    UNKNOWN: 'UNKNOWN'
+    UNKNOWN: 'UNKNOWN',
+    UNREGISTERED: 'UNREGISTERED'
   };
 
   /**

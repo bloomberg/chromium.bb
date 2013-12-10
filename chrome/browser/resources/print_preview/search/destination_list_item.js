@@ -46,7 +46,9 @@ cr.define('print_preview', function() {
    */
   DestinationListItem.EventType = {
     // Dispatched when the list item is activated.
-    SELECT: 'print_preview.DestinationListItem.SELECT'
+    SELECT: 'print_preview.DestinationListItem.SELECT',
+    REGISTER_PROMO_CLICKED:
+        'print_preview.DestinationListItem.REGISTER_PROMO_CLICKED'
   };
 
   /**
@@ -78,6 +80,7 @@ cr.define('print_preview', function() {
       nameEl.title = this.destination_.displayName;
 
       this.initializeOfflineStatusElement_();
+      this.initializeRegistrationPromoElement_();
     },
 
     /** @override */
@@ -115,6 +118,23 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Initialize registration promo element for Privet unregistered printers.
+     */
+    initializeRegistrationPromoElement_: function() {
+      if (this.destination_.connectionStatus ==
+          print_preview.Destination.ConnectionStatus.UNREGISTERED) {
+        var registerBtnEl = this.getElement().querySelector(
+            '.register-promo-button');
+        registerBtnEl.addEventListener('click',
+                                       this.onRegisterPromoClicked_.bind(this));
+
+        var registerPromoEl = this.getElement().querySelector(
+            '.register-promo');
+        setIsVisible(registerPromoEl, true);
+      }
+    },
+
+    /**
      * Called when the destination item is activated. Dispatches a SELECT event
      * on the given event target.
      * @private
@@ -132,7 +152,8 @@ cr.define('print_preview', function() {
               this.onTosAgree_.bind(this));
         }
         this.fedexTos_.setIsVisible(true);
-      } else {
+      } else if (this.destination_.connectionStatus !=
+          print_preview.Destination.ConnectionStatus.UNREGISTERED) {
         var selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
@@ -148,6 +169,16 @@ cr.define('print_preview', function() {
       var selectEvt = new Event(DestinationListItem.EventType.SELECT);
       selectEvt.destination = this.destination_;
       this.eventTarget_.dispatchEvent(selectEvt);
+    },
+
+    /**
+     * Called when the registration promo is clicked.
+     * @private
+     */
+    onRegisterPromoClicked_: function() {
+      var promoClickedEvent = new Event(
+          DestinationListItem.EventType.REGISTER_PROMO_CLICKED);
+      this.eventTarget_.dispatchEvent(promoClickedEvent);
     }
   };
 

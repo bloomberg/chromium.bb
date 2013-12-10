@@ -274,6 +274,7 @@ class PrintPreviewHandler
   void FillPrinterDescription(
       const std::string& name,
       const local_discovery::DeviceDescription& description,
+      bool has_local_printing,
       base::DictionaryValue* printer_value);
 #endif
 
