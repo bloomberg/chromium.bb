@@ -134,6 +134,9 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Returns true if currently dragged window is docked at the screen edge.
   bool is_dragged_window_docked() const { return is_dragged_window_docked_; }
 
+  // Updates docked layout when launcher shelf bounds change.
+  void OnShelfBoundsChanged();
+
   // aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
@@ -172,6 +175,7 @@ class ASH_EXPORT DockedWindowLayoutManager
                                  aura::Window* lost_active) OVERRIDE;
 
  private:
+  class ShelfWindowObserver;
   friend class DockedWindowLayoutManagerTest;
   friend class DockedWindowResizerTest;
 
@@ -286,6 +290,9 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Timestamp of the last user-initiated action that changed docked state.
   // Used in UMA metrics.
   base::Time last_action_time_;
+
+  // Observes launcher shelf for bounds changes.
+  scoped_ptr<ShelfWindowObserver> shelf_observer_;
 
   // Widget used to paint a background for the docked area.
   scoped_ptr<DockedBackgroundWidget> background_widget_;

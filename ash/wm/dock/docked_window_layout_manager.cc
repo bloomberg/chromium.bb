@@ -319,6 +319,45 @@ struct CompareWindowPos {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// A class that observes launcher shelf for bounds changes.
+class DockedWindowLayoutManager::ShelfWindowObserver : public WindowObserver {
+ public:
+  explicit ShelfWindowObserver(
+      DockedWindowLayoutManager* docked_layout_manager)
+      : docked_layout_manager_(docked_layout_manager) {
+    DCHECK(docked_layout_manager_->launcher()->shelf_widget());
+    docked_layout_manager_->launcher()->shelf_widget()->GetNativeView()
+        ->AddObserver(this);
+  }
+
+  virtual ~ShelfWindowObserver() {
+    if (docked_layout_manager_->launcher() &&
+        docked_layout_manager_->launcher()->shelf_widget())
+      docked_layout_manager_->launcher()->shelf_widget()->GetNativeView()
+          ->RemoveObserver(this);
+  }
+
+  // aura::WindowObserver:
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    shelf_bounds_in_screen_ = ScreenAsh::ConvertRectToScreen(
+        window->parent(), new_bounds);
+    docked_layout_manager_->OnShelfBoundsChanged();
+  }
+
+  const gfx::Rect& shelf_bounds_in_screen() const {
+    return shelf_bounds_in_screen_;
+  }
+
+ private:
+  DockedWindowLayoutManager* docked_layout_manager_;
+  gfx::Rect shelf_bounds_in_screen_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfWindowObserver);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager public implementation:
 DockedWindowLayoutManager::DockedWindowLayoutManager(
     aura::Window* dock_container, WorkspaceController* workspace_controller)
@@ -351,6 +390,7 @@ void DockedWindowLayoutManager::Shutdown() {
     ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForLauncher(
         launcher_->shelf_widget()->GetNativeWindow());
     shelf_layout_manager->RemoveObserver(this);
+    shelf_observer_.reset();
   }
   launcher_ = NULL;
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
@@ -436,6 +476,7 @@ void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
     ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForLauncher(
         launcher_->shelf_widget()->GetNativeWindow());
     shelf_layout_manager->AddObserver(this);
+    shelf_observer_.reset(new ShelfWindowObserver(this));
   }
 }
 
@@ -519,6 +560,11 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
     return false;
   }
   return true;
+}
+
+void DockedWindowLayoutManager::OnShelfBoundsChanged() {
+  Relayout();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_INSETS_CHANGED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -933,8 +979,10 @@ void DockedWindowLayoutManager::Relayout() {
   }
 
   // Position docked windows as well as the window being dragged.
-  const gfx::Rect work_area =
+  gfx::Rect work_area =
       Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
+  if (shelf_observer_)
+    work_area.Subtract(shelf_observer_->shelf_bounds_in_screen());
   int available_room = CalculateWindowHeightsAndRemainingRoom(work_area,
                                                               &visible_windows);
   FanOutChildren(work_area,
@@ -1111,7 +1159,10 @@ void DockedWindowLayoutManager::UpdateDockBounds(
       observer_list_,
       OnDockBoundsChanging(bounds, reason));
   // Show or hide background for docked area.
-  background_widget_->SetBackgroundBounds(docked_bounds_, alignment_);
+  gfx::Rect background_bounds(docked_bounds_);
+  if (shelf_observer_)
+    background_bounds.Subtract(shelf_observer_->shelf_bounds_in_screen());
+  background_widget_->SetBackgroundBounds(background_bounds, alignment_);
   if (docked_width_ > 0)
     background_widget_->Show();
   else
