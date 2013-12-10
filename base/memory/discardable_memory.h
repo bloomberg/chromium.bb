@@ -47,8 +47,6 @@ enum LockDiscardableMemoryStatus {
 //   - Mac: http://trac.webkit.org/browser/trunk/Source/WebCore/platform/mac/PurgeableBufferMac.cpp
 //          the comment starting with "vm_object_purgable_control" at
 //            http://www.opensource.apple.com/source/xnu/xnu-792.13.8/osfmk/vm/vm_object.c
-//
-// Thread-safety: DiscardableMemory instances are not thread-safe.
 class BASE_EXPORT DiscardableMemory {
  public:
   virtual ~DiscardableMemory() {}
