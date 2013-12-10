@@ -277,15 +277,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     InitializeController();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-#if defined(OS_MACOSX)
-    // OSX support for requestAutocomplete is still hidden behind a switch.
-    // Pending resolution of http://crbug.com/157274
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableInteractiveAutocomplete);
-#endif
-  }
-
   void InitializeController() {
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
