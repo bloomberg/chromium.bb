@@ -215,9 +215,10 @@ void ForwardRequestStatus(
   }
 }
 
-void UpdateContentLengthPrefs(int received_content_length,
-                              int original_content_length,
-                              bool via_data_reduction_proxy) {
+void UpdateContentLengthPrefs(
+    int received_content_length,
+    int original_content_length,
+    chrome_browser_net::DataReductionRequestType data_reduction_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
@@ -242,16 +243,17 @@ void UpdateContentLengthPrefs(int received_content_length,
       received_content_length,
       original_content_length,
       with_data_reduction_proxy_enabled,
-      via_data_reduction_proxy, prefs);
+      data_reduction_type, prefs);
 }
 
-void StoreAccumulatedContentLength(int received_content_length,
-                                   int original_content_length,
-                                   bool data_reduction_proxy_was_used) {
+void StoreAccumulatedContentLength(
+    int received_content_length,
+    int original_content_length,
+    chrome_browser_net::DataReductionRequestType data_reduction_type) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&UpdateContentLengthPrefs,
                  received_content_length, original_content_length,
-                 data_reduction_proxy_was_used));
+                 data_reduction_type));
 }
 
 void RecordContentLengthHistograms(
@@ -525,21 +527,20 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
       int64 original_content_length =
           request->response_info().headers->GetInt64HeaderValue(
               "x-original-content-length");
-      bool via_data_reduction_proxy =
-          request->response_info().headers->HasHeaderValue(
-              "via", "1.1 Chrome Compression Proxy");
+      chrome_browser_net::DataReductionRequestType data_reduction_type =
+          chrome_browser_net::GetDataReductionRequestType(
+              reinterpret_cast<Profile*>(profile_), request);
 
-      // Since there was no indication of the original content length, presume
-      // it is no different from the number of bytes read.
-      int64 adjusted_original_content_length = original_content_length;
-      if (adjusted_original_content_length == -1)
-        adjusted_original_content_length = received_content_length;
       base::TimeDelta freshness_lifetime =
           request->response_info().headers->GetFreshnessLifetime(
               request->response_info().response_time);
+      int64 adjusted_original_content_length =
+          chrome_browser_net::GetAdjustedOriginalContentLength(
+              data_reduction_type, original_content_length,
+              received_content_length);
       AccumulateContentLength(received_content_length,
                               adjusted_original_content_length,
-                              via_data_reduction_proxy);
+                              data_reduction_type);
       RecordContentLengthHistograms(received_content_length,
                                     original_content_length,
                                     freshness_lifetime);
@@ -759,12 +760,12 @@ void ChromeNetworkDelegate::OnRequestWaitStateChange(
 
 void ChromeNetworkDelegate::AccumulateContentLength(
     int64 received_content_length, int64 original_content_length,
-    bool via_data_reduction_proxy) {
+    chrome_browser_net::DataReductionRequestType data_reduction_type) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
   StoreAccumulatedContentLength(received_content_length,
                                 original_content_length,
-                                via_data_reduction_proxy);
+                                data_reduction_type);
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;
 }

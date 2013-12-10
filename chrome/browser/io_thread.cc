@@ -880,6 +880,14 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(
       prefs::kDailyContentLengthWithDataReductionProxyEnabled);
   registry->RegisterListPref(
+      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled);
+  registry->RegisterListPref(
+      prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled);
+  registry->RegisterListPref(
+      prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled);
+  registry->RegisterListPref(
+      prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled);
+  registry->RegisterListPref(
       prefs::kDailyOriginalContentLengthViaDataReductionProxy);
   registry->RegisterListPref(
       prefs::kDailyContentLengthViaDataReductionProxy);

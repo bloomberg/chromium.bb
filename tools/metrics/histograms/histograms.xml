@@ -7755,6 +7755,46 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.DailyContentLength_DataReductionProxyEnabled_Https"
+    units="KB">
+  <summary>
+    The total content size in KB of all HTTPS response bodies in the previous
+    calendar day while the data reduction proxy setting was enabled. The metric
+    is reported when the first response in the current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentLength_DataReductionProxyEnabled_LongBypass"
+    units="KB">
+  <summary>
+    The total content size in KB of all long-bypassed HTTP response bodies in
+    the  previous calendar day while the data reduction proxy setting was
+    enabled. The metric is reported when the first response in the current day
+    is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentLength_DataReductionProxyEnabled_ShortBypass"
+    units="KB">
+  <summary>
+    The total content size in KB of all short-bypassed HTTP response bodies in
+    the previous calendar day while the data reduction proxy setting was
+    enabled. The metric is reported when the first response in the current day
+    is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentLength_DataReductionProxyEnabled_Unknown"
+    units="KB">
+  <summary>
+    The total content size in KB of all HTTP response bodies for requests that
+    were not served by the enabled data reduction proxy for unknown reasons in
+    the previous calendar day while the data reduction proxy setting was
+    enabled. The metric is reported when the first response in the current day
+    is received.
+  </summary>
+</histogram>
+
 <histogram name="Net.DailyContentLength_ViaDataReductionProxy" units="KB">
   <summary>
     The total content size in KB of all HTTP/HTTPS response bodies in the
@@ -7770,6 +7810,47 @@ other types of suffix sets.
     reduction proxy is enabled to total HTTP/HTTPS response body size in the
     previous calendar day. The metric is reported when the first response in the
     current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentPercent_DataReductionProxyEnabled_Https"
+    units="Percent">
+  <summary>
+    The percentage of total HTTPS response body size while the data reduction
+    proxy is enabled to total HTTP/HTTPS response body size in the previous
+    calendar day. The metric is reported when the first response in the current
+    day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentPercent_DataReductionProxyEnabled_LongBypass"
+    units="Percent">
+  <summary>
+    The percentage of total long-bypassed response body size while the data
+    reduction proxy is enabled to total HTTP/HTTPS response body size in the
+    previous calendar day. The metric is reported when the first response in the
+    current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentPercent_DataReductionProxyEnabled_ShortBypass"
+    units="Percent">
+  <summary>
+    The percentage of total short-bypassed response body size while the data
+    reduction proxy is enabled to total HTTP/HTTPS response body size in the
+    previous calendar day. The metric is reported when the first response in the
+    current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentPercent_DataReductionProxyEnabled_Unknown"
+    units="Percent">
+  <summary>
+    The percentage of total body size of responses that were not served by the
+    data reduction proxy for unknown reason while the data reduction proxy is
+    enabled to total HTTP/HTTPS response body size in the previous calendar day.
+    The metric is reported when the first response in the current day is
+    received.
   </summary>
 </histogram>
 

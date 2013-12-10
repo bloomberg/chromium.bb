@@ -2065,6 +2065,19 @@ const char kDailyOriginalContentLengthWithDataReductionProxyEnabled[] =
 const char kDailyContentLengthWithDataReductionProxyEnabled[] =
     "data_reduction.daily_received_length_with_data_reduction_proxy_enabled";
 
+const char kDailyContentLengthHttpsWithDataReductionProxyEnabled[] =
+    "data_reduction.daily_received_length_https_with_"
+    "data_reduction_proxy_enabled";
+const char kDailyContentLengthShortBypassWithDataReductionProxyEnabled[] =
+    "data_reduction.daily_received_length_short_bypass_with_"
+    "data_reduction_proxy_enabled";
+const char kDailyContentLengthLongBypassWithDataReductionProxyEnabled[] =
+    "data_reduction.daily_received_length_long_bypass_with_"
+    "data_reduction_proxy_enabled";
+const char kDailyContentLengthUnknownWithDataReductionProxyEnabled[] =
+    "data_reduction.daily_received_length_unknown_with_"
+    "data_reduction_proxy_enabled";
+
 // A List pref that contains daily totals of the original size of all HTTP/HTTPS
 // that was received via the data reduction proxy.
 const char kDailyOriginalContentLengthViaDataReductionProxy[] =

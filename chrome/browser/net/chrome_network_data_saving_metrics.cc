@@ -8,10 +8,23 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/common/url_constants.h"
+#include "net/base/host_port_pair.h"
+#include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_retry_info.h"
+#include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_context.h"
+
+namespace {
+
+// A bypass delay more than this is treated as a long delay.
+const int kLongBypassDelayInSeconds = 30 * 60;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-namespace {
 
 // The number of days of history stored in the content lengths prefs.
 const size_t kNumDaysInHistory = 60;
@@ -54,7 +67,11 @@ void RecordDailyContentLengthHistograms(
     int64 original_length_with_data_reduction_enabled,
     int64 received_length_with_data_reduction_enabled,
     int64 original_length_via_data_reduction_proxy,
-    int64 received_length_via_data_reduction_proxy) {
+    int64 received_length_via_data_reduction_proxy,
+    int64 https_length_with_data_reduction_enabled,
+    int64 short_bypass_length_with_data_reduction_enabled,
+    int64 long_bypass_length_with_data_reduction_enabled,
+    int64 unknown_length_with_data_reduction_enabled) {
   // Report daily UMA only for days having received content.
   if (original_length <= 0 || received_length <= 0)
     return;
@@ -100,6 +117,45 @@ void RecordDailyContentLengthHistograms(
       "Net.DailyContentPercent_DataReductionProxyEnabled",
       (100 * received_length_with_data_reduction_enabled) / received_length);
 
+  if (https_length_with_data_reduction_enabled > 0) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_DataReductionProxyEnabled_Https",
+        https_length_with_data_reduction_enabled >> 10);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Net.DailyContentPercent_DataReductionProxyEnabled_Https",
+        (100 * https_length_with_data_reduction_enabled) / received_length);
+  }
+
+  if (short_bypass_length_with_data_reduction_enabled > 0) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_DataReductionProxyEnabled_ShortBypass",
+        short_bypass_length_with_data_reduction_enabled >> 10);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Net.DailyContentPercent_DataReductionProxyEnabled_ShortBypass",
+        ((100 * short_bypass_length_with_data_reduction_enabled) /
+         received_length));
+  }
+
+  if (long_bypass_length_with_data_reduction_enabled > 0) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_DataReductionProxyEnabled_LongBypass",
+        long_bypass_length_with_data_reduction_enabled >> 10);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Net.DailyContentPercent_DataReductionProxyEnabled_LongBypass",
+        ((100 * long_bypass_length_with_data_reduction_enabled) /
+         received_length));
+  }
+
+  if (unknown_length_with_data_reduction_enabled > 0) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_DataReductionProxyEnabled_Unknown",
+        unknown_length_with_data_reduction_enabled >> 10);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Net.DailyContentPercent_DataReductionProxyEnabled_Unknown",
+        ((100 * unknown_length_with_data_reduction_enabled) /
+         received_length));
+  }
+
   if (original_length_via_data_reduction_proxy <= 0 ||
       received_length_via_data_reduction_proxy <= 0) {
     return;
@@ -140,44 +196,72 @@ void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
   DCHECK_EQ(length, list->GetSize());
 }
 
-// Update list for date change and ensure list has exactly |length| elements.
-// The last entry in each list will be for the current day after the update.
-void MaintainContentLengthPrefsForDateChange(
-    base::ListValue* original_update,
-    base::ListValue* received_update,
-    int days_since_last_update) {
-  if (days_since_last_update == -1) {
-    // The system may go backwards in time by up to a day for legitimate
-    // reasons, such as with changes to the time zone. In such cases, we
-    // keep adding to the current day.
-    // Note: we accept the fact that some reported data is shifted to
-    // the adjacent day if users travel back and forth across time zones.
-    days_since_last_update = 0;
-  } else if (days_since_last_update < -1) {
-    // Erase all entries if the system went backwards in time by more than
-    // a day.
-    original_update->Clear();
-    received_update->Clear();
-
-    days_since_last_update = kNumDaysInHistory;
-  }
-  DCHECK_GE(days_since_last_update, 0);
-
-  // Add entries for days since last update event. This will make the
-  // lists longer than kNumDaysInHistory. The additional items will be cut off
-  // from the head of the lists by |MaintainContentLengthPrefsWindow|, below.
-  for (int i = 0;
-       i < days_since_last_update && i < static_cast<int>(kNumDaysInHistory);
-       ++i) {
-    original_update->AppendString(base::Int64ToString(0));
-    received_update->AppendString(base::Int64ToString(0));
+// DailyContentLengthUpdate maintains a data saving pref. The pref is a list
+// of |kNumDaysInHistory| elements of daily total content lengths for the past
+// |kNumDaysInHistory| days.
+class DailyContentLengthUpdate {
+ public:
+  DailyContentLengthUpdate(
+      const char* pref,
+      PrefService* pref_service)
+      : update_(pref_service, pref) {
   }
 
-  // Entries for new days may have been appended. Maintain the invariant that
-  // there should be exactly |kNumDaysInHistory| days in the histories.
-  MaintainContentLengthPrefsWindow(original_update, kNumDaysInHistory);
-  MaintainContentLengthPrefsWindow(received_update, kNumDaysInHistory);
-}
+  void UpdateForDataChange(int days_since_last_update) {
+    // New empty lists may have been created. Maintain the invariant that
+    // there should be exactly |kNumDaysInHistory| days in the histories.
+    MaintainContentLengthPrefsWindow(update_.Get(), kNumDaysInHistory);
+    if (days_since_last_update) {
+      MaintainContentLengthPrefForDateChange(days_since_last_update);
+    }
+  }
+
+  // Update the lengths for the current day.
+  void Add(int content_length) {
+    AddInt64ToListPref(kNumDaysInHistory - 1, content_length, update_.Get());
+  }
+
+  int64 GetListPrefValue(size_t index) {
+    return ListPrefInt64Value(*update_, index);
+  }
+
+ private:
+  // Update the list for date change and ensure the list has exactly |length|
+  // elements. The last entry in the list will be for the current day after
+  // the update.
+  void MaintainContentLengthPrefForDateChange(int days_since_last_update) {
+    if (days_since_last_update == -1) {
+      // The system may go backwards in time by up to a day for legitimate
+      // reasons, such as with changes to the time zone. In such cases, we
+      // keep adding to the current day.
+      // Note: we accept the fact that some reported data is shifted to
+      // the adjacent day if users travel back and forth across time zones.
+      days_since_last_update = 0;
+    } else if (days_since_last_update < -1) {
+      // Erase all entries if the system went backwards in time by more than
+      // a day.
+      update_->Clear();
+
+      days_since_last_update = kNumDaysInHistory;
+    }
+    DCHECK_GE(days_since_last_update, 0);
+
+    // Add entries for days since last update event. This will make the
+    // lists longer than kNumDaysInHistory. The additional items will be cut off
+    // from the head of the lists by |MaintainContentLengthPrefsWindow|, below.
+    for (int i = 0;
+         i < days_since_last_update && i < static_cast<int>(kNumDaysInHistory);
+         ++i) {
+      update_->AppendString(base::Int64ToString(0));
+    }
+
+    // Entries for new days may have been appended. Maintain the invariant that
+    // there should be exactly |kNumDaysInHistory| days in the histories.
+    MaintainContentLengthPrefsWindow(update_.Get(), kNumDaysInHistory);
+  }
+
+  ListPrefUpdate update_;
+};
 
 // DailyDataSavingUpdate maintains a pair of data saving prefs, original_update_
 // and received_update_. pref_original is a list of |kNumDaysInHistory| elements
@@ -187,57 +271,147 @@ void MaintainContentLengthPrefsForDateChange(
 class DailyDataSavingUpdate {
  public:
   DailyDataSavingUpdate(
-      const char* pref_original, const char* pref_received,
+      const char* pref_original,
+      const char* pref_received,
       PrefService* pref_service)
-      : pref_original_(pref_original),
-        pref_received_(pref_received),
-        original_update_(pref_service, pref_original_),
-        received_update_(pref_service, pref_received_) {
+      : original_(pref_original, pref_service),
+        received_(pref_received, pref_service) {
   }
 
   void UpdateForDataChange(int days_since_last_update) {
-    // New empty lists may have been created. Maintain the invariant that
-    // there should be exactly |kNumDaysInHistory| days in the histories.
-    MaintainContentLengthPrefsWindow(original_update_.Get(), kNumDaysInHistory);
-    MaintainContentLengthPrefsWindow(received_update_.Get(), kNumDaysInHistory);
-    if (days_since_last_update) {
-      MaintainContentLengthPrefsForDateChange(
-          original_update_.Get(), received_update_.Get(),
-          days_since_last_update);
-    }
+    original_.UpdateForDataChange(days_since_last_update);
+    received_.UpdateForDataChange(days_since_last_update);
   }
 
   // Update the lengths for the current day.
   void Add(int original_content_length, int received_content_length) {
-    AddInt64ToListPref(
-        kNumDaysInHistory - 1, original_content_length, original_update_.Get());
-    AddInt64ToListPref(
-        kNumDaysInHistory - 1, received_content_length, received_update_.Get());
+    original_.Add(original_content_length);
+    received_.Add(received_content_length);
   }
 
   int64 GetOriginalListPrefValue(size_t index) {
-    return ListPrefInt64Value(*original_update_, index);
+    return original_.GetListPrefValue(index);
   }
   int64 GetReceivedListPrefValue(size_t index) {
-    return ListPrefInt64Value(*received_update_, index);
+    return received_.GetListPrefValue(index);
   }
 
  private:
-  const char* pref_original_;
-  const char* pref_received_;
-  ListPrefUpdate original_update_;
-  ListPrefUpdate received_update_;
+  DailyContentLengthUpdate original_;
+  DailyContentLengthUpdate received_;
 };
 
-}  // namespace
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+// Returns true if the request is bypassed by all configured data reduction
+// proxies. It returns the bypass delay in delay_seconds (if not NULL). If
+// the request is bypassed by more than one proxy, delay_seconds returns
+// shortest delay.
+bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  DataReductionProxySettings::DataReductionProxyList proxies =
+      DataReductionProxySettings::GetDataReductionProxies();
+  if (proxies.size() == 0)
+    return false;
+
+  if (request == NULL || request->context() == NULL ||
+      request->context()->proxy_service() == NULL) {
+    return false;
+  }
+
+  const net::ProxyRetryInfoMap& retry_map =
+      request->context()->proxy_service()->proxy_retry_info();
+  if (retry_map.size() == 0)
+    return false;
+
+  int64 shortest_delay = 0;
+  // The request is bypassed if all configured proxies are in the retry map.
+  for (size_t i = 0; i < proxies.size(); ++i) {
+    std::string proxy = net::HostPortPair::FromURL(proxies[i]).ToString();
+    // The retry list has the scheme prefix for https but not for http.
+    if (proxies[i].SchemeIs(content::kHttpsScheme))
+      proxy = std::string(content::kHttpsScheme) + "://" + proxy;
+
+    net::ProxyRetryInfoMap::const_iterator found = retry_map.find(proxy);
+    if (found == retry_map.end())
+      return false;
+    if (shortest_delay == 0 ||
+        shortest_delay > found->second.current_delay.InSeconds()) {
+      shortest_delay = found->second.current_delay.InSeconds();
+    }
+  }
+  if (delay_seconds != NULL)
+    *delay_seconds = shortest_delay;
+  return true;
+#else
+  return false;
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+}
+
+// IsDataReductionProxyReponse returns true if response_headers contains the
+// data reduction proxy Via header value.
+bool IsDataReductionProxyReponse(
+    const net::HttpResponseHeaders* response_headers) {
+  const char kDatReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
+  size_t value_len = strlen(kDatReductionProxyViaValue);
+  void* iter = NULL;
+  std::string temp;
+  while (response_headers->EnumerateHeader(&iter, "Via", &temp)) {
+    string::const_iterator it =
+        std::search(temp.begin(),
+                    temp.end(),
+                    kDatReductionProxyViaValue,
+                    kDatReductionProxyViaValue + value_len,
+                    base::CaseInsensitiveCompareASCII<char>());
+    if (it != temp.end()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 namespace chrome_browser_net {
 
+DataReductionRequestType GetDataReductionRequestType(
+    const Profile* profile, const net::URLRequest* request) {
+  if (profile != NULL && profile->IsOffTheRecord())
+    return OFF_THE_RECORD;
+  if (request->url().SchemeIs(content::kHttpsScheme))
+    return HTTPS;
+  if (!request->url().SchemeIs(content::kHttpScheme)) {
+    NOTREACHED();
+    return UNKNOWN_TYPE;
+  }
+  int64 bypass_delay = 0;
+  if (IsBypassRequest(request, &bypass_delay)) {
+    return (bypass_delay > kLongBypassDelayInSeconds) ?
+      LONG_BYPASS : SHORT_BYPASS;
+  }
+  return IsDataReductionProxyReponse(request->response_info().headers) ?
+    VIA_DATA_REDUCTION_PROXY: UNKNOWN_TYPE;
+}
+
+int64 GetAdjustedOriginalContentLength(
+    DataReductionRequestType data_reduction_type,
+    int64 original_content_length,
+    int64 received_content_length) {
+  // Since there was no indication of the original content length, presume
+  // it is no different from the number of bytes read.
+  if (original_content_length == -1 ||
+      data_reduction_type != chrome_browser_net::VIA_DATA_REDUCTION_PROXY) {
+    return received_content_length;
+  }
+  return original_content_length;
+}
+
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void UpdateContentLengthPrefsForDataReductionProxy(
-    int received_content_length, int original_content_length,
-    bool with_data_reduction_proxy_enabled, bool via_data_reduction_proxy,
+    int received_content_length,
+    int original_content_length,
+    bool with_data_reduction_proxy_enabled,
+    DataReductionRequestType data_reduction_type,
     base::Time now, PrefService* prefs) {
   // TODO(bengr): Remove this check once the underlying cause of
   // http://crbug.com/287821 is fixed. For now, only continue if the current
@@ -282,14 +456,47 @@ void UpdateContentLengthPrefsForDataReductionProxy(
       prefs);
   via_proxy.UpdateForDataChange(days_since_last_update);
 
+  DailyContentLengthUpdate https(
+      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled, prefs);
+  https.UpdateForDataChange(days_since_last_update);
+
+  DailyContentLengthUpdate short_bypass(
+      prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled,
+      prefs);
+  short_bypass.UpdateForDataChange(days_since_last_update);
+
+  DailyContentLengthUpdate long_bypass(
+      prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled, prefs);
+  long_bypass.UpdateForDataChange(days_since_last_update);
+
+  DailyContentLengthUpdate unknown(
+      prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled, prefs);
+  unknown.UpdateForDataChange(days_since_last_update);
+
   total.Add(original_content_length, received_content_length);
   if (with_data_reduction_proxy_enabled) {
     proxy_enabled.Add(original_content_length, received_content_length);
-    // Ignore cases, if exist, when
-    // "with_data_reduction_proxy_enabled == false", and
-    // "via_data_reduction_proxy == true"
-    if (via_data_reduction_proxy) {
-      via_proxy.Add(original_content_length, received_content_length);
+    // Ignore data source cases, if exist, when
+    // "with_data_reduction_proxy_enabled == false"
+    switch (data_reduction_type) {
+      case VIA_DATA_REDUCTION_PROXY:
+        via_proxy.Add(original_content_length, received_content_length);
+        break;
+      case OFF_THE_RECORD:
+        // We don't measure off-the-record data.
+        break;
+      case HTTPS:
+        https.Add(received_content_length);
+        break;
+      case SHORT_BYPASS:
+        short_bypass.Add(received_content_length);
+        break;
+      case LONG_BYPASS:
+        long_bypass.Add(received_content_length);
+        break;
+      case UNKNOWN_TYPE:
+        unknown.Add(received_content_length);
+        break;
     }
   }
 
@@ -304,21 +511,28 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     // associated with an accurate date.
     if (days_since_last_update == 1) {
       // The previous day's data point is the second one from the tail.
+      // Therefore (kNumDaysInHistory - 2) below.
       RecordDailyContentLengthHistograms(
           total.GetOriginalListPrefValue(kNumDaysInHistory - 2),
           total.GetReceivedListPrefValue(kNumDaysInHistory - 2),
           proxy_enabled.GetOriginalListPrefValue(kNumDaysInHistory - 2),
           proxy_enabled.GetReceivedListPrefValue(kNumDaysInHistory - 2),
           via_proxy.GetOriginalListPrefValue(kNumDaysInHistory - 2),
-          via_proxy.GetReceivedListPrefValue(kNumDaysInHistory - 2));
+          via_proxy.GetReceivedListPrefValue(kNumDaysInHistory - 2),
+          https.GetListPrefValue(kNumDaysInHistory - 2),
+          short_bypass.GetListPrefValue(kNumDaysInHistory - 2),
+          long_bypass.GetListPrefValue(kNumDaysInHistory - 2),
+          unknown.GetListPrefValue(kNumDaysInHistory - 2));
     }
   }
 }
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 void UpdateContentLengthPrefs(
-    int received_content_length, int original_content_length,
-    bool with_data_reduction_proxy_enabled, bool via_data_reduction_proxy,
+    int received_content_length,
+    int original_content_length,
+    bool with_data_reduction_proxy_enabled,
+    DataReductionRequestType data_reduction_type,
     PrefService* prefs) {
   int64 total_received = prefs->GetInt64(prefs::kHttpReceivedContentLength);
   int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
@@ -332,7 +546,7 @@ void UpdateContentLengthPrefs(
       received_content_length,
       original_content_length,
       with_data_reduction_proxy_enabled,
-      via_data_reduction_proxy,
+      data_reduction_type,
       base::Time::Now(),
       prefs);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
