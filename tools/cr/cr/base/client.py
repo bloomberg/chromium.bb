@@ -36,6 +36,8 @@ OVERRIDES = cr.Config.From("""
 CONFIG_VAR_LINE = '\n  {0} = {1!r},'
 # The format string for the tail of a config file.
 CONFIG_FILE_SUFFIX = '\n)\n'
+# The name of the gclient config file
+GCLIENT_FILENAME = '.gclient'
 
 # The default config values installed by this module.
 DEFAULT = cr.Config.From(
@@ -64,7 +66,7 @@ def _DetectPath():
   # See if we can detect the source tree root
   _cached_path = os.getcwd()
   while (_cached_path and
-         not os.path.exists(os.path.join(_cached_path, '.gclient'))):
+         not os.path.exists(os.path.join(_cached_path, GCLIENT_FILENAME))):
     old = _cached_path
     _cached_path = os.path.dirname(_cached_path)
     if _cached_path == old:
@@ -124,6 +126,31 @@ def ApplyOutArgument(context):
   out = GetOutArgument(context)
   if out:
     context.derived.Set(CR_OUT_FULL=out)
+
+
+def ReadGClient(context):
+  """Loads the .gclient configuration for the current client.
+
+  This will load from CR_CLIENT_PATH.
+
+  Args:
+    context: The active context to load configuratin for.
+  Returns:
+    The dict of values set in the .gclient file.
+
+  """
+  # Now attempt to load and parse the .gclient file
+  result = {}
+  try:
+    gclient_file = context.Substitute(
+        os.path.join('{CR_CLIENT_PATH}', GCLIENT_FILENAME))
+    with open(gclient_file, 'r') as spec_file:
+      # matching the behaviour of gclient, so pylint: disable=exec-used
+      exec(spec_file.read(), {}, result)
+  except IOError:
+    # no .gclient file, skip it
+    pass
+  return result
 
 
 def LoadConfig(context):

@@ -19,10 +19,6 @@ _IGNORE_ENV = [
     'GYP_DEFINES',  # Because it gets a special merge handler
 ]
 
-# This is the name of the file we check for to see if this client is an
-# android capable one.
-# TODO(iancottrell): change this when we add handling to read the .gclient file
-_ANDROID_MARKER = '{CR_SRC}/third_party/android_tools/android_tools.gyp'
 # The message to print when we detect use of an android output directory in a
 # client that cannot build android.
 _NOT_ANDROID_MESSAGE = """
@@ -66,9 +62,14 @@ class AndroidPlatform(cr.Platform):
     return super(AndroidPlatform, self).priority + 1
 
   def Prepare(self, context):
+    """Override Prepare from cr.Platform."""
     super(AndroidPlatform, self).Prepare(context)
     # Check we are an android capable client
-    if not os.path.isfile(context.Substitute(_ANDROID_MARKER)):
+    try:
+      is_android = 'android' in context.gclient['target_os']
+    except KeyError:
+      is_android = False
+    if not is_android:
       print _NOT_ANDROID_MESSAGE
       exit(1)
     try:

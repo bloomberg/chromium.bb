@@ -122,6 +122,7 @@ class Context(cr.config.Config, cr.loader.AutoExport):
     self._subparsers = self.parser.add_subparsers()
     # Add the global arguments
     self.AddCommonArguments(self._parser)
+    self._gclient = {}
 
   def AddSubParser(self, source):
     parser = source.AddArguments(self._subparsers)
@@ -195,6 +196,12 @@ class Context(cr.config.Config, cr.loader.AutoExport):
   @property
   def autocompleting(self):
     return 'COMP_WORD' in os.environ
+
+  @property
+  def gclient(self):
+    if not self._gclient:
+      self._gclient = cr.base.client.ReadGClient(self)
+    return self._gclient
 
   def ParseArgs(self, speculative=False):
     cr.plugin.DynamicChoices.only_active = not speculative
