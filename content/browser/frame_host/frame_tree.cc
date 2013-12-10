@@ -58,8 +58,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               render_widget_delegate,
                               manager_delegate,
                               FrameTreeNode::kInvalidFrameId,
-                              std::string(),
-                              scoped_ptr<RenderFrameHostImpl>())) {
+                              std::string())) {
 }
 
 FrameTree::~FrameTree() {
@@ -105,12 +104,13 @@ void FrameTree::AddFrame(int render_frame_host_id,
   if (!parent)
     return;
 
-  parent->AddChild(CreateNode(frame_id, frame_name, render_frame_host_id,
-                              parent->navigator(),
-                              parent->render_frame_host()->GetProcess()));
+  parent->AddChild(
+      CreateNode(frame_id, frame_name, render_frame_host_id, parent));
 }
 
-void FrameTree::RemoveFrame(int64 parent_frame_id, int64 frame_id) {
+void FrameTree::RemoveFrame(RenderFrameHostImpl* render_frame_host,
+                            int64 parent_frame_id,
+                            int64 frame_id) {
   // If switches::kSitePerProcess is not specified, then the FrameTree only
   // contains a node for the root element. However, even in this case
   // frame detachments need to be broadcast outwards.
@@ -122,7 +122,7 @@ void FrameTree::RemoveFrame(int64 parent_frame_id, int64 frame_id) {
   FrameTreeNode* child = FindByFrameID(frame_id);
   if (!on_frame_removed_.is_null()) {
     on_frame_removed_.Run(
-        root_->render_frame_host()->render_view_host(), frame_id);
+        render_frame_host->render_view_host(), frame_id);
   }
 
   // TODO(ajwong): Should the renderer be killed here? Would there be a race on
@@ -167,19 +167,22 @@ scoped_ptr<FrameTreeNode> FrameTree::CreateNode(
     int64 frame_id,
     const std::string& frame_name,
     int render_frame_host_id,
-    Navigator* navigator,
-    RenderProcessHost* render_process_host) {
+    FrameTreeNode* parent_node) {
+  scoped_ptr<FrameTreeNode> frame_tree_node(new FrameTreeNode(
+      parent_node->navigator(), render_frame_delegate_, render_view_delegate_,
+      render_widget_delegate_, manager_delegate_, frame_id, frame_name));
+
   scoped_ptr<RenderFrameHostImpl> render_frame_host(
       RenderFrameHostFactory::Create(
-          root_->render_frame_host()->render_view_host(),
-          root_->render_frame_host()->delegate(),
+          parent_node->render_frame_host()->render_view_host(),
+          parent_node->render_frame_host()->delegate(),
           this,
+          frame_tree_node.get(),
           render_frame_host_id,
           false));
 
-  return make_scoped_ptr(new FrameTreeNode(navigator,
-      render_frame_delegate_, render_view_delegate_, render_widget_delegate_,
-      manager_delegate_, frame_id, frame_name, render_frame_host.Pass()));
+  frame_tree_node->set_render_frame_host(render_frame_host.release(), true);
+  return frame_tree_node.Pass();
 }
 
 }  // namespace content

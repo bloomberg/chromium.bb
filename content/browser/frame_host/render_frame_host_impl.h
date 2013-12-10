@@ -20,6 +20,7 @@ class FilePath;
 namespace content {
 
 class FrameTree;
+class FrameTreeNode;
 class RenderFrameHostDelegate;
 class RenderProcessHost;
 class RenderViewHostImpl;
@@ -59,10 +60,13 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
                       RenderFrameHostDelegate* delegate,
                       FrameTree* frame_tree,
+                      FrameTreeNode* frame_tree_node,
                       int routing_id,
                       bool is_swapped_out);
 
  private:
+  friend class TestRenderViewHost;
+
   // IPC Message handlers.
   void OnDetach(int64 parent_frame_id, int64 frame_id);
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
@@ -81,6 +85,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // Allows this RenderFrameHost to add and remove nodes in response to
   // messages from the renderer requesting DOM manipulation.
   FrameTree* frame_tree_;
+
+  // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
+  FrameTreeNode* frame_tree_node_;
+
   int routing_id_;
   bool is_swapped_out_;
 

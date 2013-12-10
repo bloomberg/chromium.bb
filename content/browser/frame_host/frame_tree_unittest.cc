@@ -110,6 +110,7 @@ TEST_F(FrameTreeTest, Shape) {
       RenderFrameHostFactory::Create(static_cast<RenderViewHostImpl*>(rvh()),
                                      NULL,
                                      &frame_tree,
+                                     frame_tree.root(),
                                      process()->GetNextRoutingID(),
                                      false);
   frame_tree.SwapMainFrame(render_frame_host.get());
@@ -151,7 +152,7 @@ TEST_F(FrameTreeTest, Shape) {
             GetTreeState(&frame_tree));
 
   // Test removing of nodes.
-  frame_tree.RemoveFrame(555, 655);
+  frame_tree.RemoveFrame(NULL, 555, 655);
   ASSERT_EQ("5: [14: [244: [], 245: []], "
                 "15: [255 'no children node': []], "
                 "16: [264: [], 265: [], 266: [], "
@@ -159,7 +160,7 @@ TEST_F(FrameTreeTest, Shape) {
                          "[365: [455: [555: []]]], 268: []]]",
             GetTreeState(&frame_tree));
 
-  frame_tree.RemoveFrame(16, 265);
+  frame_tree.RemoveFrame(NULL, 16, 265);
   ASSERT_EQ("5: [14: [244: [], 245: []], "
                 "15: [255 'no children node': []], "
                 "16: [264: [], 266: [], "
@@ -167,7 +168,7 @@ TEST_F(FrameTreeTest, Shape) {
                          "[365: [455: [555: []]]], 268: []]]",
             GetTreeState(&frame_tree));
 
-  frame_tree.RemoveFrame(5, 15);
+  frame_tree.RemoveFrame(NULL, 5, 15);
   ASSERT_EQ("5: [14: [244: [], 245: []], "
                 "16: [264: [], 266: [], "
                      "267 'node with deep subtree': "

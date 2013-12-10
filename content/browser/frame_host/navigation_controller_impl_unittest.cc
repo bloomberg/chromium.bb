@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
@@ -2648,6 +2649,8 @@ TEST_F(NavigationControllerTest, ReloadTransient) {
 // See http://crbug.com/266922.
 TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   NavigationControllerImpl& controller = controller_impl();
+  Navigator* navigator =
+      contents()->GetFrameTree()->root()->navigator();
 
   const GURL url1("nonexistent:12121");
   const GURL url1_fixed("http://nonexistent:12121/");
@@ -2655,8 +2658,7 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
 
   // We create pending entries for renderer-initiated navigations so that we
   // can show them in new tabs when it is safe.
-  contents()->DidStartProvisionalLoadForFrame(
-      test_rvh(), 1, -1, true, url1);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url1);
 
   // Simulate what happens if a BrowserURLHandler rewrites the URL, causing
   // the virtual URL to differ from the URL.
@@ -2670,8 +2672,7 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
           is_renderer_initiated());
 
   // If the user clicks another link, we should replace the pending entry.
-  contents()->DidStartProvisionalLoadForFrame(
-      test_rvh(), 1, -1, true, url2);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url2);
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetVirtualURL());
 
@@ -2681,24 +2682,24 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetVirtualURL());
 
   // We should not replace the pending entry for an error URL.
-  contents()->DidStartProvisionalLoadForFrame(
-      test_rvh(), 1, -1, true, url1);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url1);
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
-  contents()->DidStartProvisionalLoadForFrame(
-      test_rvh(), 1, -1, true, GURL(kUnreachableWebDataURL));
+  navigator->DidStartProvisionalLoad(
+      main_test_rfh(), 1, -1, true, GURL(kUnreachableWebDataURL));
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
 
   // We should remember if the pending entry will replace the current one.
   // http://crbug.com/308444.
-  contents()->DidStartProvisionalLoadForFrame(
-      test_rvh(), 1, -1, true, url1);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url1);
   NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
       set_should_replace_entry(true);
-  contents()->DidStartProvisionalLoadForFrame(
-      test_rvh(), 1, -1, true, url2);
+  navigator->DidStartProvisionalLoad(main_test_rfh(), 1, -1, true, url2);
   EXPECT_TRUE(
       NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
           should_replace_entry());
+  // TODO(nasko): Until OnNavigate is moved to RenderFrameHost, we need
+  // to go through the RenderViewHost. The TestRenderViewHost routes navigations
+  // to the main frame.
   test_rvh()->SendNavigate(0, url2);
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());
 }

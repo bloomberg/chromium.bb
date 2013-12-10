@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/test/test_render_frame_host.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -372,6 +373,7 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
   TestRenderViewHost* test_rvh();
   TestRenderViewHost* pending_test_rvh();
   TestRenderViewHost* active_test_rvh();
+  TestRenderFrameHost* main_test_rfh();
   TestWebContents* contents();
 
  private:

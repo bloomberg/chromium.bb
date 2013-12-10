@@ -78,7 +78,9 @@ class CONTENT_EXPORT FrameTree {
                 int64 parent_frame_tree_node_id,
                 int64 frame_id,
                 const std::string& frame_name);
-  void RemoveFrame(int64 parent_frame_id, int64 frame_id);
+  void RemoveFrame(RenderFrameHostImpl* render_frame_host,
+                   int64 parent_frame_id,
+                   int64 frame_id);
   void SetFrameUrl(int64 frame_id, const GURL& url);
 
   // Resets the FrameTree and changes RenderFrameHost for the main frame.
@@ -115,8 +117,7 @@ class CONTENT_EXPORT FrameTree {
   scoped_ptr<FrameTreeNode> CreateNode(int64 frame_id,
                                        const std::string& frame_name,
                                        int render_frame_host_id,
-                                       Navigator* navigator,
-                                       RenderProcessHost* render_process_host);
+                                       FrameTreeNode* parent_node);
 
   // These delegates are installed into all the RenderViewHosts and
   // RenderFrameHosts that we create.

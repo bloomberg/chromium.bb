@@ -15,6 +15,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl {
   TestRenderFrameHost(RenderViewHostImpl* render_view_host,
                       RenderFrameHostDelegate* delegate,
                       FrameTree* frame_tree,
+                      FrameTreeNode* frame_tree_node,
                       int routing_id,
                       bool is_swapped_out);
   virtual ~TestRenderFrameHost();

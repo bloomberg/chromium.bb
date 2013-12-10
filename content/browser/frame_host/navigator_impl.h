@@ -21,8 +21,25 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigatorImpl(NavigationControllerImpl* navigation_controller,
                 NavigatorDelegate* delegate);
 
+  // Navigator implementation.
+  virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
+                                       int64 frame_id,
+                                       int64 parent_frame_id,
+                                       bool main_frame,
+                                       const GURL& url) OVERRIDE;
+
  private:
   virtual ~NavigatorImpl() {}
+
+  // The NavigationController that will keep track of session history for all
+  // RenderFrameHost objects using this NavigatorImpl.
+  // TODO(nasko): Move ownership of the NavigationController from
+  // WebContentsImpl to this class.
+  NavigationControllerImpl* controller_;
+
+  // Used to notify the object embedding this Navigator about navigation
+  // events. Can be NULL in tests.
+  NavigatorDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };

@@ -101,6 +101,12 @@ RenderViewHost* RenderViewHostTestHarness::active_rvh() {
   return pending_rvh() ? pending_rvh() : rvh();
 }
 
+RenderFrameHost* RenderViewHostTestHarness::main_rfh() {
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      this->web_contents());
+  return web_contents->GetFrameTree()->GetMainFrame();
+}
+
 BrowserContext* RenderViewHostTestHarness::browser_context() {
   return browser_context_.get();
 }

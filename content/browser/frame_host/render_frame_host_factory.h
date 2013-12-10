@@ -12,6 +12,7 @@
 namespace content {
 
 class FrameTree;
+class FrameTreeNode;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderViewHostImpl;
@@ -27,6 +28,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
       FrameTree* frame_tree,
+      FrameTreeNode* frame_tree_node,
       int routing_id,
       bool is_swapped_out);
 
@@ -43,6 +45,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
       FrameTree* frame_tree,
+      FrameTreeNode* frame_tree_node,
       int routing_id,
       bool is_swapped_out) = 0;
 

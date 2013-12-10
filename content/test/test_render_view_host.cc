@@ -300,7 +300,8 @@ void TestRenderViewHost::SendNavigateWithTransition(
 
 void TestRenderViewHost::SendNavigateWithOriginalRequestURL(
     int page_id, const GURL& url, const GURL& original_request_url) {
-  OnDidStartProvisionalLoadForFrame(kFrameId, -1, true, url);
+  main_render_frame_host()->OnDidStartProvisionalLoadForFrame(
+      kFrameId, -1, true, url);
   SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK,
                              original_request_url, 200, 0);
 }
@@ -317,7 +318,8 @@ void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use in SendNavigateWithParameters.
   GURL url_copy(url);
-  OnDidStartProvisionalLoadForFrame(kFrameId, -1, true, url_copy);
+  main_render_frame_host()->OnDidStartProvisionalLoadForFrame(
+      kFrameId, -1, true, url_copy);
   SendNavigateWithParameters(page_id, url_copy, transition, url_copy,
                              response_code, 0);
 }
@@ -425,6 +427,10 @@ TestRenderViewHost* RenderViewHostImplTestHarness::pending_test_rvh() {
 
 TestRenderViewHost* RenderViewHostImplTestHarness::active_test_rvh() {
   return static_cast<TestRenderViewHost*>(active_rvh());
+}
+
+TestRenderFrameHost* RenderViewHostImplTestHarness::main_test_rfh() {
+  return static_cast<TestRenderFrameHost*>(main_rfh());
 }
 
 TestWebContents* RenderViewHostImplTestHarness::contents() {

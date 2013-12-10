@@ -31,6 +31,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
@@ -2035,66 +2036,35 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
     delegate_->SetFocusToLocationBar(select_all);
 }
 
-void WebContentsImpl::DidStartProvisionalLoadForFrame(
-    RenderViewHost* render_view_host,
+void WebContentsImpl::DidStartProvisionalLoad(
+    RenderFrameHostImpl* render_frame_host,
     int64 frame_id,
     int64 parent_frame_id,
     bool is_main_frame,
-    const GURL& url) {
-  bool is_error_page = (url.spec() == kUnreachableWebDataURL);
-  bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
-  GURL validated_url(url);
-  RenderProcessHost* render_process_host =
-      render_view_host->GetProcess();
-  RenderViewHost::FilterURL(render_process_host, false, &validated_url);
-
-  if (is_main_frame) {
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
+  if (is_main_frame)
     DidChangeLoadProgress(0);
-
-    // If there is no browser-initiated pending entry for this navigation and it
-    // is not for the error URL, create a pending entry using the current
-    // SiteInstance, and ensure the address bar updates accordingly.  We don't
-    // know the referrer or extra headers at this point, but the referrer will
-    // be set properly upon commit.
-    NavigationEntryImpl* pending_entry =
-        NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry());
-    bool has_browser_initiated_pending_entry = pending_entry &&
-        !pending_entry->is_renderer_initiated();
-    if (!has_browser_initiated_pending_entry && !is_error_page) {
-      NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-          controller_.CreateNavigationEntry(validated_url,
-                                            content::Referrer(),
-                                            content::PAGE_TRANSITION_LINK,
-                                            true /* is_renderer_initiated */,
-                                            std::string(),
-                                            GetBrowserContext()));
-      entry->set_site_instance(
-          static_cast<SiteInstanceImpl*>(GetSiteInstance()));
-      // TODO(creis): If there's a pending entry already, find a safe way to
-      // update it instead of replacing it and copying over things like this.
-      if (pending_entry) {
-        entry->set_transferred_global_request_id(
-            pending_entry->transferred_global_request_id());
-        entry->set_should_replace_entry(pending_entry->should_replace_entry());
-        entry->set_redirect_chain(pending_entry->redirect_chain());
-      }
-      controller_.SetPendingEntry(entry);
-      NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
-    }
-  }
 
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, parent_frame_id,
                     is_main_frame, validated_url, is_error_page,
-                    is_iframe_srcdoc, render_view_host));
+                    is_iframe_srcdoc, render_frame_host->render_view_host()));
 
   if (is_main_frame) {
-    // Notify observers about the provisional change in the main frame URL.
-    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      ProvisionalChangeToMainFrameUrl(validated_url,
-                                                      render_view_host));
+    FOR_EACH_OBSERVER(
+        WebContentsObserver,
+        observers_,
+        ProvisionalChangeToMainFrameUrl(validated_url,
+                                        render_frame_host->render_view_host()));
   }
+}
+
+void WebContentsImpl::NotifyChangedNavigationState(
+    InvalidateTypes changed_flags) {
+  NotifyNavigationStateChanged(changed_flags);
 }
 
 void WebContentsImpl::DidRedirectProvisionalLoad(

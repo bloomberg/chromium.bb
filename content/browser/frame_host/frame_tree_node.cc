@@ -21,8 +21,7 @@ FrameTreeNode::FrameTreeNode(Navigator* navigator,
                              RenderWidgetHostDelegate* render_widget_delegate,
                              RenderFrameHostManager::Delegate* manager_delegate,
                              int64 frame_id,
-                             const std::string& name,
-                             scoped_ptr<RenderFrameHostImpl> render_frame_host)
+                             const std::string& name)
   : navigator_(navigator),
     render_manager_(render_frame_delegate,
                     render_view_delegate,
@@ -32,7 +31,7 @@ FrameTreeNode::FrameTreeNode(Navigator* navigator,
     frame_id_(frame_id),
     frame_name_(name),
     owns_render_frame_host_(true),
-    render_frame_host_(render_frame_host.release()) {
+    render_frame_host_(NULL) {
 }
 
 FrameTreeNode::~FrameTreeNode() {

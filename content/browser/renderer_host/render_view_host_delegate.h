@@ -151,14 +151,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // RenderView is going to be destroyed
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
 
-  // The RenderView started a provisional load for a given frame.
-  virtual void DidStartProvisionalLoadForFrame(
-      RenderViewHost* render_view_host,
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool main_frame,
-      const GURL& url) {}
-
   // The RenderView processed a redirect during a provisional load.
   //
   // TODO(creis): Remove this method and have the pre-rendering code listen to

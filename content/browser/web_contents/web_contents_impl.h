@@ -300,12 +300,6 @@ class CONTENT_EXPORT WebContentsImpl
                                     base::TerminationStatus status,
                                     int error_code) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStartProvisionalLoadForFrame(
-      RenderViewHost* render_view_host,
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool main_frame,
-      const GURL& url) OVERRIDE;
   virtual void DidRedirectProvisionalLoad(
       RenderViewHost* render_view_host,
       int32 page_id,
@@ -439,6 +433,19 @@ class CONTENT_EXPORT WebContentsImpl
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) OVERRIDE;
   virtual FrameTree* GetFrameTree() OVERRIDE;
+
+  // NavigatorDelegate ---------------------------------------------------------
+
+  virtual void DidStartProvisionalLoad(
+      RenderFrameHostImpl* render_frame_host,
+      int64 frame_id,
+      int64 parent_frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc) OVERRIDE;
+  virtual void NotifyChangedNavigationState(
+      InvalidateTypes changed_flags) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

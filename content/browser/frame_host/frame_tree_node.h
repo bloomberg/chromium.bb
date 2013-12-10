@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -34,13 +35,21 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderWidgetHostDelegate* render_widget_delegate,
                 RenderFrameHostManager::Delegate* manager_delegate,
                 int64 frame_id,
-                const std::string& name,
-                scoped_ptr<RenderFrameHostImpl> render_frame_host);
+                const std::string& name);
 
   ~FrameTreeNode();
 
   void AddChild(scoped_ptr<FrameTreeNode> child);
   void RemoveChild(FrameTreeNode* child);
+
+  // TODO(nasko): This method should be removed once RenderFrameHosts are
+  // created by RenderFrameHostManager.
+  void set_render_frame_host(
+      RenderFrameHostImpl* render_frame_host,
+      bool owns_render_frame_host) {
+    render_frame_host_ = render_frame_host;
+    owns_render_frame_host_ = owns_render_frame_host;
+  }
 
   // Transitional API allowing the RenderFrameHost of a FrameTreeNode
   // representing the main frame to be provided by someone else. After

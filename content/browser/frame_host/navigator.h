@@ -8,10 +8,13 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
+class GURL;
+
 namespace content {
 
 class NavigationControllerImpl;
 class NavigatorDelegate;
+class RenderFrameHostImpl;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
@@ -22,6 +25,12 @@ class NavigatorDelegate;
 // from WebContentsImpl to this interface.
 class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
  public:
+  // The RenderFrameHostImpl started a provisional load.
+  virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
+                                       int64 frame_id,
+                                       int64 parent_frame_id,
+                                       bool main_frame,
+                                       const GURL& url) {};
 
  protected:
   friend class base::RefCounted<Navigator>;

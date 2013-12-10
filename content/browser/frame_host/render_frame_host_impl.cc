@@ -7,6 +7,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
@@ -37,11 +39,13 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     RenderViewHostImpl* render_view_host,
     RenderFrameHostDelegate* delegate,
     FrameTree* frame_tree,
+    FrameTreeNode* frame_tree_node,
     int routing_id,
     bool is_swapped_out)
     : render_view_host_(render_view_host),
       delegate_(delegate),
       frame_tree_(frame_tree),
+      frame_tree_node_(frame_tree_node),
       routing_id_(routing_id),
       is_swapped_out_(is_swapped_out) {
   GetProcess()->AddRoute(routing_id_, this);
@@ -106,7 +110,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_frame_routing_id,
 }
 
 void RenderFrameHostImpl::OnDetach(int64 parent_frame_id, int64 frame_id) {
-  frame_tree_->RemoveFrame(parent_frame_id, frame_id);
+  frame_tree_->RemoveFrame(this, parent_frame_id, frame_id);
 }
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
@@ -114,8 +118,8 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
     int64 parent_frame_id,
     bool is_main_frame,
     const GURL& url) {
-  render_view_host_->OnDidStartProvisionalLoadForFrame(
-      frame_id, parent_frame_id, is_main_frame, url);
+  frame_tree_node_->navigator()->DidStartProvisionalLoad(
+      this, frame_id, parent_frame_id, is_main_frame, url);
 }
 
 }  // namespace content

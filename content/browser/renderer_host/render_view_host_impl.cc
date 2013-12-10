@@ -194,8 +194,11 @@ RenderViewHostImpl::RenderViewHostImpl(
     main_frame_routing_id = GetProcess()->GetNextRoutingID();
 
   main_render_frame_host_ = RenderFrameHostFactory::Create(
-      this, frame_delegate, delegate_->GetFrameTree(), main_frame_routing_id,
-      is_swapped_out_);
+      this, frame_delegate, delegate_->GetFrameTree(),
+      delegate_->GetFrameTree()->root(),
+      main_frame_routing_id, is_swapped_out_);
+  delegate_->GetFrameTree()->root()->set_render_frame_host(
+      main_render_frame_host_.get(), false);
 
   GetProcess()->EnableSendQueue();
 
@@ -1416,8 +1419,7 @@ void RenderViewHostImpl::OnDidStartProvisionalLoadForFrame(
     int64 parent_frame_id,
     bool is_main_frame,
     const GURL& url) {
-  delegate_->DidStartProvisionalLoadForFrame(
-      this, frame_id, parent_frame_id, is_main_frame, url);
+  NOTREACHED();
 }
 
 void RenderViewHostImpl::OnDidRedirectProvisionalLoad(

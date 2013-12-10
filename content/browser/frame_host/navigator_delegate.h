@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_
 
+#include "content/public/browser/invalidate_type.h"
+
 namespace content {
 
 class RenderFrameHost;
@@ -12,10 +14,22 @@ class RenderFrameHost;
 // A delegate API used by Navigator to notify its embedder of navigation
 // related events.
 class NavigatorDelegate {
-  // TODO(nasko): This class will be used to dispatch notifications to
-  // WebContentsImpl, such as DidStartProvisionalLoad and
-  // NotifyNavigationStateChanged. Longer term, most of the
-  // NavigationControllerDelegate methods will likely move here.
+ public:
+  // The RenderFrameHost started a provisional load for the frame
+  // represented by |render_frame_host|.
+  virtual void DidStartProvisionalLoad(
+      RenderFrameHostImpl* render_frame_host,
+      int64 frame_id,
+      int64 parent_frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc) {}
+
+  // Notification to the Navigator embedder that navigation state has
+  // changed. This method corresponds to
+  // WebContents::NotifyNavigationStateChanged.
+  virtual void NotifyChangedNavigationState(InvalidateTypes changed_flags) {}
 };
 
 }  // namspace content

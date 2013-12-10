@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -131,6 +132,7 @@ class RenderViewHostTestHarness : public testing::Test {
   RenderViewHost* rvh();
   RenderViewHost* pending_rvh();
   RenderViewHost* active_rvh();
+  RenderFrameHost* main_rfh();
   BrowserContext* browser_context();
   MockRenderProcessHost* process();
 
