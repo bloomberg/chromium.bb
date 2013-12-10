@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Queries the document for an element with a matching id.
+ * @param {string} id is a case-sensitive string representing the unique ID of
+ *     the element being sought.
+ * @return {?Element} The element with that id.
+ */
+var $ = function(id) {
+  return document.getElementById(id);
+}
+
 function logIfError() {
   if (chrome.runtime.lastError) {
     console.log(chrome.runtime.lastError);
@@ -30,6 +40,6 @@ function keyboardLoaded() {
 
 chrome.virtualKeyboardPrivate.onTextInputBoxFocused.addListener(
   function (inputContext) {
-    keyboard.inputTypeValue = inputContext.type;
+    $('keyboard').inputTypeValue = inputContext.type;
   }
 );
