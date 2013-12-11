@@ -153,10 +153,9 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
     transaction_->Rollback();
 
   // Run the abort tasks, if any.
-  while (!abort_task_stack_.empty()) {
-    Operation task(abort_task_stack_.pop());
-    task.Run(0);
-  }
+  while (!abort_task_stack_.empty())
+    abort_task_stack_.pop().Run(0);
+
   preemptive_task_queue_.clear();
   task_queue_.clear();
 
@@ -238,9 +237,6 @@ void IndexedDBTransaction::Commit() {
 
   timeout_timer_.Stop();
 
-  // TODO(jsbell): Run abort tasks if commit fails? http://crbug.com/241843
-  abort_task_stack_.clear();
-
   state_ = FINISHED;
 
   bool committed = !used_ || transaction_->Commit();
@@ -259,9 +255,13 @@ void IndexedDBTransaction::Commit() {
   database_->TransactionFinished(this);
 
   if (committed) {
+    abort_task_stack_.clear();
     callbacks_->OnComplete(id_);
     database_->TransactionFinishedAndCompleteFired(this);
   } else {
+    while (!abort_task_stack_.empty())
+      abort_task_stack_.pop().Run(0);
+
     callbacks_->OnAbort(
         id_,
         IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,

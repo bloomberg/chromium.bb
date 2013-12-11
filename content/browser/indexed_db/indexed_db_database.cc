@@ -1313,6 +1313,9 @@ void IndexedDBDatabase::TransactionFinishedAndCompleteFired(
 }
 
 void IndexedDBDatabase::TransactionCommitFailed() {
+  // Factory may be null in unit tests.
+  if (!factory_)
+    return;
   factory_->HandleBackingStoreFailure(backing_store_->origin_url());
 }
 
