@@ -56,7 +56,7 @@ import v8_callback_interface
 from v8_globals import includes
 import v8_interface
 import v8_types
-from v8_utilities import cpp_name, conditional_string, v8_class_name
+from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
 
 class CodeGeneratorV8:
@@ -86,8 +86,11 @@ class CodeGeneratorV8:
             keep_trailing_newline=True,  # newline-terminate generated files
             lstrip_blocks=True,  # so can indent control flow tags
             trim_blocks=True)
-        jinja_env.filters['conditional'] = conditional_if_endif
-        jinja_env.filters['runtime_enabled'] = runtime_enabled_if
+        jinja_env.filters.update({
+            'blink_capitalize': capitalize,
+            'conditional': conditional_if_endif,
+            'runtime_enabled': runtime_enabled_if,
+            })
         self.header_template = jinja_env.get_template(header_template_filename)
         self.cpp_template = jinja_env.get_template(cpp_template_filename)
 

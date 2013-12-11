@@ -90,4 +90,3 @@ TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString|*
 URL
 Unforgeable
-Unserializable

@@ -171,7 +171,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
-    {% for attribute in attributes if attribute.idl_type == 'any' %}
+    {% for attribute in any_type_attributes %}
     v8::Local<v8::Value> {{attribute.name}};
     {% endfor %}
     {{cpp_class}}Init eventInit;
@@ -183,7 +183,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         {# Store attributes of type |any| on the wrapper to avoid leaking them
            between isolated worlds. #}
-        {% for attribute in attributes if attribute.idl_type == 'any' %}
+        {% for attribute in any_type_attributes %}
         options.get("{{attribute.name}}", {{attribute.name}});
         if (!{{attribute.name}}.IsEmpty())
             info.Holder()->SetHiddenValue(V8HiddenPropertyName::{{attribute.name}}(info.GetIsolate()), {{attribute.name}});
@@ -196,14 +196,20 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% else %}
     RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
     {% endif %}
-    {% if has_any_type_attributes %}
+    {% if any_type_attributes and not interface_name == 'ErrorEvent' %}
     {# If we're in an isolated world, create a SerializedScriptValue and store
        it in the event for later cloning if the property is accessed from
-       another world. The main world case is handled lazily (in custom code). #}
+       another world. The main world case is handled lazily (in custom code).
+
+       We do not clone Error objects (exceptions), for 2 reasons:
+       1) Errors carry a reference to the isolated world's global object, and
+          thus passing it around would cause leakage.
+       2) Errors cannot be cloned (or serialized):
+       http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#safe-passing-of-structured-data #}
     if (isolatedWorldForIsolate(info.GetIsolate())) {
-        {% for attribute in attributes if attribute.idl_type == 'any' %}
+        {% for attribute in any_type_attributes %}
         if (!{{attribute.name}}.IsEmpty())
-            event->{{attribute.set_serialized_script_value}}(SerializedScriptValue::createAndSwallowExceptions({{attribute.name}}, info.GetIsolate()));
+            event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValue::createAndSwallowExceptions({{attribute.name}}, info.GetIsolate()));
         {% endfor %}
     }
 

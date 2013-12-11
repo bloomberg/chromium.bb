@@ -2907,13 +2907,9 @@ sub GenerateEventConstructor
     my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
 
     my @anyAttributeNames;
-    my @serializableAnyAttributeNames;
     foreach my $attribute (@{$interface->attributes}) {
         if ($attribute->type eq "any") {
             push(@anyAttributeNames, $attribute->name);
-            if (!$attribute->extendedAttributes->{"Unserializable"}) {
-                push(@serializableAnyAttributeNames, $attribute->name);
-            }
         }
     }
 
@@ -2974,13 +2970,23 @@ END
 END
     }
 
-    if (@serializableAnyAttributeNames) {
-        # If we're in an isolated world, create a SerializedScriptValue and store it in the event for
-        # later cloning if the property is accessed from another world.
-        # The main world case is handled lazily (in Custom code).
+    if (@anyAttributeNames) {
+        # Separate check to simplify Python code
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
+    }
+    if (@anyAttributeNames && $interface->name ne 'ErrorEvent') {
+        # If we're in an isolated world, create a SerializedScriptValue andi
+        # store it in the event for later cloning if the property is accessed
+        # from another world.
+        # The main world case is handled lazily (in Custom code).
+        #
+        # We do not clone Error objects (exceptions), for 2 reasons:
+        # 1) Errors carry a reference to the isolated world's global object,
+        #    and thus passing it around would cause leakage.
+        # 2) Errors cannot be cloned (or serialized):
+        # http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#safe-passing-of-structured-data
         $implementation{nameSpaceInternal}->add("    if (isolatedWorldForIsolate(info.GetIsolate())) {\n");
-        foreach my $attrName (@serializableAnyAttributeNames) {
+        foreach my $attrName (@anyAttributeNames) {
             my $setter = "setSerialized" . FirstLetterToUpperCase($attrName);
             $implementation{nameSpaceInternal}->add(<<END);
         if (!${attrName}.IsEmpty())
