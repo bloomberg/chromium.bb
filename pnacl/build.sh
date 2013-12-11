@@ -1338,7 +1338,7 @@ lib-cpp-configure() {
     litargs+=" --param shell_prefix='${NACL_ROOT}/run.py -arch env --retries=1'"
     litargs+=" --param exe_suffix='.pexe'"
     litargs+=" --param use_system_lib=true"
-    litargs+=" --param link_flags='-std=gnu++11 -stdlib=libc++ -lpthread'"
+    litargs+=" --param link_flags='-std=gnu++11 --pnacl-exceptions=sjlj'"
     # TODO(jfb) CMAKE_???_COMPILER_WORKS can be removed once the PNaCl
     #           driver scripts stop confusing cmake for libc++. See:
     #           https://code.google.com/p/nativeclient/issues/detail?id=3661
