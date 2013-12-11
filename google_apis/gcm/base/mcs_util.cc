@@ -46,9 +46,8 @@ const char kLoginSettingValue[] = "1";
 
 }  // namespace
 
-scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
-    uint64 auth_id,
-    uint64 auth_token) {
+scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(uint64 auth_id,
+                                                      uint64 auth_token) {
   // Create a hex encoded auth id for the device id field.
   std::string auth_id_hex;
   auth_id_hex = base::StringPrintf("%" PRIx64, auth_id);
@@ -85,6 +84,20 @@ scoped_ptr<mcs_proto::IqStanza> BuildStreamAck() {
   stream_ack_iq->mutable_extension()->set_id(kStreamAck);
   stream_ack_iq->mutable_extension()->set_data("");
   return stream_ack_iq.Pass();
+}
+
+scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
+    const std::vector<std::string>& acked_ids) {
+  scoped_ptr<mcs_proto::IqStanza> selective_ack_iq(new mcs_proto::IqStanza());
+  selective_ack_iq->set_type(mcs_proto::IqStanza::SET);
+  selective_ack_iq->set_id("");
+  selective_ack_iq->mutable_extension()->set_id(kSelectiveAck);
+  mcs_proto::SelectiveAck selective_ack;
+  for (size_t i = 0; i < acked_ids.size(); ++i)
+    selective_ack.add_id(acked_ids[i]);
+  selective_ack_iq->mutable_extension()->set_data(
+      selective_ack.SerializeAsString());
+  return selective_ack_iq.Pass();
 }
 
 // Utility method to build a google::protobuf::MessageLite object from a MCS

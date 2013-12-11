@@ -192,43 +192,48 @@ void ConnectionFactoryImplTest::ConnectionsComplete() {
 }
 
 // Verify building a connection handler works.
-TEST_F(ConnectionFactoryImplTest, BuildConnectionHandler) {
+TEST_F(ConnectionFactoryImplTest, Initialize) {
   EXPECT_FALSE(factory()->IsEndpointReachable());
-  ConnectionHandler* handler = factory()->BuildConnectionHandler(
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
       base::Bind(&ReadContinuation),
       base::Bind(&WriteContinuation));
+  ConnectionHandler* handler = factory()->GetConnectionHandler();
   ASSERT_TRUE(handler);
   EXPECT_FALSE(factory()->IsEndpointReachable());
 }
 
 // An initial successful connection should not result in backoff.
 TEST_F(ConnectionFactoryImplTest, ConnectSuccess) {
-  factory()->BuildConnectionHandler(
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
       ConnectionHandler::ProtoReceivedCallback(),
       ConnectionHandler::ProtoSentCallback());
   factory()->SetConnectResult(net::OK);
-  factory()->Connect(mcs_proto::LoginRequest());
+  factory()->Connect();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());
 }
 
 // A connection failure should result in backoff.
 TEST_F(ConnectionFactoryImplTest, ConnectFail) {
-  factory()->BuildConnectionHandler(
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
       ConnectionHandler::ProtoReceivedCallback(),
       ConnectionHandler::ProtoSentCallback());
   factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
-  factory()->Connect(mcs_proto::LoginRequest());
+  factory()->Connect();
   EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
 }
 
 // A connection success after a failure should reset backoff.
 TEST_F(ConnectionFactoryImplTest, FailThenSucceed) {
-  factory()->BuildConnectionHandler(
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
       ConnectionHandler::ProtoReceivedCallback(),
       ConnectionHandler::ProtoSentCallback());
   factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
   base::TimeTicks connect_time = base::TimeTicks::Now();
-  factory()->Connect(mcs_proto::LoginRequest());
+  factory()->Connect();
   WaitForConnections();
   base::TimeTicks retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());
@@ -241,7 +246,8 @@ TEST_F(ConnectionFactoryImplTest, FailThenSucceed) {
 // Multiple connection failures should retry with an exponentially increasing
 // backoff, then reset on success.
 TEST_F(ConnectionFactoryImplTest, MultipleFailuresThenSucceed) {
-  factory()->BuildConnectionHandler(
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
       ConnectionHandler::ProtoReceivedCallback(),
       ConnectionHandler::ProtoSentCallback());
 
@@ -250,7 +256,7 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresThenSucceed) {
                                        kNumAttempts);
 
   base::TimeTicks connect_time = base::TimeTicks::Now();
-  factory()->Connect(mcs_proto::LoginRequest());
+  factory()->Connect();
   WaitForConnections();
   base::TimeTicks retry_time = factory()->NextRetryAttempt();
   EXPECT_FALSE(retry_time.is_null());
@@ -264,11 +270,12 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresThenSucceed) {
 
 // IP events should reset backoff.
 TEST_F(ConnectionFactoryImplTest, FailThenIPEvent) {
-  factory()->BuildConnectionHandler(
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
       ConnectionHandler::ProtoReceivedCallback(),
       ConnectionHandler::ProtoSentCallback());
   factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
-  factory()->Connect(mcs_proto::LoginRequest());
+  factory()->Connect();
   WaitForConnections();
   EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
 
@@ -278,11 +285,12 @@ TEST_F(ConnectionFactoryImplTest, FailThenIPEvent) {
 
 // Connection type events should reset backoff.
 TEST_F(ConnectionFactoryImplTest, FailThenConnectionTypeEvent) {
-  factory()->BuildConnectionHandler(
+  factory()->Initialize(
+      ConnectionFactory::BuildLoginRequestCallback(),
       ConnectionHandler::ProtoReceivedCallback(),
       ConnectionHandler::ProtoSentCallback());
   factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
-  factory()->Connect(mcs_proto::LoginRequest());
+  factory()->Connect();
   WaitForConnections();
   EXPECT_FALSE(factory()->NextRetryAttempt().is_null());
 

@@ -56,6 +56,8 @@ GCM_EXPORT scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
 
 // Builds a StreamAck IqStanza message.
 GCM_EXPORT scoped_ptr<mcs_proto::IqStanza> BuildStreamAck();
+GCM_EXPORT scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
+    const std::vector<std::string>& acked_ids);
 
 // Utility methods for building and identifying MCS protobufs.
 GCM_EXPORT scoped_ptr<google::protobuf::MessageLite>

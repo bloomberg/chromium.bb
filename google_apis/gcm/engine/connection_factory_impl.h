@@ -35,10 +35,12 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual ~ConnectionFactoryImpl();
 
   // ConnectionFactory implementation.
-  virtual ConnectionHandler* BuildConnectionHandler(
+  virtual void Initialize(
+      const BuildLoginRequestCallback& request_builder,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback) OVERRIDE;
-  virtual void Connect(const mcs_proto::LoginRequest& login_request) OVERRIDE;
+  virtual ConnectionHandler* GetConnectionHandler() const OVERRIDE;
+  virtual void Connect() OVERRIDE;
   virtual bool IsEndpointReachable() const OVERRIDE;
   virtual base::TimeTicks NextRetryAttempt() const OVERRIDE;
 
@@ -86,8 +88,8 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // The current connection handler, if one exists.
   scoped_ptr<ConnectionHandlerImpl> connection_handler_;
 
-  // The current login request if a connection attempt is in progress/pending.
-  mcs_proto::LoginRequest login_request_;
+  // Builder for generating new login requests.
+  BuildLoginRequestCallback request_builder_;
 
   base::WeakPtrFactory<ConnectionFactoryImpl> weak_ptr_factory_;
 

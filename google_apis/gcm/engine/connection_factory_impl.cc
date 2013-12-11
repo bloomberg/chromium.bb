@@ -64,12 +64,14 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
 }
 
-ConnectionHandler* ConnectionFactoryImpl::BuildConnectionHandler(
-      const ConnectionHandler::ProtoReceivedCallback& read_callback,
-      const ConnectionHandler::ProtoSentCallback& write_callback) {
+void ConnectionFactoryImpl::Initialize(
+    const BuildLoginRequestCallback& request_builder,
+    const ConnectionHandler::ProtoReceivedCallback& read_callback,
+    const ConnectionHandler::ProtoSentCallback& write_callback) {
   DCHECK(!connection_handler_);
 
   backoff_entry_ = CreateBackoffEntry(&kConnectionBackoffPolicy);
+  request_builder_ = request_builder;
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
@@ -80,18 +82,15 @@ ConnectionHandler* ConnectionFactoryImpl::BuildConnectionHandler(
           write_callback,
           base::Bind(&ConnectionFactoryImpl::ConnectionHandlerCallback,
                      weak_ptr_factory_.GetWeakPtr())));
+}
+
+ConnectionHandler* ConnectionFactoryImpl::GetConnectionHandler() const {
   return connection_handler_.get();
 }
 
-void ConnectionFactoryImpl::Connect(
-    const mcs_proto::LoginRequest& login_request) {
+void ConnectionFactoryImpl::Connect() {
   DCHECK(connection_handler_);
   DCHECK(!IsEndpointReachable());
-
-  if (login_request.IsInitialized()) {
-    DCHECK(!login_request_.IsInitialized());
-    login_request_ = login_request;
-  }
 
   if (backoff_entry_->ShouldRejectRequest()) {
     DVLOG(1) << "Delaying MCS endpoint connection for "
@@ -100,8 +99,7 @@ void ConnectionFactoryImpl::Connect(
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ConnectionFactoryImpl::Connect,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   login_request_),
+                   weak_ptr_factory_.GetWeakPtr()),
         NextRetryAttempt() - base::TimeTicks::Now());
     return;
   }
@@ -165,7 +163,14 @@ void ConnectionFactoryImpl::ConnectImpl() {
 }
 
 void ConnectionFactoryImpl::InitHandler() {
-  connection_handler_->Init(login_request_, socket_handle_.PassSocket());
+  // May be null in tests.
+  mcs_proto::LoginRequest login_request;
+  if (!request_builder_.is_null()) {
+    request_builder_.Run(&login_request);
+    DCHECK(login_request.IsInitialized());
+  }
+
+  connection_handler_->Init(login_request, socket_handle_.PassSocket());
 }
 
 scoped_ptr<net::BackoffEntry> ConnectionFactoryImpl::CreateBackoffEntry(
@@ -177,7 +182,7 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
   if (result != net::OK) {
     LOG(ERROR) << "Failed to connect to MCS endpoint with error " << result;
     backoff_entry_->InformOfRequest(false);
-    Connect(mcs_proto::LoginRequest());
+    Connect();
     return;
   }
 
@@ -194,7 +199,7 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   // user intervention (login page, etc.).
   LOG(ERROR) << "Connection reset with error " << result;
   backoff_entry_->InformOfRequest(false);
-  Connect(mcs_proto::LoginRequest());
+  Connect();
 }
 
 }  // namespace gcm

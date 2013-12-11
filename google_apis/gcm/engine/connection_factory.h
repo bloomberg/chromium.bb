@@ -20,26 +20,34 @@ namespace gcm {
 // backoff policies when attempting connections.
 class GCM_EXPORT ConnectionFactory {
  public:
+  typedef base::Callback<void(mcs_proto::LoginRequest* login_request)>
+      BuildLoginRequestCallback;
+
   ConnectionFactory();
   virtual ~ConnectionFactory();
 
-  // Create a new uninitialized connection handler. Should only be called once.
-  // The factory will retain ownership of the connection handler.
+  // Initialize the factory, creating a connection handler with a disconnected
+  // socket. Should only be called once.
+  // Upon connection:
   // |read_callback| will be invoked with the contents of any received protobuf
   // message.
   // |write_callback| will be invoked anytime a message has been successfully
   // sent. Note: this just means the data was sent to the wire, not that the
   // other end received it.
-  virtual ConnectionHandler* BuildConnectionHandler(
+  virtual void Initialize(
+      const BuildLoginRequestCallback& request_builder,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback) = 0;
 
-  // Opens a new connection for use by the locally owned connection handler
-  // (created via BuildConnectionHandler), and initiates login handshake using
-  // |login_request|. Upon completion of the handshake, |read_callback|
-  // will be invoked with a valid mcs_proto::LoginResponse.
-  // Note: BuildConnectionHandler must have already been invoked.
-  virtual void Connect(const mcs_proto::LoginRequest& login_request) = 0;
+  // Get the connection handler for this factory. Initialize(..) must have
+  // been called.
+  virtual ConnectionHandler* GetConnectionHandler() const = 0;
+
+  // Opens a new connection and initiates login handshake. Upon completion of
+  // the handshake, |read_callback| will be invoked with a valid
+  // mcs_proto::LoginResponse.
+  // Note: Initialize must have already been invoked.
+  virtual void Connect() = 0;
 
   // Whether or not the MCS endpoint is currently reachable with an active
   // connection.
