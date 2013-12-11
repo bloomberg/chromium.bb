@@ -132,6 +132,7 @@ class AudioReceiver : public base::NonThreadSafe,
   uint32 first_incoming_rtp_timestamp_;
   scoped_ptr<crypto::Encryptor> decryptor_;
   std::string iv_mask_;
+  base::TimeTicks last_playout_time_;
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
   std::list<DecodedAudioCallbackData> queued_decoded_callbacks_;

@@ -366,7 +366,13 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
     // This can fail if we have not received any RTCP packets in a long time.
     return now;
   }
-  return (rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_);
+  base::TimeTicks render_time =
+      rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_;
+  // // Don't allow the render time to go backwards.
+  if (render_time  < last_render_time_)
+    render_time = last_render_time_;
+  last_render_time_ = render_time;
+  return render_time;
 }
 
 void VideoReceiver::IncomingPacket(const uint8* packet, size_t length,

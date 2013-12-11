@@ -121,6 +121,7 @@ class VideoReceiver : public base::NonThreadSafe,
   bool time_incoming_packet_updated_;
   base::TimeTicks time_incoming_packet_;
   uint32 incoming_rtp_timestamp_;
+  base::TimeTicks last_render_time_;
 
   base::WeakPtrFactory<VideoReceiver> weak_factory_;
 
