@@ -202,7 +202,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
           net::DISK_CACHE,
           cache_type,
           partition_path_.Append(FILE_PATH_LITERAL("Cache")),
-          10 * 1024 * 1024,  // 10M
+          20 * 1024 * 1024,  // 20M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
