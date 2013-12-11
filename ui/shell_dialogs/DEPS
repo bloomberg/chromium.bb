@@ -1,7 +1,6 @@
 include_rules = [
   "+grit/ui_strings.h",
   "+jni",
-  "+ui/android",
   "+ui/aura",
   "+ui/base",
   "+ui/gfx",
