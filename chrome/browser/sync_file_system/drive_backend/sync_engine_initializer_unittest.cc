@@ -72,33 +72,6 @@ class SyncEngineInitializerTest : public testing::Test {
     return status;
   }
 
-  google_apis::GDataErrorCode FillTrackedFileByTrackerID(
-      int64 tracker_id,
-      scoped_ptr<TrackedFile>* file_out) {
-    scoped_ptr<TrackedFile> file(new TrackedFile);
-    if (!metadata_database_->FindTrackerByTrackerID(
-            tracker_id, &file->tracker))
-      return google_apis::HTTP_NOT_FOUND;
-    if (!metadata_database_->FindFileByFileID(
-            file->tracker.file_id(), &file->metadata))
-      return google_apis::HTTP_NOT_FOUND;
-
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> entry;
-    fake_drive_service_.GetResourceEntry(file->metadata.file_id(),
-                                         CreateResultReceiver(&error, &entry));
-    base::RunLoop().RunUntilIdle();
-
-    if (entry) {
-      file->resource =
-          drive::util::ConvertResourceEntryToFileResource(*entry);
-    }
-
-    if (file_out)
-      *file_out = file.Pass();
-    return error;
-  }
-
   SyncStatusCode PopulateDatabase(
       const google_apis::FileResource& sync_root,
       const google_apis::FileResource** app_roots,

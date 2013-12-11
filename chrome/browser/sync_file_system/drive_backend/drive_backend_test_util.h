@@ -32,11 +32,6 @@ void ExpectEquivalentMetadata(const FileMetadata& left,
                               const FileMetadata& right);
 void ExpectEquivalentTrackers(const FileTracker& left,
                               const FileTracker& right);
-void ExpectEquivalentResourceAndMetadata(
-    const google_apis::FileResource& resource,
-    const FileMetadata& metadata);
-void ExpectEquivalentMetadataAndTracker(const FileMetadata& metadata,
-                                        const FileTracker& tracker);
 
 }  // namespace test_util
 }  // namespace drive_backend

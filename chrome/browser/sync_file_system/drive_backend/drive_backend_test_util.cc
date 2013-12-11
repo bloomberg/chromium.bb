@@ -64,42 +64,6 @@ void ExpectEquivalentTrackers(const FileTracker& left,
   EXPECT_EQ(left.needs_folder_listing(), right.needs_folder_listing());
 }
 
-void ExpectEquivalentResourceAndMetadata(
-    const google_apis::FileResource& resource,
-    const FileMetadata& metadata) {
-  EXPECT_EQ(resource.file_id(), metadata.file_id());
-  const FileDetails& details = metadata.details();
-  EXPECT_EQ(resource.title(), details.title());
-
-  google_apis::DriveEntryKind resource_kind = drive::util::GetKind(resource);
-  switch (details.file_kind()) {
-    case FILE_KIND_UNSUPPORTED:
-      EXPECT_NE(google_apis::ENTRY_KIND_FILE, resource_kind);
-      EXPECT_NE(google_apis::ENTRY_KIND_FOLDER, resource_kind);
-      break;
-    case FILE_KIND_FILE:
-      EXPECT_EQ(google_apis::ENTRY_KIND_FILE, resource_kind);
-      break;
-    case FILE_KIND_FOLDER:
-      EXPECT_EQ(google_apis::ENTRY_KIND_FOLDER, resource_kind);
-      break;
-  }
-
-  EXPECT_EQ(resource.md5_checksum(), details.md5());
-  EXPECT_EQ(resource.created_date(),
-            base::Time::FromInternalValue(details.creation_time()));
-  EXPECT_EQ(resource.modified_date(),
-            base::Time::FromInternalValue(details.modification_time()));
-  EXPECT_EQ(resource.labels().is_trashed(), details.missing());
-}
-
-void ExpectEquivalentMetadataAndTracker(const FileMetadata& metadata,
-                                        const FileTracker& tracker) {
-  EXPECT_EQ(metadata.file_id(), tracker.file_id());
-  if (!tracker.dirty())
-    ExpectEquivalentDetails(metadata.details(), tracker.synced_details());
-}
-
 }  // namespace test_util
 }  // namespace drive_backend
 }  // namespace sync_file_system
