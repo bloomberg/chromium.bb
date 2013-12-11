@@ -13,6 +13,7 @@
     'protocol/app_notification_specifics.proto',
     'protocol/app_setting_specifics.proto',
     'protocol/app_specifics.proto',
+    'protocol/app_list_specifics.proto',
     'protocol/article_specifics.proto',
     'protocol/autofill_specifics.proto',
     'protocol/bookmark_specifics.proto',

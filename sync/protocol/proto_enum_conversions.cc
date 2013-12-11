@@ -20,6 +20,20 @@ namespace syncer {
 #define ENUM_CASE(enum_parent, enum_value)              \
   case enum_parent::enum_value: return #enum_value
 
+const char* GetAppListItemTypeString(
+    sync_pb::AppListSpecifics::AppListItemType item_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::AppListSpecifics, AppListItemType,
+                     TYPE_APP, TYPE_URL);
+  switch (item_type) {
+    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_APP);
+    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_REMOVE_DEFAULT_APP);
+    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_FOLDER);
+    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_URL);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* GetBrowserTypeString(
     sync_pb::SessionWindow::BrowserType browser_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SessionWindow, BrowserType,

@@ -37,6 +37,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::PRIORITY_PREFERENCES,
   syncer::EXTENSIONS,
   syncer::APPS,
+  syncer::APP_LIST,
   syncer::THEMES,
   syncer::SEARCH_ENGINES,
   syncer::SESSIONS,

@@ -8,6 +8,7 @@
 // Keep this file in sync with the .proto files in this directory.
 
 #include "sync/base/sync_export.h"
+#include "sync/protocol/app_list_specifics.pb.h"
 #include "sync/protocol/client_debug_info.pb.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -19,6 +20,9 @@ namespace syncer {
 
 // The returned strings (which don't have to be freed) are in ASCII.
 // The result of passing in an invalid enum value is undefined.
+
+SYNC_EXPORT_PRIVATE const char* GetAppListItemTypeString(
+    sync_pb::AppListSpecifics::AppListItemType item_type);
 
 SYNC_EXPORT_PRIVATE const char* GetBrowserTypeString(
     sync_pb::SessionWindow::BrowserType browser_type);

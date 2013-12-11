@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/unique_position.h"
+#include "sync/protocol/app_list_specifics.pb.h"
 #include "sync/protocol/app_notification_specifics.pb.h"
 #include "sync/protocol/app_setting_specifics.pb.h"
 #include "sync/protocol/app_specifics.pb.h"
@@ -347,6 +348,19 @@ base::DictionaryValue* CoalescedNotificationToValue(
   return value;
 }
 
+base::DictionaryValue* AppListSpecificsToValue(
+    const sync_pb::AppListSpecifics& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(item_id);
+  SET_ENUM(item_type, GetAppListItemTypeString);
+  SET_STR(item_name);
+  SET_STR(parent_id);
+  SET_STR(page_ordinal);
+  SET_STR(item_ordinal);
+
+  return value;
+}
+
 base::DictionaryValue* AppNotificationToValue(
     const sync_pb::AppNotification& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -572,6 +586,7 @@ base::DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_search_engines);
   SET_BOOL(encrypt_dictionary);
   SET_BOOL(encrypt_articles);
+  SET_BOOL(encrypt_app_list);
   SET_BOOL(encrypt_everything);
   SET_BOOL(sync_tab_favicons);
   SET_ENUM(passphrase_type, PassphraseTypeString);
@@ -694,6 +709,7 @@ base::DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_FIELD(app, AppSpecificsToValue);
+  SET_FIELD(app_list, AppListSpecificsToValue);
   SET_FIELD(app_notification, AppNotificationToValue);
   SET_FIELD(app_setting, AppSettingSpecificsToValue);
   SET_FIELD(article, ArticleSpecificsToValue);

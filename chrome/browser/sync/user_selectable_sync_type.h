@@ -40,6 +40,7 @@ enum UserSelectableSyncType {
   // NIGORI,
   // DICTIONARY
   // SEARCH_ENGINES,
+  // APP_LIST,
   // APP_SETTINGS,
   // EXTENSION_SETTINGS,
   // APP_NOTIFICATIONS,

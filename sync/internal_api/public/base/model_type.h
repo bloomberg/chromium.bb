@@ -101,6 +101,8 @@ enum ModelType {
   MANAGED_USERS,
   // Distilled articles.
   ARTICLES,
+  // App List items
+  APP_LIST,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

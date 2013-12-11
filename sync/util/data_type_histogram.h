@@ -72,6 +72,9 @@
       case ::syncer::APPS: \
         PER_DATA_TYPE_MACRO("Apps"); \
         break; \
+      case ::syncer::APP_LIST: \
+        PER_DATA_TYPE_MACRO("AppList"); \
+        break; \
       case ::syncer::APP_SETTINGS: \
         PER_DATA_TYPE_MACRO("AppSettings"); \
         break; \

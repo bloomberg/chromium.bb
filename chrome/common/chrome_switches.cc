@@ -762,8 +762,11 @@ const char kEnableSyncSyncedNotifications[] =
 // Enables sync/API based session sync implementation (in favor of legacy).
 const char kEnableSyncSessionsV2[] = "enable-sync-sessions-v2";
 
+// Enables syncing of the app list.
+const char kEnableSyncAppList[]             = "enable-sync-app-list";
+
 // Enables synced articles.
-const char kEnableSyncArticles[] = "enable-sync-articles";
+const char kEnableSyncArticles[]            = "enable-sync-articles";
 
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";

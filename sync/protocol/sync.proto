@@ -14,6 +14,7 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+import "app_list_specifics.proto";
 import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
@@ -120,6 +121,7 @@ message EntitySpecifics {
   optional ManagedUserSettingSpecifics managed_user_setting = 186662;
   optional ManagedUserSpecifics managed_user = 194582;
   optional ArticleSpecifics article = 223759;
+  optional AppListSpecifics app_list = 229170;
 }
 
 message SyncEntity {

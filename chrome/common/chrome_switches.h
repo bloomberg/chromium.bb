@@ -216,6 +216,7 @@ extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableStreamlinedHostedApps[];
 extern const char kEnableSuggestionsTabPage[];
+extern const char kEnableSyncAppList[];
 extern const char kEnableSyncArticles[];
 extern const char kEnableSyncSyncedNotifications[];
 extern const char kEnableSyncSessionsV2[];

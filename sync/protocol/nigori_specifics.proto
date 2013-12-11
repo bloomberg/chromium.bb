@@ -123,5 +123,8 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether articles should be encrypted.
   optional bool encrypt_articles = 37;
+
+  // Boolean corresponding to whether app list items should be encrypted.
+  optional bool encrypt_app_list = 38;
 }
 

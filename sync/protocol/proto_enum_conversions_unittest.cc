@@ -25,6 +25,13 @@ void TestEnumStringFunction(const char* (*enum_string_fn)(T),
   }
 }
 
+TEST_F(ProtoEnumConversionsTest, GetAppListItemTypeString) {
+  TestEnumStringFunction(
+      GetAppListItemTypeString,
+      sync_pb::AppListSpecifics::AppListItemType_MIN,
+      sync_pb::AppListSpecifics::AppListItemType_MAX);
+}
+
 TEST_F(ProtoEnumConversionsTest, GetBrowserTypeString) {
   TestEnumStringFunction(
       GetBrowserTypeString,

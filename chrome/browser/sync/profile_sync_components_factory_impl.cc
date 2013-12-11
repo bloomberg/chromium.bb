@@ -57,6 +57,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -290,6 +292,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             syncer::APP_SETTINGS, this, profile_, pss));
   }
 
+#if defined(ENABLE_APP_LIST)
+  // App List sync is disabled by default.  Register only if enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncAppList)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(syncer::APP_LIST, this, profile_, pss));
+  }
+#endif
+
   // Synced Notifications are enabled by default.
   pss->RegisterDataTypeController(
       new UIDataTypeController(
@@ -379,6 +389,11 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     case syncer::EXTENSION_SETTINGS:
       return extension_system_->extension_service()->settings_frontend()->
           GetBackendForSync(type)->AsWeakPtr();
+#if defined(ENABLE_APP_LIST)
+    case syncer::APP_LIST:
+      return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->
+          AsWeakPtr();
+#endif
 #if defined(ENABLE_THEMES)
     case syncer::THEMES:
       return ThemeServiceFactory::GetForProfile(profile_)->

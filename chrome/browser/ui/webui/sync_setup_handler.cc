@@ -95,7 +95,7 @@ const char* kDataTypeNames[] = {
   "tabs"
 };
 
-COMPILE_ASSERT(29 == syncer::MODEL_TYPE_COUNT,
+COMPILE_ASSERT(30 == syncer::MODEL_TYPE_COUNT,
                update_kDataTypeNames_to_match_UserSelectableTypes);
 
 typedef std::map<syncer::ModelType, const char*> ModelTypeNameMap;
@@ -752,7 +752,7 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
 // On ChromeOS, we need to sign out the user session to fix an auth error, so
 // the user goes through the real signin flow to generate a new auth token.
 void SyncSetupHandler::HandleDoSignOutOnAuthError(const ListValue* args) {
-  DLOG(INFO) << "Signing out the user to fix a sync error.";
+  DVLOG(1) << "Signing out the user to fix a sync error.";
   chrome::AttemptUserExit();
 }
 #endif

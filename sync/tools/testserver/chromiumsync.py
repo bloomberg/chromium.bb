@@ -23,6 +23,7 @@ import time
 import urlparse
 import uuid
 
+import app_list_specifics_pb2
 import app_notification_specifics_pb2
 import app_setting_specifics_pb2
 import app_specifics_pb2
@@ -60,6 +61,7 @@ import typed_url_specifics_pb2
 ALL_TYPES = (
     TOP_LEVEL,  # The type of the 'Google Chrome' folder.
     APPS,
+    APP_LIST,
     APP_NOTIFICATION,
     APP_SETTINGS,
     ARTICLE,
@@ -84,7 +86,7 @@ ALL_TYPES = (
     TYPED_URL,
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
-    FAVICON_TRACKING) = range(27)
+    FAVICON_TRACKING) = range(28)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -101,6 +103,7 @@ TOP_LEVEL_FOLDER_TAG = 'google_chrome'
 # to that datatype.  Note that TOP_LEVEL has no such token.
 SYNC_TYPE_FIELDS = sync_pb2.EntitySpecifics.DESCRIPTOR.fields_by_name
 SYNC_TYPE_TO_DESCRIPTOR = {
+    APP_LIST: SYNC_TYPE_FIELDS['app_list'],
     APP_NOTIFICATION: SYNC_TYPE_FIELDS['app_notification'],
     APP_SETTINGS: SYNC_TYPE_FIELDS['app_setting'],
     APPS: SYNC_TYPE_FIELDS['app'],
@@ -476,6 +479,8 @@ class SyncDataModel(object):
   _PERMANENT_ITEM_SPECS = [
       PermanentItem('google_chrome_apps', name='Apps',
                     parent_tag=ROOT_ID, sync_type=APPS),
+      PermanentItem('google_chrome_app_list', name='App List',
+                    parent_tag=ROOT_ID, sync_type=APP_LIST),
       PermanentItem('google_chrome_app_notifications', name='App Notifications',
                     parent_tag=ROOT_ID, sync_type=APP_NOTIFICATION),
       PermanentItem('google_chrome_app_settings',

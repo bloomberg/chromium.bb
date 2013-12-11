@@ -126,6 +126,7 @@ void SyncPrefs::RegisterProfilePrefs(
   model_set.Put(syncer::NIGORI);
   model_set.Put(syncer::SEARCH_ENGINES);
   model_set.Put(syncer::APPS);
+  model_set.Put(syncer::APP_LIST);
   model_set.Put(syncer::TYPED_URLS);
   model_set.Put(syncer::SESSIONS);
   model_set.Put(syncer::ARTICLES);
@@ -308,6 +309,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncExtensionSettings;
     case syncer::EXTENSIONS:
       return prefs::kSyncExtensions;
+    case syncer::APP_LIST:
+      return prefs::kSyncAppList;
     case syncer::APP_SETTINGS:
       return prefs::kSyncAppSettings;
     case syncer::APPS:
@@ -391,6 +394,7 @@ syncer::ModelTypeSet SyncPrefs::GetAcknowledgeSyncedTypesForTest() const {
 void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::APPS].Put(syncer::APP_NOTIFICATIONS);
   pref_groups_[syncer::APPS].Put(syncer::APP_SETTINGS);
+  pref_groups_[syncer::APPS].Put(syncer::APP_LIST);
 
   pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_PROFILE);
 

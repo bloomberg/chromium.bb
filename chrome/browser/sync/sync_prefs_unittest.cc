@@ -147,6 +147,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(syncer::SEARCH_ENGINES);
     }
     if (it.Get() == syncer::APPS) {
+      expected_preferred_types.Put(syncer::APP_LIST);
       expected_preferred_types.Put(syncer::APP_NOTIFICATIONS);
       expected_preferred_types.Put(syncer::APP_SETTINGS);
     }

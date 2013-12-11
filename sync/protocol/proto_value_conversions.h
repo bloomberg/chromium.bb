@@ -14,6 +14,7 @@ class DictionaryValue;
 }
 
 namespace sync_pb {
+class AppListSpecifics;
 class AppNotification;
 class AppNotificationSettings;
 class AppSettingSpecifics;
@@ -90,6 +91,10 @@ namespace syncer {
 // TODO(akalin): Perhaps extend this to decrypt?
 SYNC_EXPORT_PRIVATE base::DictionaryValue* EncryptedDataToValue(
     const sync_pb::EncryptedData& encrypted_data);
+
+// Sub-protocol of AppListSpecifics.
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AppListSpecificsToValue(
+    const sync_pb::AppListSpecifics& proto);
 
 // Sub-protocol of AppSpecifics.
 SYNC_EXPORT_PRIVATE base::DictionaryValue* AppSettingsToValue(
