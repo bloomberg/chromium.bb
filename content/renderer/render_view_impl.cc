@@ -4378,13 +4378,6 @@ void RenderViewImpl::RunModalAlertDialog(blink::WebFrame* frame,
   return runModalAlertDialog(frame, message);
 }
 
-void RenderViewImpl::LoadURLExternally(
-    blink::WebFrame* frame,
-    const blink::WebURLRequest& request,
-    blink::WebNavigationPolicy policy) {
-  main_render_frame_->loadURLExternally(frame, request, policy);
-}
-
 void RenderViewImpl::DidStartLoading() {
   didStartLoading();
 }

@@ -72,13 +72,11 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual SkBitmap* GetSadWebViewBitmap() OVERRIDE;
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual bool OverrideCreatePlugin(
-      content::RenderView* render_view,
       content::RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,
       blink::WebPlugin** plugin) OVERRIDE;
   virtual blink::WebPlugin* CreatePluginReplacement(
-      content::RenderView* render_view,
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) OVERRIDE;
   virtual bool HasErrorPage(int http_status_code,
@@ -160,7 +158,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void OnPurgeMemory();
 
   static blink::WebPlugin* CreatePlugin(
-      content::RenderView* render_view,
       content::RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,

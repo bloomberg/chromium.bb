@@ -103,10 +103,10 @@ class RendererPpapiHost {
   // routing ID of the fullscreen widget. Returns 0 on failure.
   virtual int GetRoutingIDForWidget(PP_Instance instance) const = 0;
 
-  // Converts the given plugin coordinate to the containing RenderView. This
+  // Converts the given plugin coordinate to the containing RenderFrame. This
   // will take into account the current Flash fullscreen state so will use
   // the fullscreen widget if it's displayed.
-  virtual gfx::Point PluginPointToRenderView(
+  virtual gfx::Point PluginPointToRenderFrame(
       PP_Instance instance,
       const gfx::Point& pt) const = 0;
 

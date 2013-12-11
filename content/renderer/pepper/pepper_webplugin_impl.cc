@@ -104,8 +104,7 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
 
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
-            init_data_->render_view.get(), init_data_->render_frame,
-            init_data_->module->path());
+            init_data_->render_frame, init_data_->module->path());
     if (!replacement_plugin || !replacement_plugin->initialize(container))
       return false;
 

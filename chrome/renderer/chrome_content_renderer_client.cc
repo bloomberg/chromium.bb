@@ -427,7 +427,6 @@ const Extension* ChromeContentRendererClient::GetExtensionByOrigin(
 }
 
 bool ChromeContentRendererClient::OverrideCreatePlugin(
-    content::RenderView* render_view,
     content::RenderFrame* render_frame,
     WebFrame* frame,
     const WebPluginParams& params,
@@ -454,23 +453,21 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
 #if defined(ENABLE_PLUGINS)
-  render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
+  render_frame->Send(new ChromeViewHostMsg_GetPluginInfo(
       render_frame->GetRoutingID(), GURL(params.url),
       frame->top()->document().url(), orig_mime_type, &output));
 #else
   output.status.value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
 #endif
-  *plugin = CreatePlugin(render_view, render_frame, frame, params, output);
+  *plugin = CreatePlugin(render_frame, frame, params, output);
   return true;
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
-    content::RenderView* render_view,
     content::RenderFrame* render_frame,
     const base::FilePath& plugin_path) {
   ChromePluginPlaceholder* placeholder =
-      ChromePluginPlaceholder::CreateErrorPlugin(
-          render_view, render_frame, plugin_path);
+      ChromePluginPlaceholder::CreateErrorPlugin(render_frame, plugin_path);
   return placeholder->plugin();
 }
 
@@ -493,7 +490,6 @@ void ChromeContentRendererClient::DeferMediaLoad(
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
-    content::RenderView* render_view,
     content::RenderFrame* render_frame,
     WebFrame* frame,
     const WebPluginParams& original_params,
@@ -519,7 +515,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           ResourceBundle::GetSharedInstance().GetRawDataResource(
               IDR_MOBILE_YOUTUBE_PLUGIN_HTML));
       return (new plugins::MobileYouTubePlugin(
-                  render_view,
                   render_frame,
                   frame,
                   original_params,
@@ -530,7 +525,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 #endif
     PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
     placeholder = ChromePluginPlaceholder::CreateMissingPlugin(
-        render_view, render_frame, frame, original_params);
+        render_frame, frame, original_params);
   } else {
     // TODO(bauerb): This should be in content/.
     WebPluginParams params(original_params);
@@ -551,8 +546,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       params.mimeType = WebString::fromUTF8(actual_mime_type.c_str());
     }
 
+    // TODO(jam): switch ContentSettingsObserver to RenderFrameObserver.
     ContentSettingsObserver* observer =
-        ContentSettingsObserver::Get(render_view);
+        ContentSettingsObserver::Get(render_frame->GetRenderView());
 
     const ContentSettingsType content_type =
         ShouldUseJavaScriptSettingForPlugin(plugin) ?
@@ -643,7 +639,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                 WebConsoleMessage(WebConsoleMessage::LevelError,
                                   error_message));
             placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-                render_view,
                 render_frame,
                 frame,
                 params,
@@ -666,7 +661,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         //                reduce the chance of future regressions.
         if (prerender::PrerenderHelper::IsPrerendering(render_frame)) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-              render_view,
               render_frame,
               frame,
               params,
@@ -686,7 +680,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_NPAPINotSupported"));
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_view,
             render_frame,
             frame,
             params,
@@ -695,15 +688,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             group_name,
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED_METRO));
-        render_view->Send(new ChromeViewHostMsg_NPAPINotSupported(
-            render_view->GetRoutingID(), identifier));
+        render_frame->Send(new ChromeViewHostMsg_NPAPINotSupported(
+            render_frame->GetRoutingID(), identifier));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_view,
             render_frame,
             frame,
             params,
@@ -717,7 +709,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_view,
             render_frame,
             frame,
             params,
@@ -727,8 +718,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         placeholder->set_allow_loading(true);
-        render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-            render_view->GetRoutingID(), placeholder->CreateRoutingId(),
+        render_frame->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
+            render_frame->GetRoutingID(), placeholder->CreateRoutingId(),
             identifier));
 #else
         NOTREACHED();
@@ -737,7 +728,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_view,
             render_frame,
             frame,
             params,
@@ -750,7 +740,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized: {
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_view,
             render_frame,
             frame,
             params,
@@ -760,15 +749,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
         placeholder->set_allow_loading(true);
-        render_view->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
-            render_view->GetRoutingID(),
+        render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
+            render_frame->GetRoutingID(),
             group_name,
             identifier));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_view,
             render_frame,
             frame,
             params,
@@ -785,7 +773,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_view,
             render_frame,
             frame,
             params,

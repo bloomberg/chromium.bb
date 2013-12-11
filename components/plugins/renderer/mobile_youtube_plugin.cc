@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "ui/base/webui/jstemplate_builder.h"
 
@@ -70,14 +70,12 @@ bool IsValidYouTubeVideo(const std::string& path) {
 
 namespace plugins {
 
-MobileYouTubePlugin::MobileYouTubePlugin(content::RenderView* render_view,
-                                         content::RenderFrame* render_frame,
+MobileYouTubePlugin::MobileYouTubePlugin(content::RenderFrame* render_frame,
                                          blink::WebFrame* frame,
                                          const blink::WebPluginParams& params,
                                          base::StringPiece& template_html,
                                          GURL placeholderDataUrl)
-    : PluginPlaceholder(render_view,
-                        render_frame,
+    : PluginPlaceholder(render_frame,
                         frame,
                         params,
                         HtmlData(params, template_html),
@@ -102,7 +100,7 @@ void MobileYouTubePlugin::OpenYoutubeUrlCallback(
   WebURLRequest request;
   request.initialize();
   request.setURL(url);
-  render_view()->LoadURLExternally(
+  render_frame()->LoadURLExternally(
       GetFrame(), request, blink::WebNavigationPolicyNewForegroundTab);
 }
 void MobileYouTubePlugin::BindWebFrame(WebFrame* frame) {

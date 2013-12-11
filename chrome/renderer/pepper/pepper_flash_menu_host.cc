@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
@@ -112,10 +112,10 @@ PepperFlashMenuHost::PepperFlashMenuHost(
 
 PepperFlashMenuHost::~PepperFlashMenuHost() {
   if (showing_context_menu_) {
-    content::RenderView* render_view =
-        renderer_ppapi_host_->GetRenderViewForInstance(pp_instance());
-    if (render_view)
-      render_view->CancelContextMenu(context_menu_request_id_);
+    content::RenderFrame* render_frame =
+        renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance());
+    if (render_frame)
+      render_frame->CancelContextMenu(context_menu_request_id_);
   }
 }
 
@@ -144,8 +144,8 @@ int32_t PepperFlashMenuHost::OnHostMsgShow(
     return PP_ERROR_INPROGRESS;
   }
 
-  content::RenderView* render_view =
-      renderer_ppapi_host_->GetRenderViewForInstance(pp_instance());
+  content::RenderFrame* render_frame =
+      renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance());
 
   content::ContextMenuParams params;
   params.x = location.x;
@@ -155,14 +155,14 @@ int32_t PepperFlashMenuHost::OnHostMsgShow(
       renderer_ppapi_host_->GetRoutingIDForWidget(pp_instance());
   params.custom_items = menu_data_;
 
-  // Transform the position to be in render view's coordinates.
-  gfx::Point render_view_pt = renderer_ppapi_host_->PluginPointToRenderView(
+  // Transform the position to be in render frame's coordinates.
+  gfx::Point render_frame_pt = renderer_ppapi_host_->PluginPointToRenderFrame(
       pp_instance(), gfx::Point(location.x, location.y));
-  params.x = render_view_pt.x();
-  params.y = render_view_pt.y();
+  params.x = render_frame_pt.x();
+  params.y = render_frame_pt.y();
 
   showing_context_menu_ = true;
-  context_menu_request_id_ = render_view->ShowContextMenu(this, params);
+  context_menu_request_id_ = render_frame->ShowContextMenu(this, params);
 
   // Note: the show message is sync so this OK is for the sync reply which we
   // don't actually use (see the comment in the resource file for this). The

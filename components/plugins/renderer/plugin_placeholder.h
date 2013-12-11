@@ -8,20 +8,19 @@
 #include "components/plugins/renderer/webview_plugin.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/context_menu_client.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "webkit/renderer/cpp_bound_class.h"
 
 namespace content {
-class RenderFrame;
 struct WebPluginInfo;
 }
 
 namespace plugins {
 // Placeholders can be used if a plug-in is missing or not available
 // (blocked or disabled).
-class PluginPlaceholder : public content::RenderViewObserver,
+class PluginPlaceholder : public content::RenderFrameObserver,
                           public webkit_glue::CppBoundClass,
                           public WebViewPlugin::Delegate {
  public:
@@ -35,10 +34,9 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void set_allow_loading(bool allow_loading) { allow_loading_ = allow_loading; }
 
  protected:
-  // |render_view|, |render_frame| and |frame| are weak pointers. If either one
-  // is going away, our |plugin_| will be destroyed as well and will notify us.
-  PluginPlaceholder(content::RenderView* render_view,  // TODO(jam): remove me
-                    content::RenderFrame* render_frame,
+  // |render_frame| and |frame| are weak pointers. If either one is going away,
+  // our |plugin_| will be destroyed as well and will notify us.
+  PluginPlaceholder(content::RenderFrame* render_frame,
                     blink::WebFrame* frame,
                     const blink::WebPluginParams& params,
                     const std::string& html_data,
@@ -53,7 +51,6 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void SetPluginInfo(const content::WebPluginInfo& plugin_info);
   const content::WebPluginInfo& GetPluginInfo() const;
   void SetIdentifier(const std::string& identifier);
-  content::RenderFrame* GetRenderFrame();
   blink::WebFrame* GetFrame();
   const blink::WebPluginParams& GetPluginParams() const;
   bool LoadingAllowed() const { return allow_loading_; }
@@ -93,7 +90,6 @@ class PluginPlaceholder : public content::RenderViewObserver,
 
   void UpdateMessage();
 
-  content::RenderFrame* render_frame_;
   blink::WebFrame* frame_;
   blink::WebPluginParams plugin_params_;
   WebViewPlugin* plugin_;

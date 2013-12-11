@@ -199,19 +199,20 @@ int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) const {
   return GetRenderViewForInstance(instance)->GetRoutingID();
 }
 
-gfx::Point RendererPpapiHostImpl::PluginPointToRenderView(
+gfx::Point RendererPpapiHostImpl::PluginPointToRenderFrame(
     PP_Instance instance,
     const gfx::Point& pt) const {
   PepperPluginInstanceImpl* plugin_instance = GetAndValidateInstance(instance);
   if (!plugin_instance)
     return pt;
 
-  RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
-      GetRenderViewForInstance(instance));
+  RenderFrameImpl* render_frame = static_cast<RenderFrameImpl*>(
+      GetRenderFrameForInstance(instance));
   if (plugin_instance->view_data().is_fullscreen ||
       plugin_instance->flash_fullscreen()) {
-    blink::WebRect window_rect = render_view->windowRect();
-    blink::WebRect screen_rect = render_view->screenInfo().rect;
+    blink::WebRect window_rect = render_frame->GetRenderWidget()->windowRect();
+    blink::WebRect screen_rect =
+        render_frame->GetRenderWidget()->screenInfo().rect;
     return gfx::Point(pt.x() - window_rect.x + screen_rect.x,
                       pt.y() - window_rect.y + screen_rect.y);
   }

@@ -12,7 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -33,10 +32,8 @@ class Size;
 
 namespace content {
 
-class ContextMenuClient;
 class RenderFrame;
 class RenderViewVisitor;
-struct ContextMenuParams;
 struct SSLStatus;
 
 class CONTENT_EXPORT RenderView : public IPC::Sender {
@@ -110,24 +107,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Filtered time per frame based on UpdateRect messages.
   virtual float GetFilteredTimePerFrame() const = 0;
 
-  // Shows a context menu with the given information. The given client will
-  // be called with the result.
-  //
-  // The request ID will be returned by this function. This is passed to the
-  // client functions for identification.
-  //
-  // If the client is destroyed, CancelContextMenu() should be called with the
-  // request ID returned by this function.
-  //
-  // Note: if you end up having clients outliving the RenderView, we should add
-  // a CancelContextMenuCallback function that takes a request id.
-  virtual int ShowContextMenu(ContextMenuClient* client,
-                              const ContextMenuParams& params) = 0;
-
-  // Cancels a context menu in the event that the client is destroyed before the
-  // menu is closed.
-  virtual void CancelContextMenu(int request_id) = 0;
-
   // Returns the current visibility of the WebView.
   virtual blink::WebPageVisibilityState GetVisibilityState() const = 0;
 
@@ -135,12 +114,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // once the user dismisses the dialog.
   virtual void RunModalAlertDialog(blink::WebFrame* frame,
                                    const blink::WebString& message) = 0;
-
-  // The client should handle the navigation externally.
-  virtual void LoadURLExternally(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationPolicy policy) = 0;
 
   // Used by plugins that load data in this RenderView to update the loading
   // notifications.

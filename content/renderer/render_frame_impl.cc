@@ -467,6 +467,19 @@ int RenderFrameImpl::GetRoutingID() {
   return routing_id_;
 }
 
+WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
+  return render_view_->GetWebkitPreferences();
+}
+
+int RenderFrameImpl::ShowContextMenu(ContextMenuClient* client,
+                                     const ContextMenuParams& params) {
+  return render_view_->ShowContextMenu(client, params);
+}
+
+void RenderFrameImpl::CancelContextMenu(int request_id) {
+  return render_view_->CancelContextMenu(request_id);
+}
+
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,
@@ -495,6 +508,13 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 #endif
 }
 
+void RenderFrameImpl::LoadURLExternally(
+    blink::WebFrame* frame,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationPolicy policy) {
+  loadURLExternally(frame, request, policy);
+}
+
 // blink::WebFrameClient implementation ----------------------------------------
 
 blink::WebPlugin* RenderFrameImpl::createPlugin(
@@ -502,7 +522,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
     const blink::WebPluginParams& params) {
   blink::WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
-          render_view_, this, frame, params, &plugin)) {
+          this, frame, params, &plugin)) {
     return plugin;
   }
 

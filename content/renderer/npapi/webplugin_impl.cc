@@ -252,7 +252,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
-            render_view_.get(), render_frame_, file_path_);
+            render_frame_, file_path_);
     if (!replacement_plugin)
       return false;
 

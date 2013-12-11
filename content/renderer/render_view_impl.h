@@ -333,6 +333,11 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
+  // Temporary call until the context menu code moves to RenderFrmae.
+  // TODO(jam): remove me
+  int ShowContextMenu(ContextMenuClient* client,
+                      const ContextMenuParams& params);
+  void CancelContextMenu(int request_id);
 
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
@@ -645,16 +650,9 @@ class CONTENT_EXPORT RenderViewImpl
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual bool GetContentStateImmediately() const OVERRIDE;
   virtual float GetFilteredTimePerFrame() const OVERRIDE;
-  virtual int ShowContextMenu(ContextMenuClient* client,
-                              const ContextMenuParams& params) OVERRIDE;
-  virtual void CancelContextMenu(int request_id) OVERRIDE;
   virtual blink::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
   virtual void RunModalAlertDialog(blink::WebFrame* frame,
                                    const blink::WebString& message) OVERRIDE;
-  virtual void LoadURLExternally(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationPolicy policy) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void Repaint(const gfx::Size& size) OVERRIDE;

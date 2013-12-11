@@ -66,7 +66,7 @@ int MockRendererPpapiHost::GetRoutingIDForWidget(PP_Instance instance) const {
   return 0;
 }
 
-gfx::Point MockRendererPpapiHost::PluginPointToRenderView(
+gfx::Point MockRendererPpapiHost::PluginPointToRenderFrame(
     PP_Instance instance,
     const gfx::Point& pt) const {
   return gfx::Point();

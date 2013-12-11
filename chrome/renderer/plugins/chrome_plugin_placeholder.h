@@ -16,7 +16,6 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   static const char kPluginPlaceholderDataURL[];
 
   static ChromePluginPlaceholder* CreateBlockedPlugin(
-      content::RenderView* render_view,
       content::RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,
@@ -28,13 +27,11 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
 
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateMissingPlugin(
-      content::RenderView* render_view,
       content::RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params);
 
   static ChromePluginPlaceholder* CreateErrorPlugin(
-      content::RenderView* render_view,
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path);
 
@@ -45,8 +42,7 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
 #endif
 
  private:
-  ChromePluginPlaceholder(content::RenderView* render_view,
-                          content::RenderFrame* render_frame,
+  ChromePluginPlaceholder(content::RenderFrame* render_frame,
                           blink::WebFrame* frame,
                           const blink::WebPluginParams& params,
                           const std::string& html_data,
@@ -101,10 +97,10 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   int context_menu_request_id_;  // Nonzero when request pending.
   base::string16 plugin_name_;
 
-  // TODO(jam): remove this class, it's temporary until PluginPlaceholder is a
-  // RenderFrameObserver.
-  class RenderFrameObserver;
-  scoped_ptr<RenderFrameObserver> frame_observer_;
+  // TODO(jam): remove this class, it's temporary until ContentSettingObserver
+  // is a RenderFrameObserver.
+  class RenderViewObserver;
+  scoped_ptr<RenderViewObserver> view_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePluginPlaceholder);
 };

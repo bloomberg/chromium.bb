@@ -87,7 +87,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // |plugin| will contain the created plugin, although it could be NULL. If it
   // returns false, the content layer will create the plugin.
   virtual bool OverrideCreatePlugin(
-      RenderView* render_view,  // TODO(jam): remove and only have RenderFrame.
       RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,
@@ -96,7 +95,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Creates a replacement plug-in that is shown when the plug-in at |file_path|
   // couldn't be loaded. This allows the embedder to show a custom placeholder.
   virtual blink::WebPlugin* CreatePluginReplacement(
-      RenderView* render_view,  // TODO(jam): remove and only have RenderFrame.
       RenderFrame* render_frame,
       const base::FilePath& plugin_path);
 

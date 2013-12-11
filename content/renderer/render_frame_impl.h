@@ -153,10 +153,18 @@ class CONTENT_EXPORT RenderFrameImpl
   // RenderFrame implementation:
   virtual RenderView* GetRenderView() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
+  virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
+  virtual int ShowContextMenu(ContextMenuClient* client,
+                              const ContextMenuParams& params) OVERRIDE;
+  virtual void CancelContextMenu(int request_id) OVERRIDE;
   virtual blink::WebPlugin* CreatePlugin(
       blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params) OVERRIDE;
+  virtual void LoadURLExternally(
+      blink::WebFrame* frame,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationPolicy policy) OVERRIDE;
 
   // blink::WebFrameClient implementation -------------------------------------
   virtual blink::WebPlugin* createPlugin(

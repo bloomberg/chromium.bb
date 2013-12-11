@@ -94,7 +94,6 @@ void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
-    RenderView* render_view,
     RenderFrame* render_frame,
     WebFrame* frame,
     const WebPluginParams& params,
