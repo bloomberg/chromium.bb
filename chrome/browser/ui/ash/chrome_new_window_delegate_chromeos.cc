@@ -26,7 +26,7 @@ ChromeNewWindowDelegateChromeos::~ChromeNewWindowDelegateChromeos() {}
 
 void ChromeNewWindowDelegateChromeos::OpenFileManager() {
   using file_manager::kFileManagerAppId;
-  Profile* const profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Profile* const profile = ProfileManager::GetActiveUserProfileOrOffTheRecord();
   const ExtensionService* const service = profile->GetExtensionService();
   if (service == NULL ||
       !extension_util::IsAppLaunchableWithoutEnabling(kFileManagerAppId,
@@ -46,7 +46,7 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
 
 void ChromeNewWindowDelegateChromeos::OpenCrosh() {
   GURL crosh_url = extensions::TerminalExtensionHelper::GetCroshExtensionURL(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+      ProfileManager::GetActiveUserProfileOrOffTheRecord());
   if (!crosh_url.is_valid())
     return;
   chrome::ScopedTabbedBrowserDisplayer displayer(
@@ -66,7 +66,7 @@ void ChromeNewWindowDelegateChromeos::OpenCrosh() {
 
 void ChromeNewWindowDelegateChromeos::ShowKeyboardOverlay() {
   // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Profile* profile = ProfileManager::GetActiveUserProfileOrOffTheRecord();
   std::string url(chrome::kChromeUIKeyboardOverlayURL);
   ash::KeyboardOverlayView::ShowDialog(profile,
                                        new ChromeWebContentsHandler,
