@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
+#include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

@@ -5,6 +5,7 @@
 #include "ui/views/examples/widget_example.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"

@@ -21,6 +21,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/background.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

@@ -19,6 +19,7 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

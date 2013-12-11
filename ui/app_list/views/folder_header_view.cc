@@ -12,6 +12,7 @@
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/painter.h"

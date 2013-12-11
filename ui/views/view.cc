@@ -36,6 +36,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
@@ -797,6 +798,14 @@ void View::Paint(gfx::Canvas* canvas) {
   canvas->Transform(GetTransform());
 
   PaintCommon(canvas);
+}
+
+void View::set_background(Background* b) {
+  background_.reset(b);
+}
+
+void View::set_border(Border* b) {
+  border_.reset(b);
 }
 
 ui::ThemeProvider* View::GetThemeProvider() const {

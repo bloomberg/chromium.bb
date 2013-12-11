@@ -14,6 +14,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/background.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/focusable_border.h"

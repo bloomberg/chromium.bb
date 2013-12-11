@@ -35,6 +35,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/background.h"
 
 namespace ash {
 namespace internal {

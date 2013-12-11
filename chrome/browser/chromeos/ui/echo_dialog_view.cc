@@ -8,6 +8,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"

@@ -26,11 +26,11 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
-#include "ui/views/background.h"
-#include "ui/views/border.h"
+#include "ui/views/views_export.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_comptr.h"
@@ -57,6 +57,8 @@ class ThemeProvider;
 
 namespace views {
 
+class Background;
+class Border;
 class ContextMenuController;
 class DragController;
 class FocusManager;
@@ -506,12 +508,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void Paint(gfx::Canvas* canvas);
 
   // The background object is owned by this object and may be NULL.
-  void set_background(Background* b) { background_.reset(b); }
+  void set_background(Background* b);
   const Background* background() const { return background_.get(); }
   Background* background() { return background_.get(); }
 
   // The border object is owned by this object and may be NULL.
-  void set_border(Border* b) { border_.reset(b); }
+  void set_border(Border* b);
   const Border* border() const { return border_.get(); }
   Border* border() { return border_.get(); }
 

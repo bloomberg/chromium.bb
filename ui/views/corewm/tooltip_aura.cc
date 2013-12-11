@@ -11,6 +11,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/widget/widget.h"
 

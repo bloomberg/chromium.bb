@@ -15,10 +15,10 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/background.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
 
 namespace ash {
 namespace internal {

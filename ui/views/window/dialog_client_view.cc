@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_constants.h"

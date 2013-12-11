@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/examples/bubble_example.h"

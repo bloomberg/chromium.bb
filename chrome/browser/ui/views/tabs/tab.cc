@@ -42,6 +42,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/tooltip_manager.h"

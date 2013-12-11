@@ -9,6 +9,7 @@
 #include "ash/system/tray/view_click_listener.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 

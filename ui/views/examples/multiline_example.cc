@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"

@@ -26,6 +26,8 @@
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
