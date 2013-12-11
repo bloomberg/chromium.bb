@@ -191,6 +191,8 @@ static bool DoneCallback(const MinidumpDescriptor& descriptor,
   return true;
 }
 
+#ifndef ADDRESS_SANITIZER
+
 void ChildCrash(bool use_fd) {
   AutoTempDir temp_dir;
   int fds[2] = {0};
@@ -242,6 +244,8 @@ TEST(ExceptionHandlerTest, ChildCrashWithFD) {
   ASSERT_NO_FATAL_FAILURE(ChildCrash(true));
 }
 
+#endif  // !ADDRESS_SANITIZER
+
 static bool DoneCallbackReturnFalse(const MinidumpDescriptor& descriptor,
                                     void* context,
                                     bool succeeded) {
@@ -282,6 +286,8 @@ static bool InstallRaiseSIGKILL() {
   sa.sa_handler = RaiseSIGKILL;
   return sigaction(SIGSEGV, &sa, NULL) != -1;
 }
+
+#ifndef ADDRESS_SANITIZER
 
 static void CrashWithCallbacks(ExceptionHandler::FilterCallback filter,
                                ExceptionHandler::MinidumpCallback done,
@@ -449,6 +455,8 @@ TEST(ExceptionHandlerTest, StackedHandlersUnhandledToBottom) {
   }
   ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGKILL));
 }
+
+#endif  // !ADDRESS_SANITIZER
 
 const unsigned char kIllegalInstruction[] = {
 #if defined(__mips__)
@@ -731,10 +739,6 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   unlink(minidump_path.c_str());
 }
 
-// If AddressSanitizer is used, NULL pointer dereferences generate SIGILL
-// (illegal instruction) instead of SIGSEGV (segmentation fault).  Also,
-// the number of memory regions differs, so there is no point in running
-// this test if AddressSanitizer is used.
 #ifndef ADDRESS_SANITIZER
 
 // Ensure that an extra memory block doesn't get added when the instruction
@@ -781,7 +785,8 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryNullPointer) {
 
   unlink(minidump_path.c_str());
 }
-#endif // !ADDRESS_SANITIZER
+
+#endif  // !ADDRESS_SANITIZER
 
 // Test that anonymous memory maps can be annotated with names and IDs.
 TEST(ExceptionHandlerTest, ModuleInfo) {
@@ -902,6 +907,8 @@ CrashHandler(const void* crash_context, size_t crash_context_size,
   return true;
 }
 
+#ifndef ADDRESS_SANITIZER
+
 TEST(ExceptionHandlerTest, ExternalDumper) {
   int fds[2];
   ASSERT_NE(socketpair(AF_UNIX, SOCK_DGRAM, 0, fds), -1);
@@ -973,6 +980,8 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
   ASSERT_GT(st.st_size, 0);
   unlink(templ.c_str());
 }
+
+#endif  // !ADDRESS_SANITIZER
 
 TEST(ExceptionHandlerTest, WriteMinidumpExceptionStream) {
   AutoTempDir temp_dir;

@@ -307,6 +307,8 @@ wstring find_minidump_in_directory(const wstring &directory) {
   return filename;
 }
 
+#ifndef ADDRESS_SANITIZER
+
 TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
   ASSERT_TRUE(DoesPathExist(temp_path_));
   scoped_ptr<google_breakpad::ExceptionHandler> exc(
@@ -574,5 +576,7 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
 
   DeleteFileW(minidump_filename_wide.c_str());
 }
+
+#endif  // !ADDRESS_SANITIZER
 
 }  // namespace
