@@ -266,8 +266,9 @@ void ZeroSuggestProvider::FillResults(
       }
     } else {
       suggest_results->push_back(SearchProvider::SuggestResult(
-          result, result, base::string16(), std::string(), std::string(), false,
-          relevance, relevances != NULL, false));
+          result, AutocompleteMatchType::SEARCH_SUGGEST, result,
+          base::string16(), std::string(), std::string(), false, relevance,
+          relevances != NULL, false));
     }
   }
 }

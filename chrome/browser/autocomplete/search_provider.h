@@ -240,6 +240,7 @@ class SearchProvider : public AutocompleteProvider,
   class SuggestResult : public Result {
    public:
     SuggestResult(const base::string16& suggestion,
+                  AutocompleteMatchType::Type type,
                   const base::string16& match_contents,
                   const base::string16& annotation,
                   const std::string& suggest_query_params,
@@ -251,6 +252,7 @@ class SearchProvider : public AutocompleteProvider,
     virtual ~SuggestResult();
 
     const base::string16& suggestion() const { return suggestion_; }
+    AutocompleteMatchType::Type type() const { return type_; }
     const base::string16& match_contents() const { return match_contents_; }
     const base::string16& annotation() const { return annotation_; }
     const std::string& suggest_query_params() const {
@@ -268,6 +270,8 @@ class SearchProvider : public AutocompleteProvider,
    private:
     // The search terms to be used for this suggestion.
     base::string16 suggestion_;
+
+    AutocompleteMatchType::Type type_;
 
     // The contents to be displayed in the autocomplete match.
     base::string16 match_contents_;
@@ -543,7 +547,6 @@ class SearchProvider : public AutocompleteProvider,
   void AddMatchToMap(const SuggestResult& result,
                      const base::string16& input_text,
                      const std::string& metadata,
-                     AutocompleteMatch::Type type,
                      int accepted_suggestion,
                      MatchMap* map);
 

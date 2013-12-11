@@ -107,41 +107,21 @@ bool HasMultipleWords(const base::string16& text) {
 void SetAndClassifyMatchContents(const base::string16& query_string,
                                  const base::string16& input_text,
                                  const base::string16& match_contents,
-                                 const base::string16& annotation,
                                  AutocompleteMatch* match) {
-  size_t match_contents_start = 0;
-  size_t annotation_start = match_contents.size();
-  // Append annotation if present.
-  if (annotation.empty()) {
-    match->contents = match_contents;
-  } else {
-    std::vector<size_t> positions;
-    match->contents = l10n_util::GetStringFUTF16(
-        IDS_ANNOTATED_SUGGESTION, match_contents, annotation, &positions);
-    match_contents_start = positions[0];
-    annotation_start = positions[1];
-  }
-  size_t match_contents_end = match_contents_start + match_contents.size();
-
-  if (!annotation.empty() && (annotation_start < match_contents_start))
-    match->contents_class.push_back(ACMatchClassification(
-        annotation_start, ACMatchClassification::DIM));
+  match->contents = match_contents.empty() ? query_string : match_contents;
 
   // We do intra-string highlighting for suggestions - the suggested segment
   // will be highlighted, e.g. for input_text = "you" the suggestion may be
   // "youtube", so we'll bold the "tube" section: you*tube*.
   if (input_text != match_contents) {
-    size_t input_position = match->contents.substr(
-        match_contents_start, match_contents.length()).find(input_text);
+    size_t input_position = match->contents.find(input_text);
     if (input_position == base::string16::npos) {
       // The input text is not a substring of the query string, e.g. input
       // text is "slasdot" and the query string is "slashdot", so we bold the
       // whole thing.
       match->contents_class.push_back(ACMatchClassification(
-          match_contents_start, ACMatchClassification::MATCH));
+          0, ACMatchClassification::MATCH));
     } else {
-      input_position += match_contents_start;
-
       // TODO(beng): ACMatchClassification::MATCH now seems to just mean
       //             "bold" this. Consider modifying the terminology.
       // We don't iterate over the string here annotating all matches because
@@ -149,9 +129,9 @@ void SetAndClassifyMatchContents(const base::string16& query_string,
       // short as a single character highlighted in a query suggestion result,
       // e.g. for input text "s" and query string "southwest airlines", it
       // looks odd if both the first and last s are highlighted.
-      if (input_position != match_contents_start) {
+      if (input_position != 0) {
         match->contents_class.push_back(ACMatchClassification(
-            match_contents_start, ACMatchClassification::MATCH));
+            0, ACMatchClassification::MATCH));
       }
       match->contents_class.push_back(
           ACMatchClassification(input_position, ACMatchClassification::NONE));
@@ -165,12 +145,20 @@ void SetAndClassifyMatchContents(const base::string16& query_string,
     // Otherwise, |match| is a verbatim (what-you-typed) match, either for the
     // default provider or a keyword search provider.
     match->contents_class.push_back(ACMatchClassification(
-        match_contents_start, ACMatchClassification::NONE));
+        0, ACMatchClassification::NONE));
   }
+}
 
-  if (!annotation.empty() && (annotation_start >= match_contents_start))
-    match->contents_class.push_back(ACMatchClassification(
-        match_contents_end, ACMatchClassification::DIM));
+AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
+  if (type == "ENTITY")
+    return AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  if (type == "INFINITE")
+    return AutocompleteMatchType::SEARCH_SUGGEST_INFINITE;
+  if (type == "PERSONALIZED")
+    return AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
+  if (type == "PROFILE")
+    return AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
+  return AutocompleteMatchType::SEARCH_SUGGEST;
 }
 
 }  // namespace
@@ -266,6 +254,7 @@ SearchProvider::Result::~Result() {
 
 SearchProvider::SuggestResult::SuggestResult(
     const base::string16& suggestion,
+    AutocompleteMatchType::Type type,
     const base::string16& match_contents,
     const base::string16& annotation,
     const std::string& suggest_query_params,
@@ -276,6 +265,7 @@ SearchProvider::SuggestResult::SuggestResult(
     bool should_prefetch)
     : Result(from_keyword_provider, relevance, relevance_from_server),
       suggestion_(suggestion),
+      type_(type),
       match_contents_(match_contents),
       annotation_(annotation),
       suggest_query_params_(suggest_query_params),
@@ -426,8 +416,10 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
     return match;
   match.keyword = template_url->keyword();
 
-  SetAndClassifyMatchContents(
-      query_string, input_text, match_contents, annotation, &match);
+  SetAndClassifyMatchContents(query_string, input_text, match_contents, &match);
+
+  if (!annotation.empty())
+    match.description = annotation;
 
   match.allowed_to_be_default_match = (input_text == match_contents);
 
@@ -1179,6 +1171,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
             *this, url, title, is_keyword, relevance, true));
       }
     } else {
+      AutocompleteMatchType::Type match_type = GetAutocompleteMatchType(type);
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       DictionaryValue* suggestion_detail = NULL;
       base::string16 match_contents = suggestion;
@@ -1190,24 +1183,20 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
         suggestion_details->GetDictionary(index, &suggestion_detail);
         if (suggestion_detail) {
           suggestion_detail->GetString("du", &deletion_url);
-
-          if (type == "ENTITY") {
-            suggestion_detail->GetString("a", &annotation);
-
-            base::string16 disambiguating_query;
-            if (suggestion_detail->GetString("dq", &disambiguating_query) &&
-                !disambiguating_query.empty())
-              suggestion = disambiguating_query;
-
-            suggestion_detail->GetString("q", &suggest_query_params);
-          }
+          suggestion_detail->GetString("title", &match_contents) ||
+              suggestion_detail->GetString("t", &match_contents);
+          suggestion_detail->GetString("annotation", &annotation) ||
+              suggestion_detail->GetString("a", &annotation);
+          suggestion_detail->GetString("query_params", &suggest_query_params) ||
+              suggestion_detail->GetString("q", &suggest_query_params);
         }
       }
 
       // TODO(kochi): Improve calculator suggestion presentation.
       results->suggest_results.push_back(SuggestResult(
-          suggestion, match_contents, annotation, suggest_query_params,
-          deletion_url, is_keyword, relevance, true, should_prefetch));
+          suggestion, match_type, match_contents, annotation,
+          suggest_query_params, deletion_url, is_keyword, relevance, true,
+          should_prefetch));
     }
   }
 
@@ -1255,11 +1244,11 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
   if (verbatim_relevance > 0) {
-    SuggestResult verbatim(input_.text(), input_.text(), base::string16(),
-                           std::string(), std::string(), false,
-                           verbatim_relevance, relevance_from_server, false);
+    SuggestResult verbatim(
+        input_.text(), AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        input_.text(), base::string16(), std::string(), std::string(),
+        false, verbatim_relevance, relevance_from_server, false);
     AddMatchToMap(verbatim, input_.text(), std::string(),
-                  AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                   did_not_accept_default_suggestion, &map);
   }
   if (!keyword_input_.text().empty()) {
@@ -1276,12 +1265,12 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       const int keyword_verbatim_relevance =
           GetKeywordVerbatimRelevance(&keyword_relevance_from_server);
       if (keyword_verbatim_relevance > 0) {
-        SuggestResult verbatim(keyword_input_.text(), keyword_input_.text(),
-                               base::string16(), std::string(), std::string(),
-                               true, keyword_verbatim_relevance,
-                               keyword_relevance_from_server, false);
+        SuggestResult verbatim(
+            keyword_input_.text(), AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+            keyword_input_.text(), base::string16(), std::string(),
+            std::string(), true, keyword_verbatim_relevance,
+            keyword_relevance_from_server, false);
         AddMatchToMap(verbatim, keyword_input_.text(), std::string(),
-                      AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                       did_not_accept_keyword_suggestion, &map);
       }
     }
@@ -1579,7 +1568,6 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
   for (SuggestResults::const_iterator i(scored_results.begin());
        i != scored_results.end(); ++i) {
     AddMatchToMap(*i, input_text, std::string(),
-                  AutocompleteMatchType::SEARCH_HISTORY,
                   did_not_accept_suggestion, map);
   }
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
@@ -1628,9 +1616,10 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     int relevance = CalculateRelevanceForHistory(
         i->time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
-    scored_results.push_back(
-        SuggestResult(i->term, i->term, base::string16(), std::string(),
-                      std::string(), is_keyword, relevance, false, false));
+    scored_results.push_back(SuggestResult(
+        i->term, AutocompleteMatchType::SEARCH_HISTORY, i->term,
+        base::string16(), std::string(), std::string(), is_keyword, relevance,
+        false, false));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -1658,8 +1647,7 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
     const bool is_keyword = results[i].from_keyword_provider();
     const base::string16& input = is_keyword ? keyword_input_.text()
                                              : input_.text();
-    AddMatchToMap(results[i], input, metadata,
-                  AutocompleteMatchType::SEARCH_SUGGEST, i, map);
+    AddMatchToMap(results[i], input, metadata, i, map);
   }
 }
 
@@ -1774,7 +1762,6 @@ int SearchProvider::CalculateRelevanceForHistory(
 void SearchProvider::AddMatchToMap(const SuggestResult& result,
                                    const base::string16& input_text,
                                    const std::string& metadata,
-                                   AutocompleteMatch::Type type,
                                    int accepted_suggestion,
                                    MatchMap* map) {
   // On non-mobile, ask the instant controller for the appropriate start margin.
@@ -1795,7 +1782,7 @@ void SearchProvider::AddMatchToMap(const SuggestResult& result,
   const TemplateURL* template_url = result.from_keyword_provider() ?
       providers_.GetKeywordProviderURL() : providers_.GetDefaultProviderURL();
   AutocompleteMatch match = CreateSearchSuggestion(
-      this, input_, input_text, result.relevance(), type,
+      this, input_, input_text, result.relevance(), result.type(),
       result.from_keyword_provider(), result.match_contents(),
       result.annotation(), template_url, result.suggestion(),
       result.suggest_query_params(), accepted_suggestion, omnibox_start_margin,

@@ -11,22 +11,31 @@ struct AutocompleteMatchType {
   // Type of AutocompleteMatch. Typedef'ed in autocomplete_match.h. Defined here
   // to pass the type details back and forth between the browser and renderer.
   enum Type {
-    URL_WHAT_YOU_TYPED = 0,  // The input as a URL.
-    HISTORY_URL,             // A past page whose URL contains the input.
-    HISTORY_TITLE,           // A past page whose title contains the input.
-    HISTORY_BODY,            // A past page whose body contains the input.
-    HISTORY_KEYWORD,         // A past page whose keyword contains the input.
-    NAVSUGGEST,              // A suggested URL.
-    SEARCH_WHAT_YOU_TYPED,   // The input as a search query (with the default
-                             // engine).
-    SEARCH_HISTORY,          // A past search (with the default engine)
-                             // containing the input.
-    SEARCH_SUGGEST,          // A suggested search (with the default engine).
-    SEARCH_OTHER_ENGINE,     // A search with a non-default engine.
-    EXTENSION_APP,           // An Extension App with a title/url that contains
-                             // the input.
-    CONTACT,                 // One of the user's contacts.
-    BOOKMARK_TITLE,          // A bookmark whose title contains the input.
+    URL_WHAT_YOU_TYPED = 0,      // The input as a URL.
+    HISTORY_URL,                 // A past page whose URL contains the input.
+    HISTORY_TITLE,               // A past page whose title contains the input.
+    HISTORY_BODY,                // A past page whose body contains the input.
+    HISTORY_KEYWORD,             // A past page whose keyword contains the
+                                 // input.
+    NAVSUGGEST,                  // A suggested URL.
+    SEARCH_WHAT_YOU_TYPED,       // The input as a search query (with the
+                                 // default engine).
+    SEARCH_HISTORY,              // A past search (with the default engine)
+                                 // containing the input.
+    SEARCH_SUGGEST,              // A suggested search (with the default engine)
+                                 // query that doesn't fall into one of the more
+                                 // specific suggestion categories below.
+    SEARCH_SUGGEST_ENTITY,       // A suggested search for an entity.
+    SEARCH_SUGGEST_INFINITE,     // A suggested search to complete the tail of
+                                 // the query.
+    SEARCH_SUGGEST_PERSONALIZED, // A personalized suggested search.
+    SEARCH_SUGGEST_PROFILE,      // A personalized suggested search for a
+                                 // Google+ profile.
+    SEARCH_OTHER_ENGINE,         // A search with a non-default engine.
+    EXTENSION_APP,               // An Extension App with a title/url that
+                                 // contains the input.
+    CONTACT,                     // One of the user's contacts.
+    BOOKMARK_TITLE,              // A bookmark whose title contains the input.
     NUM_TYPES,
   };
 

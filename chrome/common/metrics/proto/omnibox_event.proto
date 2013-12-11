@@ -164,12 +164,20 @@ message OmniboxEventProto {
       SEARCH_HISTORY = 8;         // A past search (with the default engine)
                                   // containing the input
       SEARCH_SUGGEST = 9;         // A suggested search (with the default
-                                  // engine)
+                                  // engine) query that doesn't fall into one of
+                                  // the more specific suggestion categories
+                                  // below.
       SEARCH_OTHER_ENGINE = 10;   // A search with a non-default engine
       EXTENSION_APP = 11;         // An Extension App with a title/url that
                                   // contains the input
       CONTACT = 12;               // One of the user's contacts
       BOOKMARK_TITLE = 13;        // A bookmark whose title contains the input.
+      SEARCH_SUGGEST_ENTITY = 14; // A suggested search for an entity.
+      SEARCH_SUGGEST_INFINITE = 15; // A suggested search to complete the tail
+                                    // of the query.
+      SEARCH_SUGGEST_PERSONALIZED = 16; // A personalized suggested search.
+      SEARCH_SUGGEST_PROFILE = 17; // A personalized suggested search for a
+                                   // Google+ profile.      
     }
     optional ResultType result_type = 2;
 

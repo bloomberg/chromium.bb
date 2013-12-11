@@ -1523,9 +1523,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </if>
 
       <!-- Keywords -->
-      <message name="IDS_ANNOTATED_SUGGESTION" desc="A suggested search query in the omnibox dropdown, annotated to disambiguate it from other similar queries.">
-        <ph name="SUGGESTION">$1<ex>roosevelt</ex></ph> - <ph name="ANNOTATION">$2<ex>Franklin D. Roosevelt, 32nd U.S. President</ex></ph>
-      </message>
       <message name="IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR" desc="The separator between a result in the autocomplete popup and its description.">
         ''' - '''
       </message>

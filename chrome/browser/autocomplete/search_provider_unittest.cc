@@ -3383,11 +3383,11 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
                 cases[i].results[j].relevance, false));
       } else {
         provider_->default_results_.suggest_results.push_back(
-            SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), base::string16(),
-                                          base::string16(), std::string(),
-                                          std::string(), false,
-                                          cases[i].results[j].relevance,
-                                          false, false));
+            SearchProvider::SuggestResult(
+                ASCIIToUTF16(suggestion), AutocompleteMatchType::SEARCH_SUGGEST,
+                base::string16(), base::string16(), std::string(),
+                std::string(), false, cases[i].results[j].relevance, false,
+                false));
       }
     }
 
@@ -3432,19 +3432,14 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
 TEST_F(SearchProviderTest, ParseEntitySuggestion) {
   struct Match {
     std::string contents;
+    std::string description;
     std::string query_params;
     std::string fill_into_edit;
     AutocompleteMatchType::Type type;
-    size_t classification_offsets[3];
-    int classification_styles[3];
   };
-  const size_t invalid_offset = 10;
-  const int invalid_style = -1;
   const Match kEmptyMatch = {
-    kNotApplicable, kNotApplicable, kNotApplicable,
-    AutocompleteMatchType::NUM_TYPES,
-    { invalid_offset, invalid_offset, invalid_offset },
-    { invalid_style, invalid_style, invalid_style } };
+    kNotApplicable, kNotApplicable, kNotApplicable, kNotApplicable,
+    AutocompleteMatchType::NUM_TYPES};
 
   struct {
     const std::string input_text;
@@ -3453,21 +3448,14 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
   } cases[] = {
     // A query and an entity suggestion with different search terms.
     { "x",
-      "[\"x\",[\"xy\", \"xy\"],[\"\",\"\"],[],"
+      "[\"x\",[\"xy\", \"yy\"],[\"\",\"\"],[],"
       " {\"google:suggestdetail\":[{},"
-      "   {\"a\":\"A\",\"dq\":\"yy\",\"q\":\"p=v\"}],"
+      "   {\"a\":\"A\",\"t\":\"xy\",\"q\":\"p=v\"}],"
       "\"google:suggesttype\":[\"QUERY\",\"ENTITY\"]}]",
-      { { "x", "", "x", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-          { 0, invalid_offset, invalid_offset },
-          { ACMatchClassification::NONE, invalid_style, invalid_style } },
-        { "xy", "", "xy", AutocompleteMatchType::SEARCH_SUGGEST,
-          { 0, 1, invalid_offset },
-          { ACMatchClassification::NONE, ACMatchClassification::MATCH,
-            invalid_style } },
-        { "xy - A", "p=v", "yy", AutocompleteMatchType::SEARCH_SUGGEST,
-          { 0, 1, 2 },
-          { ACMatchClassification::NONE, ACMatchClassification::MATCH,
-            ACMatchClassification::DIM } },
+      { { "x", "", "", "x", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+        { "xy", "", "", "xy", AutocompleteMatchType::SEARCH_SUGGEST },
+        { "xy", "A", "p=v", "yy",
+          AutocompleteMatchType::SEARCH_SUGGEST_ENTITY },
         kEmptyMatch,
         kEmptyMatch
       },
@@ -3476,19 +3464,12 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
     { "x",
       "[\"x\",[\"xy\", \"xy\"],[\"\",\"\"],[],"
       " {\"google:suggestdetail\":[{},"
-      "   {\"a\":\"A\",\"dq\":\"xy\",\"q\":\"p=v\"}],"
+      "   {\"a\":\"A\",\"t\":\"xy\",\"q\":\"p=v\"}],"
       "\"google:suggesttype\":[\"QUERY\",\"ENTITY\"]}]",
-      { { "x", "", "x", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-          { 0, invalid_offset, invalid_offset },
-          { ACMatchClassification::NONE, invalid_style, invalid_style } },
-        { "xy", "", "xy", AutocompleteMatchType::SEARCH_SUGGEST,
-          { 0, 1, invalid_offset },
-          { ACMatchClassification::NONE, ACMatchClassification::MATCH,
-            invalid_style } },
-        { "xy - A", "p=v", "xy", AutocompleteMatchType::SEARCH_SUGGEST,
-          { 0, 1, 2 },
-          { ACMatchClassification::NONE, ACMatchClassification::MATCH,
-            ACMatchClassification::DIM } },
+      { { "x", "", "", "x", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+        { "xy", "", "", "xy", AutocompleteMatchType::SEARCH_SUGGEST },
+        { "xy", "A", "p=v", "xy",
+          AutocompleteMatchType::SEARCH_SUGGEST_ENTITY },
         kEmptyMatch,
         kEmptyMatch
       },
@@ -3521,30 +3502,19 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
       SCOPED_TRACE(" and match index: " + base::IntToString(j));
       EXPECT_EQ(match.contents,
                 UTF16ToUTF8(matches[j].contents));
+      EXPECT_EQ(match.description,
+                UTF16ToUTF8(matches[j].description));
       EXPECT_EQ(match.query_params,
                 matches[j].search_terms_args->suggest_query_params);
       EXPECT_EQ(match.fill_into_edit,
                 UTF16ToUTF8(matches[j].fill_into_edit));
       EXPECT_EQ(match.type, matches[j].type);
-
-      size_t k = 0;
-      for (; k < matches[j].contents_class.size(); k++) {
-        SCOPED_TRACE(" and contents class: " + base::IntToString(k));
-        EXPECT_EQ(match.classification_offsets[k],
-            matches[j].contents_class[k].offset);
-        EXPECT_EQ(match.classification_styles[k],
-            matches[j].contents_class[k].style);
-      }
-      for (; k < ARRAYSIZE_UNSAFE(match.classification_offsets); k++) {
-        SCOPED_TRACE(" and contents class: " + base::IntToString(k));
-        EXPECT_EQ(match.classification_offsets[k], invalid_offset);
-        EXPECT_EQ(match.classification_styles[k], invalid_style);
-      }
     }
     // Ensure that no expected matches are missing.
     for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j) {
       SCOPED_TRACE(" and match index: " + base::IntToString(j));
       EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
+      EXPECT_EQ(cases[i].matches[j].description, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].query_params, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].fill_into_edit, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].type, AutocompleteMatchType::NUM_TYPES);
@@ -3553,96 +3523,6 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
 }
 #endif  // !defined(OS_WIN)
 
-TEST_F(SearchProviderTest, SearchHistorySuppressesEntitySuggestion) {
-  struct Match {
-    std::string contents;
-    std::string query_params;
-    std::string fill_into_edit;
-    AutocompleteMatchType::Type type;
-  };
-  const Match kEmptyMatch = { kNotApplicable, kNotApplicable, kNotApplicable,
-                              AutocompleteMatchType::NUM_TYPES};
-
-  struct {
-    const std::string input_text;
-    const std::string history_search_term;
-    const std::string response_json;
-    const Match matches[5];
-  } cases[] = {
-    // Search history suppresses both query and entity suggestions.
-    { "x", "xy",
-      "[\"x\",[\"xy\", \"xy\"],[\"\",\"\"],[],"
-      " {\"google:suggestdetail\":[{},"
-      "   {\"a\":\"A\",\"dq\":\"xy\",\"q\":\"p=v\"}],"
-      "\"google:suggesttype\":[\"QUERY\",\"ENTITY\"]}]",
-      {
-        {"xy", "", "xy", AutocompleteMatchType::SEARCH_HISTORY},
-        {"x", "", "x", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
-        {"xy - A", "p=v", "xy", AutocompleteMatchType::SEARCH_SUGGEST},
-        kEmptyMatch,
-        kEmptyMatch,
-      },
-    },
-    // Search history suppresses only query suggestion.
-    { "x", "xyy",
-      "[\"x\",[\"xy\", \"xy\"],[\"\",\"\"],[],"
-      " {\"google:suggestdetail\":[{},"
-      "   {\"a\":\"A\",\"dq\":\"xyy\",\"q\":\"p=v\"}],"
-      "\"google:suggesttype\":[\"QUERY\",\"ENTITY\"]}]",
-      {
-        {"xyy", "", "xyy", AutocompleteMatchType::SEARCH_HISTORY},
-        {"xy", "", "xy", AutocompleteMatchType::SEARCH_HISTORY},
-        {"x", "", "x", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
-        {"xy - A", "p=v", "xyy", AutocompleteMatchType::SEARCH_SUGGEST},
-        kEmptyMatch,
-      },
-    }
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    GURL term_url(AddSearchToHistory(
-        default_t_url_, ASCIIToUTF16(cases[i].history_search_term), 10));
-    profile_.BlockUntilHistoryProcessesPendingRequests();
-    QueryForInput(ASCIIToUTF16(cases[i].input_text), false, false);
-
-    // Set up a default fetcher with provided results.
-    net::TestURLFetcher* fetcher =
-        test_factory_.GetFetcherByID(
-            SearchProvider::kDefaultProviderURLFetcherID);
-    ASSERT_TRUE(fetcher);
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(cases[i].response_json);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-
-    RunTillProviderDone();
-
-    const ACMatches& matches = provider_->matches();
-    ASSERT_FALSE(matches.empty());
-    SCOPED_TRACE("for case: " + base::IntToString(i));
-
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
-    size_t j = 0;
-    // Ensure that the returned matches equal the expectations.
-    for (; j < matches.size(); ++j) {
-      SCOPED_TRACE(" and match index: " + base::IntToString(j));
-      EXPECT_EQ(cases[i].matches[j].contents,
-                UTF16ToUTF8(matches[j].contents));
-      EXPECT_EQ(cases[i].matches[j].query_params,
-                matches[j].search_terms_args->suggest_query_params);
-      EXPECT_EQ(cases[i].matches[j].fill_into_edit,
-                UTF16ToUTF8(matches[j].fill_into_edit));
-      EXPECT_EQ(cases[i].matches[j].type, matches[j].type);
-    }
-    // Ensure that no expected matches are missing.
-    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j) {
-      SCOPED_TRACE(" and match index: " + base::IntToString(j));
-      EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
-      EXPECT_EQ(cases[i].matches[j].query_params, kNotApplicable);
-      EXPECT_EQ(cases[i].matches[j].fill_into_edit, kNotApplicable);
-      EXPECT_EQ(cases[i].matches[j].type, AutocompleteMatchType::NUM_TYPES);
-    }
-  }
-}
 
 // A basic test that verifies the prefetch metadata parsing logic.
 TEST_F(SearchProviderTest, PrefetchMetadataParsing) {

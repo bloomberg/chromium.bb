@@ -57,6 +57,22 @@ void AutocompleteMatchToAssistedQuery(
       *type = 0;
       return;
     }
+    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY: {
+      *subtype = 46;
+      return;
+    }
+    case AutocompleteMatchType::SEARCH_SUGGEST_INFINITE: {
+      *subtype = 33;
+      return;
+    }
+    case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED: {
+      *subtype = 35;
+      return;
+    }
+    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE: {
+      *subtype = 44;
+      return;
+    }
     case AutocompleteMatchType::NAVSUGGEST: {
       *type = 5;
       return;
@@ -125,6 +141,12 @@ bool IsTrivialAutocompletion(const AutocompleteMatch& match) {
   return match.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
       match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
       match.type == AutocompleteMatchType::SEARCH_OTHER_ENGINE;
+}
+
+// Whether this autocomplete match type supports custom descriptions.
+bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
+  return match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+      match.type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
 }  // namespace
@@ -517,6 +539,8 @@ void AutocompleteController::UpdateKeywordDescriptions(
          !i->keyword.empty()) ||
         (i->provider->type() == AutocompleteProvider::TYPE_SEARCH &&
          AutocompleteMatch::IsSearchType(i->type))) {
+      if (AutocompleteMatchHasCustomDescription(*i))
+        continue;
       i->description.clear();
       i->description_class.clear();
       DCHECK(!i->keyword.empty());
