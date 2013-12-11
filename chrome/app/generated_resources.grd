@@ -10253,7 +10253,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         For your security, please verify your card details.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING" desc="Text warning the user that they're not using the Online Wallet production server, so their purchases probably wont succeed.">
-        Warning: You are not connected to production Wallet servers. Issued cards are probably invalid.
+        Warning: You are not connected to production Wallet servers. Issued cards will be invalid.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_FAILED_TO_SAVE_WALLET_DATA" desc="Text advising the user that there was an unrecoverable validation error on the wallet server.">
         Could not save data to Wallet.
