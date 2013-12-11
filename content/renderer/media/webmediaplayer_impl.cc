@@ -130,11 +130,13 @@ static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
 }
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
+    content::RenderView* render_view,
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     const WebMediaPlayerParams& params)
-    : frame_(frame),
+    : content::RenderViewObserver(render_view),
+      frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       main_loop_(base::MessageLoopProxy::current()),
@@ -182,9 +184,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
                  AsWeakPtr()));
 
-  // Also we want to be notified of |main_loop_| destruction.
-  base::MessageLoop::current()->AddDestructionObserver(this);
-
   if (blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
@@ -215,11 +214,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
     delegate_->PlayerGone(this);
 
   Destroy();
-
-  // Remove destruction observer if we're being destroyed but the main thread is
-  // still running.
-  if (base::MessageLoop::current())
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 namespace {
@@ -859,7 +853,7 @@ WebMediaPlayerImpl::CancelKeyRequestInternal(
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
-void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
+void WebMediaPlayerImpl::OnDestruct() {
   Destroy();
 }
 

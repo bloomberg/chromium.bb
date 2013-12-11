@@ -3016,7 +3016,7 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
       sink,
       RenderThreadImpl::current()->GetGpuFactories(),
       new RenderMediaLog());
-  return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
+  return new WebMediaPlayerImpl(this, frame, client, AsWeakPtr(), params);
 #endif  // defined(OS_ANDROID)
 }
 

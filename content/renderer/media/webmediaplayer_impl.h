@@ -29,6 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
@@ -73,13 +74,15 @@ class WebTextTrackImpl;
 class WebMediaPlayerImpl
     : public blink::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public base::MessageLoop::DestructionObserver,
+      public content::RenderViewObserver,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
-  //
+  // |render_view| is passed only for the purpose of registering |this| as an
+  // observer of it.
   // |delegate| may be null.
   WebMediaPlayerImpl(
+      content::RenderView* render_view,
       blink::WebFrame* frame,
       blink::WebMediaPlayerClient* client,
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
@@ -172,11 +175,8 @@ class WebMediaPlayerImpl
       const blink::WebString& key_system,
       const blink::WebString& session_id);
 
-  // As we are closing the tab or even the browser, |main_loop_| is destroyed
-  // even before this object gets destructed, so we need to know when
-  // |main_loop_| is being destroyed and we can stop posting repaint task
-  // to it.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  // content::RenderViewObserver implementation.
+  virtual void OnDestruct() OVERRIDE;
 
   void Repaint();
 
