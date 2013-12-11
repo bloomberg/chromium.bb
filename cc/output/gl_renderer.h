@@ -76,7 +76,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                       size_t bytes_visible_and_nearby,
                                       size_t bytes_allocated) OVERRIDE;
 
-  static void DebugGLCall(blink::WebGraphicsContext3D* context,
+  static void DebugGLCall(gpu::gles2::GLES2Interface* gl,
                           const char* command,
                           const char* file,
                           int line);
