@@ -482,6 +482,11 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
   if (!delegate_)
     return;
 
+  // Favor the drag and drop host over native win32 drag. For the Win8/ash
+  // launcher we want to have ashes drag and drop over win32's.
+  if (drag_and_drop_host_)
+    return;
+
   delegate_->GetShortcutPathForApp(
       drag_view_->model()->id(),
       base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
