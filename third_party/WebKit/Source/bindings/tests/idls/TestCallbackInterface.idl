@@ -26,16 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This IDL file is for testing the bindings code generator with a callback
-// interface for tracking changes in its ouput.
-callback interface TestCallback {
-  boolean callbackWithNoArg();
-  boolean callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty class1Arg);
-  boolean callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty class2Arg, DOMString strArg);
-  [Custom] boolean customCallback(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty testInterfaceEmptyArg);
-  boolean callbackWithBooleanArg(boolean boolArg);
-  boolean callbackWithSequenceArg(sequence<TestInterfaceEmpty> sequenceArg);
-  boolean callbackWithFloatArg(float floatArg);
-  [CallWith=ThisValue] boolean callbackWithThisArg(long arg);
-  void callbackWithVoidReturnValue();
+callback interface TestCallbackInterface {
+  void voidMethod();
+  boolean booleanMethod();
+  void voidMethodBooleanArg(boolean boolArg);
+  void voidMethodSequenceArg(sequence<TestInterfaceEmpty> sequenceArg);
+  void voidMethodFloatArg(float floatArg);
+  void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
+  void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty testInterfaceEmptyArg, DOMString stringArg);
+  [CallWith=ThisValue] void callbackWithThisValueVoidMethodStringArg(DOMString stringArg);
+  [Custom] void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
 };

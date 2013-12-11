@@ -563,9 +563,13 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    if (info.Length() <= 1 || !info[1]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("implementsMethod2", "TestInterface", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
     ExecutionContext* scriptContext = getExecutionContext();
-    RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg, exceptionState);
+    RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
@@ -625,9 +629,13 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    if (info.Length() <= 1 || !info[1]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "TestInterface", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
     ExecutionContext* scriptContext = getExecutionContext();
-    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, exceptionState);
+    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
@@ -810,9 +818,13 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"implementsMethod1", TestInterfaceV8Internal::implementsMethod1MethodCallback, 0, 0},
+    {"implementsMethod2", TestInterfaceV8Internal::implementsMethod2MethodCallback, 0, 2},
     {"implementsMethod3", TestInterfaceV8Internal::implementsMethod3MethodCallback, 0, 0},
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalMethod1", TestInterfaceV8Internal::supplementalMethod1MethodCallback, 0, 0},
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
+#if ENABLE(Condition11) || ENABLE(Condition12)
+    {"supplementalMethod2", TestInterfaceV8Internal::supplementalMethod2MethodCallback, 0, 2},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalMethod3", TestInterfaceV8Internal::supplementalMethod3MethodCallback, 0, 0},
@@ -873,21 +885,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     COMPILE_ASSERT(1 == TestPartialInterface::SUPPLEMENTALCONSTANT1, TheValueOfTestInterface_SUPPLEMENTALCONSTANT1DoesntMatchWithImplementation);
     COMPILE_ASSERT(2 == TestPartialInterface::CONST_IMPL, TheValueOfTestInterface_CONST_IMPLDoesntMatchWithImplementation);
     functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestInterfaceV8Internal::namedPropertyGetterCallback, TestInterfaceV8Internal::namedPropertySetterCallback, TestInterfaceV8Internal::namedPropertyQueryCallback, 0, TestInterfaceV8Internal::namedPropertyEnumeratorCallback);
-
-    // Custom Signature 'implementsMethod2'
-    const int implementsMethod2Argc = 2;
-    v8::Handle<v8::FunctionTemplate> implementsMethod2Argv[implementsMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> implementsMethod2Signature = v8::Signature::New(isolate, functionTemplate, implementsMethod2Argc, implementsMethod2Argv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "implementsMethod2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestInterfaceV8Internal::implementsMethod2MethodCallback, v8Undefined(), implementsMethod2Signature, 2));
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "implementsMethod4", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestInterfaceV8Internal::implementsMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-    // Custom Signature 'supplementalMethod2'
-    const int supplementalMethod2Argc = 2;
-    v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(isolate, functionTemplate, supplementalMethod2Argc, supplementalMethod2Argv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod4", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

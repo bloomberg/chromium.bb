@@ -41,7 +41,7 @@
 #include "V8Node.h"
 #include "V8SVGDocument.h"
 #include "V8SVGPoint.h"
-#include "V8TestCallback.h"
+#include "V8TestCallbackInterface.h"
 #include "V8TestInterface.h"
 #include "V8TestNode.h"
 #include "V8TestObjectectA.h"
@@ -2931,8 +2931,12 @@ static void voidMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
-    imp->voidMethodWithArgs(longArg, strArg, objArg);
+    if (info.Length() <= 2 || !info[2]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodWithArgs", "TestObject", "The callback provided as parameter 3 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[2]), getExecutionContext());
+    imp->voidMethodWithArgs(longArg, strArg, objArg.release());
 }
 
 static void voidMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -2964,8 +2968,12 @@ static void longMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
-    v8SetReturnValueInt(info, imp->longMethodWithArgs(longArg, strArg, objArg));
+    if (info.Length() <= 2 || !info[2]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("longMethodWithArgs", "TestObject", "The callback provided as parameter 3 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[2]), getExecutionContext());
+    v8SetReturnValueInt(info, imp->longMethodWithArgs(longArg, strArg, objArg.release()));
 }
 
 static void longMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -2998,8 +3006,12 @@ static void objMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
-    v8SetReturnValue(info, imp->objMethodWithArgs(longArg, strArg, objArg));
+    if (info.Length() <= 2 || !info[2]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("objMethodWithArgs", "TestObject", "The callback provided as parameter 3 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[2]), getExecutionContext());
+    v8SetReturnValue(info, imp->objMethodWithArgs(longArg, strArg, objArg.release()));
 }
 
 static void objMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3078,8 +3090,12 @@ static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackI
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
-    RefPtr<TestObj> result = imp->methodThatRequiresAllArgsAndThrows(strArg, objArg, exceptionState);
+    if (info.Length() <= 1 || !info[1]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("methodThatRequiresAllArgsAndThrows", "TestObject", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
+    RefPtr<TestObj> result = imp->methodThatRequiresAllArgsAndThrows(strArg, objArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
@@ -3582,105 +3598,105 @@ static void methodWithOptionalStringIsNullStringMethodCallback(const v8::Functio
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void methodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
     if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
-    imp->methodWithCallbackArg(callback.release());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    imp->methodWithCallbackInterfaceArg(callbackInterface.release());
 }
 
-static void methodWithCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::methodWithCallbackArgMethod(info);
+    TestObjV8Internal::methodWithCallbackInterfaceArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void methodWithNonCallbackArgAndCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithNonCallbackArgAndCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithNonCallbackArgAndCallbackArg", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNonCallbackArgAndCallbackInterfaceArg", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, nonCallback, toInt32(info[0]));
     if (info.Length() <= 1 || !info[1]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithNonCallbackArgAndCallbackArg", "TestObject", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNonCallbackArgAndCallbackInterfaceArg", "TestObject", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
-    imp->methodWithNonCallbackArgAndCallbackArg(nonCallback, callback.release());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
+    imp->methodWithNonCallbackArgAndCallbackInterfaceArg(nonCallback, callbackInterface.release());
 }
 
-static void methodWithNonCallbackArgAndCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithNonCallbackArgAndCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::methodWithNonCallbackArgAndCallbackArgMethod(info);
+    TestObjV8Internal::methodWithNonCallbackArgAndCallbackInterfaceArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void methodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithCallbackInterfaceAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    OwnPtr<TestCallback> callback;
+    OwnPtr<TestCallbackInterface> callbackInterface;
     if (info.Length() > 0 && !info[0]->IsNull() && !info[0]->IsUndefined()) {
         if (!info[0]->IsFunction()) {
-            throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+            throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     }
-    imp->methodWithCallbackAndOptionalArg(callback.release());
+    imp->methodWithCallbackInterfaceAndOptionalArg(callbackInterface.release());
 }
 
-static void methodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithCallbackInterfaceAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::methodWithCallbackAndOptionalArgMethod(info);
+    TestObjV8Internal::methodWithCallbackInterfaceAndOptionalArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void methodWithNullableCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithNullableCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackInterfaceArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
     if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = info[0]->IsNull() ? nullptr : V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
-    imp->methodWithNullableCallbackArg(callback.release());
+    OwnPtr<TestCallbackInterface> callbackInterface = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    imp->methodWithNullableCallbackInterfaceArg(callbackInterface.release());
 }
 
-static void methodWithNullableCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void methodWithNullableCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::methodWithNullableCallbackArgMethod(info);
+    TestObjV8Internal::methodWithNullableCallbackInterfaceArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    OwnPtr<TestCallback> callback;
+    OwnPtr<TestCallbackInterface> callbackInterface;
     if (info.Length() > 0 && !info[0]->IsNull() && !info[0]->IsUndefined()) {
         if (!info[0]->IsFunction()) {
             throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     }
-    TestObj::staticMethodWithCallbackAndOptionalArg(callback.release());
+    TestObj::staticMethodWithCallbackAndOptionalArg(callbackInterface.release());
 }
 
 static void staticMethodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3700,8 +3716,8 @@ static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8:
         throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
-    TestObj::staticMethodWithCallbackArg(callback.release());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    TestObj::staticMethodWithCallbackArg(callbackInterface.release());
 }
 
 static void staticMethodWithCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3959,8 +3975,8 @@ static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> callbackArg = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
-    imp->overloadedMethod(callbackArg.release());
+    OwnPtr<TestCallbackInterface> callbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    imp->overloadedMethod(callbackInterfaceArg.release());
 }
 
 static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3970,8 +3986,12 @@ static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
-    imp->overloadedMethod(objArg);
+    if (info.Length() <= 0 || !info[0]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    imp->overloadedMethod(objArg.release());
 }
 
 static void overloadedMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4007,7 +4027,7 @@ static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         overloadedMethod2Method(info);
         return;
     }
-    if (((info.Length() == 1) && (V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsFunction()))) {
         overloadedMethod3Method(info);
         return;
     }
@@ -4042,13 +4062,17 @@ static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = info[0]->IsNull() ? nullptr : V8TestObject::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     if (UNLIKELY(info.Length() <= 1)) {
-        imp->overloadedMethodA(objArg);
+        imp->overloadedMethodA(objArg.release());
         return;
     }
     V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
-    imp->overloadedMethodA(objArg, longArg);
+    imp->overloadedMethodA(objArg.release(), longArg);
 }
 
 static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4058,19 +4082,23 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = info[0]->IsNull() ? nullptr : V8TestObject::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    imp->overloadedMethodA(objArg, strArg);
+    imp->overloadedMethodA(objArg.release(), strArg);
 }
 
 static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
-    if (((info.Length() == 1) && (info[0]->IsNull() || V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())))) || ((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsFunction())) || ((info.Length() == 2) && (info[0]->IsNull() || info[0]->IsFunction()))) {
         overloadedMethodA1Method(info);
         return;
     }
-    if (((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 2) && (info[0]->IsNull() || info[0]->IsFunction()))) {
         overloadedMethodA2Method(info);
         return;
     }
@@ -4553,14 +4581,18 @@ static void methodWithNullableArgumentsMethod(const v8::FunctionCallbackInfo<v8:
     String str = strStringResource;
     bool lIsNull = info[1]->IsNull();
     V8TRYCATCH_VOID(int, l, toInt32(info[1]));
-    V8TRYCATCH_VOID(TestObj*, obj, V8TestObject::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[2])) : 0);
+    if (info.Length() <= 2 || !(info[2]->IsFunction() || info[2]->IsNull())) {
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableArguments", "TestObject", "The callback provided as parameter 3 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> obj = info[2]->IsNull() ? nullptr : V8TestObject::create(v8::Handle<v8::Function>::Cast(info[2]), getExecutionContext());
     if (UNLIKELY(info.Length() <= 3)) {
-        imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj);
+        imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj.release());
         return;
     }
     bool dIsNull = info[3]->IsNull();
     V8TRYCATCH_VOID(double, d, static_cast<double>(info[3]->NumberValue()));
-    imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj, dIsNull ? 0 : &d);
+    imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj.release(), dIsNull ? 0 : &d);
 }
 
 static void methodWithNullableArgumentsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4953,8 +4985,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> testCallback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
-    RefPtr<TestObj> impl = TestObj::create(testCallback);
+    OwnPtr<TestCallbackInterface> testCallbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    RefPtr<TestObj> impl = TestObj::create(testCallbackInterface);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl.release(), &V8TestObject::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
@@ -5157,11 +5189,15 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
 
 static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethod", TestObjV8Internal::voidMethodMethodCallback, 0, 0},
+    {"voidMethodWithArgs", TestObjV8Internal::voidMethodWithArgsMethodCallback, 0, 3},
     {"longMethod", TestObjV8Internal::longMethodMethodCallback, 0, 0},
+    {"longMethodWithArgs", TestObjV8Internal::longMethodWithArgsMethodCallback, 0, 3},
     {"objMethod", TestObjV8Internal::objMethodMethodCallback, 0, 0},
+    {"objMethodWithArgs", TestObjV8Internal::objMethodWithArgsMethodCallback, 0, 3},
     {"methodWithSequenceArg", TestObjV8Internal::methodWithSequenceArgMethodCallback, 0, 1},
     {"methodReturningSequence", TestObjV8Internal::methodReturningSequenceMethodCallback, 0, 1},
     {"methodWithEnumArg", TestObjV8Internal::methodWithEnumArgMethodCallback, 0, 1},
+    {"methodThatRequiresAllArgsAndThrows", TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, 0, 2},
     {"methodQueryListListener", TestObjV8Internal::methodQueryListListenerMethodCallback, 0, 1},
     {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
     {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0, 1},
@@ -5186,10 +5222,10 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"methodWithOptionalString", TestObjV8Internal::methodWithOptionalStringMethodCallback, 0, 0},
     {"methodWithOptionalStringIsUndefined", TestObjV8Internal::methodWithOptionalStringIsUndefinedMethodCallback, 0, 0},
     {"methodWithOptionalStringIsNullString", TestObjV8Internal::methodWithOptionalStringIsNullStringMethodCallback, 0, 0},
-    {"methodWithCallbackArg", TestObjV8Internal::methodWithCallbackArgMethodCallback, 0, 1},
-    {"methodWithNonCallbackArgAndCallbackArg", TestObjV8Internal::methodWithNonCallbackArgAndCallbackArgMethodCallback, 0, 2},
-    {"methodWithCallbackAndOptionalArg", TestObjV8Internal::methodWithCallbackAndOptionalArgMethodCallback, 0, 0},
-    {"methodWithNullableCallbackArg", TestObjV8Internal::methodWithNullableCallbackArgMethodCallback, 0, 1},
+    {"methodWithCallbackInterfaceArg", TestObjV8Internal::methodWithCallbackInterfaceArgMethodCallback, 0, 1},
+    {"methodWithNonCallbackArgAndCallbackInterfaceArg", TestObjV8Internal::methodWithNonCallbackArgAndCallbackInterfaceArgMethodCallback, 0, 2},
+    {"methodWithCallbackInterfaceAndOptionalArg", TestObjV8Internal::methodWithCallbackInterfaceAndOptionalArgMethodCallback, 0, 0},
+    {"methodWithNullableCallbackInterfaceArg", TestObjV8Internal::methodWithNullableCallbackInterfaceArgMethodCallback, 0, 1},
     {"methodWithEnforceRangeInt8", TestObjV8Internal::methodWithEnforceRangeInt8MethodCallback, 0, 1},
     {"methodWithEnforceRangeUInt8", TestObjV8Internal::methodWithEnforceRangeUInt8MethodCallback, 0, 1},
     {"methodWithEnforceRangeInt16", TestObjV8Internal::methodWithEnforceRangeInt16MethodCallback, 0, 1},
@@ -5275,30 +5311,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     COMPILE_ASSERT(1 == TestObj::DEPRECATED_CONSTANT, TheValueOfTestObj_DEPRECATED_CONSTANTDoesntMatchWithImplementation);
     functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestObjV8Internal::indexedPropertyGetterCallback, 0, 0, 0, indexedPropertyEnumerator<TestObj>);
     functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestObjV8Internal::namedPropertyGetterCallback, 0, TestObjV8Internal::namedPropertyQueryCallback, 0, TestObjV8Internal::namedPropertyEnumeratorCallback);
-
-    // Custom Signature 'voidMethodWithArgs'
-    const int voidMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> voidMethodWithArgsArgv[voidMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> voidMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, voidMethodWithArgsArgc, voidMethodWithArgsArgv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::voidMethodWithArgsMethodCallback, v8Undefined(), voidMethodWithArgsSignature, 3));
-
-    // Custom Signature 'longMethodWithArgs'
-    const int longMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> longMethodWithArgsArgv[longMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> longMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, longMethodWithArgsArgc, longMethodWithArgsArgv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "longMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::longMethodWithArgsMethodCallback, v8Undefined(), longMethodWithArgsSignature, 3));
-
-    // Custom Signature 'objMethodWithArgs'
-    const int objMethodWithArgsArgc = 3;
-    v8::Handle<v8::FunctionTemplate> objMethodWithArgsArgv[objMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> objMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, objMethodWithArgsArgc, objMethodWithArgsArgv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "objMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature, 3));
-
-    // Custom Signature 'methodThatRequiresAllArgsAndThrows'
-    const int methodThatRequiresAllArgsAndThrowsArgc = 2;
-    v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> methodThatRequiresAllArgsAndThrowsSignature = v8::Signature::New(isolate, functionTemplate, methodThatRequiresAllArgsAndThrowsArgc, methodThatRequiresAllArgsAndThrowsArgv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "methodThatRequiresAllArgsAndThrows", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature, 2));
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "staticMethodWithCallbackAndOptionalArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "staticMethodWithCallbackArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::staticMethodWithCallbackArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "classMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::classMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));

@@ -326,9 +326,13 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     }
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    if (info.Length() <= 1 || !info[1]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "SupportTestInterface", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestObject> objArg = V8TestObject::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
     ExecutionContext* scriptContext = getExecutionContext();
-    RefPtr<TestObj> result = SupportTestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, exceptionState);
+    RefPtr<TestObj> result = SupportTestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
@@ -391,6 +395,9 @@ static const V8DOMConfiguration::MethodConfiguration V8SupportTestInterfaceMetho
     {"supplementalMethod1", SupportTestInterfaceV8Internal::supplementalMethod1MethodCallback, 0, 0},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
+    {"supplementalMethod2", SupportTestInterfaceV8Internal::supplementalMethod2MethodCallback, 0, 2},
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
+#if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalMethod3", SupportTestInterfaceV8Internal::supplementalMethod3MethodCallback, 0, 0},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
@@ -421,14 +428,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8SupportTestInterfaceTemplate(
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8SupportTestInterfaceConstants, WTF_ARRAY_LENGTH(V8SupportTestInterfaceConstants), isolate);
     COMPILE_ASSERT(1 == SupportTestPartialInterface::SUPPLEMENTALCONSTANT1, TheValueOfSupportTestInterface_SUPPLEMENTALCONSTANT1DoesntMatchWithImplementation);
     COMPILE_ASSERT(2 == SupportTestPartialInterface::CONST_IMPL, TheValueOfSupportTestInterface_CONST_IMPLDoesntMatchWithImplementation);
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-    // Custom Signature 'supplementalMethod2'
-    const int supplementalMethod2Argc = 2;
-    v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(isolate, functionTemplate, supplementalMethod2Argc, supplementalMethod2Argv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, SupportTestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod4", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, SupportTestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

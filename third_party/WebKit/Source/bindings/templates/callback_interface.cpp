@@ -41,7 +41,7 @@
 {% endfor %}
 namespace WebCore {
 
-{{v8_class}}::{{v8_class}}(v8::Handle<v8::Object> callback, ExecutionContext* context)
+{{v8_class}}::{{v8_class}}(v8::Handle<v8::Function> callback, ExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(toIsolate(context), callback)
     , m_world(DOMWrapperWorld::current())
@@ -55,15 +55,17 @@ namespace WebCore {
 {% for method in methods if not method.custom %}
 {{method.return_cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}})
 {
+    {% set return_default = 'return true'
+           if method.return_idl_type == 'boolean' else 'return' %}{# void #}
     if (!canInvokeCallback())
-        return true;
+        {{return_default}};
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
 
     v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
-        return true;
+        {{return_default}};
 
     v8::Context::Scope scope(v8Context);
     {% if method.call_with_this_handle %}
@@ -71,7 +73,7 @@ namespace WebCore {
     if (thisHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
-        return true;
+        {{return_default}};
     }
     ASSERT(thisHandle->IsObject());
     {% endif %}
@@ -80,7 +82,7 @@ namespace WebCore {
     if ({{argument.name}}Handle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
-        return true;
+        {{return_default}};
     }
     {% endfor %}
     {% if method.arguments %}
@@ -89,9 +91,12 @@ namespace WebCore {
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}
 
-    bool callbackReturnValue = false;
     {% set this_handle_parameter = 'v8::Handle<v8::Object>::Cast(thisHandle), ' if method.call_with_this_handle else '' %}
-    return !invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, callbackReturnValue, executionContext(), isolate);
+    {% if method.return_idl_type == 'boolean' %}
+    return invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), isolate);
+    {% else %}{# void #}
+    invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), isolate);
+    {% endif %}
 }
 
 {% endfor %}

@@ -32,7 +32,7 @@
 // changes in its ouput.
 
 [
-    Constructor(STRING hello, TEST_CALLBACK testCallback)
+    Constructor(STRING hello, TEST_CALLBACK_INTERFACE testCallbackInterface)
 ] interface TestTypedefs {
     attribute ULONGLONG unsignedLongLongAttr;
 
@@ -68,7 +68,7 @@ typedef long[]                     ARRAY_OF_LONGS;
 typedef SVGPoint                   SVGPOINT;
 typedef DOMString                  STRING;
 typedef DOMString[]                ARRAY_OF_STRINGS;
-typedef TestCallback               TEST_CALLBACK;
+typedef TestCallbackInterface      TEST_CALLBACK_INTERFACE;
 typedef TestSubObjConstructor      T;
 typedef Array                      ARRAY;
 typedef DOMException               E;

@@ -36,7 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8SVGPoint.h"
 #include "V8SerializedScriptValue.h"
-#include "V8TestCallback.h"
+#include "V8TestCallbackInterface.h"
 #include "V8TestSubObj.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
@@ -441,8 +441,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallback> testCallback = V8TestCallback::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
-    RefPtr<TestTypedefs> impl = TestTypedefs::create(hello, testCallback);
+    OwnPtr<TestCallbackInterface> testCallbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
+    RefPtr<TestTypedefs> impl = TestTypedefs::create(hello, testCallbackInterface);
     v8::Handle<v8::Object> wrapper = info.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
