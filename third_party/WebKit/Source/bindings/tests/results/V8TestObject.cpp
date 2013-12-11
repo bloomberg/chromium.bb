@@ -4018,7 +4018,6 @@ static void overloadedMethod5Method(const v8::FunctionCallbackInfo<v8::Value>& i
 
 static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethod1Method(info);
         return;
@@ -4039,6 +4038,7 @@ static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         overloadedMethod5Method(info);
         return;
     }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
@@ -4093,7 +4093,6 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsFunction())) || ((info.Length() == 2) && (info[0]->IsNull() || info[0]->IsFunction()))) {
         overloadedMethodA1Method(info);
         return;
@@ -4102,6 +4101,7 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         overloadedMethodA2Method(info);
         return;
     }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
@@ -4142,7 +4142,6 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedMethodB1Method(info);
         return;
@@ -4151,6 +4150,7 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         overloadedMethodB2Method(info);
         return;
     }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
@@ -4664,7 +4664,6 @@ static void overloadedPerWorldMethod2Method(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedPerWorldMethod1Method(info);
         return;
@@ -4673,6 +4672,7 @@ static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Va
         overloadedPerWorldMethod2Method(info);
         return;
     }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
@@ -4703,7 +4703,6 @@ static void overloadedPerWorldMethod2MethodForMainWorld(const v8::FunctionCallba
 
 static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedPerWorldMethod1MethodForMainWorld(info);
         return;
@@ -4712,6 +4711,7 @@ static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbac
         overloadedPerWorldMethod2MethodForMainWorld(info);
         return;
     }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
@@ -4874,7 +4874,6 @@ static void overloadedActivityLoggedMethod2Method(const v8::FunctionCallbackInfo
 
 static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedActivityLoggedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedActivityLoggedMethod1Method(info);
         return;
@@ -4883,6 +4882,7 @@ static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<
         overloadedActivityLoggedMethod2Method(info);
         return;
     }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedActivityLoggedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
@@ -4918,7 +4918,6 @@ static void overloadedActivityLoggedMethod2MethodForMainWorld(const v8::Function
 
 static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedActivityLoggedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (((info.Length() == 1))) {
         overloadedActivityLoggedMethod1MethodForMainWorld(info);
         return;
@@ -4927,6 +4926,7 @@ static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionC
         overloadedActivityLoggedMethod2MethodForMainWorld(info);
         return;
     }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedActivityLoggedMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();

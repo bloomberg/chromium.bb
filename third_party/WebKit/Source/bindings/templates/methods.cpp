@@ -168,9 +168,6 @@ if (state.hadException()) {
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    {% if overloads.minimum_number_of_required_arguments %}
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
-    {% endif %}
     {% for method in overloads.methods %}
     if ({{method.overload_resolution_expression}}) {
         {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
@@ -178,6 +175,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     }
     {% endfor %}
     {% if overloads.minimum_number_of_required_arguments %}
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.minimum_number_of_required_arguments}}, info.Length()));
         exceptionState.throwIfNeeded();

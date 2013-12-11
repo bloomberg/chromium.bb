@@ -2255,14 +2255,12 @@ sub GenerateOverloadedFunction
     my $conditionalString = GenerateConditionalString($function);
     my $leastNumMandatoryParams = 255;
 
-    my $hasExceptionState = 0;
-    my $header = "";
-    $header .= "#if ${conditionalString}\n\n" if $conditionalString;
-    $header .= <<END;
+    my $code = "";
+    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $code .= <<END;
 static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 END
-    my $code = "";
     $code .= GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
 
@@ -2276,19 +2274,14 @@ END
         $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
-        if (!$hasExceptionState) {
-            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-            AddToImplIncludes("bindings/v8/ExceptionState.h");
-            $header .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${name}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
-            $hasExceptionState = 1;
-        }
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${name}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         $code .= "    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {\n";
         $code .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length()));\n";
         $code .= "        exceptionState.throwIfNeeded();\n";
         $code .= "        return;\n";
         $code .= "    }\n";
-    }
-    if ($hasExceptionState) {
         $code .= <<END;
     exceptionState.throwTypeError(\"No function was found that matched the signature provided.\");
     exceptionState.throwIfNeeded();
@@ -2301,7 +2294,7 @@ END
     }
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
-    $implementation{nameSpaceInternal}->add($header . $code);
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateFunctionCallback
