@@ -27,6 +27,7 @@
 #define WebGLObject_h
 
 #include "platform/graphics/GraphicsContext3D.h"
+
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

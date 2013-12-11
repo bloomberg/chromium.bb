@@ -50,7 +50,7 @@ public:
             : enabled(false)
             , bytesPerElement(0)
             , size(4)
-            , type(GL_FLOAT)
+            , type(GraphicsContext3D::FLOAT)
             , normalized(false)
             , stride(16)
             , originalStride(0)

@@ -9,6 +9,5 @@ include_rules = [
     "+public",
     "+public/platform",
     "+skia",
-    "+third_party/khronos",
     "+third_party/skia",
 ]
