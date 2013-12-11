@@ -34,10 +34,9 @@ public:
     static PassRefPtr<HTMLLabelElement> create(Document&);
 
     LabelableElement* control();
+    HTMLFormElement* form() const;
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
-
-    virtual HTMLFormElement* formOwner() const OVERRIDE;
 
 private:
     explicit HTMLLabelElement(Document&);

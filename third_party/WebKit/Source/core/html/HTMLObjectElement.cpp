@@ -449,7 +449,7 @@ bool HTMLObjectElement::appendFormData(FormDataList& encoding, bool)
     return true;
 }
 
-HTMLFormElement* HTMLObjectElement::formOwner() const
+HTMLFormElement* HTMLObjectElement::virtualForm() const
 {
     return FormAssociatedElement::form();
 }
