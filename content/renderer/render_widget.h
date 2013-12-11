@@ -133,8 +133,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void didBecomeReadyForAdditionalInput();
   virtual void didCommitAndDrawCompositorFrame();
   virtual void didCompleteSwapBuffers();
-  virtual void scheduleComposite();
-  virtual void scheduleAnimation();
+  virtual void scheduleAnimation(); // Renamed. Staged for removal.
+  virtual void scheduleUpdate();
   virtual void didFocus();
   virtual void didBlur();
   virtual void didChangeCursor(const blink::WebCursorInfo&);
@@ -226,6 +226,8 @@ class CONTENT_EXPORT RenderWidget
   void DisableScreenMetricsEmulation();
   void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
 
+  void ScheduleAnimation();
+  void ScheduleComposite();
   void ScheduleCompositeWithForcedRedraw();
 
   // Called by the compositor in single-threaded mode when a swap is posted,

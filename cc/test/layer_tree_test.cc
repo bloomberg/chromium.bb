@@ -515,6 +515,10 @@ void LayerTreeTest::ScheduleComposite() {
       base::Bind(&LayerTreeTest::DispatchComposite, main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::ScheduleAnimation() {
+  ScheduleComposite();
+}
+
 void LayerTreeTest::RealEndTest() {
   if (layer_tree_host_ && proxy()->CommitPendingForTesting()) {
     main_task_runner_->PostTask(
@@ -601,7 +605,7 @@ void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
   if (layer_tree_host_)
-    layer_tree_host_->SetNextCommitForcesRedraw();
+    layer_tree_host_->set_next_commit_forces_redraw();
 }
 
 void LayerTreeTest::DispatchComposite() {

@@ -27,12 +27,12 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
   }
 };
 
-// Makes sure that SetNeedsAnimate does not cause the CommitRequested() state to
-// be set.
-class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested
+// Makes sure that SetNeedsUpdateLayers does not cause the CommitRequested()
+// state to be set.
+class LayerTreeHostAnimationTestSetNeedsUpdateLayersShouldNotSetCommitRequested
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested()
+  LayerTreeHostAnimationTestSetNeedsUpdateLayersShouldNotSetCommitRequested()
       : num_commits_(0) {}
 
   virtual void BeginTest() OVERRIDE {
@@ -45,7 +45,7 @@ class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested
     if (num_commits_ != 1)
       return;
 
-    layer_tree_host()->SetNeedsAnimate();
+    layer_tree_host()->SetNeedsUpdateLayers();
     // Right now, CommitRequested is going to be true, because during
     // BeginFrame, we force CommitRequested to true to prevent requests from
     // hitting the impl thread. But, when the next DidCommit happens, we should
@@ -55,11 +55,11 @@ class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested
   virtual void DidCommit() OVERRIDE {
     if (!num_commits_) {
       EXPECT_FALSE(layer_tree_host()->CommitRequested());
-      layer_tree_host()->SetNeedsAnimate();
+      layer_tree_host()->SetNeedsUpdateLayers();
       EXPECT_FALSE(layer_tree_host()->CommitRequested());
     }
 
-    // Verifies that the SetNeedsAnimate we made in ::Animate did not
+    // Verifies that the SetNeedsUpdateLayers we made in ::Animate did not
     // trigger CommitRequested.
     EXPECT_FALSE(layer_tree_host()->CommitRequested());
     EndTest();
@@ -73,17 +73,17 @@ class LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested
 };
 
 MULTI_THREAD_TEST_F(
-    LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested);
+    LayerTreeHostAnimationTestSetNeedsUpdateLayersShouldNotSetCommitRequested);
 
 // Trigger a frame with SetNeedsCommit. Then, inside the resulting animate
-// callback, request another frame using SetNeedsAnimate. End the test when
+// callback, request another frame using SetNeedsUpdateLayers. End the test when
 // animate gets called yet-again, indicating that the proxy is correctly
-// handling the case where SetNeedsAnimate() is called inside the BeginFrame
-// flow.
-class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
+// handling the case where SetNeedsUpdateLayers() is called inside the
+// BeginFrame flow.
+class LayerTreeHostAnimationTestSetNeedsUpdateLayersInsideAnimationCallback
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback()
+  LayerTreeHostAnimationTestSetNeedsUpdateLayersInsideAnimationCallback()
       : num_animates_(0) {}
 
   virtual void BeginTest() OVERRIDE {
@@ -92,7 +92,7 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
 
   virtual void Animate(base::TimeTicks) OVERRIDE {
     if (!num_animates_) {
-      layer_tree_host()->SetNeedsAnimate();
+      layer_tree_host()->SetNeedsUpdateLayers();
       num_animates_++;
       return;
     }
@@ -106,7 +106,7 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
 };
 
 MULTI_THREAD_TEST_F(
-    LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback);
+    LayerTreeHostAnimationTestSetNeedsUpdateLayersInsideAnimationCallback);
 
 // Add a layer animation and confirm that
 // LayerTreeHostImpl::updateAnimationState does get called and continues to
@@ -732,14 +732,21 @@ class LayerTreeHostAnimationTestContinuousAnimate
     PostSetNeedsCommitToMainThread();
   }
 
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostAnimationTest::SetupTree();
+    content_ = FakeContentLayer::Create(&client_);
+    content_->set_always_update_resources(true);
+    layer_tree_host()->root_layer()->AddChild(content_);
+  }
+
   virtual void Animate(base::TimeTicks) OVERRIDE {
     if (num_draw_layers_ == 2)
       return;
-    layer_tree_host()->SetNeedsAnimate();
+    layer_tree_host()->SetNeedsUpdateLayers();
   }
 
   virtual void Layout() OVERRIDE {
-    layer_tree_host()->root_layer()->SetNeedsDisplay();
+    content_->SetNeedsDisplay();
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* tree_impl) OVERRIDE {
@@ -761,6 +768,8 @@ class LayerTreeHostAnimationTestContinuousAnimate
  private:
   int num_commit_complete_;
   int num_draw_layers_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> content_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestContinuousAnimate);

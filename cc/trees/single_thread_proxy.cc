@@ -176,14 +176,9 @@ const RendererCapabilities& SingleThreadProxy::GetRendererCapabilities() const {
   return renderer_capabilities_for_main_thread_;
 }
 
-void SingleThreadProxy::SetNeedsAnimate() {
-  DCHECK(Proxy::IsMainThread());
-  client_->ScheduleAnimation();
-}
-
 void SingleThreadProxy::SetNeedsUpdateLayers() {
   DCHECK(Proxy::IsMainThread());
-  client_->ScheduleComposite();
+  client_->ScheduleAnimation();
 }
 
 void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {

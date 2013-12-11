@@ -28,7 +28,6 @@ class FakeProxy : public Proxy {
   virtual void SetVisible(bool visible) OVERRIDE {}
   virtual void CreateAndInitializeOutputSurface() OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
-  virtual void SetNeedsAnimate() OVERRIDE {}
   virtual void SetNeedsUpdateLayers() OVERRIDE {}
   virtual void SetNeedsCommit() OVERRIDE {}
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE {}

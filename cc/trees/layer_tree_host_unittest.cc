@@ -4744,17 +4744,6 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor
       EXPECT_EQ(0, set_needs_redraw_count);
     }
 
-    {
-      scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       NULL,
-                                       &set_needs_commit_count,
-                                       &set_needs_redraw_count));
-      layer_tree_host()->SetNeedsAnimate();
-      EXPECT_EQ(3, set_needs_commit_count);
-      EXPECT_EQ(0, set_needs_redraw_count);
-    }
-
     EndTest();
   }
 

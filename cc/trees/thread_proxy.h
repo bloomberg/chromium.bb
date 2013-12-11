@@ -48,7 +48,6 @@ class ThreadProxy : public Proxy,
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void CreateAndInitializeOutputSurface() OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
-  virtual void SetNeedsAnimate() OVERRIDE;
   virtual void SetNeedsUpdateLayers() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE;
@@ -202,11 +201,11 @@ class ThreadProxy : public Proxy,
 
   // Accessed on main thread only.
 
-  // Set only when SetNeedsAnimate is called.
-  bool animate_requested_;
+  // Set only when SetNeedsUpdateLayers is called.
+  bool update_requested_;
   // Set only when SetNeedsCommit is called.
   bool commit_requested_;
-  // Set by SetNeedsAnimate, SetNeedsUpdateLayers, and SetNeedsCommit.
+  // Set by both SetNeedsUpdateLayers and SetNeedsCommit.
   bool commit_request_sent_to_impl_thread_;
   // Set by BeginMainFrame
   bool created_offscreen_context_provider_;
