@@ -80,14 +80,13 @@ MojoResult ProxyMessagePipeEndpoint::CanEnqueueMessage(
   return MOJO_RESULT_OK;
 }
 
+// Note: We may have to enqueue messages even when our (local) peer isn't open
+// -- it may have been written to and closed immediately, before we were ready.
+// This case is handled in |Run()| (which will call us).
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     MessageInTransit* message,
     std::vector<scoped_refptr<Dispatcher> >* dispatchers) {
   DCHECK(is_open_);
-  // If our (local) peer isn't open, we should only be enqueueing our own
-  // control messages.
-  DCHECK(is_peer_open_ ||
-         (message->type() == MessageInTransit::kTypeMessagePipe));
 
   // TODO(vtl)
   DCHECK(!dispatchers || dispatchers->empty());
