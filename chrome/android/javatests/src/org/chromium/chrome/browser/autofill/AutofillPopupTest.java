@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -68,12 +69,12 @@ public class AutofillPopupTest extends ChromiumTestShellTestBase {
         mHelper = new AutofillTestHelper();
     }
 
-    /*
-     * @MediumTest
-     * @Feature({"autofill"})
-     * Bug 312896
+    /**
+     * Tests that bringing up an Autofill and clicking on the first entry fills out the expected
+     * Autofill information.
      */
-    @FlakyTest
+    @MediumTest
+    @Feature({"autofill"})
     public void testClickAutofillPopupSuggestion()
             throws InterruptedException, ExecutionException, TimeoutException {
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
@@ -87,11 +88,12 @@ public class AutofillPopupTest extends ChromiumTestShellTestBase {
         AutofillProfile profile = new AutofillProfile(
                 "" /* guid */, ORIGIN, FIRST_NAME + " " + LAST_NAME, COMPANY_NAME, ADDRESS_LINE1,
                 ADDRESS_LINE2, CITY, STATE, ZIP_CODE, COUNTRY, PHONE_NUMBER, EMAIL);
-        String profileOneGUID = mHelper.setProfile(profile);
+        mHelper.setProfile(profile);
         assertEquals(1, mHelper.getNumberOfProfiles());
 
         // Click the input field for the first name.
         final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(view);
+        assertTrue(DOMUtils.waitForNonZeroNodeBounds(view, viewClient, "fn"));
         DOMUtils.clickNode(this, view, viewClient, "fn");
 
         waitForKeyboardShowRequest(immw, 1);
@@ -171,9 +173,12 @@ public class AutofillPopupTest extends ChromiumTestShellTestBase {
                         try {
                             return TextUtils.equals(FIRST_NAME,
                                     DOMUtils.getNodeValue(view, viewClient, "fn"));
-                        } catch (Exception e) {
+                        } catch (InterruptedException e) {
+                            return false;
+                        } catch (TimeoutException e) {
                             return false;
                         }
+
                     }
                 }));
     }

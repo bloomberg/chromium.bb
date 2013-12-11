@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.graphics.Rect;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
@@ -29,8 +28,10 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeoutException;
 
+/**
+ * Integration tests for text input using cases based on fixed regressions.
+ */
 public class ImeTest extends ContentShellTestBase {
 
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
@@ -65,8 +66,8 @@ public class ImeTest extends ContentShellTestBase {
         mCallbackContainer = new TestCallbackHelperContainer(mContentView);
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
         assertWaitForPageScaleFactorMatch(2);
-        assertWaitForNonZeroNodeBounds("input_text");
-
+        assertTrue(
+                DOMUtils.waitForNonZeroNodeBounds(mContentView, mCallbackContainer, "input_text"));
         DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_text");
         assertWaitForKeyboardStatus(true);
 
@@ -340,26 +341,6 @@ public class ImeTest extends ContentShellTestBase {
                                 && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
                     }
                 });
-            }
-        }));
-    }
-
-    private void assertWaitForNonZeroNodeBounds(final String nodeName) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Rect nodeBounds = new Rect();
-                try {
-                    nodeBounds =
-                            DOMUtils.getNodeBounds(mContentView, mCallbackContainer, nodeName);
-                } catch (InterruptedException e) {
-                    // Intentionally do nothing
-                    return false;
-                } catch (TimeoutException e) {
-                    // Intentionally do nothing
-                    return false;
-                }
-                return !nodeBounds.isEmpty();
             }
         }));
     }

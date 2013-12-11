@@ -164,6 +164,29 @@ public class DOMUtils {
     }
 
     /**
+     * Wait until a given node has non-zero bounds.
+     * @return Whether the node started having non-zero bounds.
+     */
+    public static boolean waitForNonZeroNodeBounds(final ContentView view,
+            final TestCallbackHelperContainer viewClient, final String nodeName)
+            throws InterruptedException {
+        return CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return !DOMUtils.getNodeBounds(view, viewClient, nodeName).isEmpty();
+                } catch (InterruptedException e) {
+                    // Intentionally do nothing
+                    return false;
+                } catch (TimeoutException e) {
+                    // Intentionally do nothing
+                    return false;
+                }
+            }
+        });
+    }
+
+    /**
      * Returns click targets for a given DOM node.
      */
     private static int[] getClickTargetForNode(final ContentView view,
