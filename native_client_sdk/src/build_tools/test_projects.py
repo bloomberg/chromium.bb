@@ -56,9 +56,9 @@ ALL_TOOLCHAINS = ['newlib', 'glibc', 'pnacl', 'win', 'linux', 'mac']
 #   input_event.glibc_debug_test
 #   input_event.glibc_release_test
 DISABLED_TESTS = [
-    # TODO(binji): Disable 3D examples on linux/win. See
+    # TODO(binji): Disable 3D examples on linux/win/mac. See
     # http://crbug.com/262379.
-    {'name': 'graphics_3d', 'platform': ('win', 'linux')},
+    {'name': 'graphics_3d', 'platform': ('win', 'linux', 'mac')},
     # TODO(binji): These tests timeout on the trybots because the NEXEs take
     # more than 40 seconds to load (!). See http://crbug.com/280753
     {'name': 'nacl_io_test', 'platform': 'win', 'toolchain': 'glibc'},
