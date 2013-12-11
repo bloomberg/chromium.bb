@@ -110,7 +110,7 @@ deps = {
     "/trunk/src@314",
 
   "src/third_party/leveldatabase/src":
-    (Var("googlecode_url") % "leveldb") + "/trunk@77",
+    (Var("googlecode_url") % "leveldb") + "/trunk@78",
 
   "src/third_party/snappy/src":
     (Var("googlecode_url") % "snappy") + "/trunk@80",
