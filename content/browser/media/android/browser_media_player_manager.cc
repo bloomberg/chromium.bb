@@ -34,6 +34,14 @@ using media::MediaSourcePlayer;
 // attempting to release inactive media players.
 static const int kMediaPlayerThreshold = 1;
 
+// Maximum sizes for various EME message parameters. These are checks to
+// prevent unnecessarily large messages from being passed around, and the sizes
+// are somewhat arbitrary as the EME specification doesn't specify any limits.
+static const size_t kEmeUuidSize = 16;
+static const size_t kEmeTypeMaximum = 50;  // Type is a MIME type.
+static const size_t kEmeInitDataMaximum = 10240;  // 10 KB
+static const size_t kEmeResponseMaximum = 10240;  // 10 KB
+
 namespace content {
 
 static BrowserMediaPlayerManager::Factory g_factory = NULL;
@@ -123,11 +131,9 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
                         DestroyAllMediaPlayers)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_InitializeCDM,
                         OnInitializeCDM)
-    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_GenerateKeyRequest,
-                        OnGenerateKeyRequest)
-    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_AddKey, OnAddKey)
-    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CancelKeyRequest,
-                        OnCancelKeyRequest)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CreateSession, OnCreateSession)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_UpdateSession, OnUpdateSession)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_ReleaseSession, OnReleaseSession)
 #if defined(GOOGLE_TV)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
                         OnNotifyExternalSurface)
@@ -355,7 +361,7 @@ void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
   // During the process, DisableFullscreenEncryptedMediaPlayback() may get
   // called before or after OnEnterFullscreen(). If it is called before
   // OnEnterFullscreen(), the player will not enter fullscreen. And it will
-  // retry the process once the GenerateKeyRequest is allowed to proceed
+  // retry the process once CreateSession() is allowed to proceed.
   // TODO(qinmin): make this flag default on android.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGestureRequirementForMediaFullscreen)) {
@@ -369,7 +375,7 @@ void BrowserMediaPlayerManager::OnSessionCreated(
     int media_keys_id,
     uint32 session_id,
     const std::string& web_session_id) {
-  Send(new MediaKeysMsg_SetSessionId(
+  Send(new MediaKeysMsg_SessionCreated(
       routing_id(), media_keys_id, session_id, web_session_id));
 }
 
@@ -378,18 +384,18 @@ void BrowserMediaPlayerManager::OnSessionMessage(
     uint32 session_id,
     const std::vector<uint8>& message,
     const std::string& destination_url) {
-  Send(new MediaKeysMsg_KeyMessage(
+  Send(new MediaKeysMsg_SessionMessage(
       routing_id(), media_keys_id, session_id, message, destination_url));
 }
 
 void BrowserMediaPlayerManager::OnSessionReady(int media_keys_id,
                                                uint32 session_id) {
-  Send(new MediaKeysMsg_KeyAdded(routing_id(), media_keys_id, session_id));
+  Send(new MediaKeysMsg_SessionReady(routing_id(), media_keys_id, session_id));
 }
 
 void BrowserMediaPlayerManager::OnSessionClosed(int media_keys_id,
                                                 uint32 session_id) {
-  // TODO(jrummell): Update Android calls and IPC names.
+  Send(new MediaKeysMsg_SessionClosed(routing_id(), media_keys_id, session_id));
 }
 
 void BrowserMediaPlayerManager::OnSessionError(
@@ -397,7 +403,7 @@ void BrowserMediaPlayerManager::OnSessionError(
     uint32 session_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
-  Send(new MediaKeysMsg_KeyError(
+  Send(new MediaKeysMsg_SessionError(
       routing_id(), media_keys_id, session_id, error_code, system_code));
 }
 
@@ -546,17 +552,35 @@ void BrowserMediaPlayerManager::OnInitializeCDM(
     int media_keys_id,
     const std::vector<uint8>& uuid,
     const GURL& frame_url) {
+  if (uuid.size() != kEmeUuidSize) {
+    // This failure will be discovered and reported by OnCreateSession()
+    // as GetDrmBridge() will return null.
+    NOTREACHED() << "Invalid UUID for ID: " << media_keys_id;
+    return;
+  }
+
   AddDrmBridge(media_keys_id, uuid, frame_url);
   // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
   // is the same as the |player_id|.
   OnSetMediaKeys(media_keys_id, media_keys_id);
 }
 
-void BrowserMediaPlayerManager::OnGenerateKeyRequest(
+void BrowserMediaPlayerManager::OnCreateSession(
     int media_keys_id,
     uint32 session_id,
     const std::string& type,
     const std::vector<uint8>& init_data) {
+  if (type.length() > kEmeTypeMaximum) {
+    OnSessionError(
+        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    return;
+  }
+  if (init_data.size() > kEmeInitDataMaximum) {
+    OnSessionError(
+        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    return;
+  }
+
   if (CommandLine::ForCurrentProcess()
       ->HasSwitch(switches::kDisableInfobarForProtectedMediaIdentifier)) {
     GenerateKeyIfAllowed(media_keys_id, session_id, type, init_data, true);
@@ -586,10 +610,10 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
                  init_data));
 }
 
-void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
-                                         uint32 session_id,
-                                         const std::vector<uint8>& key,
-                                         const std::vector<uint8>& init_data) {
+void BrowserMediaPlayerManager::OnUpdateSession(
+    int media_keys_id,
+    uint32 session_id,
+    const std::vector<uint8>& response) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
@@ -598,8 +622,15 @@ void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
     return;
   }
 
-  DCHECK(init_data.empty());
-  drm_bridge->UpdateSession(session_id, &key[0], key.size());
+  if (response.size() > kEmeResponseMaximum) {
+    DLOG(WARNING) << "Response for ID: " << media_keys_id
+                  << " too long: " << response.size();
+    OnSessionError(
+        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    return;
+  }
+
+  drm_bridge->UpdateSession(session_id, &response[0], response.size());
   // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
   // is the same as the |player_id|.
   // TODO(xhwang): Separate |media_keys_id| and |player_id|.
@@ -608,8 +639,8 @@ void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
     player->OnKeyAdded();
 }
 
-void BrowserMediaPlayerManager::OnCancelKeyRequest(int media_keys_id,
-                                                   uint32 session_id) {
+void BrowserMediaPlayerManager::OnReleaseSession(int media_keys_id,
+                                                 uint32 session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
@@ -681,7 +712,7 @@ void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
   scoped_ptr<MediaDrmBridge> drm_bridge(MediaDrmBridge::Create(
       media_keys_id, uuid, frame_url, security_level, this));
   if (!drm_bridge) {
-    // This failure will be discovered and reported by OnGenerateKeyRequest()
+    // This failure will be discovered and reported by OnCreateSession()
     // as GetDrmBridge() will return null.
     DVLOG(1) << "failed to create drm bridge.";
     return;

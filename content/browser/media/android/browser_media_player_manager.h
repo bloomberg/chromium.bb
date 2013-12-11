@@ -135,15 +135,14 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void OnInitializeCDM(int media_keys_id,
                        const std::vector<uint8>& uuid,
                        const GURL& frame_url);
-  void OnGenerateKeyRequest(int media_keys_id,
-                            uint32 session_id,
-                            const std::string& type,
-                            const std::vector<uint8>& init_data);
-  void OnAddKey(int media_keys_id,
-                uint32 session_id,
-                const std::vector<uint8>& key,
-                const std::vector<uint8>& init_data);
-  void OnCancelKeyRequest(int media_keys_id, uint32 session_id);
+  void OnCreateSession(int media_keys_id,
+                       uint32 session_id,
+                       const std::string& type,
+                       const std::vector<uint8>& init_data);
+  void OnUpdateSession(int media_keys_id,
+                       uint32 session_id,
+                       const std::vector<uint8>& response);
+  void OnReleaseSession(int media_keys_id, uint32 session_id);
   void OnSetMediaKeys(int player_id, int media_keys_id);
 
 #if defined(GOOGLE_TV)

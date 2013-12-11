@@ -49,7 +49,7 @@ bool ProxyMediaKeys::CreateSession(uint32 session_id,
                                    const std::string& type,
                                    const uint8* init_data,
                                    int init_data_length) {
-  manager_->GenerateKeyRequest(
+  manager_->CreateSession(
       media_keys_id_,
       session_id,
       type,
@@ -60,14 +60,14 @@ bool ProxyMediaKeys::CreateSession(uint32 session_id,
 void ProxyMediaKeys::UpdateSession(uint32 session_id,
                                    const uint8* response,
                                    int response_length) {
-  manager_->AddKey(media_keys_id_,
-                   session_id,
-                   std::vector<uint8>(response, response + response_length),
-                   std::vector<uint8>());
+  manager_->UpdateSession(
+      media_keys_id_,
+      session_id,
+      std::vector<uint8>(response, response + response_length));
 }
 
 void ProxyMediaKeys::ReleaseSession(uint32 session_id) {
-  manager_->CancelKeyRequest(media_keys_id_, session_id);
+  manager_->ReleaseSession(media_keys_id_, session_id);
 }
 
 void ProxyMediaKeys::OnSessionCreated(uint32 session_id,

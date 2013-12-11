@@ -287,39 +287,44 @@ IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_InitializeCDM,
                     std::vector<uint8> /* uuid */,
                     GURL /* frame url */)
 
-IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_GenerateKeyRequest,
+IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_CreateSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
                     std::string /* type */,
                     std::vector<uint8> /* init_data */)
+// TODO(jrummell): Use enum for type (http://crbug.com/327449)
 
-IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_AddKey,
+IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_UpdateSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
-                    std::vector<uint8> /* key */,
-                    std::vector<uint8> /* init_data */)
+                    std::vector<uint8> /* response */)
 
-IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_CancelKeyRequest,
+IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_ReleaseSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */)
 
-IPC_MESSAGE_ROUTED2(MediaKeysMsg_KeyAdded,
-                    int /* media_keys_id */,
-                    uint32_t /* session_id */)
-
-IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyError,
+IPC_MESSAGE_ROUTED3(MediaKeysMsg_SessionCreated,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
-                    media::MediaKeys::KeyError /* error_code */,
-                    int /* system_code */)
+                    std::string /* web_session_id */)
 
-IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyMessage,
+IPC_MESSAGE_ROUTED4(MediaKeysMsg_SessionMessage,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
                     std::vector<uint8> /* message */,
                     std::string /* destination_url */)
+// TODO(jrummell): Use GURL for destination_url (http://crbug.com/326663)
 
-IPC_MESSAGE_ROUTED3(MediaKeysMsg_SetSessionId,
+IPC_MESSAGE_ROUTED2(MediaKeysMsg_SessionReady,
+                    int /* media_keys_id */,
+                    uint32_t /* session_id */)
+
+IPC_MESSAGE_ROUTED2(MediaKeysMsg_SessionClosed,
+                    int /* media_keys_id */,
+                    uint32_t /* session_id */)
+
+IPC_MESSAGE_ROUTED4(MediaKeysMsg_SessionError,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
-                    std::string /* web_session_id */)
+                    media::MediaKeys::KeyError /* error_code */,
+                    int /* system_code */)

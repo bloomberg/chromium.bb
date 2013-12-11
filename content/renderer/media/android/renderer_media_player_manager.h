@@ -93,15 +93,14 @@ class RendererMediaPlayerManager : public RenderViewObserver {
                      ProxyMediaKeys* media_keys,
                      const std::vector<uint8>& uuid,
                      const GURL& frame_url);
-  void GenerateKeyRequest(int media_keys_id,
-                          uint32 session_id,
-                          const std::string& type,
-                          const std::vector<uint8>& init_data);
-  void AddKey(int media_keys_id,
-              uint32 session_id,
-              const std::vector<uint8>& key,
-              const std::vector<uint8>& init_data);
-  void CancelKeyRequest(int media_keys_id, uint32 session_id);
+  void CreateSession(int media_keys_id,
+                     uint32 session_id,
+                     const std::string& type,
+                     const std::vector<uint8>& init_data);
+  void UpdateSession(int media_keys_id,
+                     uint32 session_id,
+                     const std::vector<uint8>& response);
+  void ReleaseSession(int media_keys_id, uint32 session_id);
 
   // Registers and unregisters a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
