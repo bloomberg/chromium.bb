@@ -116,19 +116,12 @@ void WebLayerTreeViewImplForTesting::startPageScaleAnimation(
     float new_page_scale,
     double duration_sec) {}
 
-// Renamed. Staged for removal.
 void WebLayerTreeViewImplForTesting::setNeedsAnimate() {
-  setNeedsUpdateLayers();
+  layer_tree_host_->SetNeedsAnimate();
 }
 
-void WebLayerTreeViewImplForTesting::setNeedsUpdateLayers() {
-  layer_tree_host_->SetNeedsUpdateLayers();
-}
-
-// Unused. Staged for removal.
 bool WebLayerTreeViewImplForTesting::commitRequested() const {
-  NOTREACHED();
-  return false;
+  return layer_tree_host_->CommitRequested();
 }
 
 void WebLayerTreeViewImplForTesting::composite() {

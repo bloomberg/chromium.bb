@@ -55,7 +55,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
 
   virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
     if (animation_driven_drawing_ && !TestEnded())
-      layer_tree_host()->SetNeedsUpdateLayers();
+      layer_tree_host()->SetNeedsAnimate();
   }
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {

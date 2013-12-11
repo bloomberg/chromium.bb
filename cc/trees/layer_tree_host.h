@@ -167,6 +167,7 @@ class CC_EXPORT LayerTreeHost {
 
   const RendererCapabilities& GetRendererCapabilities() const;
 
+  void SetNeedsAnimate();
   virtual void SetNeedsUpdateLayers();
   virtual void SetNeedsCommit();
   virtual void SetNeedsFullTreeSync();
@@ -177,8 +178,7 @@ class CC_EXPORT LayerTreeHost {
 
   void SetNextCommitWaitsForActivation();
 
-  void set_next_commit_forces_redraw() { next_commit_forces_redraw_ = true; }
-  bool next_commit_forces_redraw() { return next_commit_forces_redraw_; }
+  void SetNextCommitForcesRedraw();
 
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
                           base::Time wall_clock_time);

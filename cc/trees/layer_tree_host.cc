@@ -519,6 +519,11 @@ const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
   return proxy_->GetRendererCapabilities();
 }
 
+void LayerTreeHost::SetNeedsAnimate() {
+  proxy_->SetNeedsAnimate();
+  NotifySwapPromiseMonitorsOfSetNeedsCommit();
+}
+
 void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
   NotifySwapPromiseMonitorsOfSetNeedsCommit();
@@ -559,6 +564,10 @@ bool LayerTreeHost::BeginMainFrameRequested() const {
 
 void LayerTreeHost::SetNextCommitWaitsForActivation() {
   proxy_->SetNextCommitWaitsForActivation();
+}
+
+void LayerTreeHost::SetNextCommitForcesRedraw() {
+  next_commit_forces_redraw_ = true;
 }
 
 void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,

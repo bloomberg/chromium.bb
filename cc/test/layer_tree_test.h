@@ -137,7 +137,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void InitializeSettings(LayerTreeSettings* settings) {}
 
   virtual void ScheduleComposite() OVERRIDE;
-  virtual void ScheduleAnimation() OVERRIDE;
 
   void RealEndTest();
 

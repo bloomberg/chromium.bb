@@ -359,8 +359,8 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
 }
 
 void RenderWidgetCompositor::SetNeedsForcedRedraw() {
-  layer_tree_host_->set_next_commit_forces_redraw();
-  setNeedsUpdateLayers();
+  layer_tree_host_->SetNextCommitForcesRedraw();
+  setNeedsAnimate();
 }
 
 scoped_ptr<cc::SwapPromiseMonitor>
@@ -479,19 +479,12 @@ void RenderWidgetCompositor::startPageScaleAnimation(
       duration);
 }
 
-// Renamed. Staged for removal.
 void RenderWidgetCompositor::setNeedsAnimate() {
-  setNeedsUpdateLayers();
+  layer_tree_host_->SetNeedsAnimate();
 }
 
-void RenderWidgetCompositor::setNeedsUpdateLayers() {
-  layer_tree_host_->SetNeedsUpdateLayers();
-}
-
-// Unused. Staged for removal.
 bool RenderWidgetCompositor::commitRequested() const {
-  NOTREACHED();
-  return false;
+  return layer_tree_host_->CommitRequested();
 }
 
 void RenderWidgetCompositor::didStopFlinging() {
@@ -629,14 +622,11 @@ RenderWidgetCompositor::OffscreenContextProvider() {
 
 void RenderWidgetCompositor::ScheduleComposite() {
   if (!suppress_schedule_composite_)
-    widget_->ScheduleComposite();
+    widget_->scheduleComposite();
 }
 
 void RenderWidgetCompositor::ScheduleAnimation() {
-  widget_->ScheduleAnimation();
-  // ScheduleAnimation alone doesn't trigger a redraw.
-  // ScheduleComposite here to send an artifical invalidation.
-  ScheduleComposite();
+  widget_->scheduleAnimation();
 }
 
 void RenderWidgetCompositor::DidPostSwapBuffers() {

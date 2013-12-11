@@ -562,34 +562,6 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
     screen_metrics_emulator_->OnShowContextMenu(params);
 }
 
-void RenderWidget::ScheduleAnimation() {
-  if (animation_update_pending_)
-    return;
-
-  TRACE_EVENT0("gpu", "RenderWidget::ScheduleAnimation");
-  animation_update_pending_ = true;
-  if (!animation_timer_.IsRunning()) {
-    animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0), this,
-                           &RenderWidget::AnimationCallback);
-  }
-}
-
-void RenderWidget::ScheduleComposite() {
-  if (is_accelerated_compositing_active_ &&
-      RenderThreadImpl::current()->compositor_message_loop_proxy().get()) {
-    DCHECK(compositor_);
-    compositor_->setNeedsAnimate();
-  } else {
-    // TODO(nduca): replace with something a little less hacky.  The reason this
-    // hack is still used is because the Invalidate-DoDeferredUpdate loop
-    // contains a lot of host-renderer synchronization logic that is still
-    // important for the accelerated compositing case. The option of simply
-    // duplicating all that code is less desirable than "faking out" the
-    // invalidation path using a magical damage rect.
-    didInvalidateRect(WebRect(0, 0, 1, 1));
-  }
-}
-
 void RenderWidget::ScheduleCompositeWithForcedRedraw() {
   if (compositor_) {
     // Regardless of whether threaded compositing is enabled, always
@@ -598,7 +570,7 @@ void RenderWidget::ScheduleCompositeWithForcedRedraw() {
     // non-threaded case.
     compositor_->SetNeedsForcedRedraw();
   }
-  ScheduleComposite();
+  scheduleComposite();
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
@@ -833,7 +805,9 @@ void RenderWidget::OnWasShown(bool needs_repainting) {
   if (!is_accelerated_compositing_active_) {
     didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
   } else {
-    ScheduleCompositeWithForcedRedraw();
+    if (compositor_)
+      compositor_->SetNeedsForcedRedraw();
+    scheduleComposite();
   }
 }
 
@@ -993,7 +967,7 @@ void RenderWidget::OnSwapBuffersAborted() {
   num_swapbuffers_complete_pending_ = 0;
   using_asynchronous_swapbuffers_ = false;
   // Schedule another frame so the compositor learns about it.
-  ScheduleComposite();
+  scheduleComposite();
 }
 
 void RenderWidget::OnSwapBuffersPosted() {
@@ -1949,15 +1923,30 @@ void RenderWidget::didCompleteSwapBuffers() {
   need_update_rect_for_auto_resize_ = false;
 }
 
-// Renamed. Staged for removal.
-void RenderWidget::scheduleAnimation() { scheduleUpdate(); }
-
-void RenderWidget::scheduleUpdate() {
-  if (is_accelerated_compositing_active_) {
-    DCHECK(compositor_);
-    compositor_->setNeedsUpdateLayers();
+void RenderWidget::scheduleComposite() {
+  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
+      compositor_) {
+      compositor_->setNeedsAnimate();
   } else {
-    ScheduleAnimation();
+    // TODO(nduca): replace with something a little less hacky.  The reason this
+    // hack is still used is because the Invalidate-DoDeferredUpdate loop
+    // contains a lot of host-renderer synchronization logic that is still
+    // important for the accelerated compositing case. The option of simply
+    // duplicating all that code is less desirable than "faking out" the
+    // invalidation path using a magical damage rect.
+    didInvalidateRect(WebRect(0, 0, 1, 1));
+  }
+}
+
+void RenderWidget::scheduleAnimation() {
+  if (animation_update_pending_)
+    return;
+
+  TRACE_EVENT0("gpu", "RenderWidget::scheduleAnimation");
+  animation_update_pending_ = true;
+  if (!animation_timer_.IsRunning()) {
+    animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0), this,
+                           &RenderWidget::AnimationCallback);
   }
 }
 
@@ -2363,7 +2352,7 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   if (!is_accelerated_compositing_active_) {
     didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
   } else {
-    ScheduleComposite();
+    scheduleComposite();
   }
 }
 

@@ -65,6 +65,7 @@ class CC_EXPORT Proxy {
 
   virtual const RendererCapabilities& GetRendererCapabilities() const = 0;
 
+  virtual void SetNeedsAnimate() = 0;
   virtual void SetNeedsUpdateLayers() = 0;
   virtual void SetNeedsCommit() = 0;
   virtual void SetNeedsRedraw(gfx::Rect damage_rect) = 0;
