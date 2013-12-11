@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "ui/gfx/rect_base.h"
 
 #include "base/logging.h"
@@ -328,6 +330,26 @@ Type RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
       y() - point.y(), point.y() - bottom()));
 
   return x_distance + y_distance;
+}
+
+template<typename Class,
+         typename PointClass,
+         typename SizeClass,
+         typename InsetsClass,
+         typename VectorClass,
+         typename Type>
+Type RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
+    ManhattanInternalDistance(const Class& rect) const {
+  Class c(x(), y(), width(), height());
+  c.Union(rect);
+
+  static const Type kEpsilon = std::numeric_limits<Type>::is_integer
+                                   ? 1
+                                   : std::numeric_limits<Type>::epsilon();
+
+  Type x = std::max<Type>(0, c.width() - width() - rect.width() + kEpsilon);
+  Type y = std::max<Type>(0, c.height() - height() - rect.height() + kEpsilon);
+  return x + y;
 }
 
 }  // namespace gfx

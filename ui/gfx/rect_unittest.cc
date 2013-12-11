@@ -893,7 +893,7 @@ TEST(RectTest, ManhattanDistanceToPoint) {
   EXPECT_FLOAT_EQ(1.1f, f.ManhattanDistanceToPoint(PointF(0.f, 3.f)));
 }
 
-TEST(RectTest, ManhattanDistanceToRect) {
+TEST(RectTest, ManhattanInternalDistance) {
   Rect i(0, 0, 400, 400);
   EXPECT_EQ(0, i.ManhattanInternalDistance(gfx::Rect(-1, 0, 2, 1)));
   EXPECT_EQ(1, i.ManhattanInternalDistance(gfx::Rect(400, 0, 1, 400)));
@@ -901,6 +901,36 @@ TEST(RectTest, ManhattanDistanceToRect) {
   EXPECT_EQ(2, i.ManhattanInternalDistance(gfx::Rect(-101, 100, 100, 100)));
   EXPECT_EQ(4, i.ManhattanInternalDistance(gfx::Rect(-101, -101, 100, 100)));
   EXPECT_EQ(435, i.ManhattanInternalDistance(gfx::Rect(630, 603, 100, 100)));
+
+  RectF f(0.0f, 0.0f, 400.0f, 400.0f);
+  static const float kEpsilon = std::numeric_limits<float>::epsilon();
+
+  EXPECT_FLOAT_EQ(
+      0.0f, f.ManhattanInternalDistance(gfx::RectF(-1.0f, 0.0f, 2.0f, 1.0f)));
+  EXPECT_FLOAT_EQ(
+      kEpsilon,
+      f.ManhattanInternalDistance(gfx::RectF(400.0f, 0.0f, 1.0f, 400.0f)));
+  EXPECT_FLOAT_EQ(2.0f * kEpsilon,
+                  f.ManhattanInternalDistance(
+                      gfx::RectF(-100.0f, -100.0f, 100.0f, 100.0f)));
+  EXPECT_FLOAT_EQ(
+      1.0f + kEpsilon,
+      f.ManhattanInternalDistance(gfx::RectF(-101.0f, 100.0f, 100.0f, 100.0f)));
+  EXPECT_FLOAT_EQ(2.0f + 2.0f * kEpsilon,
+                  f.ManhattanInternalDistance(
+                      gfx::RectF(-101.0f, -101.0f, 100.0f, 100.0f)));
+  EXPECT_FLOAT_EQ(
+      433.0f + 2.0f * kEpsilon,
+      f.ManhattanInternalDistance(gfx::RectF(630.0f, 603.0f, 100.0f, 100.0f)));
+
+  EXPECT_FLOAT_EQ(
+      0.0f, f.ManhattanInternalDistance(gfx::RectF(-1.0f, 0.0f, 1.1f, 1.0f)));
+  EXPECT_FLOAT_EQ(
+      0.1f + kEpsilon,
+      f.ManhattanInternalDistance(gfx::RectF(-1.5f, 0.0f, 1.4f, 1.0f)));
+  EXPECT_FLOAT_EQ(
+      kEpsilon,
+      f.ManhattanInternalDistance(gfx::RectF(-1.5f, 0.0f, 1.5f, 1.0f)));
 }
 
 }  // namespace gfx

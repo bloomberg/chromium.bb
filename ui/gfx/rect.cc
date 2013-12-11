@@ -63,15 +63,6 @@ GdkRectangle Rect::ToGdkRectangle() const {
 }
 #endif
 
-int Rect::ManhattanInternalDistance(const Rect& rect) const {
-  Rect c = *this;
-  c.Union(rect);
-
-  int x = std::max(0, c.width() - width() - rect.width() + 1);
-  int y = std::max(0, c.height() - height() - rect.height() + 1);
-  return (x + y);
-}
-
 std::string Rect::ToString() const {
   return base::StringPrintf("%s %s",
                             origin().ToString().c_str(),

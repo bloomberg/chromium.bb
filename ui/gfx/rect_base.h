@@ -147,6 +147,12 @@ class GFX_EXPORT RectBase {
   // inside the rect, returns 0.
   Type ManhattanDistanceToPoint(const PointClass& point) const;
 
+  // Returns the manhattan distance between the contents of this rect and the
+  // contents of the given rect. That is, if the intersection of the two rects
+  // is non-empty then the function returns 0. If the rects share a side, it
+  // returns the smallest non-zero value appropriate for Type.
+  Type ManhattanInternalDistance(const Class& rect) const;
+
  protected:
   RectBase(const PointClass& origin, const SizeClass& size)
       : origin_(origin), size_(size) {}
