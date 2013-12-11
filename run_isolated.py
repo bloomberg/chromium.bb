@@ -590,6 +590,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
   """Downloads the dependencies in the cache, hardlinks them into a |outdir|
   and runs the executable.
   """
+  result = 0
   try:
     try:
       settings = isolateserver.fetch_isolated(
@@ -602,7 +603,8 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
           require_command=True)
     except isolateserver.ConfigError as e:
       tools.report_error(e)
-      return 1
+      result = 1
+      return result
 
     if settings.read_only:
       # Note that the files themselves are read only anyway. This only inhibits
@@ -626,13 +628,30 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
           os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
     try:
       with tools.Profiler('RunTest'):
-        return subprocess.call(settings.command, cwd=cwd, env=env)
+        result = subprocess.call(settings.command, cwd=cwd, env=env)
     except OSError:
       tools.report_error('Failed to run %s; cwd=%s' % (settings.command, cwd))
-      return 1
+      result = 1
   finally:
     if outdir:
-      rmtree(outdir)
+      try:
+        rmtree(outdir)
+      except OSError:
+        # Swallow the exception so it doesn't generate an infrastructure error.
+        #
+        # It usually happens on Windows when a child process is not properly
+        # terminated, usually because of a test case starting child processes
+        # that time out. This causes files to be locked and it becomes
+        # impossible to delete them.
+        #
+        # Only report an infrastructure error if the test didn't fail. This is
+        # because a swarming bot will likely not reboot. This situation will
+        # cause accumulation of temporary hardlink trees.
+        if result:
+          logging.warning('Leaking %s' % outdir)
+        else:
+          raise
+  return result
 
 
 def main():
