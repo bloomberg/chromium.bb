@@ -173,6 +173,9 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     case WebInputEvent::GestureScrollEnd:
         m_type = PlatformEvent::GestureScrollEnd;
         break;
+    case WebInputEvent::GestureFlingStart:
+        m_type = PlatformEvent::GestureFlingStart;
+        break;
     case WebInputEvent::GestureScrollUpdate:
         m_type = PlatformEvent::GestureScrollUpdate;
         m_data.m_scrollUpdate.m_deltaX = e.data.scrollUpdate.deltaX / scale;

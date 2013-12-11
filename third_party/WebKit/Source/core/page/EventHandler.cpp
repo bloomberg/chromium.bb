@@ -2336,6 +2336,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     case PlatformEvent::GestureScrollUpdate:
     case PlatformEvent::GestureScrollUpdateWithoutPropagation:
     case PlatformEvent::GestureScrollEnd:
+    case PlatformEvent::GestureFlingStart:
         // Handle directly in main frame
         break;
 
@@ -2364,7 +2365,8 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     Scrollbar* scrollbar = 0;
     if (gestureEvent.type() == PlatformEvent::GestureScrollEnd
         || gestureEvent.type() == PlatformEvent::GestureScrollUpdate
-        || gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation) {
+        || gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation
+        || gestureEvent.type() == PlatformEvent::GestureFlingStart) {
         scrollbar = m_scrollbarHandlingScrollGesture.get();
         eventTarget = m_scrollGestureHandlingNode.get();
     }
@@ -2400,10 +2402,13 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 
     if (scrollbar) {
         bool eventSwallowed = scrollbar->gestureEvent(gestureEvent);
-        if (gestureEvent.type() == PlatformEvent::GestureScrollBegin && eventSwallowed)
+        if (gestureEvent.type() == PlatformEvent::GestureTapDown && eventSwallowed) {
             m_scrollbarHandlingScrollGesture = scrollbar;
-        else if (gestureEvent.type() == PlatformEvent::GestureScrollEnd || !eventSwallowed)
+        } else if (gestureEvent.type() == PlatformEvent::GestureScrollEnd
+            || gestureEvent.type() == PlatformEvent::GestureFlingStart
+            || !eventSwallowed) {
             m_scrollbarHandlingScrollGesture = 0;
+        }
 
         if (eventSwallowed)
             return true;
@@ -2452,6 +2457,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     case PlatformEvent::GesturePinchUpdate:
     case PlatformEvent::GestureTapDownCancel:
     case PlatformEvent::GestureTapUnconfirmed:
+    case PlatformEvent::GestureFlingStart:
         break;
     default:
         ASSERT_NOT_REACHED();

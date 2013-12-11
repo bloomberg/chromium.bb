@@ -346,40 +346,45 @@ void Scrollbar::setPressedPart(ScrollbarPart part)
 
 bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
 {
-    bool handled = false;
     switch (evt.type()) {
-    case PlatformEvent::GestureShowPress:
+    case PlatformEvent::GestureTapDown:
         setPressedPart(theme()->hitTest(this, evt.position()));
         m_pressedPos = orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y();
         return true;
     case PlatformEvent::GestureTapDownCancel:
     case PlatformEvent::GestureScrollBegin:
-        if (m_pressedPart == ThumbPart) {
-            m_scrollPos = m_pressedPos;
-            return true;
-        }
-        break;
+        if (m_pressedPart != ThumbPart)
+            return false;
+        m_scrollPos = m_pressedPos;
+        return true;
     case PlatformEvent::GestureScrollUpdate:
     case PlatformEvent::GestureScrollUpdateWithoutPropagation:
-        if (m_pressedPart == ThumbPart) {
-            m_scrollPos += orientation() == HorizontalScrollbar ? evt.deltaX() : evt.deltaY();
-            moveThumb(m_scrollPos, false);
+        if (m_pressedPart != ThumbPart)
+            return false;
+        m_scrollPos += orientation() == HorizontalScrollbar ? evt.deltaX() : evt.deltaY();
+        moveThumb(m_scrollPos, false);
+        return true;
+    case PlatformEvent::GestureScrollEnd:
+    case PlatformEvent::GestureLongPress:
+    case PlatformEvent::GestureFlingStart:
+        m_scrollPos = 0;
+        m_pressedPos = 0;
+        setPressedPart(NoPart);
+        return false;
+    case PlatformEvent::GestureTap: {
+        if (m_pressedPart != ThumbPart && m_pressedPart != NoPart && m_scrollableArea
+            && m_scrollableArea->scroll(pressedPartScrollDirection(), pressedPartScrollGranularity())) {
             return true;
         }
-        break;
-    case PlatformEvent::GestureScrollEnd:
         m_scrollPos = 0;
-        break;
-    case PlatformEvent::GestureTap:
-        if (m_pressedPart != ThumbPart && m_pressedPart != NoPart)
-            handled = m_scrollableArea && m_scrollableArea->scroll(pressedPartScrollDirection(), pressedPartScrollGranularity());
-        break;
-    default:
-        break;
+        m_pressedPos = 0;
+        setPressedPart(NoPart);
+        return false;
     }
-    setPressedPart(NoPart);
-    m_pressedPos = 0;
-    return handled;
+    default:
+        // By default, we assume that gestures don't deselect the scrollbar.
+        return true;
+    }
 }
 
 void Scrollbar::mouseMoved(const PlatformMouseEvent& evt)

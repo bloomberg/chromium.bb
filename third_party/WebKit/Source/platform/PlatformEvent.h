@@ -64,6 +64,7 @@ public:
         GesturePinchBegin,
         GesturePinchEnd,
         GesturePinchUpdate,
+        GestureFlingStart,
 
         // PlatformTouchEvent
         TouchStart,
