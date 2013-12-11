@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/environment.h"
 #include "remoting/base/logging.h"
-#include "remoting/base/util.h"
+#include "remoting/host/username.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 

@@ -93,10 +93,6 @@ std::string ReplaceCrLfByLf(const std::string& in);
 // Checks if the given string is a valid UTF-8 string.
 bool StringIsUtf8(const char* data, size_t length);
 
-// Returns the username associated with this process, or the empty string on
-// error or if not implemented.
-std::string GetUsername();
-
 bool DoesRectContain(const webrtc::DesktopRect& a,
                      const webrtc::DesktopRect& b);
 

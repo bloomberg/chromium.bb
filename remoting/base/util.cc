@@ -14,12 +14,6 @@
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
-#if defined(OS_POSIX)
-#include <pwd.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif  // defined(OS_POSIX)
-
 using media::VideoFrame;
 
 namespace remoting {
@@ -311,25 +305,6 @@ bool StringIsUtf8(const char* data, size_t length) {
   }
 
   return true;
-}
-
-std::string GetUsername() {
-#if defined(OS_ANDROID)
-  struct passwd* passwd = getpwuid(getuid());
-  return passwd ? passwd->pw_name : std::string();
-#elif defined(OS_POSIX)
-  long buf_size = sysconf(_SC_GETPW_R_SIZE_MAX);
-  if (buf_size <= 0)
-    return std::string();
-
-  scoped_ptr<char[]> buf(new char[buf_size]);
-  struct passwd passwd;
-  struct passwd* passwd_result = NULL;
-  getpwuid_r(getuid(), &passwd, buf.get(), buf_size, &passwd_result);
-  return passwd_result ? passwd_result->pw_name : std::string();
-#else  // !defined(OS_POSIX)
-  return std::string();
-#endif  // defined(OS_POSIX)
 }
 
 bool DoesRectContain(const webrtc::DesktopRect& a,
