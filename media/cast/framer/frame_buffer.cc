@@ -4,6 +4,8 @@
 
 #include "media/cast/framer/frame_buffer.h"
 
+#include "base/logging.h"
+
 namespace media {
 namespace cast {
 
@@ -38,7 +40,11 @@ void FrameBuffer::InsertPacket(const uint8* payload_data,
   if (rtp_header.frame_id != frame_id_) return;
 
   // Insert every packet only once.
-  if (packets_.find(rtp_header.packet_id) != packets_.end()) return;
+  if (packets_.find(rtp_header.packet_id) != packets_.end()) {
+    VLOG(3) << "Packet already received, ignored: frame "
+            << frame_id_ << ", packet " << rtp_header.packet_id;
+    return;
+  }
 
   std::vector<uint8> data;
   std::pair<PacketMap::iterator, bool> retval =
