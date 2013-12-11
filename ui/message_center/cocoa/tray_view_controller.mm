@@ -5,7 +5,6 @@
 #import "ui/message_center/cocoa/tray_view_controller.h"
 
 #include <cmath>
-#include <set>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/time/time.h"
@@ -190,10 +189,6 @@ const CGFloat kTrayBottomMargin = 75;
   // ones still in the updated model, so that those that should be removed
   // will remain in the map.
   const auto& modelNotifications = messageCenter_->GetVisibleNotifications();
-  // DisplayedNotification() may rebuild the visible-notifications cache when
-  // popups are also visible. That's why the list of ids should be stored in the
-  // for-loop and then DisplayedNotification() should be called later.
-  std::set<std::string> displayed_ids;
   for (auto it = modelNotifications.rbegin();
        it != modelNotifications.rend();
        ++it) {
@@ -209,7 +204,7 @@ const CGFloat kTrayBottomMargin = 75;
       [[scrollView_ documentView] addSubview:[controller view]];
 
       [notifications_ addObject:controller];  // Transfer ownership.
-      displayed_ids.insert((*it)->id());
+      messageCenter_->DisplayedNotification((*it)->id());
 
       notification = controller.get();
     } else {
@@ -229,9 +224,6 @@ const CGFloat kTrayBottomMargin = 75;
 
     minY = NSMaxY(frame) + message_center::kMarginBetweenItems;
   }
-
-  for (auto it = displayed_ids.begin(); it != displayed_ids.end(); ++it)
-    messageCenter_->DisplayedNotification(*it);
 
   // Remove any notifications that are no longer in the model.
   for (const auto& pair : notificationsMap_) {

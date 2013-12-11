@@ -456,12 +456,7 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
 
   for (std::list<std::string>::const_iterator iter = blocked_ids.begin();
        iter != blocked_ids.end(); ++iter) {
-    // Do not call MessageCenterImpl::MarkSinglePopupAsShown to avoid rebuilding
-    // the cache repeatedly.
-    notification_list_->MarkSinglePopupAsShown((*iter), true);
-    FOR_EACH_OBSERVER(MessageCenterObserver,
-                      observer_list_,
-                      OnNotificationUpdated(*iter));
+    MarkSinglePopupAsShown((*iter), true);
   }
   notification_cache_.Rebuild(
       notification_list_->GetVisibleNotifications(blockers_));
@@ -798,8 +793,6 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
   if (!HasNotification(id))
     return;
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
-  notification_cache_.Rebuild(
-      notification_list_->GetVisibleNotifications(blockers_));
   FOR_EACH_OBSERVER(
       MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
 }
@@ -808,11 +801,8 @@ void MessageCenterImpl::DisplayedNotification(const std::string& id) {
   if (!HasNotification(id))
     return;
 
-  if (HasPopupNotifications()) {
+  if (HasPopupNotifications())
     notification_list_->MarkSinglePopupAsDisplayed(id);
-    notification_cache_.Rebuild(
-        notification_list_->GetVisibleNotifications(blockers_));
-  }
   NotificationDelegate* delegate =
       notification_list_->GetNotificationDelegate(id);
   if (delegate)
