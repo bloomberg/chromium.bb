@@ -30,6 +30,8 @@ class WebRtcTestBase : public InProcessBrowserTest {
   WebRtcTestBase();
   virtual ~WebRtcTestBase();
 
+  // These all require that the loaded page fulfills the public interface in
+  // chrome/test/data/webrtc/message_handling.js.
   void GetUserMediaAndAccept(content::WebContents* tab_contents) const;
   void GetUserMediaWithSpecificConstraintsAndAccept(
       content::WebContents* tab_contents,
@@ -42,6 +44,12 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void GetUserMedia(content::WebContents* tab_contents,
                     const std::string& constraints) const;
 
+  // Convenience method which opens the page at url, calls GetUserMediaAndAccept
+  // and returns the new tab.
+  content::WebContents* OpenPageAndGetUserMediaInNewTab(const GURL& url) const;
+
+  // Opens the page at |url| where getUserMedia has been invoked through other
+  // means and accepts the user media request.
   content::WebContents* OpenPageAndAcceptUserMedia(const GURL& url) const;
 
   void ConnectToPeerConnectionServer(const std::string& peer_name,

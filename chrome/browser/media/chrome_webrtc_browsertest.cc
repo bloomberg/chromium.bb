@@ -34,18 +34,10 @@
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 
-// Temporarily disabled on Linux.
-// http://crbug.com/281268.
-#if defined(OS_LINUX)
-#define MAYBE_WebrtcBrowserTest DISABLED_WebrtcBrowserTest
-#else
-#define MAYBE_WebrtcBrowserTest WebrtcBrowserTest
-#endif
-
 // Top-level integration test for WebRTC. Requires a real webcam and microphone
 // on the running system. This test is not meant to run in the main browser
 // test suite since normal tester machines do not have webcams.
-class MAYBE_WebrtcBrowserTest : public WebRtcTestBase {
+class WebrtcBrowserTest : public WebRtcTestBase {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
@@ -178,19 +170,14 @@ class MAYBE_WebrtcBrowserTest : public WebRtcTestBase {
   }
 
   content::WebContents* OpenTestPageAndGetUserMediaInNewTab() {
-    chrome::AddTabAt(browser(), GURL(), -1, true);
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
-    content::WebContents* left_tab =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    GetUserMediaAndAccept(left_tab);
-    return left_tab;
+    return OpenPageAndGetUserMediaInNewTab(
+        embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   }
 
   PeerConnectionServerRunner peerconnection_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_RunsAudioVideoWebRTCCallInTwoTabs) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
@@ -213,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -261,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_TestMediaStreamTrackEnableDisable) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
@@ -292,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetrics) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
@@ -340,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, TestWebAudioMediaStream) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestWebAudioMediaStream) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL url(embedded_test_server()->GetURL("/webrtc/webaudio_crash.html"));
   ui_test_utils::NavigateToURL(browser(), url);
