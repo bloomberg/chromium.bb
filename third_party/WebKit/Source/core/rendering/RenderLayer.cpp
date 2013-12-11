@@ -3649,7 +3649,6 @@ CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 {
     if (!m_compositedLayerMapping) {
         m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(this));
-        compositor()->layerBecameComposited(this);
 
         updateOrRemoveFilterEffectRenderer();
 
@@ -3661,8 +3660,6 @@ CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 
 void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
 {
-    if (m_compositedLayerMapping && !renderer()->documentBeingDestroyed())
-        compositor()->layerBecameNonComposited(this);
     m_compositedLayerMapping.clear();
 
     if (!layerBeingDestroyed)
