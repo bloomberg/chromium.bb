@@ -58,18 +58,15 @@ public:
 
     void addProfile(PassRefPtr<ScriptProfile> prpProfile, PassRefPtr<ScriptCallStack>);
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
-    virtual void clearProfiles(ErrorString*);
 
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void setSamplingInterval(ErrorString*, int);
     virtual void start(ErrorString* = 0);
-    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::ProfileHeader>& header);
+    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
 
     bool enabled();
     String getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false);
-    virtual void getCPUProfile(ErrorString*, int uid, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
-    virtual void removeProfile(ErrorString*, int uid);
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
@@ -82,24 +79,19 @@ public:
 
 private:
     InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
-
     void doEnable();
-
     void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);
-
-    void resetFrontendProfiles();
-    PassRefPtr<TypeBuilder::Profiler::ProfileHeader> stop(ErrorString* = 0);
-
-    PassRefPtr<TypeBuilder::Profiler::ProfileHeader> createProfileHeader(const ScriptProfile&);
+    void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
 
     InspectorConsoleAgent* m_consoleAgent;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Profiler* m_frontend;
+    // This is a temporary workaround to make sure v8 doesn't stop profiling when
+    // last finished profile is deleted (we keep at least one finished profile alive).
+    RefPtr<ScriptProfile> m_keepAliveProfile;
     bool m_recordingCPUProfile;
     int m_currentUserInitiatedProfileNumber;
     unsigned m_nextUserInitiatedProfileNumber;
-    typedef HashMap<unsigned, RefPtr<ScriptProfile> > ProfilesMap;
-    ProfilesMap m_profiles;
 
     typedef HashMap<String, double> ProfileNameIdleTimeMap;
     ProfileNameIdleTimeMap* m_profileNameIdleTimeMap;

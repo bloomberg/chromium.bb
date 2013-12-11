@@ -49,7 +49,6 @@ function test()
     function didStopFrontendProfile2(messageObject)
     {
         InspectorTest.expectedSuccess("stopFrontendProfileSecondTime", messageObject)
-        InspectorTest.sendCommand("Profiler.clearProfiles", {});
         InspectorTest.completeTest();
     }
 }

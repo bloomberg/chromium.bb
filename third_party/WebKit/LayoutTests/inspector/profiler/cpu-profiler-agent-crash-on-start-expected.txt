@@ -2,5 +2,4 @@ Test that ProfilerAgent start/stop doesn't crash.
 
 ProfilerAgent started.
 ProfilerAgent stopped.
-ProfilerAgent cleared.
 

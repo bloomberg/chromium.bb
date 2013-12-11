@@ -638,7 +638,6 @@ bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointsActiveCmd)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kProfiler_startCmd)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kProfiler_stopCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kProfiler_getCPUProfileCmd)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kHeapProfiler_getHeapSnapshotCmd);
 }
 

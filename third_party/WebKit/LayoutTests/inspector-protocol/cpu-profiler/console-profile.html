@@ -24,7 +24,10 @@ function test()
     var headers = [];
     InspectorTest.eventHandler["Profiler.addProfileHeader"] = function(messageObject)
     {
-        headers.push(messageObject["params"]["header"]);
+        headers.push({
+            profile: messageObject["params"]["profile"],
+            title: messageObject["params"]["title"]
+        });
     }
 
     function didCollectProfiles(messageObject)
@@ -33,21 +36,20 @@ function test()
             return InspectorTest.fail("Cannot retrive headers: " + JSON.stringify(messageObject, null, 4));
         for (var i = 0; i < headers.length; i++) {
             if (headers[i].title === "inner") {
-                InspectorTest.sendCommand("Profiler.getCPUProfile", { uid: headers[i].uid }, didGetProfile);
+                checkInnerProfile(headers[i].profile);
                 return;
             }
         }
         InspectorTest.fail("Cannot find 'inner' profile header");
     }
 
-    function didGetProfile(messageObject)
+    function checkInnerProfile(profile)
     {
         InspectorTest.log("SUCCESS: retrieved 'inner' profile");
-        var root = messageObject.result.profile.head;
+        var root = profile.head;
         if (!findFunctionInProfile(root, "collectProfiles"))
-            return InspectorTest.fail("collectProfiles function not found in the profile: " + JSON.stringify(messageObject, null, 4));
+            return InspectorTest.fail("collectProfiles function not found in the profile: " + JSON.stringify(profile, null, 4));
         InspectorTest.log("SUCCESS: found 'collectProfiles' function in the profile");
-        InspectorTest.sendCommand("Profiler.clearProfiles", {});
         InspectorTest.completeTest();
     }
 

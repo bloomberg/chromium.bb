@@ -17,12 +17,6 @@ function test()
     function onStop()
     {
         InspectorTest.addResult("ProfilerAgent stopped.");
-        ProfilerAgent.clearProfiles(done);
-    }
-
-    function done()
-    {
-        InspectorTest.addResult("ProfilerAgent cleared.");
         InspectorTest.completeTest();
     }
 }
