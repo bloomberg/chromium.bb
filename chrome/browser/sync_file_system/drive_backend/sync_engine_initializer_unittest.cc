@@ -133,7 +133,7 @@ class SyncEngineInitializerTest : public testing::Test {
           sync_root->file_id(),
           CreateResultReceiver(&error));
       base::RunLoop().RunUntilIdle();
-      EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+      EXPECT_EQ(google_apis::HTTP_NO_CONTENT, error);
     }
 
     return sync_root.Pass();

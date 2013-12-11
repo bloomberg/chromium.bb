@@ -500,7 +500,7 @@ TEST_F(JobSchedulerTest, RemoveResourceFromDirectory) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_EQ(google_apis::HTTP_NO_CONTENT, error);
 }
 
 TEST_F(JobSchedulerTest, AddNewDirectory) {

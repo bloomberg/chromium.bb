@@ -109,8 +109,9 @@ void ConflictResolver::DetachFromNonPrimaryParents(
 
 void ConflictResolver::DidDetachFromParent(const SyncStatusCallback& callback,
                                            google_apis::GDataErrorCode error) {
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
