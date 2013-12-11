@@ -6,16 +6,22 @@
 #define CC_OUTPUT_GEOMETRY_BINDING_H_
 
 #include "base/basictypes.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
-namespace gfx { class RectF; }
-
-namespace blink { class WebGraphicsContext3D; }
+namespace gfx {
+class RectF;
+}
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
 
 namespace cc {
 
 class GeometryBinding {
  public:
-  GeometryBinding(blink::WebGraphicsContext3D* context,
+  GeometryBinding(gpu::gles2::GLES2Interface* gl,
                   const gfx::RectF& quad_vertex_rect);
   ~GeometryBinding();
 
@@ -29,10 +35,10 @@ class GeometryBinding {
   static int TriangleIndexAttribLocation() { return 2; }
 
  private:
-  blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
 
-  unsigned quad_vertices_vbo_;
-  unsigned quad_elements_vbo_;
+  GLuint quad_vertices_vbo_;
+  GLuint quad_elements_vbo_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryBinding);
 };

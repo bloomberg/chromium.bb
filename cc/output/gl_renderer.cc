@@ -2574,7 +2574,7 @@ void GLRenderer::InitializeSharedObjects() {
   GLC(gl_, gl_->GenFramebuffers(1, &offscreen_framebuffer_id_));
 
   shared_geometry_ = make_scoped_ptr(
-      new GeometryBinding(context_, QuadVertexRect()));
+      new GeometryBinding(gl_, QuadVertexRect()));
 }
 
 const GLRenderer::TileCheckerboardProgram*
