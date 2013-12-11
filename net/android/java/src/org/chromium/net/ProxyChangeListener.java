@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,10 @@ import org.chromium.base.NativeClassQualifiedName;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-// This class partners with native ProxyConfigServiceAndroid to listen for
-// proxy change notifications from Android.
+/**
+ * This class partners with native ProxyConfigServiceAndroid to listen for
+ * proxy change notifications from Android.
+ */
 @JNINamespace("net")
 public class ProxyChangeListener {
     private static final String TAG = "ProxyChangeListener";
@@ -36,7 +38,7 @@ public class ProxyChangeListener {
         }
         public final String mHost;
         public final int mPort;
-    };
+    }
 
     public interface Delegate {
         public void proxySettingsChanged();
@@ -55,12 +57,12 @@ public class ProxyChangeListener {
     }
 
     @CalledByNative
-    static public ProxyChangeListener create(Context context) {
+    public static ProxyChangeListener create(Context context) {
         return new ProxyChangeListener(context);
     }
 
     @CalledByNative
-    static public String getProperty(String property) {
+    public static String getProperty(String property) {
         return System.getProperty(property);
     }
 
@@ -105,8 +107,8 @@ public class ProxyChangeListener {
                 Method getHostMethod = cls.getDeclaredMethod(GET_HOST_NAME);
                 Method getPortMethod = cls.getDeclaredMethod(GET_PORT_NAME);
 
-                String host = (String)getHostMethod.invoke(props);
-                int port = (Integer)getPortMethod.invoke(props);
+                String host = (String) getHostMethod.invoke(props);
+                int port = (Integer) getPortMethod.invoke(props);
 
                 return new ProxyConfig(host, port);
             } catch (ClassNotFoundException ex) {
@@ -128,10 +130,10 @@ public class ProxyChangeListener {
             return;
         }
         if (mDelegate != null) {
-          mDelegate.proxySettingsChanged();
+            mDelegate.proxySettingsChanged();
         }
         if (mNativePtr == 0) {
-          return;
+            return;
         }
         // Note that this code currently runs on a MESSAGE_LOOP_UI thread, but
         // the C++ code must run the callbacks on the network thread.

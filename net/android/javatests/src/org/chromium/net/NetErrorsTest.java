@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@ import org.chromium.base.test.util.Feature;
 
 public class NetErrorsTest extends InstrumentationTestCase {
     // These are manually copied and should be kept in sync with net_error_list.h.
-    private static int IO_PENDING_ERROR = -1;
-    private static int FAILED_ERROR = -2;
+    private static final int IO_PENDING_ERROR = -1;
+    private static final int FAILED_ERROR = -2;
 
     /**
      * Test whether we can include NetError.java and call to static integers defined in the file.

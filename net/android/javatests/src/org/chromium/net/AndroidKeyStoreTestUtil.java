@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,7 @@ public class AndroidKeyStoreTestUtil {
      * @return new PrivateKey handle, or null in case of error.
      */
     @CalledByNative
-    public static PrivateKey createPrivateKeyFromPKCS8(int type,
-                                                       byte[] encoded_key) {
+    public static PrivateKey createPrivateKeyFromPKCS8(int type, byte[] encodedKey) {
         String algorithm = null;
         switch (type) {
             case PrivateKeyType.RSA:
@@ -47,7 +46,7 @@ public class AndroidKeyStoreTestUtil {
 
         try {
             KeyFactory factory = KeyFactory.getInstance(algorithm);
-            KeySpec ks = new PKCS8EncodedKeySpec(encoded_key);
+            KeySpec ks = new PKCS8EncodedKeySpec(encodedKey);
             PrivateKey key = factory.generatePrivate(ks);
             return key;
 

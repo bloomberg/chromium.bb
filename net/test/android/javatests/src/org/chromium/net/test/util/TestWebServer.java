@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,8 +158,8 @@ public class TestWebServer {
         setStaticInstance(null);
     }
 
-    private final static int RESPONSE_STATUS_NORMAL = 0;
-    private final static int RESPONSE_STATUS_MOVED_TEMPORARILY = 1;
+    private static final int RESPONSE_STATUS_NORMAL = 0;
+    private static final int RESPONSE_STATUS_MOVED_TEMPORARILY = 1;
 
     private String setResponseInternal(
             String requestPath, byte[] responseData,

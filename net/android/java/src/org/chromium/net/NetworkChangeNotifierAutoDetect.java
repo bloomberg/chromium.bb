@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,8 +97,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
      */
     private void registerReceiver() {
         if (!mRegistered) {
-          mRegistered = true;
-          mContext.registerReceiver(this, mIntentFilter);
+            mRegistered = true;
+            mContext.registerReceiver(this, mIntentFilter);
         }
     }
 
@@ -107,8 +107,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
      */
     private void unregisterReceiver() {
         if (mRegistered) {
-           mRegistered = false;
-           mContext.unregisterReceiver(this);
+            mRegistered = false;
+            mContext.unregisterReceiver(this);
         }
     }
 
@@ -189,7 +189,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
     private static class NetworkConnectivityIntentFilter extends IntentFilter {
         NetworkConnectivityIntentFilter() {
-                addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+            addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         }
     }
 }
