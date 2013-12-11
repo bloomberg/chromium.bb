@@ -66,11 +66,6 @@ const AtomicString& MonthInputType::formControlType() const
     return InputTypeNames::month;
 }
 
-DateComponents::Type MonthInputType::dateType() const
-{
-    return DateComponents::Month;
-}
-
 double MonthInputType::valueAsDate() const
 {
     DateComponents date;

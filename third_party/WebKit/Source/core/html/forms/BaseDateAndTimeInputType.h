@@ -52,7 +52,6 @@ protected:
 
 private:
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;
-    virtual DateComponents::Type dateType() const = 0;
     virtual double valueAsDate() const OVERRIDE;
     virtual void setValueAsDate(double, ExceptionState&) const OVERRIDE;
     virtual double valueAsDouble() const OVERRIDE;

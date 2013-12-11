@@ -63,11 +63,6 @@ const AtomicString& WeekInputType::formControlType() const
     return InputTypeNames::week;
 }
 
-DateComponents::Type WeekInputType::dateType() const
-{
-    return DateComponents::Week;
-}
-
 StepRange WeekInputType::createStepRange(AnyStepHandling anyStepHandling) const
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (weekDefaultStep, weekDefaultStepBase, weekStepScaleFactor, StepRange::ParsedStepValueShouldBeInteger));

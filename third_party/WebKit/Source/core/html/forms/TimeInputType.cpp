@@ -71,11 +71,6 @@ const AtomicString& TimeInputType::formControlType() const
     return InputTypeNames::time;
 }
 
-DateComponents::Type TimeInputType::dateType() const
-{
-    return DateComponents::Time;
-}
-
 Decimal TimeInputType::defaultValueForStepUp() const
 {
     double current = currentTimeMS();

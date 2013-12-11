@@ -68,11 +68,6 @@ const AtomicString& DateInputType::formControlType() const
     return InputTypeNames::date;
 }
 
-DateComponents::Type DateInputType::dateType() const
-{
-    return DateComponents::Date;
-}
-
 StepRange DateInputType::createStepRange(AnyStepHandling anyStepHandling) const
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (dateDefaultStep, dateDefaultStepBase, dateStepScaleFactor, StepRange::ParsedStepValueShouldBeInteger));
