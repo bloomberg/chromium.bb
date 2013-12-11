@@ -965,6 +965,8 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
 chrome_pfq.add_config('daisy_spring-chrome-pfq',
   arm,
   boards=['daisy_spring'],
+  hw_tests=HWTestConfig.DefaultListPFQ(),
+  upload_hw_test_artifacts=True,
 )
 
 chromium_info = chromium_pfq.derive(
