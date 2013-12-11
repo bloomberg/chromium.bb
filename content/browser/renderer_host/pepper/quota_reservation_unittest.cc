@@ -80,6 +80,7 @@ class QuotaReservationTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     reservation_manager_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   base::FilePath MakeFilePath(base::FilePath::StringType file_name) {
@@ -144,7 +145,7 @@ void ReserveQuota(
 // Tests that:
 // 1) We can reserve quota with no files open.
 // 2) Open a file, grow it, close it, and reserve quota with correct sizes.
-TEST_F(QuotaReservationTest, DISABLED_ReserveQuota) {
+TEST_F(QuotaReservationTest, ReserveQuota) {
   GURL origin(kOrigin);
   FileSystemType type = kType;
 
@@ -184,7 +185,7 @@ TEST_F(QuotaReservationTest, DISABLED_ReserveQuota) {
 
 // Tests that:
 // 1) We can open and close multiple files.
-TEST_F(QuotaReservationTest, DISABLED_MultipleFiles) {
+TEST_F(QuotaReservationTest, MultipleFiles) {
   GURL origin(kOrigin);
   FileSystemType type = kType;
 
