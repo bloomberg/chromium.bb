@@ -234,53 +234,52 @@ bool PrivetNotificationService::IsForced() {
 
 void PrivetNotificationService::PrivetNotify(bool has_multiple,
                                              bool added) {
-    base::string16 product_name = l10n_util::GetStringUTF16(
-        IDS_LOCAL_DISOCVERY_PRODUCT_NAME_PRINTER);
+  base::string16 product_name = l10n_util::GetStringUTF16(
+      IDS_LOCAL_DISOCVERY_SERVICE_NAME_PRINTER);
 
-    int title_resource = has_multiple ?
-        IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER_MULTIPLE :
-        IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER;
+  int title_resource = has_multiple ?
+      IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER_MULTIPLE :
+      IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER;
 
-    int body_resource = has_multiple ?
-        IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER_MULTIPLE :
-        IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER;
+  int body_resource = has_multiple ?
+      IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER_MULTIPLE :
+      IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER;
 
-    base::string16 title = l10n_util::GetStringUTF16(title_resource);
-    base::string16 body =
-        l10n_util::GetStringFUTF16(body_resource, product_name);
+  base::string16 title = l10n_util::GetStringUTF16(title_resource);
+  base::string16 body = l10n_util::GetStringUTF16(body_resource);
 
-    Profile* profile_object = Profile::FromBrowserContext(profile_);
-    message_center::RichNotificationData rich_notification_data;
+  Profile* profile_object = Profile::FromBrowserContext(profile_);
+  message_center::RichNotificationData rich_notification_data;
 
-    rich_notification_data.buttons.push_back(
-        message_center::ButtonInfo(l10n_util::GetStringUTF16(
-            IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER)));
+  rich_notification_data.buttons.push_back(
+      message_center::ButtonInfo(l10n_util::GetStringUTF16(
+          IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER)));
 
-    rich_notification_data.buttons.push_back(
-        message_center::ButtonInfo(l10n_util::GetStringUTF16(
-            IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL)));
+  rich_notification_data.buttons.push_back(
+      message_center::ButtonInfo(l10n_util::GetStringUTF16(
+          IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL)));
 
-    Notification notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        GURL(kPrivetNotificationOriginUrl),
-        title,
-        body,
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
-        blink::WebTextDirectionDefault,
-        message_center::NotifierId(GURL(kPrivetNotificationOriginUrl)),
-        product_name,
-        UTF8ToUTF16(kPrivetNotificationID),
-        rich_notification_data,
-        new PrivetNotificationDelegate(profile_));
+  Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      GURL(kPrivetNotificationOriginUrl),
+      title,
+      body,
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
+      blink::WebTextDirectionDefault,
+      message_center::NotifierId(GURL(kPrivetNotificationOriginUrl)),
+      product_name,
+      UTF8ToUTF16(kPrivetNotificationID),
+      rich_notification_data,
+      new PrivetNotificationDelegate(profile_));
 
-    bool updated = g_browser_process->notification_ui_manager()->Update(
-        notification, profile_object);
-    if (!updated && added && !LocalDiscoveryUIHandler::GetHasVisible()) {
-      ReportPrivetUmaEvent(PRIVET_NOTIFICATION_SHOWN);
-      g_browser_process->notification_ui_manager()->Add(notification,
-                                                        profile_object);
-    }
+  bool updated = g_browser_process->notification_ui_manager()->Update(
+      notification, profile_object);
+  if (!updated && added && !LocalDiscoveryUIHandler::GetHasVisible()) {
+    ReportPrivetUmaEvent(PRIVET_NOTIFICATION_SHOWN);
+    g_browser_process->notification_ui_manager()->Add(notification,
+                                                      profile_object);
+  }
 }
 
 void PrivetNotificationService::PrivetRemoveNotification() {

@@ -534,7 +534,9 @@ const char* const kChromeHostURLs[] = {
   kChromeUIChromeURLsHost,
   kChromeUICrashesHost,
   kChromeUICreditsHost,
+#if defined(ENABLE_MDNS)
   kChromeUIDevicesHost,
+#endif
   kChromeUIDNSHost,
   kChromeUIFlagsHost,
   kChromeUIHelpHost,
