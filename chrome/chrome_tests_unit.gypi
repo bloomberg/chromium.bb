@@ -1091,6 +1091,7 @@
         'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
         'browser/policy/cloud/mock_user_cloud_policy_store.cc',
         'browser/policy/cloud/mock_user_cloud_policy_store.h',
+        'browser/policy/cloud/policy_header_service_unittest.cc',
         'browser/policy/cloud/user_cloud_policy_manager_unittest.cc',
         'browser/policy/cloud/user_cloud_policy_store_unittest.cc',
         'browser/policy/cloud/user_policy_signin_service_unittest.cc',

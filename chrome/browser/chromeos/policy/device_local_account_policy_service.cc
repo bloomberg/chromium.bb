@@ -61,7 +61,7 @@ scoped_ptr<CloudPolicyClient> CreateClient(
       new SystemPolicyRequestContext(
           system_request_context,
           content::GetUserAgent(GURL(
-              device_management_service->GetServerURL())));
+              device_management_service->GetServerUrl())));
 
   scoped_ptr<CloudPolicyClient> client(
       new CloudPolicyClient(std::string(), std::string(),

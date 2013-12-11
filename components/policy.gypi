@@ -41,6 +41,8 @@
             'policy/core/browser/configuration_policy_pref_store.h',
             'policy/core/browser/policy_error_map.cc',
             'policy/core/browser/policy_error_map.h',
+            'policy/core/browser/policy_header_io_helper.cc',
+            'policy/core/browser/policy_header_io_helper.h',
             'policy/core/common/cloud/cloud_external_data_manager.cc',
             'policy/core/common/cloud/cloud_external_data_manager.h',
             'policy/core/common/cloud/cloud_policy_client.cc',

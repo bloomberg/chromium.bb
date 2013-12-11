@@ -452,7 +452,7 @@ DeviceManagementService::DeviceManagementService(
 }
 
 void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
-  std::string server_url = GetServerURL();
+  std::string server_url = GetServerUrl();
   net::URLFetcher* fetcher = net::URLFetcher::Create(
       kURLFetcherID, job->GetURL(server_url), net::URLFetcher::POST, this);
   job->ConfigureRequest(fetcher);
@@ -460,7 +460,7 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
   fetcher->Start();
 }
 
-std::string DeviceManagementService::GetServerURL() {
+std::string DeviceManagementService::GetServerUrl() {
   return configuration_->GetServerUrl();
 }
 

@@ -263,7 +263,7 @@ scoped_refptr<net::URLRequestContextGetter>
 UserPolicySigninServiceBase::CreateSystemRequestContext() {
   return new SystemPolicyRequestContext(
       system_request_context(),
-      content::GetUserAgent(GURL(device_management_service_->GetServerURL())));
+      content::GetUserAgent(GURL(device_management_service_->GetServerUrl())));
 }
 
 scoped_refptr<net::URLRequestContextGetter>
@@ -271,7 +271,7 @@ UserPolicySigninServiceBase::CreateUserRequestContext() {
   return new UserPolicyRequestContext(
       profile_->GetRequestContext(),
       system_request_context(),
-      content::GetUserAgent(GURL(device_management_service_->GetServerURL())));
+      content::GetUserAgent(GURL(device_management_service_->GetServerUrl())));
 }
 
 }  // namespace policy

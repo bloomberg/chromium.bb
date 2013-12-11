@@ -140,7 +140,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
   void Shutdown();
 
   // Gets the URL that the DMServer requests are sent to.
-  std::string GetServerURL();
+  std::string GetServerUrl();
 
  private:
   typedef std::map<const net::URLFetcher*,

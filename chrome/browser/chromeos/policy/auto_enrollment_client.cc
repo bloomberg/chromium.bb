@@ -105,7 +105,7 @@ AutoEnrollmentClient::AutoEnrollmentClient(
   request_context_ = new SystemPolicyRequestContext(
       system_request_context,
       content::GetUserAgent(
-          GURL(device_management_service_->GetServerURL())));
+          GURL(device_management_service_->GetServerUrl())));
 
   DCHECK_LE(power_initial_, power_limit_);
   DCHECK(!completion_callback_.is_null());

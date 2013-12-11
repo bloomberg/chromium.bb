@@ -247,7 +247,7 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
       new SystemPolicyRequestContext(
           g_browser_process->system_request_context(),
           content::GetUserAgent(GURL(
-              device_management_service_->GetServerURL())));
+              device_management_service_->GetServerUrl())));
 
   return make_scoped_ptr(
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),

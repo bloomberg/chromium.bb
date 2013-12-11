@@ -62,6 +62,7 @@ class URLRequestJobFactoryImpl;
 
 namespace policy {
 class PolicyCertVerifier;
+class PolicyHeaderIOHelper;
 class URLBlacklistManager;
 }  // namespace policy
 
@@ -195,6 +196,12 @@ class ProfileIOData {
       resource_prefetch_predictor_observer() const {
     return resource_prefetch_predictor_observer_.get();
   }
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::PolicyHeaderIOHelper* policy_header_helper() const {
+    return policy_header_helper_.get();
+  }
+#endif
 
 #if defined(ENABLE_MANAGED_USERS)
   const ManagedModeURLFilter* managed_mode_url_filter() const {
@@ -496,6 +503,10 @@ class ProfileIOData {
 
   // Pointed to by NetworkDelegate.
   mutable scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  mutable scoped_ptr<policy::PolicyHeaderIOHelper> policy_header_helper_;
+#endif
 
   // Pointed to by URLRequestContext.
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;

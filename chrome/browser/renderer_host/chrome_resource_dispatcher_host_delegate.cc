@@ -57,6 +57,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "components/policy/core/browser/policy_header_io_helper.h"
+#endif
+
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 #endif
@@ -288,6 +292,11 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   AppendChromeSyncGaiaHeader(request, resource_context);
+#endif
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (io_data->policy_header_helper())
+    io_data->policy_header_helper()->AddPolicyHeaders(request);
 #endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);

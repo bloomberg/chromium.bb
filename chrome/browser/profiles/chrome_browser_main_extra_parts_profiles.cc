@@ -118,6 +118,7 @@
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator_factory.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #if defined(OS_CHROMEOS)
@@ -353,6 +354,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   policy::UserCloudPolicyManagerFactory::GetInstance();
   policy::UserPolicySigninServiceFactory::GetInstance();
 #endif
+  policy::PolicyHeaderServiceFactory::GetInstance();
   policy::SchemaRegistryServiceFactory::GetInstance();
   policy::UserCloudPolicyInvalidatorFactory::GetInstance();
 #endif
