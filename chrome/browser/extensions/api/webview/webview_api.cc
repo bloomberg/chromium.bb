@@ -10,7 +10,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/error_utils.h"
 
@@ -88,8 +87,6 @@ uint32 WebviewClearDataFunction::GetRemovalMask() {
 // TODO(lazyboy): Parameters in this extension function are similar (or a
 // sub-set) to BrowsingDataRemoverFunction. How can we share this code?
 bool WebviewClearDataFunction::RunImplSafe(WebViewGuest* guest) {
-  content::RecordAction(content::UserMetricsAction("WebView.ClearData"));
-
   // Grab the initial |options| parameter, and parse out the arguments.
   base::DictionaryValue* options;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &options));
@@ -196,7 +193,6 @@ void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
     int32 on_page_id,
     const GURL& on_url,
     const base::ListValue& result) {
-  content::RecordAction(content::UserMetricsAction("WebView.ExecuteScript"));
   if (error.empty())
     SetResult(result.DeepCopy());
   WebviewExecuteCodeFunction::OnExecuteCodeFinished(error, on_page_id, on_url,
@@ -211,8 +207,6 @@ bool WebviewInsertCSSFunction::ShouldInsertCSS() const {
 }
 
 WebviewCaptureVisibleRegionFunction::WebviewCaptureVisibleRegionFunction() {
-  content::RecordAction(
-      content::UserMetricsAction("WebView.CaptureVisibleRegion"));
 }
 
 WebviewCaptureVisibleRegionFunction::~WebviewCaptureVisibleRegionFunction() {
@@ -241,7 +235,6 @@ WebviewGoFunction::~WebviewGoFunction() {
 }
 
 bool WebviewGoFunction::RunImplSafe(WebViewGuest* guest) {
-  content::RecordAction(content::UserMetricsAction("WebView.Go"));
   scoped_ptr<webview::Go::Params> params(webview::Go::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -256,7 +249,6 @@ WebviewReloadFunction::~WebviewReloadFunction() {
 }
 
 bool WebviewReloadFunction::RunImplSafe(WebViewGuest* guest) {
-  content::RecordAction(content::UserMetricsAction("WebView.Reload"));
   guest->Reload();
   return true;
 }
@@ -323,7 +315,6 @@ WebviewStopFunction::~WebviewStopFunction() {
 }
 
 bool WebviewStopFunction::RunImplSafe(WebViewGuest* guest) {
-  content::RecordAction(content::UserMetricsAction("WebView.Stop"));
   guest->Stop();
   return true;
 }
@@ -335,7 +326,6 @@ WebviewTerminateFunction::~WebviewTerminateFunction() {
 }
 
 bool WebviewTerminateFunction::RunImplSafe(WebViewGuest* guest) {
-  content::RecordAction(content::UserMetricsAction("WebView.Terminate"));
   guest->Terminate();
   return true;
 }
