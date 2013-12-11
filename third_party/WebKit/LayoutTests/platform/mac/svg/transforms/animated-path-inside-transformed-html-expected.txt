@@ -1,9 +1,9 @@
-layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
-layer at (0,0) size 800x536
-  RenderBlock {html} at (0,0) size 800x536
-    RenderBody {body} at (8,16) size 784x470 [bgcolor=#FFFFFF]
-      RenderBlock {p} at (0,0) size 784x18
+layer at (0,0) size 785x620
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x536
+  RenderBlock {html} at (0,0) size 785x536
+    RenderBody {body} at (8,16) size 769x470 [bgcolor=#FFFFFF]
+      RenderBlock {p} at (0,0) size 769x18
         RenderText {#text} at (0,0) size 573x18
           text run at (0,0) width 573: "CSS Transformed HTML div with SVG inside it. Animated SVG should repaint correctly."
 layer at (58,84) size 402x402
