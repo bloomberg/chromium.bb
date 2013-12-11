@@ -1226,13 +1226,13 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
 }
 
 
-void GraphicsLayer::notifyAnimationStarted(double startTime)
+void GraphicsLayer::notifyAnimationStarted(double wallClockTime, double monotonicTime, WebAnimation::TargetProperty)
 {
     if (m_client)
-        m_client->notifyAnimationStarted(this, startTime);
+        m_client->notifyAnimationStarted(this, wallClockTime, monotonicTime);
 }
 
-void GraphicsLayer::notifyAnimationFinished(double)
+void GraphicsLayer::notifyAnimationFinished(double, double, WebAnimation::TargetProperty)
 {
     // Do nothing.
 }

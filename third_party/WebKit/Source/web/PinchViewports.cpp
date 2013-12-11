@@ -185,7 +185,7 @@ void PinchViewports::clearViewportLayersForTreeView(WebLayerTreeView* layerTreeV
     layerTreeView->clearViewportLayers();
 }
 
-void PinchViewports::notifyAnimationStarted(const GraphicsLayer*, double time)
+void PinchViewports::notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime)
 {
 }
 

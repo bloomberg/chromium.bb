@@ -1965,12 +1965,12 @@ void CompositedLayerMapping::transitionFinished(CSSPropertyID property)
     m_graphicsLayer->removeAnimation(animationId);
 }
 
-void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double time)
+void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime)
 {
     if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicallyIncreasingTime() - (currentTime() - time));
+        renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
     else
-        renderer()->animation().notifyAnimationStarted(renderer(), time);
+        renderer()->animation().notifyAnimationStarted(renderer(), wallClockTime);
 }
 
 IntRect CompositedLayerMapping::compositedBounds() const
