@@ -528,6 +528,11 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                                           SYNC_DIRECTION_LOCAL_TO_REMOTE));
   }
 
+  if (status == SYNC_STATUS_UNKNOWN_ORIGIN && syncer->url().is_valid()) {
+    RegisterOrigin(syncer->url().origin(),
+                   base::Bind(&EmptyStatusCallback));
+  }
+
   if (status != SYNC_STATUS_OK &&
       status != SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     callback.Run(status);
@@ -539,11 +544,6 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
 
   if (status == SYNC_STATUS_OK)
     should_check_conflict_ = true;
-
-  if (status == SYNC_STATUS_UNKNOWN_ORIGIN && syncer->url().is_valid()) {
-    RegisterOrigin(syncer->url().origin(),
-                   base::Bind(&EmptyStatusCallback));
-  }
 
   callback.Run(status);
 }
