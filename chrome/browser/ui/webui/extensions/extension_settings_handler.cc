@@ -483,46 +483,46 @@ void ExtensionSettingsHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback("extensionSettingsRequestExtensionsData",
       base::Bind(&ExtensionSettingsHandler::HandleRequestExtensionsData,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsToggleDeveloperMode",
       base::Bind(&ExtensionSettingsHandler::HandleToggleDeveloperMode,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsInspect",
       base::Bind(&ExtensionSettingsHandler::HandleInspectMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsLaunch",
       base::Bind(&ExtensionSettingsHandler::HandleLaunchMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsReload",
       base::Bind(&ExtensionSettingsHandler::HandleReloadMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsEnable",
       base::Bind(&ExtensionSettingsHandler::HandleEnableMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsEnableIncognito",
       base::Bind(&ExtensionSettingsHandler::HandleEnableIncognitoMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsAllowFileAccess",
       base::Bind(&ExtensionSettingsHandler::HandleAllowFileAccessMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsUninstall",
       base::Bind(&ExtensionSettingsHandler::HandleUninstallMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsOptions",
       base::Bind(&ExtensionSettingsHandler::HandleOptionsMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsPermissions",
       base::Bind(&ExtensionSettingsHandler::HandlePermissionsMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsShowButton",
       base::Bind(&ExtensionSettingsHandler::HandleShowButtonMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsAutoupdate",
       base::Bind(&ExtensionSettingsHandler::HandleAutoUpdateMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsLoadUnpackedExtension",
       base::Bind(&ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage,
-                 base::Unretained(this)));
+                 AsWeakPtr()));
 }
 
 void ExtensionSettingsHandler::FileSelected(const base::FilePath& path,
@@ -593,7 +593,7 @@ void ExtensionSettingsHandler::Observe(
        base::MessageLoop::current()->PostTask(
            FROM_HERE,
            base::Bind(&ExtensionSettingsHandler::MaybeUpdateAfterNotification,
-                      base::Unretained(this)));
+                      AsWeakPtr()));
        break;
     default:
       NOTREACHED();
@@ -1084,7 +1084,7 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   base::Closure callback = base::Bind(
       &ExtensionSettingsHandler::MaybeUpdateAfterNotification,
-      base::Unretained(this));
+      AsWeakPtr());
 
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionInstallDenyList, callback);
