@@ -44,8 +44,6 @@
 #include <secerr.h>
 
 #include "base/logging.h"
-#include "crypto/nss_util_internal.h"
-#include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
@@ -61,18 +59,13 @@
 namespace mozilla_security_manager {
 
 // Based on nsNSSCertificateDB::handleCACertDownload, minus the UI bits.
-bool ImportCACerts(const net::CertificateList& certificates,
+bool ImportCACerts(PK11SlotInfo* slot,
+                   const net::CertificateList& certificates,
                    net::X509Certificate* root,
                    net::NSSCertDatabase::TrustBits trustBits,
                    net::NSSCertDatabase::ImportCertFailureList* not_imported) {
-  if (certificates.empty() || !root)
+  if (!slot || certificates.empty() || !root)
     return false;
-
-  crypto::ScopedPK11Slot slot(crypto::GetPublicNSSKeySlot());
-  if (!slot.get()) {
-    LOG(ERROR) << "Couldn't get internal key slot!";
-    return false;
-  }
 
   // Mozilla had some code here to check if a perm version of the cert exists
   // already and use that, but CERT_NewTempCertificate actually does that
@@ -93,13 +86,13 @@ bool ImportCACerts(const net::CertificateList& certificates,
     // and it doesn't take the slot as an argument either.  Instead, we use
     // PK11_ImportCert and CERT_ChangeCertTrust.
     SECStatus srv = PK11_ImportCert(
-        slot.get(),
+        slot,
         root->os_cert_handle(),
         CK_INVALID_HANDLE,
         net::x509_util::GetUniqueNicknameForSlot(
             root->GetDefaultNickname(net::CA_CERT),
             &root->os_cert_handle()->derSubject,
-            slot.get()).c_str(),
+            slot).c_str(),
         PR_FALSE /* includeTrust (unused) */);
     if (srv != SECSuccess) {
       LOG(ERROR) << "PK11_ImportCert failed with error " << PORT_GetError();
@@ -153,13 +146,13 @@ bool ImportCACerts(const net::CertificateList& certificates,
     // Mozilla uses CERT_ImportCerts, which doesn't take a slot arg.  We use
     // PK11_ImportCert instead.
     SECStatus srv = PK11_ImportCert(
-        slot.get(),
+        slot,
         cert->os_cert_handle(),
         CK_INVALID_HANDLE,
         net::x509_util::GetUniqueNicknameForSlot(
             cert->GetDefaultNickname(net::CA_CERT),
             &cert->os_cert_handle()->derSubject,
-            slot.get()).c_str(),
+            slot).c_str(),
         PR_FALSE /* includeTrust (unused) */);
     if (srv != SECSuccess) {
       LOG(ERROR) << "PK11_ImportCert failed with error " << PORT_GetError();
@@ -176,17 +169,12 @@ bool ImportCACerts(const net::CertificateList& certificates,
 
 // Based on nsNSSCertificateDB::ImportServerCertificate.
 bool ImportServerCert(
+    PK11SlotInfo* slot,
     const net::CertificateList& certificates,
     net::NSSCertDatabase::TrustBits trustBits,
     net::NSSCertDatabase::ImportCertFailureList* not_imported) {
-  if (certificates.empty())
+  if (!slot || certificates.empty())
     return false;
-
-  crypto::ScopedPK11Slot slot(crypto::GetPublicNSSKeySlot());
-  if (!slot.get()) {
-    LOG(ERROR) << "Couldn't get internal key slot!";
-    return false;
-  }
 
   for (size_t i = 0; i < certificates.size(); ++i) {
     const scoped_refptr<net::X509Certificate>& cert = certificates[i];
@@ -194,13 +182,13 @@ bool ImportServerCert(
     // Mozilla uses CERT_ImportCerts, which doesn't take a slot arg.  We use
     // PK11_ImportCert instead.
     SECStatus srv = PK11_ImportCert(
-        slot.get(),
+        slot,
         cert->os_cert_handle(),
         CK_INVALID_HANDLE,
         net::x509_util::GetUniqueNicknameForSlot(
             cert->GetDefaultNickname(net::SERVER_CERT),
             &cert->os_cert_handle()->derSubject,
-            slot.get()).c_str(),
+            slot).c_str(),
         PR_FALSE /* includeTrust (unused) */);
     if (srv != SECSuccess) {
       LOG(ERROR) << "PK11_ImportCert failed with error " << PORT_GetError();

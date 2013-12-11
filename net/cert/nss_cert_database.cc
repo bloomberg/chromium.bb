@@ -70,24 +70,22 @@ void NSSCertDatabase::ListCerts(CertificateList* certs) {
   CERT_DestroyCertList(cert_list);
 }
 
-CryptoModule* NSSCertDatabase::GetPublicModule() const {
-  CryptoModule* module =
-      CryptoModule::CreateFromHandle(crypto::GetPublicNSSKeySlot());
-  // The module is already referenced when returned from
-  // GetPublicNSSKeySlot, so we need to deref it once.
-  PK11_FreeSlot(module->os_module_handle());
+crypto::ScopedPK11Slot NSSCertDatabase::GetPublicSlot() const {
+  return crypto::ScopedPK11Slot(crypto::GetPublicNSSKeySlot());
+}
 
-  return module;
+crypto::ScopedPK11Slot NSSCertDatabase::GetPrivateSlot() const {
+  return crypto::ScopedPK11Slot(crypto::GetPrivateNSSKeySlot());
+}
+
+CryptoModule* NSSCertDatabase::GetPublicModule() const {
+  crypto::ScopedPK11Slot slot(GetPublicSlot());
+  return CryptoModule::CreateFromHandle(slot.get());
 }
 
 CryptoModule* NSSCertDatabase::GetPrivateModule() const {
-  CryptoModule* module =
-      CryptoModule::CreateFromHandle(crypto::GetPrivateNSSKeySlot());
-  // The module is already referenced when returned from
-  // GetPrivateNSSKeySlot, so we need to deref it once.
-  PK11_FreeSlot(module->os_module_handle());
-
-  return module;
+  crypto::ScopedPK11Slot slot(GetPrivateSlot());
+  return CryptoModule::CreateFromHandle(slot.get());
 }
 
 void NSSCertDatabase::ListModules(CryptoModuleList* modules,
@@ -163,9 +161,10 @@ X509Certificate* NSSCertDatabase::FindRootInList(
 bool NSSCertDatabase::ImportCACerts(const CertificateList& certificates,
                                     TrustBits trust_bits,
                                     ImportCertFailureList* not_imported) {
+  crypto::ScopedPK11Slot slot(GetPublicSlot());
   X509Certificate* root = FindRootInList(certificates);
-  bool success = psm::ImportCACerts(certificates, root, trust_bits,
-                                    not_imported);
+  bool success = psm::ImportCACerts(
+      slot.get(), certificates, root, trust_bits, not_imported);
   if (success)
     NotifyObserversOfCACertChanged(NULL);
 
@@ -175,7 +174,9 @@ bool NSSCertDatabase::ImportCACerts(const CertificateList& certificates,
 bool NSSCertDatabase::ImportServerCert(const CertificateList& certificates,
                                        TrustBits trust_bits,
                                        ImportCertFailureList* not_imported) {
-  return psm::ImportServerCert(certificates, trust_bits, not_imported);
+  crypto::ScopedPK11Slot slot(GetPublicSlot());
+  return psm::ImportServerCert(
+      slot.get(), certificates, trust_bits, not_imported);
 }
 
 NSSCertDatabase::TrustBits NSSCertDatabase::GetCertTrust(

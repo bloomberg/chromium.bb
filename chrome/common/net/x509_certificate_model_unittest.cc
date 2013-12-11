@@ -7,9 +7,12 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "net/base/test_data_directory.h"
-#include "net/cert/nss_cert_database.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(USE_NSS)
+#include "net/cert/nss_cert_database.h"
+#endif
 
 TEST(X509CertificateModelTest, GetTypeCA) {
   scoped_refptr<net::X509Certificate> cert(

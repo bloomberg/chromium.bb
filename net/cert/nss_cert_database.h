@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_type.h"
 #include "net/cert/x509_certificate.h"
@@ -94,16 +95,27 @@ class NET_EXPORT NSSCertDatabase {
   // instance of all certificates).
   void ListCerts(CertificateList* certs);
 
+  // Get the default slot for public key data.
+  crypto::ScopedPK11Slot GetPublicSlot() const;
+
+  // Get the default slot for private key or mixed private/public key data.
+  crypto::ScopedPK11Slot GetPrivateSlot() const;
+
   // Get the default module for public key data.
   // The returned pointer must be stored in a scoped_refptr<CryptoModule>.
+  // DEPRECATED: use GetPublicSlot instead.
+  // TODO(mattm): remove usage of this method and remove it.
   CryptoModule* GetPublicModule() const;
 
   // Get the default module for private key or mixed private/public key data.
   // The returned pointer must be stored in a scoped_refptr<CryptoModule>.
+  // DEPRECATED: use GetPrivateSlot instead.
+  // TODO(mattm): remove usage of this method and remove it.
   CryptoModule* GetPrivateModule() const;
 
   // Get all modules.
   // If |need_rw| is true, only writable modules will be returned.
+  // TODO(mattm): come up with better alternative to CryptoModuleList.
   void ListModules(CryptoModuleList* modules, bool need_rw) const;
 
   // Import certificates and private keys from PKCS #12 blob into the module.
