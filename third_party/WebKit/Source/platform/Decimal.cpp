@@ -756,6 +756,9 @@ Decimal Decimal::fromString(const String& str)
                 break;
             }
 
+            HandleTwoCharsAndBreak('E', 'e', StateE);
+            return nan();
+
         case StateDotDigit:
             if (ch >= '0' && ch <= '9') {
                 if (numberOfDigits < Precision) {
