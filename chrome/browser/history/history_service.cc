@@ -1103,6 +1103,7 @@ void HistoryService::NotifyProfileError(int backend_id,
     return;
   }
   ShowProfileErrorDialog(
+      PROFILE_ERROR_HISTORY,
       (init_status == sql::INIT_FAILURE) ?
       IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }

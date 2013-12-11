@@ -4,15 +4,17 @@
 
 #include "chrome/browser/ui/profile_error_dialog.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-void ShowProfileErrorDialog(int message_id) {
+void ShowProfileErrorDialog(ProfileErrorType type, int message_id) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   NOTIMPLEMENTED();
 #else
+  UMA_HISTOGRAM_ENUMERATION("Profile.ProfileError", type, PROFILE_ERROR_END);
   chrome::ShowMessageBox(NULL,
                          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
                          l10n_util::GetStringUTF16(message_id),

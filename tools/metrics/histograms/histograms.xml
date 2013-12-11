@@ -14771,6 +14771,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Profile.ProfileError" enum="ProfileErrorType">
+  <summary>
+    The error with the current user profile that caused an error dialog to be
+    shown. This dialog is shown usually when there is some sort of corruption in
+    the user's profile data.
+  </summary>
+</histogram>
+
 <histogram name="Profile.SupervisedProfileCreateError"
     enum="GoogleServiceAuthError">
   <summary>
@@ -28318,6 +28326,14 @@ other types of suffix sets.
   <int value="2" label="Created but not initialized (should never happen)"/>
   <int value="3" label="Succeeded"/>
   <int value="4" label="Canceled"/>
+</enum>
+
+<enum name="ProfileErrorType" type="int">
+  <int value="0" label="History error"/>
+  <int value="1" label="Preferences error"/>
+  <int value="2" label="Webdata autofill DB error"/>
+  <int value="3" label="Webdata token DB error"/>
+  <int value="4" label="Webdata DB error"/>
 </enum>
 
 <enum name="ProfileImageDownloadResult" type="int">

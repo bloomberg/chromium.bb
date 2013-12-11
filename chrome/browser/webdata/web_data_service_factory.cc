@@ -34,8 +34,9 @@ using content::BrowserThread;
 namespace {
 
 // Callback to show error dialog on profile load error.
-void ProfileErrorCallback(sql::InitStatus status) {
+void ProfileErrorCallback(ProfileErrorType type, sql::InitStatus status) {
   ShowProfileErrorDialog(
+      type,
       (status == sql::INIT_FAILURE) ?
       IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }
@@ -99,15 +100,18 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   web_database_->LoadDatabase();
 
   autofill_web_data_ = new AutofillWebDataService(
-      web_database_, ui_thread, db_thread, base::Bind(&ProfileErrorCallback));
+      web_database_, ui_thread, db_thread, base::Bind(
+          &ProfileErrorCallback, PROFILE_ERROR_DB_AUTOFILL_WEB_DATA));
   autofill_web_data_->Init();
 
   token_web_data_ = new TokenWebData(
-      web_database_, base::Bind(&ProfileErrorCallback));
+      web_database_, base::Bind(&ProfileErrorCallback,
+                                PROFILE_ERROR_DB_TOKEN_WEB_DATA));
   token_web_data_->Init();
 
   web_data_ = new WebDataService(
-      web_database_, base::Bind(&ProfileErrorCallback));
+      web_database_, base::Bind(&ProfileErrorCallback,
+                                PROFILE_ERROR_DB_WEB_DATA));
   web_data_->Init();
 
   autofill_web_data_->GetAutofillBackend(

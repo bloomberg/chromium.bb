@@ -63,7 +63,9 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 
     if (message_id) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(&ShowProfileErrorDialog, message_id));
+                              base::Bind(&ShowProfileErrorDialog,
+                                         PROFILE_ERROR_PREFERENCES,
+                                         message_id));
     }
 #else
     // On ChromeOS error screen with message about broken local state
