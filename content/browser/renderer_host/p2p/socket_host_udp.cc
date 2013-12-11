@@ -5,10 +5,12 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_messages.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -39,6 +41,11 @@ bool IsTransientError(int error) {
          error == net::ERR_ACCESS_DENIED ||
          error == net::ERR_CONNECTION_RESET ||
          error == net::ERR_OUT_OF_MEMORY;
+}
+
+bool AllowUDPWithoutSTUN() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableP2PSocketSTUNFilter);
 }
 
 }  // namespace
@@ -155,7 +162,7 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
     if (!ContainsKey(connected_peers_, recv_address_)) {
       P2PSocketHost::StunMessageType type;
       bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
-      if (stun && IsRequestOrResponse(type)) {
+      if ((stun && IsRequestOrResponse(type)) || AllowUDPWithoutSTUN()) {
         connected_peers_.insert(recv_address_);
       } else if (!stun || type == STUN_DATA_INDICATION) {
         LOG(ERROR) << "Received unexpected data packet from "
@@ -182,7 +189,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
     return;
   }
 
-  if (!ContainsKey(connected_peers_, to)) {
+  if (!ContainsKey(connected_peers_, to) && !AllowUDPWithoutSTUN()) {
     P2PSocketHost::StunMessageType type = P2PSocketHost::StunMessageType();
     bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
     if (!stun || type == STUN_DATA_INDICATION) {

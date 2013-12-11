@@ -265,6 +265,11 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
+// Allows P2P sockets to talk UDP to other servers without using STUN first.
+// For development only, use with caution.
+// TODO(hubbe): Remove this flag.
+const char kDisableP2PSocketSTUNFilter[]    = "disable-p2psocket-stun-filter";
+
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
