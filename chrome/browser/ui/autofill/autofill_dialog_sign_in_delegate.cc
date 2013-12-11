@@ -5,8 +5,11 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
 
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace autofill {
 
@@ -22,6 +25,11 @@ AutofillDialogSignInDelegate::AutofillDialogSignInDelegate(
   DCHECK(dialog_view_);
   DCHECK(wrapped_delegate_);
   web_contents->SetDelegate(this);
+
+  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
+  prefs->browser_handles_all_top_level_link_clicks = true;
+  web_contents->GetRenderViewHost()->SyncRendererPrefs();
+
   UpdateLimitsAndEnableAutoResize(minimum_size, maximum_size);
 }
 
@@ -34,7 +42,13 @@ void AutofillDialogSignInDelegate::ResizeDueToAutoResize(
 content::WebContents* AutofillDialogSignInDelegate::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  return wrapped_delegate_->OpenURLFromTab(source, params);
+  content::OpenURLParams new_params = params;
+  if (params.transition == content::PAGE_TRANSITION_LINK &&
+      params.disposition == CURRENT_TAB &&
+      !wallet::IsSignInRelatedUrl(params.url)) {
+    new_params.disposition = NEW_FOREGROUND_TAB;
+  }
+  return wrapped_delegate_->OpenURLFromTab(source, new_params);
 }
 
 void AutofillDialogSignInDelegate::AddNewContents(

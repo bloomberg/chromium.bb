@@ -127,5 +127,10 @@ TEST(WalletServiceUrl, IsSignInContinueUrl) {
   EXPECT_FALSE(IsSignInContinueUrl(GURL(not_a_sign_in_url), &user_index));
 }
 
+TEST(WalletServiceUrl, IsSignInRelatedUrl) {
+  EXPECT_TRUE(IsSignInRelatedUrl(GetSignInUrl()));
+  EXPECT_FALSE(IsSignInRelatedUrl(GURL("http://google.com")));
+}
+
 }  // namespace wallet
 }  // namespace autofill

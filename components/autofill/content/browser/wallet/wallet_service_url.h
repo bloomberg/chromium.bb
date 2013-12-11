@@ -38,6 +38,10 @@ GURL GetSignInContinueUrl();
 // which user account just signed in.
 bool IsSignInContinueUrl(const GURL& url, size_t* user_index);
 
+// Returns whether |url| is related to sign-in. This is used to determine
+// whether to open a new link from the Autofill dialog's sign-in webview.
+bool IsSignInRelatedUrl(const GURL& url);
+
 // Whether calls to Online Wallet are hitting the production server rather than
 // a sandbox or some malicious endpoint.
 bool IsUsingProd();

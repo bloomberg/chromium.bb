@@ -178,6 +178,10 @@ bool IsSignInContinueUrl(const GURL& url, size_t* user_index) {
   return true;
 }
 
+bool IsSignInRelatedUrl(const GURL& url) {
+  return url.GetOrigin() == GetSignInUrl().GetOrigin();
+}
+
 bool IsUsingProd() {
   return GetWalletHostUrl() == GURL(kProdWalletServiceUrl);
 }

@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -41,8 +42,11 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -50,6 +54,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -895,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
     // Create some valid inputted billing data.
     const DetailInput& cc_number =
         controller()->RequestedFieldsForSection(SECTION_CC)[0];
-    DCHECK_EQ(cc_number.type, CREDIT_CARD_NUMBER);
+    ASSERT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
     view->SetTextContentsOfInput(cc_number, ASCIIToUTF16("4111111111111111"));
   }
 
@@ -1216,6 +1221,34 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, TabOpensToJustRight) {
   EXPECT_EQ(1, tab_strip->active_index());
   EXPECT_EQ(2, tab_strip->GetIndexOfWebContents(first_manage_tab));
   EXPECT_EQ(3, tab_strip->GetIndexOfWebContents(blank_tab));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       SignInWebViewOpensLinksInNewTab) {
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
+
+  NavEntryCommittedObserver sign_in_page_observer(
+      controller()->SignInUrl(),
+      content::NotificationService::AllSources());
+
+  controller()->SignInLinkClicked();
+
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  content::WebContents* sign_in_contents = view->GetSignInWebContents();
+  ASSERT_TRUE(sign_in_contents);
+
+  sign_in_page_observer.Wait();
+
+  content::OpenURLParams params(GURL("http://google.com"),
+                                content::Referrer(),
+                                CURRENT_TAB,
+                                content::PAGE_TRANSITION_LINK,
+                                true);
+  int num_tabs = browser()->tab_strip_model()->count();
+  sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
+  EXPECT_EQ(num_tabs + 1, browser()->tab_strip_model()->count());
 }
 
 }  // namespace autofill
