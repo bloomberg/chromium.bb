@@ -151,10 +151,6 @@ deps = {
   "src/third_party/ots":
     (Var("googlecode_url") % "ots") + "/trunk@107",
 
-  "src/third_party/brotli/src":
-    Var("chromium_git") +
-    "/external/font-compression-reference.git@79e99afe468407e9ff9f0820df7190cb069eabeb",
-
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@171600",
 
