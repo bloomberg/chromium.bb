@@ -34,19 +34,72 @@
     '../build/win/precompile.gypi',
     'blink_heap.gypi',
   ],
-  'targets': [{
-    'target_name': 'blink_heap',
-    'type': '<(component)',
-    'dependencies': [
-      '../config.gyp:config',
-      '../wtf/wtf.gyp:wtf',
-    ],
-    'defines': [
-      'HEAP_IMPLEMENTATION=1',
-      'INSIDE_BLINK',
-    ],
-    'sources': [
-      '<@(heap_files)',
-    ],
-  }],
+  'targets': [
+    {
+      'target_name': 'blink_heap_asm_stubs',
+      'type': 'static_library',
+      # VS2010 does not correctly incrementally link obj files generated
+      # from asm files. This flag disables UseLibraryDependencyInputs to
+      # avoid this problem.
+      'msvs_2010_disable_uldi_when_referenced': 1,
+      'includes': [
+        '../../../yasm/yasm_compile.gypi',
+      ],
+      'sources': [
+        '<@(heap_asm_files)',
+      ],
+      'variables': {
+        'more_yasm_flags': [],
+        'conditions': [
+          ['OS == "mac"', {
+            'more_yasm_flags': [
+              # Necessary to ensure symbols end up with a _ prefix; added by
+              # yasm_compile.gypi for Windows, but not Mac.
+              '-DPREFIX',
+            ],
+          }],
+          ['OS == "win" and target_arch == "x64"', {
+            'more_yasm_flags': [
+              '-DX64WIN=1',
+            ],
+          }],
+          ['OS != "win" and target_arch == "x64"', {
+            'more_yasm_flags': [
+              '-DX64POSIX=1',
+            ],
+          }],
+          ['target_arch == "ia32"', {
+            'more_yasm_flags': [
+              '-DIA32=1',
+            ],
+          }],
+          ['target_arch == "arm"', {
+            'more_yasm_flags': [
+              '-DARM=1',
+            ],
+          }],
+        ],
+        'yasm_flags': [
+          '>@(more_yasm_flags)',
+        ],
+        'yasm_output_path': '<(SHARED_INTERMEDIATE_DIR)/webcore/heap'
+      },
+    },
+    {
+      'target_name': 'blink_heap',
+      'type': '<(component)',
+      'dependencies': [
+        '../config.gyp:config',
+        '../wtf/wtf.gyp:wtf',
+        'blink_heap_asm_stubs',
+      ],
+      'defines': [
+        'HEAP_IMPLEMENTATION=1',
+        'INSIDE_BLINK',
+      ],
+      'sources': [
+        '<@(heap_files)',
+      ],
+    },
+  ],
 }

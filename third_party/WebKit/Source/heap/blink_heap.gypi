@@ -31,12 +31,23 @@
 {
   'variables': {
     'heap_files': [
-        'Heap.cpp',
-        'Heap.h',
-        'HeapExport.h',
+      'Heap.cpp',
+      'Heap.h',
+      'HeapExport.h',
     ],
     'heap_test_files': [
-        'HeapTest.cpp',
+      'HeapTest.cpp',
+    ],
+    'conditions': [
+      ['target_arch == "arm"', {
+       'heap_asm_files': [
+         'asm/SaveRegisters_arm.S',
+       ],
+      }, { # target_arch != "arm"
+       'heap_asm_files': [
+         'asm/SaveRegisters.asm',
+       ],
+      }],
     ],
   },
 }
