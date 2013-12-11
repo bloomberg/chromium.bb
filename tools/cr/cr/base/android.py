@@ -65,10 +65,12 @@ class AndroidPlatform(cr.Platform):
     """Override Prepare from cr.Platform."""
     super(AndroidPlatform, self).Prepare(context)
     # Check we are an android capable client
-    try:
-      is_android = 'android' in context.gclient['target_os']
-    except KeyError:
-      is_android = False
+    is_android = 'android' in context.gclient.get('target_os', '')
+    if not is_android:
+      url = context.gclient.get('solutions', [{}])[0].get('url')
+      is_android = (url.startswith(
+                        'https://chrome-internal.googlesource.com/') and
+                    url.endswith('/internal/apps.git'))
     if not is_android:
       print _NOT_ANDROID_MESSAGE
       exit(1)
