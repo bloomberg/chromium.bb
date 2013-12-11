@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
@@ -159,12 +160,13 @@ void AppendComponentUpdaterThrottles(
   ComponentUpdateService* cus = g_browser_process->component_updater();
   if (!cus)
     return;
-  // Check for PNaCL nexe request.
+  // Check for PNaCl pexe request.
   if (resource_type == ResourceType::OBJECT) {
     const net::HttpRequestHeaders& headers = request->extra_request_headers();
     std::string accept_headers;
     if (headers.GetHeader("Accept", &accept_headers)) {
-      if (accept_headers.find("application/x-pnacl") != std::string::npos)
+      if (accept_headers.find("application/x-pnacl") != std::string::npos &&
+          pnacl::NeedsOnDemandUpdate())
         crx_id = "hnimpnehoodheedghdeeijklkeaacbdc";
     }
   }

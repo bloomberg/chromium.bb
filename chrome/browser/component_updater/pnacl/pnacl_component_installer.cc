@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 
+#include "base/atomicops.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -60,6 +61,19 @@ void SetPnaclHash(CrxComponent* component) {
 
 // If we don't have Pnacl installed, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
+const char kMinPnaclVersion[] = "0.1.0.12181";
+
+// Initially say that we do not need OnDemand updates. This should be
+// updated by CheckVersionCompatiblity(), before doing any URLRequests
+// that depend on PNaCl.
+volatile base::subtle::Atomic32 needs_on_demand_update = 0;
+
+void CheckVersionCompatiblity(const base::Version& current_version) {
+  // Using NoBarrier, since needs_on_demand_update is standalone and does
+  // not have other associated data.
+  base::subtle::NoBarrier_Store(&needs_on_demand_update,
+                                current_version.IsOlderThan(kMinPnaclVersion));
+}
 
 // PNaCl is packaged as a multi-CRX.  This returns the platform-specific
 // subdirectory that is part of that multi-CRX.
@@ -272,6 +286,7 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   // - The path service.
   // - Callbacks that requested an update.
   set_current_version(version);
+  CheckVersionCompatiblity(version);
   OverrideDirPnaclComponent(path);
   return true;
 }
@@ -308,6 +323,7 @@ void FinishPnaclUpdateRegistration(const Version& current_version,
                                    PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pci->set_current_version(current_version);
+  CheckVersionCompatiblity(current_version);
   pci->set_current_fingerprint(current_fingerprint);
   CrxComponent pnacl_component = pci->GetCrxComponent();
 
@@ -438,3 +454,12 @@ void PnaclComponentInstaller::ReRegisterPnacl() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&GetProfileInformation, this));
 }
+
+
+namespace pnacl {
+
+bool NeedsOnDemandUpdate() {
+  return base::subtle::NoBarrier_Load(&needs_on_demand_update) != 0;
+}
+
+}  // namespace pnacl

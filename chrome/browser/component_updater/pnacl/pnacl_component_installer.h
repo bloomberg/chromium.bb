@@ -21,6 +21,16 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace pnacl {
+// Returns true if PNaCl actually needs an on-demand component update.
+// E.g., if PNaCl is not yet installed and the user is loading a PNaCl app,
+// or the current version is behind chrome's version, and is ABI incompatible
+// with chrome. If not necessary, returns false.
+// May conservatively return false before PNaCl is registered, but
+// should return the right answer after it is registered.
+bool NeedsOnDemandUpdate();
+}
+
 // Component installer responsible for Portable Native Client files.
 // Files can be installed to a shared location, or be installed to
 // a per-user location.
