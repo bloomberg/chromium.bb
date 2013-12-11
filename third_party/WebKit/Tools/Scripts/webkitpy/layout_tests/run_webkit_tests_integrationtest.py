@@ -763,6 +763,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # The list of references should be empty since the test crashed and we didn't run any references.
         self.assertEqual(test_results[0].references, [])
 
+    def test_reftest_with_virtual_reference(self):
+        _, err, _ = logging_run(['--details', 'virtual/passes/reftest.html'], tests_included=True)
+        self.assertTrue('ref: virtual/passes/reftest-expected.html' in err.getvalue())
+
     def test_additional_platform_directory(self):
         self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo']))
         self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/../foo']))

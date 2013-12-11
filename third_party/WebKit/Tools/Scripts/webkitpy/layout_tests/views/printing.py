@@ -388,8 +388,13 @@ class Printer(object):
             self._print_default(' base: %s' % base)
             self._print_default(' args: %s' % args)
 
-        for extension in ('.txt', '.png', '.wav'):
-            self._print_baseline(test_name, extension)
+        references = self._port.reference_files(test_name)
+        if references:
+            for _, filename in references:
+                self._print_default('  ref: %s' % self._port.relative_test_filename(filename))
+        else:
+            for extension in ('.txt', '.png', '.wav'):
+                    self._print_baseline(test_name, extension)
 
         self._print_default('  exp: %s' % exp_str)
         self._print_default('  got: %s' % got_str)

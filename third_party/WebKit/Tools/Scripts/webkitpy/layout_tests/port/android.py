@@ -1080,14 +1080,6 @@ class ChromiumAndroidDriver(driver.Driver):
                 not self._android_commands.file_exists(self._out_fifo_path) and
                 not self._android_commands.file_exists(self._err_fifo_path))
 
-    def run_test(self, driver_input, stop_when_done):
-        base = self._port.lookup_virtual_test_base(driver_input.test_name)
-        if base:
-            driver_input = copy.copy(driver_input)
-            driver_input.args = self._port.lookup_virtual_test_args(driver_input.test_name)
-            driver_input.test_name = base
-        return super(ChromiumAndroidDriver, self).run_test(driver_input, stop_when_done)
-
     def start(self, pixel_tests, per_test_args):
         # We override the default start() so that we can call _android_driver_cmd_line()
         # instead of cmd_line().

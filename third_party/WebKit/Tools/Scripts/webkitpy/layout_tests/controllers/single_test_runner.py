@@ -95,7 +95,20 @@ class SingleTestRunner(object):
         image_hash = None
         if self._should_fetch_expected_checksum():
             image_hash = self._port.expected_checksum(self._test_name)
-        return DriverInput(self._test_name, self._timeout, image_hash, self._should_run_pixel_test)
+
+        test_base = self._port.lookup_virtual_test_base(self._test_name)
+        if test_base:
+            # If the file actually exists under the virtual dir, we want to use it (largely for virtual references),
+            # but we want to use the extra command line args either way.
+            if self._filesystem.exists(self._port.abspath_for_test(self._test_name)):
+                test_name = self._test_name
+            else:
+                test_name = test_base
+            args = self._port.lookup_virtual_test_args(self._test_name)
+        else:
+            test_name = self._test_name
+            args = []
+        return DriverInput(test_name, self._timeout, image_hash, self._should_run_pixel_test, args)
 
     def run(self):
         if self._reference_files:
@@ -307,7 +320,8 @@ class SingleTestRunner(object):
         for expectation, reference_filename in putAllMismatchBeforeMatch(self._reference_files):
             reference_test_name = self._port.relative_test_filename(reference_filename)
             reference_test_names.append(reference_test_name)
-            reference_output = self._driver.run_test(DriverInput(reference_test_name, self._timeout, None, should_run_pixel_test=True), self._stop_when_done)
+            driver_input = DriverInput(reference_test_name, self._timeout, image_hash=None, should_run_pixel_test=True, args=self._port.lookup_virtual_test_args(reference_test_name))
+            reference_output = self._driver.run_test(driver_input, self._stop_when_done)
             test_result = self._compare_output_with_reference(reference_output, test_output, reference_filename, expectation == '!=')
 
             if (expectation == '!=' and test_result.failures) or (expectation == '==' and not test_result.failures):

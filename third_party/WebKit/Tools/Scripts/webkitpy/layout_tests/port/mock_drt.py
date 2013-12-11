@@ -211,7 +211,7 @@ class MockDRT(object):
         else:
             test_name = self._port.relative_test_filename(uri)
 
-        return DriverInput(test_name, 0, checksum, should_run_pixel_tests)
+        return DriverInput(test_name, 0, checksum, should_run_pixel_tests, args=[])
 
     def output_for_test(self, test_input, is_reftest):
         port = self._port
