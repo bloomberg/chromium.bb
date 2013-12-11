@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+  <!--
+STOP! It looks like you want to suppress some lint errors:
+- Have you tried identifing the offending patch?
+  Ask the author for a fix and/or revert the patch.
+- It is preferred to add suppressions in the code instead of
+  sweeping it under the rug here. See:
+
+    http://developer.android.com/tools/debugging/improving-w-lint.html
+
+Still reading?
+- You can edit this file manually to suppress an issue
+  globally if it is not applicable to the project.
+- You can also automatically add issues found so for in the
+  build process by running:
+
+    build/android/lint/suppress.py
+
+  which will generate this file (Comments are not preserved).
+  Note: PRODUCT_DIR will be substituted at run-time with actual
+  directory path (e.g. out/Debug)
+-->
+  <issue id="AllowBackup">
+    <ignore path="AndroidManifest.xml"/>
+  </issue>
+  <issue id="CommitPrefEdits">
+    <ignore path="third_party/cacheinvalidation/src/java/com/google/ipc/invalidation/ticl/android2/channel/AndroidChannelPreferences.java"/>
+  </issue>
+  <issue id="DefaultLocale">
+    <ignore path="PRODUCT_DIR/content_shell_test_apk/classes/org/chromium/content/browser/ViewportTest.class"/>
+    <ignore path="android_webview/javatests/src/org/chromium/android_webview/test/AwViewportTest.java"/>
+    <ignore path="android_webview/javatests/src/org/chromium/android_webview/test/LoadUrlTest.java"/>
+    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java"/>
+    <ignore path="chrome/android/testshell/javatests/src/org/chromium/chrome/testshell/ChromiumTestShellUrlTest.java"/>
+    <ignore path="chrome/test/android/javatests/src/org/chromium/chrome/test/util/browser/sync/SyncTestUtil.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/app/Linker.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/LoadUrlParams.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanAccessibilityInjector.java"/>
+    <ignore path="content/public/android/javatests/src/org/chromium/content/browser/ViewportTest.java"/>
+    <ignore path="third_party/cacheinvalidation/src/java/com/google/ipc/invalidation/external/client/contrib/AndroidListenerState.java"/>
+  </issue>
+  <issue id="DrawAllocation">
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/ContentViewRenderView.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/PopupZoomer.java"/>
+  </issue>
+  <issue id="ExportedContentProvider">
+    <ignore path="AndroidManifest.xml"/>
+  </issue>
+  <issue id="HandlerLeak">
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/LongPressDetector.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/third_party/GestureDetector.java"/>
+    <ignore path="remoting/android/java/src/org/chromium/chromoting/TapGestureDetector.java"/>
+  </issue>
+  <issue id="InlinedApi">
+    <ignore path="base/android/java/src/org/chromium/base/ApiCompatibilityUtils.java"/>
+    <ignore path="base/android/java/src/org/chromium/base/MemoryPressureListener.java"/>
+    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/printing/PrintingControllerFactory.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/DeviceUtils.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanAccessibilityInjector.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/MediaCodecBridge.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/MediaDrmBridge.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java"/>
+    <ignore path="net/android/java/src/org/chromium/net/X509Util.java"/>
+    <ignore path="printing/android/java/src/org/chromium/printing/PrintingControllerImpl.java"/>
+    <ignore path="ui/android/java/src/org/chromium/ui/base/LocalizationUtils.java"/>
+  </issue>
+  <issue id="MissingRegistered" severity="ignore"/>
+  <issue id="MissingSuperCall">
+    <ignore path="android_webview/java/src/org/chromium/android_webview/AwContents.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java"/>
+  </issue>
+  <issue id="MissingVersion">
+    <ignore path="AndroidManifest.xml"/>
+  </issue>
+  <issue id="NewApi">
+    <ignore path="PRODUCT_DIR/android_webview_apk/classes/org/chromium/android_webview/test/AwTestContainerView.class"/>
+    <ignore path="PRODUCT_DIR/chromium_testshell_test_apk/classes/org/chromium/printing/PrintingControllerTest$6.class"/>
+    <ignore path="PRODUCT_DIR/chromium_testshell_test_apk/classes/org/chromium/printing/PrintingControllerTest.class"/>
+    <ignore path="PRODUCT_DIR/content_shell_test_apk/classes/org/chromium/content/browser/ClipboardTest.class"/>
+    <ignore path="android_webview/java/src/org/chromium/android_webview/AwPdfExporter.java"/>
+    <ignore path="android_webview/java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java"/>
+    <ignore path="android_webview/java/src/org/chromium/android_webview/AwWebContentsDelegateAdapter.java"/>
+    <ignore path="android_webview/test/shell/src/org/chromium/android_webview/test/AwTestContainerView.java"/>
+    <ignore path="base/android/java/src/org/chromium/base/ApiCompatibilityUtils.java"/>
+    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/BookmarkUtils.java"/>
+    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/TtsPlatformImpl.java"/>
+    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/appmenu/AppMenu.java"/>
+    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/infobar/AnimationHelper.java"/>
+    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/signin/SigninManager.java"/>
+    <ignore path="chrome/test/chromedriver/test/webview_shell/java/src/org/chromium/chromedriver_webview_shell/Main.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/GenericTouchGesture.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/VSyncMonitor.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanAccessibilityInjector.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanBrowserAccessibilityManager.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/KitKatBrowserAccessibilityManager.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/input/InputDialogContainer.java"/>
+    <ignore path="content/public/android/javatests/src/org/chromium/content/browser/ClipboardTest.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/MediaCodecBridge.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/MediaDrmBridge.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/VideoCapture.java"/>
+    <ignore path="media/base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java"/>
+    <ignore path="printing/android/java/src/org/chromium/printing/PrintDocumentAdapterWrapper.java"/>
+    <ignore path="printing/android/java/src/org/chromium/printing/PrintManagerDelegateImpl.java"/>
+    <ignore path="printing/android/java/src/org/chromium/printing/PrintingControllerImpl.java"/>
+    <ignore path="tools/android/memconsumer/java/src/org/chromium/memconsumer/ResidentService.java"/>
+    <ignore path="ui/android/java/src/org/chromium/ui/ColorPickerAdvancedComponent.java"/>
+    <ignore path="ui/android/java/src/org/chromium/ui/base/Clipboard.java"/>
+    <ignore path="ui/android/java/src/org/chromium/ui/base/LocalizationUtils.java"/>
+    <ignore path="ui/android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java"/>
+  </issue>
+  <issue id="OldTargetApi">
+    <ignore path="AndroidManifest.xml"/>
+  </issue>
+  <issue id="Recycle" severity="Error">
+    <ignore path="PRODUCT_DIR/content_shell_test_apk/classes/org/chromium/content/browser/ContentViewGestureHandlerTest.class"/>
+    <ignore path="android_webview/javatests/src/org/chromium/android_webview/test/WebKitHitTestTest.java"/>
+    <ignore path="android_webview/javatests/src/org/chromium/android_webview/test/util/AwTestTouchUtils.java"/>
+    <ignore path="chrome/android/javatests/src/org/chromium/chrome/browser/test/ProviderBookmarkNodeTest.java"/>
+    <ignore path="content/public/test/android/javatests/src/org/chromium/content/browser/test/util/TestTouchUtils.java"/>
+    <ignore path="content/public/test/android/javatests/src/org/chromium/content/browser/test/util/TouchCommon.java"/>
+  </issue>
+  <issue id="Registered" severity="ignore"/>
+  <issue id="SdCardPath">
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java"/>
+  </issue>
+  <issue id="SetJavaScriptEnabled" severity="ignore"/>
+  <issue id="UseSparseArrays">
+    <ignore path="android_webview/java/src/org/chromium/android_webview/AwQuotaManagerBridge.java"/>
+    <ignore path="android_webview/java/src/org/chromium/android_webview/AwResource.java"/>
+    <ignore path="remoting/android/java/src/org/chromium/chromoting/TapGestureDetector.java"/>
+    <ignore path="ui/android/java/src/org/chromium/ui/base/WindowAndroid.java"/>
+  </issue>
+  <issue id="ViewConstructor" severity="ignore"/>
+  <issue id="WrongCall" severity="ignore"/>
+</lint>

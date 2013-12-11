@@ -44,6 +44,7 @@
 #  res_extra_dirs - A list of extra directories containing Android resources.
 #    These directories may be generated at build time.
 #  res_extra_files - A list of the files in res_extra_dirs.
+#  never_lint - Set to 1 to not run lint on this target.
 
 {
   'dependencies': [
@@ -73,6 +74,10 @@
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'classes_dir': '<(intermediate_dir)/classes',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
+    'lint_stamp': '<(intermediate_dir)/lint.stamp',
+    'lint_result': '<(intermediate_dir)/lint_result.xml',
+    'lint_config': '<(intermediate_dir)/lint_config.xml',
+    'never_lint%': 0,
     'proguard_config%': '',
     'proguard_preprocess%': '0',
     'variables': {
@@ -306,6 +311,24 @@
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
         '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
+    },
+    {
+      'variables': {
+        'src_dirs': [
+          '<(java_in_dir)/src',
+          '>@(additional_src_dirs)',
+        ],
+        'stamp_path': '<(lint_stamp)',
+        'result_path': '<(lint_result)',
+        'config_path': '<(lint_config)',
+      },
+      'inputs': [
+        '<(compile_stamp)',
+      ],
+      'outputs': [
+        '<(lint_stamp)',
+      ],
+      'includes': [ 'android/lint_action.gypi' ],
     },
     {
       'action_name': 'jar_<(_target_name)',
