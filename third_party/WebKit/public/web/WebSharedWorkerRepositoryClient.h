@@ -31,10 +31,11 @@
 #ifndef WebSharedWorkerRepositoryClient_h
 #define WebSharedWorkerRepositoryClient_h
 
+#include "WebSharedWorker.h"
+
 namespace blink {
 
 class WebString;
-class WebSharedWorker;
 class WebURL;
 
 class WebSharedWorkerRepositoryClient {
@@ -43,7 +44,14 @@ public:
     typedef unsigned long long DocumentID;
 
     // Creates a new shared worker. This may return null.
+    // FIXME(horo):Remove this method.
     virtual WebSharedWorker* createSharedWorker(const WebURL&, const WebString&, DocumentID) { return 0; }
+
+    // Creates a new shared worker connector. This may return null.
+    virtual WebSharedWorkerConnector* createSharedWorkerConnector(const WebURL& url, const WebString& name, DocumentID id)
+    {
+        return createSharedWorker(url, name, id);
+    }
 
     // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
     virtual void documentDetached(DocumentID) { }
