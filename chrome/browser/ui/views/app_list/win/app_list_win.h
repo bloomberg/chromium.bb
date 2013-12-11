@@ -30,7 +30,7 @@ class AppListWin : public AppList {
   // exists, the position of the taskbar, and the mouse cursor. Returns the
   // intended coordinates for the center of the window. If |taskbar_rect| is
   // empty, assumes there is no taskbar on the given display.
-  static gfx::Point FindAnchorPoint(const gfx::Size view_size,
+  static gfx::Point FindAnchorPoint(const gfx::Size& view_size,
                                     const gfx::Display& display,
                                     const gfx::Point& cursor,
                                     const gfx::Rect& taskbar_rect);

@@ -50,7 +50,7 @@ AppListWin::AppListWin(app_list::AppListView* view,
 
 AppListWin::~AppListWin() {}
 
-gfx::Point AppListWin::FindAnchorPoint(const gfx::Size view_size,
+gfx::Point AppListWin::FindAnchorPoint(const gfx::Size& view_size,
                                        const gfx::Display& display,
                                        const gfx::Point& cursor,
                                        const gfx::Rect& taskbar_rect) {
@@ -71,12 +71,12 @@ gfx::Point AppListWin::FindAnchorPoint(const gfx::Size view_size,
     // If we can't find the taskbar, snap to the bottom left.
     return positioner.GetAnchorPointForScreenCorner(
         AppListPositioner::SCREEN_CORNER_BOTTOM_LEFT);
-  } else if (positioner.GetCursorDistanceFromShelf(edge, cursor) >
-             kSnapDistance) {
-    return positioner.GetAnchorPointForShelfCorner(edge);
-  } else {
-    return positioner.GetAnchorPointForShelfCursor(edge, cursor);
   }
+
+  if (positioner.GetCursorDistanceFromShelf(edge, cursor) > kSnapDistance)
+    return positioner.GetAnchorPointForShelfCorner(edge);
+
+  return positioner.GetAnchorPointForShelfCursor(edge, cursor);
 }
 
 void AppListWin::Show() {
