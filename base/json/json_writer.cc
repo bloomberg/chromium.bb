@@ -21,28 +21,24 @@ static const char kPrettyPrintLineEnding[] = "\r\n";
 static const char kPrettyPrintLineEnding[] = "\n";
 #endif
 
-/* static */
-const char* JSONWriter::kEmptyArray = "[]";
-
-/* static */
+// static
 void JSONWriter::Write(const Value* const node, std::string* json) {
   WriteWithOptions(node, 0, json);
 }
 
-/* static */
+// static
 void JSONWriter::WriteWithOptions(const Value* const node, int options,
                                   std::string* json) {
   json->clear();
   // Is there a better way to estimate the size of the output?
   json->reserve(1024);
 
-  bool escape = !(options & OPTIONS_DO_NOT_ESCAPE);
   bool omit_binary_values = !!(options & OPTIONS_OMIT_BINARY_VALUES);
   bool omit_double_type_preservation =
       !!(options & OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION);
   bool pretty_print = !!(options & OPTIONS_PRETTY_PRINT);
 
-  JSONWriter writer(escape, omit_binary_values, omit_double_type_preservation,
+  JSONWriter writer(omit_binary_values, omit_double_type_preservation,
                     pretty_print, json);
   writer.BuildJSONString(node, 0);
 
@@ -50,11 +46,10 @@ void JSONWriter::WriteWithOptions(const Value* const node, int options,
     json->append(kPrettyPrintLineEnding);
 }
 
-JSONWriter::JSONWriter(bool escape, bool omit_binary_values,
+JSONWriter::JSONWriter(bool omit_binary_values,
                        bool omit_double_type_preservation, bool pretty_print,
                        std::string* json)
-    : escape_(escape),
-      omit_binary_values_(omit_binary_values),
+    : omit_binary_values_(omit_binary_values),
       omit_double_type_preservation_(omit_double_type_preservation),
       pretty_print_(pretty_print),
       json_string_(json) {
@@ -123,11 +118,7 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
         std::string value;
         bool result = node->GetAsString(&value);
         DCHECK(result);
-        if (escape_) {
-          JsonDoubleQuote(UTF8ToUTF16(value), true, json_string_);
-        } else {
-          JsonDoubleQuote(value, true, json_string_);
-        }
+        EscapeJSONString(value, true, json_string_);
         break;
       }
 
@@ -169,7 +160,7 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
           json_string_->append(kPrettyPrintLineEnding);
 
         const DictionaryValue* dict =
-          static_cast<const DictionaryValue*>(node);
+            static_cast<const DictionaryValue*>(node);
         bool first_entry = true;
         for (DictionaryValue::Iterator itr(*dict); !itr.IsAtEnd();
              itr.Advance(), first_entry = false) {
@@ -186,7 +177,8 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
 
           if (pretty_print_)
             IndentLine(depth + 1);
-          AppendQuotedString(itr.key());
+
+          EscapeJSONString(itr.key(), true, json_string_);
           if (pretty_print_) {
             json_string_->append(": ");
           } else {
@@ -216,12 +208,6 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
     default:
       NOTREACHED() << "unknown json type";
   }
-}
-
-void JSONWriter::AppendQuotedString(const std::string& str) {
-  // TODO(viettrungluu): |str| is UTF-8, not ASCII, so to properly escape it we
-  // have to convert it to UTF-16. This round-trip is suboptimal.
-  JsonDoubleQuote(UTF8ToUTF16(str), true, json_string_);
 }
 
 void JSONWriter::IndentLine(int depth) {

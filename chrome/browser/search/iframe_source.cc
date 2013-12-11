@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search/iframe_source.h"
 
-#include "base/json/string_escape.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -87,8 +86,6 @@ void IframeSource::SendJSWithOrigin(
     return;
   }
 
-  std::string js_escaped_origin;
-  base::JsonDoubleQuote(origin, false, &js_escaped_origin);
   base::StringPiece template_js =
       ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
   std::string response(template_js.as_string());

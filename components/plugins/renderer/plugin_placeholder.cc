@@ -162,7 +162,7 @@ void PluginPlaceholder::SetMessage(const base::string16& message) {
 
 void PluginPlaceholder::UpdateMessage() {
   std::string script =
-      "window.setMessage(" + base::GetDoubleQuotedJson(message_) + ")";
+      "window.setMessage(" + base::GetQuotedJSONString(message_) + ")";
   plugin_->web_view()->mainFrame()->executeScript(
       WebScriptSource(ASCIIToUTF16(script)));
 }

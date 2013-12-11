@@ -260,8 +260,8 @@ bool Ordinal<Traits>::EqualsOrBothInvalid(const Ordinal& other) const {
 
 template <typename Traits>
 std::string Ordinal<Traits>::ToDebugString() const {
-  std::string debug_string;
-  base::JsonDoubleQuote(bytes_, false /* put_in_quotes */, &debug_string);
+  std::string debug_string =
+      base::EscapeBytesAsInvalidJSONString(bytes_, false /* put_in_quotes */);
   if (!is_valid_) {
     debug_string = "INVALID[" + debug_string + "]";
   }

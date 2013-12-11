@@ -395,7 +395,7 @@ std::string Switches::ToString() const {
     std::string value = GetSwitchValue(iter->first);
     if (value.length()) {
       if (value.find(' ') != std::string::npos)
-        value = base::GetDoubleQuotedJson(value);
+        value = base::GetQuotedJSONString(value);
       str += "=" + value;
     }
     ++iter;

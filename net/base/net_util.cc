@@ -1095,7 +1095,7 @@ std::string GetDirectoryListingHeader(const base::string16& title) {
     result.assign(header.data(), header.size());
 
   result.append("<script>start(");
-  base::JsonDoubleQuote(title, true, &result);
+  base::EscapeJSONString(title, true, &result);
   result.append(");</script>\n");
 
   return result;
@@ -1149,13 +1149,12 @@ std::string GetDirectoryListingEntry(const base::string16& name,
                                      Time modified) {
   std::string result;
   result.append("<script>addRow(");
-  base::JsonDoubleQuote(name, true, &result);
+  base::EscapeJSONString(name, true, &result);
   result.append(",");
   if (raw_bytes.empty()) {
-    base::JsonDoubleQuote(EscapePath(UTF16ToUTF8(name)),
-                                   true, &result);
+    base::EscapeJSONString(EscapePath(UTF16ToUTF8(name)), true, &result);
   } else {
-    base::JsonDoubleQuote(EscapePath(raw_bytes), true, &result);
+    base::EscapeJSONString(EscapePath(raw_bytes), true, &result);
   }
   if (is_dir) {
     result.append(",1,");
@@ -1167,7 +1166,7 @@ std::string GetDirectoryListingEntry(const base::string16& name,
   base::string16 size_string;
   if (size >= 0)
     size_string = FormatBytesUnlocalized(size);
-  base::JsonDoubleQuote(size_string, true, &result);
+  base::EscapeJSONString(size_string, true, &result);
 
   result.append(",");
 
@@ -1176,7 +1175,7 @@ std::string GetDirectoryListingEntry(const base::string16& name,
   if (!modified.is_null()) {
     modified_str = base::TimeFormatShortDateAndTime(modified);
   }
-  base::JsonDoubleQuote(modified_str, true, &result);
+  base::EscapeJSONString(modified_str, true, &result);
 
   result.append(");</script>\n");
 
