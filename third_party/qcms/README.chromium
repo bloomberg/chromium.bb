@@ -30,6 +30,7 @@ google.patch contains the following modifications. Apply with
    enabled.
  - Do not use an x86-only attribute on ARM or MIPS.
  - Fix integer truncation warning/errors on Win64 build.
+ - Apply upstream thread safety (fix) patch from
+   - https://bugzilla.mozilla.org/show_bug.cgi?id=853169
 To regenerate google.patch:
   git diff b8456f38 src > google.patch
-

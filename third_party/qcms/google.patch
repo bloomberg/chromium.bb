@@ -53,10 +53,23 @@ index 36b7011..d3c3dfe 100644
  	size_t entry_size;
  	struct lutType *lut;
 diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
-index 7d83623..1e3e125 100644
+index 7d83623..11fe222 100644
 --- a/third_party/qcms/src/qcms.h
 +++ b/third_party/qcms/src/qcms.h
-@@ -102,6 +102,12 @@ typedef enum {
+@@ -40,6 +40,12 @@ sale, use or other dealings in this Software without written
+ authorization from SunSoft Inc. 
+ ******************************************************************/
+ 
++/*
++ * QCMS, in general, is not threadsafe. However, it should be safe to create
++ * profile and transformation objects on different threads, so long as you
++ * don't use the same objects on different threads at the same time.
++ */
++
+ /* 
+  * Color Space Signatures
+  * Note that only icSigXYZData and icSigLabData are valid
+@@ -102,6 +108,12 @@ typedef enum {
  	QCMS_DATA_GRAYA_8
  } qcms_data_type;
  
@@ -69,7 +82,7 @@ index 7d83623..1e3e125 100644
  /* the names for the following two types are sort of ugly */
  typedef struct
  {
-@@ -146,6 +152,7 @@ qcms_transform* qcms_transform_create(
+@@ -146,6 +158,7 @@ qcms_transform* qcms_transform_create(
  void qcms_transform_release(qcms_transform *);
  
  void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length);
@@ -78,7 +91,7 @@ index 7d83623..1e3e125 100644
  void qcms_enable_iccv4();
  
 diff --git a/third_party/qcms/src/qcmsint.h b/third_party/qcms/src/qcmsint.h
-index 53a3420..63905de 100644
+index 53a3420..af20948 100644
 --- a/third_party/qcms/src/qcmsint.h
 +++ b/third_party/qcms/src/qcmsint.h
 @@ -45,6 +45,11 @@ struct precache_output
@@ -102,7 +115,7 @@ index 53a3420..63905de 100644
  };
  
  struct matrix {
-@@ -280,18 +285,22 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
+@@ -280,18 +285,40 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
  void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
                                            unsigned char *src,
                                            unsigned char *dest,
@@ -129,6 +142,24 @@ index 53a3420..63905de 100644
 +                                          qcms_format_type output_format);
  
  extern qcms_bool qcms_supports_iccv4;
++
++
++#ifdef _MSC_VER
++
++long __cdecl _InterlockedIncrement(long volatile *);
++long __cdecl _InterlockedDecrement(long volatile *);
++#pragma intrinsic(_InterlockedIncrement)
++#pragma intrinsic(_InterlockedDecrement)
++ 
++#define qcms_atomic_increment(x) _InterlockedIncrement((long volatile *)&x)
++#define qcms_atomic_decrement(x) _InterlockedDecrement((long volatile*)&x)
++ 
++#else
++
++#define qcms_atomic_increment(x) __sync_add_and_fetch(&x, 1)
++#define qcms_atomic_decrement(x) __sync_sub_and_fetch(&x, 1)
++
++#endif
 diff --git a/third_party/qcms/src/qcmstypes.h b/third_party/qcms/src/qcmstypes.h
 index 56d8de3..9a9b197 100644
 --- a/third_party/qcms/src/qcmstypes.h
@@ -331,7 +362,7 @@ index 6a5faf9..fa7f2d1 100644
 +    dest[b_out] = otdata_b[output[2]];
  }
 diff --git a/third_party/qcms/src/transform.c b/third_party/qcms/src/transform.c
-index 9a6562b..7312ced 100644
+index 9a6562b..7e0ba2c 100644
 --- a/third_party/qcms/src/transform.c
 +++ b/third_party/qcms/src/transform.c
 @@ -181,11 +181,20 @@ compute_chromatic_adaption(struct CIE_XYZ source_white_point,
@@ -680,7 +711,7 @@ index 9a6562b..7312ced 100644
  	int i;
  	float (*mat)[4] = transform->matrix;
  	for (i = 0; i < length; i++) {
-@@ -787,9 +851,10 @@ static void qcms_transform_data_rgb_out_linear(qcms_transform *transform, unsign
+@@ -787,16 +851,25 @@ static void qcms_transform_data_rgb_out_linear(qcms_transform *transform, unsign
  		float out_linear_g = mat[0][1]*linear_r + mat[1][1]*linear_g + mat[2][1]*linear_b;
  		float out_linear_b = mat[0][2]*linear_r + mat[1][2]*linear_g + mat[2][2]*linear_b;
  
@@ -694,7 +725,29 @@ index 9a6562b..7312ced 100644
  	}
  }
  #endif
-@@ -815,7 +880,7 @@ void precache_release(struct precache_output *p)
+ 
++/*
++ * If users create and destroy objects on different threads, even if the same
++ * objects aren't used on different threads at the same time, we can still run
++ * in to trouble with refcounts if they aren't atomic.
++ *
++ * This can lead to us prematurely deleting the precache if threads get unlucky
++ * and write the wrong value to the ref count.
++ */
+ static struct precache_output *precache_reference(struct precache_output *p)
+ {
+-	p->ref_count++;
++	qcms_atomic_increment(p->ref_count);
+ 	return p;
+ }
+ 
+@@ -810,12 +883,12 @@ static struct precache_output *precache_create()
+ 
+ void precache_release(struct precache_output *p)
+ {
+-	if (--p->ref_count == 0) {
++	if (qcms_atomic_decrement(p->ref_count) == 0) {
+ 		free(p);
  	}
  }
  
@@ -703,7 +756,7 @@ index 9a6562b..7312ced 100644
  static qcms_transform *transform_alloc(void)
  {
  	qcms_transform *t;
-@@ -994,13 +1059,15 @@ void qcms_profile_precache_output_transform(qcms_profile *profile)
+@@ -994,13 +1067,15 @@ void qcms_profile_precache_output_transform(qcms_profile *profile)
  	if (profile->color_space != RGB_SIGNATURE)
  		return;
  
@@ -725,7 +778,7 @@ index 9a6562b..7312ced 100644
  
  	/* don't precache if we do not have the TRC curves */
  	if (!profile->redTRC || !profile->greenTRC || !profile->blueTRC)
-@@ -1157,14 +1224,14 @@ qcms_transform* qcms_transform_create(
+@@ -1157,14 +1232,14 @@ qcms_transform* qcms_transform_create(
                  	return NULL;
              	}
  		if (precache) {
@@ -742,13 +795,13 @@ index 9a6562b..7312ced 100644
                      /* Microsoft Compiler for x64 doesn't support MMX.
                       * SSE code uses MMX so that we disable on x64 */
  		    } else
-@@ -1256,13 +1323,34 @@ qcms_transform* qcms_transform_create(
+@@ -1256,13 +1331,34 @@ qcms_transform* qcms_transform_create(
  	return transform;
  }
  
 -#if defined(__GNUC__) && !defined(__x86_64__) && !defined(__amd64__)
 +/* __force_align_arg_pointer__ is an x86-only attribute, and gcc/clang warns on unused
-+ * attributes. Don't use this on ARM, AMD64 or MIPS. __has_attribute can detect the presence
++ * attributes. Don't use this on ARM or AMD64. __has_attribute can detect the presence
 + * of the attribute but is currently only supported by clang */
 +#if defined(__has_attribute)
 +#define HAS_FORCE_ALIGN_ARG_POINTER __has_attribute(__force_align_arg_pointer__)
