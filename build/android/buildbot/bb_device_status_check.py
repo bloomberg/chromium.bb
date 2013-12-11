@@ -50,7 +50,11 @@ def DeviceInfo(serial, options):
   device_build_type = device_adb.GetBuildType()
   device_product_name = device_adb.GetProductName()
 
-  battery = device_adb.GetBatteryInfo()
+  try:
+    battery = device_adb.GetBatteryInfo()
+  except Exception as e:
+    battery = None
+    logging.error('Unable to obtain battery info for %s, %s', serial, e)
 
   def _GetData(re_expression, line, lambda_function=lambda x:x):
     if not line:
