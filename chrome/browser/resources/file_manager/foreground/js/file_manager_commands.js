@@ -81,6 +81,17 @@ CommandUtil.getCommandEntry = function(element) {
 };
 
 /**
+ * @param {NavigationList} navigationList navigation list to extract root node.
+ * @return {?RootType} Type of the found root.
+ */
+CommandUtil.getCommandRootType = function(navigationList) {
+  var root = CommandUtil.getCommandEntry(navigationList);
+  return root &&
+         PathUtil.isRootPath(root.fullPath) &&
+         PathUtil.getRootType(root.fullPath);
+};
+
+/**
  * Checks if command can be executed on drive.
  * @param {Event} event Command event to mark.
  * @param {FileManager} fileManager FileManager to use.
@@ -347,29 +358,14 @@ CommandHandler.COMMANDS_['unmount'] = {
    */
   execute: function(event, fileManager) {
     var root = CommandUtil.getCommandEntry(event.target);
-    if (!root)
-      return;
-    var errorCallback = function() {
-      fileManager.alert.showHtml('', str('UNMOUNT_FAILED'));
-    };
-    var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
-    if (!volumeInfo) {
-      errorCallback();
-      return;
-    }
-    fileManager.volumeManager_.unmount(
-        volumeInfo,
-        function() {},
-        errorCallback);
+    if (root)
+      fileManager.unmountVolume(PathUtil.getRootPath(root.fullPath));
   },
   /**
    * @param {Event} event Command event.
    */
   canExecute: function(event, fileManager) {
-    var root = CommandUtil.getCommandEntry(this.fileManager_.navigationList);
-    var location =
-        root && this.fileManager_.volumeManager.getLocationInfo(root);
-    var rootType = location && location.isRootEntry && location.rootType;
+    var rootType = CommandUtil.getCommandRootType(event.target);
 
     event.canExecute = (rootType == RootType.ARCHIVE ||
                         rootType == RootType.REMOVABLE);
@@ -418,8 +414,8 @@ CommandHandler.COMMANDS_['format'] = {
     // See the comment in execute() for why doing this.
     if (!root)
       root = directoryModel.getCurrentDirEntry();
-    var location = root && fileManager.volumeManager.getLocationInfo(root);
-    var removable = location && location.rootType === RootType.REMOVABLE;
+    var removable = root &&
+                    PathUtil.getRootType(root.fullPath) == RootType.REMOVABLE;
     // Don't check if the volume is read-only. Unformatted volume is
     // considered read-only per directoryModel.isPathReadOnly(), but can be
     // formatted. An error will be raised if formatting failed anyway.
@@ -760,8 +756,8 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = {
       onlyOneFolderSelected = (items.length == 1 && items[0].isDirectory);
     }
 
-    var location = entry && fileManager.volumeManager.getLocationInfo(entry);
-    var eligible = location && location.isEligibleForFolderShortcut;
+    var eligible = entry &&
+                   PathUtil.isEligibleForFolderShortcut(entry.fullPath);
     event.canExecute =
         eligible && onlyOneFolderSelected && !folderShortcutExists;
     event.command.setHidden(!eligible || !onlyOneFolderSelected);
@@ -790,9 +786,8 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = {
   canExecute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
     var path = entry && entry.fullPath;
-    var location = entry && fileManager.volumeManager.getLocationInfo(entry);
 
-    var eligible = location && location.isEligibleForFolderShortcut;
+    var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
     var isShortcut = path && fileManager.folderShortcutExists(path);
     event.canExecute = isShortcut && eligible;
     event.command.setHidden(!event.canExecute);

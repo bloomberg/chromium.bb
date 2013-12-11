@@ -1001,10 +1001,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initNavigationList_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
-    DirectoryTree.decorate(this.directoryTree_,
-                           this.directoryModel_,
-                           this.volumeManager_);
-
+    DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
 
     this.navigationList_ = this.dialogDom_.querySelector('#navigation-list');
     NavigationList.decorate(this.navigationList_,
@@ -1538,6 +1535,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.filenameInput_.value = opt_suggestedName || '';
       this.selectDefaultPathInFilenameInput_();
     }
+  };
+
+  /**
+   * Unmounts device.
+   * @param {string} path Path to a volume to unmount.
+   */
+  FileManager.prototype.unmountVolume = function(path) {
+    var onError = function(error) {
+      this.alert.showHtml('', str('UNMOUNT_FAILED'));
+    };
+    this.volumeManager_.unmount(path, function() {}, onError.bind(this));
   };
 
   /**

@@ -527,15 +527,20 @@ VolumeManager.prototype.mountArchive = function(
 
 /**
  * Unmounts volume.
- * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
+ * @param {string} mountPath Volume mounted path.
  * @param {function(string)} successCallback Success callback.
  * @param {function(util.VolumeError)} errorCallback Error callback.
  */
-VolumeManager.prototype.unmount = function(volumeInfo,
+VolumeManager.prototype.unmount = function(mountPath,
                                            successCallback,
                                            errorCallback) {
-  chrome.fileBrowserPrivate.removeMount(
-      util.makeFilesystemUrl(volumeInfo.mountPath));
+  var volumeInfo = this.volumeInfoList.find(mountPath);
+  if (!volumeInfo) {
+    errorCallback(util.VolumeError.NOT_MOUNTED);
+    return;
+  }
+
+  chrome.fileBrowserPrivate.removeMount(util.makeFilesystemUrl(mountPath));
   var requestKey = this.makeRequestKey_('unmount', volumeInfo.mountPath);
   this.startRequest_(requestKey, successCallback, errorCallback);
 };
