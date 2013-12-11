@@ -69,7 +69,7 @@ class AudioRecordInput {
 
             try {
                 mAudioRecord.stop();
-            } catch(IllegalStateException e) {
+            } catch (IllegalStateException e) {
                 Log.e(TAG, "stop failed", e);
             }
         }
@@ -123,8 +123,8 @@ class AudioRecordInput {
     @CalledByNative
     private boolean open() {
         if (mAudioRecord != null) {
-           Log.e(TAG, "open() called twice without a close()");
-           return false;
+            Log.e(TAG, "open() called twice without a close()");
+            return false;
         }
         int channelConfig;
         if (mChannels == 1) {
@@ -176,8 +176,8 @@ class AudioRecordInput {
     @CalledByNative
     private void start() {
         if (mAudioRecord == null) {
-           Log.e(TAG, "start() called before open().");
-           return;
+            Log.e(TAG, "start() called before open().");
+            return;
         }
         if (mAudioRecordThread != null) {
             // start() was already called.
@@ -200,8 +200,8 @@ class AudioRecordInput {
     @CalledByNative
     private void close() {
         if (mAudioRecordThread != null) {
-           Log.e(TAG, "close() called before stop().");
-           return;
+            Log.e(TAG, "close() called before stop().");
+            return;
         }
         if (mAudioRecord == null) {
             // open() was not called.

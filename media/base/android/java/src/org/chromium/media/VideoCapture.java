@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,10 +106,10 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
         }
 
         try {
-            Camera.CameraInfo camera_info = new Camera.CameraInfo();
-            Camera.getCameraInfo(mId, camera_info);
-            mCameraOrientation = camera_info.orientation;
-            mCameraFacing = camera_info.facing;
+            Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+            Camera.getCameraInfo(mId, cameraInfo);
+            mCameraOrientation = cameraInfo.orientation;
+            mCameraFacing = cameraInfo.facing;
             mDeviceOrientation = getDeviceOrientation();
             Log.d(TAG, "allocate: device orientation=" + mDeviceOrientation +
                   ", camera orientation=" + mCameraOrientation +
@@ -125,13 +125,13 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             }
             int frameRateInMs = frameRate * 1000;
             Iterator itFpsRange = listFpsRange.iterator();
-            int[] fpsRange = (int[])itFpsRange.next();
+            int[] fpsRange = (int[]) itFpsRange.next();
             // Use the first range as default.
             int fpsMin = fpsRange[0];
             int fpsMax = fpsRange[1];
             int newFrameRate = (fpsMin + 999) / 1000;
             while (itFpsRange.hasNext()) {
-                fpsRange = (int[])itFpsRange.next();
+                fpsRange = (int[]) itFpsRange.next();
                 if (fpsRange[0] <= frameRateInMs &&
                     frameRateInMs <= fpsRange[1]) {
                     fpsMin = fpsRange[0];
@@ -154,7 +154,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             int matchedHeight = height;
             Iterator itCameraSize = listCameraSize.iterator();
             while (itCameraSize.hasNext()) {
-                Camera.Size size = (Camera.Size)itCameraSize.next();
+                Camera.Size size = (Camera.Size) itCameraSize.next();
                 int diff = Math.abs(size.width - width) +
                            Math.abs(size.height - height);
                 Log.d(TAG, "allocate: support resolution (" +
@@ -181,7 +181,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
 
             calculateImageFormat(matchedWidth, matchedHeight);
 
-            if (parameters.isVideoStabilizationSupported()){
+            if (parameters.isVideoStabilizationSupported()) {
                 Log.d(TAG, "Image stabilization supported, currently: "
                       + parameters.getVideoStabilization() + ", setting it.");
                 parameters.setVideoStabilization(true);
@@ -247,22 +247,22 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
 
     @CalledByNative
     public int getColorspace() {
-        switch (mImageFormat){
-        case ImageFormat.YV12:
-            return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YV12;
-        case ImageFormat.NV21:
-            return AndroidImageFormatList.ANDROID_IMAGEFORMAT_NV21;
-        case ImageFormat.YUY2:
-            return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YUY2;
-        case ImageFormat.NV16:
-            return AndroidImageFormatList.ANDROID_IMAGEFORMAT_NV16;
-        case ImageFormat.JPEG:
-            return AndroidImageFormatList.ANDROID_IMAGEFORMAT_JPEG;
-        case ImageFormat.RGB_565:
-            return AndroidImageFormatList.ANDROID_IMAGEFORMAT_RGB_565;
-        case ImageFormat.UNKNOWN:
-        default:
-            return AndroidImageFormatList.ANDROID_IMAGEFORMAT_UNKNOWN;
+        switch (mImageFormat) {
+            case ImageFormat.YV12:
+                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YV12;
+            case ImageFormat.NV21:
+                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_NV21;
+            case ImageFormat.YUY2:
+                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_YUY2;
+            case ImageFormat.NV16:
+                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_NV16;
+            case ImageFormat.JPEG:
+                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_JPEG;
+            case ImageFormat.RGB_565:
+                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_RGB_565;
+            case ImageFormat.UNKNOWN:
+            default:
+                return AndroidImageFormatList.ANDROID_IMAGEFORMAT_UNKNOWN;
         }
     }
 
@@ -420,7 +420,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     private int getDeviceOrientation() {
         int orientation = 0;
         if (mContext != null) {
-            WindowManager wm = (WindowManager)mContext.getSystemService(
+            WindowManager wm = (WindowManager) mContext.getSystemService(
                     Context.WINDOW_SERVICE);
             switch(wm.getDefaultDisplay().getRotation()) {
                 case Surface.ROTATION_90:

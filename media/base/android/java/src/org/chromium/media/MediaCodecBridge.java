@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,7 +194,7 @@ class MediaCodecBridge {
     }
 
     private MediaCodecBridge(MediaCodec mediaCodec) {
-        assert(mediaCodec != null);
+        assert mediaCodec != null;
         mMediaCodec = mediaCodec;
         mLastPresentationTimeUs = 0;
         mFlushed = true;
@@ -267,9 +267,9 @@ class MediaCodecBridge {
                 status = MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER;
             } else {
                 Log.e(TAG, "Unexpected index_or_status: " + indexOrStatus);
-                assert(false);
+                assert false;
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             Log.e(TAG, "Failed to dequeue input buffer", e);
         }
         return new DequeueInputResult(status, index);
@@ -283,7 +283,7 @@ class MediaCodecBridge {
                 mAudioTrack.flush();
             }
             mMediaCodec.flush();
-        } catch(IllegalStateException e) {
+        } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to flush MediaCodec", e);
             return MEDIA_CODEC_ERROR;
         }
@@ -320,17 +320,17 @@ class MediaCodecBridge {
 
     @CalledByNative
     private int getInputBuffersCount() {
-      return mInputBuffers.length;
+        return mInputBuffers.length;
     }
 
     @CalledByNative
     private int getOutputBuffersCount() {
-      return mOutputBuffers != null ? mOutputBuffers.length : -1;
+        return mOutputBuffers != null ? mOutputBuffers.length : -1;
     }
 
     @CalledByNative
     private int getOutputBuffersCapacity() {
-      return mOutputBuffers != null ? mOutputBuffers[0].capacity() : -1;
+        return mOutputBuffers != null ? mOutputBuffers[0].capacity() : -1;
     }
 
     @CalledByNative
@@ -350,7 +350,7 @@ class MediaCodecBridge {
         resetLastPresentationTimeIfNeeded(presentationTimeUs);
         try {
             mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
-        } catch(Exception e) {
+        } catch (Exception e) {
             Log.e(TAG, "Failed to queue input buffer", e);
             return MEDIA_CODEC_ERROR;
         }
@@ -389,7 +389,7 @@ class MediaCodecBridge {
             }
             Log.e(TAG, "MediaCodec.CryptoException with error code " + e.getErrorCode());
             return MEDIA_CODEC_ERROR;
-        } catch(IllegalStateException e) {
+        } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to queue secure input buffer", e);
             return MEDIA_CODEC_ERROR;
         }
@@ -407,7 +407,7 @@ class MediaCodecBridge {
         int status = MEDIA_CODEC_ERROR;
         int index = -1;
         try {
-            int index_or_status = mMediaCodec.dequeueOutputBuffer(info, timeoutUs);
+            int indexOrStatus = mMediaCodec.dequeueOutputBuffer(info, timeoutUs);
             if (info.presentationTimeUs < mLastPresentationTimeUs) {
                 // TODO(qinmin): return a special code through DequeueOutputResult
                 // to notify the native code the the frame has a wrong presentation
@@ -416,18 +416,18 @@ class MediaCodecBridge {
             }
             mLastPresentationTimeUs = info.presentationTimeUs;
 
-            if (index_or_status >= 0) { // index!
+            if (indexOrStatus >= 0) { // index!
                 status = MEDIA_CODEC_OK;
-                index = index_or_status;
-            } else if (index_or_status == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
+                index = indexOrStatus;
+            } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 status = MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED;
-            } else if (index_or_status == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+            } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 status = MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;
-            } else if (index_or_status == MediaCodec.INFO_TRY_AGAIN_LATER) {
+            } else if (indexOrStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 status = MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER;
             } else {
-                Log.e(TAG, "Unexpected index_or_status: " + index_or_status);
-                assert(false);
+                Log.e(TAG, "Unexpected index_or_status: " + indexOrStatus);
+                assert false;
             }
         } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to dequeue output buffer", e);
@@ -450,8 +450,8 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private static MediaFormat createAudioFormat(String mime, int SampleRate, int ChannelCount) {
-        return MediaFormat.createAudioFormat(mime, SampleRate, ChannelCount);
+    private static MediaFormat createAudioFormat(String mime, int sampleRate, int channelCount) {
+        return MediaFormat.createAudioFormat(mime, sampleRate, channelCount);
     }
 
     @CalledByNative

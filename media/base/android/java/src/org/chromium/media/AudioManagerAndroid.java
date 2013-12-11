@@ -75,7 +75,7 @@ class AudioManagerAndroid {
     };
 
     // List of valid device types.
-    private static Integer[] VALID_DEVICES = new Integer[] {
+    private static final Integer[] VALID_DEVICES = new Integer[] {
         DEVICE_SPEAKERPHONE,
         DEVICE_WIRED_HEADSET,
         DEVICE_EARPIECE,
@@ -145,7 +145,7 @@ class AudioManagerAndroid {
     private AudioManagerAndroid(Context context, long nativeAudioManagerAndroid) {
         mContext = context;
         mNativeAudioManagerAndroid = nativeAudioManagerAndroid;
-        mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+        mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         mContentResolver = mContext.getContentResolver();
     }
 
@@ -199,7 +199,7 @@ class AudioManagerAndroid {
 
         mSettingsObserverThread = new SettingsObserverThread();
         mSettingsObserverThread.start();
-        synchronized(mSettingsObserverLock) {
+        synchronized (mSettingsObserverLock) {
             try {
                 mSettingsObserverLock.wait();
             } catch (InterruptedException e) {
@@ -217,7 +217,7 @@ class AudioManagerAndroid {
         if (!mIsInitialized)
             return;
 
-        if (mSettingsObserverThread != null ) {
+        if (mSettingsObserverThread != null) {
             mSettingsObserverThread = null;
         }
         if (mSettingsObserver != null) {
@@ -296,7 +296,7 @@ class AudioManagerAndroid {
             List<String> devices = new ArrayList<String>();
             AudioDeviceName[] array = new AudioDeviceName[getNumOfAudioDevicesWithLock()];
             int i = 0;
-            for (int id = 0; id < DEVICE_COUNT; ++id ) {
+            for (int id = 0; id < DEVICE_COUNT; ++id) {
                 if (mAudioDevices[id]) {
                     array[i] = new AudioDeviceName(id, DEVICE_NAMES[id]);
                     devices.add(DEVICE_NAMES[id]);
@@ -510,9 +510,8 @@ class AudioManagerAndroid {
         } else {
             // Use BluetoothManager to get the BluetoothAdapter for
             // Android 4.3 and above.
-            BluetoothManager btManager =
-                    (BluetoothManager)mContext.getSystemService(
-                            Context.BLUETOOTH_SERVICE);
+            BluetoothManager btManager = (BluetoothManager) mContext.getSystemService(
+                    Context.BLUETOOTH_SERVICE);
             btAdapter = btManager.getAdapter();
         }
 
@@ -634,7 +633,7 @@ class AudioManagerAndroid {
             // Set this thread up so the handler will work on it.
             Looper.prepare();
 
-            synchronized(mSettingsObserverLock) {
+            synchronized (mSettingsObserverLock) {
                 mSettingsObserver = new SettingsObserver();
                 mSettingsObserverLock.notify();
             }
