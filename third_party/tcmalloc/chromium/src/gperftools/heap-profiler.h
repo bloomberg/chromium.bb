@@ -61,6 +61,13 @@
 # endif
 #endif
 
+// Make the linker NOT to strip functions in this file.
+#if defined(_WIN64)
+#pragma comment(linker, "/INCLUDE:HeapProfilerStart")
+#elif defined(_WIN32)
+#pragma comment(linker, "/INCLUDE:_HeapProfilerStart")
+#endif
+
 /* All this code should be usable from within C apps. */
 #ifdef __cplusplus
 extern "C" {

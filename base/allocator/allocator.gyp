@@ -371,18 +371,11 @@
             # included by allocator_shim.cc
             'debugallocation_shim.cc',
 
-            # heap-profiler/checker/cpuprofiler
+            # heap-checker/cpuprofiler
             '<(tcmalloc_dir)/src/base/thread_lister.c',
             '<(tcmalloc_dir)/src/base/thread_lister.h',
-            '<(tcmalloc_dir)/src/deep-heap-profile.cc',
-            '<(tcmalloc_dir)/src/deep-heap-profile.h',
             '<(tcmalloc_dir)/src/heap-checker-bcad.cc',
             '<(tcmalloc_dir)/src/heap-checker.cc',
-            '<(tcmalloc_dir)/src/heap-profiler.cc',
-            '<(tcmalloc_dir)/src/heap-profile-table.cc',
-            '<(tcmalloc_dir)/src/heap-profile-table.h',
-            '<(tcmalloc_dir)/src/memory_region_map.cc',
-            '<(tcmalloc_dir)/src/memory_region_map.h',
             '<(tcmalloc_dir)/src/profiledata.cc',
             '<(tcmalloc_dir)/src/profiledata.h',
             '<(tcmalloc_dir)/src/profile-handler.cc',

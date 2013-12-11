@@ -43,7 +43,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #include "ui/base/layout.h"
 #include "webkit/child/webkit_child_helpers.h"
 #include "webkit/child/websocketstreamhandle_impl.h"
@@ -52,6 +51,10 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
+#endif
+
+#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
 using blink::WebAudioBus;

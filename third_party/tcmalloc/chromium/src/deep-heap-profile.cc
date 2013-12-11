@@ -30,6 +30,9 @@
 #include <byteswap.h>
 #endif  // defined(__BIG_ENDIAN__)
 #endif  // defined(__linux__)
+#if defined(COMPILER_MSVC)
+#include <Winsock2.h>  // for gethostname
+#endif  // defined(COMPILER_MSVC)
 
 #include "base/cycleclock.h"
 #include "base/sysinfo.h"
@@ -55,8 +58,15 @@ static const char kVirtualLabel[] = "virtual";
 static const char kCommittedLabel[] = "committed";
 
 #if defined(__linux__)
+#define OS_NAME "linux"
+#elif defined(_WIN32) || defined(_WIN64)
+#define OS_NAME "windows"
+#else
+#define OS_NAME "unknown-os"
+#endif
 
 bool DeepHeapProfile::AppendCommandLine(TextBuffer* buffer) {
+#if defined(__linux__)
   RawFD fd;
   char filename[100];
   char cmdline[4096];
@@ -81,15 +91,31 @@ bool DeepHeapProfile::AppendCommandLine(TextBuffer* buffer) {
   buffer->AppendChar('\n');
 
   return true;
+#else
+  return false;
+#endif
 }
 
-#else  // defined(__linux__)
+#if defined(_WIN32) || defined(_WIN64)
 
-bool DeepHeapProfile::AppendCommandLine(TextBuffer* buffer) {
+// TODO(peria): Implement this function.
+void DeepHeapProfile::MemoryInfoGetterWindows::Initialize() {
+}
+
+// TODO(peria): Implement this function.
+size_t DeepHeapProfile::MemoryInfoGetterWindows::CommittedSize(
+    uint64 first_address,
+    uint64 last_address,
+    TextBuffer* buffer) const {
+  return 0;
+}
+
+// TODO(peria): Implement this function.
+bool DeepHeapProfile::MemoryInfoGetterWindows::IsPageCountAvailable() const {
   return false;
 }
 
-#endif  // defined(__linux__)
+#endif  // defined(_WIN32) || defined(_WIN64)
 
 #if defined(__linux__)
 
@@ -264,7 +290,9 @@ DeepHeapProfile::MemoryResidenceInfoGetterInterface::
 DeepHeapProfile::MemoryResidenceInfoGetterInterface*
     DeepHeapProfile::MemoryResidenceInfoGetterInterface::Create(
         PageFrameType pageframe_type) {
-#if defined(__linux__)
+#if defined(_WIN32) || defined(_WIN64)
+  return new MemoryInfoGetterWindows(pageframe_type);
+#elif defined(__linux__)
   return new MemoryInfoGetterLinux(pageframe_type);
 #else
   return NULL;
@@ -329,10 +357,11 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
 
     most_recent_pid_ = getpid();
 
-    snprintf(run_id_, sizeof(run_id_), "%s-linux-%d-%lu",
+    snprintf(run_id_, sizeof(run_id_), "%s-" OS_NAME "-%d-%lu",
              hostname, most_recent_pid_, time(NULL));
 
-    memory_residence_info_getter_->Initialize();
+    if (memory_residence_info_getter_)
+      memory_residence_info_getter_->Initialize();
     deep_table_.ResetIsLogged();
 
     // Write maps into "|filename_prefix_|.<pid>.maps".
@@ -377,7 +406,7 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
   buffer.AppendChar('\n');
 
   // Assumes the physical memory <= 64GB (PFN < 2^24).
-  if (pageframe_type_ == DUMP_PAGECOUNT &&
+  if (pageframe_type_ == DUMP_PAGECOUNT && memory_residence_info_getter_ &&
       memory_residence_info_getter_->IsPageCountAvailable()) {
     buffer.AppendString("PageFrame: 24,Base64,PageCount", 0);
     buffer.AppendChar('\n');
@@ -739,11 +768,12 @@ uint64 DeepHeapProfile::RegionStats::Record(
     uint64 first_address,
     uint64 last_address,
     TextBuffer* buffer) {
-  uint64 committed;
+  uint64 committed = 0;
   virtual_bytes_ += static_cast<size_t>(last_address - first_address + 1);
-  committed = memory_residence_info_getter->CommittedSize(first_address,
-                                                          last_address,
-                                                          buffer);
+  if (memory_residence_info_getter)
+    committed = memory_residence_info_getter->CommittedSize(first_address,
+                                                            last_address,
+                                                            buffer);
   committed_bytes_ += committed;
   return committed;
 }
@@ -758,7 +788,7 @@ void DeepHeapProfile::RegionStats::Unparse(const char* name,
   buffer->AppendString("\n", 0);
 }
 
-// Snapshots all virtual memory mappging stats by merging mmap(2) records from
+// Snapshots all virtual memory mapping stats by merging mmap(2) records from
 // MemoryRegionMap and /proc/maps, the OS-level memory mapping information.
 // Memory regions described in /proc/maps, but which are not created by mmap,
 // are accounted as "unhooked" memory regions.
@@ -795,6 +825,7 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
   char* flags;
   char* filename;
   enum MapsRegionType type;
+
   for (int i = 0; i < NUMBER_OF_MAPS_REGION_TYPES; ++i) {
     all_[i].Initialize();
     unhooked_[i].Initialize();
@@ -915,8 +946,10 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
             partial_last_address = vma_last_addr;
           else
             partial_last_address = mmap_iter->end_addr - 1;
-          uint64 committed_size = memory_residence_info_getter->CommittedSize(
-              partial_first_address, partial_last_address, mmap_dump_buffer);
+          uint64 committed_size = 0;
+          if (memory_residence_info_getter)
+            committed_size = memory_residence_info_getter->CommittedSize(
+                partial_first_address, partial_last_address, mmap_dump_buffer);
           vma_subtotal += committed_size;
           mmap_dump_buffer->AppendString(trailing ? " (" : "  ", 0);
           mmap_dump_buffer->AppendPtr(mmap_iter->start_addr, 0);

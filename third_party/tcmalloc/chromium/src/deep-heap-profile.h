@@ -36,7 +36,7 @@
 #include <typeinfo>
 #endif
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(_WIN32) || defined(_WIN64)
 #define USE_DEEP_HEAP_PROFILE 1
 #endif
 
@@ -165,6 +165,23 @@ class DeepHeapProfile {
    protected:
     MemoryResidenceInfoGetterInterface();
   };
+
+#if defined(_WIN32) || defined(_WIN64)
+  // TODO(peria): Implement this class.
+  class MemoryInfoGetterWindows : public MemoryResidenceInfoGetterInterface {
+   public:
+    MemoryInfoGetterWindows(PageFrameType) {}
+    virtual ~MemoryInfoGetterWindows() {}
+
+    virtual void Initialize();
+
+    virtual size_t CommittedSize(uint64 first_address,
+                                 uint64 last_address,
+                                 TextBuffer* buffer) const;
+
+    virtual bool IsPageCountAvailable() const;
+  };
+#endif  // defined(_WIN32) || defined(_WIN64)
 
 #if defined(__linux__)
   // Implements MemoryResidenceInfoGetterInterface for Linux.
