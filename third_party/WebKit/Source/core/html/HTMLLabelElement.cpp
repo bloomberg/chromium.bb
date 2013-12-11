@@ -85,7 +85,7 @@ LabelableElement* HTMLLabelElement::control()
     return 0;
 }
 
-HTMLFormElement* HTMLLabelElement::form() const
+HTMLFormElement* HTMLLabelElement::formOwner() const
 {
     return FormAssociatedElement::findAssociatedForm(this, 0);
 }

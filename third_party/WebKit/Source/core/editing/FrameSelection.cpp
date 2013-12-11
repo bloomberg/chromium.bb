@@ -1739,8 +1739,11 @@ static HTMLFormElement* scanForForm(Node* start)
     for (; element; element = ElementTraversal::next(*element)) {
         if (element->hasTagName(formTag))
             return toHTMLFormElement(element);
-        if (element->isHTMLElement() && toHTMLElement(element)->isFormControlElement())
-            return toHTMLFormControlElement(element)->form();
+        if (element->isHTMLElement()) {
+            HTMLFormElement* owner = toHTMLElement(element)->formOwner();
+            if (owner)
+                return owner;
+        }
         if (element->hasTagName(frameTag) || element->hasTagName(iframeTag)) {
             Node* childDocument = toHTMLFrameElementBase(element)->contentDocument();
             if (HTMLFormElement* frameResult = scanForForm(childDocument))
@@ -1763,8 +1766,11 @@ HTMLFormElement* FrameSelection::currentForm() const
     for (node = start; node; node = node->parentNode()) {
         if (node->hasTagName(formTag))
             return toHTMLFormElement(node);
-        if (node->isHTMLElement() && toHTMLElement(node)->isFormControlElement())
-            return toHTMLFormControlElement(node)->form();
+        if (node->isHTMLElement()) {
+            HTMLFormElement* owner = toHTMLElement(node)->formOwner();
+            if (owner)
+                return owner;
+        }
     }
 
     // Try walking forward in the node tree to find a form element.

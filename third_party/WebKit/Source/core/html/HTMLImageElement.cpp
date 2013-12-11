@@ -114,6 +114,11 @@ const AtomicString HTMLImageElement::imageSourceURL() const
     return m_bestFitImageURL.isNull() ? fastGetAttribute(srcAttr) : m_bestFitImageURL;
 }
 
+HTMLFormElement* HTMLImageElement::formOwner() const
+{
+    return findFormAncestor();
+}
+
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == altAttr) {

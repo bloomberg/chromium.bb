@@ -62,6 +62,8 @@ public:
     virtual void dispatchFormControlChangeEvent();
     virtual void dispatchFormControlInputEvent();
 
+    virtual HTMLFormElement* formOwner() const OVERRIDE;
+
     virtual bool isDisabledFormControl() const OVERRIDE;
 
     virtual bool isEnumeratable() const { return false; }
@@ -147,7 +149,6 @@ private:
 
     virtual short tabIndex() const;
 
-    virtual HTMLFormElement* virtualForm() const;
     virtual bool isDefaultButtonForForm() const;
     virtual bool isValidFormControlElement();
     void updateAncestorDisabledState() const;

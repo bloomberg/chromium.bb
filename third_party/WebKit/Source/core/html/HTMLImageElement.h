@@ -81,6 +81,8 @@ public:
 
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
+    virtual HTMLFormElement* formOwner() const OVERRIDE;
+
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0);
 
