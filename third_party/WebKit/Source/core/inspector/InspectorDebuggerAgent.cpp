@@ -61,6 +61,7 @@ namespace DebuggerAgentState {
 static const char debuggerEnabled[] = "debuggerEnabled";
 static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
 static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
+static const char asyncCallStackDepth[] = "asyncCallStackDepth";
 
 // Breakpoint properties.
 static const char url[] = "url";
@@ -134,6 +135,7 @@ void InspectorDebuggerAgent::disable()
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
     m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, ScriptDebugServer::DontPauseOnExceptions);
     m_state->setString(DebuggerAgentState::skipStackPattern, "");
+    m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
     m_instrumentingAgents->setInspectorDebuggerAgent(0);
 
     stopListeningScriptDebugServer();
@@ -196,6 +198,7 @@ void InspectorDebuggerAgent::restore()
             m_skipAllPauses = false;
             m_state->setBoolean(DebuggerAgentState::skipAllPauses, false);
         }
+        m_asyncCallStackTracker.setAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
     }
 }
 
@@ -931,6 +934,7 @@ void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const Str
 
 void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString*, int depth)
 {
+    m_state->setLong(DebuggerAgentState::asyncCallStackDepth, depth);
     m_asyncCallStackTracker.setAsyncCallStackDepth(depth);
 }
 
