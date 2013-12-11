@@ -24,6 +24,26 @@
       ],
     },
     {
+      'target_name': 'mojo_gles2',
+      'type': 'shared_library',
+      'defines': [
+        'MOJO_GLES2_IMPLEMENTATION',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
+      'sources': [
+        'public/gles2/gles2.h',
+        'public/gles2/gles2_private.cc',
+        'public/gles2/gles2_private.h',
+      ],
+    },
+    {
       'target_name': 'mojo_public_test_support',
       'type': 'static_library',
       'dependencies': [

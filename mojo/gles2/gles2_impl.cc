@@ -2,21 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/gles2/gles2.h"
+#include "mojo/gles2/gles2_impl.h"
 
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "mojo/public/gles2/gles2_private.h"
 
-extern "C" {
+namespace mojo {
+namespace gles2 {
 
-void MojoGLES2Initialize() {
-  gles2::Initialize();
+GLES2Impl::GLES2Impl() {
 }
 
-void MojoGLES2Terminate() {
-  gles2::Terminate();
+GLES2Impl::~GLES2Impl() {
 }
 
-void MojoGLES2MakeCurrent(uint64_t encoded) {
+void GLES2Impl::Init() {
+  GLES2Private::Init(new GLES2Impl());
+}
+
+void GLES2Impl::Initialize() {
+  ::gles2::Initialize();
+}
+
+void GLES2Impl::Terminate() {
+  ::gles2::Terminate();
+}
+
+void GLES2Impl::MakeCurrent(uint64_t encoded) {
   // Ack, Hans! It's the giant hack.
   // TODO(abarth): Replace this hack with something more disciplined. Most
   // likley, we should receive a MojoHandle that we use to wire up the
@@ -25,11 +37,12 @@ void MojoGLES2MakeCurrent(uint64_t encoded) {
   gpu::gles2::GLES2Interface* gl_interface =
       reinterpret_cast<gpu::gles2::GLES2Interface*>(
           static_cast<uintptr_t>(encoded));
-  gles2::SetGLContext(gl_interface);
+  ::gles2::SetGLContext(gl_interface);
 }
 
-void MojoGLES2SwapBuffers() {
-  gles2::GetGLContext()->SwapBuffers();
+void GLES2Impl::SwapBuffers() {
+  ::gles2::GetGLContext()->SwapBuffers();
 }
 
-}  // extern "C"
+}  // namespace gles2
+}  // namespace mojo

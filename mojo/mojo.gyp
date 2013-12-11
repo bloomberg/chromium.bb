@@ -141,16 +141,19 @@
       ],
     },
     {
-      'target_name': 'mojo_gles2',
+      'target_name': 'mojo_gles2_impl',
       'type': '<(component)',
       'dependencies': [
         '../gpu/gpu.gyp:gles2_c_lib',
+        'mojo_gles2',
       ],
       'defines': [
-        'MOJO_GLES2_IMPLEMENTATION',
+        'MOJO_GLES2_IMPL_IMPLEMENTATION',
       ],
       'sources': [
-        'gles2/gles2.cc',
+        'gles2/export.h',
+        'gles2/gles2_impl.cc',
+        'gles2/gles2_impl.h',
       ],
     },
     {
@@ -221,9 +224,10 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_bindings',
+        'mojo_gles2_impl',
+        'mojo_native_viewport_service',
         'mojo_system',
         'mojo_system_impl',
-        'mojo_native_viewport_service',
       ],
       'sources': [
         'shell/app_container.cc',

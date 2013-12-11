@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-static mojo::Core* g_core = NULL;
+static mojo::CorePrivate* g_core = NULL;
 
 extern "C" {
 
@@ -67,10 +67,10 @@ MojoTimeTicks MojoGetTimeTicksNow() {
 
 namespace mojo {
 
-Core::~Core() {
+CorePrivate::~CorePrivate() {
 }
 
-void Core::Init(Core* core) {
+void CorePrivate::Init(CorePrivate* core) {
   assert(!g_core);
   g_core = core;
 }

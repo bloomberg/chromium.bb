@@ -27,7 +27,7 @@ class CoreTestBase;
 // the (obvious) exception of |Init()|, which must be called first (and the call
 // completed) before making any other calls, all the public methods are
 // thread-safe.
-class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
+class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public CorePrivate {
  public:
   static void Init();
 

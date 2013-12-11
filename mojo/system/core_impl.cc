@@ -83,7 +83,7 @@ CoreImpl::HandleTableEntry::~HandleTableEntry() {
 
 // static
 void CoreImpl::Init() {
-  Core::Init(new CoreImpl());
+  CorePrivate::Init(new CoreImpl());
 }
 
 MojoResult CoreImpl::Close(MojoHandle handle) {
