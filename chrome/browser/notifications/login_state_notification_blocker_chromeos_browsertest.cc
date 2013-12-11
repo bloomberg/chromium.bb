@@ -89,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        BaseTest) {
   CreateBlocker();
-  message_center::NotifierId notifier_id;
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION, "test-notifier");
 
   // Logged in as a normal user.
   EXPECT_CALL(login_utils(), DoBrowserLaunch(_, _)).Times(1);

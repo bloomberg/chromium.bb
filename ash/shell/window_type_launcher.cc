@@ -344,7 +344,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
         ASCIIToUTF16("Notification message body."),
         gfx::Image(),
         ASCIIToUTF16("www.testshell.org"),
-        message_center::NotifierId(),
+        message_center::NotifierId(
+            message_center::NotifierId::APPLICATION, "test-id"),
         message_center::RichNotificationData(),
         NULL /* delegate */));
 

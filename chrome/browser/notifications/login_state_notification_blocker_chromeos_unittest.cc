@@ -62,7 +62,8 @@ class LoginStateNotificationBlockerChromeOSTest
 
 TEST_F(LoginStateNotificationBlockerChromeOSTest, BaseTest) {
   // Default status: OOBE.
-  message_center::NotifierId notifier_id;
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION, "test-notifier");
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.

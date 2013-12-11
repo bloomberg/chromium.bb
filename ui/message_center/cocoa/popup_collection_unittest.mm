@@ -17,6 +17,8 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 
+namespace message_center {
+
 class PopupCollectionTest : public ui::CocoaTest {
  public:
   PopupCollectionTest()
@@ -41,6 +43,10 @@ class PopupCollectionTest : public ui::CocoaTest {
     message_center::MessageCenter::Shutdown();
   }
 
+  message_center::NotifierId DummyNotifierId() {
+    return message_center::NotifierId();
+  }
+
   void AddThreeNotifications() {
     scoped_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
@@ -51,7 +57,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                      " be displayed"),
         gfx::Image(),
         string16(),
-        message_center::NotifierId(),
+        DummyNotifierId(),
         message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
@@ -63,7 +69,7 @@ class PopupCollectionTest : public ui::CocoaTest {
         ASCIIToUTF16("This is the second notification."),
         gfx::Image(),
         string16(),
-        message_center::NotifierId(),
+        DummyNotifierId(),
         message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
@@ -80,7 +86,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                      "if the notification is way too big"),
         gfx::Image(),
         string16(),
-        message_center::NotifierId(),
+        DummyNotifierId(),
         message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
@@ -135,7 +141,7 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
       ASCIIToUTF16("This is the fourth notification."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -184,7 +190,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
       ASCIIToUTF16("This is the fourth notification."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       optional,
       NULL));
   center_->AddNotification(notification.Pass());
@@ -222,7 +228,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
               " be displayed"),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -244,7 +250,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
               "long notification."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->UpdateNotification("1", notification.Pass());
@@ -288,7 +294,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
               "longer body"),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -317,7 +323,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
                    " be displayed"),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -350,7 +356,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
       ASCIIToUTF16("New message."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->UpdateNotification("1", notification.Pass());
@@ -359,3 +365,5 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
   // be expected.
   collection_.reset();
 }
+
+}  // namespace message_center

@@ -10,7 +10,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
 
-namespace {
+namespace message_center {
 
 class TrayControllerTest : public ui::CocoaTest {
  public:
@@ -56,4 +56,4 @@ TEST_F(TrayControllerTest, OpenLeftRight) {
   EXPECT_EQ(left_point.x - NSWidth(window_frame), NSMinX(window_frame));
 }
 
-}  // namespace
+}  // namespace message_center

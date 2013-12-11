@@ -16,6 +16,8 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
 
+namespace message_center {
+
 class TrayViewControllerTest : public ui::CocoaTest {
  public:
   TrayViewControllerTest()
@@ -53,6 +55,10 @@ class TrayViewControllerTest : public ui::CocoaTest {
   }
 
  protected:
+  message_center::NotifierId DummyNotifierId() {
+    return message_center::NotifierId();
+  }
+
   message_center::MessageCenter* center_;  // Weak, global.
 
   base::MessageLoop message_loop_;
@@ -71,7 +77,7 @@ TEST_F(TrayViewControllerTest, AddRemoveOne) {
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification_data.Pass());
@@ -105,7 +111,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -116,7 +122,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -127,7 +133,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -160,7 +166,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -179,7 +185,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
       ASCIIToUTF16("This is a simple test."),
       gfx::Image(),
       string16(),
-      message_center::NotifierId(),
+      DummyNotifierId(),
       message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
@@ -198,8 +204,6 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
   EXPECT_LT(NSMinX([[tray_ clearAllButton] frame]),
             NSMinX([[tray_ pauseButton] frame]));
 }
-
-namespace message_center {
 
 namespace {
 

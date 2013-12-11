@@ -11,6 +11,8 @@
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/notification.h"
 
+namespace message_center {
+
 class PopupControllerTest : public ui::CocoaTest {
 };
 
@@ -41,3 +43,5 @@ TEST_F(PopupControllerTest, Creation) {
   [controller showWindow:nil];
   [controller close];
 }
+
+}  // namespace message_center

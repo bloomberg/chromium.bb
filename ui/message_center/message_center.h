@@ -15,8 +15,6 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 
-class TrayViewControllerTest;
-
 namespace base {
 class DictionaryValue;
 }
@@ -167,7 +165,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual void RestartPopupTimers() = 0;
 
  protected:
-  friend class ::TrayViewControllerTest;
+  friend class TrayViewControllerTest;
   friend class test::MessagePopupCollectionTest;
   virtual void DisableTimersForTest() = 0;
 
