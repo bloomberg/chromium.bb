@@ -7,6 +7,7 @@
 #include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
@@ -120,6 +121,12 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+  // TODO(mcasas): Remove Win version filtering when this bug gets fixed:
+  // http://code.google.com/p/webrtc/issues/detail?id=2703
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
