@@ -33,6 +33,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -197,23 +198,62 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView tests.
 
-// ShelfItemDelegate for ShelfViewTest.OverflowBubbleSize only.
-// This class should only be used for re-insert test because it cannot handle
-// unpin request.
-class TestShelfDelegateForShelfView : public TestShelfDelegate {
+// Simple ShelfDelegate implmentation for ShelfViewTest.OverflowBubbleSize
+// and CheckDragAndDropFromOverflowBubbleToShelf
+class TestShelfDelegateForShelfView : public ShelfDelegate {
  public:
   explicit TestShelfDelegateForShelfView(ShelfModel* model)
-      : TestShelfDelegate(model) {}
+      : model_(model) {}
   virtual ~TestShelfDelegateForShelfView() {}
 
-  // TestShelfDelegate overrides:
+  // ShelfDelegate overrides:
+  virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE {}
+
+  virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE {}
+
+  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE {
+    LauncherID id = 0;
+    EXPECT_TRUE(base::StringToInt(app_id, &id));
+    return id;
+  }
+
+  virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE {
+    // Use |app_id_| member variable because returning a reference to local
+    // variable is not allowed.
+    app_id_ = base::IntToString(id);
+    return app_id_;
+  }
+
+  virtual void PinAppWithID(const std::string& app_id) OVERRIDE {
+  }
+
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE {
     // Returns true for ShelfViewTest.OverflowBubbleSize. To test ripping off in
     // that test, an item is already pinned state.
     return true;
   }
 
+  virtual bool CanPin() const OVERRIDE {
+    return true;
+  }
+
+  virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE {
+    LauncherID id = 0;
+    EXPECT_TRUE(base::StringToInt(app_id, &id));
+    ASSERT_GT(id, 0);
+    int index = model_->ItemIndexByID(id);
+    ASSERT_GE(index, 0);
+
+    model_->RemoveItemAt(index);
+  }
+
  private:
+  ShelfModel* model_;
+
+  // Temp member variable for returning a value. See the comment in the
+  // GetAppIDForLauncherID().
+  std::string app_id_;
+
   DISALLOW_COPY_AND_ASSIGN(TestShelfDelegateForShelfView);
 };
 
@@ -415,8 +455,109 @@ class ShelfViewTest : public AshTestBase {
     return shelf_view_->tooltip_manager()->anchor_;
   }
 
+  void AddButtonsUntilOverflow() {
+    int items_added = 0;
+    while (!test_api_->IsOverflowButtonVisible()) {
+      AddAppShortcut();
+      ++items_added;
+      ASSERT_LT(items_added, 10000);
+    }
+  }
+
   void ShowTooltip() {
     shelf_view_->tooltip_manager()->ShowInternal();
+  }
+
+  void TestDraggingAnItemFromOverflowToShelf(bool cancel) {
+    test_api_->ShowOverflowBubble();
+    ASSERT_TRUE(test_api_->overflow_bubble() &&
+                test_api_->overflow_bubble()->IsShowing());
+
+    ash::test::ShelfViewTestAPI test_api_for_overflow(
+      test_api_->overflow_bubble()->shelf_view());
+
+    int total_item_count = model_->item_count();
+
+    int last_visible_item_id_in_shelf =
+        model_->items()[test_api_->GetLastVisibleIndex()].id;
+    int second_last_visible_item_id_in_shelf =
+        model_->items()[test_api_->GetLastVisibleIndex() - 1].id;
+    int first_visible_item_id_in_overflow =
+        model_->items()[test_api_for_overflow.GetFirstVisibleIndex()].id;
+    int second_last_visible_item_id_in_overflow =
+        model_->items()[test_api_for_overflow.GetLastVisibleIndex() - 1].id;
+
+    int drag_item_index =
+        test_api_for_overflow.GetLastVisibleIndex();
+    LauncherID drag_item_id = model_->items()[drag_item_index].id;
+    internal::ShelfButton* drag_button =
+        test_api_for_overflow.GetButton(drag_item_index);
+    gfx::Point center_point_of_drag_item =
+        drag_button->GetBoundsInScreen().CenterPoint();
+
+    aura::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
+                                         center_point_of_drag_item);
+    // Rip an item off to OverflowBubble.
+    generator.PressLeftButton();
+    gfx::Point rip_off_point(center_point_of_drag_item.x(), 0);
+    generator.MoveMouseTo(rip_off_point);
+    test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
+    ASSERT_TRUE(test_api_for_overflow.IsDraggingShelfItem());
+    ASSERT_FALSE(test_api_for_overflow.DraggedItemFromOverflowToShelf());
+
+    // Move a dragged item into Shelf at |drop_index|.
+    int drop_index = 1;
+    gfx::Point drop_point =
+        test_api_->GetButton(drop_index)->GetBoundsInScreen().CenterPoint();
+    int item_width = test_api_for_overflow.GetButtonSize();
+    // To insert at |drop_index|, more smaller x-axis value of |drop_point|
+    // should be used.
+    gfx::Point modified_drop_point(drop_point.x() - item_width / 4,
+                                   drop_point.y());
+    generator.MoveMouseTo(modified_drop_point);
+    test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    ASSERT_TRUE(test_api_for_overflow.IsDraggingShelfItem());
+    ASSERT_TRUE(test_api_for_overflow.DraggedItemFromOverflowToShelf());
+
+    if (cancel)
+      drag_button->OnMouseCaptureLost();
+    else
+      generator.ReleaseLeftButton();
+
+    test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    ASSERT_FALSE(test_api_for_overflow.IsDraggingShelfItem());
+    ASSERT_FALSE(test_api_for_overflow.DraggedItemFromOverflowToShelf());
+
+    // Compare pre-stored items' id with newly positioned items' after dragging
+    // is canceled or finished.
+    if (cancel) {
+      EXPECT_EQ(model_->items()[test_api_->GetLastVisibleIndex()].id,
+          last_visible_item_id_in_shelf);
+      EXPECT_EQ(model_->items()[test_api_->GetLastVisibleIndex() - 1].id,
+          second_last_visible_item_id_in_shelf);
+      EXPECT_EQ(
+          model_->items()[test_api_for_overflow.GetFirstVisibleIndex()].id,
+          first_visible_item_id_in_overflow);
+      EXPECT_EQ(
+          model_->items()[test_api_for_overflow.GetLastVisibleIndex() - 1].id,
+          second_last_visible_item_id_in_overflow);
+    } else {
+      LauncherID drop_item_id = model_->items()[drop_index].id;
+      EXPECT_EQ(drop_item_id, drag_item_id);
+      EXPECT_EQ(model_->item_count(), total_item_count);
+      EXPECT_EQ(
+          model_->items()[test_api_for_overflow.GetFirstVisibleIndex()].id,
+          last_visible_item_id_in_shelf);
+      EXPECT_EQ(model_->items()[test_api_->GetLastVisibleIndex()].id,
+          second_last_visible_item_id_in_shelf);
+      EXPECT_EQ(
+          model_->items()[test_api_for_overflow.GetFirstVisibleIndex() + 1].id,
+          first_visible_item_id_in_overflow);
+      EXPECT_EQ(model_->items()[test_api_for_overflow.GetLastVisibleIndex()].id,
+          second_last_visible_item_id_in_overflow);
+    }
   }
 
   ShelfModel* model_;
@@ -1342,13 +1483,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
       Launcher::ForPrimaryDisplay()).SetShelfDelegate(delegate);
   test_api_->SetShelfDelegate(delegate);
 
-  // Add buttons until overflow.
-  int items_added = 0;
-  while (!test_api_->IsOverflowButtonVisible()) {
-    AddAppShortcut();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
+  AddButtonsUntilOverflow();
 
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
@@ -1417,13 +1552,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 
   EXPECT_EQ(2, model_->item_count());
 
-  // Add buttons until overflow.
-  int items_added = 0;
-  while (!test_api_->IsOverflowButtonVisible()) {
-    AddAppShortcut();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
+  AddButtonsUntilOverflow();
 
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
@@ -1491,13 +1620,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   // Speeds up animation for test.
   test_api_for_secondary.SetAnimationDuration(1);
 
-  // Add buttons until overflow.
-  int items_added = 0;
-  while (!test_api_->IsOverflowButtonVisible()) {
-    AddAppShortcut();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
+  AddButtonsUntilOverflow();
 
   // Test #1: Test drag insertion bounds of primary shelf.
   // Show overflow bubble.
@@ -1546,6 +1669,23 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   // Checks that a point of overflow bubble in primary shelf should not be
   // contained by insert bounds of secondary shelf.
   EXPECT_FALSE(drag_reinsert_bounds_in_secondary.Contains(point_in_shelf_view));
+}
+
+// Checks various drag and drop operations from OverflowBubble to Shelf.
+TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
+  // Replace LauncherDelegate.
+  test::ShellTestApi test_api(Shell::GetInstance());
+  test_api.SetShelfDelegate(NULL);
+  ShelfDelegate *delegate = new TestShelfDelegateForShelfView(model_);
+  test_api.SetShelfDelegate(delegate);
+  test::LauncherTestAPI(
+      Launcher::ForPrimaryDisplay()).SetShelfDelegate(delegate);
+  test_api_->SetShelfDelegate(delegate);
+
+  AddButtonsUntilOverflow();
+
+  TestDraggingAnItemFromOverflowToShelf(false);
+  TestDraggingAnItemFromOverflowToShelf(true);
 }
 
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,

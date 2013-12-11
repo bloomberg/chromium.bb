@@ -168,6 +168,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
 
+  // Update all button's visibility in overflow.
+  void UpdateAllButtonsVisibilityInOverflowMode();
+
   // Calculates the ideal bounds. The bounds of each button corresponding to an
   // item in the model is set in |view_model_|.
   void CalculateIdealBounds(IdealBounds* bounds);
@@ -439,6 +442,12 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // True when this ShelfView is used for Overflow Bubble.
   bool overflow_mode_;
+
+  // Holds a pointer to main ShelfView when a ShelfView is in overflow mode.
+  ShelfView* main_shelf_;
+
+  // True when ripped item from overflow bubble is entered into Shelf.
+  bool dragged_off_from_overflow_to_shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };

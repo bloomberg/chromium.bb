@@ -83,6 +83,12 @@ class ShelfViewTestAPI {
   // Returns re-insertable bounds in screen.
   gfx::Rect GetBoundsForDragInsertInScreen();
 
+  // Returns true if item is ripped off.
+  bool IsDraggingShelfItem();
+
+  // Returns true if an item is ripped off and entered into shelf.
+  bool DraggedItemFromOverflowToShelf();
+
  private:
   internal::ShelfView* shelf_view_;
 
