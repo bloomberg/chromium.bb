@@ -38,7 +38,6 @@ namespace feedback_util {
   void SendReport(scoped_refptr<FeedbackData> data);
   bool ZipString(const base::FilePath& filename,
                  const std::string& data, std::string* compressed_data);
-  bool ZipFile(const base::FilePath& filename, std::string* compressed_data);
 
 }  // namespace feedback_util
 
