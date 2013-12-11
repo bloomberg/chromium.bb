@@ -136,9 +136,9 @@ bool initializeEvent(EventInit& eventInit, const Dictionary& options, ExceptionS
     if (!initializeTestEvent(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestExtendedEvent") : forEventName))
         return false;
 
-    if (!options.convert(conversionContext.withAttributes(false, NormalConversion), "location", eventInit.location))
+    if (!options.convert(conversionContext.setConversionType("unsigned long", false), "location", eventInit.location))
         return false;
-    if (options.convert(conversionContext.withAttributes(false, NormalConversion), "keyLocation", eventInit.location)) {
+    if (options.convert(conversionContext.setConversionType("unsigned long", false), "keyLocation", eventInit.location)) {
         if (options.hasProperty("keyLocation"))
             UseCounter::countDeprecation(activeExecutionContext(), UseCounter::KeyboardEventKeyLocation);
     } else {

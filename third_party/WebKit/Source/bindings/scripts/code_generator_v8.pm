@@ -3018,29 +3018,8 @@ END
                 my $attributeName = $attribute->name;
                 my $attributeImplName = GetImplName($attribute);
 
-                # Construct the arguments to the corresponding Dictionary.convert() method.
-                my @convertArguments = ();
-                if ($attribute->extendedAttributes->{"EnforceRange"}) {
-                    push(@convertArguments, "EnforceRange");
-                } elsif ($attribute->extendedAttributes->{"Clamp"}) {
-                    push(@convertArguments, "Clamp");
-                } elsif (IsIntegerType($attribute->type)) {
-                    push(@convertArguments, "NormalConversion");
-                } elsif ($attribute->type eq "boolean" || $attribute->type eq "double") {
-                    ;
-                } elsif ($attribute->type eq "DOMString" || IsEnumType($attribute->type) || IsCallbackFunctionType($attribute->type)) {
-                    ;
-                } elsif ($attribute->type ne "object") {
-                    push(@convertArguments, "\"" . $attribute->type . "\"");
-                }
-
-                my $withPropertyAttributes = "";
-                if (@convertArguments || $attribute->isNullable) {
-                    unshift(@convertArguments, $attribute->isNullable ? "true" : "false");
-                    $withPropertyAttributes = ".withAttributes(" . join(", ", @convertArguments) . ")";
-                }
-
-                my $dictionaryGetter = "options.convert(conversionContext${withPropertyAttributes}, \"$attributeName\", eventInit.$attributeImplName)";
+                my $isNullable = $attribute->isNullable ? "true" : "false";
+                my $dictionaryGetter = "options.convert(conversionContext.setConversionType(\"" . $attribute->type . "\", $isNullable), \"$attributeName\", eventInit.$attributeImplName)";
                 my $deprecation = $attribute->extendedAttributes->{"DeprecateAs"};
                 if ($deprecation) {
                     $code .= "    if ($dictionaryGetter) {\n";

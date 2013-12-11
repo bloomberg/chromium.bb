@@ -205,17 +205,17 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
     if (!initializeEvent(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName))
         return false;
 
-    if (!options.convert(conversionContext, "initializedByEventConstructorReadonlyStringAttribute", eventInit.initializedByEventConstructorReadonlyStringAttribute))
+    if (!options.convert(conversionContext.setConversionType("DOMString", false), "initializedByEventConstructorReadonlyStringAttribute", eventInit.initializedByEventConstructorReadonlyStringAttribute))
         return false;
-    if (options.convert(conversionContext, "deprecatedInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedInitializedByEventConstructorReadonlyStringAttribute)) {
+    if (options.convert(conversionContext.setConversionType("DOMString", false), "deprecatedInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedInitializedByEventConstructorReadonlyStringAttribute)) {
         if (options.hasProperty("deprecatedInitializedByEventConstructorReadonlyStringAttribute"))
             UseCounter::countDeprecation(activeExecutionContext(), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {
         return false;
     }
-    if (!options.convert(conversionContext, "implementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.implementedAsName))
+    if (!options.convert(conversionContext.setConversionType("DOMString", false), "implementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.implementedAsName))
         return false;
-    if (options.convert(conversionContext, "deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedImplementedAsName)) {
+    if (options.convert(conversionContext.setConversionType("DOMString", false), "deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedImplementedAsName)) {
         if (options.hasProperty("deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute"))
             UseCounter::countDeprecation(activeExecutionContext(), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {

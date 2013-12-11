@@ -117,13 +117,8 @@ public:
 
         bool isNullable() const { return m_isNullable; }
         String typeName() const { return m_propertyTypeName; }
-        IntegerConversionConfiguration numberConversion() const { return m_numberConversion; }
 
-        ConversionContext& withAttributes(bool, IntegerConversionConfiguration, const String&);
-        ConversionContext& withAttributes(bool, IntegerConversionConfiguration);
-        ConversionContext& withAttributes(bool, const String&);
-        ConversionContext& withAttributes(bool);
-        ConversionContext& withAttributes(const String&);
+        ConversionContext& setConversionType(const String&, bool);
 
         void throwTypeError(const String& detail);
 
@@ -137,7 +132,6 @@ public:
 
         bool m_isNullable;
         String m_propertyTypeName;
-        IntegerConversionConfiguration m_numberConversion;
     };
 
     class ConversionContextScope {
@@ -298,18 +292,14 @@ template<typename T> bool Dictionary::convert(ConversionContext& context, const 
         return true;
 
     bool ok = false;
-    value = IntegralTypeTraits<T>::toIntegral(v8Value, context.numberConversion(), ok);
-    if (!ok) {
-        V8TRYCATCH_RETURN(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
-        if (v8Number.IsEmpty()) {
-            context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have type " + IntegralTypeTraits<T>::typeName() + "."));
-        } else {
-            ASSERT(context.numberConversion() == EnforceRange);
-            context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "is not a finite number."));
-        }
-        return false;
-    }
-    return true;
+    value = IntegralTypeTraits<T>::toIntegral(v8Value, NormalConversion, ok);
+    if (ok)
+        return true;
+
+    V8TRYCATCH_RETURN(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
+    ASSERT(v8Number.IsEmpty());
+    context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have type " + IntegralTypeTraits<T>::typeName() + "."));
+    return false;
 }
 
 template<typename T> bool Dictionary::convert(ConversionContext& context, const String& key, RefPtr<T>& value) const
@@ -319,15 +309,16 @@ template<typename T> bool Dictionary::convert(ConversionContext& context, const 
     if (!get(key, value))
         return true;
 
-    if (!value) {
-        v8::Local<v8::Value> v8Value;
-        getKey(key, v8Value);
-        if (!(context.isNullable() && WebCore::isUndefinedOrNull(v8Value))) {
-            context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have " + (context.typeName().isEmpty() ? String("the expected type.") : ("a " + context.typeName() + " type."))));
-            return false;
-        }
-    }
-    return true;
+    if (value)
+        return true;
+
+    v8::Local<v8::Value> v8Value;
+    getKey(key, v8Value);
+    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+        return true;
+
+    context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a " + context.typeName() + " type."));
+    return false;
 }
 
 }

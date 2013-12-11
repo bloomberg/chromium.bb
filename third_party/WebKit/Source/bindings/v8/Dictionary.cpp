@@ -743,39 +743,17 @@ void Dictionary::ConversionContext::resetPerPropertyContext()
         m_dirty = false;
         m_isNullable = false;
         m_propertyTypeName = "";
-        m_numberConversion = NormalConversion;
     }
 }
 
-Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable, IntegerConversionConfiguration conversion, const String& typeName)
+Dictionary::ConversionContext& Dictionary::ConversionContext::setConversionType(const String& typeName, bool isNullable)
 {
     ASSERT(!m_dirty);
     m_dirty = true;
     m_isNullable = isNullable;
     m_propertyTypeName = typeName;
-    m_numberConversion = conversion;
 
     return *this;
-}
-
-Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable, const String& typeName)
-{
-    return withAttributes(isNullable, NormalConversion, typeName);
-}
-
-Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable, IntegerConversionConfiguration conversion)
-{
-    return withAttributes(isNullable, conversion, "");
-}
-
-Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(const String& typeName)
-{
-    return withAttributes(false, NormalConversion, typeName);
-}
-
-Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable)
-{
-    return withAttributes(isNullable, NormalConversion, "");
 }
 
 void Dictionary::ConversionContext::throwTypeError(const String& detail)
