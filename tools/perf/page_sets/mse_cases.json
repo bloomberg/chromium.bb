@@ -1,6 +1,6 @@
 {
   "description": "Media source extensions perf benchmark",
-  "media_metrics": {"action": "wait", "javascript" : "window.__testDone() == true"},
+  "media_metrics": {"action": "wait", "javascript" : "window.__testDone == true"},
   "pages": [
     {
       "url": "file://mse_cases/startup_test.html?testType=AV"
