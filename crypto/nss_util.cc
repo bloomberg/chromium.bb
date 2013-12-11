@@ -880,7 +880,11 @@ void LoadNSSLibraries() {
 #elif defined(ARCH_CPU_X86)
   paths.push_back(base::FilePath("/usr/lib/i386-linux-gnu/nss"));
 #elif defined(ARCH_CPU_ARMEL)
+#if defined(__ARM_PCS_VFP)
+  paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabihf/nss"));
+#else
   paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabi/nss"));
+#endif
 #elif defined(ARCH_CPU_MIPSEL)
   paths.push_back(base::FilePath("/usr/lib/mipsel-linux-gnu/nss"));
 #endif
