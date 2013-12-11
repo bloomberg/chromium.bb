@@ -278,6 +278,7 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura_test_support',
             '../ui/compositor/compositor.gyp:compositor',
+            '../ui/resources/ui_resources.gyp:ui_test_pak',
           ],
         }],
         ['OS=="win"', {
