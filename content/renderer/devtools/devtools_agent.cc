@@ -205,7 +205,9 @@ void DevToolsAgent::OnGpuTasksChunk(const std::vector<GpuTaskInfo>& tasks) {
     return;
   for (size_t i = 0; i < tasks.size(); i++) {
     const GpuTaskInfo& task = tasks[i];
-    web_agent->processGPUEvent(task.timestamp, task.phase, task.foreign);
+    WebDevToolsAgent::GPUEvent event(task.timestamp, task.phase, task.foreign,
+        static_cast<size_t>(task.used_gpu_memory_bytes));
+    web_agent->processGPUEvent(event);
   }
 }
 

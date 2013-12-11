@@ -6,7 +6,6 @@
 #define CONTENT_COMMON_GPU_DEVTOOLS_GPU_AGENT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/process/process.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "content/common/gpu/devtools_gpu_instrumentation.h"
@@ -21,6 +20,7 @@ class Message;
 namespace content {
 
 class GpuChannel;
+class GpuCommandBufferStub;
 
 class DevToolsGpuAgent : public base::NonThreadSafe {
  public:
@@ -29,7 +29,7 @@ class DevToolsGpuAgent : public base::NonThreadSafe {
 
   void ProcessEvent(TimeTicks timestamp,
                     GpuEventsDispatcher::EventPhase,
-                    base::ProcessId owner_pid);
+                    GpuCommandBufferStub* stub);
 
   void StartEventsRecording(int32* route_id);
   void StopEventsRecording();

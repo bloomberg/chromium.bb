@@ -165,12 +165,12 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
   gpu_channel_manager->Send(new GpuHostMsg_DestroyCommandBuffer(surface_id()));
 }
 
-GpuMemoryManager* GpuCommandBufferStub::GetMemoryManager() {
+GpuMemoryManager* GpuCommandBufferStub::GetMemoryManager() const {
     return channel()->gpu_channel_manager()->gpu_memory_manager();
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
-  devtools_gpu_instrumentation::ScopedGpuTask task(channel());
+  devtools_gpu_instrumentation::ScopedGpuTask task(this);
   FastSetActiveURL(active_url_, active_url_hash_);
 
   // Ensure the appropriate GL context is current before handling any IPC
@@ -991,6 +991,10 @@ void GpuCommandBufferStub::MarkContextLost() {
   if (decoder_)
     decoder_->LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB);
   command_buffer_->SetParseError(gpu::error::kLostContext);
+}
+
+uint64 GpuCommandBufferStub::GetMemoryUsage() const {
+  return GetMemoryManager()->GetClientMemoryUsage(this);
 }
 
 }  // namespace content

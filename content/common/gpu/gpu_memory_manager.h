@@ -62,6 +62,8 @@ class CONTENT_EXPORT GpuMemoryManager :
   GpuMemoryTrackingGroup* CreateTrackingGroup(
       base::ProcessId pid, gpu::gles2::MemoryTracker* memory_tracker);
 
+  uint64 GetClientMemoryUsage(const GpuMemoryManagerClient* client) const;
+
  private:
   friend class GpuMemoryManagerTest;
   friend class GpuMemoryTrackingGroup;

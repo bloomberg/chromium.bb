@@ -48,7 +48,7 @@ void DevToolsGpuAgent::StopEventsRecording() {
 void DevToolsGpuAgent::ProcessEvent(
     TimeTicks timestamp,
     GpuEventsDispatcher::EventPhase phase,
-    base::ProcessId owner_pid) {
+    GpuCommandBufferStub* stub) {
   DCHECK(CalledOnValidThread());
   if (route_id_ == MSG_ROUTING_NONE)
     return;
@@ -56,7 +56,8 @@ void DevToolsGpuAgent::ProcessEvent(
   GpuTaskInfo task;
   task.timestamp = (timestamp - TimeTicks()).InSecondsF();
   task.phase = phase;
-  task.foreign = gpu_channel_->renderer_pid() != owner_pid;
+  task.foreign = stub->channel() != gpu_channel_;
+  task.used_gpu_memory_bytes = stub->GetMemoryUsage();
 
   const int kFlushIntervalMs = 100;
   const unsigned kMaxPendingItems = 100;

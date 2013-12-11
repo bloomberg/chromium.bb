@@ -143,8 +143,10 @@ class GpuCommandBufferStub
 
   void MarkContextLost();
 
+  uint64 GetMemoryUsage() const;
+
  private:
-  GpuMemoryManager* GetMemoryManager();
+  GpuMemoryManager* GetMemoryManager() const;
   bool MakeCurrent();
   void Destroy();
 

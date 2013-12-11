@@ -330,6 +330,14 @@ void GpuMemoryManager::SetClientStateManagedMemoryStats(
   }
 }
 
+uint64 GpuMemoryManager::GetClientMemoryUsage(
+    const GpuMemoryManagerClient* client) const{
+  TrackingGroupMap::const_iterator tracking_group_it =
+      tracking_groups_.find(client->GetMemoryTracker());
+  DCHECK(tracking_group_it != tracking_groups_.end());
+  return tracking_group_it->second->GetSize();
+}
+
 GpuMemoryTrackingGroup* GpuMemoryManager::CreateTrackingGroup(
     base::ProcessId pid, gpu::gles2::MemoryTracker* memory_tracker) {
   GpuMemoryTrackingGroup* tracking_group = new GpuMemoryTrackingGroup(

@@ -129,6 +129,7 @@ IPC_STRUCT_BEGIN(GpuTaskInfo)
   IPC_STRUCT_MEMBER(double, timestamp)
   IPC_STRUCT_MEMBER(int, phase)
   IPC_STRUCT_MEMBER(bool, foreign)
+  IPC_STRUCT_MEMBER(uint64, used_gpu_memory_bytes)
 IPC_STRUCT_END()
 
 // Recorded events are passed in chunks to the renderer process.
