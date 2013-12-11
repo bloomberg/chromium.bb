@@ -128,6 +128,8 @@ NetworkStats::NetworkStats(net::ClientSocketFactory* socket_factory)
       probe_packet_bytes_(0),
       bytes_for_packet_size_test_(0),
       current_test_index_(0),
+      read_state_(READ_STATE_IDLE),
+      write_state_(WRITE_STATE_IDLE),
       weak_factory_(this) {
   ResetData();
 }
@@ -171,6 +173,7 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
 
 void NetworkStats::StartOneTest() {
   if (test_sequence_[current_test_index_] == TOKEN_REQUEST) {
+    DCHECK_EQ(WRITE_STATE_IDLE, write_state_);
     write_buffer_ = NULL;
     SendHelloRequest();
   } else {
@@ -179,6 +182,7 @@ void NetworkStats::StartOneTest() {
 }
 
 void NetworkStats::ResetData() {
+  DCHECK_EQ(WRITE_STATE_IDLE, write_state_);
   write_buffer_ = NULL;
   packets_received_mask_.reset();
   first_arrival_time_ = base::TimeTicks();
@@ -312,6 +316,9 @@ int NetworkStats::ReadData() {
   if (!socket_.get())
     return 0;
 
+  if (read_state_ == READ_STATE_READ_PENDING)
+    return net::ERR_IO_PENDING;
+
   int rv = 0;
   do {
     DCHECK(!read_buffer_.get());
@@ -322,10 +329,16 @@ int NetworkStats::ReadData() {
         kMaxMessageSize,
         base::Bind(&NetworkStats::OnReadComplete, weak_factory_.GetWeakPtr()));
   } while (rv > 0 && !ReadComplete(rv));
+  if (rv == net::ERR_IO_PENDING)
+    read_state_ = READ_STATE_READ_PENDING;
   return rv;
 }
 
 void NetworkStats::OnReadComplete(int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  DCHECK_EQ(READ_STATE_READ_PENDING, read_state_);
+
+  read_state_ = READ_STATE_IDLE;
   if (!ReadComplete(result)) {
     // Called ReadData() via PostDelayedTask() to avoid recursion. Added a delay
     // of 1ms so that the time-out will fire before we have time to really hog
@@ -438,8 +451,10 @@ bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
 }
 
 int NetworkStats::SendData(const std::string& output) {
-  if (write_buffer_.get() || !socket_.get())
+  if (write_buffer_.get() || !socket_.get() ||
+      write_state_ == WRITE_STATE_WRITE_PENDING) {
     return net::ERR_UNEXPECTED;
+  }
   scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(output));
   write_buffer_ = new net::DrainableIOBuffer(buffer.get(), buffer->size());
 
@@ -447,16 +462,20 @@ int NetworkStats::SendData(const std::string& output) {
       write_buffer_.get(),
       write_buffer_->BytesRemaining(),
       base::Bind(&NetworkStats::OnWriteComplete, weak_factory_.GetWeakPtr()));
-  if (bytes_written < 0)
+  if (bytes_written < 0) {
+    if (bytes_written == net::ERR_IO_PENDING)
+      write_state_ = WRITE_STATE_WRITE_PENDING;
     return bytes_written;
+  }
   UpdateSendBuffer(bytes_written);
   return net::OK;
 }
 
 void NetworkStats::OnWriteComplete(int result) {
-  DCHECK(socket_.get());
   DCHECK_NE(net::ERR_IO_PENDING, result);
-  if (result < 0) {
+  DCHECK_EQ(WRITE_STATE_WRITE_PENDING, write_state_);
+  write_state_ = WRITE_STATE_IDLE;
+  if (result < 0 || !socket_.get() || write_buffer_ == NULL) {
     TestPhaseComplete(WRITE_FAILED, result);
     return;
   }
@@ -466,6 +485,7 @@ void NetworkStats::OnWriteComplete(int result) {
 void NetworkStats::UpdateSendBuffer(int bytes_sent) {
   write_buffer_->DidConsume(bytes_sent);
   DCHECK_EQ(write_buffer_->BytesRemaining(), 0);
+  DCHECK_EQ(WRITE_STATE_IDLE, write_state_);
   write_buffer_ = NULL;
 }
 
@@ -513,8 +533,10 @@ void NetworkStats::OnReadDataTimeout(uint32 test_index) {
 void NetworkStats::TestPhaseComplete(Status status, int result) {
   // If there is no valid token, do nothing and delete self.
   // This includes all connection error, name resolve error, etc.
-  if (token_.timestamp_micros() != 0 &&
-      (status == SUCCESS || status == READ_TIMED_OUT)) {
+  if (write_state_ == WRITE_STATE_WRITE_PENDING) {
+    UMA_HISTOGRAM_BOOLEAN("NetConnectivity5.TestFailed.WritePending", true);
+  } else if (token_.timestamp_micros() != 0 &&
+             (status == SUCCESS || status == READ_TIMED_OUT)) {
     TestType current_test = test_sequence_[current_test_index_];
     DCHECK_LT(current_test, TEST_TYPE_MAX);
     if (current_test != TOKEN_REQUEST) {
@@ -601,7 +623,7 @@ void NetworkStats::RecordHistograms(TestType test_type) {
 void NetworkStats::RecordInterArrivalHistograms(TestType test_type) {
   DCHECK_NE(test_type, PACKET_SIZE_TEST);
   std::string histogram_name =
-      base::StringPrintf("NetConnectivity4.%s.Sent%d.PacketDelay.%d.%dB",
+      base::StringPrintf("NetConnectivity5.%s.Sent%d.PacketDelay.%d.%dB",
                          kTestName[test_type],
                          maximum_sequential_packets_,
                          histogram_port_,
@@ -614,7 +636,7 @@ void NetworkStats::RecordPacketsReceivedHistograms(TestType test_type) {
   DCHECK_NE(test_type, PACKET_SIZE_TEST);
   const char* test_name = kTestName[test_type];
   std::string histogram_prefix = base::StringPrintf(
-      "NetConnectivity4.%s.Sent%d.", test_name, maximum_sequential_packets_);
+      "NetConnectivity5.%s.Sent%d.", test_name, maximum_sequential_packets_);
   std::string histogram_suffix =
       base::StringPrintf(".%d.%dB", histogram_port_, probe_packet_bytes_);
   std::string name = histogram_prefix + "GotAPacket" + histogram_suffix;
@@ -661,7 +683,7 @@ void NetworkStats::RecordNATTestReceivedHistograms(Status status) {
                                         : "Connectivity.Failure";
   // Record whether the HelloRequest got reply successfully.
   std::string histogram_name =
-      base::StringPrintf("NetConnectivity4.%s.Sent%d.%s.%d.%dB",
+      base::StringPrintf("NetConnectivity5.%s.Sent%d.%s.%d.%dB",
                          test_name,
                          maximum_NAT_packets_,
                          middle_name.c_str(),
@@ -681,7 +703,7 @@ void NetworkStats::RecordNATTestReceivedHistograms(Status status) {
 
   middle_name = packets_received_mask_.test(1) ? "Bind.Success"
                                                : "Bind.Failure";
-  histogram_name = base::StringPrintf("NetConnectivity4.%s.Sent%d.%s.%d.%dB",
+  histogram_name = base::StringPrintf("NetConnectivity5.%s.Sent%d.%s.%d.%dB",
                                       test_name,
                                       maximum_NAT_packets_,
                                       middle_name.c_str(),
@@ -701,7 +723,7 @@ void NetworkStats::RecordPacketSizeTestReceivedHistograms(Status status) {
                                         : "Connectivity.Failure";
   // Record whether the HelloRequest got reply successfully.
   std::string histogram_name =
-      base::StringPrintf("NetConnectivity4.%s.%s.%d",
+      base::StringPrintf("NetConnectivity5.%s.%s.%d",
                          test_name,
                          middle_name.c_str(),
                          histogram_port_);
@@ -715,10 +737,10 @@ void NetworkStats::RecordPacketSizeTestReceivedHistograms(Status status) {
 void NetworkStats::RecordPacketLossSeriesHistograms(TestType test_type) {
   DCHECK_NE(test_type, PACKET_SIZE_TEST);
   const char* test_name = kTestName[test_type];
-  // Build "NetConnectivity4.<TestName>.First6.SeriesRecv.<port>.<probe_size>"
+  // Build "NetConnectivity5.<TestName>.First6.SeriesRecv.<port>.<probe_size>"
   // histogram name. Total 3(tests) x 12 histograms.
   std::string series_acked_histogram_name =
-      base::StringPrintf("NetConnectivity4.%s.First6.SeriesRecv.%d.%dB",
+      base::StringPrintf("NetConnectivity5.%s.First6.SeriesRecv.%d.%dB",
                          test_name,
                          histogram_port_,
                          probe_packet_bytes_);
@@ -746,7 +768,7 @@ void NetworkStats::RecordRTTHistograms(TestType test_type, uint32 index) {
     return;  // Probe packet never received.
 
   std::string rtt_histogram_name = base::StringPrintf(
-      "NetConnectivity4.%s.Sent%d.Success.RTT.Packet%02d.%d.%dB",
+      "NetConnectivity5.%s.Sent%d.Success.RTT.Packet%02d.%d.%dB",
       kTestName[test_type],
       maximum_sequential_packets_,
       index + 1,
@@ -762,7 +784,7 @@ void NetworkStats::RecordSendToLastRecvDelayHistograms(TestType test_type) {
   uint32 packets_sent = test_type == NAT_BIND_TEST
       ? maximum_NAT_packets_ : maximum_sequential_packets_;
   std::string histogram_name = base::StringPrintf(
-      "NetConnectivity4.%s.Sent%d.SendToLastRecvDelay.%d.%dB",
+      "NetConnectivity5.%s.Sent%d.SendToLastRecvDelay.%d.%dB",
       kTestName[test_type],
       packets_sent,
       histogram_port_,

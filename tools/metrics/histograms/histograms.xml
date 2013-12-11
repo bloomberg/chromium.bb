@@ -10454,6 +10454,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NetConnectivity5">
+  <summary>
+    In this experiment, a few packets were sent from Google to clients via UDP
+    on port 443 or 80 to perform net connectivity test.
+  </summary>
+</histogram>
+
+<histogram name="NetConnectivity5.TestFailed.WritePending"
+    enum="BooleanSuccess">
+  <summary>
+    Next NetConnectivity5 experiment weren't started because there is an
+    outstading pending write.
+  </summary>
+</histogram>
+
 <histogram name="Network.3G.Gobi.Activation" units="milliseconds">
   <summary>The time the Gobi modem takes to complete activation.</summary>
 </histogram>
@@ -31978,6 +31993,7 @@ other types of suffix sets.
              client successfully sent a UMA upload. Each packet was numbered
              when it was sent by Google."/>
   <affected-histogram name="NetConnectivity4"/>
+  <affected-histogram name="NetConnectivity5"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4NATBindPacketReceives" separator=".">
@@ -32006,6 +32022,7 @@ other types of suffix sets.
              between sendings of the first two packets. Results are only
              shown if the first two packets are both received."/>
   <affected-histogram name="NetConnectivity4.NATBind.Sent2"/>
+  <affected-histogram name="NetConnectivity5.NATBind.Sent2"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketFirst6" separator=".">
@@ -32021,6 +32038,9 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity4.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity4.PacedPacket"/>
   <affected-histogram name="NetConnectivity4.StartPacket"/>
+  <affected-histogram name="NetConnectivity5.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket"/>
+  <affected-histogram name="NetConnectivity5.StartPacket"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketReceives" separator=".">
@@ -32048,6 +32068,9 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity4.NonPacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity4.PacedPacket.Sent21"/>
   <affected-histogram name="NetConnectivity4.StartPacket.Sent21"/>
+  <affected-histogram name="NetConnectivity5.NonPacedPacket.Sent21"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket.Sent21"/>
+  <affected-histogram name="NetConnectivity5.StartPacket.Sent21"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketRTT" separator=".">
@@ -32076,6 +32099,9 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity4.NonPacedPacket"/>
   <affected-histogram name="NetConnectivity4.PacedPacket"/>
   <affected-histogram name="NetConnectivity4.StartPacket"/>
+  <affected-histogram name="NetConnectivity5.NonPacedPacket"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket"/>
+  <affected-histogram name="NetConnectivity5.StartPacket"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketRTTSeries" separator=".">
@@ -32088,6 +32114,10 @@ other types of suffix sets.
       name="NetConnectivity4.NonPacedPacket.Sent21.Success.RTT"/>
   <affected-histogram name="NetConnectivity4.PacedPacket.Sent21.Success.RTT"/>
   <affected-histogram name="NetConnectivity4.StartPacket.Sent21.Success.RTT"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.Success.RTT"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket.Sent21.Success.RTT"/>
+  <affected-histogram name="NetConnectivity5.StartPacket.Sent21.Success.RTT"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketsAll" separator=".">
@@ -32282,6 +32312,191 @@ other types of suffix sets.
       name="NetConnectivity4.StartPacket.Sent21.Success.RTT.Packet10"/>
   <affected-histogram
       name="NetConnectivity4.StartPacket.Sent21.Success.RTT.Packet20"/>
+  <affected-histogram name="NetConnectivity5.NATBind.Sent2.Bind.Failure"/>
+  <affected-histogram name="NetConnectivity5.NATBind.Sent2.Bind.Success"/>
+  <affected-histogram
+      name="NetConnectivity5.NATBind.Sent2.Connectivity.Failure"/>
+  <affected-histogram
+      name="NetConnectivity5.NATBind.Sent2.Connectivity.Success"/>
+  <affected-histogram
+      name="NetConnectivity5.NATBind.Sent2.SendToLastRecvDelay"/>
+  <affected-histogram name="NetConnectivity5.NonPacedPacket.Sent21.GotAPacket"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst01Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst02Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst03Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst04Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst05Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst06Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst07Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst08Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst09Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst10Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst11Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst12Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst13Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst14Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst15Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst16Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst17Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst18Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst19Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst20Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.NumRecvFromFirst21Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.PacketDelay"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.PacketsRecv"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.RecvNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.SendToLastRecvDelay"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.Success.RTT.Packet01"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.Success.RTT.Packet02"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.Success.RTT.Packet03"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.Success.RTT.Packet10"/>
+  <affected-histogram
+      name="NetConnectivity5.NonPacedPacket.Sent21.Success.RTT.Packet20"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket.Sent21.GotAPacket"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst01Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst02Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst03Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst04Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst05Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst06Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst07Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst08Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst09Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst10Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst11Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst12Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst13Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst14Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst15Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst16Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst17Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst18Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst19Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst20Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.NumRecvFromFirst21Packets"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket.Sent21.PacketDelay"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket.Sent21.PacketsRecv"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket.Sent21.RecvNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.SendToLastRecvDelay"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.Success.RTT.Packet01"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.Success.RTT.Packet02"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.Success.RTT.Packet03"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.Success.RTT.Packet10"/>
+  <affected-histogram
+      name="NetConnectivity5.PacedPacket.Sent21.Success.RTT.Packet20"/>
+  <affected-histogram name="NetConnectivity5.StartPacket.Sent21.GotAPacket"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst01Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst02Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst03Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst04Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst05Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst06Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst07Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst08Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst09Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst10Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst11Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst12Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst13Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst14Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst15Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst16Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst17Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst18Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst19Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst20Packets"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.NumRecvFromFirst21Packets"/>
+  <affected-histogram name="NetConnectivity5.StartPacket.Sent21.PacketDelay"/>
+  <affected-histogram name="NetConnectivity5.StartPacket.Sent21.PacketsRecv"/>
+  <affected-histogram name="NetConnectivity5.StartPacket.Sent21.RecvNthPacket"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.SendToLastRecvDelay"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.Success.RTT.Packet01"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.Success.RTT.Packet02"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.Success.RTT.Packet03"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.Success.RTT.Packet10"/>
+  <affected-histogram
+      name="NetConnectivity5.StartPacket.Sent21.Success.RTT.Packet20"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketSizeTest" separator=".">
@@ -32292,6 +32507,7 @@ other types of suffix sets.
       label="This histogram records the size of the packet size that was
              received from the server."/>
   <affected-histogram name="NetConnectivity4"/>
+  <affected-histogram name="NetConnectivity5"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4PacketSizeTestPort" separator=".">
@@ -32301,6 +32517,10 @@ other types of suffix sets.
       name="NetConnectivity4.PacketSizeTest.Connectivity.Failure"/>
   <affected-histogram
       name="NetConnectivity4.PacketSizeTest.Connectivity.Success"/>
+  <affected-histogram
+      name="NetConnectivity5.PacketSizeTest.Connectivity.Failure"/>
+  <affected-histogram
+      name="NetConnectivity5.PacketSizeTest.Connectivity.Success"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity4SeriesRecv" separator=".">
@@ -32325,6 +32545,9 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity4.NonPacedPacket.First6.SeriesRecv"/>
   <affected-histogram name="NetConnectivity4.PacedPacket.First6.SeriesRecv"/>
   <affected-histogram name="NetConnectivity4.StartPacket.First6.SeriesRecv"/>
+  <affected-histogram name="NetConnectivity5.NonPacedPacket.First6.SeriesRecv"/>
+  <affected-histogram name="NetConnectivity5.PacedPacket.First6.SeriesRecv"/>
+  <affected-histogram name="NetConnectivity5.StartPacket.First6.SeriesRecv"/>
 </fieldtrial>
 
 <fieldtrial name="NetProxyResolverExecutionTime">

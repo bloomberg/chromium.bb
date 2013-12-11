@@ -66,6 +66,16 @@ class NetworkStats {
     STATUS_MAX,            // Bounding value.
   };
 
+  enum ReadState {         // Used to track if |socket_| has a pending read.
+    READ_STATE_IDLE,
+    READ_STATE_READ_PENDING,
+  };
+
+  enum WriteState {        // Used to track if |socket_| has a pending write.
+    WRITE_STATE_IDLE,
+    WRITE_STATE_WRITE_PENDING,
+  };
+
   // |TestType| specifies the possible tests we may run
   // (except for the first and the last serving as boundaries).
   enum TestType {
@@ -305,6 +315,10 @@ class NetworkStats {
 
   // Token received from server for authentication.
   ProbePacket_Token token_;
+
+  // The state variables to track pending reads/writes.
+  ReadState read_state_;
+  WriteState write_state_;
 
   // We use this factory to create timeout tasks for socket's ReadData.
   base::WeakPtrFactory<NetworkStats> weak_factory_;
