@@ -444,19 +444,19 @@ static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<Style
         const StyleRuleBase* rule = rules[i].get();
         switch (rule->type()) {
         case StyleRuleBase::Style:
-            if (static_cast<const StyleRule*>(rule)->properties()->hasFailedOrCanceledSubresources())
+            if (toStyleRule(rule)->properties()->hasFailedOrCanceledSubresources())
                 return true;
             break;
         case StyleRuleBase::FontFace:
-            if (static_cast<const StyleRuleFontFace*>(rule)->properties()->hasFailedOrCanceledSubresources())
+            if (toStyleRuleFontFace(rule)->properties()->hasFailedOrCanceledSubresources())
                 return true;
             break;
         case StyleRuleBase::Media:
-            if (childRulesHaveFailedOrCanceledSubresources(static_cast<const StyleRuleMedia*>(rule)->childRules()))
+            if (childRulesHaveFailedOrCanceledSubresources(toStyleRuleMedia(rule)->childRules()))
                 return true;
             break;
         case StyleRuleBase::Region:
-            if (childRulesHaveFailedOrCanceledSubresources(static_cast<const StyleRuleRegion*>(rule)->childRules()))
+            if (childRulesHaveFailedOrCanceledSubresources(toStyleRuleRegion(rule)->childRules()))
                 return true;
             break;
         case StyleRuleBase::Import:

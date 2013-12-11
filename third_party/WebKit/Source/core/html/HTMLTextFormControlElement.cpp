@@ -621,19 +621,19 @@ HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
     return ancestor && isHTMLTextFormControlElement(ancestor) ? toHTMLTextFormControlElement(ancestor) : 0;
 }
 
-static const Element* parentHTMLElement(const Element* element)
+static const HTMLElement* parentHTMLElement(const Element* element)
 {
     while (element) {
         element = element->parentElement();
         if (element && element->isHTMLElement())
-            return element;
+            return toHTMLElement(element);
     }
     return 0;
 }
 
 String HTMLTextFormControlElement::directionForFormData() const
 {
-    for (const Element* element = this; element; element = parentHTMLElement(element)) {
+    for (const HTMLElement* element = this; element; element = parentHTMLElement(element)) {
         const AtomicString& dirAttributeValue = element->fastGetAttribute(dirAttr);
         if (dirAttributeValue.isNull())
             continue;
@@ -643,7 +643,7 @@ String HTMLTextFormControlElement::directionForFormData() const
 
         if (equalIgnoringCase(dirAttributeValue, "auto")) {
             bool isAuto;
-            TextDirection textDirection = static_cast<const HTMLElement*>(element)->directionalityIfhasDirAutoAttribute(isAuto);
+            TextDirection textDirection = element->directionalityIfhasDirAutoAttribute(isAuto);
             return textDirection == RTL ? "rtl" : "ltr";
         }
     }

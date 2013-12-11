@@ -150,8 +150,8 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
     if (!node->isTextNode())
         return appendBasicSubtargetsForNode(node, subtargets);
 
-    Text* textNode = static_cast<WebCore::Text*>(node);
-    RenderText* textRenderer = static_cast<RenderText*>(textNode->renderer());
+    Text* textNode = toText(node);
+    RenderText* textRenderer = toRenderText(textNode->renderer());
 
     if (textRenderer->frame()->editor().behavior().shouldSelectOnContextualMenuClick()) {
         // Make subtargets out of every word.

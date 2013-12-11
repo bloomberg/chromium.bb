@@ -299,7 +299,7 @@ bool SVGLengthContext::determineViewport(FloatSize& viewportSize) const
     if (!viewportElement || !viewportElement->isSVGSVGElement())
         return false;
 
-    const SVGSVGElement* svg = static_cast<const SVGSVGElement*>(viewportElement);
+    const SVGSVGElement* svg = toSVGSVGElement(viewportElement);
     viewportSize = svg->currentViewBoxRect().size();
     if (viewportSize.isEmpty())
         viewportSize = svg->currentViewportSize();

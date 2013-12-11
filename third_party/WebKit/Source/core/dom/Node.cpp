@@ -1459,7 +1459,7 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
         case DOCUMENT_TYPE_NODE:
             return nullAtom;
         case ATTRIBUTE_NODE: {
-            const Attr *attr = static_cast<const Attr *>(this);
+            const Attr *attr = toAttr(this);
             if (attr->ownerElement())
                 return attr->ownerElement()->lookupPrefix(namespaceURI);
             return nullAtom;
@@ -1517,8 +1517,7 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
         case DOCUMENT_FRAGMENT_NODE:
             return nullAtom;
         case ATTRIBUTE_NODE: {
-            const Attr *attr = static_cast<const Attr *>(this);
-
+            const Attr *attr = toAttr(this);
             if (attr->ownerElement())
                 return attr->ownerElement()->lookupNamespaceURI(prefix);
             else

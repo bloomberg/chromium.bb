@@ -217,7 +217,7 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
         // Respect xlink:href, take attributes from referenced element
         Node* refNode = SVGURIReference::targetElementFromIRIString(current->hrefCurrentValue(), document());
         if (refNode && refNode->hasTagName(SVGNames::patternTag)) {
-            current = static_cast<const SVGPatternElement*>(const_cast<const Node*>(refNode));
+            current = toSVGPatternElement(const_cast<const Node*>(refNode));
 
             // Cycle detection
             if (processedPatterns.contains(current)) {
