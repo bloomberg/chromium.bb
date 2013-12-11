@@ -462,7 +462,13 @@ void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
     }
     return;
   }
-  metadata_database_ = initializer->PassMetadataDatabase();
+
+  scoped_ptr<MetadataDatabase> metadata_database =
+      initializer->PassMetadataDatabase();
+  if (metadata_database)
+    metadata_database_ = metadata_database.Pass();
+
+  DCHECK(metadata_database_);
   UpdateRegisteredApps();
 }
 
@@ -642,6 +648,7 @@ void SyncEngine::UpdateRegisteredApps() {
   if (!extension_service_)
     return;
 
+  DCHECK(metadata_database_);
   std::vector<std::string> app_ids;
   metadata_database_->GetRegisteredAppIDs(&app_ids);
 
