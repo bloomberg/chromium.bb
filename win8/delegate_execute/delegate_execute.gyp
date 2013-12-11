@@ -71,6 +71,13 @@
           'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
         },
       },
+      'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            '../win8.gyp:metro_viewer_constants',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'delegate_execute_unittests',

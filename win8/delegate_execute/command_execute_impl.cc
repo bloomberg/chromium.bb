@@ -30,6 +30,7 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "win8/delegate_execute/chrome_util.h"
 #include "win8/delegate_execute/delegate_execute_util.h"
+#include "win8/viewer/metro_viewer_constants.h"
 
 namespace {
 
@@ -300,7 +301,7 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   }
 
 #if defined(USE_AURA)
-  if (*pahe == AHE_IMMERSIVE && verb_ != L"test_open")
+  if (*pahe == AHE_IMMERSIVE && verb_ != win8::kMetroViewerConnectVerb)
     LaunchChromeBrowserProcess();
 #endif
 

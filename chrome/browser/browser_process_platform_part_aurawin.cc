@@ -38,8 +38,7 @@ void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
       if (launch) {
         CHECK(metro_viewer_process_host_->LaunchViewerAndWaitForConnection(
             command_line.GetSwitchValueNative(
-                switches::kViewerLaunchViaAppId),
-            L""));
+                switches::kViewerLaunchViaAppId)));
       }
     }
   }

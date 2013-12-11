@@ -48,12 +48,9 @@ class MetroViewerProcessHost : public IPC::Listener,
   // and blocks until that viewer process connects or until a timeout is
   // reached. Returns true if the viewer process connects before the timeout is
   // reached. NOTE: this assumes that the app referred to by |app_user_model_id|
-  // is registered as the default browser. |verb| can be customized for
-  // testing (test_open will cause the viewer not to launch chrome), and if
-  // it's empty it will be replaced by "open".
+  // is registered as the default browser.
   bool LaunchViewerAndWaitForConnection(
-      const base::string16& app_user_model_id,
-      const base::string16& verb);
+      const base::string16& app_user_model_id);
 
  private:
   // IPC::Sender implementation:

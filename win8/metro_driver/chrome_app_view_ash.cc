@@ -428,9 +428,8 @@ bool LaunchChromeBrowserProcess(const wchar_t* additional_parameters,
         mswrw::HString launch_args_str;
         launch_args->get_Arguments(launch_args_str.GetAddressOf());
         string16 actual_launch_args(MakeStdWString(launch_args_str.Get()));
-        if (actual_launch_args == L"test_open") {
-          DVLOG(1) << __FUNCTION__
-                  << "Not launching chrome server";
+        if (actual_launch_args == win8::kMetroViewerConnectVerb) {
+          DVLOG(1) << __FUNCTION__ << "Not launching chrome server";
           return true;
         }
       }

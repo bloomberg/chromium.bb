@@ -75,7 +75,7 @@
           'conditions': [
             ['use_aura==1', {
               'dependencies': [
-                '../win8.gyp:metro_viewer',
+                '../win8.gyp:metro_viewer_constants',
               ],
               'sources': [
                 'chrome_app_view_ash.cc',

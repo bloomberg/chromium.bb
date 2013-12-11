@@ -52,8 +52,7 @@ base::ProcessId MetroViewerProcessHost::GetViewerProcessId() {
 }
 
 bool MetroViewerProcessHost::LaunchViewerAndWaitForConnection(
-    const base::string16& app_user_model_id,
-    const base::string16& verb) {
+    const base::string16& app_user_model_id) {
   DCHECK_EQ(base::kNullProcessId, channel_->peer_pid());
 
   channel_connected_event_.reset(new base::WaitableEvent(false, false));
@@ -66,9 +65,9 @@ bool MetroViewerProcessHost::LaunchViewerAndWaitForConnection(
   HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
   if (SUCCEEDED(hr)) {
     DWORD pid = 0;
-    base::string16 actual_verb = verb.empty() ? L"open" : verb;
+    // Use the "connect" verb to
     hr = activator->ActivateApplication(
-        app_user_model_id.c_str(), actual_verb.c_str(), AO_NONE, &pid);
+        app_user_model_id.c_str(), kMetroViewerConnectVerb, AO_NONE, &pid);
   }
 
   LOG_IF(ERROR, FAILED(hr)) << "Tried and failed to launch Metro Chrome. "

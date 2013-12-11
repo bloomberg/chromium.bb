@@ -8,4 +8,6 @@ namespace win8 {
 
 const char kMetroViewerIPCChannelName[] = "viewer";
 
+const wchar_t kMetroViewerConnectVerb[] = L"connect";
+
 } // namespace win8

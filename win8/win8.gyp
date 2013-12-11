@@ -51,6 +51,17 @@
       ],
     },
     {
+      'target_name': 'metro_viewer_constants',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'viewer/metro_viewer_constants.cc',
+        'viewer/metro_viewer_constants.h',
+      ],
+    },
+    {
       'target_name': 'metro_viewer',
       'type': 'static_library',
       'dependencies': [
@@ -58,10 +69,9 @@
         '../ipc/ipc.gyp:ipc',
         '../ui/aura/aura.gyp:aura',
         '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
+        'metro_viewer_constants'
       ],
       'sources': [
-        'viewer/metro_viewer_constants.cc',
-        'viewer/metro_viewer_constants.h',
         'viewer/metro_viewer_process_host.cc',
         'viewer/metro_viewer_process_host.h',
       ],
