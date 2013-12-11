@@ -303,6 +303,8 @@ public:
 
     void forceCompositingUpdate(Document*, ExceptionState&);
 
+    void setZoomFactor(float);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

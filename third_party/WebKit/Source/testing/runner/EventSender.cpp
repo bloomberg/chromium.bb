@@ -995,6 +995,16 @@ void EventSender::addTouchPoint(const CppArgumentList& arguments, CppVariant* re
     touchPoint.position = WebPoint(arguments[0].toInt32(), arguments[1].toInt32());
     touchPoint.screenPosition = touchPoint.position;
 
+    if (arguments.size() > 2) {
+        int radiusX = arguments[2].toInt32();
+        int radiusY = radiusX;
+        if (arguments.size() > 3)
+            radiusY = arguments[3].toInt32();
+
+        touchPoint.radiusX = radiusX;
+        touchPoint.radiusY = radiusY;
+    }
+
     int lowestId = 0;
     for (size_t i = 0; i < touchPoints.size(); i++) {
         if (touchPoints[i].id == lowestId)

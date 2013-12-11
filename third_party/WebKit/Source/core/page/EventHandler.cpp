@@ -3775,11 +3775,14 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
         int adjustedPageX = lroundf(pagePoint.x() / scaleFactor);
         int adjustedPageY = lroundf(pagePoint.y() / scaleFactor);
+        int adjustedRadiusX = lroundf(point.radiusX() / scaleFactor);
+        int adjustedRadiusY = lroundf(point.radiusY() / scaleFactor);
 
         RefPtr<Touch> touch = Touch::create(targetFrame, touchTarget.get(), point.id(),
                                             point.screenPos().x(), point.screenPos().y(),
                                             adjustedPageX, adjustedPageY,
-                                            point.radiusX(), point.radiusY(), point.rotationAngle(), point.force());
+                                            adjustedRadiusX, adjustedRadiusY,
+                                            point.rotationAngle(), point.force());
 
         // Ensure this target's touch list exists, even if it ends up empty, so it can always be passed to TouchEvent::Create below.
         TargetTouchesMap::iterator targetTouchesIterator = touchesByTarget.find(touchTarget.get());

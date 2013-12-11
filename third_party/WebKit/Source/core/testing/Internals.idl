@@ -270,4 +270,6 @@
     boolean loseSharedGraphicsContext3D();
 
     [RaisesException] void forceCompositingUpdate(Document document);
+
+    void setZoomFactor(float factor);
 };

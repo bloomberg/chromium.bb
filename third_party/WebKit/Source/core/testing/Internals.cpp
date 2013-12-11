@@ -2321,4 +2321,9 @@ void Internals::forceCompositingUpdate(Document* document, ExceptionState& excep
         view->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
 }
 
+void Internals::setZoomFactor(float factor)
+{
+    frame()->setPageZoomFactor(factor);
+}
+
 }
