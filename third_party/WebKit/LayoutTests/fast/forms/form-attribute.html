@@ -178,6 +178,19 @@ shouldBe('labelElement.form', 'null');
 container.appendChild(owner);
 shouldBe('inputElement.form', 'owner');
 shouldBe('labelElement.form', 'owner');
+
+debug('');
+debug('- Checks if option.form is only set if it has a &lt;select&gt; parent.');
+container.innerHTML = '<form id=firstOwner><option id=firstOption></option></form>' +
+    '<form id=secondOwner><optgroup><option id=secondOption></option></optgroup></form>' +
+    '<form id=thirdOwner><select><optgroup><option id=thirdOption></option></optgroup></select></form>';
+var option1 = document.getElementById('firstOption');
+shouldBe('option1.form', 'null');
+var option2 = document.getElementById('secondOption');
+shouldBe('option2.form', 'null');
+owner = document.getElementById('thirdOwner');
+var option3 = document.getElementById('thirdOption');
+shouldBe('option3.form', 'owner');
 </script>
 </body>
 </html>

@@ -366,4 +366,13 @@ String HTMLOptionElement::collectOptionInnerText() const
     return text.toString();
 }
 
+HTMLFormElement* HTMLOptionElement::form() const
+{
+    HTMLSelectElement* selectElement = ownerSelectElement();
+    if (!selectElement)
+        return 0;
+
+    return selectElement->formOwner();
+}
+
 } // namespace WebCore

@@ -63,8 +63,12 @@ PASS inputElement.form is null
 PASS labelElement.form is null
 PASS inputElement.form is owner
 PASS labelElement.form is owner
+
+- Checks if option.form is only set if it has a <select> parent.
+PASS option1.form is null
+PASS option2.form is null
+PASS option3.form is owner
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
 

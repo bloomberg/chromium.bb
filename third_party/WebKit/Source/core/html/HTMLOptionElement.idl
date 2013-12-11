@@ -23,7 +23,7 @@
     RaisesException=Constructor
 ] interface HTMLOptionElement : HTMLElement {
     [Reflect] attribute boolean disabled;
-    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
+    readonly attribute HTMLFormElement form;
     attribute DOMString label;
     [Reflect=selected] attribute boolean defaultSelected;
     attribute boolean selected;

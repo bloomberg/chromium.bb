@@ -64,6 +64,8 @@ public:
 
     void setSelectedState(bool);
 
+    HTMLFormElement* form() const;
+
 private:
     explicit HTMLOptionElement(Document&);
 
