@@ -196,6 +196,12 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
 
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(browser_context_);
+  if (extension_->location() == Manifest::COMPONENT) {
+    // bshe's log for http://crbug.com/314872
+    LOG(ERROR) << "Start loading extension icon for " << extension_->name()
+               << ". scale = " << scale;
+  }
+
   loader->LoadImagesAsync(extension_, info_list,
                           base::Bind(&IconImage::OnImageLoaded,
                                      weak_ptr_factory_.GetWeakPtr(),
@@ -208,6 +214,11 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
   const gfx::ImageSkia* image =
       image_in.IsEmpty() ? &default_icon_ : image_in.ToImageSkia();
 
+  if (extension_->location() == Manifest::COMPONENT) {
+    // bshe's log for http://crbug.com/314872
+    LOG(ERROR) << "Component extension icon for " << extension_->name()
+               << " is loaded. scale = " << scale;
+  }
   // Maybe default icon was not set.
   if (image->isNull())
     return;
