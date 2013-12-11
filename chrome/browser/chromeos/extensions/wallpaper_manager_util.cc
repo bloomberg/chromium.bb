@@ -21,7 +21,9 @@
 namespace wallpaper_manager_util {
 
 void OpenWallpaperManager() {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  DCHECK(profile);
+
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
