@@ -47,7 +47,7 @@ except ImportError:
 
 PRE_CQ = 'pre-cq'
 CQ = 'cq'
-SUBMITTED_WAIT_TIMEOUT = 30 # Time in seconds.
+SUBMITTED_WAIT_TIMEOUT = 120 # Time in seconds.
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -1864,8 +1864,8 @@ class ValidationPool(object):
     if not was_change_submitted:
       logging.warning(
           'Change %s was submitted without errors, but gerrit is still'
-          ' reporting it with status "%s".  This is odd!',
-          change.gerrit_number_str, updated_change.status)
+          ' reporting it with status "%s" (expected "%s").  This is odd!',
+          change.gerrit_number_str, updated_change.status, 'MERGED')
     return was_change_submitted
 
   def RemoveCommitReady(self, change):

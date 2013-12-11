@@ -602,6 +602,13 @@ class MockPatchSeries(partial_mock.PartialMock):
 
 class TestSubmitChange(cros_test_lib.MoxTestCase):
 
+  def setUp(self):
+    self.orig_timeout = validation_pool.SUBMITTED_WAIT_TIMEOUT
+    validation_pool.SUBMITTED_WAIT_TIMEOUT = 4
+
+  def tearDown(self):
+    validation_pool.SUBMITTED_WAIT_TIMEOUT = self.orig_timeout
+
   def testSubmitChangeMerged(self):
     """Submit one change to gerrit, status MERGED."""
     result = cros_test_lib.EasyAttr(status='MERGED')
