@@ -390,10 +390,16 @@ crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delet
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ Pass ImageOnlyFailure ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Pass ImageOnlyFailure ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Pass ImageOnlyFailure ]
-crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass Crash ]
-crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
 
-crbug.com/324120 http/tests/media/media-source/webkitmediasource-removesourcebuffer-texttrack.html [ Pass Crash ]
+# 309184 and 303419 track Android-specific failures
+crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
+
+# 323284 tracks Android-specific flaky failure
+crbug.com/323284 crbug.com/324120 http/tests/media/media-source/webkitmediasource-removesourcebuffer-texttrack.html [ Pass Crash Failure ]
+
+crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Pass Crash ]
+crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
+crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
 
 crbug.com/286287 [ Linux Mac Android ] http/tests/inspector/network/network-initiator.html [ Failure Pass ]
 crbug.com/306228 [ Win ] http/tests/inspector/network/network-initiator.html [ Pass Failure Timeout ]
