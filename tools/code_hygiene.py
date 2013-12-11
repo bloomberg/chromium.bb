@@ -37,6 +37,7 @@ CPP_CHECKER = ['cpplint.py',
                ',-readability/casting'
                ',-readability/check'
                ',-readability/multiline_comment'
+               ',-readability/streams'
                ',-runtime/sizeof'
                ',-runtime/threadsafe_fn'
                ',-whitespace/newline'
