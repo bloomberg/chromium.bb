@@ -295,10 +295,6 @@ PassRefPtr<CSSValue> SVGElement::getPresentationAttribute(const String& name)
     return cssValue ? cssValue->cloneForCSSOM() : 0;
 }
 
-bool SVGElement::isKnownAttribute(const QualifiedName& attrName)
-{
-    return isIdAttributeName(attrName);
-}
 
 bool SVGElement::instanceUpdatesBlocked() const
 {
@@ -325,6 +321,26 @@ String SVGElement::xmlbase() const
 void SVGElement::setXMLbase(const String& value)
 {
     setAttribute(XMLNames::baseAttr, value);
+}
+
+String SVGElement::xmllang() const
+{
+    return fastGetAttribute(XMLNames::langAttr);
+}
+
+void SVGElement::setXMLlang(const String& value)
+{
+    setAttribute(XMLNames::langAttr, value);
+}
+
+String SVGElement::xmlspace() const
+{
+    return fastGetAttribute(XMLNames::spaceAttr);
+}
+
+void SVGElement::setXMLspace(const String& value)
+{
+    setAttribute(XMLNames::spaceAttr, value);
 }
 
 Node::InsertionNotificationRequest SVGElement::insertedInto(ContainerNode* rootParent)
@@ -671,7 +687,7 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         // style updates (instead of Element::parseAttribute). We don't
         // tell Element about the change to avoid parsing the class list twice
         setClassNameBaseValue(value);
-    } else if (SVGLangSpace::parseAttribute(name, value)) {
+    } else if (name.matches(XMLNames::langAttr) || name.matches(XMLNames::spaceAttr)) {
     } else
         Element::parseAttribute(name, value);
 }

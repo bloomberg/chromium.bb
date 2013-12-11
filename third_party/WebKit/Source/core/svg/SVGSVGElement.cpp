@@ -256,8 +256,7 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
         setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
     else if (name == SVGNames::heightAttr)
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
-    else if (SVGLangSpace::parseAttribute(name, value)
-               || SVGExternalResourcesRequired::parseAttribute(name, value)
+    else if (SVGExternalResourcesRequired::parseAttribute(name, value)
                || SVGFitToViewBox::parseAttribute(this, name, value)
                || SVGZoomAndPan::parseAttribute(this, name, value)) {
     } else
@@ -296,7 +295,6 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
 
     if (updateRelativeLengthsOrViewBox
-        || SVGLangSpace::isKnownAttribute(attrName)
         || SVGExternalResourcesRequired::isKnownAttribute(attrName)
         || SVGZoomAndPan::isKnownAttribute(attrName)) {
         if (renderer())

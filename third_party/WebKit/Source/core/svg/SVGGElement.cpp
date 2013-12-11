@@ -65,9 +65,6 @@ void SVGGElement::parseAttribute(const QualifiedName& name, const AtomicString& 
         return;
     }
 
-    if (SVGLangSpace::parseAttribute(name, value))
-        return;
-
     ASSERT_NOT_REACHED();
 }
 

@@ -2995,8 +2995,6 @@
             'svg/SVGImageElement.h',
             'svg/SVGImageLoader.cpp',
             'svg/SVGImageLoader.h',
-            'svg/SVGLangSpace.cpp',
-            'svg/SVGLangSpace.h',
             'svg/SVGLength.cpp',
             'svg/SVGLengthContext.cpp',
             'svg/SVGLengthList.cpp',
