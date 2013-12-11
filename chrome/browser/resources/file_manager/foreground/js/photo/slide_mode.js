@@ -116,7 +116,7 @@ SlideMode.prototype.initDom_ = function() {
   util.platform.getPreference(SlideMode.OVERWRITE_KEY, function(value) {
     // Out-of-the box default is 'true'
     this.overwriteOriginal_.checked =
-        (typeof value != 'string' || value == 'true');
+        (typeof value !== 'string' || value === 'true');
   }.bind(this));
   this.overwriteOriginal_.addEventListener('click',
       this.onOverwriteOriginalClick_.bind(this));
@@ -268,7 +268,7 @@ SlideMode.prototype.enter = function(
   // The latest |leave| call might have left the image animating. Remove it.
   this.unloadImage_();
 
-  if (this.getItemCount_() == 0) {
+  if (this.getItemCount_() === 0) {
     this.displayedIndex_ = -1;
     //TODO(kaznacheev) Show this message in the grid mode too.
     this.showErrorBanner_('GALLERY_NO_IMAGES');
@@ -277,7 +277,7 @@ SlideMode.prototype.enter = function(
     // Remember the selection if it is empty or multiple. It will be restored
     // in |leave| if the user did not changing the selection manually.
     var currentSelection = this.selectionModel_.selectedIndexes;
-    if (currentSelection.length == 1)
+    if (currentSelection.length === 1)
       this.savedSelection_ = null;
     else
       this.savedSelection_ = currentSelection;
@@ -288,12 +288,11 @@ SlideMode.prototype.enter = function(
     this.displayedIndex_ = this.getSelectedIndex();
 
     var selectedItem = this.getSelectedItem();
-    var selectedUrl = selectedItem.getUrl();
     // Show the selected item ASAP, then complete the initialization
     // (loading the ribbon thumbnails can take some time).
-    this.metadataCache_.get(selectedUrl, Gallery.METADATA_TYPE,
+    this.metadataCache_.get(selectedItem.getEntry(), Gallery.METADATA_TYPE,
         function(metadata) {
-          this.loadItem_(selectedUrl, metadata,
+          this.loadItem_(selectedItem.getEntry(), metadata,
               zoomFromRect && this.imageView_.createZoomEffect(zoomFromRect),
               displayCallback, loadDone);
         }.bind(this));
@@ -324,7 +323,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       callback();
     }.bind(this);
 
-  if (this.getItemCount_() == 0) {
+  if (this.getItemCount_() === 0) {
     this.showErrorBanner_(false);
     commitDone();
   } else {
@@ -409,14 +408,14 @@ SlideMode.prototype.toggleFullScreen_ = function() {
  * @private
  */
 SlideMode.prototype.onSelection_ = function() {
-  if (this.selectionModel_.selectedIndexes.length == 0)
+  if (this.selectionModel_.selectedIndexes.length === 0)
     return;  // Temporary empty selection.
 
   // Forget the saved selection if the user changed the selection manually.
   if (!this.isSlideshowOn_())
     this.savedSelection_ = null;
 
-  if (this.getSelectedIndex() == this.displayedIndex_)
+  if (this.getSelectedIndex() === this.displayedIndex_)
     return;  // Do not reselect.
 
   this.commitItem_(this.loadSelectedItem_.bind(this));
@@ -456,7 +455,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   this.slideHint_ = undefined;
 
   var index = this.getSelectedIndex();
-  if (index == this.displayedIndex_)
+  if (index === this.displayedIndex_)
     return;  // Do not reselect.
 
   var step = slideHint || (index - this.displayedIndex_);
@@ -465,7 +464,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
     // Long leap, the sequence is broken, we have no good prefetch candidate.
     this.sequenceDirection_ = 0;
     this.sequenceLength_ = 0;
-  } else if (this.sequenceDirection_ == step) {
+  } else if (this.sequenceDirection_ === step) {
     // Keeping going in sequence.
     this.sequenceLength_++;
   } else {
@@ -477,7 +476,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   if (this.sequenceLength_ <= 1) {
     // We have just broke the sequence. Touch the current image so that it stays
     // in the cache longer.
-    this.imageView_.prefetch(this.imageView_.contentID_);
+    this.imageView_.prefetch(this.imageView_.contentEntry_);
   }
 
   this.displayedIndex_ = index;
@@ -489,11 +488,11 @@ SlideMode.prototype.loadSelectedItem_ = function() {
 
     // Never prefetch after a video load (decoding the next image can freeze
     // the UI for a second or two).
-    if (loadType == ImageView.LOAD_TYPE_VIDEO_FILE)
+    if (loadType === ImageView.LOAD_TYPE_VIDEO_FILE)
       return false;
 
     // Always prefetch if the previous load was from cache.
-    if (loadType == ImageView.LOAD_TYPE_CACHED_FULL)
+    if (loadType === ImageView.LOAD_TYPE_CACHED_FULL)
       return true;
 
     // Prefetch if we have been going in the same direction for long enough.
@@ -506,7 +505,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   var onMetadata = function(metadata) {
     // Discard, since another load has been invoked after this one.
     if (selectedUniqueKey != this.currentUniqueKey_) return;
-    this.loadItem_(selectedItem.getUrl(), metadata,
+    this.loadItem_(selectedItem.getEntry(), metadata,
         new ImageView.Effect.Slide(step, this.isSlideshowPlaying_()),
         function() {} /* no displayCallback */,
         function(loadType, delay) {
@@ -520,7 +519,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
         }.bind(this));
   }.bind(this);
   this.metadataCache_.get(
-      selectedItem.getUrl(), Gallery.METADATA_TYPE, onMetadata);
+      selectedItem.getEntry(), Gallery.METADATA_TYPE, onMetadata);
 };
 
 /**
@@ -581,7 +580,7 @@ SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
     index += (direction > 0 ? 1 : -1);
     if (index < 0)
       return limit - 1;
-    if (index == limit)
+    if (index === limit)
       return 0;
     return index;
   }
@@ -603,7 +602,7 @@ SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
  * @param {string} keyID Key identifier.
  */
 SlideMode.prototype.advanceWithKeyboard = function(keyID) {
-  this.advanceManually(keyID == 'Up' || keyID == 'Left' ? -1 : 1);
+  this.advanceManually(keyID === 'Up' || keyID === 'Left' ? -1 : 1);
 };
 
 /**
@@ -646,7 +645,7 @@ SlideMode.prototype.selectLast = function() {
 /**
  * Load and display an item.
  *
- * @param {string} url Item url.
+ * @param {FileEntry} entry Item entry to be loaded.
  * @param {Object} metadata Item metadata.
  * @param {Object} effect Transition effect object.
  * @param {function} displayCallback Called when the image is displayed
@@ -655,7 +654,7 @@ SlideMode.prototype.selectLast = function() {
  * @private
  */
 SlideMode.prototype.loadItem_ = function(
-    url, metadata, effect, displayCallback, loadCallback) {
+    entry, metadata, effect, displayCallback, loadCallback) {
   this.selectedImageMetadata_ = MetadataCache.cloneMetadata(metadata);
 
   this.showSpinner_(true);
@@ -665,7 +664,7 @@ SlideMode.prototype.loadItem_ = function(
     ImageUtil.setAttribute(this.container_, 'video', video);
 
     this.showSpinner_(false);
-    if (loadType == ImageView.LOAD_TYPE_ERROR) {
+    if (loadType === ImageView.LOAD_TYPE_ERROR) {
       // if we have a specific error, then display it
       if (error) {
         this.showErrorBanner_(error);
@@ -674,7 +673,7 @@ SlideMode.prototype.loadItem_ = function(
         this.showErrorBanner_(
             video ? 'GALLERY_VIDEO_ERROR' : 'GALLERY_IMAGE_ERROR');
       }
-    } else if (loadType == ImageView.LOAD_TYPE_OFFLINE) {
+    } else if (loadType === ImageView.LOAD_TYPE_OFFLINE) {
       this.showErrorBanner_(
           video ? 'GALLERY_VIDEO_OFFLINE' : 'GALLERY_IMAGE_OFFLINE');
     }
@@ -699,9 +698,10 @@ SlideMode.prototype.loadItem_ = function(
       ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
           toMillions(canvas.width * canvas.height));
 
-      var extIndex = url.lastIndexOf('.');
-      var ext = extIndex < 0 ? '' : url.substr(extIndex + 1).toLowerCase();
-      if (ext == 'jpeg') ext = 'jpg';
+      var extIndex = entry.name.lastIndexOf('.');
+      var ext = extIndex < 0 ? '' :
+          entry.name.substr(extIndex + 1).toLowerCase();
+      if (ext === 'jpeg') ext = 'jpg';
       ImageUtil.metrics.recordEnum(
           ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
     }
@@ -721,7 +721,7 @@ SlideMode.prototype.loadItem_ = function(
 
     util.platform.getPreference(SlideMode.OVERWRITE_BUBBLE_KEY,
         function(value) {
-          var times = typeof value == 'string' ? parseInt(value, 10) : 0;
+          var times = typeof value === 'string' ? parseInt(value, 10) : 0;
           if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
             this.bubble_.hidden = false;
             if (this.isEditing()) {
@@ -739,7 +739,7 @@ SlideMode.prototype.loadItem_ = function(
     displayCallback();
   }.bind(this);
 
-  this.editor_.openSession(url, metadata, effect,
+  this.editor_.openSession(entry, metadata, effect,
       this.saveCurrentImage_.bind(this), displayDone, loadDone);
 };
 
@@ -781,8 +781,8 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
   if (this.getItemCount_() <= 1) return;
 
   var index = this.getNextSelectedIndex_(direction);
-  var nextItemUrl = this.getItem(index).getUrl();
-  this.imageView_.prefetch(nextItemUrl, delay);
+  var nextItemEntry = this.getItem(index).getEntry();
+  this.imageView_.prefetch(nextItemEntry, delay);
 };
 
 // Event handlers.
@@ -942,7 +942,7 @@ SlideMode.prototype.updateThumbnails = function() {
  */
 SlideMode.prototype.saveCurrentImage_ = function(callback) {
   var item = this.getSelectedItem();
-  var oldUrl = item.getUrl();
+  var oldEntry = item.getEntry();
   var canvas = this.imageView_.getCanvas();
 
   this.showSpinner_(true);
@@ -963,11 +963,11 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         this.showSpinner_(false);
         this.flashSavedLabel_();
 
-        var e = new Event('content');
-        e.item = item;
-        e.oldUrl = oldUrl;
-        e.metadata = this.selectedImageMetadata_;
-        this.dataModel_.dispatchEvent(e);
+        var event = new Event('content');
+        event.item = item;
+        event.oldEntry = oldEntry;
+        event.metadata = this.selectedImageMetadata_;
+        this.dataModel_.dispatchEvent(event);
 
         // Allow changing the 'Overwrite original' setting only if the user
         // used Undo to restore the original image AND it is not a copy.
@@ -975,13 +975,13 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         var mayChangeOverwrite = !this.editor_.canUndo() && item.isOriginal();
         ImageUtil.setAttribute(this.options_, 'saved', !mayChangeOverwrite);
 
-        if (this.imageView_.getContentRevision() == 1) {  // First edit.
+        if (this.imageView_.getContentRevision() === 1) {  // First edit.
           ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
         }
 
-        if (oldUrl != item.getUrl()) {
+        if (util.isSameEntry(oldEntry, item.getEntry())) {
           this.dataModel_.splice(
-              this.getSelectedIndex(), 0, new Gallery.Item(oldUrl));
+              this.getSelectedIndex(), 0, new Gallery.Item(oldEntry));
           // The ribbon will ignore the splice above and redraw after the
           // select call below (while being obscured by the Editor toolbar,
           // so there is no need for nice animation here).
@@ -995,17 +995,15 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
 };
 
 /**
- * Update caches when the selected item url has changed.
- *
+ * Update caches when the selected item has been renamed.
  * @param {Event} event Event.
  * @private
  */
 SlideMode.prototype.onContentChange_ = function(event) {
-  var newUrl = event.item.getUrl();
-  if (newUrl != event.oldUrl) {
-    this.imageView_.changeUrl(newUrl);
-  }
-  this.metadataCache_.clear(event.oldUrl, Gallery.METADATA_TYPE);
+  var newEntry = event.item.getEntry();
+  if (util.isSameEntry(newEntry, event.oldEntry))
+    this.imageView_.changeEntry(newEntry);
+  this.metadataCache_.clear(event.oldEntry, Gallery.METADATA_TYPE);
 };
 
 /**
@@ -1159,7 +1157,7 @@ SlideMode.prototype.stopSlideshow_ = function(opt_event) {
  * @private
  */
 SlideMode.prototype.isSlideshowPlaying_ = function() {
-  return this.container_.getAttribute('slideshow') == 'playing';
+  return this.container_.getAttribute('slideshow') === 'playing';
 };
 
 /**

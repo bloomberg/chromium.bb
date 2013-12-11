@@ -46,8 +46,8 @@ function ImageView(container, viewport, metadataCache) {
    */
   this.screenImage_ = null;
 
-  this.localImageTransformFetcher_ = function(url, callback) {
-    metadataCache.get(url, 'fetchedMedia', function(fetchedMedia) {
+  this.localImageTransformFetcher_ = function(entry, callback) {
+    metadataCache.get(entry, 'fetchedMedia', function(fetchedMedia) {
       callback(fetchedMedia.imageTransform);
     });
   };
@@ -102,13 +102,13 @@ ImageView.LOAD_TYPE_TOTAL = 6;
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
 /**
- * Draw below overlays with the default zIndex.
+ * Draws below overlays with the default zIndex.
  * @return {number} Z-index.
  */
 ImageView.prototype.getZIndex = function() { return -1 };
 
 /**
- * Draw the image on screen.
+ * Draws the image on screen.
  */
 ImageView.prototype.draw = function() {
   if (!this.contentCanvas_)  // Do nothing if the image content is not set.
@@ -116,7 +116,7 @@ ImageView.prototype.draw = function() {
 
   var forceRepaint = false;
 
-  if (this.displayedViewportGeneration_ !=
+  if (this.displayedViewportGeneration_ !==
       this.viewport_.getCacheGeneration()) {
     this.displayedViewportGeneration_ = this.viewport_.getCacheGeneration();
 
@@ -126,7 +126,7 @@ ImageView.prototype.draw = function() {
   }
 
   if (forceRepaint ||
-      this.displayedContentGeneration_ != this.contentGeneration_) {
+      this.displayedContentGeneration_ !== this.contentGeneration_) {
     this.displayedContentGeneration_ = this.contentGeneration_;
 
     ImageUtil.trace.resetTimer('paint');
@@ -158,7 +158,7 @@ ImageView.prototype.getCursorStyle = function(x, y, mouseDown) {
  */
 ImageView.prototype.getDragHandler = function(x, y) {
   var cursor = this.getCursorStyle(x, y);
-  if (cursor == 'move') {
+  if (cursor === 'move') {
     // Return the handler that drags the entire image.
     return this.viewport_.createOffsetSetter(x, y);
   }
@@ -174,7 +174,7 @@ ImageView.prototype.getCacheGeneration = function() {
 };
 
 /**
- * Invalidate the caches to force redrawing the screen canvas.
+ * Invalidates the caches to force redrawing the screen canvas.
  */
 ImageView.prototype.invalidateCaches = function() {
   this.contentGeneration_++;
@@ -210,7 +210,7 @@ ImageView.prototype.getContentRevision = function() {
 };
 
 /**
- * Copy an image fragment from a full resolution canvas to a device resolution
+ * Copies an image fragment from a full resolution canvas to a device resolution
  * canvas.
  *
  * @param {Rect} deviceRect Rectangle in the device coordinates.
@@ -234,7 +234,7 @@ ImageView.prototype.paintDeviceRect = function(deviceRect, canvas, imageRect) {
 };
 
 /**
- * Create an overlay canvas with properties similar to the screen canvas.
+ * Creates an overlay canvas with properties similar to the screen canvas.
  * Useful for showing quick feedback when editing.
  *
  * @return {HTMLCanvasElement} Overlay canvas.
@@ -255,10 +255,10 @@ ImageView.prototype.setupDeviceBuffer = function(canvas) {
   var deviceRect = this.viewport_.getDeviceClipped();
 
   // Set the canvas position and size in device pixels.
-  if (canvas.width != deviceRect.width)
+  if (canvas.width !== deviceRect.width)
     canvas.width = deviceRect.width;
 
-  if (canvas.height != deviceRect.height)
+  if (canvas.height !== deviceRect.height)
     canvas.height = deviceRect.height;
 
   canvas.style.left = deviceRect.left + 'px';
@@ -284,19 +284,19 @@ ImageView.prototype.isLoading = function() {
 };
 
 /**
- * Cancel the current image loading operation. The callbacks will be ignored.
+ * Cancels the current image loading operation. The callbacks will be ignored.
  */
 ImageView.prototype.cancelLoad = function() {
   this.imageLoader_.cancel();
 };
 
 /**
- * Load and display a new image.
+ * Loads and display a new image.
  *
  * Loads the thumbnail first, then replaces it with the main image.
  * Takes into account the image orientation encoded in the metadata.
  *
- * @param {string} url Image url.
+ * @param {FileEntry} entry Image entry.
  * @param {Object} metadata Metadata.
  * @param {Object} effect Transition effect object.
  * @param {function(number} displayCallback Called when the image is displayed
@@ -304,7 +304,7 @@ ImageView.prototype.cancelLoad = function() {
  * @param {function(number} loadCallback Called when the image is fully loaded.
  *   The parameter is the load type.
  */
-ImageView.prototype.load = function(url, metadata, effect,
+ImageView.prototype.load = function(entry, metadata, effect,
                                     displayCallback, loadCallback) {
   if (effect) {
     // Skip effects when reloading repeatedly very quickly.
@@ -322,10 +322,10 @@ ImageView.prototype.load = function(url, metadata, effect,
 
   var self = this;
 
-  this.contentID_ = url;
+  this.contentEntry_ = entry;
   this.contentRevision_ = -1;
 
-  var loadingVideo = FileType.getMediaType(url) == 'video';
+  var loadingVideo = FileType.getMediaType(entry) === 'video';
   if (loadingVideo) {
     var video = this.document_.createElement('video');
     var videoPreview = !!(metadata.thumbnail && metadata.thumbnail.url);
@@ -356,7 +356,7 @@ ImageView.prototype.load = function(url, metadata, effect,
     video.addEventListener('loadedmetadata', onVideoLoadSuccess);
     video.addEventListener('error', onVideoLoadError);
 
-    video.src = url;
+    video.src = entry.toURL();
     video.load();
     return;
   }
@@ -365,12 +365,12 @@ ImageView.prototype.load = function(url, metadata, effect,
   // evicted later by the prefetched image.
   this.contentCache_.evictLRU();
 
-  var cached = this.contentCache_.getItem(this.contentID_);
+  var cached = this.contentCache_.getItem(this.contentEntry_);
   if (cached) {
     displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL,
         false /* no preview */, cached);
   } else {
-    var cachedScreen = this.screenCache_.getItem(this.contentID_);
+    var cachedScreen = this.screenCache_.getItem(this.contentEntry_);
     var imageWidth = metadata.media && metadata.media.width ||
                      metadata.drive && metadata.drive.imageWidth;
     var imageHeight = metadata.media && metadata.media.height ||
@@ -381,7 +381,7 @@ ImageView.prototype.load = function(url, metadata, effect,
       // As far as the user can tell the image is loaded. We still need to load
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
-    } else if ((!effect || (effect.constructor.name == 'Slide')) &&
+    } else if ((!effect || (effect.constructor.name === 'Slide')) &&
         metadata.thumbnail && metadata.thumbnail.url &&
         !(imageWidth && imageHeight &&
           ImageUtil.ImageLoader.isTooLarge(imageWidth, imageHeight))) {
@@ -396,7 +396,7 @@ ImageView.prototype.load = function(url, metadata, effect,
                          success ? thumbnailLoader.getImage() : null);
       });
     } else {
-      loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, url,
+      loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, entry,
           false /* no preview*/, 0 /* delay */);
     }
   }
@@ -411,12 +411,12 @@ ImageView.prototype.load = function(url, metadata, effect,
           true /* preview */);
       if (displayCallback) displayCallback();
     }
-    loadMainImage(loadType, url, !!canvas,
+    loadMainImage(loadType, entry, !!canvas,
         (effect && canvas) ? effect.getSafeInterval() : 0);
   }
 
-  function loadMainImage(loadType, contentURL, previewShown, delay) {
-    if (self.prefetchLoader_.isLoading(contentURL)) {
+  function loadMainImage(loadType, contentEntry, previewShown, delay) {
+    if (self.prefetchLoader_.isLoading(contentEntry)) {
       // The image we need is already being prefetched. Initiating another load
       // would be a waste. Hijack the load instead by overriding the callback.
       self.prefetchLoader_.setCallback(
@@ -431,7 +431,7 @@ ImageView.prototype.load = function(url, metadata, effect,
     self.prefetchLoader_.cancel();  // The prefetch was doing something useless.
 
     self.imageLoader_.load(
-        contentURL,
+        contentEntry,
         self.localImageTransformFetcher_,
         displayMainImage.bind(null, loadType, previewShown),
         delay);
@@ -448,22 +448,22 @@ ImageView.prototype.load = function(url, metadata, effect,
     //      same HTML element as the preview).
     var animationDuration = 0;
     if (!(previewShown &&
-        (loadType == ImageView.LOAD_TYPE_ERROR ||
-         loadType == ImageView.LOAD_TYPE_VIDEO_FILE))) {
+        (loadType === ImageView.LOAD_TYPE_ERROR ||
+         loadType === ImageView.LOAD_TYPE_VIDEO_FILE))) {
       var replaceEffect = previewShown ? null : effect;
       animationDuration = replaceEffect ? replaceEffect.getSafeInterval() : 0;
       self.replace(content, replaceEffect);
       if (!previewShown && displayCallback) displayCallback();
     }
 
-    if (loadType != ImageView.LOAD_TYPE_ERROR &&
-        loadType != ImageView.LOAD_TYPE_CACHED_SCREEN) {
+    if (loadType !== ImageView.LOAD_TYPE_ERROR &&
+        loadType !== ImageView.LOAD_TYPE_CACHED_SCREEN) {
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
     }
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
         loadType, ImageView.LOAD_TYPE_TOTAL);
 
-    if (loadType == ImageView.LOAD_TYPE_ERROR &&
+    if (loadType === ImageView.LOAD_TYPE_ERROR &&
         !navigator.onLine && metadata.streaming) {
       // |streaming| is set only when the file is not locally cached.
       loadType = ImageView.LOAD_TYPE_OFFLINE;
@@ -473,28 +473,27 @@ ImageView.prototype.load = function(url, metadata, effect,
 };
 
 /**
- * Prefetch an image.
- *
- * @param {string} url The image url.
+ * Prefetches an image.
+ * @param {FileEntry} entry The image entry.
  * @param {number} delay Image load delay in ms.
  */
-ImageView.prototype.prefetch = function(url, delay) {
+ImageView.prototype.prefetch = function(entry, delay) {
   var self = this;
   function prefetchDone(canvas) {
     if (canvas.width)
-      self.contentCache_.putItem(url, canvas);
+      self.contentCache_.putItem(entry, canvas);
   }
 
-  var cached = this.contentCache_.getItem(url);
+  var cached = this.contentCache_.getItem(entry);
   if (cached) {
     prefetchDone(cached);
-  } else if (FileType.getMediaType(url) == 'image') {
+  } else if (FileType.getMediaType(entry) === 'image') {
     // Evict the LRU item before we allocate the new canvas to avoid unneeded
     // strain on memory.
     this.contentCache_.evictLRU();
 
     this.prefetchLoader_.load(
-        url,
+        entry,
         this.localImageTransformFetcher_,
         prefetchDone,
         delay);
@@ -502,19 +501,17 @@ ImageView.prototype.prefetch = function(url, delay) {
 };
 
 /**
- * Rename the current image.
- *
- * @param {string} newUrl The new image url.
+ * Renames the current image.
+ * @param {FileEntry} newEntry The new image Entry.
  */
-ImageView.prototype.changeUrl = function(newUrl) {
-  this.contentCache_.renameItem(this.contentID_, newUrl);
-  this.screenCache_.renameItem(this.contentID_, newUrl);
-  this.contentID_ = newUrl;
+ImageView.prototype.changeEntry = function(newEntry) {
+  this.contentCache_.renameItem(this.contentEntry_, newEntry);
+  this.screenCache_.renameItem(this.contentEntry_, newEntry);
+  this.contentEntry_ = newEntry;
 };
 
 /**
- * Unload content.
- *
+ * Unloads content.
  * @param {Rect} zoomToRect Target rectangle for zoom-out-effect.
  */
 ImageView.prototype.unload = function(zoomToRect) {
@@ -540,7 +537,6 @@ ImageView.prototype.unload = function(zoomToRect) {
 };
 
 /**
- *
  * @param {HTMLCanvasElement|HTMLVideoElement} content The image element.
  * @param {number=} opt_width Image width.
  * @param {number=} opt_height Image height.
@@ -550,10 +546,10 @@ ImageView.prototype.unload = function(zoomToRect) {
 ImageView.prototype.replaceContent_ = function(
     content, opt_width, opt_height, opt_preview) {
 
-  if (this.contentCanvas_ && this.contentCanvas_.parentNode == this.container_)
+  if (this.contentCanvas_ && this.contentCanvas_.parentNode === this.container_)
     this.container_.removeChild(this.contentCanvas_);
 
-  if (content.constructor.name == 'HTMLVideoElement') {
+  if (content.constructor.name === 'HTMLVideoElement') {
     this.contentCanvas_ = null;
     this.videoElement_ = content;
     this.screenImage_ = content;
@@ -585,8 +581,8 @@ ImageView.prototype.replaceContent_ = function(
     this.container_.appendChild(this.contentCanvas_);
     this.contentCanvas_.classList.add('fullres');
 
-    this.contentCache_.putItem(this.contentID_, this.contentCanvas_, true);
-    this.screenCache_.putItem(this.contentID_, this.screenImage_);
+    this.contentCache_.putItem(this.contentEntry_, this.contentCanvas_, true);
+    this.screenCache_.putItem(this.contentEntry_, this.screenImage_);
 
     // TODO(kaznacheev): It is better to pass screenImage_ as it is usually
     // much smaller than contentCanvas_ and still contains the entire image.
@@ -594,7 +590,7 @@ ImageView.prototype.replaceContent_ = function(
     this.updateThumbnail_(this.screenImage_);
 
     this.contentRevision_++;
-    for (var i = 0; i != this.contentCallbacks_.length; i++) {
+    for (var i = 0; i !== this.contentCallbacks_.length; i++) {
       try {
         this.contentCallbacks_[i]();
       } catch (e) {
@@ -605,7 +601,7 @@ ImageView.prototype.replaceContent_ = function(
 };
 
 /**
- * Add a listener for content changes.
+ * Adds a listener for content changes.
  * @param {function} callback Callback.
  */
 ImageView.prototype.addContentCallback = function(callback) {
@@ -613,7 +609,7 @@ ImageView.prototype.addContentCallback = function(callback) {
 };
 
 /**
- * Update the cached thumbnail image.
+ * Updates the cached thumbnail image.
  *
  * @param {HTMLCanvasElement} canvas The source canvas.
  * @private
@@ -632,7 +628,7 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
 };
 
 /**
- * Replace the displayed image, possibly with slide-in animation.
+ * Replaces the displayed image, possibly with slide-in animation.
  *
  * @param {HTMLCanvasElement|HTMLVideoElement} content The image element.
  * @param {Object=} opt_effect Transition effect object.
@@ -682,7 +678,7 @@ ImageView.prototype.replace = function(
 ImageView.prototype.setTransform = function(element, opt_effect, opt_duration) {
   if (!opt_effect)
     opt_effect = new ImageView.Effect.None();
-  if (typeof opt_duration != 'number')
+  if (typeof opt_duration !== 'number')
     opt_duration = opt_effect.getDuration();
   element.style.webkitTransitionDuration = opt_duration + 'ms';
   element.style.webkitTransitionTimingFunction = opt_effect.getTiming();
@@ -701,7 +697,7 @@ ImageView.prototype.createZoomEffect = function(screenRect) {
 };
 
 /**
- * Visualize crop or rotate operation. Hide the old image instantly, animate
+ * Visualizes crop or rotate operation. Hide the old image instantly, animate
  * the new image to visualize the operation.
  *
  * @param {HTMLCanvasElement} canvas New content canvas.
@@ -743,7 +739,7 @@ ImageView.prototype.replaceAndAnimate = function(
 };
 
 /**
- * Visualize "undo crop". Shrink the current image to the given crop rectangle
+ * Visualizes "undo crop". Shrink the current image to the given crop rectangle
  * while fading in the new image.
  *
  * @param {HTMLCanvasElement} canvas New content canvas.
@@ -782,7 +778,6 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
 
 /**
  * Generic cache with a limited capacity and LRU eviction.
- *
  * @param {number} capacity Maximum number of cached item.
  * @constructor
  */
@@ -793,71 +788,73 @@ ImageView.Cache = function(capacity) {
 };
 
 /**
- * Fetch the item from the cache.
- *
- * @param {string} id The item ID.
+ * Fetches the item from the cache.
+ * @param {FileEntry} entry The entry.
  * @return {Object} The cached item.
  */
-ImageView.Cache.prototype.getItem = function(id) { return this.map_[id] };
+ImageView.Cache.prototype.getItem = function(entry) {
+  return this.map_[entry.toURL()];
+};
 
 /**
- * Put the item into the cache.
- * @param {string} id The item ID.
+ * Puts the item into the cache.
+ *
+ * @param {FileEntry} entry The entry.
  * @param {Object} item The item object.
  * @param {boolean=} opt_keepLRU True if the LRU order should not be modified.
  */
-ImageView.Cache.prototype.putItem = function(id, item, opt_keepLRU) {
-  var pos = this.order_.indexOf(id);
+ImageView.Cache.prototype.putItem = function(entry, item, opt_keepLRU) {
+  var pos = this.order_.indexOf(entry.toURL());
 
-  if ((pos >= 0) != (id in this.map_))
+  if ((pos >= 0) !== (entry.toURL() in this.map_))
     throw new Error('Inconsistent cache state');
 
-  if (id in this.map_) {
+  if (entry.toURL() in this.map_) {
     if (!opt_keepLRU) {
       // Move to the end (most recently used).
       this.order_.splice(pos, 1);
-      this.order_.push(id);
+      this.order_.push(entry.toURL());
     }
   } else {
     this.evictLRU();
-    this.order_.push(id);
+    this.order_.push(entry.toURL());
   }
 
-  if ((pos >= 0) && (item != this.map_[id]))
-    this.deleteItem_(this.map_[id]);
-  this.map_[id] = item;
+  if ((pos >= 0) && (item !== this.map_[entry.toURL()]))
+    this.deleteItem_(this.map_[entry.toURL()]);
+  this.map_[entry.toURL()] = item;
 
   if (this.order_.length > this.capacity_)
     throw new Error('Exceeded cache capacity');
 };
 
 /**
- * Evict the least recently used items.
+ * Evicts the least recently used items.
  */
 ImageView.Cache.prototype.evictLRU = function() {
-  if (this.order_.length == this.capacity_) {
-    var id = this.order_.shift();
-    this.deleteItem_(this.map_[id]);
-    delete this.map_[id];
+  if (this.order_.length === this.capacity_) {
+    var url = this.order_.shift();
+    this.deleteItem_(this.map_[url]);
+    delete this.map_[url];
   }
 };
 
 /**
- * Change the id of an entry.
- * @param {string} oldId The old ID.
- * @param {string} newId The new ID.
+ * Changes the Entry.
+ * @param {FileEntry} oldEntry The old Entry.
+ * @param {FileEntry} newEntry The new Entry.
  */
-ImageView.Cache.prototype.renameItem = function(oldId, newId) {
-  if (oldId == newId)
+ImageView.Cache.prototype.renameItem = function(oldEntry, newEntry) {
+  if (util.isSameEntry(oldEntry, newEntry))
     return;  // No need to rename.
 
-  var pos = this.order_.indexOf(oldId);
+  var pos = this.order_.indexOf(oldEntry.toURL());
   if (pos < 0)
     return;  // Not cached.
 
-  this.order_[pos] = newId;
-  this.map_[newId] = this.map_[oldId];
-  delete this.map_[oldId];
+  this.order_[pos] = newEntry.toURL();
+  this.map_[newEntry.toURL()] = this.map_[oldEntry.toURL()];
+  delete this.map_[oldEntry.toURL()];
 };
 
 /**
@@ -924,7 +921,7 @@ ImageView.Effect.prototype.getTiming = function() { return this.timing_ };
  * @private
  */
 ImageView.Effect.getPixelRatio_ = function(element) {
-  if (element.constructor.name == 'HTMLCanvasElement')
+  if (element.constructor.name === 'HTMLCanvasElement')
     return Viewport.getDevicePixelRatio();
   else
     return 1;

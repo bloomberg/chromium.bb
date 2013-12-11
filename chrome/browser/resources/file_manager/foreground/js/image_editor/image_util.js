@@ -215,7 +215,7 @@ Rect.prototype.contains = function(rect) {
  * @return {boolean} True if rectangle is empty.
  */
 Rect.prototype.isEmpty = function() {
-  return this.width == 0 || this.height == 0;
+  return this.width === 0 || this.height === 0;
 };
 
 /**
@@ -398,7 +398,7 @@ ImageUtil.setClass = function(element, className, on) {
 };
 
 /**
- * ImageLoader loads an image from a given URL into a canvas in two steps:
+ * ImageLoader loads an image from a given Entry into a canvas in two steps:
  * 1. Loads the image into an HTMLImageElement.
  * 2. Copies pixels from HTMLImageElement to HTMLCanvasElement. This is done
  *    stripe-by-stripe to avoid freezing up the UI. The transform is taken into
@@ -435,7 +435,7 @@ ImageUtil.ImageLoader.isTooLarge = function(width, height) {
  * TODO(mtomasz): Simplify, or even get rid of this class and merge with the
  * ThumbnaiLoader class.
  *
- * @param {string} url Image URL.
+ * @param {FileEntry} entry Image entry to be loaded.
  * @param {function(function(object))} transformFetcher function to get
  *     the image transform (which we need for the image orientation).
  * @param {function(HTMLCanvasElement, string=)} callback Callback to be
@@ -444,16 +444,16 @@ ImageUtil.ImageLoader.isTooLarge = function(width, height) {
  *     animations play out before the computation heavy image loading starts.
  */
 ImageUtil.ImageLoader.prototype.load = function(
-    url, transformFetcher, callback, opt_delay) {
+    entry, transformFetcher, callback, opt_delay) {
   this.cancel();
 
-  this.url_ = url;
+  this.entry_ = entry;
   this.callback_ = callback;
 
   // The transform fetcher is not cancellable so we need a generation counter.
   var generation = ++this.generation_;
   var onTransform = function(image, transform) {
-    if (generation == this.generation_) {
+    if (generation === this.generation_) {
       this.convertImage_(
           image, transform || { scaleX: 1, scaleY: 1, rotate90: 0});
     }
@@ -482,7 +482,7 @@ ImageUtil.ImageLoader.prototype.load = function(
         onError('GALLERY_IMAGE_TOO_BIG_ERROR');
         return;
       }
-      transformFetcher(url, onTransform.bind(this, e.target));
+      transformFetcher(entry, onTransform.bind(this, e.target));
     }.bind(this);
 
     // The error callback has an optional error argument, which in case of a
@@ -496,14 +496,14 @@ ImageUtil.ImageLoader.prototype.load = function(
                            opt_metadata.modificationTime.getTime();
 
     // Load the image directly.
-    this.image_.src = url;
+    this.image_.src = entry.toURL();
   }.bind(this);
 
   // Loads the image. If already loaded, then forces a reload.
   var startLoad = this.resetImage_.bind(this, function() {
     // Fetch metadata to detect last modification time for the caching purpose.
     if (this.metadataCache_)
-      this.metadataCache_.get(url, 'filesystem', loadImage);
+      this.metadataCache_.get(entry, 'filesystem', loadImage);
     else
       loadImage();
   }.bind(this), onError);
@@ -534,7 +534,7 @@ ImageUtil.ImageLoader.prototype.resetImage_ = function(onSuccess, onError) {
   var emptyImage = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAA' +
       'AAABAAEAAAICTAEAOw==';
 
-  if (this.image_.src != emptyImage) {
+  if (this.image_.src !== emptyImage) {
     // Load an empty image, then clear src.
     this.image_.onload = clearSrc;
     this.image_.onerror = onError.bind(this, 'GALLERY_IMAGE_ERROR');
@@ -553,11 +553,11 @@ ImageUtil.ImageLoader.prototype.isBusy = function() {
 };
 
 /**
- * @param {string} url Image url.
+ * @param {Entry} entry Image entry.
  * @return {boolean} True if loader loads this image.
  */
-ImageUtil.ImageLoader.prototype.isLoading = function(url) {
-  return this.isBusy() && (this.url_ == url);
+ImageUtil.ImageLoader.prototype.isLoading = function(entry) {
+  return this.isBusy() && util.isSameEntry(this.entry_, entry);
 };
 
 /**
@@ -629,9 +629,9 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
       -image.width / 2, firstRow - image.height / 2,
       image.width, lastRow - firstRow);
 
-  if (lastRow == image.height) {
+  if (lastRow === image.height) {
     context.restore();
-    if (this.url_.substr(0, 5) != 'data:') {  // Ignore data urls.
+    if (this.entry_.toURL().substr(0, 5) !== 'data:') {  // Ignore data urls.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('LoadTime'));
     }
     try {
@@ -658,47 +658,13 @@ ImageUtil.removeChildren = function(element) {
 };
 
 /**
- * @param {string} url "filesystem:" URL.
- * @return {string} File name.
- */
-ImageUtil.getFullNameFromUrl = function(url) {
-  url = decodeURIComponent(url);
-  if (url.indexOf('/') != -1)
-    return url.substr(url.lastIndexOf('/') + 1);
-  else
-    return url;
-};
-
-/**
  * @param {string} name File name (with extension).
  * @return {string} File name without extension.
  */
-ImageUtil.getFileNameFromFullName = function(name) {
+ImageUtil.getDisplayNameFromName = function(name) {
   var index = name.lastIndexOf('.');
-  if (index != -1)
+  if (index !== -1)
     return name.substr(0, index);
-  else
-    return name;
-};
-
-/**
- * @param {string} url "filesystem:" URL.
- * @return {string} File name.
- */
-ImageUtil.getFileNameFromUrl = function(url) {
-  return ImageUtil.getFileNameFromFullName(ImageUtil.getFullNameFromUrl(url));
-};
-
-/**
- * @param {string} fullName Original file name.
- * @param {string} name New file name without extension.
- * @return {string} New file name with base of |name| and extension of
- *                  |fullName|.
- */
-ImageUtil.replaceFileNameInFullName = function(fullName, name) {
-  var index = fullName.lastIndexOf('.');
-  if (index != -1)
-    return name + fullName.substr(index);
   else
     return name;
 };
@@ -709,7 +675,7 @@ ImageUtil.replaceFileNameInFullName = function(fullName, name) {
  */
 ImageUtil.getExtensionFromFullName = function(name) {
   var index = name.lastIndexOf('.');
-  if (index != -1)
+  if (index !== -1)
     return name.substring(index);
   else
     return '';

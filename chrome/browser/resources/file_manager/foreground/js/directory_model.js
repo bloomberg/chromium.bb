@@ -939,9 +939,11 @@ DirectoryModel.prototype.selectEntry = function(entry) {
 };
 
 /**
- * @param {Array.<string>} urls Array of URLs.
+ * @param {Array.<string>} entries Array of entries.
  */
-DirectoryModel.prototype.selectUrls = function(urls) {
+DirectoryModel.prototype.selectEntries = function(entries) {
+  // URLs are needed here, since we are comparing Entries by URLs.
+  var urls = util.entriesToURLs(entries);
   var fileList = this.getFileList();
   this.fileListSelection_.beginChange();
   this.fileListSelection_.unselectAll();

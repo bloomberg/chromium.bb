@@ -137,7 +137,7 @@ VolumeManagerWrapper.prototype.onEvent_ = function(event) {
     // If the drive is disabled, ignore all drive related events.
     if (event.type === 'drive-connection-changed' ||
         (event.type === 'externally-unmounted' &&
-         event.volumeType === util.VolumeType.DRIVE))
+         event.volumeInfo.volumeType === util.VolumeType.DRIVE))
       return;
   }
 

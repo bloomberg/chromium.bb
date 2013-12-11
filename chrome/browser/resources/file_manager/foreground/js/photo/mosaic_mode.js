@@ -309,9 +309,8 @@ Mosaic.prototype.initTiles_ = function(tiles, opt_callback) {
  * @private
  */
 Mosaic.prototype.initTile_ = function(tile, callback) {
-  var url = tile.getItem().getUrl();
   var onImageMeasured = callback;
-  this.metadataCache_.get(url, Gallery.METADATA_TYPE,
+  this.metadataCache_.get(tile.getItem().getEntry(), Gallery.METADATA_TYPE,
       function(metadata) {
         tile.init(metadata, onImageMeasured);
       });
@@ -1778,9 +1777,9 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   var priority = this.getAttribute('selected') ? 2 : 3;
 
   // Use embedded thumbnails on Drive, since they have higher resolution.
-  var hidpiEmbedded = FileType.isOnDrive(this.getItem().getUrl());
+  var hidpiEmbedded = FileType.isOnDrive(this.getItem().getEntry());
   this.thumbnailLoader_ = new ThumbnailLoader(
-      this.getItem().getUrl(),
+      this.getItem().getEntry().toURL(),
       ThumbnailLoader.LoaderType.CANVAS,
       metadata,
       undefined,  // Media type.
@@ -1792,7 +1791,7 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   // for preloading.
   if (!hidpiEmbedded) {
     this.thumbnailPreloader_ = new ThumbnailLoader(
-        this.getItem().getUrl(),
+        this.getItem().getEntry().toURL(),
         ThumbnailLoader.LoaderType.CANVAS,
         metadata,
         undefined,  // Media type.

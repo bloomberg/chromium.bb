@@ -43,6 +43,7 @@ function Gallery(context, volumeManager) {
   this.context_ = context;
   this.metadataCache_ = context.metadataCache;
   this.volumeManager_ = volumeManager;
+  this.selectedEntry_ = null;
 
   this.dataModel_ = new cr.ui.ArrayDataModel([]);
   this.selectionModel_ = new cr.ui.ListSelectionModel();
@@ -58,16 +59,16 @@ function Gallery(context, volumeManager) {
 Gallery.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Create and initialize a Gallery object based on a context.
+ * Creates and initializes a Gallery object based on a context.
  *
  * @param {Object} context Gallery context.
  * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
- * @param {Array.<string>} urls Array of urls.
- * @param {Array.<string>} selectedUrls Array of selected urls.
+ * @param {Array.<Entry>} entries Array of entries.
+ * @param {Array.<Entry>} selectedEntries Array of selected entries.
  */
-Gallery.open = function(context, volumeManager, urls, selectedUrls) {
+Gallery.open = function(context, volumeManager, entries, selectedEntries) {
   Gallery.instance = new Gallery(context, volumeManager);
-  Gallery.instance.load(urls, selectedUrls);
+  Gallery.instance.load(entries, selectedEntries);
 };
 
 /**
@@ -100,7 +101,7 @@ Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
 Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming|drive';
 
 /**
- * Initialize listeners.
+ * Initializes listeners.
  * @private
  */
 Gallery.prototype.initListeners_ = function() {
@@ -131,10 +132,13 @@ Gallery.prototype.initListeners_ = function() {
  * @private
  */
 Gallery.prototype.onExternallyUnmounted_ = function(event) {
-  if (!this.selectedItemFilesystemPath_)
+  if (!this.selectedEntry_)
     return;
-  if (this.selectedItemFilesystemPath_.indexOf(event.mountPath) == 0)
+
+  if (this.volumeManager_.getVolumeInfo(this.selectedEntry_) ===
+      event.volumeInfo) {
     this.onBack_();
+  }
 };
 
 /**
@@ -146,7 +150,7 @@ Gallery.prototype.onBeforeUnload = function() {
 };
 
 /**
- * Unload the Gallery.
+ * Unloads the Gallery.
  * @param {boolean} exiting True if the app is exiting.
  */
 Gallery.prototype.onUnload = function(exiting) {
@@ -267,45 +271,46 @@ Gallery.prototype.createToolbarButton_ = function(className, title) {
 };
 
 /**
- * Load the content.
+ * Loads the content.
  *
- * @param {Array.<string>} urls Array of urls.
- * @param {Array.<string>} selectedUrls Array of selected urls.
+ * @param {Array.<Entry>} entries Array of entries.
+ * @param {Array.<Entry>} selectedEntries Array of selected entries. Must be a
+ *     subset of {@code entries}.
  */
-Gallery.prototype.load = function(urls, selectedUrls) {
+Gallery.prototype.load = function(entries, selectedEntries) {
   var items = [];
-  for (var index = 0; index < urls.length; ++index) {
-    items.push(new Gallery.Item(urls[index]));
+  for (var index = 0; index < entries.length; ++index) {
+    items.push(new Gallery.Item(entries[index]));
   }
   this.dataModel_.push.apply(this.dataModel_, items);
 
   this.selectionModel_.adjustLength(this.dataModel_.length);
 
-  for (var i = 0; i != selectedUrls.length; i++) {
-    var selectedIndex = urls.indexOf(selectedUrls[i]);
+  for (var i = 0; i !== selectedEntries.length; i++) {
+    var selectedIndex = entries.indexOf(selectedEntries[i]);
     if (selectedIndex >= 0)
       this.selectionModel_.setIndexSelected(selectedIndex, true);
     else
-      console.error('Cannot select ' + selectedUrls[i]);
+      console.error('Cannot select ' + selectedEntries[i]);
   }
 
-  if (this.selectionModel_.selectedIndexes.length == 0)
+  if (this.selectionModel_.selectedIndexes.length === 0)
     this.onSelection_();
 
   var mosaic = this.mosaicMode_ && this.mosaicMode_.getMosaic();
 
   // Mosaic view should show up if most of the selected files are images.
   var imagesCount = 0;
-  for (var i = 0; i != selectedUrls.length; i++) {
-    if (FileType.getMediaType(selectedUrls[i]) == 'image')
+  for (var i = 0; i !== selectedEntries.length; i++) {
+    if (FileType.getMediaType(selectedEntries[i]) === 'image')
       imagesCount++;
   }
-  var mostlyImages = imagesCount > (selectedUrls.length / 2.0);
+  var mostlyImages = imagesCount > (selectedEntries.length / 2.0);
 
   var forcedMosaic = (this.context_.pageState &&
-       this.context_.pageState.gallery == 'mosaic');
+       this.context_.pageState.gallery === 'mosaic');
 
-  var showMosaic = (mostlyImages && selectedUrls.length > 1) || forcedMosaic;
+  var showMosaic = (mostlyImages && selectedEntries.length > 1) || forcedMosaic;
   if (mosaic && showMosaic) {
     this.setCurrentMode_(this.mosaicMode_);
     mosaic.init();
@@ -329,7 +334,7 @@ Gallery.prototype.load = function(urls, selectedUrls) {
 };
 
 /**
- * Close the Gallery and go to Files.app.
+ * Closes the Gallery and go to Files.app.
  * @private
  */
 Gallery.prototype.back_ = function() {
@@ -337,11 +342,11 @@ Gallery.prototype.back_ = function() {
     util.toggleFullScreen(this.context_.appWindow,
                           false);  // Leave the full screen mode.
   }
-  this.context_.onBack(this.getSelectedUrls());
+  this.context_.onBack(this.getSelectedEntries());
 };
 
 /**
- * Handle user's 'Back' action (Escape or a click on the X icon).
+ * Handles user's 'Back' action (Escape or a click on the X icon).
  * @private
  */
 Gallery.prototype.onBack_ = function() {
@@ -349,7 +354,7 @@ Gallery.prototype.onBack_ = function() {
 };
 
 /**
- * Handle user's 'Close' action.
+ * Handles user's 'Close' action.
  * @private
  */
 Gallery.prototype.onClose_ = function() {
@@ -357,7 +362,7 @@ Gallery.prototype.onClose_ = function() {
 };
 
 /**
- * Handle user's 'Maximize' action (Escape or a click on the X icon).
+ * Handles user's 'Maximize' action (Escape or a click on the X icon).
  * @private
  */
 Gallery.prototype.onMaximize_ = function() {
@@ -365,7 +370,7 @@ Gallery.prototype.onMaximize_ = function() {
 };
 
 /**
- * Execute a function when the editor is done with the modifications.
+ * Executes a function when the editor is done with the modifications.
  * @param {function} callback Function to execute.
  */
 Gallery.prototype.executeWhenReady = function(callback) {
@@ -398,12 +403,12 @@ Gallery.prototype.onUserAction_ = function() {
 };
 
 /**
- * Set the current mode, update the UI.
+ * Sets the current mode, update the UI.
  * @param {Object} mode Current mode.
  * @private
  */
 Gallery.prototype.setCurrentMode_ = function(mode) {
-  if (mode != this.slideMode_ && mode != this.mosaicMode_)
+  if (mode !== this.slideMode_ && mode !== this.mosaicMode_)
     console.error('Invalid Gallery mode');
 
   this.currentMode_ = mode;
@@ -440,7 +445,7 @@ Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
   var mosaic = this.mosaicMode_.getMosaic();
   var tileRect = mosaic.getTileRect(tileIndex);
 
-  if (this.currentMode_ == this.slideMode_) {
+  if (this.currentMode_ === this.slideMode_) {
     this.setCurrentMode_(this.mosaicMode_);
     mosaic.transform(
         tileRect, this.slideMode_.getSelectedImageRect(), true /* instant */);
@@ -485,13 +490,11 @@ Gallery.prototype.delete_ = function() {
     if (!itemsToRemove.length)
       return;  // All deleted.
 
-    var url = itemsToRemove.pop().getUrl();
-    webkitResolveLocalFileSystemURL(url,
-        function(entry) {
-          entry.remove(deleteNext,
-              util.flog('Error deleting ' + url, deleteNext));
-        },
-        util.flog('Error resolving ' + url, deleteNext));
+    // TODO(hirono): Use fileOperationManager.
+    var entry = itemsToRemove.pop().getEntry();
+    entry.remove(deleteNext, function() {
+      util.flog('Error deleting: ' + entry.fullPath, deleteNext);
+    });
   }
 
   // Prevent the Gallery from handling Esc and Enter.
@@ -533,11 +536,11 @@ Gallery.prototype.getSelectedItems = function() {
 };
 
 /**
- * @return {Array.<string>} Array of currently selected urls.
+ * @return {Array.<Entry>} Array of currently selected entries.
  */
-Gallery.prototype.getSelectedUrls = function() {
+Gallery.prototype.getSelectedEntries = function() {
   return this.selectionModel_.selectedIndexes.map(function(index) {
-    return this.dataModel_.item(index).getUrl();
+    return this.dataModel_.item(index).getEntry();
   }.bind(this));
 };
 
@@ -575,7 +578,7 @@ Gallery.prototype.onSplice_ = function() {
 */
 Gallery.prototype.onContentChange_ = function(event) {
   var index = this.dataModel_.indexOf(event.item);
-  if (index != this.selectionModel_.selectedIndex)
+  if (index !== this.selectionModel_.selectedIndex)
     console.error('Content changed for unselected item');
   this.updateSelectionAndState_();
 };
@@ -623,7 +626,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
 // Name box and rename support.
 
 /**
- * Update the UI related to the selected item and the persistent state.
+ * Updates the UI related to the selected item and the persistent state.
  *
  * @private
  */
@@ -632,12 +635,11 @@ Gallery.prototype.updateSelectionAndState_ = function() {
   var displayName = '';
 
   var selectedItems = this.getSelectedItems();
-  if (selectedItems.length == 1) {
+  if (selectedItems.length === 1) {
     var item = selectedItems[0];
-    path = util.extractFilePath(item.getUrl());
-    var fullName = item.getFileName();
-    window.top.document.title = fullName;
-    displayName = ImageUtil.getFileNameFromFullName(fullName);
+    var entry = item.getEntry();
+    window.top.document.title = entry.name;
+    displayName = ImageUtil.getDisplayNameFromName(entry.name);
   } else if (selectedItems.length > 1 && this.context_.curDirEntry) {
     // If the Gallery was opened on search results the search query will not be
     // recorded in the app state and the relaunch will just open the gallery
@@ -650,11 +652,11 @@ Gallery.prototype.updateSelectionAndState_ = function() {
   }
 
   window.top.util.updateAppState(path,
-      {gallery: (this.currentMode_ == this.mosaicMode_ ? 'mosaic' : 'slide')});
+      {gallery: (this.currentMode_ === this.mosaicMode_ ? 'mosaic' : 'slide')});
 
   // We can't rename files in readonly directory.
   // We can only rename a single file.
-  this.filenameEdit_.disabled = selectedItems.length != 1 ||
+  this.filenameEdit_.disabled = selectedItems.length !== 1 ||
                                 this.context_.readonlyDirName;
 
   this.filenameEdit_.value = displayName;
@@ -664,14 +666,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
     var selectedIndex = this.selectionModel_.selectedIndex;
     var selectedItem =
         this.dataModel_.item(this.selectionModel_.selectedIndex);
-
-    this.selectedItemFilesystemPath_ = null;
-    webkitResolveLocalFileSystemURL(selectedItem.getUrl(),
-      function(entry) {
-        if (this.selectionModel_.selectedIndex != selectedIndex)
-          return;
-        this.selectedItemFilesystemPath_ = entry.fullPath;
-      }.bind(this));
+    this.selectedEntry_ = selectedItem.getEntry();
   }
 };
 
@@ -694,7 +689,7 @@ Gallery.prototype.onFilenameFocus_ = function() {
  * @private
  */
 Gallery.prototype.onFilenameEditBlur_ = function(event) {
-  if (this.filenameEdit_.value && this.filenameEdit_.value[0] == '.') {
+  if (this.filenameEdit_.value && this.filenameEdit_.value[0] === '.') {
     this.prompt_.show('GALLERY_FILE_HIDDEN_NAME', 5000);
     this.filenameEdit_.focus();
     event.stopPropagation();
@@ -703,7 +698,7 @@ Gallery.prototype.onFilenameEditBlur_ = function(event) {
   }
 
   var item = this.getSingleSelectedItem();
-  var oldUrl = item.getUrl();
+  var oldEntry = item.getEntry();
 
   var onFileExists = function() {
     this.prompt_.show('GALLERY_FILE_EXISTS', 3000);
@@ -712,11 +707,11 @@ Gallery.prototype.onFilenameEditBlur_ = function(event) {
   }.bind(this);
 
   var onSuccess = function() {
-    var e = new Event('content');
-    e.item = item;
-    e.oldUrl = oldUrl;
-    e.metadata = null;  // Metadata unchanged.
-    this.dataModel_.dispatchEvent(e);
+    var event = new Event('content');
+    event.item = item;
+    event.oldEntry = oldEntry;
+    event.metadata = null;  // Metadata unchanged.
+    this.dataModel_.dispatchEvent(event);
   }.bind(this);
 
   if (this.filenameEdit_.value) {
@@ -797,11 +792,11 @@ Gallery.prototype.toggleShare_ = function() {
  * @private.
  */
 Gallery.prototype.updateShareMenu_ = function() {
-  var urls = this.getSelectedUrls();
+  var entries = this.getSelectedEntries();
 
   function isShareAction(task) {
     var taskParts = task.taskId.split('|');
-    return taskParts[0] != chrome.runtime.id;
+    return taskParts[0] !== chrome.runtime.id;
   }
 
   var api = Gallery.getFileBrowserPrivate();
@@ -811,11 +806,11 @@ Gallery.prototype.updateShareMenu_ = function() {
     var wasHidden = this.shareMenu_.hidden;
     this.shareMenu_.hidden = true;
     var items = this.shareMenu_.querySelectorAll('.item');
-    for (var i = 0; i != items.length; i++) {
+    for (var i = 0; i !== items.length; i++) {
       items[i].parentNode.removeChild(items[i]);
     }
 
-    for (var t = 0; t != tasks.length; t++) {
+    for (var t = 0; t !== tasks.length; t++) {
       var task = tasks[t];
       if (!isShareAction(task)) continue;
 
@@ -824,21 +819,22 @@ Gallery.prototype.updateShareMenu_ = function() {
       item.style.backgroundImage = 'url(' + task.iconUrl + ')';
       item.addEventListener('click', function(taskId) {
         this.toggleShare_();  // Hide the menu.
-        this.executeWhenReady(api.executeTask.bind(api, taskId, urls));
+        this.executeWhenReady(api.executeTask.bind(api, taskId, entries));
       }.bind(this, task.taskId));
     }
 
-    var empty = this.shareMenu_.querySelector('.item') == null;
+    var empty = this.shareMenu_.querySelector('.item') === null;
     ImageUtil.setAttribute(this.shareButton_, 'disabled', empty);
     this.shareMenu_.hidden = wasHidden || empty;
   }.bind(this);
 
   // Create or update the share menu with a list of sharing tasks and show
   // or hide the share button.
-  if (!urls.length)
+  // TODO(mtomasz): Pass Entries directly, instead of URLs.
+  if (!entries.length)
     createShareMenu([]);  // Empty list of tasks, since there is no selection.
   else
-    api.getFileTasks(urls, mimeTypes, createShareMenu);
+    api.getFileTasks(util.entriesToURLs(entries), mimeTypes, createShareMenu);
 };
 
 /**
@@ -846,7 +842,7 @@ Gallery.prototype.updateShareMenu_ = function() {
  * @private
  */
 Gallery.prototype.updateThumbnails_ = function() {
-  if (this.currentMode_ == this.slideMode_)
+  if (this.currentMode_ === this.slideMode_)
     this.slideMode_.updateThumbnails();
 
   if (this.mosaicMode_) {
@@ -863,8 +859,8 @@ Gallery.prototype.updateThumbnails_ = function() {
 Gallery.prototype.updateButtons_ = function() {
   if (this.modeButton_) {
     var oppositeMode =
-        this.currentMode_ == this.slideMode_ ? this.mosaicMode_ :
-                                               this.slideMode_;
+        this.currentMode_ === this.slideMode_ ? this.mosaicMode_ :
+                                                this.slideMode_;
     this.modeButton_.title =
         this.displayStringFunction_(oppositeMode.getTitle());
   }

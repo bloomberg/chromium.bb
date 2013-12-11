@@ -486,8 +486,9 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     if (event.status === 'success' && !requested && volumeInfo) {
       console.warn('Mounted volume without a request: ', mountPath);
       var e = new Event('externally-unmounted');
+      // TODO(mtomasz): The mountPath field is deprecated. Remove it.
       e.mountPath = mountPath;
-      e.volumeType = volumeInfo.volumeType;
+      e.volumeInfo = volumeInfo;
       this.dispatchEvent(e);
     }
     this.finishRequest_(requestKey, status);

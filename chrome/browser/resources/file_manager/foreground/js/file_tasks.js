@@ -566,7 +566,7 @@ FileTasks.prototype.mountArchives = function(entries) {
 FileTasks.prototype.mountArchivesInternal_ = function(entries) {
   var fm = this.fileManager_;
 
-  var tracker = fm.directoryModel_.createDirectoryChangeTracker();
+  var tracker = fm.directoryModel.createDirectoryChangeTracker();
   tracker.start();
 
   // TODO(mtomasz): Pass Entries instead of URLs.
@@ -574,11 +574,11 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
   fm.resolveSelectResults_(urls, function(resolvedURLs) {
     for (var index = 0; index < resolvedURLs.length; ++index) {
       // TODO(mtomasz): Pass Entry instead of URL.
-      fm.volumeManager_.mountArchive(resolvedURLs[index],
+      fm.volumeManager.mountArchive(resolvedURLs[index],
         function(mountPath) {
           tracker.stop();
           if (!tracker.hasChanged)
-            fm.directoryModel_.changeDirectory(mountPath);
+            fm.directoryModel.changeDirectory(mountPath);
         }, function(url, error) {
           tracker.stop();
           var path = util.extractFilePath(url);
@@ -629,9 +629,8 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
   // changes in the Gallery and popped when the Gallery is closed.
   util.updateAppState();
 
-  // TODO(mtomasz): Pass entries instead of urls.
-  var onBack = function(selectedUrls) {
-    fm.directoryModel_.selectUrls(selectedUrls);
+  var onBack = function(selectedEntries) {
+    fm.directoryModel.selectEntries(selectedEntries);
     fm.closeFilePopup();  // Will call Gallery.unload.
     window.appState = savedAppState;
     util.saveAppState();
@@ -659,7 +658,7 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
     var readonly = fm.isOnReadonlyDirectory();
     var currentDir = fm.getCurrentDirectoryEntry();
     var downloadsVolume =
-        fm.volumeManager_.getCurrentProfileVolumeInfo(RootType.DOWNLOADS);
+        fm.volumeManager.getCurrentProfileVolumeInfo(RootType.DOWNLOADS);
     var downloadsDir = downloadsVolume && downloadsVolume.root;
     var readonlyDirName = null;
     if (readonly && currentDir) {
@@ -674,7 +673,7 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
       readonlyDirName: readonlyDirName,
       curDirEntry: currentDir,
       saveDirEntry: readonly ? downloadsDir : null,
-      searchResults: fm.directoryModel_.isSearching(),
+      searchResults: fm.directoryModel.isSearching(),
       metadataCache: fm.metadataCache_,
       pageState: this.params_,
       appWindow: chrome.app.window.current(),
@@ -684,11 +683,8 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
       onAppRegionChanged: onAppRegionChanged,
       displayStringFunction: strf
     };
-    // TODO(mtomasz): Pass entries instead.
-    var allUrls = util.entriesToURLs(allEntries);
-    var urls = util.entriesToURLs(entries);
     galleryFrame.contentWindow.Gallery.open(
-        context, fm.volumeManager_, allUrls, urls);
+        context, fm.volumeManager, allEntries, entries);
   }.bind(this);
 
   galleryFrame.src = 'gallery.html';

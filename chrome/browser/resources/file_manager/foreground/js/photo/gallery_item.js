@@ -7,29 +7,24 @@
 /**
  * Object representing an image item (a photo or a video).
  *
- * @param {string} url Image url.
+ * @param {FileEntry} entry Image entry.
  * @constructor
  */
-Gallery.Item = function(url) {
-  this.url_ = url;
+Gallery.Item = function(entry) {
+  this.entry_ = entry;
   this.original_ = true;
 };
 
 /**
- * @return {string} Image url.
+ * @return {FileEntry} Image entry.
  */
-Gallery.Item.prototype.getUrl = function() { return this.url_ };
-
-/**
- * @param {string} url New url.
- */
-Gallery.Item.prototype.setUrl = function(url) { this.url_ = url };
+Gallery.Item.prototype.getEntry = function() { return this.entry_ };
 
 /**
  * @return {string} File name.
  */
 Gallery.Item.prototype.getFileName = function() {
-  return ImageUtil.getFullNameFromUrl(this.url_);
+  return this.entry_.name;
 };
 
 /**
@@ -58,7 +53,7 @@ Gallery.Item.REGEXP_COPY_N =
     new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + ' \\((\\d+)\\)$');
 
 /**
- * Create a name for an edited copy of the file.
+ * Creates a name for an edited copy of the file.
  *
  * @param {Entry} dirEntry Entry.
  * @param {function} callback Callback.
@@ -116,7 +111,7 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
 };
 
 /**
- * Write the new item content to the file.
+ * Writes the new item content to the file.
  *
  * @param {Entry} overrideDir Directory to save to. If null, save to the same
  *   directory as the original.
@@ -131,10 +126,10 @@ Gallery.Item.prototype.saveToFile = function(
 
   var name = this.getFileName();
 
-  var onSuccess = function(url) {
+  var onSuccess = function(entry) {
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
     ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
-    this.setUrl(url);
+    this.entry_ = entry;
     if (opt_callback) opt_callback(true);
   }.bind(this);
 
@@ -147,7 +142,7 @@ Gallery.Item.prototype.saveToFile = function(
   function doSave(newFile, fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
       function writeContent() {
-        fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
+        fileWriter.onwriteend = onSuccess.bind(null, fileEntry);
         fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
       }
       fileWriter.onerror = function(error) {
@@ -191,45 +186,42 @@ Gallery.Item.prototype.saveToFile = function(
   if (overrideDir) {
     saveToDir(overrideDir);
   } else {
-    webkitResolveLocalFileSystemURL(this.getUrl(),
-        function(entry) { entry.getParent(saveToDir, onError)},
-        onError);
+    this.entry_.getParent(saveToDir, onError);
   }
 };
 
 /**
- * Rename the file.
+ * Renames the file.
  *
- * @param {string} name New file name.
- * @param {function} onSuccess Success callback.
- * @param {function} onExists Called if the file with the new name exists.
+ * @param {string} displayName New display name (without the extension).
+ * @param {function()} onSuccess Success callback.
+ * @param {function()} onExists Called if the file with the new name exists.
  */
-Gallery.Item.prototype.rename = function(name, onSuccess, onExists) {
-  var oldName = this.getFileName();
-  if (ImageUtil.getExtensionFromFullName(name) ==
-      ImageUtil.getExtensionFromFullName(oldName)) {
-    name = ImageUtil.getFileNameFromFullName(name);
-  }
-  var newName = ImageUtil.replaceFileNameInFullName(oldName, name);
-  if (oldName == newName) return;
+Gallery.Item.prototype.rename = function(displayName, onSuccess, onExists) {
+  var fileName = this.entry_.name.replace(
+      ImageUtil.getDisplayNameFromName(this.entry_.name), displayName);
 
-  function onError() {
-    console.error('Rename error: "' + oldName + '" to "' + newName + '"');
-  }
+  if (name === this.entry_.name)
+    return;
 
   var onRenamed = function(entry) {
-    this.setUrl(entry.toURL());
+    this.entry_ = entry;
     onSuccess();
   }.bind(this);
 
-  function moveIfDoesNotExist(entry, parentDir) {
-    parentDir.getFile(newName, {create: false, exclusive: false}, onExists,
-        function() { entry.moveTo(parentDir, newName, onRenamed, onError) });
-  }
+  var onError = function() {
+    console.error('Rename error: "' + oldName + '" to "' + newName + '"');
+  };
 
-  webkitResolveLocalFileSystemURL(this.getUrl(),
-      function(entry) {
-        entry.getParent(moveIfDoesNotExist.bind(null, entry), onError);
-      },
-      onError);
+  var moveIfDoesNotExist = function(parentDir) {
+    parentDir.getFile(
+        fileName,
+        {create: false, exclusive: false},
+        onExists,
+        function() {
+          this.entry_.moveTo(parentDir, fileName, onRenamed, onError);
+        }.bind(this));
+  }.bind(this);
+
+  this.entry_.getParent(moveIfDoesNotExist, onError);
 };
