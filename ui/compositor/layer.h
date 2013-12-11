@@ -198,11 +198,10 @@ class COMPOSITOR_EXPORT Layer
 
   // Set a layer mask for a layer.
   // Note the provided layer mask can neither have a layer mask itself nor can
-  // it have any children. The ownership of |layer_mask| will not be
-  // transferred with this call.
+  // it have any children.
   // Furthermore: A mask layer can only be set to one layer.
-  void SetMaskLayer(Layer* layer_mask);
-  Layer* layer_mask_layer() { return layer_mask_; }
+  void SetMaskLayer(scoped_ptr<Layer> layer_mask);
+  Layer* layer_mask_layer() { return layer_mask_.get(); }
 
   // Sets the visibility of the Layer. A Layer may be visible but not
   // drawn. This happens if any ancestor of a Layer is not visible.
@@ -449,12 +448,8 @@ class COMPOSITOR_EXPORT Layer
   float layer_grayscale_;
   bool layer_inverted_;
 
-  // The associated mask layer with this layer.
-  Layer* layer_mask_;
-  // The back link from the mask layer to it's associated masked layer.
-  // We keep this reference for the case that if the mask layer gets deleted
-  // while attached to the main layer before the main layer is deleted.
-  Layer* layer_mask_back_link_;
+  // The mask layer associated with this layer.
+  scoped_ptr<Layer> layer_mask_;
 
   // The zoom factor to scale the layer by.  Zooming is disabled when this is
   // set to 1.

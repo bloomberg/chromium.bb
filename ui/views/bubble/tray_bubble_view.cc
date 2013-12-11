@@ -179,7 +179,7 @@ class TrayBubbleContentMask : public ui::LayerDelegate {
   explicit TrayBubbleContentMask(int corner_radius);
   virtual ~TrayBubbleContentMask();
 
-  ui::Layer* layer() { return &layer_; }
+  void set_bounds(gfx::Rect bounds) { bounds_ = bounds; }
 
   // Overridden from LayerDelegate.
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
@@ -187,25 +187,22 @@ class TrayBubbleContentMask : public ui::LayerDelegate {
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 
  private:
-  ui::Layer layer_;
+  gfx::Rect bounds_;
   SkScalar corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleContentMask);
 };
 
 TrayBubbleContentMask::TrayBubbleContentMask(int corner_radius)
-    : layer_(ui::LAYER_TEXTURED),
-      corner_radius_(corner_radius) {
-  layer_.set_delegate(this);
+    : corner_radius_(corner_radius) {
 }
 
 TrayBubbleContentMask::~TrayBubbleContentMask() {
-  layer_.set_delegate(NULL);
 }
 
 void TrayBubbleContentMask::OnPaintLayer(gfx::Canvas* canvas) {
   SkPath path;
-  path.addRoundRect(gfx::RectToSkRect(gfx::Rect(layer()->bounds().size())),
+  path.addRoundRect(gfx::RectToSkRect(gfx::Rect(bounds_.size())),
                     corner_radius_, corner_radius_);
   SkPaint paint;
   paint.setAlpha(255);
@@ -340,6 +337,10 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
 
 TrayBubbleView::~TrayBubbleView() {
   mouse_watcher_.reset();
+
+  if (layer()->parent()->layer_mask_layer())
+    layer()->parent()->layer_mask_layer()->set_delegate(NULL);
+
   // Inform host items (models) that their views are being destroyed.
   if (delegate_)
     delegate_->BubbleViewDestroyed();
@@ -350,8 +351,11 @@ void TrayBubbleView::InitializeAndShowBubble() {
   SetAlignment(params_.arrow_alignment);
   bubble_border_->UpdateArrowOffset();
 
-  if (get_use_acceleration_when_possible())
-    layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
+  if (get_use_acceleration_when_possible()) {
+    scoped_ptr<ui::Layer> mask_layer(new ui::Layer(ui::LAYER_TEXTURED));
+    mask_layer->set_delegate(bubble_content_mask_.get());
+    layer()->parent()->SetMaskLayer(mask_layer.Pass());
+  }
 
   GetWidget()->Show();
   UpdateBubble();
@@ -359,8 +363,11 @@ void TrayBubbleView::InitializeAndShowBubble() {
 
 void TrayBubbleView::UpdateBubble() {
   SizeToContents();
-  if (get_use_acceleration_when_possible())
-    bubble_content_mask_->layer()->SetBounds(layer()->bounds());
+  if (get_use_acceleration_when_possible()) {
+    bubble_content_mask_->set_bounds(layer()->bounds());
+    if (layer()->parent()->layer_mask_layer())
+      layer()->parent()->layer_mask_layer()->SetBounds(layer()->bounds());
+  }
   GetWidget()->GetRootView()->SchedulePaint();
 }
 

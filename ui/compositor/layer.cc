@@ -57,8 +57,6 @@ Layer::Layer()
       layer_brightness_(0.0f),
       layer_grayscale_(0.0f),
       layer_inverted_(false),
-      layer_mask_(NULL),
-      layer_mask_back_link_(NULL),
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
@@ -81,8 +79,6 @@ Layer::Layer(LayerType type)
       layer_brightness_(0.0f),
       layer_grayscale_(0.0f),
       layer_inverted_(false),
-      layer_mask_(NULL),
-      layer_mask_back_link_(NULL),
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
@@ -101,12 +97,10 @@ Layer::~Layer() {
   animator_ = NULL;
   if (compositor_)
     compositor_->SetRootLayer(NULL);
+  if (layer_mask_.get())
+    SetMaskLayer(scoped_ptr<Layer>());
   if (parent_)
     parent_->Remove(this);
-  if (layer_mask_)
-    SetMaskLayer(NULL);
-  if (layer_mask_back_link_)
-    layer_mask_back_link_->SetMaskLayer(NULL);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
   cc_layer_->RemoveLayerAnimationEventObserver(this);
@@ -281,28 +275,18 @@ void Layer::SetLayerInverted(bool inverted) {
   SetLayerFilters();
 }
 
-void Layer::SetMaskLayer(Layer* layer_mask) {
+void Layer::SetMaskLayer(scoped_ptr<Layer> layer_mask) {
   // The provided mask should not have a layer mask itself.
-  DCHECK(!layer_mask ||
+  DCHECK(!layer_mask.get() ||
          (!layer_mask->layer_mask_layer() &&
-          layer_mask->children().empty() &&
-          !layer_mask->layer_mask_back_link_));
-  DCHECK(!layer_mask_back_link_);
-  if (layer_mask_ == layer_mask)
+          layer_mask->children().empty()));
+  if (layer_mask_.get() == layer_mask.get())
     return;
-  // We need to de-reference the currently linked object so that no problem
-  // arises if the mask layer gets deleted before this object.
-  if (layer_mask_)
-    layer_mask_->layer_mask_back_link_ = NULL;
-  layer_mask_ = layer_mask;
+  layer_mask_ = layer_mask.Pass();
   cc_layer_->SetMaskLayer(
-      layer_mask ? layer_mask->cc_layer() : NULL);
-  // We need to reference the linked object so that it can properly break the
-  // link to us when it gets deleted.
-  if (layer_mask) {
-    layer_mask->layer_mask_back_link_ = this;
-    layer_mask->OnDeviceScaleFactorChanged(device_scale_factor_);
-  }
+      layer_mask_.get() ? layer_mask_->cc_layer() : NULL);
+  if (layer_mask_.get())
+    layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor_);
 }
 
 void Layer::SetBackgroundZoom(float zoom, int inset) {
