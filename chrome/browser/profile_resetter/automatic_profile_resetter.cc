@@ -374,6 +374,7 @@ AutomaticProfileResetter::AutomaticProfileResetter(Profile* profile)
       enumeration_of_loaded_modules_ready_(false),
       template_url_service_ready_(false),
       has_already_dismissed_prompt_(false),
+      should_show_reset_banner_(false),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
 }
@@ -438,6 +439,7 @@ void AutomaticProfileResetter::TriggerProfileReset(bool send_feedback) {
   DCHECK_EQ(state_, STATE_HAS_SHOWN_BUBBLE);
 
   state_ = STATE_PERFORMING_RESET;
+  should_show_reset_banner_ = false;
 
   ReportPromptResult(PROMPT_ACTION_RESET);
   delegate_->TriggerProfileSettingsReset(
@@ -450,6 +452,8 @@ void AutomaticProfileResetter::SkipProfileReset() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(state_, STATE_HAS_SHOWN_BUBBLE);
 
+  should_show_reset_banner_ = false;
+
   ReportPromptResult(PROMPT_ACTION_NO_RESET);
   delegate_->DismissPrompt();
   FinishResetPromptFlow();
@@ -458,6 +462,11 @@ void AutomaticProfileResetter::SkipProfileReset() {
 bool AutomaticProfileResetter::IsResetPromptFlowActive() const {
   return state_ == STATE_HAS_TRIGGERED_PROMPT ||
       state_ == STATE_HAS_SHOWN_BUBBLE;
+}
+
+bool AutomaticProfileResetter::ShouldShowResetBanner() const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  return should_show_reset_banner_ && ShouldPerformLiveRun();
 }
 
 void AutomaticProfileResetter::NotifyDidShowResetBubble() {
@@ -504,6 +513,11 @@ void AutomaticProfileResetter::NotifyDidCloseWebUIResetDialog(
     }
     FinishResetPromptFlow();
   }
+}
+
+void AutomaticProfileResetter::NotifyDidCloseWebUIResetBanner() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  should_show_reset_banner_ = false;
 }
 
 void AutomaticProfileResetter::SetProgramForTesting(
@@ -675,6 +689,9 @@ void AutomaticProfileResetter::FinishEvaluationFlow(
 
   ReportStatistics(results->satisfied_criteria_mask,
                    results->combined_status_mask);
+
+  if (results->should_prompt)
+    should_show_reset_banner_ = true;
 
   if (results->should_prompt && !results->had_prompted_already) {
     evaluation_results_ = results.Pass();

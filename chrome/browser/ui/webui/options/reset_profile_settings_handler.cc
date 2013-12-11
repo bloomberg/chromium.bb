@@ -46,6 +46,8 @@ void ResetProfileSettingsHandler::InitializePage() {
   web_ui()->CallJavascriptFunction(
       "ResetProfileSettingsOverlay.setResettingState",
       base::FundamentalValue(resetter_->IsActive()));
+  if (automatic_profile_resetter_->ShouldShowResetBanner())
+    web_ui()->CallJavascriptFunction("ResetProfileSettingsBanner.show");
 }
 
 void ResetProfileSettingsHandler::Uninitialize() {
@@ -61,9 +63,11 @@ void ResetProfileSettingsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
+    { "resetProfileSettingsBannerText",
+        IDS_RESET_PROFILE_SETTINGS_BANNER_TEXT },
     { "resetProfileSettingsCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON },
     { "resetProfileSettingsExplanation",
-        IDS_RESET_PROFILE_SETTINGS_EXPLANATION},
+        IDS_RESET_PROFILE_SETTINGS_EXPLANATION },
     { "resetProfileSettingsFeedback", IDS_RESET_PROFILE_SETTINGS_FEEDBACK }
   };
 
@@ -82,6 +86,10 @@ void ResetProfileSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onShowResetProfileDialog",
       base::Bind(&ResetProfileSettingsHandler::OnShowResetProfileDialog,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("onDismissedResetProfileSettingsBanner",
+      base::Bind(&ResetProfileSettingsHandler::
+                 OnDismissedResetProfileSettingsBanner,
                  base::Unretained(this)));
 }
 
@@ -143,6 +151,11 @@ void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
                  Unretained(this)),
       GURL("https://tools.google.com/service/update2"),
       brandcode_));
+}
+
+void ResetProfileSettingsHandler::OnDismissedResetProfileSettingsBanner(
+    const base::ListValue* args) {
+  automatic_profile_resetter_->NotifyDidCloseWebUIResetBanner();
 }
 
 void ResetProfileSettingsHandler::OnSettingsFetched() {

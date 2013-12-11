@@ -21,7 +21,8 @@ class ResettableSettingsSnapshot;
 
 namespace options {
 
-// Reset Profile Settings handler page UI handler.
+// Handler for both the 'Reset Profile Settings' overlay page and also the
+// corresponding banner that is shown at the top of the options page.
 class ResetProfileSettingsHandler
     : public OptionsPageUIHandler,
       public base::SupportsWeakPtr<ResetProfileSettingsHandler> {
@@ -48,6 +49,9 @@ class ResetProfileSettingsHandler
 
   // Called when the confirmation box appears.
   void OnShowResetProfileDialog(const base::ListValue* value);
+
+  // Called when the reset banner is dismissed from the WebUI.
+  void OnDismissedResetProfileSettingsBanner(const base::ListValue* args);
 
   // Called when BrandcodeConfigFetcher completed fetching settings.
   void OnSettingsFetched();

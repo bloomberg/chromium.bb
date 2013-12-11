@@ -4,6 +4,7 @@
 
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
+  var ResetProfileSettingsBanner = options.ResetProfileSettingsBanner;
 
   /**
    * ResetProfileSettingsOverlay class
@@ -45,6 +46,7 @@ cr.define('options', function() {
 
     /** @override */
     didShowPage: function() {
+      ResetProfileSettingsBanner.dismiss();
       chrome.send('onShowResetProfileDialog');
     },
   };

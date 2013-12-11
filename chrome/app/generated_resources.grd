@@ -15089,6 +15089,9 @@ Do you accept?
     </message>
 
     <!-- Reset Profile Settings strings -->
+    <message name="IDS_RESET_PROFILE_SETTINGS_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that the settings might have been changed without the user's knowledge.">
+      Some of your settings may have been changed without your knowledge.
+    </message>
     <message name="IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE" desc="The title of the section in chrome://settings that allows resetting some settings in a profile">
       Reset browser settings
     </message>

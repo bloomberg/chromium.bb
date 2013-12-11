@@ -95,6 +95,10 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   // definitive action (and we are not yet performing a reset).
   bool IsResetPromptFlowActive() const;
 
+  // Returns whether or not the profile reset banner should be shown on the
+  // WebUI-based settings page.
+  bool ShouldShowResetBanner() const;
+
   // Called to give notice that the reset bubble has actually been shown.
   void NotifyDidShowResetBubble();
 
@@ -110,6 +114,10 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   // PromptResult, dismiss the prompt, and conclude the reset prompt flow early
   // without setting off any resets in the future.
   void NotifyDidCloseWebUIResetDialog(bool performed_reset);
+
+  // Called to give notice that reset banner has been dismissed as a result of
+  // user action on the WebUI-based settings page itself.
+  void NotifyDidCloseWebUIResetBanner();
 
   base::WeakPtr<AutomaticProfileResetter> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -246,6 +254,8 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   std::string program_;
 
   scoped_ptr<EvaluationResults> evaluation_results_;
+
+  bool should_show_reset_banner_;
 
   scoped_ptr<AutomaticProfileResetterDelegate> delegate_;
   scoped_refptr<base::TaskRunner> task_runner_for_waiting_;
