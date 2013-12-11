@@ -289,8 +289,9 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
   GestureEventWithLatencyInfo pinch_event;
   scroll_event.event.modifiers |= gesture_event.event.modifiers;
   scroll_event.event.timeStampSeconds = gesture_event.event.timeStampSeconds;
-  scroll_event.latency = gesture_event.latency;
-  scroll_event.latency.MergeWith(last_event->latency);
+  // Keep the oldest LatencyInfo.
+  DCHECK_LE(last_event->latency.trace_id, gesture_event.latency.trace_id);
+  scroll_event.latency = last_event->latency;
   pinch_event = scroll_event;
   scroll_event.event.type = WebInputEvent::GestureScrollUpdate;
   pinch_event.event.type = WebInputEvent::GesturePinchUpdate;
@@ -305,8 +306,11 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
   GestureEventWithLatencyInfo* second_last_event = &coalesced_gesture_events_
       [coalesced_gesture_events_.size() - 2];
   if (ShouldTryMerging(gesture_event, *second_last_event)) {
-    scroll_event.latency.MergeWith(second_last_event->latency);
-    pinch_event.latency.MergeWith(second_last_event->latency);
+    // Keep the oldest LatencyInfo.
+    DCHECK_LE(second_last_event->latency.trace_id,
+              scroll_event.latency.trace_id);
+    scroll_event.latency = second_last_event->latency;
+    pinch_event.latency = second_last_event->latency;
     coalesced_gesture_events_.pop_back();
   } else {
     DCHECK(combined_scroll_pinch_ == GetTransformForEvent(gesture_event));
