@@ -53,6 +53,7 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdAesGcm,
     WebCryptoAlgorithmIdRsaOaep,
     WebCryptoAlgorithmIdAesCtr,
+    WebCryptoAlgorithmIdAesKw,
 #if INSIDE_BLINK
     NumberOfWebCryptoAlgorithmId,
 #endif

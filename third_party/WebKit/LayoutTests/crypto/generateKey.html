@@ -39,6 +39,15 @@ shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: -3 }, extracta
 shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: -Infinity }, extractable, keyUsages)");
 
 // ---------------------------------------------------
+// AES-KW normalization failures (AesKeyGenParams)
+// ---------------------------------------------------
+
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw' }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw', length: 70000 }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw', length: -3 }, extractable, keyUsages)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw', length: -Infinity }, extractable, keyUsages)");
+
+// ---------------------------------------------------
 // HMAC normalization failures (HmacKeyParams)
 // ---------------------------------------------------
 

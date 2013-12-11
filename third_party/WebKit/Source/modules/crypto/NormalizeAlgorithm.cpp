@@ -77,6 +77,7 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"SHA-256", blink::WebCryptoAlgorithmIdSha256},
     {"SHA-384", blink::WebCryptoAlgorithmIdSha384},
     {"SHA-512", blink::WebCryptoAlgorithmIdSha512},
+    {"AES-KW", blink::WebCryptoAlgorithmIdAesKw},
 };
 
 // What operations each algorithm supports, and what parameters it expects.
@@ -123,6 +124,12 @@ const OperationParamsMapping operationParamsMappings[] = {
     {blink::WebCryptoAlgorithmIdSha256, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdSha384, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdSha512, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
+
+    // AES-KW
+    {blink::WebCryptoAlgorithmIdAesKw, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+    {blink::WebCryptoAlgorithmIdAesKw, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdAesKw, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdAesKw, WrapKey, blink::WebCryptoAlgorithmParamsTypeNone},
 };
 
 // This structure describes an algorithm and its supported operations.
