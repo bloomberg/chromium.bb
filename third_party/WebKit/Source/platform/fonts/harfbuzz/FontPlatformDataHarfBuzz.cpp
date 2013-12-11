@@ -212,6 +212,9 @@ SkFontID FontPlatformData::uniqueID() const
 
 String FontPlatformData::fontFamilyName() const
 {
+    // FIXME(crbug.com/326582): come up with a proper way of handling SVG.
+    if (!this->typeface())
+        return "";
     SkTypeface::LocalizedStrings* fontFamilyIterator = this->typeface()->createFamilyNameIterator();
     SkTypeface::LocalizedString localizedString;
     while (fontFamilyIterator->next(&localizedString) && !localizedString.fString.size()) { }
