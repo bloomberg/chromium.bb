@@ -190,10 +190,6 @@
          selector:@selector(onVideoError:)
              name:AVFoundationGlue::AVCaptureSessionRuntimeErrorNotification()
            object:captureSession_];
-  [nc addObserver:self
-         selector:@selector(onVideoStop:)
-             name:AVFoundationGlue::AVCaptureSessionDidStopRunningNotification()
-           object:captureSession_];
   [captureSession_ startRunning];
   return YES;
 }
@@ -242,9 +238,6 @@
   base::AutoLock lock(lock_);
   if (frameReceiver_)
     frameReceiver_->ReceiveError([[error localizedDescription] UTF8String]);
-}
-
-- (void)onVideoStop {
 }
 
 @end
