@@ -192,8 +192,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
  protected:
-  virtual PersonalDataManager* GetManager() OVERRIDE {
-    return &test_manager_;
+  virtual PersonalDataManager* GetManager() const OVERRIDE {
+    return &const_cast<TestAutofillDialogController*>(this)->test_manager_;
   }
 
   virtual wallet::WalletClient* GetWalletClient() OVERRIDE {

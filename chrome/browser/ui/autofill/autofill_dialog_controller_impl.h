@@ -107,6 +107,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual base::string16 SaveLocallyTooltip() const OVERRIDE;
   virtual base::string16 LegalDocumentsText() OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
+  virtual bool ShouldShowAccountChooser() const OVERRIDE;
   virtual bool ShouldShowSignInWebView() const OVERRIDE;
   virtual GURL SignInUrl() const OVERRIDE;
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
@@ -245,7 +246,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   }
 
   // Returns the PersonalDataManager for |profile_|.
-  virtual PersonalDataManager* GetManager();
+  virtual PersonalDataManager* GetManager() const;
 
   // Returns the WalletClient* this class uses to talk to Online Wallet. Exposed
   // for testing.
@@ -593,7 +594,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // The AccountChooserModel acts as the MenuModel for the account chooser,
   // and also tracks which data source the dialog is using.
-  AccountChooserModel account_chooser_model_;
+  scoped_ptr<AccountChooserModel> account_chooser_model_;
 
   // The sign-in helper to fetch the user's Wallet cookie and to perform passive
   // sign-in. The helper is set only during fetch/sign-in, and NULL otherwise.

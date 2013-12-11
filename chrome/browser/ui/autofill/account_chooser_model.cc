@@ -29,6 +29,7 @@ AccountChooserModelDelegate::~AccountChooserModelDelegate() {}
 AccountChooserModel::AccountChooserModel(
     AccountChooserModelDelegate* delegate,
     Profile* profile,
+    bool disable_wallet,
     const AutofillMetrics& metric_logger)
     : ui::SimpleMenuModel(this),
       delegate_(delegate),
@@ -37,7 +38,8 @@ AccountChooserModel::AccountChooserModel(
       metric_logger_(metric_logger) {
   if (profile->GetPrefs()->GetBoolean(
           ::prefs::kAutofillDialogPayWithoutWallet) ||
-      profile->IsOffTheRecord()) {
+      profile->IsOffTheRecord() ||
+      disable_wallet) {
     checked_item_ = kAutofillItemId;
   }
 

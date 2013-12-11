@@ -187,7 +187,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
   // will only update when Chrome is restarted.
-  const std::string& GetDefaultCountryCodeForNewAddress() const;
+  virtual const std::string& GetDefaultCountryCodeForNewAddress() const;
 
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of

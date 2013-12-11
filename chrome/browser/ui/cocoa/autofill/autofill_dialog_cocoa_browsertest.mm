@@ -5,10 +5,12 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
@@ -35,9 +37,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      GURL(),
                                      base::Bind(MockCallback)),
         metric_logger_(metric_logger) ,
-        runner_(runner) {
-    DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
-  }
+        runner_(runner) {}
 
   virtual ~TestAutofillDialogController() {}
 
@@ -73,6 +73,10 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
     autofill::test::DisableSystemServices(browser()->profile());
+
+    // Stick to local autofill mode.
+    browser()->profile()->GetPrefs()->SetBoolean(
+        ::prefs::kAutofillDialogPayWithoutWallet, true);
 
     FormFieldData field;
     field.autocomplete_attribute = "cc-number";

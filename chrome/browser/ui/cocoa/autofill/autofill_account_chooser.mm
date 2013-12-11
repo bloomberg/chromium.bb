@@ -96,6 +96,8 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 }
 
 - (void)update {
+  [self setHidden:!delegate_->ShouldShowAccountChooser()];
+
   NSImage* iconImage = delegate_->AccountChooserImage().AsNSImage();
   [icon_ setImage:iconImage];
 

@@ -28,6 +28,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(SaveLocallyTooltip, base::string16());
   MOCK_METHOD0(LegalDocumentsText, base::string16());
   MOCK_CONST_METHOD0(ShouldShowSpinner, bool());
+  MOCK_CONST_METHOD0(ShouldShowAccountChooser, bool());
   MOCK_CONST_METHOD0(ShouldShowSignInWebView, bool());
   MOCK_CONST_METHOD0(SignInUrl, GURL());
   MOCK_CONST_METHOD0(ShouldOfferToSaveInChrome, bool());

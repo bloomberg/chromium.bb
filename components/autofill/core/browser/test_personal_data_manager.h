@@ -34,6 +34,13 @@ class TestPersonalDataManager : public PersonalDataManager {
   virtual std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card) OVERRIDE;
 
+  virtual const std::string& GetDefaultCountryCodeForNewAddress() const
+      OVERRIDE;
+
+  void set_default_country_code(const std::string& default_country_code) {
+    default_country_code_ = default_country_code;
+  }
+
   const AutofillProfile& imported_profile() { return imported_profile_; }
   const CreditCard& imported_credit_card() { return imported_credit_card_; }
 
@@ -42,6 +49,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   std::vector<CreditCard*> credit_cards_;
   AutofillProfile imported_profile_;
   CreditCard imported_credit_card_;
+  std::string default_country_code_;
 };
 
 }  // namespace autofill

@@ -489,7 +489,7 @@ AutofillDialogViews::AccountChooser::AccountChooser(
 AutofillDialogViews::AccountChooser::~AccountChooser() {}
 
 void AutofillDialogViews::AccountChooser::Update() {
-  SetVisible(!delegate_->ShouldShowSpinner());
+  SetVisible(delegate_->ShouldShowAccountChooser());
 
   gfx::Image icon = delegate_->AccountChooserImage();
   image_->SetImage(icon.AsImageSkia());

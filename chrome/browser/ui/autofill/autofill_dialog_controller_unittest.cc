@@ -296,6 +296,7 @@ class TestAutofillDialogController
   }
 
   MOCK_METHOD0(LoadRiskFingerprintData, void());
+  using AutofillDialogControllerImpl::AccountChooserModelForTesting;
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::IsEditingExistingData;
   using AutofillDialogControllerImpl::IsSubmitPausedOn;
@@ -303,8 +304,9 @@ class TestAutofillDialogController
   using AutofillDialogControllerImpl::SignedInState;
 
  protected:
-  virtual PersonalDataManager* GetManager() OVERRIDE {
-    return &test_manager_;
+  virtual PersonalDataManager* GetManager() const OVERRIDE {
+    return const_cast<TestAutofillDialogController*>(this)->
+        GetTestingManager();
   }
 
   virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
@@ -417,17 +419,17 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
         callback,
         mock_new_card_bubble_controller_.get()))->AsWeakPtr();
     controller_->Init(profile());
-    controller_->Show();
   }
 
   // Creates a new controller for |form_data| and sets up some initial wallet
   // data for it.
   void SetUpControllerWithFormData(const FormData& form_data) {
     ResetControllerWithFormData(form_data);
+    controller()->Show();
     if (!profile()->GetPrefs()->GetBoolean(
             ::prefs::kAutofillDialogPayWithoutWallet)) {
       EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
-      controller_->OnDidFetchWalletCookieValue(std::string());
+      controller()->OnDidFetchWalletCookieValue(std::string());
       controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
     }
   }
@@ -2601,12 +2603,35 @@ TEST_F(AutofillDialogControllerTest, InputEditability) {
   }
 }
 
+// When the default country is something besides US, wallet is not selected
+// and the account chooser shouldn't be visible.
+TEST_F(AutofillDialogControllerTest, HideWalletInOtherCountries) {
+  ResetControllerWithFormData(DefaultFormData());
+  controller()->GetTestingManager()->set_default_country_code("US");
+  controller()->Show();
+  EXPECT_TRUE(
+      controller()->AccountChooserModelForTesting()->WalletIsSelected());
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  EXPECT_TRUE(controller()->ShouldShowAccountChooser());
+  EXPECT_TRUE(
+      controller()->AccountChooserModelForTesting()->WalletIsSelected());
+
+  ResetControllerWithFormData(DefaultFormData());
+  controller()->GetTestingManager()->set_default_country_code("ES");
+  controller()->Show();
+  EXPECT_FALSE(controller()->ShouldShowAccountChooser());
+  EXPECT_FALSE(
+      controller()->AccountChooserModelForTesting()->WalletIsSelected());
+}
+
 TEST_F(AutofillDialogControllerTest, DontGetWalletTillNecessary) {
   // When starting on local data mode, the dialog will provide a "Use Google
   // Wallet" link.
   profile()->GetPrefs()->SetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet, true);
   ResetControllerWithFormData(DefaultFormData());
+  controller()->Show();
   base::string16 use_wallet_text = controller()->SignInLinkText();
   EXPECT_EQ(TestAutofillDialogController::NOT_CHECKED,
             controller()->SignedInState());

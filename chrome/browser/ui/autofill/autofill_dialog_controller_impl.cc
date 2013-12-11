@@ -622,19 +622,24 @@ void AutofillDialogControllerImpl::Show() {
       base::Bind(common::DetailInputMatchesField, SECTION_SHIPPING),
       &form_structure_);
 
-  SuggestionsUpdated();
-  SubmitButtonDelayBegin();
+  account_chooser_model_.reset(
+      new AccountChooserModel(this,
+                              profile_,
+                              !ShouldShowAccountChooser(),
+                              metric_logger_));
 
-  if (account_chooser_model_.WalletIsSelected())
+  if (account_chooser_model_->WalletIsSelected())
     FetchWalletCookie();
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
+  SuggestionsUpdated();
+  SubmitButtonDelayBegin();
   view_.reset(CreateView());
   view_->Show();
   GetManager()->AddObserver(this);
 
-  if (!account_chooser_model_.WalletIsSelected())
+  if (!account_chooser_model_->WalletIsSelected())
     LogDialogLatencyToShow();
 }
 
@@ -669,11 +674,11 @@ base::string16 AutofillDialogControllerImpl::DialogTitle() const {
 }
 
 base::string16 AutofillDialogControllerImpl::AccountChooserText() const {
-  if (!account_chooser_model_.WalletIsSelected())
+  if (!account_chooser_model_->WalletIsSelected())
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET);
 
   if (SignedInState() == SIGNED_IN)
-    return account_chooser_model_.GetActiveWalletAccountName();
+    return account_chooser_model_->GetActiveWalletAccountName();
 
   // In this case, the account chooser should be showing the signin link.
   return base::string16();
@@ -723,6 +728,11 @@ base::string16 AutofillDialogControllerImpl::LegalDocumentsText() {
 bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
   return SignedInState() == REQUIRES_RESPONSE ||
          SignedInState() == REQUIRES_PASSIVE_SIGN_IN;
+}
+
+bool AutofillDialogControllerImpl::ShouldShowAccountChooser() const {
+  return GetManager()->GetDefaultCountryCodeForNewAddress() == "US" &&
+      !ShouldShowSpinner();
 }
 
 bool AutofillDialogControllerImpl::ShouldShowSignInWebView() const {
@@ -1015,7 +1025,7 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
       local_state->GetList(::prefs::kAutofillDialogWalletLocationAcceptance);
   bool has_accepted_location_sharing =
       accepted->Find(base::StringValue(
-          account_chooser_model_.GetActiveWalletAccountName())) !=
+          account_chooser_model_->GetActiveWalletAccountName())) !=
       accepted->end();
 
   if (wallet_items_->legal_documents().empty()) {
@@ -1322,9 +1332,9 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // there's a wallet error.
   if (wallet_error_notification_ ||
       (SignedInState() == SIGNED_IN &&
-       account_chooser_model_.HasAccountsToChoose() &&
+       account_chooser_model_->HasAccountsToChoose() &&
        !ShouldShowSignInWebView())) {
-    return &account_chooser_model_;
+    return account_chooser_model_.get();
   }
 
   // Otherwise, there is no menu, just a sign in link.
@@ -2009,7 +2019,7 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
 
   if (SignedInState() == NOT_CHECKED) {
     handling_use_wallet_link_click_ = true;
-    account_chooser_model_.SelectWalletAccount(0);
+    account_chooser_model_->SelectWalletAccount(0);
     FetchWalletCookie();
     view_->UpdateAccountChooser();
   } else if (signin_registrar_.IsEmpty()) {
@@ -2032,10 +2042,10 @@ void AutofillDialogControllerImpl::NotificationCheckboxStateChanged(
     DialogNotification::Type type, bool checked) {
   if (type == DialogNotification::WALLET_USAGE_CONFIRMATION) {
     if (checked) {
-      account_chooser_model_.SelectWalletAccount(
+      account_chooser_model_->SelectWalletAccount(
           GetWalletClient()->user_index());
     } else {
-      account_chooser_model_.SelectUseAutofill();
+      account_chooser_model_->SelectUseAutofill();
     }
 
     AccountChoiceChanged();
@@ -2364,7 +2374,7 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
     for (size_t i = 0; i < wallet_items_->gaia_accounts().size(); ++i) {
       usernames.push_back(wallet_items_->gaia_accounts()[i]->email_address());
     }
-    account_chooser_model_.SetWalletAccounts(
+    account_chooser_model_->SetWalletAccounts(
         usernames, wallet_items_->active_account_index());
   }
 
@@ -2423,8 +2433,8 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   SetIsSubmitting(false);
 
   size_t selected_user_index =
-      account_chooser_model_.GetActiveWalletAccountIndex();
-  if (account_chooser_model_.WalletIsSelected() &&
+      account_chooser_model_->GetActiveWalletAccountIndex();
+  if (account_chooser_model_->WalletIsSelected() &&
       client->user_index() != selected_user_index) {
     client->set_user_index(selected_user_index);
     // Clear |wallet_items_| so we don't try to restore the selected instrument
@@ -2511,7 +2521,7 @@ void AutofillDialogControllerImpl::
 
 AccountChooserModel* AutofillDialogControllerImpl::
     AccountChooserModelForTesting() {
-  return &account_chooser_model_;
+  return account_chooser_model_.get();
 }
 
 bool AutofillDialogControllerImpl::IsSignInContinueUrl(
@@ -2532,7 +2542,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       invoked_from_same_origin_(true),
       source_url_(source_url),
       callback_(callback),
-      account_chooser_model_(this, profile_, metric_logger_),
       wallet_client_(profile_->GetRequestContext(), this, source_url),
       wallet_items_requested_(false),
       handling_use_wallet_link_click_(false),
@@ -2561,7 +2570,7 @@ AutofillDialogView* AutofillDialogControllerImpl::CreateView() {
   return AutofillDialogView::Create(this);
 }
 
-PersonalDataManager* AutofillDialogControllerImpl::GetManager() {
+PersonalDataManager* AutofillDialogControllerImpl::GetManager() const {
   return PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
@@ -2575,7 +2584,7 @@ wallet::WalletClient* AutofillDialogControllerImpl::GetWalletClient() {
 }
 
 bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
-  return account_chooser_model_.WalletIsSelected() &&
+  return account_chooser_model_->WalletIsSelected() &&
          SignedInState() == SIGNED_IN;
 }
 
@@ -2639,7 +2648,7 @@ bool AutofillDialogControllerImpl::IsManuallyEditingSection(
 }
 
 void AutofillDialogControllerImpl::OnWalletSigninError() {
-  account_chooser_model_.SetHadWalletSigninError();
+  account_chooser_model_->SetHadWalletSigninError();
   GetWalletClient()->CancelRequests();
   LogDialogLatencyToShow();
 }
@@ -2652,7 +2661,7 @@ void AutofillDialogControllerImpl::DisableWallet(
   GetWalletClient()->CancelRequests();
   SetIsSubmitting(false);
   wallet_error_notification_ = GetWalletError(error_type);
-  account_chooser_model_.SetHadWalletError();
+  account_chooser_model_->SetHadWalletError();
 }
 
 void AutofillDialogControllerImpl::SuggestionsUpdated() {
@@ -2869,7 +2878,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     // address.
     if (section == SECTION_CC_BILLING) {
       SetOutputForFieldsOfType(
-          EMAIL_ADDRESS, account_chooser_model_.GetActiveWalletAccountName());
+          EMAIL_ADDRESS, account_chooser_model_->GetActiveWalletAccountName());
     }
   } else {
     // The user manually input data. If using Autofill, save the info as new or
@@ -3131,7 +3140,7 @@ void AutofillDialogControllerImpl::AcceptLegalTerms() {
   ListPrefUpdate accepted(
       local_state, ::prefs::kAutofillDialogWalletLocationAcceptance);
   accepted->AppendIfNotPresent(new base::StringValue(
-      account_chooser_model_.GetActiveWalletAccountName()));
+      account_chooser_model_->GetActiveWalletAccountName()));
 
   if (AreLegalDocumentsCurrent()) {
     LoadRiskFingerprintData();
@@ -3337,10 +3346,10 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
   // hand, if there was an error that prevented the user from having the choice
   // of using Wallet, leave the pref alone.
   if (!wallet_error_notification_ &&
-      account_chooser_model_.HasAccountsToChoose()) {
+      account_chooser_model_->HasAccountsToChoose()) {
     profile_->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet,
-        !account_chooser_model_.WalletIsSelected());
+        !account_chooser_model_->WalletIsSelected());
   }
 
   LogOnFinishSubmitMetrics();

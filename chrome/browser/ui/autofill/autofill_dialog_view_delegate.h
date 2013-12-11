@@ -60,6 +60,9 @@ class AutofillDialogViewDelegate {
   // retreiving Wallet data, etc.).
   virtual bool ShouldShowSpinner() const = 0;
 
+  // Whether the account chooser/sign in link control should be visible.
+  virtual bool ShouldShowAccountChooser() const = 0;
+
   // Whether the sign in web view should be displayed.
   virtual bool ShouldShowSignInWebView() const = 0;
 

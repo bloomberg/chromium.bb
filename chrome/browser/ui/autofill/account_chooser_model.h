@@ -49,8 +49,11 @@ class AccountChooserModelDelegate {
 class AccountChooserModel : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
+  // |disable_wallet| overrides the starting value, which is normally set by a
+  // pref.
   AccountChooserModel(AccountChooserModelDelegate* delegate,
                       Profile* profile,
+                      bool disable_wallet,
                       const AutofillMetrics& metric_logger);
   virtual ~AccountChooserModel();
 
