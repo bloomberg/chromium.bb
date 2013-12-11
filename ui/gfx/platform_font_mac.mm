@@ -126,6 +126,10 @@ std::string PlatformFontMac::GetFontName() const {
   return font_name_;
 }
 
+std::string PlatformFontMac::GetActualFontNameForTesting() const {
+  return base::SysNSStringToUTF8([native_font_ familyName]);
+}
+
 int PlatformFontMac::GetFontSize() const {
   return font_size_;
 }

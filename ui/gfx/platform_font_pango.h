@@ -55,6 +55,7 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   virtual int GetExpectedTextWidth(int length) const OVERRIDE;
   virtual int GetStyle() const OVERRIDE;
   virtual std::string GetFontName() const OVERRIDE;
+  virtual std::string GetActualFontNameForTesting() const OVERRIDE;
   virtual int GetFontSize() const OVERRIDE;
   virtual NativeFont GetNativeFont() const OVERRIDE;
 
@@ -75,8 +76,8 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   void InitWithNameAndSize(const std::string& font_name, int font_size);
   void InitWithTypefaceNameSizeAndStyle(
       const skia::RefPtr<SkTypeface>& typeface,
-      const std::string& name,
-      int size,
+      const std::string& font_family,
+      int font_size,
       int style);
   void InitFromPlatformFont(const PlatformFontPango* other);
 

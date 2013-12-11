@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/controls/label.h"
+
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -9,15 +11,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/label.h"
 
 namespace views {
 
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
 
-// Disabled. http://crbug.com/316955
-TEST(LabelTest, DISABLED_FontPropertySymbol) {
+TEST(LabelTest, FontPropertySymbol) {
   Label label;
   std::string font_name("symbol");
   gfx::Font font(font_name, 26);

@@ -96,8 +96,11 @@ class GFX_EXPORT Font {
   // Returns the style of the font.
   int GetStyle() const;
 
-  // Returns the font name in UTF-8.
+  // Returns the specified font name in UTF-8.
   std::string GetFontName() const;
+
+  // Returns the actually used font name in UTF-8.
+  std::string GetActualFontNameForTesting() const;
 
   // Returns the font size in pixels.
   int GetFontSize() const;

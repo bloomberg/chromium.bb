@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -215,6 +216,12 @@ std::string PlatformFontPango::GetFontName() const {
   return font_family_;
 }
 
+std::string PlatformFontPango::GetActualFontNameForTesting() const {
+  SkString family_name;
+  typeface_->getFamilyName(&family_name);
+  return family_name.c_str();
+}
+
 int PlatformFontPango::GetFontSize() const {
   return font_size_pixels_;
 }
@@ -293,7 +300,7 @@ void PlatformFontPango::InitWithNameAndSize(const std::string& font_name,
   std::string fallback;
 
   skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
-          SkTypeface::CreateFromName(font_name.c_str(), SkTypeface::kNormal));
+      SkTypeface::CreateFromName(font_name.c_str(), SkTypeface::kNormal));
   if (!typeface) {
     // A non-scalable font such as .pcf is specified. Falls back to a default
     // scalable font.

@@ -78,6 +78,10 @@ std::string Font::GetFontName() const {
   return platform_font_->GetFontName();
 }
 
+std::string Font::GetActualFontNameForTesting() const {
+  return platform_font_->GetActualFontNameForTesting();
+}
+
 int Font::GetFontSize() const {
   return platform_font_->GetFontSize();
 }

@@ -6,14 +6,17 @@
 
 namespace gfx {
 
+// static
 PlatformFont* PlatformFont::CreateDefault() {
   return NULL;
 }
 
+// static
 PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
   return NULL;
 }
 
+// static
 PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
   return NULL;
