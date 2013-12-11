@@ -209,6 +209,15 @@ void TestGLES2Interface::TexStorage2DEXT(GLenum target,
   test_context_->texStorage2DEXT(target, levels, internalformat, width, height);
 }
 
+void TestGLES2Interface::TexImageIOSurface2DCHROMIUM(GLenum target,
+                                                     GLsizei width,
+                                                     GLsizei height,
+                                                     GLuint io_surface_id,
+                                                     GLuint plane) {
+  test_context_->texImageIOSurface2DCHROMIUM(
+      target, width, height, io_surface_id, plane);
+}
+
 void TestGLES2Interface::TexParameteri(GLenum target,
                                        GLenum pname,
                                        GLint param) {

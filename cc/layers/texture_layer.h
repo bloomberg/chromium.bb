@@ -13,8 +13,6 @@
 #include "cc/layers/layer.h"
 #include "cc/resources/texture_mailbox.h"
 
-namespace blink { class WebGraphicsContext3D; }
-
 namespace cc {
 class BlockingTaskRunner;
 class SingleReleaseCallback;
