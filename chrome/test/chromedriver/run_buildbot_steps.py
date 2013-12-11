@@ -346,6 +346,35 @@ def _WaitForLatestSnapshot(revision):
   util.PrintAndFlush('Got snapshot revision %s' % snapshot_revision)
 
 
+def _AddToolsToPath(platform_name):
+  """Add some tools like Ant and Java to PATH for testing steps to use."""
+  paths = []
+  error_message = ''
+  if platform_name == 'win32':
+    paths = [
+        # Path to Ant and Java, required for the java acceptance tests.
+        'C:\\Program Files (x86)\\Java\\ant\\bin',
+        'C:\\Program Files (x86)\\Java\\jre\\bin',
+    ]
+    error_message = ('Java test steps will fail as expected and '
+                     'they can be ignored.\n'
+                     'Ant, Java or others might not be installed on bot.\n'
+                     'Please refer to page "WATERFALL" on site '
+                     'go/chromedriver.')
+  if paths:
+    util.MarkBuildStepStart('Add tools to PATH')
+    path_missing = False
+    for path in paths:
+      if not os.path.isdir(path) or not os.listdir(path):
+        print 'Directory "%s" is not found or empty.' % path
+        path_missing = True
+    if path_missing:
+      print error_message
+      util.MarkBuildStepError()
+      return
+    os.environ['PATH'] += os.pathsep + os.pathsep.join(paths)
+
+
 def main():
   parser = optparse.OptionParser()
   parser.add_option(
@@ -379,6 +408,8 @@ def main():
     if platform == 'linux64':
       _ArchivePrebuilts(options.revision)
     _WaitForLatestSnapshot(options.revision)
+
+  _AddToolsToPath(platform)
 
   cmd = [
       sys.executable,
