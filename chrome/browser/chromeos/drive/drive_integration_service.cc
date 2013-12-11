@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
@@ -275,6 +276,8 @@ DriveIntegrationService::DriveIntegrationService(
     preference_watcher_.reset(preference_watcher);
     preference_watcher->set_integration_service(this);
   }
+
+  SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
 }
 
 DriveIntegrationService::~DriveIntegrationService() {
@@ -301,6 +304,13 @@ void DriveIntegrationService::Shutdown() {
 }
 
 void DriveIntegrationService::SetEnabled(bool enabled) {
+  // If Drive is being disabled, ensure the download destination preference to
+  // be out of Drive. Do this before "Do nothing if not changed." because we
+  // want to run the check for the first SetEnabled() called in the constructor,
+  // which may be a change from false to false.
+  if (!enabled)
+    AvoidDriveAsDownloadDirecotryPreference();
+
   // Do nothing if not changed.
   if (enabled_ == enabled)
     return;
@@ -461,7 +471,7 @@ void DriveIntegrationService::Initialize() {
                  cache_.get(),
                  resource_metadata_.get(),
                  drive_service_->GetResourceIdCanonicalizer(),
-                 DownloadPrefs::GetDefaultDownloadDirectory()),
+                 file_manager::util::GetDownloadsFolderForProfile(profile_)),
       base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -478,14 +488,8 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
   if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Failed to initialize: " << FileErrorToString(error);
 
-    // Change the download directory to the default value if the download
-    // destination is set to under Drive mount point.
-    PrefService* pref_service = profile_->GetPrefs();
-    if (util::IsUnderDriveMountPoint(
-            pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
-      pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
-                                DownloadPrefs::GetDefaultDownloadDirectory());
-    }
+    // Cannot used Drive. Set the download destination preference out of Drive.
+    AvoidDriveAsDownloadDirecotryPreference();
 
     // Back to NOT_INITIALIZED state. Then, re-running Initialize() should
     // work if the error is recoverable manually (such as out of disk space).
@@ -521,6 +525,16 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
   // the metadata initialization, so we need to look this up again here.
   if (enabled_)
     AddDriveMountPoint();
+}
+
+void DriveIntegrationService::AvoidDriveAsDownloadDirecotryPreference() {
+  PrefService* pref_service = profile_->GetPrefs();
+  if (util::IsUnderDriveMountPoint(
+          pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
+    pref_service->SetFilePath(
+        prefs::kDownloadDefaultDirectory,
+        file_manager::util::GetDownloadsFolderForProfile(profile_));
+  }
 }
 
 //===================== DriveIntegrationServiceFactory =======================
@@ -596,7 +610,6 @@ DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     service = factory_for_test_.Run(profile);
   }
 
-  service->SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
   return service;
 }
 

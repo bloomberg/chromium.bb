@@ -146,6 +146,10 @@ class DriveIntegrationService
   // the metadata initialization is successful.
   void InitializeAfterMetadataInitialized(FileError error);
 
+  // Change the download directory to the local "Downloads" if the download
+  // destination is set under Drive. This must be called when disabling Drive.
+  void AvoidDriveAsDownloadDirecotryPreference();
+
   friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;

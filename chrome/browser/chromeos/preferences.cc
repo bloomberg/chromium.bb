@@ -549,18 +549,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
     input_method_manager_->SetEnabledExtensionImes(&split_values);
   }
-
-  // Change the download directory to the default value if a Drive directory is
-  // selected and Drive is disabled.
-  if (!pref_name || *pref_name == prefs::kDisableDrive) {
-    if (disable_drive_.GetValue()) {
-      if (drive::util::IsUnderDriveMountPoint(
-          download_default_directory_.GetValue())) {
-        prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
-                            DownloadPrefs::GetDefaultDownloadDirectory());
-      }
-    }
-  }
 }
 
 void Preferences::OnIsSyncingChanged() {
