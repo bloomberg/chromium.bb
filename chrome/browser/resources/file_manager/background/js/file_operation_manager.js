@@ -1068,9 +1068,9 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
     task = this.deleteTasks_[i];
     if (task.taskId !== taskId)
       continue;
-    task.requestCancel();
+    task.cancelRequested = true;
     // If the task is not on progress, remove it immediately.
-    if (i != 0) {
+    if (i !== 0) {
       this.eventRouter_.sendDeleteEvent('CANCELED', task);
       this.deleteTasks_.splice(i, 1);
     }
@@ -1263,13 +1263,15 @@ FileOperationManager.DELETE_TIMEOUT = 30 * 1000;
  * @param {Array.<Entry>} entries The entries.
  */
 FileOperationManager.prototype.deleteEntries = function(entries) {
-  var task = {
+  // TODO(hirono): Make FileOperationManager.DeleteTask.
+  var task = Object.seal({
     entries: entries,
     taskId: this.generateTaskId_(),
     entrySize: {},
     totalBytes: 0,
-    processedBytes: 0
-  };
+    processedBytes: 0,
+    cancelRequested: false
+  });
 
   // Obtains entry size and sum them up.
   var group = new AsyncUtil.Group();
@@ -1329,7 +1331,7 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
   // Delete each entry.
   var error = null;
   var deleteOneEntry = function(inCallback) {
-    if (!task.entries.length || task.canceled || error) {
+    if (!task.entries.length || task.cancelRequested || error) {
       inCallback();
       return;
     }
@@ -1355,7 +1357,7 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
     var reason;
     if (error)
       reason = 'ERROR';
-    else if (task.canceled)
+    else if (task.cancelRequested)
       reason = 'CANCELED';
     else
       reason = 'SUCCESS';

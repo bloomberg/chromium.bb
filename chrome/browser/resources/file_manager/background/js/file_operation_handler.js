@@ -245,7 +245,9 @@ FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
       item.message = FileOperationHandler.getDeleteMessage_(event);
       item.progressMax = event.totalBytes;
       item.progressValue = event.processedBytes;
-      // TODO(hirono): Specify the cancel handler to the item.
+      item.cancelCallback = this.fileOperationManager_.requestTaskCancel.bind(
+          this.fileOperationManager_,
+          event.taskId);
       this.pendingItems_[item.id] = item;
       setTimeout(this.showPendingItem_.bind(this, item),
                  FileOperationHandler.PENDING_TIME_MS_);
@@ -267,6 +269,7 @@ FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
       break;
 
     case 'SUCCESS':
+    case 'CANCELED':
     case 'ERROR':
       // Obtain working variable.
       pending = event.taskId in this.pendingItems_;
@@ -282,6 +285,8 @@ FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
       if (event.reason === 'SUCCESS') {
         item.state = ProgressItemState.COMPLETED;
         item.progressValue = item.progressMax;
+      } else if (event.reason === 'CANCELED') {
+        item.state = ProgressItemState.CANCELED;
       } else {
         item.state = ProgressItemState.ERROR;
       }
