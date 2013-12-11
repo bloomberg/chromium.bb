@@ -114,8 +114,8 @@ def _GenerateDepsDirUsingIsolate(suite_name):
       'remap',
       '--isolate', isolate_abs_path,
       '--isolated', isolated_abs_path,
-      '-V', 'PRODUCT_DIR=%s' % constants.GetOutDirectory(),
-      '-V', 'OS=android',
+      '--path-variable', 'PRODUCT_DIR', constants.GetOutDirectory(),
+      '--config-variable', 'OS', 'android',
       '--outdir', constants.ISOLATE_DEPS_DIR,
   ]
   assert not cmd_helper.RunCmd(isolate_cmd)
