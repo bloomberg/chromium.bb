@@ -95,10 +95,10 @@ void SyncAppHelper::SetupIfNecessary(SyncTest* test) {
 
   for (int i = 0; i < test->num_clients(); ++i) {
     extensions::ExtensionSystem::Get(
-        test->GetProfile(i))->InitForRegularProfile(true, false);
+        test->GetProfile(i))->InitForRegularProfile(true);
   }
   extensions::ExtensionSystem::Get(
-      test->verifier())->InitForRegularProfile(true, false);
+      test->verifier())->InitForRegularProfile(true);
 
   setup_completed_ = true;
 }

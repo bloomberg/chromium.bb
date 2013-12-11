@@ -53,8 +53,7 @@ class TestExtensionSystem : public ExtensionSystem {
 
   void CreateSocketManager();
 
-  virtual void InitForRegularProfile(bool extensions_enabled,
-                                     bool defer_background_creation) OVERRIDE {}
+  virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
   void SetExtensionService(ExtensionService* service);
   virtual ExtensionService* extension_service() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;

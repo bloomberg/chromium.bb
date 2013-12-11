@@ -113,11 +113,6 @@ class ProcessManager : public content::NotificationObserver {
   // onSuspendCanceled() event to it.
   void CancelSuspend(const Extension* extension);
 
-  // If |defer| is true background host creation is to be deferred until this is
-  // called again with |defer| set to false, at which point all deferred
-  // background hosts will be created.  Defaults to false.
-  void DeferBackgroundHostCreation(bool defer);
-
   // Ensures background hosts are loaded for a new browser window.
   void OnBrowserWindowReady();
 
@@ -214,9 +209,6 @@ class ProcessManager : public content::NotificationObserver {
   // The time to delay between sending a ShouldSuspend message and
   // sending a Suspend message; read from command-line switch.
   base::TimeDelta event_page_suspending_time_;
-
-  // If true, then creation of background hosts is suspended.
-  bool defer_background_host_creation_;
 
   // True if we have created the startup set of background hosts.
   bool startup_background_hosts_created_;

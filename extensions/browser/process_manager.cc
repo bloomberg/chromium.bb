@@ -175,7 +175,6 @@ ProcessManager* ProcessManager::Create(BrowserContext* context) {
 ProcessManager::ProcessManager(BrowserContext* context,
                                BrowserContext* original_context)
   : site_instance_(SiteInstance::Create(context)),
-    defer_background_host_creation_(false),
     startup_background_hosts_created_(false),
     devtools_callback_(base::Bind(
         &ProcessManager::OnDevToolsStateChanged,
@@ -536,16 +535,6 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
   }
 }
 
-void ProcessManager::DeferBackgroundHostCreation(bool defer) {
-  bool previous = defer_background_host_creation_;
-  defer_background_host_creation_ = defer;
-
-  // If we were deferred, and we switch to non-deferred, then create the
-  // background hosts.
-  if (previous && !defer_background_host_creation_)
-    CreateBackgroundHostsForProfileStartup();
-}
-
 void ProcessManager::OnBrowserWindowReady() {
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       GetBrowserContext())->extension_service();
@@ -568,6 +557,12 @@ void ProcessManager::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSIONS_READY:
     case chrome::NOTIFICATION_PROFILE_CREATED: {
+       // Don't load background hosts now if the loading should be deferred.
+       // Instead they will be loaded when a browser window for this profile
+       // (or an incognito profile from this profile) is ready.
+       if (DeferLoadingBackgroundHosts())
+         break;
+
       CreateBackgroundHostsForProfileStartup();
       break;
     }
@@ -699,13 +694,6 @@ void ProcessManager::CreateBackgroundHostsForProfileStartup() {
   if (startup_background_hosts_created_)
     return;
 
-  // Don't load background hosts now if the loading should be deferred.
-  // Instead they will be loaded when a browser window for this profile
-  // (or an incognito profile from this profile) is ready, or when
-  // DeferBackgroundHostCreation is called with false.
-  if (DeferLoadingBackgroundHosts())
-    return;
-
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       GetBrowserContext())->extension_service();
   DCHECK(service);
@@ -805,10 +793,6 @@ void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {
 }
 
 bool ProcessManager::DeferLoadingBackgroundHosts() const {
-  // Don't load background hosts now if the loading should be deferred.
-  if (defer_background_host_creation_)
-    return true;
-
   // The extensions embedder may have special rules about background hosts.
   return ExtensionsBrowserClient::Get()->DeferLoadingBackgroundHosts(
       GetBrowserContext());

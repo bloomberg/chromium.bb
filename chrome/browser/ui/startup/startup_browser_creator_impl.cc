@@ -418,14 +418,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     ShellIntegration::MigrateChromiumShortcuts();
 #endif  // defined(OS_WIN)
 
-#if defined(ENABLE_EXTENSIONS)
-  // If we deferred creation of background extension hosts, we want to create
-  // them now that the session (if any) has been restored.
-  extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-  process_manager->DeferBackgroundHostCreation(false);
-#endif
-
   return true;
 }
 

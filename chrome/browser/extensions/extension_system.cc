@@ -337,9 +337,7 @@ void ExtensionSystemImpl::Shutdown() {
   process_manager_.reset();
 }
 
-void ExtensionSystemImpl::InitForRegularProfile(
-    bool extensions_enabled,
-    bool defer_background_creation) {
+void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   DCHECK(!profile_->IsOffTheRecord());
   if (user_script_master() || extension_service())
     return;  // Already initialized.
@@ -348,9 +346,6 @@ void ExtensionSystemImpl::InitForRegularProfile(
   shared_->info_map();
 
   process_manager_.reset(ProcessManager::Create(profile_));
-
-  process_manager_->DeferBackgroundHostCreation(
-      defer_background_creation);
 
   shared_->Init(extensions_enabled);
 }
