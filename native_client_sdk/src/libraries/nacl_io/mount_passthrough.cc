@@ -111,10 +111,8 @@ class MountNodePassthrough : public MountNode {
 
 MountPassthrough::MountPassthrough() {}
 
-Error MountPassthrough::Init(int dev,
-                             StringMap_t& args,
-                             PepperInterface* ppapi) {
-  return Mount::Init(dev, args, ppapi);
+Error MountPassthrough::Init(const MountInitArgs& args) {
+  return Mount::Init(args);
 }
 
 void MountPassthrough::Destroy() {}

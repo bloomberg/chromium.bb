@@ -26,7 +26,10 @@ namespace {
 class MountHttpForTesting : public MountHttp {
  public:
   MountHttpForTesting(StringMap_t map, PepperInterface* ppapi) {
-    EXPECT_EQ(0, Init(1, map, ppapi));
+    MountInitArgs args(1);
+    args.string_map = map;
+    args.ppapi = ppapi;
+    EXPECT_EQ(0, Init(args));
   }
 
   using MountHttp::GetNodeCacheForTesting;

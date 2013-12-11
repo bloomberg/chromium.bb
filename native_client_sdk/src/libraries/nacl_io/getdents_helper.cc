@@ -14,8 +14,15 @@
 
 namespace nacl_io {
 
+GetDentsHelper::GetDentsHelper()
+    : curdir_ino_(0), parentdir_ino_(0), init_defaults_(false) {
+  Initialize();
+}
+
 GetDentsHelper::GetDentsHelper(ino_t curdir_ino, ino_t parentdir_ino)
-    : curdir_ino_(curdir_ino), parentdir_ino_(parentdir_ino) {
+    : curdir_ino_(curdir_ino),
+      parentdir_ino_(parentdir_ino),
+      init_defaults_(true) {
   Initialize();
 }
 
@@ -25,9 +32,11 @@ void GetDentsHelper::Reset() {
 }
 
 void GetDentsHelper::Initialize() {
-  // Add the default entries: "." and ".."
-  AddDirent(curdir_ino_, ".", 1);
-  AddDirent(parentdir_ino_, "..", 2);
+  if (init_defaults_) {
+    // Add the default entries: "." and ".."
+    AddDirent(curdir_ino_, ".", 1);
+    AddDirent(parentdir_ino_, "..", 2);
+  }
 }
 
 void GetDentsHelper::AddDirent(ino_t ino, const char* name, size_t namelen) {

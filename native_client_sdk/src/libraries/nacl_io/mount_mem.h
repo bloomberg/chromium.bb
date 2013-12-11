@@ -14,7 +14,8 @@ class MountMem : public Mount {
  protected:
   MountMem();
 
-  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  using Mount::Init;
+  virtual Error Init(const MountInitArgs& args);
 
   // The protected functions are only used internally and will not
   // acquire or release the mount's lock themselves.  The caller is

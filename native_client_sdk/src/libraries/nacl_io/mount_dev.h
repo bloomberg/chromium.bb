@@ -27,7 +27,7 @@ class MountDev : public Mount {
  protected:
   MountDev();
 
-  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(const MountInitArgs& args);
 
  private:
   ScopedMountNode root_;

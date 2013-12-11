@@ -201,13 +201,15 @@ MountHttp::MountHttp()
       cache_stat_(true),
       cache_content_(true) {}
 
-Error MountHttp::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-  Error error = Mount::Init(dev, args, ppapi);
+Error MountHttp::Init(const MountInitArgs& args) {
+  Error error = Mount::Init(args);
   if (error)
     return error;
 
   // Parse mount args.
-  for (StringMap_t::iterator iter = args.begin(); iter != args.end(); ++iter) {
+  for (StringMap_t::const_iterator iter = args.string_map.begin();
+       iter != args.string_map.end();
+       ++iter) {
     if (iter->first == "SOURCE") {
       url_root_ = iter->second;
 

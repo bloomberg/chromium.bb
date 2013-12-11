@@ -14,6 +14,8 @@ namespace nacl_io {
 
 class GetDentsHelper {
  public:
+  // Initialize the helper without any defaults.
+  GetDentsHelper();
   GetDentsHelper(ino_t curdir_ino, ino_t parentdir_ino);
 
   void Reset();
@@ -26,6 +28,7 @@ class GetDentsHelper {
   std::vector<dirent> dirents_;
   ino_t curdir_ino_;
   ino_t parentdir_ino_;
+  bool init_defaults_;
 };
 
 }  // namespace nacl_io

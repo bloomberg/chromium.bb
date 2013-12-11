@@ -132,6 +132,7 @@ class MountNode : public sdk_util::RefObject {
 
   friend class Mount;
   friend class MountDev;
+  friend class MountFuse;
   friend class MountHtml5Fs;
   friend class MountHttp;
   friend class MountMem;

@@ -27,6 +27,7 @@
         'main.cc',
         'mock_util.h',
         'mount_dev_mock.h',
+        'mount_fuse_test.cc',
         'mount_html5fs_test.cc',
         'mount_http_test.cc',
         'mount_mock.cc',

@@ -40,8 +40,11 @@ namespace {
 
 class MountHtml5FsForTesting : public MountHtml5Fs {
  public:
-  MountHtml5FsForTesting(StringMap_t& args, PepperInterface* ppapi) {
-    Error error = Init(1, args, ppapi);
+  MountHtml5FsForTesting(StringMap_t& string_map, PepperInterface* ppapi) {
+    MountInitArgs args;
+    args.string_map = string_map;
+    args.ppapi = ppapi;
+    Error error = Init(args);
     EXPECT_EQ(0, error);
   }
 };

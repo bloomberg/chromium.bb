@@ -13,12 +13,10 @@ namespace nacl_io {
 template <typename T>
 class TypedMountFactory : public MountFactory {
  public:
-  virtual Error CreateMount(int dev,
-                            StringMap_t& args,
-                            PepperInterface* ppapi,
+  virtual Error CreateMount(const MountInitArgs& args,
                             ScopedMount* out_mount) {
     sdk_util::ScopedRef<T> mnt(new T());
-    Error error = mnt->Init(dev, args, ppapi);
+    Error error = mnt->Init(args);
     if (error)
       return error;
 

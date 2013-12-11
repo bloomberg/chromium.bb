@@ -34,7 +34,7 @@ class MountHttp : public Mount {
  protected:
   MountHttp();
 
-  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(const MountInitArgs& args);
   virtual void Destroy();
   Error FindOrCreateDir(const Path& path, ScopedMountNode* out_node);
   Error LoadManifest(const std::string& path, char** out_manifest);

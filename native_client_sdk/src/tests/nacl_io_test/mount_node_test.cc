@@ -30,8 +30,8 @@ static int s_AllocNum = 0;
 class MockMount : public MountMem {
  public:
   MockMount() {
-    StringMap_t map;
-    EXPECT_EQ(0, Init(1, map, NULL));
+    MountInitArgs args(1);
+    EXPECT_EQ(0, Init(args));
   }
 
   int num_nodes() { return inode_pool_.size(); }

@@ -422,13 +422,15 @@ TEST_F(KernelProxyTest, MemMountDup) {
 
 namespace {
 
-StringMap_t g_StringMap;
+StringMap_t g_string_map;
 
 class MountMockInit : public MountMem {
  public:
-  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-    g_StringMap = args;
-    if (args.find("false") != args.end())
+  using MountMem::Init;
+
+  virtual Error Init(const MountInitArgs& args) {
+    g_string_map = args.string_map;
+    if (g_string_map.find("false") != g_string_map.end())
       return EINVAL;
     return 0;
   }
@@ -465,13 +467,13 @@ class KernelProxyMountTest : public ::testing::Test {
 TEST_F(KernelProxyMountTest, MountInit) {
   int res1 = ki_mount("/", "/mnt1", "initfs", 0, "false,foo=bar");
 
-  EXPECT_EQ("bar", g_StringMap["foo"]);
+  EXPECT_EQ("bar", g_string_map["foo"]);
   EXPECT_EQ(-1, res1);
   EXPECT_EQ(EINVAL, errno);
 
   int res2 = ki_mount("/", "/mnt2", "initfs", 0, "true,bar=foo,x=y");
   EXPECT_NE(-1, res2);
-  EXPECT_EQ("y", g_StringMap["x"]);
+  EXPECT_EQ("y", g_string_map["x"]);
 }
 
 namespace {
@@ -591,9 +593,7 @@ class SingletonMountFactory : public MountFactory {
  public:
   SingletonMountFactory(const ScopedMount& mount) : mount_(mount) {}
 
-  virtual Error CreateMount(int dev,
-                            StringMap_t& args,
-                            PepperInterface* ppapi,
+  virtual Error CreateMount(const MountInitArgs& args,
                             ScopedMount* out_mount) {
     *out_mount = mount_;
     return 0;

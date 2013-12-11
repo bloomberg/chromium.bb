@@ -123,12 +123,12 @@ MountHtml5Fs::MountHtml5Fs()
       filesystem_open_has_result_(false),
       filesystem_open_error_(0) {}
 
-Error MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-  Error error = Mount::Init(dev, args, ppapi);
+Error MountHtml5Fs::Init(const MountInitArgs& args) {
+  Error error = Mount::Init(args);
   if (error)
     return error;
 
-  if (!ppapi)
+  if (!args.ppapi)
     return ENOSYS;
 
   pthread_cond_init(&filesystem_open_cond_, NULL);
@@ -136,7 +136,8 @@ Error MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   // Parse mount args.
   PP_FileSystemType filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
   int64_t expected_size = 0;
-  for (StringMap_t::iterator iter = args.begin(), end = args.end(); iter != end;
+  for (StringMap_t::const_iterator iter = args.string_map.begin();
+       iter != args.string_map.end();
        ++iter) {
     if (iter->first == "type") {
       if (iter->second == "PERSISTENT") {
@@ -150,7 +151,7 @@ Error MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   }
 
   // Initialize filesystem.
-  filesystem_resource_ = ppapi->GetFileSystemInterface()
+  filesystem_resource_ = args.ppapi->GetFileSystemInterface()
       ->Create(ppapi_->GetInstance(), filesystem_type);
   if (filesystem_resource_ == 0)
     return ENOSYS;
@@ -158,13 +159,13 @@ Error MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   // We can't block the main thread, so make an asynchronous call if on main
   // thread. If we are off-main-thread, then don't make an asynchronous call;
   // otherwise we require a message loop.
-  bool main_thread = ppapi->GetCoreInterface()->IsMainThread();
+  bool main_thread = args.ppapi->GetCoreInterface()->IsMainThread();
   PP_CompletionCallback cc =
       main_thread ? PP_MakeCompletionCallback(
                         &MountHtml5Fs::FilesystemOpenCallbackThunk, this)
                   : PP_BlockUntilComplete();
 
-  int32_t result = ppapi->GetFileSystemInterface()
+  int32_t result = args.ppapi->GetFileSystemInterface()
       ->Open(filesystem_resource_, expected_size, cc);
 
   if (!main_thread) {

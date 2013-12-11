@@ -15,8 +15,7 @@
 class MountDevMock : public nacl_io::MountDev {
  public:
   MountDevMock() {
-    nacl_io::StringMap_t map;
-    Init(1, map, NULL);
+    Init(nacl_io::MountInitArgs(1));
   }
   int num_nodes() { return (int) inode_pool_.size(); }
 };

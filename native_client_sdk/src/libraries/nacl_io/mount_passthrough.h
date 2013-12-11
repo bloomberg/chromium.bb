@@ -14,7 +14,7 @@ class MountPassthrough : public Mount {
  protected:
   MountPassthrough();
 
-  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(const MountInitArgs& args);
   virtual void Destroy();
 
  public:

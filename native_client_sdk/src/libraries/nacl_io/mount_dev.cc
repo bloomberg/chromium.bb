@@ -307,8 +307,8 @@ MountDev::MountDev() {}
   if (error)                                                            \
     return error;
 
-Error MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-  Error error = Mount::Init(dev, args, ppapi);
+Error MountDev::Init(const MountInitArgs& args) {
+  Error error = Mount::Init(args);
   if (error)
     return error;
 

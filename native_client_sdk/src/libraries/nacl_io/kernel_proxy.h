@@ -18,6 +18,7 @@
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 
+struct fuse_operations;
 struct timeval;
 
 namespace nacl_io {
@@ -48,6 +49,11 @@ class KernelProxy : protected KernelObject {
   // Takes ownership of |ppapi|.
   // |ppapi| may be NULL. If so, no mount that uses pepper calls can be mounted.
   virtual Error Init(PepperInterface* ppapi);
+
+  // Register/Unregister a new mount type. See the documentation in nacl_io.h
+  // for more info.
+  bool RegisterMountType(const char* mount_type, fuse_operations* fuse_ops);
+  bool UnregisterMountType(const char* mount_type);
 
   virtual int pipe(int pipefds[2]);
 

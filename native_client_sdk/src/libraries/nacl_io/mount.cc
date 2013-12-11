@@ -26,9 +26,9 @@ Mount::Mount() : dev_(0) {}
 
 Mount::~Mount() {}
 
-Error Mount::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-  dev_ = dev;
-  ppapi_ = ppapi;
+Error Mount::Init(const MountInitArgs& args) {
+  dev_ = args.dev;
+  ppapi_ = args.ppapi;
   return 0;
 }
 

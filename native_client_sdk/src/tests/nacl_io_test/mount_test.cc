@@ -24,8 +24,8 @@ namespace {
 class MountMemMock : public MountMem {
  public:
   MountMemMock() {
-    StringMap_t map;
-    EXPECT_EQ(0, Init(1, map, NULL));
+    MountInitArgs args(1);
+    EXPECT_EQ(0, Init(args));
   }
 
   int num_nodes() { return (int) inode_pool_.size(); }

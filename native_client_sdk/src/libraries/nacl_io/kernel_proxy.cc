@@ -18,6 +18,7 @@
 #include <iterator>
 #include <string>
 
+#include "nacl_io/fuse_mount_factory.h"
 #include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
@@ -111,15 +112,37 @@ Error KernelProxy::Init(PepperInterface* ppapi) {
   host_resolver_.Init(ppapi_);
 #endif
 
-  StringMap_t args;
+  MountInitArgs args;
+  args.dev = dev_++;
+  args.ppapi = ppapi_;
   stream_mount_.reset(new MountStream());
-  result = stream_mount_->Init(0, args, ppapi);
+  result = stream_mount_->Init(args);
   if (result != 0) {
     assert(false);
     rtn = result;
   }
 
   return rtn;
+}
+
+bool KernelProxy::RegisterMountType(const char* mount_type,
+                                    fuse_operations* fuse_ops) {
+  MountFactoryMap_t::iterator iter = factories_.find(mount_type);
+  if (iter != factories_.end())
+    return false;
+
+  factories_[mount_type] = new FuseMountFactory(fuse_ops);
+  return true;
+}
+
+bool KernelProxy::UnregisterMountType(const char* mount_type) {
+  MountFactoryMap_t::iterator iter = factories_.find(mount_type);
+  if (iter == factories_.end())
+    return false;
+
+  delete iter->second;
+  factories_.erase(iter);
+  return true;
 }
 
 int KernelProxy::open_resource(const char* path) {
@@ -392,8 +415,13 @@ int KernelProxy::mount(const char* source,
     }
   }
 
+  MountInitArgs args;
+  args.dev = dev_++;
+  args.string_map = smap;
+  args.ppapi = ppapi_;
+
   ScopedMount mnt;
-  Error error = factory->second->CreateMount(dev_++, smap, ppapi_, &mnt);
+  Error error = factory->second->CreateMount(args, &mnt);
   if (error) {
     errno = error;
     return -1;

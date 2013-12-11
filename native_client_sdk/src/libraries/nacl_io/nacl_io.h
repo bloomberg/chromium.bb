@@ -117,6 +117,67 @@ void nacl_io_init_ppapi(PP_Instance instance,
  *         unsigned long mountflags, const void *data) NOTHROW;
  */
 
+/**
+ * Register a new mount type, using a FUSE interface to implement it.
+ *
+ * Example:
+ *   int my_open(const char* path, struct fuse_file_info*) {
+ *     ...
+ *   }
+ *
+ *   int my_read(const char* path, char* buf, size_t count, off_t offset, struct
+ *               fuse_file_info* info) {
+ *     ...
+ *   }
+ *
+ *   struct fuse_operations my_fuse_ops = {
+ *     ...
+ *     my_open,
+ *     NULL,  // opendir() not implemented.
+ *     my_read,
+ *     ...
+ *   };
+ *
+ *   ...
+ *
+ *   const char mount_type[] = "my_mount";
+ *   int result = nacl_io_register_mount_type(mount_type, &my_fuse_ops);
+ *   if (!result) {
+ *     fprintf(stderr, "Error registering mount type %s.\n", mount_type);
+ *     exit(1);
+ *   }
+ *
+ *   ...
+ *
+ *   int result = mount("", "/mnt/foo", mount_type, 0, NULL);
+ *   if (!result) {
+ *     fprintf(stderr, "Error mounting %s.\n", mount_type);
+ *     exit(1);
+ *   }
+ *
+ * See fuse.h for more information about the FUSE interface.
+ * Also see fuse.sourceforge.net for more information about FUSE in general.
+ *
+ * @param[in] mount_type The name of the new mount type.
+ * @param[in] fuse_ops A pointer to the FUSE interface that will be used to
+ *     implement this mount type. This pointer must be valid for the lifetime
+ *     of all mounts and nodes that are created with it.
+ * @return 0 on success, -1 on failure (with errno set).
+ */
+struct fuse_operations;
+int nacl_io_register_mount_type(const char* mount_type,
+                                struct fuse_operations* fuse_ops);
+
+/**
+ * Unregister a mount type, previously registered by
+ * nacl_io_register_mount_type().
+ *
+ * @param[in] mount_type The name of the mount type; the same identifier that
+ *     was passed to nacl_io_register_mount_type().
+ * @return 0 on success, -1 on failure (with errno set).
+ */
+int nacl_io_unregister_mount_type(const char* mount_type);
+
 EXTERN_C_END
 
 #endif  /* LIBRARIES_NACL_IO_NACL_IO_H_ */

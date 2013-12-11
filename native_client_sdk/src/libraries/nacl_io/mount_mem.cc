@@ -23,8 +23,8 @@ namespace nacl_io {
 
 MountMem::MountMem() : root_(NULL) {}
 
-Error MountMem::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-  Error error = Mount::Init(dev, args, ppapi);
+Error MountMem::Init(const MountInitArgs& args) {
+  Error error = Mount::Init(args);
   if (error)
     return error;
 
