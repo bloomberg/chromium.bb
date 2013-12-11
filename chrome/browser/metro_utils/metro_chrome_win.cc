@@ -37,7 +37,8 @@ bool ActivateMetroChrome() {
   HRESULT hr = activation_manager.CreateInstance(
       CLSID_ApplicationActivationManager);
   if (!activation_manager) {
-    NOTREACHED() << "Failed to cocreate activation manager. Error: " << hr;
+    NOTREACHED() << "Failed to cocreate activation manager. Error: "
+                 << std::showbase << std::hex << hr;
     return false;
   }
 
@@ -47,7 +48,8 @@ bool ActivateMetroChrome() {
                                                AO_NONE,
                                                &pid);
   if (FAILED(hr)) {
-    NOTREACHED() << "Failed to activate metro chrome. Error: " << hr;
+    NOTREACHED() << "Failed to activate metro chrome. Error: "
+                 << std::showbase << std::hex << hr;
     return false;
   }
 
