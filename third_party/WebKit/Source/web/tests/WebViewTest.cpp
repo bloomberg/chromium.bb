@@ -58,11 +58,15 @@
 #include "core/page/Chrome.h"
 #include "core/page/Settings.h"
 #include "core/platform/chromium/KeyboardCodes.h"
+#include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebWidgetClient.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 using namespace blink;
 using blink::FrameTestHelpers::runPendingTasks;
@@ -283,6 +287,35 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
     // webView does not have a frame yet, but we should still be able to set the background color.
     webView->setBaseBackgroundColor(kBlue);
     EXPECT_EQ(kBlue, webView->backgroundColor());
+}
+
+TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
+{
+    const WebColor kAlphaRed = 0x80FF0000;
+    const WebColor kAlphaGreen = 0x8000FF00;
+    const int kWidth = 100;
+    const int kHeight = 100;
+
+    // Set WebView background to green with alpha.
+    WebView* webView = m_webViewHelper.initialize();
+    webView->setBaseBackgroundColor(kAlphaGreen);
+    webView->settings()->setShouldClearDocumentBackground(false);
+    webView->resize(WebSize(kWidth, kHeight));
+    webView->layout();
+
+    // Set canvas background to red with alpha.
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, kWidth, kHeight);
+    bitmap.allocPixels();
+    SkBitmapDevice device(bitmap);
+    SkCanvas canvas(&device);
+    canvas.clear(kAlphaRed);
+    webView->paint(&canvas, WebRect(0, 0, kWidth, kHeight));
+
+    // The result should be a blend of red and green.
+    SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);
+    EXPECT_TRUE(WebCore::redChannel(color));
+    EXPECT_TRUE(WebCore::greenChannel(color));
 }
 
 TEST_F(WebViewTest, FocusIsInactive)

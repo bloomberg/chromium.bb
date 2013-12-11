@@ -628,6 +628,11 @@ void WebSettingsImpl::setShouldPrintBackgrounds(bool enabled)
     m_settings->setShouldPrintBackgrounds(enabled);
 }
 
+void WebSettingsImpl::setShouldClearDocumentBackground(bool enabled)
+{
+    m_settings->setShouldClearDocumentBackground(enabled);
+}
+
 void WebSettingsImpl::setEnableScrollAnimator(bool enabled)
 {
     m_settings->setScrollAnimatorEnabled(enabled);
