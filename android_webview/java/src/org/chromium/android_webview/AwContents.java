@@ -865,7 +865,7 @@ public class AwContents {
      */
     public void loadUrl(LoadUrlParams params) {
         if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA &&
-            !params.isBaseUrlDataScheme()) {
+                !params.isBaseUrlDataScheme()) {
             // This allows data URLs with a non-data base URL access to file:///android_asset/ and
             // file:///android_res/ URLs. If AwSettings.getAllowFileAccess permits, it will also
             // allow access to file:// URLs (subject to OS level permission checks).
@@ -874,9 +874,9 @@ public class AwContents {
 
         // If we are reloading the same url, then set transition type as reload.
         if (params.getUrl() != null &&
-            params.getUrl().equals(mContentViewCore.getUrl()) &&
-            params.getTransitionType() == PageTransitionTypes.PAGE_TRANSITION_LINK) {
-            params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
+                params.getUrl().equals(mContentViewCore.getUrl()) &&
+                params.getTransitionType() == PageTransitionTypes.PAGE_TRANSITION_LINK) {
+                params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
         }
         params.setTransitionType(
                 params.getTransitionType() | PageTransitionTypes.PAGE_TRANSITION_FROM_API);
@@ -901,6 +901,13 @@ public class AwContents {
         if (!mHasRequestedVisitedHistoryFromClient) {
             mHasRequestedVisitedHistoryFromClient = true;
             requestVisitedHistoryFromClient();
+        }
+
+        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA &&
+                params.getBaseUrl() != null) {
+            // Data loads with a base url will be resolved in Blink, and not cause an onPageStarted
+            // event to be sent. Sending the callback directly from here.
+            mContentsClient.getCallbackHelper().postOnPageStarted(params.getBaseUrl());
         }
     }
 

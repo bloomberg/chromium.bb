@@ -24,6 +24,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Tests for the {@link android.webkit.WebView#loadDataWithBaseURL(String, String, String, String,
+ * String)} method.
+ */
 public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
@@ -191,6 +195,19 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
                 "</body></html>";
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, null, null);
         assertEquals("about:blank", getTitleOnUiThread(mAwContents));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testloadDataWithBaseUrlCallsOnPageStarted() throws Throwable {
+        final String baseUrl = "http://base.com/";
+        TestCallbackHelperContainer.OnPageStartedHelper onPageStartedHelper =
+                mContentsClient.getOnPageStartedHelper();
+        final int callCount = onPageStartedHelper.getCallCount();
+        loadDataWithBaseUrlAsync(CommonResources.ABOUT_HTML, "text/html", false, baseUrl,
+                "about:blank");
+        onPageStartedHelper.waitForCallback(callCount);
+        assertEquals(baseUrl, onPageStartedHelper.getUrl());
     }
 
     @SmallTest
