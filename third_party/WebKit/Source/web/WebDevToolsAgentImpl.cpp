@@ -351,6 +351,7 @@ void WebDevToolsAgentImpl::enableViewportEmulation()
     m_originalViewportEnabled = RuntimeEnabledFeatures::cssViewportEnabled();
     RuntimeEnabledFeatures::setCSSViewportEnabled(true);
     m_webViewImpl->settings()->setViewportEnabled(true);
+    m_webViewImpl->settings()->setViewportMetaEnabled(true);
     m_webViewImpl->setIgnoreViewportTagScaleLimits(true);
     m_webViewImpl->setPageScaleFactorLimits(-1, -1);
     m_webViewImpl->setZoomFactorOverride(1);
@@ -362,6 +363,7 @@ void WebDevToolsAgentImpl::disableViewportEmulation()
         return;
     RuntimeEnabledFeatures::setCSSViewportEnabled(m_originalViewportEnabled);
     m_webViewImpl->settings()->setViewportEnabled(false);
+    m_webViewImpl->settings()->setViewportMetaEnabled(false);
     m_webViewImpl->setIgnoreViewportTagScaleLimits(false);
     m_webViewImpl->setPageScaleFactorLimits(1, 1);
     m_webViewImpl->setZoomFactorOverride(0);
