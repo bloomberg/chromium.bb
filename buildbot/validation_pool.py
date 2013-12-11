@@ -1219,9 +1219,8 @@ class ValidationPool(object):
       changes: List of changes for this validation pool.
       non_manifest_changes: List of changes that are part of this validation
         pool but aren't part of the cros checkout.
-      changes_that_failed_to_apply_earlier: Changes that failed to apply but
-        we're keeping around because they conflict with other changes in
-        flight.
+      conflicting_changes: Changes that failed to apply but we're keeping around
+        because they conflict with other changes in flight.
       pre_cq: If set to True, this builder is verifying CLs before they go to
         the commit queue.
     """
