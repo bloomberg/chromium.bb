@@ -47,10 +47,12 @@ void ReturnRetryOnSuccess(const SyncStatusCallback& callback,
 }  // namespace
 
 LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
+                                         const SyncFileMetadata& local_metadata,
                                          const FileChange& local_change,
                                          const base::FilePath& local_path,
                                          const fileapi::FileSystemURL& url)
     : sync_context_(sync_context),
+      local_metadata_(local_metadata),
       local_change_(local_change),
       local_path_(local_path),
       url_(url),
@@ -113,9 +115,10 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
 
   if (!missing_components.empty()) {
     if (local_change_.IsDelete() ||
-        local_change_.file_type() == SYNC_FILE_TYPE_UNKNOWN) {
-      // !IsDelete() case is an error, handle the case as a local deletion case.
-      DCHECK(local_change_.IsDelete());
+        local_metadata_.file_type == SYNC_FILE_TYPE_UNKNOWN) {
+      // !IsDelete() but SYNC_FILE_TYPE_UNKNOWN could happen when a file is
+      // deleted by recursive deletion (which is not recorded by tracker)
+      // but there're remaining changes for the same file in the tracker.
 
       // Local file is deleted and remote file is missing, already deleted or
       // not yet synced.  There is nothing to do for the file.
@@ -238,10 +241,7 @@ void LocalToRemoteSyncer::HandleExistingRemoteFile(
   DCHECK(remote_file_tracker_->has_synced_details());
 
   if (local_change_.IsDelete() ||
-      local_change_.file_type() == SYNC_FILE_TYPE_UNKNOWN) {
-    // !IsDelete() case is an error, handle the case as a local deletion case.
-    DCHECK(local_change_.IsDelete());
-
+      local_metadata_.file_type == SYNC_FILE_TYPE_UNKNOWN) {
     // Local file deletion for existing remote file.
     DeleteRemoteFile(callback);
     return;

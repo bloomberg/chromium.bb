@@ -157,7 +157,8 @@ class LocalToRemoteSyncerTest : public testing::Test,
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     base::FilePath local_path = base::FilePath::FromUTF8Unsafe("dummy");
     scoped_ptr<LocalToRemoteSyncer> syncer(new LocalToRemoteSyncer(
-        this, file_change, local_path, url));
+        this, SyncFileMetadata(file_change.file_type(), 0, base::Time()),
+        file_change, local_path, url));
     syncer->Run(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;

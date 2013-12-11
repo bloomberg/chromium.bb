@@ -39,6 +39,7 @@ class SyncEngineContext;
 class LocalToRemoteSyncer : public SyncTask {
  public:
   LocalToRemoteSyncer(SyncEngineContext* sync_context,
+                      const SyncFileMetadata& local_metadata,
                       const FileChange& local_change,
                       const base::FilePath& local_path,
                       const fileapi::FileSystemURL& url);
@@ -102,6 +103,7 @@ class LocalToRemoteSyncer : public SyncTask {
 
   SyncEngineContext* sync_context_;  // Not owned.
 
+  SyncFileMetadata local_metadata_;
   FileChange local_change_;
   base::FilePath local_path_;
   fileapi::FileSystemURL url_;
