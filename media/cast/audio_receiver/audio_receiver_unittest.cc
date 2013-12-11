@@ -9,7 +9,7 @@
 #include "media/cast/audio_receiver/audio_receiver.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/pacing/mock_paced_packet_sender.h"
+#include "media/cast/net/pacing/mock_paced_packet_sender.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"

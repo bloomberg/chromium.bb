@@ -8,7 +8,7 @@
 #define MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_TEST_RTP_PACKET_BUILDER_H_
 
 
-#include "media/cast/rtp_common/rtp_defines.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {

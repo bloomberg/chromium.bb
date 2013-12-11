@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer.h"
+#include "media/cast/net/rtp_sender/rtp_packetizer/rtp_packetizer.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/pacing/paced_sender.h"
-#include "media/cast/rtp_common/rtp_defines.h"
-#include "media/cast/rtp_sender/packet_storage/packet_storage.h"
-#include "media/cast/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"
+#include "media/cast/net/pacing/paced_sender.h"
+#include "media/cast/net/rtp_sender/packet_storage/packet_storage.h"
+#include "media/cast/net/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -34,22 +33,22 @@ class TestRtpPacketTransport : public PacedPacketSender {
          expected_packet_id_(0),
          expected_frame_id_(0) {}
 
-  void VerifyRtpHeader(const RtpCastHeader& rtp_header) {
+  void VerifyRtpHeader(const RtpCastTestHeader& rtp_header) {
     VerifyCommonRtpHeader(rtp_header);
     VerifyCastRtpHeader(rtp_header);
   }
 
-  void VerifyCommonRtpHeader(const RtpCastHeader& rtp_header) {
+  void VerifyCommonRtpHeader(const RtpCastTestHeader& rtp_header) {
     EXPECT_EQ(expected_number_of_packets_ == packets_sent_,
-        rtp_header.webrtc.header.markerBit);
-    EXPECT_EQ(kPayload, rtp_header.webrtc.header.payloadType);
-    EXPECT_EQ(sequence_number_, rtp_header.webrtc.header.sequenceNumber);
-    EXPECT_EQ(kTimestampMs * 90, rtp_header.webrtc.header.timestamp);
-    EXPECT_EQ(config_.ssrc, rtp_header.webrtc.header.ssrc);
-    EXPECT_EQ(0, rtp_header.webrtc.header.numCSRCs);
+        rtp_header.marker);
+    EXPECT_EQ(kPayload, rtp_header.payload_type);
+    EXPECT_EQ(sequence_number_, rtp_header.sequence_number);
+    EXPECT_EQ(kTimestampMs * 90, rtp_header.rtp_timestamp);
+    EXPECT_EQ(config_.ssrc, rtp_header.ssrc);
+    EXPECT_EQ(0, rtp_header.num_csrcs);
   }
 
-  void VerifyCastRtpHeader(const RtpCastHeader& rtp_header) {
+  void VerifyCastRtpHeader(const RtpCastTestHeader& rtp_header) {
     EXPECT_FALSE(rtp_header.is_key_frame);
     EXPECT_EQ(expected_frame_id_, rtp_header.frame_id);
     EXPECT_EQ(expected_packet_id_, rtp_header.packet_id);
@@ -64,7 +63,7 @@ class TestRtpPacketTransport : public PacedPacketSender {
     for (; it != packets.end(); ++it) {
       ++packets_sent_;
       RtpHeaderParser parser(it->data(), it->size());
-      RtpCastHeader rtp_header;
+      RtpCastTestHeader rtp_header;
       parser.Parse(&rtp_header);
       VerifyRtpHeader(rtp_header);
       ++sequence_number_;

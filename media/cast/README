@@ -16,7 +16,7 @@ cast/audio_sender/
 cast/congestion_control/
     Bandwidth estimation and network congestion handling.
 
-cast/pacing/
+cast/net/pacing/
     Module for rate limiting data outflow.
 
 cast/rtcp/
@@ -28,7 +28,7 @@ cast/rtp_common/
 cast/rtp_receiver/
     Module for reciving RTP messages.
 
-cast/rtp_sender/
+cast/net/rtp_sender/
     Module for sending RTP messages.
 
 cast/test/

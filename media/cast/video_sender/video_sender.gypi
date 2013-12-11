@@ -23,7 +23,7 @@
       'dependencies': [
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/media/cast/rtcp/rtcp.gyp:*',
-        '<(DEPTH)/media/cast/rtp_sender/rtp_sender.gyp:*',
+        '<(DEPTH)/media/cast/net/rtp_sender/rtp_sender.gyp:*',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         'congestion_control',

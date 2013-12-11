@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_PACING_PACED_SENDER_H_
-#define MEDIA_CAST_PACING_PACED_SENDER_H_
+#ifndef MEDIA_CAST_NET_PACING_PACED_SENDER_H_
+#define MEDIA_CAST_NET_PACING_PACED_SENDER_H_
 
 #include <list>
 #include <vector>
@@ -80,4 +80,4 @@ class PacedSender : public PacedPacketSender,
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_PACING_PACED_SENDER_H_
+#endif  // MEDIA_CAST_NET_PACING_PACED_SENDER_H_

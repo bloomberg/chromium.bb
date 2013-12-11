@@ -8,7 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/pacing/mock_paced_packet_sender.h"
+#include "media/cast/net/pacing/mock_paced_packet_sender.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/video_receiver/video_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_PACING_MOCK_PACED_PACKET_SENDER_H_
-#define MEDIA_CAST_PACING_MOCK_PACED_PACKET_SENDER_H_
+#ifndef MEDIA_CAST_NET_PACING_MOCK_PACED_PACKET_SENDER_H_
+#define MEDIA_CAST_NET_PACING_MOCK_PACED_PACKET_SENDER_H_
 
-#include "media/cast/pacing/paced_sender.h"
+#include "media/cast/net/pacing/paced_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -24,4 +24,4 @@ class MockPacedPacketSender : public PacedPacketSender {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_PACING_MOCK_PACED_PACKET_SENDER_H_
+#endif  // MEDIA_CAST_NET_PACING_MOCK_PACED_PACKET_SENDER_H_

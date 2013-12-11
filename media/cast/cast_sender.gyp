@@ -26,9 +26,9 @@
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         'audio_sender',
         'congestion_control',
-        'pacing/paced_sender.gyp:cast_paced_sender',
+        'net/pacing/paced_sender.gyp:cast_paced_sender',
+        'net/rtp_sender/rtp_sender.gyp:cast_rtp_sender',
         'rtcp/rtcp.gyp:cast_rtcp',
-        'rtp_sender/rtp_sender.gyp:cast_rtp_sender',
         'video_sender',
       ], # dependencies
     },

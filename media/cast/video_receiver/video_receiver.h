@@ -17,8 +17,8 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/rtcp/rtcp.h"
-#include "media/cast/rtp_common/rtp_defines.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace crypto {
   class Encryptor;

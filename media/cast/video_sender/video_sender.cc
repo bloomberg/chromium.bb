@@ -12,7 +12,7 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/pacing/paced_sender.h"
+#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/video_sender/video_encoder.h"
 
 namespace media {

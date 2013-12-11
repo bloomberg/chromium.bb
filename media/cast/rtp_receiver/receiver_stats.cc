@@ -5,7 +5,7 @@
 #include "media/cast/rtp_receiver/receiver_stats.h"
 
 #include "base/logging.h"
-#include "media/cast/rtp_common/rtp_defines.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {

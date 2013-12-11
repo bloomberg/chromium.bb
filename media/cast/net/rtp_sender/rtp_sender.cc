@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/rtp_sender/rtp_sender.h"
+#include "media/cast/net/rtp_sender/rtp_sender.h"
 
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/pacing/paced_sender.h"
+#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "net/base/big_endian.h"
 

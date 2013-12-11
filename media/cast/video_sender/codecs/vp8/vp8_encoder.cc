@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/rtp_common/rtp_defines.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 
 namespace media {

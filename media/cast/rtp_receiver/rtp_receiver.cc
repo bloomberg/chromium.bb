@@ -5,9 +5,9 @@
 #include "media/cast/rtp_receiver/rtp_receiver.h"
 
 #include "base/logging.h"
-#include "media/cast/rtp_common/rtp_defines.h"
 #include "media/cast/rtp_receiver/receiver_stats.h"
 #include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 #include "net/base/big_endian.h"
 
 namespace media {

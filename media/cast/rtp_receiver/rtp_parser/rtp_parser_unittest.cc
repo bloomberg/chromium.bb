@@ -5,10 +5,10 @@
 #include <gtest/gtest.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "media/cast/rtp_common/rtp_defines.h"
 #include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
 #include "media/cast/rtp_receiver/rtp_parser/test/rtp_packet_builder.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {

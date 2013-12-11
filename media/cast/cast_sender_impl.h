@@ -10,7 +10,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/pacing/paced_sender.h"
+#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/video_sender/video_sender.h"
 
 namespace media {

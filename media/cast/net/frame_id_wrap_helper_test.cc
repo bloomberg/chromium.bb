@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <gtest/gtest.h>
-#include <media/cast/cast_defines.h>
+#include "media/cast/net/cast_net_defines.h"
 
 namespace media {
 namespace cast {

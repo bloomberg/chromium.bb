@@ -5,7 +5,8 @@
 #ifndef MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_RTP_PARSER_H_
 #define MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_RTP_PARSER_H_
 
-#include "media/cast/rtp_common/rtp_defines.h"
+#include "media/cast/net/cast_net_defines.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {

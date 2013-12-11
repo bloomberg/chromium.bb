@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTP_SENDER_PACKET_STORAGE_INCLUDE_PACKET_STORAGE_H_
-#define MEDIA_CAST_RTP_SENDER_PACKET_STORAGE_INCLUDE_PACKET_STORAGE_H_
+#ifndef MEDIA_CAST_NET_RTP_SENDER_PACKET_STORAGE_PACKET_STORAGE_H_
+#define MEDIA_CAST_NET_RTP_SENDER_PACKET_STORAGE_PACKET_STORAGE_H_
 
 #include <list>
 #include <map>
@@ -52,4 +52,4 @@ class PacketStorage {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTP_SENDER_PACKET_STORAGE_INCLUDE_PACKET_STORAGE_H_
+#endif  // MEDIA_CAST_NET_RTP_SENDER_PACKET_STORAGE_PACKET_STORAGE_H_

@@ -4,8 +4,8 @@
 
 // This file contains the interface to the cast RTP sender.
 
-#ifndef MEDIA_CAST_RTP_SENDER_RTP_SENDER_H_
-#define MEDIA_CAST_RTP_SENDER_RTP_SENDER_H_
+#ifndef MEDIA_CAST_NET_RTP_SENDER_RTP_SENDER_H_
+#define MEDIA_CAST_NET_RTP_SENDER_RTP_SENDER_H_
 
 #include <map>
 #include <set>
@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/rtp_sender/packet_storage/packet_storage.h"
-#include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer.h"
-#include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer_config.h"
+#include "media/cast/net/rtp_sender/packet_storage/packet_storage.h"
+#include "media/cast/net/rtp_sender/rtp_packetizer/rtp_packetizer.h"
+#include "media/cast/net/rtp_sender/rtp_packetizer/rtp_packetizer_config.h"
 
 namespace media {
 namespace cast {
@@ -63,4 +63,4 @@ class RtpSender {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTP_SENDER_RTP_SENDER_H_
+#endif  // MEDIA_CAST_NET_RTP_SENDER_RTP_SENDER_H_

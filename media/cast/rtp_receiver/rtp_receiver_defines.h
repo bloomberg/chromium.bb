@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTP_COMMON_RTP_DEFINES_H_
-#define MEDIA_CAST_RTP_COMMON_RTP_DEFINES_H_
+#ifndef MEDIA_CAST_RTP_RECEIVER_RTP_RECEIVER_DEFINES_H_
+#define MEDIA_CAST_RTP_RECEIVER_RTP_RECEIVER_DEFINES_H_
 
 #include "base/basictypes.h"
 #include "media/cast/cast_config.h"
@@ -45,4 +45,4 @@ class RtpPayloadFeedback {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTP_COMMON_RTP_DEFINES_H_
+#endif  // MEDIA_CAST_RTP_RECEIVER_RTP_RECEIVER_DEFINES_H_

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/pacing/paced_sender.h"
+#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

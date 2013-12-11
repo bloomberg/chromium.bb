@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_RECEIVER_H_
 #define MEDIA_CAST_RTCP_RTCP_RECEIVER_H_
 
+#include "media/cast/net/cast_net_defines.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_utility.h"

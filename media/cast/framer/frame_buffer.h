@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "media/cast/cast_config.h"
-#include "media/cast/rtp_common/rtp_defines.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_H_
-#define MEDIA_CAST_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_H_
+#ifndef MEDIA_CAST_NET_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_H_
+#define MEDIA_CAST_NET_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_H_
 
 #include <cmath>
 #include <list>
 #include <map>
 
 #include "base/time/time.h"
-#include "media/cast/rtp_common/rtp_defines.h"
-#include "media/cast/rtp_sender/packet_storage/packet_storage.h"
-#include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer_config.h"
+#include "media/cast/net/rtp_sender/packet_storage/packet_storage.h"
+#include "media/cast/net/rtp_sender/rtp_packetizer/rtp_packetizer_config.h"
 
 namespace media {
 namespace cast {
@@ -71,4 +70,4 @@ class RtpPacketizer {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_H_
+#endif  // MEDIA_CAST_NET_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_H_

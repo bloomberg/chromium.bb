@@ -10,7 +10,7 @@
 #include "media/cast/audio_sender/audio_sender.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/pacing/mock_paced_packet_sender.h"
+#include "media/cast/net/pacing/mock_paced_packet_sender.h"
 #include "media/cast/test/audio_utility.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"

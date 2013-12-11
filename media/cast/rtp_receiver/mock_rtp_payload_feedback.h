@@ -5,7 +5,7 @@
 #ifndef MEDIA_CAST_RTP_COMMON_MOCK_RTP_PAYLOAD_FEEDBACK_H_
 #define MEDIA_CAST_RTP_COMMON_MOCK_RTP_PAYLOAD_FEEDBACK_H_
 
-#include "media/cast/rtp_common/rtp_defines.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {

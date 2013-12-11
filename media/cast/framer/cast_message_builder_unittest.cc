@@ -6,7 +6,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/framer/cast_message_builder.h"
 #include "media/cast/rtcp/rtcp.h"
-#include "media/cast/rtp_common/rtp_defines.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

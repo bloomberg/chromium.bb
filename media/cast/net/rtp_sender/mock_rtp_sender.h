@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "media/cast/rtp_sender/rtp_sender.h"
+#include "media/cast/net/rtp_sender/rtp_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {

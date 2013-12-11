@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/rtp_sender/rtp_packetizer/rtp_packetizer_config.h"
+#include "media/cast/net/rtp_sender/rtp_packetizer/rtp_packetizer_config.h"
 
 namespace media {
 namespace cast {

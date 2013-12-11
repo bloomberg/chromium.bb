@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/pacing/paced_sender.h"
+#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "net/base/big_endian.h"
 

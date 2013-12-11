@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_CONFIG_H_
-#define CAST_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_CONFIG_H_
+#ifndef CAST_NET_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_CONFIG_H_
+#define CAST_NET_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_CONFIG_H_
 
 #include "media/cast/cast_config.h"
-#include "media/cast/rtp_common/rtp_defines.h"
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {
@@ -36,4 +36,4 @@ struct RtpPacketizerConfig {
 }  // namespace cast
 }  // namespace media
 
-#endif  // CAST_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_CONFIG_H_
+#endif  // CAST_NET_RTP_SENDER_RTP_PACKETIZER_RTP_PACKETIZER_CONFIG_H_

@@ -25,7 +25,7 @@
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         'cast_audio_receiver',
         'cast_video_receiver',
-        'pacing/paced_sender.gyp:cast_paced_sender',
+        'net/pacing/paced_sender.gyp:cast_paced_sender',
         'rtp_receiver/rtp_receiver.gyp:cast_rtp_receiver',
       ],
     },

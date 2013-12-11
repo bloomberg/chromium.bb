@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"
+#include "media/cast/net/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"
 
 #include <cstddef>
 
@@ -16,6 +16,23 @@ static const uint8 kCastReferenceFrameIdBitMask = 0x40;
 static const size_t kRtpCommonHeaderLength = 12;
 static const size_t kRtpCastHeaderLength = 12;
 
+RtpCastTestHeader::RtpCastTestHeader()
+    : is_key_frame(false),
+      frame_id(0),
+      packet_id(0),
+      max_packet_id(0),
+      is_reference(false),
+      reference_frame_id(0),
+      marker(false),
+      sequence_number(0),
+      rtp_timestamp(0),
+      ssrc(0),
+      payload_type(0),
+      num_csrcs(0),
+      audio_num_energy(0),
+      header_length(0) {}
+
+RtpCastTestHeader::~RtpCastTestHeader() {}
 
 RtpHeaderParser::RtpHeaderParser(const uint8* rtp_data,
                                  size_t rtp_data_length)
@@ -24,14 +41,14 @@ RtpHeaderParser::RtpHeaderParser(const uint8* rtp_data,
 
 RtpHeaderParser::~RtpHeaderParser() {}
 
-bool RtpHeaderParser::Parse(RtpCastHeader* parsed_packet) const {
+bool RtpHeaderParser::Parse(RtpCastTestHeader* parsed_packet) const {
   if (length_ <  kRtpCommonHeaderLength + kRtpCastHeaderLength)
     return false;
   if (!ParseCommon(parsed_packet)) return false;
   return ParseCast(parsed_packet);
 }
 
-bool RtpHeaderParser::ParseCommon(RtpCastHeader* parsed_packet) const {
+bool RtpHeaderParser::ParseCommon(RtpCastTestHeader* parsed_packet) const {
   const uint8 version  = rtp_data_begin_[0] >> 6;
   if (version != 2) {
     return false;
@@ -52,21 +69,20 @@ bool RtpHeaderParser::ParseCommon(RtpCastHeader* parsed_packet) const {
 
   const uint8 csrc_octs = num_csrcs * 4;
 
-  parsed_packet->webrtc.header.markerBit      = marker;
-  parsed_packet->webrtc.header.payloadType    = payload_type;
-  parsed_packet->webrtc.header.sequenceNumber = sequence_number;
-  parsed_packet->webrtc.header.timestamp      = rtp_timestamp;
-  parsed_packet->webrtc.header.ssrc           = ssrc;
-  parsed_packet->webrtc.header.numCSRCs       = num_csrcs;
+  parsed_packet->marker = marker;
+  parsed_packet->payload_type = payload_type;
+  parsed_packet->sequence_number = sequence_number;
+  parsed_packet->rtp_timestamp = rtp_timestamp;
+  parsed_packet->ssrc = ssrc;
+  parsed_packet->num_csrcs = num_csrcs;
 
-  parsed_packet->webrtc.type.Audio.numEnergy =
-      parsed_packet->webrtc.header.numCSRCs;
+  parsed_packet->audio_num_energy = parsed_packet->num_csrcs;
 
-  parsed_packet->webrtc.header.headerLength   = 12 + csrc_octs;
+  parsed_packet->header_length = 12 + csrc_octs;
   return true;
 }
 
-bool RtpHeaderParser::ParseCast(RtpCastHeader* parsed_packet) const {
+bool RtpHeaderParser::ParseCast(RtpCastTestHeader* parsed_packet) const {
   const uint8* data = rtp_data_begin_ + kRtpCommonHeaderLength;
   parsed_packet->is_key_frame = (data[0] & kCastKeyFrameBitMask);
   parsed_packet->is_reference = (data[0] & kCastReferenceFrameIdBitMask);
