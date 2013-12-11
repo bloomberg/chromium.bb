@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
+#include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES
@@ -12,8 +12,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
-namespace webkit {
-namespace gpu {
+namespace skia_bindings {
 
 GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   GrGLInterface* interface = new GrGLInterface;
@@ -130,5 +129,4 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   return interface;
 }
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace skia

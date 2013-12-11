@@ -35,8 +35,8 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/skia/include/core/SkTypes.h"
-#include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
 
 namespace content {
 
@@ -1337,7 +1337,7 @@ DELEGATE_TO_GL_2R(mapImageCHROMIUM, MapImageCHROMIUM,
 DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
 
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::createGrGLInterface() {
-  return webkit::gpu::CreateCommandBufferSkiaGLBinding();
+  return skia_bindings::CreateCommandBufferSkiaGLBinding();
 }
 
 namespace {

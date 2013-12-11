@@ -22,9 +22,9 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
 
 using gpu::gles2::GLES2Implementation;
 using gpu::GLInProcessContext;
@@ -1127,7 +1127,7 @@ WGC3Dboolean WebGraphicsContext3DInProcessCommandBufferImpl::
 
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     createGrGLInterface() {
-  return CreateCommandBufferSkiaGLBinding();
+  return skia_bindings::CreateCommandBufferSkiaGLBinding();
 }
 
 ::gpu::gles2::GLES2Interface*

@@ -433,6 +433,7 @@
         '../gpu/gpu.gyp:gles2_c_lib',
         '../gpu/gpu.gyp:gles2_implementation',
         '../gpu/gpu.gyp:gpu_ipc',
+        '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
