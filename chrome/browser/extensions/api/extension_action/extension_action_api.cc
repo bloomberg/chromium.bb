@@ -113,8 +113,7 @@ std::string RepresentationToString(const gfx::ImageSkia& image, float scale) {
   std::string raw_str(static_cast<const char*>(bitmap_pickle.data()),
                       bitmap_pickle.size());
   std::string base64_str;
-  if (!base::Base64Encode(raw_str, &base64_str))
-    return std::string();
+  base::Base64Encode(raw_str, &base64_str);
   return base64_str;
 }
 

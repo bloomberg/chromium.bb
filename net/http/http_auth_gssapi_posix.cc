@@ -734,11 +734,7 @@ int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
   std::string encode_input(static_cast<char*>(output_token.value),
                            output_token.length);
   std::string encode_output;
-  bool base64_rv = base::Base64Encode(encode_input, &encode_output);
-  if (!base64_rv) {
-    LOG(ERROR) << "Base64 encoding of auth token failed.";
-    return ERR_ENCODING_CONVERSION_FAILED;
-  }
+  base::Base64Encode(encode_input, &encode_output);
   *auth_token = scheme_ + " " + encode_output;
   return OK;
 }

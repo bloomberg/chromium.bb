@@ -16,8 +16,7 @@ TEST(Base64Test, Basic) {
   std::string decoded;
   bool ok;
 
-  ok = Base64Encode(kText, &encoded);
-  EXPECT_TRUE(ok);
+  Base64Encode(kText, &encoded);
   EXPECT_EQ(kBase64Text, encoded);
 
   ok = Base64Decode(encoded, &decoded);

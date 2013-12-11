@@ -292,8 +292,7 @@ WebURL WebKitTestRunner::localFileToDataURL(const WebURL& file_url) {
         routing_id(), local_path, &contents));
 
   std::string contents_base64;
-  if (!base::Base64Encode(contents, &contents_base64))
-    return WebURL();
+  base::Base64Encode(contents, &contents_base64);
 
   const char data_url_prefix[] = "data:text/css:charset=utf-8;base64,";
   return WebURL(GURL(data_url_prefix + contents_base64));

@@ -156,10 +156,7 @@ scoped_ptr<buzz::XmlElement> V2Authenticator::GetNextMessage() {
   while (!pending_messages_.empty()) {
     const std::string& spake_message = pending_messages_.front();
     std::string base64_message;
-    if (!base::Base64Encode(spake_message, &base64_message)) {
-      LOG(DFATAL) << "Cannot perform base64 encode on certificate";
-      continue;
-    }
+    base::Base64Encode(spake_message, &base64_message);
 
     buzz::XmlElement* eke_tag = new buzz::XmlElement(kEkeTag);
     eke_tag->SetBodyText(base64_message);
@@ -171,9 +168,7 @@ scoped_ptr<buzz::XmlElement> V2Authenticator::GetNextMessage() {
   if (!local_cert_.empty() && !certificate_sent_) {
     buzz::XmlElement* certificate_tag = new buzz::XmlElement(kCertificateTag);
     std::string base64_cert;
-    if (!base::Base64Encode(local_cert_, &base64_cert)) {
-      LOG(DFATAL) << "Cannot perform base64 encode on certificate";
-    }
+    base::Base64Encode(local_cert_, &base64_cert);
     certificate_tag->SetBodyText(base64_cert);
     message->AddElement(certificate_tag);
     certificate_sent_ = true;

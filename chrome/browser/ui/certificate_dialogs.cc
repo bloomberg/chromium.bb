@@ -49,11 +49,7 @@ std::string WrapAt64(const std::string &str) {
 
 std::string GetBase64String(net::X509Certificate::OSCertHandle cert) {
   std::string base64;
-  if (!base::Base64Encode(
-      x509_certificate_model::GetDerString(cert), &base64)) {
-    LOG(ERROR) << "base64 encoding error";
-    return std::string();
-  }
+  base::Base64Encode(x509_certificate_model::GetDerString(cert), &base64);
   return "-----BEGIN CERTIFICATE-----\r\n" +
       WrapAt64(base64) +
       "-----END CERTIFICATE-----\r\n";

@@ -170,10 +170,9 @@ void WebKitTestResultPrinter::PrintEncodedBinaryData(
   *output_ << "Content-Transfer-Encoding: base64\n";
 
   std::string data_base64;
-  const bool success = base::Base64Encode(
+  base::Base64Encode(
       base::StringPiece(reinterpret_cast<const char*>(&data[0]), data.size()),
       &data_base64);
-  DCHECK(success);
 
   *output_ << "Content-Length: " << data_base64.length() << "\n";
   output_->write(data_base64.c_str(), data_base64.length());

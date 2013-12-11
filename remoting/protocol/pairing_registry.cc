@@ -49,10 +49,8 @@ PairingRegistry::Pairing PairingRegistry::Pairing::Create(
   std::string shared_secret;
   char buffer[kKeySize];
   crypto::RandBytes(buffer, arraysize(buffer));
-  if (!base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
-                          &shared_secret)) {
-    LOG(FATAL) << "Base64Encode failed.";
-  }
+  base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
+                     &shared_secret);
   return Pairing(created_time, client_name, client_id, shared_secret);
 }
 

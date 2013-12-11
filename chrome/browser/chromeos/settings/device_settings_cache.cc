@@ -28,10 +28,7 @@ bool Store(const em::PolicyData& policy, PrefService* local_state) {
   if (local_state) {
     std::string policy_string = policy.SerializeAsString();
     std::string encoded;
-    if (!base::Base64Encode(policy_string, &encoded)) {
-      LOG(ERROR) << "Can't encode policy in base64.";
-      return false;
-    }
+    base::Base64Encode(policy_string, &encoded);
     local_state->SetString(prefs::kDeviceSettingsCache, encoded);
     return true;
   }

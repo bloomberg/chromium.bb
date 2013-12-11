@@ -66,10 +66,7 @@ void CachingPermutedEntropyProvider::UpdateLocalState() const {
   cache_.SerializeToString(&serialized);
 
   std::string base64_encoded;
-  if (!base::Base64Encode(serialized, &base64_encoded)) {
-    NOTREACHED();
-    return;
-  }
+  base::Base64Encode(serialized, &base64_encoded);
   local_state_->SetString(prefs::kMetricsPermutedEntropyCache, base64_encoded);
 }
 

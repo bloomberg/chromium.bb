@@ -20,10 +20,8 @@ std::string GenerateRandomStreamId() {
   char buffer[kStreamIdLengthBytes];
   crypto::RandBytes(buffer, arraysize(buffer));
   std::string result;
-  if (!base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
-                          &result)) {
-    LOG(FATAL) << "Base64Encode failed.";
-  }
+  base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
+                     &result);
   return result;
 }
 

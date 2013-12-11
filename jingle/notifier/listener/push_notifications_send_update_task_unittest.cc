@@ -36,7 +36,7 @@ TEST_F(PushNotificationsSendUpdateTaskTest, MakeUpdateMessage) {
   notification.data = "test_data";
 
   std::string base64_data;
-  EXPECT_TRUE(base::Base64Encode(notification.data, &base64_data));
+  base::Base64Encode(notification.data, &base64_data);
 
   scoped_ptr<buzz::XmlElement> message(
       PushNotificationsSendUpdateTask::MakeUpdateMessage(
