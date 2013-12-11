@@ -70,8 +70,10 @@ class LocalToRemoteSyncer : public SyncTask {
   void DidUpdateDatabaseForUploadExistingFile(
       const SyncStatusCallback& callback,
       SyncStatusCode status);
-  void UpdateRemoteMetadata(const SyncStatusCallback& callback);
-  void DidGetRemoteMetadata(const SyncStatusCallback& callback,
+  void UpdateRemoteMetadata(const std::string& file_id,
+                            const SyncStatusCallback& callback);
+  void DidGetRemoteMetadata(const std::string& file_id,
+                            const SyncStatusCallback& callback,
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::ResourceEntry> entry);
 

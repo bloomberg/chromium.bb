@@ -37,8 +37,8 @@ scoped_ptr<FileTracker> FindTrackerByID(MetadataDatabase* metadata_database,
   return scoped_ptr<FileTracker>();
 }
 
-void DidUpdateDatabase(const SyncStatusCallback& callback,
-                       SyncStatusCode status) {
+void ReturnRetryOnSuccess(const SyncStatusCallback& callback,
+                          SyncStatusCode status) {
   if (status == SYNC_STATUS_OK)
     status = SYNC_STATUS_RETRY;
   callback.Run(status);
@@ -363,10 +363,24 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
     // update database with it.
     // TODO(tzik): Consider adding local side low-priority dirtiness handling to
     // handle this as ListChangesTask.
-    UpdateRemoteMetadata(callback);
+    UpdateRemoteMetadata(remote_file_tracker_->file_id(),
+                         base::Bind(&ReturnRetryOnSuccess, callback));
     return;
   }
 
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  if (!entry) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  DCHECK(entry);
   metadata_database()->UpdateByFileResource(
       *drive::util::ConvertResourceEntryToFileResource(*entry),
       base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile,
@@ -409,29 +423,48 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
 }
 
 void LocalToRemoteSyncer::UpdateRemoteMetadata(
+    const std::string& file_id,
     const SyncStatusCallback& callback) {
   DCHECK(remote_file_tracker_);
   drive_service()->GetResourceEntry(
-      remote_file_tracker_->file_id(),
+      file_id,
       base::Bind(&LocalToRemoteSyncer::DidGetRemoteMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 file_id, callback));
 }
 
 void LocalToRemoteSyncer::DidGetRemoteMetadata(
+    const std::string& file_id,
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
+  if (error == google_apis::HTTP_NOT_FOUND) {
+    metadata_database()->UpdateByDeletedRemoteFile(file_id, callback);
+    return;
+  }
+
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  if (!entry) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
   metadata_database()->UpdateByFileResource(
-      *drive::util::ConvertResourceEntryToFileResource(*entry),
-      base::Bind(&DidUpdateDatabase, callback));
+      *drive::util::ConvertResourceEntryToFileResource(*entry), callback);
 }
 
 void LocalToRemoteSyncer::DidDeleteForUploadNewFile(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   if (status == SYNC_STATUS_HAS_CONFLICT) {
-    UpdateRemoteMetadata(callback);
+    UpdateRemoteMetadata(remote_file_tracker_->file_id(),
+                         base::Bind(&ReturnRetryOnSuccess, callback));
     return;
   }
 
@@ -447,7 +480,8 @@ void LocalToRemoteSyncer::DidDeleteForCreateFolder(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   if (status == SYNC_STATUS_HAS_CONFLICT) {
-    UpdateRemoteMetadata(callback);
+    UpdateRemoteMetadata(remote_file_tracker_->file_id(),
+                         base::Bind(&ReturnRetryOnSuccess, callback));
     return;
   }
 
@@ -480,9 +514,15 @@ void LocalToRemoteSyncer::DidUploadNewFile(
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (error != google_apis::HTTP_SUCCESS &&
-      error != google_apis::HTTP_CREATED) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  if (!entry) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
@@ -537,8 +577,9 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
 void LocalToRemoteSyncer::DidDetachResourceForCreationConflict(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 

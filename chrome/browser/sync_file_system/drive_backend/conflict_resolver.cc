@@ -211,9 +211,9 @@ void ConflictResolver::DidRemoveFile(const SyncStatusCallback& callback,
     return;
   }
 
-  if (error != google_apis::HTTP_SUCCESS &&
-      error != google_apis::HTTP_NOT_FOUND) {
-    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != SYNC_STATUS_OK && error != google_apis::HTTP_NOT_FOUND) {
+    callback.Run(status);
     return;
   }
 

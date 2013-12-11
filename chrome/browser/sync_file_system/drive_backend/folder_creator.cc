@@ -99,6 +99,12 @@ void FolderCreator::DidListFolders(
 
   scoped_ptr<google_apis::ResourceEntry> oldest =
       GetOldestCreatedFolderResource(candidates.Pass());
+
+  if (!oldest) {
+    callback.Run(std::string(), SYNC_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
   std::string file_id = oldest->resource_id();
 
   metadata_database_->UpdateByFileResourceList(
