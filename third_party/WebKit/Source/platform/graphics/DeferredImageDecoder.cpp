@@ -232,10 +232,16 @@ SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)
     ASSERT(decodedSize.width() > 0);
     ASSERT(decodedSize.height() > 0);
 
+    SkImageInfo info;
+    info.fWidth = decodedSize.width();
+    info.fHeight = decodedSize.height();
+    info.fColorType = kPMColor_SkColorType;
+    info.fAlphaType = kPremul_SkAlphaType;
+
     // Creates a lazily decoded SkPixelRef that references the entire image without scaling.
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, decodedSize.width(), decodedSize.height());
-    bitmap.setPixelRef(new LazyDecodingPixelRef(m_frameGenerator, index))->unref();
+    bitmap.setConfig(info);
+    bitmap.setPixelRef(new LazyDecodingPixelRef(info, m_frameGenerator, index))->unref();
 
     // Use the URI to identify this as a lazily decoded SkPixelRef of type LazyDecodingPixelRef.
     // FIXME: It would be more useful to give the actual image URI.

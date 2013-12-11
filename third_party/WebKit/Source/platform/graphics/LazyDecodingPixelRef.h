@@ -47,7 +47,7 @@ class ScaledImageFragment;
 
 class LazyDecodingPixelRef : public LazyPixelRef {
 public:
-    LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator>, size_t index);
+    LazyDecodingPixelRef(const SkImageInfo&, PassRefPtr<ImageFrameGenerator>, size_t index);
     virtual ~LazyDecodingPixelRef();
 
     SK_DECLARE_UNFLATTENABLE_OBJECT()

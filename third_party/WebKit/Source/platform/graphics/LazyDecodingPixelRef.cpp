@@ -33,8 +33,9 @@
 
 namespace WebCore {
 
-LazyDecodingPixelRef::LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator> frameGenerator, size_t index)
-    : m_frameGenerator(frameGenerator)
+LazyDecodingPixelRef::LazyDecodingPixelRef(const SkImageInfo& info, PassRefPtr<ImageFrameGenerator> frameGenerator, size_t index)
+    : LazyPixelRef(info)
+    , m_frameGenerator(frameGenerator)
     , m_frameIndex(index)
     , m_lockedImageResource(0)
     , m_objectTracker(this)

@@ -47,7 +47,7 @@ class PLATFORM_EXPORT DiscardablePixelRefAllocator : public SkBitmap::Allocator 
 // PixelRef object whose memory can be discarded when pixels are unlocked.
 class PLATFORM_EXPORT DiscardablePixelRef : public SkPixelRef {
 public:
-    DiscardablePixelRef(PassOwnPtr<SkMutex>);
+    DiscardablePixelRef(const SkImageInfo&, PassOwnPtr<SkMutex>);
     ~DiscardablePixelRef();
 
     static bool isDiscardable(SkPixelRef*);

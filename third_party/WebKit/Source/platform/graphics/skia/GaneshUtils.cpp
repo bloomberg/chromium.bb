@@ -51,7 +51,14 @@ bool ensureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap, const IntSize&
         SkAutoTUnref<GrTexture> texture(gr->createUncachedTexture(desc, 0, 0));
         if (!texture.get())
             return false;
-        SkGrPixelRef* pixelRef = SkNEW_ARGS(SkGrPixelRef, (texture.get()));
+
+        SkImageInfo info;
+        info.fWidth = desc.fWidth;
+        info.fHeight = desc.fHeight;
+        info.fColorType = kPMColor_SkColorType;
+        info.fAlphaType = kPremul_SkAlphaType;
+
+        SkGrPixelRef* pixelRef = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
         if (!pixelRef)
             return false;
         bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
