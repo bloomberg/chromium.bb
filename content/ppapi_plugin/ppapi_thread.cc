@@ -37,7 +37,6 @@
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/api_id.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -60,37 +59,12 @@ namespace content {
 typedef int32_t (*InitializeBrokerFunc)
     (PP_ConnectInstance_Func* connect_instance_func);
 
-PpapiThread::DispatcherMessageListener::DispatcherMessageListener(
-    PpapiThread* owner) : owner_(owner) {
-}
-
-PpapiThread::DispatcherMessageListener::~DispatcherMessageListener() {
-}
-
-bool PpapiThread::DispatcherMessageListener::OnMessageReceived(
-    const IPC::Message& msg) {
-  // The first parameter should be a plugin dispatcher ID.
-  PickleIterator iter(msg);
-  uint32 id = 0;
-  if (!msg.ReadUInt32(&iter, &id)) {
-    NOTREACHED();
-    return false;
-  }
-  std::map<uint32, ppapi::proxy::PluginDispatcher*>::iterator dispatcher =
-      owner_->plugin_dispatchers_.find(id);
-  if (dispatcher != owner_->plugin_dispatchers_.end())
-    return dispatcher->second->OnMessageReceived(msg);
-
-  return false;
-}
-
 PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
     : is_broker_(is_broker),
       connect_instance_func_(NULL),
       local_pp_module_(
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
-      next_plugin_dispatcher_id_(1),
-      dispatcher_message_listener_(this) {
+      next_plugin_dispatcher_id_(1) {
   ppapi::proxy::PluginGlobals* globals = ppapi::proxy::PluginGlobals::Get();
   globals->set_plugin_proxy_delegate(this);
   globals->set_command_line(
@@ -98,11 +72,6 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
 
   webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
   blink::initialize(webkit_platform_support_.get());
-
-  // Register interfaces that expect messages from the browser process. Please
-  // note that only those InterfaceProxy-based ones require registration.
-  AddRoute(ppapi::API_ID_PPB_HOSTRESOLVER_PRIVATE,
-           &dispatcher_message_listener_);
 }
 
 PpapiThread::~PpapiThread() {
