@@ -237,7 +237,7 @@
       "smoothness": {
         "action": "scroll",
         "scroll_requires_touch": true,
-        "remaining_scroll_distance_function": "function() { return Math.max(0, 1250 + document.getElementById('element-19').contentDocument.getElementById('element-22').getBoundingClientRect().top); }"
+        "scroll_distance_function": "function() { return Math.max(0, 1250 + document.getElementById('element-19').contentDocument.getElementById('element-22').getBoundingClientRect().top); }"
       }
     },
     {
@@ -250,7 +250,7 @@
       "smoothness": {
         "action": "scroll",
         "scroll_requires_touch": true,
-        "remaining_scroll_distance_function": "function() { return Math.max(0, 1250 + document.getElementById('element-5').getBoundingClientRect().top); }"
+        "scroll_distance_function": "function() { return Math.max(0, 1250 + document.getElementById('element-5').getBoundingClientRect().top); }"
       }
     },
     {
