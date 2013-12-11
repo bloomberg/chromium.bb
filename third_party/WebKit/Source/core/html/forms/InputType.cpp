@@ -993,4 +993,13 @@ Decimal InputType::findStepBase(const Decimal& defaultValue) const
     return stepBase;
 }
 
+StepRange InputType::createStepRange(AnyStepHandling anyStepHandling, const Decimal& stepBaseDefault, const Decimal& minimumDefault, const Decimal& maximumDefault, const StepRange::StepDescription& stepDescription) const
+{
+    const Decimal stepBase = findStepBase(stepBaseDefault);
+    const Decimal minimum = parseToNumber(element().fastGetAttribute(minAttr), minimumDefault);
+    const Decimal maximum = parseToNumber(element().fastGetAttribute(maxAttr), maximumDefault);
+    const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
+    return StepRange(stepBase, minimum, maximum, step, stepDescription);
+}
+
 } // namespace WebCore

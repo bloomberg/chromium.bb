@@ -95,11 +95,7 @@ StepRange TimeInputType::createStepRange(AnyStepHandling anyStepHandling) const
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (timeDefaultStep, timeDefaultStepBase, timeStepScaleFactor, StepRange::ScaledStepValueShouldBeInteger));
 
-    const Decimal stepBase = findStepBase(0);
-    const Decimal minimum = parseToNumber(element().fastGetAttribute(minAttr), Decimal::fromDouble(DateComponents::minimumTime()));
-    const Decimal maximum = parseToNumber(element().fastGetAttribute(maxAttr), Decimal::fromDouble(DateComponents::maximumTime()));
-    const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
-    return StepRange(stepBase, minimum, maximum, step, stepDescription);
+    return InputType::createStepRange(anyStepHandling, 0, Decimal::fromDouble(DateComponents::minimumTime()), Decimal::fromDouble(DateComponents::maximumTime()), stepDescription);
 }
 
 bool TimeInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const

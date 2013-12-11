@@ -77,11 +77,7 @@ StepRange DateInputType::createStepRange(AnyStepHandling anyStepHandling) const
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (dateDefaultStep, dateDefaultStepBase, dateStepScaleFactor, StepRange::ParsedStepValueShouldBeInteger));
 
-    const Decimal stepBase = findStepBase(0);
-    const Decimal minimum = parseToNumber(element().fastGetAttribute(minAttr), Decimal::fromDouble(DateComponents::minimumDate()));
-    const Decimal maximum = parseToNumber(element().fastGetAttribute(maxAttr), Decimal::fromDouble(DateComponents::maximumDate()));
-    const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
-    return StepRange(stepBase, minimum, maximum, step, stepDescription);
+    return InputType::createStepRange(anyStepHandling, 0, Decimal::fromDouble(DateComponents::minimumDate()), Decimal::fromDouble(DateComponents::maximumDate()), stepDescription);
 }
 
 bool DateInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const

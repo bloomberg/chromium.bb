@@ -240,6 +240,8 @@ protected:
     // Derive the step base, following the HTML algorithm steps.
     Decimal findStepBase(const Decimal&) const;
 
+    StepRange createStepRange(AnyStepHandling, const Decimal& stepBaseDefault, const Decimal& minimumDefault, const Decimal& maximumDefault, const StepRange::StepDescription&) const;
+
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
     void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
