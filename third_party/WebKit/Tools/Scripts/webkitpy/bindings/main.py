@@ -223,6 +223,7 @@ class BindingsTests(object):
 
     def no_excess_files(self):
         generated_files = set(os.listdir(self.output_directory))
+        generated_files.add('.svn')  # Subversion working copy directory
         excess_files = [output_file
                         for output_file in os.listdir(reference_directory)
                         if output_file not in generated_files]
