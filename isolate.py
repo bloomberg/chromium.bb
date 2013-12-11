@@ -208,6 +208,8 @@ def normalize_path_variables(cwd, path_variables, relative_base_dir):
   logging.info(
       'normalize_path_variables(%s, %s, %s)', cwd, path_variables,
       relative_base_dir)
+  assert isinstance(cwd, unicode), cwd
+  assert isinstance(relative_base_dir, unicode), relative_base_dir
   relative_base_dir = file_path.get_native_path_case(relative_base_dir)
   return dict(
       (k, _normalize_path_variable(cwd, relative_base_dir, k, v))
@@ -2024,7 +2026,7 @@ def _process_variable_arg(option, opt, _value, parser):
   if not re.match('^' + VALID_VARIABLE + '$', k):
     raise optparse.OptionValueError(
         'Variable \'%s\' doesn\'t respect format \'%s\'' % (k, VALID_VARIABLE))
-  variables.append((k, v))
+  variables.append((k, v.decode('utf-8')))
 
 
 def add_variable_option(parser):
