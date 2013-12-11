@@ -143,10 +143,8 @@ class StubLogin : public LoginStatusConsumer,
   StubLogin(std::string username, std::string password)
       : profile_prepared_(false) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-    Profile* primary_profile = g_browser_process->profile_manager()->
-        GetPrimaryUserProfileOrOffTheRecord();
     authenticator_.get()->AuthenticateToLogin(
-        primary_profile,
+        ProfileHelper::GetSigninProfile(),
         UserContext(username, password, std::string() /* auth_code */));
   }
 
