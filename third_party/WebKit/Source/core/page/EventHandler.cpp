@@ -3575,18 +3575,10 @@ void EventHandler::capsLockStateMayHaveChanged()
     }
 }
 
-void EventHandler::sendScrollEvent()
-{
-    setFrameWasScrolledByUser();
-    if (m_frame->view() && m_frame->document())
-        m_frame->document()->enqueueScrollEventForNode(m_frame->document());
-}
-
 void EventHandler::setFrameWasScrolledByUser()
 {
-    FrameView* v = m_frame->view();
-    if (v)
-        v->setWasScrolledByUser(true);
+    if (FrameView* view = m_frame->view())
+        view->setWasScrolledByUser(true);
 }
 
 bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& mev, Scrollbar* scrollbar)

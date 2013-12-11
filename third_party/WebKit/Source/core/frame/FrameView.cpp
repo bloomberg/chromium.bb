@@ -1687,10 +1687,14 @@ void FrameView::setLayoutSize(const IntSize& size)
 
 void FrameView::scrollPositionChanged()
 {
-    m_frame->eventHandler().sendScrollEvent();
+    setWasScrolledByUser(true);
+
+    Document* document = m_frame->document();
+    document->enqueueScrollEventForNode(document);
+
     m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
 
-    if (RenderView* renderView = this->renderView()) {
+    if (RenderView* renderView = document->renderView()) {
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidScroll();
     }

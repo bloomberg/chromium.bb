@@ -171,8 +171,6 @@ public:
 
     void capsLockStateMayHaveChanged(); // Only called by FrameSelection
 
-    void sendScrollEvent(); // Only called in FrameView
-
     bool handleTouchEvent(const PlatformTouchEvent&);
 
     bool useHandCursor(Node*, bool isOverLink, bool shiftKey);
