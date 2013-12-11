@@ -134,6 +134,8 @@ void InsertListCommand::doApply()
         VisiblePosition startOfLastParagraph = startOfParagraph(endOfSelection, CanSkipOverEditingBoundary);
 
         if (startOfParagraph(startOfSelection, CanSkipOverEditingBoundary) != startOfLastParagraph) {
+            RefPtr<ContainerNode> scope;
+            int indexForEndOfSelection = indexForVisiblePosition(endOfSelection, scope);
             bool forceCreateList = !selectionHasListOfType(selection, listTag);
 
             RefPtr<Range> currentSelection = endingSelection().firstRange();
@@ -153,8 +155,6 @@ void InsertListCommand::doApply()
                 // FIXME: This is an inefficient way to keep selection alive because indexForVisiblePosition walks from
                 // the beginning of the document to the endOfSelection everytime this code is executed.
                 // But not using index is hard because there are so many ways we can lose selection inside doApplyForSingleParagraph.
-                RefPtr<ContainerNode> scope;
-                int indexForEndOfSelection = indexForVisiblePosition(endOfSelection, scope);
                 doApplyForSingleParagraph(forceCreateList, listTag, currentSelection.get());
                 if (endOfSelection.isNull() || endOfSelection.isOrphan() || startOfLastParagraph.isNull() || startOfLastParagraph.isOrphan()) {
                     endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scope.get());
@@ -178,7 +178,11 @@ void InsertListCommand::doApply()
             setEndingSelection(endOfSelection);
             doApplyForSingleParagraph(forceCreateList, listTag, currentSelection.get());
             // Fetch the end of the selection, for the reason mentioned above.
-            endOfSelection = endingSelection().visibleEnd();
+            if (endOfSelection.isNull() || endOfSelection.isOrphan()) {
+                endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scope.get());
+                if (endOfSelection.isNull())
+                    return;
+            }
             setEndingSelection(VisibleSelection(startOfSelection, endOfSelection, endingSelection().isDirectional()));
             return;
         }
