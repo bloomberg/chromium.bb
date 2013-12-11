@@ -50,7 +50,7 @@ class StartImeFunction : public SyncExtensionFunction {
 class InputMethodAPI : public ProfileKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:
-  explicit InputMethodAPI(Profile* profile);
+  explicit InputMethodAPI(content::BrowserContext* context);
   virtual ~InputMethodAPI();
 
   // Returns input method name for the given XKB (X keyboard extensions in X
@@ -76,7 +76,7 @@ class InputMethodAPI : public ProfileKeyedAPI,
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  Profile* const profile_;
+  content::BrowserContext* const context_;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>

@@ -11,13 +11,14 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 
 namespace chromeos {
 
-ExtensionInputMethodEventRouter::ExtensionInputMethodEventRouter() {
+ExtensionInputMethodEventRouter::ExtensionInputMethodEventRouter(
+    content::BrowserContext* context)
+    : context_(context) {
   input_method::InputMethodManager::Get()->AddObserver(this);
 }
 
@@ -28,9 +29,9 @@ ExtensionInputMethodEventRouter::~ExtensionInputMethodEventRouter() {
 void ExtensionInputMethodEventRouter::InputMethodChanged(
     input_method::InputMethodManager *manager,
     bool show_message) {
-  Profile *profile = ProfileManager::GetDefaultProfile();
   extensions::EventRouter *router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
+      extensions::ExtensionSystem::GetForBrowserContext(context_)->
+          event_router();
 
   if (!router->HasEventListener(extensions::event_names::kOnInputMethodChanged))
     return;
@@ -44,9 +45,8 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::event_names::kOnInputMethodChanged, args.Pass()));
-  event->restrict_to_browser_context = profile;
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      BroadcastEvent(event.Pass());
+  event->restrict_to_browser_context = context_;
+  router->BroadcastEvent(event.Pass());
 }
 
 }  // namespace chromeos

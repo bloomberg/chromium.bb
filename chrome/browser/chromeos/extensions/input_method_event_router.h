@@ -11,13 +11,17 @@
 #include "base/compiler_specific.h"
 #include "chromeos/ime/input_method_manager.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace chromeos {
 
 // Event router class for the input method events.
 class ExtensionInputMethodEventRouter
     : public input_method::InputMethodManager::Observer {
  public:
-  ExtensionInputMethodEventRouter();
+  explicit ExtensionInputMethodEventRouter(content::BrowserContext* context);
   virtual ~ExtensionInputMethodEventRouter();
 
   // Implements input_method::InputMethodManager::Observer:
@@ -28,6 +32,8 @@ class ExtensionInputMethodEventRouter
       input_method::InputMethodManager* manager) OVERRIDE {}
 
  private:
+  content::BrowserContext* context_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionInputMethodEventRouter);
 };
 
