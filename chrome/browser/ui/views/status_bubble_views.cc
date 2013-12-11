@@ -34,6 +34,10 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/wm/window_state.h"
 #endif
@@ -572,6 +576,9 @@ void StatusBubbleViews::Init() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeView();
     popup_->Init(params);
+#if defined(USE_AURA)
+    popup_->GetNativeView()->SetName("StatusBubbleViews");
+#endif
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0x00);
