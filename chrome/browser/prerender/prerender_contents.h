@@ -337,6 +337,9 @@ class PrerenderContents : public content::NotificationObserver,
   // (potentially only partially) prerendered page is shown to the user.
   base::TimeTicks load_start_time_;
 
+  // The prerendered WebContents; may be null.
+  scoped_ptr<content::WebContents> prerender_contents_;
+
  private:
   class WebContentsDelegateImpl;
 
@@ -405,9 +408,6 @@ class PrerenderContents : public content::NotificationObserver,
   // Process Metrics of the render process associated with the
   // RenderViewHost for this object.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
-
-  // The prerendered WebContents; may be null.
-  scoped_ptr<content::WebContents> prerender_contents_;
 
   scoped_ptr<WebContentsDelegateImpl> web_contents_delegate_;
 

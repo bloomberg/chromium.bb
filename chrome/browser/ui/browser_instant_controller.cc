@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -28,6 +29,17 @@
 #include "content/public/browser/web_contents_view.h"
 
 using content::UserMetricsAction;
+
+namespace {
+
+InstantSearchPrerenderer* GetInstantSearchPrerenderer(Profile* profile) {
+  DCHECK(profile);
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  return instant_service ? instant_service->instant_search_prerenderer() : NULL;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, public:
@@ -127,6 +139,16 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
   if (search_terms.empty())
     return false;
 
+  InstantSearchPrerenderer* prerenderer =
+      GetInstantSearchPrerenderer(profile());
+  if (prerenderer &&
+      prerenderer->CanCommitQuery(GetActiveWebContents(), search_terms)) {
+    // Submit query to render the prefetched results. Browser will swap the
+    // prerendered contents with the active tab contents.
+    prerenderer->Commit(search_terms);
+    return false;
+  }
+
   return instant_.SubmitQuery(search_terms);
 }
 
@@ -154,6 +176,11 @@ void BrowserInstantController::ActiveTabChanged() {
 
 void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
   instant_.TabDeactivated(contents);
+
+  InstantSearchPrerenderer* prerenderer =
+      GetInstantSearchPrerenderer(profile());
+  if (prerenderer)
+    prerenderer->Cancel();
 }
 
 void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {

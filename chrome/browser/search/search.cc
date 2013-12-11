@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search_urls.h"
@@ -303,6 +304,17 @@ bool IsQueryExtractionEnabled() {
 }
 
 string16 GetSearchTermsFromURL(Profile* profile, const GURL& url) {
+  if (url.is_valid() && url == GetSearchResultPrefetchBaseURL(profile)) {
+    // InstantSearchPrerenderer has the search query for the Instant search base
+    // page.
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profile);
+    InstantSearchPrerenderer* prerenderer =
+        instant_service ? instant_service->instant_search_prerenderer() : NULL;
+    DCHECK(prerenderer);
+    return prerenderer->get_last_query();
+  }
+
   string16 search_terms;
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   if (template_url && IsSuitableURLForInstant(url, template_url))

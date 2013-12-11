@@ -36,6 +36,7 @@
 #include "url/gurl.h"
 
 class Profile;
+class InstantSearchPrerendererTest;
 struct ChromeCookieDetails;
 
 namespace base {
@@ -500,6 +501,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void SourceNavigatedAway(PrerenderData* prerender_data);
 
  private:
+  friend class ::InstantSearchPrerendererTest;
   friend class PrerenderBrowserTest;
   friend class PrerenderContents;
   friend class PrerenderHandle;

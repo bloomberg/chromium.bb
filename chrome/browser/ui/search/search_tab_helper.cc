@@ -200,7 +200,6 @@ void SearchTabHelper::SetSuggestionToPrefetch(
 }
 
 void SearchTabHelper::Submit(const string16& text) {
-  DCHECK(!chrome::IsInstantNTP(web_contents_));
   ipc_router_.Submit(text);
 }
 
@@ -214,6 +213,10 @@ void SearchTabHelper::OnTabDeactivated() {
 
 void SearchTabHelper::ToggleVoiceSearch() {
   ipc_router_.ToggleVoiceSearch();
+}
+
+bool SearchTabHelper::IsSearchResultsPage() {
+  return model_.mode().is_origin_search();
 }
 
 void SearchTabHelper::RenderViewCreated(

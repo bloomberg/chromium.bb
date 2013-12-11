@@ -21,6 +21,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/common/instant_types.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -107,6 +108,13 @@ class InstantService : public BrowserContextKeyedService,
   // Sends the current set of search URLs to a renderer process.
   void SendSearchURLsToRenderer(content::RenderProcessHost* rph);
 
+  InstantSearchPrerenderer* instant_search_prerenderer() {
+#if defined(UNIT_TEST)
+    return instant_prerenderer_.get();
+#endif
+    return NULL;
+  }
+
  private:
   friend class InstantExtendedTest;
   friend class InstantServiceTest;
@@ -152,6 +160,8 @@ class InstantService : public BrowserContextKeyedService,
   // Used by tests.
   InstantNTPPrerenderer* ntp_prerenderer();
 
+  void ResetInstantSearchPrerenderer();
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -176,6 +186,9 @@ class InstantService : public BrowserContextKeyedService,
   // Total number of BrowserInstantController objects (does not include objects
   // created for OTR browser windows). Used to preload and delete InstantNTP.
   size_t browser_instant_controller_object_count_;
+
+  // Set to NULL if the default search provider does not support Instant.
+  scoped_ptr<InstantSearchPrerenderer> instant_prerenderer_;
 
   // Used for Top Sites async retrieval.
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;

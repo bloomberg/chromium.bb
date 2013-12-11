@@ -1513,6 +1513,8 @@
         'browser/ui/search/instant_ntp_prerenderer.h',
         'browser/ui/search/instant_page.cc',
         'browser/ui/search/instant_page.h',
+        'browser/ui/search/instant_search_prerenderer.cc',
+        'browser/ui/search/instant_search_prerenderer.h',
         'browser/ui/search/instant_tab.cc',
         'browser/ui/search/instant_tab.h',
         'browser/ui/search/instant_unload_handler.cc',

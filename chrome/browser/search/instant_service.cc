@@ -74,6 +74,8 @@ InstantService::InstantService(Profile* profile)
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return;
 
+  ResetInstantSearchPrerenderer();
+
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllSources());
@@ -443,6 +445,8 @@ void InstantService::OnGoogleURLUpdated(
   if (last_prompted_url.is_empty())
     return;
 
+  ResetInstantSearchPrerenderer();
+
   // Only the scheme changed. Ignore it since we do not prompt the user in this
   // case.
   if (net::StripWWWFromHost(details->first) ==
@@ -465,10 +469,24 @@ void InstantService::OnDefaultSearchProviderChanged(
     // could cause that, neither of which we support.
     return;
   }
+
+  ResetInstantSearchPrerenderer();
+
   FOR_EACH_OBSERVER(
       InstantServiceObserver, observers_, DefaultSearchProviderChanged());
 }
 
 InstantNTPPrerenderer* InstantService::ntp_prerenderer() {
   return &ntp_prerenderer_;
+}
+
+void InstantService::ResetInstantSearchPrerenderer() {
+  if (!chrome::ShouldPrefetchSearchResults())
+    return;
+
+  GURL url(chrome::GetSearchResultPrefetchBaseURL(profile_));
+  if (url.is_valid())
+    instant_prerenderer_.reset(new InstantSearchPrerenderer(profile_, url));
+  else
+    instant_prerenderer_.reset();
 }

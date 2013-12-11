@@ -18,6 +18,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -98,9 +99,23 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
 
 void InstantController::SetSuggestionToPrefetch(
     const InstantSuggestion& suggestion) {
-  if (instant_tab_ && search_mode_.is_search()) {
-    SearchTabHelper::FromWebContents(instant_tab_->contents())->
-        SetSuggestionToPrefetch(suggestion);
+  if (instant_tab_ &&
+      SearchTabHelper::FromWebContents(instant_tab_->contents())->
+          IsSearchResultsPage()) {
+    if (chrome::ShouldPrefetchSearchResultsOnSRP() ||
+        chrome::ShouldPrefetchSearchResults()) {
+      SearchTabHelper::FromWebContents(instant_tab_->contents())->
+          SetSuggestionToPrefetch(suggestion);
+    }
+  } else {
+    if (chrome::ShouldPrefetchSearchResults()) {
+      InstantService* instant_service = GetInstantService();
+      InstantSearchPrerenderer* prerenderer =
+          instant_service ? instant_service->instant_search_prerenderer() :
+              NULL;
+      if (prerenderer)
+        prerenderer->Prerender(suggestion);
+    }
   }
 }
 

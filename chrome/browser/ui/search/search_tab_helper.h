@@ -83,6 +83,9 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Tells the page to toggle voice search.
   void ToggleVoiceSearch();
 
+  // Returns true if the underlying page is a search results page.
+  bool IsSearchResultsPage();
+
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
   friend class InstantPageTest;
