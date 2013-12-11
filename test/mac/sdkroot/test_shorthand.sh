@@ -5,8 +5,16 @@
 
 set -e
 
-if ! expected=$(xcodebuild -version -sdk macosx10.6 Path 2>/dev/null) ; then
-  expected=$(xcodebuild -version -sdk macosx10.7 Path)
+found=false
+for sdk in 10.6 10.7 10.8 10.9 ; do
+  if expected=$(xcodebuild -version -sdk macosx$sdk Path 2>/dev/null) ; then
+    found=true
+    break
+  fi
+done
+if ! $found ; then
+  echo >&2 "cannot find installed SDK"
+  exit 1
 fi
 
 test $SDKROOT = $expected
