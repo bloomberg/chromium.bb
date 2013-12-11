@@ -96,8 +96,14 @@ void PPB_VideoDecoder_Shared::RunBitstreamBufferCallback(
 }
 
 void PPB_VideoDecoder_Shared::FlushCommandBuffer() {
-  if (gles2_impl_)
-    gles2_impl_->Flush();
+  // Ensure that graphics_context is still live before using gles2_impl_.
+  // Our "plugin reference" is not enough to keep graphics_context alive if
+  // DidDeleteInstance() has been called.
+  if (PpapiGlobals::Get()->GetResourceTracker()->GetResource(
+          graphics_context_)) {
+    if (gles2_impl_)
+      gles2_impl_->Flush();
+  }
 }
 
 }  // namespace ppapi
