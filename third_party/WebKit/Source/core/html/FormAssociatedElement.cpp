@@ -122,8 +122,10 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
 void FormAssociatedElement::formRemovedFromTree(const Node* formRoot)
 {
     ASSERT(m_form);
-    if (toHTMLElement(this)->highestAncestor() != formRoot)
-        setForm(0);
+    if (toHTMLElement(this)->highestAncestor() == formRoot)
+        return;
+    RefPtr<HTMLElement> protector(toHTMLElement(this));
+    setForm(0);
 }
 
 void FormAssociatedElement::setForm(HTMLFormElement* newForm)
