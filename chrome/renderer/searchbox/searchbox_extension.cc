@@ -460,7 +460,8 @@ void SearchBoxExtension::DispatchChromeIdentityCheckResult(
     blink::WebFrame* frame,
     const base::string16& identity,
     bool identity_match) {
-  std::string escaped_identity = base::GetQuotedJSONString(identity);
+  std::string escaped_identity;
+  base::JsonDoubleQuote(identity, true, &escaped_identity);
   blink::WebString script(UTF8ToUTF16(base::StringPrintf(
       kDispatchChromeIdentityCheckResult,
       escaped_identity.c_str(),

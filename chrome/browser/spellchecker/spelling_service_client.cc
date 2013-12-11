@@ -69,20 +69,21 @@ bool SpellingServiceClient::RequestTextCheck(
       &country_code);
 
   // Format the JSON request to be sent to the Spelling service.
-  std::string encoded_text = base::GetQuotedJSONString(text);
+  std::string encoded_text;
+  base::JsonDoubleQuote(text, false, &encoded_text);
 
   static const char kSpellingRequest[] =
       "{"
       "\"method\":\"spelling.check\","
       "\"apiVersion\":\"v%d\","
       "\"params\":{"
-      "\"text\":%s,"
+      "\"text\":\"%s\","
       "\"language\":\"%s\","
       "\"originCountry\":\"%s\","
       "\"key\":%s"
       "}"
       "}";
-  std::string api_key = base::GetQuotedJSONString(google_apis::GetAPIKey());
+  std::string api_key = base::GetDoubleQuotedJson(google_apis::GetAPIKey());
   std::string request = base::StringPrintf(
       kSpellingRequest,
       type,

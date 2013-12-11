@@ -119,7 +119,7 @@ Status AdbImpl::SetCommandLineFile(const std::string& device_serial,
                                    const std::string& args) {
   std::string response;
   std::string quoted_command =
-      base::GetQuotedJSONString(exec_name + " " + args);
+      base::GetDoubleQuotedJson(exec_name + " " + args);
   Status status = ExecuteHostShellCommand(
       device_serial,
       base::StringPrintf("echo %s > %s; echo $?",

@@ -172,7 +172,7 @@ std::string StatisticsRecorder::ToJSON(const std::string& query) {
   std::string output("{");
   if (!query.empty()) {
     output += "\"query\":";
-    EscapeJSONString(query, true, &output);
+    JsonDoubleQuote(query, true, &output);
     output += ",";
   }
 

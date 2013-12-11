@@ -662,7 +662,7 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
       break;
     case TRACE_VALUE_TYPE_STRING:
     case TRACE_VALUE_TYPE_COPY_STRING:
-      EscapeJSONString(value.as_string ? value.as_string : "NULL", true, out);
+      JsonDoubleQuote(value.as_string ? value.as_string : "NULL", true, out);
       break;
     default:
       NOTREACHED() << "Don't know how to print this value";
