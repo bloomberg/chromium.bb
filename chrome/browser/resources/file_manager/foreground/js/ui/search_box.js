@@ -117,7 +117,7 @@ SearchBox.AutocompleteListItem_ = function(document, item) {
   text.className = 'detail-text';
 
   if (item.isHeaderItem) {
-    icon.setAttribute('search-icon');
+    icon.setAttribute('search-icon', '');
     text.innerHTML =
         strf('SEARCH_DRIVE_HTML', util.htmlEscape(item.searchQuery));
   } else {

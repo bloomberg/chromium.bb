@@ -14,7 +14,7 @@ function highlightIfChanged(node, oldVal, newVal) {
     // listeners.  There can be only one listener per event at a time.
     // Reference: https://developer.mozilla.org/en/DOM/element.addEventListener
     node.addEventListener('webkitAnimationEnd', clearHighlight, false);
-    node.setAttribute('highlighted');
+    node.setAttribute('highlighted', '');
   }
 }
 

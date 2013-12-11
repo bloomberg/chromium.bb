@@ -15,7 +15,7 @@ function onGetAuthToken(authToken) {
   var signInEl = document.getElementById('signIn');
   var getFileEl = document.getElementById('getFile');
   if (authToken) {
-    signInEl.setAttribute('hidden');
+    signInEl.setAttribute('hidden', '');
     getFileEl.removeAttribute('hidden');
     window.authToken =  authToken;
 
@@ -26,7 +26,7 @@ function onGetAuthToken(authToken) {
     // this app. Display a button to let the user sign in and authorize this
     // application.
     signInEl.removeAttribute('hidden');
-    getFileEl.setAttribute('hidden');
+    getFileEl.setAttribute('hidden', '');
   }
 };
 

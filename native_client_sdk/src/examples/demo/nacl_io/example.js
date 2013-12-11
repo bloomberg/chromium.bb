@@ -46,7 +46,7 @@ function onRadioClicked(e) {
     if (functionEls[i].id === divId)
       functionEls[i].removeAttribute('hidden');
     else
-      functionEls[i].setAttribute('hidden');
+      functionEls[i].setAttribute('hidden', '');
   }
 }
 

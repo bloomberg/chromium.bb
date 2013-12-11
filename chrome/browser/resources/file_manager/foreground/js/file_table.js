@@ -983,7 +983,7 @@ filelist.decorateListItem = function(li, entry, metadataCache) {
      */
     set: function(v) {
       if (v)
-        this.setAttribute('selected');
+        this.setAttribute('selected', '');
       else
         this.removeAttribute('selected');
       var checkBox = this.querySelector('input.file-checkbox');

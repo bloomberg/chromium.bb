@@ -138,7 +138,7 @@ function createIframe(src) {
   iframeEl.setAttribute('width', '100%');
   iframeEl.setAttribute('height', '100%');
   iframeEl.src = src;
-  iframeEl.setAttribute('hidden');
+  iframeEl.setAttribute('hidden', '');
   iframeEl.onload = function() {
     if (oldIframeEl)
       oldIframeEl.parentNode.removeChild(oldIframeEl);

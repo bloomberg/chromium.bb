@@ -26,7 +26,7 @@ function highlightIfChanged(node, oldVal, newVal) {
     node.addEventListener('webkitAnimationEnd',
                           function() { this.removeAttribute('highlighted'); },
                           false);
-    node.setAttribute('highlighted');
+    node.setAttribute('highlighted', '');
   }
 }
 

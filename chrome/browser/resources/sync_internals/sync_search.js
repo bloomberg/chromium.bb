@@ -63,7 +63,7 @@ cr.define('chrome.sync', function() {
       doSearch(query, function(nodes, error) {
         if (error) {
           statusControl.textContent = 'Error: ' + error;
-          queryControl.setAttribute('error');
+          queryControl.setAttribute('error', '');
         } else {
           statusControl.textContent =
             'Found ' + nodes.length + ' nodes in ' +
