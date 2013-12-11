@@ -939,6 +939,9 @@
     {
       'target_name': 'views_examples_exe',
       'type': 'executable',
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
       'sources': [
         'examples/examples_main.cc',
       ],
