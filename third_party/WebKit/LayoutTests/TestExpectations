@@ -267,7 +267,7 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-from-to-trans
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-keyframe-properties.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure Crash ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
