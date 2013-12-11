@@ -54,6 +54,14 @@ const char kWaitForDebugger[]               = "wait-for-debugger";
 // Sends a pretty-printed version of tracing info to the console.
 const char kTraceToConsole[]                = "trace-to-console";
 
+// Configure whether chrome://profiler will contain timing information. This
+// option is enabled by default. A value of "0" will disable profiler timing,
+// while all other values will enable it.
+const char kProfilerTiming[]                = "profiler-timing";
+// Value of the --profiler-timing flag that will disable timing information for
+// chrome://profiler.
+const char kProfilerTimingDisabledValue[]   = "0";
+
 #if defined(OS_POSIX)
 // Used for turning on Breakpad crash reporting in a debug environment where
 // crash reporting is typically compiled but disabled.

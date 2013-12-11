@@ -7,6 +7,8 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
@@ -50,6 +52,28 @@ const ThreadData::Status kInitialStartupState =
 // can be flipped to efficiently disable this path (if there is a performance
 // problem with its presence).
 static const bool kAllowAlternateTimeSourceHandling = true;
+
+inline bool IsProfilerTimingEnabled() {
+  static enum {
+    UNDEFINED_TIMING,
+    ENABLED_TIMING,
+    DISABLED_TIMING,
+  } timing_enabled = UNDEFINED_TIMING;
+  // This initialization is not thread-safe, so the value of |timing_enabled|
+  // can be computed multiple times. This is not an issue, as the computed value
+  // will always be the same, and is side-effect free, while needing to use a
+  // lock or a memory barrier would be more costly.
+  if (timing_enabled == UNDEFINED_TIMING) {
+    if (!CommandLine::InitializedForCurrentProcess())
+      return true;
+    timing_enabled = (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                          switches::kProfilerTiming) ==
+                      switches::kProfilerTimingDisabledValue)
+                         ? DISABLED_TIMING
+                         : ENABLED_TIMING;
+  }
+  return timing_enabled == ENABLED_TIMING;
+}
 
 }  // namespace
 
@@ -754,7 +778,7 @@ void ThreadData::SetAlternateTimeSource(NowFunction* now_function) {
 TrackedTime ThreadData::Now() {
   if (kAllowAlternateTimeSourceHandling && now_function_)
     return TrackedTime::FromMilliseconds((*now_function_)());
-  if (kTrackAllTaskObjects && TrackingStatus())
+  if (kTrackAllTaskObjects && IsProfilerTimingEnabled() && TrackingStatus())
     return TrackedTime::Now();
   return TrackedTime();  // Super fast when disabled, or not compiled.
 }
