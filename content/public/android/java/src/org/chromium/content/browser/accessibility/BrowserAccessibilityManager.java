@@ -320,8 +320,8 @@ public class BrowserAccessibilityManager {
     }
 
     @CalledByNative
-    private void addAccessibilityNodeInfoChild(AccessibilityNodeInfo node, int child_id) {
-        node.addChild(mView, child_id);
+    private void addAccessibilityNodeInfoChild(AccessibilityNodeInfo node, int childId) {
+        node.addChild(mView, childId);
     }
 
     @CalledByNative

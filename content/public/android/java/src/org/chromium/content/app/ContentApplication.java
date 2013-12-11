@@ -53,13 +53,13 @@ public class ContentApplication extends BaseChromiumApplication {
      */
     @Override
     public void onTerminate() {
-      try {
-          getTracingController().unregisterReceiver(this);
-      } catch (SecurityException e) {
-          // Happens if the process is isolated. Ignore.
-      }
+        try {
+            getTracingController().unregisterReceiver(this);
+        } catch (SecurityException e) {
+            // Happens if the process is isolated. Ignore.
+        }
 
-      super.onTerminate();
+        super.onTerminate();
     }
 
 }

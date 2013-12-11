@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ public class CallbackHelper {
      * is called.
      */
     public int getCallCount() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             return mCallCount;
         }
     }
@@ -170,7 +170,7 @@ public class CallbackHelper {
             TimeUnit unit) throws InterruptedException, TimeoutException {
         assert mCallCount >= currentCallCount;
         assert numberOfCallsToWaitFor > 0;
-        synchronized(mLock) {
+        synchronized (mLock) {
             int callCountWhenDoneWaiting = currentCallCount + numberOfCallsToWaitFor;
             while (callCountWhenDoneWaiting > mCallCount) {
                 int callCountBeforeWait = mCallCount;
@@ -201,7 +201,7 @@ public class CallbackHelper {
      */
     public void waitUntilCriteria(Criteria criteria, long timeout, TimeUnit unit)
             throws InterruptedException, TimeoutException {
-        synchronized(mLock) {
+        synchronized (mLock) {
             final long startTime = System.currentTimeMillis();
             boolean isSatisfied = criteria.isSatisfied();
             while (!isSatisfied &&
@@ -222,7 +222,7 @@ public class CallbackHelper {
      * Should be called when the callback associated with this helper object is called.
      */
     public void notifyCalled() {
-        synchronized(mLock) {
+        synchronized (mLock) {
             mCallCount++;
             mLock.notifyAll();
         }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -459,8 +459,8 @@ class PopupZoomer extends View {
         // Since we want the content to appear directly above its counterpart on the
         // page, we need to remove the mShiftX/Y effect at the beginning of the animation.
         // The unshifting decreases with the animation.
-        float unshiftX = - mShiftX * (1.0f - fractionAnimation) / mScale;
-        float unshiftY = - mShiftY * (1.0f - fractionAnimation) / mScale;
+        float unshiftX = -mShiftX * (1.0f - fractionAnimation) / mScale;
+        float unshiftY = -mShiftY * (1.0f - fractionAnimation) / mScale;
 
         // Compute the rect to show.
         RectF rect = new RectF();

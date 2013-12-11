@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,7 +164,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         }
     }
 
-    static private MotionEvent motionEvent(int action, long downTime, long eventTime) {
+    private static MotionEvent motionEvent(int action, long downTime, long eventTime) {
         return MotionEvent.obtain(downTime, eventTime, action, FAKE_COORD_X, FAKE_COORD_Y, 0);
     }
 
@@ -595,7 +595,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                         ContentViewGestureHandler.GESTURE_SCROLL_END));
         assertEquals("We should have stopped scrolling",
                 ContentViewGestureHandler.GESTURE_SCROLL_END,
-                (int) mockDelegate.mMostRecentGestureEvent.mType);
+                mockDelegate.mMostRecentGestureEvent.mType);
         assertEquals("Only tapDown, scrollBegin and scrollBy and scrollEnd should have been sent",
                 5, mockDelegate.mGestureTypeList.size());
     }
@@ -1132,7 +1132,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             public Bundle getExtraParams() {
                 return mExtraParams;
             }
-        };
+        }
         private GestureEvent mMostRecentGestureEvent;
         private final ArrayList<Integer> mGestureTypeList = new ArrayList<Integer>();
         private final ArrayList<Long> mGestureTimeList = new ArrayList<Long>();
@@ -1145,7 +1145,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         @Override
         public boolean sendGesture(int type, long timeMs, int x, int y, Bundle extraParams) {
-            Log.i(TAG,"Gesture event received with type id " + type);
+            Log.i(TAG, "Gesture event received with type id " + type);
             mMostRecentGestureEvent = new GestureEvent(type, timeMs, x, y, extraParams);
             mGestureTypeList.add(mMostRecentGestureEvent.mType);
             mGestureTimeList.add(timeMs);
@@ -1425,7 +1425,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
      */
     @SmallTest
     @Feature({"Gestures"})
-    public void testTouchMoveWithinTouchSlopNotDeferredIfJavascriptConsumingGesture() throws Exception {
+    public void testTouchMoveWithinTouchSlopNotDeferredIfJavascriptConsumingGesture()
+            throws Exception {
         Context context = getInstrumentation().getTargetContext();
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
@@ -1771,7 +1772,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
-   }
+    }
 
     /**
      * Verify that no double tap gestures are created if the gesture handler is

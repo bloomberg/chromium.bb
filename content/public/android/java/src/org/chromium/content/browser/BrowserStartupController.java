@@ -177,7 +177,6 @@ public class BrowserStartupController {
      *
      * @param maxRenderers The maximum number of renderer processes the browser may
      *                      create. Zero for single process mode.
-     * @return true if successfully started, false otherwise.
      * @throws ProcessInitException
      */
     public void startBrowserProcessesSync(int maxRenderers) throws ProcessInitException {
@@ -196,7 +195,7 @@ public class BrowserStartupController {
 
         // Startup should now be complete
         assert mStartupDone;
-        if(!mStartupSuccess) {
+        if (!mStartupSuccess) {
             throw new ProcessInitException(ResultCodes.RESULT_CODE_NATIVE_STARTUP_FAILED);
         }
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,8 +83,7 @@ public class ContentShellActivity extends Activity {
             try {
                 BrowserStartupController.get(this).startBrowserProcessesSync(
                        BrowserStartupController.MAX_RENDERERS_LIMIT);
-            }
-            catch (ProcessInitException e) {
+            } catch (ProcessInitException e) {
                 Log.e(TAG, "Failed to load native library.", e);
                 System.exit(-1);
             }
@@ -92,21 +91,20 @@ public class ContentShellActivity extends Activity {
             try {
                 BrowserStartupController.get(this).startBrowserProcessesAsync(
                         new BrowserStartupController.StartupCallback() {
-                    @Override
-                    public void onSuccess(boolean alreadyStarted) {
-                        finishInitialization(savedInstanceState);
-                    }
+                            @Override
+                            public void onSuccess(boolean alreadyStarted) {
+                                finishInitialization(savedInstanceState);
+                            }
 
-                    @Override
-                    public void onFailure() {
-                        initializationFailed();
-                    }
-                });
-            }
-            catch (ProcessInitException e) {
+                            @Override
+                            public void onFailure() {
+                                initializationFailed();
+                            }
+                        });
+            } catch (ProcessInitException e) {
                 Log.e(TAG, "Unable to load native library.", e);
                 System.exit(-1);
-          }
+            }
         }
     }
 

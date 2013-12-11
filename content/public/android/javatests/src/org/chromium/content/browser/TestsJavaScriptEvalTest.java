@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,8 @@ public class TestsJavaScriptEvalTest extends ContentShellTestBase {
         final TestCallbackHelperContainer viewClient =
                 new TestCallbackHelperContainer(view);
 
-        for(int i = 0; i < 30; ++i) {
-            for(int j = 0; j < 10; ++j) {
+        for (int i = 0; i < 30; ++i) {
+            for (int j = 0; j < 10; ++j) {
                 // Start evaluation of a JavaScript script -- we don't need a result.
                 view.evaluateJavaScript("foobar();");
             }

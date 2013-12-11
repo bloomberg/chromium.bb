@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,8 +154,8 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
         assertTrue(startOrientation);
         assertTrue(mDeviceMotionAndOrientation.mDeviceOrientationIsActive);
 
-        float alpha = (float)Math.PI / 4;
-        float[] values = {0, 0, (float)Math.sin(alpha / 2), (float)Math.cos(alpha / 2), -1};
+        float alpha = (float) Math.PI / 4;
+        float[] values = {0, 0, (float) Math.sin(alpha / 2), (float) Math.cos(alpha / 2), -1};
         mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_ROTATION_VECTOR, values);
         mDeviceMotionAndOrientation.verifyCalls("gotOrientation");
         mDeviceMotionAndOrientation.verifyValuesEpsilon(Math.toDegrees(alpha), 0, 0);
@@ -203,8 +203,8 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
         assertTrue(mDeviceMotionAndOrientation.mDeviceMotionIsActive);
         assertTrue(mDeviceMotionAndOrientation.mDeviceOrientationIsActive);
 
-        float alpha = (float)Math.PI / 4;
-        float[] values = {0, 0, (float)Math.sin(alpha / 2), (float)Math.cos(alpha / 2), -1};
+        float alpha = (float) Math.PI / 4;
+        float[] values = {0, 0, (float) Math.sin(alpha / 2), (float) Math.cos(alpha / 2), -1};
         mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_ROTATION_VECTOR, values);
         mDeviceMotionAndOrientation.verifyCalls("gotOrientation");
         mDeviceMotionAndOrientation.verifyValuesEpsilon(Math.toDegrees(alpha), 0, 0);
@@ -230,7 +230,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
 
     @SmallTest
     public void testOrientationAnglesFromRotationMatrix45DegreesX() {
-        float[] gravity = {0, (float)Math.sin(Math.PI / 4), (float)Math.cos(Math.PI / 4)};
+        float[] gravity = {0, (float) Math.sin(Math.PI / 4), (float) Math.cos(Math.PI / 4)};
         float[] magnetic = {0, 1, 0};
         double[] expectedAngles = {0, Math.PI / 4, 0};
 
@@ -239,7 +239,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
 
     @SmallTest
     public void testOrientationAnglesFromRotationMatrix45DegreesY() {
-        float[] gravity = {-(float)Math.sin(Math.PI / 4), 0, (float)Math.cos(Math.PI / 4)};
+        float[] gravity = {-(float) Math.sin(Math.PI / 4), 0, (float) Math.cos(Math.PI / 4)};
         float[] magnetic = {0, 1, 0};
         double[] expectedAngles = {0, 0, Math.PI / 4};
 
@@ -249,7 +249,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
     @SmallTest
     public void testOrientationAnglesFromRotationMatrix45DegreesZ() {
         float[] gravity = {0, 0, 1};
-        float[] magnetic = {(float)Math.sin(Math.PI / 4), (float)Math.cos(Math.PI / 4), 0};
+        float[] magnetic = {(float) Math.sin(Math.PI / 4), (float) Math.cos(Math.PI / 4), 0};
         double[] expectedAngles = {Math.PI / 4, 0, 0};
 
         verifyOrientationAngles(gravity, magnetic, expectedAngles);
@@ -258,7 +258,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
     @SmallTest
     public void testOrientationAnglesFromRotationMatrixGimbalLock() {
         float[] gravity = {0, 1, 0};
-        float[] magnetic = {(float)Math.sin(Math.PI / 4), 0, -(float)Math.cos(Math.PI / 4)};
+        float[] magnetic = {(float) Math.sin(Math.PI / 4), 0, -(float) Math.cos(Math.PI / 4)};
         double[] expectedAngles = {Math.PI / 4, Math.PI / 2, 0};  // favor yaw instead of roll
 
         verifyOrientationAngles(gravity, magnetic, expectedAngles);
@@ -267,8 +267,8 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
     @SmallTest
     public void testOrientationAnglesFromRotationMatrixPitchGreaterThan90() {
         final double largePitchAngle = Math.PI / 2 + Math.PI / 4;
-        float[] gravity = {0, (float)Math.cos(largePitchAngle - Math.PI / 2),
-                -(float)Math.sin(largePitchAngle - Math.PI / 2)};
+        float[] gravity = {0, (float) Math.cos(largePitchAngle - Math.PI / 2),
+                -(float) Math.sin(largePitchAngle - Math.PI / 2)};
         float[] magnetic = {0, 0, -1};
         double[] expectedAngles = {0, largePitchAngle, 0};
 

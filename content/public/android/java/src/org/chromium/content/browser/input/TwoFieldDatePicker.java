@@ -71,7 +71,7 @@ public abstract class TwoFieldDatePicker extends FrameLayout {
                         year += 1;
                         positionInYear = getMinPositionInYear(year);
                     } else if (oldVal == picker.getMinValue() && newVal == picker.getMaxValue()) {
-                        year -=1;
+                        year -= 1;
                         positionInYear = getMaxPositionInYear(year);
                     }
                 } else if (picker == mYearSpinner) {
@@ -115,7 +115,7 @@ public abstract class TwoFieldDatePicker extends FrameLayout {
      *
      * @param year The initial year.
      * @param positionInYear The initial month <strong>starting from zero</strong> or week in year.
-     * @param onMonthChangedListener How user is notified date is changed by
+     * @param onMonthOrWeekChangedListener How user is notified date is changed by
      *            user, can be null.
      */
     public void init(int year, int positionInYear,

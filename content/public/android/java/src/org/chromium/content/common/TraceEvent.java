@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,19 +17,19 @@ import org.chromium.base.ThreadUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-// Java mirror of Chrome trace event API.  See
-// base/debug/trace_event.h.  Unlike the native version, Java does not
-// have stack objects, so a TRACE_EVENT() which does both
-// TRACE_EVENT_BEGIN() and TRACE_EVENT_END() in ctor/dtor is not
-// possible.
-// It is OK to use tracing before the native library has loaded, but such traces will
-// be ignored. (Perhaps we could devise to buffer them up in future?).
+/**
+ * Java mirror of Chrome trace event API. See base/debug/trace_event.h.  Unlike the native version,
+ * Java does not have stack objects, so a TRACE_EVENT() which does both TRACE_EVENT_BEGIN() and
+ * TRACE_EVENT_END() in ctor/dtor is not possible.
+ * It is OK to use tracing before the native library has loaded, but such traces will
+ * be ignored. (Perhaps we could devise to buffer them up in future?).
+ */
 public class TraceEvent {
 
     private static volatile boolean sEnabled = false;
 
     private static class BasicLooperMonitor implements Printer {
-        private final static String DISPATCH_EVENT_NAME =
+        private static final String DISPATCH_EVENT_NAME =
                 "Looper.dispatchMessage";
 
         @Override
@@ -72,19 +72,19 @@ public class TraceEvent {
      * accumulate between idle notifications and get reset when a new idle
      * notification is received.
      */
-    private final static class IdleTracingLooperMonitor extends BasicLooperMonitor
+    private static final class IdleTracingLooperMonitor extends BasicLooperMonitor
             implements MessageQueue.IdleHandler {
         // Tags for dumping to logcat or TraceEvent
-        private final static String TAG = "TraceEvent.LooperMonitor";
-        private final static String IDLE_EVENT_NAME = "Looper.queueIdle";
+        private static final String TAG = "TraceEvent.LooperMonitor";
+        private static final String IDLE_EVENT_NAME = "Looper.queueIdle";
 
         // Calculation constants
-        private final static long FRAME_DURATION_MILLIS = 1000L / 60L; // 60 FPS
+        private static final long FRAME_DURATION_MILLIS = 1000L / 60L; // 60 FPS
         // A reasonable threshold for defining a Looper event as "long running"
-        private final static long MIN_INTERESTING_DURATION_MILLIS =
+        private static final long MIN_INTERESTING_DURATION_MILLIS =
                 FRAME_DURATION_MILLIS;
         // A reasonable threshold for a "burst" of tasks on the Looper
-        private final static long MIN_INTERESTING_BURST_DURATION_MILLIS =
+        private static final long MIN_INTERESTING_BURST_DURATION_MILLIS =
                 MIN_INTERESTING_DURATION_MILLIS * 3;
 
         // Stats tracking
@@ -166,8 +166,8 @@ public class TraceEvent {
     }
 
     // Holder for monitor avoids unnecessary construction on non-debug runs
-    private final static class LooperMonitorHolder {
-        private final static BasicLooperMonitor sInstance =
+    private static final class LooperMonitorHolder {
+        private static final BasicLooperMonitor sInstance =
                 CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_IDLE_TRACING) ?
                         new IdleTracingLooperMonitor() : new BasicLooperMonitor();
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ public class DOMUtils {
         sb.append("(function() {");
         sb.append("  var node = document.getElementById('" + nodeId + "');");
         sb.append("  if (!node) return null;");
-        sb.append("  if (!node." + fieldName +") return null;");
+        sb.append("  if (!node." + fieldName + ") return null;");
         sb.append("  return [ node." + fieldName + " ];");
         sb.append("})();");
 
@@ -173,9 +173,9 @@ public class DOMUtils {
         Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeName + "'.", bounds);
 
         int clickX = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX())
-                + (int) view.getContentViewCore().getViewportSizeOffsetWidthPix();
+                + view.getContentViewCore().getViewportSizeOffsetWidthPix();
         int clickY = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterY())
-                + (int) view.getContentViewCore().getViewportSizeOffsetHeightPix();
+                + view.getContentViewCore().getViewportSizeOffsetHeightPix();
         return new int[] { clickX, clickY };
     }
 }

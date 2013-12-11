@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,8 @@ public class UiUtils {
             public void run() {
                 runnable.run();
                 finishedSemaphore.release();
-            }});
+            }
+        });
         try {
             Assert.assertTrue(finishedSemaphore.tryAcquire(1, WAIT_FOR_RESPONSE_MS,
                     TimeUnit.MILLISECONDS));

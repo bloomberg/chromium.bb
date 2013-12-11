@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,16 +25,16 @@ class DateTimeChooserAndroid {
         mInputDialogContainer = new InputDialogContainer(context,
                 new InputDialogContainer.InputActionDelegate() {
 
-            @Override
-            public void replaceDateTime(double value) {
-                nativeReplaceDateTime(mNativeDateTimeChooserAndroid, value);
-            }
+                    @Override
+                    public void replaceDateTime(double value) {
+                        nativeReplaceDateTime(mNativeDateTimeChooserAndroid, value);
+                    }
 
-            @Override
-            public void cancelDateTimeDialog() {
-                nativeCancelDialog(mNativeDateTimeChooserAndroid);
-            }
-        });
+                    @Override
+                    public void cancelDateTimeDialog() {
+                        nativeCancelDialog(mNativeDateTimeChooserAndroid);
+                    }
+                });
     }
 
     private void showDialog(int dialogType, double dialogValue,

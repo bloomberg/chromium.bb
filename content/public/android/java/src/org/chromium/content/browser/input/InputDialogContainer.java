@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -355,7 +355,6 @@ public class InputDialogContainer {
             return;
         mDialogAlreadyDismissed = true;
 
-        double value = 0;
         if (dialogType == sTextInputTypeMonth) {
             mInputActionDelegate.replaceDateTime((year - 1970) * 12 + month);
         } else if (dialogType == sTextInputTypeWeek) {
@@ -376,7 +375,7 @@ public class InputDialogContainer {
             cal.set(Calendar.MINUTE, minute);
             cal.set(Calendar.SECOND, second);
             cal.set(Calendar.MILLISECOND, millis);
-            mInputActionDelegate.replaceDateTime((double) cal.getTimeInMillis());
+            mInputActionDelegate.replaceDateTime(cal.getTimeInMillis());
         }
     }
 }

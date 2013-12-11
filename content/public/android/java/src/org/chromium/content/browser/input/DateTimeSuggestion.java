@@ -26,7 +26,7 @@ class DateTimeSuggestion {
     }
 
     double value() {
-      return mValue;
+        return mValue;
     }
 
     String localizedValue() {

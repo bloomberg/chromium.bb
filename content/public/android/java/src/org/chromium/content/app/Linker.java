@@ -88,7 +88,7 @@ import java.util.Map;
  *   library per APK.
  */
 
-/*
+/**
  * Here's an explanation of how this class is supposed to be used:
  *
  *  - Native shared libraries should be loaded with Linker.loadLibrary(),
@@ -329,7 +329,7 @@ public class Linker {
     /**
      * Call this method before any other Linker method to force a specific
      * memory device configuration. Should only be used for testing.
-     * @param config either MEMORY_DEVICE_CONFIG_LOW or MEMORY_DEVICE_CONFIG_NORMAL.
+     * @param memoryDeviceConfig either MEMORY_DEVICE_CONFIG_LOW or MEMORY_DEVICE_CONFIG_NORMAL.
      */
     public static void setMemoryDeviceConfig(int memoryDeviceConfig) {
         if (DEBUG) Log.i(TAG, "setMemoryDeviceConfig(" + memoryDeviceConfig + ") called");
@@ -390,7 +390,7 @@ public class Linker {
      * Note that when in a service process, this will block until the RELRO bundle is
      * received, i.e. when another thread calls useSharedRelros().
      */
-     public static void finishLibraryLoad() {
+    public static void finishLibraryLoad() {
         if (DEBUG) Log.i(TAG, "finishLibraryLoad() called");
         synchronized (Linker.class) {
             if (DEBUG) Log.i(TAG, String.format(
@@ -457,7 +457,7 @@ public class Linker {
             }
         }
         if (DEBUG) Log.i(TAG, "finishLibraryLoad() exiting");
-     }
+    }
 
     /**
      * Call this to send a Bundle containing the shared RELRO sections to be
@@ -568,11 +568,11 @@ public class Linker {
             sBaseLoadAddress = address;
             sCurrentLoadAddress = address;
             if (address == 0) {
-              // If the computed address is 0, there are issues with the
-              // entropy source, so disable RELRO shared / fixed load addresses.
-              Log.w(TAG, "Disabling shared RELROs due to bad entropy sources");
-              sBrowserUsesSharedRelro = false;
-              sWaitForSharedRelros = false;
+                // If the computed address is 0, there are issues with the
+                // entropy source, so disable RELRO shared / fixed load addresses.
+                Log.w(TAG, "Disabling shared RELROs due to bad entropy sources");
+                sBrowserUsesSharedRelro = false;
+                sWaitForSharedRelros = false;
             }
         }
     }
@@ -598,7 +598,7 @@ public class Linker {
 
         // The maximum limit of the desired random offset.
         final long pageSize = nativeGetPageSize();
-        final int offsetLimit = (int)((baseAddressMax - baseAddress) / pageSize);
+        final int offsetLimit = (int) ((baseAddressMax - baseAddress) / pageSize);
 
         // Get the greatest power of 2 that is smaller or equal to offsetLimit.
         int numBits = 30;
@@ -651,8 +651,9 @@ public class Linker {
 
         int result = 0;
         try {
-            for (int n = 0; n < 4; n++)
+            for (int n = 0; n < 4; n++) {
                 result = (result << 8) | (input.read() & 255);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Could not read /dev/urandom", e);
             return -1;
@@ -682,7 +683,7 @@ public class Linker {
      * Use the shared RELRO section from a Bundle received form another process.
      * Call this after calling setBaseLoadAddress() then loading all libraries
      * with loadLibrary().
-     * @param a Bundle instance generated with createSharedRelroBundle() in
+     * @param bundle Bundle instance generated with createSharedRelroBundle() in
      * another process.
      */
     private static void useSharedRelrosLocked(Bundle bundle) {
@@ -741,7 +742,6 @@ public class Linker {
      * previously, this uses the standard linker (i.e. System.loadLibrary()).
      *
      * @param library The library's base name.
-     * @throws UnsatisfiedLinkError if the library does not exist.
      */
     public static void loadLibrary(String library) {
         if (DEBUG) Log.i(TAG, "loadLibrary: " + library);
@@ -775,7 +775,6 @@ public class Linker {
             }
 
             LibInfo libInfo = new LibInfo();
-            LibInfo relroLibInfo = null;
             long loadAddress = 0;
             if ((sInBrowserProcess && sBrowserUsesSharedRelro) || sWaitForSharedRelros) {
                 // Load the library at a fixed address.
@@ -808,10 +807,8 @@ public class Linker {
             if (sInBrowserProcess) {
                 // Create a new shared RELRO section at the 'current' fixed load address.
                 if (!nativeCreateSharedRelro(libName, sCurrentLoadAddress, libInfo)) {
-                  Log.w(TAG,
-                      String.format(
-                          "Could not create shared RELRO for %s at %x",
-                          libName, sCurrentLoadAddress));
+                    Log.w(TAG, String.format("Could not create shared RELRO for %s at %x",
+                            libName, sCurrentLoadAddress));
                 } else {
                     if (DEBUG) Log.i(TAG,
                         String.format(
@@ -839,12 +836,12 @@ public class Linker {
      * Native method used to load a library.
      * @param library Platform specific library name (e.g. libfoo.so)
      * @param loadAddress Explicit load address, or 0 for randomized one.
-     * @param relro_info If not null, the mLoadAddress and mLoadSize fields
+     * @param libInfo If not null, the mLoadAddress and mLoadSize fields
      * of this LibInfo instance will set on success.
      * @return true for success, false otherwise.
      */
     private static native boolean nativeLoadLibrary(String library,
-                                                    long  loadAddress,
+                                                    long loadAddress,
                                                     LibInfo libInfo);
 
     /**
@@ -856,7 +853,7 @@ public class Linker {
      * @param library Library name.
      * @param loadAddress load address, which can be different from the one
      * used to load the library in the current process!
-     * @param LibInfo libInfo instance. On success, the mRelroStart, mRelroSize
+     * @param libInfo libInfo instance. On success, the mRelroStart, mRelroSize
      * and mRelroFd will be set.
      * @return true on success, false otherwise.
      */
@@ -903,11 +900,11 @@ public class Linker {
 
         public void close() {
             if (mRelroFd >= 0) {
-              try {
-                  ParcelFileDescriptor.adoptFd(mRelroFd).close();
-              } catch (java.io.IOException e) {
-              }
-              mRelroFd = -1;
+                try {
+                    ParcelFileDescriptor.adoptFd(mRelroFd).close();
+                } catch (java.io.IOException e) {
+                }
+                mRelroFd = -1;
             }
         }
 
@@ -946,17 +943,20 @@ public class Linker {
         }
 
         // from Parcelable
-        public static final Parcelable.Creator<LibInfo> CREATOR
-                = new Parcelable.Creator<LibInfo>() {
-            public LibInfo createFromParcel(Parcel in) {
-                return new LibInfo(in);
-            }
+        public static final Parcelable.Creator<LibInfo> CREATOR =
+                new Parcelable.Creator<LibInfo>() {
+                    @Override
+                    public LibInfo createFromParcel(Parcel in) {
+                        return new LibInfo(in);
+                    }
 
-            public LibInfo[] newArray(int size) {
-                return new LibInfo[size];
-            }
-        };
+                    @Override
+                    public LibInfo[] newArray(int size) {
+                        return new LibInfo[size];
+                    }
+                };
 
+        @Override
         public String toString() {
             return String.format("[load=0x%x-0x%x relro=0x%x-0x%x fd=%d]",
                                  mLoadAddress,
@@ -978,8 +978,9 @@ public class Linker {
     // Create a Bundle from a map of LibInfo objects.
     private static Bundle createBundleFromLibInfoMap(HashMap<String, LibInfo> map) {
         Bundle bundle = new Bundle(map.size());
-        for (Map.Entry<String, LibInfo> entry : map.entrySet())
+        for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
             bundle.putParcelable(entry.getKey(), entry.getValue());
+        }
 
         return bundle;
     }
@@ -988,16 +989,17 @@ public class Linker {
     private static HashMap<String, LibInfo> createLibInfoMapFromBundle(Bundle bundle) {
         HashMap<String, LibInfo> map = new HashMap<String, LibInfo>();
         for (String library : bundle.keySet()) {
-          LibInfo libInfo = bundle.getParcelable(library);
-          map.put(library, libInfo);
+            LibInfo libInfo = bundle.getParcelable(library);
+            map.put(library, libInfo);
         }
         return map;
     }
 
     // Call the close() method on all values of a LibInfo map.
     private static void closeLibInfoMap(HashMap<String, LibInfo> map) {
-        for (Map.Entry<String, LibInfo> entry : map.entrySet())
+        for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
             entry.getValue().close();
+        }
     }
 
     // The map of libraries that are currently loaded in this process.

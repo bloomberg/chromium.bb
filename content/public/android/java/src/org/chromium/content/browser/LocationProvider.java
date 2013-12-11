@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,10 +158,10 @@ class LocationProvider {
                     mLocationManager.requestLocationUpdates(0, 0, criteria, this,
                             ThreadUtils.getUiThreadLooper());
                 }
-            } catch(SecurityException e) {
+            } catch (SecurityException e) {
                 Log.e(TAG, "Caught security exception registering for location updates from " +
                     "system. This should only happen in DumpRenderTree.");
-            } catch(IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 Log.e(TAG, "Caught IllegalArgumentException registering for location updates.");
             }
         }

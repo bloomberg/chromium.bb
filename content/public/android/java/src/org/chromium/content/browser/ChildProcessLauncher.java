@@ -339,18 +339,18 @@ public class ChildProcessLauncher {
 
         ChildProcessConnection.ConnectionCallback connectionCallback =
                 new ChildProcessConnection.ConnectionCallback() {
-            @Override
-            public void onConnected(int pid) {
-                Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext);
-                if (pid != NULL_PROCESS_HANDLE) {
-                    sBindingManager.addNewConnection(pid, connection);
-                    sServiceMap.put(pid, connection);
-                } else {
-                    freeConnection(connection);
-                }
-                nativeOnChildProcessStarted(clientContext, pid);
-            }
-        };
+                    @Override
+                    public void onConnected(int pid) {
+                        Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext);
+                        if (pid != NULL_PROCESS_HANDLE) {
+                            sBindingManager.addNewConnection(pid, connection);
+                            sServiceMap.put(pid, connection);
+                        } else {
+                            freeConnection(connection);
+                        }
+                        nativeOnChildProcessStarted(clientContext, pid);
+                    }
+                };
 
         // TODO(sievers): Revisit this as it doesn't correctly handle the utility process
         // assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,15 +275,12 @@ public class ResourceExtractor {
 
         try {
             mExtractTask.get();
-        }
-        catch (CancellationException e) {
+        } catch (CancellationException e) {
             // Don't leave the files in an inconsistent state.
             deleteFiles(mContext);
-        }
-        catch (ExecutionException e2) {
+        } catch (ExecutionException e2) {
             deleteFiles(mContext);
-        }
-        catch (InterruptedException e3) {
+        } catch (InterruptedException e3) {
             deleteFiles(mContext);
         }
     }

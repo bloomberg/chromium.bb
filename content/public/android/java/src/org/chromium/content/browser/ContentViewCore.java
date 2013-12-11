@@ -842,7 +842,7 @@ public class ContentViewCore
         TraceEvent.end();
     }
 
-    private void initPopupZoomer(Context context){
+    private void initPopupZoomer(Context context) {
         mPopupZoomer = new PopupZoomer(context);
         mPopupZoomer.setOnVisibilityChangedListener(new PopupZoomer.OnVisibilityChangedListener() {
             @Override

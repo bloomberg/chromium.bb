@@ -66,7 +66,7 @@ class NestedSystemMessageHandler {
         while (!quitLoop) {
             Message msg = null;
             try {
-                msg = (Message)nextMethod.invoke(queue);
+                msg = (Message) nextMethod.invoke(queue);
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
                 return false;

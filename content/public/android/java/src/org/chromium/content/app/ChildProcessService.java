@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,8 +125,9 @@ public class ChildProcessService extends Service {
 
                     if (useLinker) {
                         synchronized (mMainThread) {
-                            while (!mIsBound)
+                            while (!mIsBound) {
                                 mMainThread.wait();
+                            }
                         }
                         if (mLinkerParams != null) {
                             if (mLinkerParams.mWaitForSharedRelro)
@@ -245,9 +246,9 @@ public class ChildProcessService extends Service {
         Surface surface = null;
         boolean needRelease = false;
         if (surfaceObject instanceof Surface) {
-            surface = (Surface)surfaceObject;
+            surface = (Surface) surfaceObject;
         } else if (surfaceObject instanceof SurfaceTexture) {
-            surface = new Surface((SurfaceTexture)surfaceObject);
+            surface = new Surface((SurfaceTexture) surfaceObject);
             needRelease = true;
         } else {
             Log.e(TAG, "Not a valid surfaceObject: " + surfaceObject);

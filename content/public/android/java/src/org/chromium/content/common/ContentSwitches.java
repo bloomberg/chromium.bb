@@ -40,15 +40,15 @@ public abstract class ContentSwitches {
 
     // Whether to always expose web content using Android's accessibility
     // framework instead of injecting javascript for accessibility.
-    public static final String DISABLE_ACCESSIBILITY_SCRIPT_INJECTION
-            = "disable-accessibility-script-injection";
+    public static final String DISABLE_ACCESSIBILITY_SCRIPT_INJECTION =
+            "disable-accessibility-script-injection";
 
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
 
     // Whether to enable the auto-hiding top controls.
-    public static final String ENABLE_TOP_CONTROLS_POSITION_CALCULATION
-            = "enable-top-controls-position-calculation";
+    public static final String ENABLE_TOP_CONTROLS_POSITION_CALCULATION =
+            "enable-top-controls-position-calculation";
 
     // The height of the movable top controls.
     public static final String TOP_CONTROLS_HEIGHT = "top-controls-height";
@@ -76,4 +76,4 @@ public abstract class ContentSwitches {
 
     // Prevent instantiation.
     private ContentSwitches() {}
-};
+}
