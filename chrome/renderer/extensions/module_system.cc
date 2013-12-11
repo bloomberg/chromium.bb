@@ -128,6 +128,8 @@ ModuleSystem::ModuleSystem(ChromeV8Context* context, SourceMap* source_map)
       base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
   RouteFunction("requireNative",
       base::Bind(&ModuleSystem::RequireNative, base::Unretained(this)));
+  RouteFunction("privates",
+      base::Bind(&ModuleSystem::Private, base::Unretained(this)));
 
   v8::Handle<v8::Object> global(context->v8_context()->Global());
   global->SetHiddenValue(
@@ -241,11 +243,13 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
       // CommonJS.
       natives->Get(v8::String::NewFromUtf8(
           GetIsolate(), "require", v8::String::kInternalizedString)),
-      natives->Get(v8::String::NewFromUtf8(GetIsolate(), "requireNative",
-                                           v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(
+            GetIsolate(), "requireNative", v8::String::kInternalizedString)),
       exports,
       // Libraries that we magically expose to every module.
       console::AsV8Object(),
+      natives->Get(v8::String::NewFromUtf8(
+            GetIsolate(), "privates", v8::String::kInternalizedString)),
       // Each safe builtin. Keep in order with the arguments in WrapSource.
       context_->safe_builtins()->GetArray(),
       context_->safe_builtins()->GetFunction(),
@@ -555,12 +559,26 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   // Keep in order with the arguments in RequireForJsInner.
   v8::Handle<v8::String> left = v8::String::NewFromUtf8(GetIsolate(),
       "(function(require, requireNative, exports, "
-                "console, "
+                "console, privates, "
                 "$Array, $Function, $JSON, $Object, $RegExp, $String) {"
        "'use strict';");
   v8::Handle<v8::String> right = v8::String::NewFromUtf8(GetIsolate(), "\n})");
   return handle_scope.Escape(v8::Local<v8::String>(
       v8::String::Concat(left, v8::String::Concat(source, right))));
+}
+
+void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(1, args.Length());
+  CHECK(args[0]->IsObject());
+  v8::Local<v8::Object> obj = args[0].As<v8::Object>();
+  v8::Local<v8::String> privates_key =
+      v8::String::NewFromUtf8(GetIsolate(), "privates");
+  v8::Local<v8::Value> privates = obj->GetHiddenValue(privates_key);
+  if (privates.IsEmpty()) {
+    privates = v8::Object::New();
+    obj->SetHiddenValue(privates_key, privates);
+  }
+  args.GetReturnValue().Set(privates);
 }
 
 }  // namespace extensions

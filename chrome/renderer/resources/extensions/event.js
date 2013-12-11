@@ -72,7 +72,7 @@
       function(listener) {
     // Only attach / detach on the first / last listener removed.
     if (this.event_.listeners_.length == 0)
-      eventNatives.AttachEvent(this.event_.eventName_);
+      eventNatives.AttachEvent(privates(this.event_).eventName);
   };
 
   UnfilteredAttachmentStrategy.prototype.onRemovedListener =
@@ -82,7 +82,7 @@
   };
 
   UnfilteredAttachmentStrategy.prototype.detach = function(manual) {
-    eventNatives.DetachEvent(this.event_.eventName_, manual);
+    eventNatives.DetachEvent(privates(this.event_).eventName, manual);
   };
 
   UnfilteredAttachmentStrategy.prototype.getListenersByIDs = function(ids) {
@@ -98,7 +98,7 @@
   FilteredAttachmentStrategy.idToEventMap = {};
 
   FilteredAttachmentStrategy.prototype.onAddedListener = function(listener) {
-    var id = eventNatives.AttachFilteredEvent(this.event_.eventName_,
+    var id = eventNatives.AttachFilteredEvent(privates(this.event_).eventName,
                                               listener.filters || {});
     if (id == -1)
       throw new Error("Can't add listener");
@@ -192,13 +192,13 @@
   // extension event rather than a <webview> event.
   var Event = function(opt_eventName, opt_argSchemas, opt_eventOptions,
                        opt_webViewInstanceId) {
-    this.eventName_ = opt_eventName;
+    privates(this).eventName = opt_eventName;
     this.argSchemas_ = opt_argSchemas;
     this.listeners_ = [];
     this.eventOptions_ = parseEventOptions(opt_eventOptions);
     this.webViewInstanceId_ = opt_webViewInstanceId || 0;
 
-    if (!this.eventName_) {
+    if (!privates(this).eventName) {
       if (this.eventOptions_.supportsRules)
         throw new Error("Events that support rules require an event name.");
       // Events without names cannot be managed by the browser by definition
@@ -261,7 +261,7 @@
       throw new Error("This event does not support listeners.");
     if (this.eventOptions_.maxListeners &&
         this.getListenerCount() >= this.eventOptions_.maxListeners) {
-      throw new Error("Too many listeners for " + this.eventName_);
+      throw new Error("Too many listeners for " + privates(this).eventName);
     }
     if (filters) {
       if (!this.eventOptions_.supportsFilters)
@@ -283,12 +283,12 @@
 
     if (this.listeners_.length == 0) {
       allAttachedEvents[allAttachedEvents.length] = this;
-      if (this.eventName_) {
-        if (attachedNamedEvents[this.eventName_]) {
-          throw new Error("Event '" + this.eventName_ +
+      if (privates(this).eventName) {
+        if (attachedNamedEvents[privates(this).eventName]) {
+          throw new Error("Event '" + privates(this).eventName +
                           "' is already attached.");
         }
-        attachedNamedEvents[this.eventName_] = this;
+        attachedNamedEvents[privates(this).eventName] = this;
       }
     }
   };
@@ -309,10 +309,12 @@
       var i = $Array.indexOf(allAttachedEvents, this);
       if (i >= 0)
         delete allAttachedEvents[i];
-      if (this.eventName_) {
-        if (!attachedNamedEvents[this.eventName_])
-          throw new Error("Event '" + this.eventName_ + "' is not attached.");
-        delete attachedNamedEvents[this.eventName_];
+      if (privates(this).eventName) {
+        if (!attachedNamedEvents[privates(this).eventName]) {
+          throw new Error(
+              "Event '" + privates(this).eventName + "' is not attached.");
+        }
+        delete attachedNamedEvents[privates(this).eventName];
       }
     }
   };
@@ -350,7 +352,7 @@
 
   Event.prototype.dispatch_ = function(args, listenerIDs) {
     if (this.destroyed_) {
-      throw new Error(this.eventName_ + ' was already destroyed at: ' +
+      throw new Error(privates(this).eventName + ' was already destroyed at: ' +
                       this.destroyed_);
     }
     if (!this.eventOptions_.supportsListeners)
@@ -360,7 +362,7 @@
       try {
         validate(args, this.argSchemas_);
       } catch (e) {
-        e.message += ' in ' + this.eventName_;
+        e.message += ' in ' + privates(this).eventName;
         throw e;
       }
     }
@@ -377,9 +379,10 @@
         if (result !== undefined)
           $Array.push(results, result);
       } catch (e) {
-        console.error('Error in event handler for ' +
-                      (this.eventName_ ? this.eventName_ : '(unknown)') +
-                      ': ' + e.stack);
+        console.error(
+          'Error in event handler for ' +
+          (privates(this).eventName ? privates(this).eventName : '(unknown)') +
+          ': ' + e.stack);
       }
     }
     if (results.length)
@@ -441,8 +444,8 @@
     };
 
     if (!this.eventOptions_.conditions || !this.eventOptions_.actions) {
-      throw new Error('Event ' + this.eventName_ + ' misses conditions or ' +
-                      'actions in the API specification.');
+      throw new Error('Event ' + privates(this).eventName + ' misses ' +
+                      'conditions or actions in the API specification.');
     }
 
     validateRules(rules,
@@ -455,9 +458,10 @@
     validate([this.webViewInstanceId_, rules, opt_cb],
              $Array.splice(
                  $Array.slice(ruleFunctionSchemas.addRules.parameters), 1));
-    sendRequest("events.addRules",
-                [this.eventName_, this.webViewInstanceId_, rules,  opt_cb],
-                ruleFunctionSchemas.addRules.parameters);
+    sendRequest(
+      "events.addRules",
+      [privates(this).eventName, this.webViewInstanceId_, rules,  opt_cb],
+      ruleFunctionSchemas.addRules.parameters);
   }
 
   Event.prototype.removeRules = function(ruleIdentifiers, opt_cb) {
@@ -470,7 +474,7 @@
              $Array.splice(
                  $Array.slice(ruleFunctionSchemas.removeRules.parameters), 1));
     sendRequest("events.removeRules",
-                [this.eventName_,
+                [privates(this).eventName,
                  this.webViewInstanceId_,
                  ruleIdentifiers,
                  opt_cb],
@@ -487,9 +491,10 @@
              $Array.splice(
                  $Array.slice(ruleFunctionSchemas.getRules.parameters), 1));
 
-    sendRequest("events.getRules",
-                [this.eventName_, this.webViewInstanceId_, ruleIdentifiers, cb],
-                ruleFunctionSchemas.getRules.parameters);
+    sendRequest(
+      "events.getRules",
+      [privates(this).eventName, this.webViewInstanceId_, ruleIdentifiers, cb],
+      ruleFunctionSchemas.getRules.parameters);
   }
 
   unloadEvent.addListener(function() {

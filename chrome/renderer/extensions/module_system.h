@@ -189,6 +189,9 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // Wraps |source| in a (function(require, requireNative, exports) {...}).
   v8::Handle<v8::String> WrapSource(v8::Handle<v8::String> source);
 
+  // NativeHandler implementation which returns the private area of an Object.
+  void Private(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   ChromeV8Context* context_;
 
   // A map from module names to the JS source for that module. GetSource()
