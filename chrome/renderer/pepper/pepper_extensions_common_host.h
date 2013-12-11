@@ -9,9 +9,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/renderer/extensions/request_sender.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/renderer/extensions/pepper_request_proxy.h"
 #include "ppapi/host/resource_host.h"
 
 namespace base {
@@ -32,8 +34,7 @@ namespace extensions {
 class Dispatcher;
 }
 
-class PepperExtensionsCommonHost : public ppapi::host::ResourceHost,
-                                   public extensions::RequestSender::Source {
+class PepperExtensionsCommonHost : public ppapi::host::ResourceHost {
  public:
   virtual ~PepperExtensionsCommonHost();
 
@@ -46,36 +47,33 @@ class PepperExtensionsCommonHost : public ppapi::host::ResourceHost,
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  // extensions::RequestSender::Source implementation.
-  virtual extensions::ChromeV8Context* GetContext() OVERRIDE;
-  virtual void OnResponseReceived(const std::string& name,
-                                  int request_id,
-                                  bool success,
-                                  const base::ListValue& response,
-                                  const std::string& error) OVERRIDE;
  private:
-  typedef std::map<int, linked_ptr<ppapi::host::ReplyMessageContext> >
-      PendingRequestMap;
-
-  PepperExtensionsCommonHost(content::RendererPpapiHost* host,
-                             PP_Instance instance,
-                             PP_Resource resource,
-                             extensions::Dispatcher* dispatcher);
+  PepperExtensionsCommonHost(
+      content::RendererPpapiHost* host,
+      PP_Instance instance,
+      PP_Resource resource,
+      extensions::PepperRequestProxy* pepper_request_proxy);
 
   int32_t OnPost(ppapi::host::HostMessageContext* context,
                  const std::string& request_name,
-                 base::ListValue& args);
+                 const base::ListValue& args);
 
   int32_t OnCall(ppapi::host::HostMessageContext* context,
                  const std::string& request_name,
-                 base::ListValue& args);
+                 const base::ListValue& args);
+
+  void OnResponseReceived(
+      scoped_ptr<ppapi::host::ReplyMessageContext> response_context,
+      bool success,
+      const base::ListValue& response,
+      const std::string& error);
 
   // Non-owning pointer.
   content::RendererPpapiHost* renderer_ppapi_host_;
   // Non-owning pointer.
-  extensions::Dispatcher* dispatcher_;
+  extensions::PepperRequestProxy* pepper_request_proxy_;
 
-  PendingRequestMap pending_request_map_;
+  base::WeakPtrFactory<PepperExtensionsCommonHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperExtensionsCommonHost);
 };

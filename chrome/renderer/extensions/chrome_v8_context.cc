@@ -35,6 +35,7 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
       extension_(extension),
       context_type_(context_type),
       safe_builtins_(this),
+      pepper_request_proxy_(this),
       isolate_(v8_context->GetIsolate()) {
   VLOG(1) << "Created context:\n"
           << "  extension id: " << GetExtensionID() << "\n"

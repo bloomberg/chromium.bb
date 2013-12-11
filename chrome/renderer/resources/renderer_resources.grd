@@ -83,6 +83,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS" file="extensions\page_actions_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS" file="extensions\page_action_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\page_capture_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_PEPPER_REQUEST_JS" file="extensions\pepper_request.js" type="BINDATA" />
         <include name="IDR_RUNTIME_CUSTOM_BINDINGS_JS" file="extensions\runtime_custom_bindings.js" type="BINDATA" />
         <include name="IDR_BINDING_JS" file="extensions\binding.js" type="BINDATA" />
         <include name="IDR_STORAGE_AREA_JS" file="extensions\storage_area.js" type="BINDATA" />

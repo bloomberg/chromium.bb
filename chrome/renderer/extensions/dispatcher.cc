@@ -53,6 +53,7 @@
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
+#include "chrome/renderer/extensions/pepper_request_natives.h"
 #include "chrome/renderer/extensions/render_view_observer_natives.h"
 #include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/runtime_custom_bindings.h"
@@ -938,6 +939,9 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("page_capture",
       scoped_ptr<NativeHandler>(
           new PageCaptureCustomBindings(this, context)));
+  module_system->RegisterNativeHandler(
+      "pepper_request_natives",
+      scoped_ptr<NativeHandler>(new PepperRequestNatives(context)));
   module_system->RegisterNativeHandler("runtime",
       scoped_ptr<NativeHandler>(new RuntimeCustomBindings(this, context)));
   module_system->RegisterNativeHandler("tabs",
@@ -959,6 +963,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
   source_map_.RegisterSource("messaging", IDR_MESSAGING_JS);
   source_map_.RegisterSource("messaging_utils", IDR_MESSAGING_UTILS_JS);
+  source_map_.RegisterSource("pepper_request", IDR_PEPPER_REQUEST_JS);
   source_map_.RegisterSource(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);

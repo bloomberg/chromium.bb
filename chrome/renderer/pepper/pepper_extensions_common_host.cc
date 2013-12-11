@@ -22,19 +22,23 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
+namespace {
+void DoNothing(bool success,
+               const base::ListValue& response,
+               const std::string& error) {}
+}
+
 PepperExtensionsCommonHost::PepperExtensionsCommonHost(
     content::RendererPpapiHost* host,
     PP_Instance instance,
     PP_Resource resource,
-    extensions::Dispatcher* dispatcher)
+    extensions::PepperRequestProxy* pepper_request_proxy)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      dispatcher_(dispatcher) {
-}
+      pepper_request_proxy_(pepper_request_proxy),
+      weak_factory_(this) {}
 
-PepperExtensionsCommonHost::~PepperExtensionsCommonHost() {
-  dispatcher_->request_sender()->InvalidateSource(this);
-}
+PepperExtensionsCommonHost::~PepperExtensionsCommonHost() {}
 
 // static
 PepperExtensionsCommonHost* PepperExtensionsCommonHost::Create(
@@ -51,8 +55,22 @@ PepperExtensionsCommonHost* PepperExtensionsCommonHost::Create(
   extensions::Dispatcher* dispatcher = extension_helper->dispatcher();
   if (!dispatcher)
     return NULL;
+  blink::WebPluginContainer* container =
+      host->GetContainerForInstance(instance);
+  if (!container)
+    return NULL;
+  blink::WebFrame* frame = container->element().document().frame();
+  if (!frame)
+    return NULL;
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  extensions::ChromeV8Context* context =
+      dispatcher->v8_context_set().GetByV8Context(
+          frame->mainWorldScriptContext());
+  if (!context)
+    return NULL;
 
-  return new PepperExtensionsCommonHost(host, instance, resource, dispatcher);
+  return new PepperExtensionsCommonHost(
+      host, instance, resource, context->pepper_request_proxy());
 }
 
 int32_t PepperExtensionsCommonHost::OnResourceMessageReceived(
@@ -67,35 +85,11 @@ int32_t PepperExtensionsCommonHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-extensions::ChromeV8Context* PepperExtensionsCommonHost::GetContext() {
-  blink::WebPluginContainer* container =
-      renderer_ppapi_host_->GetContainerForInstance(pp_instance());
-  if (!container)
-    return NULL;
-
-  blink::WebFrame* frame = container->element().document().frame();
-  v8::HandleScope scope(v8::Isolate::GetCurrent());
-  return dispatcher_->v8_context_set().GetByV8Context(
-      frame->mainWorldScriptContext());
-}
-
 void PepperExtensionsCommonHost::OnResponseReceived(
-    const std::string& /* name */,
-    int request_id,
+    scoped_ptr<ppapi::host::ReplyMessageContext> context,
     bool success,
     const base::ListValue& response,
     const std::string& /* error */) {
-  PendingRequestMap::iterator iter = pending_request_map_.find(request_id);
-
-  // Ignore responses resulted from calls to OnPost().
-  if (iter == pending_request_map_.end()) {
-    DCHECK_EQ(0u, response.GetSize());
-    return;
-  }
-
-  linked_ptr<ppapi::host::ReplyMessageContext> context = iter->second;
-  pending_request_map_.erase(iter);
-
   context->params.set_result(success ? PP_OK : PP_ERROR_FAILED);
   SendReply(*context, PpapiPluginMsg_ExtensionsCommon_CallReply(response));
 }
@@ -103,28 +97,26 @@ void PepperExtensionsCommonHost::OnResponseReceived(
 int32_t PepperExtensionsCommonHost::OnPost(
     ppapi::host::HostMessageContext* context,
     const std::string& request_name,
-    base::ListValue& args) {
-  // TODO(yzshen): Add support for calling into JS for APIs that have custom
-  // bindings.
-  int request_id = dispatcher_->request_sender()->GetNextRequestId();
-  dispatcher_->request_sender()->StartRequest(this, request_name, request_id,
-                                              false, false, &args);
-  return PP_OK;
+    const base::ListValue& args) {
+  std::string error;
+  bool success = pepper_request_proxy_->StartRequest(
+      base::Bind(&DoNothing), request_name, args, &error);
+  return success ? PP_OK : PP_ERROR_FAILED;
 }
 
 int32_t PepperExtensionsCommonHost::OnCall(
     ppapi::host::HostMessageContext* context,
     const std::string& request_name,
-    base::ListValue& args) {
-  // TODO(yzshen): Add support for calling into JS for APIs that have custom
-  // bindings.
-  int request_id = dispatcher_->request_sender()->GetNextRequestId();
-  pending_request_map_[request_id] =
-      linked_ptr<ppapi::host::ReplyMessageContext>(
-          new ppapi::host::ReplyMessageContext(
-              context->MakeReplyMessageContext()));
-
-  dispatcher_->request_sender()->StartRequest(this, request_name, request_id,
-                                              true, false, &args);
-  return PP_OK_COMPLETIONPENDING;
+    const base::ListValue& args) {
+  std::string error;
+  scoped_ptr<ppapi::host::ReplyMessageContext> message_context(
+      new ppapi::host::ReplyMessageContext(context->MakeReplyMessageContext()));
+  bool success = pepper_request_proxy_->StartRequest(
+      base::Bind(&PepperExtensionsCommonHost::OnResponseReceived,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&message_context)),
+      request_name,
+      args,
+      &error);
+  return success ? PP_OK_COMPLETIONPENDING : PP_ERROR_FAILED;
 }

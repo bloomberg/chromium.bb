@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/renderer/extensions/module_system.h"
+#include "chrome/renderer/extensions/pepper_request_proxy.h"
 #include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/safe_builtins.h"
 #include "chrome/renderer/extensions/scoped_persistent.h"
@@ -73,6 +74,10 @@ class ChromeV8Context : public RequestSender::Source {
   }
   const SafeBuiltins* safe_builtins() const {
     return &safe_builtins_;
+  }
+
+  PepperRequestProxy* pepper_request_proxy() {
+    return &pepper_request_proxy_;
   }
 
   // Returns the ID of the extension associated with this context, or empty
@@ -140,6 +145,9 @@ class ChromeV8Context : public RequestSender::Source {
 
   // Contains safe copies of builtin objects like Function.prototype.
   SafeBuiltins safe_builtins_;
+
+  // The proxy for this context for making API calls from Pepper via Javascript.
+  PepperRequestProxy pepper_request_proxy_;
 
   v8::Isolate* isolate_;
 
