@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/views/toolbar/site_chip_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -183,6 +184,7 @@ LocationBarView::LocationBarView(Browser* browser,
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
       script_bubble_icon_view_(NULL),
+      site_chip_view_(NULL),
       translate_icon_view_(NULL),
       star_view_(NULL),
       search_button_(NULL),
@@ -720,8 +722,8 @@ void LocationBarView::Layout() {
         selected_keyword_view_->set_is_extension_icon(false);
       }
     }
-  } else if (GetToolbarModel()->GetSecurityLevel(false) ==
-      ToolbarModel::EV_SECURE) {
+  } else if (!site_chip_view_ &&
+      (GetToolbarModel()->GetSecurityLevel(false) == ToolbarModel::EV_SECURE)) {
     ev_bubble_view_->SetLabel(GetToolbarModel()->GetEVCertName());
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
@@ -970,11 +972,13 @@ void LocationBarView::SelectAll() {
 }
 
 views::ImageView* LocationBarView::GetLocationIconView() {
-  return location_icon_view_;
+  return site_chip_view_ ?
+      site_chip_view_->location_icon_view() : location_icon_view_;
 }
 
 const views::ImageView* LocationBarView::GetLocationIconView() const {
-  return location_icon_view_;
+  return site_chip_view_ ?
+      site_chip_view_->location_icon_view() : location_icon_view_;
 }
 
 views::View* LocationBarView::GetLocationBarAnchor() {
@@ -1047,6 +1051,9 @@ void LocationBarView::OnChanged() {
       views::Button::STATE_NORMAL,
       *GetThemeProvider()->GetImageSkiaNamed((icon_id == IDR_OMNIBOX_SEARCH) ?
           IDR_OMNIBOX_SEARCH_BUTTON_LOUPE : IDR_OMNIBOX_SEARCH_BUTTON_ARROW));
+
+  if (site_chip_view_)
+    site_chip_view_->OnChanged();
 
   Layout();
   SchedulePaint();

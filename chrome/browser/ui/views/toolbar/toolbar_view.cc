@@ -244,6 +244,9 @@ void ToolbarView::Init() {
   location_bar_->Init();
 
   site_chip_view_->Init();
+  if (site_chip_view_->ShouldShow())
+    location_bar_->set_site_chip_view(site_chip_view_);
+
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(),
                          base::Bind(&ToolbarView::OnShowHomeButtonChanged,
@@ -497,7 +500,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
                 (home_->GetPreferredSize().width() + button_spacing) : 0) +
             (site_chip_view_->ShouldShow() ?
                 (site_chip_view_->GetPreferredSize().width() +
-                    2 * kStandardSpacing + 2 * button_spacing) :
+                    2 * kStandardSpacing) :
                 0) +
             browser_actions_->GetPreferredSize().width() +
             app_menu_->GetPreferredSize().width() + kRightEdgeSpacing,
@@ -570,36 +573,31 @@ void ToolbarView::Layout() {
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
 
-  // Note: spacing from location bar to site chip is 1 pixel less than
-  // kStandardSpacing given the edge thickness of the chip.
-  int site_chip_width =
-      (site_chip_view_->ShouldShow() ?
-          site_chip_view_->GetPreferredSize().width() +
-          kStandardSpacing : 0);
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int location_x = home_->x() + home_->width() + kStandardSpacing;
   int available_width = std::max(0, width() - kRightEdgeSpacing -
       app_menu_width - browser_actions_width - location_x);
 
   // Cap site chip width at 1/2 the size available to the location bar.
-  site_chip_width = std::min(site_chip_width, available_width / 2);
-  available_width -= site_chip_width;
+  site_chip_view_->SetVisible(site_chip_view_->ShouldShow());
+  int site_chip_width = site_chip_view_->GetPreferredSize().width();
+  site_chip_width = std::max(0, std::min(site_chip_width,
+      (available_width - kStandardSpacing) / 2));
+  if (site_chip_view_->visible())
+    available_width -= site_chip_width;
 
   int location_height = location_bar_->GetPreferredSize().height();
   int location_y = (height() - location_height + 1) / 2;
   location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
                            location_height);
+  int browser_actions_x = location_bar_->bounds().right();
 
-  int browser_actions_x = location_bar_->x() + location_bar_->width();
-
-  site_chip_view_->SetVisible(site_chip_view_->ShouldShow());
-  if (site_chip_view_->ShouldShow()) {
+  if (site_chip_view_->visible()) {
     site_chip_view_->SetBounds(browser_actions_x + kStandardSpacing,
                                child_y,
-                               site_chip_view_->GetPreferredSize().width(),
+                               site_chip_width,
                                child_height);
-    browser_actions_x +=
-        site_chip_view_->GetPreferredSize().width() + kStandardSpacing;
+    browser_actions_x = site_chip_view_->bounds().right();
   }
 
   browser_actions_->SetBounds(browser_actions_x, 0,

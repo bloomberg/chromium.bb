@@ -7332,6 +7332,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_SITE_CHIP_EV_SSL_LABEL" desc="Formatting for the string displayed in the EV SSL site chip next to the omnibox.">
+        <ph name="ORGNAME">$1<ex>Google, Inc. [US]</ex></ph> <ph name="HOSTNAME">$2<ex>google.com</ex></ph>
+      </message>
+
       <!--Script Bubble-->
       <message name="IDS_SCRIPT_BUBBLE_HEADLINE" desc="The headline of the script bubble.">
         Extensions interacting with this page:

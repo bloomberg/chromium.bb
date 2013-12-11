@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_SITE_CHIP_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_SITE_CHIP_VIEW_H_
 
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/drag_controller.h"
 
+class SiteChipExtensionIcon;
 class ToolbarView;
 
 namespace content {
@@ -25,7 +28,8 @@ class Label;
 }
 
 class SiteChipView : public ToolbarButton,
-                     public views::ButtonListener {
+                     public views::ButtonListener,
+                     public views::DragController {
  public:
   explicit SiteChipView(ToolbarView* toolbar_view);
   virtual ~SiteChipView();
@@ -39,7 +43,14 @@ class SiteChipView : public ToolbarButton,
   // Recalculates the contents of the Site Chip based on the displayed tab.
   void Update(content::WebContents* tab);
 
-  views::ImageView* location_icon_view() { return location_icon_view_; }
+  void OnChanged();
+
+  views::ImageView* location_icon_view() {
+    return location_icon_view_;
+  }
+  const views::ImageView* location_icon_view() const {
+    return location_icon_view_;
+  }
 
   // ToolbarButton:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -50,11 +61,32 @@ class SiteChipView : public ToolbarButton,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // views::DragController:
+  virtual void WriteDragDataForView(View* sender,
+                                    const gfx::Point& press_pt,
+                                    OSExchangeData* data) OVERRIDE;
+  virtual int GetDragOperationsForView(View* sender,
+                                       const gfx::Point& p) OVERRIDE;
+  virtual bool CanStartDragForView(View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) OVERRIDE;
+
  private:
+  string16 SiteLabelFromURL(const GURL& url);
+
   ToolbarView* toolbar_view_;
   views::Label* host_label_;
   LocationIconView* location_icon_view_;
-  scoped_ptr<views::Painter> background_painter_;
+  scoped_ptr<views::Painter> ev_background_painter_;
+  scoped_ptr<views::Painter> broken_ssl_background_painter_;
+  // Will point to one of the background painters, or NULL if the state of the
+  // chip has no background.
+  views::Painter* painter_;
+  bool showing_16x16_icon_;
+  scoped_ptr<SiteChipExtensionIcon> extension_icon_;
+  GURL url_displayed_;
+  string16 host_;
+  ToolbarModel::SecurityLevel security_level_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteChipView);
 };

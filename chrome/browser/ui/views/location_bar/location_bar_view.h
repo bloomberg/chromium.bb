@@ -46,6 +46,7 @@ class PageActionImageView;
 class Profile;
 class ScriptBubbleIconView;
 class SelectedKeywordView;
+class SiteChipView;
 class StarView;
 class TemplateURLService;
 class TranslateIconView;
@@ -198,6 +199,10 @@ class LocationBarView : public LocationBar,
 
   // The translate icon. It may not be visible.
   TranslateIconView* translate_icon_view() { return translate_icon_view_; }
+
+  void set_site_chip_view(SiteChipView* site_chip_view) {
+    site_chip_view_ = site_chip_view;
+  }
 
   // Shows the bookmark prompt.
   void ShowBookmarkPrompt();
@@ -488,6 +493,9 @@ class LocationBarView : public LocationBar,
 
   // The script bubble.
   ScriptBubbleIconView* script_bubble_icon_view_;
+
+  // The Site Chip.
+  SiteChipView* site_chip_view_;
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_;
