@@ -37,6 +37,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -290,7 +291,8 @@ AccessibilityManager::AccessibilityManager()
       autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
       weak_ptr_factory_(this),
-      should_speak_chrome_vox_announcements_on_user_screen_(true) {
+      should_speak_chrome_vox_announcements_on_user_screen_(true),
+      system_sounds_enabled_(false) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());
@@ -312,21 +314,15 @@ AccessibilityManager::AccessibilityManager()
   GetBrailleController()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  std::vector<base::StringPiece> sound_resources(
-      media::SoundsManager::SOUND_COUNT);
-  sound_resources[media::SoundsManager::SOUND_STARTUP] =
-      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV);
-  sound_resources[media::SoundsManager::SOUND_LOCK] =
-      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV);
-  sound_resources[media::SoundsManager::SOUND_UNLOCK] =
-      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV);
-  sound_resources[media::SoundsManager::SOUND_SHUTDOWN] =
-      bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV);
-  sound_resources[media::SoundsManager::SOUND_SPOKEN_FEEDBACK_ENABLED] =
-      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_ENABLED_WAV);
-  sound_resources[media::SoundsManager::SOUND_SPOKEN_FEEDBACK_DISABLED] =
-      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV);
-  media::SoundsManager::Get()->Initialize(sound_resources);
+  media::SoundsManager* manager = media::SoundsManager::Get();
+  manager->Initialize(SOUND_SHUTDOWN,
+                      bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV));
+  manager->Initialize(
+      SOUND_SPOKEN_FEEDBACK_ENABLED,
+      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_ENABLED_WAV));
+  manager->Initialize(
+      SOUND_SPOKEN_FEEDBACK_DISABLED,
+      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV));
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -512,8 +508,7 @@ void AccessibilityManager::LoadChromeVoxToLockScreen() {
 }
 
 void AccessibilityManager::UnloadChromeVox() {
-  media::SoundsManager::Get()->Play(
-      media::SoundsManager::SOUND_SPOKEN_FEEDBACK_DISABLED);
+  PlaySound(SOUND_SPOKEN_FEEDBACK_DISABLED);
   if (chrome_vox_loaded_on_lock_screen_)
     UnloadChromeVoxFromLockScreen();
 
@@ -738,6 +733,19 @@ void AccessibilityManager::SetBrailleControllerForTest(
   g_braille_controller_for_test = controller;
 }
 
+void AccessibilityManager::EnableSystemSounds(bool system_sounds_enabled) {
+  system_sounds_enabled_ = system_sounds_enabled;
+}
+
+base::TimeDelta AccessibilityManager::PlayShutdownSound() {
+  if (!IsSpokenFeedbackEnabled() || !system_sounds_enabled_)
+    return base::TimeDelta();
+  system_sounds_enabled_ = false;
+  media::SoundsManager* manager = media::SoundsManager::Get();
+  manager->Play(SOUND_SHUTDOWN);
+  return manager->GetDuration(SOUND_SHUTDOWN);
+}
+
 void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback",
                         IsSpokenFeedbackEnabled());
@@ -882,8 +890,7 @@ void AccessibilityManager::OnListenerRemoved(
 
 void AccessibilityManager::SetUpPreLoadChromeVox(Profile* profile) {
   // Do any setup work needed immediately before ChromeVox actually loads.
-  media::SoundsManager::Get()->Play(
-      media::SoundsManager::SOUND_SPOKEN_FEEDBACK_ENABLED);
+  PlaySound(SOUND_SPOKEN_FEEDBACK_ENABLED);
 
   if (profile) {
     extensions::ExtensionSystem::Get(profile)->
@@ -899,6 +906,11 @@ void AccessibilityManager::TearDownPostUnloadChromeVox(Profile* profile) {
     extensions::ExtensionSystem::Get(profile)->
         event_router()->UnregisterObserver(this);
   }
+}
+
+void AccessibilityManager::PlaySound(int sound_key) const {
+  if (system_sounds_enabled_)
+    media::SoundsManager::Get()->Play(sound_key);
 }
 
 }  // namespace chromeos

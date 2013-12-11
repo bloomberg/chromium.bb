@@ -55,6 +55,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -228,6 +229,10 @@ void OnLanguageSwitchedCallback(
       self->first_screen_name, self->startup_manifest, self->display_host);
 }
 
+void EnableSystemSoundsForAccessibility() {
+  chromeos::AccessibilityManager::Get()->EnableSystemSounds(true);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -291,15 +296,14 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   bool is_registered = StartupUtils::IsDeviceRegistered();
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
-  bool disable_boot_animation = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableBootAnimation);
-  bool disable_oobe_animation = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableOobeAnimation);
+  bool disable_boot_animation = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBootAnimation);
+  bool disable_oobe_animation = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOobeAnimation);
 
-  waiting_for_wallpaper_load_ =
-      !zero_delay_enabled &&
-      (is_registered || !disable_oobe_animation) &&
-      (!is_registered || !disable_boot_animation);
+  waiting_for_wallpaper_load_ = !zero_delay_enabled &&
+                                (is_registered || !disable_oobe_animation) &&
+                                (!is_registered || !disable_boot_animation);
 
   // For slower hardware we have boot animation disabled so
   // we'll be initializing WebUI hidden, waiting for user pods to load and then
@@ -311,8 +315,9 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   // Check if WebUI init type is overriden.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshWebUIInit)) {
-    const std::string override_type = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kAshWebUIInit);
+    const std::string override_type =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kAshWebUIInit);
     if (override_type == kWebUIInitParallel)
       initialize_webui_hidden_ = true;
     else if (override_type == kWebUIInitPostpone)
@@ -329,17 +334,20 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     initialize_webui_hidden_ = false;
 
   if (waiting_for_wallpaper_load_) {
-    registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                    content::NotificationService::AllSources());
   }
 
   // When we wait for WebUI to be initialized we wait for one of
   // these notifications.
-  if ((waiting_for_user_pods_ || waiting_for_wallpaper_load_)
-      && initialize_webui_hidden_) {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+  if ((waiting_for_user_pods_ || waiting_for_wallpaper_load_) &&
+      initialize_webui_hidden_) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                    content::NotificationService::AllSources());
   }
   LOG(WARNING) << "Login WebUI >> "
@@ -347,6 +355,11 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
                << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
                << " wait_for_pods_: " << waiting_for_user_pods_
                << " init_webui_hidden_: " << initialize_webui_hidden_;
+
+  media::SoundsManager* manager = media::SoundsManager::Get();
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  manager->Initialize(chromeos::SOUND_STARTUP,
+                      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 }
 
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
@@ -373,7 +386,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   // TODO(tengs): This should be refactored together with the first run UI.
   // See crbug.com/314934.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDriveOfflineFirstRun)) {
+          switches::kEnableDriveOfflineFirstRun)) {
     if (UserManager::Get()->IsCurrentUserNew()) {
       // DriveOptInController will delete itself when finished.
       (new DriveFirstRunController())->EnableOfflineMode();
@@ -1024,10 +1037,18 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
     return;
   }
 
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  media::SoundsManager* sounds_manager = media::SoundsManager::Get();
+  startup_sound_played_ = true;
   if (!startup_sound_honors_spoken_feedback_ ||
-      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
-    startup_sound_played_ = true;
-    media::SoundsManager::Get()->Play(media::SoundsManager::SOUND_STARTUP);
+      accessibility_manager->IsSpokenFeedbackEnabled()) {
+    sounds_manager->Play(SOUND_STARTUP);
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&EnableSystemSoundsForAccessibility),
+        sounds_manager->GetDuration(SOUND_STARTUP));
+  } else {
+    accessibility_manager->EnableSystemSounds(true);
   }
 }
 

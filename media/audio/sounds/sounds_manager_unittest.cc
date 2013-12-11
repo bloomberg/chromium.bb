@@ -26,14 +26,6 @@ class SoundsManagerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     audio_manager_.reset(AudioManager::CreateForTesting());
     SoundsManager::Create();
-
-    std::vector<base::StringPiece> resources;
-    for (size_t i = 0;
-         i < static_cast<size_t>(SoundsManager::SOUND_COUNT); ++i) {
-      resources.push_back(base::StringPiece(kTestAudioData,
-                                            arraysize(kTestAudioData)));
-    }
-    CHECK(SoundsManager::Get()->Initialize(resources));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -59,9 +51,12 @@ TEST_F(SoundsManagerTest, Play) {
 
   SetObserverForTesting(&observer);
 
-  ASSERT_EQ(41, SoundsManager::Get()->GetDuration(
-      SoundsManager::SOUND_STARTUP).InMicroseconds());
-  ASSERT_TRUE(SoundsManager::Get()->Play(SoundsManager::SOUND_STARTUP));
+  ASSERT_TRUE(SoundsManager::Get()->Initialize(
+      kTestAudioKey,
+      base::StringPiece(kTestAudioData, arraysize(kTestAudioData))));
+  ASSERT_EQ(41,
+            SoundsManager::Get()->GetDuration(kTestAudioKey).InMicroseconds());
+  ASSERT_TRUE(SoundsManager::Get()->Play(kTestAudioKey));
   run_loop.Run();
 
   ASSERT_EQ(1, observer.num_play_requests());

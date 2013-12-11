@@ -37,14 +37,17 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -133,9 +136,9 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
-void PlaySound(media::SoundsManager::Sound sound) {
+void PlaySound(int sound_key) {
   if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled())
-    media::SoundsManager::Get()->Play(sound);
+    media::SoundsManager::Get()->Play(sound_key);
 }
 
 static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer =
@@ -161,9 +164,17 @@ ScreenLocker::ScreenLocker(const UserList& users)
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 
-  ash::Shell::GetInstance()->lock_state_controller()->
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  media::SoundsManager* manager = media::SoundsManager::Get();
+  manager->Initialize(SOUND_LOCK,
+                      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
+  manager->Initialize(SOUND_UNLOCK,
+                      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
+
+  ash::Shell::GetInstance()->
+      lock_state_controller()->
       SetLockScreenDisplayedCallback(
-          base::Bind(&PlaySound, media::SoundsManager::SOUND_LOCK));
+          base::Bind(&PlaySound, static_cast<int>(chromeos::SOUND_LOCK)));
 }
 
 void ScreenLocker::Init() {
@@ -383,7 +394,7 @@ void ScreenLocker::ScheduleDeletion() {
     return;
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
 
-  PlaySound(media::SoundsManager::SOUND_UNLOCK);
+  PlaySound(SOUND_UNLOCK);
 
   delete screen_locker_;
   screen_locker_ = NULL;

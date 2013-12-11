@@ -8,6 +8,7 @@
 #include "ash/accessibility_delegate.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -114,6 +115,12 @@ class AccessibilityManager : public content::NotificationObserver,
   static void SetBrailleControllerForTest(
       extensions::api::braille_display_private::BrailleController* controller);
 
+  // Enables/disables system sounds.
+  void EnableSystemSounds(bool system_sounds_enabled);
+
+  // Initiates play of shutdown sound and returns it's duration.
+  base::TimeDelta PlayShutdownSound();
+
  protected:
   AccessibilityManager();
   virtual ~AccessibilityManager();
@@ -161,6 +168,12 @@ class AccessibilityManager : public content::NotificationObserver,
   virtual void OnListenerRemoved(
       const extensions::EventListenerInfo& details) OVERRIDE;
 
+  // Plays sound identified by |sound_key| if |system_sounds_enabled_|.
+  // |sound_key| must be an ID for sound registered by
+  // AccessibilityManager.  If there is no such sound or
+  // !|system_sounds_enabled_|, sound isn't played.
+  void PlaySound(int sound_key) const;
+
   // Profile which has the current a11y context.
   Profile* profile_;
 
@@ -191,6 +204,8 @@ class AccessibilityManager : public content::NotificationObserver,
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
   bool should_speak_chrome_vox_announcements_on_user_screen_;
+
+  bool system_sounds_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };

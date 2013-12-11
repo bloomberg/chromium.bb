@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/magnifier/magnifier_constants.h"
+#include "base/time/time.h"
 
 namespace ash {
 
@@ -81,6 +82,9 @@ class ASH_EXPORT AccessibilityDelegate {
 
   // Gets the last accessibility alert that was triggered.
   virtual AccessibilityAlert GetLastAccessibilityAlert() = 0;
+
+  // Initiates play of shutdown sound and returns it's duration.
+  virtual base::TimeDelta PlayShutdownSound() const = 0;
 };
 
 }  // namespace ash

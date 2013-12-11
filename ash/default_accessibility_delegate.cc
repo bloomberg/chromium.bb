@@ -93,5 +93,9 @@ AccessibilityAlert DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
   return accessibility_alert_;
 }
 
+base::TimeDelta DefaultAccessibilityDelegate::PlayShutdownSound() const {
+  return base::TimeDelta();
+}
+
 }  // namespace internal
 }  // namespace ash

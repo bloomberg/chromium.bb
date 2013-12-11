@@ -5,9 +5,8 @@
 #ifndef MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
 #define MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -19,17 +18,7 @@ namespace media {
 // should be accessed from the Audio thread.
 class MEDIA_EXPORT SoundsManager : public base::NonThreadSafe {
  public:
-  // TODO(dalecurtis): Define elsewhere (belongs under chromeos). See
-  // crbug.com/321335.
-  enum Sound {
-    SOUND_STARTUP = 0,
-    SOUND_LOCK,
-    SOUND_UNLOCK,
-    SOUND_SHUTDOWN,
-    SOUND_SPOKEN_FEEDBACK_ENABLED,
-    SOUND_SPOKEN_FEEDBACK_DISABLED,
-    SOUND_COUNT
-  };
+  typedef int SoundKey;
 
   // Creates a singleton instance of the SoundsManager.
   static void Create();
@@ -43,15 +32,16 @@ class MEDIA_EXPORT SoundsManager : public base::NonThreadSafe {
   // Initializes SoundsManager with the wav data for the system
   // sounds. Returns true if SoundsManager was successfully
   // initialized.
-  virtual bool Initialize(const std::vector<base::StringPiece>& resources) = 0;
+  virtual bool Initialize(SoundKey key, const base::StringPiece& data) = 0;
 
-  // Plays |sound|, returns false if SoundsManager was not properly
-  // initialized.
-  virtual bool Play(Sound sound) = 0;
+  // Plays sound identified by |key|, returns false if SoundsManager
+  // was not properly initialized.
+  virtual bool Play(SoundKey key) = 0;
 
-  // Returns duration of the |sound|. If SoundsManager was not
-  // properly initialized returns an empty value.
-  virtual base::TimeDelta GetDuration(Sound sound) = 0;
+  // Returns duration of the sound identified by |key|. If SoundsManager
+  // was not properly initialized or |key| was not registered, this
+  // method returns an empty value.
+  virtual base::TimeDelta GetDuration(SoundKey key) = 0;
 
  protected:
   SoundsManager();

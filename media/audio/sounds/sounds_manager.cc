@@ -28,60 +28,52 @@ class SoundsManagerImpl : public SoundsManager {
   virtual ~SoundsManagerImpl();
 
   // SoundsManager implementation:
-  virtual bool Initialize(
-      const std::vector<base::StringPiece>& resources) OVERRIDE;
-  virtual bool Play(Sound sound) OVERRIDE;
-  virtual base::TimeDelta GetDuration(Sound sound) OVERRIDE;
+  virtual bool Initialize(SoundKey key,
+                          const base::StringPiece& data) OVERRIDE;
+  virtual bool Play(SoundKey key) OVERRIDE;
+  virtual base::TimeDelta GetDuration(SoundKey key) OVERRIDE;
 
  private:
-  std::vector<linked_ptr<AudioStreamHandler> > handlers_;
+  base::hash_map<SoundKey, linked_ptr<AudioStreamHandler> > handlers_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SoundsManagerImpl);
 };
 
 SoundsManagerImpl::SoundsManagerImpl()
-    : handlers_(SOUND_COUNT),
-      message_loop_(AudioManager::Get()->GetMessageLoop()) {
-}
+    : message_loop_(AudioManager::Get()->GetMessageLoop()) {}
 
-SoundsManagerImpl::~SoundsManagerImpl() {
-  DCHECK(CalledOnValidThread());
-}
+SoundsManagerImpl::~SoundsManagerImpl() { DCHECK(CalledOnValidThread()); }
 
-bool SoundsManagerImpl::Initialize(
-    const std::vector<base::StringPiece>& resources) {
-  if (resources.size() != static_cast<size_t>(SOUND_COUNT)) {
-    LOG(ERROR) << "Incorrect num of sounds.";
+bool SoundsManagerImpl::Initialize(SoundKey key,
+                                   const base::StringPiece& data) {
+  if (handlers_.find(key) != handlers_.end() && handlers_[key]->IsInitialized())
+    return true;
+  linked_ptr<AudioStreamHandler> handler(new AudioStreamHandler(data));
+  if (!handler->IsInitialized()) {
+    LOG(WARNING) << "Can't initialize AudioStreamHandler for key=" << key;
     return false;
   }
-  for (size_t i = 0; i < resources.size(); ++i) {
-    handlers_[i].reset(new AudioStreamHandler(resources[i]));
-    if (!handlers_[i]->IsInitialized()) {
-      LOG(WARNING) << "Can't initialize AudioStreamHandler for sound "
-                   << i << ".";
-      return false;
-    }
-  }
+  handlers_[key] = handler;
   return true;
 }
 
-bool SoundsManagerImpl::Play(Sound sound) {
+bool SoundsManagerImpl::Play(SoundKey key) {
   DCHECK(CalledOnValidThread());
-  DCHECK(sound < SOUND_COUNT);
-  if (!handlers_[sound].get() || !handlers_[sound]->IsInitialized())
+  if (handlers_.find(key) == handlers_.end() ||
+      !handlers_[key]->IsInitialized()) {
     return false;
-  return handlers_[sound]->Play();
+  }
+  return handlers_[key]->Play();
 }
 
-base::TimeDelta SoundsManagerImpl::GetDuration(Sound sound) {
+base::TimeDelta SoundsManagerImpl::GetDuration(SoundKey key) {
   DCHECK(CalledOnValidThread());
-  if (sound >= SOUND_COUNT ||
-      !handlers_[sound].get() ||
-      !handlers_[sound]->IsInitialized()) {
+  if (handlers_.find(key) == handlers_.end() ||
+      !handlers_[key]->IsInitialized()) {
     return base::TimeDelta();
   }
-  const WavAudioHandler& wav_audio = handlers_[sound]->wav_audio_handler();
+  const WavAudioHandler& wav_audio = handlers_[key]->wav_audio_handler();
   const int64 size = wav_audio.size();
   const int64 rate = wav_audio.byte_rate();
   return base::TimeDelta::FromMicroseconds(size * 1000000 / rate);
@@ -95,52 +87,46 @@ class SoundsManagerStub : public SoundsManager {
   virtual ~SoundsManagerStub();
 
   // SoundsManager implementation:
-  virtual bool Initialize(
-      const std::vector<base::StringPiece>& resources) OVERRIDE;
-  virtual bool Play(Sound sound) OVERRIDE;
-  virtual base::TimeDelta GetDuration(Sound sound) OVERRIDE;
+  virtual bool Initialize(SoundKey key,
+                          const base::StringPiece& data) OVERRIDE;
+  virtual bool Play(SoundKey key) OVERRIDE;
+  virtual base::TimeDelta GetDuration(SoundKey key) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SoundsManagerStub);
 };
 
-SoundsManagerStub::SoundsManagerStub() {
-}
+SoundsManagerStub::SoundsManagerStub() {}
 
-SoundsManagerStub::~SoundsManagerStub() {
-  DCHECK(CalledOnValidThread());
-}
+SoundsManagerStub::~SoundsManagerStub() { DCHECK(CalledOnValidThread()); }
 
-bool SoundsManagerStub::Initialize(
-    const std::vector<base::StringPiece>& /* resources */) {
+bool SoundsManagerStub::Initialize(SoundKey /* key */,
+                                   const base::StringPiece& /* data */) {
   DCHECK(CalledOnValidThread());
   return false;
 }
 
-bool SoundsManagerStub::Play(Sound /* sound */) {
+bool SoundsManagerStub::Play(SoundKey /* key */) {
   DCHECK(CalledOnValidThread());
   return false;
 }
 
-base::TimeDelta SoundsManagerStub::GetDuration(Sound /* sound */) {
+base::TimeDelta SoundsManagerStub::GetDuration(SoundKey /* key */) {
   DCHECK(CalledOnValidThread());
   return base::TimeDelta();
 }
 
 }  // namespace
 
-SoundsManager::SoundsManager() {
-}
+SoundsManager::SoundsManager() {}
 
-SoundsManager::~SoundsManager() {
-  DCHECK(CalledOnValidThread());
-}
+SoundsManager::~SoundsManager() { DCHECK(CalledOnValidThread()); }
 
 // static
 void SoundsManager::Create() {
   CHECK(!g_instance) << "SoundsManager::Create() is called twice";
   const bool enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kDisableSystemSoundsManager);
+                            ::switches::kDisableSystemSoundsManager);
   if (enabled)
     g_instance = new SoundsManagerImpl();
   else

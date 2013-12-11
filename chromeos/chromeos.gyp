@@ -43,6 +43,7 @@
         'audio/cras_audio_handler.h',
         'audio/audio_devices_pref_handler_stub.cc',
         'audio/audio_devices_pref_handler_stub.h',
+        'audio/chromeos_sounds.h',
         'attestation/attestation_constants.cc',
         'attestation/attestation_constants.h',
         'attestation/attestation_flow.cc',

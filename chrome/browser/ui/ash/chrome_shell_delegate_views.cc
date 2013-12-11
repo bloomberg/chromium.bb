@@ -131,6 +131,10 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
     return ash::A11Y_ALERT_NONE;
   }
 
+  base::TimeDelta PlayShutdownSound() const OVERRIDE {
+    return base::TimeDelta();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyAccessibilityDelegate);
 };

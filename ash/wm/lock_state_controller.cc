@@ -369,8 +369,7 @@ void LockStateController::OnPreShutdownAnimationTimeout() {
   StartRealShutdownTimer(false);
 }
 
-void LockStateController::StartRealShutdownTimer(
-    bool with_animation_time) {
+void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kShutdownRequestDelayMs);
   if (with_animation_time) {
@@ -381,20 +380,15 @@ void LockStateController::StartRealShutdownTimer(
 #if defined(OS_CHROMEOS)
   const AccessibilityDelegate* const delegate =
       Shell::GetInstance()->accessibility_delegate();
-  if (delegate->IsSpokenFeedbackEnabled()) {
-    const base::TimeDelta shutdown_sound_duration = std::min(
-        SoundsManager::Get()->GetDuration(SoundsManager::SOUND_SHUTDOWN),
-        base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));
-    duration = std::max(duration, shutdown_sound_duration);
-    SoundsManager::Get()->Play(SoundsManager::SOUND_SHUTDOWN);
-  }
+  base::TimeDelta sound_duration = delegate->PlayShutdownSound();
+  sound_duration =
+      std::min(sound_duration,
+               base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));
+  duration = std::max(duration, sound_duration);
 #endif
 
   real_shutdown_timer_.Start(
-      FROM_HERE,
-      duration,
-      this,
-      &LockStateController::OnRealShutdownTimeout);
+      FROM_HERE, duration, this, &LockStateController::OnRealShutdownTimeout);
 }
 
 void LockStateController::OnRealShutdownTimeout() {

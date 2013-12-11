@@ -167,6 +167,10 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return ash::A11Y_ALERT_NONE;
   }
 
+  virtual base::TimeDelta PlayShutdownSound() const OVERRIDE {
+    return chromeos::AccessibilityManager::Get()->PlayShutdownSound();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };
