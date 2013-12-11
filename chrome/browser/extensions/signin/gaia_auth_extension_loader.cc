@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/scoped_gaia_auth_extension.h"
+#include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
@@ -18,6 +19,8 @@
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #endif
+
+using content::BrowserThread;
 
 namespace {
 
@@ -29,6 +32,8 @@ extensions::ComponentLoader* GetComponentLoader(Profile* profile) {
 }
 
 void LoadGaiaAuthExtension(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   extensions::ComponentLoader* component_loader = GetComponentLoader(profile);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
@@ -45,7 +50,7 @@ void LoadGaiaAuthExtension(Profile* profile) {
     manifest_resource_id = IDR_GAIA_AUTH_KEYBOARD_MANIFEST;
   else if (command_line->HasSwitch(chromeos::switches::kEnableSamlSignin))
     manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
-#elif !defined(OS_ANDROID)
+#else
   if (command_line->HasSwitch(switches::kEnableInlineSignin))
     manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
 #endif
@@ -55,17 +60,51 @@ void LoadGaiaAuthExtension(Profile* profile) {
 }
 
 void UnloadGaiaAuthExtension(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   const char kGaiaAuthId[] = "mfffpogegjflfpflabcdkioaeobkgjik";
   GetComponentLoader(profile)->Remove(kGaiaAuthId);
 }
 
 }  // namespace
 
-ScopedGaiaAuthExtension::ScopedGaiaAuthExtension(Profile* profile)
-    : profile_(profile) {
-  LoadGaiaAuthExtension(profile_);
+namespace extensions {
+
+GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(Profile* profile)
+    : profile_(profile), load_count_(0) {}
+
+GaiaAuthExtensionLoader::~GaiaAuthExtensionLoader() {
+  if (load_count_ > 0) {
+    UnloadGaiaAuthExtension(profile_);
+    load_count_ = 0;
+  }
 }
 
-ScopedGaiaAuthExtension::~ScopedGaiaAuthExtension() {
-  UnloadGaiaAuthExtension(profile_);
+void GaiaAuthExtensionLoader::LoadIfNeeded() {
+  if (load_count_ == 0)
+    LoadGaiaAuthExtension(profile_);
+  ++load_count_;
 }
+
+void GaiaAuthExtensionLoader::UnloadIfNeeded() {
+  --load_count_;
+  if (load_count_ == 0)
+    UnloadGaiaAuthExtension(profile_);
+}
+
+// static
+GaiaAuthExtensionLoader* GaiaAuthExtensionLoader::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<GaiaAuthExtensionLoader>::GetForProfile(
+      profile);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<GaiaAuthExtensionLoader> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<GaiaAuthExtensionLoader>*
+GaiaAuthExtensionLoader::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+} // namespace extensions

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_INLINE_LOGIN_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_INLINE_LOGIN_UI_H_
 
-#include "chrome/browser/extensions/scoped_gaia_auth_extension.h"
+#include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 // Inline login WebUI in various signin flows for ChromeOS and Chrome desktop.
