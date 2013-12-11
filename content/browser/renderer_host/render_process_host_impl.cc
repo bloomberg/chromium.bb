@@ -1200,8 +1200,11 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (!SuddenTerminationAllowed())
     return false;
 
-  ProcessDied(false /* already_dead */);
+  // Set this before ProcessDied() so observers can tell if the render process
+  // died due to fast shutdown versus another cause.
   fast_shutdown_started_ = true;
+
+  ProcessDied(false /* already_dead */);
   return true;
 }
 

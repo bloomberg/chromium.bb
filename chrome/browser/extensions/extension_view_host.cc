@@ -9,8 +9,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_source.h"
@@ -161,6 +163,8 @@ bool ExtensionViewHost::IsBackgroundPage() const {
   return false;
 }
 
+// content::WebContentsDelegate overrides:
+
 WebContents* ExtensionViewHost::OpenURLFromTab(
     WebContents* source,
     const OpenURLParams& params) {
@@ -217,12 +221,31 @@ void ExtensionViewHost::HandleKeyboardEvent(
   UnhandledKeyboardEvent(source, event);
 }
 
+content::ColorChooser* ExtensionViewHost::OpenColorChooser(
+    WebContents* web_contents,
+    SkColor initial_color,
+    const std::vector<content::ColorSuggestion>& suggestions) {
+  // Similar to the file chooser below, opening a color chooser requires a
+  // visible <input> element to click on. Therefore this code only exists for
+  // extensions with a view.
+  return chrome::ShowColorChooser(web_contents, initial_color);
+}
+
+void ExtensionViewHost::RunFileChooser(
+    WebContents* tab,
+    const content::FileChooserParams& params) {
+  // For security reasons opening a file picker requires a visible <input>
+  // element to click on, so this code only exists for extensions with a view.
+  FileSelectHelper::RunFileChooser(tab, params);
+}
+
+
 void ExtensionViewHost::ResizeDueToAutoResize(WebContents* source,
                                           const gfx::Size& new_size) {
   view_->ResizeDueToAutoResize(new_size);
 }
 
-// content::WebContentsObserver
+// content::WebContentsObserver overrides:
 
 void ExtensionViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
   ExtensionHost::RenderViewCreated(render_view_host);
@@ -237,6 +260,8 @@ void ExtensionViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
         render_view_host->GetRoutingID(), window->GetWindowId()));
   }
 }
+
+// web_modal::WebContentsModalDialogManagerDelegate overrides:
 
 web_modal::WebContentsModalDialogHost*
 ExtensionViewHost::GetWebContentsModalDialogHost() {

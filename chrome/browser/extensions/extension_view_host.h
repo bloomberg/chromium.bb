@@ -89,6 +89,13 @@ class ExtensionViewHost
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE;
+  virtual void RunFileChooser(
+      content::WebContents* tab,
+      const content::FileChooserParams& params) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* source,
                                      const gfx::Size& new_size) OVERRIDE;
 
