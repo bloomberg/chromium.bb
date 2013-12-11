@@ -33,7 +33,7 @@ namespace WebCore {
 class NotificationPermissionCallback {
 public:
     virtual ~NotificationPermissionCallback() { }
-    virtual bool handleEvent(const String& permission) = 0;
+    virtual void handleEvent(const String& permission) = 0;
 };
 
 } // namespace WebCore

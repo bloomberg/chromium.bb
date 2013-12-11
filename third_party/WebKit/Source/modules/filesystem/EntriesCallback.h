@@ -41,7 +41,7 @@ typedef Vector<RefPtr<Entry> > EntryVector;
 class EntriesCallback {
 public:
     virtual ~EntriesCallback() { }
-    virtual bool handleEvent(const EntryVector&) = 0;
+    virtual void handleEvent(const EntryVector&) = 0;
 };
 
 } // namespace

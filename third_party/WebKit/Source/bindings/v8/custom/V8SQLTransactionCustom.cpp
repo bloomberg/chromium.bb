@@ -96,7 +96,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             setDOMException(TypeMismatchError, info.GetIsolate());
             return;
         }
-        callback = V8SQLStatementCallback::create(v8::Handle<v8::Object>::Cast(info[2]), executionContext);
+        callback = V8SQLStatementCallback::create(v8::Handle<v8::Function>::Cast(info[2]), executionContext);
     }
 
     OwnPtr<SQLStatementErrorCallback> errorCallback;
@@ -105,7 +105,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             setDOMException(TypeMismatchError, info.GetIsolate());
             return;
         }
-        errorCallback = V8SQLStatementErrorCallback::create(v8::Handle<v8::Object>::Cast(info[3]), executionContext);
+        errorCallback = V8SQLStatementErrorCallback::create(v8::Handle<v8::Function>::Cast(info[3]), executionContext);
     }
 
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());

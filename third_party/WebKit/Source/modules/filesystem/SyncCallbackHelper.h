@@ -111,16 +111,14 @@ private:
             return adoptPtr(new SuccessCallbackImpl(helper));
         }
 
-        virtual bool handleEvent()
+        virtual void handleEvent()
         {
             m_helper->setError(FileError::OK);
-            return true;
         }
 
-        virtual bool handleEvent(CallbackArg arg)
+        virtual void handleEvent(CallbackArg arg)
         {
             m_helper->setResult(arg);
-            return true;
         }
 
     private:
@@ -138,11 +136,10 @@ private:
             return adoptPtr(new ErrorCallbackImpl(helper));
         }
 
-        virtual bool handleEvent(FileError* error)
+        virtual void handleEvent(FileError* error)
         {
             ASSERT(error);
             m_helper->setError(error->code());
-            return true;
         }
 
     private:

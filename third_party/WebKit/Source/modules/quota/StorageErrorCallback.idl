@@ -29,5 +29,5 @@
  */
 
 callback interface StorageErrorCallback {
-    boolean handleEvent(DOMError error);
+    void handleEvent(DOMError error);
 };

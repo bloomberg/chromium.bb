@@ -38,7 +38,7 @@ class Metadata;
 class MetadataCallback {
 public:
     virtual ~MetadataCallback() { }
-    virtual bool handleEvent(Metadata*) = 0;
+    virtual void handleEvent(Metadata*) = 0;
 };
 
 } // namespace

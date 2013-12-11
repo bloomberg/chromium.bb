@@ -42,7 +42,7 @@
 #include "wtf/RefPtr.h"
 namespace WebCore {
 
-V8TestCallback::V8TestCallback(v8::Handle<v8::Object> callback, ExecutionContext* context)
+V8TestCallback::V8TestCallback(v8::Handle<v8::Function> callback, ExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(toIsolate(context), callback)
     , m_world(DOMWrapperWorld::current())
@@ -68,8 +68,7 @@ bool V8TestCallback::callbackWithNoArg()
     v8::Context::Scope scope(v8Context);
     v8::Handle<v8::Value> *argv = 0;
 
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 0, argv, callbackReturnValue, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(isolate), 0, argv, executionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class1Arg)
@@ -93,8 +92,7 @@ bool V8TestCallback::callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class
     }
     v8::Handle<v8::Value> argv[] = { class1ArgHandle };
 
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(isolate), 1, argv, executionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class2Arg, const String& strArg)
@@ -124,8 +122,7 @@ bool V8TestCallback::callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class
     }
     v8::Handle<v8::Value> argv[] = { class2ArgHandle, strArgHandle };
 
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(isolate), 2, argv, executionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithBooleanArg(bool boolArg)
@@ -149,8 +146,7 @@ bool V8TestCallback::callbackWithBooleanArg(bool boolArg)
     }
     v8::Handle<v8::Value> argv[] = { boolArgHandle };
 
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(isolate), 1, argv, executionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg)
@@ -174,8 +170,7 @@ bool V8TestCallback::callbackWithSequenceArg(const Vector<RefPtr<TestInterfaceEm
     }
     v8::Handle<v8::Value> argv[] = { sequenceArgHandle };
 
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(isolate), 1, argv, executionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithFloatArg(float floatArg)
@@ -199,8 +194,7 @@ bool V8TestCallback::callbackWithFloatArg(float floatArg)
     }
     v8::Handle<v8::Value> argv[] = { floatArgHandle };
 
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(isolate), 1, argv, executionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int arg)
@@ -231,8 +225,25 @@ bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int arg)
     }
     v8::Handle<v8::Value> argv[] = { argHandle };
 
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv, callbackReturnValue, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv, executionContext(), isolate);
+}
+
+void V8TestCallback::callbackWithVoidReturnValue()
+{
+    if (!canInvokeCallback())
+        return;
+
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
+    if (v8Context.IsEmpty())
+        return;
+
+    v8::Context::Scope scope(v8Context);
+    v8::Handle<v8::Value> *argv = 0;
+
+    invokeCallback(m_callback.newLocal(isolate), 0, argv, executionContext(), isolate);
 }
 
 } // namespace WebCore

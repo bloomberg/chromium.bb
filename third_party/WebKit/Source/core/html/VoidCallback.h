@@ -31,7 +31,7 @@ namespace WebCore {
 class VoidCallback {
 public:
     virtual ~VoidCallback() { }
-    virtual bool handleEvent() = 0;
+    virtual void handleEvent() = 0;
 };
 
 } // namespace WebCore

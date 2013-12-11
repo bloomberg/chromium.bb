@@ -32,7 +32,7 @@ namespace WebCore {
 class NavigatorUserMediaErrorCallback {
 public:
     virtual ~NavigatorUserMediaErrorCallback() { }
-    virtual bool handleEvent(NavigatorUserMediaError*) = 0;
+    virtual void handleEvent(NavigatorUserMediaError*) = 0;
 };
 
 } // namespace WebCore

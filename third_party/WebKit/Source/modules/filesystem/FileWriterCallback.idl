@@ -29,5 +29,5 @@
  */
 
 callback interface FileWriterCallback {
-    boolean handleEvent(FileWriter fileWriter);
+    void handleEvent(FileWriter fileWriter);
 };

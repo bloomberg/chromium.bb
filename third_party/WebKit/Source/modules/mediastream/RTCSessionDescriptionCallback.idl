@@ -29,6 +29,6 @@
  */
 
 callback interface RTCSessionDescriptionCallback {
-    boolean handleEvent(RTCSessionDescription sdp);
+    void handleEvent(RTCSessionDescription sdp);
 };
 

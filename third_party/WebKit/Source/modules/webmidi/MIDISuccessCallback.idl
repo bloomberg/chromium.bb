@@ -32,5 +32,5 @@ callback interface MIDISuccessCallback {
     // FIXME: The second argument should be Dictionary, but IDL generator
     // can not handle Dictionary as a handleEvent argument correctly now.
     // http://crbug.com/246161
-    boolean handleEvent(MIDIAccess access, boolean sysex);
+    void handleEvent(MIDIAccess access, boolean sysex);
 };

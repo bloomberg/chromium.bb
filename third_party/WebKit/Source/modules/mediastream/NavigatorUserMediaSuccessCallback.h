@@ -32,7 +32,7 @@ class MediaStream;
 class NavigatorUserMediaSuccessCallback {
 public:
     virtual ~NavigatorUserMediaSuccessCallback() { }
-    virtual bool handleEvent(MediaStream*) = 0;
+    virtual void handleEvent(MediaStream*) = 0;
 };
 
 } // namespace WebCore

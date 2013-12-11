@@ -40,8 +40,9 @@ namespace WebCore {
 
 class ExecutionContext;
 
-bool invokeCallback(v8::Handle<v8::Object> callback, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ExecutionContext*, v8::Isolate*);
-bool invokeCallback(v8::Handle<v8::Object> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[], bool& callbackReturnValue, ExecutionContext*, v8::Isolate*);
+// Returns false if the callback threw an exception, true otherwise.
+bool invokeCallback(v8::Local<v8::Function> callback, int argc, v8::Handle<v8::Value> argv[], ExecutionContext*, v8::Isolate*);
+bool invokeCallback(v8::Local<v8::Function> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[], ExecutionContext*, v8::Isolate*);
 
 enum CallbackAllowedValueFlag {
     CallbackAllowUndefined = 1,

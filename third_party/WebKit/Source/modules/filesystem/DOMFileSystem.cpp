@@ -121,9 +121,9 @@ public:
         return adoptPtr(new ConvertToFileWriterCallback(callback));
     }
 
-    bool handleEvent(FileWriterBase* fileWriterBase)
+    void handleEvent(FileWriterBase* fileWriterBase)
     {
-        return m_callback->handleEvent(static_cast<FileWriter*>(fileWriterBase));
+        m_callback->handleEvent(static_cast<FileWriter*>(fileWriterBase));
     }
 private:
     ConvertToFileWriterCallback(PassOwnPtr<FileWriterCallback> callback)

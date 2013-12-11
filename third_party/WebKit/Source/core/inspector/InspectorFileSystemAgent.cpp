@@ -89,9 +89,9 @@ public:
         return adoptPtr(new CallbackDispatcher(handler, handlingMethod));
     }
 
-    virtual bool handleEvent(Argument argument) OVERRIDE
+    virtual void handleEvent(Argument argument) OVERRIDE
     {
-        return (m_handler.get()->*m_handlingMethod)(argument);
+        (m_handler.get()->*m_handlingMethod)(argument);
     }
 
 private:
@@ -519,9 +519,9 @@ private:
         {
         }
 
-        virtual bool handleEvent() OVERRIDE
+        virtual void handleEvent() OVERRIDE
         {
-            return m_handler->didDeleteEntry();
+            m_handler->didDeleteEntry();
         }
 
     private:

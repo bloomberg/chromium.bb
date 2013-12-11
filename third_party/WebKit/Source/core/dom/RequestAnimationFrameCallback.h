@@ -36,7 +36,7 @@ namespace WebCore {
 class RequestAnimationFrameCallback {
 public:
     virtual ~RequestAnimationFrameCallback() { }
-    virtual bool handleEvent(double highResTimeMs) = 0;
+    virtual void handleEvent(double highResTimeMs) = 0;
 
     int m_id;
     bool m_cancelled;

@@ -23,6 +23,6 @@
  */
 
 callback interface NavigatorUserMediaErrorCallback {
-    boolean handleEvent(NavigatorUserMediaError error);
+    void handleEvent(NavigatorUserMediaError error);
 };
 

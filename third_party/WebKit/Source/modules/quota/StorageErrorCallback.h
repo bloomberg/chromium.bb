@@ -45,7 +45,7 @@ typedef int ExceptionCode;
 class StorageErrorCallback {
 public:
     virtual ~StorageErrorCallback() { }
-    virtual bool handleEvent(DOMError*) = 0;
+    virtual void handleEvent(DOMError*) = 0;
 
     class CallbackTask : public ExecutionContextTask {
     public:

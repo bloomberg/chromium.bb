@@ -23,6 +23,6 @@
  */
 
 callback interface NavigatorUserMediaSuccessCallback {
-    boolean handleEvent(MediaStream stream);
+    void handleEvent(MediaStream stream);
 };
 

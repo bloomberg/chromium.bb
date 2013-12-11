@@ -29,5 +29,5 @@
  */
 
 callback interface StorageQuotaCallback {
-    boolean handleEvent(unsigned long long grantedQuotaInBytes);
+    void handleEvent(unsigned long long grantedQuotaInBytes);
 };

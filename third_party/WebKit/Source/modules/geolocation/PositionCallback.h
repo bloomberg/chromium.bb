@@ -33,7 +33,7 @@ namespace WebCore {
     class PositionCallback {
     public:
         virtual ~PositionCallback() { }
-        virtual bool handleEvent(Geoposition*) = 0;
+        virtual void handleEvent(Geoposition*) = 0;
     };
 
 } // namespace WebCore

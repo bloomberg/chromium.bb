@@ -37,4 +37,5 @@ callback interface TestCallback {
   boolean callbackWithSequenceArg(sequence<TestInterfaceEmpty> sequenceArg);
   boolean callbackWithFloatArg(float floatArg);
   [CallWith=ThisValue] boolean callbackWithThisArg(long arg);
+  void callbackWithVoidReturnValue();
 };

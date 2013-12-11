@@ -44,7 +44,7 @@ class ExecutionContext;
 
 class V8TestCallback : public TestCallback, public ActiveDOMCallback {
 public:
-    static PassOwnPtr<V8TestCallback> create(v8::Handle<v8::Object> callback, ExecutionContext* context)
+    static PassOwnPtr<V8TestCallback> create(v8::Handle<v8::Function> callback, ExecutionContext* context)
     {
         ASSERT(context);
         return adoptPtr(new V8TestCallback(callback, context));
@@ -60,10 +60,11 @@ public:
     virtual bool callbackWithSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg);
     virtual bool callbackWithFloatArg(float floatArg);
     virtual bool callbackWithThisArg(ScriptValue thisValue, int arg);
+    virtual void callbackWithVoidReturnValue();
 private:
-    V8TestCallback(v8::Handle<v8::Object>, ExecutionContext*);
+    V8TestCallback(v8::Handle<v8::Function>, ExecutionContext*);
 
-    ScopedPersistent<v8::Object> m_callback;
+    ScopedPersistent<v8::Function> m_callback;
     RefPtr<DOMWrapperWorld> m_world;
 };
 

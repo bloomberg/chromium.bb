@@ -4864,7 +4864,7 @@ sub GenerateCallbackHeader
     $header{class}->addFooter("};\n");
 
     $header{classPublic}->add(<<END);
-    static PassOwnPtr<${v8ClassName}> create(v8::Handle<v8::Object> callback, ExecutionContext* context)
+    static PassOwnPtr<${v8ClassName}> create(v8::Handle<v8::Function> callback, ExecutionContext* context)
     {
         ASSERT(context);
         return adoptPtr(new ${v8ClassName}(callback, context));
@@ -4895,9 +4895,9 @@ END
     }
 
     $header{classPrivate}->add(<<END);
-    ${v8ClassName}(v8::Handle<v8::Object>, ExecutionContext*);
+    ${v8ClassName}(v8::Handle<v8::Function>, ExecutionContext*);
 
-    ScopedPersistent<v8::Object> m_callback;
+    ScopedPersistent<v8::Function> m_callback;
     RefPtr<DOMWrapperWorld> m_world;
 END
 }
@@ -4914,7 +4914,7 @@ sub GenerateCallbackImplementation
     AddToImplIncludes("wtf/Assertions.h");
 
     $implementation{nameSpaceWebCore}->add(<<END);
-${v8ClassName}::${v8ClassName}(v8::Handle<v8::Object> callback, ExecutionContext* context)
+${v8ClassName}::${v8ClassName}(v8::Handle<v8::Function> callback, ExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(toIsolate(context), callback)
     , m_world(DOMWrapperWorld::current())
@@ -4939,7 +4939,8 @@ END
             next if $function->extendedAttributes->{"Custom"};
 
             AddIncludesForType($function->type);
-            die "We don't yet support callbacks that return non-boolean values.\n" if $function->type ne "boolean";
+            die "We only support callbacks that return boolean or void values.\n" unless ($function->type eq "boolean" || $function->type eq "void");
+            my $defaultReturn = $function->type eq "boolean" ? " true" : "";
             $code .= GetNativeTypeForCallbacks($function->type) . " ${v8ClassName}::" . $function->name . "(";
             my $callWithThisValue = ExtendedAttributeContains($function->extendedAttributes->{"CallWith"}, "ThisValue");
 
@@ -4967,12 +4968,12 @@ END
             $code .= ")\n";
             $code .= "{\n";
             $code .= "    if (!canInvokeCallback())\n";
-            $code .= "        return true;\n\n";
+            $code .= "        return${defaultReturn};\n\n";
             $code .= "    v8::Isolate* isolate = v8::Isolate::GetCurrent();\n";
             $code .= "    v8::HandleScope handleScope(isolate);\n\n";
             $code .= "    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());\n";
             $code .= "    if (v8Context.IsEmpty())\n";
-            $code .= "        return true;\n\n";
+            $code .= "        return${defaultReturn};\n\n";
             $code .= "    v8::Context::Scope scope(v8Context);\n";
 
             my $thisObjectHandle = "";
@@ -4981,7 +4982,7 @@ END
                 $code .= "    if (thisHandle.IsEmpty()) {\n";
                 $code .= "        if (!isScriptControllerTerminating())\n";
                 $code .= "            CRASH();\n";
-                $code .= "        return true;\n";
+                $code .= "        return${defaultReturn};\n";
                 $code .= "    }\n";
                 $code .= "    ASSERT(thisHandle->IsObject());\n";
                 $thisObjectHandle = "v8::Handle<v8::Object>::Cast(thisHandle), ";
@@ -4993,7 +4994,7 @@ END
                 $code .= "    if (${paramName}Handle.IsEmpty()) {\n";
                 $code .= "        if (!isScriptControllerTerminating())\n";
                 $code .= "            CRASH();\n";
-                $code .= "        return true;\n";
+                $code .= "        return${defaultReturn};\n";
                 $code .= "    }\n";
                 push(@args, "${paramName}Handle");
             }
@@ -5005,8 +5006,11 @@ END
             } else {
                 $code .= "    v8::Handle<v8::Value> *argv = 0;\n\n";
             }
-            $code .= "    bool callbackReturnValue = false;\n";
-            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, callbackReturnValue, executionContext(), isolate);\n";
+            $code .= "    ";
+            if ($function->type eq "boolean") {
+                $code .= "return ";
+            }
+            $code .= "invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, executionContext(), isolate);\n";
             $code .= "}\n\n";
             $implementation{nameSpaceWebCore}->add($code);
         }
@@ -5411,6 +5415,7 @@ sub GetNativeTypeForCallbacks
     my $type = shift;
     return "const String&" if $type eq "DOMString";
     return "PassRefPtr<SerializedScriptValue>" if $type eq "SerializedScriptValue";
+    return "void" if $type eq "void";
 
     # Callbacks use raw pointers, so pass isParameter = 1
     my $nativeType = GetNativeType($type, {}, "parameter");

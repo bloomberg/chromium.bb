@@ -38,7 +38,7 @@ class File;
 class FileCallback {
 public:
     virtual ~FileCallback() { }
-    virtual bool handleEvent(File*) = 0;
+    virtual void handleEvent(File*) = 0;
 };
 
 } // namespace

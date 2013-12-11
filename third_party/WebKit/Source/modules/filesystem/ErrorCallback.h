@@ -38,7 +38,7 @@ class FileError;
 class ErrorCallback {
 public:
     virtual ~ErrorCallback() { }
-    virtual bool handleEvent(FileError*) = 0;
+    virtual void handleEvent(FileError*) = 0;
 };
 
 } // namespace

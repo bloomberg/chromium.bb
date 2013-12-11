@@ -36,7 +36,7 @@ namespace WebCore {
 class StorageUsageCallback {
 public:
     virtual ~StorageUsageCallback() { }
-    virtual bool handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes) = 0;
+    virtual void handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes) = 0;
 };
 
 } // namespace

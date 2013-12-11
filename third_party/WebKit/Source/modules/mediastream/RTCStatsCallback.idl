@@ -23,6 +23,6 @@
  */
 
 callback interface RTCStatsCallback {
-    boolean handleEvent(RTCStatsResponse response);
+    void handleEvent(RTCStatsResponse response);
 };
 

@@ -40,7 +40,7 @@ class MIDIAccess;
 class MIDISuccessCallback {
 public:
     virtual ~MIDISuccessCallback() { }
-    virtual bool handleEvent(MIDIAccess*, bool) = 0;
+    virtual void handleEvent(MIDIAccess*, bool) = 0;
 };
 
 } // namespace WebCore

@@ -25,5 +25,5 @@
 [
     Conditional=WEB_AUDIO
 ] callback interface AudioBufferCallback {
-    boolean handleEvent(AudioBuffer audioBuffer);
+    void handleEvent(AudioBuffer audioBuffer);
 };

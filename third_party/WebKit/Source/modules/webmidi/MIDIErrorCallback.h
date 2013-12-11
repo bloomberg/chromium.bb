@@ -38,7 +38,7 @@ class DOMError;
 class MIDIErrorCallback {
 public:
     virtual ~MIDIErrorCallback() { }
-    virtual bool handleEvent(DOMError*) = 0;
+    virtual void handleEvent(DOMError*) = 0;
 };
 
 } // namespace WebCore

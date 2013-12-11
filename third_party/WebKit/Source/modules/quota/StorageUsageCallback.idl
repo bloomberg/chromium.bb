@@ -29,5 +29,5 @@
  */
 
 callback interface StorageUsageCallback {
-    boolean handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes);
+    void handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes);
 };

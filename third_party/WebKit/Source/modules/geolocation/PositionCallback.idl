@@ -23,5 +23,5 @@
  */
 
 callback interface PositionCallback {
-    boolean handleEvent(Geoposition position);
+    void handleEvent(Geoposition position);
 };

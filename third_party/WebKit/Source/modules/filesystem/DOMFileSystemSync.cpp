@@ -184,9 +184,8 @@ public:
         return adoptPtr(new ReceiveFileWriterCallback());
     }
 
-    bool handleEvent(FileWriterBase*)
+    void handleEvent(FileWriterBase*)
     {
-        return true;
     }
 
 private:
@@ -202,11 +201,10 @@ public:
         return adoptPtr(new LocalErrorCallback(errorCode));
     }
 
-    bool handleEvent(FileError* error)
+    void handleEvent(FileError* error)
     {
         ASSERT(error->code() != FileError::OK);
         m_errorCode = error->code();
-        return true;
     }
 
 private:

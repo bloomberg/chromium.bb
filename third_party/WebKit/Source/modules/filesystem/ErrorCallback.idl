@@ -29,5 +29,5 @@
  */
 
 callback interface ErrorCallback {
-    boolean handleEvent(FileError error);
+    void handleEvent(FileError error);
 };

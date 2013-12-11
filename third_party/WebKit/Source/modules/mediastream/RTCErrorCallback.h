@@ -38,7 +38,7 @@ namespace WebCore {
 class RTCErrorCallback {
 public:
     virtual ~RTCErrorCallback() { }
-    virtual bool handleEvent(const String& errorInformation) = 0;
+    virtual void handleEvent(const String& errorInformation) = 0;
 };
 
 } // namespace WebCore

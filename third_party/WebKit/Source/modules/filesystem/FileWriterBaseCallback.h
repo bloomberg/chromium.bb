@@ -38,7 +38,7 @@ class FileWriterBase;
 class FileWriterBaseCallback {
 public:
     virtual ~FileWriterBaseCallback() { }
-    virtual bool handleEvent(FileWriterBase*) = 0;
+    virtual void handleEvent(FileWriterBase*) = 0;
 };
 
 } // namespace

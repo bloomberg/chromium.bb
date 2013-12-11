@@ -29,6 +29,6 @@
  */
 
 callback interface RTCErrorCallback {
-    boolean handleEvent(DOMString errorInformation);
+    void handleEvent(DOMString errorInformation);
 };
 

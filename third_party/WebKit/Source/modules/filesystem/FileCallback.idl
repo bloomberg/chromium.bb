@@ -29,5 +29,5 @@
  */
 
 callback interface FileCallback {
-    boolean handleEvent(File file);
+    void handleEvent(File file);
 };

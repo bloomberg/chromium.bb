@@ -36,7 +36,7 @@ namespace WebCore {
 class StorageQuotaCallback {
 public:
     virtual ~StorageQuotaCallback() { }
-    virtual bool handleEvent(unsigned long long grantedQuotaInBytes) = 0;
+    virtual void handleEvent(unsigned long long grantedQuotaInBytes) = 0;
 };
 
 } // namespace

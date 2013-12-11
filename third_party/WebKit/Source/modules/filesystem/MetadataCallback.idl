@@ -29,5 +29,5 @@
  */
 
 callback interface MetadataCallback {
-    boolean handleEvent(Metadata metadata);
+    void handleEvent(Metadata metadata);
 };

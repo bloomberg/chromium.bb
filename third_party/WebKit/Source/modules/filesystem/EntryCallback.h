@@ -38,7 +38,7 @@ class Entry;
 class EntryCallback {
 public:
     virtual ~EntryCallback() { }
-    virtual bool handleEvent(Entry*) = 0;
+    virtual void handleEvent(Entry*) = 0;
 };
 
 } // namespace

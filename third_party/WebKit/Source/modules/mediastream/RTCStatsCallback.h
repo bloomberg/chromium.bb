@@ -32,7 +32,7 @@ class RTCStatsResponse;
 class RTCStatsCallback {
 public:
     virtual ~RTCStatsCallback() { }
-    virtual bool handleEvent(RTCStatsResponse*) = 0;
+    virtual void handleEvent(RTCStatsResponse*) = 0;
 };
 
 } // namespace WebCore

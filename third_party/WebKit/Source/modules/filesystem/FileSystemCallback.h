@@ -38,7 +38,7 @@ class DOMFileSystem;
 class FileSystemCallback {
 public:
     virtual ~FileSystemCallback() { }
-    virtual bool handleEvent(DOMFileSystem*) = 0;
+    virtual void handleEvent(DOMFileSystem*) = 0;
 };
 
 } // namespace

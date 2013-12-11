@@ -26,6 +26,6 @@
  */
 
 callback interface CSSVariablesMapForEachCallback {
-    [CallWith=ThisValue] boolean handleItem(DOMString value, DOMString name, CSSVariablesMap map);
-    boolean handleItem(DOMString value, DOMString name, CSSVariablesMap map);
+    [CallWith=ThisValue] void handleItem(DOMString value, DOMString name, CSSVariablesMap map);
+    void handleItem(DOMString value, DOMString name, CSSVariablesMap map);
 };

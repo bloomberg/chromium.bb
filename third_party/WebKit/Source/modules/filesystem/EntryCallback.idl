@@ -29,5 +29,5 @@
  */
 
 callback interface EntryCallback {
-    boolean handleEvent(Entry entry);
+    void handleEvent(Entry entry);
 };

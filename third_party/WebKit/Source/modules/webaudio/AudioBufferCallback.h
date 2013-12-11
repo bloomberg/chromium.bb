@@ -34,7 +34,7 @@ class AudioBuffer;
 class AudioBufferCallback {
 public:
     virtual ~AudioBufferCallback() { }
-    virtual bool handleEvent(AudioBuffer*) = 0;
+    virtual void handleEvent(AudioBuffer*) = 0;
 };
 
 } // namespace

@@ -29,5 +29,5 @@
  */
 
 callback interface StringCallback {
-    boolean handleEvent(DOMString data);
+    void handleEvent(DOMString data);
 };

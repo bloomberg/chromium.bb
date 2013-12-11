@@ -29,5 +29,5 @@
  */
 
 callback interface FileSystemCallback {
-    boolean handleEvent(DOMFileSystem fileSystem);
+    void handleEvent(DOMFileSystem fileSystem);
 };
