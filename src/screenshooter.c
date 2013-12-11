@@ -585,7 +585,7 @@ screenshooter_destroy(struct wl_listener *listener, void *data)
 	free(shooter);
 }
 
-void
+WL_EXPORT void
 screenshooter_create(struct weston_compositor *ec)
 {
 	struct screenshooter *shooter;

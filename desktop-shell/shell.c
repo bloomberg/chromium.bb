@@ -6030,6 +6030,8 @@ module_init(struct weston_compositor *ec,
 		create_keyboard_focus_listener(seat);
 	}
 
+	screenshooter_create(ec);
+
 	shell_add_bindings(ec, shell);
 
 	shell_fade_init(shell);

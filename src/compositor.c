@@ -3672,7 +3672,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
 		return -1;
 
-	screenshooter_create(ec);
 	text_backend_init(ec);
 
 	wl_data_device_manager_init(ec->wl_display);
