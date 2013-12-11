@@ -82,20 +82,20 @@
     {
       'target_name': 'vectored_handler_tests',
       'type': 'executable',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:run_all_unittests',
+        '../../breakpad/breakpad.gyp:breakpad_handler',
+        '../../testing/gmock.gyp:gmock',
+        '../../testing/gtest.gyp:gtest',
+        'crash_dll',
+        'crash_report',
+      ],
       'sources': [
         'nt_loader_unittest.cc',
         'vectored_handler_unittest.cc',
         'veh_test.cc',
         'veh_test.h',
-      ],
-      'dependencies': [
-        'crash_dll',
-        'crash_report',
-        '../../base/base.gyp:base',
-        '../../testing/gmock.gyp:gmock',
-        '../../testing/gtest.gyp:gtest',
-        '../../testing/gtest.gyp:gtest_main',
-        '../../breakpad/breakpad.gyp:breakpad_handler',
       ],
     },
     {
