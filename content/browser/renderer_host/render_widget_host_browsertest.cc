@@ -47,7 +47,8 @@ class RenderWidgetHostBrowserTest : public ContentBrowserTest {
 };
 
 // Disabled on Windows and CrOS because it is flaky: crbug.com/272379.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Disabled on Ozone due to flake: crbug.com/315392.
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_OZONE)
 #define MAYBE_GetSnapshotFromRendererTest DISABLED_GetSnapshotFromRendererTest
 #else
 #define MAYBE_GetSnapshotFromRendererTest GetSnapshotFromRendererTest
