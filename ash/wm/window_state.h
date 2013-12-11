@@ -254,6 +254,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void SnapWindow(WindowShowType left_or_right,
                   const gfx::Rect& bounds);
 
+  // Sets the window show type and updates the show state if necessary.
+  void SetWindowShowType(WindowShowType new_window_show_type);
+
   // The owner of this window settings.
   aura::Window* window_;
   scoped_ptr<WindowStateDelegate> delegate_;
@@ -278,6 +281,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   scoped_ptr<gfx::Rect> pre_auto_manage_window_bounds_;
 
   ObserverList<WindowStateObserver> observer_list_;
+
+  // True when in SetWindowShowType(). This is used to avoid reentrance.
+  bool in_set_window_show_type_;
 
   WindowShowType window_show_type_;
 
