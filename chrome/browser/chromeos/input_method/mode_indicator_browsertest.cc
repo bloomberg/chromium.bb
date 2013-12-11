@@ -23,7 +23,8 @@ namespace input_method {
 class ScopedModeIndicatorObserverForTesting :
       public ModeIndicatorObserverInterface {
  public:
-  ScopedModeIndicatorObserverForTesting() {
+  ScopedModeIndicatorObserverForTesting()
+      : max_widget_list_size_(0) {
     ModeIndicatorController::SetModeIndicatorObserverForTesting(this);
   }
 
@@ -42,9 +43,23 @@ class ScopedModeIndicatorObserverForTesting :
     return is_displayed_;
   }
 
+  const std::vector<views::Widget*>& widget_list() const {
+    return widget_list_;
+  }
+
+  size_t widget_list_size() const {
+    return widget_list_.size();
+  }
+
+  size_t max_widget_list_size() const {
+    return max_widget_list_size_;
+  }
+
   // ModeIndicatorObserverInterface override:
   virtual void AddModeIndicatorWidget(views::Widget* widget) OVERRIDE {
     widget_list_.push_back(widget);
+    max_widget_list_size_ =
+        std::max(max_widget_list_size_, widget_list_.size());
     widget->AddObserver(this);
   }
 
@@ -66,6 +81,7 @@ class ScopedModeIndicatorObserverForTesting :
  private:
   bool is_displayed_;
   gfx::Rect last_bounds_;
+  size_t max_widget_list_size_;
   std::vector<views::Widget*> widget_list_;
 };
 
@@ -164,6 +180,39 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
     mi3_bounds = observer.last_bounds();
     EXPECT_TRUE(observer.is_displayed());
     EXPECT_LT(mi3_bounds.bottom(), screen_bounds.bottom());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, NumOfWidgets) {
+  InitializeIMF();
+
+  InputMethodManager* imm = InputMethodManager::Get();
+  ASSERT_TRUE(imm);
+
+  // Add keyboard layouts to enable the mode indicator.
+  imm->EnableLayouts("fr", "xkb:fr::fra");
+  ASSERT_LT(1UL, imm->GetNumActiveInputMethods());
+
+  chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
+  candidate_window->FocusStateChanged(true);
+
+  {
+    ScopedModeIndicatorObserverForTesting observer;
+
+    EXPECT_TRUE(imm->SwitchToNextInputMethod());
+    EXPECT_EQ(1UL, observer.max_widget_list_size());
+    const views::Widget* widget1 = observer.widget_list()[0];
+
+    EXPECT_TRUE(imm->SwitchToNextInputMethod());
+    EXPECT_EQ(2UL, observer.max_widget_list_size());
+
+    // When a new mode indicator is displayed, the previous one should be
+    // closed.
+    content::RunAllPendingInMessageLoop();
+    EXPECT_EQ(1UL, observer.widget_list_size());
+    const views::Widget* widget2 = observer.widget_list()[0];
+    EXPECT_NE(widget1, widget2);
   }
 }
 }  // namespace input_method
