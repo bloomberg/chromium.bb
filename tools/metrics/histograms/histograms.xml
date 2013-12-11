@@ -23474,7 +23474,7 @@ other types of suffix sets.
   <int value="34" label="AUTOTESTPRIVATE_RESTART"/>
   <int value="35" label="USB_CLAIMINTERFACE"/>
   <int value="36" label="MEDIAPLAYERPRIVATE_SETWINDOWHEIGHT"/>
-  <int value="37" label="PROCESSES_GETPROCESSINFO"/>
+  <int value="37" label="DELETED_EXPERIMENTAL_PROCESSES_GETPROCESSINFO"/>
   <int value="38" label="HISTORY_GETVISITS"/>
   <int value="39" label="SOCKET_BIND"/>
   <int value="40" label="TABS_MOVE"/>
@@ -23490,7 +23490,7 @@ other types of suffix sets.
   <int value="50" label="APP_CURRENTWINDOWINTERNAL_SETBOUNDS"/>
   <int value="51" label="CLOUDPRINTPRIVATE_SETUPCONNECTOR"/>
   <int value="52" label="SERIAL_SETCONTROLSIGNALS"/>
-  <int value="53" label="FILEBROWSERPRIVATE_SETLASTMODIFIED"/>
+  <int value="53" label="DELETED_FILEBROWSERPRIVATE_SETLASTMODIFIED"/>
   <int value="54" label="IDLE_SETDETECTIONINTERVAL"/>
   <int value="55" label="FILEBROWSERPRIVATE_GETFILETASKS"/>
   <int value="56" label="WEBSTOREPRIVATE_GETSTORELOGIN"/>
@@ -23500,7 +23500,7 @@ other types of suffix sets.
   <int value="60" label="APP_CURRENTWINDOWINTERNAL_SHOW"/>
   <int value="61" label="WEBSTOREPRIVATE_GETBROWSERLOGIN"/>
   <int value="62" label="EXPERIMENTAL_IDENTITY_GETAUTHTOKEN"/>
-  <int value="63" label="SYSTEMINFO_DISPLAY_GETDISPLAYINFO"/>
+  <int value="63" label="DELETED_SYSTEMINFO_DISPLAY_GETDISPLAYINFO"/>
   <int value="64" label="BROWSINGDATA_REMOVEPLUGINDATA"/>
   <int value="65" label="SOCKET_LISTEN"/>
   <int value="66" label="MEDIAGALLERIES_GETMEDIAFILESYSTEMS"/>
@@ -23510,7 +23510,7 @@ other types of suffix sets.
   <int value="70" label="INPUTMETHODPRIVATE_GET"/>
   <int value="71" label="USB_CLOSEDEVICE"/>
   <int value="72" label="TTS_STOP"/>
-  <int value="73" label="SERIAL_GETPORTS"/>
+  <int value="73" label="DELETED_SERIAL_GETPORTS"/>
   <int value="74" label="DELETED_FILEBROWSERPRIVATE_CLEARDRIVECACHE"/>
   <int value="75" label="SERIAL_GETCONTROLSIGNALS"/>
   <int value="76" label="DEVELOPERPRIVATE_ENABLE"/>
@@ -23531,7 +23531,7 @@ other types of suffix sets.
   <int value="91" label="APP_CURRENTWINDOWINTERNAL_MINIMIZE"/>
   <int value="92" label="DEVELOPERPRIVATE_AUTOUPDATE"/>
   <int value="93" label="DNS_RESOLVE"/>
-  <int value="94" label="EXPERIMENTAL_SYSTEMINFO_MEMORY_GET"/>
+  <int value="94" label="DELETED_EXPERIMENTAL_SYSTEMINFO_MEMORY_GET"/>
   <int value="95" label="HISTORY_ADDURL"/>
   <int value="96" label="TABS_GET"/>
   <int value="97" label="BROWSERACTION_SETBADGETEXT"/>
@@ -23539,11 +23539,11 @@ other types of suffix sets.
   <int value="99" label="WINDOWS_CREATE"/>
   <int value="100" label="DEVELOPERPRIVATE_LOADUNPACKED"/>
   <int value="101" label="DELETED_DOWNLOADS_SETDESTINATION"/>
-  <int value="102" label="PROCESSES_GETPROCESSIDFORTAB"/>
+  <int value="102" label="DELETED_EXPERIMENTAL_PROCESSES_GETPROCESSIDFORTAB"/>
   <int value="103" label="BOOKMARKS_GETCHILDREN"/>
   <int value="104" label="BROWSERACTION_GETTITLE"/>
   <int value="105" label="TERMINALPRIVATE_OPENTERMINALPROCESS"/>
-  <int value="106" label="SERIAL_CLOSE"/>
+  <int value="106" label="DELETED_SERIAL_CLOSE"/>
   <int value="107" label="CONTEXTMENUS_REMOVE"/>
   <int value="108" label="FILEBROWSERPRIVATE_REQUESTFILESYSTEM"/>
   <int value="109" label="ECHOPRIVATE_GETREGISTRATIONCODE"/>
@@ -23555,7 +23555,7 @@ other types of suffix sets.
   <int value="115" label="STORAGE_SET"/>
   <int value="116" label="FONTSETTINGS_GETDEFAULTFONTSIZE"/>
   <int value="117" label="EXTENSION_SETUPDATEURLDATA"/>
-  <int value="118" label="SERIAL_WRITE"/>
+  <int value="118" label="DELETED_SERIAL_WRITE"/>
   <int value="119" label="IDLE_QUERYSTATE"/>
   <int value="120" label="DELETED_EXPERIMENTAL_RLZ_GETACCESSPOINTRLZ"/>
   <int value="121" label="WEBSTOREPRIVATE_SETSTORELOGIN"/>
@@ -23626,9 +23626,9 @@ other types of suffix sets.
   <int value="185" label="DOWNLOADS_GETFILEICON"/>
   <int value="186" label="PAGEACTION_GETTITLE"/>
   <int value="187" label="BROWSINGDATA_REMOVE"/>
-  <int value="188" label="SERIAL_OPEN"/>
+  <int value="188" label="DELETED_SERIAL_OPEN"/>
   <int value="189" label="FILESYSTEM_GETDISPLAYPATH"/>
-  <int value="190" label="FILEBROWSERPRIVATE_FORMATDEVICE"/>
+  <int value="190" label="FILEBROWSERPRIVATE_FORMATVOLUME"/>
   <int value="191" label="BOOKMARKS_GET"/>
   <int value="192" label="DELETED_MANAGEDMODEPRIVATE_GET"/>
   <int value="193" label="ALARMS_CLEAR"/>
@@ -23642,7 +23642,7 @@ other types of suffix sets.
   <int value="201" label="CONTENTSETTINGS_GETRESOURCEIDENTIFIERS"/>
   <int value="202" label="SOCKET_CREATE"/>
   <int value="203" label="DEVELOPERPRIVATE_RELOAD"/>
-  <int value="204" label="FILEBROWSERPRIVATE_GETMOUNTPOINTS"/>
+  <int value="204" label="FILEBROWSERPRIVATE_GETVOLUMEMETADATALIST"/>
   <int value="205" label="APP_RUNTIME_POSTINTENTRESPONSE"/>
   <int value="206" label="DELETED_MANAGEDMODEPRIVATE_SETPOLICY"/>
   <int value="207" label="WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3"/>
@@ -23650,7 +23650,7 @@ other types of suffix sets.
   <int value="209" label="USB_CONTROLTRANSFER"/>
   <int value="210" label="DELETED_EXPERIMENTAL_SPEECHINPUT_STOP"/>
   <int value="211" label="USB_BULKTRANSFER"/>
-  <int value="212" label="FILEBROWSERPRIVATE_GETVOLUMEMETADATA"/>
+  <int value="212" label="DELETED_FILEBROWSERPRIVATE_GETVOLUMEMETADATA"/>
   <int value="213" label="PAGECAPTURE_SAVEASMHTML"/>
   <int value="214" label="EXTENSION_ISALLOWEDINCOGNITOACCESS"/>
   <int value="215" label="BROWSINGDATA_REMOVEAPPCACHE"/>
@@ -23733,7 +23733,7 @@ other types of suffix sets.
   <int value="292" label="EXPERIMENTAL_APP_NOTIFY"/>
   <int value="293" label="METRICSPRIVATE_RECORDLONGTIME"/>
   <int value="294" label="SOCKET_READ"/>
-  <int value="295" label="PROCESSES_TERMINATE"/>
+  <int value="295" label="DELETED_EXPERIMENTAL_PROCESSES_TERMINATE"/>
   <int value="296" label="METRICSPRIVATE_RECORDTIME"/>
   <int value="297" label="BOOKMARKMANAGERPRIVATE_GETSTRINGS"/>
   <int value="298" label="USB_ISOCHRONOUSTRANSFER"/>
@@ -23775,7 +23775,7 @@ other types of suffix sets.
   <int value="334" label="TABS_DETECTLANGUAGE"/>
   <int value="335" label="METRICSPRIVATE_RECORDVALUE"/>
   <int value="336" label="BOOKMARKMANAGERPRIVATE_SORTCHILDREN"/>
-  <int value="337" label="SERIAL_READ"/>
+  <int value="337" label="DELETED_SERIAL_READ"/>
   <int value="338" label="APP_CURRENTWINDOWINTERNAL_MAXIMIZE"/>
   <int value="339" label="EXPERIMENTAL_DISCOVERY_CLEARALLSUGGESTIONS"/>
   <int value="340" label="DELETED_MANAGEDMODEPRIVATE_ENTER"/>
@@ -23793,7 +23793,7 @@ other types of suffix sets.
   <int value="352" label="TTS_ISSPEAKING"/>
   <int value="353" label="BOOKMARKS_REMOVETREE"/>
   <int value="354" label="FILEBROWSERPRIVATE_SEARCHDRIVE"/>
-  <int value="355" label="EXPERIMENTAL_SYSTEMINFO_CPU_GET"/>
+  <int value="355" label="DELETED_EXPERIMENTAL_SYSTEMINFO_CPU_GET"/>
   <int value="356" label="FILEBROWSERPRIVATE_SETPREFERENCES"/>
   <int value="357" label="FONTSETTINGS_SETFONT"/>
   <int value="358" label="SOCKET_GETNETWORKLIST"/>
@@ -23825,11 +23825,11 @@ other types of suffix sets.
   <int value="384" label="WINDOWS_GETALL"/>
   <int value="385" label="DELETED_FILEBROWSERPRIVATE_TOGGLEFULLSCREEN"/>
   <int value="386" label="APP_CURRENTWINDOWINTERNAL_RESTORE"/>
-  <int value="387" label="WEBSOCKETPROXYPRIVATE_GETPASSPORTFORTCP"/>
+  <int value="387" label="DELETED_WEBSOCKETPROXYPRIVATE_GETPASSPORTFORTCP"/>
   <int value="388" label="PAGEACTION_HIDE"/>
-  <int value="389" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_GET"/>
+  <int value="389" label="DELETED_EXPERIMENTAL_SYSTEMINFO_STORAGE_GET"/>
   <int value="390" label="DOWNLOADS_ACCEPTDANGER"/>
-  <int value="391" label="WEBSOCKETPROXYPRIVATE_GETURLFORTCP"/>
+  <int value="391" label="DELETED_WEBSOCKETPROXYPRIVATE_GETURLFORTCP"/>
   <int value="392" label="FILEBROWSERPRIVATE_GETSIZESTATS"/>
   <int value="393" label="DOWNLOADS_RESUME"/>
   <int value="394" label="COOKIES_GETALLCOOKIESTORES"/>
@@ -23838,8 +23838,8 @@ other types of suffix sets.
   <int value="397" label="WEBVIEW_EXECUTESCRIPT"/>
   <int value="398" label="NOTIFICATIONS_UPDATE"/>
   <int value="399" label="NOTIFICATIONS_CLEAR"/>
-  <int value="400" label="SESSIONRESTORE_GETRECENTLYCLOSED"/>
-  <int value="401" label="SESSIONRESTORE_RESTORE"/>
+  <int value="400" label="DELETED_SESSIONRESTORE_GETRECENTLYCLOSED"/>
+  <int value="401" label="DELETED_SESSIONRESTORE_RESTORE"/>
   <int value="402" label="MANAGEMENT_UNINSTALLSELF"/>
   <int value="403" label="ECHOPRIVATE_GETOOBETIMESTAMP"/>
   <int value="404" label="FILEBROWSERPRIVATE_VALIDATEPATHNAMELENGTH"/>
@@ -23852,8 +23852,8 @@ other types of suffix sets.
   <int value="411" label="MEDIAGALLERIESPRIVATE_GETALLGALLERYWATCH"/>
   <int value="412" label="MEDIAGALLERIESPRIVATE_REMOVEALLGALLERYWATCH"/>
   <int value="413" label="FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA"/>
-  <int value="414" label="ECHOPRIVATE_CHECKALLOWREDEEMOFFERS"/>
-  <int value="415" label="MEDIAGALLERIESPRIVATE_EJECTDEVICE"/>
+  <int value="414" label="DELETED_ECHOPRIVATE_CHECKALLOWREDEEMOFFERS"/>
+  <int value="415" label="DELETED_MEDIAGALLERIESPRIVATE_EJECTDEVICE"/>
   <int value="416" label="FILEBROWSERPRIVATE_LOGOUTUSERFORREAUTHENTICATION"/>
   <int value="417" label="DEVELOPERPRIVATE_CHOOSEPATH"/>
   <int value="418" label="DEVELOPERPRIVATE_PACKDIRECTORY"/>
@@ -23920,15 +23920,16 @@ other types of suffix sets.
   <int value="478" label="MUSICMANAGERPRIVATE_GETDEVICEID"/>
   <int value="479" label="TTS_PAUSE"/>
   <int value="480" label="TTS_RESUME"/>
-  <int value="481" label="SYSTEMINFO_CPU_GET"/>
-  <int value="482" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_ADDWATCH"/>
-  <int value="483" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_REMOVEWATCH"/>
-  <int value="484" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_GETALLWATCH"/>
-  <int value="485" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_REMOVEALLWATCH"/>
-  <int value="486" label="SYSTEMINFO_MEMORY_GET"/>
+  <int value="481" label="DELETED_SYSTEMINFO_CPU_GET"/>
+  <int value="482" label="DELETED_EXPERIMENTAL_SYSTEMINFO_STORAGE_ADDWATCH"/>
+  <int value="483" label="DELETED_EXPERIMENTAL_SYSTEMINFO_STORAGE_REMOVEWATCH"/>
+  <int value="484" label="DELETED_EXPERIMENTAL_SYSTEMINFO_STORAGE_GETALLWATCH"/>
+  <int value="485"
+      label="DELETED_EXPERIMENTAL_SYSTEMINFO_STORAGE_REMOVEALLWATCH"/>
+  <int value="486" label="DELETED_SYSTEMINFO_MEMORY_GET"/>
   <int value="487" label="ACTIVITYLOGPRIVATE_GETEXTENSIONACTIVITIES"/>
   <int value="488" label="RUNTIME_GETPACKAGEDIRECTORYENTRY"/>
-  <int value="489" label="SYSTEMINFO_DISPLAY_SETDISPLAYPROPERTIES"/>
+  <int value="489" label="DELETED_SYSTEMINFO_DISPLAY_SETDISPLAYPROPERTIES"/>
   <int value="490" label="FEEDBACKPRIVATE_GETUSEREMAIL"/>
   <int value="491" label="FEEDBACKPRIVATE_GETSYSTEMINFORMATION"/>
   <int value="492" label="FEEDBACKPRIVATE_SENDFEEDBACK"/>
@@ -23945,25 +23946,152 @@ other types of suffix sets.
   <int value="503" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_GET"/>
   <int value="504" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_SET"/>
   <int value="505" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_CLEAR"/>
-  <int value="506" label="SYSTEM_CPU_GETINFO"/>
-  <int value="507" label="SYSTEM_DISPLAY_GETINFO"/>
-  <int value="508" label="SYSTEM_DISPLAY_SETDISPLAYPROPERTIES"/>
-  <int value="509" label="SYSTEM_MEMORY_GETINFO"/>
-  <int value="510" label="SYSTEM_STORAGE_GETINFO"/>
-  <int value="511" label="SYSTEM_STORAGE_EJECTDEVICE"/>
-  <int value="512" label="SYSTEM_STORAGE_ADDAVAILABLECAPACITYWATCH"/>
-  <int value="513" label="SYSTEM_STORAGE_REMOVEAVAILABLECAPACITYWATCH"/>
-  <int value="514" label="SYSTEM_STORAGE_GETALLAVAILABLECAPACITYWATCHES"/>
-  <int value="515" label="SYSTEM_STORAGE_REMOVEALLAVAILABLECAPACITYWATCHES"/>
-  <int value="516" label="INFOBARS_SHOW"/>
-  <int value="517" label="VIRTUALKEYBOARDPRIVATE_MOVECURSOR"/>
-  <int value="518" label="AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG"/>
-  <int value="519" label="WALLPAPER_SETWALLPAPER"/>
-  <int value="520" label="VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD"/>
-  <int value="521" label="SYSTEM_STORAGE_GETAVAILABLECAPACITY"/>
-  <int value="522" label="VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED"/>
-  <int value="523" label="MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA"/>
-  <int value="524" label="MEDIAGALLERIES_GETMETADATA"/>
+  <int value="506" label="DELETED_EXPERIMENTAL_SYSTEMINFO_STORAGE_EJECTDEVICE"/>
+  <int value="507" label="SYSTEM_CPU_GETINFO"/>
+  <int value="508" label="BOOKMARKMANAGERPRIVATE_REMOVETREES"/>
+  <int value="509" label="SYSTEM_DISPLAY_GETINFO"/>
+  <int value="510" label="SYSTEM_DISPLAY_SETDISPLAYPROPERTIES"/>
+  <int value="511" label="SYSTEM_MEMORY_GETINFO"/>
+  <int value="512" label="FILEBROWSERPRIVATE_GETSHAREURL"/>
+  <int value="513" label="SYSTEM_STORAGE_GETINFO"/>
+  <int value="514" label="SYSTEM_STORAGE_EJECTDEVICE"/>
+  <int value="515" label="DELETED_SYSTEM_STORAGE_ADDAVAILABLECAPACITYWATCH"/>
+  <int value="516" label="DELETED_SYSTEM_STORAGE_REMOVEAVAILABLECAPACITYWATCH"/>
+  <int value="517"
+      label="DELETED_SYSTEM_STORAGE_GETALLAVAILABLECAPACITYWATCHES"/>
+  <int value="518"
+      label="DELETED_SYSTEM_STORAGE_REMOVEALLAVAILABLECAPACITYWATCHES"/>
+  <int value="519" label="DOWNLOADS_REMOVEFILE"/>
+  <int value="520" label="DOWNLOADS_SHOWDEFAULTFOLDER"/>
+  <int value="521" label="INFOBARS_SHOW"/>
+  <int value="522" label="DOWNLOADS_SETSHELFENABLED"/>
+  <int value="523" label="IMAGEWRITER_WRITEFROMURL"/>
+  <int value="524" label="IMAGEWRITER_WRITEFROMFILE"/>
+  <int value="525" label="IMAGEWRITER_CANCELWRITE"/>
+  <int value="526" label="IMAGEWRITER_DESTROYPARTITIONS"/>
+  <int value="527" label="FEEDBACKPRIVATE_GETSTRINGS"/>
+  <int value="528" label="LOGPRIVATE_GETHISTORICAL"/>
+  <int value="529" label="VIRTUALKEYBOARDPRIVATE_MOVECURSOR"/>
+  <int value="530" label="METRICSPRIVATE_GETVARIATIONPARAMS"/>
+  <int value="531" label="WEBVIEW_SETPERMISSION"/>
+  <int value="532" label="DESKTOPCAPTURE_CHOOSEDESKTOPMEDIA"/>
+  <int value="533" label="APP_CURRENTWINDOWINTERNAL_SETSHAPE"/>
+  <int value="534" label="PROCESSES_GETPROCESSINFO"/>
+  <int value="535" label="PROCESSES_GETPROCESSIDFORTAB"/>
+  <int value="536" label="PROCESSES_TERMINATE"/>
+  <int value="537" label="SOCKETS_UDP_CREATE"/>
+  <int value="538" label="SOCKETS_UDP_UPDATE"/>
+  <int value="539" label="SOCKETS_UDP_BIND"/>
+  <int value="540" label="SOCKETS_UDP_SEND"/>
+  <int value="541" label="SOCKETS_UDP_CLOSE"/>
+  <int value="542" label="SOCKETS_UDP_GETINFO"/>
+  <int value="543" label="SOCKETS_UDP_GETSOCKETS"/>
+  <int value="544" label="SOCKETS_UDP_JOINGROUP"/>
+  <int value="545" label="SOCKETS_UDP_LEAVEGROUP"/>
+  <int value="546" label="SOCKETS_UDP_SETMULTICASTTIMETOLIVE"/>
+  <int value="547" label="SOCKETS_UDP_SETMULTICASTLOOPBACKMODE"/>
+  <int value="548" label="SOCKETS_UDP_GETJOINEDGROUPS"/>
+  <int value="549" label="SIGNED_IN_DEVICES_GET"/>
+  <int value="550" label="AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG"/>
+  <int value="551" label="WEBVIEW_CLEARDATA"/>
+  <int value="552" label="SESSIONS_GETRECENTLYCLOSED"/>
+  <int value="553" label="SESSIONS_GETDEVICES"/>
+  <int value="554" label="SESSIONS_RESTORE"/>
+  <int value="555" label="SYNCFILESYSTEM_GETSERVICESTATUS"/>
+  <int value="556" label="ECHOPRIVATE_SETOFFERINFO"/>
+  <int value="557" label="ECHOPRIVATE_GETOFFERINFO"/>
+  <int value="558" label="DEVELOPERPRIVATE_ISPROFILEMANAGED"/>
+  <int value="559" label="FILEBROWSERPRIVATE_INSTALLWEBSTOREITEM"/>
+  <int value="560" label="FILEBROWSERPRIVATE_STARTCOPY"/>
+  <int value="561" label="FILEBROWSERPRIVATE_CANCELCOPY"/>
+  <int value="562" label="NETWORKINGPRIVATE_CREATENETWORK"/>
+  <int value="563" label="BRAILLEDISPLAYPRIVATE_GETDISPLAYSTATE"/>
+  <int value="564" label="BRAILLEDISPLAYPRIVATE_WRITEDOTS"/>
+  <int value="565" label="USB_GETDEVICES"/>
+  <int value="566" label="USB_REQUESTACCESS"/>
+  <int value="567" label="USB_OPENDEVICE"/>
+  <int value="568" label="ACTIVITYLOGPRIVATE_DELETEDATABASE"/>
+  <int value="569" label="ACTIVITYLOGPRIVATE_DELETEURLS"/>
+  <int value="570" label="FILEBROWSERPRIVATE_REQUESTWEBSTOREACCESSTOKEN"/>
+  <int value="571" label="IMAGEWRITER_LISTREMOVABLESTORAGEDEVICES"/>
+  <int value="572" label="WALLPAPER_SETWALLPAPER"/>
+  <int value="573" label="VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD"/>
+  <int value="574" label="AUTOTESTPRIVATE_LOCKSCREEN"/>
+  <int value="575" label="WEBRTCLOGGINGPRIVATE_SETMETADATA"/>
+  <int value="576" label="WEBRTCLOGGINGPRIVATE_START"/>
+  <int value="577" label="WEBRTCLOGGINGPRIVATE_SETUPLOADONRENDERCLOSE"/>
+  <int value="578" label="WEBRTCLOGGINGPRIVATE_STOP"/>
+  <int value="579" label="WEBRTCLOGGINGPRIVATE_UPLOAD"/>
+  <int value="580" label="WEBRTCLOGGINGPRIVATE_DISCARD"/>
+  <int value="581" label="WEBVIEW_OVERRIDEUSERAGENT"/>
+  <int value="582" label="PRINCIPALSPRIVATE_SHOWAVATARBUBBLE"/>
+  <int value="583" label="PRINCIPALSPRIVATE_SIGNOUT"/>
+  <int value="584" label="CAST_CHANNEL_OPEN"/>
+  <int value="585" label="CAST_CHANNEL_SEND"/>
+  <int value="586" label="CAST_CHANNEL_CLOSE"/>
+  <int value="587" label="RUNTIME_RESTART"/>
+  <int value="588" label="DESKTOPCAPTURE_CANCELCHOOSEDESKTOPMEDIA"/>
+  <int value="589" label="APP_CURRENTWINDOWINTERNAL_SETALWAYSONTOP"/>
+  <int value="590" label="SOCKETS_TCP_CREATE"/>
+  <int value="591" label="SOCKETS_TCP_UPDATE"/>
+  <int value="592" label="SOCKETS_TCP_SETPAUSED"/>
+  <int value="593" label="SOCKETS_TCP_SETKEEPALIVE"/>
+  <int value="594" label="SOCKETS_TCP_SETNODELAY"/>
+  <int value="595" label="SOCKETS_TCP_CONNECT"/>
+  <int value="596" label="SOCKETS_TCP_DISCONNECT"/>
+  <int value="597" label="SOCKETS_TCP_SEND"/>
+  <int value="598" label="SOCKETS_TCP_CLOSE"/>
+  <int value="599" label="SOCKETS_TCP_GETINFO"/>
+  <int value="600" label="SOCKETS_TCP_GETSOCKETS"/>
+  <int value="601" label="NETWORKINGPRIVATE_GETENABLEDNETWORKTYPES"/>
+  <int value="602" label="NETWORKINGPRIVATE_ENABLENETWORKTYPE"/>
+  <int value="603" label="NETWORKINGPRIVATE_DISABLENETWORKTYPE"/>
+  <int value="604" label="SOCKETS_TCP_SERVER_CREATE"/>
+  <int value="605" label="SOCKETS_TCP_SERVER_UPDATE"/>
+  <int value="606" label="SOCKETS_TCP_SERVER_SETPAUSED"/>
+  <int value="607" label="SOCKETS_TCP_SERVER_LISTEN"/>
+  <int value="608" label="SOCKETS_TCP_SERVER_DISCONNECT"/>
+  <int value="609" label="SOCKETS_TCP_SERVER_CLOSE"/>
+  <int value="610" label="SOCKETS_TCP_SERVER_GETINFO"/>
+  <int value="611" label="SOCKETS_TCP_SERVER_GETSOCKETS"/>
+  <int value="612" label="SYSTEM_STORAGE_GETAVAILABLECAPACITY"/>
+  <int value="613" label="BROWSERACTION_OPEN_POPUP"/>
+  <int value="614" label="WEBRTC_AUDIO_PRIVATE_GET_SINKS"/>
+  <int value="615" label="WEBRTC_AUDIO_PRIVATE_GET_ACTIVE_SINK"/>
+  <int value="616" label="WEBRTC_AUDIO_PRIVATE_SET_ACTIVE_SINK"/>
+  <int value="617" label="WEBRTC_AUDIO_PRIVATE_GET_ASSOCIATED_SINK"/>
+  <int value="618" label="VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED"/>
+  <int value="619" label="APP_CURRENTWINDOWINTERNAL_SETMINWIDTH"/>
+  <int value="620" label="APP_CURRENTWINDOWINTERNAL_SETMINHEIGHT"/>
+  <int value="621" label="APP_CURRENTWINDOWINTERNAL_SETMAXWIDTH"/>
+  <int value="622" label="APP_CURRENTWINDOWINTERNAL_SETMAXHEIGHT"/>
+  <int value="623" label="SYSTEMPRIVATE_GETAPIKEY"/>
+  <int value="624" label="CHROMEOSINFOPRIVATE_SET"/>
+  <int value="625" label="BOOKMARKMANAGERPRIVATE_GETMETAINFO"/>
+  <int value="626" label="BOOKMARKMANAGERPRIVATE_SETMETAINFO"/>
+  <int value="627" label="FILESYSTEMPROVIDER_MOUNT"/>
+  <int value="628" label="AUTOTESTPRIVATE_GETEXTENSIONSINFO"/>
+  <int value="629" label="SCREENLOCKPRIVATE_GETLOCKED"/>
+  <int value="630" label="SCREENLOCKPRIVATE_SETLOCKED"/>
+  <int value="631" label="SCREENLOCKPRIVATE_SHOWMESSAGE"/>
+  <int value="632" label="FEEDBACKPRIVATE_GETHISTOGRAMS"/>
+  <int value="633" label="SYSTEM_NETWORK_GETNETWORKINTERFACES"/>
+  <int value="634" label="SERIAL_GETDEVICES"/>
+  <int value="635" label="SERIAL_UPDATE"/>
+  <int value="636" label="SERIAL_SETPAUSED"/>
+  <int value="637" label="SERIAL_GETINFO"/>
+  <int value="638" label="SERIAL_GETCONNECTIONS"/>
+  <int value="639" label="SERIAL_SEND"/>
+  <int value="640" label="GCM_REGISTER"/>
+  <int value="641" label="GCM_SEND"/>
+  <int value="642" label="SERIAL_CONNECT"/>
+  <int value="643" label="SERIAL_DISCONNECT"/>
+  <int value="644" label="MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA"/>
+  <int value="645" label="FIRSTRUNPRIVATE_GETLOCALIZEDSTRINGS"/>
+  <int value="646" label="FIRSTRUNPRIVATE_LAUNCHTUTORIAL"/>
+  <int value="647" label="SOCKETS_UDP_SETPAUSED"/>
+  <int value="648" label="WEBVIEW_CAPTUREVISIBLEREGION"/>
+  <int value="649" label="MEDIAGALLERIES_GETMETADATA"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

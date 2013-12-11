@@ -5,7 +5,7 @@
 #include "extensions/browser/extension_function.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -114,8 +114,7 @@ void ExtensionFunction::SetError(const std::string& error) {
 }
 
 void ExtensionFunction::Run() {
-  UMA_HISTOGRAM_ENUMERATION("Extensions.FunctionCalls", histogram_value(),
-                            extensions::functions::ENUM_BOUNDARY);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.FunctionCalls", histogram_value());
 
   if (!RunImpl())
     SendResponse(false);
