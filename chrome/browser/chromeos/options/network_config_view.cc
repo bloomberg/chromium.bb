@@ -41,12 +41,12 @@ using views::Widget;
 
 namespace {
 
-gfx::NativeWindow GetDialogParent() {
+gfx::NativeWindow GetParentForUnhostedDialog() {
   if (chromeos::LoginDisplayHostImpl::default_host()) {
     return chromeos::LoginDisplayHostImpl::default_host()->GetNativeWindow();
   } else {
     Browser* browser = chrome::FindTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+        ProfileManager::GetPrimaryUserProfileOrOffTheRecord(),
         true,
         chrome::HOST_DESKTOP_TYPE_ASH);
     if (browser)
@@ -268,7 +268,7 @@ void NetworkConfigView::ViewHierarchyChanged(
 
 void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
   if (parent == NULL)
-    parent = GetDialogParent();
+    parent = GetParentForUnhostedDialog();
   // Failed connections may result in a pop-up with no natural parent window,
   // so provide a fallback context on the primary display. This is necessary
   // becase one of parent or context must be non NULL.

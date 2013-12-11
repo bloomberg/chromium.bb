@@ -44,9 +44,10 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
 }
 
 void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-      profile))
+  // We are only interested in sync logs for the primary user profile.
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (!profile ||
+      !ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(profile))
     return;
 
   ProfileSyncService* service =
@@ -88,13 +89,13 @@ void ChromeInternalLogSource::PopulateExtensionInfoLogs(
   if (!reporting_enabled)
     return;
 
-  Profile* default_profile =
-      g_browser_process->profile_manager()->GetDefaultProfile();
-  if (!default_profile)
+  Profile* primary_profile =
+      g_browser_process->profile_manager()->GetPrimaryUserProfile();
+  if (!primary_profile)
     return;
 
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(default_profile)->extension_service();
+      extensions::ExtensionSystem::Get(primary_profile)->extension_service();
   if (!service)
     return;
 

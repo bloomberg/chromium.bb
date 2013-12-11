@@ -79,7 +79,7 @@ bool VPNRequiresCredentials(const std::string& service_path,
   return false;
 }
 
-std::string GetDefaultProfilePath(const NetworkState* network) {
+std::string GetDefaultUserProfilePath(const NetworkState* network) {
   if (!NetworkHandler::IsInitialized() ||
       !LoginState::Get()->IsUserAuthenticated() ||
       (network && network->type() == shill::kTypeWifi &&
@@ -256,7 +256,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
   // indicate that it does not need to be set.
   std::string profile_path;
   if (!network || network->profile_path().empty())
-    profile_path = GetDefaultProfilePath(network);
+    profile_path = GetDefaultUserProfilePath(network);
 
   // All synchronous checks passed, add |service_path| to connecting list.
   pending_requests_.insert(std::make_pair(

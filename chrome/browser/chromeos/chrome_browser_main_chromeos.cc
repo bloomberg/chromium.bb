@@ -143,11 +143,11 @@ class StubLogin : public LoginStatusConsumer,
   StubLogin(std::string username, std::string password)
       : profile_prepared_(false) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+    Profile* primary_profile = g_browser_process->profile_manager()->
+        GetPrimaryUserProfileOrOffTheRecord();
     authenticator_.get()->AuthenticateToLogin(
-        g_browser_process->profile_manager()->GetDefaultProfile(),
-        UserContext(username,
-                    password,
-                    std::string()));  // auth_code
+        primary_profile,
+        UserContext(username, password, std::string() /* auth_code */));
   }
 
   virtual ~StubLogin() {
@@ -195,7 +195,7 @@ void RunAutoLaunchKioskApp() {
   ShowLoginWizard(chromeos::WizardController::kAppLaunchSplashScreenName);
 
   // Login screen is skipped but 'login-prompt-visible' signal is still needed.
-  LOG(INFO) << "Kiosk app auto launch >> login-prompt-visible";
+  VLOG(1) << "Kiosk app auto launch >> login-prompt-visible";
   DBusThreadManager::Get()->GetSessionManagerClient()->
       EmitLoginPromptVisible();
 }
@@ -369,9 +369,9 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
       singleton_command_line->AppendSwitchASCII(switches::kLoginProfile,
                                                 chrome::kTestUserProfileDir);
     }
-    LOG(INFO) << "Running as stub user with profile dir: "
-              << singleton_command_line->GetSwitchValuePath(
-                  switches::kLoginProfile).value();
+    LOG(WARNING) << "Running as stub user with profile dir: "
+                 << singleton_command_line->GetSwitchValuePath(
+                     switches::kLoginProfile).value();
   }
 
 #if defined(GOOGLE_CHROME_BUILD)

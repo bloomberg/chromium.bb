@@ -92,9 +92,9 @@ class ProxyResolverImpl : public ProxyResolverInterface {
         request);
     all_requests_.insert(request);
 
-    // GetDefaultProfile() and GetRequestContext() must be called on UI
+    // GetPrimaryUserProfile() and GetRequestContext() must be called on UI
     // thread.
-    Profile* profile = ProfileManager::GetDefaultProfile();
+    Profile* profile = ProfileManager::GetPrimaryUserProfileOrOffTheRecord();
     scoped_refptr<net::URLRequestContextGetter> getter =
         profile->GetRequestContext();
 

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -284,9 +285,11 @@ bool CreateDialog(const std::string& service_path,
 
   NET_LOG_USER("Enrolling", service_path);
 
+  Browser* browser = chrome::FindBrowserWithWindow(owning_window);
+  Profile* profile = browser ? browser->profile() :
+      ProfileManager::GetPrimaryUserProfileOrOffTheRecord();
   DialogEnrollmentDelegate* enrollment =
-      new DialogEnrollmentDelegate(owning_window, network->name(),
-                                   ProfileManager::GetDefaultProfile());
+      new DialogEnrollmentDelegate(owning_window, network->name(), profile);
   return enrollment->Enroll(certificate_pattern.enrollment_uri_list(),
                             base::Bind(&EnrollmentComplete, service_path));
 }
