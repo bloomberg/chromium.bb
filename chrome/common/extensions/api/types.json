@@ -17,6 +17,7 @@
           {
             "name": "get",
             "type": "function",
+            "nocompile": true,
             "description": "Gets the value of a setting.",
             "parameters": [
               {
@@ -63,6 +64,7 @@
           {
             "name": "set",
             "type": "function",
+            "nocompile": true,
             "description": "Sets the value of a setting.",
             "parameters": [
               {
@@ -94,6 +96,7 @@
           {
             "name": "clear",
             "type": "function",
+            "nocompile": true,
             "description": "Clears the setting, restoring any default value.",
             "parameters": [
               {
@@ -147,6 +150,26 @@
             ]
           }
         ]
+      },
+      {
+        "id": "ImageDetails",
+        "type": "object",
+        "description": "Details about the format and quality of an image.",
+        "properties": {
+          "format": {
+            "type": "string",
+            "optional": true,
+            "enum": ["jpeg", "png"],
+            "description": "The format of the resulting image.  Default is <code>\"jpeg\"</code>."
+          },
+          "quality": {
+            "type": "integer",
+            "optional": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "When format is <code>\"jpeg\"</code>, controls the quality of the resulting image.  This value is ignored for PNG images.  As quality is decreased, the resulting image will have more visual artifacts, and the number of bytes needed to store it will decrease."
+          }
+        }
       }
     ]
   }

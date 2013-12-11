@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_CAPTURE_WEB_CONTENTS_FUNCTION_H_
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/common/extensions/api/capture_web_contents_private.h"
+#include "chrome/common/extensions/api/types.h"
 
 class SkBitmap;
 
@@ -41,7 +41,7 @@ class CaptureWebContentsFunction : public ChromeAsyncExtensionFunction {
   virtual void OnCaptureFailure(FailureReason reason) = 0;
 
  private:
-  typedef api::capture_web_contents_private::ImageDetails ImageDetails;
+  typedef api::types::ImageDetails ImageDetails;
 
   void CopyFromBackingStoreComplete(bool succeed, const SkBitmap& bitmap);
   void GetSnapshotFromRendererComplete(bool succeeded, const SkBitmap& bitmap);

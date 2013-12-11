@@ -612,7 +612,7 @@
             "description": "The target window. Defaults to the <a href='windows.html#current-window'>current window</a>."
           },
           {
-            "$ref": "capture_web_contents_private.ImageDetails",
+            "$ref": "types.ImageDetails",
             "name": "options",
             "optional": true
           },

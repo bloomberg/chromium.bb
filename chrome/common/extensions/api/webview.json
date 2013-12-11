@@ -161,7 +161,7 @@
             "description": "The instance ID of the guest <webview> process."
           },
           {
-            "$ref": "capture_web_contents_private.ImageDetails",
+            "$ref": "types.ImageDetails",
             "name": "options",
             "optional": true
           },
