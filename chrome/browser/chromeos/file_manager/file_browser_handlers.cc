@@ -513,10 +513,16 @@ FileBrowserHandlerList FindFileBrowserHandlers(
       // For all additional files, find intersection between the accumulated and
       // file specific set.
       FileBrowserHandlerList intersection;
-      std::set_intersection(common_handlers.begin(), common_handlers.end(),
-                            handlers.begin(), handlers.end(),
-                            std::back_inserter(intersection));
-      common_handlers = intersection;
+      std::set<const FileBrowserHandler*> common_handler_set(
+          common_handlers.begin(), common_handlers.end());
+
+      for (FileBrowserHandlerList::const_iterator itr = handlers.begin();
+           itr != handlers.end(); ++itr) {
+        if (ContainsKey(common_handler_set, *itr))
+          intersection.push_back(*itr);
+      }
+
+      std::swap(common_handlers, intersection);
       if (common_handlers.empty())
         return FileBrowserHandlerList();
     }
