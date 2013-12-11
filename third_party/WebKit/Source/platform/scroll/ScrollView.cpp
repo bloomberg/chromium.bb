@@ -129,6 +129,13 @@ void ScrollView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode v
         return;
 
     updateScrollbars(scrollOffset());
+
+    if (!layerForScrolling())
+        return;
+    blink::WebLayer* layer = layerForScrolling()->platformLayer();
+    if (!layer)
+        return;
+    layer->setUserScrollable(userInputScrollable(HorizontalScrollbar), userInputScrollable(VerticalScrollbar));
 }
 
 void ScrollView::scrollbarModes(ScrollbarMode& horizontalMode, ScrollbarMode& verticalMode) const
