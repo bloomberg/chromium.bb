@@ -351,6 +351,7 @@ BrowserPluginGuest::BrowserPluginGuest(
       mouse_locked_(false),
       pending_lock_request_(false),
       embedder_visible_(true),
+      copy_request_id_(0),
       next_permission_request_id_(browser_plugin::kInvalidPermissionRequestID),
       has_render_view_(has_render_view),
       last_seen_auto_size_enabled_(false),
@@ -507,6 +508,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
                         OnSwapBuffersACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameACK,
                         OnCompositorFrameACK)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
+                        OnCopyFromCompositingSurfaceAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ExecuteEditCommand,
@@ -684,6 +687,16 @@ RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
 
 void BrowserPluginGuest::UpdateVisibility() {
   OnSetVisibility(instance_id_, visible());
+}
+
+void BrowserPluginGuest::CopyFromCompositingSurface(
+      gfx::Rect src_subrect,
+      gfx::Size dst_size,
+      const base::Callback<void(bool, const SkBitmap&)>& callback) {
+  copy_request_callbacks_.insert(std::make_pair(++copy_request_id_, callback));
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_CopyFromCompositingSurface(instance_id(),
+          copy_request_id_, src_subrect, dst_size));
 }
 
 // screen.
@@ -1121,6 +1134,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
   switch (message.type()) {
     case BrowserPluginHostMsg_BuffersSwappedACK::ID:
     case BrowserPluginHostMsg_CompositorFrameACK::ID:
+    case BrowserPluginHostMsg_CopyFromCompositingSurfaceAck::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_ExecuteEditCommand::ID:
     case BrowserPluginHostMsg_HandleInputEvent::ID:
@@ -1562,6 +1576,18 @@ void BrowserPluginGuest::OnUpdateRectACK(
   if (needs_ack)
     Send(new ViewMsg_UpdateRect_ACK(routing_id()));
   OnSetSize(instance_id_, auto_size_params, resize_guest_params);
+}
+
+void BrowserPluginGuest::OnCopyFromCompositingSurfaceAck(
+    int instance_id,
+    int request_id,
+    const SkBitmap& bitmap) {
+  CHECK(copy_request_callbacks_.count(request_id));
+  if (!copy_request_callbacks_.count(request_id))
+    return;
+  const CopyRequestCallback& callback = copy_request_callbacks_[request_id];
+  callback.Run(!bitmap.empty() && !bitmap.isNull(), bitmap);
+  copy_request_callbacks_.erase(request_id);
 }
 
 void BrowserPluginGuest::OnUpdateGeometry(int instance_id,

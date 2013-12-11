@@ -347,9 +347,10 @@ BackingStore* RenderWidgetHostViewGuest::AllocBackingStore(
 
 void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
-    const gfx::Size& /* dst_size */,
+    const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  callback.Run(false, SkBitmap());
+  CHECK(guest_);
+  guest_->CopyFromCompositingSurface(src_subrect, dst_size, callback);
 }
 
 void RenderWidgetHostViewGuest::CopyFromCompositingSurfaceToVideoFrame(

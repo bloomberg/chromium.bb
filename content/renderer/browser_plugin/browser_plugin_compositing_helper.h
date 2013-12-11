@@ -21,6 +21,7 @@ class SharedMemory;
 
 namespace cc {
 class CompositorFrame;
+class CopyOutputResult;
 class Layer;
 class SolidColorLayer;
 class TextureLayer;
@@ -32,6 +33,11 @@ class DelegatedRendererLayer;
 namespace blink {
 class WebPluginContainer;
 class WebLayer;
+}
+
+namespace gfx {
+class Rect;
+class Size;
 }
 
 namespace content {
@@ -46,6 +52,9 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                                  BrowserPluginManager* manager,
                                  int instance_id,
                                  int host_routing_id);
+  void CopyFromCompositingSurface(int request_id,
+                                  gfx::Rect source_rect,
+                                  gfx::Size dest_size);
   void DidCommitCompositorFrame();
   void EnableCompositing(bool);
   void OnContainerDestroy();
@@ -96,6 +105,10 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                        unsigned sync_point,
                        bool lost_resource);
   void SendReturnedDelegatedResources();
+  void CopyFromCompositingSurfaceHasResult(
+      int request_id,
+      gfx::Size dest_size,
+      scoped_ptr<cc::CopyOutputResult> result);
 
   int instance_id_;
   int host_routing_id_;

@@ -21,6 +21,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
 #include "ui/gfx/point.h"
@@ -212,6 +213,11 @@ IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_BuffersSwappedACK,
                     std::string /* mailbox_name */,
                     uint32 /* sync_point */)
 
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
+                    int /* instance_id */,
+                    int /* request_id */,
+                    SkBitmap);
+
 // Acknowledge that we presented an ubercomp frame.
 IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_CompositorFrameACK,
                     int /* instance_id */,
@@ -337,6 +343,12 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_UpdateRect,
                      int /* instance_id */,
                      BrowserPluginMsg_UpdateRect_Params)
+
+IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CopyFromCompositingSurface,
+                     int /* instance_id */,
+                     int /* request_id */,
+                     gfx::Rect  /* source_rect */,
+                     gfx::Size  /* dest_size */)
 
 // Requests the renderer to find out if a browser plugin is at position
 // (|x|, |y|) within the embedder.

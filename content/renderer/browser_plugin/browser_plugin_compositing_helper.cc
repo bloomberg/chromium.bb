@@ -10,15 +10,19 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_thread_impl.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gfx/skia_util.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 namespace content {
@@ -50,6 +54,21 @@ BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
 }
 
 BrowserPluginCompositingHelper::~BrowserPluginCompositingHelper() {
+}
+
+void BrowserPluginCompositingHelper::CopyFromCompositingSurface(
+    int request_id,
+    gfx::Rect source_rect,
+    gfx::Size dest_size) {
+  CHECK(background_layer_);
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
+          &BrowserPluginCompositingHelper::CopyFromCompositingSurfaceHasResult,
+          this,
+          request_id,
+          dest_size));
+  request->set_area(source_rect);
+  background_layer_->RequestCopyOfOutput(request.Pass());
 }
 
 void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
@@ -448,6 +467,27 @@ void BrowserPluginCompositingHelper::SetContentsOpaque(bool opaque) {
     texture_layer_->SetContentsOpaque(opaque_);
   if (delegated_layer_.get())
     delegated_layer_->SetContentsOpaque(opaque_);
+}
+
+void BrowserPluginCompositingHelper::CopyFromCompositingSurfaceHasResult(
+    int request_id,
+    gfx::Size dest_size,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  scoped_ptr<SkBitmap> bitmap;
+  if (result && result->HasBitmap() && !result->size().IsEmpty())
+    bitmap = result->TakeBitmap();
+
+  SkBitmap resized_bitmap;
+  if (bitmap) {
+    resized_bitmap = skia::ImageOperations::Resize(*bitmap,
+                       skia::ImageOperations::RESIZE_BEST,
+                       dest_size.width(),
+                       dest_size.height());
+  }
+  browser_plugin_manager_->Send(
+      new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
+          host_routing_id_, instance_id_, request_id,
+          resized_bitmap));
 }
 
 }  // namespace content

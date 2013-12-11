@@ -144,6 +144,11 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   void UpdateVisibility();
 
+  void CopyFromCompositingSurface(
+      gfx::Rect src_subrect,
+      gfx::Size dst_size,
+      const base::Callback<void(bool, const SkBitmap&)>& callback);
+
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
@@ -375,7 +380,9 @@ class CONTENT_EXPORT BrowserPluginGuest
                             uint32 output_surface_id,
                             int renderer_host_id,
                             const cc::CompositorFrameAck& ack);
-
+  void OnCopyFromCompositingSurfaceAck(int instance_id,
+                                       int request_id,
+                                       const SkBitmap& bitmap);
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding
@@ -527,6 +534,13 @@ class CONTENT_EXPORT BrowserPluginGuest
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
+
+  // Each copy-request is identified by a unique number. The unique number is
+  // used to keep track of the right callback.
+  int copy_request_id_;
+  typedef base::Callback<void(bool, const SkBitmap&)> CopyRequestCallback;
+  typedef std::map<int, const CopyRequestCallback> CopyRequestMap;
+  CopyRequestMap copy_request_callbacks_;
 
   typedef std::map<BrowserPluginGuest*, NewWindowInfo> PendingWindowMap;
   PendingWindowMap pending_new_windows_;

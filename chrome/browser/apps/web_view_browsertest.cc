@@ -1846,17 +1846,31 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
 
 // Taking a screenshot does not work with threaded compositing, so disable
 // threaded compositing for this test (http://crbug.com/326756).
-class WebViewWithoutThreadedCompositingTest : public WebViewTest {
+class WebViewCaptureTest : public WebViewTest,
+  public testing::WithParamInterface<std::string> {
  public:
-  WebViewWithoutThreadedCompositingTest() {}
-  virtual ~WebViewWithoutThreadedCompositingTest() {}
+  WebViewCaptureTest() {}
+  virtual ~WebViewCaptureTest() {}
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kDisableThreadedCompositing);
+    command_line->AppendSwitch(GetParam());
+    // http://crbug.com/327035
+    command_line->AppendSwitch(switches::kDisableDelegatedRenderer);
     WebViewTest::SetUpCommandLine(command_line);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebViewWithoutThreadedCompositingTest,
+IN_PROC_BROWSER_TEST_P(WebViewCaptureTest,
                        Shim_ScreenshotCapture) {
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
+
+INSTANTIATE_TEST_CASE_P(WithoutThreadedCompositor,
+    WebViewCaptureTest,
+    ::testing::Values(std::string(switches::kDisableThreadedCompositing)));
+
+// http://crbug.com/171744
+#if !defined(OS_MACOSX)
+INSTANTIATE_TEST_CASE_P(WithThreadedCompositor,
+    WebViewCaptureTest,
+    ::testing::Values(std::string(switches::kEnableThreadedCompositing)));
+#endif

@@ -120,6 +120,8 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(message))
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_CopyFromCompositingSurface,
+                        OnCopyFromCompositingSurface)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
                         OnGuestContentWindowReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
@@ -454,6 +456,23 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
                                                 param.c /* route_id */,
                                                 param.d /* output_surface_id */,
                                                 param.e /* host_id */);
+}
+
+void BrowserPlugin::OnCopyFromCompositingSurface(int guest_instance_id,
+                                                 int request_id,
+                                                 gfx::Rect source_rect,
+                                                 gfx::Size dest_size) {
+  if (!compositing_enabled_) {
+    browser_plugin_manager()->Send(
+        new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
+            render_view_routing_id_,
+            guest_instance_id_,
+            request_id,
+            SkBitmap()));
+    return;
+  }
+  compositing_helper_->CopyFromCompositingSurface(request_id, source_rect,
+                                                  dest_size);
 }
 
 void BrowserPlugin::OnGuestContentWindowReady(int guest_instance_id,
@@ -1033,6 +1052,7 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_Attach_ACK::ID:
     case BrowserPluginMsg_BuffersSwapped::ID:
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
+    case BrowserPluginMsg_CopyFromCompositingSurface::ID:
     case BrowserPluginMsg_GuestContentWindowReady::ID:
     case BrowserPluginMsg_GuestGone::ID:
     case BrowserPluginMsg_SetCursor::ID:

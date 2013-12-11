@@ -810,4 +810,119 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DoNotCrashOnInvalidNavigation) {
   EXPECT_TRUE(delegate->load_aborted_url().is_valid());
 }
 
+
+// Tests involving the threaded compositor.
+class BrowserPluginThreadedCompositorTest : public BrowserPluginHostTest {
+ public:
+  BrowserPluginThreadedCompositorTest() {}
+  virtual ~BrowserPluginThreadedCompositorTest() {}
+
+ protected:
+  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
+    BrowserPluginHostTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch(switches::kEnableThreadedCompositing);
+
+    // http://crbug.com/327035
+    cmd->AppendSwitch(switches::kDisableDelegatedRenderer);
+  }
+};
+
+static void CompareSkBitmaps(const SkBitmap& expected_bitmap,
+                             const SkBitmap& bitmap) {
+  EXPECT_EQ(expected_bitmap.width(), bitmap.width());
+  if (expected_bitmap.width() != bitmap.width())
+    return;
+  EXPECT_EQ(expected_bitmap.height(), bitmap.height());
+  if (expected_bitmap.height() != bitmap.height())
+    return;
+  EXPECT_EQ(expected_bitmap.config(), bitmap.config());
+  if (expected_bitmap.config() != bitmap.config())
+    return;
+
+  SkAutoLockPixels expected_bitmap_lock(expected_bitmap);
+  SkAutoLockPixels bitmap_lock(bitmap);
+  int fails = 0;
+  const int kAllowableError = 2;
+  for (int i = 0; i < bitmap.width() && fails < 10; ++i) {
+    for (int j = 0; j < bitmap.height() && fails < 10; ++j) {
+      SkColor expected_color = expected_bitmap.getColor(i, j);
+      SkColor color = bitmap.getColor(i, j);
+      int expected_alpha = SkColorGetA(expected_color);
+      int alpha = SkColorGetA(color);
+      int expected_red = SkColorGetR(expected_color);
+      int red = SkColorGetR(color);
+      int expected_green = SkColorGetG(expected_color);
+      int green = SkColorGetG(color);
+      int expected_blue = SkColorGetB(expected_color);
+      int blue = SkColorGetB(color);
+      EXPECT_NEAR(expected_alpha, alpha, kAllowableError)
+          << "expected_color: " << std::hex << expected_color
+          << " color: " <<  color
+          << " Failed at " << std::dec << i << ", " << j
+          << " Failure " << ++fails;
+      EXPECT_NEAR(expected_red, red, kAllowableError)
+          << "expected_color: " << std::hex << expected_color
+          << " color: " <<  color
+          << " Failed at " << std::dec << i << ", " << j
+          << " Failure " << ++fails;
+      EXPECT_NEAR(expected_green, green, kAllowableError)
+          << "expected_color: " << std::hex << expected_color
+          << " color: " <<  color
+          << " Failed at " << std::dec << i << ", " << j
+          << " Failure " << ++fails;
+      EXPECT_NEAR(expected_blue, blue, kAllowableError)
+          << "expected_color: " << std::hex << expected_color
+          << " color: " <<  color
+          << " Failed at " << std::dec << i << ", " << j
+          << " Failure " << ++fails;
+    }
+  }
+  EXPECT_LT(fails, 10);
+}
+
+static void CompareSkBitmapAndRun(const base::Closure& callback,
+                                  const SkBitmap& expected_bitmap,
+                                  bool *result,
+                                  bool succeed,
+                                  const SkBitmap& bitmap) {
+  *result = succeed;
+  if (succeed)
+    CompareSkBitmaps(expected_bitmap, bitmap);
+  callback.Run();
+}
+
+// http://crbug.com/171744
+#if defined(OS_MACOSX)
+#define MAYBE_GetBackingStore DISABLED_GetBackingStore
+#else
+#define MAYBE_GetBackingStore GetBackingStore
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserPluginThreadedCompositorTest,
+                       MAYBE_GetBackingStore) {
+  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
+  const char kHTMLForGuest[] =
+      "data:text/html,<html><style>body { background-color: red; }</style>"
+      "<body></body></html>";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true,
+                         std::string("SetSize(50, 60);"));
+
+  WebContentsImpl* guest_contents = test_guest()->web_contents();
+  RenderWidgetHostImpl* guest_widget_host =
+      RenderWidgetHostImpl::From(guest_contents->GetRenderViewHost());
+
+  SkBitmap expected_bitmap;
+  expected_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 50, 60);
+  expected_bitmap.allocPixels();
+  expected_bitmap.eraseARGB(255, 255, 0, 0);  // #f00
+  bool result = false;
+  while (!result) {
+    base::RunLoop loop;
+    guest_widget_host->CopyFromBackingStore(gfx::Rect(),
+        guest_widget_host->GetView()->GetViewBounds().size(),
+        base::Bind(&CompareSkBitmapAndRun, loop.QuitClosure(), expected_bitmap,
+                   &result));
+    loop.Run();
+  }
+}
+
 }  // namespace content

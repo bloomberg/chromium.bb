@@ -286,6 +286,10 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnBuffersSwapped(int instance_id,
                         const BrowserPluginMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
+  void OnCopyFromCompositingSurface(int instance_id,
+                                    int request_id,
+                                    gfx::Rect source_rect,
+                                    gfx::Size dest_size);
   void OnGuestContentWindowReady(int instance_id,
                                  int content_window_routing_id);
   void OnGuestGone(int instance_id);
