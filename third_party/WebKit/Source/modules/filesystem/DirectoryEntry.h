@@ -62,6 +62,8 @@ private:
     DirectoryEntry(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
+DEFINE_TYPE_CASTS(DirectoryEntry, Entry, entry, entry->isDirectory(), entry.isDirectory());
+
 } // namespace
 
 #endif // DirectoryEntry_h

@@ -239,7 +239,7 @@ bool DirectoryContentRequest::didGetEntry(Entry* entry)
         return true;
     }
 
-    m_directoryReader = static_cast<DirectoryEntry*>(entry)->createReader();
+    m_directoryReader = toDirectoryEntry(entry)->createReader();
     m_entries = Array<TypeBuilder::FileSystem::Entry>::create();
     readDirectoryEntries();
     return true;
@@ -461,7 +461,7 @@ bool FileContentRequest::didGetEntry(Entry* entry)
 
     OwnPtr<FileCallback> successCallback = CallbackDispatcherFactory<FileCallback>::create(this, &FileContentRequest::didGetFile);
     OwnPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &FileContentRequest::didHitError);
-    static_cast<FileEntry*>(entry)->file(successCallback.release(), errorCallback.release());
+    toFileEntry(entry)->file(successCallback.release(), errorCallback.release());
 
     m_reader = FileReader::create(entry->filesystem()->executionContext());
     m_mimeType = MIMETypeRegistry::getMIMETypeForPath(entry->name());
@@ -579,7 +579,7 @@ bool DeleteEntryRequest::didGetEntry(Entry* entry)
     OwnPtr<VoidCallback> successCallback = adoptPtr(new VoidCallbackImpl(this));
     OwnPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &DeleteEntryRequest::didHitError);
     if (entry->isDirectory()) {
-        DirectoryEntry* directoryEntry = static_cast<DirectoryEntry*>(entry);
+        DirectoryEntry* directoryEntry = toDirectoryEntry(entry);
         directoryEntry->removeRecursively(successCallback.release(), errorCallback.release());
     } else {
         entry->remove(successCallback.release(), errorCallback.release());

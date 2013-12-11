@@ -61,6 +61,8 @@ private:
     DirectoryEntrySync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
+DEFINE_TYPE_CASTS(DirectoryEntrySync, EntrySync, entry, entry->isDirectory(), entry.isDirectory());
+
 }
 
 #endif // DirectoryEntrySync_h

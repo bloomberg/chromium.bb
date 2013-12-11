@@ -55,6 +55,8 @@ private:
     FileEntry(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
+DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());
+
 } // namespace
 
 #endif // FileEntry_h

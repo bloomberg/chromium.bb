@@ -59,6 +59,8 @@ private:
     FileEntrySync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
+DEFINE_TYPE_CASTS(FileEntrySync, EntrySync, entry, entry->isFile(), entry.isFile());
+
 }
 
 #endif // FileEntrySync_h

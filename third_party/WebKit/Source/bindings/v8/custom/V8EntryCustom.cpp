@@ -43,10 +43,8 @@ v8::Handle<v8::Object> wrap(Entry* impl, v8::Handle<v8::Object> creationContext,
 {
     ASSERT(impl);
     if (impl->isFile())
-        return wrap(static_cast<FileEntry*>(impl), creationContext, isolate);
-
-    ASSERT(impl->isDirectory());
-    return wrap(static_cast<DirectoryEntry*>(impl), creationContext, isolate);
+        return wrap(toFileEntry(impl), creationContext, isolate);
+    return wrap(toDirectoryEntry(impl), creationContext, isolate);
 }
 
 } // namespace WebCore
