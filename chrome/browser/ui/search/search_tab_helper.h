@@ -72,7 +72,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
   // Tells the page that the user pressed Enter in the omnibox.
-  void Submit(const string16& text);
+  void Submit(const base::string16& text);
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
@@ -135,11 +135,11 @@ class SearchTabHelper : public content::WebContentsObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
-      const string16& frame_unique_name,
+      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const string16& error_description,
+      const base::string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFinishLoad(
       int64 frame_id,
@@ -160,8 +160,8 @@ class SearchTabHelper : public content::WebContentsObserver,
   virtual void OnUndoMostVisitedDeletion(const GURL& url) OVERRIDE;
   virtual void OnUndoAllMostVisitedDeletions() OVERRIDE;
   virtual void OnLogEvent(NTPLoggingEventType event) OVERRIDE;
-  virtual void PasteIntoOmnibox(const string16& text) OVERRIDE;
-  virtual void OnChromeIdentityCheck(const string16& identity) OVERRIDE;
+  virtual void PasteIntoOmnibox(const base::string16& text) OVERRIDE;
+  virtual void OnChromeIdentityCheck(const base::string16& identity) OVERRIDE;
 
   // Overridden from InstantServiceObserver:
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;

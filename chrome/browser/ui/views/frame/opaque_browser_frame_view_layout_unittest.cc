@@ -224,7 +224,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void AddAvatarLabel() {
-    avatar_label_ = new views::MenuButton(NULL, string16(), NULL, false);
+    avatar_label_ = new views::MenuButton(NULL, base::string16(), NULL, false);
     avatar_label_->set_id(VIEW_ID_AVATAR_LABEL);
     root_view_->AddChildView(avatar_label_);
 
@@ -233,7 +233,8 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void AddNewAvatarButton() {
-   new_avatar_button_ = new views::MenuButton(NULL, string16(), NULL, false);
+   new_avatar_button_ =
+       new views::MenuButton(NULL, base::string16(), NULL, false);
    new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
    root_view_->AddChildView(new_avatar_button_);
   }

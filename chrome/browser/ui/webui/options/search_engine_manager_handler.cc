@@ -247,8 +247,8 @@ void SearchEngineManagerHandler::EditSearchEngine(const ListValue* args) {
 
 void SearchEngineManagerHandler::OnEditedKeyword(
     TemplateURL* template_url,
-    const string16& title,
-    const string16& keyword,
+    const base::string16& title,
+    const base::string16& keyword,
     const std::string& url) {
   DCHECK(!url.empty());
   if (template_url)
@@ -263,8 +263,8 @@ void SearchEngineManagerHandler::CheckSearchEngineInfoValidity(
 {
   if (!edit_controller_.get())
     return;
-  string16 name;
-  string16 keyword;
+  base::string16 name;
+  base::string16 keyword;
   std::string url;
   std::string modelIndex;
   if (!args->GetString(ENGINE_NAME, &name) ||
@@ -294,8 +294,8 @@ void SearchEngineManagerHandler::EditCancelled(const ListValue* args) {
 void SearchEngineManagerHandler::EditCompleted(const ListValue* args) {
   if (!edit_controller_.get())
     return;
-  string16 name;
-  string16 keyword;
+  base::string16 name;
+  base::string16 keyword;
   std::string url;
   if (!args->GetString(ENGINE_NAME, &name) ||
       !args->GetString(ENGINE_KEYWORD, &keyword) ||

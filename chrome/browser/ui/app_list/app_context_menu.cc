@@ -92,10 +92,10 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
         base::Bind(MenuItemHasLauncherContext)));
 
     if (!is_platform_app_)
-      menu_model_->AddItem(LAUNCH_NEW, string16());
+      menu_model_->AddItem(LAUNCH_NEW, base::string16());
 
     int index = 0;
-    extension_menu_items_->AppendExtensionItems(app_id_, string16(),
+    extension_menu_items_->AppendExtensionItems(app_id_, base::string16(),
                                                 &index);
 
     // Show Pin/Unpin option if shelf is available.
@@ -181,7 +181,7 @@ string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
   } else {
     NOTREACHED();
-    return string16();
+    return base::string16();
   }
 }
 

@@ -54,7 +54,7 @@ class PermissionMenuButton : public views::MenuButton,
   // |PermissionMenuButton|. If the |show_menu_marker| flag is true, then a
   // small icon is be displayed next to the button |text|, indicating that the
   // button opens a drop down menu.
-  PermissionMenuButton(const string16& text,
+  PermissionMenuButton(const base::string16& text,
                        PermissionMenuModel* model,
                        bool show_menu_marker);
   virtual ~PermissionMenuButton();
@@ -63,7 +63,7 @@ class PermissionMenuButton : public views::MenuButton,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from views::TextButton.
-  virtual void SetText(const string16& text) OVERRIDE;
+  virtual void SetText(const base::string16& text) OVERRIDE;
 
   // Overridden from views::View.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -83,7 +83,7 @@ class PermissionMenuButton : public views::MenuButton,
 // PermissionMenuButton
 ///////////////////////////////////////////////////////////////////////////////
 
-PermissionMenuButton::PermissionMenuButton(const string16& text,
+PermissionMenuButton::PermissionMenuButton(const base::string16& text,
                                            PermissionMenuModel* model,
                                            bool show_menu_marker)
     : MenuButton(NULL, text, this, show_menu_marker),
@@ -115,7 +115,7 @@ gfx::Size PermissionMenuButton::GetPreferredSize() {
   return prefsize;
 }
 
-void PermissionMenuButton::SetText(const string16& text) {
+void PermissionMenuButton::SetText(const base::string16& text) {
   MenuButton::SetText(text);
   SizeToPreferredSize();
 }

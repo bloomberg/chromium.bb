@@ -109,7 +109,7 @@ void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
       new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_FOLDER,
-      string16(),  // TODO(estade): a name for the dialog?
+      base::string16(),  // TODO(estade): a name for the dialog?
       base::FilePath(),
       NULL, 0,
       base::FilePath::StringType(),

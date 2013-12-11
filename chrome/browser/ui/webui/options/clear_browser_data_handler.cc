@@ -109,7 +109,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
 
   ListValue* time_list = new ListValue;
   for (int i = 0; i < 5; i++) {
-    string16 label_string;
+    base::string16 label_string;
     switch (i) {
       case 0:
         label_string = l10n_util::GetStringUTF16(IDS_CLEAR_DATA_HOUR);

@@ -470,7 +470,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
 
   values->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
-  string16 omnibox_url = ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
+  base::string16 omnibox_url = ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
   values->SetString(
       "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
@@ -1242,8 +1242,8 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("setupInProgress",
       service && !service->IsManaged() && service->FirstSetupInProgress());
 
-  string16 status_label;
-  string16 link_label;
+  base::string16 status_label;
+  base::string16 link_label;
   bool status_has_error = sync_ui_util::GetStatusLabels(
       service, *signin, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
           sync_ui_util::SYNC_ERROR;
@@ -1457,7 +1457,7 @@ void BrowserOptionsHandler::SetupCloudPrintConnectorSection() {
   }
   base::FundamentalValue disabled(email.empty());
 
-  string16 label_str;
+  base::string16 label_str;
   if (email.empty()) {
     label_str = l10n_util::GetStringFUTF16(
         IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,

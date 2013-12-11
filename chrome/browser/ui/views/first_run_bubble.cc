@@ -42,7 +42,7 @@ void FirstRunBubble::Init() {
 
   views::Label* title = new views::Label(l10n_util::GetStringFUTF16(
       IDS_FR_BUBBLE_TITLE, browser_ ?
-          GetDefaultSearchEngineName(browser_->profile()) : string16()));
+          GetDefaultSearchEngineName(browser_->profile()) : base::string16()));
   title->SetFont(original_font.DeriveFont(2, gfx::Font::BOLD));
 
   views::Link* change =

@@ -109,10 +109,10 @@ class CreateProfileHandler: public OptionsPageUIHandler {
                                     Profile* profile);
 
   // Updates the UI to show an error when creating a profile.
-  void ShowProfileCreationError(Profile* profile, const string16& error);
+  void ShowProfileCreationError(Profile* profile, const base::string16& error);
 
   // Updates the UI to show a non-fatal warning when creating a profile.
-  void ShowProfileCreationWarning(const string16& warning);
+  void ShowProfileCreationWarning(const base::string16& warning);
 
   // Cancels creation of a managed-user profile currently in progress, as
   // indicated by profile_path_being_created_, removing the object and files
@@ -134,7 +134,8 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   void RecordSupervisedProfileCreationMetrics(
       GoogleServiceAuthError::State error_state);
 
-  string16 GetProfileCreationErrorMessage(ProfileCreationErrorType error) const;
+  base::string16 GetProfileCreationErrorMessage(
+      ProfileCreationErrorType error) const;
   std::string GetJavascriptMethodName(ProfileCreationStatus status) const;
 
   bool IsValidExistingManagedUserId(

@@ -192,7 +192,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
   // the default "You are signed in" message is displayed.
-  void DisplayFinalConfirmationBubble(const string16& custom_message);
+  void DisplayFinalConfirmationBubble(const base::string16& custom_message);
 
   // Makes sure browser_ points to a valid browser (opens a new browser if
   // necessary). Useful in the case where the user has created a new Profile as

@@ -32,7 +32,7 @@ int ACMatchStyleToTagStyle(int styles) {
 
 // Translates ACMatchClassifications into SearchResult tags.
 void ACMatchClassificationsToTags(
-    const string16& text,
+    const base::string16& text,
     const ACMatchClassifications& text_classes,
     SearchResult::Tags* tags) {
   int tag_styles = SearchResult::Tag::NONE;

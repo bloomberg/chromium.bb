@@ -83,7 +83,7 @@ string16 ConfirmInfoBar::GetTextFor(
     ConfirmInfoBarDelegate::InfoBarButton button) {
   ConfirmInfoBarDelegate* delegate = GetDelegate();
   return (delegate->GetButtons() & button) ?
-      delegate->GetButtonLabel(button) : string16();
+      delegate->GetButtonLabel(button) : base::string16();
 }
 
 

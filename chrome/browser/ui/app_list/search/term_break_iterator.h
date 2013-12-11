@@ -26,7 +26,7 @@ namespace app_list {
 class TermBreakIterator {
  public:
   // Note that |word| must out live this iterator.
-  explicit TermBreakIterator(const string16& word);
+  explicit TermBreakIterator(const base::string16& word);
   ~TermBreakIterator();
 
   // Advance to the next term. Returns false if at the end of the word.
@@ -34,7 +34,7 @@ class TermBreakIterator {
 
   // Returns the current term, which is the substr of |word_| in range
   // [prev_, pos_).
-  const string16 GetCurrentTerm() const;
+  const base::string16 GetCurrentTerm() const;
 
   size_t prev() const { return prev_; }
   size_t pos() const { return pos_; }
@@ -54,7 +54,7 @@ class TermBreakIterator {
   // Returns new state for given |ch|.
   State GetNewState(char16 ch);
 
-  const string16& word_;
+  const base::string16& word_;
   size_t prev_;
   size_t pos_;
 

@@ -69,7 +69,7 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
 }
 
 // Puts the |content| into a span with the given CSS class.
-string16 CreateSpanWithClass(const string16& content,
+string16 CreateSpanWithClass(const base::string16& content,
                              const std::string& css_class) {
   return ASCIIToUTF16("<span class='" + css_class + "'>") +
       net::EscapeForHTML(content) + ASCIIToUTF16("</span>");
@@ -201,7 +201,7 @@ void NTPLoginHandler::UpdateLogin() {
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
 
-  string16 header, sub_header;
+  base::string16 header, sub_header;
   std::string icon_url;
   if (!username.empty()) {
     ProfileInfoCache& cache =
@@ -212,7 +212,7 @@ void NTPLoginHandler::UpdateLogin() {
       // case. In the multi-profile case the profile picture is visible in the
       // title bar and the full name can be ambiguous.
       if (cache.GetNumberOfProfiles() == 1) {
-        string16 name = cache.GetGAIANameOfProfileAtIndex(profile_index);
+        base::string16 name = cache.GetGAIANameOfProfileAtIndex(profile_index);
         if (!name.empty())
           header = CreateSpanWithClass(name, "profile-name");
         const gfx::Image* image =
@@ -233,7 +233,7 @@ void NTPLoginHandler::UpdateLogin() {
     SigninManager* signin = SigninManagerFactory::GetForProfile(
         profile->GetOriginalProfile());
     if (!profile->IsManaged() && signin->IsSigninAllowed()) {
-      string16 signed_in_link = l10n_util::GetStringUTF16(
+      base::string16 signed_in_link = l10n_util::GetStringUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
       signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");
       header = l10n_util::GetStringFUTF16(
@@ -273,7 +273,7 @@ void NTPLoginHandler::GetLocalizedValues(Profile* profile,
   PrefService* prefs = profile->GetPrefs();
   bool hide_sync = !prefs->GetBoolean(prefs::kSignInPromoShowNTPBubble);
 
-  string16 message = hide_sync ? string16() :
+  base::string16 message = hide_sync ? base::string16() :
       l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 
@@ -281,9 +281,9 @@ void NTPLoginHandler::GetLocalizedValues(Profile* profile,
   values->SetString("login_status_url",
       hide_sync ? std::string() : chrome::kSyncLearnMoreURL);
   values->SetString("login_status_advanced",
-      hide_sync ? string16() :
+      hide_sync ? base::string16() :
       l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED));
   values->SetString("login_status_dismiss",
-      hide_sync ? string16() :
+      hide_sync ? base::string16() :
       l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_OK));
 }

@@ -141,7 +141,7 @@ void StackedPanelCollection::RefreshLayoutWithTopPanelStartingAt(
 
 string16 StackedPanelCollection::GetTitle() const {
   if (panels_.empty())
-    return string16();
+    return base::string16();
 
   Panel* panel = panels_.front();
   const extensions::Extension* extension = panel->GetExtension();

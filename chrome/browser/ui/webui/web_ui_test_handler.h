@@ -25,15 +25,15 @@ class WebUITestHandler : public content::WebUIMessageHandler {
 
   // Sends a message through |preload_host| with the |js_text| to preload at the
   // appropriate time before the onload call is made.
-  void PreloadJavaScript(const string16& js_text,
+  void PreloadJavaScript(const base::string16& js_text,
                          content::RenderViewHost* preload_host);
 
   // Runs |js_text| in this object's WebUI frame. Does not wait for any result.
-  void RunJavaScript(const string16& js_text);
+  void RunJavaScript(const base::string16& js_text);
 
   // Runs |js_text| in this object's WebUI frame. Waits for result, logging an
   // error message on failure. Returns test pass/fail.
-  bool RunJavaScriptTestWithResult(const string16& js_text);
+  bool RunJavaScriptTestWithResult(const base::string16& js_text);
 
   // WebUIMessageHandler overrides.
   // Add test handlers to the current WebUI object.

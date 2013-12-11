@@ -30,7 +30,7 @@ class MemoryInternalsHandler : public content::WebUIMessageHandler {
   void OnJSUpdate(const base::ListValue* list);
 
   // MemoryInternals message handlers.
-  void OnUpdate(const string16& update);
+  void OnUpdate(const base::string16& update);
 
  private:
   scoped_refptr<MemoryInternalsProxy> proxy_;

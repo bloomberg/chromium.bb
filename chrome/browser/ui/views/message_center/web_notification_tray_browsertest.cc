@@ -67,7 +67,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
                                 ASCIIToUTF16("Test Web Notification"),
                                 ASCIIToUTF16("Notification message body."),
                                 blink::WebTextDirectionDefault,
-                                string16(),
+                                base::string16(),
                                 ASCIIToUTF16(replace_id),
                                 new TestNotificationDelegate(id));
 
@@ -82,7 +82,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
                                 ASCIIToUTF16("Updated Web Notification"),
                                 ASCIIToUTF16("Updated message body."),
                                 blink::WebTextDirectionDefault,
-                                string16(),
+                                base::string16(),
                                 ASCIIToUTF16(replace_id),
                                 new TestNotificationDelegate(new_id));
 

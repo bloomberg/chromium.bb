@@ -16,15 +16,15 @@ namespace {
 class DirectoryAccessConfirmationDialog : public TabModalConfirmDialogDelegate {
  public:
   DirectoryAccessConfirmationDialog(bool writable,
-                                    const string16& app_name,
+                                    const base::string16& app_name,
                                     content::WebContents* web_contents,
                                     const base::Closure& on_accept,
                                     const base::Closure& on_cancel);
 
-  virtual string16 GetTitle() OVERRIDE;
-  virtual string16 GetMessage() OVERRIDE;
-  virtual string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual string16 GetCancelButtonTitle() OVERRIDE;
+  virtual base::string16 GetTitle() OVERRIDE;
+  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
+  virtual base::string16 GetCancelButtonTitle() OVERRIDE;
 
  private:
   virtual void OnAccepted() OVERRIDE;
@@ -34,12 +34,12 @@ class DirectoryAccessConfirmationDialog : public TabModalConfirmDialogDelegate {
   const base::Closure on_accept_;
   const base::Closure on_cancel_;
   const bool writable_;
-  const string16 app_name_;
+  const base::string16 app_name_;
 };
 
 DirectoryAccessConfirmationDialog::DirectoryAccessConfirmationDialog(
     bool writable,
-    const string16& app_name,
+    const base::string16& app_name,
     content::WebContents* web_contents,
     const base::Closure& on_accept,
     const base::Closure& on_cancel)
@@ -88,7 +88,7 @@ void DirectoryAccessConfirmationDialog::OnClosed() {
 }  // namespace
 
 void CreateDirectoryAccessConfirmationDialog(bool writable,
-                                             const string16& app_name,
+                                             const base::string16& app_name,
                                              content::WebContents* web_contents,
                                              const base::Closure& on_accept,
                                              const base::Closure& on_cancel) {

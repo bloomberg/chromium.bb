@@ -23,11 +23,11 @@ class ChromeSigninDelegate : public app_list::SigninDelegate {
   virtual void ShowSignin() OVERRIDE;
   virtual void OpenLearnMore() OVERRIDE;
   virtual void OpenSettings() OVERRIDE;
-  virtual string16 GetSigninHeading() OVERRIDE;
-  virtual string16 GetSigninText() OVERRIDE;
-  virtual string16 GetSigninButtonText() OVERRIDE;
-  virtual string16 GetLearnMoreLinkText() OVERRIDE;
-  virtual string16 GetSettingsLinkText() OVERRIDE;
+  virtual base::string16 GetSigninHeading() OVERRIDE;
+  virtual base::string16 GetSigninText() OVERRIDE;
+  virtual base::string16 GetSigninButtonText() OVERRIDE;
+  virtual base::string16 GetLearnMoreLinkText() OVERRIDE;
+  virtual base::string16 GetSettingsLinkText() OVERRIDE;
 
   Profile* profile_;
 

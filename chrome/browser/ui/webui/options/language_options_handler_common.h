@@ -59,7 +59,7 @@ class LanguageOptionsHandlerCommon
 
  private:
   // Returns the name of the product (ex. "Chrome" or "Chrome OS").
-  virtual string16 GetProductName() = 0;
+  virtual base::string16 GetProductName() = 0;
 
   // Sets the application locale.
   virtual void SetApplicationLocale(const std::string& language_code) = 0;

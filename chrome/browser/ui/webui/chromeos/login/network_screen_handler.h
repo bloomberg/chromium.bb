@@ -32,10 +32,10 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void ShowError(const string16& message) OVERRIDE;
+  virtual void ShowError(const base::string16& message) OVERRIDE;
   virtual void ClearErrors() OVERRIDE;
   virtual void ShowConnectingStatus(bool connecting,
-                                    const string16& network_id) OVERRIDE;
+                                    const base::string16& network_id) OVERRIDE;
   virtual void EnableContinue(bool enabled) OVERRIDE;
 
   // BaseScreenHandler implementation:

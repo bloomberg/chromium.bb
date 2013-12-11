@@ -54,7 +54,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   bool tos_visible = tab && tab->ShouldWelcomePageLinkToTermsOfService();
   html_source->AddBoolean("tosVisible", tos_visible);
 
-  string16 tos_html;
+  base::string16 tos_html;
   if (tos_visible) {
     std::string privacy_notice_url =
         base::StringPrintf(kPrivacyNoticeBaseURL, locale.c_str());

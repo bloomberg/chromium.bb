@@ -229,7 +229,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
     GURL search(template_url->url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(term)));
     history->AddPageWithDetails(
-        search, string16(), visit_count, visit_count,
+        search, base::string16(), visit_count, visit_count,
         base::Time::Now(), false, history::SOURCE_BROWSED);
     history->SetKeywordSearchTermsForURL(
         search, template_url->id(), term);

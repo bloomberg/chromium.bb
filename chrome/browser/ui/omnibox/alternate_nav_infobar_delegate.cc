@@ -24,7 +24,7 @@ AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
 // static
 void AlternateNavInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    const string16& text,
+    const base::string16& text,
     const AutocompleteMatch& match,
     const GURL& search_url) {
   InfoBarService* infobar_service =
@@ -37,7 +37,7 @@ void AlternateNavInfoBarDelegate::Create(
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     Profile* profile,
-    const string16& text,
+    const base::string16& text,
     const AutocompleteMatch& match,
     const GURL& search_url)
     : InfoBarDelegate(),
@@ -54,8 +54,8 @@ AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
 
 string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
     size_t* link_offset) const {
-  const string16 label = l10n_util::GetStringFUTF16(
-      IDS_ALTERNATE_NAV_URL_VIEW_LABEL, string16(), link_offset);
+  const base::string16 label = l10n_util::GetStringFUTF16(
+      IDS_ALTERNATE_NAV_URL_VIEW_LABEL, base::string16(), link_offset);
   return label;
 }
 

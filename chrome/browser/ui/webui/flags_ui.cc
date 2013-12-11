@@ -84,7 +84,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   } else {
     // The warning will be only shown on ChromeOS, when the current user is not
     // the owner.
-    source->AddString("ownerWarning", string16());
+    source->AddString("ownerWarning", base::string16());
   }
 #endif
 

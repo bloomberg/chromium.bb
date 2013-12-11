@@ -276,7 +276,7 @@ class Panel : public ui::BaseWindow,
   bool ExecuteCommandIfEnabled(int id);
 
   // Gets the title of the window from the web contents.
-  string16 GetWindowTitle() const;
+  base::string16 GetWindowTitle() const;
 
   // Gets the Favicon of the web contents.
   gfx::Image GetCurrentPageIcon() const;

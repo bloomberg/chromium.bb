@@ -85,7 +85,7 @@ void SearchController::Init() {
 void SearchController::Start() {
   Stop();
 
-  string16 query;
+  base::string16 query;
   TrimWhitespace(search_box_->text(), TRIM_ALL, &query);
 
   dispatching_query_ = true;

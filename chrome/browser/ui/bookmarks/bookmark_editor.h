@@ -45,7 +45,7 @@ class BookmarkEditor {
     static EditDetails AddNodeInFolder(const BookmarkNode* parent_node,
                                        int index,
                                        const GURL& url,
-                                       const string16& title);
+                                       const base::string16& title);
 
     // Returns an EditDetails instance for the user adding a folder within a
     // given parent node with a specified index.
@@ -85,11 +85,11 @@ class BookmarkEditor {
 
     // If type == NEW_URL this gives the URL/title.
     GURL url;
-    string16 title;
+    base::string16 title;
 
     // If type == NEW_FOLDER, this is the urls/title pairs to add to the
     // folder.
-    std::vector<std::pair<GURL, string16> > urls;
+    std::vector<std::pair<GURL, base::string16> > urls;
 
    private:
     explicit EditDetails(Type node_type);

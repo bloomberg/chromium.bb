@@ -13,7 +13,7 @@ class WebContents;
 }
 
 void CreateDirectoryAccessConfirmationDialog(bool writable,
-                                             const string16& app_name,
+                                             const base::string16& app_name,
                                              content::WebContents* web_contents,
                                              const base::Closure& on_accept,
                                              const base::Closure& on_cancel);

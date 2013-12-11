@@ -27,9 +27,9 @@ class ProtocolDialogDelegate {
   // dialog is checked.
   virtual void DoCancel(const GURL& url, bool dont_block) const = 0;
 
-  virtual string16 GetMessageText() const = 0;
-  virtual string16 GetCheckboxText() const = 0;
-  virtual string16 GetTitleText() const = 0;
+  virtual base::string16 GetMessageText() const = 0;
+  virtual base::string16 GetCheckboxText() const = 0;
+  virtual base::string16 GetTitleText() const = 0;
 
   const GURL& url() const { return url_; }
 

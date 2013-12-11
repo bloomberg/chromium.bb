@@ -185,9 +185,9 @@ void HandlerOptionsHandler::SetDefault(const ListValue* args) {
 
 ProtocolHandler HandlerOptionsHandler::ParseHandlerFromArgs(
     const ListValue* args) const {
-  string16 protocol;
-  string16 url;
-  string16 title;
+  base::string16 protocol;
+  base::string16 url;
+  base::string16 title;
   bool ok = args->GetString(0, &protocol) && args->GetString(1, &url) &&
     args->GetString(2, &title);
   if (!ok)

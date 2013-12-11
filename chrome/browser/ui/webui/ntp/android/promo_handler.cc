@@ -152,7 +152,7 @@ void PromoHandler::HandlePromoSendEmail(const base::ListValue* args) {
   if (!profile)
     return;
 
-  string16 data_subject, data_body, data_inv;
+  base::string16 data_subject, data_body, data_inv;
   if (!args || args->GetSize() < 3) {
     DVLOG(1) << "promoSendEmail: expected three args, got "
              << (args ? args->GetSize() : 0);

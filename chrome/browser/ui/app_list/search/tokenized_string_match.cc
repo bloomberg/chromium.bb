@@ -95,8 +95,8 @@ bool TokenizedStringMatch::Calculate(const TokenizedString& query,
   return relevance_ > kNoMatchScore;
 }
 
-bool TokenizedStringMatch::Calculate(const string16& query,
-                                     const string16& text) {
+bool TokenizedStringMatch::Calculate(const base::string16& query,
+                                     const base::string16& text) {
   const TokenizedString tokenized_query(query);
   const TokenizedString tokenized_text(text);
   return Calculate(tokenized_query, tokenized_text);

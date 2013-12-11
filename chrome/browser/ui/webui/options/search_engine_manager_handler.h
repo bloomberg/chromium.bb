@@ -38,8 +38,8 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
 
   // EditSearchEngineControllerDelegate implementation.
   virtual void OnEditedKeyword(TemplateURL* template_url,
-                               const string16& title,
-                               const string16& keyword,
+                               const base::string16& title,
+                               const base::string16& keyword,
                                const std::string& url) OVERRIDE;
 
   virtual void RegisterMessages() OVERRIDE;

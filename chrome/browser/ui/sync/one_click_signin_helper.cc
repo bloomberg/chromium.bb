@@ -175,11 +175,11 @@ class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
   virtual ~ConfirmEmailDialogDelegate();
 
   // TabModalConfirmDialogDelegate:
-  virtual string16 GetTitle() OVERRIDE;
-  virtual string16 GetMessage() OVERRIDE;
-  virtual string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual string16 GetCancelButtonTitle() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetTitle() OVERRIDE;
+  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
+  virtual base::string16 GetCancelButtonTitle() OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
   virtual void OnClosed() OVERRIDE;
@@ -543,7 +543,7 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
-      const string16& frame_unique_name,
+      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type,
@@ -567,7 +567,7 @@ CurrentHistoryCleaner::~CurrentHistoryCleaner() {
 
 void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type,
@@ -728,7 +728,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       if (g_browser_process && !same_email) {
         ProfileManager* manager = g_browser_process->profile_manager();
         if (manager) {
-          string16 email16 = UTF8ToUTF16(email);
+          base::string16 email16 = UTF8ToUTF16(email);
           ProfileInfoCache& cache = manager->GetProfileInfoCache();
 
           for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
@@ -1028,7 +1028,7 @@ void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
 
   browser->window()->ShowOneClickSigninBubble(
       BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-      string16(), /* no SAML email */
+      base::string16(), /* no SAML email */
       UTF8ToUTF16(error),
       // This callback is never invoked.
       // TODO(rogerta): Separate out the bubble API so we don't have to pass

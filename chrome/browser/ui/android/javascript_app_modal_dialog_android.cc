@@ -110,14 +110,15 @@ void JavascriptAppModalDialogAndroid::CloseAppModalDialog() {
 }
 
 void JavascriptAppModalDialogAndroid::AcceptAppModalDialog() {
-  string16 prompt_text;
+  base::string16 prompt_text;
   dialog_->OnAccept(prompt_text, false);
   delete this;
 }
 
 void JavascriptAppModalDialogAndroid::DidAcceptAppModalDialog(
     JNIEnv* env, jobject, jstring prompt, bool should_suppress_js_dialogs) {
-  string16 prompt_text = base::android::ConvertJavaStringToUTF16(env, prompt);
+  base::string16 prompt_text =
+      base::android::ConvertJavaStringToUTF16(env, prompt);
   dialog_->OnAccept(prompt_text, should_suppress_js_dialogs);
   delete this;
 }

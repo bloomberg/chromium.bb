@@ -169,7 +169,7 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
     path_to_use = base::FilePath();
   }
 
-  string16 select_title;
+  base::string16 select_title;
   if (operation == "load") {
     select_title = l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
   } else if (operation == "pem") {

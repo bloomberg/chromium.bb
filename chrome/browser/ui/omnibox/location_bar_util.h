@@ -18,7 +18,7 @@ class Rect;
 namespace location_bar_util {
 
 // Build a short string to use in keyword-search when the field isn't very big.
-string16 CalculateMinString(const string16& description);
+string16 CalculateMinString(const base::string16& description);
 
 // Paint the background and border for |action| on |tab_id|.  |bounds| should
 // include the top and bottom of the location bar, and the middle column

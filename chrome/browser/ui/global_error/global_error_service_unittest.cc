@@ -24,9 +24,9 @@ class BaseError : public GlobalError {
     ADD_FAILURE();
     return 0;
   }
-  virtual string16 MenuItemLabel() OVERRIDE {
+  virtual base::string16 MenuItemLabel() OVERRIDE {
     ADD_FAILURE();
-    return string16();
+    return base::string16();
   }
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { ADD_FAILURE(); }
 
@@ -56,7 +56,7 @@ class MenuError : public BaseError {
 
   virtual bool HasMenuItem() OVERRIDE { return true; }
   virtual int MenuItemCommandID() OVERRIDE { return command_id_; }
-  virtual string16 MenuItemLabel() OVERRIDE { return string16(); }
+  virtual base::string16 MenuItemLabel() OVERRIDE { return base::string16(); }
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE {}
 
  private:

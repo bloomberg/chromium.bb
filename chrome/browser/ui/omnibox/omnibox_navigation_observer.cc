@@ -52,7 +52,7 @@ bool IsValidNavigation(const GURL& original_url, const GURL& final_url) {
 
 OmniboxNavigationObserver::OmniboxNavigationObserver(
     Profile* profile,
-    const string16& text,
+    const base::string16& text,
     const AutocompleteMatch& match,
     const AutocompleteMatch& alternate_nav_match)
     : text_(text),

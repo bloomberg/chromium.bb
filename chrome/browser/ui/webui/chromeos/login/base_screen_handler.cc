@@ -22,7 +22,7 @@ void LocalizedValuesBuilder::Add(const std::string& key,
 }
 
 void LocalizedValuesBuilder::Add(const std::string& key,
-                                 const string16& message) {
+                                 const base::string16& message) {
   dict_->SetString(key, message);
 }
 
@@ -33,15 +33,15 @@ void LocalizedValuesBuilder::Add(const std::string& key, int message_id) {
 
 void LocalizedValuesBuilder::AddF(const std::string& key,
                                   int message_id,
-                                  const string16& a) {
+                                  const base::string16& a) {
   dict_->SetString(key,
                    l10n_util::GetStringFUTF16(message_id, a));
 }
 
 void LocalizedValuesBuilder::AddF(const std::string& key,
                                   int message_id,
-                                  const string16& a,
-                                  const string16& b) {
+                                  const base::string16& a,
+                                  const base::string16& b) {
   dict_->SetString(key,
                    l10n_util::GetStringFUTF16(message_id, a, b));
 }

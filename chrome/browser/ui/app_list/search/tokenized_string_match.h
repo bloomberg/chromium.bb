@@ -33,7 +33,7 @@ class TokenizedStringMatch {
   bool Calculate(const TokenizedString& query, const TokenizedString& text);
 
   // Convenience wrapper to calculate match from raw string input.
-  bool Calculate(const string16& query, const string16& text);
+  bool Calculate(const base::string16& query, const base::string16& text);
 
   double relevance() const { return relevance_; }
   const Hits& hits() const { return hits_; }

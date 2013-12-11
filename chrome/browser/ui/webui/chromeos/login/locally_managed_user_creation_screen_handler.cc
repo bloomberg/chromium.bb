@@ -219,7 +219,7 @@ void LocallyManagedUserCreationScreenHandler::ShowManagerPasswordError() {
 
 void LocallyManagedUserCreationScreenHandler::ShowStatusMessage(
     bool is_progress,
-    const string16& message) {
+    const base::string16& message) {
   if (is_progress)
     CallJS("showProgress", message);
   else
@@ -235,9 +235,9 @@ void LocallyManagedUserCreationScreenHandler::ShowTutorialPage() {
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
-    const string16& title,
-    const string16& message,
-    const string16& button_text) {
+    const base::string16& title,
+    const base::string16& message,
+    const base::string16& button_text) {
   CallJS("showErrorPage", title, message, button_text);
 }
 
@@ -269,7 +269,7 @@ void LocallyManagedUserCreationScreenHandler::HandleImportUserSelected(
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
-    const string16& name) {
+    const base::string16& name) {
   std::string user_id;
   if (NULL != UserManager::Get()->GetSupervisedUserManager()->
           FindByDisplayName(CollapseWhitespace(name, true))) {
@@ -289,11 +289,12 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
-    const string16& new_raw_user_name,
+    const base::string16& new_raw_user_name,
     const std::string& new_user_password) {
   if (!delegate_)
     return;
-  const string16 new_user_name = CollapseWhitespace(new_raw_user_name, true);
+  const base::string16 new_user_name =
+      CollapseWhitespace(new_raw_user_name, true);
   if (NULL != UserManager::Get()->GetSupervisedUserManager()->
           FindByDisplayName(new_user_name)) {
     CallJS("managedUserNameError", new_user_name,

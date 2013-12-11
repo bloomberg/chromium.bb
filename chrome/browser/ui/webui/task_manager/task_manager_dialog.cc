@@ -63,7 +63,7 @@ class TaskManagerDialogImpl : public WebDialogDelegate {
   virtual ui::ModalType GetDialogModalType() const OVERRIDE {
     return ui::MODAL_TYPE_NONE;
   }
-  virtual string16 GetDialogTitle() const OVERRIDE {
+  virtual base::string16 GetDialogTitle() const OVERRIDE {
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
   }
   virtual std::string GetDialogName() const OVERRIDE {

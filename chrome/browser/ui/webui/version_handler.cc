@@ -23,8 +23,8 @@ namespace {
 
 // Retrieves the executable and profile paths on the FILE thread.
 void GetFilePaths(const base::FilePath& profile_path,
-                  string16* exec_path_out,
-                  string16* profile_path_out) {
+                  base::string16* exec_path_out,
+                  base::string16* profile_path_out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   base::FilePath executable_path = base::MakeAbsoluteFilePath(
@@ -72,8 +72,8 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
 
   // Grab the executable path on the FILE thread. It is returned in
   // OnGotFilePaths.
-  string16* exec_path_buffer = new string16;
-  string16* profile_path_buffer = new string16;
+  base::string16* exec_path_buffer = new base::string16;
+  base::string16* profile_path_buffer = new base::string16;
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::FILE, FROM_HERE,
           base::Bind(&GetFilePaths, Profile::FromWebUI(web_ui())->GetPath(),
@@ -115,7 +115,7 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
 }
 
 void VersionHandler::OnGotFilePaths(string16* executable_path_data,
-                                    string16* profile_path_data) {
+                                    base::string16* profile_path_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   StringValue exec_path(*executable_path_data);
@@ -130,7 +130,7 @@ void VersionHandler::OnGotPlugins(
   std::vector<content::WebPluginInfo> info_array;
   content::PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), content::kFlashPluginSwfMimeType, false, &info_array, NULL);
-  string16 flash_version =
+  base::string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
   PluginPrefs* plugin_prefs =
       PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui())).get();

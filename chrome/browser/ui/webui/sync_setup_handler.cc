@@ -199,7 +199,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     content::WebUI* web_ui) {
   DCHECK(localized_strings);
 
-  string16 product_name(GetStringUTF16(IDS_PRODUCT_NAME));
+  base::string16 product_name(GetStringUTF16(IDS_PRODUCT_NAME));
   localized_strings->SetString(
       "chooseDataTypesInstructions",
       GetStringFUTF16(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS, product_name));
@@ -367,7 +367,8 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   base::Time passphrase_time = service->GetExplicitPassphraseTime();
   syncer::PassphraseType passphrase_type = service->GetPassphraseType();
   if (!passphrase_time.is_null()) {
-    string16 passphrase_time_str = base::TimeFormatShortDate(passphrase_time);
+    base::string16 passphrase_time_str =
+        base::TimeFormatShortDate(passphrase_time);
     args.SetString(
         "enterPassphraseBody",
         GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,

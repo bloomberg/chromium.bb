@@ -28,8 +28,8 @@ inline ContentViewCore* GetContentViewCoreFrom(RenderWidgetHost* widget_host) {
 ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
     RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view,
-    const string16& main_text,
-    const string16& sub_text) {
+    const base::string16& main_text,
+    const base::string16& sub_text) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_validation_message_bubble_.Reset(
       Java_ValidationMessageBubble_createAndShow(
@@ -70,8 +70,8 @@ namespace chrome {
 scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
     RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view,
-    const string16& main_text,
-    const string16& sub_text) {
+    const base::string16& main_text,
+    const base::string16& sub_text) {
   return scoped_ptr<ValidationMessageBubble>(new ValidationMessageBubbleAndroid(
       widget_host, anchor_in_root_view, main_text, sub_text)).Pass();
 }

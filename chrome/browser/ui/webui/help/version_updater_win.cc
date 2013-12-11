@@ -47,13 +47,13 @@ class VersionUpdaterWin : public VersionUpdater,
   // GoogleUpdateStatusListener implementation.
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
                                GoogleUpdateErrorCode error_code,
-                               const string16& error_message,
-                               const string16& version) OVERRIDE;
+                               const base::string16& error_message,
+                               const base::string16& version) OVERRIDE;
 
   // Update the UI to show the status of the upgrade.
   void UpdateStatus(GoogleUpdateUpgradeResult result,
                     GoogleUpdateErrorCode error_code,
-                    const string16& error_message);
+                    const base::string16& error_message);
 
   // Got the intalled version so the handling of the UPGRADE_ALREADY_UP_TO_DATE
   // result case can now be completeb on the UI thread.
@@ -147,7 +147,8 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
     // This could happen if the page got refreshed after results were returned.
     if (!google_updater_)
       CreateGoogleUpdater();
-    UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR, string16());
+    UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR,
+                 base::string16());
     // Specify false to not upgrade yet.
     google_updater_->CheckForUpdate(false, GetElevationParent());
   }
@@ -159,7 +160,7 @@ void VersionUpdaterWin::RelaunchBrowser() const {
 
 void VersionUpdaterWin::OnReportResults(
     GoogleUpdateUpgradeResult result, GoogleUpdateErrorCode error_code,
-    const string16& error_message, const string16& version) {
+    const base::string16& error_message, const base::string16& version) {
   // Drop the last reference to the object so that it gets cleaned up here.
   ClearGoogleUpdater();
   UpdateStatus(result, error_code, error_message);
@@ -167,13 +168,13 @@ void VersionUpdaterWin::OnReportResults(
 
 void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
                                      GoogleUpdateErrorCode error_code,
-                                     const string16& error_message) {
+                                     const base::string16& error_message) {
   // For Chromium builds it would show an error message.
   // But it looks weird because in fact there is no error,
   // just the update server is not available for non-official builds.
 #if defined(GOOGLE_CHROME_BUILD)
   Status status = UPDATED;
-  string16 message;
+  base::string16 message;
 
   switch (result) {
     case UPGRADE_CHECK_STARTED: {
@@ -191,7 +192,7 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
           UserMetricsAction("UpgradeCheck_UpgradeIsAvailable"));
       DCHECK(!google_updater_);  // Should have been nulled out already.
       CreateGoogleUpdater();
-      UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR, string16());
+      UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR, base::string16());
       // Specify true to upgrade now.
       google_updater_->CheckForUpdate(true, GetElevationParent());
       return;
@@ -255,10 +256,10 @@ void VersionUpdaterWin::GotInstalledVersion(const Version& version) {
   if (!version.IsValid() || version.CompareTo(running_version) <= 0) {
     content::RecordAction(
         UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));
-    callback_.Run(UPDATED, 0, string16());
+    callback_.Run(UPDATED, 0, base::string16());
   } else {
     content::RecordAction(UserMetricsAction("UpgradeCheck_AlreadyUpgraded"));
-    callback_.Run(NEARLY_UPDATED, 0, string16());
+    callback_.Run(NEARLY_UPDATED, 0, base::string16());
   }
 }
 

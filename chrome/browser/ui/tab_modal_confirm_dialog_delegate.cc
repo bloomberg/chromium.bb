@@ -89,7 +89,7 @@ string16 TabModalConfirmDialogDelegate::GetCancelButtonTitle() {
 }
 
 string16 TabModalConfirmDialogDelegate::GetLinkText() const {
-  return string16();
+  return base::string16();
 }
 
 const char* TabModalConfirmDialogDelegate::GetAcceptButtonIcon() {

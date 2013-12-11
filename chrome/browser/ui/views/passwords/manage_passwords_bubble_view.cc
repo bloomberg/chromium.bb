@@ -35,7 +35,7 @@ void UpdateBiggestWidth(const autofill::PasswordForm& password_form,
                         int* biggest_width) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   gfx::FontList font_list(rb->GetFontList(ui::ResourceBundle::BaseFont));
-  string16 display_string(username ?
+  base::string16 display_string(username ?
       password_form.username_value :
       ManagePasswordItemView::GetPasswordDisplayString(
           password_form.password_value));

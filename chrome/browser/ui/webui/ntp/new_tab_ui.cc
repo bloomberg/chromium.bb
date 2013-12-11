@@ -76,7 +76,7 @@ const char kLTRHtmlTextDirection[] = "ltr";
 
 static base::LazyInstance<std::set<const WebUIController*> > g_live_new_tabs;
 
-const char* GetHtmlTextDirection(const string16& text) {
+const char* GetHtmlTextDirection(const base::string16& text) {
   if (base::i18n::IsRTL() && base::i18n::StringContainsStrongRTLChars(text))
     return kRTLHtmlTextDirection;
   else
@@ -294,12 +294,12 @@ bool NewTabUI::IsDiscoveryInNTPEnabled() {
 
 // static
 void NewTabUI::SetUrlTitleAndDirection(DictionaryValue* dictionary,
-                                       const string16& title,
+                                       const base::string16& title,
                                        const GURL& gurl) {
   dictionary->SetString("url", gurl.spec());
 
   bool using_url_as_the_title = false;
-  string16 title_to_set(title);
+  base::string16 title_to_set(title);
   if (title_to_set.empty()) {
     using_url_as_the_title = true;
     title_to_set = UTF8ToUTF16(gurl.spec());
@@ -327,7 +327,7 @@ void NewTabUI::SetUrlTitleAndDirection(DictionaryValue* dictionary,
 }
 
 // static
-void NewTabUI::SetFullNameAndDirection(const string16& full_name,
+void NewTabUI::SetFullNameAndDirection(const base::string16& full_name,
                                        base::DictionaryValue* dictionary) {
   dictionary->SetString("full_name", full_name);
   dictionary->SetString("full_name_direction", GetHtmlTextDirection(full_name));

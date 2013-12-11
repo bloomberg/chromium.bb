@@ -110,7 +110,7 @@ void TaskManagerHandler::RegisterMessages() {
 
 static int parseIndex(const Value* value) {
   int index = -1;
-  string16 string16_index;
+  base::string16 base::string16_index;
   double double_index;
   if (value->GetAsString(&string16_index)) {
     bool converted = base::StringToInt(string16_index, &index);

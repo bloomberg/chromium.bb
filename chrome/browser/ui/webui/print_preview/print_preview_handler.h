@@ -242,7 +242,7 @@ class PrintPreviewHandler
   void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
 
   bool GetPreviewDataAndTitle(scoped_refptr<base::RefCountedBytes>* data,
-                              string16* title) const;
+                              base::string16* title) const;
 
 #if defined(USE_CUPS)
   void SaveCUPSColorSetting(const base::DictionaryValue* settings);

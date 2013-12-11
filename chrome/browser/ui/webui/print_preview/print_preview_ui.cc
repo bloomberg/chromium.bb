@@ -209,7 +209,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR);
   source->AddLocalizedString("printPreviewPageLabelPlural",
                              IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
-  const string16 shortcut_text(UTF8ToUTF16(kAdvancedPrintShortcut));
+  const base::string16 shortcut_text(UTF8ToUTF16(kAdvancedPrintShortcut));
 #if defined(OS_CHROMEOS)
   source->AddString(
       "systemDialogOption",
@@ -400,7 +400,7 @@ int PrintPreviewUI::GetAvailableDraftPageCount() {
 }
 
 void PrintPreviewUI::SetInitiatorTitle(
-    const string16& job_title) {
+    const base::string16& job_title) {
   initiator_title_ = job_title;
 }
 

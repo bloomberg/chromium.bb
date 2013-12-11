@@ -75,12 +75,12 @@ class FullscreenExitBubble : public gfx::AnimationDelegate {
   void Cancel();
 
   // The following strings may change according to the content type and URL.
-  string16 GetCurrentMessageText() const;
-  string16 GetCurrentDenyButtonText() const;
+  base::string16 GetCurrentMessageText() const;
+  base::string16 GetCurrentDenyButtonText() const;
 
   // The following strings never change.
-  string16 GetAllowButtonText() const;
-  string16 GetInstructionText() const;
+  base::string16 GetAllowButtonText() const;
+  base::string16 GetInstructionText() const;
 
   // The browser this bubble is in.
   Browser* browser_;

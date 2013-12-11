@@ -32,7 +32,7 @@ class WebsiteSettingsPopupAndroid : public WebsiteSettingsUI {
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) OVERRIDE;
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
-  virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
+  virtual void SetFirstVisit(const base::string16& first_visit) OVERRIDE;
   virtual void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) OVERRIDE;
 
   static bool RegisterWebsiteSettingsPopupAndroid(JNIEnv* env);

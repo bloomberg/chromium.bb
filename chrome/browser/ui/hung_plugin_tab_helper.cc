@@ -135,33 +135,33 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   static InfoBar* Create(InfoBarService* infobar_service,
                          HungPluginTabHelper* helper,
                          int plugin_child_id,
-                         const string16& plugin_name);
+                         const base::string16& plugin_name);
 
  private:
   HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
                             int plugin_child_id,
-                            const string16& plugin_name);
+                            const base::string16& plugin_name);
   virtual ~HungPluginInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
   HungPluginTabHelper* helper_;
   int plugin_child_id_;
 
-  string16 message_;
-  string16 button_text_;
+  base::string16 message_;
+  base::string16 button_text_;
 };
 
 // static
 InfoBar* HungPluginInfoBarDelegate::Create(InfoBarService* infobar_service,
                                            HungPluginTabHelper* helper,
                                            int plugin_child_id,
-                                           const string16& plugin_name) {
+                                           const base::string16& plugin_name) {
   return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new HungPluginInfoBarDelegate(
           helper, plugin_child_id, plugin_name))));
@@ -170,7 +170,7 @@ InfoBar* HungPluginInfoBarDelegate::Create(InfoBarService* infobar_service,
 HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
     HungPluginTabHelper* helper,
     int plugin_child_id,
-    const string16& plugin_name)
+    const base::string16& plugin_name)
     : ConfirmInfoBarDelegate(),
       helper_(helper),
       plugin_child_id_(plugin_child_id),
@@ -213,11 +213,11 @@ bool HungPluginInfoBarDelegate::Accept() {
 // not we're currently showing the infobar.
 struct HungPluginTabHelper::PluginState {
   // Initializes the plugin state to be a hung plugin.
-  PluginState(const base::FilePath& p, const string16& n);
+  PluginState(const base::FilePath& p, const base::string16& n);
   ~PluginState();
 
   base::FilePath path;
-  string16 name;
+  base::string16 name;
 
   // Possibly-null if we're not showing an infobar right now.
   InfoBar* infobar;
@@ -242,7 +242,7 @@ struct HungPluginTabHelper::PluginState {
 const int HungPluginTabHelper::PluginState::kInitialReshowDelaySec = 10;
 
 HungPluginTabHelper::PluginState::PluginState(const base::FilePath& p,
-                                              const string16& n)
+                                              const base::string16& n)
     : path(p),
       name(n),
       infobar(NULL),
@@ -310,7 +310,7 @@ void HungPluginTabHelper::PluginHungStatusChanged(
     return;
   }
 
-  string16 plugin_name =
+  base::string16 plugin_name =
       content::PluginService::GetInstance()->GetPluginDisplayNameByPath(
           plugin_path);
 

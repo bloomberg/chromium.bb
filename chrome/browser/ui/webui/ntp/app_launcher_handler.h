@@ -112,7 +112,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
     ~AppInstallInfo();
 
     bool is_bookmark_app;
-    string16 title;
+    base::string16 title;
     GURL app_url;
     syncer::StringOrdinal page_ordinal;
   };

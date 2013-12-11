@@ -199,7 +199,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
   // In theory, we should be able to create a map that is sorted by
   // display names using ICU comparator, but doing it is hard, thus we'll
   // use an auxiliary vector to achieve the same result.
-  typedef std::pair<std::string, string16> LanguagePair;
+  typedef std::pair<std::string, base::string16> LanguagePair;
   typedef std::map<string16, LanguagePair> LanguageMap;
   LanguageMap language_map;
   // The auxiliary vector mentioned above.
@@ -216,9 +216,9 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
       continue;
     }
 
-    const string16 display_name =
+    const base::string16 display_name =
         l10n_util::GetDisplayNameForLocale(*iter, app_locale, true);
-    const string16 native_display_name =
+    const base::string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(*iter, *iter, true);
 
     display_names.push_back(display_name);
@@ -238,10 +238,10 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     if (IsBlacklisted(base_language_codes[i]))
       continue;
 
-    string16 display_name =
+    base::string16 display_name =
         l10n_util::GetDisplayNameForLocale(
             base_language_codes[i], app_locale, false);
-    string16 native_display_name =
+    base::string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(
             base_language_codes[i], base_language_codes[i], false);
     display_names.push_back(display_name);
@@ -256,7 +256,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
   ListValue* language_list = new ListValue();
   for (size_t i = 0; i < display_names.size(); ++i) {
     // Sets the directionality of the display language name.
-    string16 display_name(display_names[i]);
+    base::string16 display_name(display_names[i]);
     bool markup_removal =
         base::i18n::UnadjustStringForLocaleDirection(&display_name);
     DCHECK(markup_removal);

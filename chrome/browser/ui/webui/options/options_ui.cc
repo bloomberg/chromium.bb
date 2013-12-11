@@ -206,7 +206,7 @@ void OptionsPageUIHandler::RegisterStrings(
     const OptionsStringResource* resources,
     size_t length) {
   for (size_t i = 0; i < length; ++i) {
-    string16 value;
+    base::string16 value;
     if (resources[i].substitution_id == 0) {
       value = l10n_util::GetStringUTF16(resources[i].id);
     } else {

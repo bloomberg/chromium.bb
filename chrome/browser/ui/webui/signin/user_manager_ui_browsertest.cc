@@ -41,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  string16 title = web_contents->GetTitle();
+  base::string16 title = web_contents->GetTitle();
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_USER_MANAGER_SCREEN_TITLE), title);
 
   // If the page has loaded correctly, then there should be an account picker.

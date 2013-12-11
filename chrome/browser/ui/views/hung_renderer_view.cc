@@ -124,7 +124,7 @@ int HungPagesTableModel::RowCount() {
 
 string16 HungPagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
-  string16 title = tab_observers_[row]->web_contents()->GetTitle();
+  base::string16 title = tab_observers_[row]->web_contents()->GetTitle();
   if (title.empty())
     title = CoreTabHelper::GetDefaultTitle();
   // TODO(xji): Consider adding a special case if the title text is a URL,

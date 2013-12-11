@@ -99,7 +99,7 @@ BookmarkEditor::EditDetails BookmarkEditor::EditDetails::AddNodeInFolder(
     const BookmarkNode* parent_node,
     int index,
     const GURL& url,
-    const string16& title) {
+    const base::string16& title) {
   EditDetails details(NEW_URL);
   details.parent_node = parent_node;
   details.index = index;

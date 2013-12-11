@@ -213,7 +213,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
       GURL url;
-      string16 title;
+      base::string16 title;
       chrome::GetURLAndTitleToBookmark(
           browser_->tab_strip_model()->GetActiveWebContents(),
           &url, &title);

@@ -139,11 +139,12 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
 
   bool no_error = store->status() == policy::CloudPolicyStore::STATUS_OK &&
                   client && client->status() == policy::DM_STATUS_SUCCESS;
-  string16 status = store->status() == policy::CloudPolicyStore::STATUS_OK &&
-                    client && client->status() != policy::DM_STATUS_SUCCESS ?
-                        policy::FormatDeviceManagementStatus(client->status()) :
-                        policy::FormatStoreStatus(store->status(),
-                                                  store->validation_status());
+  base::string16 status =
+      store->status() == policy::CloudPolicyStore::STATUS_OK &&
+      client && client->status() != policy::DM_STATUS_SUCCESS ?
+                policy::FormatDeviceManagementStatus(client->status()) :
+                policy::FormatStoreStatus(store->status(),
+                                          store->validation_status());
   const em::PolicyData* policy = store->policy();
   std::string client_id = policy ? policy->device_id() : std::string();
   std::string username = policy ? policy->username() : std::string();
@@ -684,7 +685,7 @@ void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
       value->SetString("level", "recommended");
     else
       value->SetString("level", "mandatory");
-    string16 error = errors->GetErrors(entry->first);
+    base::string16 error = errors->GetErrors(entry->first);
     if (!error.empty())
       value->SetString("error", error);
     values->Set(entry->first, value);

@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_SearchesFromFakebox) {
   EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox()->model()->focus_state());
 
   // Pressing enter should search for [test].
-  const string16& search_title = ASCIIToUTF16("test - Google Search");
+  const base::string16& search_title = ASCIIToUTF16("test - Google Search");
   content::TitleWatcher title_watcher(active_tab, search_title);
   PressEnterAndWaitForNavigation();
   EXPECT_EQ(search_title, title_watcher.WaitAndGetTitle());

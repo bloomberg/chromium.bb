@@ -85,7 +85,7 @@ class WebsiteSettingsPopupView
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) OVERRIDE;
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
-  virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
+  virtual void SetFirstVisit(const base::string16& first_visit) OVERRIDE;
   virtual void SetSelectedTab(TabId tab_id) OVERRIDE;
 
   // Creates the contents of the "Permissions" tab. The ownership of the
@@ -100,7 +100,7 @@ class WebsiteSettingsPopupView
   // section |contents| and an optional |link|. This method creates a section
   // for the given |headline|, |contents| and |link|. |link| can be NULL if the
   // section should not contain a link.
-  views::View* CreateSection(const string16& headline,
+  views::View* CreateSection(const base::string16& headline,
                              views::View* contents,
                              views::Link* link) WARN_UNUSED_RESULT;
 
@@ -112,8 +112,8 @@ class WebsiteSettingsPopupView
   // the views hierarchy. If the |link| is NULL then no link is be displayed.
   void ResetConnectionSection(views::View* section_container,
                               const gfx::Image& icon,
-                              const string16& headline,
-                              const string16& text,
+                              const base::string16& headline,
+                              const base::string16& text,
                               views::Link* link);
   // Handles LinkClicked asynchronously.
   void HandleLinkClickedAsync(views::Link* source);

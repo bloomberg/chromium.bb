@@ -54,7 +54,7 @@ class StatusBubbleViews : public StatusBubble {
   void SetBubbleWidth(int width);
 
   // Overridden from StatusBubble:
-  virtual void SetStatus(const string16& status) OVERRIDE;
+  virtual void SetStatus(const base::string16& status) OVERRIDE;
   virtual void SetURL(const GURL& url, const std::string& languages) OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void MouseMoved(const gfx::Point& location,
@@ -94,10 +94,10 @@ class StatusBubbleViews : public StatusBubble {
   int GetMaxStatusBubbleWidth();
 
   // The status text we want to display when there are no URLs to display.
-  string16 status_text_;
+  base::string16 status_text_;
 
   // The url we want to display when there is no status text to display.
-  string16 url_text_;
+  base::string16 url_text_;
 
   // The original, non-elided URL.
   GURL url_;

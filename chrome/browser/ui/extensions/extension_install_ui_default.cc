@@ -91,9 +91,9 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~ErrorInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   extensions::CrxInstallerError error_;
@@ -127,7 +127,7 @@ int ErrorInfoBarDelegate::GetButtons() const {
 
 string16 ErrorInfoBarDelegate::GetLinkText() const {
   return (error_.type() == extensions::CrxInstallerError::ERROR_OFF_STORE) ?
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE) : string16();
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE) : base::string16();
 }
 
 bool ErrorInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {

@@ -78,7 +78,7 @@ void NetworkScreenHandler::Show() {
 void NetworkScreenHandler::Hide() {
 }
 
-void NetworkScreenHandler::ShowError(const string16& message) {
+void NetworkScreenHandler::ShowError(const base::string16& message) {
   CallJS("showError", message);
 }
 
@@ -89,8 +89,8 @@ void NetworkScreenHandler::ClearErrors() {
 
 void NetworkScreenHandler::ShowConnectingStatus(
     bool connecting,
-    const string16& network_id) {
-  // string16 connecting_label =
+    const base::string16& network_id) {
+  // base::string16 connecting_label =
   //     l10n_util::GetStringFUTF16(IDS_NETWORK_SELECTION_CONNECTING,
   //                                network_id);
   // CallJS("cr.ui.Oobe.showConnectingStatus",

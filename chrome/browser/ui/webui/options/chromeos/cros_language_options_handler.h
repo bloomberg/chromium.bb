@@ -65,7 +65,7 @@ class CrosLanguageOptionsHandler
 
  private:
   // LanguageOptionsHandlerCommon implementation.
-  virtual string16 GetProductName() OVERRIDE;
+  virtual base::string16 GetProductName() OVERRIDE;
   virtual void SetApplicationLocale(const std::string& language_code) OVERRIDE;
 
   // Called when the sign-out button is clicked.

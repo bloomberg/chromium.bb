@@ -75,8 +75,8 @@ void CreateProfileHandler::CreateProfile(const ListValue* args) {
   DCHECK(profile_path_being_created_.empty());
   profile_creation_start_time_ = base::TimeTicks::Now();
 
-  string16 name;
-  string16 icon;
+  base::string16 name;
+  base::string16 icon;
   std::string managed_user_id;
   bool create_shortcut = false;
   bool managed_user = false;
@@ -222,7 +222,7 @@ void CreateProfileHandler::OnManagedUserRegistered(
     return;
   }
 
-  string16 error_msg;
+  base::string16 error_msg;
   if (state == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
       state == GoogleServiceAuthError::USER_NOT_SIGNED_UP ||
       state == GoogleServiceAuthError::ACCOUNT_DELETED ||
@@ -275,8 +275,9 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 }
 
-void CreateProfileHandler::ShowProfileCreationError(Profile* profile,
-                                                    const string16& error) {
+void CreateProfileHandler::ShowProfileCreationError(
+    Profile* profile,
+    const base::string16& error) {
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
   profile_path_being_created_.clear();
@@ -287,7 +288,7 @@ void CreateProfileHandler::ShowProfileCreationError(Profile* profile,
 }
 
 void CreateProfileHandler::ShowProfileCreationWarning(
-    const string16& warning) {
+    const base::string16& warning) {
   DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
   web_ui()->CallJavascriptFunction("BrowserOptions.showCreateProfileWarning",
                                    base::StringValue(warning));
@@ -361,7 +362,7 @@ void CreateProfileHandler::RecordSupervisedProfileCreationMetrics(
   }
 }
 
-string16 CreateProfileHandler::GetProfileCreationErrorMessage(
+base::string16 CreateProfileHandler::GetProfileCreationErrorMessage(
     ProfileCreationErrorType error) const {
   int message_id = -1;
   switch (error) {

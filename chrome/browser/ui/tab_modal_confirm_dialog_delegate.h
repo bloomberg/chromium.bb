@@ -70,8 +70,8 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   void LinkClicked(WindowOpenDisposition disposition);
 
   // The title of the dialog. Note that the title is not shown on all platforms.
-  virtual string16 GetTitle() = 0;
-  virtual string16 GetMessage() = 0;
+  virtual base::string16 GetTitle() = 0;
+  virtual base::string16 GetMessage() = 0;
 
   // Icon to show for the dialog. If this method is not overridden, a default
   // icon (like the application icon) is shown.
@@ -79,12 +79,12 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
 
   // Title for the accept and the cancel buttons.
   // The default implementation uses IDS_OK and IDS_CANCEL.
-  virtual string16 GetAcceptButtonTitle();
-  virtual string16 GetCancelButtonTitle();
+  virtual base::string16 GetAcceptButtonTitle();
+  virtual base::string16 GetCancelButtonTitle();
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // an empty string.
-  virtual string16 GetLinkText() const;
+  virtual base::string16 GetLinkText() const;
 
   // GTK stock icon names for the accept and cancel buttons, respectively.
   // The icons are only used on GTK. If these methods are not overriden,

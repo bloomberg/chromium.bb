@@ -87,7 +87,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Image avatar;
   gfx::Image taskbar_badge_avatar;
-  string16 text;
+  base::string16 text;
   bool is_rectangle = false;
   if (browser_view_->IsGuestSession()) {
     avatar = rb.GetImageNamed(browser_view_->GetGuestIconResourceID());
@@ -148,7 +148,7 @@ void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
 
   if (browser_view_->ShouldShowAvatar()) {
     if (!new_avatar_button_) {
-      string16 profile_name =
+      base::string16 profile_name =
           profiles::GetActiveProfileDisplayName(browser_view_->browser());
       new_avatar_button_ = new NewAvatarButton(
           listener, profile_name, style, browser_view_->browser());

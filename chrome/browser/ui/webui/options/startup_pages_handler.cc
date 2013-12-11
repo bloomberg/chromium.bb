@@ -224,12 +224,12 @@ void StartupPagesHandler::CancelChanges(const ListValue* args) {
 
 void StartupPagesHandler::RequestAutocompleteSuggestions(
     const ListValue* args) {
-  string16 input;
+  base::string16 input;
   CHECK_EQ(args->GetSize(), 1U);
   CHECK(args->GetString(0, &input));
 
   autocomplete_controller_->Start(AutocompleteInput(
-      input, string16::npos, string16(), GURL(),
+      input, base::string16::npos, base::string16(), GURL(),
       AutocompleteInput::INVALID_SPEC, true,
       false, false, AutocompleteInput::ALL_MATCHES));
 }

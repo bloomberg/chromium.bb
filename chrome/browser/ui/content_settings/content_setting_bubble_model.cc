@@ -243,7 +243,7 @@ bool ContentSettingSingleRadioGroup::settings_changed() const {
 // content type and setting the default value based on the content setting.
 void ContentSettingSingleRadioGroup::SetRadioGroup() {
   GURL url = web_contents()->GetURL();
-  string16 display_host;
+  base::string16 display_host;
   net::AppendFormattedHost(
       url,
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
@@ -655,7 +655,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   RadioGroup radio_group;
   radio_group.url = url;
 
-  string16 display_host_utf16;
+  base::string16 display_host_utf16;
   net::AppendFormattedHost(
       url,
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
@@ -1015,7 +1015,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   pending_handler_ = content_settings->pending_protocol_handler();
   previous_handler_ = content_settings->previous_protocol_handler();
 
-  string16 protocol;
+  base::string16 protocol;
   if (pending_handler_.protocol() == "mailto") {
     protocol = l10n_util::GetStringUTF16(
         IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);

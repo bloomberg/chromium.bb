@@ -196,7 +196,7 @@ void FontSettingsHandler::FontsListHasLoaded(
     ListValue* font;
     bool has_font = list->GetList(i, &font);
     DCHECK(has_font);
-    string16 value;
+    base::string16 value;
     bool has_value = font->GetString(1, &value);
     DCHECK(has_value);
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(value);
@@ -220,7 +220,7 @@ void FontSettingsHandler::FontsListHasLoaded(
       int cmd_id = it->encoding_id;
       std::string encoding =
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
-      string16 name = it->encoding_display_name;
+      base::string16 name = it->encoding_display_name;
       bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(name);
       option->Append(new base::StringValue(encoding));
       option->Append(new base::StringValue(name));

@@ -21,7 +21,7 @@ using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
-ChromeHttpAuthHandler::ChromeHttpAuthHandler(const string16& explanation)
+ChromeHttpAuthHandler::ChromeHttpAuthHandler(const base::string16& explanation)
     : observer_(NULL),
       explanation_(explanation) {
 }
@@ -43,8 +43,9 @@ jobject ChromeHttpAuthHandler::GetJavaObject() {
   return java_chrome_http_auth_handler_.obj();
 }
 
-void ChromeHttpAuthHandler::OnAutofillDataAvailable(const string16& username,
-                                                    const string16& password) {
+void ChromeHttpAuthHandler::OnAutofillDataAvailable(
+    const base::string16& username,
+    const base::string16& password) {
   DCHECK(java_chrome_http_auth_handler_.obj() != NULL);
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_username =
@@ -61,8 +62,8 @@ void ChromeHttpAuthHandler::SetAuth(JNIEnv* env,
                                     jstring username,
                                     jstring password) {
   if (observer_) {
-    string16 username16 = ConvertJavaStringToUTF16(env, username);
-    string16 password16 = ConvertJavaStringToUTF16(env, password);
+    base::string16 username16 = ConvertJavaStringToUTF16(env, username);
+    base::string16 password16 = ConvertJavaStringToUTF16(env, password);
     observer_->SetAuth(username16, password16);
   }
 }

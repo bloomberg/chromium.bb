@@ -181,7 +181,7 @@ void NetworkDropdown::Refresh() {
 }
 
 void NetworkDropdown::SetNetworkIconAndText() {
-  string16 text;
+  base::string16 text;
   gfx::ImageSkia icon_image;
   bool animating = false;
   ash::network_icon::GetDefaultNetworkImageAndLabel(

@@ -80,7 +80,7 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   result_to_output.SetBoolean("done", controller_->done());
   result_to_output.SetInteger("time_since_omnibox_started_ms",
       (base::Time::Now() - time_omnibox_started_).InMilliseconds());
-  const string16& host = controller_->input().text().substr(
+  const base::string16& host = controller_->input().text().substr(
       controller_->input().parts().host.begin,
       controller_->input().parts().host.len);
   result_to_output.SetString("host", host);
@@ -158,7 +158,7 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
   output->SetInteger(prefix + ".num_items", i);
 }
 
-bool OmniboxUIHandler::LookupIsTypedHost(const string16& host,
+bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
                                          bool* is_typed_host) const {
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_,
@@ -174,7 +174,7 @@ bool OmniboxUIHandler::LookupIsTypedHost(const string16& host,
 
 void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
   DCHECK_EQ(4u, input->GetSize());
-  string16 input_string;
+  base::string16 input_string;
   bool return_val = input->GetString(0, &input_string);
   DCHECK(return_val);
   int cursor_position;
@@ -196,7 +196,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
   controller_->Start(AutocompleteInput(
       input_string,
       cursor_position,
-      string16(),  // user's desired tld (top-level domain)
+      base::string16(),  // user's desired tld (top-level domain)
       GURL(),
       AutocompleteInput::INVALID_SPEC,
       prevent_inline_autocomplete,

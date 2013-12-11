@@ -66,10 +66,10 @@ void OptionsUIBrowserTest::VerifyNavbar() {
 }
 
 void OptionsUIBrowserTest::VerifyTitle() {
-  string16 title =
+  base::string16 title =
       browser()->tab_strip_model()->GetActiveWebContents()->GetTitle();
-  string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
-  EXPECT_NE(title.find(expected_title), string16::npos);
+  base::string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
+  EXPECT_NE(title.find(expected_title), base::string16::npos);
 }
 
 // Flaky, see http://crbug.com/119671.
@@ -117,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, NavigateBackFromOverlayDialog) {
       profile_manager->GenerateNextProfileDirectoryPath(),
       base::Bind(&RunClosureWhenProfileInitialized,
                  run_loop.QuitClosure()),
-                 string16(),
-                 string16(),
+                 base::string16(),
+                 base::string16(),
                  std::string());
   run_loop.Run();
 

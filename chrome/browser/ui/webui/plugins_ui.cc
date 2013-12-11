@@ -106,7 +106,7 @@ content::WebUIDataSource* CreatePluginsUIHTMLSource() {
   return source;
 }
 
-string16 PluginTypeToString(int type) {
+base::string16 PluginTypeToString(int type) {
   // The type is stored as an |int|, but doing the switch on the right
   // enumeration type gives us better build-time error checking (if someone adds
   // a new type).
@@ -121,7 +121,7 @@ string16 PluginTypeToString(int type) {
       return l10n_util::GetStringUTF16(IDS_PLUGINS_PPAPI_UNSANDBOXED);
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
 
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
   if (is_group_str == "true") {
-    string16 group_name;
+    base::string16 group_name;
     if (!args->GetString(0, &group_name)) {
       NOTREACHED();
       return;
@@ -249,9 +249,10 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     plugin_prefs->EnablePluginGroup(enable, group_name);
     if (enable) {
       // See http://crbug.com/50105 for background.
-      string16 adobereader = ASCIIToUTF16(
-           PluginMetadata::kAdobeReaderGroupName);
-      string16 internalpdf = ASCIIToUTF16(ChromeContentClient::kPDFPluginName);
+      base::string16 adobereader = ASCIIToUTF16(
+          PluginMetadata::kAdobeReaderGroupName);
+      base::string16 internalpdf =
+          ASCIIToUTF16(ChromeContentClient::kPDFPluginName);
       if (group_name == adobereader)
         plugin_prefs->EnablePluginGroup(false, internalpdf);
       else if (group_name == internalpdf)
@@ -352,7 +353,7 @@ void PluginsDOMHandler::PluginsLoaded(
     ListValue* plugin_files = new ListValue();
     scoped_ptr<PluginMetadata> plugin_metadata(
         plugin_finder->GetPluginMetadata(*group_plugins[0]));
-    string16 group_name = plugin_metadata->name();
+    base::string16 group_name = plugin_metadata->name();
     std::string group_identifier = plugin_metadata->identifier();
     bool group_enabled = false;
     bool all_plugins_enabled_by_policy = true;

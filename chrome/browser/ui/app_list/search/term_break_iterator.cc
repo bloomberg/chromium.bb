@@ -11,7 +11,7 @@
 
 namespace app_list {
 
-TermBreakIterator::TermBreakIterator(const string16& word)
+TermBreakIterator::TermBreakIterator(const base::string16& word)
     : word_(word),
       prev_(npos),
       pos_(0),
@@ -48,7 +48,7 @@ bool TermBreakIterator::Advance() {
   return prev_ != pos_ || !iter_->end();
 }
 
-const string16 TermBreakIterator::GetCurrentTerm() const {
+const base::string16 TermBreakIterator::GetCurrentTerm() const {
   DCHECK(prev_ != npos && pos_ != npos);
   return word_.substr(prev_, pos_ - prev_);
 }

@@ -67,7 +67,7 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
         temp_profile_dir,
         base::Bind(&AppListControllerBrowserTest::OnProfileCreated,
                    this),
-        string16(), string16(), std::string());
+        base::string16(), base::string16(), std::string());
     content::RunMessageLoop();  // Will stop in OnProfileCreated().
   }
 

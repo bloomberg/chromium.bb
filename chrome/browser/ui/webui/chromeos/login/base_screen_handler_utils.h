@@ -86,7 +86,7 @@ inline base::StringValue MakeValue(const std::string& v) {
   return base::StringValue(v);
 }
 
-inline base::StringValue MakeValue(const string16& v) {
+inline base::StringValue MakeValue(const base::string16& v) {
   return base::StringValue(v);
 }
 

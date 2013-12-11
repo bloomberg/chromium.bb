@@ -29,7 +29,7 @@ void ConfirmBubbleModel::Cancel() {
 }
 
 string16 ConfirmBubbleModel::GetLinkText() const {
-  return string16();
+  return base::string16();
 }
 
 void ConfirmBubbleModel::LinkClicked() {

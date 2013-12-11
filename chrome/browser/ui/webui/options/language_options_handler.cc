@@ -66,7 +66,7 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
   // In theory, we should be able to create a map that is sorted by
   // display names using ICU comparator, but doing it is hard, thus we'll
   // use an auxiliary vector to achieve the same result.
-  typedef std::pair<std::string, string16> LanguagePair;
+  typedef std::pair<std::string, base::string16> LanguagePair;
   typedef std::map<string16, LanguagePair> LanguageMap;
   LanguageMap language_map;
   // The auxiliary vector mentioned above.
@@ -74,10 +74,10 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
 
   // Build the list of display names, and build the language map.
   for (size_t i = 0; i < language_codes.size(); ++i) {
-    string16 display_name =
+    base::string16 display_name =
         l10n_util::GetDisplayNameForLocale(language_codes[i], app_locale,
                                            false);
-    string16 native_display_name =
+    base::string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(language_codes[i], language_codes[i],
                                            false);
     display_names.push_back(display_name);
@@ -92,12 +92,12 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
   // Build the language list from the language map.
   ListValue* language_list = new ListValue();
   for (size_t i = 0; i < display_names.size(); ++i) {
-    string16& display_name = display_names[i];
-    string16 adjusted_display_name(display_name);
+    base::string16& display_name = display_names[i];
+    base::string16 adjusted_display_name(display_name);
     base::i18n::AdjustStringForLocaleDirection(&adjusted_display_name);
 
     const LanguagePair& pair = language_map[display_name];
-    string16 adjusted_native_display_name(pair.second);
+    base::string16 adjusted_native_display_name(pair.second);
     base::i18n::AdjustStringForLocaleDirection(&adjusted_native_display_name);
 
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(display_name);

@@ -173,7 +173,7 @@ class CertificateManagerHandler
   // password, etc the user chose while we wait for them to enter a password,
   // wait for file to be read, etc.
   base::FilePath file_path_;
-  string16 password_;
+  base::string16 password_;
   bool use_hardware_backed_;
   std::string file_data_;
   net::CertificateList selected_cert_list_;

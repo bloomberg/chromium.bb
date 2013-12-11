@@ -26,24 +26,24 @@ class BubbleViewError : public GlobalErrorWithStandardBubble {
     ADD_FAILURE();
     return 0;
   }
-  virtual string16 MenuItemLabel() OVERRIDE {
+  virtual base::string16 MenuItemLabel() OVERRIDE {
     ADD_FAILURE();
-    return string16();
+    return base::string16();
   }
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { ADD_FAILURE(); }
 
   virtual bool HasBubbleView() OVERRIDE { return true; }
-  virtual string16 GetBubbleViewTitle() OVERRIDE {
-    return string16();
+  virtual base::string16 GetBubbleViewTitle() OVERRIDE {
+    return base::string16();
   }
   virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE {
     return std::vector<string16>();
   }
-  virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE {
-    return string16();
+  virtual base::string16 GetBubbleViewAcceptButtonLabel() OVERRIDE {
+    return base::string16();
   }
-  virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE {
-    return string16();
+  virtual base::string16 GetBubbleViewCancelButtonLabel() OVERRIDE {
+    return base::string16();
   }
   virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE {
     EXPECT_TRUE(browser);

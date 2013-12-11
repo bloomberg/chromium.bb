@@ -52,7 +52,7 @@ AppSearchProvider::AppSearchProvider(
 
 AppSearchProvider::~AppSearchProvider() {}
 
-void AppSearchProvider::Start(const string16& query) {
+void AppSearchProvider::Start(const base::string16& query) {
   const TokenizedString query_terms(query);
 
   ClearResults();

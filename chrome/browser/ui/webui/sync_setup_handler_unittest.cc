@@ -196,10 +196,10 @@ class TestWebUI : public content::WebUI {
   virtual ui::ScaleFactor GetDeviceScaleFactor() const OVERRIDE {
     return ui::SCALE_FACTOR_100P;
   }
-  virtual const string16& GetOverriddenTitle() const OVERRIDE {
+  virtual const base::string16& GetOverriddenTitle() const OVERRIDE {
     return temp_string_;
   }
-  virtual void OverrideTitle(const string16& title) OVERRIDE {}
+  virtual void OverrideTitle(const base::string16& title) OVERRIDE {}
   virtual content::PageTransition GetLinkTransitionType() const OVERRIDE {
     return content::PAGE_TRANSITION_LINK;
   }
@@ -240,7 +240,7 @@ class TestWebUI : public content::WebUI {
   const std::vector<CallData>& call_data() { return call_data_; }
  private:
   std::vector<CallData> call_data_;
-  string16 temp_string_;
+  base::string16 temp_string_;
 };
 
 class TestingSyncSetupHandler : public SyncSetupHandler {

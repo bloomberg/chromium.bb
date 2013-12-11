@@ -44,7 +44,7 @@ void WebserviceSearchProvider::StartThrottledQuery(
   last_keytyped_ = base::Time::Now();
 }
 
-bool WebserviceSearchProvider::IsValidQuery(const string16& query) {
+bool WebserviceSearchProvider::IsValidQuery(const base::string16& query) {
   // If |query| contains sensitive data, bail out and do not create the place
   // holder "search-web-store" result.
   if (IsSensitiveInput(query) ||
@@ -58,7 +58,7 @@ bool WebserviceSearchProvider::IsValidQuery(const string16& query) {
 
 // Returns whether or not the user's input string, |query|, might contain any
 // sensitive information, based purely on its value and not where it came from.
-bool WebserviceSearchProvider::IsSensitiveInput(const string16& query) {
+bool WebserviceSearchProvider::IsSensitiveInput(const base::string16& query) {
   const GURL query_as_url(query);
   if (!query_as_url.is_valid())
     return false;

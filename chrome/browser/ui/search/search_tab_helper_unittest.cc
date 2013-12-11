@@ -49,8 +49,8 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
   MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
-  MOCK_METHOD1(PasteIntoOmnibox, void(const string16&));
-  MOCK_METHOD1(OnChromeIdentityCheck, void(const string16& identity));
+  MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
+  MOCK_METHOD1(OnChromeIdentityCheck, void(const base::string16& identity));
 };
 
 }  // namespace
@@ -141,7 +141,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
-  const string16 test_identity = ASCIIToUTF16("foo@bar.com");
+  const base::string16 test_identity = ASCIIToUTF16("foo@bar.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
@@ -161,7 +161,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
-  const string16 test_identity = ASCIIToUTF16("bar@foo.com");
+  const base::string16 test_identity = ASCIIToUTF16("bar@foo.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
@@ -181,7 +181,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMatch) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
-  const string16 test_identity;
+  const base::string16 test_identity;
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
@@ -201,7 +201,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
-  const string16 test_identity = ASCIIToUTF16("bar@foo.com");
+  const base::string16 test_identity = ASCIIToUTF16("bar@foo.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
@@ -219,8 +219,8 @@ class TabTitleObserver : public content::WebContentsObserver {
   explicit TabTitleObserver(content::WebContents* contents)
       : WebContentsObserver(contents) {}
 
-  string16 title_on_start() { return title_on_start_; }
-  string16 title_on_commit() { return title_on_commit_; }
+  base::string16 title_on_start() { return title_on_start_; }
+  base::string16 title_on_commit() { return title_on_commit_; }
 
  private:
   virtual void DidStartProvisionalLoadForFrame(
@@ -240,14 +240,14 @@ class TabTitleObserver : public content::WebContentsObserver {
     title_on_commit_ = web_contents()->GetTitle();
   }
 
-  string16 title_on_start_;
-  string16 title_on_commit_;
+  base::string16 title_on_start_;
+  base::string16 title_on_commit_;
 };
 
 TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
   TabTitleObserver title_observer(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeUINewTabURL));
-  const string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  const base::string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   EXPECT_EQ(title, title_observer.title_on_start());
   EXPECT_EQ(title, title_observer.title_on_commit());
   EXPECT_EQ(title, web_contents()->GetTitle());

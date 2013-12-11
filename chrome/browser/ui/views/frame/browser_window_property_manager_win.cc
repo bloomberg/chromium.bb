@@ -42,13 +42,13 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
 
   // Set the app user model id for this application to that of the application
   // name. See http://crbug.com/7028.
-  string16 app_id = browser->is_app() ?
+  base::string16 app_id = browser->is_app() ?
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(browser->app_name()),
                                                 profile->GetPath()) :
       ShellIntegration::GetChromiumModelIdForProfile(profile->GetPath());
-  string16 icon_path_string;
-  string16 command_line_string;
-  string16 pinned_name;
+  base::string16 icon_path_string;
+  base::string16 command_line_string;
+  base::string16 pinned_name;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileShortcutManager* shortcut_manager = NULL;
 

@@ -50,7 +50,7 @@ class TestSearchProvider : public SearchProvider {
   virtual ~TestSearchProvider() {}
 
   // SearchProvider overrides:
-  virtual void Start(const string16& query) OVERRIDE {
+  virtual void Start(const base::string16& query) OVERRIDE {
     ClearResults();
     for (size_t i = 0; i < count_; ++i) {
       const std::string id =
@@ -95,7 +95,7 @@ class MixerTest : public testing::Test {
   }
 
   void RunQuery() {
-    const string16 query;
+    const base::string16 query;
 
     for (size_t i = 0; i < providers_.size(); ++i) {
       providers_[i]->Start(query);

@@ -25,8 +25,8 @@ class ValidationMessageBubbleAndroid : public chrome::ValidationMessageBubble {
  public:
   ValidationMessageBubbleAndroid(content::RenderWidgetHost* widget_host,
                                  const gfx::Rect& anchor_in_screen,
-                                 const string16& main_text,
-                                 const string16& sub_text);
+                                 const base::string16& main_text,
+                                 const base::string16& sub_text);
   virtual ~ValidationMessageBubbleAndroid();
   virtual void SetPositionRelativeToAnchor(
       content::RenderWidgetHost* widget_host,

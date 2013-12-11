@@ -37,7 +37,7 @@ void GetLanguages(base::DictionaryValue* dict) {
   for (std::vector<std::string>::iterator it = language_codes.begin();
        it != language_codes.end(); ++it) {
     const std::string& lang_code = *it;
-    string16 lang_name =
+    base::string16 lang_name =
         l10n_util::GetDisplayNameForLocale(lang_code, app_locale, false);
     dict->SetString(lang_code, lang_name);
   }

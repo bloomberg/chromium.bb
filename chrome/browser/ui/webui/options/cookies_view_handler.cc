@@ -208,7 +208,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
 }
 
 void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
-  string16 query;
+  base::string16 query;
   if (!args->GetString(0, &query))
     return;
 

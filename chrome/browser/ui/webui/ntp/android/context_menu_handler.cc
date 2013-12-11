@@ -126,7 +126,7 @@ void ContextMenuHandler::HandleOpenInIncognitoTab(const ListValue* args) {
 
 void ContextMenuHandler::OpenUrl(const ListValue* args,
                                  WindowOpenDisposition disposition) {
-  string16 url = ExtractStringValue(args);
+  base::string16 url = ExtractStringValue(args);
   if (!url.empty()) {
     web_ui()->GetWebContents()->OpenURL(content::OpenURLParams(
         GURL(url), content::Referrer(), disposition,

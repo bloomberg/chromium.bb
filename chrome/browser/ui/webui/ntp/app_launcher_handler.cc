@@ -114,14 +114,14 @@ void AppLauncherHandler::CreateAppInfo(
 
   // The Extension class 'helpfully' wraps bidi control characters that
   // impede our ability to determine directionality.
-  string16 short_name = UTF8ToUTF16(extension->short_name());
+  base::string16 short_name = UTF8ToUTF16(extension->short_name());
   base::i18n::UnadjustStringForLocaleDirection(&short_name);
   NewTabUI::SetUrlTitleAndDirection(
       value,
       short_name,
       extensions::AppLaunchInfo::GetFullLaunchURL(extension));
 
-  string16 name = UTF8ToUTF16(extension->name());
+  base::string16 name = UTF8ToUTF16(extension->name());
   base::i18n::UnadjustStringForLocaleDirection(&name);
   NewTabUI::SetFullNameAndDirection(name, value);
 
@@ -657,7 +657,7 @@ void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
 }
 
 void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
-  string16 name;
+  base::string16 name;
   CHECK(args->GetString(0, &name));
 
   double page_index;
@@ -675,7 +675,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   CHECK(args->GetString(0, &url));
   GURL launch_url(url);
 
-  string16 title;
+  base::string16 title;
   CHECK(args->GetString(1, &title));
 
   double page_index;

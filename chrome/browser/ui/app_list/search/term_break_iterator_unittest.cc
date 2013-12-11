@@ -11,13 +11,13 @@ namespace app_list {
 namespace test {
 
 TEST(TermBreakIteratorTest, EmptyWord) {
-  string16 empty;
+  base::string16 empty;
   TermBreakIterator iter(empty);
   EXPECT_FALSE(iter.Advance());
 }
 
 TEST(TermBreakIteratorTest, Simple) {
-  string16 word(UTF8ToUTF16("simple"));
+  base::string16 word(UTF8ToUTF16("simple"));
   TermBreakIterator iter(word);
   EXPECT_TRUE(iter.Advance());
   EXPECT_EQ(UTF8ToUTF16("simple"), iter.GetCurrentTerm());
@@ -25,7 +25,7 @@ TEST(TermBreakIteratorTest, Simple) {
 }
 
 TEST(TermBreakIteratorTest, CamelCase) {
-  string16 word(UTF8ToUTF16("CamelCase"));
+  base::string16 word(UTF8ToUTF16("CamelCase"));
   TermBreakIterator iter(word);
   EXPECT_TRUE(iter.Advance());
   EXPECT_EQ(UTF8ToUTF16("Camel"), iter.GetCurrentTerm());
@@ -35,7 +35,7 @@ TEST(TermBreakIteratorTest, CamelCase) {
 }
 
 TEST(TermBreakIteratorTest, LowerToUpper) {
-  string16 word(UTF8ToUTF16("lowerToUpper"));
+  base::string16 word(UTF8ToUTF16("lowerToUpper"));
   TermBreakIterator iter(word);
   EXPECT_TRUE(iter.Advance());
   EXPECT_EQ(UTF8ToUTF16("lower"), iter.GetCurrentTerm());
@@ -47,7 +47,7 @@ TEST(TermBreakIteratorTest, LowerToUpper) {
 }
 
 TEST(TermBreakIteratorTest, AlphaNumber) {
-  string16 word(UTF8ToUTF16("Chromium26.0.0.0"));
+  base::string16 word(UTF8ToUTF16("Chromium26.0.0.0"));
   TermBreakIterator iter(word);
   EXPECT_TRUE(iter.Advance());
   EXPECT_EQ(UTF8ToUTF16("Chromium"), iter.GetCurrentTerm());
@@ -57,7 +57,7 @@ TEST(TermBreakIteratorTest, AlphaNumber) {
 }
 
 TEST(TermBreakIteratorTest, StartsWithNumber) {
-  string16 word(UTF8ToUTF16("123startWithNumber"));
+  base::string16 word(UTF8ToUTF16("123startWithNumber"));
   TermBreakIterator iter(word);
   EXPECT_TRUE(iter.Advance());
   EXPECT_EQ(UTF8ToUTF16("123"), iter.GetCurrentTerm());
@@ -72,7 +72,7 @@ TEST(TermBreakIteratorTest, StartsWithNumber) {
 
 TEST(TermBreakIteratorTest, CaseAndNoCase) {
   // "English" + two Chinese chars U+4E2D U+6587 + "Word"
-  string16 word(UTF8ToUTF16("English\xe4\xb8\xad\xe6\x96\x87Word"));
+  base::string16 word(UTF8ToUTF16("English\xe4\xb8\xad\xe6\x96\x87Word"));
   TermBreakIterator iter(word);
   EXPECT_TRUE(iter.Advance());
   EXPECT_EQ(UTF8ToUTF16("English"), iter.GetCurrentTerm());

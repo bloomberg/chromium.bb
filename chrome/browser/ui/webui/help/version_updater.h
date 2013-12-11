@@ -41,9 +41,9 @@ class VersionUpdater {
 #endif
 
   // Used to update the client of status changes. int parameter is the progress
-  // and should only be non-zero for the UPDATING state.  string16 parameter is
-  // a message explaining a failure.
-  typedef base::Callback<void(Status, int, const string16&)>
+  // and should only be non-zero for the UPDATING state.
+  // base::string16 parameter is a message explaining a failure.
+  typedef base::Callback<void(Status, int, const base::string16&)>
       StatusCallback;
 
 #if defined(OS_MACOSX)

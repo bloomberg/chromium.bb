@@ -753,11 +753,12 @@ void ExternalTabContainerWin::AddNewContents(WebContents* source,
   }
 }
 
-void ExternalTabContainerWin::WebContentsCreated(WebContents* source_contents,
-                                                 int64 source_frame_id,
-                                                 const string16& frame_name,
-                                                 const GURL& target_url,
-                                                 WebContents* new_contents) {
+void ExternalTabContainerWin::WebContentsCreated(
+    WebContents* source_contents,
+    int64 source_frame_id,
+    const base::string16& frame_name,
+    const GURL& target_url,
+    WebContents* new_contents) {
   if (!load_requests_via_automation_)
     return;
 
@@ -802,7 +803,7 @@ void ExternalTabContainerWin::UpdateTargetURL(WebContents* source,
                                               int32 page_id,
                                               const GURL& url) {
   if (automation_) {
-    string16 url_string = base::UTF8ToUTF16(url.spec());
+    base::string16 url_string = base::UTF8ToUTF16(url.spec());
     automation_->Send(
         new AutomationMsg_UpdateTargetUrl(tab_handle_, url_string));
   }
@@ -1021,7 +1022,7 @@ void ExternalTabContainerWin::RegisterProtocolHandler(
     WebContents* tab,
     const std::string& protocol,
     const GURL& url,
-    const string16& title,
+    const base::string16& title,
     bool user_gesture) {
   Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title,
                                          user_gesture, NULL);
@@ -1071,11 +1072,11 @@ bool ExternalTabContainerWin::OnMessageReceived(const IPC::Message& message) {
 
 void ExternalTabContainerWin::DidFailProvisionalLoad(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description,
+    const base::string16& error_description,
     content::RenderViewHost* render_view_host) {
   if (automation_) {
     automation_->Send(new AutomationMsg_NavigationFailed(

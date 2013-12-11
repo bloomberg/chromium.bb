@@ -24,7 +24,7 @@ class ConfirmInfoBar : public InfoBarAndroid {
                              const std::string& action_value) OVERRIDE;
 
   ConfirmInfoBarDelegate* GetDelegate();
-  string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
+  base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
 
   base::android::ScopedJavaGlobalRef<jobject> java_confirm_delegate_;
 

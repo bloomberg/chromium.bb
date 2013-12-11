@@ -313,7 +313,7 @@ void ManageProfileHandler::SetProfileIconAndName(const ListValue* args) {
   if (profile->IsManaged())
     return;
 
-  string16 new_profile_name;
+  base::string16 new_profile_name;
   if (!args->GetString(2, &new_profile_name))
     return;
 
@@ -368,7 +368,7 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
   if (profile_index == std::string::npos)
     return;
-  string16 gaia_name = cache.GetNameOfProfileAtIndex(profile_index);
+  base::string16 gaia_name = cache.GetNameOfProfileAtIndex(profile_index);
   if (gaia_name.empty())
     return;
 
@@ -405,7 +405,7 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(profile);
-  string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
+  base::string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
   ProfileSyncService* service =
      ProfileSyncServiceFactory::GetForProfile(profile);
   GoogleServiceAuthError::State state = service->GetAuthError().state();

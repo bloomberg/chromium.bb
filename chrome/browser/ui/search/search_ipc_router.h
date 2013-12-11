@@ -64,12 +64,12 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
     // Called when the page wants to paste the |text| (or the clipboard contents
     // if the |text| is empty) into the omnibox.
-    virtual void PasteIntoOmnibox(const string16& text) = 0;
+    virtual void PasteIntoOmnibox(const base::string16& text) = 0;
 
     // Called when the SearchBox wants to verify the signed-in Chrome identity
     // against the provided |identity|. Will make a round-trip to the browser
     // and eventually return the result through SendChromeIdentityCheckResult.
-    virtual void OnChromeIdentityCheck(const string16& identity) = 0;
+    virtual void OnChromeIdentityCheck(const base::string16& identity) = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -109,7 +109,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void DetermineIfPageSupportsInstant();
 
   // Tells the renderer about the result of the Chrome identity check.
-  void SendChromeIdentityCheckResult(const string16& identity,
+  void SendChromeIdentityCheckResult(const base::string16& identity,
                                      bool identity_match);
 
   // Tells the renderer information it needs to display promos.
@@ -131,7 +131,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void ToggleVoiceSearch();
 
   // Tells the page that the user pressed Enter in the omnibox.
-  void Submit(const string16& text);
+  void Submit(const base::string16& text);
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
@@ -169,8 +169,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_id) const;
   void OnLogEvent(int page_id, NTPLoggingEventType event) const;
-  void OnPasteAndOpenDropDown(int page_id, const string16& text) const;
-  void OnChromeIdentityCheck(int page_id, const string16& identity) const;
+  void OnPasteAndOpenDropDown(int page_id, const base::string16& text) const;
+  void OnChromeIdentityCheck(int page_id, const base::string16& identity) const;
 
   // Used by unit tests to set a fake delegate.
   void set_delegate(Delegate* delegate);

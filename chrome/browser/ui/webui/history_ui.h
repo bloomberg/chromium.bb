@@ -39,9 +39,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
       COMBINED_ENTRY
     };
 
-    HistoryEntry(EntryType type, const GURL& url, const string16& title,
+    HistoryEntry(EntryType type, const GURL& url, const base::string16& title,
                  base::Time time, const std::string& client_id,
-                 bool is_search_result, const string16& snippet,
+                 bool is_search_result, const base::string16& snippet,
                  bool blocked_visit, const std::string& accept_languages);
     HistoryEntry();
     virtual ~HistoryEntry();
@@ -63,7 +63,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     EntryType entry_type;
 
     GURL url;
-    string16 title;  // Title of the entry. May be empty.
+    base::string16 title;  // Title of the entry. May be empty.
 
     // The time of the entry. Usually this will be the time of the most recent
     // visit to |url| on a particular day as defined in the local timezone.
@@ -79,7 +79,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     bool is_search_result;
 
     // The entry's search snippet, if this entry is a search result.
-    string16 snippet;
+    base::string16 snippet;
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
@@ -140,13 +140,13 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   void WebHistoryTimeout();
 
   // Callback from the history system when a history query has completed.
-  void QueryComplete(const string16& search_text,
+  void QueryComplete(const base::string16& search_text,
                      const history::QueryOptions& options,
                      HistoryService::Handle request_handle,
                      history::QueryResults* results);
 
   // Callback from the WebHistoryService when a query has completed.
-  void WebHistoryQueryComplete(const string16& search_text,
+  void WebHistoryQueryComplete(const base::string16& search_text,
                                const history::QueryOptions& options,
                                base::TimeTicks start_time,
                                history::WebHistoryService::Request* request,
@@ -210,7 +210,7 @@ class HistoryUI : public content::WebUIController {
   explicit HistoryUI(content::WebUI* web_ui);
 
   // Return the URL for a given search term.
-  static const GURL GetHistoryURLWithSearchText(const string16& text);
+  static const GURL GetHistoryURLWithSearchText(const base::string16& text);
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);

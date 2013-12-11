@@ -53,10 +53,10 @@ class FindTabHelper : public content::WebContentsObserver,
 
   // Accessor for find_text_. Used to determine if this WebContents has any
   // active searches.
-  string16 find_text() const { return find_text_; }
+  base::string16 find_text() const { return find_text_; }
 
   // Accessor for the previous search we issued.
-  string16 previous_find_text() const { return previous_find_text_; }
+  base::string16 previous_find_text() const { return previous_find_text_; }
 
   gfx::Range selected_range() const { return selected_range_; }
   void set_selected_range(const gfx::Range& selected_range) {
@@ -109,10 +109,10 @@ class FindTabHelper : public content::WebContentsObserver,
   // The current string we are/just finished searching for. This is used to
   // figure out if this is a Find or a FindNext operation (FindNext should not
   // increase the request id).
-  string16 find_text_;
+  base::string16 find_text_;
 
   // The string we searched for before |find_text_|.
-  string16 previous_find_text_;
+  base::string16 previous_find_text_;
 
   // The selection within the text.
   gfx::Range selected_range_;

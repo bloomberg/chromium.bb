@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, WindowedNPAPIPluginHidden) {
                                                true);
 
   // First load the page and wait for the NPAPI plugin's window to display.
-  string16 expected_title(ASCIIToUTF16("ready"));
+  base::string16 expected_title(ASCIIToUTF16("ready"));
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TitleWatcher title_watcher(tab, expected_title);

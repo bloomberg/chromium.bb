@@ -18,7 +18,7 @@ namespace fullscreen_bubble {
 string16 GetLabelTextForType(FullscreenExitBubbleType type,
                              const GURL& url,
                              ExtensionService* extension_service) {
-  string16 host(UTF8ToUTF16(url.host()));
+  base::string16 host(UTF8ToUTF16(url.host()));
   if (extension_service) {
     const ExtensionSet* extensions = extension_service->extensions();
     DCHECK(extensions);
@@ -56,7 +56,7 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
             IDS_FULLSCREEN_UNKNOWN_EXTENSION_TRIGGERED_FULLSCREEN);
       default:
         NOTREACHED();
-        return string16();
+        return base::string16();
     }
   }
   switch (type) {
@@ -86,7 +86,7 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
           IDS_FULLSCREEN_EXTENSION_TRIGGERED_FULLSCREEN, host);
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
@@ -104,10 +104,10 @@ string16 GetDenyButtonTextForType(FullscreenExitBubbleType type) {
     case FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
     case FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
       NOTREACHED();  // No button in this case.
-      return string16();
+      return base::string16();
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 

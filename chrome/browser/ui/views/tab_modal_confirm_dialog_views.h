@@ -35,8 +35,9 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
                              content::WebContents* web_contents);
 
   // views::DialogDelegate:
-  virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Close() OVERRIDE;

@@ -309,7 +309,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
     if (!enterprise_domain.empty()) {
       // Device is enterprise enrolled.
       localized_strings.SetString("enterpriseInfoVisible", "true");
-      string16 enterprise_info = l10n_util::GetStringFUTF16(
+      base::string16 enterprise_info = l10n_util::GetStringFUTF16(
           IDS_DEVICE_OWNED_BY_NOTICE,
           UTF8ToUTF16(enterprise_domain));
       localized_strings.SetString("enterpriseInfoMessage", enterprise_info);

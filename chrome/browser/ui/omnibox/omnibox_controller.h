@@ -42,7 +42,7 @@ class OmniboxController : public AutocompleteControllerDelegate {
 
   // |current_url| is only set for mobile ports.
   void StartAutocomplete(
-      string16 user_text,
+      base::string16 user_text,
       size_t cursor_position,
       const GURL& current_url,
       AutocompleteInput::PageClassification current_page_classification,

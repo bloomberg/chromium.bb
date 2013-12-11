@@ -57,7 +57,7 @@ void ManagePasswordsIconView::SetTooltip(bool password_to_be_saved) {
 }
 
 bool ManagePasswordsIconView::GetTooltipText(const gfx::Point& p,
-                                             string16* tooltip) const {
+                                             base::string16* tooltip) const {
   // Don't show tooltip if the password bubble is displayed.
   return !ManagePasswordsBubbleView::IsShowing() &&
       ImageView::GetTooltipText(p, tooltip);

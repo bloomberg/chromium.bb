@@ -47,7 +47,7 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
         this, new ChromeSelectFilePolicy(NULL));
 
     const base::FilePath file_path;
-    const string16 title = string16();
+    const base::string16 title = base::string16();
 
     file_selection_initialisation_in_progress = true;
     select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,

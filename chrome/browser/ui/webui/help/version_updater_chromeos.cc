@@ -102,7 +102,7 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {
                   l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
     return;
   } else if (status == NETWORK_STATUS_DISALLOWED) {
-    string16 message =
+    base::string16 message =
         l10n_util::GetStringFUTF16(
             IDS_UPGRADE_DISALLOWED,
             help_utils_chromeos::GetConnectionTypeAsUTF16(network->type()));
@@ -161,7 +161,7 @@ void VersionUpdaterCros::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   Status my_status = UPDATED;
   int progress = 0;
-  string16 message;
+  base::string16 message;
 
   // If the updater is currently idle, just show the last operation (unless it
   // was previously checking for an update -- in that case, the system is
@@ -213,5 +213,5 @@ void VersionUpdaterCros::OnUpdateCheck(
   // If version updating is not implemented, this binary is the most up-to-date
   // possible with respect to automatic updating.
   if (result == UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED)
-    callback_.Run(UPDATED, 0, string16());
+    callback_.Run(UPDATED, 0, base::string16());
 }

@@ -69,7 +69,7 @@ ManagePasswordItemView::ManagePasswordItemView(
   label_2_->SetEnabled(false);
   label_2_->SetUnderline(false);
 
-  delete_button_ = new views::LabelButton(this, string16());
+  delete_button_ = new views::LabelButton(this, base::string16());
   delete_button_->SetStyle(views::Button::STYLE_TEXTBUTTON);
   delete_button_->SetImage(views::Button::STATE_NORMAL,
                            *rb->GetImageSkiaNamed(IDR_CLOSE_2));
@@ -92,10 +92,10 @@ ManagePasswordItemView::ManagePasswordItemView(
 
 // static
 string16 ManagePasswordItemView::GetPasswordDisplayString(
-    const string16& password) {
+    const base::string16& password) {
   const wchar_t kPasswordBullet = 0x2022;
   const size_t kMaxPasswordChar = 22;
-  return string16(std::min(password.length(), kMaxPasswordChar),
+  return base::string16(std::min(password.length(), kMaxPasswordChar),
                   kPasswordBullet);
 }
 

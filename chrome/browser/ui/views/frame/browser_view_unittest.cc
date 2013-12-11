@@ -120,7 +120,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   // Bookmark bar is reparented to BrowserView on NTP.
   NavigateAndCommitActiveTabWithTitle(browser,
                                       GURL(chrome::kChromeUINewTabURL),
-                                      string16());
+                                      base::string16());
   EXPECT_TRUE(bookmark_bar->visible());
   EXPECT_TRUE(bookmark_bar->IsDetached());
   EXPECT_EQ(browser_view(), bookmark_bar->parent());
@@ -148,7 +148,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   // Bookmark bar is parented back to top container on normal page.
   NavigateAndCommitActiveTabWithTitle(browser,
                                       GURL("about:blank"),
-                                      string16());
+                                      base::string16());
   EXPECT_FALSE(bookmark_bar->visible());
   EXPECT_FALSE(bookmark_bar->IsDetached());
   EXPECT_EQ(top_container, bookmark_bar->parent());

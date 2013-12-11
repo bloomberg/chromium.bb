@@ -78,7 +78,7 @@ GURL GetURLToBookmark(content::WebContents* web_contents);
 // Fills in the URL and title for a bookmark of |web_contents|.
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
-                              string16* title);
+                              base::string16* title);
 
 // Toggles whether the bookmark bar is shown only on the new tab page or on
 // all tabs. This is a preference modifier, not a visual modifier.

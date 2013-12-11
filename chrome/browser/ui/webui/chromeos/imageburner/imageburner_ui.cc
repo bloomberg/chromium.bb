@@ -142,7 +142,7 @@ class WebUIHandler
 
   // BurnController::Delegate override.
   virtual void OnDeviceTooSmall(int64 device_size) OVERRIDE {
-    string16 size;
+    base::string16 size;
     GetDataSizeText(device_size, &size);
     StringValue device_size_text(size);
     web_ui()->CallJavascriptFunction("browserBridge.reportDeviceTooSmall",
@@ -153,7 +153,7 @@ class WebUIHandler
   virtual void OnProgress(ProgressType progress_type,
                           int64 amount_finished,
                           int64 amount_total) OVERRIDE {
-    const string16 time_remaining_text =
+    const base::string16 time_remaining_text =
         l10n_util::GetStringUTF16(IDS_IMAGEBURN_PROGRESS_TIME_UNKNOWN);
     SendProgressSignal(progress_type, amount_finished, amount_total,
                        time_remaining_text);
@@ -165,7 +165,7 @@ class WebUIHandler
       int64 amount_finished,
       int64 amount_total,
       const base::TimeDelta& time_remaining) OVERRIDE {
-    const string16 time_remaining_text = l10n_util::GetStringFUTF16(
+    const base::string16 time_remaining_text = l10n_util::GetStringFUTF16(
         IDS_IMAGEBURN_DOWNLOAD_TIME_REMAINING,
         ui::TimeFormat::TimeRemaining(time_remaining));
     SendProgressSignal(progress_type, amount_finished, amount_total,
@@ -185,7 +185,7 @@ class WebUIHandler
  private:
   void CreateDiskValue(const disks::DiskMountManager::Disk& disk,
                        DictionaryValue* disk_value) {
-    string16 label = ASCIIToUTF16(disk.drive_label());
+    base::string16 label = ASCIIToUTF16(disk.drive_label());
     base::i18n::AdjustStringForLocaleDirection(&label);
     disk_value->SetString(std::string(kPropertyLabel), label);
     disk_value->SetString(std::string(kPropertyFilePath), disk.file_path());
@@ -235,7 +235,7 @@ class WebUIHandler
   void SendProgressSignal(ProgressType progress_type,
                           int64 amount_finished,
                           int64 amount_total,
-                          const string16& time_remaining_text) {
+                          const base::string16& time_remaining_text) {
     DictionaryValue progress;
     int progress_message_id = 0;
     switch (progress_type) {
@@ -257,7 +257,7 @@ class WebUIHandler
     progress.SetInteger("amountFinished", amount_finished);
     progress.SetInteger("amountTotal", amount_total);
     if (amount_total != 0) {
-      string16 progress_text;
+      base::string16 progress_text;
       GetProgressText(progress_message_id, amount_finished, amount_total,
                       &progress_text);
       progress.SetString("progressText", progress_text);
@@ -270,7 +270,7 @@ class WebUIHandler
   }
 
   // size_text should be previously created.
-  void GetDataSizeText(int64 size, string16* size_text) {
+  void GetDataSizeText(int64 size, base::string16* size_text) {
     *size_text = ui::FormatBytes(size);
     base::i18n::AdjustStringForLocaleDirection(size_text);
   }
@@ -279,10 +279,10 @@ class WebUIHandler
   void GetProgressText(int message_id,
                        int64 amount_finished,
                        int64 amount_total,
-                       string16* progress_text) {
-    string16 finished;
+                       base::string16* progress_text) {
+    base::string16 finished;
     GetDataSizeText(amount_finished, &finished);
-    string16 total;
+    base::string16 total;
     GetDataSizeText(amount_total, &total);
     *progress_text = l10n_util::GetStringFUTF16(message_id, finished, total);
   }

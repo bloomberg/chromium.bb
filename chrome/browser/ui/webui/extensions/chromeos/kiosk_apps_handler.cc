@@ -159,7 +159,7 @@ void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       "kioskDisableBailoutShortcutWarningBold",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD));
-  const string16 product_os_name =
+  const base::string16 product_os_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
   source->AddString(
       "kioskDisableBailoutShortcutWarning",

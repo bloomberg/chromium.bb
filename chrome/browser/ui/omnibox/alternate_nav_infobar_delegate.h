@@ -16,17 +16,17 @@ class AlternateNavInfoBarDelegate : public InfoBarDelegate {
   // Creates an alternate nav infobar and delegate and adds the infobar to the
   // infobar service for |web_contents|.
   static void Create(content::WebContents* web_contents,
-                     const string16& text,
+                     const base::string16& text,
                      const AutocompleteMatch& match,
                      const GURL& search_url);
 
-  string16 GetMessageTextWithOffset(size_t* link_offset) const;
-  string16 GetLinkText() const;
+  base::string16 GetMessageTextWithOffset(size_t* link_offset) const;
+  base::string16 GetLinkText() const;
   bool LinkClicked(WindowOpenDisposition disposition);
 
  private:
   AlternateNavInfoBarDelegate(Profile* profile,
-                              const string16& text,
+                              const base::string16& text,
                               const AutocompleteMatch& match,
                               const GURL& search_url);
 
@@ -39,7 +39,7 @@ class AlternateNavInfoBarDelegate : public InfoBarDelegate {
   virtual Type GetInfoBarType() const OVERRIDE;
 
   Profile* profile_;
-  const string16 text_;
+  const base::string16 text_;
   const AutocompleteMatch match_;
   const GURL search_url_;
 

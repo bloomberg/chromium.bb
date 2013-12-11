@@ -53,9 +53,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   int GetAvailableDraftPageCount();
 
   // Setters
-  void SetInitiatorTitle(const string16& initiator_title);
+  void SetInitiatorTitle(const base::string16& initiator_title);
 
-  string16 initiator_title() { return initiator_title_; }
+  base::string16 initiator_title() { return initiator_title_; }
 
   bool source_is_modifiable() { return source_is_modifiable_; }
 
@@ -191,7 +191,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Store the initiator title, used for populating the print preview dialog
   // title.
-  string16 initiator_title_;
+  base::string16 initiator_title_;
 
   // Keeps track of whether OnClosePrintPreviewDialog() has been called or not.
   bool dialog_closed_;

@@ -41,7 +41,7 @@ class CertificateViewerDialog : private ui::WebDialogDelegate {
  private:
   // Overridden from ui::WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual base::string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
@@ -61,7 +61,7 @@ class CertificateViewerDialog : private ui::WebDialogDelegate {
   ConstrainedWebDialogDelegate* dialog_;
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
-  string16 title_;
+  base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialog);
 };

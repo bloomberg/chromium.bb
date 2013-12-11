@@ -98,7 +98,7 @@ void SetValueList(const ListValue* list,
                   AutofillProfile* profile) {
   std::vector<string16> values(list->GetSize());
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    string16 value;
+    base::string16 value;
     if (list->GetString(i, &value))
       values[i] = value;
   }
@@ -146,17 +146,17 @@ void SetNameList(const ListValue* names, AutofillProfile* profile) {
     bool success = names->GetList(i, &name);
     DCHECK(success);
 
-    string16 first_name;
+    base::string16 first_name;
     success = name->GetString(0, &first_name);
     DCHECK(success);
     first_names[i] = first_name;
 
-    string16 middle_name;
+    base::string16 middle_name;
     success = name->GetString(1, &middle_name);
     DCHECK(success);
     middle_names[i] = middle_name;
 
-    string16 last_name;
+    base::string16 last_name;
     success = name->GetString(2, &last_name);
     DCHECK(success);
     last_names[i] = last_name;
@@ -200,7 +200,7 @@ void ExtractPhoneNumberInformation(const ListValue* args,
 void RemoveDuplicatePhoneNumberAtIndex(size_t index,
                                        const std::string& country_code,
                                        ListValue* list) {
-  string16 new_value;
+  base::string16 new_value;
   if (!list->GetString(index, &new_value)) {
     NOTREACHED() << "List should have a value at index " << index;
     return;
@@ -212,7 +212,7 @@ void RemoveDuplicatePhoneNumberAtIndex(size_t index,
     if (i == index)
       continue;
 
-    string16 existing_value;
+    base::string16 existing_value;
     if (!list->GetString(i, &existing_value)) {
       NOTREACHED() << "List should have a value at index " << i;
       continue;
@@ -520,7 +520,7 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
   AutofillProfile profile(guid, kSettingsOrigin);
 
   std::string country_code;
-  string16 value;
+  base::string16 value;
   const ListValue* list_value;
   if (args->GetList(1, &list_value))
     SetNameList(list_value, &profile);
@@ -573,7 +573,7 @@ void AutofillOptionsHandler::SetCreditCard(const ListValue* args) {
 
   CreditCard credit_card(guid, kSettingsOrigin);
 
-  string16 value;
+  base::string16 value;
   if (args->GetString(1, &value))
     credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME, value);
 

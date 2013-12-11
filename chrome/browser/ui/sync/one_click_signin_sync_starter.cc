@@ -318,7 +318,7 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
     browser_->window()->ShowOneClickSigninBubble(
         BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
         UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
-        string16(), // No error message to display.
+        base::string16(), // No error message to display.
         base::Bind(&OneClickSigninSyncStarter::UntrustedSigninConfirmed,
                    weak_pointer_factory_.GetWeakPtr()));
   } else {
@@ -377,7 +377,7 @@ void OneClickSigninSyncStarter::SigninSuccess() {
         profile_sync_service->SetSyncSetupCompleted();
       FinishProfileSyncServiceSetup();
       if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
-        string16 message;
+        base::string16 message;
         if (!profile_sync_service) {
           // Sync is disabled by policy.
           message = l10n_util::GetStringUTF16(
@@ -400,11 +400,11 @@ void OneClickSigninSyncStarter::SigninSuccess() {
 }
 
 void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
-    const string16& custom_message) {
+    const base::string16& custom_message) {
   EnsureBrowser();
   browser_->window()->ShowOneClickSigninBubble(
       BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-      string16(),  // No email required - this is not a SAML confirmation.
+      base::string16(),  // No email required - this is not a SAML confirmation.
       custom_message,
       // Callback is ignored.
       BrowserWindow::StartSyncCallback());

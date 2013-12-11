@@ -24,7 +24,7 @@ ui::ModalType InlineLoginDialog::GetDialogModalType() const {
 }
 
 string16 InlineLoginDialog::GetDialogTitle() const {
-  return string16();
+  return base::string16();
 }
 
 GURL InlineLoginDialog::GetDialogContentURL() const {

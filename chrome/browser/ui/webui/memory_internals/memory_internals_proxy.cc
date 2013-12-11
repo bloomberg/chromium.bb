@@ -353,7 +353,8 @@ void MemoryInternalsProxy::CallJavaScriptFunctionOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<const base::Value*> args_vector(1, &args);
-  string16 update = content::WebUI::GetJavascriptCall(function, args_vector);
+  base::string16 update =
+      content::WebUI::GetJavascriptCall(function, args_vector);
   // Don't forward updates to a destructed UI.
   if (handler_)
     handler_->OnUpdate(update);

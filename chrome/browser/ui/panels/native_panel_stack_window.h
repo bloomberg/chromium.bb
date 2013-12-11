@@ -18,7 +18,7 @@ class Vector2d;
 class NativePanelStackWindowDelegate {
  public:
   // Returns the title representing the whole stack.
-  virtual string16 GetTitle() const = 0;
+  virtual base::string16 GetTitle() const = 0;
 
   // Returns the icon denoting the whole stack.
   virtual gfx::Image GetIcon() const = 0;

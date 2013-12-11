@@ -13,7 +13,7 @@ using base::i18n::BreakIterator;
 
 namespace app_list {
 
-TokenizedString::TokenizedString(const string16& text)
+TokenizedString::TokenizedString(const base::string16& text)
     : text_(text) {
   Tokenize();
 }
@@ -28,7 +28,7 @@ void TokenizedString::Tokenize() {
     if (!break_iter.IsWord())
       continue;
 
-    const string16 word(break_iter.GetString());
+    const base::string16 word(break_iter.GetString());
     const size_t word_start = break_iter.prev();
     TermBreakIterator term_iter(word);
     while (term_iter.Advance()) {

@@ -102,7 +102,7 @@ void VersionUpdaterMac::CheckForUpdate(
   } else {
     // There is no glue, or the application is on a read-only filesystem.
     // Updates and promotions are impossible.
-    status_callback_.Run(DISABLED, 0, string16());
+    status_callback_.Run(DISABLED, 0, base::string16());
   }
 }
 
@@ -132,7 +132,7 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
       [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
 
   bool enable_promote_button = true;
-  string16 message;
+  base::string16 message;
 
   Status status;
   switch (keystone_status) {
@@ -198,9 +198,10 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
     case kAutoupdateNeedsPromotion:
       {
         status = FAILED;
-        string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-        message = l10n_util:: GetStringFUTF16(IDS_PROMOTE_INFOBAR_TEXT,
-                                              product_name);
+        base::string16 product_name =
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+        message = l10n_util::GetStringFUTF16(IDS_PROMOTE_INFOBAR_TEXT,
+                                             product_name);
       }
       break;
 

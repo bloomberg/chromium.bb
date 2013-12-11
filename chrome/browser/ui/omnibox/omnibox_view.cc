@@ -16,24 +16,24 @@
 #include "ui/base/clipboard/clipboard.h"
 
 // static
-string16 OmniboxView::StripJavascriptSchemas(const string16& text) {
-  const string16 kJsPrefix(ASCIIToUTF16(content::kJavaScriptScheme) +
+string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {
+  const base::string16 kJsPrefix(ASCIIToUTF16(content::kJavaScriptScheme) +
                            ASCIIToUTF16(":"));
-  string16 out(text);
+  base::string16 out(text);
   while (StartsWith(out, kJsPrefix, false))
     TrimWhitespace(out.substr(kJsPrefix.length()), TRIM_LEADING, &out);
   return out;
 }
 
 // static
-string16 OmniboxView::SanitizeTextForPaste(const string16& text) {
+string16 OmniboxView::SanitizeTextForPaste(const base::string16& text) {
   // Check for non-newline whitespace; if found, collapse whitespace runs down
   // to single spaces.
   // TODO(shess): It may also make sense to ignore leading or
   // trailing whitespace when making this determination.
   for (size_t i = 0; i < text.size(); ++i) {
     if (IsWhitespace(text[i]) && text[i] != '\n' && text[i] != '\r') {
-      const string16 collapsed = CollapseWhitespace(text, false);
+      const base::string16 collapsed = CollapseWhitespace(text, false);
       // If the user is pasting all-whitespace, paste a single space
       // rather than nothing, since pasting nothing feels broken.
       return collapsed.empty() ?
@@ -51,7 +51,7 @@ string16 OmniboxView::GetClipboardText() {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                    ui::CLIPBOARD_TYPE_COPY_PASTE)) {
-    string16 text;
+    base::string16 text;
     clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
     return SanitizeTextForPaste(text);
   }
@@ -73,7 +73,7 @@ string16 OmniboxView::GetClipboardText() {
       return StripJavascriptSchemas(UTF8ToUTF16(url.spec()));
   }
 
-  return string16();
+  return base::string16();
 }
 
 OmniboxView::~OmniboxView() {
@@ -102,12 +102,12 @@ int OmniboxView::GetIcon() const {
       model_->CurrentTextType() : AutocompleteMatchType::URL_WHAT_YOU_TYPED);
 }
 
-void OmniboxView::SetUserText(const string16& text) {
+void OmniboxView::SetUserText(const base::string16& text) {
   SetUserText(text, text, true);
 }
 
-void OmniboxView::SetUserText(const string16& text,
-                              const string16& display_text,
+void OmniboxView::SetUserText(const base::string16& text,
+                              const base::string16& display_text,
                               bool update_popup) {
   if (model_.get())
     model_->SetUserText(text);

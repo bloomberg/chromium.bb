@@ -25,7 +25,8 @@ class ManagePasswordItemView : public views::View,
       int field_1_width,
       int field_2_width);
 
-  static string16 GetPasswordDisplayString(const string16& password);
+  static base::string16 GetPasswordDisplayString(
+      const base::string16& password);
 
  private:
   virtual ~ManagePasswordItemView();

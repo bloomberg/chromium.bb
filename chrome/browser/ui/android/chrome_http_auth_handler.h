@@ -17,7 +17,7 @@
 // by, e.g., showing the user a login dialog.
 class ChromeHttpAuthHandler {
  public:
-  ChromeHttpAuthHandler(const string16& explanation);
+  ChromeHttpAuthHandler(const base::string16& explanation);
   ~ChromeHttpAuthHandler();
 
   // This must be called before using the object.
@@ -35,8 +35,8 @@ class ChromeHttpAuthHandler {
 
   // Forwards the autofill data to the Java land object.
   void OnAutofillDataAvailable(
-      const string16& username,
-      const string16& password);
+      const base::string16& username,
+      const base::string16& password);
 
   // --------------------------------------------------------------
   // JNI Methods
@@ -67,7 +67,7 @@ class ChromeHttpAuthHandler {
   LoginHandler* observer_;
   base::android::ScopedJavaGlobalRef<jobject> java_chrome_http_auth_handler_;
   // e.g. "The server example.com:80 requires a username and password."
-  string16 explanation_;
+  base::string16 explanation_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeHttpAuthHandler);
 };

@@ -95,7 +95,7 @@ class InstantTestBase {
                  bool* loaded);
 
   // Returns the omnibox's inline autocompletion (shown in blue highlight).
-  string16 GetBlueText();
+  base::string16 GetBlueText();
 
  private:
   GURL instant_url_;

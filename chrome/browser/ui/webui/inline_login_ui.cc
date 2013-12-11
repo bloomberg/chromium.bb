@@ -205,7 +205,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
 
   // JS callback:
   void HandleSwitchToFullTab(const base::ListValue* args) {
-    string16 url_str;
+    base::string16 url_str;
     CHECK(args->GetString(0, &url_str));
 
     content::WebContents* web_contents = web_ui()->GetWebContents();
@@ -233,8 +233,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     oauth2_token_fetcher_->StartExchangeFromCookies();
 #else
     const base::DictionaryValue* dict = NULL;
-    string16 email;
-    string16 password;
+    base::string16 email;
+    base::string16 password;
     if (!args->GetDictionary(0, &dict) || !dict ||
         !dict->GetString("email", &email)) {
       NOTREACHED();
@@ -281,8 +281,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
   }
 
   void OnGaiaCookiesFetched(
-      const string16 email,
-      const string16 password,
+      const base::string16 email,
+      const base::string16 password,
       const net::CookieList& cookie_list) {
     net::CookieList::const_iterator it;
     std::string oauth_code;

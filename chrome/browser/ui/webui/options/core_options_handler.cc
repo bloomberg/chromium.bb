@@ -415,7 +415,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
   if (!args->Get(0, &callback) || !callback->IsType(base::Value::TYPE_STRING))
     return;
 
-  string16 callback_function;
+  base::string16 callback_function;
   if (!callback->GetAsString(&callback_function))
     return;
 

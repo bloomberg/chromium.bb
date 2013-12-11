@@ -111,10 +111,10 @@ void ChromeBrowserMainExtraPartsAura::DetectRunningAsRoot() {
     if (command_line.HasSwitch(switches::kUserDataDir))
       return;
 
-    string16 title = l10n_util::GetStringFUTF16(
+    base::string16 title = l10n_util::GetStringFUTF16(
         IDS_REFUSE_TO_RUN_AS_ROOT,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-    string16 message = l10n_util::GetStringFUTF16(
+    base::string16 message = l10n_util::GetStringFUTF16(
         IDS_REFUSE_TO_RUN_AS_ROOT_2,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 

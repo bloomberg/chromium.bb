@@ -199,7 +199,7 @@ void SearchTabHelper::SetSuggestionToPrefetch(
   ipc_router_.SetSuggestionToPrefetch(suggestion);
 }
 
-void SearchTabHelper::Submit(const string16& text) {
+void SearchTabHelper::Submit(const base::string16& text) {
   ipc_router_.Submit(text);
 }
 
@@ -270,11 +270,11 @@ void SearchTabHelper::DidNavigateMainFrame(
 
 void SearchTabHelper::DidFailProvisionalLoad(
     int64 /* frame_id */,
-    const string16& /* frame_unique_name */,
+    const base::string16& /* frame_unique_name */,
     bool is_main_frame,
     const GURL& validated_url,
     int /* error_code */,
-    const string16& /* error_description */,
+    const base::string16& /* error_description */,
     content::RenderViewHost* /* render_view_host */) {
   if (is_main_frame &&
       chrome::ShouldUseCacheableNTP() &&
@@ -491,7 +491,7 @@ void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
     data->LogEvent(event);
 }
 
-void SearchTabHelper::PasteIntoOmnibox(const string16& text) {
+void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
 // iOS and Android don't use the Instant framework.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
@@ -503,7 +503,7 @@ void SearchTabHelper::PasteIntoOmnibox(const string16& text) {
   // from the clipboard already sanitized. The second case is needed to handle
   // drag-and-drop value and it has to be sanitazed before setting it into the
   // omnibox.
-  string16 text_to_paste = text.empty() ? omnibox->GetClipboardText() :
+  base::string16 text_to_paste = text.empty() ? omnibox->GetClipboardText() :
       omnibox->SanitizeTextForPaste(text);
 
   if (text_to_paste.empty())
@@ -519,10 +519,11 @@ void SearchTabHelper::PasteIntoOmnibox(const string16& text) {
 #endif
 }
 
-void SearchTabHelper::OnChromeIdentityCheck(const string16& identity) {
+void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
   SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile());
   if (manager) {
-    const string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
+    const base::string16 username =
+        UTF8ToUTF16(manager->GetAuthenticatedUsername());
     ipc_router_.SendChromeIdentityCheckResult(identity,
                                               identity == username);
   }

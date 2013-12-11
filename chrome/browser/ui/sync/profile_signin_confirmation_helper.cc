@@ -143,7 +143,7 @@ void ProfileSigninConfirmationHelper::CheckHasHistory(int max_entries) {
   history::QueryOptions opts;
   opts.max_count = max_entries;
   service->QueryHistory(
-      string16(), opts, &request_consumer_,
+      base::string16(), opts, &request_consumer_,
       base::Bind(&ProfileSigninConfirmationHelper::OnHistoryQueryResults,
                  this,
                  max_entries));

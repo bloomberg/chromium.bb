@@ -132,8 +132,9 @@ class UserManagerScreenHandler::ProfileUpdateObserver
     user_manager_handler_->SendUserList();
   }
 
-  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const string16& profile_name) OVERRIDE {
+  virtual void OnProfileWasRemoved(
+      const base::FilePath& profile_path,
+      const base::string16& profile_name) OVERRIDE {
     // TODO(noms): Change 'SendUserList' to 'removeUser' JS-call when
     // UserManager is able to find pod belonging to removed user.
     user_manager_handler_->SendUserList();
@@ -145,8 +146,9 @@ class UserManagerScreenHandler::ProfileUpdateObserver
     // will be called.
   }
 
-  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
-                                    const string16& old_profile_name) OVERRIDE {
+  virtual void OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) OVERRIDE {
     user_manager_handler_->SendUserList();
   }
 
@@ -254,8 +256,8 @@ void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
-  string16 emailAddress;
-  string16 displayName;
+  base::string16 emailAddress;
+  base::string16 displayName;
 
   if (!args->GetString(0, &emailAddress) ||
       !args->GetString(1, &displayName)) {
@@ -364,10 +366,12 @@ void UserManagerScreenHandler::GetLocalizedValues(
 
   // Strings needed for the user_pod_template public account div, but not ever
   // actually displayed for desktop users.
-  localized_strings->SetString("publicAccountReminder", string16());
-  localized_strings->SetString("publicAccountEnter", string16());
-  localized_strings->SetString("publicAccountEnterAccessibleName", string16());
-  localized_strings->SetString("multiple-signin-banner-text", string16());
+  localized_strings->SetString("publicAccountReminder", base::string16());
+  localized_strings->SetString("publicAccountEnter", base::string16());
+  localized_strings->SetString("publicAccountEnterAccessibleName",
+                               base::string16());
+  localized_strings->SetString("multiple-signin-banner-text",
+                               base::string16());
  }
 
 void UserManagerScreenHandler::SendUserList() {

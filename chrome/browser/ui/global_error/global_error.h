@@ -40,7 +40,7 @@ class GlobalError {
   // Returns the command ID for the menu item.
   virtual int MenuItemCommandID() = 0;
   // Returns the label for the menu item.
-  virtual string16 MenuItemLabel() = 0;
+  virtual base::string16 MenuItemLabel() = 0;
   // Returns the resource ID for the menu item icon.
   int MenuItemIconResourceID();
   // Called when the user clicks on the menu item.
@@ -69,16 +69,16 @@ class GlobalErrorWithStandardBubble
   // Returns an icon to use for the bubble view.
   virtual gfx::Image GetBubbleViewIcon();
   // Returns the title for the bubble view.
-  virtual string16 GetBubbleViewTitle() = 0;
+  virtual base::string16 GetBubbleViewTitle() = 0;
   // Returns the messages for the bubble view, one per line. Multiple messages
   // are only supported on Views.
   // TODO(yoz): Add multi-line support for GTK and Cocoa.
   virtual std::vector<string16> GetBubbleViewMessages() = 0;
   // Returns the accept button label for the bubble view.
-  virtual string16 GetBubbleViewAcceptButtonLabel() = 0;
+  virtual base::string16 GetBubbleViewAcceptButtonLabel() = 0;
   // Returns the cancel button label for the bubble view. To hide the cancel
   // button return an empty string.
-  virtual string16 GetBubbleViewCancelButtonLabel() = 0;
+  virtual base::string16 GetBubbleViewCancelButtonLabel() = 0;
   // Called when the bubble view is closed. |browser| is the Browser that the
   // bubble view was shown on.
   void BubbleViewDidClose(Browser* browser);

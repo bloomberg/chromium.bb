@@ -237,9 +237,9 @@ void WebNotificationTray::UpdateStatusIcon() {
 
   int unread_notifications = message_center()->UnreadNotificationCount();
 
-  string16 tool_tip;
+  base::string16 tool_tip;
   if (unread_notifications > 0) {
-    string16 str_unread_count = base::FormatNumber(unread_notifications);
+    base::string16 str_unread_count = base::FormatNumber(unread_notifications);
     tool_tip = l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
                                           str_unread_count);
   } else {
@@ -320,7 +320,7 @@ MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
 }
 
 void WebNotificationTray::CreateStatusIcon(const gfx::ImageSkia& image,
-                                           const string16& tool_tip) {
+                                           const base::string16& tool_tip) {
   if (status_icon_)
     return;
 

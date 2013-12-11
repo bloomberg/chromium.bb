@@ -360,7 +360,7 @@ void LocationBarView::Init() {
   star_view_->SetVisible(false);
   AddChildView(star_view_);
 
-  search_button_ = new views::LabelButton(this, string16());
+  search_button_ = new views::LabelButton(this, base::string16());
   search_button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   search_button_->SetStyle(views::Button::STYLE_BUTTON);

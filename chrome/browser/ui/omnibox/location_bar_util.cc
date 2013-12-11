@@ -16,13 +16,13 @@
 
 namespace location_bar_util {
 
-string16 CalculateMinString(const string16& description) {
+string16 CalculateMinString(const base::string16& description) {
   // Chop at the first '.' or whitespace.
   const size_t dot_index = description.find('.');
   const size_t ws_index = description.find_first_of(base::kWhitespaceUTF16);
   size_t chop_index = std::min(dot_index, ws_index);
-  string16 min_string;
-  if (chop_index == string16::npos) {
+  base::string16 min_string;
+  if (chop_index == base::string16::npos) {
     // No dot or whitespace, truncate to at most 3 chars.
     min_string = gfx::TruncateString(description, 3);
   } else {

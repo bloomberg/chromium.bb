@@ -30,7 +30,7 @@ class VersionHandler : public content::WebUIMessageHandler {
   // Callback which handles returning the executable and profile paths to the
   // front end.
   void OnGotFilePaths(string16* executable_path_data,
-                      string16* profile_path_data);
+                      base::string16* profile_path_data);
 
   // Callback for GetPlugins which responds to the page with the Flash version.
   // This also initiates the OS Version load on ChromeOS.

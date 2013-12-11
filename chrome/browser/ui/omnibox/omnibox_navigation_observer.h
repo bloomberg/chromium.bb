@@ -54,7 +54,7 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
   };
 
   OmniboxNavigationObserver(Profile* profile,
-                            const string16& text,
+                            const base::string16& text,
                             const AutocompleteMatch& match,
                             const AutocompleteMatch& alternate_nav_match);
   virtual ~OmniboxNavigationObserver();
@@ -94,7 +94,7 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
   // the alternate nav infobar if necessary, and deletes |this|.
   void OnAllLoadingFinished();
 
-  const string16 text_;
+  const base::string16 text_;
   const AutocompleteMatch match_;
   const AutocompleteMatch alternate_nav_match_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;  // May be NULL

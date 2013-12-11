@@ -151,7 +151,7 @@ DictionaryValue* CreateDownloadItemValue(
   }
 
   // Keep file names as LTR.
-  string16 file_name =
+  base::string16 file_name =
     download_item->GetFileNameToReportUser().LossyDisplayName();
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
   file_value->SetString("file_name", file_name);

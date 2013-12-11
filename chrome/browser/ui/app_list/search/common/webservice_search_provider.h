@@ -25,7 +25,7 @@ class WebserviceSearchProvider : public SearchProvider {
   virtual ~WebserviceSearchProvider();
 
   // Validate the query for privacy and size.
-  bool IsValidQuery(const string16& query);
+  bool IsValidQuery(const base::string16& query);
 
   // Start a query with throttling enabled.
   void StartThrottledQuery(const base::Closure& start_query);
@@ -37,7 +37,7 @@ class WebserviceSearchProvider : public SearchProvider {
   WebserviceCache* cache_;  // BrowserContextKeyedService, not owned.
 
  private:
-  bool IsSensitiveInput(const string16& query);
+  bool IsSensitiveInput(const base::string16& query);
 
   // The timestamp when the last key event happened.
   base::Time last_keytyped_;

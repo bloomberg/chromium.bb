@@ -104,7 +104,7 @@ class StackedPanelCollection : public PanelCollection,
   };
 
   // Overridden from PanelBoundsBatchUpdateObserver:
-  virtual string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
   virtual gfx::Image GetIcon() const OVERRIDE;
   virtual void PanelBoundsBatchUpdateCompleted() OVERRIDE;
 

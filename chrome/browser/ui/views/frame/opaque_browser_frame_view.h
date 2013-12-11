@@ -76,7 +76,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // OpaqueBrowserFrameViewLayoutDelegate implementation:
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual int GetIconSize() const OVERRIDE;
   virtual bool ShouldLeaveOffsetNearTopBorder() const OVERRIDE;
   virtual gfx::Size GetBrowserViewMinimumSize() const OVERRIDE;

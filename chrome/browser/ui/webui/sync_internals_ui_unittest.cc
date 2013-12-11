@@ -48,7 +48,7 @@ class TestSyncWebUI: public WebUI {
       : WebUI(web_contents) {}
   virtual ~TestSyncWebUI() {}
 
-  MOCK_METHOD1(ExecuteJavascript, void(const string16&));
+  MOCK_METHOD1(ExecuteJavascript, void(const base::string16&));
 };
 
 // Tests with non-NULL ProfileSyncService.

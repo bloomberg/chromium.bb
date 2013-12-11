@@ -57,7 +57,7 @@ void AppLaunchSplashScreenHandler::DeclareLocalizedValues(
   builder->Add("appStartMessage", IDS_APP_START_NETWORK_WAIT_MESSAGE);
   builder->Add("configureNetwork", IDS_APP_START_CONFIGURE_NETWORK);
 
-  const string16 product_os_name =
+  const base::string16 product_os_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
   builder->Add(
       "shortcutInfo",

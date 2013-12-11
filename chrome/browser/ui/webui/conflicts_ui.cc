@@ -121,7 +121,7 @@ void ConflictsDOMHandler::SendModuleList() {
   // Add the section title and the total count for bad modules found.
   int confirmed_bad = loaded_modules->confirmed_bad_modules_detected();
   int suspected_bad = loaded_modules->suspected_bad_modules_detected();
-  string16 table_title;
+  base::string16 table_title;
   if (!confirmed_bad && !suspected_bad) {
     table_title += l10n_util::GetStringFUTF16(
         IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE,

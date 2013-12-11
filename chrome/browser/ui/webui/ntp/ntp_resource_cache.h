@@ -79,7 +79,7 @@ class NTPResourceCache : public content::NotificationObserver,
 #if !defined(OS_ANDROID)
   // Returns a message describing any newly-added sync types, or an empty
   // string if all types have already been acknowledged.
-  string16 GetSyncTypeMessage();
+  base::string16 GetSyncTypeMessage();
 
   void CreateNewTabIncognitoHTML();
   void CreateNewTabIncognitoCSS();

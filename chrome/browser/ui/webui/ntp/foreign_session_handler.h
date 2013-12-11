@@ -65,7 +65,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   bool IsTabSyncEnabled();
 
   // Returns a string used to show the user when a session was last modified.
-  string16 FormatSessionTime(const base::Time& time);
+  base::string16 FormatSessionTime(const base::Time& time);
 
   // Determines which session is to be opened, and then calls
   // OpenForeignSession, to begin the process of opening a new browser window.

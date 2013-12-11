@@ -1187,7 +1187,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
     const ListValue* list) {
   // |value| should be: [<URL to test>].
-  string16 url_str;
+  base::string16 url_str;
   CHECK(list->GetString(0, &url_str));
 
   // Try to fix-up the user provided URL into something valid.

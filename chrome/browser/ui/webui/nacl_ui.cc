@@ -154,7 +154,9 @@ void NaClDomHandler::RegisterMessages() {
 
 // Helper functions for collecting a list of key-value pairs that will
 // be displayed.
-void AddPair(ListValue* list, const string16& key, const string16& value) {
+void AddPair(ListValue* list,
+             const base::string16& key,
+             const base::string16& value) {
   DictionaryValue* results = new DictionaryValue();
   results->SetString("key", key);
   results->SetString("value", value);
@@ -217,8 +219,8 @@ void NaClDomHandler::AddPluginList(ListValue* list) {
   std::vector<content::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), "application/x-nacl", false, &info_array, NULL);
-  string16 nacl_version;
-  string16 nacl_key = ASCIIToUTF16("NaCl plugin");
+  base::string16 nacl_version;
+  base::string16 nacl_key = ASCIIToUTF16("NaCl plugin");
   if (info_array.empty()) {
     AddPair(list, nacl_key, ASCIIToUTF16("Disabled"));
   } else {
@@ -247,7 +249,7 @@ void NaClDomHandler::AddPluginList(ListValue* list) {
 
 void NaClDomHandler::AddPnaclInfo(ListValue* list) {
   // Display whether PNaCl is enabled.
-  string16 pnacl_enabled_string = ASCIIToUTF16("Enabled");
+  base::string16 pnacl_enabled_string = ASCIIToUTF16("Enabled");
   if (!isPluginEnabled(0)) {
     pnacl_enabled_string = ASCIIToUTF16("Disabled in profile prefs");
   } else if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -277,7 +279,7 @@ void NaClDomHandler::AddPnaclInfo(ListValue* list) {
 }
 
 void NaClDomHandler::AddNaClInfo(ListValue* list) {
-  string16 nacl_enabled_string = ASCIIToUTF16("Disabled");
+  base::string16 nacl_enabled_string = ASCIIToUTF16("Disabled");
   if (isPluginEnabled(0) &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
     nacl_enabled_string = ASCIIToUTF16("Enabled by flag '--enable-nacl'");

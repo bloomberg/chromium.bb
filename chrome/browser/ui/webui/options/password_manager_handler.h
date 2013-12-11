@@ -29,7 +29,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
 
   // PasswordUIView implementation.
   virtual Profile* GetProfile() OVERRIDE;
-  virtual void ShowPassword(size_t index, const string16& password_value)
+  virtual void ShowPassword(size_t index, const base::string16& password_value)
       OVERRIDE;
   virtual void SetPasswordList(
       const ScopedVector<autofill::PasswordForm>& password_list,

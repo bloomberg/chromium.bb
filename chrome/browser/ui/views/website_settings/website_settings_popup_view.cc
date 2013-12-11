@@ -116,11 +116,11 @@ class PopupHeaderView : public views::View {
   virtual ~PopupHeaderView();
 
   // Sets the name of the site's identity.
-  void SetIdentityName(const string16& name);
+  void SetIdentityName(const base::string16& name);
 
   // Sets the |status_text| for the identity check of this site and the
   // |text_color|.
-  void SetIdentityStatus(const string16& status_text, SkColor text_color);
+  void SetIdentityStatus(const base::string16& status_text, SkColor text_color);
 
  private:
   // The label that displays the name of the site's identity.
@@ -173,7 +173,7 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
   layout->AddPaddingRow(0, kHeaderPaddingTop);
 
   layout->StartRow(0, label_column);
-  name_ = new views::Label(string16());
+  name_ = new views::Label(base::string16());
   gfx::Font headline_font(name_->font().GetFontName(), kIdentityNameFontSize);
   name_->SetFont(headline_font.DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(name_, 1, 1, views::GridLayout::LEADING,
@@ -193,7 +193,7 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
   layout->AddPaddingRow(0, kHeaderRowSpacing);
 
   layout->StartRow(0, label_column);
-  status_ = new views::Label(string16());
+  status_ = new views::Label(base::string16());
   layout->AddView(status_,
                   1,
                   1,
@@ -206,11 +206,11 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
 PopupHeaderView::~PopupHeaderView() {
 }
 
-void PopupHeaderView::SetIdentityName(const string16& name) {
+void PopupHeaderView::SetIdentityName(const base::string16& name) {
   name_->SetText(name);
 }
 
-void PopupHeaderView::SetIdentityStatus(const string16& status,
+void PopupHeaderView::SetIdentityStatus(const base::string16& status,
                                         SkColor text_color) {
   status_->SetText(status);
   status_->SetEnabledColor(text_color);
@@ -428,7 +428,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
   for (CookieInfoList::const_iterator i(cookie_info_list.begin());
        i != cookie_info_list.end();
        ++i) {
-    string16 label_text = l10n_util::GetStringFUTF16(
+    base::string16 label_text = l10n_util::GetStringFUTF16(
         IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
         UTF8ToUTF16(i->cookie_source),
         base::IntToString16(i->allowed),
@@ -492,7 +492,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
 
 void WebsiteSettingsPopupView::SetIdentityInfo(
     const IdentityInfo& identity_info) {
-  string16 identity_status_text;
+  base::string16 identity_status_text;
   SkColor text_color = SK_ColorBLACK;
   switch (identity_info.identity_status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
@@ -518,7 +518,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   // site's identity was verified, then the headline contains the organization
   // name from the provided certificate. If the organization name is not
   // available than the hostname of the site is used instead.
-  string16 headline;
+  base::string16 headline;
   if (identity_info.cert_id) {
     cert_id_ = identity_info.cert_id;
     certificate_dialog_link_ = new views::Link(
@@ -529,14 +529,14 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   ResetConnectionSection(
       identity_info_content_,
       WebsiteSettingsUI::GetIdentityIcon(identity_info.identity_status),
-      string16(), // The identity section has no headline.
+      base::string16(), // The identity section has no headline.
       UTF8ToUTF16(identity_info.identity_status_description),
       certificate_dialog_link_);
 
   ResetConnectionSection(
       connection_info_content_,
       WebsiteSettingsUI::GetConnectionIcon(identity_info.connection_status),
-      string16(),  // The connection section has no headline.
+      base::string16(),  // The connection section has no headline.
       UTF8ToUTF16(identity_info.connection_status_description),
       NULL);
 
@@ -545,7 +545,8 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   SizeToContents();
 }
 
-void WebsiteSettingsPopupView::SetFirstVisit(const string16& first_visit) {
+void WebsiteSettingsPopupView::SetFirstVisit(
+    const base::string16& first_visit) {
   ResetConnectionSection(
       page_info_content_,
       WebsiteSettingsUI::GetFirstVisitIcon(first_visit),
@@ -623,7 +624,7 @@ views::View* WebsiteSettingsPopupView::CreateConnectionTab() {
 }
 
 views::View* WebsiteSettingsPopupView::CreateSection(
-    const string16& headline_text,
+    const base::string16& headline_text,
     views::View* content,
     views::Link* link) {
   views::View* container = new views::View();
@@ -665,8 +666,8 @@ views::View* WebsiteSettingsPopupView::CreateSection(
 void WebsiteSettingsPopupView::ResetConnectionSection(
     views::View* section_container,
     const gfx::Image& icon,
-    const string16& headline,
-    const string16& text,
+    const base::string16& headline,
+    const base::string16& text,
     views::Link* link) {
   section_container->RemoveAllChildViews(true);
 

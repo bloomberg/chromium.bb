@@ -174,7 +174,7 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
 void ManagedUserImportHandler::ClearManagedUsersAndShowError() {
   web_ui()->CallJavascriptFunction(
       "ManagedUserImportOverlay.receiveExistingManagedUsers");
-  string16 error_message =
+  base::string16 error_message =
       l10n_util::GetStringUTF16(IDS_MANAGED_USER_IMPORT_SIGN_IN_ERROR);
   web_ui()->CallJavascriptFunction("ManagedUserImportOverlay.onError",
                                    base::StringValue(error_message));
