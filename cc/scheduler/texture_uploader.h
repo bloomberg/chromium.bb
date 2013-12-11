@@ -13,21 +13,24 @@
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/resources/resource_provider.h"
 
-namespace blink { class WebGraphicsContext3D; }
-
 namespace gfx {
 class Rect;
 class Size;
 class Vector2d;
 }
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace cc {
 
 class CC_EXPORT TextureUploader {
  public:
-  static scoped_ptr<TextureUploader>
-  Create(blink::WebGraphicsContext3D* context) {
-    return make_scoped_ptr(new TextureUploader(context));
+  static scoped_ptr<TextureUploader> Create(gpu::gles2::GLES2Interface* gl) {
+    return make_scoped_ptr(new TextureUploader(gl));
   }
   ~TextureUploader();
 
@@ -52,8 +55,8 @@ class CC_EXPORT TextureUploader {
  private:
   class Query {
    public:
-    static scoped_ptr<Query> Create(blink::WebGraphicsContext3D* context) {
-      return make_scoped_ptr(new Query(context));
+    static scoped_ptr<Query> Create(gpu::gles2::GLES2Interface* gl) {
+      return make_scoped_ptr(new Query(gl));
     }
 
     virtual ~Query();
@@ -71,9 +74,9 @@ class CC_EXPORT TextureUploader {
     }
 
    private:
-    explicit Query(blink::WebGraphicsContext3D* context);
+    explicit Query(gpu::gles2::GLES2Interface* gl);
 
-    blink::WebGraphicsContext3D* context_;
+    gpu::gles2::GLES2Interface* gl_;
     unsigned query_id_;
     unsigned value_;
     bool has_value_;
@@ -82,7 +85,7 @@ class CC_EXPORT TextureUploader {
     DISALLOW_COPY_AND_ASSIGN(Query);
   };
 
-  explicit TextureUploader(blink::WebGraphicsContext3D* context);
+  explicit TextureUploader(gpu::gles2::GLES2Interface* gl);
 
   void BeginQuery();
   void EndQuery();
@@ -100,7 +103,7 @@ class CC_EXPORT TextureUploader {
                                 ResourceFormat format);
   void UploadWithTexImageETC1(const uint8* image, gfx::Size size);
 
-  blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
   ScopedPtrDeque<Query> pending_queries_;
   ScopedPtrDeque<Query> available_queries_;
   std::multiset<double> textures_per_second_history_;

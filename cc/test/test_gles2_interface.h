@@ -31,6 +31,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 
   virtual void BindTexture(GLenum target, GLuint texture) OVERRIDE;
 
+  virtual void GetIntegerv(GLenum pname, GLint* params) OVERRIDE;
   virtual void GetShaderiv(GLuint shader, GLenum pname, GLint* params) OVERRIDE;
   virtual void GetProgramiv(GLuint program,
                             GLenum pname,
@@ -59,11 +60,77 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   virtual void Clear(GLbitfield mask) OVERRIDE;
   virtual void Flush() OVERRIDE;
   virtual void Finish() OVERRIDE;
+  virtual void ShallowFlushCHROMIUM() OVERRIDE;
   virtual void Enable(GLenum cap) OVERRIDE;
   virtual void Disable(GLenum cap) OVERRIDE;
 
   virtual void BindBuffer(GLenum target, GLuint buffer) OVERRIDE;
   virtual void BindFramebuffer(GLenum target, GLuint buffer) OVERRIDE;
+
+  virtual void TexImage2D(GLenum target,
+                          GLint level,
+                          GLint internalformat,
+                          GLsizei width,
+                          GLsizei height,
+                          GLint border,
+                          GLenum format,
+                          GLenum type,
+                          const void* pixels) OVERRIDE;
+  virtual void TexSubImage2D(GLenum target,
+                             GLint level,
+                             GLint xoffset,
+                             GLint yoffset,
+                             GLsizei width,
+                             GLsizei height,
+                             GLenum format,
+                             GLenum type,
+                             const void* pixels) OVERRIDE;
+  virtual void TexStorage2DEXT(GLenum target,
+                               GLsizei levels,
+                               GLenum internalformat,
+                               GLsizei width,
+                               GLsizei height) OVERRIDE;
+  virtual void TexParameteri(GLenum target, GLenum pname, GLint param) OVERRIDE;
+
+  virtual void AsyncTexImage2DCHROMIUM(GLenum target,
+                                       GLint level,
+                                       GLint internalformat,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLint border,
+                                       GLenum format,
+                                       GLenum type,
+                                       const void* pixels) OVERRIDE;
+  virtual void AsyncTexSubImage2DCHROMIUM(GLenum target,
+                                          GLint level,
+                                          GLint xoffset,
+                                          GLint yoffset,
+                                          GLsizei width,
+                                          GLsizei height,
+                                          GLenum format,
+                                          GLenum type,
+                                          const void* pixels) OVERRIDE;
+  virtual void CompressedTexImage2D(GLenum target,
+                                    GLint level,
+                                    GLenum internalformat,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    GLint border,
+                                    GLsizei image_size,
+                                    const void* data) OVERRIDE;
+  virtual void WaitAsyncTexImage2DCHROMIUM(GLenum target) OVERRIDE;
+  virtual GLuint CreateImageCHROMIUM(GLsizei width,
+                                     GLsizei height,
+                                     GLenum internalformat) OVERRIDE;
+  virtual void DestroyImageCHROMIUM(GLuint image_id) OVERRIDE;
+  virtual void* MapImageCHROMIUM(GLuint image_id, GLenum access) OVERRIDE;
+  virtual void GetImageParameterivCHROMIUM(GLuint image_id,
+                                           GLenum pname,
+                                           GLint* params) OVERRIDE;
+  virtual void UnmapImageCHROMIUM(GLuint image_id) OVERRIDE;
+  virtual void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) OVERRIDE;
+  virtual void ReleaseTexImage2DCHROMIUM(GLenum target,
+                                         GLint image_id) OVERRIDE;
 
   virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) OVERRIDE;
   virtual GLboolean UnmapBufferCHROMIUM(GLuint target) OVERRIDE;
@@ -77,11 +144,18 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 
   virtual void BeginQueryEXT(GLenum target, GLuint id) OVERRIDE;
   virtual void EndQueryEXT(GLenum target) OVERRIDE;
+  virtual void GetQueryObjectuivEXT(GLuint id,
+                                    GLenum pname,
+                                    GLuint* params) OVERRIDE;
 
   virtual void DiscardFramebufferEXT(GLenum target,
                                      GLsizei count,
                                      const GLenum* attachments) OVERRIDE;
   virtual void GenMailboxCHROMIUM(GLbyte* mailbox) OVERRIDE;
+  virtual void ProduceTextureCHROMIUM(GLenum target,
+                                      const GLbyte* mailbox) OVERRIDE;
+  virtual void ConsumeTextureCHROMIUM(GLenum target,
+                                      const GLbyte* mailbox) OVERRIDE;
 
  private:
   TestWebGraphicsContext3D* test_context_;

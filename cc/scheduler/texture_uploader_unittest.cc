@@ -6,28 +6,20 @@
 
 #include "cc/base/util.h"
 #include "cc/resources/prioritized_resource.h"
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using blink::WGC3Denum;
-using blink::WGC3Dint;
-using blink::WGC3Dsizei;
-using blink::WebGLId;
-using blink::WGC3Duint;
-
 namespace cc {
 namespace {
 
-class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
+class TextureUploadTestContext : public gpu::gles2::GLES2InterfaceStub {
  public:
-  TestWebGraphicsContext3DTextureUpload()
-      : result_available_(0),
-        unpack_alignment_(4) {}
+  TextureUploadTestContext() : result_available_(0), unpack_alignment_(4) {}
 
-  virtual void pixelStorei(WGC3Denum pname, WGC3Dint param) OVERRIDE {
+  virtual void PixelStorei(GLenum pname, GLint param) OVERRIDE {
     switch (pname) {
       case GL_UNPACK_ALIGNMENT:
         // Param should be a power of two <= 8.
@@ -49,8 +41,9 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
     }
   }
 
-  virtual void getQueryObjectuivEXT(WebGLId, WGC3Denum type, WGC3Duint* value)
-      OVERRIDE {
+  virtual void GetQueryObjectuivEXT(GLuint,
+                                    GLenum type,
+                                    GLuint* value) OVERRIDE {
     switch (type) {
       case GL_QUERY_RESULT_AVAILABLE_EXT:
         *value = result_available_;
@@ -61,14 +54,14 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
     }
   }
 
-  virtual void texSubImage2D(WGC3Denum target,
-                             WGC3Dint level,
-                             WGC3Dint xoffset,
-                             WGC3Dint yoffset,
-                             WGC3Dsizei width,
-                             WGC3Dsizei height,
-                             WGC3Denum format,
-                             WGC3Denum type,
+  virtual void TexSubImage2D(GLenum target,
+                             GLint level,
+                             GLint xoffset,
+                             GLint yoffset,
+                             GLsizei width,
+                             GLsizei height,
+                             GLenum format,
+                             GLenum type,
                              const void* pixels) OVERRIDE {
     EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     EXPECT_EQ(0, level);
@@ -131,7 +124,7 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
     // be 0x2.
     const unsigned int stride =
         RoundUp(bytes_per_pixel * width, unpack_alignment_);
-    for (WGC3Dsizei row = 0; row < height; ++row) {
+    for (GLsizei row = 0; row < height; ++row) {
       const uint8* row_bytes =
           bytes + (xoffset * bytes_per_pixel + (yoffset + row) * stride);
       EXPECT_EQ(0x1, row_bytes[0]);
@@ -147,7 +140,7 @@ class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
   unsigned result_available_;
   unsigned unpack_alignment_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWebGraphicsContext3DTextureUpload);
+  DISALLOW_COPY_AND_ASSIGN(TextureUploadTestContext);
 };
 
 void UploadTexture(TextureUploader* uploader,
@@ -163,19 +156,17 @@ void UploadTexture(TextureUploader* uploader,
 }
 
 TEST(TextureUploaderTest, NumBlockingUploads) {
-  scoped_ptr<TestWebGraphicsContext3DTextureUpload> fake_context(
-      new TestWebGraphicsContext3DTextureUpload);
-  scoped_ptr<TextureUploader> uploader =
-      TextureUploader::Create(fake_context.get());
+  TextureUploadTestContext context;
+  scoped_ptr<TextureUploader> uploader = TextureUploader::Create(&context);
 
-  fake_context->SetResultAvailable(0);
+  context.SetResultAvailable(0);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(1u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(2u, uploader->NumBlockingUploads());
 
-  fake_context->SetResultAvailable(1);
+  context.SetResultAvailable(1);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
@@ -185,12 +176,10 @@ TEST(TextureUploaderTest, NumBlockingUploads) {
 }
 
 TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking) {
-  scoped_ptr<TestWebGraphicsContext3DTextureUpload> fake_context(
-      new TestWebGraphicsContext3DTextureUpload);
-  scoped_ptr<TextureUploader> uploader =
-      TextureUploader::Create(fake_context.get());
+  TextureUploadTestContext context;
+  scoped_ptr<TextureUploader> uploader = TextureUploader::Create(&context);
 
-  fake_context->SetResultAvailable(0);
+  context.SetResultAvailable(0);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
@@ -201,7 +190,7 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking) {
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   EXPECT_EQ(1u, uploader->NumBlockingUploads());
 
-  fake_context->SetResultAvailable(1);
+  context.SetResultAvailable(1);
   EXPECT_EQ(0u, uploader->NumBlockingUploads());
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(), NULL);
   uploader->MarkPendingUploadsAsNonBlocking();
@@ -209,10 +198,9 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking) {
 }
 
 TEST(TextureUploaderTest, UploadContentsTest) {
-  scoped_ptr<TestWebGraphicsContext3DTextureUpload> fake_context(
-      new TestWebGraphicsContext3DTextureUpload);
-  scoped_ptr<TextureUploader> uploader =
-      TextureUploader::Create(fake_context.get());
+  TextureUploadTestContext context;
+  scoped_ptr<TextureUploader> uploader = TextureUploader::Create(&context);
+
   uint8 buffer[256 * 256 * 4];
 
   // Upload a tightly packed 256x256 RGBA texture.

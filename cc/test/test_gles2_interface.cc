@@ -77,6 +77,10 @@ void TestGLES2Interface::BindTexture(GLenum target, GLuint texture) {
   test_context_->bindTexture(target, texture);
 }
 
+void TestGLES2Interface::GetIntegerv(GLenum pname, GLint* params) {
+  test_context_->getIntegerv(pname, params);
+}
+
 void TestGLES2Interface::GetShaderiv(GLuint shader,
                                      GLenum pname,
                                      GLint* params) {
@@ -148,6 +152,10 @@ void TestGLES2Interface::Flush() { test_context_->flush(); }
 
 void TestGLES2Interface::Finish() { test_context_->finish(); }
 
+void TestGLES2Interface::ShallowFlushCHROMIUM() {
+  test_context_->shallowFlushCHROMIUM();
+}
+
 void TestGLES2Interface::Enable(GLenum cap) { test_context_->enable(cap); }
 
 void TestGLES2Interface::Disable(GLenum cap) { test_context_->disable(cap); }
@@ -158,6 +166,135 @@ void TestGLES2Interface::BindFramebuffer(GLenum target, GLuint buffer) {
 
 void TestGLES2Interface::BindBuffer(GLenum target, GLuint buffer) {
   test_context_->bindBuffer(target, buffer);
+}
+
+void TestGLES2Interface::TexImage2D(GLenum target,
+                                    GLint level,
+                                    GLint internalformat,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    GLint border,
+                                    GLenum format,
+                                    GLenum type,
+                                    const void* pixels) {
+  test_context_->texImage2D(target,
+                            level,
+                            internalformat,
+                            width,
+                            height,
+                            border,
+                            format,
+                            type,
+                            pixels);
+}
+
+void TestGLES2Interface::TexSubImage2D(GLenum target,
+                                       GLint level,
+                                       GLint xoffset,
+                                       GLint yoffset,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLenum format,
+                                       GLenum type,
+                                       const void* pixels) {
+  test_context_->texSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, pixels);
+}
+
+void TestGLES2Interface::TexStorage2DEXT(GLenum target,
+                                         GLsizei levels,
+                                         GLenum internalformat,
+                                         GLsizei width,
+                                         GLsizei height) {
+  test_context_->texStorage2DEXT(target, levels, internalformat, width, height);
+}
+
+void TestGLES2Interface::TexParameteri(GLenum target,
+                                       GLenum pname,
+                                       GLint param) {
+  test_context_->texParameteri(target, pname, param);
+}
+
+void TestGLES2Interface::AsyncTexImage2DCHROMIUM(GLenum target,
+                                                 GLint level,
+                                                 GLint internalformat,
+                                                 GLsizei width,
+                                                 GLsizei height,
+                                                 GLint border,
+                                                 GLenum format,
+                                                 GLenum type,
+                                                 const void* pixels) {
+  test_context_->asyncTexImage2DCHROMIUM(target,
+                                         level,
+                                         internalformat,
+                                         width,
+                                         height,
+                                         border,
+                                         format,
+                                         type,
+                                         pixels);
+}
+
+void TestGLES2Interface::AsyncTexSubImage2DCHROMIUM(GLenum target,
+                                                    GLint level,
+                                                    GLint xoffset,
+                                                    GLint yoffset,
+                                                    GLsizei width,
+                                                    GLsizei height,
+                                                    GLenum format,
+                                                    GLenum type,
+                                                    const void* pixels) {
+  test_context_->asyncTexSubImage2DCHROMIUM(
+      target, level, xoffset, yoffset, width, height, format, type, pixels);
+}
+
+void TestGLES2Interface::CompressedTexImage2D(GLenum target,
+                                              GLint level,
+                                              GLenum internalformat,
+                                              GLsizei width,
+                                              GLsizei height,
+                                              GLint border,
+                                              GLsizei image_size,
+                                              const void* data) {
+  test_context_->compressedTexImage2D(
+      target, level, internalformat, width, height, border, image_size, data);
+}
+
+void TestGLES2Interface::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
+  test_context_->waitAsyncTexImage2DCHROMIUM(target);
+}
+
+GLuint TestGLES2Interface::CreateImageCHROMIUM(GLsizei width,
+                                               GLsizei height,
+                                               GLenum internalformat) {
+  return test_context_->createImageCHROMIUM(width, height, internalformat);
+}
+
+void TestGLES2Interface::DestroyImageCHROMIUM(GLuint image_id) {
+  test_context_->destroyImageCHROMIUM(image_id);
+}
+
+void* TestGLES2Interface::MapImageCHROMIUM(GLuint image_id, GLenum access) {
+  return test_context_->mapImageCHROMIUM(image_id, access);
+}
+
+void TestGLES2Interface::GetImageParameterivCHROMIUM(GLuint image_id,
+                                                     GLenum pname,
+                                                     GLint* params) {
+  test_context_->getImageParameterivCHROMIUM(image_id, pname, params);
+}
+
+void TestGLES2Interface::UnmapImageCHROMIUM(GLuint image_id) {
+  test_context_->unmapImageCHROMIUM(image_id);
+}
+
+void TestGLES2Interface::BindTexImage2DCHROMIUM(GLenum target, GLint image_id) {
+  test_context_->bindTexImage2DCHROMIUM(target, image_id);
+}
+
+void TestGLES2Interface::ReleaseTexImage2DCHROMIUM(GLenum target,
+                                                   GLint image_id) {
+  test_context_->releaseTexImage2DCHROMIUM(target, image_id);
 }
 
 void* TestGLES2Interface::MapBufferCHROMIUM(GLuint target, GLenum access) {
@@ -191,6 +328,12 @@ void TestGLES2Interface::EndQueryEXT(GLenum target) {
   test_context_->endQueryEXT(target);
 }
 
+void TestGLES2Interface::GetQueryObjectuivEXT(GLuint id,
+                                              GLenum pname,
+                                              GLuint* params) {
+  test_context_->getQueryObjectuivEXT(id, pname, params);
+}
+
 void TestGLES2Interface::DiscardFramebufferEXT(GLenum target,
                                                GLsizei count,
                                                const GLenum* attachments) {
@@ -199,6 +342,16 @@ void TestGLES2Interface::DiscardFramebufferEXT(GLenum target,
 
 void TestGLES2Interface::GenMailboxCHROMIUM(GLbyte* mailbox) {
   test_context_->genMailboxCHROMIUM(mailbox);
+}
+
+void TestGLES2Interface::ProduceTextureCHROMIUM(GLenum target,
+                                                const GLbyte* mailbox) {
+  test_context_->produceTextureCHROMIUM(target, mailbox);
+}
+
+void TestGLES2Interface::ConsumeTextureCHROMIUM(GLenum target,
+                                                const GLbyte* mailbox) {
+  test_context_->consumeTextureCHROMIUM(target, mailbox);
 }
 
 }  // namespace cc

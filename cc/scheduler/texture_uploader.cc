@@ -13,11 +13,13 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
+
+using gpu::gles2::GLES2Interface;
 
 namespace {
 
@@ -38,44 +40,44 @@ static const size_t kTextureUploadFlushPeriod = 4;
 
 namespace cc {
 
-TextureUploader::Query::Query(blink::WebGraphicsContext3D* context)
-    : context_(context),
+TextureUploader::Query::Query(GLES2Interface* gl)
+    : gl_(gl),
       query_id_(0),
       value_(0),
       has_value_(false),
       is_non_blocking_(false) {
-  query_id_ = context_->createQueryEXT();
+  gl_->GenQueriesEXT(1, &query_id_);
 }
 
-TextureUploader::Query::~Query() { context_->deleteQueryEXT(query_id_); }
+TextureUploader::Query::~Query() { gl_->DeleteQueriesEXT(1, &query_id_); }
 
 void TextureUploader::Query::Begin() {
   has_value_ = false;
   is_non_blocking_ = false;
-  context_->beginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query_id_);
+  gl_->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query_id_);
 }
 
 void TextureUploader::Query::End() {
-  context_->endQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+  gl_->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 }
 
 bool TextureUploader::Query::IsPending() {
   unsigned available = 1;
-  context_->getQueryObjectuivEXT(
+  gl_->GetQueryObjectuivEXT(
       query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
   return !available;
 }
 
 unsigned TextureUploader::Query::Value() {
   if (!has_value_) {
-    context_->getQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &value_);
+    gl_->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &value_);
     has_value_ = true;
   }
   return value_;
 }
 
-TextureUploader::TextureUploader(blink::WebGraphicsContext3D* context)
-    : context_(context),
+TextureUploader::TextureUploader(GLES2Interface* gl)
+    : gl_(gl),
       num_blocking_texture_uploads_(0),
       sub_image_size_(0),
       num_texture_uploads_since_last_flush_(0) {
@@ -115,7 +117,7 @@ double TextureUploader::EstimatedTexturesPerSecond() {
 
 void TextureUploader::BeginQuery() {
   if (available_queries_.empty())
-    available_queries_.push_back(Query::Create(context_));
+    available_queries_.push_back(Query::Create(gl_));
 
   available_queries_.front()->Begin();
 }
@@ -160,7 +162,7 @@ void TextureUploader::Flush() {
   if (!num_texture_uploads_since_last_flush_)
     return;
 
-  context_->shallowFlushCHROMIUM();
+  gl_->ShallowFlushCHROMIUM();
 
   num_texture_uploads_since_last_flush_ = 0;
 }
@@ -207,21 +209,21 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
     for (int row = 0; row < source_rect.height(); ++row)
       memcpy(&sub_image_[upload_image_stride * row],
              &image[bytes_per_pixel *
-                 (offset.x() + (offset.y() + row) * image_rect.width())],
+                    (offset.x() + (offset.y() + row) * image_rect.width())],
              source_rect.width() * bytes_per_pixel);
 
     pixel_source = &sub_image_[0];
   }
 
-  context_->texSubImage2D(GL_TEXTURE_2D,
-                          0,
-                          dest_offset.x(),
-                          dest_offset.y(),
-                          source_rect.width(),
-                          source_rect.height(),
-                          GLDataFormat(format),
-                          GLDataType(format),
-                          pixel_source);
+  gl_->TexSubImage2D(GL_TEXTURE_2D,
+                     0,
+                     dest_offset.x(),
+                     dest_offset.y(),
+                     source_rect.width(),
+                     source_rect.height(),
+                     GLDataFormat(format),
+                     GLDataType(format),
+                     pixel_source);
 }
 
 void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
@@ -249,16 +251,16 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
       RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
   // Upload tile data via a mapped transfer buffer
-  uint8* pixel_dest = static_cast<uint8*>(
-      context_->mapTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
-                                         0,
-                                         dest_offset.x(),
-                                         dest_offset.y(),
-                                         source_rect.width(),
-                                         source_rect.height(),
-                                         GLDataFormat(format),
-                                         GLDataType(format),
-                                         GL_WRITE_ONLY));
+  uint8* pixel_dest =
+      static_cast<uint8*>(gl_->MapTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
+                                                        0,
+                                                        dest_offset.x(),
+                                                        dest_offset.y(),
+                                                        source_rect.width(),
+                                                        source_rect.height(),
+                                                        GLDataFormat(format),
+                                                        GLDataType(format),
+                                                        GL_WRITE_ONLY));
 
   if (!pixel_dest) {
     UploadWithTexSubImage(image, image_rect, source_rect, dest_offset, format);
@@ -276,12 +278,12 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
     for (int row = 0; row < source_rect.height(); ++row) {
       memcpy(&pixel_dest[upload_image_stride * row],
              &image[bytes_per_pixel *
-                 (offset.x() + (offset.y() + row) * image_rect.width())],
+                    (offset.x() + (offset.y() + row) * image_rect.width())],
              source_rect.width() * bytes_per_pixel);
     }
   }
 
-  context_->unmapTexSubImage2DCHROMIUM(pixel_dest);
+  gl_->UnmapTexSubImage2DCHROMIUM(pixel_dest);
 }
 
 void TextureUploader::UploadWithTexImageETC1(const uint8* image,
@@ -290,14 +292,14 @@ void TextureUploader::UploadWithTexImageETC1(const uint8* image,
   DCHECK_EQ(0, size.width() % 4);
   DCHECK_EQ(0, size.height() % 4);
 
-  context_->compressedTexImage2D(GL_TEXTURE_2D,
-                                 0,
-                                 GLInternalFormat(ETC1),
-                                 size.width(),
-                                 size.height(),
-                                 0,
-                                 Resource::MemorySizeBytes(size, ETC1),
-                                 image);
+  gl_->CompressedTexImage2D(GL_TEXTURE_2D,
+                            0,
+                            GLInternalFormat(ETC1),
+                            size.width(),
+                            size.height(),
+                            0,
+                            Resource::MemorySizeBytes(size, ETC1),
+                            image);
 }
 
 void TextureUploader::ProcessQueries() {

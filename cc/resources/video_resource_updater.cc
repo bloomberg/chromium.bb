@@ -8,9 +8,9 @@
 #include "cc/output/gl_renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
 #include "media/filters/skcanvas_video_renderer.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/size_conversions.h"
@@ -205,20 +205,18 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       if (!software_compositor) {
         DCHECK(context_provider_);
 
-        blink::WebGraphicsContext3D* context =
-            context_provider_->Context3d();
+        gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 
-        GLC(context, context->genMailboxCHROMIUM(mailbox.name));
+        GLC(gl, gl->GenMailboxCHROMIUM(mailbox.name));
         if (mailbox.IsZero()) {
           resource_provider_->DeleteResource(resource_id);
           resource_id = 0;
         } else {
           ResourceProvider::ScopedWriteLockGL lock(
               resource_provider_, resource_id);
-          GLC(context, context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
-          GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D,
-                                                       mailbox.name));
-          GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
+          GLC(gl, gl->BindTexture(GL_TEXTURE_2D, lock.texture_id()));
+          GLC(gl, gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+          GLC(gl, gl->BindTexture(GL_TEXTURE_2D, 0));
         }
       }
 
@@ -383,8 +381,8 @@ void VideoResourceUpdater::RecycleResource(
 
   ContextProvider* context_provider = updater->context_provider_;
   if (context_provider && sync_point) {
-    GLC(context_provider->Context3d(),
-        context_provider->Context3d()->waitSyncPoint(sync_point));
+    GLC(context_provider->ContextGL(),
+        context_provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point));
   }
 
   if (lost_resource) {

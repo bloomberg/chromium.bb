@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/single_release_callback.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace cc {
 
@@ -20,8 +20,8 @@ static void DeleteTextureOnImplThread(
     unsigned sync_point,
     bool is_lost) {
   if (sync_point)
-    context_provider->Context3d()->waitSyncPoint(sync_point);
-  context_provider->Context3d()->deleteTexture(texture_id);
+    context_provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point);
+  context_provider->ContextGL()->DeleteTextures(1, &texture_id);
 }
 
 static void PostTaskFromMainToImplThread(

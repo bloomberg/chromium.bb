@@ -17,12 +17,6 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using testing::Test;
-using blink::WGC3Denum;
-using blink::WGC3Dint;
-using blink::WGC3Duint;
-using blink::WGC3Dsizei;
-using blink::WebGLId;
-using blink::WebString;
 
 namespace cc {
 namespace {
@@ -39,22 +33,18 @@ class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
 
   virtual void flush() OVERRIDE;
   virtual void shallowFlushCHROMIUM() OVERRIDE;
-  virtual void texSubImage2D(
-      WGC3Denum target,
-      WGC3Dint level,
-      WGC3Dint xoffset,
-      WGC3Dint yoffset,
-      WGC3Dsizei width,
-      WGC3Dsizei height,
-      WGC3Denum format,
-      WGC3Denum type,
-      const void* pixels) OVERRIDE;
+  virtual void texSubImage2D(GLenum target,
+                             GLint level,
+                             GLint xoffset,
+                             GLint yoffset,
+                             GLsizei width,
+                             GLsizei height,
+                             GLenum format,
+                             GLenum type,
+                             const void* pixels) OVERRIDE;
   virtual GrGLInterface* createGrGLInterface() OVERRIDE { return NULL; }
 
-  virtual void getQueryObjectuivEXT(
-      WebGLId id,
-      WGC3Denum pname,
-      WGC3Duint* value);
+  virtual void getQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* value);
 
  private:
   ResourceUpdateControllerTest* test_;
@@ -218,23 +208,21 @@ void WebGraphicsContext3DForUploadTest::shallowFlushCHROMIUM() {
   test_->OnFlush();
 }
 
-void WebGraphicsContext3DForUploadTest::texSubImage2D(
-    WGC3Denum target,
-    WGC3Dint level,
-    WGC3Dint xoffset,
-    WGC3Dint yoffset,
-    WGC3Dsizei width,
-    WGC3Dsizei height,
-    WGC3Denum format,
-    WGC3Denum type,
-    const void* pixels) {
+void WebGraphicsContext3DForUploadTest::texSubImage2D(GLenum target,
+                                                      GLint level,
+                                                      GLint xoffset,
+                                                      GLint yoffset,
+                                                      GLsizei width,
+                                                      GLsizei height,
+                                                      GLenum format,
+                                                      GLenum type,
+                                                      const void* pixels) {
   test_->OnUpload();
 }
 
-void WebGraphicsContext3DForUploadTest::getQueryObjectuivEXT(
-    WebGLId id,
-    WGC3Denum pname,
-    WGC3Duint* params) {
+void WebGraphicsContext3DForUploadTest::getQueryObjectuivEXT(GLuint id,
+                                                             GLenum pname,
+                                                             GLuint* params) {
   if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
     *params = test_->IsQueryResultAvailable();
 }
