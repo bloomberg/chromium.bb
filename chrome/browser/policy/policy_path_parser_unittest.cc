@@ -20,7 +20,13 @@ class PolicyPathParserTests : public testing::Test {
   }
 };
 
-TEST_F(PolicyPathParserTests, AllPlatformVariables) {
+#if defined(OS_MACOSX)
+// http://crbug.com/327520
+#define MAYBE_AllPlatformVariables DISABLED_AllPlatformVariables
+#else
+#define MAYBE_AllPlatformVariables AllPlatformVariables
+#endif
+TEST_F(PolicyPathParserTests, MAYBE_AllPlatformVariables) {
   // No vars whatsoever no substitution should occur.
   base::FilePath::StringType no_vars(FILE_PATH_LITERAL("//$C/shares"));
   base::FilePath::StringType no_vars_result =
