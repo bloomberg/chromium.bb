@@ -132,6 +132,11 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static uint32 IndexToGLFaceTarget(int index);
 
+  static uint32 GetPreferredGLReadPixelsFormat(uint32 internal_format);
+
+  static uint32 GetPreferredGLReadPixelsType(
+      uint32 internal_format, uint32 texture_type);
+
   // Returns a bitmask for the channels the given format supports.
   // See ChannelBits.
   static uint32 GetChannelsForFormat(int format);

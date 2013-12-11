@@ -60,6 +60,10 @@ class RenderbufferAttachment
     return renderbuffer_->internal_format();
   }
 
+  virtual GLenum texture_type() const OVERRIDE {
+    return 0;
+  }
+
   virtual GLsizei samples() const OVERRIDE {
     return renderbuffer_->samples();
   }
@@ -157,6 +161,14 @@ class TextureAttachment
     texture_ref_->texture()->GetLevelType(
         target_, level_, &temp_type, &temp_internal_format);
     return temp_internal_format;
+  }
+
+  virtual GLenum texture_type() const OVERRIDE {
+    GLenum temp_type = 0;
+    GLenum temp_internal_format = 0;
+    texture_ref_->texture()->GetLevelType(
+        target_, level_, &temp_type, &temp_internal_format);
+    return temp_type;
   }
 
   virtual GLsizei samples() const OVERRIDE {
@@ -383,6 +395,15 @@ GLenum Framebuffer::GetColorAttachmentFormat() const {
   }
   const Attachment* attachment = it->second.get();
   return attachment->internal_format();
+}
+
+GLenum Framebuffer::GetColorAttachmentTextureType() const {
+  AttachmentMap::const_iterator it = attachments_.find(GL_COLOR_ATTACHMENT0);
+  if (it == attachments_.end()) {
+    return 0;
+  }
+  const Attachment* attachment = it->second.get();
+  return attachment->texture_type();
 }
 
 GLenum Framebuffer::IsPossiblyComplete() const {

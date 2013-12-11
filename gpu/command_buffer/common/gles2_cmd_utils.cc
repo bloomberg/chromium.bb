@@ -590,6 +590,43 @@ uint32 GLES2Util::IndexToGLFaceTarget(int index) {
   return faces[index];
 }
 
+uint32 GLES2Util::GetPreferredGLReadPixelsFormat(uint32 internal_format) {
+  switch (internal_format) {
+    case GL_RGB16F_EXT:
+    case GL_RGB32F_EXT:
+      return GL_RGB;
+    case GL_RGBA16F_EXT:
+    case GL_RGBA32F_EXT:
+      return GL_RGBA;
+    default:
+      return GL_RGBA;
+  }
+}
+
+uint32 GLES2Util::GetPreferredGLReadPixelsType(
+    uint32 internal_format, uint32 texture_type) {
+  switch (internal_format) {
+    case GL_RGBA32F_EXT:
+    case GL_RGB32F_EXT:
+      return GL_FLOAT;
+    case GL_RGBA16F_EXT:
+    case GL_RGB16F_EXT:
+      return GL_HALF_FLOAT_OES;
+    case GL_RGBA:
+    case GL_RGB:
+      // Unsized internal format, check the type
+      switch (texture_type) {
+        case GL_FLOAT:
+        case GL_HALF_FLOAT_OES:
+          return GL_FLOAT;
+        default:
+          return GL_UNSIGNED_BYTE;
+      }
+    default:
+      return GL_UNSIGNED_BYTE;
+  }
+}
+
 uint32 GLES2Util::GetChannelsForFormat(int format) {
   switch (format) {
     case GL_ALPHA:
