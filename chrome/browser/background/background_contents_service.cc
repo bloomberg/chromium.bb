@@ -159,7 +159,6 @@ class CrashNotificationDelegate : public NotificationDelegate {
 void NotificationImageReady(
     const std::string extension_name,
     const base::string16 message,
-    const GURL extension_url,
     scoped_refptr<CrashNotificationDelegate> delegate,
     Profile* profile,
     const gfx::Image& icon) {
@@ -168,14 +167,20 @@ void NotificationImageReady(
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     notification_icon = rb.GetImageNamed(IDR_EXTENSION_DEFAULT_ICON);
   }
-  base::string16 title;  // no notification title
-  DesktopNotificationService::AddIconNotification(extension_url,
-                                                  title,
-                                                  message,
-                                                  notification_icon,
-                                                  base::string16(),
-                                                  delegate.get(),
-                                                  profile);
+
+  // Origin URL must be different from the crashed extension to avoid the
+  // conflict. NotificationSystemObserver will cancel all notifications from
+  // the same origin when NOTIFICATION_EXTENSION_UNLOADED.
+  // TODO(mukai, dewittj): remove this and switch to message center
+  // notifications.
+  DesktopNotificationService::AddIconNotification(
+      GURL() /* empty origin */,
+      base::string16(),
+      message,
+      icon,
+      base::string16(),
+      delegate.get(),
+      profile);
 }
 #endif
 
@@ -203,7 +208,6 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
           &NotificationImageReady,
           extension->name(),
           message,
-          extension->url(),
           make_scoped_refptr(new CrashNotificationDelegate(profile, extension)),
           profile));
 #endif
@@ -427,14 +431,7 @@ void BackgroundContentsService::Observe(
       const bool force_installed =
           extensions::Manifest::IsPolicyLocation(extension->location());
       if (!force_installed) {
-        // When an extension crashes, EXTENSION_PROCESS_TERMINATED is followed
-        // by an EXTENSION_UNLOADED notification. This UNLOADED signal causes
-        // all the notifications for this extension to be cancelled by
-        // DesktopNotificationService. For this reason, we post the crash
-        // handling code as a task here so that it is not executed before this
-        // event.
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(&ShowBalloon, extension, profile));
+        ShowBalloon(extension, profile);
       } else {
         // Restart the extension.
         RestartForceInstalledExtensionOnCrash(extension, profile);
