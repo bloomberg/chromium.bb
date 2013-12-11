@@ -48,7 +48,9 @@ bool IsProfileFromActiveUser(Profile* profile) {
   return GetUserIDFromProfile(profile) ==
          chromeos::UserManager::Get()->GetActiveUser()->email();
 #else
-  return profile->GetOriginalProfile() == ProfileManager::GetDefaultProfile();
+  // In non Chrome OS configurations this will be always true since this only
+  // makes sense in separate desktop mode.
+  return true;
 #endif
 }
 

@@ -431,9 +431,6 @@ class ChromeLauncherController : public ash::ShelfDelegate,
       int index,
       ash::LauncherItemType launcher_item_type);
 
-  // Returns the profile used for new windows.
-  Profile* GetProfileForNewWindows();
-
   // Invoked when the associated browser or app is closed.
   void LauncherItemClosed(ash::LauncherID id);
 

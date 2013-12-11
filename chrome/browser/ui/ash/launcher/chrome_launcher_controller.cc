@@ -329,9 +329,11 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
       app_sync_ui_state_(NULL),
       ignore_persist_pinned_state_change_(false) {
   if (!profile_) {
+    // If no profile was passed, we take the currently active profile and use it
+    // as the owner of the current desktop.
     // Use the original profile as on chromeos we may get a temporary off the
     // record profile.
-    profile_ = ProfileManager::GetDefaultProfile()->GetOriginalProfile();
+    profile_ = ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
 
     app_sync_ui_state_ = AppSyncUIState::Get(profile_);
     if (app_sync_ui_state_)
@@ -662,11 +664,11 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
   if (LaunchedInNativeDesktop(app_id))
     return;
 
-  AppLaunchParams params(
-      GetProfileForNewWindows(),
-      extension,
-      event_flags,
-      chrome::HOST_DESKTOP_TYPE_ASH);
+  // The app will be created for the currently active profile.
+  AppLaunchParams params(profile_,
+                         extension,
+                         event_flags,
+                         chrome::HOST_DESKTOP_TYPE_ASH);
   if (source != ash::LAUNCH_FROM_UNKNOWN &&
       app_id == extension_misc::kWebStoreAppId) {
     // Get the corresponding source string.
@@ -827,16 +829,17 @@ void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
 }
 
 bool ChromeLauncherController::IsLoggedInAsGuest() {
-  return ProfileManager::GetDefaultProfileOrOffTheRecord()->IsOffTheRecord();
+  return profile_->IsGuestSession();
 }
 
 void ChromeLauncherController::CreateNewWindow() {
-  chrome::NewEmptyWindow(
-      GetProfileForNewWindows(), chrome::HOST_DESKTOP_TYPE_ASH);
+  // Use the currently active user.
+  chrome::NewEmptyWindow(profile_, chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 void ChromeLauncherController::CreateNewIncognitoWindow() {
-  chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile(),
+  // Use the currently active user.
+  chrome::NewEmptyWindow(profile_->GetOffTheRecordProfile(),
                          chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
@@ -1147,7 +1150,9 @@ void ChromeLauncherController::ActiveUserChanged(
   // Coming here the default profile is already switched. All profile specific
   // resources get released and the new profile gets attached instead.
   ReleaseProfile();
-  AttachProfile(ProfileManager::GetDefaultProfile());
+  // When coming here, the active user has already be changed so that we can
+  // set it as active.
+  AttachProfile(ProfileManager::GetActiveUserProfile());
   // Update the V1 applications.
   browser_status_monitor_->ActiveUserChanged(user_email);
   // Switch the running applications to the new user.
@@ -1416,10 +1421,6 @@ bool ChromeLauncherController::IsBrowserFromActiveUser(Browser* browser) {
           chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
     return true;
   return multi_user_util::IsProfileFromActiveUser(browser->profile());
-}
-
-Profile* ChromeLauncherController::GetProfileForNewWindows() {
-  return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }
 
 void ChromeLauncherController::LauncherItemClosed(ash::LauncherID id) {

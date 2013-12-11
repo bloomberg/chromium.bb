@@ -20,7 +20,9 @@ std::string GetUserIDFromEmail(const std::string& email);
 // Get a profile for a given user id.
 Profile* GetProfileFromUserID(const std::string& user_id);
 
-// Check if the given profile is from the currently active user.
+// Check if the given profile is from the currently active user. Note that since
+// only Chrome OS has the concept of an active user, only Chrome OS can ever
+// return false.
 bool IsProfileFromActiveUser(Profile* profile);
 
 }  // namespace multi_user_util
