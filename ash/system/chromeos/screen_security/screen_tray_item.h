@@ -129,6 +129,8 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE = 0;
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
+  virtual void UpdateAfterShelfAlignmentChange(
+      ShelfAlignment alignment) OVERRIDE;
 
  private:
   tray::ScreenTrayView* tray_view_;
