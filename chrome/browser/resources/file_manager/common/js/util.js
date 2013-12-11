@@ -1157,7 +1157,7 @@ util.getCurrentLocaleOrDefault = function() {
 };
 
 /**
- * Converts array of entries to an array of corresponding URLs
+ * Converts array of entries to an array of corresponding URLs.
  * @param {Array.<Entry>} entries Input array of entries.
  * @return {Array.<string>} Output array of URLs.
  */
@@ -1168,6 +1168,32 @@ util.entriesToURLs = function(entries) {
   return entries.map(function(entry) {
      return entry.toURL();
   });
+};
+
+/**
+ * Converts array of URLs to an array of corresponding Entries.
+ *
+ * @param {Array.<string>} urls Input array of URLs.
+ * @param {function(Array.<Entry>)} callback Completion callback with array of
+ *     Entries.
+ */
+util.URLsToEntries = function(urls, callback) {
+  var result = [];
+  AsyncUtil.forEach(
+      urls,
+      function(forEachCallback, url) {
+        webkitResolveLocalFileSystemURL(url, function(entry) {
+          result.push(entry);
+          forEachCallback();
+        }, function() {
+          // Not an error. Possibly, the file is not accessible anymore.
+          console.warn('Failed to resolve the file with url: ' + url + '.');
+          forEachCallback();
+        });
+      },
+      function() {
+        callback(result);
+      });
 };
 
 /**
