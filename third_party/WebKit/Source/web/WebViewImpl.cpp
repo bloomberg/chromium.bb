@@ -2165,15 +2165,15 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (!focused)
         return info;
 
-    FrameSelection& selection = focused->selection();
-    Node* node = selection.selection().rootEditableElement();
-    if (!node)
-        return info;
-
     info.inputMode = inputModeOfFocusedElement();
 
     info.type = textInputType();
     if (info.type == WebTextInputTypeNone)
+        return info;
+
+    FrameSelection& selection = focused->selection();
+    Node* node = selection.selection().rootEditableElement();
+    if (!node)
         return info;
 
     if (!focused->editor().canEdit())
