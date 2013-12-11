@@ -1106,13 +1106,6 @@ void WebMediaPlayerImpl::StartPipeline() {
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);
-
-#if !defined(OS_CHROMEOS)
-    // Disable GpuVideoDecoder creation on platforms other than CrOS until
-    // they support codec config changes.
-    // TODO(acolwell): Remove this once http://crbug.com/151045 is fixed.
-    gpu_factories_ = NULL;
-#endif
   }
 
   scoped_ptr<media::FilterCollection> filter_collection(
