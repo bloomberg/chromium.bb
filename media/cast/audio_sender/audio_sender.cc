@@ -200,7 +200,9 @@ void AudioSender::ScheduleNextRtcpReport() {
 
 void AudioSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_.SendRtcpFromRtpSender(NULL);  // TODO(pwestin): add logging.
+  // We don't send audio logging messages since all captured audio frames will
+  // be sent.
+  rtcp_.SendRtcpFromRtpSender(NULL);
   ScheduleNextRtcpReport();
 }
 

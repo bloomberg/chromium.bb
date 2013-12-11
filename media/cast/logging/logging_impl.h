@@ -29,6 +29,8 @@ class LoggingImpl : public base::NonThreadSafe {
 
   ~LoggingImpl();
 
+  // TODO(pwestin): Add argument to API to send in time of event instead of
+  // grabbing now.
   void InsertFrameEvent(CastLoggingEvent event,
                         uint32 rtp_timestamp,
                         uint32 frame_id);

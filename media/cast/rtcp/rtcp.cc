@@ -59,8 +59,9 @@ RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 
 class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
  public:
-  explicit LocalRtcpReceiverFeedback(Rtcp* rtcp)
-      : rtcp_(rtcp) {
+  LocalRtcpReceiverFeedback(Rtcp* rtcp,
+                           scoped_refptr<CastEnvironment> cast_environment)
+      : rtcp_(rtcp), cast_environment_(cast_environment) {
   }
 
   virtual void OnReceivedSenderReport(
@@ -86,20 +87,83 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
 
   virtual void OnReceivedReceiverLog(
       const RtcpReceiverLogMessage& receiver_log) OVERRIDE {
-    // TODO(pwestin): Implement.
     // Add received log messages into our log system.
-    NOTIMPLEMENTED();
+    RtcpReceiverLogMessage::const_iterator it = receiver_log.begin();
+
+    for (; it != receiver_log.end(); ++it) {
+      uint32 rtp_timestamp = it->rtp_timestamp_;
+
+      RtcpReceiverEventLogMessages::const_iterator event_it =
+          it->event_log_messages_.begin();
+      for (; event_it != it->event_log_messages_.end(); ++event_it) {
+        // TODO(pwestin): we need to send in the event_it->event_timestamp to
+        // the log system too.
+        switch (event_it->type) {
+          case kPacketReceived:
+            cast_environment_->Logging()->InsertPacketEvent(kPacketReceived,
+                rtp_timestamp, kFrameIdUnknown, event_it->packet_id, 0, 0);
+            break;
+          case kAckSent:
+          case kAudioFrameDecoded:
+          case kVideoFrameDecoded:
+            cast_environment_->Logging()->InsertFrameEvent(event_it->type,
+                rtp_timestamp, kFrameIdUnknown);
+            break;
+          case kAudioPlayoutDelay:
+          case kVideoRenderDelay:
+            cast_environment_->Logging()->InsertFrameEventWithDelay(
+                event_it->type, rtp_timestamp, kFrameIdUnknown,
+                event_it->delay_delta);
+            break;
+          default:
+            VLOG(2) << "Received log message via RTCP that we did not expect: "
+                    << static_cast<int>(event_it->type);
+            break;
+        }
+      }
+    }
   }
 
   virtual void OnReceivedSenderLog(
-    const RtcpSenderLogMessage& sender_log)  OVERRIDE {
-    // TODO(pwestin): Implement.
-    // Add received log messages into our log system.
-    NOTIMPLEMENTED();
+      const RtcpSenderLogMessage& sender_log)  OVERRIDE {
+    RtcpSenderLogMessage::const_iterator it = sender_log.begin();
+
+    for (; it != sender_log.end(); ++it) {
+      uint32 rtp_timestamp = it->rtp_timestamp;
+      CastLoggingEvent log_event = kUnknown;
+
+      // These events are provided to know the status of frames that never
+      // reached the receiver. The timing information for these events are not
+      // relevant and is not sent over the wire.
+      switch (it->frame_status) {
+        case kRtcpSenderFrameStatusDroppedByFlowControl:
+          // A frame that have been dropped by the flow control would have
+          // kVideoFrameCaptured as its last event in the log.
+          log_event = kVideoFrameCaptured;
+          break;
+        case kRtcpSenderFrameStatusDroppedByEncoder:
+          // A frame that have been dropped by the encoder would have
+          // kVideoFrameSentToEncoder as its last event in the log.
+          log_event = kVideoFrameSentToEncoder;
+          break;
+        case kRtcpSenderFrameStatusSentToNetwork:
+          // A frame that have be encoded is always sent to the network. We
+          // do not add a new log entry for this.
+          log_event = kVideoFrameEncoded;
+          break;
+        default:
+          continue;
+      }
+      // TODO(pwestin): how do we handle the truncated rtp_timestamp?
+      // Add received log messages into our log system.
+      cast_environment_->Logging()->InsertFrameEvent(log_event, rtp_timestamp,
+          kFrameIdUnknown);
+    }
   }
 
  private:
   Rtcp* rtcp_;
+  scoped_refptr<CastEnvironment> cast_environment_;
 };
 
 Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
@@ -118,7 +182,7 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       remote_ssrc_(remote_ssrc),
       rtp_sender_statistics_(rtp_sender_statistics),
       rtp_receiver_statistics_(rtp_receiver_statistics),
-      receiver_feedback_(new LocalRtcpReceiverFeedback(this)),
+      receiver_feedback_(new LocalRtcpReceiverFeedback(this, cast_environment)),
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
       rtcp_sender_(new RtcpSender(cast_environment, paced_packet_sender,
                                   local_ssrc, c_name)),

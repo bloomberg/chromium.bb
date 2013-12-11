@@ -40,17 +40,6 @@ class RtcpSenderFeedback {
   virtual ~RtcpSenderFeedback() {}
 };
 
-class RtcpReceivedLog {
- public:
-  virtual void OnReceivedReceiverLog(
-      const RtcpReceiverLogMessage& receiver_log) = 0;
-
-  virtual void OnReceivedSenderLog(
-      const RtcpSenderLogMessage& sender_log) = 0;
-
-  virtual ~RtcpReceivedLog() {}
-};
-
 class RtpSenderStatistics {
  public:
   virtual void GetStatistics(const base::TimeTicks& now,

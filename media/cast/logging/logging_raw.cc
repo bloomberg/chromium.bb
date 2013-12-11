@@ -47,6 +47,7 @@ void LoggingRaw::InsertFrameEventWithDelay(CastLoggingEvent event,
   DCHECK(it != frame_map_.end());
   it->second.delay_delta = delay;
 }
+
 void LoggingRaw::InsertBaseFrameEvent(CastLoggingEvent event,
                                       uint32 frame_id,
                                       uint32 rtp_timestamp) {
