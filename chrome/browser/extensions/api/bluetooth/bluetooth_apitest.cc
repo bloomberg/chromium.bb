@@ -315,14 +315,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   // crbug.com/132796
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_Discovery DISABLED_Discovery
-#else
-#define MAYBE_Discovery Discovery
-#endif
-
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, MAYBE_Discovery) {
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   // Try with a failure to start
   EXPECT_CALL(*mock_adapter_, StartDiscovering(testing::_, testing::_))
       .WillOnce(testing::Invoke(CallDiscoveryErrorCallback));
