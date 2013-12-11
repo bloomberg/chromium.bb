@@ -112,6 +112,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   mount_points->RegisterFileSystem(
       drive_mount_name,
       fileapi::kFileSystemTypeDrive,
+      fileapi::FileSystemMountOption(),
       GetDriveMountPointPath());
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),
@@ -124,6 +125,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   mount_points->RegisterFileSystem(
       "drive2",
       fileapi::kFileSystemTypeDrive,
+      fileapi::FileSystemMountOption(),
       GetDriveMountPointPath());
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),
@@ -134,6 +136,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   mount_points->RegisterFileSystem(
       "Downloads",
       fileapi::kFileSystemTypeNativeLocal,
+      fileapi::FileSystemMountOption(),
       temp_dir_.path());
   EXPECT_EQ(
       base::FilePath(),

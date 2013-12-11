@@ -96,8 +96,10 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
     std::string cracked_id;
     base::FilePath cracked_path;
     FileSystemType cracked_type;
+    FileSystemMountOption cracked_option;
     ASSERT_TRUE(isolated_context()->CrackVirtualPath(
-        virtual_path, &cracked_id, &cracked_type, &cracked_path));
+        virtual_path, &cracked_id, &cracked_type, &cracked_path,
+        &cracked_option));
     ASSERT_EQ(kTestPaths[i].NormalizePathSeparators().value(),
               cracked_path.value());
     ASSERT_EQ(id_, cracked_id);
@@ -192,13 +194,16 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
       std::string cracked_id;
       base::FilePath cracked_path;
       FileSystemType cracked_type;
+      FileSystemMountOption cracked_option;
       if (!relatives[j].valid) {
         ASSERT_FALSE(isolated_context()->CrackVirtualPath(
-            virtual_path, &cracked_id, &cracked_type, &cracked_path));
+            virtual_path, &cracked_id, &cracked_type, &cracked_path,
+            &cracked_option));
         continue;
       }
       ASSERT_TRUE(isolated_context()->CrackVirtualPath(
-          virtual_path, &cracked_id, &cracked_type, &cracked_path));
+          virtual_path, &cracked_id, &cracked_type, &cracked_path,
+          &cracked_option));
       ASSERT_EQ(kTestPaths[i].Append(relatives[j].path)
                     .NormalizePathSeparators().value(),
                 cracked_path.value());
@@ -257,13 +262,14 @@ TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
 TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   std::string cracked_id;
   base::FilePath cracked_path;
+  FileSystemMountOption cracked_option;
 
   // Trying to crack virtual root "/" returns true but with empty cracked path
   // as "/" of the isolated filesystem is a pure virtual directory
   // that has no corresponding platform directory.
   base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_);
   ASSERT_TRUE(isolated_context()->CrackVirtualPath(
-      virtual_path, &cracked_id, NULL, &cracked_path));
+      virtual_path, &cracked_id, NULL, &cracked_path, &cracked_option));
   ASSERT_EQ(FPL(""), cracked_path.value());
   ASSERT_EQ(id_, cracked_id);
 
@@ -272,7 +278,7 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   virtual_path = isolated_context()->CreateVirtualRootPath(
       id_).AppendASCII("foo");
   ASSERT_FALSE(isolated_context()->CrackVirtualPath(
-      virtual_path, &cracked_id, NULL, &cracked_path));
+      virtual_path, &cracked_id, NULL, &cracked_path, &cracked_option));
 }
 
 TEST_F(IsolatedContextTest, CanHandleURL) {
@@ -329,8 +335,9 @@ TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
 
   std::string cracked_id;
   base::FilePath cracked_path;
+  FileSystemMountOption cracked_option;
   ASSERT_TRUE(isolated_context()->CrackVirtualPath(
-      whole_virtual_path, &cracked_id, NULL, &cracked_path));
+      whole_virtual_path, &cracked_id, NULL, &cracked_path, &cracked_option));
   ASSERT_EQ(database_fsid, cracked_id);
   ASSERT_EQ(test_virtual_path, cracked_path);
 }

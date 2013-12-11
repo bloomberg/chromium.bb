@@ -144,10 +144,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT IsolatedContext : public MountPoints {
   virtual bool RevokeFileSystem(const std::string& filesystem_id) OVERRIDE;
   virtual bool GetRegisteredPath(const std::string& filesystem_id,
                                  base::FilePath* path) const OVERRIDE;
-  virtual bool CrackVirtualPath(const base::FilePath& virtual_path,
-                                std::string* filesystem_id,
-                                FileSystemType* type,
-                                base::FilePath* path) const OVERRIDE;
+  virtual bool CrackVirtualPath(
+      const base::FilePath& virtual_path,
+      std::string* filesystem_id,
+      FileSystemType* type,
+      base::FilePath* path,
+      FileSystemMountOption* mount_option) const OVERRIDE;
   virtual FileSystemURL CrackURL(const GURL& url) const OVERRIDE;
   virtual FileSystemURL CreateCrackedFileSystemURL(
       const GURL& origin,

@@ -111,6 +111,7 @@ TEST_F(FileSystemContextTest, NullExternalMountPoints) {
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "system",
       kFileSystemTypeNativeLocal,
+      FileSystemMountOption(),
       base::FilePath(DRIVE FPL("/test/sys/"))));
 
   FileSystemURL cracked_isolated = file_system_context->CrackURL(
@@ -154,6 +155,7 @@ TEST_F(FileSystemContextTest, FileSystemContextKeepsMountPointsAlive) {
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "system",
       kFileSystemTypeNativeLocal,
+      FileSystemMountOption(),
       base::FilePath(DRIVE FPL("/test/sys/"))));
 
   scoped_refptr<FileSystemContext> file_system_context(
@@ -198,22 +200,26 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "system",
       kFileSystemTypeDrive,
+      FileSystemMountOption(),
       base::FilePath(DRIVE FPL("/test/sys/"))));
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "ext",
       kFileSystemTypeNativeLocal,
+      FileSystemMountOption(),
       base::FilePath(DRIVE FPL("/test/ext"))));
   // Register a system external mount point with the same name/id as the
   // registered isolated mount point.
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kIsolatedFileSystemID,
       kFileSystemTypeRestrictedNativeLocal,
+      FileSystemMountOption(),
       base::FilePath(DRIVE FPL("/test/system/isolated"))));
   // Add a mount points with the same name as a system mount point to
   // FileSystemContext's external mount points.
   ASSERT_TRUE(external_mount_points->RegisterFileSystem(
       "ext",
        kFileSystemTypeNativeLocal,
+       FileSystemMountOption(),
        base::FilePath(DRIVE FPL("/test/local/ext/"))));
 
   const GURL kTestOrigin = GURL("http://chromium.org/");
@@ -351,7 +357,8 @@ TEST_F(FileSystemContextTest, CanServeURLRequest) {
   // A request for an external mount point should be served.
   const std::string kExternalMountName = "ext_mount";
   ASSERT_TRUE(ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      kExternalMountName, kFileSystemTypeDrive, base::FilePath()));
+      kExternalMountName, kFileSystemTypeDrive, FileSystemMountOption(),
+      base::FilePath()));
   cracked_url = context->CrackURL(
       CreateRawFileSystemURL("external", kExternalMountName));
   EXPECT_EQ(kFileSystemTypeExternal, cracked_url.mount_type());

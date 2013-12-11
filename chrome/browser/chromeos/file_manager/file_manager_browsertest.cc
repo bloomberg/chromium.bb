@@ -204,7 +204,10 @@ class LocalTestVolume {
     mount_points->RevokeFileSystem(kDownloads);
 
     return mount_points->RegisterFileSystem(
-        kDownloads, fileapi::kFileSystemTypeNativeLocal, local_path_) &&
+        kDownloads,
+        fileapi::kFileSystemTypeNativeLocal,
+        fileapi::FileSystemMountOption(),
+        local_path_) &&
         base::CreateDirectory(local_path_);
   }
 

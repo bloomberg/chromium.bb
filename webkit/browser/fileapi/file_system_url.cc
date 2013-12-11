@@ -21,7 +21,8 @@ namespace {
 FileSystemURL::FileSystemURL()
     : is_valid_(false),
       mount_type_(kFileSystemTypeUnknown),
-      type_(kFileSystemTypeUnknown) {
+      type_(kFileSystemTypeUnknown),
+      mount_option_(COPY_SYNC_OPTION_NO_SYNC) {
 }
 
 // static
@@ -98,7 +99,8 @@ bool FileSystemURL::ParseFileSystemSchemeURL(
 
 FileSystemURL::FileSystemURL(const GURL& url)
     : mount_type_(kFileSystemTypeUnknown),
-      type_(kFileSystemTypeUnknown) {
+      type_(kFileSystemTypeUnknown),
+      mount_option_(COPY_SYNC_OPTION_NO_SYNC) {
   is_valid_ = ParseFileSystemSchemeURL(url, &origin_, &mount_type_,
                                        &virtual_path_);
   path_ = virtual_path_;
@@ -113,7 +115,8 @@ FileSystemURL::FileSystemURL(const GURL& origin,
       mount_type_(mount_type),
       virtual_path_(virtual_path.NormalizePathSeparators()),
       type_(mount_type),
-      path_(virtual_path.NormalizePathSeparators()) {
+      path_(virtual_path.NormalizePathSeparators()),
+      mount_option_(COPY_SYNC_OPTION_NO_SYNC) {
 }
 
 FileSystemURL::FileSystemURL(const GURL& origin,
@@ -122,7 +125,8 @@ FileSystemURL::FileSystemURL(const GURL& origin,
                              const std::string& mount_filesystem_id,
                              FileSystemType cracked_type,
                              const base::FilePath& cracked_path,
-                             const std::string& filesystem_id)
+                             const std::string& filesystem_id,
+                             const FileSystemMountOption& mount_option)
     : is_valid_(true),
       origin_(origin),
       mount_type_(mount_type),
@@ -130,7 +134,8 @@ FileSystemURL::FileSystemURL(const GURL& origin,
       mount_filesystem_id_(mount_filesystem_id),
       type_(cracked_type),
       path_(cracked_path.NormalizePathSeparators()),
-      filesystem_id_(filesystem_id) {
+      filesystem_id_(filesystem_id),
+      mount_option_(mount_option) {
 }
 
 FileSystemURL::~FileSystemURL() {}

@@ -249,6 +249,7 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())->
         RegisterFileSystem(kLocalMountPointName,
                            fileapi::kFileSystemTypeNativeLocal,
+                           fileapi::FileSystemMountOption(),
                            mount_point_dir_));
   }
 
@@ -275,6 +276,7 @@ class RestrictedFileSystemExtensionApiTest
     EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())->
         RegisterFileSystem(kRestrictedMountPointName,
                            fileapi::kFileSystemTypeRestrictedNativeLocal,
+                           fileapi::FileSystemMountOption(),
                            mount_point_dir_));
   }
 

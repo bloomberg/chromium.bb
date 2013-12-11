@@ -122,7 +122,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     // adding the test mount point (which will also be mapped as Downloads).
     mount_points->RevokeFileSystem(mount_point_name);
     EXPECT_TRUE(mount_points->RegisterFileSystem(
-        mount_point_name, fileapi::kFileSystemTypeNativeLocal, path));
+        mount_point_name, fileapi::kFileSystemTypeNativeLocal,
+        fileapi::FileSystemMountOption(), path));
   }
 
   void CheckJavascriptErrors() {

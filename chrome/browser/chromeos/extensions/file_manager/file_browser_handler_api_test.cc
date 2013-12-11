@@ -174,6 +174,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
     BrowserContext::GetMountPoints(browser()->profile())->RegisterFileSystem(
         "tmp",
         fileapi::kFileSystemTypeNativeLocal,
+        fileapi::FileSystemMountOption(),
         tmp_mount_point_);
   }
 

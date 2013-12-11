@@ -429,6 +429,7 @@ void DriveIntegrationService::AddDriveMountPoint() {
   bool success = mount_points->RegisterFileSystem(
       drive_mount_point.BaseName().AsUTF8Unsafe(),
       fileapi::kFileSystemTypeDrive,
+      fileapi::FileSystemMountOption(),
       drive_mount_point);
 
   if (success) {

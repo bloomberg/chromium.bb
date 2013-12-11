@@ -11,6 +11,7 @@
 #include "base/platform_file.h"
 #include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/common/fileapi/file_system_mount_option.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace fileapi {
@@ -118,6 +119,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
 
   FileSystemType mount_type() const { return mount_type_; }
 
+  const FileSystemMountOption& mount_option() const { return mount_option_; }
+
   // Returns the formatted URL of this instance.
   GURL ToGURL() const;
 
@@ -154,7 +157,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
                 const std::string& mount_filesystem_id,
                 FileSystemType cracked_type,
                 const base::FilePath& cracked_path,
-                const std::string& filesystem_id);
+                const std::string& filesystem_id,
+                const FileSystemMountOption& mount_option);
 
   bool is_valid_;
 
@@ -172,6 +176,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
   FileSystemType type_;
   base::FilePath path_;
   std::string filesystem_id_;
+  FileSystemMountOption mount_option_;
 };
 
 typedef std::set<FileSystemURL, FileSystemURL::Comparator> FileSystemURLSet;

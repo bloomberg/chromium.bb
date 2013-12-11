@@ -63,14 +63,17 @@ void FileSystemBackend::AddSystemMountPoints() {
   system_mount_points_->RegisterFileSystem(
       "archive",
       fileapi::kFileSystemTypeNativeLocal,
+      fileapi::FileSystemMountOption(),
       chromeos::CrosDisksClient::GetArchiveMountPoint());
   system_mount_points_->RegisterFileSystem(
       "removable",
       fileapi::kFileSystemTypeNativeLocal,
+      fileapi::FileSystemMountOption(fileapi::COPY_SYNC_OPTION_SYNC),
       chromeos::CrosDisksClient::GetRemovableDiskMountPoint());
   system_mount_points_->RegisterFileSystem(
       "oem",
       fileapi::kFileSystemTypeRestrictedNativeLocal,
+      fileapi::FileSystemMountOption(),
       base::FilePath(FILE_PATH_LITERAL("/usr/share/oem")));
 }
 
@@ -166,9 +169,11 @@ void FileSystemBackend::GrantFileAccessToExtension(
   std::string id;
   fileapi::FileSystemType type;
   base::FilePath path;
-  if (!mount_points_->CrackVirtualPath(virtual_path, &id, &type, &path) &&
+  fileapi::FileSystemMountOption option;
+  if (!mount_points_->CrackVirtualPath(virtual_path,
+                                       &id, &type, &path, &option) &&
       !system_mount_points_->CrackVirtualPath(virtual_path,
-                                              &id, &type, &path)) {
+                                              &id, &type, &path, &option)) {
     return;
   }
 

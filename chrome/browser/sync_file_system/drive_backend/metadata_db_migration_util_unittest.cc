@@ -30,7 +30,8 @@ bool CreateV0SerializedSyncableFileSystemURL(
     const base::FilePath& path,
     std::string* serialized_url) {
   fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      kV0ServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
+      kV0ServiceName, fileapi::kFileSystemTypeSyncable,
+      fileapi::FileSystemMountOption(), base::FilePath());
   fileapi::FileSystemURL url =
       fileapi::ExternalMountPoints::GetSystemInstance()->
           CreateExternalFileSystemURL(origin, kV0ServiceName, path);

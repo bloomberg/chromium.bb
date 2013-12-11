@@ -57,16 +57,22 @@ namespace fileapi {
 
 class ExternalMountPoints::Instance {
  public:
-  Instance(FileSystemType type, const base::FilePath& path)
-      : type_(type), path_(path.StripTrailingSeparators()) {}
+  Instance(FileSystemType type,
+           const base::FilePath& path,
+           const FileSystemMountOption& mount_option)
+      : type_(type),
+        path_(path.StripTrailingSeparators()),
+        mount_option_(mount_option) {}
   ~Instance() {}
 
   FileSystemType type() const { return type_; }
   const base::FilePath& path() const { return path_; }
+  const FileSystemMountOption& mount_option() const { return mount_option_; }
 
  private:
   const FileSystemType type_;
   const base::FilePath path_;
+  const FileSystemMountOption mount_option_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
@@ -86,14 +92,19 @@ scoped_refptr<ExternalMountPoints> ExternalMountPoints::CreateRefCounted() {
 bool ExternalMountPoints::RegisterFileSystem(
     const std::string& mount_name,
     FileSystemType type,
+    const FileSystemMountOption& mount_option,
     const base::FilePath& path_in) {
+  // COPY_SYNC_OPTION_SYNC is only applicable to native local file system.
+  DCHECK(type == kFileSystemTypeNativeLocal ||
+         mount_option.copy_sync_option() != COPY_SYNC_OPTION_SYNC);
+
   base::AutoLock locker(lock_);
 
   base::FilePath path = NormalizeFilePath(path_in);
   if (!ValidateNewMountPoint(mount_name, path))
     return false;
 
-  instance_map_[mount_name] = new Instance(type, path);
+  instance_map_[mount_name] = new Instance(type, path, mount_option);
   if (!path.empty())
     path_to_name_map_.insert(std::make_pair(path, mount_name));
   return true;
@@ -128,10 +139,12 @@ bool ExternalMountPoints::GetRegisteredPath(
   return true;
 }
 
-bool ExternalMountPoints::CrackVirtualPath(const base::FilePath& virtual_path,
-                                           std::string* mount_name,
-                                           FileSystemType* type,
-                                           base::FilePath* path) const {
+bool ExternalMountPoints::CrackVirtualPath(
+    const base::FilePath& virtual_path,
+    std::string* mount_name,
+    FileSystemType* type,
+    base::FilePath* path,
+    FileSystemMountOption* mount_option) const {
   DCHECK(mount_name);
   DCHECK(path);
 
@@ -165,6 +178,7 @@ bool ExternalMountPoints::CrackVirtualPath(const base::FilePath& virtual_path,
     if (type)
       *type = instance->type();
     cracked_path = instance->path();
+    *mount_option = instance->mount_option();
   }
 
   for (; component_iter != components.end(); ++component_iter)
@@ -268,23 +282,24 @@ FileSystemURL ExternalMountPoints::CrackFileSystemURL(
     return FileSystemURL(
         url.origin(), url.mount_type(), url.virtual_path(),
         url.mount_filesystem_id(), kFileSystemTypeNativeLocal,
-        url.path(), url.filesystem_id());
+        url.path(), url.filesystem_id(), url.mount_option());
 #endif
   }
 
   std::string mount_name;
   FileSystemType cracked_type;
   base::FilePath cracked_path;
+  FileSystemMountOption cracked_mount_option;
 
   if (!CrackVirtualPath(virtual_path, &mount_name, &cracked_type,
-                        &cracked_path)) {
+                        &cracked_path, &cracked_mount_option)) {
     return FileSystemURL();
   }
 
   return FileSystemURL(
       url.origin(), url.mount_type(), url.virtual_path(),
       !url.filesystem_id().empty() ? url.filesystem_id() : mount_name,
-      cracked_type, cracked_path, mount_name);
+      cracked_type, cracked_path, mount_name, cracked_mount_option);
 }
 
 bool ExternalMountPoints::ValidateNewMountPoint(const std::string& mount_name,

@@ -625,7 +625,10 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
   // smoothly, all accessed paths need to be registered in the list of
   // external mount points.
   fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      name, fileapi::kFileSystemTypeNativeLocal, path);
+      name,
+      fileapi::kFileSystemTypeNativeLocal,
+      fileapi::FileSystemMountOption(),
+      path);
 }
 
 void FileSystemChooseEntryFunction::SetInitialPathOnFileThread(

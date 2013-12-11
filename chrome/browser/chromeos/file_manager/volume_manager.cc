@@ -190,6 +190,7 @@ void VolumeManager::Initialize() {
   bool success = mount_points->RegisterFileSystem(
       downloads_folder.BaseName().AsUTF8Unsafe(),
       fileapi::kFileSystemTypeNativeLocal,
+      fileapi::FileSystemMountOption(),
       downloads_folder);
   DCHECK(success);
 

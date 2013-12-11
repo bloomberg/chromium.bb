@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "net/base/mime_util.h"
 #include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/common/fileapi/file_system_mount_option.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 #if defined(OS_CHROMEOS)
@@ -371,8 +372,9 @@ bool ValidateFileEntryAndGetPath(
   base::FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
       .Append(relative_path);
   fileapi::FileSystemType type;
+  fileapi::FileSystemMountOption mount_option;
   if (!context->CrackVirtualPath(
-          virtual_path, &filesystem_id, &type, file_path)) {
+          virtual_path, &filesystem_id, &type, file_path, &mount_option)) {
     *error = kInvalidParameters;
     return false;
   }

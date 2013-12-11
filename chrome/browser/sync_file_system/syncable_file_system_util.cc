@@ -51,10 +51,12 @@ void RegisterSyncableFileSystem() {
   ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kSyncableMountName,
       fileapi::kFileSystemTypeSyncable,
+      fileapi::FileSystemMountOption(),
       base::FilePath());
   ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kSyncableMountNameForInternalSync,
       fileapi::kFileSystemTypeSyncableForInternalSync,
+      fileapi::FileSystemMountOption(),
       base::FilePath());
 }
 
