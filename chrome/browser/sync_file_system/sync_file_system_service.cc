@@ -325,7 +325,21 @@ void SyncFileSystemService::DumpFiles(const GURL& origin,
 }
 
 scoped_ptr<base::ListValue> SyncFileSystemService::DumpDatabase() {
-  return remote_service_->DumpDatabase();
+  scoped_ptr<base::ListValue> list = remote_service_->DumpDatabase();
+  if (!list)
+    list.reset(new base::ListValue);
+  if (v2_remote_service_) {
+    scoped_ptr<base::ListValue> v2list = v2_remote_service_->DumpDatabase();
+    if (!v2list)
+      return list.Pass();
+    for (base::ListValue::iterator itr = v2list->begin();
+         itr != v2list->end(); ) {
+      scoped_ptr<base::Value> item;
+      itr = v2list->Erase(itr, &item);
+      list->Append(item.release());
+    }
+  }
+  return list.Pass();
 }
 
 void SyncFileSystemService::GetFileSyncStatus(
@@ -714,15 +728,15 @@ RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
     return remote_service_.get();
 
   if (!v2_remote_service_) {
+    v2_remote_service_ = RemoteFileSyncService::CreateForBrowserContext(
+        RemoteFileSyncService::V2, profile_);
     scoped_ptr<RemoteSyncRunner> v2_remote_syncer(
         new RemoteSyncRunner(kRemoteSyncNameV2, this,
                              v2_remote_service_.get()));
-
-    v2_remote_service_ = RemoteFileSyncService::CreateForBrowserContext(
-        RemoteFileSyncService::V2, profile_);
     v2_remote_service_->AddServiceObserver(v2_remote_syncer.get());
     v2_remote_service_->AddFileStatusObserver(this);
     v2_remote_service_->SetRemoteChangeProcessor(local_service_.get());
+    sync_runners_.push_back(v2_remote_syncer.release());
   }
   return v2_remote_service_.get();
 }
