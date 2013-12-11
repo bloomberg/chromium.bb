@@ -103,8 +103,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool allowWriteToClipboard(blink::WebFrame* frame,
                                      bool default_value);
   virtual bool allowWebComponents(const blink::WebDocument&, bool);
-  virtual bool allowHTMLNotifications(
-      const blink::WebDocument& document);
   virtual bool allowMutationEvents(const blink::WebDocument&,
                                    bool default_value);
   virtual bool allowPushState(const blink::WebDocument&);

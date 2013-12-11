@@ -1503,9 +1503,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
     }
 
-    if (message_center::IsRichNotificationEnabled())
-      command_line->AppendSwitch(switches::kDisableHTMLNotifications);
-
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
       autofill::switches::kDisableInteractiveAutocomplete,

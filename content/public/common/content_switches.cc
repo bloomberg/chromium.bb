@@ -236,9 +236,6 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 
-// Disables HTML-based desktop notifications.
-const char kDisableHTMLNotifications[]      = "disable-html-notifications";
-
 // Disable the use of an ImageTransportSurface. This means the GPU process
 // will present the rendered page rather than the browser process.
 const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";

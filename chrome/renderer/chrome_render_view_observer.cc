@@ -589,17 +589,6 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
   return false;
 }
 
-bool ChromeRenderViewObserver::allowHTMLNotifications(
-    const WebDocument& document) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableHTMLNotifications))
-    return false;
-
-  WebSecurityOrigin origin = document.securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  return extension && extension->HasAPIPermission(APIPermission::kNotification);
-}
-
 bool ChromeRenderViewObserver::allowMutationEvents(const WebDocument& document,
                                                    bool default_value) {
   WebSecurityOrigin origin = document.securityOrigin();
