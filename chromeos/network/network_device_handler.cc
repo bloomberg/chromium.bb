@@ -127,9 +127,6 @@ const char NetworkDeviceHandler::kErrorPinBlocked[] = "pin-blocked";
 const char NetworkDeviceHandler::kErrorPinRequired[] = "pin-required";
 const char NetworkDeviceHandler::kErrorUnknown[] = "unknown";
 
-NetworkDeviceHandler::NetworkDeviceHandler() {
-}
-
 NetworkDeviceHandler::~NetworkDeviceHandler() {
 }
 
@@ -254,13 +251,7 @@ void NetworkDeviceHandler::ChangePin(
       base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
-void NetworkDeviceHandler::HandleShillCallFailureForTest(
-    const std::string& device_path,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& shill_error_name,
-    const std::string& shill_error_message) {
-  HandleShillCallFailure(
-      device_path, error_callback, shill_error_name, shill_error_message);
+NetworkDeviceHandler::NetworkDeviceHandler() {
 }
 
 }  // namespace chromeos

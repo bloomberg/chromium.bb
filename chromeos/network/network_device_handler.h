@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler.h"
@@ -195,15 +194,8 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
  private:
   friend class NetworkHandler;
   friend class NetworkDeviceHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(NetworkDeviceHandlerTest, ErrorTranslation);
 
   NetworkDeviceHandler();
-
-  void HandleShillCallFailureForTest(
-      const std::string& device_path,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& error_name,
-      const std::string& error_message);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandler);
 };

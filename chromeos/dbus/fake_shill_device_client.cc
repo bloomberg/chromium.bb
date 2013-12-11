@@ -29,6 +29,14 @@ void ErrorFunction(const std::string& device_path,
              << ": " << error_name << " : " << error_message;
 }
 
+void PostDeviceNotFoundError(
+    const ShillDeviceClient::ErrorCallback& error_callback) {
+  std::string error_name("org.chromium.flimflam.Error.Failure");
+  std::string error_message("Failed");
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(error_callback, error_name, error_message));
+}
+
 }  // namespace
 
 FakeShillDeviceClient::FakeShillDeviceClient() : weak_ptr_factory_(this) {
@@ -79,12 +87,7 @@ void FakeShillDeviceClient::SetProperty(const dbus::ObjectPath& device_path,
   base::DictionaryValue* device_properties = NULL;
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
                                                        &device_properties)) {
-    std::string error_name("org.chromium.flimflam.Error.Failure");
-    std::string error_message("Failed");
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(error_callback,
-                                                      error_name,
-                                                      error_message));
+    PostDeviceNotFoundError(error_callback);
     return;
   }
   device_properties->SetWithoutPathExpansion(name, value.DeepCopy());
@@ -124,6 +127,10 @@ void FakeShillDeviceClient::RequirePin(const dbus::ObjectPath& device_path,
                                        bool require,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -131,6 +138,10 @@ void FakeShillDeviceClient::EnterPin(const dbus::ObjectPath& device_path,
                                      const std::string& pin,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -139,6 +150,10 @@ void FakeShillDeviceClient::UnblockPin(const dbus::ObjectPath& device_path,
                                        const std::string& pin,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -147,6 +162,10 @@ void FakeShillDeviceClient::ChangePin(const dbus::ObjectPath& device_path,
                                       const std::string& new_pin,
                                       const base::Closure& callback,
                                       const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -154,6 +173,10 @@ void FakeShillDeviceClient::Register(const dbus::ObjectPath& device_path,
                                      const std::string& network_id,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -161,12 +184,20 @@ void FakeShillDeviceClient::SetCarrier(const dbus::ObjectPath& device_path,
                                        const std::string& carrier,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,
                                   const base::Closure& callback,
                                   const ErrorCallback& error_callback) {
+  if (!stub_devices_.HasKey(device_path.value())) {
+    PostDeviceNotFoundError(error_callback);
+    return;
+  }
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
