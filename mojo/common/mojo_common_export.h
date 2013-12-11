@@ -15,7 +15,7 @@
 #define MOJO_COMMON_EXPORT __declspec(dllimport)
 #endif
 
-#else  // defined(WIN32)
+#else  // !defined(WIN32)
 
 #if defined(MOJO_COMMON_IMPLEMENTATION)
 #define MOJO_COMMON_EXPORT __attribute__((visibility("default")))
@@ -25,10 +25,8 @@
 
 #endif  // defined(WIN32)
 
-#else  // defined(COMPONENT_BUILD)
-
+#else  // !defined(COMPONENT_BUILD)
 #define MOJO_COMMON_EXPORT
-
-#endif  // defined(COMPONENT_BUILD)
+#endif
 
 #endif  // MOJO_COMMON_MOJO_COMMON_EXPORT_H_

@@ -2,31 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_GLES2_ADAPTOR_H_
-#define MOJO_PUBLIC_GLES2_ADAPTOR_H_
+#ifndef MOJO_PUBLIC_GLES2_GLES2_H_
+#define MOJO_PUBLIC_GLES2_GLES2_H_
 
 // Note: This header should be compilable as C.
 
 #include <stdint.h>
 
 #if defined(COMPONENT_BUILD)
+
 #if defined(WIN32)
 
 #if defined(MOJO_GLES2_IMPLEMENTATION)
 #define MOJO_GLES2_EXPORT __declspec(dllexport)
 #else
 #define MOJO_GLES2_EXPORT __declspec(dllimport)
-#endif  // defined(MOJO_GLES2_IMPLEMENTATION)
+#endif
 
-#else  // defined(WIN32)
+#else  // !defined(WIN32)
+
 #if defined(MOJO_GLES2_IMPLEMENTATION)
 #define MOJO_GLES2_EXPORT __attribute__((visibility("default")))
 #else
 #define MOJO_GLES2_EXPORT
 #endif
-#endif
 
-#else  // defined(COMPONENT_BUILD)
+#endif  // defined(WIN32)
+
+#else  // !defined(COMPONENT_BUILD)
 #define MOJO_GLES2_EXPORT
 #endif
 
@@ -44,4 +47,4 @@ MOJO_GLES2_EXPORT void MojoGLES2SwapBuffers();
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_GLES2_ADAPTOR_H_
+#endif  // MOJO_PUBLIC_GLES2_GLES2_H_
