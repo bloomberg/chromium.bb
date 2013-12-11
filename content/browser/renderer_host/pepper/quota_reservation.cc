@@ -116,12 +116,14 @@ void QuotaReservation::GotReservedQuota(
 }
 
 void QuotaReservation::DeleteOnCorrectThread() const {
-  if (file_system_context_) {
+  if (file_system_context_ &&
+      !file_system_context_->
+          default_file_task_runner()->RunsTasksOnCurrentThread()) {
     file_system_context_->default_file_task_runner()->DeleteSoon(
         FROM_HERE,
         this);
   } else {
-    // Unit testing code path.
+    // We're on the right thread to delete, or unit test.
     delete this;
   }
 }
