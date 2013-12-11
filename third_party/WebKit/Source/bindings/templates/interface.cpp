@@ -135,7 +135,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if is_constructor_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if is_constructor_call_with_execution_context %}
     ExecutionContext* context = getExecutionContext();
@@ -163,8 +163,10 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {% if has_event_constructor %}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (info.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "An event name must be provided."), info.GetIsolate());
+        exceptionState.throwTypeError("An event name must be provided.");
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -175,7 +177,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     {{cpp_class}}Init eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!initialize{{cpp_class}}(eventInit, options, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -189,7 +190,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {% endfor %}
     }
     {% if is_constructor_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     RefPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
