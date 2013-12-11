@@ -187,15 +187,6 @@ namespace WebCore {
     // FIXME: Replace all the call sites with V8TRYCATCH_FOR_V8STRINGRESOURCE().
     // Using this method will lead to a wrong behavior, because you cannot stop the
     // execution when an exception is thrown inside stringResource.prepare().
-    inline String toWebCoreStringWithNullCheck(v8::Handle<v8::Value> value)
-    {
-        V8StringResource<WithNullCheck> stringResource(value);
-        if (!stringResource.prepare())
-            return String();
-        return stringResource;
-    }
-
-    // FIXME: See the above comment.
     inline String toWebCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::Value> value)
     {
         V8StringResource<WithUndefinedOrNullCheck> stringResource(value);

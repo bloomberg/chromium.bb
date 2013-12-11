@@ -109,7 +109,8 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
             RefPtr<JSONValue> propertyValue = v8ToJSONValue(object->Get(name), maxDepth, isolate);
             if (!propertyValue)
                 return 0;
-            jsonObject->setValue(toWebCoreStringWithNullCheck(name), propertyValue);
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, nameString, name, 0);
+            jsonObject->setValue(nameString, propertyValue);
         }
         return jsonObject;
     }

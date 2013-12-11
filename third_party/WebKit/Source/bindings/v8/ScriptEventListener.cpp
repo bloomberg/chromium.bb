@@ -107,7 +107,8 @@ String eventListenerHandlerBody(Document* document, EventListener* listener)
     if (function.IsEmpty())
         return "";
 
-    return toWebCoreStringWithNullCheck(function);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, functionString, function, "");
+    return functionString;
 }
 
 ScriptValue eventListenerHandler(Document* document, EventListener* listener)

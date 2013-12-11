@@ -88,7 +88,8 @@ static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
             menu.appendItem(item);
         } else {
             ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
-            ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, toWebCoreStringWithNullCheck(label));
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, labelString, label, false);
+            ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, labelString);
             if (checked->IsBoolean())
                 menuItem.setChecked(checked->ToBoolean()->Value());
             if (enabled->IsBoolean())
