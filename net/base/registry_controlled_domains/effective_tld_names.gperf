@@ -67,6 +67,7 @@ ac.tz, 0
 ac.ug, 0
 ac.vn, 0
 aca.pro, 0
+academy, 0
 academy.museum, 0
 accident-investigation.aero, 0
 accident-prevention.aero, 0
@@ -427,6 +428,7 @@ bergbau.museum, 0
 bergen.no, 0
 berkeley.museum, 0
 berlevag.no, 0
+berlin, 0
 berlin.museum, 0
 bern.museum, 0
 beskidy.pl, 0
@@ -449,6 +451,7 @@ bieszczady.pl, 0
 bievat.no, 0
 bifuka.hokkaido.jp, 0
 bihoro.hokkaido.jp, 0
+bike, 0
 bilbao.museum, 0
 bill.museum, 0
 bindal.no, 0
@@ -526,6 +529,7 @@ blogspot.sg, 4
 blogspot.sk, 4
 blogspot.td, 4
 blogspot.tw, 4
+blue, 0
 bm, 0
 bmd.br, 0
 bn, 2
@@ -580,6 +584,8 @@ bt, 0
 bt.it, 0
 bu.no, 0
 budejju.no, 0
+build, 0
+builders, 0
 building.museum, 0
 bungoono.oita.jp, 0
 bungotakada.oita.jp, 0
@@ -589,8 +595,10 @@ buryatia.ru, 0
 bus.museum, 0
 busan.kr, 0
 bushey.museum, 0
+business, 0
 buyshouses.net, 4
 buzen.fukuoka.jp, 0
+buzz, 0
 bv.nl, 0
 bw, 0
 by, 0
@@ -608,12 +616,15 @@ ca.it, 0
 ca.na, 0
 ca.us, 0
 caa.aero, 0
+cab, 0
 cadaques.museum, 0
 cagliari.it, 0
 cahcesuolo.no, 0
 california.museum, 0
 caltanissetta.it, 0
 cambridge.museum, 0
+camera, 0
+camp, 0
 campidano-medio.it, 0
 campidanomedio.it, 0
 campobasso.it, 0
@@ -622,6 +633,8 @@ canada.museum, 0
 capebreton.museum, 0
 carbonia-iglesias.it, 0
 carboniaiglesias.it, 0
+career, 0
+careers, 0
 cargo.aero, 0
 carrara-massa.it, 0
 carraramassa.it, 0
@@ -700,7 +713,9 @@ cd, 0
 ce.it, 0
 cechire.com, 4
 celtic.museum, 0
+center, 0
 center.museum, 0
+ceo, 0
 certification.aero, 0
 cesena-forli.it, 0
 cesenaforli.it, 0
@@ -793,9 +808,11 @@ cl, 0
 cl.it, 0
 clinton.museum, 0
 clock.museum, 0
+clothing, 0
 cloudcontrolapp.com, 4
 cloudcontrolled.com, 4
 cloudfront.net, 4
+club, 0
 club.aero, 0
 club.tw, 0
 cm, 0
@@ -859,8 +876,10 @@ co.ve, 0
 co.vi, 0
 coal.museum, 0
 coastaldefence.museum, 0
+codes, 0
 codespot.com, 4
 cody.museum, 0
+coffee, 0
 coldwar.museum, 0
 collection.museum, 0
 colonialwilliamsburg.museum, 0
@@ -915,6 +934,7 @@ com.hk, 0
 com.hn, 0
 com.hr, 0
 com.ht, 0
+com.im, 0
 com.io, 0
 com.iq, 0
 com.is, 0
@@ -936,6 +956,7 @@ com.mg, 0
 com.mk, 0
 com.ml, 0
 com.mo, 0
+com.mt, 0
 com.mu, 0
 com.mv, 0
 com.mw, 0
@@ -992,18 +1013,22 @@ communication.museum, 0
 communications.museum, 0
 community.museum, 0
 como.it, 0
+company, 0
 compute-1.amazonaws.com, 4
 compute.amazonaws.com, 4
+computer, 0
 computer.museum, 0
 computerhistory.museum, 0
 conf.au, 0
 conf.lv, 0
 conference.aero, 0
+construction, 0
 consulado.st, 0
 consultant.aero, 0
 consulting.aero, 0
 contemporary.museum, 0
 contemporaryart.museum, 0
+contractors, 0
 control.aero, 0
 convent.museum, 0
 coop, 0
@@ -1035,7 +1060,7 @@ crew.aero, 0
 crimea.ua, 0
 crotone.it, 0
 cs.it, 0
-csiro.au, 0
+csiro.au, 1
 ct.it, 0
 ct.us, 0
 cu, 0
@@ -1043,6 +1068,7 @@ cultural.museum, 0
 culturalcenter.museum, 0
 culture.museum, 0
 cuneo.it, 0
+cupcake.is, 4
 cv, 0
 cv.ua, 0
 cw, 0
@@ -1065,6 +1091,7 @@ daito.osaka.jp, 0
 daiwa.hiroshima.jp, 0
 dali.museum, 0
 dallas.museum, 0
+dance, 0
 database.museum, 0
 date.fukushima.jp, 0
 date.hokkaido.jp, 0
@@ -1083,6 +1110,7 @@ delaware.museum, 0
 dell-ogliastra.it, 0
 dellogliastra.it, 0
 delmenhorst.museum, 0
+democrat, 0
 denmark.museum, 0
 dep.no, 0
 depot.museum, 0
@@ -1090,8 +1118,10 @@ design.aero, 0
 design.museum, 0
 detroit.museum, 0
 dgca.aero, 0
+diamonds, 0
 dielddanuorri.no, 0
 dinosaur.museum, 0
+directory, 0
 discovery.museum, 0
 divtasvuodna.no, 0
 divttasvuotna.no, 0
@@ -1114,6 +1144,7 @@ does-it.net, 4
 doesntexist.com, 4
 doesntexist.org, 4
 dolls.museum, 0
+domains, 0
 dominic.ua, 0
 donetsk.ua, 0
 donna.no, 0
@@ -1246,6 +1277,7 @@ edu.mk, 0
 edu.ml, 0
 edu.mn, 0
 edu.mo, 0
+edu.mt, 0
 edu.mv, 0
 edu.mw, 0
 edu.mx, 0
@@ -1289,6 +1321,7 @@ edu.vc, 0
 edu.ve, 0
 edu.vn, 0
 edu.ws, 0
+education, 0
 education.museum, 0
 educational.museum, 0
 educator.aero, 0
@@ -1313,6 +1346,7 @@ elburg.museum, 0
 elk.pl, 0
 elvendrell.museum, 0
 elverum.no, 0
+email, 0
 embaixada.st, 0
 embetsu.hokkaido.jp, 0
 embroidery.museum, 0
@@ -1334,11 +1368,13 @@ england.museum, 0
 eniwa.hokkaido.jp, 0
 enna.it, 0
 ens.tn, 0
+enterprises, 0
 entertainment.aero, 0
 entomology.museum, 0
 environment.museum, 0
 environmentalconservation.museum, 0
 epilepsy.museum, 0
+equipment, 0
 equipment.aero, 0
 er, 2
 erimo.hokkaido.jp, 0
@@ -1355,6 +1391,7 @@ est-a-la-masion.com, 4
 est-le-patron.com, 4
 est-mon-blogueur.com, 4
 est.pr, 0
+estate, 0
 estate.museum, 0
 et, 2
 etajima.hiroshima.jp, 0
@@ -1382,6 +1419,7 @@ fam.pk, 0
 family.museum, 0
 far.br, 0
 fareast.ru, 0
+farm, 0
 farm.museum, 0
 farmequipment.museum, 0
 farmers.museum, 0
@@ -1441,6 +1479,7 @@ flog.br, 0
 flora.no, 0
 florence.it, 0
 florida.museum, 0
+florist, 0
 floro.no, 0
 fm, 0
 fm.br, 0
@@ -1595,6 +1634,7 @@ fusa.no, 0
 fuso.aichi.jp, 0
 fussa.tokyo.jp, 0
 futaba.fukushima.jp, 0
+futbol, 0
 futsu.nagasaki.jp, 0
 futtsu.chiba.jp, 0
 fylkesbibl.no, 0
@@ -1605,6 +1645,8 @@ g12.br, 0
 ga, 0
 ga.us, 0
 gaivuotna.no, 0
+gal, 0
+gallery, 0
 gallery.museum, 0
 galsa.no, 0
 gamagori.aichi.jp, 0
@@ -1649,6 +1691,7 @@ gh, 0
 gi, 0
 giehtavuoatna.no, 0
 giessen.museum, 0
+gift, 0
 gifu.gifu.jp, 0
 gifu.jp, 0
 gildeskal.no, 0
@@ -1664,6 +1707,7 @@ gjesdal.no, 0
 gjovik.no, 0
 gl, 0
 glas.museum, 0
+glass, 0
 glass.museum, 0
 gliding.aero, 0
 gliwice.pl, 0
@@ -1764,20 +1808,17 @@ gov.ec, 0
 gov.ee, 0
 gov.eg, 0
 gov.ge, 0
-gov.gg, 0
 gov.gh, 0
 gov.gi, 0
 gov.gn, 0
 gov.gr, 0
 gov.hk, 0
 gov.ie, 0
-gov.im, 0
 gov.in, 0
 gov.iq, 0
 gov.ir, 0
 gov.is, 0
 gov.it, 0
-gov.je, 0
 gov.jo, 0
 gov.kg, 0
 gov.ki, 0
@@ -1856,6 +1897,7 @@ gran.no, 0
 grandrapids.museum, 0
 grane.no, 0
 granvin.no, 0
+graphics, 0
 gratangen.no, 0
 graz.museum, 0
 greta.fr, 0
@@ -1898,10 +1940,12 @@ gu, 2
 gu.us, 0
 gub.uy, 0
 guernsey.museum, 0
+guide, 0
 gujo.gifu.jp, 0
 gulen.no, 0
 gunma.jp, 0
 guovdageaidnu.no, 0
+guru, 0
 gushikami.okinawa.jp, 0
 gv.ao, 0
 gv.at, 0
@@ -2106,7 +2150,9 @@ hokuryu.hokkaido.jp, 0
 hokuto.hokkaido.jp, 0
 hokuto.yamanashi.jp, 0
 hol.no, 0
+holdings, 0
 hole.no, 0
+holiday, 0
 holmestrand.no, 0
 holtalen.no, 0
 home.dyndns.org, 4
@@ -2136,6 +2182,7 @@ horten.no, 0
 hotel.hu, 0
 hotel.lk, 0
 hotel.tz, 0
+house, 0
 house.museum, 0
 hoyanger.no, 0
 hoylandet.no, 0
@@ -2220,6 +2267,7 @@ imakane.hokkaido.jp, 0
 imari.saga.jp, 0
 imb.br, 0
 imizu.toyama.jp, 0
+immobilien, 0
 imperia.it, 0
 in, 0
 in-addr.arpa, 0
@@ -2283,6 +2331,7 @@ info.vn, 0
 ing.pa, 0
 ingatlan.hu, 0
 ino.kochi.jp, 0
+institute, 0
 insurance.aero, 0
 int, 0
 int.ar, 0
@@ -2303,6 +2352,7 @@ int.tt, 0
 int.vn, 0
 intelligence.museum, 0
 interactive.museum, 0
+international, 0
 intl.tn, 0
 inuyama.aichi.jp, 0
 inzai.chiba.jp, 0
@@ -2560,7 +2610,6 @@ k12.pa.us, 0
 k12.pr.us, 0
 k12.ri.us, 0
 k12.sc.us, 0
-k12.sd.us, 0
 k12.tn.us, 0
 k12.tx.us, 0
 k12.ut.us, 0
@@ -2694,6 +2743,7 @@ katsuragi.wakayama.jp, 0
 katsushika.tokyo.jp, 0
 katsuura.chiba.jp, 0
 katsuyama.fukui.jp, 0
+kaufen, 0
 kautokeino.no, 0
 kawaba.gunma.jp, 0
 kawachinagano.osaka.jp, 0
@@ -2758,6 +2808,7 @@ kijo.miyazaki.jp, 0
 kikonai.hokkaido.jp, 0
 kikuchi.kumamoto.jp, 0
 kikugawa.shizuoka.jp, 0
+kim, 0
 kimino.wakayama.jp, 0
 kimitsu.chiba.jp, 0
 kimobetsu.hokkaido.jp, 0
@@ -2796,7 +2847,9 @@ kitanakagusuku.okinawa.jp, 0
 kitashiobara.fukushima.jp, 0
 kitaura.miyazaki.jp, 0
 kitayama.wakayama.jp, 0
+kitchen, 0
 kiwa.mie.jp, 0
+kiwi, 0
 kiyama.saga.jp, 0
 kiyokawa.kanagawa.jp, 0
 kiyosato.hokkaido.jp, 0
@@ -2979,6 +3032,7 @@ lajolla.museum, 0
 lakas.hu, 0
 lanbib.se, 0
 lancashire.museum, 0
+land, 0
 land-4-sale.us, 4
 landes.museum, 0
 langevag.no, 0
@@ -3077,15 +3131,16 @@ lib.vi.us, 0
 lib.vt.us, 0
 lib.wa.us, 0
 lib.wi.us, 0
-lib.wv.us, 0
 lib.wy.us, 0
 lier.no, 0
 lierne.no, 0
+lighting, 0
 likes-pie.com, 4
 likescandy.com, 4
 lillehammer.no, 0
 lillesand.no, 0
 limanowa.pl, 0
+limo, 0
 lincoln.museum, 0
 lindas.no, 0
 lindesnes.no, 0
@@ -3133,6 +3188,7 @@ luroy.no, 0
 luster.no, 0
 lutsk.ua, 0
 luxembourg.museum, 0
+luxury, 0
 luzern.museum, 0
 lv, 0
 lv.ua, 0
@@ -3165,8 +3221,10 @@ malopolska.pl, 0
 malselv.no, 0
 malvik.no, 0
 mamurogawa.yamagata.jp, 0
+management, 0
 manchester.museum, 0
 mandal.no, 0
+mango, 0
 maniwa.okayama.jp, 0
 manno.kagawa.jp, 0
 mansion.museum, 0
@@ -3180,6 +3238,7 @@ marine.ru, 0
 maritime.museum, 0
 maritimo.museum, 0
 marker.no, 0
+marketing, 0
 marketplace.aero, 0
 marnardal.no, 0
 marugame.kagawa.jp, 0
@@ -3245,7 +3304,6 @@ media.aero, 0
 media.hu, 0
 media.museum, 0
 media.pl, 0
-mediaphone.om, 1
 medical.museum, 0
 medio-campidano.it, 0
 mediocampidano.it, 0
@@ -3259,6 +3317,7 @@ meldal.no, 0
 melhus.no, 0
 meloy.no, 0
 memorial.museum, 0
+menu, 0
 meraker.no, 0
 merseine.nu, 4
 mesaverde.museum, 0
@@ -3457,15 +3516,18 @@ mobi.tz, 0
 mochizuki.nagano.jp, 0
 mod.gi, 0
 mod.uk, 1
+moda, 0
 modalen.no, 0
 modelling.aero, 0
 modena.it, 0
 modern.museum, 0
 modum.no, 0
+moe, 0
 moka.tochigi.jp, 0
 molde.no, 0
 moma.museum, 0
 mombetsu.hokkaido.jp, 0
+monash, 0
 money.museum, 0
 monmouth.museum, 0
 monticello.museum, 0
@@ -3507,7 +3569,7 @@ ms.it, 0
 ms.kr, 0
 ms.us, 0
 msk.ru, 0
-mt, 2
+mt, 0
 mt.it, 0
 mt.us, 0
 mu, 0
@@ -3580,6 +3642,7 @@ nagawa.nagano.jp, 0
 nagi.okayama.jp, 0
 nagiso.nagano.jp, 0
 nago.okinawa.jp, 0
+nagoya, 0
 nagoya.jp, 2
 naha.okinawa.jp, 0
 nahari.kochi.jp, 0
@@ -3680,8 +3743,6 @@ naustdal.no, 0
 naval.museum, 0
 navigation.aero, 0
 navuotna.no, 0
-nawras.om, 1
-nawrastelecom.om, 1
 nayoro.hokkaido.jp, 0
 nb.ca, 0
 nc, 0
@@ -3772,6 +3833,7 @@ net.me, 0
 net.mk, 0
 net.ml, 0
 net.mo, 0
+net.mt, 0
 net.mu, 0
 net.mv, 0
 net.mw, 0
@@ -3836,7 +3898,6 @@ ngo.ph, 0
 ngo.pl, 0
 nh.us, 0
 ni, 2
-nic.im, 0
 nic.in, 0
 nic.tj, 0
 nic.tr, 1
@@ -3855,6 +3916,7 @@ nikaho.akita.jp, 0
 niki.hokkaido.jp, 0
 nikko.tochigi.jp, 0
 nikolaev.ua, 0
+ninja, 0
 ninohe.iwate.jp, 0
 ninomiya.kanagawa.jp, 0
 nirasaki.yamanashi.jp, 0
@@ -3956,7 +4018,6 @@ nsw.edu.au, 0
 nt.au, 0
 nt.ca, 0
 nt.edu.au, 0
-nt.gov.au, 0
 nt.no, 0
 nt.ro, 0
 ntr.br, 0
@@ -4072,9 +4133,6 @@ omachi.nagano.jp, 0
 omachi.saga.jp, 0
 omaezaki.shizuoka.jp, 0
 omaha.museum, 0
-omanmobile.om, 1
-omanpost.om, 1
-omantel.om, 1
 omasvuotna.no, 0
 ome.tokyo.jp, 0
 omi.nagano.jp, 0
@@ -4092,6 +4150,7 @@ on.ca, 0
 onagawa.miyagi.jp, 0
 onga.fukuoka.jp, 0
 onjuku.chiba.jp, 0
+onl, 0
 online.museum, 0
 onna.okinawa.jp, 0
 ono.fukui.jp, 0
@@ -4202,6 +4261,7 @@ org.mk, 0
 org.ml, 0
 org.mn, 0
 org.mo, 0
+org.mt, 0
 org.mu, 0
 org.mv, 0
 org.mw, 0
@@ -4302,6 +4362,7 @@ otoineppu.hokkaido.jp, 0
 otoyo.kochi.jp, 0
 otsu.shiga.jp, 0
 otsuchi.iwate.jp, 0
+otsuka, 0
 otsuki.kochi.jp, 0
 otsuki.yamanashi.jp, 0
 ouchi.saga.jp, 0
@@ -4380,12 +4441,15 @@ philadelphia.museum, 0
 philadelphiaarea.museum, 0
 philately.museum, 0
 phoenix.museum, 0
+photography, 0
 photography.museum, 0
+photos, 0
 pi.it, 0
 piacenza.it, 0
 pila.pl, 0
 pilot.aero, 0
 pilots.museum, 0
+pink, 0
 pippu.hokkaido.jp, 0
 pisa.it, 0
 pistoia.it, 0
@@ -4401,6 +4465,7 @@ plaza.museum, 0
 plc.co.im, 0
 plc.ly, 0
 plo.ps, 0
+plumbing, 0
 pm, 0
 pn, 0
 pn.it, 0
@@ -4519,7 +4584,6 @@ railroad.museum, 0
 railway.museum, 0
 raisa.no, 0
 rakkestad.no, 0
-rakpetroleum.om, 1
 ralingen.no, 0
 rana.no, 0
 randaberg.no, 0
@@ -4539,7 +4603,9 @@ rec.br, 0
 rec.co, 0
 rec.nf, 0
 rec.ro, 0
+recipes, 0
 recreation.aero, 0
+red, 0
 red.sv, 0
 reggio-calabria.it, 0
 reggio-emilia.it, 0
@@ -4552,12 +4618,14 @@ rendalen.no, 0
 rennebu.no, 0
 rennesoy.no, 0
 rep.kp, 0
+repair, 0
 repbody.aero, 0
 res.aero, 0
 res.in, 0
 research.aero, 0
 research.museum, 0
 resistance.museum, 0
+reviews, 0
 rg.it, 0
 rhcloud.com, 4
 ri.it, 0
@@ -4612,6 +4680,7 @@ rs.ba, 0
 ru, 0
 ru.com, 4
 rubtsovsk.ru, 0
+ruhr, 0
 ruovat.no, 0
 russia.museum, 0
 rv.ua, 0
@@ -4752,10 +4821,8 @@ sc.tz, 0
 sc.ug, 0
 sc.us, 0
 sch.ae, 0
-sch.gg, 0
 sch.id, 0
 sch.ir, 0
-sch.je, 0
 sch.jo, 0
 sch.lk, 0
 sch.ly, 0
@@ -4837,6 +4904,7 @@ settsu.osaka.jp, 0
 sevastopol.ua, 0
 sex.hu, 0
 sex.pl, 0
+sexy, 0
 sf.no, 0
 sg, 0
 sh, 0
@@ -4930,6 +4998,7 @@ shizukuishi.iwate.jp, 0
 shizuoka.jp, 0
 shizuoka.shizuoka.jp, 0
 shobara.hiroshima.jp, 0
+shoes, 0
 shonai.fukuoka.jp, 0
 shonai.yamagata.jp, 0
 shoo.okayama.jp, 0
@@ -4946,13 +5015,13 @@ si.it, 0
 sibenik.museum, 0
 siedlce.pl, 0
 siellak.no, 0
-siemens.om, 1
 siena.it, 0
 sigdal.no, 0
 siljan.no, 0
 silk.museum, 0
 simbirsk.ru, 0
 simple-url.com, 4
+singles, 0
 siracusa.it, 0
 sirdal.no, 0
 sk, 0
@@ -4997,6 +5066,7 @@ so.gov.pl, 0
 so.it, 0
 sobetsu.hokkaido.jp, 0
 soc.lk, 0
+social, 0
 society.museum, 0
 sodegaura.chiba.jp, 0
 soeda.fukuoka.jp, 0
@@ -5007,14 +5077,15 @@ soja.okayama.jp, 0
 soka.saitama.jp, 0
 sokndal.no, 0
 sola.no, 0
+solar, 0
 sologne.museum, 0
 solund.no, 0
+solutions, 0
 soma.fukushima.jp, 0
 somna.no, 0
 sondre-land.no, 0
 sondrio.it, 0
 songdalen.no, 0
-songfest.om, 1
 soni.nara.jp, 0
 soo.kagoshima.jp, 0
 sopot.pl, 0
@@ -5060,7 +5131,6 @@ starnberg.museum, 0
 starostwo.gov.pl, 0
 stat.no, 0
 state.museum, 0
-statecouncil.om, 1
 stateofdelaware.museum, 0
 stathelle.no, 0
 station.museum, 0
@@ -5114,6 +5184,7 @@ sumy.ua, 0
 sunagawa.hokkaido.jp, 0
 sund.no, 0
 sunndal.no, 0
+support, 0
 surgeonshall.museum, 0
 surgut.ru, 0
 surnadal.no, 0
@@ -5140,6 +5211,7 @@ sx.cn, 0
 sy, 0
 sydney.museum, 0
 sykkylven.no, 0
+systems, 0
 syzran.ru, 0
 sz, 0
 szczecin.pl, 0
@@ -5244,6 +5316,7 @@ tateyama.chiba.jp, 0
 tateyama.toyama.jp, 0
 tatsuno.hyogo.jp, 0
 tatsuno.nagano.jp, 0
+tattoo, 0
 tawaramoto.nara.jp, 0
 taxi.aero, 0
 taxi.br, 0
@@ -5253,6 +5326,7 @@ td, 0
 te.it, 0
 te.ua, 0
 teaches-yoga.com, 4
+technology, 0
 technology.museum, 0
 tel, 0
 teledata.mz, 1
@@ -5284,6 +5358,7 @@ time.no, 0
 timekeeping.museum, 0
 tingvoll.no, 0
 tinn.no, 0
+tips, 0
 tj, 0
 tj.cn, 0
 tjeldsund.no, 0
@@ -5314,6 +5389,7 @@ tochigi.jp, 0
 tochigi.tochigi.jp, 0
 tochio.niigata.jp, 0
 toda.saitama.jp, 0
+today, 0
 toei.aichi.jp, 0
 toga.toyama.jp, 0
 togakushi.nagano.jp, 0
@@ -5336,6 +5412,7 @@ tokorozawa.saitama.jp, 0
 tokushima.jp, 0
 tokushima.tokushima.jp, 0
 tokuyama.yamaguchi.jp, 0
+tokyo, 0
 tokyo.jp, 0
 tolga.no, 0
 tom.ru, 0
@@ -5404,6 +5481,7 @@ trader.aero, 0
 trading.aero, 0
 traeumtgerade.de, 4
 trainer.aero, 0
+training, 0
 trana.no, 0
 tranby.no, 0
 trani-andria-barletta.it, 0
@@ -5462,6 +5540,7 @@ tsushima.nagasaki.jp, 0
 tsuwano.shimane.jp, 0
 tsuyama.okayama.jp, 0
 tt, 0
+tt.im, 0
 tula.ru, 0
 tur.ar, 0
 tur.br, 0
@@ -5473,6 +5552,7 @@ tuva.ru, 0
 tv, 0
 tv.bo, 0
 tv.br, 0
+tv.im, 0
 tv.it, 0
 tv.na, 0
 tv.sd, 0
@@ -5535,6 +5615,7 @@ univ.sn, 0
 university.museum, 0
 unjarga.no, 0
 unnan.shimane.jp, 0
+uno, 0
 unsa.ba, 0
 unzen.nagasaki.jp, 0
 uonuma.niigata.jp, 0
@@ -5626,6 +5707,7 @@ vegarshei.no, 0
 venezia.it, 0
 venice.it, 0
 vennesla.no, 0
+ventures, 0
 verbania.it, 0
 vercelli.it, 0
 verdal.no, 0
@@ -5647,6 +5729,7 @@ vgs.no, 0
 vi, 0
 vi.it, 0
 vi.us, 0
+viajes, 0
 vibo-valentia.it, 0
 vibovalentia.it, 0
 vic.au, 0
@@ -5681,6 +5764,8 @@ volyn.ua, 0
 voronezh.ru, 0
 voss.no, 0
 vossevangen.no, 0
+voting, 0
+voyage, 0
 vr.it, 0
 vrn.ru, 0
 vs.it, 0
@@ -5708,6 +5793,7 @@ wakuya.miyagi.jp, 0
 walbrzych.pl, 0
 wales.museum, 0
 wallonie.museum, 0
+wang, 0
 wanouchi.gifu.jp, 0
 war.museum, 0
 warabi.saitama.jp, 0
@@ -5733,6 +5819,7 @@ webhop.biz, 4
 webhop.info, 4
 webhop.net, 4
 webhop.org, 4
+wed, 0
 wegrow.pl, 0
 western.museum, 0
 westfalen.museum, 0
@@ -5740,6 +5827,8 @@ wf, 0
 whaling.museum, 0
 wi.us, 0
 wielun.pl, 0
+wien, 0
+wiki, 0
 wiki.br, 0
 wildlife.museum, 0
 williamsburg.museum, 0
@@ -5764,11 +5853,19 @@ wy.us, 0
 x.bg, 0
 x.se, 0
 xj.cn, 0
+xn--3bst00m, 0
+xn--3ds443g, 0
 xn--3e0b707e, 0
 xn--45brj9c, 0
+xn--4gbrim, 0
 xn--54b7fta0cc, 0
+xn--55qw42g, 0
 xn--55qx5d.cn, 0
 xn--55qx5d.hk, 0
+xn--6frz82g, 0
+xn--6qq986b3xl, 0
+xn--80asehdb, 0
+xn--80aswg, 0
 xn--90a3ac, 0
 xn--9dbhblg6di.museum, 0
 xn--andy-ira.no, 0
@@ -5794,6 +5891,7 @@ xn--brnny-wuac.no, 0
 xn--brnnysund-m8ac.no, 0
 xn--brum-voa.no, 0
 xn--btsfjord-9za.no, 0
+xn--cg4bki, 0
 xn--ciqpn.hk, 0
 xn--clchc0ea0b2g2a9gcd, 0
 xn--comunicaes-v6a2o.museum, 0
@@ -5805,6 +5903,8 @@ xn--drbak-wua.no, 0
 xn--dyry-ira.no, 0
 xn--eveni-0qa01ga.no, 0
 xn--finny-yua.no, 0
+xn--fiq228c5hs, 0
+xn--fiq64b, 0
 xn--fiqs8s, 0
 xn--fiqz9s, 0
 xn--fjord-lra.no, 0
@@ -5887,6 +5987,7 @@ xn--mgba3a4f16a.ir, 0
 xn--mgba3a4fra, 0
 xn--mgba3a4fra.ir, 0
 xn--mgbaam7a8h, 0
+xn--mgbab2bd, 0
 xn--mgbayh7gpa, 0
 xn--mgbbh1a71e, 0
 xn--mgbc0a9azcg, 0
@@ -5907,6 +6008,7 @@ xn--msy-ula0h.no, 0
 xn--mtta-vrjjat-k7af.no, 0
 xn--muost-0qa.no, 0
 xn--mxtq1m.hk, 0
+xn--ngbc5azd, 0
 xn--nmesjevuemie-tcba.no, 0
 xn--nnx388a, 0
 xn--node, 0
@@ -5924,6 +6026,7 @@ xn--osyro-wua.no, 0
 xn--p1ai, 0
 xn--pgbs0dh, 0
 xn--porsgu-sta26f.no, 0
+xn--q9jyb4c, 0
 xn--rady-ira.no, 0
 xn--rdal-poa.no, 0
 xn--rde-ula.no, 0
@@ -5931,6 +6034,7 @@ xn--rdy-0nab.no, 0
 xn--rennesy-v1a.no, 0
 xn--rhkkervju-01af.no, 0
 xn--rholt-mra.no, 0
+xn--rhqv96g, 0
 xn--risa-5na.no, 0
 xn--risr-ira.no, 0
 xn--rland-uua.no, 0
@@ -5983,6 +6087,7 @@ xn--uc0atv.hk, 0
 xn--uc0atv.tw, 0
 xn--uc0ay4a.hk, 0
 xn--unjrga-rta.no, 0
+xn--unup4y, 0
 xn--vads-jra.no, 0
 xn--vard-jra.no, 0
 xn--vegrshei-c0a.no, 0
@@ -5990,6 +6095,7 @@ xn--vestvgy-ixa6o.no, 0
 xn--vg-yiab.no, 0
 xn--vgan-qoa.no, 0
 xn--vgsy-qoa0j.no, 0
+xn--vhquv, 0
 xn--vler-qoa.hedmark.no, 0
 xn--vler-qoa.xn--stfold-9xa.no, 0
 xn--vre-eiker-k8a.no, 0
@@ -6007,6 +6113,7 @@ xn--ygbi2ammx, 0
 xn--ystre-slidre-ujb.no, 0
 xn--zf0ao64a.tw, 0
 xn--zf0avx.hk, 0
+xn--zfr164b, 0
 xxx, 0
 xz.cn, 0
 y.bg, 0
