@@ -85,19 +85,6 @@ keyDown('\b'); // -> 05:06 [--]
 keyDown('P'); // -> 05:06 [PM]
 shouldBeEqualToString('input.value', '17:06');
 
-// FIXME: We should test type ahead time out. When event.leapForward() affects
-// keyboard event time stamp, we can uncomment this fragment.
-/*
-beginTest('Digit keys with type ahead timeout');
-keyDown('1');
-leapForward(1100);
-keyDown('1');
-keyDown('5');
-keyDown('6');
-keyDown('A');
-shouldBeEqualToString('input.value', '01:56');
-*/
-
 beginTest('Left/Right keys', '01:24');
 keyDown('rightArrow');
 keyDown('5');

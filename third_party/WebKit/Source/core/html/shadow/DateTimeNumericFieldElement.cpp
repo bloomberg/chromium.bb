@@ -37,8 +37,6 @@ using namespace WTF::Unicode;
 
 namespace WebCore {
 
-static const DOMTimeStamp typeAheadTimeout = 1000;
-
 int DateTimeNumericFieldElement::Range::clampValue(int value) const
 {
     return std::min(std::max(value, minimum), maximum);
@@ -53,7 +51,6 @@ bool DateTimeNumericFieldElement::Range::isInRange(int value) const
 
 DateTimeNumericFieldElement::DateTimeNumericFieldElement(Document& document, FieldOwner& fieldOwner, const Range& range, const Range& hardLimits, const String& placeholder, const DateTimeNumericFieldElement::Step& step)
     : DateTimeFieldElement(document, fieldOwner)
-    , m_lastDigitCharTime(0)
     , m_placeholder(placeholder)
     , m_range(range)
     , m_hardLimits(hardLimits)
@@ -125,13 +122,7 @@ void DateTimeNumericFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEve
     if (digit < 0 || digit > 9)
         return;
 
-    DOMTimeStamp delta = keyboardEvent->timeStamp() - m_lastDigitCharTime;
-    m_lastDigitCharTime = keyboardEvent->timeStamp();
-
-    if (delta > typeAheadTimeout)
-        m_typeAheadBuffer.clear();
     m_typeAheadBuffer.append(number);
-
     int newValue = typeAheadValue();
     if (newValue >= m_hardLimits.minimum)
         setValueAsInteger(newValue, DispatchEvent);

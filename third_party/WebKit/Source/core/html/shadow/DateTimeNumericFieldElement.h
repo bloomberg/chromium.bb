@@ -92,7 +92,6 @@ private:
     int roundDown(int) const;
     int typeAheadValue() const;
 
-    DOMTimeStamp m_lastDigitCharTime;
     const String m_placeholder;
     const Range m_range;
     const Range m_hardLimits;

@@ -70,18 +70,6 @@ keyDown('0'); // -> Week 01, [0000]
 keyDown('6'); // -> Week 05, [0006]
 shouldBeEqualToString('input.value', '0006-W01');
 
-// FIXME: We should test type ahead time out. When event.leapForward() affects
-// keyboard event time stamp, we can uncomment this fragment.
-/*
-beginTest('Digit keys with type ahead timeout');
-keyDown('1'); // -> Week [01], yyyy
-eventSender.leapForward(1100); // -> Week 01, [yyyy]
-keyDown('1'); // -> Week 01, [0001]
-keyDown('5'); // -> Week 01, [0015]
-keyDown('6'); // -> Week 01, [0156]
-shouldBeEqualToString('input.value', '0156-W01');
-*/
-
 beginTest('Left/Right keys', '2012-W09');
 keyDown('rightArrow'); // -> Week 09, [2012]
 keyDown('5'); // -> Week 09, [0005]
