@@ -162,10 +162,6 @@ class DriveMetadataStore
                                        const leveldb::Status& status);
   void DidInitialize(const InitializationCallback& callback,
                      scoped_ptr<DBContents> contents);
-  void DidUpdateOrigin(const SyncStatusCallback& callback,
-                       SyncStatusCode status);
-
-  leveldb::DB* GetDBInstanceForTesting();
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   base::FilePath base_dir_;

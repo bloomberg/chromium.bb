@@ -145,14 +145,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     EXPECT_EQ(SYNC_STATUS_OK, status);
   }
 
-  void AddLocalFolder(const GURL& origin,
-                      const base::FilePath& path) {
-    ASSERT_TRUE(ContainsKey(file_systems_, origin));
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
-              file_systems_[origin]->CreateDirectory(
-                  CreateSyncableFileSystemURL(origin, path)));
-  }
-
   void AddOrUpdateLocalFile(const GURL& origin,
                             const base::FilePath& path,
                             const std::string& content) {

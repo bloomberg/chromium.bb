@@ -222,16 +222,8 @@ class DriveMetadataStoreTest : public testing::Test {
               GetResourceID(metadata_store()->disabled_origins(), origin));
   }
 
-  base::FilePath base_dir() {
-    return base_dir_.path();
-  }
-
   DriveMetadataStore* metadata_store() {
     return drive_metadata_store_.get();
-  }
-
-  leveldb::DB* metadata_db() {
-    return drive_metadata_store_->GetDBInstanceForTesting();
   }
 
   const DriveMetadataStore::MetadataMap& metadata_map() {

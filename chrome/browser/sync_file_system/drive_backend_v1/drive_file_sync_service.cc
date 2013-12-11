@@ -123,12 +123,6 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
   return service.Pass();
 }
 
-scoped_ptr<drive_backend::APIUtilInterface>
-DriveFileSyncService::DestroyAndPassAPIUtilForTesting(
-    scoped_ptr<DriveFileSyncService> sync_service) {
-  return sync_service->api_util_.Pass();
-}
-
 void DriveFileSyncService::AddServiceObserver(Observer* observer) {
   service_observers_.AddObserver(observer);
 }

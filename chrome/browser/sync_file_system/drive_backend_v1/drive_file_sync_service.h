@@ -85,12 +85,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
       scoped_ptr<drive_backend::APIUtilInterface> api_util,
       scoped_ptr<DriveMetadataStore> metadata_store);
 
-  // Destroys |sync_service| and passes the ownership of |sync_client| to caller
-  // for testing.
-  static scoped_ptr<drive_backend::APIUtilInterface>
-      DestroyAndPassAPIUtilForTesting(
-          scoped_ptr<DriveFileSyncService> sync_service);
-
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(Observer* observer) OVERRIDE;
   virtual void AddFileStatusObserver(FileStatusObserver* observer) OVERRIDE;
@@ -182,9 +176,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
   void DidInitializeMetadataStore(const SyncStatusCallback& callback,
                                   SyncStatusCode status,
                                   bool created);
-  void DidGetDriveRootResourceId(const SyncStatusCallback& callback,
-                                 google_apis::GDataErrorCode error,
-                                 const std::string& root_resource_id);
 
   void UpdateServiceStateFromLastOperationStatus(
       SyncStatusCode sync_status,
@@ -243,9 +234,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
   void UpdateRegisteredOrigins();
 
   void StartBatchSync(const SyncStatusCallback& callback);
-  void GetDriveDirectoryForOrigin(const GURL& origin,
-                                  const SyncStatusCallback& callback,
-                                  const std::string& sync_root_resource_id);
   void DidGetDriveDirectoryForOrigin(const GURL& origin,
                                      const SyncStatusCallback& callback,
                                      SyncStatusCode status,
@@ -293,7 +281,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const base::Time& updated_time,
       SyncFileType file_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
-  void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 
   // TODO(kinuko,tzik): Move this out of DriveFileSyncService.
   void MarkConflict(
@@ -331,9 +318,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
                                         SyncFileStatus sync_status,
                                         SyncAction action_taken,
                                         SyncDirection direction);
-
-  void HandleSyncRootDirectoryChange(const google_apis::ResourceEntry& entry);
-  void HandleOriginRootDirectoryChange(const google_apis::ResourceEntry& entry);
 
   void EnsureSyncRootDirectory(const ResourceIdCallback& callback);
   void DidEnsureSyncRoot(const ResourceIdCallback& callback,

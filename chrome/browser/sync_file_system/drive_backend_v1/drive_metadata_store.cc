@@ -405,10 +405,6 @@ void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
   callback.Run(db_status_, contents->created);
 }
 
-leveldb::DB* DriveMetadataStore::GetDBInstanceForTesting() {
-  return db_.get();
-}
-
 void DriveMetadataStore::SetLargestChangeStamp(
     int64 largest_changestamp,
     const SyncStatusCallback& callback) {
@@ -635,13 +631,6 @@ void DriveMetadataStore::RemoveOrigin(
   metadata_map_.erase(origin);
 
   WriteToDB(batch.Pass(), callback);
-}
-
-void DriveMetadataStore::DidUpdateOrigin(
-    const SyncStatusCallback& callback,
-    SyncStatusCode status) {
-  UpdateDBStatus(status);
-  callback.Run(status);
 }
 
 void DriveMetadataStore::WriteToDB(scoped_ptr<leveldb::WriteBatch> batch,

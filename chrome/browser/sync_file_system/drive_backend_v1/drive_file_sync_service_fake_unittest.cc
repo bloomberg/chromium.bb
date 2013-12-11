@@ -246,10 +246,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetSyncEnabled(bool enabled) {
-    sync_service_->SetSyncEnabled(enabled);
-  }
-
  protected:
   void EnableExtension(const std::string& extension_id) {
     extension_service_->EnableExtension(extension_id);
@@ -279,12 +275,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     EXPECT_EQ(b_size, pending_batch_sync_origins()->size());
     EXPECT_EQ(i_size, metadata_store()->incremental_sync_origins().size());
     EXPECT_EQ(d_size, metadata_store()->disabled_origins().size());
-  }
-
-  APIUtilInterface* api_util() {
-    if (api_util_)
-      return api_util_.get();
-    return sync_service_->api_util_.get();
   }
 
   DriveMetadataStore* metadata_store() {
