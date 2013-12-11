@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import platform
 import sys
 
 from measurements import media
@@ -11,9 +10,6 @@ from telemetry import test
 class Media(test.Test):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
-  # Disable on Win8 crbug.com/326384
-  win8 = sys.platform.startswith('win') and '2008' in platform.release()
-  enabled = not win8
   page_set = 'page_sets/tough_video_cases.json'
 
 class MediaNetworkSimulation(test.Test):
