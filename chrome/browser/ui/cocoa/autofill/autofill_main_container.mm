@@ -150,8 +150,6 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
     size.height += legalDocumentSize.height + autofill::kVerticalSpacing;
   }
 
-  // TODO(isherman): Move notifications into the AutofillHeader class, and
-  // rename this method to -footerSizeForWidth:.
   NSSize notificationSize =
       [notificationContainer_ preferredSizeForWidth:width];
   size.height += notificationSize.height;
@@ -165,7 +163,7 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
 
   NSSize size = NSMakeSize(std::max(decorationSize.width, detailsSize.width),
                            decorationSize.height + detailsSize.height);
-  size.height += 2 * autofill::kDetailVerticalPadding;
+  size.height += autofill::kDetailVerticalPadding;
 
   return size;
 }
@@ -207,15 +205,13 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   // Buttons/checkbox/legal take up lower part of view, notifications the
   // upper part. Adjust the detailsContainer to take up the remainder.
   CGFloat remainingHeight =
-      NSHeight(bounds) - currentY - NSHeight(notificationFrame) -
-      autofill::kDetailVerticalPadding;
+      NSHeight(bounds) - currentY - NSHeight(notificationFrame);
   NSRect containerFrame =
       NSMakeRect(0, currentY, NSWidth(bounds), remainingHeight);
   [[detailsContainer_ view] setFrame:containerFrame];
   [detailsContainer_ performLayout];
 
-  notificationFrame.origin =
-      NSMakePoint(0, NSMaxY(containerFrame) + autofill::kDetailVerticalPadding);
+  notificationFrame.origin = NSMakePoint(0, NSMaxY(containerFrame));
   [[notificationContainer_ view] setFrame:notificationFrame];
   [notificationContainer_ performLayout];
 }

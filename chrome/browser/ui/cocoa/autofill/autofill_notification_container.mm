@@ -10,6 +10,10 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_notification_controller.h"
 
+// Padding above the notifications section.
+const CGFloat kTopPadding =
+    autofill::kDetailVerticalPadding - autofill::kArrowHeight;
+
 @implementation AutofillNotificationContainer
 
 - (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate {
@@ -32,6 +36,9 @@
   if ([notificationControllers_ count] == 0)
     return preferredSize;
 
+  // A bit of padding above the arrow.
+  preferredSize.height += kTopPadding;
+
   // If the first notification doesn't have an arrow, reserve empty space.
   if (![[notificationControllers_ objectAtIndex:0] hasArrow])
     preferredSize.height += autofill::kArrowHeight;
@@ -41,6 +48,8 @@
     preferredSize.height += [controller preferredSizeForWidth:width].height;
   }
 
+  preferredSize.height += autofill::kDetailVerticalPadding;
+
   return preferredSize;
 }
 
@@ -49,6 +58,8 @@
     return;
 
   NSRect remaining = [[self view] bounds];
+  remaining.origin.y += autofill::kDetailVerticalPadding;
+  remaining.size.height -= kTopPadding + autofill::kDetailVerticalPadding;
 
   if (![[notificationControllers_ objectAtIndex:0] hasArrow])
     remaining.size.height -= autofill::kArrowHeight;
