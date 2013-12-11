@@ -453,6 +453,7 @@
     runAppendTest(video, appenders, function(stats, timestamps) {
       displayResults(stats);
       plotTimestamps(timestamps, testParams.graphDuration, video);
+      window.__testDone = true;
     });
   }
 
@@ -481,7 +482,5 @@
   }
 
   window["setupTest"] = setupTest;
-  window.__testDone = function() {
-    return testDone;
-  };
+  window.__testDone = false;
 })();
