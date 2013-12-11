@@ -42,7 +42,12 @@ namespace blink {
 //
 //       http://www.w3.org/TR/WebCryptoAPI
 //
-//       The parameters in the spec have the same name, minus the "WebCrypto" prefix.
+//       For the most part, the parameters in the spec have the same name,
+//       except that in the blink code:
+//
+//         - Structure names are prefixed by "WebCrypto"
+//         - Optional fields are prefixed by "optional"
+//         - Data length properties are suffixed by either "Bits" or "Bytes"
 
 class WebCryptoAlgorithmParams {
 public:
@@ -75,33 +80,36 @@ private:
 
 class WebCryptoAesCtrParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesCtrParams(unsigned char length, const unsigned char* counter, unsigned counterSize)
+    WebCryptoAesCtrParams(unsigned char lengthBits, const unsigned char* counter, unsigned counterSize)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesCtrParams)
         , m_counter(counter, counterSize)
-        , m_length(length)
+        , m_lengthBits(lengthBits)
     {
     }
 
     const WebVector<unsigned char>& counter() const { return m_counter; }
-    unsigned char length() const { return m_length; }
+    unsigned char lengthBits() const { return m_lengthBits; }
 
 private:
     const WebVector<unsigned char> m_counter;
-    const unsigned char m_length;
+    const unsigned char m_lengthBits;
 };
 
 class WebCryptoAesKeyGenParams : public WebCryptoAlgorithmParams {
 public:
-    explicit WebCryptoAesKeyGenParams(unsigned short length)
+    explicit WebCryptoAesKeyGenParams(unsigned short lengthBits)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesKeyGenParams)
-        , m_length(length)
+        , m_lengthBits(lengthBits)
     {
     }
 
-    unsigned short length() const { return m_length; }
+    // FIXME: Delete once no longer referenced by chromium.
+    unsigned short length() const { return m_lengthBits; }
+
+    unsigned short lengthBits() const { return m_lengthBits; }
 
 private:
-    const unsigned short m_length;
+    const unsigned short m_lengthBits;
 };
 
 class WebCryptoHmacParams : public WebCryptoAlgorithmParams {
@@ -121,31 +129,35 @@ private:
 
 class WebCryptoHmacKeyParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoHmacKeyParams(const WebCryptoAlgorithm& hash, bool hasLength, unsigned length)
+    WebCryptoHmacKeyParams(const WebCryptoAlgorithm& hash, bool hasLengthBytes, unsigned lengthBytes)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeHmacKeyParams)
         , m_hash(hash)
-        , m_hasLength(hasLength)
-        , m_length(length)
+        , m_hasLengthBytes(hasLengthBytes)
+        , m_optionalLengthBytes(lengthBytes)
     {
         BLINK_ASSERT(!hash.isNull());
+        BLINK_ASSERT(hasLengthBytes || !lengthBytes);
     }
 
     const WebCryptoAlgorithm& hash() const { return m_hash; }
 
-    bool hasLength() const { return m_hasLength; }
+    bool hasLengthBytes() const { return m_hasLengthBytes; }
 
+    // FIXME: Delete once no longer referenced by chromium.
     bool getLength(unsigned& length) const
     {
-        if (!m_hasLength)
+        if (!m_hasLengthBytes)
             return false;
-        length = m_length;
+        length = m_optionalLengthBytes;
         return true;
     }
 
+    unsigned optionalLengthBytes() const { return m_optionalLengthBytes; }
+
 private:
     const WebCryptoAlgorithm m_hash;
-    const bool m_hasLength;
-    const unsigned m_length;
+    const bool m_hasLengthBytes;
+    const unsigned m_optionalLengthBytes;
 };
 
 class WebCryptoRsaSsaParams : public WebCryptoAlgorithmParams {
@@ -165,59 +177,52 @@ private:
 
 class WebCryptoRsaKeyGenParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoRsaKeyGenParams(unsigned modulusLength, const unsigned char* publicExponent, unsigned publicExponentSize)
+    WebCryptoRsaKeyGenParams(unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaKeyGenParams)
-        , m_modulusLength(modulusLength)
+        , m_modulusLengthBits(modulusLengthBits)
         , m_publicExponent(publicExponent, publicExponentSize)
     {
     }
 
-    unsigned modulusLength() const { return m_modulusLength; }
+    // FIXME: Delete once no longer referenced by chromium.
+    unsigned modulusLength() const { return m_modulusLengthBits; }
+
+    unsigned modulusLengthBits() const { return m_modulusLengthBits; }
     const WebVector<unsigned char>& publicExponent() const { return m_publicExponent; }
 
 private:
-    const unsigned m_modulusLength;
+    const unsigned m_modulusLengthBits;
     const WebVector<unsigned char> m_publicExponent;
 };
 
 class WebCryptoAesGcmParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesGcmParams(const unsigned char* iv, unsigned ivSize, bool hasAdditionalData, const unsigned char* additionalData, unsigned additionalDataSize, bool hasTagLength, unsigned char tagLength)
+    WebCryptoAesGcmParams(const unsigned char* iv, unsigned ivSize, bool hasAdditionalData, const unsigned char* additionalData, unsigned additionalDataSize, bool hasTagLengthBits, unsigned char tagLengthBits)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesGcmParams)
         , m_iv(iv, ivSize)
         , m_hasAdditionalData(hasAdditionalData)
-        , m_additionalData(additionalData, additionalDataSize)
-        , m_hasTagLength(hasTagLength)
-        , m_tagLength(tagLength)
+        , m_optionalAdditionalData(additionalData, additionalDataSize)
+        , m_hasTagLengthBits(hasTagLengthBits)
+        , m_optionalTagLengthBits(tagLengthBits)
     {
+        BLINK_ASSERT(hasAdditionalData || !additionalDataSize);
+        BLINK_ASSERT(hasTagLengthBits || !tagLengthBits);
     }
 
     const WebVector<unsigned char>& iv() const { return m_iv; }
 
     bool hasAdditionalData() const { return m_hasAdditionalData; }
-    bool getAdditionalData(const WebVector<unsigned char>*& additionalData) const
-    {
-        if (!m_hasAdditionalData)
-            return false;
-        additionalData = &m_additionalData;
-        return true;
-    }
+    const WebVector<unsigned char>& optionalAdditionalData() const { return m_optionalAdditionalData; }
 
-    bool hasTagLength() const { return m_hasTagLength; }
-    bool getTagLength(unsigned& tagLength) const
-    {
-        if (!m_hasTagLength)
-            return false;
-        tagLength = m_tagLength;
-        return true;
-    }
+    bool hasTagLengthBits() const { return m_hasTagLengthBits; }
+    unsigned optionalTagLengthBits() const { return m_optionalTagLengthBits; }
 
 private:
     const WebVector<unsigned char> m_iv;
     const bool m_hasAdditionalData;
-    const WebVector<unsigned char> m_additionalData;
-    const bool m_hasTagLength;
-    const unsigned char m_tagLength;
+    const WebVector<unsigned char> m_optionalAdditionalData;
+    const bool m_hasTagLengthBits;
+    const unsigned char m_optionalTagLengthBits;
 };
 
 class WebCryptoRsaOaepParams : public WebCryptoAlgorithmParams {
@@ -226,26 +231,21 @@ public:
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaOaepParams)
         , m_hash(hash)
         , m_hasLabel(hasLabel)
-        , m_label(label, labelSize)
+        , m_optionalLabel(label, labelSize)
     {
         BLINK_ASSERT(!hash.isNull());
+        BLINK_ASSERT(hasLabel || !labelSize);
     }
 
     const WebCryptoAlgorithm& hash() const { return m_hash; }
 
     bool hasLabel() const { return m_hasLabel; }
-    bool getLabel(const WebVector<unsigned char>*& label) const
-    {
-        if (!m_hasLabel)
-            return false;
-        label = &m_label;
-        return true;
-    }
+    const WebVector<unsigned char>& optionalLabel() const { return m_optionalLabel; }
 
 private:
     const WebCryptoAlgorithm m_hash;
     const bool m_hasLabel;
-    const WebVector<unsigned char> m_label;
+    const WebVector<unsigned char> m_optionalLabel;
 };
 
 } // namespace blink

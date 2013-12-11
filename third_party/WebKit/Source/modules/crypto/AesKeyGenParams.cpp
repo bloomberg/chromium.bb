@@ -37,7 +37,7 @@ namespace WebCore {
 
 unsigned short AesKeyGenParams::length() const
 {
-    return m_algorithm.aesKeyGenParams()->length();
+    return m_algorithm.aesKeyGenParams()->lengthBits();
 }
 
 AesKeyGenParams::AesKeyGenParams(const blink::WebCryptoAlgorithm& algorithm)

@@ -44,9 +44,8 @@ Algorithm* HmacKeyParams::hash()
 
 unsigned HmacKeyParams::length(bool& isNull)
 {
-    unsigned length = 0;
-    isNull = !m_algorithm.hmacKeyParams()->getLength(length);
-    return length;
+    isNull = !m_algorithm.hmacKeyParams()->hasLengthBytes();
+    return m_algorithm.hmacKeyParams()->optionalLengthBytes();
 }
 
 HmacKeyParams::HmacKeyParams(const blink::WebCryptoAlgorithm& algorithm)

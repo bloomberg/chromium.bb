@@ -46,7 +46,7 @@ Uint8Array* AesCtrParams::counter()
 
 unsigned char AesCtrParams::length()
 {
-    return m_algorithm.aesCtrParams()->length();
+    return m_algorithm.aesCtrParams()->lengthBits();
 }
 
 AesCtrParams::AesCtrParams(const blink::WebCryptoAlgorithm& algorithm)

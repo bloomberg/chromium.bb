@@ -37,7 +37,7 @@ namespace WebCore {
 
 unsigned RsaKeyGenParams::modulusLength() const
 {
-    return m_algorithm.rsaKeyGenParams()->modulusLength();
+    return m_algorithm.rsaKeyGenParams()->modulusLengthBits();
 }
 
 Uint8Array* RsaKeyGenParams::publicExponent()
