@@ -40,7 +40,7 @@ namespace device_util {
 // x86_64     -> Simulator
 std::string GetPlatform();
 
-// Returns true if the application is running on a high-ram device. (>=250M).
+// Returns true if the application is running on a high-ram device. (>=500M).
 bool IsRunningOnHighRamDevice();
 
 // Returns true if the device has only one core.

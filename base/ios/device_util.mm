@@ -72,8 +72,8 @@ bool IsRunningOnHighRamDevice() {
   uint64_t memory_size = 0;
   size_t size = sizeof(memory_size);
   if (sysctlbyname("hw.memsize", &memory_size, &size, NULL, 0) == 0) {
-    // Anything >= 250M, call high ram.
-    return memory_size >= 250 * 1024 * 1024;
+    // Anything >= 500M, call high ram.
+    return memory_size >= 500 * 1024 * 1024;
   }
   return false;
 }
