@@ -495,7 +495,7 @@ void DesktopRootWindowHostX11::Restore() {
 }
 
 bool DesktopRootWindowHostX11::IsMaximized() const {
-  return (HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_VERT") ||
+  return (HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_VERT") &&
           HasWMSpecProperty("_NET_WM_STATE_MAXIMIZED_HORZ"));
 }
 
