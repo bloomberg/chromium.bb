@@ -702,29 +702,28 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
             if (!boxShadowShouldBeAppliedToBackground)
                 backgroundRect.intersect(paintInfo.rect);
 
-            // If we have an alpha and we are painting the root element, go ahead and blend with the base background color.
-            Color baseColor;
-            bool shouldClearBackground = false;
-            if (isOpaqueRoot) {
-                baseColor = view()->frameView()->baseBackgroundColor();
-                if (!baseColor.alpha())
-                    shouldClearBackground = true;
-            }
-
             GraphicsContextStateSaver shadowStateSaver(*context, boxShadowShouldBeAppliedToBackground);
             if (boxShadowShouldBeAppliedToBackground)
                 applyBoxShadowForBackground(context, this);
 
-            if (baseColor.alpha()) {
-                if (bgColor.alpha())
-                    baseColor = baseColor.blend(bgColor);
+            if (isOpaqueRoot) {
+                // If we have an alpha and we are painting the root element, go ahead and blend with the base background color.
+                Color baseColor = view()->frameView()->baseBackgroundColor();
+                bool shouldClearDocumentBackground = document().settings() && document().settings()->shouldClearDocumentBackground();
+                CompositeOperator operation = shouldClearDocumentBackground ? CompositeCopy : context->compositeOperation();
 
-                context->fillRect(backgroundRect, baseColor, CompositeCopy);
+                if (baseColor.alpha()) {
+                    if (bgColor.alpha())
+                        baseColor = baseColor.blend(bgColor);
+                    context->fillRect(backgroundRect, baseColor, operation);
+                } else if (bgColor.alpha()) {
+                    context->fillRect(backgroundRect, bgColor, operation);
+                } else if (shouldClearDocumentBackground) {
+                    context->clearRect(backgroundRect);
+                }
             } else if (bgColor.alpha()) {
-                CompositeOperator operation = shouldClearBackground ? CompositeCopy : context->compositeOperation();
-                context->fillRect(backgroundRect, bgColor, operation);
-            } else if (shouldClearBackground)
-                context->clearRect(backgroundRect);
+                context->fillRect(backgroundRect, bgColor, context->compositeOperation());
+            }
         }
     }
 
