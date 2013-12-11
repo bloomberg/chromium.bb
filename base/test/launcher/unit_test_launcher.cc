@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/debugger.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
@@ -20,6 +21,7 @@
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,6 +62,10 @@ void PrintUsage() {
           " Other flags:\n"
           "  --test-launcher-batch-limit=N\n"
           "    Sets the limit of test batch to run in a single process to N.\n"
+          "\n"
+          "  --test-launcher-debug-launcher\n"
+          "    Disables autodetection of debuggers and similar tools,\n"
+          "    making it possible to use them to debug launcher itself.\n"
           "\n"
           "  --test-launcher-retry-limit=N\n"
           "    Sets the limit of test retries on failures to N.\n"
@@ -463,12 +469,39 @@ int LaunchUnitTestsInternal(int argc,
                             const RunTestSuiteCallback& run_test_suite,
                             int default_jobs) {
   CommandLine::Init(argc, argv);
+
 #if defined(OS_ANDROID)
   // We can't easily fork on Android, just run the test suite directly.
   return run_test_suite.Run();
 #else
+  bool force_single_process = false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherDebugLauncher)) {
+    fprintf(stdout, "Forcing test launcher debugging mode.\n");
+    fflush(stdout);
+  } else {
+    if (base::debug::BeingDebugged()) {
+      fprintf(stdout,
+              "Debugger detected, switching to single process mode.\n"
+              "Pass --test-launcher-debug-launcher to debug the launcher "
+              "itself.\n");
+      fflush(stdout);
+      force_single_process = true;
+    }
+
+    if (RunningOnValgrind()) {
+      fprintf(stdout,
+              "Valgrind detected, switching to single process mode.\n"
+              "Pass --test-launcher-debug-launcher to valgrind the launcher "
+              "itself.\n");
+      fflush(stdout);
+      force_single_process = true;
+    }
+  }
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag)) {
+      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
+      force_single_process) {
     return run_test_suite.Run();
   }
 #endif

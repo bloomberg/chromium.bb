@@ -16,6 +16,12 @@ const char switches::kTestLauncherBatchLimit[] = "test-launcher-batch-limit";
 const char switches::kTestLauncherBotMode[] =
     "test-launcher-bot-mode";
 
+// Makes it possible to debug the launcher itself. By default the launcher
+// automatically switches to single process mode when it detects presence
+// of debugger.
+const char switches::kTestLauncherDebugLauncher[] =
+    "test-launcher-debug-launcher";
+
 // Number of parallel test launcher jobs.
 const char switches::kTestLauncherJobs[] = "test-launcher-jobs";
 
