@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_pinch_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 
 namespace content {
 namespace {
@@ -34,6 +35,9 @@ scoped_ptr<SyntheticGesture> SyntheticGesture::Create(
     case SyntheticGestureParams::PINCH_GESTURE:
       return CreateGesture<SyntheticPinchGesture,
                            SyntheticPinchGestureParams>(gesture_params);
+    case SyntheticGestureParams::TAP_GESTURE:
+      return CreateGesture<SyntheticTapGesture,
+                           SyntheticTapGestureParams>(gesture_params);
   }
   NOTREACHED() << "Invalid synthetic gesture type";
   return scoped_ptr<SyntheticGesture>();

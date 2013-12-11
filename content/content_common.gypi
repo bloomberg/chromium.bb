@@ -283,6 +283,8 @@
     'common/input/synthetic_pinch_gesture_params.h',
     'common/input/synthetic_smooth_scroll_gesture_params.cc',
     'common/input/synthetic_smooth_scroll_gesture_params.h',
+    'common/input/synthetic_tap_gesture_params.cc',
+    'common/input/synthetic_tap_gesture_params.h',
     'common/input/synthetic_web_input_event_builders.cc',
     'common/input/synthetic_web_input_event_builders.h',
     'common/input/web_input_event_traits.cc',

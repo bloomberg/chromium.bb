@@ -860,6 +860,8 @@
     'browser/renderer_host/input/synthetic_pinch_gesture.h',
     'browser/renderer_host/input/synthetic_smooth_scroll_gesture.cc',
     'browser/renderer_host/input/synthetic_smooth_scroll_gesture.h',
+    'browser/renderer_host/input/synthetic_tap_gesture.cc',
+    'browser/renderer_host/input/synthetic_tap_gesture.h',
     'browser/renderer_host/input/tap_suppression_controller.cc',
     'browser/renderer_host/input/tap_suppression_controller.h',
     'browser/renderer_host/input/tap_suppression_controller_client.h',

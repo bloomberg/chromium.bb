@@ -16,6 +16,7 @@
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
+#include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/common/input/touch_action.h"
@@ -74,6 +75,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPinchGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(total_num_pixels_covered)
   IPC_STRUCT_TRAITS_MEMBER(anchor)
   IPC_STRUCT_TRAITS_MEMBER(relative_pointer_speed_in_pixels_s)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::SyntheticTapGestureParams)
+  IPC_STRUCT_TRAITS_PARENT(content::SyntheticGestureParams)
+  IPC_STRUCT_TRAITS_MEMBER(position)
+  IPC_STRUCT_TRAITS_MEMBER(duration_ms)
 IPC_STRUCT_TRAITS_END()
 
 // Sends an input event to the render widget.

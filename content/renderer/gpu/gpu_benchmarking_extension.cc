@@ -17,6 +17,7 @@
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
+#include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
@@ -323,6 +324,17 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "                    anchor_x, anchor_y, callback,"
           "                    relative_pointer_speed_in_pixels_s);"
           "};"
+          "chrome.gpuBenchmarking.tap = "
+          "    function(position_x, position_y, opt_callback, opt_duration_ms,"
+          "             opt_gesture_source_type) {"
+          "  callback = opt_callback || function() { };"
+          "  duration_ms = opt_duration_ms || 0;"
+          "  gesture_source_type = opt_gesture_source_type ||"
+          "      chrome.gpuBenchmarking.DEFAULT_INPUT;"
+          "  native function BeginTap();"
+          "  return BeginTap(position_x, position_y, callback, duration_ms,"
+          "                  gesture_source_type);"
+          "};"
           "chrome.gpuBenchmarking.beginWindowSnapshotPNG = function(callback) {"
           "  native function BeginWindowSnapshotPNG();"
           "  BeginWindowSnapshotPNG(callback);"
@@ -364,6 +376,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(isolate, SmoothScrollSendsTouch);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginPinch")))
       return v8::FunctionTemplate::New(isolate, BeginPinch);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginTap")))
+      return v8::FunctionTemplate::New(isolate, BeginTap);
     if (name->Equals(
             v8::String::NewFromUtf8(isolate, "BeginWindowSnapshotPNG")))
       return v8::FunctionTemplate::New(isolate, BeginWindowSnapshotPNG);
@@ -615,6 +629,64 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     v8::Local<v8::Function> callback_local =
         v8::Local<v8::Function>::Cast(args[4]);
+
+    scoped_refptr<CallbackAndContext> callback_and_context =
+        new CallbackAndContext(args.GetIsolate(),
+                               callback_local,
+                               context.web_frame()->mainWorldScriptContext());
+
+
+    // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+    // progress, we will leak the callback and context. This needs to be fixed,
+    // somehow.
+    context.render_view_impl()->QueueSyntheticGesture(
+        gesture_params.PassAs<SyntheticGestureParams>(),
+        base::Bind(&OnSyntheticGestureCompleted,
+                   callback_and_context));
+
+    args.GetReturnValue().Set(true);
+  }
+
+  static void BeginTap(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    GpuBenchmarkingContext context;
+    if (!context.Init(false))
+      return;
+
+    int arglen = args.Length();
+    if (arglen < 5 ||
+        !args[0]->IsNumber() ||
+        !args[1]->IsNumber() ||
+        !args[2]->IsFunction() ||
+        !args[3]->IsNumber() ||
+        !args[4]->IsNumber()) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    scoped_ptr<SyntheticTapGestureParams> gesture_params(
+        new SyntheticTapGestureParams);
+
+    // Convert coordinates from CSS pixels to density independent pixels (DIPs).
+    float page_scale_factor = context.web_view()->pageScaleFactor();
+
+    gesture_params->position.SetPoint(
+        args[0]->IntegerValue() * page_scale_factor,
+        args[1]->IntegerValue() * page_scale_factor);
+    gesture_params->duration_ms = args[3]->IntegerValue();
+
+    int gesture_source_type = args[4]->IntegerValue();
+    if (gesture_source_type < 0 ||
+        gesture_source_type > SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+    gesture_params->gesture_source_type =
+        static_cast<SyntheticGestureParams::GestureSourceType>(
+            gesture_source_type);
+
+    v8::Local<v8::Function> callback_local =
+        v8::Local<v8::Function>::Cast(args[2]);
 
     scoped_refptr<CallbackAndContext> callback_and_context =
         new CallbackAndContext(args.GetIsolate(),

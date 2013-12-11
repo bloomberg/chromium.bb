@@ -9,9 +9,12 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_pinch_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/input/input_event.h"
+#include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
+#include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host.h"
@@ -259,6 +262,88 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
   gfx::PointF start_0_;
   gfx::PointF start_1_;
   bool started_;
+};
+
+class MockSyntheticTapGestureTarget : public MockSyntheticGestureTarget {
+ public:
+  MockSyntheticTapGestureTarget() : state_(NOT_STARTED) {}
+  virtual ~MockSyntheticTapGestureTarget() {}
+
+  bool GestureFinished() const { return state_ == FINISHED; }
+  gfx::Point position() const { return position_; }
+
+ protected:
+  enum GestureState {
+    NOT_STARTED,
+    STARTED,
+    FINISHED
+  };
+
+  gfx::Point position_;
+  GestureState state_;
+};
+
+class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
+ public:
+  MockSyntheticTapTouchTarget() {}
+  virtual ~MockSyntheticTapTouchTarget() {}
+
+  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
+    const blink::WebInputEvent* web_event = event.web_event.get();
+    ASSERT_TRUE(blink::WebInputEvent::isTouchEventType(web_event->type));
+    const blink::WebTouchEvent* touch_event =
+        static_cast<const blink::WebTouchEvent*>(web_event);
+    ASSERT_EQ(touch_event->touchesLength, (unsigned int)1);
+
+    switch (state_) {
+      case NOT_STARTED:
+        EXPECT_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
+        position_ = gfx::Point(touch_event->touches[0].position);
+        state_ = STARTED;
+        break;
+      case STARTED:
+        EXPECT_EQ(touch_event->type, blink::WebInputEvent::TouchEnd);
+        EXPECT_EQ(position_, gfx::Point(touch_event->touches[0].position));
+        state_ = FINISHED;
+        break;
+      case FINISHED:
+        EXPECT_FALSE(true);
+        break;
+    }
+  }
+};
+
+class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
+ public:
+  MockSyntheticTapMouseTarget() {}
+  virtual ~MockSyntheticTapMouseTarget() {}
+
+  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
+    const blink::WebInputEvent* web_event = event.web_event.get();
+    ASSERT_TRUE(blink::WebInputEvent::isMouseEventType(web_event->type));
+    const blink::WebMouseEvent* mouse_event =
+        static_cast<const blink::WebMouseEvent*>(web_event);
+
+    switch (state_) {
+      case NOT_STARTED:
+        EXPECT_EQ(mouse_event->type, blink::WebInputEvent::MouseDown);
+        EXPECT_EQ(mouse_event->button, blink::WebMouseEvent::ButtonLeft);
+        EXPECT_EQ(mouse_event->clickCount, 1);
+        position_ = gfx::Point(mouse_event->x, mouse_event->y);
+        state_ = STARTED;
+        break;
+      case STARTED:
+        EXPECT_EQ(mouse_event->type, blink::WebInputEvent::MouseUp);
+        EXPECT_EQ(mouse_event->button, blink::WebMouseEvent::ButtonLeft);
+        EXPECT_EQ(mouse_event->clickCount, 1);
+        EXPECT_EQ(position_, gfx::Point(mouse_event->x, mouse_event->y));
+        state_ = FINISHED;
+        break;
+      case FINISHED:
+        EXPECT_FALSE(true);
+        break;
+    }
+  }
 };
 
 class SyntheticGestureControllerTest : public testing::Test {
@@ -678,6 +763,50 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZeroPixelsCovered) {
   EXPECT_EQ(pinch_target->zoom_direction(),
             MockSyntheticPinchTouchTarget::ZOOM_DIRECTION_UNKNOWN);
   EXPECT_EQ(0, pinch_target->total_num_pixels_covered());
+}
+
+TEST_F(SyntheticGestureControllerTest, TapGestureTouch) {
+  CreateControllerAndTarget<MockSyntheticTapTouchTarget>();
+
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.duration_ms = 123;
+  params.position.SetPoint(87, -124);
+
+  scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  FlushInputUntilComplete();
+
+  MockSyntheticTapTouchTarget* tap_target =
+      static_cast<MockSyntheticTapTouchTarget*>(target_);
+  EXPECT_EQ(1, target_->num_success());
+  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_TRUE(tap_target->GestureFinished());
+  EXPECT_EQ(tap_target->position(), params.position);
+  EXPECT_GE(GetTotalTime(),
+            base::TimeDelta::FromMilliseconds(params.duration_ms));
+}
+
+TEST_F(SyntheticGestureControllerTest, TapGestureMouse) {
+  CreateControllerAndTarget<MockSyntheticTapMouseTarget>();
+
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.duration_ms = 79;
+  params.position.SetPoint(98, 123);
+
+  scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  FlushInputUntilComplete();
+
+  MockSyntheticTapMouseTarget* tap_target =
+      static_cast<MockSyntheticTapMouseTarget*>(target_);
+  EXPECT_EQ(1, target_->num_success());
+  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_TRUE(tap_target->GestureFinished());
+  EXPECT_EQ(tap_target->position(), params.position);
+  EXPECT_GE(GetTotalTime(),
+            base::TimeDelta::FromMilliseconds(params.duration_ms));
 }
 
 }  // namespace

@@ -66,6 +66,10 @@ void ParamTraits<content::SyntheticGesturePacket>::Write(Message* m,
       WriteParam(m, *content::SyntheticPinchGestureParams::Cast(
           p.gesture_params()));
       break;
+    case content::SyntheticGestureParams::TAP_GESTURE:
+      WriteParam(m, *content::SyntheticTapGestureParams::Cast(
+          p.gesture_params()));
+      break;
   }
 }
 
@@ -85,6 +89,10 @@ bool ParamTraits<content::SyntheticGesturePacket>::Read(const Message* m,
     case content::SyntheticGestureParams::PINCH_GESTURE:
       gesture_params =
           ReadGestureParams<content::SyntheticPinchGestureParams>(m, iter);
+      break;
+    case content::SyntheticGestureParams::TAP_GESTURE:
+      gesture_params =
+          ReadGestureParams<content::SyntheticTapGestureParams>(m, iter);
       break;
     default:
       return false;
@@ -107,6 +115,11 @@ void ParamTraits<content::SyntheticGesturePacket>::Log(const param_type& p,
     case content::SyntheticGestureParams::PINCH_GESTURE:
       LogParam(
           *content::SyntheticPinchGestureParams::Cast(p.gesture_params()),
+          l);
+      break;
+    case content::SyntheticGestureParams::TAP_GESTURE:
+      LogParam(
+          *content::SyntheticTapGestureParams::Cast(p.gesture_params()),
           l);
       break;
   }

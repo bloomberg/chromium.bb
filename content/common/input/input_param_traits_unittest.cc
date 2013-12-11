@@ -56,6 +56,13 @@ class InputParamTraitsTest : public testing::Test {
               b->relative_pointer_speed_in_pixels_s);
   }
 
+  static void Compare(const SyntheticTapGestureParams* a,
+                      const SyntheticTapGestureParams* b) {
+    EXPECT_EQ(a->gesture_source_type, b->gesture_source_type);
+    EXPECT_EQ(a->position, b->position);
+    EXPECT_EQ(a->duration_ms, b->duration_ms);
+  }
+
   static void Compare(const SyntheticGesturePacket* a,
                       const SyntheticGesturePacket* b) {
     ASSERT_EQ(!!a, !!b);
@@ -72,6 +79,10 @@ class InputParamTraitsTest : public testing::Test {
       case SyntheticGestureParams::PINCH_GESTURE:
         Compare(SyntheticPinchGestureParams::Cast(a->gesture_params()),
                 SyntheticPinchGestureParams::Cast(b->gesture_params()));
+        break;
+      case SyntheticGestureParams::TAP_GESTURE:
+        Compare(SyntheticTapGestureParams::Cast(a->gesture_params()),
+                SyntheticTapGestureParams::Cast(b->gesture_params()));
         break;
     }
   }
@@ -200,6 +211,20 @@ TEST_F(InputParamTraitsTest, SyntheticPinchGestureParams) {
   gesture_params->anchor.SetPoint(234, 345);
   gesture_params->relative_pointer_speed_in_pixels_s = 456;
   ASSERT_EQ(SyntheticGestureParams::PINCH_GESTURE,
+            gesture_params->GetGestureType());
+  SyntheticGesturePacket packet_in;
+  packet_in.set_gesture_params(gesture_params.PassAs<SyntheticGestureParams>());
+
+  Verify(packet_in);
+}
+
+TEST_F(InputParamTraitsTest, SyntheticTapGestureParams) {
+  scoped_ptr<SyntheticTapGestureParams> gesture_params(
+      new SyntheticTapGestureParams);
+  gesture_params->gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  gesture_params->position.SetPoint(798, 233);
+  gesture_params->duration_ms = 13;
+  ASSERT_EQ(SyntheticGestureParams::TAP_GESTURE,
             gesture_params->GetGestureType());
   SyntheticGesturePacket packet_in;
   packet_in.set_gesture_params(gesture_params.PassAs<SyntheticGestureParams>());
