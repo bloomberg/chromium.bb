@@ -72,18 +72,17 @@ class KURL;
 //               <|-                    HTMLImportChild <- LinkStyle <- HTMLLinkElement
 //
 //
-// # Import Sharing and HTMLImportData
+// # Import Sharing and HTMLImportLoader
 //
 // The HTML Imports spec calls for de-dup mechanism to share already loaded imports.
 // To implement this, the actual loading machinery is split out from HTMLImportChild to
-// HTMLImportData (FIXME: rename HTMLImportChild),
-// and each loader shares HTMLImportData with other loader if the URL is same.
+// HTMLImportLoader, and each loader shares HTMLImportLoader with other loader if the URL is same.
 // Check around HTMLImportsController::findLink() for more detail.
 //
-// Note that HTMLImportData provides HTMLImportDataClient to hook it up.
-// As it can be shared, HTMLImportData supports multiple clients.
+// Note that HTMLImportLoader provides HTMLImportLoaderClient to hook it up.
+// As it can be shared, HTMLImportLoader supports multiple clients.
 //
-//    HTMLImportChild (1)-->(*) HTMLImportData
+//    HTMLImportChild (1)-->(*) HTMLImportLoader
 //
 //
 // # Script Blocking

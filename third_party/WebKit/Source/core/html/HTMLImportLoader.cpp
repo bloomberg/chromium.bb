@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/html/HTMLImportData.h"
+#include "core/html/HTMLImportLoader.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
@@ -37,37 +37,37 @@
 #include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImport.h"
-#include "core/html/HTMLImportDataClient.h"
+#include "core/html/HTMLImportLoaderClient.h"
 #include "core/loader/DocumentWriter.h"
 
 
 namespace WebCore {
 
-PassRefPtr<HTMLImportData> HTMLImportData::create(HTMLImport* import, ResourceFetcher* fetcher)
+PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* import, ResourceFetcher* fetcher)
 {
-    RefPtr<HTMLImportData> self = adoptRef(new HTMLImportData(import, fetcher));
+    RefPtr<HTMLImportLoader> self = adoptRef(new HTMLImportLoader(import, fetcher));
     return self.release();
 }
 
-HTMLImportData::HTMLImportData(HTMLImport* import, ResourceFetcher* fetcher)
+HTMLImportLoader::HTMLImportLoader(HTMLImport* import, ResourceFetcher* fetcher)
     : m_import(import)
     , m_fetcher(fetcher)
     , m_state(StateLoading)
 {
 }
 
-HTMLImportData::~HTMLImportData()
+HTMLImportLoader::~HTMLImportLoader()
 {
     if (m_importedDocument)
         m_importedDocument->setImport(0);
 }
 
-void HTMLImportData::startLoading(const ResourcePtr<RawResource>& resource)
+void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
 {
     setResource(resource);
 }
 
-void HTMLImportData::responseReceived(Resource* resource, const ResourceResponse& response)
+void HTMLImportLoader::responseReceived(Resource* resource, const ResourceResponse& response)
 {
     // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
     if (!m_fetcher->canAccess(resource, PotentiallyCORSEnabled)) {
@@ -78,13 +78,13 @@ void HTMLImportData::responseReceived(Resource* resource, const ResourceResponse
     setState(startWritingAndParsing(response));
 }
 
-void HTMLImportData::dataReceived(Resource*, const char* data, int length)
+void HTMLImportLoader::dataReceived(Resource*, const char* data, int length)
 {
     RefPtr<DocumentWriter> protectingWriter(m_writer);
     m_writer->addData(data, length);
 }
 
-void HTMLImportData::notifyFinished(Resource* resource)
+void HTMLImportLoader::notifyFinished(Resource* resource)
 {
     // The writer instance indicates that a part of the document can be already loaded.
     // We don't take such a case as an error because the partially-loaded document has been visible from script at this point.
@@ -96,7 +96,7 @@ void HTMLImportData::notifyFinished(Resource* resource)
     setState(finishWriting());
 }
 
-HTMLImportData::State HTMLImportData::startWritingAndParsing(const ResourceResponse& response)
+HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceResponse& response)
 {
     DocumentInit init = DocumentInit(response.url(), 0, m_import->master()->contextDocument(), m_import)
         .withRegistrationContext(m_import->master()->registrationContext());
@@ -107,17 +107,17 @@ HTMLImportData::State HTMLImportData::startWritingAndParsing(const ResourceRespo
     return StateLoading;
 }
 
-HTMLImportData::State HTMLImportData::finishWriting()
+HTMLImportLoader::State HTMLImportLoader::finishWriting()
 {
     return StateWritten;
 }
 
-HTMLImportData::State HTMLImportData::finishParsing()
+HTMLImportLoader::State HTMLImportLoader::finishParsing()
 {
     return StateReady;
 }
 
-void HTMLImportData::setState(State state)
+void HTMLImportLoader::setState(State state)
 {
     if (m_state == state)
         return;
@@ -134,26 +134,26 @@ void HTMLImportData::setState(State state)
         didFinish();
 }
 
-void HTMLImportData::didFinishParsing()
+void HTMLImportLoader::didFinishParsing()
 {
     setState(finishParsing());
 }
 
-Document* HTMLImportData::importedDocument() const
+Document* HTMLImportLoader::importedDocument() const
 {
     if (m_state == StateError)
         return 0;
     return m_importedDocument.get();
 }
 
-bool HTMLImportData::isProcessing() const
+bool HTMLImportLoader::isProcessing() const
 {
     if (!m_importedDocument)
         return !isDone();
     return m_importedDocument->parsing();
 }
 
-void HTMLImportData::didFinish()
+void HTMLImportLoader::didFinish()
 {
     for (size_t i = 0; i < m_clients.size(); ++i)
         m_clients[i]->didFinish();
@@ -163,7 +163,7 @@ void HTMLImportData::didFinish()
     ASSERT(!m_importedDocument || !m_importedDocument->parsing());
 }
 
-void HTMLImportData::addClient(HTMLImportDataClient* client)
+void HTMLImportLoader::addClient(HTMLImportLoaderClient* client)
 {
     ASSERT(kNotFound == m_clients.find(client));
     m_clients.append(client);
@@ -171,7 +171,7 @@ void HTMLImportData::addClient(HTMLImportDataClient* client)
         client->didFinish();
 }
 
-void HTMLImportData::removeClient(HTMLImportDataClient* client)
+void HTMLImportLoader::removeClient(HTMLImportLoaderClient* client)
 {
     ASSERT(kNotFound != m_clients.find(client));
     m_clients.remove(m_clients.find(client));

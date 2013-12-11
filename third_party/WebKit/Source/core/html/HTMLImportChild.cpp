@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLImportChildClient.h"
-#include "core/html/HTMLImportData.h"
+#include "core/html/HTMLImportLoader.h"
 
 namespace WebCore {
 
@@ -46,24 +46,24 @@ HTMLImportChild::HTMLImportChild(const KURL& url, HTMLImportChildClient* client)
 HTMLImportChild::~HTMLImportChild()
 {
     // importDestroyed() should be called before the destruction.
-    ASSERT(!m_data);
+    ASSERT(!m_loader);
 }
 
 void HTMLImportChild::wasAlreadyLoadedAs(HTMLImportChild* found)
 {
-    ASSERT(!m_data);
+    ASSERT(!m_loader);
     ASSERT(m_client);
-    shareData(found);
+    shareLoader(found);
 }
 
 void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
 {
     ASSERT(!hasResource());
-    ASSERT(!m_data);
+    ASSERT(!m_loader);
 
     HTMLImportResourceOwner::setResource(resource);
 
-    // If the node is "document blocked", it cannot create HTMLImportData
+    // If the node is "document blocked", it cannot create HTMLImportLoader
     // even if there is no sharable one found, as there is possibility that
     // preceding imports load the sharable imports.
     // In that case preceding one should win because it comes first in the tree order.
@@ -71,7 +71,7 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     if (isDocumentBlocked())
         return;
 
-    createData();
+    createLoader();
 }
 
 void HTMLImportChild::didFinish()
@@ -84,18 +84,18 @@ void HTMLImportChild::didFinish()
 
 Document* HTMLImportChild::importedDocument() const
 {
-    if (!m_data)
+    if (!m_loader)
         return 0;
-    return m_data->importedDocument();
+    return m_loader->importedDocument();
 }
 
 void HTMLImportChild::importDestroyed()
 {
     if (parent())
         parent()->removeChild(this);
-    if (m_data) {
-        m_data->removeClient(this);
-        m_data.clear();
+    if (m_loader) {
+        m_loader->removeClient(this);
+        m_loader.clear();
     }
 }
 
@@ -106,7 +106,7 @@ HTMLImportRoot* HTMLImportChild::root()
 
 Document* HTMLImportChild::document() const
 {
-    return (m_data && m_data->isOwnedBy(this)) ? m_data->document() : 0;
+    return (m_loader && m_loader->isOwnedBy(this)) ? m_loader->document() : 0;
 }
 
 void HTMLImportChild::wasDetachedFromDocument()
@@ -118,8 +118,8 @@ void HTMLImportChild::wasDetachedFromDocument()
 
 void HTMLImportChild::didFinishParsing()
 {
-    ASSERT(m_data->isOwnedBy(this));
-    m_data->didFinishParsing();
+    ASSERT(m_loader->isOwnedBy(this));
+    m_loader->didFinishParsing();
 }
 
 // Once all preceding imports are loaded and "document blocking" ends,
@@ -129,46 +129,46 @@ void HTMLImportChild::didUnblockDocument()
 {
     HTMLImport::didUnblockDocument();
     ASSERT(!isDocumentBlocked());
-    ASSERT(!m_data || !m_data->isOwnedBy(this));
+    ASSERT(!m_loader || !m_loader->isOwnedBy(this));
 
-    if (m_data)
+    if (m_loader)
         return;
     if (HTMLImportChild* found = root()->findLinkFor(m_url, this))
-        shareData(found);
+        shareLoader(found);
     else
-        createData();
+        createLoader();
 }
 
-void HTMLImportChild::createData()
+void HTMLImportChild::createLoader()
 {
     ASSERT(!isDocumentBlocked());
-    ASSERT(!m_data);
-    m_data = HTMLImportData::create(this, parent()->document()->fetcher());
-    m_data->addClient(this);
-    m_data->startLoading(resource());
+    ASSERT(!m_loader);
+    m_loader = HTMLImportLoader::create(this, parent()->document()->fetcher());
+    m_loader->addClient(this);
+    m_loader->startLoading(resource());
 }
 
-void HTMLImportChild::shareData(HTMLImportChild* loader)
+void HTMLImportChild::shareLoader(HTMLImportChild* loader)
 {
-    ASSERT(!m_data);
-    m_data = loader->m_data;
-    m_data->addClient(this);
+    ASSERT(!m_loader);
+    m_loader = loader->m_loader;
+    m_loader->addClient(this);
     root()->blockerGone();
 }
 
 bool HTMLImportChild::isProcessing() const
 {
-    return m_data && m_data->isOwnedBy(this) && m_data->isProcessing();
+    return m_loader && m_loader->isOwnedBy(this) && m_loader->isProcessing();
 }
 
 bool HTMLImportChild::isDone() const
 {
-    return m_data && m_data->isDone();
+    return m_loader && m_loader->isDone();
 }
 
 bool HTMLImportChild::isLoaded() const
 {
-    return m_data->isLoaded();
+    return m_loader->isLoaded();
 }
 
 } // namespace WebCore

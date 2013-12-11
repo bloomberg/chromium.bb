@@ -32,25 +32,25 @@
 #define HTMLImportChild_h
 
 #include "core/html/HTMLImport.h"
-#include "core/html/HTMLImportDataClient.h"
+#include "core/html/HTMLImportLoaderClient.h"
 #include "core/html/HTMLImportResourceOwner.h"
 #include "platform/weborigin/KURL.h"
 
 namespace WebCore {
 
-class HTMLImportData;
+class HTMLImportLoader;
 class HTMLImportChildClient;
 
 //
 // An import tree node subclas to encapsulate imported document
 // lifecycle. This class is owned by LinkStyle. The actual loading
-// is done by HTMLImportData, which can be shared among multiple
+// is done by HTMLImportLoader, which can be shared among multiple
 // HTMLImportChild of same link URL.
 //
 // HTMLImportChild implements ResourceClient through HTMLImportResourceOwner
 // so that it can speculatively request linked resources while it is unblocked.
 //
-class HTMLImportChild : public HTMLImport, public HTMLImportDataClient, public HTMLImportResourceOwner {
+class HTMLImportChild : public HTMLImport, public HTMLImportLoaderClient, public HTMLImportResourceOwner {
 public:
     HTMLImportChild(const KURL&, HTMLImportChildClient*);
     virtual ~HTMLImportChild();
@@ -81,15 +81,15 @@ private:
     virtual void dataReceived(Resource*, const char*, int) OVERRIDE { }
     virtual void notifyFinished(Resource*) OVERRIDE { }
 
-    // HTMLImportDataClient
+    // HTMLImportLoaderClient
     virtual void didFinish() OVERRIDE;
 
-    void createData();
-    void shareData(HTMLImportChild*);
+    void createLoader();
+    void shareLoader(HTMLImportChild*);
 
     KURL m_url;
     HTMLImportChildClient* m_client;
-    RefPtr<HTMLImportData> m_data;
+    RefPtr<HTMLImportLoader> m_loader;
 };
 
 } // namespace WebCore

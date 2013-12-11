@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportData_h
-#define HTMLImportData_h
+#ifndef HTMLImportLoader_h
+#define HTMLImportLoader_h
 
 #include "core/html/HTMLImportResourceOwner.h"
 #include "wtf/Vector.h"
@@ -39,16 +39,15 @@ namespace WebCore {
 class Document;
 class DocumentWriter;
 class HTMLImport;
-class HTMLImportDataClient;
+class HTMLImportLoaderClient;
 
 //
 // Owning imported Document lifetime. It also implements ResourceClient through HTMLImportResourceOwner
 // to feed fetched bytes to the DocumentWriter of the imported document.
-// HTMLImportData is owned by and shared between HTMLImportChild.
+// HTMLImportLoader is owned by and shared between HTMLImportChild.
 //
-// FIXME: Should be renamed to HTMLImportLoader
 //
-class HTMLImportData : public RefCounted<HTMLImportData>, public HTMLImportResourceOwner {
+class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImportResourceOwner {
 public:
     enum State {
         StateLoading,
@@ -57,14 +56,14 @@ public:
         StateReady
     };
 
-    static PassRefPtr<HTMLImportData> create(HTMLImport*, ResourceFetcher*);
+    static PassRefPtr<HTMLImportLoader> create(HTMLImport*, ResourceFetcher*);
 
-    virtual ~HTMLImportData();
+    virtual ~HTMLImportLoader();
 
     Document* document() const { return m_importedDocument.get(); }
     Document* importedDocument() const;
-    void addClient(HTMLImportDataClient*);
-    void removeClient(HTMLImportDataClient*);
+    void addClient(HTMLImportLoaderClient*);
+    void removeClient(HTMLImportLoaderClient*);
 
     bool isDone() const { return m_state == StateReady || m_state == StateError; }
     bool isLoaded() const { return m_state == StateReady; }
@@ -75,7 +74,7 @@ public:
     bool isOwnedBy(const HTMLImport* import) const { return m_import == import; }
 
 private:
-    HTMLImportData(HTMLImport*, ResourceFetcher*);
+    HTMLImportLoader(HTMLImport*, ResourceFetcher*);
 
     // RawResourceClient
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
@@ -91,7 +90,7 @@ private:
 
     HTMLImport* m_import;
     ResourceFetcher* m_fetcher;
-    Vector<HTMLImportDataClient*> m_clients;
+    Vector<HTMLImportLoaderClient*> m_clients;
     State m_state;
     RefPtr<Document> m_importedDocument;
     RefPtr<DocumentWriter> m_writer;
@@ -99,4 +98,4 @@ private:
 
 } // namespace WebCore
 
-#endif // HTMLImportData_h
+#endif // HTMLImportLoader_h
