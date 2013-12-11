@@ -1278,7 +1278,6 @@ sub GenerateDomainSafeFunctionSetter
     my $v8ClassName = GetV8ClassName($interface);
 
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
-    AddToImplIncludes("bindings/v8/ExceptionState.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static void ${implClassName}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
@@ -1539,7 +1538,6 @@ END
     my $raisesException = $attribute->extendedAttributes->{"RaisesException"};
     my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Getter");
     if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurity"}) {
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::GetterContext, \"${attrName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 
@@ -1935,7 +1933,6 @@ sub GenerateNormalAttributeSetter
     # fail, or if we're dealing with SVG, which does strange things with
     # tearoffs and read-only wrappers.
     if ($useExceptions or $hasStrictTypeChecking or GetSVGTypeNeedingTearOff($interfaceName) or GetSVGTypeNeedingTearOff($attrType)) {
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::SetterContext, \"${attrName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 
@@ -2275,7 +2272,6 @@ END
     }
     if ($leastNumMandatoryParams >= 1) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${name}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         $code .= "    if (UNLIKELY(info.Length() < $leastNumMandatoryParams)) {\n";
         $code .= "        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments($leastNumMandatoryParams, info.Length()));\n";
@@ -2375,7 +2371,6 @@ sub GenerateFunction
 
     my $hasExceptionState = 0;
     if ($raisesExceptions || $isEventListener || $isSecurityCheckNecessary || $isNonListSVGType) {
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${unoverloadedName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         $hasExceptionState = 1;
     }
@@ -2578,7 +2573,6 @@ END
         }
 
         my $parameterName = $parameter->name;
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         if (IsCallbackInterface($parameter->type)) {
             my $v8ClassName = "V8" . $parameter->type;
             AddToImplIncludes("$v8ClassName.h");
@@ -2727,7 +2721,6 @@ END
     if ($leastNumMandatoryParams >= 1) {
         if (!$hasExceptionState) {
             AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-            AddToImplIncludes("bindings/v8/ExceptionState.h");
             $header .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
             $hasExceptionState = 1;
         }
@@ -2782,7 +2775,6 @@ END
     }
 
     if ($raisesExceptions) {
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 
@@ -3125,7 +3117,6 @@ END
 END
 
     if ($raisesExceptions) {
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 
@@ -4223,7 +4214,6 @@ sub GenerateImplementation
     AddIncludesForType($interfaceName);
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
     }
 
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";

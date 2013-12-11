@@ -80,8 +80,7 @@ def generate_method(interface, method):
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
     is_raises_exception = 'RaisesException' in extended_attributes
     if is_raises_exception:
-        includes.update(['bindings/v8/ExceptionMessages.h',
-                         'bindings/v8/ExceptionState.h'])
+        includes.add('bindings/v8/ExceptionMessages.h')
 
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]

@@ -39,7 +39,6 @@
 #include "V8TestCallbackInterface.h"
 #include "V8TestSubObj.h"
 #include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"

@@ -51,6 +51,7 @@ INTERFACE_H_INCLUDES = set([
 INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
     'bindings/v8/ExceptionMessages.h',
+    # 'bindings/v8/ExceptionState.h',  # included via Document.h
     'bindings/v8/V8DOMConfiguration.h',
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
@@ -71,8 +72,7 @@ def generate_interface(interface):
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
-        includes.update(['bindings/v8/BindingSecurity.h',
-                         'bindings/v8/ExceptionState.h'])
+        includes.add('bindings/v8/BindingSecurity.h')
 
     # [GenerateVisitDOMWrapper]
     generate_visit_dom_wrapper_function = extended_attributes.get('GenerateVisitDOMWrapper')
@@ -84,11 +84,6 @@ def generate_interface(interface):
     is_measure_as = 'MeasureAs' in extended_attributes
     if is_measure_as:
         includes.add('core/frame/UseCounter.h')
-
-    # [RaisesException=Constructor]
-    is_constructor_raises_exception = extended_attributes.get('RaisesException') == 'Constructor'
-    if is_constructor_raises_exception:
-        includes.add('bindings/v8/ExceptionState.h')
 
     # [SpecialWrapFor]
     if 'SpecialWrapFor' in extended_attributes:
@@ -137,7 +132,7 @@ def generate_interface(interface):
             interface, 'ConstructorCallWith', 'Document'),  # [ConstructorCallWith=Document]
         'is_constructor_call_with_execution_context': has_extended_attribute_value(
             interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
-        'is_constructor_raises_exception': is_constructor_raises_exception,
+        'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
         'length': 1 if has_event_constructor else 0,  # FIXME: more complex in general, see discussion of length in http://heycam.github.io/webidl/#es-interface-call
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]

@@ -42,7 +42,6 @@
 #include "bindings/tests/idls/TestImplements.h"
 #include "bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8EventListenerList.h"

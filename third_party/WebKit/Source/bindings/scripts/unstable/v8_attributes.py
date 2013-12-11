@@ -62,8 +62,7 @@ def generate_attribute(interface, attribute):
         'RaisesException' in extended_attributes and
         extended_attributes['RaisesException'] in [None, 'Getter'])
     if is_check_security_for_node or is_getter_raises_exception:
-        includes.update(set(['bindings/v8/ExceptionMessages.h',
-                             'bindings/v8/ExceptionState.h']))
+        includes.add('bindings/v8/ExceptionMessages.h')
     # [Reflect]
     is_reflect = 'Reflect' in extended_attributes
     if is_reflect:

@@ -36,7 +36,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Blob.h"
 #include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
