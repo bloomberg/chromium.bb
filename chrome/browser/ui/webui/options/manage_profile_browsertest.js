@@ -5,9 +5,6 @@
 // None of these tests is relevant for Chrome OS.
 GEN('#if !defined(OS_CHROMEOS)');
 
-GEN('#include "base/command_line.h"');
-GEN('#include "chrome/common/chrome_switches.h"');
-
 /**
  * TestFixture for ManageProfileOverlay and CreateProfileOverlay WebUI testing.
  * @extends {testing.Test}
@@ -27,12 +24,6 @@ ManageProfileUITest.prototype = {
    * @override
    */
   runAccessibilityChecks: false,
-
-  /** @override */
-  testGenPreamble: function() {
-    GEN('CommandLine::ForCurrentProcess()->' +
-        'AppendSwitch(switches::kEnableManagedUsers);');
-  },
 
   /**
    * Returns a test profile-info object with configurable "managed" status.
@@ -113,18 +104,6 @@ TEST_F('ManageProfileUITest', 'DefaultCreateOptions', function() {
   OptionsPage.showPageByName('createProfile');
   assertEquals(shortcutsAllowed, createShortcut.checked);
   assertFalse(createManaged.checked);
-});
-
-// Creating managed users should be disallowed when they are not enabled.
-TEST_F('ManageProfileUITest', 'CreateManagedUserAllowed', function() {
-  var container = $('create-profile-managed-container');
-
-  ManageProfileOverlay.getInstance().initializePage();
-  assertFalse(container.hidden);
-
-  loadTimeData.overrideValues({'managedUsersEnabled': false});
-  ManageProfileOverlay.getInstance().initializePage();
-  assertTrue(container.hidden);
 });
 
 // The checkbox label should change depending on whether the user is signed in.

@@ -89,7 +89,7 @@ void CreateProfileHandler::CreateProfile(const ListValue* args) {
     }
   }
 
-  if (managed_user && ManagedUserService::AreManagedUsersEnabled()) {
+  if (managed_user) {
     if (!IsValidExistingManagedUserId(managed_user_id))
       return;
 

@@ -876,13 +876,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableVp8AlphaPlayback)
   },
   {
-    "enable-managed-users",
-    IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME,
-    IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux | kOsCrOSOwnerOnly,
-    SINGLE_VALUE_TYPE(switches::kEnableManagedUsers)
-  },
-  {
     "per-tile-painting",
     IDS_FLAGS_PER_TILE_PAINTING_NAME,
     IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION,

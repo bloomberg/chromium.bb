@@ -58,12 +58,8 @@ cr.define('options', function() {
         CreateProfileOverlay.cancelCreateProfile();
       };
 
-      $('create-profile-managed-container').hidden =
-          !loadTimeData.getBoolean('managedUsersEnabled');
-
       $('import-existing-managed-user-link').hidden =
-          !loadTimeData.getBoolean('allowCreateExistingManagedUsers') ||
-          !loadTimeData.getBoolean('managedUsersEnabled');
+          !loadTimeData.getBoolean('allowCreateExistingManagedUsers');
 
       $('manage-profile-cancel').onclick =
           $('delete-profile-cancel').onclick = function(event) {

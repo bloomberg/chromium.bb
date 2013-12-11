@@ -5,7 +5,6 @@
 #include <string>
 
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -48,11 +46,6 @@ class SupervisedUserTest : public chromeos::LoginManagerTest {
                          mock_async_method_caller_(NULL),
                          network_portal_detector_(NULL),
                          registration_utility_stub_(NULL) {
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(::switches::kEnableManagedUsers);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

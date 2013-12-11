@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/test/test_utils.h"
@@ -22,7 +21,6 @@ namespace chromeos {
 class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(::switches::kEnableManagedUsers);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

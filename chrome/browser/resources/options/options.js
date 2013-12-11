@@ -139,7 +139,7 @@ function load() {
                                $('manage-languages')]);
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
-  if (loadTimeData.getBoolean('managedUsersEnabled') && !cr.isChromeOS) {
+  if (!cr.isChromeOS) {
     OptionsPage.registerOverlay(ManagedUserCreateConfirmOverlay.getInstance(),
                                 BrowserOptions.getInstance());
     if (loadTimeData.getBoolean('allowCreateExistingManagedUsers')) {

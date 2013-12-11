@@ -646,10 +646,6 @@ const char kEnableIPPooling[]               = "enable-ip-pooling";
 // Enable always using the local NTP for the first NTP load of a new window.
 const char kEnableLocalFirstLoadNTP[] = "enable-local-first-load-ntp";
 
-// Enables support for user profiles that are managed by another user and can
-// have restrictions applied.
-const char kEnableManagedUsers[]            = "enable-managed-users";
-
 // Make the values returned to window.performance.memory more granular and more
 // up to date. Without this flag, the memory information is still available, but
 // it is bucketized and updated less frequently.

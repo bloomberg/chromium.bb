@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,8 +52,6 @@
 using base::DictionaryValue;
 using content::BrowserThread;
 
-const char kManagedModeFinchActive[] = "Active";
-const char kManagedModeFinchName[] = "ManagedModeLaunch";
 const char kManagedUserAccessRequestKeyPrefix[] =
     "X-ManagedUser-AccessRequests";
 const char kManagedUserAccessRequestTime[] = "timestamp";
@@ -183,15 +180,6 @@ void ManagedUserService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kManagedUserCreationAllowed, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
-// static
-bool ManagedUserService::AreManagedUsersEnabled() {
-  // Allow enabling by command line for now for easier development.
-  return base::FieldTrialList::FindFullName(kManagedModeFinchName) ==
-             kManagedModeFinchActive ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableManagedUsers);
 }
 
 // static

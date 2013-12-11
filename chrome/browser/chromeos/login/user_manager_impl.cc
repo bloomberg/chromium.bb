@@ -43,7 +43,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1592,9 +1591,8 @@ bool UserManagerImpl::AreLocallyManagedUsersAllowed() const {
   bool locally_managed_users_allowed = false;
   cros_settings_->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
                              &locally_managed_users_allowed);
-  return ManagedUserService::AreManagedUsersEnabled() &&
-        (locally_managed_users_allowed ||
-         !g_browser_process->browser_policy_connector()->IsEnterpriseManaged());
+  return locally_managed_users_allowed ||
+         !g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
 }
 
 base::FilePath UserManagerImpl::GetUserProfileDir(

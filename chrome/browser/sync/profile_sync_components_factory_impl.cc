@@ -68,7 +68,6 @@
 #include "sync/api/syncable_service.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
@@ -217,16 +216,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   }
 
 #if defined(ENABLE_MANAGED_USERS)
-  if (ManagedUserService::AreManagedUsersEnabled()) {
-    if (profile_->IsManaged()) {
-      pss->RegisterDataTypeController(
-          new UIDataTypeController(
-              syncer::MANAGED_USER_SETTINGS, this, profile_, pss));
-    } else {
-      pss->RegisterDataTypeController(
-          new UIDataTypeController(
-              syncer::MANAGED_USERS, this, profile_, pss));
-    }
+  if (profile_->IsManaged()) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(
+            syncer::MANAGED_USER_SETTINGS, this, profile_, pss));
+  } else {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(
+            syncer::MANAGED_USERS, this, profile_, pss));
   }
 #endif
 }
