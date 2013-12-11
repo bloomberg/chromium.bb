@@ -19,7 +19,8 @@ namespace {
 class SK_API CairoSurfacePixelRef : public SkPixelRef {
  public:
   // The constructor takes ownership of the passed-in surface.
-  explicit CairoSurfacePixelRef(cairo_surface_t* surface);
+  explicit CairoSurfacePixelRef(const SkImageInfo& info,
+                                cairo_surface_t* surface);
   virtual ~CairoSurfacePixelRef();
 
   SK_DECLARE_UNFLATTENABLE_OBJECT();
@@ -32,8 +33,9 @@ class SK_API CairoSurfacePixelRef : public SkPixelRef {
   cairo_surface_t* surface_;
 };
 
-CairoSurfacePixelRef::CairoSurfacePixelRef(cairo_surface_t* surface)
-    : surface_(surface) {
+CairoSurfacePixelRef::CairoSurfacePixelRef(const SkImageInfo& info,
+                                           cairo_surface_t* surface)
+    : SkPixelRef(info), surface_(surface) {
 }
 
 CairoSurfacePixelRef::~CairoSurfacePixelRef() {
@@ -109,11 +111,18 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
     cairo_surface_destroy(surface);
     return NULL;
   }
+
+  SkImageInfo info = {
+    width,
+    height,
+    kPMColor_SkColorType,
+    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType
+  };
+
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height,
-                   cairo_image_surface_get_stride(surface),
-                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new CairoSurfacePixelRef(surface));
+  bitmap.setConfig(info, cairo_image_surface_get_stride(surface));
+  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new CairoSurfacePixelRef(info,
+                                                                   surface));
   bitmap.setPixelRef(pixel_ref.get());
 
   // The device object will take ownership of the graphics context.
@@ -215,12 +224,18 @@ PlatformBitmap::~PlatformBitmap() {
 }
 
 bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
+  SkImageInfo info = {
+    width,
+    height,
+    kPMColor_SkColorType,
+    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType
+  };
+
   // The SkBitmap allocates and owns the bitmap memory; PlatformBitmap owns the
   // cairo drawing context tied to the bitmap. The SkBitmap's pixelRef can
   // outlive the PlatformBitmap if additional copies are made.
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, stride,
-                    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+  bitmap_.setConfig(info, stride);
 
   cairo_surface_t* surf = cairo_image_surface_create(
       CAIRO_FORMAT_ARGB32,
@@ -230,7 +245,7 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
     cairo_surface_destroy(surf);
     return false;
   }
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new CairoSurfacePixelRef(surf));
+  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new CairoSurfacePixelRef(info, surf));
   bitmap_.setPixelRef(pixel_ref.get());
   return true;
 }
