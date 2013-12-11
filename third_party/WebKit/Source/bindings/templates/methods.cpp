@@ -12,8 +12,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% else %}
     {% if method.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length()));
-        exceptionState.throwIfNeeded();
+        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length())), info.GetIsolate());
         return;
     }
     {% endif %}
@@ -169,6 +168,9 @@ if (state.hadException()) {
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    {% if overloads.minimum_number_of_required_arguments %}
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {% endif %}
     {% for method in overloads.methods %}
     if ({{method.overload_resolution_expression}}) {
         {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
@@ -177,11 +179,15 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% endfor %}
     {% if overloads.minimum_number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {
-        throwTypeError(ExceptionMessages::failedToExecute("{{overloads.name}}", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{overloads.minimum_number_of_required_arguments}}, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.minimum_number_of_required_arguments}}, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    {% endif %}
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+    {% else %}
     throwTypeError(ExceptionMessages::failedToExecute("{{overloads.name}}", "{{interface_name}}", "No function was found that matched the signature provided."), info.GetIsolate());
+    {% endif %}
 }
 {% endmacro %}
 
