@@ -135,7 +135,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
 
   def __init__(self, server_address, request_hander_class, pem_cert_and_key,
                ssl_client_auth, ssl_client_cas, ssl_bulk_ciphers,
-               record_resume_info, tls_intolerant, signed_cert_timestamps):
+               record_resume_info, tls_intolerant, signed_cert_timestamps,
+               fallback_scsv_enabled):
     self.cert_chain = tlslite.api.X509CertChain().parseChain(pem_cert_and_key)
     # Force using only python implementation - otherwise behavior is different
     # depending on whether m2crypto Python module is present (error is thrown
@@ -148,6 +149,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
     self.ssl_client_cas = []
     self.tls_intolerant = tls_intolerant
     self.signed_cert_timestamps = signed_cert_timestamps
+    self.fallback_scsv_enabled = fallback_scsv_enabled
 
     for ca_file in ssl_client_cas:
       s = open(ca_file).read()
@@ -181,7 +183,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                                     reqCAs=self.ssl_client_cas,
                                     tlsIntolerant=self.tls_intolerant,
                                     signedCertTimestamps=
-                                    self.signed_cert_timestamps)
+                                    self.signed_cert_timestamps,
+                                    fallbackSCSV=self.fallback_scsv_enabled)
       tlsConnection.ignoreAbruptClose = True
       return True
     except tlslite.api.TLSAbruptCloseError:
@@ -1947,7 +1950,8 @@ class ServerRunner(testserver_base.TestServerRunner):
                              self.options.record_resume,
                              self.options.tls_intolerant,
                              self.options.signed_cert_timestamps.decode(
-                                 "base64"))
+                                 "base64"),
+                             self.options.fallback_scsv)
         print 'HTTPS server started on %s:%d...' % (host, server.server_port)
       else:
         server = HTTPServer((host, port), TestPageHandler)
@@ -2092,6 +2096,13 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'server will respond with a '
                                   'signed_certificate_timestamp TLS extension '
                                   'whenever the client supports it.')
+    self.option_parser.add_option('--fallback-scsv', dest='fallback_scsv',
+                                  default=False, const=True,
+                                  action='store_const',
+                                  help='If given, TLS_FALLBACK_SCSV support '
+                                  'will be enabled. This causes the server to '
+                                  'reject fallback connections from compatible '
+                                  'clients (e.g. Chrome).')
     self.option_parser.add_option('--https-record-resume',
                                   dest='record_resume', const=True,
                                   default=False, action='store_const',

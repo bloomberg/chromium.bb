@@ -48,6 +48,7 @@ class TLSAlert(TLSError):
         AlertDescription.protocol_version: "protocol_version",\
         AlertDescription.insufficient_security: "insufficient_security",\
         AlertDescription.internal_error: "internal_error",\
+        AlertDescription.inappropriate_fallback: "inappropriate_fallback",\
         AlertDescription.user_canceled: "user_canceled",\
         AlertDescription.no_renegotiation: "no_renegotiation",\
         AlertDescription.unknown_srp_username: "unknown_srp_username",\

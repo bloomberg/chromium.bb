@@ -60,7 +60,8 @@ BaseTestServer::SSLOptions::SSLOptions()
       request_client_certificate(false),
       bulk_ciphers(SSLOptions::BULK_CIPHER_ANY),
       record_resume(false),
-      tls_intolerant(TLS_INTOLERANT_NONE) {}
+      tls_intolerant(TLS_INTOLERANT_NONE),
+      fallback_scsv_enabled(false) {}
 
 BaseTestServer::SSLOptions::SSLOptions(
     BaseTestServer::SSLOptions::ServerCertificate cert)
@@ -70,7 +71,8 @@ BaseTestServer::SSLOptions::SSLOptions(
       request_client_certificate(false),
       bulk_ciphers(SSLOptions::BULK_CIPHER_ANY),
       record_resume(false),
-      tls_intolerant(TLS_INTOLERANT_NONE) {}
+      tls_intolerant(TLS_INTOLERANT_NONE),
+      fallback_scsv_enabled(false) {}
 
 BaseTestServer::SSLOptions::~SSLOptions() {}
 
@@ -396,6 +398,8 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("tls-intolerant",
                      new base::FundamentalValue(ssl_options_.tls_intolerant));
     }
+    if (ssl_options_.fallback_scsv_enabled)
+      arguments->Set("fallback-scsv", base::Value::CreateNullValue());
     if (!ssl_options_.signed_cert_timestamps.empty()) {
       std::string b64_scts;
       base::Base64Encode(ssl_options_.signed_cert_timestamps, &b64_scts);

@@ -937,7 +937,8 @@ class TLSConnection(TLSRecordLayer):
                         certChain=None, privateKey=None, reqCert=False,
                         sessionCache=None, settings=None, checker=None,
                         reqCAs=None, tlsIntolerant=0,
-                        signedCertTimestamps=None):
+                        signedCertTimestamps=None,
+                        fallbackSCSV=False):
         """Perform a handshake in the role of server.
 
         This function performs an SSL or TLS handshake.  Depending on
@@ -1022,7 +1023,8 @@ class TLSConnection(TLSRecordLayer):
         """
         for result in self.handshakeServerAsync(sharedKeyDB, verifierDB,
                 certChain, privateKey, reqCert, sessionCache, settings,
-                checker, reqCAs, tlsIntolerant, signedCertTimestamps):
+                checker, reqCAs, tlsIntolerant, signedCertTimestamps,
+                fallbackSCSV):
             pass
 
 
@@ -1030,7 +1032,8 @@ class TLSConnection(TLSRecordLayer):
                              certChain=None, privateKey=None, reqCert=False,
                              sessionCache=None, settings=None, checker=None,
                              reqCAs=None, tlsIntolerant=0,
-                             signedCertTimestamps=None):
+                             signedCertTimestamps=None,
+                             fallbackSCSV=False):
         """Start a server handshake operation on the TLS connection.
 
         This function returns a generator which behaves similarly to
@@ -1049,7 +1052,8 @@ class TLSConnection(TLSRecordLayer):
             sessionCache=sessionCache, settings=settings,
             reqCAs=reqCAs,
             tlsIntolerant=tlsIntolerant,
-            signedCertTimestamps=signedCertTimestamps)
+            signedCertTimestamps=signedCertTimestamps,
+            fallbackSCSV=fallbackSCSV)
         for result in self._handshakeWrapperAsync(handshaker, checker):
             yield result
 
@@ -1057,7 +1061,8 @@ class TLSConnection(TLSRecordLayer):
     def _handshakeServerAsyncHelper(self, sharedKeyDB, verifierDB,
                                     certChain, privateKey, reqCert,
                                     sessionCache, settings, reqCAs,
-                                    tlsIntolerant, signedCertTimestamps):
+                                    tlsIntolerant, signedCertTimestamps,
+                                    fallbackSCSV):
 
         self._handshakeStart(client=False)
 
@@ -1141,12 +1146,18 @@ class TLSConnection(TLSRecordLayer):
                 yield result
 
         #If client's version is too high, propose my highest version
-        elif clientHello.client_version > settings.maxVersion:
+        if clientHello.client_version > settings.maxVersion:
             self.version = settings.maxVersion
-
         else:
             #Set the version to the client's version
             self.version = clientHello.client_version
+            if (fallbackSCSV and
+                clientHello.client_version < settings.maxVersion):
+                for cipherSuite in clientHello.cipher_suites:
+                    if cipherSuite == 0x5600:
+                        for result in self._sendError(\
+                                AlertDescription.inappropriate_fallback):
+                            yield result
 
         #Get the client nonce; create server nonce
         clientRandom = clientHello.random

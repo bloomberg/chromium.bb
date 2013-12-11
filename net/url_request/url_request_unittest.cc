@@ -6050,6 +6050,46 @@ TEST_F(HTTPSRequestTest, TLSv1Fallback) {
   EXPECT_TRUE(r.ssl_info().connection_status & SSL_CONNECTION_VERSION_FALLBACK);
 }
 
+// Tests that we don't fallback with servers that implement TLS_FALLBACK_SCSV.
+#if defined(USE_OPENSSL)
+TEST_F(HTTPSRequestTest, DISABLED_FallbackSCSV) {
+#else
+TEST_F(HTTPSRequestTest, FallbackSCSV) {
+#endif
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger
+  // a version fallback.
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+  // Have the server process TLS_FALLBACK_SCSV so that version fallback
+  // connections are rejected.
+  ssl_options.fallback_scsv_enabled = true;
+
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  TestDelegate d;
+  TestURLRequestContext context(true);
+  context.Init();
+  d.set_allow_certificate_errors(true);
+  URLRequest r(
+      test_server.GetURL(std::string()), DEFAULT_PRIORITY, &d, &context);
+  r.Start();
+
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1, d.response_started_count());
+  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH is how the server simulates version
+  // intolerance. If the fallback SCSV is processed when the original error
+  // that caused the fallback should be returned, which should be
+  // ERR_SSL_VERSION_OR_CIPHER_MISMATCH.
+  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, r.status().error());
+}
+
 // This tests that a load of www.google.com with a certificate error sets
 // the |certificate_errors_are_fatal| flag correctly. This flag will cause
 // the interstitial to be fatal.

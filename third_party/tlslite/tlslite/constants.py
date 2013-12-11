@@ -91,6 +91,7 @@ class AlertDescription:
     protocol_version = 70
     insufficient_security = 71
     internal_error = 80
+    inappropriate_fallback = 86
     user_canceled = 90
     no_renegotiation = 100
     unknown_srp_username = 120

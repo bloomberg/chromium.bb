@@ -148,6 +148,13 @@ class BaseTestServer {
     // negotiates an intolerant TLS version in order to test version fallback.
     TLSIntolerantLevel tls_intolerant;
 
+    // fallback_scsv_enabled, if true, causes the server to process the
+    // TLS_FALLBACK_SCSV cipher suite. This cipher suite is sent by Chrome
+    // when performing TLS version fallback in response to an SSL handshake
+    // failure. If this option is enabled then the server will reject fallback
+    // connections.
+    bool fallback_scsv_enabled;
+
     // (Fake) SignedCertificateTimestampList (as a raw binary string) to send in
     // a TLS extension.
     // Temporary glue for testing: validation of SCTs is application-controlled
