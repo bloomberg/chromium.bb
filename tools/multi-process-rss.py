@@ -42,7 +42,10 @@ _LOGGER.addHandler(_NullHandler())
 
 
 def _recursive_get_children(pid):
-  children = psutil.Process(pid).get_children()
+  try:
+    children = psutil.Process(pid).get_children()
+  except psutil.error.NoSuchProcess:
+    return []
   descendant = []
   for child in children:
     descendant.append(child.pid)
@@ -78,7 +81,14 @@ def count_pageframes(pids):
   pagemap_dct = {}
   for pid in pids:
     maps = procfs.ProcMaps.load(pid)
-    pagemap_dct[pid] = procfs.ProcPagemap.load(pid, maps)
+    if not maps:
+      _LOGGER.warning('/proc/%d/maps not found.' % pid)
+      continue
+    pagemap = procfs.ProcPagemap.load(pid, maps)
+    if not pagemap:
+      _LOGGER.warning('/proc/%d/pagemap not found.' % pid)
+      continue
+    pagemap_dct[pid] = pagemap
 
   for pid, pagemap in pagemap_dct.iteritems():
     for vma in pagemap.vma_internals.itervalues():
@@ -86,6 +96,23 @@ def count_pageframes(pids):
         pageframes[pageframe] += number
 
   return pageframes
+
+
+def count_statm(pids):
+  resident = 0
+  shared = 0
+  private = 0
+
+  for pid in pids:
+    statm = procfs.ProcStatm.load(pid)
+    if not statm:
+      _LOGGER.warning('/proc/%d/statm not found.' % pid)
+      continue
+    resident += statm.resident
+    shared += statm.share
+    private += (statm.resident - statm.share)
+
+  return (resident, shared, private)
 
 
 def main(argv):
