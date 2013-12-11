@@ -51,6 +51,14 @@ function getLog() {
 }
 
 /**
+ * Clear old logs.
+ */
+function clearLogs() {
+  chrome.send('clearLogs');
+  $('log-entries').innerHTML = '';
+}
+
+/**
  * Handles callback from getUpdateLog.
  * @param {Array} list List of dictionaries containing 'id', 'time', 'logEvent'.
  */
@@ -75,6 +83,7 @@ SyncService.onGetLog = function(logEntries) {
  */
 function main() {
   cr.ui.decorate('tabbox', cr.ui.TabBox);
+  $('clear-log-button').addEventListener('click', clearLogs);
   getServiceStatus();
   getNotificationSource();
 

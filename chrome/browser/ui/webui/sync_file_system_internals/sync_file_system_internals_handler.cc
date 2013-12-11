@@ -51,6 +51,10 @@ void SyncFileSystemInternalsHandler::RegisterMessages() {
       base::Bind(&SyncFileSystemInternalsHandler::GetLog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "clearLogs",
+      base::Bind(&SyncFileSystemInternalsHandler::ClearLogs,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getNotificationSource",
       base::Bind(&SyncFileSystemInternalsHandler::GetNotificationSource,
                  base::Unretained(this)));
@@ -126,6 +130,10 @@ void SyncFileSystemInternalsHandler::GetLog(
     return;
 
   web_ui()->CallJavascriptFunction("SyncService.onGetLog", list);
+}
+
+void SyncFileSystemInternalsHandler::ClearLogs(const base::ListValue* args) {
+  sync_file_system::util::ClearLog();
 }
 
 }  // namespace syncfs_internals
