@@ -52,8 +52,6 @@ SyncData CreateLocalSyncData(const std::string& id,
   specifics.mutable_managed_user()->set_name(name);
   if (!chrome_avatar.empty())
     specifics.mutable_managed_user()->set_chrome_avatar(chrome_avatar);
-  else
-    specifics.mutable_managed_user()->clear_chrome_avatar();
   if (!chromeos_avatar.empty())
     specifics.mutable_managed_user()->set_chromeos_avatar(chromeos_avatar);
   if (!master_key.empty())
@@ -115,9 +113,6 @@ void ManagedUserSyncService::RegisterProfilePrefs(
 // static
 bool ManagedUserSyncService::GetAvatarIndex(const std::string& avatar_str,
                                             int* avatar_index) {
-  // TODO(ibraaaa): when chrome OS supports supervised users avatar syncing
-  // then update this method to support extracting the avatar index
-  // for chrome OS as well.
   DCHECK(avatar_index);
   if (avatar_str.empty()) {
     *avatar_index = kNoAvatar;
@@ -232,18 +227,29 @@ bool ManagedUserSyncService::UpdateManagedUserAvatarIfNeeded(
   value->GetString(ManagedUserSyncService::kName, &name);
   std::string master_key;
   value->GetString(ManagedUserSyncService::kMasterKey, &master_key);
-  // TODO(ibraaaa): this should be updated when avatar syncing for
-  // supervised users is implemented on Chrome OS.
   std::string chromeos_avatar;
   value->GetString(ManagedUserSyncService::kChromeOsAvatar, &chromeos_avatar);
   std::string chrome_avatar;
   value->GetString(ManagedUserSyncService::kChromeAvatar, &chrome_avatar);
+  // The following check is just for safety. We want to avoid that the existing
+  // avatar selection is overwritten. Currently we don't allow the user to
+  // choose a different avatar in the recreation dialog, anyway, if there is
+  // already an avatar selected.
+#if defined(OS_CHROMEOS)
+  if (!chromeos_avatar.empty() && avatar_index != kNoAvatar)
+    return false;
+#else
   if (!chrome_avatar.empty() && avatar_index != kNoAvatar)
     return false;
+#endif
 
   chrome_avatar = avatar_index == kNoAvatar ?
       std::string() : BuildAvatarString(avatar_index);
+#if defined(OS_CHROMEOS)
+  value->SetString(kChromeOsAvatar, chrome_avatar);
+#else
   value->SetString(kChromeAvatar, chrome_avatar);
+#endif
 
   if (!sync_processor_)
     return true;

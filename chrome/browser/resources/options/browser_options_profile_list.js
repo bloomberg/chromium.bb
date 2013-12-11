@@ -54,7 +54,7 @@ cr.define('options.browser_options', function() {
 
       var iconEl = this.ownerDocument.createElement('img');
       iconEl.className = 'profile-img';
-      iconEl.src = profileInfo.iconURL;
+      iconEl.style.content = imageset(profileInfo.iconURL + '@scalefactorx');
       this.contentElement.appendChild(iconEl);
 
       var nameEl = this.ownerDocument.createElement('div');

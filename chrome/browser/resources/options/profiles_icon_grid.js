@@ -37,7 +37,7 @@ cr.define('options', function() {
       ListItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
       imageEl.className = 'profile-icon';
-      imageEl.src = this.iconURL_;
+      imageEl.style.content = imageset(this.iconURL_ + '@scalefactorx');
       this.appendChild(imageEl);
 
       this.className = 'profile-icon-grid-item';

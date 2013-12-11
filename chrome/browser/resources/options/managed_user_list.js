@@ -62,7 +62,8 @@ cr.define('options.managedUserOptions', function() {
       // Add the avatar.
       var iconElement = this.ownerDocument.createElement('img');
       iconElement.className = 'profile-img';
-      iconElement.src = managedUser.iconURL;
+      iconElement.style.content =
+          imageset(managedUser.iconURL + '@scalefactorx');
       this.appendChild(iconElement);
 
       // Add the profile name.
@@ -78,7 +79,7 @@ cr.define('options.managedUserOptions', function() {
         // Add "(already on this device)" message.
         var alreadyOnDeviceElement = this.ownerDocument.createElement('div');
         alreadyOnDeviceElement.className =
-            'profile-name profile-name-disabled already-on-this-device';
+            'profile-name-disabled already-on-this-device';
         alreadyOnDeviceElement.textContent =
             loadTimeData.getString('managedUserAlreadyOnThisDevice');
         this.appendChild(alreadyOnDeviceElement);

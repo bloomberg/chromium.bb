@@ -181,8 +181,10 @@ cr.define('options', function() {
       });
 
       $('managed-user-list').dataModel = new ArrayDataModel(managedUsers);
-      if (managedUsers.length == 0)
+      if (managedUsers.length == 0) {
         this.onError_(loadTimeData.getString('noExistingManagedUsers'));
+        $('managed-user-import-ok').disabled = true;
+      }
     },
 
     /**
