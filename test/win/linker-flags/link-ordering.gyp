@@ -31,7 +31,35 @@
         'y.cc',
         'hello.cc',
       ],
-
     },
+
+    {
+      'target_name': 'test_ordering_subdirs',
+      'type': 'executable',
+      # These are so the names of the functions appear in the disassembly.
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'DebugInformationFormat': '3',
+          'Optimization': '2',
+        },
+        'VCLinkerTool': {
+          'GenerateDebugInformation': 'true',
+          'LinkIncremental': '1',
+          'GenerateManifest': 'false',
+          # Minimize the disassembly to just our code.
+          'AdditionalOptions': [
+            '/NODEFAULTLIB',
+          ],
+        },
+      },
+      'sources': [
+        # Explicitly sorted the same way as the disassembly in the test .py.
+        'main-crt.c',
+        'hello.cc',
+        'b/y.cc',
+        'a/z.cc',
+      ],
+    },
+
   ]
 }

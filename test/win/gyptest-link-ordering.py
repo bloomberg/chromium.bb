@@ -29,7 +29,7 @@ if sys.platform == 'win32':
   # This is the full dump that we expect. The source files in the .gyp match
   # this order which is what determines the ordering in the binary.
 
-  expected_disasm = '''
+  expected_disasm_basic = '''
 _mainCRTStartup:
   00401000: B8 05 00 00 00     mov         eax,5
   00401005: C3                 ret
@@ -47,7 +47,29 @@ _main:
   00401042: C3                 ret
 '''
 
-  if expected_disasm not in GetDisasm('test_ordering_exe.exe'):
+  if expected_disasm_basic not in GetDisasm('test_ordering_exe.exe'):
     print GetDisasm('test_ordering_exe.exe')
     test.fail_test()
+
+  # Similar to above. The VS generator handles subdirectories differently.
+
+  expected_disasm_subdirs = '''
+_mainCRTStartup:
+  00401000: B8 05 00 00 00     mov         eax,5
+  00401005: C3                 ret
+_main:
+  00401010: 33 C0              xor         eax,eax
+  00401012: C3                 ret
+?y@@YAHXZ:
+  00401020: B8 02 00 00 00     mov         eax,2
+  00401025: C3                 ret
+?z@@YAHXZ:
+  00401030: B8 03 00 00 00     mov         eax,3
+  00401035: C3                 ret
+'''
+
+  if expected_disasm_subdirs not in GetDisasm('test_ordering_subdirs.exe'):
+    print GetDisasm('test_ordering_subdirs.exe')
+    test.fail_test()
+
   test.pass_test()
