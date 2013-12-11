@@ -7,11 +7,18 @@
 
 #include "base/callback.h"
 #include "chrome/browser/ui/app_list/app_list.h"
+#include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "ui/app_list/views/app_list_view_observer.h"
 
 namespace app_list {
 class AppListView;
 }
+
+namespace gfx {
+class Display;
+class Point;
+class Size;
+}  // namespace gfx
 
 // Responsible for positioning, hiding and showing an AppListView on Linux.
 // This includes watching window activation/deactivation messages to determine
@@ -22,6 +29,16 @@ class AppListLinux : public AppList,
   AppListLinux(app_list::AppListView* view,
                const base::Closure& on_should_dismiss);
   virtual ~AppListLinux();
+
+  // Finds the position for a window to anchor it to the shelf. This chooses the
+  // most appropriate position for the window based on whether the shelf exists,
+  // the position of the shelf, and the mouse cursor. Returns the intended
+  // coordinates for the center of the window. If |shelf_rect| is empty, assumes
+  // there is no shelf on the given display.
+  static gfx::Point FindAnchorPoint(const gfx::Size& view_size,
+                                    const gfx::Display& display,
+                                    const gfx::Point& cursor,
+                                    AppListPositioner::ScreenEdge edge);
 
   // AppList:
   virtual void Show() OVERRIDE;

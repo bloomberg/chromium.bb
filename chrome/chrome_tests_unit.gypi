@@ -2902,6 +2902,7 @@
             'browser/ui/app_list/test/fake_profile_store.cc',
             'browser/ui/app_list/test/fake_profile_store.h',
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
+            'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
             'browser/ui/views/app_list/win/app_list_win_unittest.cc',
           ],
         },

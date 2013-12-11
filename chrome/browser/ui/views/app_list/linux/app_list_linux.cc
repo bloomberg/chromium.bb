@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -24,6 +25,33 @@ AppListLinux::~AppListLinux() {
   view_->RemoveObserver(this);
 }
 
+// static
+gfx::Point AppListLinux::FindAnchorPoint(const gfx::Size& view_size,
+                                         const gfx::Display& display,
+                                         const gfx::Point& cursor,
+                                         AppListPositioner::ScreenEdge edge) {
+  AppListPositioner positioner(display, view_size, 0);
+
+  gfx::Point anchor;
+  // Snap to the shelf edge. If the cursor is greater than the window
+  // width/height away, anchor to the corner. Otherwise, anchor to the cursor
+  // position.
+  if (edge == AppListPositioner::SCREEN_EDGE_UNKNOWN) {
+    // If we can't find the shelf, snap to the top left.
+    return positioner.GetAnchorPointForScreenCorner(
+        AppListPositioner::SCREEN_CORNER_TOP_LEFT);
+  }
+
+  int snap_distance = edge == AppListPositioner::SCREEN_EDGE_BOTTOM ||
+                              edge == AppListPositioner::SCREEN_EDGE_TOP
+                          ? view_size.height()
+                          : view_size.width();
+  if (positioner.GetCursorDistanceFromShelf(edge, cursor) > snap_distance)
+    return positioner.GetAnchorPointForShelfCorner(edge);
+
+  return positioner.GetAnchorPointForShelfCursor(edge, cursor);
+}
+
 void AppListLinux::Show() {
   view_->GetWidget()->Show();
   if (!window_icon_updated_) {
@@ -38,13 +66,19 @@ void AppListLinux::Hide() {
 }
 
 void AppListLinux::MoveNearCursor() {
+  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenFor(view_->GetWidget()->GetNativeView());
+  gfx::Display display = screen->GetDisplayNearestPoint(cursor);
+
   view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
-  // Anchor to the top-left corner of the screen.
-  // TODO(mgiuca): Try to anchor near the taskbar and/or mouse cursor. This will
-  // depend upon the user's window manager.
-  gfx::Size view_size = view_->GetPreferredSize();
-  view_->SetAnchorPoint(
-      gfx::Point(view_size.width() / 2, view_size.height() / 2));
+  // Find which edge of the screen the shelf is attached to. For now, just
+  // assume Ubuntu Unity (fixed to left edge).
+  // TODO(mgiuca): Support other window manager configurations, and multiple
+  // monitors (where the current display may not have an edge).
+  AppListPositioner::ScreenEdge edge = AppListPositioner::SCREEN_EDGE_LEFT;
+  view_->SetAnchorPoint(FindAnchorPoint(view_->GetPreferredSize(), display,
+                                        cursor, edge));
 }
 
 bool AppListLinux::IsVisible() {
