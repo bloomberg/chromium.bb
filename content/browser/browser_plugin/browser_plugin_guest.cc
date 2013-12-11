@@ -761,6 +761,9 @@ void BrowserPluginGuest::HandleKeyboardEvent(
   if (delegate_ && delegate_->HandleKeyboardEvent(event))
     return;
 
+  if (!embedder_web_contents_->GetDelegate())
+    return;
+
   // Send the unhandled keyboard events back to the embedder to reprocess them.
   // TODO(fsamuel): This introduces the possibility of out-of-order keyboard
   // events because the guest may be arbitrarily delayed when responding to
@@ -831,6 +834,12 @@ void BrowserPluginGuest::RendererResponsive(WebContents* source) {
 
 void BrowserPluginGuest::RunFileChooser(WebContents* web_contents,
                                         const FileChooserParams& params) {
+  if (!attached())
+    return;
+
+  if (!embedder_web_contents_->GetDelegate())
+    return;
+
   embedder_web_contents_->GetDelegate()->RunFileChooser(web_contents, params);
 }
 
