@@ -333,7 +333,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
     return;
   }
 
-  SendRegisterDone(found->second);
+  SendRegisterDone(found->first, found->second);
 }
 
 void LocalDiscoveryUIHandler::OnConfirmDone(
@@ -440,12 +440,13 @@ void LocalDiscoveryUIHandler::SendRegisterError() {
 }
 
 void LocalDiscoveryUIHandler::SendRegisterDone(
-    const DeviceDescription& device) {
+    const std::string& service_name, const DeviceDescription& device) {
   base::DictionaryValue printer_value;
 
   printer_value.SetString("id", device.id);
   printer_value.SetString("display_name", device.name);
   printer_value.SetString("description", device.description);
+  printer_value.SetString("service_name", service_name);
 
   web_ui()->CallJavascriptFunction("local_discovery.onRegistrationSuccess",
                                    printer_value);

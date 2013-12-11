@@ -703,7 +703,7 @@ cr.define('print_preview', function() {
      * @private
      */
      onCloudPrintRegisterPromoClick_: function(e) {
-       var devicesUrl = 'chrome://devices/';
+       var devicesUrl = 'chrome://devices/register?id=' + e.destination.id;
        this.nativeLayer_.startForceOpenNewTab(devicesUrl);
      },
 

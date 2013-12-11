@@ -178,6 +178,7 @@ cr.define('print_preview', function() {
     onRegisterPromoClicked_: function() {
       var promoClickedEvent = new Event(
           DestinationListItem.EventType.REGISTER_PROMO_CLICKED);
+      promoClickedEvent.destination = this.destination_;
       this.eventTarget_.dispatchEvent(promoClickedEvent);
     }
   };

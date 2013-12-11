@@ -51,6 +51,12 @@ cr.define('local_discovery', function() {
   var isUserLoggedIn = true;
 
   /**
+   * Whether or not the path-based dialog has been shown.
+   * @type bool
+   */
+  var dialogFromPathHasBeenShown = false;
+
+  /**
    * Focus manager for page.
    */
   var focusManager = null;
@@ -300,6 +306,11 @@ cr.define('local_discovery', function() {
         devices[name] = new Device(info, isUserLoggedIn);
         devices[name].renderDevice();
       }
+
+      if (name == getOverlayIDFromPath() && !dialogFromPathHasBeenShown) {
+        dialogFromPathHasBeenShown = true;
+        devices[name].showRegister();
+      }
     } else {
       if (devices.hasOwnProperty(name)) {
         devices[name].removeDevice();
@@ -388,6 +399,11 @@ cr.define('local_discovery', function() {
    */
   function onRegistrationSuccess(device_data) {
     hideRegisterOverlay();
+
+    if (device_data.service_name == getOverlayIDFromPath()) {
+      window.close();
+    }
+
     var deviceDOM = createCloudDeviceDOM(device_data);
     $('cloud-devices').insertBefore(deviceDOM, $('cloud-devices').firstChild);
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_SUCCESS);
@@ -479,6 +495,7 @@ cr.define('local_discovery', function() {
       $('cloud-devices-loading').hidden = true;
       $('cloud-devices-unavailable').hidden = true;
       clearElement($('cloud-devices'));
+      hideRegisterOverlay();
     }
 
     updateUIToReflectState();
@@ -543,6 +560,12 @@ cr.define('local_discovery', function() {
      }
   }
 
+  function getOverlayIDFromPath() {
+    if (document.location.pathname == '/register') {
+      var params = parseQueryParams(document.location);
+      return params['id'] || null;
+    }
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
     cr.ui.overlay.setupOverlay($('overlay'));
@@ -571,7 +594,6 @@ cr.define('local_discovery', function() {
 
     updateVisibility();
     document.addEventListener('visibilitychange', updateVisibility, false);
-
 
     focusManager = new LocalDiscoveryFocusManager();
     focusManager.initialize();

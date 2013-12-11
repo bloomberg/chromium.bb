@@ -122,7 +122,8 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void SendRegisterError();
 
   // Singal to the web interface that registration has finished.
-  void SendRegisterDone(const DeviceDescription& device);
+  void SendRegisterDone(const std::string& service_name,
+                        const DeviceDescription& device);
 
   // Set the visibility of the page.
   void SetIsVisible(bool visible);
