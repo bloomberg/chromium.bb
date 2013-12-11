@@ -1305,11 +1305,11 @@ class ValidationPool(object):
       The fully formed URL
     """
     build_dashboard = cls.GetBuildDashboardForOverlays(overlays, trybot)
-    url = '%s/builders/%s/builds/%s' % (build_dashboard, builder_name,
-                                        str(build_number))
+    url_suffix = 'builders/%s/builds/%s' % (builder_name, str(build_number))
     if stage:
-      url += '/steps/%s/logs/stdio' % (stage,)
-    return url
+      url_suffix += '/steps/%s/logs/stdio' % (stage,)
+    url_suffix = urllib.quote(url_suffix)
+    return os.path.join(build_dashboard, url_suffix)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
@@ -2145,7 +2145,7 @@ class ValidationPool(object):
     if not details:
       details = ['cbuildbot failed']
     details.append('in %s' % (self.build_log,))
-    msg = '%s: %s' % (urllib.unquote(self._builder_name), ' '.join(details))
+    msg = '%s: %s' % (self._builder_name, ' '.join(details))
     return ValidationFailedMessage(msg, tracebacks, internal)
 
   def HandleCouldNotApply(self, change):

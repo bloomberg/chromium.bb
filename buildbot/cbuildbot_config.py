@@ -11,7 +11,6 @@ import copy
 import json
 import optparse
 import sys
-import urllib
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
 
@@ -628,8 +627,6 @@ class _config(dict):
   See _settings for details on known configurations, and their documentation.
   """
 
-  _URLQUOTED_PARAMS = ('paladin_builder_name',)
-
   def __getattr__(self, name):
     """Support attribute-like access to each dict entry."""
     if name in self:
@@ -678,9 +675,6 @@ class _config(dict):
     # aren't affected by recent refactorings.
 
     config_dict = _default.derive(self, *inherits, **overrides)
-    config_dict.update(
-        (key, urllib.quote(config_dict[key]))
-        for key in self._URLQUOTED_PARAMS if config_dict.get(key))
 
     # TODO(mtennant): This is just confusing.  Some random _config object
     # (self) can add a new _config object to the global config dict.  Even if
