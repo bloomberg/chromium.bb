@@ -227,7 +227,7 @@ void LoginScreenDefaultPolicyInSessionBrowsertest::SetUpOnMainThread() {
 
 void LoginScreenDefaultPolicyInSessionBrowsertest::VerifyPrefFollowsDefault(
     const char* pref_name) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_TRUE(profile);
   const PrefService::Preference* pref =
       profile->GetPrefs()->FindPreference(pref_name);

@@ -403,18 +403,27 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         .Append(base::StringPrintf("%s-%s.crx", id.c_str(), version.c_str()));
   }
 
+  // Returns a profile which can be used for testing.
+  Profile* GetProfileForTest() {
+    // Any profile can be used here since this test does not test multi profile.
+    return ProfileManager::GetActiveUserProfile();
+  }
+
   const std::string user_id_1_;
   const std::string user_id_2_;
 
+  scoped_ptr<base::RunLoop> run_loop_;
+
+  UserPolicyBuilder device_local_account_policy_;
+  LocalPolicyTestServer test_server_;
+
+ private:
   base::ScopedTempDir extension_cache_root_dir_;
   base::ScopedTempDir external_data_cache_dir_;
   scoped_ptr<base::ScopedPathOverride> extension_cache_root_dir_override_;
   scoped_ptr<base::ScopedPathOverride> external_data_cache_dir_override_;
 
-  UserPolicyBuilder device_local_account_policy_;
-  LocalPolicyTestServer test_server_;
-
-  scoped_ptr<base::RunLoop> run_loop_;
+  DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountTest);
 };
 
 static bool IsKnownUser(const std::string& account_id) {
@@ -611,8 +620,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
                                         base::Bind(IsSessionStarted)).Wait();
 
   // Open a browser window.
-  chrome::NewEmptyWindow(ProfileManager::GetDefaultProfile(),
-                         chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::NewEmptyWindow(GetProfileForTest(), chrome::HOST_DESKTOP_TYPE_ASH);
   BrowserList* browser_list =
     BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   EXPECT_EQ(1U, browser_list->size());
@@ -705,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   extension_observer.Wait();
 
   // Verify that the hosted app was installed.
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -803,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   extension_observer.Wait();
 
   // Verify that the hosted app was installed.
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -921,8 +929,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   // Verify that the external data reference has propagated to the device-local
   // account's ProfilePolicyConnector.
   ProfilePolicyConnector* policy_connector =
-      ProfilePolicyConnectorFactory::GetForProfile(
-          ProfileManager::GetDefaultProfile());
+      ProfilePolicyConnectorFactory::GetForProfile(GetProfileForTest());
   ASSERT_TRUE(policy_connector);
   const PolicyMap& policies = policy_connector->policy_service()->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
