@@ -136,7 +136,8 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   void SetFileSystemContext(
       scoped_refptr<fileapi::FileSystemContext> file_system_context);
 
-  int32_t CreateQuotaReservation(const base::Closure& callback);
+  bool ShouldCreateQuotaReservation() const;
+  void CreateQuotaReservation(const base::Closure& callback);
   void GotQuotaReservation(
       const base::Closure& callback,
       scoped_refptr<QuotaReservation> quota_reservation);

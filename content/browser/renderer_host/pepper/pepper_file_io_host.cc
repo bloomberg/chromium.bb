@@ -32,7 +32,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace content {
@@ -91,7 +90,6 @@ PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
       file_(base::kInvalidPlatformFileValue),
       open_flags_(0),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
-      quota_policy_(quota::kQuotaLimitTypeUnknown),
       max_written_offset_(0),
       check_quota_(false),
       weak_factory_(this) {
@@ -220,18 +218,6 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
     host()->SendReply(reply_context, PpapiPluginMsg_FileIO_OpenReply());
     return;
   }
-
-  quota_policy_ = quota::kQuotaLimitTypeUnknown;
-  quota::QuotaManagerProxy* quota_manager_proxy =
-      file_system_context_->quota_manager_proxy();
-  CHECK(quota_manager_proxy);
-  CHECK(quota_manager_proxy->quota_manager());
-  if (quota_manager_proxy->quota_manager()->IsStorageUnlimited(
-          file_system_url_.origin(),
-          fileapi::FileSystemTypeToQuotaStorageType(file_system_url_.type())))
-    quota_policy_ = quota::kQuotaLimitTypeUnlimited;
-  else
-    quota_policy_ = quota::kQuotaLimitTypeLimited;
 
   DCHECK(file_system_host_.get());
   DCHECK(file_system_host_->GetFileSystemOperationRunner());
@@ -517,8 +503,7 @@ void PepperFileIOHost::DidCloseFile(base::PlatformFileError error) {
 
 int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
     ppapi::host::HostMessageContext* context) {
-  if (open_flags_ != PP_FILEOPENFLAG_READ &&
-      quota_policy_ != quota::kQuotaLimitTypeUnlimited)
+  if (open_flags_ != PP_FILEOPENFLAG_READ && file_system_host_->ChecksQuota())
     return PP_ERROR_FAILED;
 
   GURL document_url =

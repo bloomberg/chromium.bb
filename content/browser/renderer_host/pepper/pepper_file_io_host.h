@@ -21,7 +21,6 @@
 #include "ppapi/shared_impl/file_io_state_manager.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/common/quota/quota_types.h"
 
 namespace content {
 class PepperFileSystemBrowserHost;
@@ -144,9 +143,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   // indicate that the open command actually succeeded.
   PP_FileSystemType file_system_type_;
   base::WeakPtr<PepperFileSystemBrowserHost> file_system_host_;
-
-  // Used to check if we can pass file handle to plugins.
-  quota::QuotaLimitType quota_policy_;
 
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;

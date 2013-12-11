@@ -23,7 +23,9 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace content {
 
@@ -225,11 +227,10 @@ void PepperFileSystemBrowserHost::OpenExistingFileSystem(
   }
   SetFileSystemContext(file_system_context);
 
-  int32_t pp_error = CreateQuotaReservation(callback);
-  if (pp_error == PP_OK_COMPLETIONPENDING)
-    return;
-
-  callback.Run();
+  if (ShouldCreateQuotaReservation())
+    CreateQuotaReservation(callback);
+  else
+    callback.Run();
 }
 
 void PepperFileSystemBrowserHost::OpenFileSystem(
@@ -263,14 +264,14 @@ void PepperFileSystemBrowserHost::OpenFileSystemComplete(
     opened_ = true;
     root_url_ = root;
 
-    pp_error = CreateQuotaReservation(
-        base::Bind(&PepperFileSystemBrowserHost::SendReplyForFileSystem,
-                   weak_factory_.GetWeakPtr(),
-                   reply_context,
-                   static_cast<int32_t>(PP_OK)));
-    if (pp_error == PP_OK_COMPLETIONPENDING)
+    if (ShouldCreateQuotaReservation()) {
+      CreateQuotaReservation(
+          base::Bind(&PepperFileSystemBrowserHost::SendReplyForFileSystem,
+                     weak_factory_.GetWeakPtr(),
+                     reply_context,
+                     static_cast<int32_t>(PP_OK)));
       return;
-    // For PP_OK and all other error codes, we can send the reply now.
+    }
   }
   SendReplyForFileSystem(reply_context, pp_error);
 }
@@ -407,11 +408,25 @@ void PepperFileSystemBrowserHost::SetFileSystemContext(
   }
 }
 
-int32_t PepperFileSystemBrowserHost::CreateQuotaReservation(
-    const base::Closure& callback) {
+bool PepperFileSystemBrowserHost::ShouldCreateQuotaReservation() const {
+  // Some file system types don't have quota.
   if (!ppapi::FileSystemTypeHasQuota(type_))
-    return PP_OK;
+    return false;
 
+  // For file system types with quota, ome origins have unlimited storage.
+  quota::QuotaManagerProxy* quota_manager_proxy =
+      file_system_context_->quota_manager_proxy();
+  CHECK(quota_manager_proxy);
+  CHECK(quota_manager_proxy->quota_manager());
+  fileapi::FileSystemType file_system_type =
+      ppapi::PepperFileSystemTypeToFileSystemType(type_);
+  return !quota_manager_proxy->quota_manager()->IsStorageUnlimited(
+      root_url_.GetOrigin(),
+      fileapi::FileSystemTypeToQuotaStorageType(file_system_type));
+}
+
+void PepperFileSystemBrowserHost::CreateQuotaReservation(
+    const base::Closure& callback) {
   DCHECK(root_url_.is_valid());
   base::PostTaskAndReplyWithResult(
       file_system_context_->default_file_task_runner(),
@@ -423,7 +438,6 @@ int32_t PepperFileSystemBrowserHost::CreateQuotaReservation(
       base::Bind(&PepperFileSystemBrowserHost::GotQuotaReservation,
                  weak_factory_.GetWeakPtr(),
                  callback));
-  return PP_OK_COMPLETIONPENDING;
 }
 
 void PepperFileSystemBrowserHost::GotQuotaReservation(
