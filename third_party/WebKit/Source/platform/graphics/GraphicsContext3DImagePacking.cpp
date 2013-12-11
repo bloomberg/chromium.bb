@@ -39,72 +39,72 @@ GraphicsContext3D::DataFormat getDataFormat(GC3Denum destinationFormat, GC3Denum
 {
     GraphicsContext3D::DataFormat dstFormat = GraphicsContext3D::DataFormatRGBA8;
     switch (destinationType) {
-    case GraphicsContext3D::UNSIGNED_BYTE:
+    case GL_UNSIGNED_BYTE:
         switch (destinationFormat) {
-        case GraphicsContext3D::RGB:
+        case GL_RGB:
             dstFormat = GraphicsContext3D::DataFormatRGB8;
             break;
-        case GraphicsContext3D::RGBA:
+        case GL_RGBA:
             dstFormat = GraphicsContext3D::DataFormatRGBA8;
             break;
-        case GraphicsContext3D::ALPHA:
+        case GL_ALPHA:
             dstFormat = GraphicsContext3D::DataFormatA8;
             break;
-        case GraphicsContext3D::LUMINANCE:
+        case GL_LUMINANCE:
             dstFormat = GraphicsContext3D::DataFormatR8;
             break;
-        case GraphicsContext3D::LUMINANCE_ALPHA:
+        case GL_LUMINANCE_ALPHA:
             dstFormat = GraphicsContext3D::DataFormatRA8;
             break;
         default:
             ASSERT_NOT_REACHED();
         }
         break;
-    case GraphicsContext3D::UNSIGNED_SHORT_4_4_4_4:
+    case GL_UNSIGNED_SHORT_4_4_4_4:
         dstFormat = GraphicsContext3D::DataFormatRGBA4444;
         break;
-    case GraphicsContext3D::UNSIGNED_SHORT_5_5_5_1:
+    case GL_UNSIGNED_SHORT_5_5_5_1:
         dstFormat = GraphicsContext3D::DataFormatRGBA5551;
         break;
-    case GraphicsContext3D::UNSIGNED_SHORT_5_6_5:
+    case GL_UNSIGNED_SHORT_5_6_5:
         dstFormat = GraphicsContext3D::DataFormatRGB565;
         break;
-    case GraphicsContext3D::HALF_FLOAT_OES: // OES_texture_half_float
+    case GL_HALF_FLOAT_OES: // OES_texture_half_float
         switch (destinationFormat) {
-        case GraphicsContext3D::RGB:
+        case GL_RGB:
             dstFormat = GraphicsContext3D::DataFormatRGB16F;
             break;
-        case GraphicsContext3D::RGBA:
+        case GL_RGBA:
             dstFormat = GraphicsContext3D::DataFormatRGBA16F;
             break;
-        case GraphicsContext3D::ALPHA:
+        case GL_ALPHA:
             dstFormat = GraphicsContext3D::DataFormatA16F;
             break;
-        case GraphicsContext3D::LUMINANCE:
+        case GL_LUMINANCE:
             dstFormat = GraphicsContext3D::DataFormatR16F;
             break;
-        case GraphicsContext3D::LUMINANCE_ALPHA:
+        case GL_LUMINANCE_ALPHA:
             dstFormat = GraphicsContext3D::DataFormatRA16F;
             break;
         default:
             ASSERT_NOT_REACHED();
         }
         break;
-    case GraphicsContext3D::FLOAT: // OES_texture_float
+    case GL_FLOAT: // OES_texture_float
         switch (destinationFormat) {
-        case GraphicsContext3D::RGB:
+        case GL_RGB:
             dstFormat = GraphicsContext3D::DataFormatRGB32F;
             break;
-        case GraphicsContext3D::RGBA:
+        case GL_RGBA:
             dstFormat = GraphicsContext3D::DataFormatRGBA32F;
             break;
-        case GraphicsContext3D::ALPHA:
+        case GL_ALPHA:
             dstFormat = GraphicsContext3D::DataFormatA32F;
             break;
-        case GraphicsContext3D::LUMINANCE:
+        case GL_LUMINANCE:
             dstFormat = GraphicsContext3D::DataFormatR32F;
             break;
-        case GraphicsContext3D::LUMINANCE_ALPHA:
+        case GL_LUMINANCE_ALPHA:
             dstFormat = GraphicsContext3D::DataFormatRA32F;
             break;
         default:
@@ -1477,7 +1477,7 @@ bool GraphicsContext3D::packImageData(
 
     unsigned packedSize;
     // Output data is tightly packed (alignment == 1).
-    if (computeImageSizeInBytes(format, type, width, height, 1, &packedSize, 0) != GraphicsContext3D::NO_ERROR)
+    if (computeImageSizeInBytes(format, type, width, height, 1, &packedSize, 0) != GL_NO_ERROR)
         return false;
     data.resize(packedSize);
 
@@ -1504,7 +1504,7 @@ bool GraphicsContext3D::extractImageData(
 
     unsigned packedSize;
     // Output data is tightly packed (alignment == 1).
-    if (computeImageSizeInBytes(format, type, width, height, 1, &packedSize, 0) != GraphicsContext3D::NO_ERROR)
+    if (computeImageSizeInBytes(format, type, width, height, 1, &packedSize, 0) != GL_NO_ERROR)
         return false;
     data.resize(packedSize);
 

@@ -429,7 +429,7 @@ DELEGATE_TO_WEBCONTEXT_1(linkProgram, Platform3DObject)
 
 void GraphicsContext3D::pixelStorei(GC3Denum pname, GC3Dint param)
 {
-    if (pname == PACK_ALIGNMENT)
+    if (pname == GL_PACK_ALIGNMENT)
         m_packAlignment = param;
     m_impl->pixelStorei(pname, param);
 }
@@ -534,7 +534,7 @@ PassRefPtr<Uint8ClampedArray> GraphicsContext3D::paintRenderingResultsToImageDat
 
     RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
 
-    m_impl->bindFramebuffer(FRAMEBUFFER, framebufferId);
+    m_impl->bindFramebuffer(GL_FRAMEBUFFER, framebufferId);
     readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, AlphaDoNothing);
     flipVertically(pixels->data(), width, height);
 
@@ -544,10 +544,10 @@ PassRefPtr<Uint8ClampedArray> GraphicsContext3D::paintRenderingResultsToImageDat
 void GraphicsContext3D::readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder readbackOrder, AlphaOp op)
 {
     if (m_packAlignment > 4)
-        m_impl->pixelStorei(PACK_ALIGNMENT, 1);
-    m_impl->readPixels(0, 0, width, height, RGBA, UNSIGNED_BYTE, pixels);
+        m_impl->pixelStorei(GL_PACK_ALIGNMENT, 1);
+    m_impl->readPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     if (m_packAlignment > 4)
-        m_impl->pixelStorei(PACK_ALIGNMENT, m_packAlignment);
+        m_impl->pixelStorei(GL_PACK_ALIGNMENT, m_packAlignment);
 
     size_t bufferSize = 4 * width * height;
 
@@ -608,19 +608,19 @@ bool GraphicsContext3D::computeFormatAndTypeParameters(GC3Denum format,
                                                        unsigned int* bytesPerComponent)
 {
     switch (format) {
-    case GraphicsContext3D::ALPHA:
-    case GraphicsContext3D::LUMINANCE:
-    case GraphicsContext3D::DEPTH_COMPONENT:
-    case GraphicsContext3D::DEPTH_STENCIL:
+    case GL_ALPHA:
+    case GL_LUMINANCE:
+    case GL_DEPTH_COMPONENT:
+    case GL_DEPTH_STENCIL_OES:
         *componentsPerPixel = 1;
         break;
-    case GraphicsContext3D::LUMINANCE_ALPHA:
+    case GL_LUMINANCE_ALPHA:
         *componentsPerPixel = 2;
         break;
-    case GraphicsContext3D::RGB:
+    case GL_RGB:
         *componentsPerPixel = 3;
         break;
-    case GraphicsContext3D::RGBA:
+    case GL_RGBA:
     case Extensions3D::BGRA_EXT: // GL_EXT_texture_format_BGRA8888
         *componentsPerPixel = 4;
         break;
@@ -628,26 +628,26 @@ bool GraphicsContext3D::computeFormatAndTypeParameters(GC3Denum format,
         return false;
     }
     switch (type) {
-    case GraphicsContext3D::UNSIGNED_BYTE:
+    case GL_UNSIGNED_BYTE:
         *bytesPerComponent = sizeof(GC3Dubyte);
         break;
-    case GraphicsContext3D::UNSIGNED_SHORT:
+    case GL_UNSIGNED_SHORT:
         *bytesPerComponent = sizeof(GC3Dushort);
         break;
-    case GraphicsContext3D::UNSIGNED_SHORT_5_6_5:
-    case GraphicsContext3D::UNSIGNED_SHORT_4_4_4_4:
-    case GraphicsContext3D::UNSIGNED_SHORT_5_5_5_1:
+    case GL_UNSIGNED_SHORT_5_6_5:
+    case GL_UNSIGNED_SHORT_4_4_4_4:
+    case GL_UNSIGNED_SHORT_5_5_5_1:
         *componentsPerPixel = 1;
         *bytesPerComponent = sizeof(GC3Dushort);
         break;
-    case GraphicsContext3D::UNSIGNED_INT_24_8:
-    case GraphicsContext3D::UNSIGNED_INT:
+    case GL_UNSIGNED_INT_24_8_OES:
+    case GL_UNSIGNED_INT:
         *bytesPerComponent = sizeof(GC3Duint);
         break;
-    case GraphicsContext3D::FLOAT: // OES_texture_float
+    case GL_FLOAT: // OES_texture_float
         *bytesPerComponent = sizeof(GC3Dfloat);
         break;
-    case GraphicsContext3D::HALF_FLOAT_OES: // OES_texture_half_float
+    case GL_HALF_FLOAT_OES: // OES_texture_half_float
         *bytesPerComponent = sizeof(GC3Dhalffloat);
         break;
     default:
@@ -662,20 +662,20 @@ GC3Denum GraphicsContext3D::computeImageSizeInBytes(GC3Denum format, GC3Denum ty
     ASSERT(imageSizeInBytes);
     ASSERT(alignment == 1 || alignment == 2 || alignment == 4 || alignment == 8);
     if (width < 0 || height < 0)
-        return GraphicsContext3D::INVALID_VALUE;
+        return GL_INVALID_VALUE;
     unsigned int bytesPerComponent, componentsPerPixel;
     if (!computeFormatAndTypeParameters(format, type, &bytesPerComponent, &componentsPerPixel))
-        return GraphicsContext3D::INVALID_ENUM;
+        return GL_INVALID_ENUM;
     if (!width || !height) {
         *imageSizeInBytes = 0;
         if (paddingInBytes)
             *paddingInBytes = 0;
-        return GraphicsContext3D::NO_ERROR;
+        return GL_NO_ERROR;
     }
     CheckedInt<uint32_t> checkedValue(bytesPerComponent * componentsPerPixel);
     checkedValue *=  width;
     if (!checkedValue.isValid())
-        return GraphicsContext3D::INVALID_VALUE;
+        return GL_INVALID_VALUE;
     unsigned int validRowSize = checkedValue.value();
     unsigned int padding = 0;
     unsigned int residual = validRowSize % alignment;
@@ -687,11 +687,11 @@ GC3Denum GraphicsContext3D::computeImageSizeInBytes(GC3Denum format, GC3Denum ty
     checkedValue *= (height - 1);
     checkedValue += validRowSize;
     if (!checkedValue.isValid())
-        return GraphicsContext3D::INVALID_VALUE;
+        return GL_INVALID_VALUE;
     *imageSizeInBytes = checkedValue.value();
     if (paddingInBytes)
         *paddingInBytes = padding;
-    return GraphicsContext3D::NO_ERROR;
+    return GL_NO_ERROR;
 }
 
 GraphicsContext3D::ImageExtractor::ImageExtractor(Image* image, ImageHtmlDomSource imageHtmlDomSource, bool premultiplyAlpha, bool ignoreGammaAndColorProfile)
@@ -762,22 +762,22 @@ bool GraphicsContext3D::ImageExtractor::extractImage(bool premultiplyAlpha, bool
 unsigned GraphicsContext3D::getClearBitsByFormat(GC3Denum format)
 {
     switch (format) {
-    case GraphicsContext3D::ALPHA:
-    case GraphicsContext3D::LUMINANCE:
-    case GraphicsContext3D::LUMINANCE_ALPHA:
-    case GraphicsContext3D::RGB:
-    case GraphicsContext3D::RGB565:
-    case GraphicsContext3D::RGBA:
-    case GraphicsContext3D::RGBA4:
-    case GraphicsContext3D::RGB5_A1:
-        return GraphicsContext3D::COLOR_BUFFER_BIT;
-    case GraphicsContext3D::DEPTH_COMPONENT16:
-    case GraphicsContext3D::DEPTH_COMPONENT:
-        return GraphicsContext3D::DEPTH_BUFFER_BIT;
-    case GraphicsContext3D::STENCIL_INDEX8:
-        return GraphicsContext3D::STENCIL_BUFFER_BIT;
-    case GraphicsContext3D::DEPTH_STENCIL:
-        return GraphicsContext3D::DEPTH_BUFFER_BIT | GraphicsContext3D::STENCIL_BUFFER_BIT;
+    case GL_ALPHA:
+    case GL_LUMINANCE:
+    case GL_LUMINANCE_ALPHA:
+    case GL_RGB:
+    case GL_RGB565:
+    case GL_RGBA:
+    case GL_RGBA4:
+    case GL_RGB5_A1:
+        return GL_COLOR_BUFFER_BIT;
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT:
+        return GL_DEPTH_BUFFER_BIT;
+    case GL_STENCIL_INDEX8:
+        return GL_STENCIL_BUFFER_BIT;
+    case GL_DEPTH_STENCIL_OES:
+        return GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
     default:
         return 0;
     }
@@ -786,25 +786,25 @@ unsigned GraphicsContext3D::getClearBitsByFormat(GC3Denum format)
 unsigned GraphicsContext3D::getChannelBitsByFormat(GC3Denum format)
 {
     switch (format) {
-    case GraphicsContext3D::ALPHA:
+    case GL_ALPHA:
         return ChannelAlpha;
-    case GraphicsContext3D::LUMINANCE:
+    case GL_LUMINANCE:
         return ChannelRGB;
-    case GraphicsContext3D::LUMINANCE_ALPHA:
+    case GL_LUMINANCE_ALPHA:
         return ChannelRGBA;
-    case GraphicsContext3D::RGB:
-    case GraphicsContext3D::RGB565:
+    case GL_RGB:
+    case GL_RGB565:
         return ChannelRGB;
-    case GraphicsContext3D::RGBA:
-    case GraphicsContext3D::RGBA4:
-    case GraphicsContext3D::RGB5_A1:
+    case GL_RGBA:
+    case GL_RGBA4:
+    case GL_RGB5_A1:
         return ChannelRGBA;
-    case GraphicsContext3D::DEPTH_COMPONENT16:
-    case GraphicsContext3D::DEPTH_COMPONENT:
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT:
         return ChannelDepth;
-    case GraphicsContext3D::STENCIL_INDEX8:
+    case GL_STENCIL_INDEX8:
         return ChannelStencil;
-    case GraphicsContext3D::DEPTH_STENCIL:
+    case GL_DEPTH_STENCIL_OES:
         return ChannelDepth | ChannelStencil;
     default:
         return 0;
@@ -839,7 +839,7 @@ void GraphicsContext3D::paintFramebufferToCanvas(int framebuffer, int width, int
     SkAutoLockPixels bitmapLock(*readbackBitmap);
     pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
 
-    m_impl->bindFramebuffer(FRAMEBUFFER, framebuffer);
+    m_impl->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     readBackFramebuffer(pixels, width, height, ReadbackSkia, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing);
     flipVertically(pixels, width, height);
 
@@ -884,7 +884,7 @@ void GraphicsContext3D::initializeExtensions()
     if (!success)
         return;
 
-    String extensionsString = m_impl->getString(GraphicsContext3D::EXTENSIONS);
+    String extensionsString = m_impl->getString(GL_EXTENSIONS);
     splitStringHelper(extensionsString, m_enabledExtensions);
 
     String requestableExtensionsString = m_impl->getRequestableExtensionsCHROMIUM();

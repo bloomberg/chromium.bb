@@ -144,7 +144,7 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
 
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
     context.pixelStorei(Extensions3D::UNPACK_FLIP_Y_CHROMIUM, !flipY);
-    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, getBackingTexture(), texture, level, internalFormat, destType);
+    extensions->copyTextureCHROMIUM(GL_TEXTURE_2D, getBackingTexture(), texture, level, internalFormat, destType);
 
     context.pixelStorei(Extensions3D::UNPACK_FLIP_Y_CHROMIUM, false);
     context.pixelStorei(Extensions3D::UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
@@ -172,8 +172,8 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     if (!context3D || !tex)
         return false;
 
-    return drawingBuffer->copyToPlatformTexture(*(context3D.get()), tex, GraphicsContext3D::RGBA,
-        GraphicsContext3D::UNSIGNED_BYTE, 0, true, false);
+    return drawingBuffer->copyToPlatformTexture(*(context3D.get()), tex, GL_RGBA,
+        GL_UNSIGNED_BYTE, 0, true, false);
 }
 
 void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect,

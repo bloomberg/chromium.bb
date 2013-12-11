@@ -50,12 +50,12 @@ CustomFilterMesh::CustomFilterMesh(GraphicsContext3D* context, unsigned columns,
     m_context->makeContextCurrent();
 
     m_verticesBufferObject = m_context->createBuffer();
-    m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, m_verticesBufferObject);
-    m_context->bufferData(GraphicsContext3D::ARRAY_BUFFER, generator.vertices().size() * sizeof(float), generator.vertices().data(), GraphicsContext3D::STATIC_DRAW);
+    m_context->bindBuffer(GL_ARRAY_BUFFER, m_verticesBufferObject);
+    m_context->bufferData(GL_ARRAY_BUFFER, generator.vertices().size() * sizeof(float), generator.vertices().data(), GL_STATIC_DRAW);
 
     m_elementsBufferObject = m_context->createBuffer();
-    m_context->bindBuffer(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, m_elementsBufferObject);
-    m_context->bufferData(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, generator.indices().size() * sizeof(uint16_t), generator.indices().data(), GraphicsContext3D::STATIC_DRAW);
+    m_context->bindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementsBufferObject);
+    m_context->bufferData(GL_ELEMENT_ARRAY_BUFFER, generator.indices().size() * sizeof(uint16_t), generator.indices().data(), GL_STATIC_DRAW);
 }
 
 CustomFilterMesh::~CustomFilterMesh()

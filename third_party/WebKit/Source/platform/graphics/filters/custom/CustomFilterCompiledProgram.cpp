@@ -50,11 +50,11 @@ CustomFilterCompiledProgram::CustomFilterCompiledProgram(PassRefPtr<GraphicsCont
 {
     m_context->makeContextCurrent();
 
-    Platform3DObject vertexShader = compileShader(GraphicsContext3D::VERTEX_SHADER, validatedVertexShader);
+    Platform3DObject vertexShader = compileShader(GL_VERTEX_SHADER, validatedVertexShader);
     if (!vertexShader)
         return;
 
-    Platform3DObject fragmentShader = compileShader(GraphicsContext3D::FRAGMENT_SHADER, validatedFragmentShader);
+    Platform3DObject fragmentShader = compileShader(GL_FRAGMENT_SHADER, validatedFragmentShader);
     if (!fragmentShader) {
         m_context->deleteShader(vertexShader);
         return;
@@ -82,7 +82,7 @@ Platform3DObject CustomFilterCompiledProgram::compileShader(GC3Denum shaderType,
     m_context->compileShader(shader);
 
     int compiled = 0;
-    m_context->getShaderiv(shader, GraphicsContext3D::COMPILE_STATUS, &compiled);
+    m_context->getShaderiv(shader, GL_COMPILE_STATUS, &compiled);
     if (!compiled) {
         // FIXME: This is an invalid shader. Throw some errors.
         // https://bugs.webkit.org/show_bug.cgi?id=74416
@@ -101,7 +101,7 @@ Platform3DObject CustomFilterCompiledProgram::linkProgram(Platform3DObject verte
     m_context->linkProgram(program);
 
     int linked = 0;
-    m_context->getProgramiv(program, GraphicsContext3D::LINK_STATUS, &linked);
+    m_context->getProgramiv(program, GL_LINK_STATUS, &linked);
     if (!linked) {
         // FIXME: Invalid vertex/fragment shader combination. Throw some errors here.
         // https://bugs.webkit.org/show_bug.cgi?id=74416

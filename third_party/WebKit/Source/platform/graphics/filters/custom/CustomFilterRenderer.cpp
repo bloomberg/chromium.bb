@@ -104,7 +104,7 @@ void CustomFilterRenderer::draw(Platform3DObject inputTexture, const IntSize& si
     m_contextSize = size;
 
     bindProgramAndBuffers(inputTexture);
-    m_context->drawElements(GraphicsContext3D::TRIANGLES, m_mesh->indicesCount(), GraphicsContext3D::UNSIGNED_SHORT, 0);
+    m_context->drawElements(GL_TRIANGLES, m_mesh->indicesCount(), GL_UNSIGNED_SHORT, 0);
     unbindVertexAttributes();
 }
 
@@ -136,7 +136,7 @@ void CustomFilterRenderer::initializeMeshIfNeeded()
 void CustomFilterRenderer::bindVertexAttribute(int attributeLocation, unsigned size, unsigned offset)
 {
     if (attributeLocation != -1) {
-        m_context->vertexAttribPointer(attributeLocation, size, GraphicsContext3D::FLOAT, false, m_mesh->bytesPerVertex(), offset);
+        m_context->vertexAttribPointer(attributeLocation, size, GL_FLOAT, false, m_mesh->bytesPerVertex(), offset);
         m_context->enableVertexAttribArray(attributeLocation);
     }
 }
@@ -233,13 +233,13 @@ void CustomFilterRenderer::bindProgramAndBuffers(Platform3DObject inputTexture)
         ASSERT(m_programType == ProgramTypeBlendsElementTexture);
         ASSERT(m_compiledProgram->samplerLocation() != -1);
 
-        m_context->activeTexture(GraphicsContext3D::TEXTURE0);
+        m_context->activeTexture(GL_TEXTURE0);
         m_context->uniform1i(m_compiledProgram->samplerLocation(), 0);
-        m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, inputTexture);
-        m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR);
-        m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR);
-        m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE);
-        m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE);
+        m_context->bindTexture(GL_TEXTURE_2D, inputTexture);
+        m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
     if (m_compiledProgram->projectionMatrixLocation() != -1) {
@@ -268,8 +268,8 @@ void CustomFilterRenderer::bindProgramAndBuffers(Platform3DObject inputTexture)
     if (m_compiledProgram->samplerSizeLocation() != -1)
         m_context->uniform2f(m_compiledProgram->samplerSizeLocation(), m_contextSize.width(), m_contextSize.height());
 
-    m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, m_mesh->verticesBufferObject());
-    m_context->bindBuffer(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, m_mesh->elementsBufferObject());
+    m_context->bindBuffer(GL_ARRAY_BUFFER, m_mesh->verticesBufferObject());
+    m_context->bindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_mesh->elementsBufferObject());
 
     bindVertexAttribute(m_compiledProgram->positionAttribLocation(), PositionAttribSize, PositionAttribOffset);
     bindVertexAttribute(m_compiledProgram->texAttribLocation(), TexAttribSize, TexAttribOffset);

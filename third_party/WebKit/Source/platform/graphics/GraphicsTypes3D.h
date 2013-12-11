@@ -29,8 +29,8 @@
 #include "wtf/Forward.h"
 #include <stdint.h>
 
-// GC3D types match the corresponding GL types as defined in OpenGL ES 2.0
-// header file gl2.h from khronos.org.
+// GC3D types and enums match the corresponding GL types and enums as defined
+// in OpenGL ES 2.0 header file gl2.h from khronos.org.
 typedef unsigned GC3Denum;
 typedef unsigned char GC3Dboolean;
 typedef unsigned GC3Dbitfield;
@@ -49,5 +49,13 @@ typedef intptr_t GC3Dsizeiptr;
 typedef char GC3Dchar;
 
 typedef GC3Duint Platform3DObject;
+
+// WebGL-specific enums
+const GC3Denum GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL = 0x821A;
+const GC3Denum GC3D_UNPACK_FLIP_Y_WEBGL = 0x9240;
+const GC3Denum GC3D_UNPACK_PREMULTIPLY_ALPHA_WEBGL = 0x9241;
+const GC3Denum GC3D_CONTEXT_LOST_WEBGL = 0x9242;
+const GC3Denum GC3D_UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243;
+const GC3Denum GC3D_BROWSER_DEFAULT_WEBGL = 0x9244;
 
 #endif

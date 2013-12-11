@@ -109,9 +109,9 @@ void WebGLProgram::increaseLinkCount()
 WebGLShader* WebGLProgram::getAttachedShader(GC3Denum type)
 {
     switch (type) {
-    case GraphicsContext3D::VERTEX_SHADER:
+    case GL_VERTEX_SHADER:
         return m_vertexShader.get();
-    case GraphicsContext3D::FRAGMENT_SHADER:
+    case GL_FRAGMENT_SHADER:
         return m_fragmentShader.get();
     default:
         return 0;
@@ -123,12 +123,12 @@ bool WebGLProgram::attachShader(WebGLShader* shader)
     if (!shader || !shader->object())
         return false;
     switch (shader->type()) {
-    case GraphicsContext3D::VERTEX_SHADER:
+    case GL_VERTEX_SHADER:
         if (m_vertexShader)
             return false;
         m_vertexShader = shader;
         return true;
-    case GraphicsContext3D::FRAGMENT_SHADER:
+    case GL_FRAGMENT_SHADER:
         if (m_fragmentShader)
             return false;
         m_fragmentShader = shader;
@@ -143,12 +143,12 @@ bool WebGLProgram::detachShader(WebGLShader* shader)
     if (!shader || !shader->object())
         return false;
     switch (shader->type()) {
-    case GraphicsContext3D::VERTEX_SHADER:
+    case GL_VERTEX_SHADER:
         if (m_vertexShader != shader)
             return false;
         m_vertexShader = 0;
         return true;
-    case GraphicsContext3D::FRAGMENT_SHADER:
+    case GL_FRAGMENT_SHADER:
         if (m_fragmentShader != shader)
             return false;
         m_fragmentShader = 0;
@@ -163,7 +163,7 @@ void WebGLProgram::cacheActiveAttribLocations(GraphicsContext3D* context3d)
     m_activeAttribLocations.clear();
 
     GC3Dint numAttribs = 0;
-    context3d->getProgramiv(object(), GraphicsContext3D::ACTIVE_ATTRIBUTES, &numAttribs);
+    context3d->getProgramiv(object(), GL_ACTIVE_ATTRIBUTES, &numAttribs);
     m_activeAttribLocations.resize(static_cast<size_t>(numAttribs));
     for (int i = 0; i < numAttribs; ++i) {
         ActiveInfo info;
@@ -184,7 +184,7 @@ void WebGLProgram::cacheInfoIfNeeded()
     if (!context)
         return;
     GC3Dint linkStatus = 0;
-    context->getProgramiv(object(), GraphicsContext3D::LINK_STATUS, &linkStatus);
+    context->getProgramiv(object(), GL_LINK_STATUS, &linkStatus);
     m_linkStatus = linkStatus;
     if (m_linkStatus)
         cacheActiveAttribLocations(context);

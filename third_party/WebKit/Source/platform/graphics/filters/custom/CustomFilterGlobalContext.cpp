@@ -82,7 +82,7 @@ void CustomFilterGlobalContext::prepareContextIfNeeded()
     if (!m_context)
         return;
     m_context->makeContextCurrent();
-    m_context->enable(GraphicsContext3D::DEPTH_TEST);
+    m_context->enable(GL_DEPTH_TEST);
 }
 
 PassRefPtr<CustomFilterValidatedProgram> CustomFilterGlobalContext::getValidatedProgram(const CustomFilterProgramInfo& programInfo)

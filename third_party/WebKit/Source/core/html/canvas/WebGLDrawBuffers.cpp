@@ -73,25 +73,25 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GC3Denum>& buffers)
     const GC3Denum* bufs = buffers.data();
     if (!m_context->m_framebufferBinding) {
         if (n != 1) {
-            m_context->synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "drawBuffersWEBGL", "more than one buffer");
+            m_context->synthesizeGLError(GL_INVALID_VALUE, "drawBuffersWEBGL", "more than one buffer");
             return;
         }
-        if (bufs[0] != GraphicsContext3D::BACK && bufs[0] != GraphicsContext3D::NONE) {
-            m_context->synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawBuffersWEBGL", "BACK or NONE");
+        if (bufs[0] != GL_BACK && bufs[0] != GL_NONE) {
+            m_context->synthesizeGLError(GL_INVALID_OPERATION, "drawBuffersWEBGL", "BACK or NONE");
             return;
         }
         // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
-        GC3Denum value = (bufs[0] == GraphicsContext3D::BACK) ? GraphicsContext3D::COLOR_ATTACHMENT0 : GraphicsContext3D::NONE;
+        GC3Denum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
         m_context->graphicsContext3D()->extensions()->drawBuffersEXT(1, &value);
         m_context->setBackDrawBuffer(bufs[0]);
     } else {
         if (n > m_context->maxDrawBuffers()) {
-            m_context->synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "drawBuffersWEBGL", "more than max draw buffers");
+            m_context->synthesizeGLError(GL_INVALID_VALUE, "drawBuffersWEBGL", "more than max draw buffers");
             return;
         }
         for (GC3Dsizei i = 0; i < n; ++i) {
-            if (bufs[i] != GraphicsContext3D::NONE && bufs[i] != static_cast<GC3Denum>(Extensions3D::COLOR_ATTACHMENT0_EXT + i)) {
-                m_context->synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawBuffersWEBGL", "COLOR_ATTACHMENTi_EXT or NONE");
+            if (bufs[i] != GL_NONE && bufs[i] != static_cast<GC3Denum>(Extensions3D::COLOR_ATTACHMENT0_EXT + i)) {
+                m_context->synthesizeGLError(GL_INVALID_OPERATION, "drawBuffersWEBGL", "COLOR_ATTACHMENTi_EXT or NONE");
                 return;
             }
         }
@@ -113,7 +113,7 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
         return false;
 
     Platform3DObject fbo = context->createFramebuffer();
-    context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, fbo);
+    context->bindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     const unsigned char* buffer = 0; // Chromium doesn't allow init data for depth/stencil tetxures.
     bool supportsDepth = (context->extensions()->supports("GL_CHROMIUM_depth_texture")
@@ -124,14 +124,14 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
     Platform3DObject depthStencil = 0;
     if (supportsDepthStencil) {
         depthStencil = context->createTexture();
-        context->bindTexture(GraphicsContext3D::TEXTURE_2D, depthStencil);
-        context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::DEPTH_STENCIL, 1, 1, 0, GraphicsContext3D::DEPTH_STENCIL, GraphicsContext3D::UNSIGNED_INT_24_8, buffer);
+        context->bindTexture(GL_TEXTURE_2D, depthStencil);
+        context->texImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_OES, 1, 1, 0, GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, buffer);
     }
     Platform3DObject depth = 0;
     if (supportsDepth) {
         depth = context->createTexture();
-        context->bindTexture(GraphicsContext3D::TEXTURE_2D, depth);
-        context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::DEPTH_COMPONENT, 1, 1, 0, GraphicsContext3D::DEPTH_COMPONENT, GraphicsContext3D::UNSIGNED_INT, buffer);
+        context->bindTexture(GL_TEXTURE_2D, depth);
+        context->texImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, buffer);
     }
 
     Vector<Platform3DObject> colors;
@@ -140,30 +140,30 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
     for (GC3Dint i = 0; i < maxAllowedBuffers; ++i) {
         Platform3DObject color = context->createTexture();
         colors.append(color);
-        context->bindTexture(GraphicsContext3D::TEXTURE_2D, color);
-        context->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::RGBA, 1, 1, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, buffer);
-        context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0 + i, GraphicsContext3D::TEXTURE_2D, color, 0);
-        if (context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE) {
+        context->bindTexture(GL_TEXTURE_2D, color);
+        context->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, color, 0);
+        if (context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             ok = false;
             break;
         }
         if (supportsDepth) {
-            context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::TEXTURE_2D, depth, 0);
-            if (context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE) {
+            context->framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+            if (context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
                 ok = false;
                 break;
             }
-            context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::TEXTURE_2D, 0, 0);
+            context->framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
         }
         if (supportsDepthStencil) {
-            context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::TEXTURE_2D, depthStencil, 0);
-            context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::TEXTURE_2D, depthStencil, 0);
-            if (context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE) {
+            context->framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthStencil, 0);
+            context->framebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthStencil, 0);
+            if (context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
                 ok = false;
                 break;
             }
-            context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::TEXTURE_2D, 0, 0);
-            context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::TEXTURE_2D, 0, 0);
+            context->framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+            context->framebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
         }
     }
 

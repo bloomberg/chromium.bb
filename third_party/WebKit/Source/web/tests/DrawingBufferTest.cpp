@@ -63,14 +63,14 @@ public:
 
     virtual void bindTexture(WGC3Denum target, WebGLId texture)
     {
-        if (target == GraphicsContext3D::TEXTURE_2D) {
+        if (target == GL_TEXTURE_2D) {
             m_boundTexture = texture;
         }
     }
 
     virtual void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels)
     {
-        if (target == GraphicsContext3D::TEXTURE_2D && !level) {
+        if (target == GL_TEXTURE_2D && !level) {
             m_textureSizes.set(m_boundTexture, IntSize(width, height));
         }
     }
@@ -84,7 +84,7 @@ public:
 
     virtual void produceTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox)
     {
-        ASSERT_EQ(target, GraphicsContext3D::TEXTURE_2D);
+        ASSERT_EQ(target, static_cast<WGC3Denum>(GL_TEXTURE_2D));
         m_mostRecentlyProducedSize = m_textureSizes.get(m_boundTexture);
     }
 
