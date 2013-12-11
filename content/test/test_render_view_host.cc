@@ -312,6 +312,13 @@ void TestRenderViewHost::SendNavigateWithFile(
                              url, 200, &file_path);
 }
 
+void TestRenderViewHost::SendNavigateWithParams(
+    ViewHostMsg_FrameNavigate_Params* params) {
+  params->frame_id = kFrameId;
+  ViewHostMsg_FrameNavigate msg(1, *params);
+  OnNavigate(msg);
+}
+
 void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
     int page_id, const GURL& url, PageTransition transition,
     int response_code) {

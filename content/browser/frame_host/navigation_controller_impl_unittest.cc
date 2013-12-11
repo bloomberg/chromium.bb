@@ -608,6 +608,42 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   EXPECT_GE(controller.GetVisibleEntry()->GetTimestamp(), timestamp);
 }
 
+// Load the same page twice, once as a GET and once as a POST.
+// We should update the post state on the NavigationEntry.
+TEST_F(NavigationControllerTest, LoadURL_SamePage_DifferentMethod) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  const GURL url1("http://foo1");
+
+  controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  ViewHostMsg_FrameNavigate_Params params;
+  params.page_id = 0;
+  params.url = url1;
+  params.transition = PAGE_TRANSITION_TYPED;
+  params.is_post = true;
+  params.post_id = 123;
+  params.page_state = PageState::CreateForTesting(url1, false, 0, 0);
+  test_rvh()->SendNavigateWithParams(&params);
+
+  // The post data should be visible.
+  NavigationEntry* entry = controller.GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetHasPostData());
+  EXPECT_EQ(entry->GetPostID(), 123);
+
+  controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  test_rvh()->SendNavigate(0, url1);
+
+  // We should not have produced a new session history entry.
+  ASSERT_EQ(controller.GetVisibleEntry(), entry);
+
+  // The post data should have been cleared due to the GET.
+  EXPECT_FALSE(entry->GetHasPostData());
+  EXPECT_EQ(entry->GetPostID(), 0);
+}
+
 // Tests loading a URL but discarding it before the load commits.
 TEST_F(NavigationControllerTest, LoadURL_Discarded) {
   NavigationControllerImpl& controller = controller_impl();

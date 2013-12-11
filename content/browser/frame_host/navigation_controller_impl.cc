@@ -1099,6 +1099,10 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
     UpdateVirtualURLToURL(existing_entry, params.url);
   existing_entry->SetURL(params.url);
 
+  // The page may have been requested with a different HTTP method.
+  existing_entry->SetHasPostData(params.is_post);
+  existing_entry->SetPostID(params.post_id);
+
   DiscardNonCommittedEntries();
 }
 

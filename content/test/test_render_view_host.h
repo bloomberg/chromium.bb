@@ -264,6 +264,8 @@ class TestRenderViewHost
   void SendNavigateWithFile(
       int page_id, const GURL& url, const base::FilePath& file_path);
 
+  void SendNavigateWithParams(ViewHostMsg_FrameNavigate_Params* params);
+
   void TestOnUpdateStateWithFile(
       int process_id, const base::FilePath& file_path);
 
