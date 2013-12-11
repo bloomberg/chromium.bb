@@ -73,7 +73,7 @@ struct MasterPrefs {
   bool homepage_defined;
   int do_import_items;
   int dont_import_items;
-  bool make_chrome_default;
+  bool make_chrome_default_for_user;
   bool suppress_first_run_default_browser_prompt;
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
@@ -146,9 +146,11 @@ void AutoImport(Profile* profile,
                 int dont_import_items,
                 const std::string& import_bookmarks_path);
 
-// Does remaining first run tasks for |profile| and makes Chrome default browser
-// if |make_chrome_default|. This can pop the first run consent dialog on linux.
-void DoPostImportTasks(Profile* profile, bool make_chrome_default);
+// Does remaining first run tasks. This can pop the first run consent dialog on
+// linux. |make_chrome_default_for_user| is the value of
+// kMakeChromeDefaultForUser in master_preferences which contributes to the
+// decision of making chrome default browser in post import tasks.
+void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user);
 
 // Returns the current state of AutoImport as recorded in a bitfield formed from
 // values in AutoImportState.

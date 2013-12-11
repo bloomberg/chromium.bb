@@ -41,8 +41,6 @@ void SetupMasterPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,
     MasterPrefs* out_prefs);
 
-void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
-
 // Creates the sentinel file that signals that chrome has been configured.
 bool CreateSentinel();
 

@@ -437,6 +437,26 @@ installer::MasterPreferences* LoadMasterPrefs() {
   return install_prefs;
 }
 
+// Makes chrome the user's default browser according to policy or
+// |make_chrome_default_for_user| if no policy is set.
+void ProcessDefaultBrowserPolicy(bool make_chrome_default_for_user) {
+  // Only proceed if chrome can be made default unattended. The interactive case
+  // (Windows 8+) is handled by the first run default browser prompt.
+  if (ShellIntegration::CanSetAsDefaultBrowser() ==
+          ShellIntegration::SET_DEFAULT_UNATTENDED) {
+    // The policy has precedence over the user's choice.
+    if (g_browser_process->local_state()->IsManagedPreference(
+            prefs::kDefaultBrowserSettingEnabled)) {
+      if (g_browser_process->local_state()->GetBoolean(
+          prefs::kDefaultBrowserSettingEnabled)) {
+        ShellIntegration::SetAsDefaultBrowser();
+      }
+    } else if (make_chrome_default_for_user) {
+        ShellIntegration::SetAsDefaultBrowser();
+    }
+  }
+}
+
 }  // namespace
 
 namespace first_run {
@@ -528,7 +548,7 @@ void SetupMasterPrefsFromInstallPrefs(
   if (install_prefs.GetBool(
           installer::master_preferences::kMakeChromeDefaultForUser,
           &value) && value) {
-    out_prefs->make_chrome_default = true;
+    out_prefs->make_chrome_default_for_user = true;
   }
 
   if (install_prefs.GetBool(
@@ -546,25 +566,6 @@ void SetupMasterPrefsFromInstallPrefs(
   install_prefs.GetString(
       installer::master_preferences::kDistroSuppressDefaultBrowserPromptPref,
       &out_prefs->suppress_default_browser_prompt_for_version);
-}
-
-void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
-  // Even on the first run we only allow for the user choice to take effect if
-  // no policy has been set by the admin.
-  if (!g_browser_process->local_state()->IsManagedPreference(
-          prefs::kDefaultBrowserSettingEnabled)) {
-    bool value = false;
-    if (install_prefs->GetBool(
-            installer::master_preferences::kMakeChromeDefaultForUser,
-            &value) && value) {
-      ShellIntegration::SetAsDefaultBrowser();
-    }
-  } else {
-    if (g_browser_process->local_state()->GetBoolean(
-            prefs::kDefaultBrowserSettingEnabled)) {
-      ShellIntegration::SetAsDefaultBrowser();
-    }
-  }
 }
 
 bool CreateSentinel() {
@@ -591,7 +592,7 @@ MasterPrefs::MasterPrefs()
       homepage_defined(false),
       do_import_items(0),
       dont_import_items(0),
-      make_chrome_default(false),
+      make_chrome_default_for_user(false),
       suppress_first_run_default_browser_prompt(false) {
 }
 
@@ -713,8 +714,6 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 
     internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);
-
-    internal::SetDefaultBrowser(install_prefs.get());
   }
 
   return FIRST_RUN_PROCEED;
@@ -808,12 +807,10 @@ void AutoImport(
   g_auto_import_state |= AUTO_IMPORT_CALLED;
 }
 
-void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
-  if (make_chrome_default &&
-      ShellIntegration::CanSetAsDefaultBrowser() ==
-          ShellIntegration::SET_DEFAULT_UNATTENDED) {
-    ShellIntegration::SetAsDefaultBrowser();
-  }
+void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user) {
+  // Only set default browser after import as auto import relies on the current
+  // default browser to know what to import from.
+  ProcessDefaultBrowserPolicy(make_chrome_default_for_user);
 
   // Display the first run bubble if there is a default search provider.
   TemplateURLService* template_url =

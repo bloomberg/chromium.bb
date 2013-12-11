@@ -1343,7 +1343,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                           master_prefs_->import_bookmarks_path);
 
     // Note: this can pop the first run consent dialog on linux.
-    first_run::DoPostImportTasks(profile_, master_prefs_->make_chrome_default);
+    first_run::DoPostImportTasks(profile_,
+                                 master_prefs_->make_chrome_default_for_user);
 
     if (!master_prefs_->suppress_first_run_default_browser_prompt) {
       browser_creator_->set_show_main_browser_window(
