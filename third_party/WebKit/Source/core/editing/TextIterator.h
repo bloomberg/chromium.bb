@@ -44,6 +44,7 @@ enum TextIteratorBehavior {
     TextIteratorEmitsOriginalText = 1 << 3,
     TextIteratorStopsOnFormControls = 1 << 4,
     TextIteratorEmitsImageAltText = 1 << 5,
+    TextIteratorEntersAuthorShadowRoots = 1 << 6
 };
 
 // FIXME: Can't really answer this question correctly without knowing the white-space mode.
@@ -120,6 +121,7 @@ public:
 private:
     enum IterationProgress {
         HandledNone,
+        HandledAuthorShadowRoots,
         HandledUserAgentShadowRoot,
         HandledNode,
         HandledChildren
@@ -209,6 +211,8 @@ private:
     bool m_shouldStop;
 
     bool m_emitsImageAltText;
+
+    bool m_entersAuthorShadowRoots;
 };
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries

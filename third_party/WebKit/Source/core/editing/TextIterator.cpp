@@ -237,7 +237,7 @@ static void setUpFullyClippedStack(BitStack& stack, Node* node)
 
 // --------
 
-TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
+TextIterator::TextIterator(const Range* range, TextIteratorBehavior behavior)
     : m_shadowDepth(0)
     , m_startContainer(0)
     , m_startOffset(0)
@@ -256,21 +256,22 @@ TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
     , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
     , m_shouldStop(false)
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
+    , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
 {
-    if (!r)
+    if (!range)
         return;
 
     // get and validate the range endpoints
-    Node* startContainer = r->startContainer();
+    Node* startContainer = range->startContainer();
     if (!startContainer)
         return;
-    int startOffset = r->startOffset();
-    Node* endContainer = r->endContainer();
-    int endOffset = r->endOffset();
+    int startOffset = range->startOffset();
+    Node* endContainer = range->endContainer();
+    int endOffset = range->endOffset();
 
     // Callers should be handing us well-formed ranges. If we discover that this isn't
     // the case, we could consider changing this assertion to an early return.
-    ASSERT(r->boundaryPointsValid());
+    ASSERT(range->boundaryPointsValid());
 
     // remember range - this does not change
     m_startContainer = startContainer;
@@ -279,7 +280,7 @@ TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
     m_endOffset = endOffset;
 
     // set up the current node for processing
-    m_node = r->firstNode();
+    m_node = range->firstNode();
     if (!m_node)
         return;
     setUpFullyClippedStack(m_fullyClippedStack, m_node);
@@ -366,18 +367,32 @@ void TextIterator::advance()
                 m_iterationProgress = HandledChildren;
             }
         } else {
-            // Enter user-agent shadow root, if necessary.
-            if (m_iterationProgress < HandledUserAgentShadowRoot) {
-                if (m_entersTextControls && renderer->isTextControl()) {
-                    m_node = toElement(m_node)->userAgentShadowRoot();
+            // Enter author shadow roots, from youngest, if any and if necessary.
+            if (m_iterationProgress < HandledAuthorShadowRoots) {
+                if (m_entersAuthorShadowRoots && m_node->isElementNode() && toElement(m_node)->hasAuthorShadowRoot()) {
+                    ShadowRoot* youngestShadowRoot = toElement(m_node)->shadowRoot();
+                    ASSERT(youngestShadowRoot->type() == ShadowRoot::AuthorShadowRoot);
+                    m_node = youngestShadowRoot;
                     m_iterationProgress = HandledNone;
-                    m_handledFirstLetter = false;
-                    m_firstLetterText = 0;
                     ++m_shadowDepth;
                     pushFullyClippedState(m_fullyClippedStack, m_node);
                     continue;
                 }
 
+                m_iterationProgress = HandledAuthorShadowRoots;
+            }
+
+            // Enter user-agent shadow root, if necessary.
+            if (m_iterationProgress < HandledUserAgentShadowRoot) {
+                if (m_entersTextControls && renderer->isTextControl()) {
+                    ShadowRoot* userAgentShadowRoot = toElement(m_node)->userAgentShadowRoot();
+                    ASSERT(userAgentShadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+                    m_node = userAgentShadowRoot;
+                    m_iterationProgress = HandledNone;
+                    ++m_shadowDepth;
+                    pushFullyClippedState(m_fullyClippedStack, m_node);
+                    continue;
+                }
                 m_iterationProgress = HandledUserAgentShadowRoot;
             }
 
@@ -433,16 +448,34 @@ void TextIterator::advance()
                 }
 
                 if (!next && !parentNode && m_shadowDepth > 0) {
-                    // 4. Reached the top of a shadow root; go back to where we were.
+                    // 4. Reached the top of a shadow root. If it's created by author, then try to visit the next
+                    // sibling shadow root, if any.
                     ShadowRoot* shadowRoot = toShadowRoot(m_node);
-                    // For now, the root can only be a user-agent shadow root.
-                    ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
-                    m_node = shadowRoot->host();
-                    m_iterationProgress = HandledUserAgentShadowRoot;
+                    if (shadowRoot->type() == ShadowRoot::AuthorShadowRoot) {
+                        ShadowRoot* nextShadowRoot = shadowRoot->olderShadowRoot();
+                        if (nextShadowRoot && nextShadowRoot->type() == ShadowRoot::AuthorShadowRoot) {
+                            m_fullyClippedStack.pop();
+                            m_node = nextShadowRoot;
+                            m_iterationProgress = HandledNone;
+                            // m_shadowDepth is unchanged since we exit from a shadow root and enter another.
+                            pushFullyClippedState(m_fullyClippedStack, m_node);
+                        } else {
+                            // We are the last shadow root; exit from here and go back to where we were.
+                            m_node = shadowRoot->host();
+                            m_iterationProgress = HandledAuthorShadowRoots;
+                            --m_shadowDepth;
+                            m_fullyClippedStack.pop();
+                        }
+                    } else {
+                        // If we are in a user-agent shadow root, then go back to the host.
+                        ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+                        m_node = shadowRoot->host();
+                        m_iterationProgress = HandledUserAgentShadowRoot;
+                        --m_shadowDepth;
+                        m_fullyClippedStack.pop();
+                    }
                     m_handledFirstLetter = false;
                     m_firstLetterText = 0;
-                    --m_shadowDepth;
-                    m_fullyClippedStack.pop();
                     continue;
                 }
             }
