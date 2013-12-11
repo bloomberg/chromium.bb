@@ -1164,7 +1164,8 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
   PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath path = GetDirectoryForURL(url, create, &error);
   if (error != base::PLATFORM_FILE_OK) {
-    LOG(WARNING) << "Failed to get origin+type directory: " << path.value();
+    LOG(WARNING) << "Failed to get origin+type directory: "
+                 << url.DebugString() << " error:" << error;
     return NULL;
   }
   MarkUsed();

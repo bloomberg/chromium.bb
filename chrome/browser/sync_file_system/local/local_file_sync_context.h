@@ -227,7 +227,10 @@ class LocalFileSyncContext
   // Helper routines for MaybeInitializeFileSystemContext.
   void InitializeFileSystemContextOnIOThread(
       const GURL& source_url,
-      fileapi::FileSystemContext* file_system_context);
+      fileapi::FileSystemContext* file_system_context,
+      const GURL& /* root */,
+      const std::string& /* name */,
+      base::PlatformFileError error);
   SyncStatusCode InitializeChangeTrackerOnFileThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
       fileapi::FileSystemContext* file_system_context,
@@ -321,8 +324,9 @@ class LocalFileSyncContext
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // Indicates if the sync service is shutdown on UI thread.
-  bool shutdown_on_ui_;
+  // Indicates if the sync service is shutdown.
+  bool shutdown_on_ui_;  // Updated and referred only on UI thread.
+  bool shutdown_on_io_;  // Updated and referred only on IO thread.
 
   // OperationRunner. This must be accessed only on IO thread.
   scoped_ptr<SyncableFileOperationRunner> operation_runner_;

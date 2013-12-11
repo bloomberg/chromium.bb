@@ -281,8 +281,9 @@ void SyncFileSystemBackend::DidInitializeSyncFileSystemService(
     return;
   }
 
-  GetDelegate()->OpenFileSystem(origin_url, type, mode, callback,
-                                GetSyncableFileSystemRootURI(origin_url));
+  callback.Run(GetSyncableFileSystemRootURI(origin_url),
+               GetFileSystemName(origin_url, type),
+               base::PLATFORM_FILE_OK);
 }
 
 }  // namespace sync_file_system

@@ -53,6 +53,7 @@ LocalFileSyncContext::LocalFileSyncContext(
       ui_task_runner_(ui_task_runner),
       io_task_runner_(io_task_runner),
       shutdown_on_ui_(false),
+      shutdown_on_io_(false),
       mock_notify_changes_duration_in_sec_(-1) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 }
@@ -75,11 +76,20 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
   if (callback_queue.size() > 1)
     return;
 
+  // The sync service always expects the origin (app) is initialized
+  // for writable way (even when MaybeInitializeFileSystemContext is called
+  // from read-only OpenFileSystem), so open the filesystem with
+  // CREATE_IF_NONEXISTENT here.
+  fileapi::FileSystemBackend::OpenFileSystemCallback open_filesystem_callback =
+      base::Bind(&LocalFileSyncContext::InitializeFileSystemContextOnIOThread,
+                 this, source_url, make_scoped_refptr(file_system_context));
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LocalFileSyncContext::InitializeFileSystemContextOnIOThread,
-                 this, source_url,
-                 make_scoped_refptr(file_system_context)));
+      base::Bind(&fileapi::SandboxFileSystemBackendDelegate::OpenFileSystem,
+                 base::Unretained(file_system_context->sandbox_delegate()),
+                 source_url, fileapi::kFileSystemTypeSyncable,
+                 fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                 open_filesystem_callback, GURL()));
 }
 
 void LocalFileSyncContext::ShutdownOnUIThread() {
@@ -244,6 +254,8 @@ void LocalFileSyncContext::RegisterURLForWaitingSync(
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (shutdown_on_io_)
+    return;
   if (sync_status()->IsSyncable(url)) {
     // No need to register; fire the callback now.
     ui_task_runner_->PostTask(FROM_HERE, on_syncable_callback);
@@ -346,7 +358,7 @@ void LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate(
   // Remove() may fail if the target entry does not exist (which is ok),
   // so we ignore |error| here.
 
-  if (!sync_status()) {
+  if (shutdown_on_io_) {
     callback.Run(SYNC_FILE_ERROR_ABORT);
     return;
   }
@@ -507,6 +519,8 @@ LocalFileSyncStatus* LocalFileSyncContext::sync_status() const {
 
 void LocalFileSyncContext::OnSyncEnabled(const FileSystemURL& url) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (shutdown_on_io_)
+    return;
   origins_with_pending_changes_.insert(url.origin());
   ScheduleNotifyChangesUpdatedOnIOThread();
   if (url_syncable_callback_.is_null() ||
@@ -528,6 +542,8 @@ LocalFileSyncContext::~LocalFileSyncContext() {
 
 void LocalFileSyncContext::ScheduleNotifyChangesUpdatedOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (shutdown_on_io_)
+    return;
   if (base::Time::Now() > last_notified_changes_ + NotifyChangesDuration()) {
     NotifyAvailableChangesOnIOThread();
   } else if (!timer_on_io_->IsRunning()) {
@@ -539,6 +555,8 @@ void LocalFileSyncContext::ScheduleNotifyChangesUpdatedOnIOThread() {
 
 void LocalFileSyncContext::NotifyAvailableChangesOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (shutdown_on_io_)
+    return;
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::NotifyAvailableChanges,
@@ -555,6 +573,7 @@ void LocalFileSyncContext::NotifyAvailableChanges(
 
 void LocalFileSyncContext::ShutdownOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  shutdown_on_io_ = true;
   operation_runner_.reset();
   root_delete_helper_.reset();
   sync_status_.reset();
@@ -563,8 +582,18 @@ void LocalFileSyncContext::ShutdownOnIOThread() {
 
 void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
     const GURL& source_url,
-    FileSystemContext* file_system_context) {
+    FileSystemContext* file_system_context,
+    const GURL& /* root */,
+    const std::string& /* name */,
+    base::PlatformFileError error) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (shutdown_on_io_)
+    error = base::PLATFORM_FILE_ERROR_ABORT;
+  if (error != base::PLATFORM_FILE_OK) {
+    DidInitialize(source_url, file_system_context,
+                  PlatformFileErrorToSyncStatusCode(error));
+    return;
+  }
   DCHECK(file_system_context);
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);
@@ -641,6 +670,8 @@ void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(file_system_context);
   DCHECK(origins_with_changes);
+  if (shutdown_on_io_)
+    status = SYNC_STATUS_ABORT;
   if (status != SYNC_STATUS_OK) {
     DidInitialize(source_url, file_system_context, status);
     return;
@@ -655,7 +686,9 @@ void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
                                        origins_with_changes->end());
   ScheduleNotifyChangesUpdatedOnIOThread();
 
-  InitializeFileSystemContextOnIOThread(source_url, file_system_context);
+  InitializeFileSystemContextOnIOThread(source_url, file_system_context,
+                                        GURL(), std::string(),
+                                        base::PLATFORM_FILE_OK);
 }
 
 void LocalFileSyncContext::DidInitialize(
@@ -856,10 +889,8 @@ void LocalFileSyncContext::ClearSyncFlagOnIOThread(
     const FileSystemURL& url,
     bool for_snapshot_sync) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  if (!sync_status()) {
-    // The service might have been shut down.
+  if (shutdown_on_io_)
     return;
-  }
   sync_status()->EndSyncing(url);
 
   if (for_snapshot_sync) {
@@ -876,10 +907,8 @@ void LocalFileSyncContext::ClearSyncFlagOnIOThread(
 void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
     const FileSystemURL& url) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  if (!sync_status()) {
-    // The service might have been shut down.
+  if (shutdown_on_io_)
     return;
-  }
   sync_status()->EndWriting(url);
 
   // Since a sync has finished the number of changes must have been updated.
