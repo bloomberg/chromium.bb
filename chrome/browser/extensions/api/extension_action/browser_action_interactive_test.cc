@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -192,6 +193,49 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
       service->GetExtensionById(last_loaded_extension_id(), false),
       SessionID::IdForTab(browser()->tab_strip_model()->GetActiveWebContents()),
       APIPermission::kTab));
+}
+
+// Test that the extension popup is closed when the browser window is clicked.
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, BrowserClickClosesPopup1) {
+  if (!ShouldRunPopupTest())
+    return;
+
+  // Open an extension popup via the chrome.browserAction.openPopup API.
+  content::WindowedNotificationObserver frame_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
+                                  "open_popup_succeeds.html")) << message_;
+  frame_observer.Wait();
+  EXPECT_TRUE(BrowserActionTestUtil(browser()).HasPopup());
+
+  // Click on the omnibox to close the extension popup.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_OMNIBOX);
+  EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
+}
+
+// Test that the extension popup is closed when the browser window is clicked.
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, BrowserClickClosesPopup2) {
+  if (!ShouldRunPopupTest())
+    return;
+
+  // Load a first extension that can open a popup.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "browser_action/popup")));
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Open an extension popup by clicking the browser action button.
+  content::WindowedNotificationObserver frame_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  BrowserActionTestUtil(browser()).Press(0);
+  frame_observer.Wait();
+  EXPECT_TRUE(BrowserActionTestUtil(browser()).HasPopup());
+
+  // Click on the omnibox to close the extension popup.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_OMNIBOX);
+  EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
 }
 
 }  // namespace
