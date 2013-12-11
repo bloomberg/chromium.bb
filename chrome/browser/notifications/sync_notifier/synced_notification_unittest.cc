@@ -43,8 +43,8 @@ class StubNotificationUIManager : public NotificationUIManager {
   StubNotificationUIManager()
       : notification_(GURL(),
                       GURL(),
-                      string16(),
-                      string16(),
+                      base::string16(),
+                      base::string16(),
                       new MockNotificationDelegate("stub")) {}
   virtual ~StubNotificationUIManager() {}
 

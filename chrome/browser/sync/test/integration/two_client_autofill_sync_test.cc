@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  string16 max_length_string(AutofillTable::kMaxDataLength, '.');
+  base::string16 max_length_string(AutofillTable::kMaxDataLength, '.');
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
@@ -435,7 +435,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  string16 exceeds_max_length_string(AutofillTable::kMaxDataLength + 1, '.');
+  base::string16 exceeds_max_length_string(
+      AutofillTable::kMaxDataLength + 1, '.');
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),

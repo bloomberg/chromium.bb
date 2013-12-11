@@ -280,7 +280,7 @@ void RemoveProfile(int profile, const std::string& guid) {
 void UpdateProfile(int profile,
                    const std::string& guid,
                    const AutofillType& type,
-                   const string16& value) {
+                   const base::string16& value) {
   const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {

@@ -177,7 +177,7 @@ void Feedback::Clear() {
 }
 
 const std::set<uint32>& Feedback::FindMisspellings(
-    const string16& misspelled_text) const {
+    const base::string16& misspelled_text) const {
   const TextHashesMap::const_iterator text_it = text_.find(misspelled_text);
   return text_it == text_.end() ? empty_hash_collection_ : text_it->second;
 }

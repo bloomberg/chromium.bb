@@ -556,8 +556,8 @@ Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
 void ProfileManager::CreateProfileAsync(
     const base::FilePath& profile_path,
     const CreateCallback& callback,
-    const string16& name,
-    const string16& icon_url,
+    const base::string16& name,
+    const base::string16& icon_url,
     const std::string& managed_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -583,7 +583,7 @@ void ProfileManager::CreateProfileAsync(
     std::string icon_url_std = UTF16ToASCII(icon_url);
     if (cache.IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
       // add profile to cache with user selected name and avatar
-      cache.AddProfileToCache(profile_path, name, string16(), icon_index,
+      cache.AddProfileToCache(profile_path, name, base::string16(), icon_index,
                               managed_user_id);
     }
 
@@ -951,8 +951,8 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
 
 // static
 base::FilePath ProfileManager::CreateMultiProfileAsync(
-    const string16& name,
-    const string16& icon_url,
+    const base::string16& name,
+    const base::string16& icon_url,
     const CreateCallback& callback,
     const std::string& managed_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1018,12 +1018,12 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   if (cache.GetIndexOfProfileWithPath(profile->GetPath()) != std::string::npos)
     return;
 
-  string16 username = UTF8ToUTF16(profile->GetPrefs()->GetString(
+  base::string16 username = UTF8ToUTF16(profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername));
 
   // Profile name and avatar are set by InitProfileUserPrefs and stored in the
   // profile. Use those values to setup the cache entry.
-  string16 profile_name = UTF8ToUTF16(profile->GetPrefs()->GetString(
+  base::string16 profile_name = UTF8ToUTF16(profile->GetPrefs()->GetString(
       prefs::kProfileName));
 
   size_t icon_index = profile->GetPrefs()->GetInteger(
@@ -1149,8 +1149,8 @@ void ProfileManager::ScheduleProfileForDeletion(
                              new_path.BaseName().MaybeAsASCII());
       CreateProfileAsync(new_path,
                          callback,
-                         string16(),
-                         string16(),
+                         base::string16(),
+                         base::string16(),
                          std::string());
     } else {
       // On the Mac, the browser process is not killed when all browser windows
@@ -1163,8 +1163,8 @@ void ProfileManager::ScheduleProfileForDeletion(
                                     profile_dir,
                                     last_non_managed_profile_path,
                                     callback),
-                         string16(),
-                         string16(),
+                         base::string16(),
+                         base::string16(),
                          std::string());
       return;
 #else

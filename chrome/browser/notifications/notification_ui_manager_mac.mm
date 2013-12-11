@@ -299,7 +299,7 @@ bool NotificationUIManagerMac::RemoveNotification(
 
 id<CrUserNotification>
 NotificationUIManagerMac::FindNotificationWithReplacementId(
-    const string16& replacement_id) const {
+    const base::string16& replacement_id) const {
   for (NotificationMap::const_iterator it = notification_map_.begin();
        it != notification_map_.end();
        ++it) {

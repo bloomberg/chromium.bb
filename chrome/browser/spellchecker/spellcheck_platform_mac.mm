@@ -142,7 +142,7 @@ void ShowSpellingPanel(bool show) {
   }
 }
 
-void UpdateSpellingPanelWithMisspelledWord(const string16& word) {
+void UpdateSpellingPanelWithMisspelledWord(const base::string16& word) {
   NSString * word_to_display = base::SysUTF16ToNSString(word);
   [SharedSpellChecker()
       performSelectorOnMainThread:
@@ -173,7 +173,7 @@ void SetLanguage(const std::string& lang_to_set) {
 
 static int last_seen_tag_;
 
-bool CheckSpelling(const string16& word_to_check, int tag) {
+bool CheckSpelling(const base::string16& word_to_check, int tag) {
   last_seen_tag_ = tag;
 
   // -[NSSpellChecker checkSpellingOfString] returns an NSRange that
@@ -194,7 +194,7 @@ bool CheckSpelling(const string16& word_to_check, int tag) {
   return word_correct;
 }
 
-void FillSuggestionList(const string16& wrong_word,
+void FillSuggestionList(const base::string16& wrong_word,
                         std::vector<string16>* optional_suggestions) {
   NSString* NS_wrong_word = base::SysUTF16ToNSString(wrong_word);
   TimeTicks debug_begin_time = base::Histogram::DebugNow();
@@ -211,12 +211,12 @@ void FillSuggestionList(const string16& wrong_word,
   }
 }
 
-void AddWord(const string16& word) {
+void AddWord(const base::string16& word) {
     NSString* word_to_add = base::SysUTF16ToNSString(word);
   [SharedSpellChecker() learnWord:word_to_add];
 }
 
-void RemoveWord(const string16& word) {
+void RemoveWord(const base::string16& word) {
   NSString *word_to_remove = base::SysUTF16ToNSString(word);
   [SharedSpellChecker() unlearnWord:word_to_remove];
 }
@@ -226,7 +226,7 @@ int GetDocumentTag() {
   return static_cast<int>(doc_tag);
 }
 
-void IgnoreWord(const string16& word) {
+void IgnoreWord(const base::string16& word) {
   [SharedSpellChecker() ignoreWord:base::SysUTF16ToNSString(word)
             inSpellDocumentWithTag:last_seen_tag_];
 }
@@ -236,7 +236,7 @@ void CloseDocumentWithTag(int tag) {
 }
 
 void RequestTextCheck(int document_tag,
-                      const string16& text,
+                      const base::string16& text,
                       TextCheckCompleteCallback callback) {
   NSString* text_to_check = base::SysUTF16ToNSString(text);
   NSRange range_to_check = NSMakeRange(0, [text_to_check length]);

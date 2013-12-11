@@ -108,7 +108,7 @@ void BundleInstalledBubbleGtk::InsertExtensionList(
     GtkWidget* parent,
     const BundleInstaller* bundle,
     BundleInstaller::Item::State state) {
-  string16 heading = bundle->GetHeadingTextFor(state);
+  base::string16 heading = bundle->GetHeadingTextFor(state);
   BundleInstaller::ItemList items = bundle->GetItemsWithState(state);
   if (heading.empty() || items.empty())
     return;

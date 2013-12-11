@@ -36,11 +36,11 @@ class PluginMetadata {
   static const char kWindowsMediaPlayerGroupName[];
 
   PluginMetadata(const std::string& identifier,
-                 const string16& name,
+                 const base::string16& name,
                  bool url_for_display,
                  const GURL& plugin_url,
                  const GURL& help_url,
-                 const string16& group_name_matcher,
+                 const base::string16& group_name_matcher,
                  const std::string& language);
   ~PluginMetadata();
 
@@ -48,7 +48,7 @@ class PluginMetadata {
   const std::string& identifier() const { return identifier_; }
 
   // Human-readable name of the plug-in.
-  const string16& name() const { return name_; }
+  const base::string16& name() const { return name_; }
 
   // If |url_for_display| is false, |plugin_url| is the URL of the download page
   // for the plug-in, which should be opened in a new tab. If it is true,
@@ -91,8 +91,8 @@ class PluginMetadata {
   };
 
   std::string identifier_;
-  string16 name_;
-  string16 group_name_matcher_;
+  base::string16 name_;
+  base::string16 group_name_matcher_;
   bool url_for_display_;
   GURL plugin_url_;
   GURL help_url_;

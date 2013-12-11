@@ -220,16 +220,16 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 
   // Set up the fields we need to send and create a Notification object.
   GURL image_url = GetImageUrl();
-  string16 text = UTF8ToUTF16(GetText());
-  string16 heading = UTF8ToUTF16(GetHeading());
-  string16 description = UTF8ToUTF16(GetDescription());
-  string16 annotation = UTF8ToUTF16(GetAnnotation());
+  base::string16 text = UTF8ToUTF16(GetText());
+  base::string16 heading = UTF8ToUTF16(GetHeading());
+  base::string16 description = UTF8ToUTF16(GetDescription());
+  base::string16 annotation = UTF8ToUTF16(GetAnnotation());
   // TODO(petewil): Eventually put the display name of the sending service here.
-  string16 display_source = UTF8ToUTF16(GetAppId());
-  string16 replace_key = UTF8ToUTF16(GetKey());
-  string16 notification_heading = heading;
-  string16 notification_text = description;
-  string16 newline = UTF8ToUTF16("\n");
+  base::string16 display_source = UTF8ToUTF16(GetAppId());
+  base::string16 replace_key = UTF8ToUTF16(GetKey());
+  base::string16 notification_heading = heading;
+  base::string16 notification_text = description;
+  base::string16 newline = UTF8ToUTF16("\n");
 
   // The delegate will eventually catch calls that the notification
   // was read or deleted, and send the changes back to the server.

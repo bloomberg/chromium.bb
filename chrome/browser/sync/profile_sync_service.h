@@ -462,7 +462,7 @@ class ProfileSyncService
   }
 
   // Returns a user-friendly string form of last synced time (in minutes).
-  virtual string16 GetLastSyncedTimeString() const;
+  virtual base::string16 GetLastSyncedTimeString() const;
 
   // Returns a human readable string describing backend initialization state.
   std::string GetBackendInitializationStateString() const;

@@ -101,7 +101,7 @@ base::string16 ToolbarModelImpl::GetText() const {
     return search_terms;
 
   if (WouldOmitURLDueToOriginChip())
-    return string16();
+    return base::string16();
 
   std::string languages;  // Empty if we don't have a |navigation_controller|.
   Profile* profile = GetProfile();

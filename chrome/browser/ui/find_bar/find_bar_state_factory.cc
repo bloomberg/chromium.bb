@@ -18,7 +18,7 @@ FindBarState* FindBarStateFactory::GetForProfile(Profile* profile) {
 // static
 string16 FindBarStateFactory::GetLastPrepopulateText(Profile* p) {
   FindBarState* state = GetForProfile(p);
-  string16 text = state->last_prepopulate_text();
+  base::string16 text = state->last_prepopulate_text();
 
   if (text.empty() && p->IsOffTheRecord()) {
     // Fall back to the original profile.

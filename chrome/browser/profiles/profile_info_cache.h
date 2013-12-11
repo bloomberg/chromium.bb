@@ -41,8 +41,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // This |is_managed| refers to local management (formerly "managed mode"),
   // not enterprise management.
   void AddProfileToCache(const base::FilePath& profile_path,
-                         const string16& name,
-                         const string16& username,
+                         const base::string16& name,
+                         const base::string16& username,
                          size_t icon_index,
                          const std::string& managed_user_id);
   void DeleteProfileFromCache(const base::FilePath& profile_path);
@@ -53,11 +53,12 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // the item being referred to to change out from under you.
   virtual size_t GetIndexOfProfileWithPath(
       const base::FilePath& profile_path) const OVERRIDE;
-  virtual string16 GetNameOfProfileAtIndex(size_t index) const OVERRIDE;
-  virtual string16 GetShortcutNameOfProfileAtIndex(size_t index)
+  virtual base::string16 GetNameOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual base::string16 GetShortcutNameOfProfileAtIndex(size_t index)
       const OVERRIDE;
   virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE;
-  virtual string16 GetUserNameOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual base::string16 GetUserNameOfProfileAtIndex(
+      size_t index) const OVERRIDE;
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual std::string GetLocalAuthCredentialsOfProfileAtIndex(
@@ -67,8 +68,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // which results is the same in both cases (thus far).
   virtual bool GetBackgroundStatusOfProfileAtIndex(
       size_t index) const OVERRIDE;
-  virtual string16 GetGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
-  virtual string16 GetGAIAGivenNameOfProfileAtIndex(
+  virtual base::string16 GetGAIANameOfProfileAtIndex(
+      size_t index) const OVERRIDE;
+  virtual base::string16 GetGAIAGivenNameOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual bool IsUsingGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
   // Returns the GAIA picture for the given profile. This may return NULL
@@ -86,17 +88,20 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
-  void SetNameOfProfileAtIndex(size_t index, const string16& name);
-  void SetShortcutNameOfProfileAtIndex(size_t index, const string16& name);
-  void SetUserNameOfProfileAtIndex(size_t index, const string16& user_name);
+  void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
+  void SetShortcutNameOfProfileAtIndex(size_t index,
+                                       const base::string16& name);
+  void SetUserNameOfProfileAtIndex(size_t index,
+                                   const base::string16& user_name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetManagedUserIdOfProfileAtIndex(size_t index, const std::string& id);
   void SetLocalAuthCredentialsOfProfileAtIndex(size_t index,
                                                const std::string& auth);
   void SetBackgroundStatusOfProfileAtIndex(size_t index,
                                            bool running_background_apps);
-  void SetGAIANameOfProfileAtIndex(size_t index, const string16& name);
-  void SetGAIAGivenNameOfProfileAtIndex(size_t index, const string16& name);
+  void SetGAIANameOfProfileAtIndex(size_t index, const base::string16& name);
+  void SetGAIAGivenNameOfProfileAtIndex(size_t index,
+                                        const base::string16& name);
   void SetIsUsingGAIANameOfProfileAtIndex(size_t index, bool value);
   void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
@@ -104,7 +109,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetProfileIsEphemeralAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.
-  string16 ChooseNameForNewProfile(size_t icon_index) const;
+  base::string16 ChooseNameForNewProfile(size_t icon_index) const;
 
   // Checks if the given profile has switched to using GAIA information
   // for the profile name and picture. This pref is used to switch over
@@ -157,7 +162,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::string CacheKeyFromProfilePath(const base::FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(
       const std::string& search_key,
-      const string16& search_name);
+      const base::string16& search_name);
 
   // Returns true if the given icon index is not in use by another profie.
   bool IconIndexIsUnique(size_t icon_index) const;

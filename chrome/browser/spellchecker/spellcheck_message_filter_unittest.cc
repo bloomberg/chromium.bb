@@ -33,7 +33,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
                            int identifier,
                            const std::vector<SpellCheckMarker>& markers,
                            bool success,
-                           const string16& text,
+                           const base::string16& text,
                            const std::vector<SpellCheckResult>& results) {
     SpellCheckMessageFilter::OnTextCheckComplete(
         route_id, identifier, markers, success, text, results);
@@ -80,13 +80,13 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
   static const int kRouteId = 0;
   static const int kCallbackId = 0;
   static const std::vector<SpellCheckMarker> kMarkers;
-  static const string16 kText = ASCIIToUTF16("Helllo warld.");
+  static const base::string16 kText = ASCIIToUTF16("Helllo warld.");
   static const bool kSuccess = true;
   static const SpellCheckResult::Decoration kDecoration =
       SpellCheckResult::SPELLING;
   static const int kLocation = 7;
   static const int kLength = 5;
-  static const string16 kReplacement = ASCIIToUTF16("world");
+  static const base::string16 kReplacement = ASCIIToUTF16("world");
 
   std::vector<SpellCheckResult> results;
   results.push_back(SpellCheckResult(
@@ -103,7 +103,7 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
 
   int sent_identifier = -1;
   bool sent_success = false;
-  string16 sent_text;
+  base::string16 sent_text;
   std::vector<SpellCheckResult> sent_results;
   bool ok = SpellCheckMsg_RespondSpellingService::Read(filter->sent_messages[0],
                                                        &sent_identifier,
@@ -136,7 +136,7 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTest) {
 
   int sent_identifier = -1;
   bool sent_success = false;
-  string16 sent_text;
+  base::string16 sent_text;
   std::vector<SpellCheckResult> sent_results;
   bool ok = SpellCheckMsg_RespondSpellingService::Read(filter->sent_messages[0],
                                                        &sent_identifier,

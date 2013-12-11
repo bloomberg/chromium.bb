@@ -211,8 +211,8 @@ GtkWidget* InfoBarGtk::CreateMenuButton(const std::string& text) {
   return button;
 }
 
-void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
-                                        const string16& link_text,
+void InfoBarGtk::AddLabelWithInlineLink(const base::string16& display_text,
+                                        const base::string16& link_text,
                                         size_t link_offset,
                                         GCallback callback) {
   DCHECK(hbox_);

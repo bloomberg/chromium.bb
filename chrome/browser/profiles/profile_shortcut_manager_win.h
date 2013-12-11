@@ -22,11 +22,11 @@ base::FilePath GetProfileIconPath(const base::FilePath& profile_path);
 // Returns the default shortcut filename for the given profile name,
 // given |distribution|. Returns a filename appropriate for a
 // single-user installation if |profile_name| is empty.
-string16 GetShortcutFilenameForProfile(const string16& profile_name,
-                                       BrowserDistribution* distribution);
+base::string16 GetShortcutFilenameForProfile(const base::string16& profile_name,
+                                             BrowserDistribution* distribution);
 
 // Returns the command-line flags to launch Chrome with the given profile.
-string16 CreateProfileShortcutFlags(const base::FilePath& profile_path);
+base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path);
 
 }  // namespace internal
 }  // namespace profiles
@@ -64,15 +64,17 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetShortcutProperties(const base::FilePath& profile_path,
                                      CommandLine* command_line,
-                                     string16* name,
+                                     base::string16* name,
                                      base::FilePath* icon_path) OVERRIDE;
 
   // ProfileInfoCacheObserver implementation:
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const string16& profile_name) OVERRIDE;
-  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
-                                    const string16& old_profile_name) OVERRIDE;
+  virtual void OnProfileWasRemoved(
+      const base::FilePath& profile_path,
+      const base::string16& profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) OVERRIDE;
   virtual void OnProfileAvatarChanged(
       const base::FilePath& profile_path) OVERRIDE;
 

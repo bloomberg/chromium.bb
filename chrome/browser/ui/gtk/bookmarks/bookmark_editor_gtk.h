@@ -86,7 +86,7 @@ class BookmarkEditorGtk : public BookmarkEditor,
   GURL GetInputURL() const;
 
   // Returns the title the user has input.
-  string16 GetInputTitle() const;
+  base::string16 GetInputTitle() const;
 
   // Invokes ApplyEdits with the selected node.
   //

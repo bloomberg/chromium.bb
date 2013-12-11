@@ -41,7 +41,7 @@ class ProfileShortcutManager {
   // the given |profile_path| should use.
   virtual void GetShortcutProperties(const base::FilePath& profile_path,
                                      CommandLine* command_line,
-                                     string16* name,
+                                     base::string16* name,
                                      base::FilePath* icon_path) = 0;
 
   static bool IsFeatureEnabled();

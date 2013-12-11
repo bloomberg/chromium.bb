@@ -225,7 +225,7 @@ void RenderViewContextMenuGtk::AppendBidiSubMenu() {
 void RenderViewContextMenuGtk::UpdateMenuItem(int command_id,
                                               bool enabled,
                                               bool hidden,
-                                              const string16& title) {
+                                              const base::string16& title) {
   GtkWidget* item = GetMenuItemByID(&menu_model_, menu_gtk_->widget(),
                                     command_id);
   if (!item || !GTK_IS_MENU_ITEM(item))

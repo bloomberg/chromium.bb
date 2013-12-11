@@ -226,7 +226,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   // The user name label.
   GtkWidget* item_vbox = gtk_vbox_new(FALSE, 0);
   GtkWidget* name_label = NULL;
-  string16 elided_name = gfx::ElideText(item_.name,
+  base::string16 elided_name = gfx::ElideText(item_.name,
                                        gfx::Font(),
                                        kUserNameMaxWidth,
                                        gfx::ELIDE_AT_END);

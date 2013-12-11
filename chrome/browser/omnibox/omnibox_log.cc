@@ -5,7 +5,7 @@
 #include "chrome/browser/omnibox/omnibox_log.h"
 
 OmniboxLog::OmniboxLog(
-    const string16& text,
+    const base::string16& text,
     bool just_deleted_text,
     AutocompleteInput::Type input_type,
     size_t selected_index,

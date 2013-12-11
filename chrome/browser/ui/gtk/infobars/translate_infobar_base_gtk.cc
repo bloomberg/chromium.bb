@@ -158,7 +158,7 @@ GtkWidget* TranslateInfoBarBase::CreateLanguageCombobox(
     if (i == exclude_language)
       continue;
     GtkTreeIter tree_iter;
-    const string16& name = delegate->language_name_at(i);
+    const base::string16& name = delegate->language_name_at(i);
 
     gtk_list_store_append(model, &tree_iter);
     gtk_list_store_set(model, &tree_iter,

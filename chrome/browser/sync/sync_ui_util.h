@@ -36,24 +36,24 @@ enum StatusLabelStyle {
 MessageType GetStatusLabels(ProfileSyncService* service,
                             const SigninManagerBase& signin,
                             StatusLabelStyle style,
-                            string16* status_label,
-                            string16* link_label);
+                            base::string16* status_label,
+                            base::string16* link_label);
 
 // Same as above but for use specifically on the New Tab Page.
 // |status_label| may contain an HTML-formatted link.
 MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
                                          const SigninManagerBase& signin,
-                                         string16* status_label,
-                                         string16* link_label);
+                                         base::string16* status_label,
+                                         base::string16* link_label);
 
 // Gets various labels for the sync global error based on the sync error state.
 // |menu_item_label|, |bubble_message|, and |bubble_accept_label| must not be
 // NULL.
 void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
                                        const SigninManagerBase& signin,
-                                       string16* menu_item_label,
-                                       string16* bubble_message,
-                                       string16* bubble_accept_label);
+                                       base::string16* menu_item_label,
+                                       base::string16* bubble_message,
+                                       base::string16* bubble_accept_label);
 
 MessageType GetStatus(ProfileSyncService* service,
                       const SigninManagerBase& signin);

@@ -549,7 +549,7 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
       section_content);
 }
 
-void WebsiteSettingsPopupGtk::SetFirstVisit(const string16& first_visit) {
+void WebsiteSettingsPopupGtk::SetFirstVisit(const base::string16& first_visit) {
   GtkWidget* title = theme_service_->BuildLabel(
       l10n_util::GetStringUTF8(IDS_PAGE_INFO_SITE_INFO_TITLE),
       ui::kGdkBlack);

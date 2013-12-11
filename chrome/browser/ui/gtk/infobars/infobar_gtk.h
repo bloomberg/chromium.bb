@@ -104,8 +104,8 @@ class InfoBarGtk : public InfoBar,
   // rendered as a hyperlink and inserted into |display_text| at |link_offset|,
   // or right aligned in the infobar if |link_offset| is |npos|. If a link is
   // supplied, |link_callback| must not be null. It will be invoked on click.
-  void AddLabelWithInlineLink(const string16& display_text,
-                              const string16& link_text,
+  void AddLabelWithInlineLink(const base::string16& display_text,
+                              const base::string16& link_text,
                               size_t link_offset,
                               GCallback callback);
 

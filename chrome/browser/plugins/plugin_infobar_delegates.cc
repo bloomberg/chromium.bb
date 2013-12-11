@@ -88,7 +88,7 @@ string16 PluginInfoBarDelegate::GetLinkText() const {
 void UnauthorizedPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     HostContentSettingsMap* content_settings,
-    const string16& name,
+    const base::string16& name,
     const std::string& identifier) {
   infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new UnauthorizedPluginInfoBarDelegate(
@@ -115,7 +115,7 @@ void UnauthorizedPluginInfoBarDelegate::Create(
 
 UnauthorizedPluginInfoBarDelegate::UnauthorizedPluginInfoBarDelegate(
     HostContentSettingsMap* content_settings,
-    const string16& name,
+    const base::string16& name,
     const std::string& identifier)
     : PluginInfoBarDelegate(identifier),
       content_settings_(content_settings),
@@ -177,7 +177,7 @@ void OutdatedPluginInfoBarDelegate::Create(
     scoped_ptr<PluginMetadata> plugin_metadata) {
   // Copy the name out of |plugin_metadata| now, since the Pass() call below
   // will make it impossible to get at.
-  string16 name(plugin_metadata->name());
+  base::string16 name(plugin_metadata->name());
   infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new OutdatedPluginInfoBarDelegate(
           installer, plugin_metadata.Pass(), l10n_util::GetStringFUTF16(
@@ -189,7 +189,7 @@ void OutdatedPluginInfoBarDelegate::Create(
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata,
-    const string16& message)
+    const base::string16& message)
     : PluginInfoBarDelegate(plugin_metadata->identifier()),
       WeakPluginInstallerObserver(installer),
       plugin_metadata_(plugin_metadata.Pass()),
@@ -291,7 +291,7 @@ void OutdatedPluginInfoBarDelegate::OnlyWeakObserversLeft() {
 }
 
 void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
-    const string16& message) {
+    const base::string16& message) {
   // Return early if the message doesn't change. This is important in case the
   // PluginInstaller is still iterating over its observers (otherwise we would
   // keep replacing infobar delegates infinitely).
@@ -309,7 +309,7 @@ void PluginInstallerInfoBarDelegate::Create(
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata,
     const InstallCallback& callback) {
-  string16 name(plugin_metadata->name());
+  base::string16 name(plugin_metadata->name());
 #if defined(OS_WIN)
   if (base::win::IsMetroProcess()) {
     PluginMetroModeInfoBarDelegate::Create(
@@ -333,7 +333,7 @@ void PluginInstallerInfoBarDelegate::Replace(
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata,
     bool new_install,
-    const string16& message) {
+    const base::string16& message) {
   DCHECK(infobar->owner());
   infobar->owner()->ReplaceInfoBar(infobar,
       ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
@@ -348,7 +348,7 @@ PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
     scoped_ptr<PluginMetadata> plugin_metadata,
     const InstallCallback& callback,
     bool new_install,
-    const string16& message)
+    const base::string16& message)
     : ConfirmInfoBarDelegate(),
       WeakPluginInstallerObserver(installer),
       plugin_metadata_(plugin_metadata.Pass()),
@@ -430,7 +430,7 @@ void PluginInstallerInfoBarDelegate::OnlyWeakObserversLeft() {
 }
 
 void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
-    const string16& message) {
+    const base::string16& message) {
   // Return early if the message doesn't change. This is important in case the
   // PluginInstaller is still iterating over its observers (otherwise we would
   // keep replacing infobar delegates infinitely).
@@ -449,7 +449,7 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
 void PluginMetroModeInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginMetroModeInfoBarDelegate::Mode mode,
-    const string16& name) {
+    const base::string16& name) {
   infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(
           new PluginMetroModeInfoBarDelegate(mode, name))));
@@ -457,7 +457,7 @@ void PluginMetroModeInfoBarDelegate::Create(
 
 PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
     PluginMetroModeInfoBarDelegate::Mode mode,
-    const string16& name)
+    const base::string16& name)
     : ConfirmInfoBarDelegate(),
       mode_(mode),
       name_(name) {
@@ -490,7 +490,7 @@ string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
 }
 
 #if defined(USE_AURA) && defined(USE_ASH)
-void LaunchDesktopInstanceHelper(const string16& url) {
+void LaunchDesktopInstanceHelper(const base::string16& url) {
   base::FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
     return;

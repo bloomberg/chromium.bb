@@ -213,8 +213,8 @@ const char kSingleRealmTestPage[] = "files/login/single_realm.html";
 const char* kAuthBasicPage = "auth-basic";
 const char* kAuthDigestPage = "auth-digest";
 
-string16 ExpectedTitleFromAuth(const string16& username,
-                               const string16& password) {
+string16 ExpectedTitleFromAuth(const base::string16& username,
+                               const base::string16& password) {
   // The TestServer sets the title to username/password on successful login.
   return username + UTF8ToUTF16("/") + password;
 }
@@ -311,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
   SetAuthFor(handler);
   auth_supplied_waiter.Wait();
 
-  string16 expected_title =
+  base::string16 expected_title =
       ExpectedTitleFromAuth(ASCIIToUTF16("basicuser"), ASCIIToUTF16("secret"));
   content::TitleWatcher title_watcher(contents, expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -357,12 +357,12 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestDigestAuth) {
   WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
   LoginHandler* handler = *observer.handlers_.begin();
 
-  string16 username(UTF8ToUTF16(username_digest_));
-  string16 password(UTF8ToUTF16(password_));
+  base::string16 username(UTF8ToUTF16(username_digest_));
+  base::string16 password(UTF8ToUTF16(password_));
   handler->SetAuth(username, password);
   auth_supplied_waiter.Wait();
 
-  string16 expected_title = ExpectedTitleFromAuth(username, password);
+  base::string16 expected_title = ExpectedTitleFromAuth(username, password);
   content::TitleWatcher title_watcher(contents, expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -411,9 +411,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
   LoginHandler* handler1 = *observer.handlers_.begin();
   LoginHandler* handler2 = *(++(observer.handlers_.begin()));
 
-  string16 expected_title1 = ExpectedTitleFromAuth(
+  base::string16 expected_title1 = ExpectedTitleFromAuth(
       UTF8ToUTF16(username_basic_), UTF8ToUTF16(password_));
-  string16 expected_title2 = ExpectedTitleFromAuth(
+  base::string16 expected_title2 = ExpectedTitleFromAuth(
       UTF8ToUTF16(username_digest_), UTF8ToUTF16(password_));
   content::TitleWatcher title_watcher1(contents1, expected_title1);
   content::TitleWatcher title_watcher2(contents2, expected_title2);

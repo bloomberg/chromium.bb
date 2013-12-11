@@ -27,42 +27,42 @@ class Notification : public message_center::Notification {
   // Initializes a notification with HTML content.
   Notification(const GURL& origin_url,
                const GURL& content_url,
-               const string16& display_source,
-               const string16& replace_id,
+               const base::string16& display_source,
+               const base::string16& replace_id,
                NotificationDelegate* delegate);
 
   // Initializes a notification with text content. On non-ash platforms, this
   // creates an HTML representation using a data: URL for display.
   Notification(const GURL& origin_url,
                const GURL& icon_url,
-               const string16& title,
-               const string16& body,
+               const base::string16& title,
+               const base::string16& body,
                blink::WebTextDirection dir,
-               const string16& display_source,
-               const string16& replace_id,
+               const base::string16& display_source,
+               const base::string16& replace_id,
                NotificationDelegate* delegate);
 
   // Initializes a notification with text content and an icon image. Currently
   // only used on Ash. Does not generate content_url_.
   Notification(const GURL& origin_url,
                const gfx::Image& icon,
-               const string16& title,
-               const string16& body,
+               const base::string16& title,
+               const base::string16& body,
                blink::WebTextDirection dir,
-               const string16& display_source,
-               const string16& replace_id,
+               const base::string16& display_source,
+               const base::string16& replace_id,
                NotificationDelegate* delegate);
 
   Notification(
       message_center::NotificationType type,
       const GURL& origin_url,
-      const string16& title,
-      const string16& body,
+      const base::string16& title,
+      const base::string16& body,
       const gfx::Image& icon,
       blink::WebTextDirection dir,
       const message_center::NotifierId& notifier_id,
-      const string16& display_source,
-      const string16& replace_id,
+      const base::string16& display_source,
+      const base::string16& replace_id,
       const message_center::RichNotificationData& rich_notification_data,
       NotificationDelegate* delegate);
 
@@ -83,7 +83,7 @@ class Notification : public message_center::Notification {
   const GURL& icon_url() const { return icon_url_; }
 
   // A unique identifier used to update (replace) or remove a notification.
-  const string16& replace_id() const { return replace_id_; }
+  const base::string16& replace_id() const { return replace_id_; }
 
   // A url for the button icons to be shown (optional).
   const GURL& button_one_icon_url() const { return button_one_icon_url_; }
@@ -126,7 +126,7 @@ class Notification : public message_center::Notification {
   GURL image_url_;
 
   // The user-supplied replace ID for the notification.
-  string16 replace_id_;
+  base::string16 replace_id_;
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

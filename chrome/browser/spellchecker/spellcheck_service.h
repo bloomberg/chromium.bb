@@ -58,8 +58,8 @@ class SpellcheckService : public BrowserContextKeyedService,
   // This function computes a vector of strings which are to be displayed in
   // the context menu over a text area for changing spell check languages. It
   // returns the index of the current spell check language in the vector.
-  // TODO(port): this should take a vector of string16, but the implementation
-  // has some dependencies in l10n util that need porting first.
+  // TODO(port): this should take a vector of base::string16, but the
+  // implementation has some dependencies in l10n util that need porting first.
   static int GetSpellCheckLanguages(content::BrowserContext* context,
                                     std::vector<std::string>* languages);
 

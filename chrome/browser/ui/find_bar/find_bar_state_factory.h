@@ -20,7 +20,7 @@ class FindBarStateFactory : public BrowserContextKeyedServiceFactory {
   // Retrieves the last prepopulate text for a given Profile.  If the profile is
   // incognito and has an empty prepopulate text, falls back to the
   // prepopulate text from the normal profile.
-  static string16 GetLastPrepopulateText(Profile* profile);
+  static base::string16 GetLastPrepopulateText(Profile* profile);
 
   static FindBarStateFactory* GetInstance();
 

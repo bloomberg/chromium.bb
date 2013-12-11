@@ -12,7 +12,7 @@
 string16 TrimWords(
     size_t* start,
     size_t end,
-    const string16& text,
+    const base::string16& text,
     size_t keep) {
   if (*start > text.length() || *start > end)
     return text;

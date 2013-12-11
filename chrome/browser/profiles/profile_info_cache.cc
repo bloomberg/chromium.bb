@@ -184,7 +184,7 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   for (DictionaryValue::Iterator it(*cache); !it.IsAtEnd(); it.Advance()) {
     DictionaryValue* info = NULL;
     cache->GetDictionaryWithoutPathExpansion(it.key(), &info);
-    string16 name;
+    base::string16 name;
     info->GetString(kNameKey, &name);
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
     // TODO(ibraaaa): delete this when 97% of our users are using M31.
@@ -203,8 +203,8 @@ ProfileInfoCache::~ProfileInfoCache() {
 }
 
 void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
-                                         const string16& name,
-                                         const string16& username,
+                                         const base::string16& name,
+                                         const base::string16& username,
                                          size_t icon_index,
                                          const std::string& managed_user_id) {
   std::string key = CacheKeyFromProfilePath(profile_path);
@@ -248,7 +248,7 @@ void ProfileInfoCache::DeleteProfileFromCache(
     NOTREACHED();
     return;
   }
-  string16 name = GetNameOfProfileAtIndex(profile_index);
+  base::string16 name = GetNameOfProfileAtIndex(profile_index);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
@@ -287,9 +287,9 @@ size_t ProfileInfoCache::GetIndexOfProfileWithPath(
 }
 
 string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
-  string16 name;
+  base::string16 name;
   if (IsUsingGAIANameOfProfileAtIndex(index)) {
-    string16 given_name = GetGAIAGivenNameOfProfileAtIndex(index);
+    base::string16 given_name = GetGAIAGivenNameOfProfileAtIndex(index);
     name = given_name.empty() ? GetGAIANameOfProfileAtIndex(index) : given_name;
   }
 
@@ -300,7 +300,7 @@ string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
 
 string16 ProfileInfoCache::GetShortcutNameOfProfileAtIndex(size_t index)
     const {
-  string16 shortcut_name;
+  base::string16 shortcut_name;
   GetInfoForProfileAtIndex(index)->GetString(
       kShortcutNameKey, &shortcut_name);
   return shortcut_name;
@@ -311,7 +311,7 @@ base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
 }
 
 string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(size_t index) const {
-  string16 user_name;
+  base::string16 user_name;
   GetInfoForProfileAtIndex(index)->GetString(kUserNameKey, &user_name);
   return user_name;
 }
@@ -346,15 +346,16 @@ bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
   return background_app_status;
 }
 
-string16 ProfileInfoCache::GetGAIANameOfProfileAtIndex(size_t index) const {
-  string16 name;
+base::string16 ProfileInfoCache::GetGAIANameOfProfileAtIndex(
+    size_t index) const {
+  base::string16 name;
   GetInfoForProfileAtIndex(index)->GetString(kGAIANameKey, &name);
   return name;
 }
 
-string16 ProfileInfoCache::GetGAIAGivenNameOfProfileAtIndex(
+base::string16 ProfileInfoCache::GetGAIAGivenNameOfProfileAtIndex(
     size_t index) const {
-  string16 name;
+  base::string16 name;
   GetInfoForProfileAtIndex(index)->GetString(kGAIAGivenNameKey, &name);
   return name;
 }
@@ -474,18 +475,18 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
 }
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
-                                               const string16& name) {
+                                               const base::string16& name) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  string16 current_name;
+  base::string16 current_name;
   info->GetString(kNameKey, &current_name);
   if (name == current_name)
     return;
 
-  string16 old_display_name = GetNameOfProfileAtIndex(index);
+  base::string16 old_display_name = GetNameOfProfileAtIndex(index);
   info->SetString(kNameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
-  string16 new_display_name = GetNameOfProfileAtIndex(index);
+  base::string16 new_display_name = GetNameOfProfileAtIndex(index);
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
@@ -498,7 +499,7 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
 
 void ProfileInfoCache::SetShortcutNameOfProfileAtIndex(
     size_t index,
-    const string16& shortcut_name) {
+    const base::string16& shortcut_name) {
   if (shortcut_name == GetShortcutNameOfProfileAtIndex(index))
     return;
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
@@ -507,8 +508,9 @@ void ProfileInfoCache::SetShortcutNameOfProfileAtIndex(
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
-                                                   const string16& user_name) {
+void ProfileInfoCache::SetUserNameOfProfileAtIndex(
+    size_t index,
+    const base::string16& user_name) {
   if (user_name == GetUserNameOfProfileAtIndex(index))
     return;
 
@@ -560,16 +562,16 @@ void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
 }
 
 void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
-                                                   const string16& name) {
+                                                   const base::string16& name) {
   if (name == GetGAIANameOfProfileAtIndex(index))
     return;
 
-  string16 old_display_name = GetNameOfProfileAtIndex(index);
+  base::string16 old_display_name = GetNameOfProfileAtIndex(index);
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kGAIANameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
-  string16 new_display_name = GetNameOfProfileAtIndex(index);
+  base::string16 new_display_name = GetNameOfProfileAtIndex(index);
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
@@ -582,7 +584,7 @@ void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
 
 void ProfileInfoCache::SetGAIAGivenNameOfProfileAtIndex(
     size_t index,
-    const string16& name) {
+    const base::string16& name) {
   if (name == GetGAIAGivenNameOfProfileAtIndex(index))
     return;
 
@@ -597,12 +599,12 @@ void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
   if (value == IsUsingGAIANameOfProfileAtIndex(index))
     return;
 
-  string16 old_display_name = GetNameOfProfileAtIndex(index);
+  base::string16 old_display_name = GetNameOfProfileAtIndex(index);
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kUseGAIANameKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
-  string16 new_display_name = GetNameOfProfileAtIndex(index);
+  base::string16 new_display_name = GetNameOfProfileAtIndex(index);
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
@@ -702,8 +704,9 @@ void ProfileInfoCache::SetProfileIsEphemeralAtIndex(size_t index, bool value) {
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-string16 ProfileInfoCache::ChooseNameForNewProfile(size_t icon_index) const {
-  string16 name;
+base::string16 ProfileInfoCache::ChooseNameForNewProfile(
+    size_t icon_index) const {
+  base::string16 name;
   for (int name_index = 1; ; ++name_index) {
     if (icon_index < kGenericIconCount) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
@@ -867,10 +870,10 @@ std::string ProfileInfoCache::CacheKeyFromProfilePath(
 
 std::vector<std::string>::iterator ProfileInfoCache::FindPositionForProfile(
     const std::string& search_key,
-    const string16& search_name) {
-  string16 search_name_l = base::i18n::ToLower(search_name);
+    const base::string16& search_name) {
+  base::string16 search_name_l = base::i18n::ToLower(search_name);
   for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
-    string16 name_l = base::i18n::ToLower(GetNameOfProfileAtIndex(i));
+    base::string16 name_l = base::i18n::ToLower(GetNameOfProfileAtIndex(i));
     int name_compare = search_name_l.compare(name_l);
     if (name_compare < 0)
       return sorted_keys_.begin() + i;
@@ -884,7 +887,7 @@ std::vector<std::string>::iterator ProfileInfoCache::FindPositionForProfile(
 }
 
 void ProfileInfoCache::UpdateSortForProfileIndex(size_t index) {
-  string16 name = GetNameOfProfileAtIndex(index);
+  base::string16 name = GetNameOfProfileAtIndex(index);
 
   // Remove and reinsert key in |sorted_keys_| to alphasort.
   std::string key = CacheKeyFromProfilePath(GetPathOfProfileAtIndex(index));
@@ -901,12 +904,12 @@ void ProfileInfoCache::UpdateSortForProfileIndex(size_t index) {
 }
 
 // static
-std::vector<string16> ProfileInfoCache::GetProfileNames() {
-  std::vector<string16> names;
+std::vector<base::string16> ProfileInfoCache::GetProfileNames() {
+  std::vector<base::string16> names;
   PrefService* local_state = g_browser_process->local_state();
   const DictionaryValue* cache = local_state->GetDictionary(
       prefs::kProfileInfoCache);
-  string16 name;
+  base::string16 name;
   for (base::DictionaryValue::Iterator it(*cache); !it.IsAtEnd();
        it.Advance()) {
     const base::DictionaryValue* info = NULL;

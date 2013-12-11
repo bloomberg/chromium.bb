@@ -135,8 +135,8 @@ void SwitchToProfile(
                  always_create,
                  false,
                  desktop_type),
-      string16(),
-      string16(),
+      base::string16(),
+      base::string16(),
       std::string());
 }
 
@@ -149,16 +149,16 @@ void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
                  false,
                  false,
                  desktop_type),
-      string16(),
-      string16(),
+      base::string16(),
+      base::string16(),
       std::string());
 }
 
 void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
                                  ProfileSwitchingDoneCallback callback) {
   ProfileManager::CreateMultiProfileAsync(
-      string16(),
-      string16(),
+      base::string16(),
+      base::string16(),
       base::Bind(&OpenBrowserWindowForProfile,
                  callback,
                  true,

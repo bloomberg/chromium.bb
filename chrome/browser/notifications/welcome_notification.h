@@ -58,7 +58,7 @@ class WelcomeNotification
   // Unconditionally shows the welcome notification.
   void ShowWelcomeNotification(
       const message_center::NotifierId notifier_id,
-      const string16& display_source,
+      const base::string16& display_source,
       PopUpRequest pop_up_request);
 
   // Hides the welcome notification.

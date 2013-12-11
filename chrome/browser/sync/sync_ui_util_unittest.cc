@@ -58,7 +58,7 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
   GoogleServiceAuthError auth_error(error_state);
   EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
 
-  string16 label1, label2, label3;
+  base::string16 label1, label2, label3;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
       service, signin, &label1, &label2, &label3);
   EXPECT_EQ(label1.empty(), !is_error);
@@ -113,7 +113,7 @@ TEST_F(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
   GoogleServiceAuthError auth_error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
-  string16 menu_label, label2, label3;
+  base::string16 menu_label, label2, label3;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
       &service, signin, &menu_label, &label2, &label3);
   // Make sure we are still displaying the passphrase error badge (don't show
@@ -335,8 +335,8 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
         new FakeAuthStatusProvider(
             SigninGlobalError::GetForProfile(profile.get())));
     GetDistinctCase(service, &signin, provider.get(), idx);
-    string16 status_label;
-    string16 link_label;
+    base::string16 status_label;
+    base::string16 link_label;
     sync_ui_util::GetStatusLabels(&service,
                                   signin,
                                   sync_ui_util::WITH_HTML,
@@ -347,8 +347,8 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     // message, and the test has failed.
     EXPECT_FALSE(status_label.empty()) <<
         "Empty status label returned for case #" << idx;
-    string16 combined_label =
-        status_label + string16(ASCIIToUTF16("#")) + link_label;
+    base::string16 combined_label =
+        status_label + base::string16(ASCIIToUTF16("#")) + link_label;
     EXPECT_TRUE(messages.find(combined_label) == messages.end()) <<
         "Duplicate message for case #" << idx << ": " << combined_label;
     messages.insert(combined_label);
@@ -375,8 +375,8 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
         new FakeAuthStatusProvider(
             SigninGlobalError::GetForProfile(profile.get())));
     GetDistinctCase(service, &signin, provider.get(), idx);
-    string16 status_label;
-    string16 link_label;
+    base::string16 status_label;
+    base::string16 link_label;
     sync_ui_util::GetStatusLabels(&service,
                                   signin,
                                   sync_ui_util::PLAIN_TEXT,
@@ -388,7 +388,7 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     // the status label.
     EXPECT_FALSE(status_label.empty());
     EXPECT_EQ(status_label.find(string16(ASCIIToUTF16("href"))),
-              string16::npos);
+              base::string16::npos);
     testing::Mock::VerifyAndClearExpectations(&service);
     testing::Mock::VerifyAndClearExpectations(&signin);
     EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(error));

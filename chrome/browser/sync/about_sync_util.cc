@@ -62,7 +62,7 @@ class StringSyncStat {
  public:
   StringSyncStat(ListValue* section, const std::string& key);
   void SetValue(const std::string& value);
-  void SetValue(const string16& value);
+  void SetValue(const base::string16& value);
 
  private:
   // Owned by the |section| passed in during construction.
@@ -82,7 +82,7 @@ void StringSyncStat::SetValue(const std::string& value) {
   stat_->SetBoolean("is_valid", true);
 }
 
-void StringSyncStat::SetValue(const string16& value) {
+void StringSyncStat::SetValue(const base::string16& value) {
   stat_->SetString("stat_value", value);
   stat_->SetBoolean("is_valid", true);
 }

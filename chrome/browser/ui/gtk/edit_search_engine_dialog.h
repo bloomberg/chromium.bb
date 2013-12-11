@@ -31,8 +31,8 @@ class EditSearchEngineDialog {
   void Init(GtkWindow* parent_window, Profile* profile);
 
   // Retrieve the user input in the various fields.
-  string16 GetTitleInput() const;
-  string16 GetKeywordInput() const;
+  base::string16 GetTitleInput() const;
+  base::string16 GetKeywordInput() const;
   std::string GetURLInput() const;
 
   // Set sensitivity of buttons based on entry state.

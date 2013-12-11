@@ -16,9 +16,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-SSLErrorInfo::SSLErrorInfo(const string16& title,
-                           const string16& details,
-                           const string16& short_description,
+SSLErrorInfo::SSLErrorInfo(const base::string16& title,
+                           const base::string16& details,
+                           const base::string16& short_description,
                            const std::vector<string16>& extra_info)
     : title_(title),
       details_(details),
@@ -30,7 +30,7 @@ SSLErrorInfo::SSLErrorInfo(const string16& title,
 SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
                                        net::X509Certificate* cert,
                                        const GURL& request_url) {
-  string16 title, details, short_description;
+  base::string16 title, details, short_description;
   std::vector<string16> extra_info;
   switch (error_type) {
     case CERT_COMMON_NAME_INVALID: {

@@ -35,7 +35,7 @@ Misspelling::Misspelling()
     : location(0), length(0), hash(0), timestamp(base::Time::Now()) {
 }
 
-Misspelling::Misspelling(const string16& context,
+Misspelling::Misspelling(const base::string16& context,
                          size_t location,
                          size_t length,
                          const std::vector<string16>& suggestions,
@@ -69,6 +69,6 @@ string16 Misspelling::GetMisspelledString() const {
   // Feedback sender does not create Misspelling objects for spellcheck results
   // that are out-of-bounds of checked text length.
   if (location > context.length())
-    return string16();
+    return base::string16();
   return context.substr(location, length);
 }

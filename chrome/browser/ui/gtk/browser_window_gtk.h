@@ -143,8 +143,8 @@ class BrowserWindowGtk
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,
-      const string16& email,
-      const string16& error_message,
+      const base::string16& email,
+      const base::string16& error_message,
       const StartSyncCallback& start_sync_callback) OVERRIDE;
 #endif
   virtual bool IsDownloadShelfVisible() const OVERRIDE;

@@ -283,7 +283,7 @@ void CheckCanOpenURL(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  string16 title = UTF8ToUTF16(url.spec() + " was blocked");
+  base::string16 title = UTF8ToUTF16(url.spec() + " was blocked");
   EXPECT_NE(title, contents->GetTitle());
 }
 
@@ -294,7 +294,7 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  string16 title = UTF8ToUTF16(url.spec() + " was blocked");
+  base::string16 title = UTF8ToUTF16(url.spec() + " was blocked");
   EXPECT_EQ(title, contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
@@ -747,8 +747,8 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
   // Verifies that the default locale can be overridden with policy.
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
-  string16 title;
+  base::string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  base::string16 title;
   EXPECT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &title));
   EXPECT_EQ(french_title, title);
 
@@ -756,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
   std::string loaded =
       ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("en-US");
   EXPECT_EQ("en-US", loaded);
-  string16 english_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  base::string16 english_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   EXPECT_NE(french_title, english_title);
 }
 #endif
@@ -839,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
-  const string16 kKeyword(ASCIIToUTF16("testsearch"));
+  const base::string16 kKeyword(ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("http://search.example/search?q={searchTerms}");
   const std::string kAlternateURL0(
       "http://search.example/search#q={searchTerms}");
@@ -1030,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
-  const string16 kKeyword(ASCIIToUTF16("testsearch"));
+  const base::string16 kKeyword(ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("https://www.google.com/search?q={searchTerms}");
   const std::string kInstantURL("http://does/not/exist");
   const std::string kAlternateURL0(

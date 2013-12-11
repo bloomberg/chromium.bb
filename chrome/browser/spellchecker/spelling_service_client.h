@@ -47,7 +47,7 @@ class URLFetcher;
 //       ...
 //     }
 //
-//     void MyTextCheck(BrowserContext* context, const string16& text) {
+//     void MyTextCheck(BrowserContext* context, const base::string16& text) {
 //        client_.reset(new SpellingServiceClient);
 //        client_->RequestTextCheck(context, 0, text,
 //            base::Bind(&MyClient::OnTextCheckComplete,
@@ -71,7 +71,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   };
   typedef base::Callback<void(
       bool /* success */,
-      const string16& /* text */,
+      const base::string16& /* text */,
       const std::vector<SpellCheckResult>& /* results */)>
           TextCheckCompleteCallback;
 
@@ -84,7 +84,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // call |callback| when we receive a text-check response from the service.
   bool RequestTextCheck(content::BrowserContext* context,
                         ServiceType type,
-                        const string16& text,
+                        const base::string16& text,
                         const TextCheckCompleteCallback& callback);
 
   // Returns whether the specified service is available for the given context.
@@ -97,7 +97,8 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
 
  private:
   struct TextCheckCallbackData {
-    TextCheckCallbackData(TextCheckCompleteCallback callback, string16 text);
+    TextCheckCallbackData(TextCheckCompleteCallback callback,
+                          base::string16 text);
     ~TextCheckCallbackData();
 
     // The callback function to be called when we receive a response from the
@@ -105,7 +106,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
     TextCheckCompleteCallback callback;
 
     // The text checked by the Spelling service.
-    string16 text;
+    base::string16 text;
   };
 
   // net::URLFetcherDelegate implementation.

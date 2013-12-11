@@ -350,7 +350,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     sql::Statement& s) const {
   std::string encrypted_password;
   s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
-  string16 decrypted_password;
+  base::string16 decrypted_password;
   EncryptionResult encryption_result =
       DecryptedString(encrypted_password, &decrypted_password);
   if (encryption_result != ENCRYPTION_RESULT_SUCCESS)
@@ -563,7 +563,7 @@ Pickle LoginDatabase::SerializeVector(const std::vector<string16>& vec) const {
 
 std::vector<string16> LoginDatabase::DeserializeVector(const Pickle& p) const {
   std::vector<string16> ret;
-  string16 str;
+  base::string16 str;
 
   PickleIterator iterator(p);
   while (iterator.ReadString16(&str)) {

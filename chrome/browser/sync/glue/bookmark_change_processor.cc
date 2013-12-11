@@ -552,7 +552,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       if (!foster_parent) {
         foster_parent = model->AddFolder(model->other_node(),
                                          model->other_node()->child_count(),
-                                         string16());
+                                         base::string16());
         if (!foster_parent) {
           error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
               "Failed to create foster parent.");

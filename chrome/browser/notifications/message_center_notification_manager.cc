@@ -104,7 +104,7 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
 
 bool MessageCenterNotificationManager::Update(const Notification& notification,
                                               Profile* profile) {
-  const string16& replace_id = notification.replace_id();
+  const base::string16& replace_id = notification.replace_id();
   if (replace_id.empty())
     return false;
 

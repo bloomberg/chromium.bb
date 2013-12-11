@@ -175,7 +175,7 @@ void AutofillPopupViewGtk::SetUpLayout() {
   pango_layout_set_height(layout_, window_->allocation.height * PANGO_SCALE);
 }
 
-void AutofillPopupViewGtk::SetLayoutText(const string16& text,
+void AutofillPopupViewGtk::SetLayoutText(const base::string16& text,
                                          const gfx::Font& font,
                                          const GdkColor text_color) {
   PangoAttrList* attrs = pango_attr_list_new();

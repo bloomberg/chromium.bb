@@ -19,16 +19,16 @@ class FindBarState : public BrowserContextKeyedService {
   FindBarState() {}
   virtual ~FindBarState() {}
 
-  string16 last_prepopulate_text() const {
+  base::string16 last_prepopulate_text() const {
     return last_prepopulate_text_;
   }
 
-  void set_last_prepopulate_text(const string16& text) {
+  void set_last_prepopulate_text(const base::string16& text) {
     last_prepopulate_text_ = text;
   }
 
  private:
-  string16 last_prepopulate_text_;
+  base::string16 last_prepopulate_text_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarState);
 };

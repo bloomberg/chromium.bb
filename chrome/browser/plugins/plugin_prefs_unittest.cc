@@ -135,14 +135,14 @@ TEST_F(PluginPrefsTest, EnabledByPolicy) {
 }
 
 TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
-  const string16 k42(ASCIIToUTF16("42"));
-  const string16 kEnabled(ASCIIToUTF16("Enabled"));
-  const string16 kEnabled2(ASCIIToUTF16("Enabled 2"));
-  const string16 kEnabled3(ASCIIToUTF16("Enabled 3"));
-  const string16 kException(ASCIIToUTF16("Exception"));
-  const string16 kException2(ASCIIToUTF16("Exception 2"));
-  const string16 kGoogleMars(ASCIIToUTF16("Google Mars"));
-  const string16 kGoogleEarth(ASCIIToUTF16("Google Earth"));
+  const base::string16 k42(ASCIIToUTF16("42"));
+  const base::string16 kEnabled(ASCIIToUTF16("Enabled"));
+  const base::string16 kEnabled2(ASCIIToUTF16("Enabled 2"));
+  const base::string16 kEnabled3(ASCIIToUTF16("Enabled 3"));
+  const base::string16 kException(ASCIIToUTF16("Exception"));
+  const base::string16 kException2(ASCIIToUTF16("Exception 2"));
+  const base::string16 kGoogleMars(ASCIIToUTF16("Google Mars"));
+  const base::string16 kGoogleEarth(ASCIIToUTF16("Google Earth"));
 
   std::set<string16> disabled_plugins;
   std::set<string16> disabled_plugins_exceptions;
@@ -212,7 +212,7 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
   PluginService::GetInstance()->Init();
   PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
 
-  string16 component_updated_plugin_name(
+  base::string16 component_updated_plugin_name(
       ASCIIToUTF16("Component-updated Pepper Flash"));
   content::WebPluginInfo component_updated_plugin_1(
       component_updated_plugin_name,

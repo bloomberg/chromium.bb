@@ -116,7 +116,7 @@ void DetectUpdatability(const base::Closure& callback_task,
                         bool* is_unstable_channel) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  string16 app_guid = installer::GetAppGuidForUpdates(IsSystemInstall());
+  base::string16 app_guid = installer::GetAppGuidForUpdates(IsSystemInstall());
   DCHECK(!app_guid.empty());
   if (GoogleUpdateSettings::AUTOMATIC_UPDATES ==
       GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, NULL)) {

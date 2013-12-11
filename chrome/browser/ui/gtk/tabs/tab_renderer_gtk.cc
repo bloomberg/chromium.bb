@@ -880,7 +880,7 @@ void TabRendererGtk::PaintTitle(GtkWidget* widget, cairo_t* cr) {
     return;
 
   // Paint the Title.
-  string16 title = data_.title;
+  base::string16 title = data_.title;
   if (title.empty()) {
     title = data_.loading ?
         l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :

@@ -27,7 +27,8 @@ class PasswordUIView {
   // Reveals the password for the saved password entry at |index| in the UI.
   // |index| the index of the saved password entry.
   // |password_value| the value of saved password entry at |index|.
-  virtual void ShowPassword(size_t index, const string16& password_value) = 0;
+  virtual void ShowPassword(size_t index,
+                            const base::string16& password_value) = 0;
 
   // Updates the list of passwords in the UI.
   // |password_list| the list of saved password entries.

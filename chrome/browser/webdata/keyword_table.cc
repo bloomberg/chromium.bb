@@ -629,10 +629,10 @@ bool KeywordTable::MigrateKeywordsTableForVersion45(const std::string& name) {
   sql = "SELECT id, keyword, url, autogenerate_keyword FROM " + name +
       " ORDER BY id ASC";
   sql::Statement s(db_->GetUniqueStatement(sql.c_str()));
-  string16 placeholder_keyword(ASCIIToUTF16("dummy"));
+  base::string16 placeholder_keyword(ASCIIToUTF16("dummy"));
   std::set<string16> keywords;
   while (s.Step()) {
-    string16 keyword(s.ColumnString16(1));
+    base::string16 keyword(s.ColumnString16(1));
     bool generate_keyword = keyword.empty() || s.ColumnBool(3);
     if (generate_keyword)
       keyword = placeholder_keyword;

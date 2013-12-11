@@ -521,7 +521,7 @@ TEST_F(FeedbackSenderTest, MultipleAddToDictFeedback) {
   std::vector<SpellCheckResult> results;
   static const int kSentenceLength = 14;
   static const int kNumberOfSentences = 2;
-  static const string16 kTextWithDuplicates =
+  static const base::string16 kTextWithDuplicates =
       ASCIIToUTF16("Helllo world. Helllo world.");
   for (int i = 0; i < kNumberOfSentences; ++i) {
     results.push_back(SpellCheckResult(SpellCheckResult::SPELLING,

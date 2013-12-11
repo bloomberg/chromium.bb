@@ -153,7 +153,7 @@ void WelcomeNotification::RegisterProfilePrefs(
 
 void WelcomeNotification::ShowWelcomeNotification(
     const message_center::NotifierId notifier_id,
-    const string16& display_source,
+    const base::string16& display_source,
     PopUpRequest pop_up_request) {
   message_center::ButtonInfo learn_more(
       l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE));

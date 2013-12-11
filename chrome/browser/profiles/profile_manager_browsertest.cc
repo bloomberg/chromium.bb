@@ -142,7 +142,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(new_path,
                                       base::Bind(&OnUnblockOnProfileCreation),
-                                      string16(), string16(), std::string());
+                                      base::string16(), base::string16(),
+                                      std::string());
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.
@@ -222,8 +223,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   // Create a profile, make sure callback is invoked before any callbacks are
   // invoked (so they can do things like sign in the profile, etc).
   ProfileManager::CreateMultiProfileAsync(
-      string16(), // name
-      string16(), // icon url
+      base::string16(), // name
+      base::string16(), // icon url
       base::Bind(ProfileCreationComplete),
       std::string());
   // Wait for profile to finish loading.
@@ -263,7 +264,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(path_profile2,
                                       base::Bind(&OnUnblockOnProfileCreation),
-                                      string16(), string16(), std::string());
+                                      base::string16(), base::string16(),
+                                      std::string());
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.
@@ -324,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, EphemeralProfile) {
   profile_manager->CreateProfileAsync(
       path_profile2,
       base::Bind(&EphemeralProfileCreationComplete),
-      string16(), string16(), std::string());
+      base::string16(), base::string16(), std::string());
 
   // Spin to allow profile creation to take place.
   content::RunMessageLoop();

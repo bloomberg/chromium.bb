@@ -55,7 +55,7 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
   void SetPrefs(PrefService* prefs);
 
   // Enable or disable a plugin group.
-  void EnablePluginGroup(bool enable, const string16& group_name);
+  void EnablePluginGroup(bool enable, const base::string16& group_name);
 
   // Enables or disables a specific plug-in file, if possible.
   // If the plug-in state can't be changed (because of a policy for example)
@@ -67,7 +67,7 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
 
   // Returns whether there is a policy enabling or disabling plug-ins of the
   // given name.
-  PolicyStatus PolicyStatusForPlugin(const string16& name) const;
+  PolicyStatus PolicyStatusForPlugin(const base::string16& name) const;
 
   // Returns whether the plugin is enabled or not.
   bool IsPluginEnabled(const content::WebPluginInfo& plugin) const;
@@ -116,7 +116,7 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
   // Callback for after the plugin groups have been loaded.
   void EnablePluginGroupInternal(
       bool enabled,
-      const string16& group_name,
+      const base::string16& group_name,
       const std::vector<content::WebPluginInfo>& plugins);
   void EnablePluginInternal(
       bool enabled,
@@ -135,7 +135,7 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
                                    std::set<string16>* dest);
 
   // Checks if |name| matches any of the patterns in |pattern_set|.
-  static bool IsStringMatchedInSet(const string16& name,
+  static bool IsStringMatchedInSet(const base::string16& name,
                                    const std::set<string16>& pattern_set);
 
   // Guards access to the following data structures.

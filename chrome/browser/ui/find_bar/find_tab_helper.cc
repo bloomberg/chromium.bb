@@ -45,7 +45,7 @@ void FindTabHelper::StartFinding(string16 search_string,
   if (search_string.empty() && find_text_.empty()) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    string16 last_search_prepopulate_text =
+    base::string16 last_search_prepopulate_text =
         FindBarStateFactory::GetLastPrepopulateText(profile);
 
     // Try the last thing we searched for on this tab, then the last thing
@@ -99,7 +99,7 @@ void FindTabHelper::StopFinding(
     // kClearSelection means the find string has been cleared by the user, but
     // the UI has not been dismissed. In that case we want to clear the
     // previously remembered search (http://crbug.com/42639).
-    previous_find_text_ = string16();
+    previous_find_text_ = base::string16();
   } else {
     find_ui_active_ = false;
     if (!find_text_.empty())

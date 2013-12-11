@@ -67,8 +67,8 @@ void ProcessSingletonDialog::OnResponse(GtkWidget* dialog, int response_id) {
 
 }  // namespace
 
-bool ShowProcessSingletonDialog(const string16& message,
-                                const string16& relaunch_text) {
+bool ShowProcessSingletonDialog(const base::string16& message,
+                                const base::string16& relaunch_text) {
   ProcessSingletonDialog dialog(base::UTF16ToUTF8(message),
                                 base::UTF16ToUTF8(relaunch_text));
   return dialog.GetResponseId() == GTK_RESPONSE_ACCEPT;

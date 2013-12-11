@@ -7,7 +7,7 @@
 #include "components/webdata/encryptor/encryptor.h"
 
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
-    const string16& plain_text,
+    const base::string16& plain_text,
     std::string* cipher_text) const {
   if (Encryptor::EncryptString16(plain_text, cipher_text))
     return ENCRYPTION_RESULT_SUCCESS;
@@ -16,7 +16,7 @@ LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
 
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    string16* plain_text) const {
+    base::string16* plain_text) const {
   if (Encryptor::DecryptString16(cipher_text, plain_text))
     return ENCRYPTION_RESULT_SUCCESS;
   return ENCRYPTION_RESULT_ITEM_FAILURE;

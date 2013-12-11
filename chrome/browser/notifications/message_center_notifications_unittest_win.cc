@@ -103,8 +103,8 @@ class MessageCenterNotificationManagerTest : public testing::Test {
   const ::Notification GetANotification(const std::string& id) {
     return ::Notification(GURL(),
                           GURL(),
-                          string16(),
-                          string16(),
+                          base::string16(),
+                          base::string16(),
                           new MockNotificationDelegate(id));
   }
 

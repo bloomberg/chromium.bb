@@ -304,7 +304,7 @@ void WebsiteSettings::Init(Profile* profile,
   scoped_refptr<net::X509Certificate> cert;
 
   // Identity section.
-  string16 subject_name(UTF8ToUTF16(url.host()));
+  base::string16 subject_name(UTF8ToUTF16(url.host()));
   if (subject_name.empty()) {
     subject_name.assign(
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
@@ -330,7 +330,7 @@ void WebsiteSettings::Init(Profile* profile,
           IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE, UTF8ToUTF16(url.host()));
     } else if (net::IsCertStatusMinorError(ssl.cert_status)) {
       site_identity_status_ = SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN;
-      string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
+      base::string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
         issuer_name.assign(l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
@@ -361,7 +361,7 @@ void WebsiteSettings::Init(Profile* profile,
       // state is "if any".
       DCHECK(!cert->subject().locality_name.empty());
       DCHECK(!cert->subject().country_name.empty());
-      string16 locality;
+      base::string16 locality;
       if (!cert->subject().state_or_province_name.empty()) {
         locality = l10n_util::GetStringFUTF16(
             IDS_PAGEINFO_ADDRESS,
@@ -385,7 +385,7 @@ void WebsiteSettings::Init(Profile* profile,
       // Non-EV OK HTTPS page.
       site_identity_status_ = GetSiteIdentityStatusByCTInfo(
           ssl.signed_certificate_timestamp_ids, false);
-      string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
+      base::string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
         issuer_name.assign(l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
@@ -405,7 +405,7 @@ void WebsiteSettings::Init(Profile* profile,
     else
       site_identity_status_ = SITE_IDENTITY_STATUS_ERROR;
 
-    const string16 bullet = UTF8ToUTF16("\n • ");
+    const base::string16 bullet = UTF8ToUTF16("\n • ");
     std::vector<SSLErrorInfo> errors;
     SSLErrorInfo::GetErrorsForCertStatus(ssl.cert_id, ssl.cert_status,
                                          url, &errors);
@@ -665,7 +665,7 @@ void WebsiteSettings::PresentHistoryInfo(base::Time first_visit) {
   base::Time first_visit_midnight = first_visit.LocalMidnight();
   visited_before_today = (first_visit_midnight < today);
 
-  string16 first_visit_text;
+  base::string16 first_visit_text;
   if (visited_before_today) {
     first_visit_text = l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,

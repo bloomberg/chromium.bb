@@ -52,7 +52,7 @@ class PluginObserver : public content::WebContentsObserver,
 #endif
 
   // Message handlers:
-  void OnBlockedUnauthorizedPlugin(const string16& name,
+  void OnBlockedUnauthorizedPlugin(const base::string16& name,
                                    const std::string& identifier);
   void OnBlockedOutdatedPlugin(int placeholder_id,
                                const std::string& identifier);

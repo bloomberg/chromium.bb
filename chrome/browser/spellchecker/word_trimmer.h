@@ -17,16 +17,16 @@
 //
 //  size_t start = 14;
 //  size_t end = 23;
-//  string16 text = ASCIIToUTF16("one two three four five six seven eight");
+//  base::string16 text =
+//      ASCIIToUTF16("one two three four five six seven eight");
 //  int keep = 2;
-//  string16 trimmed = TrimWords(&start, end, text, keep);
+//  base::string16 trimmed = TrimWords(&start, end, text, keep);
 //  DCHECK(trimmed == ASCIIToUTF16("two three four five six seven"));
 //  DCHECK(start == 10);
 //
-string16 TrimWords(
-    size_t* start,
-    size_t end,
-    const string16& text,
-    size_t keep);
+base::string16 TrimWords(size_t* start,
+                         size_t end,
+                         const base::string16& text,
+                         size_t keep);
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_WORD_TRIMMER_H_

@@ -60,7 +60,7 @@ TEST_F(SpellcheckMacTest, IgnoreWords_EN_US) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    const string16 word(ASCIIToUTF16(kTestCases[i]));
+    const base::string16 word(ASCIIToUTF16(kTestCases[i]));
     const int doc_tag = spellcheck_mac::GetDocumentTag();
 
     // The word should show up as misspelled.
@@ -355,14 +355,15 @@ TEST_F(SpellcheckMacTest, SpellCheckSuggestions_EN_US) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    const string16 word(ASCIIToUTF16(kTestCases[i].input));
+    const base::string16 word(ASCIIToUTF16(kTestCases[i].input));
     EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, 0)) << word;
 
     // Check if the suggested words occur.
-    std::vector<string16> suggestions;
+    std::vector<base::string16> suggestions;
     spellcheck_mac::FillSuggestionList(word, &suggestions);
     bool suggested_word_is_present = false;
-    const string16 suggested_word(ASCIIToUTF16(kTestCases[i].suggested_word));
+    const base::string16 suggested_word(
+        ASCIIToUTF16(kTestCases[i].suggested_word));
     for (size_t j = 0; j < suggestions.size(); j++) {
       if (suggestions[j].compare(suggested_word) == 0) {
         suggested_word_is_present = true;
@@ -378,7 +379,7 @@ TEST_F(SpellcheckMacTest, SpellCheckSuggestions_EN_US) {
 // the language used in that sentence. Test that it is filtered out from
 // RequestTextCheck results.
 TEST_F(SpellcheckMacTest, SpellCheckIgnoresOrthography)  {
-  string16 test_string(ASCIIToUTF16("Icland is awesome."));
+  base::string16 test_string(ASCIIToUTF16("Icland is awesome."));
   spellcheck_mac::RequestTextCheck(0, test_string, callback_);
   WaitForCallback();
   EXPECT_TRUE(callback_finished_);

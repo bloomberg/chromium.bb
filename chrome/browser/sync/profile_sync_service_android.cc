@@ -295,7 +295,8 @@ ScopedJavaLocalRef<jstring>
         JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::Time passphrase_time = sync_service_->GetExplicitPassphraseTime();
-  string16 passphrase_time_str = base::TimeFormatShortDate(passphrase_time);
+  base::string16 passphrase_time_str =
+      base::TimeFormatShortDate(passphrase_time);
   return base::android::ConvertUTF16ToJavaString(env,
       l10n_util::GetStringFUTF16(
         IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
@@ -307,7 +308,8 @@ ScopedJavaLocalRef<jstring>
         JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::Time passphrase_time = sync_service_->GetExplicitPassphraseTime();
-  string16 passphrase_time_str = base::TimeFormatShortDate(passphrase_time);
+  base::string16 passphrase_time_str =
+      base::TimeFormatShortDate(passphrase_time);
   return base::android::ConvertUTF16ToJavaString(env,
       l10n_util::GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
         passphrase_time_str));

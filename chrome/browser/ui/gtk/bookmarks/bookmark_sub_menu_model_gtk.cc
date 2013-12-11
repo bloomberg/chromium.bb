@@ -82,7 +82,7 @@ void BookmarkNodeMenuModel::PopulateMenu() {
       // Ironically the label will end up getting converted back to UTF8 later.
       // We need to escape any Windows-style "&" characters since they will be
       // converted in MenuGtk outside of our control here.
-      const string16 label = UTF8ToUTF16(
+      const base::string16 label = UTF8ToUTF16(
           ui::EscapeWindowsStyleAccelerators(BuildMenuLabelFor(child)));
       // No command id. We override ActivatedAt below to handle activations.
       AddItem(kBookmarkItemCommandId, label);
@@ -102,7 +102,7 @@ void BookmarkNodeMenuModel::AddSubMenuForNode(const BookmarkNode* node) {
   // Ironically the label will end up getting converted back to UTF8 later.
   // We need to escape any Windows-style "&" characters since they will be
   // converted in MenuGtk outside of our control here.
-  const string16 label =
+  const base::string16 label =
       UTF8ToUTF16(ui::EscapeWindowsStyleAccelerators(BuildMenuLabelFor(node)));
   // Don't pass in the delegate, if any. Bookmark submenus don't need one.
   BookmarkNodeMenuModel* submenu =

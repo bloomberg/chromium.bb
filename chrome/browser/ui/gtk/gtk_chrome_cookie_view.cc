@@ -608,8 +608,8 @@ void gtk_chrome_cookie_view_display_indexed_db(
 void gtk_chrome_cookie_view_display_local_storage_item(
     GtkChromeCookieView* self,
     const std::string& host,
-    const string16& key,
-    const string16& value) {
+    const base::string16& key,
+    const base::string16& value) {
   UpdateVisibleDetailedInfo(self, self->local_storage_item_table_);
 
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_item_origin_entry_),
@@ -624,8 +624,8 @@ void gtk_chrome_cookie_view_display_local_storage_item(
 void gtk_chrome_cookie_view_display_database_accessed(
     GtkChromeCookieView* self,
     const std::string& host,
-    const string16& database_name,
-    const string16& display_name,
+    const base::string16& database_name,
+    const base::string16& display_name,
     unsigned long estimated_size) {
   UpdateVisibleDetailedInfo(self, self->database_accessed_table_);
 

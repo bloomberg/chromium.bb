@@ -19,7 +19,7 @@ class AutocompleteResult;
 // the omnibox popup.
 struct OmniboxLog {
   OmniboxLog(
-      const string16& text,
+      const base::string16& text,
       bool just_deleted_text,
       AutocompleteInput::Type input_type,
       size_t selected_index,
@@ -32,7 +32,7 @@ struct OmniboxLog {
   ~OmniboxLog();
 
   // The user's input text in the omnibox.
-  string16 text;
+  base::string16 text;
 
   // Whether the user deleted text immediately before selecting an omnibox
   // suggestion.  This is usually the result of pressing backspace or delete.
@@ -64,7 +64,7 @@ struct OmniboxLog {
 
   // The number of extra characters the user would have to manually type
   // if she/he were not given the opportunity to select this match.  Set to
-  // string16::npos if not available.
+  // base::string16::npos if not available.
   size_t completed_length;
 
   // The amount of time since the last time the default (i.e., inline)

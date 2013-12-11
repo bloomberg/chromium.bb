@@ -71,7 +71,7 @@ class NotificationUIManagerMac : public BalloonNotificationUIManager {
 
   // Finds a notification with a given replacement id.
   id<CrUserNotification> FindNotificationWithReplacementId(
-      const string16& replacement_id) const;
+      const base::string16& replacement_id) const;
 
   // Cocoa class that receives callbacks from the NSUserNotificationCenter.
   base::scoped_nsobject<NotificationCenterDelegate> delegate_;

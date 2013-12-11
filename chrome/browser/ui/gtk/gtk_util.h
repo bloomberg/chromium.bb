@@ -193,7 +193,7 @@ void DrawTextEntryBackground(GtkWidget* offscreen_entry,
                              GdkRectangle* rec);
 
 // Set up the text to be displayed by |layout|.
-void SetLayoutText(PangoLayout* layout, const string16& text);
+void SetLayoutText(PangoLayout* layout, const base::string16& text);
 
 // Draws the background of the toolbar area subject to the expose rectangle
 // |event| and starting image tiling from |tabstrip_origin|.

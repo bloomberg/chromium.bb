@@ -82,7 +82,7 @@ class Feedback {
 
   // Returns a list of all misspelling identifiers for |misspelled_text|.
   const std::set<uint32>& FindMisspellings(
-      const string16& misspelled_text) const;
+      const base::string16& misspelled_text) const;
 
  private:
   typedef std::map<uint32, Misspelling> HashMisspellingMap;

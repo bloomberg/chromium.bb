@@ -63,9 +63,9 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
                                scoped_ptr<PluginMetadata> plugin_metadata);
 
   // TabModalConfirmDialogDelegate methods:
-  virtual string16 GetTitle() OVERRIDE;
-  virtual string16 GetMessage() OVERRIDE;
-  virtual string16 GetAcceptButtonTitle() OVERRIDE;
+  virtual base::string16 GetTitle() OVERRIDE;
+  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
 
@@ -127,7 +127,7 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
  public:
   PluginPlaceholderHost(PluginObserver* observer,
                         int routing_id,
-                        string16 plugin_name,
+                        base::string16 plugin_name,
                         PluginInstaller* installer)
       : PluginInstallerObserver(installer),
         observer_(observer),
@@ -218,9 +218,9 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
                                    base::ProcessId plugin_pid) {
   DCHECK(!plugin_path.value().empty());
 
-  string16 plugin_name =
+  base::string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
-  string16 infobar_text;
+  base::string16 infobar_text;
 #if defined(OS_WIN)
   // Find out whether the plugin process is still alive.
   // Note: Although the chances are slim, it is possible that after the plugin
@@ -287,7 +287,7 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PluginObserver::OnBlockedUnauthorizedPlugin(
-    const string16& name,
+    const base::string16& name,
     const std::string& identifier) {
   UnauthorizedPluginInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
@@ -379,7 +379,7 @@ void PluginObserver::OnOpenAboutPlugins() {
 
 void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
   g_browser_process->metrics_service()->LogPluginLoadingError(plugin_path);
-  string16 plugin_name =
+  base::string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),

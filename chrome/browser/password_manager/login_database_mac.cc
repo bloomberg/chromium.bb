@@ -9,7 +9,7 @@
 // providing storage of fields Keychain doesn't allow.
 
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
-    const string16& plain_text,
+    const base::string16& plain_text,
     std::string* cipher_text) const {
   *cipher_text = std::string();
   return ENCRYPTION_RESULT_SUCCESS;
@@ -17,7 +17,7 @@ LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
 
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    string16* plain_text) const {
-  *plain_text = string16();
+    base::string16* plain_text) const {
+  *plain_text = base::string16();
   return ENCRYPTION_RESULT_SUCCESS;
 }

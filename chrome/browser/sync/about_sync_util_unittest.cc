@@ -26,7 +26,7 @@ TEST(SyncUIUtilTestAbout, ConstructAboutInformationWithUnrecoverableErrorTest) {
   NiceMock<ProfileSyncServiceMock> service(profile.get());
 
   // Will be released when the dictionary is destroyed
-  string16 str(ASCIIToUTF16("none"));
+  base::string16 str(ASCIIToUTF16("none"));
 
   browser_sync::SyncBackendHost::Status status;
 

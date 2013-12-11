@@ -50,8 +50,8 @@ namespace message_center {
 class ProfileNotifierGroup : public message_center::NotifierGroup {
  public:
   ProfileNotifierGroup(const gfx::Image& icon,
-                       const string16& display_name,
-                       const string16& login_info,
+                       const base::string16& display_name,
+                       const base::string16& login_info,
                        size_t index,
                        const base::FilePath& profile_path);
   virtual ~ProfileNotifierGroup() {}
@@ -63,8 +63,8 @@ class ProfileNotifierGroup : public message_center::NotifierGroup {
 };
 
 ProfileNotifierGroup::ProfileNotifierGroup(const gfx::Image& icon,
-                                           const string16& display_name,
-                                           const string16& login_info,
+                                           const base::string16& display_name,
+                                           const base::string16& login_info,
                                            size_t index,
                                            const base::FilePath& profile_path)
     : message_center::NotifierGroup(icon, display_name, login_info, index),
@@ -249,7 +249,7 @@ void MessageCenterSettingsController::GetNotifierList(
     }
 
     std::string url_pattern = iter->primary_pattern.ToString();
-    string16 name = UTF8ToUTF16(url_pattern);
+    base::string16 name = UTF8ToUTF16(url_pattern);
     GURL url(url_pattern);
     NotifierId notifier_id(url);
     notifiers->push_back(new Notifier(
@@ -273,7 +273,7 @@ void MessageCenterSettingsController::GetNotifierList(
 
   // Screenshot notification feature is only for ChromeOS. See crbug.com/238358
 #if defined(OS_CHROMEOS)
-  const string16 screenshot_name =
+  const base::string16 screenshot_name =
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME);
   NotifierId screenshot_notifier_id(
       NotifierId::SYSTEM_COMPONENT, ash::system_notifier::kNotifierScreenshot);

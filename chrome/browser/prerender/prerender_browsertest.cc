@@ -331,7 +331,7 @@ class TestPrerenderContents : public PrerenderContents {
       content::SessionStorageNamespace* session_storage_namespace) OVERRIDE {
     WebContents* web_contents = PrerenderContents::CreateWebContents(
         session_storage_namespace);
-    string16 ready_title = ASCIIToUTF16(kReadyTitle);
+    base::string16 ready_title = ASCIIToUTF16(kReadyTitle);
     if (prerender_should_wait_for_ready_title_)
       ready_title_watcher_.reset(new content::TitleWatcher(
           web_contents, ready_title));
@@ -340,7 +340,7 @@ class TestPrerenderContents : public PrerenderContents {
 
   void WaitForPrerenderToHaveReadyTitleIfRequired() {
     if (ready_title_watcher_.get()) {
-      string16 ready_title = ASCIIToUTF16(kReadyTitle);
+      base::string16 ready_title = ASCIIToUTF16(kReadyTitle);
       ASSERT_EQ(ready_title, ready_title_watcher_->WaitAndGetTitle());
     }
   }
@@ -852,7 +852,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void NavigateToDestUrlAndWaitForPassTitle() {
-    string16 expected_title = ASCIIToUTF16(kPassTitle);
+    base::string16 expected_title = ASCIIToUTF16(kPassTitle);
     content::TitleWatcher title_watcher(
         GetPrerenderContents()->prerender_contents(),
         expected_title);
@@ -923,7 +923,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   void RemoveLinkElement(int i) const {
     current_browser()->tab_strip_model()->GetActiveWebContents()->
         GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-            string16(),
+            base::string16(),
             ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
   }
 
@@ -934,7 +934,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     RenderViewHost* render_view_host = current_browser()->tab_strip_model()->
         GetActiveWebContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
-        string16(),
+        base::string16(),
         ASCIIToUTF16("ClickOpenLink()"));
     new_page_observer.Wait();
   }
@@ -1332,7 +1332,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         GetActiveWebContents()->GetRenderViewHost();
 
     render_view_host->ExecuteJavascriptInWebFrame(
-        string16(), ASCIIToUTF16(javascript_function_name));
+        base::string16(), ASCIIToUTF16(javascript_function_name));
 
     if (prerender_contents->quit_message_loop_on_destruction()) {
       // Run message loop until the prerender contents is destroyed.
@@ -2092,9 +2092,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
 
   // One of the resources that has a WebContents associated with it should have
   // the Prerender prefix.
-  const string16 prefix =
-      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX, string16());
-  string16 prerender_title;
+  const base::string16 prefix =
+      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
+                                 base::string16());
+  base::string16 prerender_title;
   int num_prerender_tabs = 0;
 
   TaskManagerModel* model = GetModel();
@@ -2108,19 +2109,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
     }
   }
   EXPECT_EQ(1, num_prerender_tabs);
-  const string16 prerender_page_title = prerender_title.substr(prefix.length());
+  const base::string16 prerender_page_title =
+      prerender_title.substr(prefix.length());
 
   NavigateToDestURL();
 
   // There should be no tabs with the Prerender prefix.
-  const string16 tab_prefix =
-      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, string16());
+  const base::string16 tab_prefix =
+      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, base::string16());
   num_prerender_tabs = 0;
   int num_tabs_with_prerender_page_title = 0;
   model->Refresh();
   for (int i = 0; i < model->ResourceCount(); ++i) {
     if (model->GetResourceWebContents(i)) {
-      string16 tab_title = model->GetResourceTitle(i);
+      base::string16 tab_title = model->GetResourceTitle(i);
       if (StartsWith(tab_title, prefix, true)) {
         ++num_prerender_tabs;
       } else {
@@ -2128,7 +2130,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
 
         // The prerender tab should now be a normal tab but the title should be
         // the same. Depending on timing, there may be more than one of these.
-        const string16 tab_page_title = tab_title.substr(tab_prefix.length());
+        const base::string16 tab_page_title =
+            tab_title.substr(tab_prefix.length());
         if (prerender_page_title.compare(tab_page_title) == 0)
           ++num_tabs_with_prerender_page_title;
       }
@@ -2680,7 +2683,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderUnload) {
   set_loader_path("files/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  string16 expected_title = ASCIIToUTF16("Unloaded");
+  base::string16 expected_title = ASCIIToUTF16("Unloaded");
   content::TitleWatcher title_watcher(
       current_browser()->tab_strip_model()->GetActiveWebContents(),
       expected_title);

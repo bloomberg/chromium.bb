@@ -120,7 +120,7 @@ class ProfileManagerTest : public testing::Test {
         base::Bind(&MockObserver::OnProfileCreated,
                    base::Unretained(mock_observer)),
         UTF8ToUTF16(name),
-        string16(),
+        base::string16(),
         std::string());
   }
 
@@ -315,11 +315,14 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
 
   EXPECT_EQ(0u, cache.GetNumberOfProfiles());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
-                          ASCIIToUTF16("name_1"), string16(), 0, std::string());
+                          ASCIIToUTF16("name_1"), base::string16(), 0,
+                          std::string());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_2"),
-                          ASCIIToUTF16("name_2"), string16(), 0, std::string());
+                          ASCIIToUTF16("name_2"), base::string16(), 0,
+                          std::string());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_3"),
-                          ASCIIToUTF16("name_3"), string16(), 0, std::string());
+                          ASCIIToUTF16("name_3"), base::string16(), 0,
+                          std::string());
   cache.SetBackgroundStatusOfProfileAtIndex(0, true);
   cache.SetBackgroundStatusOfProfileAtIndex(2, true);
   EXPECT_EQ(3u, cache.GetNumberOfProfiles());
@@ -337,9 +340,11 @@ TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
 
   EXPECT_EQ(0u, cache.GetNumberOfProfiles());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
-                          ASCIIToUTF16("name_1"), string16(), 0, std::string());
+                          ASCIIToUTF16("name_1"), base::string16(), 0,
+                          std::string());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_2"),
-                          ASCIIToUTF16("name_2"), string16(), 0, std::string());
+                          ASCIIToUTF16("name_2"), base::string16(), 0,
+                          std::string());
   cache.SetBackgroundStatusOfProfileAtIndex(0, false);
   cache.SetBackgroundStatusOfProfileAtIndex(1, true);
   EXPECT_EQ(2u, cache.GetNumberOfProfiles());
@@ -780,7 +785,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
   // Track the profile, but don't load it.
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   cache.AddProfileToCache(dest_path2, ASCIIToUTF16(profile_name2),
-                          string16(), 0, std::string());
+                          base::string16(), 0, std::string());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());

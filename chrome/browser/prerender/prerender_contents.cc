@@ -116,7 +116,7 @@ class PrerenderContents::WebContentsDelegateImpl
   virtual void RegisterProtocolHandler(WebContents* web_contents,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const string16& title,
+                                       const base::string16& title,
                                        bool user_gesture) OVERRIDE {
     // TODO(mmenke): Consider supporting this if it is a common case during
     // prerenders.

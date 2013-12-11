@@ -68,7 +68,7 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
   MOCK_METHOD1(SetPermissionInfo,
                void(const PermissionInfoList& permission_info_list));
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
-  MOCK_METHOD1(SetFirstVisit, void(const string16& first_visit));
+  MOCK_METHOD1(SetFirstVisit, void(const base::string16& first_visit));
   MOCK_METHOD1(SetSelectedTab, void(TabId tab_id));
 };
 

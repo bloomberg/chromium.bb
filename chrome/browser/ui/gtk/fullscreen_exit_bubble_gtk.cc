@@ -63,7 +63,7 @@ void FullscreenExitBubbleGtk::UpdateContent(
     gtk_widget_show(deny_button_);
   } else {
     bool link_visible = true;
-    string16 accelerator;
+    base::string16 accelerator;
     if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
         bubble_type ==
             FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {

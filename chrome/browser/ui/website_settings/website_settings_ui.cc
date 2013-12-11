@@ -130,7 +130,7 @@ string16 WebsiteSettingsUI::PermissionTypeToUIString(
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TYPE_MIDI_SYSEX);
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
@@ -145,7 +145,7 @@ string16 WebsiteSettingsUI::PermissionValueToUIString(ContentSetting value) {
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_PERMISSION_ASK);
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
 }
 
@@ -176,7 +176,7 @@ string16 WebsiteSettingsUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_NONE:
     default:
       NOTREACHED();
-      return string16();
+      return base::string16();
   }
   int button_text_id = button_text_ids[effective_setting];
   DCHECK_NE(button_text_id, kInvalidResourceID);
@@ -316,7 +316,7 @@ const gfx::Image& WebsiteSettingsUI::GetConnectionIcon(
 }
 
 // static
-int WebsiteSettingsUI::GetFirstVisitIconID(const string16& first_visit) {
+int WebsiteSettingsUI::GetFirstVisitIconID(const base::string16& first_visit) {
   // FIXME(markusheintz): Display a minor warning icon if the page is visited
   // the first time.
   return IDR_PAGEINFO_INFO;
@@ -324,7 +324,7 @@ int WebsiteSettingsUI::GetFirstVisitIconID(const string16& first_visit) {
 
 // static
 const gfx::Image& WebsiteSettingsUI::GetFirstVisitIcon(
-    const string16& first_visit) {
+    const base::string16& first_visit) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(GetFirstVisitIconID(first_visit));
 }

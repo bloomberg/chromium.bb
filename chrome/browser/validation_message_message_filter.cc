@@ -61,7 +61,7 @@ void ValidationMessageMessageFilter::OverrideThreadForMessage(
 
 void ValidationMessageMessageFilter::OnShowValidationMessage(
     int route_id, const gfx::Rect& anchor_in_root_view,
-    const string16& main_text, const string16& sub_text) {
+    const base::string16& main_text, const base::string16& sub_text) {
   RenderWidgetHost* widget_host =
       RenderWidgetHost::FromID(renderer_id_, route_id);
   validation_message_bubble_ = chrome::ValidationMessageBubble::CreateAndShow(

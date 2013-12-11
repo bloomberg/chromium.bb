@@ -30,7 +30,7 @@
 class Misspelling {
  public:
   Misspelling();
-  Misspelling(const string16& context,
+  Misspelling(const base::string16& context,
               size_t location,
               size_t length,
               const std::vector<string16>& suggestions,
@@ -43,10 +43,10 @@ class Misspelling {
 
   // Returns the substring of |context| that begins at |location| and contains
   // |length| characters.
-  string16 GetMisspelledString() const;
+  base::string16 GetMisspelledString() const;
 
   // A several-word text snippet that immediately surrounds the misspelling.
-  string16 context;
+  base::string16 context;
 
   // The number of characters between the beginning of |context| and the first
   // misspelled character.

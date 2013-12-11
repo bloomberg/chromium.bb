@@ -63,7 +63,7 @@ StatusBubbleGtk::~StatusBubbleGtk() {
   container_.Destroy();
 }
 
-void StatusBubbleGtk::SetStatus(const string16& status_text_wide) {
+void StatusBubbleGtk::SetStatus(const base::string16& status_text_wide) {
   std::string status_text = UTF16ToUTF8(status_text_wide);
   if (status_text_ == status_text)
     return;

@@ -31,8 +31,9 @@ void AlternateNavInfoBarGtk::PlatformSpecificSetOwner() {
   InfoBarGtk::PlatformSpecificSetOwner();
 
   size_t link_offset;
-  string16 display_text = GetDelegate()->GetMessageTextWithOffset(&link_offset);
-  string16 link_text = GetDelegate()->GetLinkText();
+  base::string16 display_text =
+      GetDelegate()->GetMessageTextWithOffset(&link_offset);
+  base::string16 link_text = GetDelegate()->GetLinkText();
   AddLabelWithInlineLink(display_text, link_text, link_offset,
                          G_CALLBACK(OnLinkClickedThunk));
 }

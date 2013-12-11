@@ -67,7 +67,7 @@ class GlobalHistoryMenu::HistoryItem {
         session_id(0) {}
 
   // The title for the menu item.
-  string16 title;
+  base::string16 title;
   // The URL that will be navigated to if the user selects this item.
   GURL url;
 
@@ -193,7 +193,7 @@ GtkWidget* GlobalHistoryMenu::AddHistoryItemToMenu(HistoryItem* item,
                                                    GtkWidget* menu,
                                                    int tag,
                                                    int index) {
-  string16 title = item->title;
+  base::string16 title = item->title;
   std::string url_string = item->url.possibly_invalid_spec();
 
   if (title.empty())

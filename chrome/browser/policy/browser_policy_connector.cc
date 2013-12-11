@@ -499,7 +499,7 @@ void BrowserPolicyConnector::SetPolicyProviderForTesting(
 namespace {
 
 // Returns true if |domain| matches the regex |pattern|.
-bool MatchDomain(const string16& domain, const string16& pattern) {
+bool MatchDomain(const base::string16& domain, const base::string16& pattern) {
   UErrorCode status = U_ZERO_ERROR;
   const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
   icu::RegexMatcher matcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status);
@@ -538,10 +538,10 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
     L"yahoo(\\.co|\\.com|)\\.[^.]+", // yahoo.com, yahoo.co.uk, yahoo.com.tw
     L"yandex\\.ru",
   };
-  const string16 domain =
+  const base::string16 domain =
       UTF8ToUTF16(gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
   for (size_t i = 0; i < arraysize(kNonManagedDomainPatterns); i++) {
-    string16 pattern = WideToUTF16(kNonManagedDomainPatterns[i]);
+    base::string16 pattern = WideToUTF16(kNonManagedDomainPatterns[i]);
     if (MatchDomain(domain, pattern))
       return true;
   }

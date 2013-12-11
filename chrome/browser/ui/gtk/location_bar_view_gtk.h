@@ -371,10 +371,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   void UpdateEVCertificateLabelSize();
 
   // Set the keyword text for the Search BLAH: keyword box.
-  void SetKeywordLabel(const string16& keyword);
+  void SetKeywordLabel(const base::string16& keyword);
 
   // Set the keyword text for the "Press tab to search BLAH" hint box.
-  void SetKeywordHintLabel(const string16& keyword);
+  void SetKeywordHintLabel(const base::string16& keyword);
 
   void ShowFirstRunBubbleInternal();
 
@@ -508,14 +508,14 @@ class LocationBarViewGtk : public OmniboxEditController,
   bool show_keyword_hint_;
 
   // The last search keyword that was shown via the |tab_to_search_box_|.
-  string16 last_keyword_;
+  base::string16 last_keyword_;
 
   // Used to change the visibility of the star decoration.
   BooleanPrefMember edit_bookmarks_enabled_;
 
   // Used to remember the URL and title text when drag&drop has begun.
   GURL drag_url_;
-  string16 drag_title_;
+  base::string16 drag_title_;
 
   // Used to schedule a task for the first run bubble.
   base::WeakPtrFactory<LocationBarViewGtk> weak_ptr_factory_;

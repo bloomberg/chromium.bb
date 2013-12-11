@@ -719,7 +719,7 @@ std::string GetDesktopFileContents(
     const GURL& url,
     const std::string& extension_id,
     const base::FilePath& extension_path,
-    const string16& title,
+    const base::string16& title,
     const std::string& icon_name,
     const base::FilePath& profile_path,
     bool no_display) {
@@ -799,7 +799,7 @@ std::string GetDesktopFileContents(
   return output_buffer;
 }
 
-std::string GetDirectoryFileContents(const string16& title,
+std::string GetDirectoryFileContents(const base::string16& title,
                                      const std::string& icon_name) {
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
   GKeyFile* key_file = g_key_file_new();

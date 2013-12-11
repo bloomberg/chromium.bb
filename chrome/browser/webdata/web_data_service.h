@@ -222,9 +222,10 @@ class WebDataService : public WebDataServiceBase {
       const webkit_glue::WebIntentServiceData& service);
   WebDatabase::State RemoveWebIntentServiceImpl(
       const webkit_glue::WebIntentServiceData& service);
-  scoped_ptr<WDTypedResult> GetWebIntentServicesImpl(const string16& action);
+  scoped_ptr<WDTypedResult> GetWebIntentServicesImpl(
+      const base::string16& action);
   scoped_ptr<WDTypedResult> GetWebIntentServicesForURLImpl(
-      const string16& service_url);
+      const base::string16& service_url);
   scoped_ptr<WDTypedResult> GetAllWebIntentServicesImpl();
   WebDatabase::State AddDefaultWebIntentServiceImpl(
       const DefaultWebIntentService& service);
@@ -233,7 +234,7 @@ class WebDataService : public WebDataServiceBase {
   WebDatabase::State RemoveWebIntentServiceDefaultsImpl(
       const GURL& service_url);
   scoped_ptr<WDTypedResult> GetDefaultWebIntentServicesForActionImpl(
-      const string16& action);
+      const base::string16& action);
   scoped_ptr<WDTypedResult> GetAllDefaultWebIntentServicesImpl();
 #endif
 

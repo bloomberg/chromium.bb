@@ -83,7 +83,7 @@ class OmniboxPopupViewGtkTest : public PlatformTest {
   // friend of the class being tested.  This method just proxies the
   // call through after adding the fixture's layout_.
   void SetupLayoutForMatch(
-      const string16& text,
+      const base::string16& text,
       const AutocompleteMatch::ACMatchClassifications& classifications,
       const GdkColor* base_color,
       const GdkColor* dim_color,
@@ -230,7 +230,7 @@ class OmniboxPopupViewGtkTest : public PlatformTest {
 // text matches the input string, with the passed-in color, and
 // nothing bolded.
 TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringNoMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const base::string16 kContents = ASCIIToUTF16("This is a test");
 
   AutocompleteMatch::ACMatchClassifications classifications;
 
@@ -259,7 +259,7 @@ TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringNoMatch) {
 // Identical to DecorateMatchedStringNoMatch, except test that URL
 // style gets a different color than we passed in.
 TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const base::string16 kContents = ASCIIToUTF16("This is a test");
   AutocompleteMatch::ACMatchClassifications classifications;
 
   classifications.push_back(
@@ -288,7 +288,7 @@ TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
 
 // Test that DIM works as expected.
 TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const base::string16 kContents = ASCIIToUTF16("This is a test");
   // Dim "is".
   const guint kRunLength1 = 5, kRunLength2 = 2, kRunLength3 = 7;
   // Make sure nobody messed up the inputs.
@@ -338,7 +338,7 @@ TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
 // Test that the matched run gets bold-faced, but keeps the same
 // color.
 TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const base::string16 kContents = ASCIIToUTF16("This is a test");
   // Match "is".
   const guint kRunLength1 = 5, kRunLength2 = 2, kRunLength3 = 7;
   // Make sure nobody messed up the inputs.
@@ -382,7 +382,7 @@ TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringMatch) {
 
 // Just like DecorateMatchedStringURLMatch, this time with URL style.
 TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringURLMatch) {
-  const string16 kContents = ASCIIToUTF16("http://hello.world/");
+  const base::string16 kContents = ASCIIToUTF16("http://hello.world/");
   // Match "hello".
   const guint kRunLength1 = 7, kRunLength2 = 5, kRunLength3 = 7;
   // Make sure nobody messed up the inputs.

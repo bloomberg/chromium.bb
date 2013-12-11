@@ -101,7 +101,7 @@ class LoginDatabase {
   // successful, or returning false and leaving cipher_text unchanged if
   // encryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  EncryptionResult EncryptedString(const string16& plain_text,
+  EncryptionResult EncryptedString(const base::string16& plain_text,
                                    std::string* cipher_text) const;
 
   // Decrypts cipher_text, setting the value of plain_text and returning true if
@@ -109,7 +109,7 @@ class LoginDatabase {
   // decryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
   EncryptionResult DecryptedString(const std::string& cipher_text,
-                                   string16* plain_text) const;
+                                   base::string16* plain_text) const;
 
   bool InitLoginsTable();
   bool MigrateOldVersionsAsNeeded();

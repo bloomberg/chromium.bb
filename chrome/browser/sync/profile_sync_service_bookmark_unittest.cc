@@ -1103,7 +1103,8 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   // Test insertion in first half of range by repeatedly inserting in second
   // position.
   for (int i = 0; i < kTimesToInsert; ++i) {
-    string16 title = ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
+    base::string16 title =
+        ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
     model_->AddFolder(model_->other_node(), 1, title);
     count++;
   }
@@ -1111,7 +1112,8 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   // Test insertion in second half of range by repeatedly inserting in
   // second-to-last position.
   for (int i = 0; i < kTimesToInsert; ++i) {
-    string16 title = ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
+    base::string16 title =
+        ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
     model_->AddFolder(model_->other_node(), count - 1, title);
     count++;
   }

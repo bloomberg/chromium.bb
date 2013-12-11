@@ -17,7 +17,7 @@
 
 class ScreenCaptureNotificationUIGtk : public ScreenCaptureNotificationUI {
  public:
-  explicit ScreenCaptureNotificationUIGtk(const string16& text);
+  explicit ScreenCaptureNotificationUIGtk(const base::string16& text);
   virtual ~ScreenCaptureNotificationUIGtk();
 
   // ScreenCaptureNotificationUI interface
@@ -49,7 +49,7 @@ class ScreenCaptureNotificationUIGtk : public ScreenCaptureNotificationUI {
 };
 
 ScreenCaptureNotificationUIGtk::ScreenCaptureNotificationUIGtk(
-    const string16& text)
+    const base::string16& text)
     : text_(UTF16ToUTF8(text)),
       window_(NULL),
       current_width_(0),
@@ -280,7 +280,7 @@ gboolean ScreenCaptureNotificationUIGtk::OnButtonPress(GtkWidget* widget,
 }
 
 scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
-    const string16& text) {
+    const base::string16& text) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIGtk(text));
 }

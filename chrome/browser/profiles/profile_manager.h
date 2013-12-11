@@ -105,8 +105,8 @@ class ProfileManager : public base::NonThreadSafe,
   // immediately. Should be called on the UI thread.
   void CreateProfileAsync(const base::FilePath& profile_path,
                           const CreateCallback& callback,
-                          const string16& name,
-                          const string16& icon_url,
+                          const base::string16& name,
+                          const base::string16& icon_url,
                           const std::string& managed_user_id);
 
   // Returns true if the profile pointer is known to point to an existing
@@ -180,8 +180,8 @@ class ProfileManager : public base::NonThreadSafe,
   // prohibited. Returns the file path to the profile that will be created
   // asynchronously.
   static base::FilePath CreateMultiProfileAsync(
-      const string16& name,
-      const string16& icon_url,
+      const base::string16& name,
+      const base::string16& icon_url,
       const CreateCallback& callback,
       const std::string& managed_user_id);
 
@@ -298,7 +298,7 @@ class ProfileManager : public base::NonThreadSafe,
   // RegisterProfile.
   ProfileInfo* GetProfileInfoByPath(const base::FilePath& path) const;
 
-  typedef std::pair<base::FilePath, string16> ProfilePathAndName;
+  typedef std::pair<base::FilePath, base::string16> ProfilePathAndName;
   typedef std::vector<ProfilePathAndName> ProfilePathAndNames;
   ProfilePathAndNames GetSortedProfilesFromDirectoryMap();
 

@@ -48,8 +48,9 @@ void WebDragBookmarkHandlerGtk::OnReceiveDataFromGtk(GtkSelectionData* data) {
   bookmark_drag_data_.SetOriginatingProfile(profile);
 }
 
-void WebDragBookmarkHandlerGtk::OnReceiveProcessedData(const GURL& url,
-                                                       const string16& title) {
+void WebDragBookmarkHandlerGtk::OnReceiveProcessedData(
+    const GURL& url,
+    const base::string16& title) {
   bookmark_drag_data_.ReadFromTuple(url, title);
 }
 

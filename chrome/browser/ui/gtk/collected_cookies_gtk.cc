@@ -54,7 +54,7 @@ const int kBannerPadding = 3;
 // created.
 const std::string GetInfobarLabel(ContentSetting setting,
                                   bool multiple_domains_added,
-                                  const string16& domain_name) {
+                                  const base::string16& domain_name) {
   if (multiple_domains_added) {
     switch (setting) {
       case CONTENT_SETTING_BLOCK:
@@ -468,7 +468,7 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
   GtkTreeModel* model;
   GList* paths =
       gtk_tree_selection_get_selected_rows(selection, &model);
-  string16 last_domain_name;
+  base::string16 last_domain_name;
   bool multiple_domains_added = false;
   for (GList* item = paths; item; item = item->next) {
     GtkTreeIter iter;

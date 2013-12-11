@@ -61,7 +61,7 @@ void RecursiveResolve(BookmarkModel* bb_model,
                                    parent_iter)) {
     do {
       int64 id = GetIdFromTreeIter(GTK_TREE_MODEL(tree_store), &child_iter);
-      string16 title =
+      base::string16 title =
           GetTitleFromTreeIter(GTK_TREE_MODEL(tree_store), &child_iter);
       const BookmarkNode* child_bb_node = NULL;
       if (id == 0) {
@@ -229,7 +229,7 @@ int64 GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
 
 string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
   GValue value = { 0, };
-  string16 ret_val;
+  base::string16 ret_val;
   gtk_tree_model_get_value(model, iter, FOLDER_NAME, &value);
   if (G_VALUE_HOLDS_STRING(&value)) {
     const gchar* utf8str = g_value_get_string(&value);

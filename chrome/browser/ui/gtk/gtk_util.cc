@@ -708,7 +708,7 @@ void DrawTextEntryBackground(GtkWidget* offscreen_entry,
   g_object_unref(our_style);
 }
 
-void SetLayoutText(PangoLayout* layout, const string16& text) {
+void SetLayoutText(PangoLayout* layout, const base::string16& text) {
   // Pango is really easy to overflow and send into a computational death
   // spiral that can corrupt the screen. Assume that we'll never have more than
   // 2000 characters, which should be a safe assumption until we all get robot
@@ -944,7 +944,7 @@ gfx::Rect GetDialogBounds(GtkWidget* dialog) {
 
 string16 GetStockPreferencesMenuLabel() {
   GtkStockItem stock_item;
-  string16 preferences;
+  base::string16 preferences;
   if (gtk_stock_lookup(GTK_STOCK_PREFERENCES, &stock_item)) {
     const char16 kUnderscore[] = { '_', 0 };
     base::RemoveChars(UTF8ToUTF16(stock_item.label), kUnderscore, &preferences);

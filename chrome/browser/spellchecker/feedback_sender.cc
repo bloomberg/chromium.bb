@@ -74,9 +74,9 @@ uint32 BuildHash(const base::Time& session_start, size_t suggestion_index) {
 // Returns a pending feedback data structure for the spellcheck |result| and
 // |text|.
 Misspelling BuildFeedback(const SpellCheckResult& result,
-                          const string16& text) {
+                          const base::string16& text) {
   size_t start = result.location;
-  string16 context = TrimWords(&start,
+  base::string16 context = TrimWords(&start,
                                result.length,
                                text,
                                chrome::spellcheck_common::kContextWordCount);
@@ -230,7 +230,7 @@ void FeedbackSender::IgnoredSuggestions(uint32 hash) {
 }
 
 void FeedbackSender::ManuallyCorrected(uint32 hash,
-                                       const string16& correction) {
+                                       const base::string16& correction) {
   Misspelling* misspelling = feedback_.GetMisspelling(hash);
   // GetMisspelling() returns null for flushed feedback. Feedback is flushed
   // when the session expires every |kSessionHours| hours.
@@ -262,7 +262,7 @@ void FeedbackSender::OnReceiveDocumentMarkers(
 
 void FeedbackSender::OnSpellcheckResults(
     int renderer_process_id,
-    const string16& text,
+    const base::string16& text,
     const std::vector<SpellCheckMarker>& markers,
     std::vector<SpellCheckResult>* results) {
   // Don't collect feedback if not going to send it.

@@ -42,7 +42,7 @@ void SpellCheckHostMetrics::RecordEnabledStats(bool enabled) {
     RecordCustomWordCountStats(-1);
 }
 
-void SpellCheckHostMetrics::RecordCheckedWordStats(const string16& word,
+void SpellCheckHostMetrics::RecordCheckedWordStats(const base::string16& word,
                                                    bool misspell) {
   spellchecked_word_count_++;
   if (misspell) {

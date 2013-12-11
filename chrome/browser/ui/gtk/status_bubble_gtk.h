@@ -43,7 +43,7 @@ class StatusBubbleGtk : public StatusBubble,
   int y_offset() const { return y_offset_; }
 
   // StatusBubble implementation.
-  virtual void SetStatus(const string16& status) OVERRIDE;
+  virtual void SetStatus(const base::string16& status) OVERRIDE;
   virtual void SetURL(const GURL& url, const std::string& languages) OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void MouseMoved(const gfx::Point& location,

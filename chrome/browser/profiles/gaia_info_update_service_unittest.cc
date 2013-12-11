@@ -32,7 +32,7 @@ class ProfileDownloaderMock : public ProfileDownloader {
   virtual ~ProfileDownloaderMock() {
   }
 
-  MOCK_CONST_METHOD0(GetProfileFullName, string16());
+  MOCK_CONST_METHOD0(GetProfileFullName, base::string16());
   MOCK_CONST_METHOD0(GetProfilePicture, SkBitmap());
   MOCK_CONST_METHOD0(GetProfilePictureStatus,
                      ProfileDownloader::PictureStatus());
@@ -72,7 +72,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   GAIAInfoUpdateService service(profile());
   NiceMock<ProfileDownloaderMock> downloader(&service);
 
-  string16 name = ASCIIToUTF16("Pat Smith");
+  base::string16 name = ASCIIToUTF16("Pat Smith");
   EXPECT_CALL(downloader, GetProfileFullName()).WillOnce(Return(name));
   gfx::Image image = gfx::test::CreateImage();
   const SkBitmap* bmp = image.ToSkBitmap();
@@ -101,7 +101,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
-  string16 old_name = GetCache()->GetNameOfProfileAtIndex(index);
+  base::string16 old_name = GetCache()->GetNameOfProfileAtIndex(index);
   gfx::Image old_image = GetCache()->GetAvatarIconOfProfileAtIndex(index);
 
   GAIAInfoUpdateService service(profile());
@@ -123,7 +123,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
 
 TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
   size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
-  string16 old_name = GetCache()->GetNameOfProfileAtIndex(index);
+  base::string16 old_name = GetCache()->GetNameOfProfileAtIndex(index);
   gfx::Image old_image = GetCache()->GetAvatarIconOfProfileAtIndex(index);
 
   // Mark the profile as migrated.
@@ -131,7 +131,7 @@ TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
 
   GAIAInfoUpdateService service(profile());
   NiceMock<ProfileDownloaderMock> downloader(&service);
-  string16 new_name = ASCIIToUTF16("Pat Smith");
+  base::string16 new_name = ASCIIToUTF16("Pat Smith");
   EXPECT_CALL(downloader, GetProfileFullName()).WillOnce(Return(new_name));
   gfx::Image new_image = gfx::test::CreateImage();
   const SkBitmap* new_bmp = new_image.ToSkBitmap();
@@ -172,7 +172,7 @@ TEST_F(GAIAInfoUpdateServiceTest, ScheduleUpdate) {
 TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    "pat@example.com");
-  string16 gaia_name = UTF8ToUTF16("Pat Foo");
+  base::string16 gaia_name = UTF8ToUTF16("Pat Foo");
   GetCache()->SetGAIANameOfProfileAtIndex(0, gaia_name);
   gfx::Image gaia_picture = gfx::test::CreateImage();
   GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_picture);

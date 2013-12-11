@@ -232,7 +232,7 @@ scoped_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
 
 // helper functions -----------------------------------------------------------
 
-scoped_refptr<Extension> CreateExtension(const string16& name,
+scoped_refptr<Extension> CreateExtension(const base::string16& name,
                                          const base::FilePath& path,
                                          Manifest::Location location,
                                          extensions::Manifest::Type type,
@@ -845,7 +845,7 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
     std::string value;
     ASSERT_TRUE(dict->GetString("key", &value));
     if (value == "Extensions") {
-      string16 extensions;
+      base::string16 extensions;
       EXPECT_TRUE(dict->GetString("value", &extensions));
       EXPECT_EQ(WideToUTF16(L"Tiësto"), extensions);
     }

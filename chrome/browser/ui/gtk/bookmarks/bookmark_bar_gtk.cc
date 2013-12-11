@@ -1379,7 +1379,7 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
       // so that it doesn't look like we can drag onto the bookmark bar.
       if (!url.is_valid())
         break;
-      string16 title = GetNameForURL(url);
+      base::string16 title = GetNameForURL(url);
       model_->AddURL(dest_node, index, title, url);
       dnd_success = TRUE;
       break;

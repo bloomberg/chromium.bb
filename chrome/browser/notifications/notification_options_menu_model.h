@@ -43,7 +43,7 @@ class NotificationOptionsMenuModel : public ui::SimpleMenuModel,
 
   // Overridden from ui::SimpleMenuModel:
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

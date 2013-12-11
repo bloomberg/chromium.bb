@@ -169,7 +169,7 @@ bool ExtensionInstalledBubbleGtk::MaybeShowNow() {
 
   // Heading label.
   GtkWidget* heading_label = gtk_label_new(NULL);
-  string16 extension_name = UTF8ToUTF16(bubble_.extension()->name());
+  base::string16 extension_name = UTF8ToUTF16(bubble_.extension()->name());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
   std::string heading_text = l10n_util::GetStringFUTF8(
       IDS_EXTENSION_INSTALLED_HEADING, extension_name);

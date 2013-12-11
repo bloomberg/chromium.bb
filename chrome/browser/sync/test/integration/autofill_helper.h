@@ -81,7 +81,7 @@ void RemoveProfile(int profile, const std::string& guid);
 void UpdateProfile(int profile,
                    const std::string& guid,
                    const autofill::AutofillType& type,
-                   const string16& value);
+                   const base::string16& value);
 
 // Gets all the Autofill profiles in the PersonalDataManager of sync profile
 // |profile|.

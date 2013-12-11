@@ -31,7 +31,7 @@ class BookmarkBubbleGtkBrowserTest : public InProcessBrowserTest {
     bookmark_utils::AddIfNotBookmarked(
         BookmarkModelFactory::GetForProfile(browser()->profile()),
         GURL(kTestBookmarkURL),
-        string16());
+        base::string16());
   }
 
  protected:

@@ -319,7 +319,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
       // throw SQLITE_CORRUPT.  The corruption handler will recover the database
       // and poison the handle, so the outer call fails.
       EXPECT_EQ(TopSitesDatabase::kRankOfNonExistingURL,
-                db.GetURLRank(MostVisitedURL(kUrl1, string16())));
+                db.GetURLRank(MostVisitedURL(kUrl1, base::string16())));
 
       ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
     }
@@ -340,7 +340,7 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
     VerifyTablesAndColumns(db.db_.get());
 
     EXPECT_EQ(TopSitesDatabase::kRankOfNonExistingURL,
-              db.GetURLRank(MostVisitedURL(kUrl1, string16())));
+              db.GetURLRank(MostVisitedURL(kUrl1, base::string16())));
 
     MostVisitedURLList urls;
     std::map<GURL, Images> thumbnails;

@@ -32,10 +32,10 @@ class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
       const base::FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWasRemoved(
       const base::FilePath& profile_path,
-      const string16& profile_name) OVERRIDE;
+      const base::string16& profile_name) OVERRIDE;
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
-      const string16& old_profile_name) OVERRIDE;
+      const base::string16& old_profile_name) OVERRIDE;
   virtual void OnProfileAvatarChanged(const base::FilePath& profile_path) OVERRIDE;
 
  private:

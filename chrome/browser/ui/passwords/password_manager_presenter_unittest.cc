@@ -26,7 +26,7 @@ class MockPasswordUIView : public PasswordUIView {
 #if !defined(OS_ANDROID)
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 #endif
-  MOCK_METHOD2(ShowPassword, void(size_t, const string16&));
+  MOCK_METHOD2(ShowPassword, void(size_t, const base::string16&));
   MOCK_METHOD2(SetPasswordList,
                void(const ScopedVector<autofill::PasswordForm>&, bool));
   MOCK_METHOD1(SetPasswordExceptionList,

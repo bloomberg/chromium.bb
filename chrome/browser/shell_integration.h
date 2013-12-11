@@ -98,8 +98,8 @@ class ShellIntegration {
     // is still used to generate the app id (windows app id, not chrome app id).
     std::string extension_id;
     bool is_platform_app;
-    string16 title;
-    string16 description;
+    base::string16 title;
+    base::string16 description;
     base::FilePath extension_path;
     gfx::ImageFamily favicon;
     base::FilePath profile_path;
@@ -171,16 +171,16 @@ class ShellIntegration {
   // Note: If the app has an installation specific suffix (e.g. on user-level
   // Chrome installs), |app_name| should already be suffixed, this method will
   // then further suffix it with the profile id as described above.
-  static string16 GetAppModelIdForProfile(const string16& app_name,
+  static base::string16 GetAppModelIdForProfile(const base::string16& app_name,
                                           const base::FilePath& profile_path);
 
   // Generates an application user model ID (AppUserModelId) for Chromium by
   // calling GetAppModelIdForProfile() with ShellUtil::GetAppId() as app_name.
-  static string16 GetChromiumModelIdForProfile(
+  static base::string16 GetChromiumModelIdForProfile(
       const base::FilePath& profile_path);
 
   // Get the AppUserModelId for the App List, for the profile in |profile_path|.
-  static string16 GetAppListAppModelIdForProfile(
+  static base::string16 GetAppListAppModelIdForProfile(
       const base::FilePath& profile_path);
 
   // Migrates existing chrome shortcuts by tagging them with correct app id.

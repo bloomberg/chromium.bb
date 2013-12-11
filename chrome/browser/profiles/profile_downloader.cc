@@ -132,8 +132,8 @@ bool GetImageURLWithSize(const GURL& old_url, int size, GURL* new_url) {
 // |data| should be the JSON formatted data return by the response.
 // Returns false to indicate a parsing error.
 bool ProfileDownloader::ParseProfileJSON(const std::string& data,
-                                         string16* full_name,
-                                         string16* given_name,
+                                         base::string16* full_name,
+                                         base::string16* given_name,
                                          std::string* url,
                                          int image_size,
                                          std::string* profile_locale) {
@@ -142,8 +142,8 @@ bool ProfileDownloader::ParseProfileJSON(const std::string& data,
   DCHECK(url);
   DCHECK(profile_locale);
 
-  *full_name = string16();
-  *given_name = string16();
+  *full_name = base::string16();
+  *given_name = base::string16();
   *url = std::string();
   *profile_locale = std::string();
 

@@ -44,8 +44,9 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   virtual void OnRequestCancelled() OVERRIDE;
 
   // Initializes the underlying platform specific view.
-  virtual void BuildViewForPasswordManager(PasswordManager* manager,
-                                           const string16& explanation) = 0;
+  virtual void BuildViewForPasswordManager(
+      PasswordManager* manager,
+      const base::string16& explanation) = 0;
 
   // Sets information about the authentication type (|form|) and the
   // |password_manager| for this profile.
@@ -57,7 +58,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.
-  void SetAuth(const string16& username, const string16& password);
+  void SetAuth(const base::string16& username, const base::string16& password);
 
   // Display the error page without asking for credentials again.
   // This function can be called from either thread.
@@ -99,8 +100,8 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   void RemoveObservers();
 
   // Notify observers that authentication is supplied.
-  void NotifyAuthSupplied(const string16& username,
-                          const string16& password);
+  void NotifyAuthSupplied(const base::string16& username,
+                          const base::string16& password);
 
   // Notify observers that authentication is cancelled.
   void NotifyAuthCancelled();
@@ -110,8 +111,8 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   bool TestAndSetAuthHandled();
 
   // Calls SetAuth from the IO loop.
-  void SetAuthDeferred(const string16& username,
-                       const string16& password);
+  void SetAuthDeferred(const base::string16& username,
+                       const base::string16& password);
 
   // Calls CancelAuth from the IO loop.
   void CancelAuthDeferred();
@@ -178,20 +179,20 @@ class LoginNotificationDetails {
 class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
  public:
   AuthSuppliedLoginNotificationDetails(LoginHandler* handler,
-                                       const string16& username,
-                                       const string16& password)
+                                       const base::string16& username,
+                                       const base::string16& password)
       : LoginNotificationDetails(handler),
         username_(username),
         password_(password) {}
-  const string16& username() const { return username_; }
-  const string16& password() const { return password_; }
+  const base::string16& username() const { return username_; }
+  const base::string16& password() const { return password_; }
 
  private:
   // The username that was used for the authentication.
-  const string16 username_;
+  const base::string16 username_;
 
   // The password that was used for the authentication.
-  const string16 password_;
+  const base::string16 password_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthSuppliedLoginNotificationDetails);
 };

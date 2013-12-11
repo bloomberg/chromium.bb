@@ -27,7 +27,7 @@ class WebDragBookmarkHandlerGtk : public content::WebDragDestDelegate {
   virtual GdkAtom GetBookmarkTargetAtom() const OVERRIDE;
   virtual void OnReceiveDataFromGtk(GtkSelectionData* data) OVERRIDE;
   virtual void OnReceiveProcessedData(const GURL& url,
-                                      const string16& title) OVERRIDE;
+                                      const base::string16& title) OVERRIDE;
   virtual void OnDragOver() OVERRIDE;
   virtual void OnDragEnter() OVERRIDE;
   virtual void OnDrop() OVERRIDE;

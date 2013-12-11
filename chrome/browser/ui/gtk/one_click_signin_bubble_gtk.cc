@@ -31,8 +31,8 @@ static const int kModalDialogMessageWidth = 400;
 OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
     BrowserWindowGtk* browser_window_gtk,
     BrowserWindow::OneClickSigninBubbleType type,
-    const string16& email,
-    const string16& error_message,
+    const base::string16& email,
+    const base::string16& error_message,
     const BrowserWindow::StartSyncCallback& start_sync_callback)
     : bubble_(NULL),
       email_(email),

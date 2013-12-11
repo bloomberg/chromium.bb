@@ -26,9 +26,9 @@ void BeforeTranslateInfoBar::PlatformSpecificSetOwner() {
   GtkWidget* new_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox(), new_hbox, false, 0);
   size_t offset = 0;
-  string16 text =
+  base::string16 text =
       l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE,
-                                 string16(), &offset);
+                                 base::string16(), &offset);
 
   gtk_box_pack_start(GTK_BOX(new_hbox),
                      CreateLabel(UTF16ToUTF8(text.substr(0, offset))),

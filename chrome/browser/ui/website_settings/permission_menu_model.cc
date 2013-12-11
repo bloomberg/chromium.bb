@@ -16,7 +16,7 @@ PermissionMenuModel::PermissionMenuModel(
     : ui::SimpleMenuModel(this),
       delegate_(delegate),
       site_url_(url) {
-  string16 label;
+  base::string16 label;
   switch (default_setting) {
     case CONTENT_SETTING_ALLOW:
       label = l10n_util::GetStringUTF16(

@@ -70,7 +70,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
 
   // Returns the expected title for the tab with the given (full) referrer and
   // the expected modification of it.
-  string16 GetExpectedTitle(const GURL& url,
+  base::string16 GetExpectedTitle(const GURL& url,
                             ExpectedReferrer expected_referrer) {
     std::string referrer;
     switch (expected_referrer) {
@@ -140,7 +140,8 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
         content::NotificationService::AllSources());
 
-    string16 expected_title = GetExpectedTitle(start_url, expected_referrer);
+    base::string16 expected_title =
+        GetExpectedTitle(start_url, expected_referrer);
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::TitleWatcher title_watcher(tab, expected_title);
@@ -380,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   // Navigate to C.
   ui_test_utils::NavigateToURL(browser(), test_server_->GetURL(std::string()));
 
-  string16 expected_title =
+  base::string16 expected_title =
       GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();

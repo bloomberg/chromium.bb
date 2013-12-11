@@ -80,7 +80,7 @@ class WebsiteSettingsUI {
     // Status of the site's identity.
     WebsiteSettings::SiteIdentityStatus identity_status;
     // Helper to get the status text to display to the user.
-    string16 GetIdentityStatusText() const;
+    base::string16 GetIdentityStatusText() const;
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;
@@ -99,17 +99,17 @@ class WebsiteSettingsUI {
   virtual ~WebsiteSettingsUI();
 
   // Returns the UI string for the given permission |type|.
-  static string16 PermissionTypeToUIString(ContentSettingsType type);
+  static base::string16 PermissionTypeToUIString(ContentSettingsType type);
 
   // Returns the UI string for the given permission |value|, used in the
   // permission-changing menu. Generally this will be a verb in the imperative
   // form, e.g. "ask", "allow", "block".
-  static string16 PermissionValueToUIString(ContentSetting value);
+  static base::string16 PermissionValueToUIString(ContentSetting value);
 
   // Returns the UI string describing the action taken for a permission,
   // including why that action was taken. E.g. "Allowed by you",
   // "Blocked by default".
-  static string16 PermissionActionToUIString(
+  static base::string16 PermissionActionToUIString(
       ContentSetting setting,
       ContentSetting default_setting,
       content_settings::SettingSource source);
@@ -138,10 +138,10 @@ class WebsiteSettingsUI {
       WebsiteSettings::SiteConnectionStatus status);
 
   // Returns the icon ID to show along with the first visit information.
-  static int GetFirstVisitIconID(const string16& first_visit);
+  static int GetFirstVisitIconID(const base::string16& first_visit);
 
   // Returns the icon to show along with the first visit information.
-  static const gfx::Image& GetFirstVisitIcon(const string16& first_visit);
+  static const gfx::Image& GetFirstVisitIcon(const base::string16& first_visit);
 
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
@@ -154,7 +154,7 @@ class WebsiteSettingsUI {
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
 
   // Sets the first visited data. |first_visit| can be an empty string.
-  virtual void SetFirstVisit(const string16& first_visit) = 0;
+  virtual void SetFirstVisit(const base::string16& first_visit) = 0;
 
   // Selects the tab with the given |tab_id|.
   virtual void SetSelectedTab(TabId tab_id) = 0;

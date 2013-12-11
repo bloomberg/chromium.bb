@@ -172,7 +172,7 @@ class PrerenderContents : public content::NotificationObserver,
 
   PrerenderManager* prerender_manager() { return prerender_manager_; }
 
-  string16 title() const { return title_; }
+  base::string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
   const GURL& prerender_url() const { return prerender_url_; }
@@ -371,7 +371,7 @@ class PrerenderContents : public content::NotificationObserver,
   // Used to apply to the new RenderViewHost delegate that might eventually
   // own the contained RenderViewHost when the prerendered page is shown
   // in a WebContents.
-  string16 title_;
+  base::string16 title_;
   int32 page_id_;
   GURL url_;
   GURL icon_url_;

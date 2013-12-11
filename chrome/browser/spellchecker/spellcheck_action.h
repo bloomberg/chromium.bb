@@ -46,7 +46,7 @@ class SpellcheckAction {
   };
 
   SpellcheckAction();
-  SpellcheckAction(SpellcheckActionType type, int index, string16 value);
+  SpellcheckAction(SpellcheckActionType type, int index, base::string16 value);
   ~SpellcheckAction();
 
   // Returns true if the action is final and should be sent to the feedback
@@ -69,7 +69,7 @@ class SpellcheckAction {
   int index;
 
   // The value for the user action, if applicable.
-  string16 value;
+  base::string16 value;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_ACTION_H_

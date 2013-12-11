@@ -73,7 +73,7 @@ string16 SyncGlobalError::GetBubbleViewAcceptButtonLabel() {
 }
 
 string16 SyncGlobalError::GetBubbleViewCancelButtonLabel() {
-  return string16();
+  return base::string16();
 }
 
 void SyncGlobalError::OnBubbleViewDidClose(Browser* browser) {
@@ -88,9 +88,9 @@ void SyncGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
 }
 
 void SyncGlobalError::OnStateChanged() {
-  string16 menu_label;
-  string16 bubble_message;
-  string16 bubble_accept_label;
+  base::string16 menu_label;
+  base::string16 bubble_message;
+  base::string16 bubble_accept_label;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
       service_, *signin_, &menu_label, &bubble_message, &bubble_accept_label);
 

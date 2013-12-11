@@ -67,7 +67,7 @@ GlobalErrorBubble::GlobalErrorBubble(
   // to know the width of the title and the width of the buttons group.
   GtkWidget* accept_button = gtk_button_new_with_label(
       UTF16ToUTF8(error_->GetBubbleViewAcceptButtonLabel()).c_str());
-  string16 cancel_string = error_->GetBubbleViewCancelButtonLabel();
+  base::string16 cancel_string = error_->GetBubbleViewCancelButtonLabel();
   GtkWidget* cancel_button = NULL;
   if (!cancel_string.empty()) {
     cancel_button =

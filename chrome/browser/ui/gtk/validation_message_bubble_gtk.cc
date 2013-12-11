@@ -31,8 +31,8 @@ class ValidationMessageBubbleGtk : public chrome::ValidationMessageBubble,
  public:
   ValidationMessageBubbleGtk(content::RenderWidgetHost* widget_host,
                              const gfx::Rect& anchor_in_screen,
-                             const string16& main_text,
-                             const string16& sub_text);
+                             const base::string16& main_text,
+                             const base::string16& sub_text);
   virtual ~ValidationMessageBubbleGtk();
   virtual void SetPositionRelativeToAnchor(
       content::RenderWidgetHost* widget_host,
@@ -42,8 +42,8 @@ class ValidationMessageBubbleGtk : public chrome::ValidationMessageBubble,
   virtual void BubbleClosing(BubbleGtk*, bool) OVERRIDE;
 
  private:
-  static GtkWidget* ConstructContent(const string16& main_text,
-                                     const string16& sub_text);
+  static GtkWidget* ConstructContent(const base::string16& main_text,
+                                     const base::string16& sub_text);
 
   BubbleGtk* bubble_;
 };
@@ -51,8 +51,8 @@ class ValidationMessageBubbleGtk : public chrome::ValidationMessageBubble,
 ValidationMessageBubbleGtk::ValidationMessageBubbleGtk(
     content::RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view,
-    const string16& main_text,
-    const string16& sub_text)
+    const base::string16& main_text,
+    const base::string16& sub_text)
     : bubble_(NULL) {
   if (!widget_host->IsRenderView())
     return;
@@ -86,7 +86,7 @@ void ValidationMessageBubbleGtk::BubbleClosing(BubbleGtk*, bool) {
 
 // static
 GtkWidget* ValidationMessageBubbleGtk::ConstructContent(
-      const string16& main_text, const string16& sub_text) {
+      const base::string16& main_text, const base::string16& sub_text) {
   GtkWidget* icon = gtk_image_new();
   gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0);
   gtk_misc_set_padding(GTK_MISC(icon), kPadding, kPadding);
@@ -131,8 +131,8 @@ namespace chrome {
 scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
     content::RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view,
-    const string16& main_text,
-    const string16& sub_text) {
+    const base::string16& main_text,
+    const base::string16& sub_text) {
   return scoped_ptr<ValidationMessageBubble>(new ValidationMessageBubbleGtk(
       widget_host, anchor_in_root_view, main_text, sub_text)).Pass();
 }

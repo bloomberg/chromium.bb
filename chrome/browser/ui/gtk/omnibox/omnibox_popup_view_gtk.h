@@ -80,7 +80,7 @@ class OmniboxPopupViewGtk : public OmniboxPopupView,
 
   static void SetupLayoutForMatch(
       PangoLayout* layout,
-      const string16& text,
+      const base::string16& text,
       const AutocompleteMatch::ACMatchClassifications& classifications,
       const GdkColor* base_color,
       const GdkColor* dim_color,

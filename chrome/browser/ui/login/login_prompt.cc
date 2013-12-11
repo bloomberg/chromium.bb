@@ -127,8 +127,8 @@ WebContents* LoginHandler::GetWebContentsForLogin() const {
                                       tab_contents_id_);
 }
 
-void LoginHandler::SetAuth(const string16& username,
-                           const string16& password) {
+void LoginHandler::SetAuth(const base::string16& username,
+                           const base::string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (TestAndSetAuthHandled())
@@ -296,8 +296,8 @@ void LoginHandler::RemoveObservers() {
   registrar_.reset();
 }
 
-void LoginHandler::NotifyAuthSupplied(const string16& username,
-                                      const string16& password) {
+void LoginHandler::NotifyAuthSupplied(const base::string16& username,
+                                      const base::string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(WasAuthHandled());
 
@@ -345,8 +345,8 @@ bool LoginHandler::TestAndSetAuthHandled() {
 }
 
 // Calls SetAuth from the IO loop.
-void LoginHandler::SetAuthDeferred(const string16& username,
-                                   const string16& password) {
+void LoginHandler::SetAuthDeferred(const base::string16& username,
+                                   const base::string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (request_) {
@@ -440,12 +440,12 @@ void LoginDialogCallback(const GURL& request_url,
 
   // The realm is controlled by the remote server, so there is no reason
   // to believe it is of a reasonable length.
-  string16 elided_realm;
+  base::string16 elided_realm;
   gfx::ElideString(UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
 
-  string16 host_and_port = ASCIIToUTF16(request_url.scheme() + "://" +
+  base::string16 host_and_port = ASCIIToUTF16(request_url.scheme() + "://" +
                                         auth_info->challenger.ToString());
-  string16 explanation = elided_realm.empty() ?
+  base::string16 explanation = elided_realm.empty() ?
       l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
                                  host_and_port) :
       l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,

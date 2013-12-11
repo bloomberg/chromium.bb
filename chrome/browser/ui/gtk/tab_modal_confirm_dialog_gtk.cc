@@ -55,7 +55,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
 
   gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
-  string16 link_text = delegate->GetLinkText();
+  base::string16 link_text = delegate->GetLinkText();
   if (!link_text.empty()) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     GtkThemeService* theme_service = GtkThemeService::GetFrom(

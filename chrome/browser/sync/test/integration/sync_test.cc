@@ -830,7 +830,7 @@ void SyncTest::TriggerSyncError(const syncer::SyncProtocolError& error,
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
   std::string output = UTF16ToASCII(
       browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-  ASSERT_TRUE(output.find("SetError: 200") != string16::npos);
+  ASSERT_TRUE(output.find("SetError: 200") != base::string16::npos);
 }
 
 void SyncTest::TriggerCreateSyncedBookmarks() {

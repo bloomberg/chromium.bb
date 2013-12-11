@@ -105,8 +105,8 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
                                  last_updated_.ToInternalValue());
   ScheduleNextUpdate();
 
-  string16 full_name = downloader->GetProfileFullName();
-  string16 given_name = downloader->GetProfileGivenName();
+  base::string16 full_name = downloader->GetProfileFullName();
+  base::string16 given_name = downloader->GetProfileGivenName();
   SkBitmap bitmap = downloader->GetProfilePicture();
   ProfileDownloader::PictureStatus picture_status =
       downloader->GetProfilePictureStatus();
@@ -173,7 +173,7 @@ void GAIAInfoUpdateService::OnUsernameChanged() {
       prefs::kGoogleServicesUsername);
   if (username.empty()) {
     // Unset the old user's GAIA info.
-    cache.SetGAIANameOfProfileAtIndex(profile_index, string16());
+    cache.SetGAIANameOfProfileAtIndex(profile_index, base::string16());
     // The profile index may have changed.
     profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
     if (profile_index == std::string::npos)

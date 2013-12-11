@@ -547,7 +547,7 @@ void PasswordFormManager::UpdateLogin() {
 }
 
 bool PasswordFormManager::UpdatePendingCredentialsIfOtherPossibleUsername(
-    const string16& username) {
+    const base::string16& username) {
   for (PasswordFormMap::const_iterator it = best_matches_.begin();
        it != best_matches_.end(); ++it) {
     for (size_t i = 0; i < it->second->other_possible_usernames.size(); ++i) {

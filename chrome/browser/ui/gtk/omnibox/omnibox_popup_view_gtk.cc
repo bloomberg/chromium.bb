@@ -98,7 +98,7 @@ gfx::Rect GetWindowRect(GdkWindow* window) {
 }
 
 // TODO(deanm): Find some better home for this, and make it more efficient.
-size_t GetUTF8Offset(const string16& text, size_t text_offset) {
+size_t GetUTF8Offset(const base::string16& text, size_t text_offset) {
   return UTF16ToUTF8(text.substr(0, text_offset)).length();
 }
 
@@ -365,7 +365,7 @@ const AutocompleteResult& OmniboxPopupViewGtk::GetResult() const {
 // static
 void OmniboxPopupViewGtk::SetupLayoutForMatch(
     PangoLayout* layout,
-    const string16& text,
+    const base::string16& text,
     const AutocompleteMatch::ACMatchClassifications& classifications,
     const GdkColor* base_color,
     const GdkColor* dim_color,
@@ -378,7 +378,7 @@ void OmniboxPopupViewGtk::SetupLayoutForMatch(
   // or WrapStringWithLTRFormatting will render the elllipsis at the left of the
   // elided pure LTR text.
   bool marked_with_lre = false;
-  string16 localized_text = text;
+  base::string16 localized_text = text;
   // Pango is really easy to overflow and send into a computational death
   // spiral that can corrupt the screen. Assume that we'll never have more than
   // 2000 characters, which should be a safe assumption until we all get robot

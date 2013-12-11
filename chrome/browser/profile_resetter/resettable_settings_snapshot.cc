@@ -36,7 +36,9 @@ const char kStartupTypePath[] = "startup_type";
 const char kStartupURLPath[] = "startup_urls";
 
 template <class StringType>
-void AddPair(ListValue* list, const string16& key, const StringType& value) {
+void AddPair(ListValue* list,
+             const base::string16& key,
+             const StringType& value) {
   DictionaryValue* results = new DictionaryValue();
   results->SetString("key", key);
   results->SetString("value", value);
@@ -207,7 +209,7 @@ ListValue* GetReadableFeedback(Profile* profile) {
             startup_urls);
   }
 
-  string16 startup_type;
+  base::string16 startup_type;
   switch (snapshot.startup_type()) {
     case SessionStartupPref::DEFAULT:
       startup_type = l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_NEWTAB);

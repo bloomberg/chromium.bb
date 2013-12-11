@@ -117,12 +117,13 @@ class AutofillTableMock : public AutofillTable {
  public:
   AutofillTableMock() : AutofillTable("en-US") {}
   MOCK_METHOD2(RemoveFormElement,
-               bool(const string16& name, const string16& value));  // NOLINT
+               bool(const base::string16& name,
+                    const base::string16& value));  // NOLINT
   MOCK_METHOD1(GetAllAutofillEntries,
                bool(std::vector<AutofillEntry>* entries));  // NOLINT
   MOCK_METHOD3(GetAutofillTimestamps,
-               bool(const string16& name,  // NOLINT
-                    const string16& value,
+               bool(const base::string16& name,  // NOLINT
+                    const base::string16& value,
                     std::vector<base::Time>* timestamps));
   MOCK_METHOD1(UpdateAutofillEntries,
                bool(const std::vector<AutofillEntry>&));  // NOLINT
@@ -926,12 +927,12 @@ namespace {
 bool IncludesField(const AutofillProfile& profile1,
                    const AutofillProfile& profile2,
                    ServerFieldType field_type) {
-  std::vector<string16> values1;
+  std::vector<base::string16> values1;
   profile1.GetRawMultiInfo(field_type, &values1);
-  std::vector<string16> values2;
+  std::vector<base::string16> values2;
   profile2.GetRawMultiInfo(field_type, &values2);
 
-  std::set<string16> values_set;
+  std::set<base::string16> values_set;
   for (size_t i = 0; i < values1.size(); ++i)
     values_set.insert(values1[i]);
   for (size_t i = 0; i < values2.size(); ++i)

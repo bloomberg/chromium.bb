@@ -70,7 +70,7 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
 
 // TCM: 3728323
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, Add) {
-  const string16 kHistoryUrl(
+  const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, Add) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
-  const string16 kHistoryUrl(
+  const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
 #define MAYBE_AddExpiredThenUpdate AddExpiredThenUpdate
 #endif
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
-  const string16 kHistoryUrl(
+  const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
 // TCM: 3705291
 // flaky, see crbug.com/108511
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddThenDelete) {
-  const string16 kHistoryUrl(
+  const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -188,8 +188,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddThenDelete) {
 
 // TCM: 3643277
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
-  const string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));
-  const string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));
+  const base::string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));
+  const base::string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Disable typed url sync for one client, leave it active for the other.
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
 
 // flaky, see crbug.com/108511
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddOneDeleteOther) {
-  const string16 kHistoryUrl(
+  const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-delete-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddOneDeleteOther) {
 // flaky, see crbug.com/108511
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        DISABLED_AddOneDeleteOtherAddAgain) {
-  const string16 kHistoryUrl(
+  const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 // Tests transitioning a URL from non-typed to typed when one of the clients
 // has never seen that URL before (so no merge is necessary).
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
-  const string16 kHistoryUrl(
+  const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 

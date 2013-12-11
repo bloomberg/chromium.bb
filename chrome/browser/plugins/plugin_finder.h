@@ -61,7 +61,7 @@ class PluginFinder {
 #endif
 
   // Returns the plug-in name with the given identifier.
-  string16 FindPluginNameWithIdentifier(const std::string& identifier);
+  base::string16 FindPluginNameWithIdentifier(const std::string& identifier);
 
   // Gets plug-in metadata using |plugin|.
   scoped_ptr<PluginMetadata> GetPluginMetadata(

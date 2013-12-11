@@ -63,7 +63,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 string16 GetActiveProfileDisplayName(Browser* browser) {
-  string16 profile_name;
+  base::string16 profile_name;
   Profile* profile = browser->profile();
 
   if (profile->IsGuestSession()) {

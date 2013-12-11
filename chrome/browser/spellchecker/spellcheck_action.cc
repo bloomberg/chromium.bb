@@ -11,7 +11,7 @@ SpellcheckAction::SpellcheckAction() : type(TYPE_PENDING), index(-1) {}
 
 SpellcheckAction::SpellcheckAction(SpellcheckActionType type,
                                    int index,
-                                   string16 value)
+                                   base::string16 value)
     : type(type), index(index), value(value) {}
 
 SpellcheckAction::~SpellcheckAction() {}

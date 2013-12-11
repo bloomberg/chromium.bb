@@ -35,11 +35,11 @@ bool AllServicesMatch();
 // the returned TemplateURL*.
 TemplateURL* CreateTestTemplateURL(Profile* profile,
                                    int seed,
-                                   const string16& keyword,
+                                   const base::string16& keyword,
                                    const std::string& sync_guid);
 TemplateURL* CreateTestTemplateURL(Profile* profile,
                                    int seed,
-                                   const string16& keyword,
+                                   const base::string16& keyword,
                                    const std::string& url,
                                    const std::string& sync_guid);
 
@@ -51,9 +51,9 @@ void AddSearchEngine(int profile_index, int seed);
 // original keyword |keyword| and changes its user-visible fields. Does the same
 // to the verifier, if it is used.
 void EditSearchEngine(int profile_index,
-                      const string16& keyword,
-                      const string16& short_name,
-                      const string16& new_keyword,
+                      const base::string16& keyword,
+                      const base::string16& short_name,
+                      const base::string16& new_keyword,
                       const std::string& url);
 
 // Deletes a search engine from the service at index |profile_index| which was

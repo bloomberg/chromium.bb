@@ -178,7 +178,7 @@ void ZoomBubbleGtk::Refresh() {
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->zoom_percent();
-  string16 text =
+  base::string16 text =
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent);
   gtk_label_set_text(GTK_LABEL(g_bubble->label_), UTF16ToUTF8(text).c_str());
   StartTimerIfNecessary();

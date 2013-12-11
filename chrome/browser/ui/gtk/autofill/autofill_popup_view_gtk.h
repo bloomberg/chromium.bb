@@ -69,7 +69,7 @@ class AutofillPopupViewGtk : public AutofillPopupView {
 
   // Set up the pango layout to print the given text and have it's width match
   // the text's (this gives us better control when placing the text box).
-  void SetLayoutText(const string16& text,
+  void SetLayoutText(const base::string16& text,
                      const gfx::Font& font,
                      const GdkColor text_color);
 

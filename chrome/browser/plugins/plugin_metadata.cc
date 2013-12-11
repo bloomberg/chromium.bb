@@ -21,11 +21,11 @@ const char PluginMetadata::kWindowsMediaPlayerGroupName[] =
     "Windows Media Player";
 
 PluginMetadata::PluginMetadata(const std::string& identifier,
-                               const string16& name,
+                               const base::string16& name,
                                bool url_for_display,
                                const GURL& plugin_url,
                                const GURL& help_url,
-                               const string16& group_name_matcher,
+                               const base::string16& group_name_matcher,
                                const std::string& language)
     : identifier_(identifier),
       name_(name),

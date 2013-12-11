@@ -51,12 +51,12 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   }
 
   bool password_submitted() { return password_submitted_; }
-  const string16& title() { return title_; }
+  const base::string16& title() { return title_; }
   const autofill::PasswordForm& pending_credentials() {
     return pending_credentials_;
   }
   const autofill::PasswordFormMap& best_matches() { return best_matches_; }
-  const string16& manage_link() { return manage_link_; }
+  const base::string16& manage_link() { return manage_link_; }
 
  private:
   // content::WebContentsObserver
@@ -66,10 +66,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   content::WebContents* web_contents_;
   ManagePasswordsBubbleState manage_passwords_bubble_state_;
   bool password_submitted_;
-  string16 title_;
+  base::string16 title_;
   autofill::PasswordForm pending_credentials_;
   autofill::PasswordFormMap best_matches_;
-  string16 manage_link_;
+  base::string16 manage_link_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleModel);
 };

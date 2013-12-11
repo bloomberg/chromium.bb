@@ -37,14 +37,14 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
 
   virtual ~SpellCheckMessageFilterMac();
 
-  void OnCheckSpelling(const string16& word, int route_id, bool* correct);
-  void OnFillSuggestionList(const string16& word,
+  void OnCheckSpelling(const base::string16& word, int route_id, bool* correct);
+  void OnFillSuggestionList(const base::string16& word,
                             std::vector<string16>* suggestions);
   void OnShowSpellingPanel(bool show);
-  void OnUpdateSpellingPanelWithMisspelledWord(const string16& word);
+  void OnUpdateSpellingPanelWithMisspelledWord(const base::string16& word);
   void OnRequestTextCheck(int route_id,
                           int identifier,
-                          const string16& text,
+                          const base::string16& text,
                           std::vector<SpellCheckMarker> markers);
 
   int ToDocumentTag(int route_id);

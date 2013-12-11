@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTest, PrefetchOn) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kPrefetchPage);
 
-  const string16 expected_title = ASCIIToUTF16("link onload");
+  const base::string16 expected_title = ASCIIToUTF16("link onload");
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),
       expected_title);
@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestNoPrefetching, PrefetchOff) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kPrefetchPage);
 
-  const string16 expected_title = ASCIIToUTF16("link onerror");
+  const base::string16 expected_title = ASCIIToUTF16("link onerror");
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),
       expected_title);

@@ -41,7 +41,7 @@ class ProfileResetGlobalError
   // GlobalError:
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
-  virtual string16 MenuItemLabel() OVERRIDE;
+  virtual base::string16 MenuItemLabel() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual bool HasShownBubbleView() OVERRIDE;

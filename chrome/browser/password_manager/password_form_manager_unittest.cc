@@ -203,8 +203,8 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   // will yield the previously saved login.
   SimulateMatchingPhase(manager, true);
   // Set up the new login.
-  string16 new_user = ASCIIToUTF16("newuser");
-  string16 new_pass = ASCIIToUTF16("newpass");
+  base::string16 new_user = ASCIIToUTF16("newuser");
+  base::string16 new_pass = ASCIIToUTF16("newpass");
   credentials.username_value = new_user;
   credentials.password_value = new_pass;
   manager->ProvisionallySave(
@@ -239,7 +239,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   // origin URL (as it does in this case) than the saved_match, but we want to
   // make sure the updated password is reflected in saved_match, because that is
   // what we autofilled.
-  string16 new_pass = ASCIIToUTF16("newpassword");
+  base::string16 new_pass = ASCIIToUTF16("newpassword");
   PasswordForm credentials = *observed_form();
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = new_pass;
@@ -397,7 +397,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   manager->FetchMatchingLoginsFromPasswordStore();
   content::RunAllPendingInMessageLoop();
 
-  string16 new_username = saved_match()->other_possible_usernames[0];
+  base::string16 new_username = saved_match()->other_possible_usernames[0];
   login.username_value = new_username;
   manager->ProvisionallySave(
       login,

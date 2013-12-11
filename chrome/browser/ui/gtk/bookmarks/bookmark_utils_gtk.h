@@ -33,7 +33,7 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node,
 // Returns a GtkWindow with a visual hierarchy for passing to
 // gtk_drag_set_icon_widget().
 GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
-                                 const string16& title,
+                                 const base::string16& title,
                                  GtkThemeService* provider);
 GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
                                         BookmarkModel* model,

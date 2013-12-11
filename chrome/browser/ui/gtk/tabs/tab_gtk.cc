@@ -28,7 +28,7 @@ using content::WebContents;
 namespace {
 
 // Returns the width of the title for the current font, in pixels.
-int GetTitleWidth(gfx::Font* font, string16 title) {
+int GetTitleWidth(gfx::Font* font, base::string16 title) {
   DCHECK(font);
   if (title.empty())
     return 0;

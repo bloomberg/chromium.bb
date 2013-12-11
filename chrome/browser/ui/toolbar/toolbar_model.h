@@ -38,7 +38,7 @@ class ToolbarModel {
   //   - If the current page's URL is a search URL for the user's default search
   //     engine, the query will be extracted and returned for display instead
   //     of the URL.
-  virtual string16 GetText() const = 0;
+  virtual base::string16 GetText() const = 0;
 
   // Some search URLs bundle a special "corpus" param that we can extract and
   // display next to users' search terms in cases where we'd show the search

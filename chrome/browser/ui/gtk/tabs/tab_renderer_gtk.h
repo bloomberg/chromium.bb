@@ -228,7 +228,7 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   void Raise() const;
 
   // Returns the title of the Tab.
-  string16 GetTitle() const;
+  base::string16 GetTitle() const;
 
   // enter-notify-event handler that signals when the mouse enters the tab.
   CHROMEGTK_CALLBACK_1(TabRendererGtk, gboolean, OnEnterNotifyEvent,
@@ -251,7 +251,7 @@ class TabRendererGtk : public gfx::AnimationDelegate,
     SkBitmap favicon;
     gfx::CairoCachedSurface cairo_favicon;
     bool is_default_favicon;
-    string16 title;
+    base::string16 title;
     bool loading;
     bool crashed;
     bool incognito;

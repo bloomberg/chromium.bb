@@ -175,14 +175,14 @@ void gtk_chrome_cookie_view_display_indexed_db(
 void gtk_chrome_cookie_view_display_local_storage_item(
     GtkChromeCookieView* widget,
     const std::string& host,
-    const string16& key,
-    const string16& value);
+    const base::string16& key,
+    const base::string16& value);
 
 void gtk_chrome_cookie_view_display_database_accessed(
     GtkChromeCookieView* self,
     const std::string& host,
-    const string16& database_name,
-    const string16& display_name,
+    const base::string16& database_name,
+    const base::string16& display_name,
     unsigned long estimated_size);
 
 void gtk_chrome_cookie_view_display_appcache_created(

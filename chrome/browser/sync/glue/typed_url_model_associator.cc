@@ -573,7 +573,7 @@ TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
     return DIFF_UPDATE_NODE;
 
   // Convert these values only once.
-  string16 node_title(UTF8ToUTF16(node.title()));
+  base::string16 node_title(UTF8ToUTF16(node.title()));
   base::Time node_last_visit = base::Time::FromInternalValue(
       node.visits(node.visits_size() - 1));
 

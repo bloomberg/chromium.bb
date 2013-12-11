@@ -84,7 +84,7 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
   // than once if we get requests from different renderers.
 }
 
-void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
+void SpellCheckMessageFilter::OnNotifyChecked(const base::string16& word,
                                               bool misspelled) {
   SpellcheckService* spellcheck = GetSpellcheckService();
   // Spellcheck service may not be available for a renderer process that is
@@ -110,7 +110,7 @@ void SpellCheckMessageFilter::OnRespondDocumentMarkers(
 void SpellCheckMessageFilter::OnCallSpellingService(
     int route_id,
     int identifier,
-    const string16& text,
+    const base::string16& text,
     std::vector<SpellCheckMarker> markers) {
   DCHECK(!text.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -129,7 +129,7 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
     int identifier,
     const std::vector<SpellCheckMarker>& markers,
     bool success,
-    const string16& text,
+    const base::string16& text,
     const std::vector<SpellCheckResult>& results) {
   SpellcheckService* spellcheck = GetSpellcheckService();
   // Spellcheck service may not be available for a renderer process that is
@@ -166,7 +166,7 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
 // CallSpellingService always executes the callback OnTextCheckComplete.
 // (Which, in turn, sends a SpellCheckMsg_RespondSpellingService)
 void SpellCheckMessageFilter::CallSpellingService(
-    const string16& text,
+    const base::string16& text,
     int route_id,
     int identifier,
     const std::vector<SpellCheckMarker>& markers) {

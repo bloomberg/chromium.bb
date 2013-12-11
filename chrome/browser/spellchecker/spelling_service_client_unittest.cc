@@ -150,10 +150,10 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
   void VerifyResponse(bool success,
-                      const string16& request_text,
+                      const base::string16& request_text,
                       const std::vector<SpellCheckResult>& results) {
     EXPECT_EQ(success_, success);
-    string16 text(UTF8ToUTF16(request_text_));
+    base::string16 text(UTF8ToUTF16(request_text_));
     EXPECT_EQ(text, request_text);
     for (std::vector<SpellCheckResult>::const_iterator it = results.begin();
          it != results.end(); ++it) {
@@ -183,7 +183,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   int response_status_;
   std::string response_data_;
   bool success_;
-  string16 corrected_text_;
+  base::string16 corrected_text_;
   TestSpellingURLFetcher* fetcher_;  // weak
 };
 
@@ -194,7 +194,7 @@ class SpellingServiceClientTest : public testing::Test {
  public:
   void OnTextCheckComplete(int tag,
                            bool success,
-                           const string16& text,
+                           const base::string16& text,
                            const std::vector<SpellCheckResult>& results) {
     client_.VerifyResponse(success, text, results);
   }

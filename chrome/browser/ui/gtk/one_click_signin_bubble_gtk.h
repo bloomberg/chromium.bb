@@ -27,8 +27,8 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
   OneClickSigninBubbleGtk(
       BrowserWindowGtk* browser_window_gtk,
       BrowserWindow::OneClickSigninBubbleType type,
-      const string16& email,
-      const string16& error_message,
+      const base::string16& email,
+      const base::string16& error_message,
       const BrowserWindow::StartSyncCallback& start_sync_callback);
 
   // BubbleDelegateGtk implementation.
@@ -62,10 +62,10 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
   BubbleGtk* bubble_;
 
   // The user's email address to be used for sync.
-  const string16 email_;
+  const base::string16 email_;
 
   // Alternate error message to be displayed.
-  const string16 error_message_;
+  const base::string16 error_message_;
 
   // This callback is nulled once its called, so that it is called only once.
   // It will be called when the bubble is closed if it has not been called

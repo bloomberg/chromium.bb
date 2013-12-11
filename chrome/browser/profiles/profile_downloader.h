@@ -53,11 +53,11 @@ class ProfileDownloader : public net::URLFetcherDelegate,
 
   // On successful download this returns the full name of the user. For example
   // "Pat Smith".
-  virtual string16 GetProfileFullName() const;
+  virtual base::string16 GetProfileFullName() const;
 
   // On successful download this returns the given name of the user. For example
   // if the name is "Pat Smith", the given name is "Pat".
-  virtual string16 GetProfileGivenName() const;
+  virtual base::string16 GetProfileGivenName() const;
 
   // On successful download this returns G+ locale preference of the user.
   virtual std::string GetProfileLocale() const;
@@ -102,8 +102,8 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   // |data| should be the JSON formatted data return by the response.
   // Returns false to indicate a parsing error.
   static bool ParseProfileJSON(const std::string& data,
-                               string16* full_name,
-                               string16* given_name,
+                               base::string16* full_name,
+                               base::string16* given_name,
                                std::string* url,
                                int image_size,
                                std::string* profile_locale);
@@ -126,8 +126,8 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   scoped_ptr<net::URLFetcher> user_entry_fetcher_;
   scoped_ptr<net::URLFetcher> profile_image_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
-  string16 profile_full_name_;
-  string16 profile_given_name_;
+  base::string16 profile_full_name_;
+  base::string16 profile_given_name_;
   std::string profile_locale_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;

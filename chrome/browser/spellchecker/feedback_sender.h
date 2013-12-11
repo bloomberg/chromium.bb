@@ -74,7 +74,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   // Records that user did not choose any suggestion but manually corrected the
   // misspelling identified by |hash| to string |correction|, which is not in
   // the list of suggestions.
-  void ManuallyCorrected(uint32 hash, const string16& correction);
+  void ManuallyCorrected(uint32 hash, const base::string16& correction);
 
   // Records that user has the misspelling in the custom dictionary. The user
   // will never see the spellcheck suggestions for the misspelling.
@@ -94,7 +94,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   // service client receives results from the spelling service. Does not take
   // ownership of |results|.
   void OnSpellcheckResults(int renderer_process_id,
-                           const string16& text,
+                           const base::string16& text,
                            const std::vector<SpellCheckMarker>& markers,
                            std::vector<SpellCheckResult>* results);
 

@@ -54,8 +54,8 @@ class ProfileDownloaderTest : public testing::Test {
                              const std::string& expected_url,
                              const std::string& locale,
                              bool is_valid) {
-    string16 parsed_full_name;
-    string16 parsed_given_name;
+    base::string16 parsed_full_name;
+    base::string16 parsed_given_name;
     std::string parsed_url;
     std::string parsed_locale;
     bool result = ProfileDownloader::ParseProfileJSON(

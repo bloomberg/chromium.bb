@@ -9,7 +9,7 @@
 // TODO: Actually encrypt passwords on Linux.
 
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
-    const string16& plain_text,
+    const base::string16& plain_text,
     std::string* cipher_text) const {
   *cipher_text = UTF16ToUTF8(plain_text);
   return ENCRYPTION_RESULT_SUCCESS;
@@ -17,7 +17,7 @@ LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
 
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    string16* plain_text) const {
+    base::string16* plain_text) const {
   *plain_text = UTF8ToUTF16(cipher_text);
   return ENCRYPTION_RESULT_SUCCESS;
 }

@@ -144,19 +144,19 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
     // We get back no extension here when we show the notification after
     // the extension has crashed.
     if (extension) {
-      const string16 disable_label = l10n_util::GetStringUTF16(
+      const base::string16 disable_label = l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_DISABLE);
       AddItem(kToggleExtensionCommand, disable_label);
     }
   } else if (!notification.display_source().empty()) {
-    const string16 disable_label = l10n_util::GetStringFUTF16(
+    const base::string16 disable_label = l10n_util::GetStringFUTF16(
         IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
         notification.display_source());
     AddItem(kTogglePermissionCommand, disable_label);
   }
 
   if (!notification.display_source().empty()) {
-    const string16 settings_label = l10n_util::GetStringUTF16(
+    const base::string16 settings_label = l10n_util::GetStringUTF16(
         IDS_NOTIFICATIONS_SETTINGS_BUTTON);
     AddItem(kOpenContentSettingsCommand, settings_label);
   }
@@ -212,7 +212,7 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
   } else if (command_id == kOpenContentSettingsCommand) {
     return l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_SETTINGS_BUTTON);
   }
-  return string16();
+  return base::string16();
 }
 
 bool NotificationOptionsMenuModel::IsCommandIdChecked(int /* command_id */)

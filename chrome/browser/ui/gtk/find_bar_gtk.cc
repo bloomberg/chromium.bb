@@ -355,7 +355,7 @@ void FindBarGtk::SetFocusAndSelection() {
 }
 
 void FindBarGtk::ClearResults(const FindNotificationDetails& results) {
-  UpdateUIForFindResult(results, string16());
+  UpdateUIForFindResult(results, base::string16());
 }
 
 void FindBarGtk::StopAnimation() {
@@ -367,7 +367,7 @@ void FindBarGtk::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   // Not moving the window on demand, so do nothing.
 }
 
-void FindBarGtk::SetFindTextAndSelectedRange(const string16& find_text,
+void FindBarGtk::SetFindTextAndSelectedRange(const base::string16& find_text,
                                              const gfx::Range& selected_range) {
   std::string find_text_utf8 = UTF16ToUTF8(find_text);
 
@@ -394,7 +394,7 @@ gfx::Range FindBarGtk::GetSelectedRange() {
 }
 
 void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
-                                       const string16& find_text) {
+                                       const base::string16& find_text) {
   selection_rect_ = result.selection_rect();
   int xposition = GetDialogPosition(result.selection_rect()).x();
   GtkAllocation allocation;
@@ -622,7 +622,7 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
   } else {
     // The textbox is empty so we reset.
     find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
-    UpdateUIForFindResult(find_tab_helper->find_result(), string16());
+    UpdateUIForFindResult(find_tab_helper->find_result(), base::string16());
 
     // Clearing the text box should also clear the prepopulate state so that
     // when we close and reopen the Find box it doesn't show the search we

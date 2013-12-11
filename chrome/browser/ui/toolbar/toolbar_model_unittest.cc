@@ -37,14 +37,14 @@ struct TestItem {
   GURL url;
   // The expected text to display when both forms of URL replacement are
   // inactive.
-  string16 expected_text_url_replacement_inactive;
+  base::string16 expected_text_url_replacement_inactive;
   // The expected text to display when query extraction is active.
-  string16 expected_text_query_extraction;
+  base::string16 expected_text_query_extraction;
   // The expected text to display when the origin chip (URL removal) is active.
-  string16 expected_text_origin_chip;
+  base::string16 expected_text_origin_chip;
   // The expected text to display when both query extraction and URL removal are
   // active.
-  string16 expected_text_both;
+  base::string16 expected_text_both;
   bool would_perform_search_term_replacement;
   bool should_display_url;
 } test_items[] = {
@@ -52,8 +52,8 @@ struct TestItem {
     GURL("view-source:http://www.google.com"),
     ASCIIToUTF16("view-source:www.google.com"),
     ASCIIToUTF16("view-source:www.google.com"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
@@ -61,8 +61,8 @@ struct TestItem {
     GURL("view-source:chrome://newtab/"),
     ASCIIToUTF16("view-source:chrome://newtab"),
     ASCIIToUTF16("view-source:chrome://newtab"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
@@ -70,17 +70,17 @@ struct TestItem {
     GURL("chrome-extension://monkey/balls.html"),
     ASCIIToUTF16("chrome-extension://monkey/balls.html"),
     ASCIIToUTF16("chrome-extension://monkey/balls.html"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
   {
     GURL("chrome-internal://newtab/"),
-    string16(),
-    string16(),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
+    base::string16(),
+    base::string16(),
     false,
     false
   },
@@ -88,8 +88,8 @@ struct TestItem {
     GURL(content::kAboutBlankURL),
     ASCIIToUTF16(content::kAboutBlankURL),
     ASCIIToUTF16(content::kAboutBlankURL),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
@@ -97,8 +97,8 @@ struct TestItem {
     GURL("http://searchurl/?q=tractor+supply"),
     ASCIIToUTF16("searchurl/?q=tractor+supply"),
     ASCIIToUTF16("searchurl/?q=tractor+supply"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
@@ -106,8 +106,8 @@ struct TestItem {
     GURL("http://google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
@@ -115,8 +115,8 @@ struct TestItem {
     GURL("https://google.ca/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
@@ -124,8 +124,8 @@ struct TestItem {
     GURL("https://google.com/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
     ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
-    string16(),
-    string16(),
+    base::string16(),
+    base::string16(),
     false,
     true
   },
@@ -133,7 +133,7 @@ struct TestItem {
     GURL("https://google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("https://google.com/search?q=tractor+supply&espv=1"),
     ASCIIToUTF16("tractor supply"),
-    string16(),
+    base::string16(),
     ASCIIToUTF16("tractor supply"),
     true,
     true
@@ -142,7 +142,7 @@ struct TestItem {
     GURL("https://google.com/search?q=tractorsupply.com&espv=1"),
     ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
     ASCIIToUTF16("tractorsupply.com"),
-    string16(),
+    base::string16(),
     ASCIIToUTF16("tractorsupply.com"),
     true,
     true
@@ -151,7 +151,7 @@ struct TestItem {
     GURL("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
     ASCIIToUTF16("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
     ASCIIToUTF16("ftp://tractorsupply.ie"),
-    string16(),
+    base::string16(),
     ASCIIToUTF16("ftp://tractorsupply.ie"),
     true,
     true

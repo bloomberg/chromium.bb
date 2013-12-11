@@ -13,8 +13,8 @@ class LoginModelObserver {
  public:
   // Called by the model when a username,password pair has been identified
   // as a match for the pending login prompt.
-  virtual void OnAutofillDataAvailable(const string16& username,
-                                       const string16& password) = 0;
+  virtual void OnAutofillDataAvailable(const base::string16& username,
+                                       const base::string16& password) = 0;
 
   virtual void OnLoginModelDestroying() = 0;
 

@@ -633,7 +633,7 @@ void NativeAppWindowGtk::UpdateWindowIcon() {
 }
 
 void NativeAppWindowGtk::UpdateWindowTitle() {
-  string16 title = shell_window_->GetTitle();
+  base::string16 title = shell_window_->GetTitle();
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
 }
 

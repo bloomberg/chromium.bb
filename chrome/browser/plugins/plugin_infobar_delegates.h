@@ -37,7 +37,7 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
 
   std::string identifier_;
 
@@ -51,18 +51,18 @@ class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      HostContentSettingsMap* content_settings,
-                     const string16& name,
+                     const base::string16& name,
                      const std::string& identifier);
 
  private:
   UnauthorizedPluginInfoBarDelegate(HostContentSettingsMap* content_settings,
-                                    const string16& name,
+                                    const base::string16& name,
                                     const std::string& identifier);
   virtual ~UnauthorizedPluginInfoBarDelegate();
 
   // PluginInfoBarDelegate:
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
@@ -70,7 +70,7 @@ class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual std::string GetLearnMoreURL() const OVERRIDE;
 
   HostContentSettingsMap* content_settings_;
-  string16 name_;
+  base::string16 name_;
 
   DISALLOW_COPY_AND_ASSIGN(UnauthorizedPluginInfoBarDelegate);
 };
@@ -89,12 +89,12 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
  private:
   OutdatedPluginInfoBarDelegate(PluginInstaller* installer,
                                 scoped_ptr<PluginMetadata> metadata,
-                                const string16& message);
+                                const base::string16& message);
   virtual ~OutdatedPluginInfoBarDelegate();
 
   // PluginInfoBarDelegate:
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
@@ -112,11 +112,11 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
 
   // Replaces this infobar with one showing |message|. The new infobar will
   // not have any buttons (and not call the callback).
-  void ReplaceWithInfoBar(const string16& message);
+  void ReplaceWithInfoBar(const base::string16& message);
 
   scoped_ptr<PluginMetadata> plugin_metadata_;
 
-  string16 message_;
+  base::string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(OutdatedPluginInfoBarDelegate);
 };
@@ -143,23 +143,23 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
                       PluginInstaller* installer,
                       scoped_ptr<PluginMetadata> plugin_metadata,
                       bool new_install,
-                      const string16& message);
+                      const base::string16& message);
 
  private:
   PluginInstallerInfoBarDelegate(PluginInstaller* installer,
                                  scoped_ptr<PluginMetadata> metadata,
                                  const InstallCallback& callback,
                                  bool new_install,
-                                 const string16& message);
+                                 const base::string16& message);
   virtual ~PluginInstallerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   // PluginInstallerObserver:
@@ -173,7 +173,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // Replaces this infobar with one showing |message|. The new infobar will
   // not have any buttons (and not call the callback).
-  void ReplaceWithInfoBar(const string16& message);
+  void ReplaceWithInfoBar(const base::string16& message);
 
   scoped_ptr<PluginMetadata> plugin_metadata_;
 
@@ -182,7 +182,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   // True iff the plug-in isn't installed yet.
   bool new_install_;
 
-  string16 message_;
+  base::string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerInfoBarDelegate);
 };
@@ -203,23 +203,23 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      Mode mode,
-                     const string16& name);
+                     const base::string16& name);
 
  private:
-  PluginMetroModeInfoBarDelegate(Mode mode, const string16& name);
+  PluginMetroModeInfoBarDelegate(Mode mode, const base::string16& name);
   virtual ~PluginMetroModeInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
+  virtual base::string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   const Mode mode_;
-  const string16 name_;
+  const base::string16 name_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetroModeInfoBarDelegate);
 };

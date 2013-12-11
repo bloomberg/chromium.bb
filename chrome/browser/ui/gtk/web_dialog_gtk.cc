@@ -76,7 +76,7 @@ ui::ModalType WebDialogGtk::GetDialogModalType() const {
 }
 
 string16 WebDialogGtk::GetDialogTitle() const {
-  return delegate_ ? delegate_->GetDialogTitle() : string16();
+  return delegate_ ? delegate_->GetDialogTitle() : base::string16();
 }
 
 GURL WebDialogGtk::GetDialogContentURL() const {

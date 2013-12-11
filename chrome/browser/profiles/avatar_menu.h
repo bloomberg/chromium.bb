@@ -45,10 +45,10 @@ class AvatarMenu : public content::NotificationObserver {
     bool active;
 
     // The name of this profile.
-    string16 name;
+    base::string16 name;
 
     // A string representing the sync state of the profile.
-    string16 sync_state;
+    base::string16 sync_state;
 
     // Whether or not the current profile is signed in. If true, |sync_state| is
     // expected to be the email of the signed in user.

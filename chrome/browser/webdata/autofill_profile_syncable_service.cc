@@ -344,7 +344,7 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
                      specifics.address_home_city(), profile) || diff;
   diff = UpdateField(autofill::ADDRESS_HOME_STATE,
                      specifics.address_home_state(), profile) || diff;
-  string16 country_name_or_code =
+  base::string16 country_name_or_code =
       ASCIIToUTF16(specifics.address_home_country());
   std::string country_code = AutofillCountry::GetCountryCode(
       country_name_or_code, app_locale);
@@ -588,7 +588,7 @@ bool AutofillProfileSyncableService::UpdateMultivaluedField(
     changed = true;
   }
   for (size_t i = 0; i < values.size(); ++i) {
-    string16 synced_value(
+    base::string16 synced_value(
         UTF8ToUTF16(new_values.Get(static_cast<int>(i))));
     if (values[i] != synced_value) {
       values[i] = synced_value;

@@ -37,7 +37,7 @@ void NotificationObjectProxy::Display() {
 void NotificationObjectProxy::Error() {
   RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
   if (host)
-    host->DesktopNotificationPostError(notification_id_, string16());
+    host->DesktopNotificationPostError(notification_id_, base::string16());
 }
 
 void NotificationObjectProxy::Close(bool by_user) {
