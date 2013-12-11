@@ -265,8 +265,21 @@ int NaClQualifyUnaligned(void) {
      *
      * Otherwise, all user-mode instructions detailed in the ARM ARM
      * section A3.2.1 "Unaligned data access" are tested. We expect
-     * SCTLR.A to be 0, which is the default for Linux (and is a
-     * system-wide setting).
+     * SCTLR.A to observably be 0, which is the default for Linux (and
+     * is a system-wide setting).
+     *
+     * Note that SCTLR.A can be 1 (cause alignment faults when executing
+     * unaligned instructions) as long as the kernel emulates the
+     * unaligned instruction when trapping (which is very slow). On ARM
+     * Linux this is configured through /proc/cpu/alignment.
+     *
+     * The ldrd/strd tests also execute a byte-aligned 64-bit load/store
+     * when the ARM ISA only allows 32-bit aligned ldrd/strd to
+     * succeed. The test expects the kernel to emulate the
+     * instruction. If NaCl were to run in an environment which didn't
+     * emulate this instruction then user code would crash
+     * unexpectedly. We could work around non-emulating kernels by
+     * adding a NaCl fault handler that does the emulation.
      */
     success &= test_halfword_load();
     success &= test_halfword_store();
