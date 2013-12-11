@@ -75,8 +75,7 @@ bool PopupBlockedInfoBarDelegate::Accept() {
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
   profile->GetHostContentSettingsMap()->AddExceptionForURL(
-      url, url, CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
-      CONTENT_SETTING_ALLOW);
+      url, url, CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_ALLOW);
 
   // Launch popups.
   PopupBlockerTabHelper* popup_blocker_helper =

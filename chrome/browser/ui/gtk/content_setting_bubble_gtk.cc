@@ -114,27 +114,6 @@ void ContentSettingBubbleGtk::BuildBubble() {
     gtk_box_pack_start(GTK_BOX(bubble_content), label, FALSE, FALSE, 0);
   }
 
-  const std::set<std::string>& plugins = content.resource_identifiers;
-  if (!plugins.empty()) {
-    GtkWidget* list_content = gtk_vbox_new(FALSE, ui::kControlSpacing);
-
-    PluginFinder* finder = PluginFinder::GetInstance();
-    for (std::set<std::string>::const_iterator it = plugins.begin();
-        it != plugins.end(); ++it) {
-      std::string name = UTF16ToUTF8(finder->FindPluginNameWithIdentifier(*it));
-      GtkWidget* label = theme_provider->BuildLabel(
-          BuildElidedText(name).c_str(), ui::kGdkBlack);
-      GtkWidget* label_box = gtk_hbox_new(FALSE, 0);
-      gtk_box_pack_start(GTK_BOX(label_box), label, FALSE, FALSE, 0);
-
-      gtk_box_pack_start(GTK_BOX(list_content),
-                         label_box,
-                         FALSE, FALSE, 0);
-    }
-    gtk_box_pack_start(GTK_BOX(bubble_content), list_content, FALSE, FALSE,
-                       ui::kControlSpacing);
-  }
-
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_POPUPS) {
     const std::vector<ContentSettingBubbleModel::PopupItem>& popup_items =

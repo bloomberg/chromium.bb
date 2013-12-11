@@ -717,11 +717,6 @@ const char kEnableQuicHttps[]               = "enable-quic-https";
 // Enables the Quickoffoce/Chrome document viewer rather than the editor.
 const char kEnableQuickofficeViewing[]      = "enable-quickoffice-viewing";
 
-// Enables content settings based on host *and* plug-in in the user
-// preferences.
-const char kEnableResourceContentSettings[] =
-    "enable-resource-content-settings";
-
 // Enables save password prompt bubble.
 const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 

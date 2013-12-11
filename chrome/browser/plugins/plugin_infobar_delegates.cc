@@ -151,7 +151,7 @@ bool UnauthorizedPluginInfoBarDelegate::Cancel() {
   content::RecordAction(UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
   const GURL& url = web_contents()->GetURL();
   content_settings_->AddExceptionForURL(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
-                                        std::string(), CONTENT_SETTING_ALLOW);
+                                        CONTENT_SETTING_ALLOW);
   LoadBlockedPlugins();
   return true;
 }

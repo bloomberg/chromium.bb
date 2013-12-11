@@ -146,15 +146,12 @@ class HostContentSettingsMap
                          base::Value* value);
 
   // Convenience method to add a content setting for the given URLs, making sure
-  // that there is no setting overriding it. For ContentSettingsTypes that
-  // require an resource identifier to be specified, the |resource_identifier|
-  // must be non-empty.
+  // that there is no setting overriding it.
   //
   // This should only be called on the UI thread.
   void AddExceptionForURL(const GURL& primary_url,
                           const GURL& secondary_url,
                           ContentSettingsType content_type,
-                          const std::string& resource_identifier,
                           ContentSetting setting);
 
   // Clears all host-specific settings for one content type.

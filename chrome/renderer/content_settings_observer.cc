@@ -96,16 +96,10 @@ bool ContentSettingsObserver::IsPluginTemporarilyAllowed(
 }
 
 void ContentSettingsObserver::DidBlockContentType(
-    ContentSettingsType settings_type,
-    const std::string& resource_identifier) {
-  // Always send a message when |resource_identifier| is not empty, to tell the
-  // browser which resource was blocked (otherwise the browser will only show
-  // the first resource to be blocked, and none that are blocked at a later
-  // time).
-  if (!content_blocked_[settings_type] || !resource_identifier.empty()) {
+    ContentSettingsType settings_type) {
+  if (!content_blocked_[settings_type]) {
     content_blocked_[settings_type] = true;
-    Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
-                                              resource_identifier));
+    Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type));
   }
 }
 
@@ -198,7 +192,7 @@ bool ContentSettingsObserver::AllowImage(WebFrame* frame,
     }
   }
   if (!allow)
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
   return allow;
 }
 
@@ -293,15 +287,15 @@ bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
 }
 
 void ContentSettingsObserver::DidNotAllowPlugins() {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
 }
 
 void ContentSettingsObserver::DidNotAllowScript() {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
 void ContentSettingsObserver::DidNotAllowMixedScript() {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, std::string());
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
 }
 
 void ContentSettingsObserver::BlockNPAPIPlugins() {

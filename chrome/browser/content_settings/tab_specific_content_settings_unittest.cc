@@ -72,13 +72,10 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
                                     "A=B",
                                     options,
                                     false);
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
-                                     std::string());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
   content_settings->SetPopupsBlocked(true);
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                     std::string());
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                                     std::string());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 
   // Check that only the respective content types are affected.
   EXPECT_TRUE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));

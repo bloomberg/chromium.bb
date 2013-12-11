@@ -200,20 +200,6 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
-  const std::set<std::string>& plugins = bubble_content.resource_identifiers;
-  if (!plugins.empty()) {
-    if (!bubble_content_empty)
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    PluginFinder* finder = PluginFinder::GetInstance();
-    for (std::set<std::string>::const_iterator i(plugins.begin());
-         i != plugins.end(); ++i) {
-      base::string16 name = finder->FindPluginNameWithIdentifier(*i);
-      layout->StartRow(0, kSingleColumnSetId);
-      layout->AddView(new views::Label(name));
-      bubble_content_empty = false;
-    }
-  }
-
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_POPUPS) {
     const int kPopupColumnSetId = 2;

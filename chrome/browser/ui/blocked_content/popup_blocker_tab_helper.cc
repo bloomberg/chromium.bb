@@ -96,7 +96,7 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
     if (blocked_popups_.size() < kMaximumNumberOfPopups) {
       blocked_popups_.Add(new BlockedRequest(params, window_features));
       TabSpecificContentSettings::FromWebContents(web_contents())->
-          OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+          OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
     }
     return true;
   }
@@ -109,7 +109,7 @@ void PopupBlockerTabHelper::AddBlockedPopup(const BlockedWindowParams& params) {
   if (blocked_popups_.size() < kMaximumNumberOfPopups) {
     blocked_popups_.Add(new BlockedRequest(nav_params, params.features()));
     TabSpecificContentSettings::FromWebContents(web_contents())->
-        OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+        OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
   }
 }
 

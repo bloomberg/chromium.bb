@@ -780,7 +780,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_ClickToPlay"));
-        observer->DidBlockContentType(content_type, identifier);
+        observer->DidBlockContentType(content_type);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
@@ -796,7 +796,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Blocked"));
-        observer->DidBlockContentType(content_type, identifier);
+        observer->DidBlockContentType(content_type);
         break;
       }
     }

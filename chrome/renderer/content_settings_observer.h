@@ -37,11 +37,7 @@ class ContentSettingsObserver
   bool IsPluginTemporarilyAllowed(const std::string& identifier);
 
   // Sends an IPC notification that the specified content type was blocked.
-  // If the content type requires it, |resource_identifier| names the specific
-  // resource that was blocked (the plugin path in the case of plugins),
-  // otherwise it's the empty string.
-  void DidBlockContentType(ContentSettingsType settings_type,
-                           const std::string& resource_identifier);
+  void DidBlockContentType(ContentSettingsType settings_type);
 
   // These correspond to blink::WebPermissionClient methods.
   bool AllowDatabase(blink::WebFrame* frame,

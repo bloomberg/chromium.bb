@@ -83,7 +83,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     RadioGroup radio_group;
     bool radio_group_enabled;
     std::vector<DomainList> domain_lists;
-    std::set<std::string> resource_identifiers;
     std::string custom_link;
     bool custom_link_enabled;
     std::string manage_link;
@@ -158,7 +157,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_selected_device(const content::MediaStreamDevice& device) {
     bubble_content_.media_menus[device.type].selected_device = device;
   }
-  void AddBlockedResource(const std::string& resource_identifier);
 
  private:
   content::WebContents* web_contents_;
@@ -181,7 +179,6 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   Delegate* delegate() const { return delegate_; }
 
  private:
-  void SetBlockedResources();
   void SetTitle();
   void SetManageLink();
   virtual void OnManageLinkClicked() OVERRIDE;

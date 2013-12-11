@@ -346,29 +346,12 @@ MediaMenuParts::~MediaMenuParts() {}
 }
 
 - (void)initializeBlockedPluginsList {
-  NSMutableArray* pluginArray = [NSMutableArray array];
-  const std::set<std::string>& plugins =
-      contentSettingBubbleModel_->bubble_content().resource_identifiers;
-  if (plugins.empty()) {
-    int delta = NSMinY([titleLabel_ frame]) -
-                NSMinY([blockedResourcesField_ frame]);
-    [blockedResourcesField_ removeFromSuperview];
-    NSRect frame = [[self window] frame];
-    frame.size.height -= delta;
-    [[self window] setFrame:frame display:NO];
-  } else {
-    PluginFinder* finder = PluginFinder::GetInstance();
-    for (std::set<std::string>::iterator it = plugins.begin();
-         it != plugins.end(); ++it) {
-      NSString* name =
-          SysUTF16ToNSString(finder->FindPluginNameWithIdentifier(*it));
-      [pluginArray addObject:name];
-    }
-    [blockedResourcesField_
-        setStringValue:[pluginArray componentsJoinedByString:@"\n"]];
-    [GTMUILocalizerAndLayoutTweaker
-        sizeToFitFixedWidthTextField:blockedResourcesField_];
-  }
+  int delta = NSMinY([titleLabel_ frame]) -
+              NSMinY([blockedResourcesField_ frame]);
+  [blockedResourcesField_ removeFromSuperview];
+  NSRect frame = [[self window] frame];
+  frame.size.height -= delta;
+  [[self window] setFrame:frame display:NO];
 }
 
 - (void)initializePopupList {

@@ -456,9 +456,8 @@ IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_UpdatedCacheStats,
 
 // Tells the browser that content in the current page was blocked due to the
 // user's content settings.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ContentBlocked,
-                    ContentSettingsType, /* type of blocked content */
-                    std::string /* resource identifier */)
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_ContentBlocked,
+                    ContentSettingsType /* type of blocked content */)
 
 // Sent by the renderer process to check whether access to web databases is
 // granted by content settings.

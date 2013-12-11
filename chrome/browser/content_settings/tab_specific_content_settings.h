@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -205,9 +204,6 @@ class TabSpecificContentSettings
   // Returns the state of the camera and microphone usage.
   MicrophoneCameraState GetMicrophoneCameraState() const;
 
-  const std::set<std::string>& BlockedResourcesForType(
-      ContentSettingsType content_type) const;
-
   // Returns the ContentSettingsUsagesState that controls the
   // geolocation API usage on this page.
   const ContentSettingsUsagesState& geolocation_usages_state() const {
@@ -294,8 +290,7 @@ class TabSpecificContentSettings
                                 bool blocked_by_policy) OVERRIDE;
 
   // Message handlers. Public for testing.
-  void OnContentBlocked(ContentSettingsType type,
-                        const std::string& resource_identifier);
+  void OnContentBlocked(ContentSettingsType type);
   void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread by the static functions above.
@@ -351,9 +346,6 @@ class TabSpecificContentSettings
   explicit TabSpecificContentSettings(content::WebContents* tab);
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
 
-  void AddBlockedResource(ContentSettingsType content_type,
-                          const std::string& resource_identifier);
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -373,11 +365,6 @@ class TabSpecificContentSettings
 
   // Stores which content setting types actually were allowed.
   bool content_allowed_[CONTENT_SETTINGS_NUM_TYPES];
-
-  // Stores the blocked resources for each content type.
-  // Currently only used for plugins.
-  scoped_ptr<std::set<std::string> >
-      blocked_resources_[CONTENT_SETTINGS_NUM_TYPES];
 
   // The profile of the tab.
   Profile* profile_;

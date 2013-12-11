@@ -230,28 +230,7 @@ bool TabSpecificContentSettings::IsContentAllowed(
   return content_allowed_[content_type];
 }
 
-const std::set<std::string>&
-    TabSpecificContentSettings::BlockedResourcesForType(
-        ContentSettingsType content_type) const {
-  if (blocked_resources_[content_type].get()) {
-    return *blocked_resources_[content_type];
-  } else {
-    CR_DEFINE_STATIC_LOCAL(std::set<std::string>, empty_set, ());
-    return empty_set;
-  }
-}
-
-void TabSpecificContentSettings::AddBlockedResource(
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
-  if (!blocked_resources_[content_type].get())
-    blocked_resources_[content_type].reset(new std::set<std::string>());
-  blocked_resources_[content_type]->insert(resource_identifier);
-}
-
-void TabSpecificContentSettings::OnContentBlocked(
-    ContentSettingsType type,
-    const std::string& resource_identifier) {
+void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   if (type < 0 || type >= CONTENT_SETTINGS_NUM_TYPES)
@@ -272,18 +251,6 @@ void TabSpecificContentSettings::OnContentBlocked(
       content_allowed_[type] = true;
       break;
   }
-
-  // Unless UI for resource content settings is enabled, ignore the resource
-  // identifier.
-  // TODO(bauerb): The UI to unblock content should be disabled if the content
-  // setting was not set by the user.
-  std::string identifier;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableResourceContentSettings)) {
-    identifier = resource_identifier;
-  }
-  if (!identifier.empty())
-    AddBlockedResource(type, identifier);
 
 #if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_POPUPS) {
@@ -350,7 +317,7 @@ void TabSpecificContentSettings::OnCookiesRead(
   if (blocked_by_policy) {
     blocked_local_shared_objects_.cookies()->AddReadCookies(
         frame_url, url, cookie_list);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.cookies()->AddReadCookies(
         frame_url, url, cookie_list);
@@ -369,7 +336,7 @@ void TabSpecificContentSettings::OnCookieChanged(
   if (blocked_by_policy) {
     blocked_local_shared_objects_.cookies()->AddChangedCookie(
         frame_url, url, cookie_line, options);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.cookies()->AddChangedCookie(
         frame_url, url, cookie_line, options);
@@ -386,7 +353,7 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(
   if (blocked_by_policy) {
     blocked_local_shared_objects_.indexed_dbs()->AddIndexedDB(
         url, description);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.indexed_dbs()->AddIndexedDB(
         url, description);
@@ -407,7 +374,7 @@ void TabSpecificContentSettings::OnLocalStorageAccessed(
   helper->AddLocalStorage(url);
 
   if (blocked_by_policy)
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   else
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
 
@@ -422,7 +389,7 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
   if (blocked_by_policy) {
     blocked_local_shared_objects_.databases()->AddDatabase(
         url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.databases()->AddDatabase(
         url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
@@ -438,7 +405,7 @@ void TabSpecificContentSettings::OnFileSystemAccessed(
   if (blocked_by_policy) {
     blocked_local_shared_objects_.file_systems()->AddFileSystem(url,
         fileapi::kFileSystemTypeTemporary, 0);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.file_systems()->AddFileSystem(url,
         fileapi::kFileSystemTypeTemporary, 0);
@@ -465,8 +432,7 @@ void TabSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
   if (allowed) {
     OnContentAllowed(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
   } else {
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                     std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
   }
 }
 #endif
@@ -515,8 +481,7 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
       case MediaStreamDevicesController::MEDIA_BLOCKED_BY_POLICY:
       case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER_SETTING:
       case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER:
-        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                         std::string());
+        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
         break;
     }
   }
@@ -535,8 +500,7 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
       case MediaStreamDevicesController::MEDIA_BLOCKED_BY_POLICY:
       case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER_SETTING:
       case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER:
-        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                         std::string());
+        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
         break;
     }
   }
@@ -551,14 +515,13 @@ void TabSpecificContentSettings::OnMIDISysExAccessed(
 void TabSpecificContentSettings::OnMIDISysExAccessBlocked(
     const GURL& requesting_origin) {
   midi_usages_state_.OnPermissionSet(requesting_origin, false);
-  OnContentBlocked(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
+  OnContentBlocked(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i) {
     if (i == CONTENT_SETTINGS_TYPE_COOKIES)
       continue;
-    blocked_resources_[i].reset();
     content_blocked_[i] = false;
     content_allowed_[i] = false;
     content_blockage_indicated_to_user_[i] = false;
@@ -624,7 +587,7 @@ void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
   if (allowed) {
     OnContentAllowed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
   } else {
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
   }
 }
 
@@ -682,7 +645,7 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
                                                   bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);

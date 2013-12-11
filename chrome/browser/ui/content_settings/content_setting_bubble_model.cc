@@ -92,20 +92,8 @@ ContentSettingTitleAndLinkModel::ContentSettingTitleAndLinkModel(
         delegate_(delegate) {
   // Notifications do not have a bubble.
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  SetBlockedResources();
   SetTitle();
   SetManageLink();
-}
-
-void ContentSettingTitleAndLinkModel::SetBlockedResources() {
-  TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  const std::set<std::string>& resources = settings->BlockedResourcesForType(
-      content_type());
-  for (std::set<std::string>::const_iterator it = resources.begin();
-       it != resources.end(); ++it) {
-    AddBlockedResource(*it);
-  }
 }
 
 void ContentSettingTitleAndLinkModel::SetTitle() {
@@ -122,10 +110,6 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_TITLE},
   };
   // Fields as for kBlockedTitleIDs, above.
-  static const ContentSettingsTypeIdEntry
-      kResourceSpecificBlockedTitleIDs[] = {
-        {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
-      };
   static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
@@ -140,9 +124,6 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
           web_contents())->IsContentBlocked(content_type())) {
     title_ids = kAccessedTitleIDs;
     num_title_ids = arraysize(kAccessedTitleIDs);
-  } else if (!bubble_content().resource_identifiers.empty()) {
-    title_ids = kResourceSpecificBlockedTitleIDs;
-    num_title_ids = arraysize(kResourceSpecificBlockedTitleIDs);
   }
   int title_id =
       GetIdForContentType(title_ids, num_title_ids, content_type());
@@ -225,8 +206,7 @@ class ContentSettingSingleRadioGroup
 
  private:
   void SetRadioGroup();
-  void AddException(ContentSetting setting,
-                    const std::string& resource_identifier);
+  void AddException(ContentSetting setting);
   virtual void OnRadioClicked(int radio_index) OVERRIDE;
 
   ContentSetting block_setting_;
@@ -251,16 +231,7 @@ ContentSettingSingleRadioGroup::~ContentSettingSingleRadioGroup() {
         selected_item_ == kAllowButtonIndex ?
                           CONTENT_SETTING_ALLOW :
                           block_setting_;
-    const std::set<std::string>& resources =
-        bubble_content().resource_identifiers;
-    if (resources.empty()) {
-      AddException(setting, std::string());
-    } else {
-      for (std::set<std::string>::const_iterator it = resources.begin();
-           it != resources.end(); ++it) {
-        AddException(setting, *it);
-      }
-    }
+    AddException(setting);
   }
 }
 
@@ -280,9 +251,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
 
   if (display_host.empty())
     display_host = ASCIIToUTF16(url.spec());
-
-  const std::set<std::string>& resources =
-      bubble_content().resource_identifiers;
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
@@ -304,9 +272,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_UNBLOCK},
   };
   // Fields as for kBlockedAllowIDs, above.
-  static const ContentSettingsTypeIdEntry kResourceSpecificBlockedAllowIDs[] = {
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_UNBLOCK},
-  };
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
     // TODO(bauerb): The string shouldn't be "unblock" (they weren't blocked).
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_UNBLOCK},
@@ -322,15 +287,9 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     radio_allow_label = (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) ?
         l10n_util::GetStringFUTF8(resource_id, display_host) :
         l10n_util::GetStringUTF8(resource_id);
-  } else if (resources.empty()) {
-    radio_allow_label = l10n_util::GetStringFUTF8(
-        GetIdForContentType(kBlockedAllowIDs, arraysize(kBlockedAllowIDs),
-                            content_type()),
-        display_host);
   } else {
     radio_allow_label = l10n_util::GetStringFUTF8(
-        GetIdForContentType(kResourceSpecificBlockedAllowIDs,
-                            arraysize(kResourceSpecificBlockedAllowIDs),
+        GetIdForContentType(kBlockedAllowIDs, arraysize(kBlockedAllowIDs),
                             content_type()),
         display_host);
   }
@@ -367,70 +326,42 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
 
   radio_group.radio_items.push_back(radio_allow_label);
   radio_group.radio_items.push_back(radio_block_label);
-  HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(profile()).get();
-  ContentSetting most_restrictive_setting;
-  SettingSource most_restrictive_setting_source = SETTING_SOURCE_NONE;
-  bool most_restrictive_setting_is_wildcard = false;
+  ContentSetting setting;
+  SettingSource setting_source = SETTING_SOURCE_NONE;
+  bool setting_is_wildcard = false;
 
-  if (resources.empty()) {
-    if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
-      most_restrictive_setting = cookie_settings->GetCookieSetting(
-          url, url, true, &most_restrictive_setting_source);
-    } else {
-      SettingInfo info;
-      scoped_ptr<Value> value(map->GetWebsiteSetting(
-          url, url, content_type(), std::string(), &info));
-      most_restrictive_setting =
-          content_settings::ValueToContentSetting(value.get());
-      most_restrictive_setting_source = info.source;
-      most_restrictive_setting_is_wildcard =
-          info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-          info.secondary_pattern == ContentSettingsPattern::Wildcard();
-    }
+  if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
+    CookieSettings* cookie_settings =
+        CookieSettings::Factory::GetForProfile(profile()).get();
+    setting = cookie_settings->GetCookieSetting(
+        url, url, true, &setting_source);
   } else {
-    most_restrictive_setting = CONTENT_SETTING_ALLOW;
-    for (std::set<std::string>::const_iterator it = resources.begin();
-         it != resources.end(); ++it) {
-      SettingInfo info;
-      scoped_ptr<Value> val(map->GetWebsiteSetting(
-          url, url, content_type(), *it, &info));
-      ContentSetting setting =
-          content_settings::ValueToContentSetting(val.get());
-      if (setting == CONTENT_SETTING_BLOCK) {
-        most_restrictive_setting = CONTENT_SETTING_BLOCK;
-        most_restrictive_setting_source = info.source;
-        most_restrictive_setting_is_wildcard =
-            info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-            info.secondary_pattern == ContentSettingsPattern::Wildcard();
-        break;
-      }
-      if (setting == CONTENT_SETTING_ASK) {
-        most_restrictive_setting = CONTENT_SETTING_ASK;
-        most_restrictive_setting_source = info.source;
-        most_restrictive_setting_is_wildcard =
-            info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-            info.secondary_pattern == ContentSettingsPattern::Wildcard();
-      }
-    }
+    SettingInfo info;
+    HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+    scoped_ptr<Value> value(map->GetWebsiteSetting(
+        url, url, content_type(), std::string(), &info));
+    setting = content_settings::ValueToContentSetting(value.get());
+    setting_source = info.source;
+    setting_is_wildcard =
+        info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+        info.secondary_pattern == ContentSettingsPattern::Wildcard();
   }
 
   if (content_type() == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      most_restrictive_setting == CONTENT_SETTING_ALLOW &&
-      most_restrictive_setting_is_wildcard) {
+      setting == CONTENT_SETTING_ALLOW &&
+      setting_is_wildcard) {
     // In the corner case of unrecognized plugins (which are now blocked by
     // default) we indicate the blocked state in the UI and allow the user to
     // whitelist.
     radio_group.default_item = 1;
-  } else if (most_restrictive_setting == CONTENT_SETTING_ALLOW) {
+  } else if (setting == CONTENT_SETTING_ALLOW) {
     radio_group.default_item = kAllowButtonIndex;
     // |block_setting_| is already set to |CONTENT_SETTING_BLOCK|.
   } else {
     radio_group.default_item = 1;
-    block_setting_ = most_restrictive_setting;
+    block_setting_ = setting;
   }
-  if (most_restrictive_setting_source != SETTING_SOURCE_USER) {
+  if (setting_source != SETTING_SOURCE_USER) {
     set_radio_group_enabled(false);
   } else {
     set_radio_group_enabled(true);
@@ -439,15 +370,12 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   set_radio_group(radio_group);
 }
 
-void ContentSettingSingleRadioGroup::AddException(
-    ContentSetting setting,
-    const std::string& resource_identifier) {
+void ContentSettingSingleRadioGroup::AddException(ContentSetting setting) {
   if (profile()) {
     profile()->GetHostContentSettingsMap()->AddExceptionForURL(
         bubble_content().radio_group.url,
         bubble_content().radio_group.url,
         content_type(),
-        resource_identifier,
         setting);
   }
 }
@@ -1364,12 +1292,6 @@ ContentSettingBubbleModel::BubbleContent::BubbleContent()
 }
 
 ContentSettingBubbleModel::BubbleContent::~BubbleContent() {}
-
-
-void ContentSettingBubbleModel::AddBlockedResource(
-    const std::string& resource_identifier) {
-  bubble_content_.resource_identifiers.insert(resource_identifier);
-}
 
 void ContentSettingBubbleModel::Observe(
     int type,

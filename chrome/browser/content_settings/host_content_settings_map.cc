@@ -309,7 +309,6 @@ void HostContentSettingsMap::AddExceptionForURL(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type,
-    const std::string& resource_identifier,
     ContentSetting setting) {
   // TODO(markusheintz): Until the UI supports pattern pairs, both urls must
   // match.
@@ -321,13 +320,13 @@ void HostContentSettingsMap::AddExceptionForURL(
   SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(primary_url),
                     ContentSettingsPattern::Wildcard(),
                     content_type,
-                    resource_identifier,
+                    std::string(),
                     CONTENT_SETTING_DEFAULT);
 
   SetContentSetting(ContentSettingsPattern::FromURL(primary_url),
                     ContentSettingsPattern::Wildcard(),
                     content_type,
-                    resource_identifier,
+                    std::string(),
                     setting);
 }
 
