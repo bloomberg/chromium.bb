@@ -46,7 +46,8 @@ struct screenshooter {
 struct screenshooter_frame_listener {
 	struct wl_listener listener;
 	struct weston_buffer *buffer;
-	struct wl_resource *resource;
+	weston_screenshooter_done_func_t done;
+	void *data;
 };
 
 static void
@@ -129,7 +130,7 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 	pixels = malloc(stride * l->buffer->height);
 
 	if (pixels == NULL) {
-		wl_resource_post_no_memory(l->resource);
+		l->done(l->data, WESTON_SCREENSHOOTER_NO_MEMORY);
 		free(l);
 		return;
 	}
@@ -167,9 +168,65 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 
 	wl_shm_buffer_end_access(l->buffer->shm_buffer);
 
-	screenshooter_send_done(l->resource);
+	l->done(l->data, WESTON_SCREENSHOOTER_SUCCESS);
 	free(pixels);
 	free(l);
+}
+
+WL_EXPORT int
+weston_screenshooter_shoot(struct weston_output *output,
+			   struct weston_buffer *buffer,
+			   weston_screenshooter_done_func_t done, void *data)
+{
+	struct screenshooter_frame_listener *l;
+
+	if (!wl_shm_buffer_get(buffer->resource)) {
+		done(data, WESTON_SCREENSHOOTER_BAD_BUFFER);
+		return -1;
+	}
+
+	buffer->shm_buffer = wl_shm_buffer_get(buffer->resource);
+	buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
+	buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
+
+	if (buffer->width < output->current_mode->width ||
+	    buffer->height < output->current_mode->height) {
+		done(data, WESTON_SCREENSHOOTER_BAD_BUFFER);
+		return -1;
+	}
+
+	l = malloc(sizeof *l);
+	if (l == NULL) {
+		done(data, WESTON_SCREENSHOOTER_NO_MEMORY);
+		return -1;
+	}
+
+	l->buffer = buffer;
+	l->done = done;
+	l->data = data;
+	l->listener.notify = screenshooter_frame_notify;
+	wl_signal_add(&output->frame_signal, &l->listener);
+	output->disable_planes++;
+	weston_output_schedule_repaint(output);
+
+	return 0;
+}
+
+static void
+screenshooter_done(void *data, enum weston_screenshooter_outcome outcome)
+{
+	struct wl_resource *resource = data;
+
+	switch (outcome) {
+	case WESTON_SCREENSHOOTER_SUCCESS:
+		screenshooter_send_done(resource);
+		break;
+	case WESTON_SCREENSHOOTER_NO_MEMORY:
+		wl_resource_post_no_memory(resource);
+		break;
+	default:
+		break;
+	}
 }
 
 static void
@@ -180,7 +237,6 @@ screenshooter_shoot(struct wl_client *client,
 {
 	struct weston_output *output =
 		wl_resource_get_user_data(output_resource);
-	struct screenshooter_frame_listener *l;
 	struct weston_buffer *buffer =
 		weston_buffer_from_resource(buffer_resource);
 
@@ -188,30 +244,8 @@ screenshooter_shoot(struct wl_client *client,
 		wl_resource_post_no_memory(resource);
 		return;
 	}
-	if (!wl_shm_buffer_get(buffer->resource))
-		return;
 
-	buffer->shm_buffer = wl_shm_buffer_get(buffer->resource);
-	buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
-	buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
-
-	if (buffer->width < output->current_mode->width ||
-	    buffer->height < output->current_mode->height)
-		return;
-
-	l = malloc(sizeof *l);
-	if (l == NULL) {
-		wl_resource_post_no_memory(resource);
-		return;
-	}
-
-	l->buffer = buffer;
-	l->resource = resource;
-
-	l->listener.notify = screenshooter_frame_notify;
-	wl_signal_add(&output->frame_signal, &l->listener);
-	output->disable_planes++;
-	weston_output_schedule_repaint(output);
+	weston_screenshooter_shoot(output, buffer, screenshooter_done, resource);
 }
 
 struct screenshooter_interface screenshooter_implementation = {

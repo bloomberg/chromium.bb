@@ -1293,6 +1293,18 @@ tty_activate_vt(struct tty *tty, int vt);
 void
 screenshooter_create(struct weston_compositor *ec);
 
+enum weston_screenshooter_outcome {
+	WESTON_SCREENSHOOTER_SUCCESS,
+	WESTON_SCREENSHOOTER_NO_MEMORY,
+	WESTON_SCREENSHOOTER_BAD_BUFFER
+};
+
+typedef void (*weston_screenshooter_done_func_t)(void *data,
+				enum weston_screenshooter_outcome outcome);
+int
+weston_screenshooter_shoot(struct weston_output *output, struct weston_buffer *buffer,
+			   weston_screenshooter_done_func_t done, void *data);
+
 struct clipboard *
 clipboard_create(struct weston_seat *seat);
 
