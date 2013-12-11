@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "ppapi/c/dev/ppb_alarms_dev.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"

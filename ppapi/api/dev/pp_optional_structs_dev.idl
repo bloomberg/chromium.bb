@@ -1,0 +1,14 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines optional structs for primitive types.
+ */
+
+struct PP_Optional_Double_Dev {
+  double_t value;
+  PP_Bool is_set;
+};
+

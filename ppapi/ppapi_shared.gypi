@@ -131,6 +131,7 @@
           'thunk/enter.cc',
           'thunk/enter.h',
           'thunk/extensions_common_api.h',
+          'thunk/ppb_alarms_dev_thunk.cc',
           'thunk/ppb_audio_api.h',
           'thunk/ppb_audio_config_api.h',
           'thunk/ppb_audio_config_thunk.cc',

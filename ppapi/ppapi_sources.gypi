@@ -69,7 +69,9 @@
 
       # Dev interfaces.
       'c/dev/pp_cursor_type_dev.h',
+      'c/dev/pp_optional_structs_dev.h',
       'c/dev/pp_video_dev.h',
+      'c/dev/ppb_alarms_dev.h',
       'c/dev/ppb_buffer_dev.h',
       'c/dev/ppb_char_set_dev.h',
       'c/dev/ppb_cursor_control_dev.h',

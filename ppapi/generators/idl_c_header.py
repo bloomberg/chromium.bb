@@ -145,12 +145,7 @@ def CheckTypedefs(filenode, releases):
   See http://crbug.com/233439 for details.
   """
   cgen = CGen()
-  # TODO(teravest): Fix the following callback to pass PP_Var by pointer
-  # instead of by value.
-  node_whitelist = ['PP_Ext_Alarms_OnAlarm_Func_Dev_0_1']
   for node in filenode.GetListOf('Typedef'):
-    if node.GetName() in node_whitelist:
-      continue
     build_list = node.GetUniqueReleases(releases)
     callnode = node.GetOneOf('Callspec')
     if callnode:
@@ -162,7 +157,7 @@ def CheckTypedefs(filenode, releases):
         t = param.GetType(build_list[0])
         while t.IsA('Typedef'):
           t = t.GetType(build_list[0])
-        if t.IsA('Struct'):
+        if t.IsA('Struct') and t.GetProperty('passByValue'):
           raise Exception('%s is a struct in callback %s. '
                           'See http://crbug.com/233439' %
                           (t.GetName(), node.GetName()))

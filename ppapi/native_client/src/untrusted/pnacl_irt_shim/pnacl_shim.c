@@ -7,6 +7,7 @@
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
+#include "ppapi/c/dev/ppb_alarms_dev.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_crypto_dev.h"
@@ -173,6 +174,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4;
@@ -1618,6 +1620,40 @@ static void Pnacl_M14_PPP_Messaging_HandleMessage(PP_Instance instance, struct P
 /* Not generating wrapper methods for PPB_FileChooserTrusted_0_6 */
 
 /* Not generating wrapper methods for PPB_URLLoaderTrusted_0_3 */
+
+/* Begin wrapper methods for PPB_Alarms_Dev_0_1 */
+
+static void Pnacl_M33_PPB_Alarms_Dev_Create(PP_Instance instance, struct PP_Var* name, const struct PP_Alarms_AlarmCreateInfo_Dev* alarm_info) {
+  const struct PPB_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1.real_iface;
+  iface->Create(instance, *name, alarm_info);
+}
+
+static int32_t Pnacl_M33_PPB_Alarms_Dev_Get(PP_Instance instance, struct PP_Var* name, struct PP_Alarms_Alarm_Dev* alarm, struct PP_CompletionCallback* callback) {
+  const struct PPB_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1.real_iface;
+  return iface->Get(instance, *name, alarm, *callback);
+}
+
+static int32_t Pnacl_M33_PPB_Alarms_Dev_GetAll(PP_Instance instance, struct PP_Alarms_Alarm_Array_Dev* alarms, struct PP_ArrayOutput* array_allocator, struct PP_CompletionCallback* callback) {
+  const struct PPB_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1.real_iface;
+  return iface->GetAll(instance, alarms, *array_allocator, *callback);
+}
+
+static void Pnacl_M33_PPB_Alarms_Dev_Clear(PP_Instance instance, struct PP_Var* name) {
+  const struct PPB_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1.real_iface;
+  iface->Clear(instance, *name);
+}
+
+static void Pnacl_M33_PPB_Alarms_Dev_ClearAll(PP_Instance instance) {
+  const struct PPB_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1.real_iface;
+  iface->ClearAll(instance);
+}
+
+static uint32_t Pnacl_M33_PPB_Alarms_Dev_AddOnAlarmListener(PP_Instance instance, PP_Alarms_OnAlarm_Dev callback, void* user_data) {
+  const struct PPB_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1.real_iface;
+  return iface->AddOnAlarmListener(instance, callback, user_data);
+}
+
+/* End wrapper methods for PPB_Alarms_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_AudioInput_Dev_0_2 */
 
@@ -4435,6 +4471,15 @@ struct PPP_Messaging_1_0 Pnacl_Wrappers_PPP_Messaging_1_0 = {
 
 /* Not generating wrapper interface for PPB_URLLoaderTrusted_0_3 */
 
+struct PPB_Alarms_Dev_0_1 Pnacl_Wrappers_PPB_Alarms_Dev_0_1 = {
+    .Create = (void (*)(PP_Instance instance, struct PP_Var name, const struct PP_Alarms_AlarmCreateInfo_Dev* alarm_info))&Pnacl_M33_PPB_Alarms_Dev_Create,
+    .Get = (int32_t (*)(PP_Instance instance, struct PP_Var name, struct PP_Alarms_Alarm_Dev* alarm, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_Alarms_Dev_Get,
+    .GetAll = (int32_t (*)(PP_Instance instance, struct PP_Alarms_Alarm_Array_Dev* alarms, struct PP_ArrayOutput array_allocator, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_Alarms_Dev_GetAll,
+    .Clear = (void (*)(PP_Instance instance, struct PP_Var name))&Pnacl_M33_PPB_Alarms_Dev_Clear,
+    .ClearAll = (void (*)(PP_Instance instance))&Pnacl_M33_PPB_Alarms_Dev_ClearAll,
+    .AddOnAlarmListener = (uint32_t (*)(PP_Instance instance, PP_Alarms_OnAlarm_Dev callback, void* user_data))&Pnacl_M33_PPB_Alarms_Dev_AddOnAlarmListener
+};
+
 struct PPB_AudioInput_Dev_0_2 Pnacl_Wrappers_PPB_AudioInput_Dev_0_2 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_AudioInput_Dev_Create,
     .IsAudioInput = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_AudioInput_Dev_IsAudioInput,
@@ -5335,6 +5380,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1 = {
+  .iface_macro = PPB_ALARMS_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Alarms_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2 = {
   .iface_macro = PPB_AUDIO_INPUT_DEV_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_AudioInput_Dev_0_2,
@@ -5745,6 +5796,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0,
   &Pnacl_WrapperInfo_PPB_VarDictionary_1_0,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
+  &Pnacl_WrapperInfo_PPB_Alarms_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4,
