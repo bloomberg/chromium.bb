@@ -19,15 +19,17 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d.h"
-#include "ui/gl/gl_share_group.h"
 
 class SkBitmap;
 
 namespace base {
 class MessageLoopProxy;
 class RunLoop;
+}
+
+namespace blink {
+class WebGraphicsContext3D;
 }
 
 namespace cc {
@@ -38,30 +40,13 @@ class LayerTreeHost;
 }
 
 namespace gfx {
-class GLContext;
-class GLSurface;
-class GLShareGroup;
-class Point;
 class Rect;
 class Size;
-}
-
-namespace blink {
-class WebGraphicsContext3D;
-}
-
-namespace webkit {
-namespace gpu {
-class ContextProviderInProcess;
-class WebGraphicsContext3DInProcessCommandBufferImpl;
-}
 }
 
 namespace ui {
 
 class Compositor;
-class CompositorObserver;
-class ContextProviderFromContextFactory;
 class Layer;
 class PostedSwapQueue;
 class Reflector;
@@ -179,7 +164,7 @@ class COMPOSITOR_EXPORT CompositorLock
 // This is only to be used for test. It allows execution of other tasks on
 // the current message loop before the current task finishs (there is a
 // potential for re-entrancy).
-class COMPOSITOR_EXPORT DrawWaiterForTest : public ui::CompositorObserver {
+class COMPOSITOR_EXPORT DrawWaiterForTest : public CompositorObserver {
  public:
   // Waits for a draw to be issued by the compositor. If the test times out
   // here, there may be a logic error in the compositor code causing it
@@ -264,7 +249,7 @@ class COMPOSITOR_EXPORT Compositor
   // from changes to layer properties.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
-  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
+  void SetLatencyInfo(const LatencyInfo& latency_info);
 
   // Reads the region |bounds_in_pixel| of the contents of the last rendered
   // frame into the given bitmap.
