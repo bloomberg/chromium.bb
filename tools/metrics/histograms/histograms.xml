@@ -10552,6 +10552,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.MigrationNssToPem"
+    enum="MigrationNssToPemNetworkTypes">
+  <summary>
+    Chrome OS metric counting the number of network configurations that
+    contained a NSS nickname identifying a CA certificate, which triggered the
+    migration to PEM encoding. This metric doesn't consider whether the
+    migration was successful but once a migration was successful the nickname is
+    removed.
+  </summary>
+</histogram>
+
 <histogram name="Network.ServiceErrors" enum="NetworkServiceError">
   <summary>Chrome OS connection manager service errors seen.</summary>
 </histogram>
@@ -26741,6 +26752,12 @@ other types of suffix sets.
   <int value="1" label="kSuccess"/>
   <int value="2" label="kKeySystemNotSupported"/>
   <int value="3" label="kInvalidPlayerState"/>
+</enum>
+
+<enum name="MigrationNssToPemNetworkTypes" type="int">
+  <int value="0" label="EAP"/>
+  <int value="1" label="OpenVPN"/>
+  <int value="2" label="IPsec"/>
 </enum>
 
 <enum name="MistSwitchResult" type="int">
