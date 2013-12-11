@@ -18,11 +18,16 @@ namespace views {
 
 class MenuButton;
 class MenuModelAdapter;
+class MenuRunnerHandler;
 class Widget;
 
 namespace internal {
 class DisplayChangeListener;
 class MenuRunnerImpl;
+}
+
+namespace test {
+class MenuRunnerTestAPI;
 }
 
 // MenuRunner is responsible for showing (running) the menu and additionally
@@ -112,9 +117,18 @@ class VIEWS_EXPORT MenuRunner {
   base::TimeDelta closing_event_time() const;
 
  private:
+  friend class test::MenuRunnerTestAPI;
+
+  // Sets an implementation of RunMenuAt. This is intended to be used at test.
+  void SetRunnerHandler(scoped_ptr<MenuRunnerHandler> runner_handler);
+
   scoped_ptr<MenuModelAdapter> menu_model_adapter_;
 
   internal::MenuRunnerImpl* holder_;
+
+  // An implementation of RunMenuAt. This is usually NULL and ignored. If this
+  // is not NULL, this implementation will be used.
+  scoped_ptr<MenuRunnerHandler> runner_handler_;
 
   scoped_ptr<internal::DisplayChangeListener> display_change_listener_;
 

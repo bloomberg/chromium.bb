@@ -15,6 +15,10 @@ class ComboboxListener {
  public:
   virtual void OnSelectedIndexChanged(Combobox* combobox) = 0;
 
+  // Handles when the combobox's style is the button style and the button is
+  // clicked.
+  virtual void OnComboboxTextButtonClicked(Combobox* combobox) {}
+
  protected:
   virtual ~ComboboxListener() {}
 };

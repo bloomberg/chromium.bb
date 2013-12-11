@@ -65,8 +65,9 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // views::CombboxListener method.
+  // views::CombboxListener methods.
   virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+  virtual void OnComboboxTextButtonClicked(views::Combobox* combobox) OVERRIDE;
 
   // views::LinkListener method.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

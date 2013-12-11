@@ -13,6 +13,7 @@
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner_handler.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -312,6 +313,11 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
                                             MenuItemView::AnchorPosition anchor,
                                             ui::MenuSourceType source_type,
                                             int32 types) {
+  if (runner_handler_.get()) {
+    return runner_handler_->RunMenuAt(parent, button, bounds, anchor,
+                                      source_type, types);
+  }
+
   // The parent of the nested menu will have created a DisplayChangeListener, so
   // we avoid creating a DisplayChangeListener if nested. Drop menus are
   // transient, so we don't cancel in that case.
@@ -349,6 +355,11 @@ void MenuRunner::Cancel() {
 
 base::TimeDelta MenuRunner::closing_event_time() const {
   return holder_->closing_event_time();
+}
+
+void MenuRunner::SetRunnerHandler(
+    scoped_ptr<MenuRunnerHandler> runner_handler) {
+  runner_handler_ = runner_handler.Pass();
 }
 
 }  // namespace views

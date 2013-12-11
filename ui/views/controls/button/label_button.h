@@ -23,6 +23,9 @@ class Painter;
 class VIEWS_EXPORT LabelButton : public CustomButton,
                                  public NativeThemeDelegate {
  public:
+  // The length of the hover fade animation.
+  static const int kHoverAnimationDurationMs;
+
   static const char kViewClassName[];
 
   LabelButton(ButtonListener* listener, const string16& text);

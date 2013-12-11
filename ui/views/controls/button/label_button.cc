@@ -23,9 +23,6 @@ namespace {
 // The spacing between the icon and text.
 const int kSpacing = 5;
 
-// The length of the hover fade animation.
-const int kHoverAnimationDurationMs = 170;
-
 // Default text and shadow colors for STYLE_BUTTON.
 const SkColor kStyleButtonTextColor = SK_ColorBLACK;
 const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
@@ -33,6 +30,9 @@ const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
 }  // namespace
 
 namespace views {
+
+// static
+const int LabelButton::kHoverAnimationDurationMs = 170;
 
 // static
 const char LabelButton::kViewClassName[] = "LabelButton";
