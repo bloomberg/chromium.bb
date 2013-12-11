@@ -548,6 +548,7 @@ cr.define('options', function() {
 
       // Unhide
       section.hidden = false;
+      section.style.height = '0px';
 
       var expander = function() {
         // Reveal the section using a WebKit transition if animating.
@@ -593,7 +594,7 @@ cr.define('options', function() {
       setTimeout(function() {
         // Hide the section using a WebKit transition.
         section.classList.add('sliding');
-        section.style.height = '';
+        section.style.height = '0px';
       }, 0);
     },
 
@@ -682,9 +683,10 @@ cr.define('options', function() {
       // Disable WebKit transitions.
       section.classList.remove('sliding');
 
-      if (section.style.height == '') {
+      if (section.style.height == '0px') {
         // Hide the content so it can't get tab focus.
         section.hidden = true;
+        section.style.height = '';
       } else {
         // Set the section height to 'auto' to allow for size changes
         // (due to font change or dynamic content).
