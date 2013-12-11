@@ -1300,7 +1300,6 @@
         'browser/net/websocket_browsertest.cc',
         'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
         'browser/notifications/message_center_notifications_browsertest.cc',
-        'browser/notifications/sync_notifier/chrome_notifier_delegate_browsertest.cc',
         'browser/notifications/sync_notifier/notification_bitmap_fetcher_browsertest.cc',
         'browser/notifications/sync_notifier/sync_notifier_test_utils.cc',
         'browser/notifications/sync_notifier/sync_notifier_test_utils.h',

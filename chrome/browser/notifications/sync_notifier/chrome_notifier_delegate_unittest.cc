@@ -8,26 +8,22 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/sync_notifier_test_utils.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 #include "sync/api/sync_change.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/notification_types.h"
 
 const char kTestNotificationId[] = "SomeRandomNotificationId";
 
 class StubChromeNotifierService : public notifier::ChromeNotifierService {
  public:
-  StubChromeNotifierService()
-      : ChromeNotifierService(ProfileManager::GetDefaultProfile(), NULL) {}
+  explicit StubChromeNotifierService(Profile* profile)
+      : ChromeNotifierService(profile, NULL) {}
 
   virtual ~StubChromeNotifierService() {}
 
@@ -70,22 +66,34 @@ class StubChromeNotifierService : public notifier::ChromeNotifierService {
   ScopedVector<notifier::SyncedNotification> owned_notifications_;
 };
 
-class ChromeNotifierDelegateBrowserTest : public InProcessBrowserTest {};
+class ChromeNotifierDelegateTest : public BrowserWithTestWindowTest {
+ public:
+  ChromeNotifierDelegateTest() {}
+  virtual ~ChromeNotifierDelegateTest() {}
 
-// Test will not have access to the browser profile on linux aura
-#if defined(OS_LINUX) && defined(USE_AURA)
-#define MAYBE_ClickTest \
-    DISABLED_ClickTest
-#else
-#define MAYBE_ClickTest \
-    ClickTest
-#endif
+  virtual void SetUp() OVERRIDE {
+    BrowserWithTestWindowTest::SetUp();
+    notifier_.reset(new StubChromeNotifierService(profile()));
+  }
 
-IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest, MAYBE_ClickTest) {
+  virtual void TearDown() OVERRIDE {
+    notifier_.reset();
+    BrowserWithTestWindowTest::TearDown();
+  }
+
+ protected:
+  StubChromeNotifierService* notifier() { return notifier_.get(); }
+
+ private:
+  scoped_ptr<StubChromeNotifierService> notifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeNotifierDelegateTest);
+};
+
+TEST_F(ChromeNotifierDelegateTest, ClickTest) {
   std::string id(kTestNotificationId);
-  StubChromeNotifierService notifier;
   scoped_refptr<notifier::ChromeNotifierDelegate> delegate(
-      new notifier::ChromeNotifierDelegate(id, &notifier));
+      new notifier::ChromeNotifierDelegate(id, notifier()));
 
   // Set up an observer to wait for the navigation
   content::WindowedNotificationObserver observer(
@@ -104,21 +112,10 @@ IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest, MAYBE_ClickTest) {
   ASSERT_EQ(url, tab->GetController().GetActiveEntry()->GetVirtualURL());
 }
 
-// Test will not have access to the browser profile on linux aura.
-#if defined(OS_LINUX) && defined(USE_AURA)
-#define MAYBE_ButtonClickTest \
-    DISABLED_ButtonClickTest
-#else
-#define MAYBE_ButtonClickTest \
-    ButtonClickTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest,
-                       MAYBE_ButtonClickTest) {
+TEST_F(ChromeNotifierDelegateTest, ButtonClickTest) {
   std::string id(kTestNotificationId);
-  StubChromeNotifierService notifier;
   scoped_refptr<notifier::ChromeNotifierDelegate> delegate(
-      new notifier::ChromeNotifierDelegate(id, &notifier));
+      new notifier::ChromeNotifierDelegate(id, notifier()));
 
   // Set up an observer to wait for the navigation
   content::WindowedNotificationObserver observer(
@@ -148,15 +145,14 @@ IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest,
   ASSERT_EQ(url2, tab->GetController().GetActiveEntry()->GetVirtualURL());
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest, CloseTest) {
+TEST_F(ChromeNotifierDelegateTest, CloseTest) {
   std::string id(kTestNotificationId);
-  StubChromeNotifierService notifier;
   scoped_refptr<notifier::ChromeNotifierDelegate> delegate(
-      new notifier::ChromeNotifierDelegate(id, &notifier));
+      new notifier::ChromeNotifierDelegate(id, notifier()));
 
   delegate->Close(false);
-  ASSERT_EQ("", notifier.read_id());
+  ASSERT_EQ("", notifier()->read_id());
 
   delegate->Close(true);
-  ASSERT_EQ(kTestNotificationId, notifier.read_id());
+  ASSERT_EQ(kTestNotificationId, notifier()->read_id());
 }

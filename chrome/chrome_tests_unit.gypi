@@ -1061,6 +1061,7 @@
         'browser/notifications/message_center_notifications_unittest_win.cc',
         'browser/notifications/message_center_settings_controller_unittest.cc',
         'browser/notifications/multi_user_notification_blocker_chromeos_unittest.cc',
+        'browser/notifications/sync_notifier/chrome_notifier_delegate_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_unittest.cc',
         'browser/notifications/sync_notifier/sync_notifier_test_utils.cc',
