@@ -40,10 +40,11 @@ class EVENTS_EXPORT GestureRecognizer {
   // Return the window which should handle this TouchEvent, in the case where
   // the touch is already associated with a target.
   // Otherwise, returns null.
-  virtual GestureConsumer* GetTouchLockedTarget(TouchEvent* event) = 0;
+  virtual GestureConsumer* GetTouchLockedTarget(const TouchEvent& event) = 0;
 
   // Return the window which should handle this GestureEvent.
-  virtual GestureConsumer* GetTargetForGestureEvent(GestureEvent* event) = 0;
+  virtual GestureConsumer* GetTargetForGestureEvent(
+      const GestureEvent& event) = 0;
 
   // If there is an active touch within
   // GestureConfiguration::max_separation_for_gesture_touches_in_pixels,

@@ -34,9 +34,10 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   std::vector<GestureEventHelper*>& helpers() { return helpers_; }
 
   // Overridden from GestureRecognizer
-  virtual GestureConsumer* GetTouchLockedTarget(TouchEvent* event) OVERRIDE;
+  virtual GestureConsumer* GetTouchLockedTarget(
+      const TouchEvent& event) OVERRIDE;
   virtual GestureConsumer* GetTargetForGestureEvent(
-      GestureEvent* event) OVERRIDE;
+      const GestureEvent& event) OVERRIDE;
   virtual GestureConsumer* GetTargetForLocation(
       const gfx::Point& location) OVERRIDE;
   virtual void TransferEventsTo(GestureConsumer* current_consumer,

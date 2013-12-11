@@ -2893,9 +2893,9 @@ TEST_F(GestureRecognizerTest, FlushAllOnHide) {
   dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
   window->Hide();
   EXPECT_EQ(NULL,
-      ui::GestureRecognizer::Get()->GetTouchLockedTarget(&press1));
+      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press1));
   EXPECT_EQ(NULL,
-      ui::GestureRecognizer::Get()->GetTouchLockedTarget(&press2));
+      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press2));
 }
 
 TEST_F(GestureRecognizerTest, LongPressTimerStopsOnPreventDefaultedTouchMoves) {
@@ -3564,10 +3564,10 @@ TEST_F(GestureRecognizerTest,
 
   ui::GestureRecognizer* gesture_recognizer = ui::GestureRecognizer::Get();
   EXPECT_EQ(window.get(),
-            gesture_recognizer->GetTouchLockedTarget(&press));
+            gesture_recognizer->GetTouchLockedTarget(press));
   gesture_recognizer->TransferEventsTo(window.get(), NULL);
   EXPECT_EQ(NULL,
-            gesture_recognizer->GetTouchLockedTarget(&press));
+            gesture_recognizer->GetTouchLockedTarget(press));
   // The event-handler removes |window| from its parent on the first
   // touch-cancel event, so it won't receive the second touch-cancel event.
   EXPECT_EQ(1, handler->touch_cancelled_count());

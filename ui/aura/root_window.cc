@@ -322,7 +322,7 @@ Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
   }
   if (!target) {
     target = ConsumerToWindow(
-        ui::GestureRecognizer::Get()->GetTargetForGestureEvent(event));
+        ui::GestureRecognizer::Get()->GetTargetForGestureEvent(*event));
   }
 
   return target;
@@ -1035,7 +1035,7 @@ ui::EventDispatchDetails RootWindow::DispatchTouchEventImpl(
   Window* target = client::GetCaptureWindow(window());
   if (!target) {
     target = ConsumerToWindow(
-        ui::GestureRecognizer::Get()->GetTouchLockedTarget(event));
+        ui::GestureRecognizer::Get()->GetTouchLockedTarget(*event));
     if (!target) {
       target = ConsumerToWindow(ui::GestureRecognizer::Get()->
           GetTargetForLocation(event->location()));
