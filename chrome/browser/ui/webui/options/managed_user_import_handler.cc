@@ -86,12 +86,21 @@ void ManagedUserImportHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED, type);
-  RequestManagedUserImportUpdate(NULL);
+  if (type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED) {
+    SigninGlobalError* error =
+        SigninGlobalError::GetForProfile(Profile::FromWebUI(web_ui()));
+    if (content::Details<SigninGlobalError>(details).ptr() != error)
+      return;
+
+    RequestManagedUserImportUpdate(NULL);
+    return;
+  }
+
+  OptionsPageUIHandler::Observe(type, source, details);
 }
 
 void ManagedUserImportHandler::RequestManagedUserImportUpdate(
-    const base::ListValue* args) {
+    const base::ListValue* /* args */) {
   if (Profile::FromWebUI(web_ui())->IsManaged())
     return;
 

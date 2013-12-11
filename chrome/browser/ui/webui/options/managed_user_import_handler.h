@@ -61,7 +61,6 @@ class ManagedUserImportHandler : public OptionsPageUIHandler {
   bool IsAccountConnected() const;
   bool HasAuthError() const;
 
-  content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<ManagedUserImportHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserImportHandler);
