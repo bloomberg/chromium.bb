@@ -30,6 +30,7 @@ import copy
 import logging
 import os
 import re
+import signal
 import sys
 import subprocess
 import threading
@@ -215,6 +216,12 @@ class AndroidCommands(object):
         if chmod:
             self.run(['shell', 'chmod', chmod, device_path])
 
+    def restart_adb(self):
+        pids = self.extract_pids('adbd')
+        if pids:
+            output = self.run(['shell', 'kill', '-' + str(signal.SIGTERM)] + pids)
+        self.run(['wait-for-device'])
+
     def restart_as_root(self):
         output = self.run(['root'])
         if 'adbd is already running as root' in output:
@@ -224,6 +231,21 @@ class AndroidCommands(object):
             self._log_error('Unrecognized output from adb root: %s' % output)
 
         self.run(['wait-for-device'])
+
+    def extract_pids(self, process_name):
+        pids = []
+        output = self.run(['shell', 'ps'])
+        for line in output.splitlines():
+            data = line.split()
+            try:
+                if process_name in data[-1]:  # name is in the last column
+                    if process_name == data[-1]:
+                        pids.insert(0, data[1])  # PID is in the second column
+                    else:
+                        pids.append(data[1])
+            except IndexError:
+                pass
+        return pids
 
     def run(self, command, ignore_error=False):
         self._log_debug('Run adb command: ' + str(command))
@@ -869,6 +891,7 @@ class ChromiumAndroidDriver(driver.Driver):
         if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             return
 
+        self._android_commands.restart_adb()
         self._android_commands.restart_as_root()
         self._setup_md5sum_and_push_data_if_needed(log_callback)
         self._setup_performance()
