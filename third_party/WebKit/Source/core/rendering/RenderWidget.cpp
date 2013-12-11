@@ -35,8 +35,6 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "wtf/HashMap.h"
 
-using namespace std;
-
 namespace WebCore {
 
 typedef HashMap<RefPtr<Widget>, FrameView*> WidgetToParentMap;
@@ -347,14 +345,6 @@ void RenderWidget::widgetPositionsUpdated()
     if (!m_widget)
         return;
     m_widget->widgetPositionsUpdated();
-}
-
-IntRect RenderWidget::windowClipRect() const
-{
-    if (!m_frameView)
-        return IntRect();
-
-    return intersection(m_frameView->contentsToWindow(m_clipRect), m_frameView->windowClipRect());
 }
 
 void RenderWidget::clearWidget()

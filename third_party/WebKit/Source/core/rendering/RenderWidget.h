@@ -36,7 +36,6 @@ public:
 
     void updateWidgetPosition();
     void widgetPositionsUpdated();
-    IntRect windowClipRect() const;
 
     void setIsOverlapped(bool);
 
@@ -50,9 +49,7 @@ public:
     };
 
 protected:
-    RenderWidget(Element*);
-
-    FrameView* frameView() const { return m_frameView; }
+    explicit RenderWidget(Element*);
 
     void clearWidget();
 
