@@ -51,6 +51,8 @@ class RemoteToLocalSyncer : public SyncTask {
   const fileapi::FileSystemURL& url() const { return url_; }
   SyncAction sync_action() const { return sync_action_; }
 
+  bool is_sync_root_deletion() const { return sync_root_deletion_; }
+
  private:
   typedef std::vector<std::string> FileIDList;
 
@@ -132,6 +134,8 @@ class RemoteToLocalSyncer : public SyncTask {
   void DidPrepareForFolderUpdate(const SyncStatusCallback& callback,
                                  SyncStatusCode status);
 
+  void HandleSyncRootDeletion(const SyncStatusCallback& callback);
+
   // Handles deleted remote file.  Needs Prepare() call.
   // If the deleted tracker is the sync-root:
   //  - TODO(tzik): Needs special handling.
@@ -198,6 +202,7 @@ class RemoteToLocalSyncer : public SyncTask {
   SyncAction sync_action_;
 
   bool prepared_;
+  bool sync_root_deletion_;
 
   scoped_ptr<SyncFileMetadata> local_metadata_;
   scoped_ptr<FileChangeList> local_changes_;

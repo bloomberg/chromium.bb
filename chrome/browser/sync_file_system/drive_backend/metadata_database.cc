@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/scoped_vector.h"
@@ -494,6 +495,22 @@ MetadataDatabase::~MetadataDatabase() {
       file_by_id_.begin(), file_by_id_.end());
   STLDeleteContainerPairSecondPointers(
       tracker_by_id_.begin(), tracker_by_id_.end());
+}
+
+// static
+void MetadataDatabase::ClearDatabase(
+    scoped_ptr<MetadataDatabase> metadata_database) {
+  DCHECK(metadata_database);
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      metadata_database->task_runner_;
+  base::FilePath database_path = metadata_database->database_path_;
+  DCHECK(!database_path.empty());
+  metadata_database.reset();
+
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(base::DeleteFile),
+                 database_path, true /* recursive */));
 }
 
 int64 MetadataDatabase::GetLargestFetchedChangeID() const {
@@ -992,7 +1009,11 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
     }
   }
 
-  // TODO(tzik): Handle modification to sync-root.
+  // Sync-root deletion should be handled separately by SyncEngine.
+  DCHECK(tracker_id != GetSyncRootTrackerID() ||
+         (tracker->has_synced_details() &&
+          tracker->synced_details().title() == updated_details.title() &&
+          !updated_details.missing()));
 
   if (tracker_id != GetSyncRootTrackerID()) {
     // Check if the tracker's parent is still in |parent_tracker_ids|.
@@ -1200,8 +1221,10 @@ void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
   }
 }
 
-MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner)
+MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner,
+                                   const base::FilePath& database_path)
     : task_runner_(task_runner),
+      database_path_(database_path),
       largest_known_change_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(task_runner);
@@ -1214,9 +1237,9 @@ void MetadataDatabase::CreateOnTaskRunner(
     const base::FilePath& database_path,
     const CreateCallback& callback) {
   scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(task_runner));
+      new MetadataDatabase(task_runner, database_path));
   SyncStatusCode status =
-      metadata_database->InitializeOnTaskRunner(database_path);
+      metadata_database->InitializeOnTaskRunner();
   if (status != SYNC_STATUS_OK)
     metadata_database.reset();
 
@@ -1229,17 +1252,17 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
     scoped_ptr<leveldb::DB> db,
     scoped_ptr<MetadataDatabase>* metadata_database_out) {
   scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(base::MessageLoopProxy::current()));
+      new MetadataDatabase(base::MessageLoopProxy::current(),
+                           base::FilePath()));
   metadata_database->db_ = db.Pass();
   SyncStatusCode status =
-      metadata_database->InitializeOnTaskRunner(base::FilePath());
+      metadata_database->InitializeOnTaskRunner();
   if (status == SYNC_STATUS_OK)
     *metadata_database_out = metadata_database.Pass();
   return status;
 }
 
-SyncStatusCode MetadataDatabase::InitializeOnTaskRunner(
-    const base::FilePath& database_path) {
+SyncStatusCode MetadataDatabase::InitializeOnTaskRunner() {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -1247,7 +1270,7 @@ SyncStatusCode MetadataDatabase::InitializeOnTaskRunner(
   bool created = false;
   // Open database unless |db_| is overridden for testing.
   if (!db_) {
-    status = OpenDatabase(database_path, &db_, &created);
+    status = OpenDatabase(database_path_, &db_, &created);
     if (status != SYNC_STATUS_OK)
       return status;
   }

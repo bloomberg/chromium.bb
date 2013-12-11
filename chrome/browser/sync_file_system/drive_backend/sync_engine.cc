@@ -475,6 +475,13 @@ void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
 void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                                         const SyncFileCallback& callback,
                                         SyncStatusCode status) {
+  if (syncer->is_sync_root_deletion()) {
+    MetadataDatabase::ClearDatabase(metadata_database_.Pass());
+    PostInitializeTask();
+    callback.Run(status, syncer->url());
+    return;
+  }
+
   if (status != SYNC_STATUS_OK)
     DCHECK_EQ(SYNC_ACTION_NONE, syncer->sync_action());
 

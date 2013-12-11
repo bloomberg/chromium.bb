@@ -78,6 +78,7 @@ RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
     : sync_context_(sync_context),
       sync_action_(SYNC_ACTION_NONE),
       prepared_(false),
+      sync_root_deletion_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -150,6 +151,21 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   DCHECK(dirty_tracker_->has_synced_details());
   const FileDetails& synced_details = dirty_tracker_->synced_details();
 
+  if (dirty_tracker_->tracker_id() ==
+      metadata_database()->GetSyncRootTrackerID()) {
+    if (remote_details.missing() ||
+        synced_details.title() != remote_details.title() ||
+        remote_details.parent_folder_ids_size()) {
+      HandleSyncRootDeletion(callback);
+      return;
+    }
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  DCHECK_NE(dirty_tracker_->tracker_id(),
+            metadata_database()->GetSyncRootTrackerID());
+
   if (remote_details.missing()) {
     if (!synced_details.missing()) {
       HandleDeletion(callback);
@@ -196,24 +212,21 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
   }
   DCHECK_EQ(synced_details.title(), remote_details.title());
 
-  if (dirty_tracker_->tracker_id() !=
-      metadata_database()->GetSyncRootTrackerID()) {
-    FileTracker parent_tracker;
-    if (!metadata_database()->FindTrackerByTrackerID(
-            dirty_tracker_->parent_tracker_id(), &parent_tracker)) {
-      LOG(ERROR) << "Missing parent tracker for a non sync-root tracker: "
-                 << dirty_tracker_->file_id();
-      NOTREACHED();
-      callback.Run(SYNC_STATUS_FAILED);
-      return;
-    }
+  FileTracker parent_tracker;
+  if (!metadata_database()->FindTrackerByTrackerID(
+          dirty_tracker_->parent_tracker_id(), &parent_tracker)) {
+    LOG(ERROR) << "Missing parent tracker for a non sync-root tracker: "
+               << dirty_tracker_->file_id();
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
 
-    if (!HasFolderAsParent(remote_details, parent_tracker.file_id())) {
-      // Handle reorganize as deletion + addition.
-      Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
-                         weak_ptr_factory_.GetWeakPtr(), callback));
-      return;
-    }
+  if (!HasFolderAsParent(remote_details, parent_tracker.file_id())) {
+    // Handle reorganize as deletion + addition.
+    Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
+    return;
   }
 
   if (synced_details.file_kind() == FILE_KIND_FILE) {
@@ -223,11 +236,6 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     }
   } else {
     DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
-    if (dirty_tracker_->tracker_id() ==
-        metadata_database()->GetSyncRootTrackerID()) {
-      callback.Run(SYNC_STATUS_OK);
-      return;
-    }
     HandleFolderUpdate(callback);
     return;
   }
@@ -379,6 +387,12 @@ void RemoteToLocalSyncer::DidPrepareForFolderUpdate(
   CreateFolder(callback);
 }
 
+void RemoteToLocalSyncer::HandleSyncRootDeletion(
+    const SyncStatusCallback& callback) {
+  sync_root_deletion_ = true;
+  callback.Run(SYNC_STATUS_OK);
+}
+
 void RemoteToLocalSyncer::HandleDeletion(
     const SyncStatusCallback& callback) {
   DCHECK(dirty_tracker_);
@@ -504,6 +518,11 @@ void RemoteToLocalSyncer::DidListFolderContent(
 
 void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
                                         SyncStatusCode status) {
+  if (sync_root_deletion_) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
   if (status == SYNC_STATUS_RETRY) {
     callback.Run(SYNC_STATUS_OK);
     return;
@@ -574,14 +593,6 @@ void RemoteToLocalSyncer::DidPrepare(const SyncStatusCallback& callback,
 }
 
 void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
-  if (dirty_tracker_->tracker_id() ==
-      metadata_database()->GetSyncRootTrackerID()) {
-    // TODO(tzik): Sync-root is deleted. Needs special handling.
-    NOTIMPLEMENTED();
-    callback.Run(SYNC_STATUS_FAILED);
-    return;
-  }
-
   remote_change_processor()->ApplyRemoteChange(
       FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN),
       base::FilePath(),

@@ -127,6 +127,8 @@ class MetadataDatabase {
                      const CreateCallback& callback);
   ~MetadataDatabase();
 
+  static void ClearDatabase(scoped_ptr<MetadataDatabase> metadata_database);
+
   int64 GetLargestFetchedChangeID() const;
   int64 GetSyncRootTrackerID() const;
   bool HasSyncRoot() const;
@@ -334,7 +336,8 @@ class MetadataDatabase {
 
   typedef std::set<FileTracker*, DirtyTrackerComparator> DirtyTrackers;
 
-  explicit MetadataDatabase(base::SequencedTaskRunner* task_runner);
+  MetadataDatabase(base::SequencedTaskRunner* task_runner,
+                   const base::FilePath& database_path);
   static void CreateOnTaskRunner(base::SingleThreadTaskRunner* callback_runner,
                                  base::SequencedTaskRunner* task_runner,
                                  const base::FilePath& database_path,
@@ -342,7 +345,7 @@ class MetadataDatabase {
   static SyncStatusCode CreateForTesting(
       scoped_ptr<leveldb::DB> db,
       scoped_ptr<MetadataDatabase>* metadata_database_out);
-  SyncStatusCode InitializeOnTaskRunner(const base::FilePath& database_path);
+  SyncStatusCode InitializeOnTaskRunner();
   void BuildIndexes(DatabaseContents* contents);
 
   // Database manipulation methods.
@@ -420,6 +423,7 @@ class MetadataDatabase {
   scoped_ptr<base::ListValue> DumpMetadata();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::FilePath database_path_;
   scoped_ptr<leveldb::DB> db_;
 
   scoped_ptr<ServiceMetadata> service_metadata_;
