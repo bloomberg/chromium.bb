@@ -18,7 +18,10 @@ class SpinningCube {
   ~SpinningCube();
 
   void Init(uint32_t width, uint32_t height);
-  void Update(float delta_time);
+  void set_direction(int direction) { direction_ = direction; }
+  void SetFlingMultiplier(float drag_distance, float drag_time);
+  void UpdateForTimeDelta(float delta_time);
+  void UpdateForDragDistance(float distance);
   void Draw();
 
   void OnGLContextLost();
@@ -26,10 +29,14 @@ class SpinningCube {
  private:
   class GLState;
 
+  void Update();
+
   bool initialized_;
   uint32_t width_;
   uint32_t height_;
   scoped_ptr<GLState> state_;
+  float fling_multiplier_;
+  int direction_;
 };
 
 }  // namespace examples

@@ -6,6 +6,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../gpu/gpu.gyp:gles2_c_lib',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/gl/gl.gyp:gl',
         'mojo_common_lib',
         'mojo_gles2',
