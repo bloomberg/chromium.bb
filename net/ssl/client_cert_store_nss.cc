@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/client_cert_store_impl.h"
+#include "net/ssl/client_cert_store_nss.h"
 
 #include <nss.h>
 #include <ssl.h>
@@ -101,11 +101,13 @@ void GetClientCertsOnWorkerThread(
 
 }  // namespace
 
-ClientCertStoreImpl::ClientCertStoreImpl() {}
+ClientCertStoreNSS::ClientCertStoreNSS(
+    const PasswordDelegateFactory& password_delegate_factory)
+    : password_delegate_factory_(password_delegate_factory) {}
 
-ClientCertStoreImpl::~ClientCertStoreImpl() {}
+ClientCertStoreNSS::~ClientCertStoreNSS() {}
 
-void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
+void ClientCertStoreNSS::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {
   scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
@@ -126,12 +128,7 @@ void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
   }
 }
 
-void ClientCertStoreImpl::set_password_delegate_factory(
-      const PasswordDelegateFactory& password_delegate_factory) {
-  password_delegate_factory_ = password_delegate_factory;
-}
-
-bool ClientCertStoreImpl::SelectClientCertsForTesting(
+bool ClientCertStoreNSS::SelectClientCertsForTesting(
     const CertificateList& input_certs,
     const SSLCertRequestInfo& request,
     CertificateList* selected_certs) {

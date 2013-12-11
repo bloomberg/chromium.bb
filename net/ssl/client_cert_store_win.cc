@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/client_cert_store_impl.h"
+#include "net/ssl/client_cert_store_win.h"
 
 #include <algorithm>
 #include <string>
@@ -143,11 +143,11 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
 
 }  // namespace
 
-ClientCertStoreImpl::ClientCertStoreImpl() {}
+ClientCertStoreWin::ClientCertStoreWin() {}
 
-ClientCertStoreImpl::~ClientCertStoreImpl() {}
+ClientCertStoreWin::~ClientCertStoreWin() {}
 
-void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
+void ClientCertStoreWin::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {
   // Client certificates of the user are in the "MY" system certificate store.
@@ -165,7 +165,7 @@ void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
   callback.Run();
 }
 
-bool ClientCertStoreImpl::SelectClientCertsForTesting(
+bool ClientCertStoreWin::SelectClientCertsForTesting(
     const CertificateList& input_certs,
     const SSLCertRequestInfo& request,
     CertificateList* selected_certs) {

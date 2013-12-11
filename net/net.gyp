@@ -1021,10 +1021,12 @@
         'spdy/spdy_write_queue.h',
         'spdy/write_blocked_list.h',
         'ssl/client_cert_store.h',
-        'ssl/client_cert_store_impl.h',
-        'ssl/client_cert_store_impl_mac.cc',
-        'ssl/client_cert_store_impl_nss.cc',
-        'ssl/client_cert_store_impl_win.cc',
+        'ssl/client_cert_store_mac.cc',
+        'ssl/client_cert_store_mac.h',
+        'ssl/client_cert_store_nss.cc',
+        'ssl/client_cert_store_nss.h',
+        'ssl/client_cert_store_win.cc',
+        'ssl/client_cert_store_win.h',
         'ssl/default_server_bound_cert_store.cc',
         'ssl/default_server_bound_cert_store.h',
         'ssl/openssl_client_key_store.cc',
@@ -1310,7 +1312,6 @@
               'socket/ssl_client_socket_nss.h',
               'socket/ssl_server_socket_nss.cc',
               'socket/ssl_server_socket_nss.h',
-              'ssl/client_cert_store_impl_nss.cc',
               'third_party/mozilla_security_manager/nsKeygenHandler.cpp',
               'third_party/mozilla_security_manager/nsKeygenHandler.h',
               'third_party/mozilla_security_manager/nsNSSCertificateDB.cpp',
@@ -1419,7 +1420,8 @@
             'sources!': [
               'cert/cert_verify_proc_nss.cc',
               'cert/cert_verify_proc_nss.h',
-              'ssl/client_cert_store_impl_nss.cc',
+              'ssl/client_cert_store_nss.cc',
+              'ssl/client_cert_store_nss.h',
             ],
         }],
         [ 'enable_websockets != 1', {
@@ -1451,7 +1453,6 @@
               'http/http_auth_handler_ntlm_portable.cc',
               'socket/tcp_socket_libevent.cc',
               'socket/tcp_socket_libevent.h',
-              'ssl/client_cert_store_impl_nss.cc',
               'udp/udp_socket_libevent.cc',
               'udp/udp_socket_libevent.h',
             ],
@@ -1474,9 +1475,6 @@
           },
         ],
         [ 'OS == "mac"', {
-            'sources!': [
-              'ssl/client_cert_store_impl_nss.cc',
-            ],
             'dependencies': [
               '../third_party/nss/nss.gyp:nspr',
               '../third_party/nss/nss.gyp:nss',
@@ -1928,7 +1926,10 @@
         'spdy/spdy_websocket_test_util.h',
         'spdy/spdy_write_queue_unittest.cc',
         'spdy/write_blocked_list_test.cc',
-        'ssl/client_cert_store_impl_unittest.cc',
+        'ssl/client_cert_store_mac_unittest.cc',
+        'ssl/client_cert_store_nss_unittest.cc',
+        'ssl/client_cert_store_unittest-inl.h',
+        'ssl/client_cert_store_win_unittest.cc',
         'ssl/default_server_bound_cert_store_unittest.cc',
         'ssl/openssl_client_key_store_unittest.cc',
         'ssl/server_bound_cert_service_unittest.cc',
@@ -2041,11 +2042,15 @@
             # No res_ninit() et al on Android, so this doesn't make a lot of
             # sense.
             'dns/dns_config_service_posix_unittest.cc',
-            'ssl/client_cert_store_impl_unittest.cc',
           ],
           'dependencies': [
             'net_javatests',
             'net_test_jni_headers',
+          ],
+        }],
+        [ 'use_nss != 1', {
+          'sources!': [
+            'ssl/client_cert_store_nss_unittest.cc',
           ],
         }],
         [ 'use_openssl == 1', {
@@ -2111,7 +2116,6 @@
               'cert/nss_cert_database_unittest.cc',
               'cert/x509_util_nss_unittest.cc',
               'quic/test_tools/crypto_test_utils_nss.cc',
-              'ssl/client_cert_store_impl_unittest.cc',
             ],
           }, {  # else !use_openssl: remove the unneeded files
             'sources!': [
@@ -2223,7 +2227,6 @@
               # Need TestServer.
               'proxy/proxy_script_fetcher_impl_unittest.cc',
               'socket/ssl_client_socket_unittest.cc',
-              'ssl/client_cert_store_impl_unittest.cc',
               'url_request/url_fetcher_impl_unittest.cc',
               'url_request/url_request_context_builder_unittest.cc',
               # Needs GetAppOutput().

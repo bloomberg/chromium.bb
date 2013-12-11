@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/client_cert_store_impl.h"
+#include "net/ssl/client_cert_store_mac.h"
 
 #include <CommonCrypto/CommonDigest.h>
 #include <CoreFoundation/CFArray.h>
@@ -172,11 +172,11 @@ void GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
 
 }  // namespace
 
-ClientCertStoreImpl::ClientCertStoreImpl() {}
+ClientCertStoreMac::ClientCertStoreMac() {}
 
-ClientCertStoreImpl::~ClientCertStoreImpl() {}
+ClientCertStoreMac::~ClientCertStoreMac() {}
 
-void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
+void ClientCertStoreMac::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {
   std::string server_domain =
@@ -257,7 +257,7 @@ void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
   callback.Run();
 }
 
-bool ClientCertStoreImpl::SelectClientCertsForTesting(
+bool ClientCertStoreMac::SelectClientCertsForTesting(
     const CertificateList& input_certs,
     const SSLCertRequestInfo& request,
     CertificateList* selected_certs) {
@@ -265,8 +265,7 @@ bool ClientCertStoreImpl::SelectClientCertsForTesting(
   return true;
 }
 
-#if !defined(OS_IOS)
-bool ClientCertStoreImpl::SelectClientCertsGivenPreferredForTesting(
+bool ClientCertStoreMac::SelectClientCertsGivenPreferredForTesting(
     const scoped_refptr<X509Certificate>& preferred_cert,
     const CertificateList& regular_certs,
     const SSLCertRequestInfo& request,
@@ -275,6 +274,5 @@ bool ClientCertStoreImpl::SelectClientCertsGivenPreferredForTesting(
       preferred_cert, regular_certs, request, false, selected_certs);
   return true;
 }
-#endif
 
 }  // namespace net

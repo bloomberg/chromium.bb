@@ -71,7 +71,6 @@
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/ssl/client_cert_store_impl.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -104,6 +103,15 @@
 
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
+#include "net/ssl/client_cert_store_nss.h"
+#endif
+
+#if defined(OS_WIN)
+#include "net/ssl/client_cert_store_win.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "net/ssl/client_cert_store_mac.h"
 #endif
 
 using content::BrowserContext;
@@ -826,19 +834,21 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
 
 scoped_ptr<net::ClientCertStore>
 ProfileIOData::ResourceContext::CreateClientCertStore() {
-#if !defined(USE_OPENSSL)
-  scoped_ptr<net::ClientCertStoreImpl> store(new net::ClientCertStoreImpl());
 #if defined(USE_NSS)
-  store->set_password_delegate_factory(
+  return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
       base::Bind(&chrome::NewCryptoModuleBlockingDialogDelegate,
-                 chrome::kCryptoModulePasswordClientAuth));
-#endif
-  return store.PassAs<net::ClientCertStore>();
-#else  // defined(USE_OPENSSL)
+                 chrome::kCryptoModulePasswordClientAuth)));
+#elif defined(OS_WIN)
+  return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
+#elif defined(OS_MACOSX)
+  return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
+#elif defined(USE_OPENSSL)
   // OpenSSL does not use the ClientCertStore infrastructure. On Android client
   // cert matching is done by the OS as part of the call to show the cert
   // selection dialog.
   return scoped_ptr<net::ClientCertStore>();
+#else
+#error Unknown platform.
 #endif
 }
 
