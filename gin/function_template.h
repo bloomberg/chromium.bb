@@ -60,7 +60,7 @@ struct CallbackParamTraits<const T*> {
 // among every CallbackHolder instance.
 class CallbackHolderBase : public Wrappable<CallbackHolderBase> {
  protected:
-  ~CallbackHolderBase() {}
+  virtual ~CallbackHolderBase() {}
 };
 
 template<typename Sig>
@@ -71,7 +71,7 @@ class CallbackHolder : public CallbackHolderBase {
   base::Callback<Sig> callback;
   int flags;
  private:
-  ~CallbackHolder() {}
+  virtual ~CallbackHolder() {}
 };
 
 

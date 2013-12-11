@@ -26,7 +26,7 @@ class MyObject : public Wrappable<MyObject> {
 
  private:
   MyObject() : value_(0) {}
-  ~MyObject() {}
+  virtual ~MyObject() {}
 
   int value_;
 };
