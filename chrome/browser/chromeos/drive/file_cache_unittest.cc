@@ -159,8 +159,12 @@ class FileCacheTestOnUIThread : public testing::Test {
     expected_cache_state_ = expected_cache_state;
 
     FileError error = FILE_ERROR_OK;
-    cache_->PinOnUIThread(
-        id,
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&internal::FileCache::Pin,
+                   base::Unretained(cache_.get()),
+                   id),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, id);
@@ -173,8 +177,12 @@ class FileCacheTestOnUIThread : public testing::Test {
     expected_cache_state_ = expected_cache_state;
 
     FileError error = FILE_ERROR_OK;
-    cache_->UnpinOnUIThread(
-        id,
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&internal::FileCache::Unpin,
+                   base::Unretained(cache_.get()),
+                   id),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, id);
@@ -224,7 +232,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     expected_cache_state_ = expected_cache_state;
 
     FileError error = FILE_ERROR_OK;
-    PostTaskAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&FileCache::ClearDirty,
@@ -254,10 +262,15 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     FileError error = FILE_ERROR_OK;
     base::FilePath cache_file_path;
-    cache_->MarkAsMountedOnUIThread(
-        id,
-        google_apis::test_util::CreateCopyResultCallback(
-            &error, &cache_file_path));
+
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(),
+        FROM_HERE,
+        base::Bind(&FileCache::MarkAsMounted,
+                   base::Unretained(cache_.get()),
+                   id,
+                   &cache_file_path),
+        google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
 
     EXPECT_TRUE(base::PathExists(cache_file_path));
@@ -272,8 +285,12 @@ class FileCacheTestOnUIThread : public testing::Test {
     expected_cache_state_ = expected_cache_state;
 
     FileError error = FILE_ERROR_OK;
-    cache_->MarkAsUnmountedOnUIThread(
-        file_path,
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(),
+        FROM_HERE,
+        base::Bind(&FileCache::MarkAsUnmounted,
+                   base::Unretained(cache_.get()),
+                   file_path),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
 

@@ -398,8 +398,11 @@ void SyncClient::OnFetchFileComplete(const std::string& local_id,
       case FILE_ERROR_ABORT:
         // If user cancels download, unpin the file so that we do not sync the
         // file again.
-        cache_->UnpinOnUIThread(local_id,
-                                base::Bind(&util::EmptyFileOperationCallback));
+        base::PostTaskAndReplyWithResult(
+            blocking_task_runner_,
+            FROM_HERE,
+            base::Bind(&FileCache::Unpin, base::Unretained(cache_), local_id),
+            base::Bind(&util::EmptyFileOperationCallback));
         break;
       case FILE_ERROR_NO_CONNECTION:
         // Add the task again so that we'll retry once the connection is back.

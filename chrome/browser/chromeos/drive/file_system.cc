@@ -969,7 +969,14 @@ void FileSystem::MarkCacheFileAsUnmounted(
     callback.Run(FILE_ERROR_FAILED);
     return;
   }
-  cache_->MarkAsUnmountedOnUIThread(cache_file_path, callback);
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::FileCache::MarkAsUnmounted,
+                 base::Unretained(cache_),
+                 cache_file_path),
+      callback);
 }
 
 void FileSystem::GetCacheEntry(
