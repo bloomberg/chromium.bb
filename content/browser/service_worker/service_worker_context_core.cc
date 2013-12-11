@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
+#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -20,7 +21,8 @@ namespace content {
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy)
-    : storage_(new ServiceWorkerStorage(path, quota_manager_proxy)) {}
+    : storage_(new ServiceWorkerStorage(path, quota_manager_proxy)),
+      embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())) {}
 
 ServiceWorkerContextCore::~ServiceWorkerContextCore() {}
 

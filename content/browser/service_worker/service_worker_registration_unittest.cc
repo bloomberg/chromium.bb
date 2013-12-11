@@ -26,7 +26,8 @@ class ServiceWorkerRegistrationTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerRegistrationTest, Shutdown) {
-  int64 registration_id = -1L;
+  const int64 registration_id = -1L;
+  const int64 version_id = -1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
       new ServiceWorkerRegistration(
           GURL("http://www.example.com/*"),
@@ -34,7 +35,7 @@ TEST_F(ServiceWorkerRegistrationTest, Shutdown) {
           registration_id);
 
   scoped_refptr<ServiceWorkerVersion> active_version =
-      new ServiceWorkerVersion(registration);
+      new ServiceWorkerVersion(registration, NULL, version_id);
   registration->set_active_version(active_version);
 
   registration->Shutdown();
@@ -54,12 +55,14 @@ TEST_F(ServiceWorkerRegistrationTest, ActivatePending) {
           GURL("http://www.example.com/service_worker.js"),
           registration_id);
 
+  const int64 version_1_id = 1L;
+  const int64 version_2_id = 2L;
   scoped_refptr<ServiceWorkerVersion> version_1 =
-      new ServiceWorkerVersion(registration);
+      new ServiceWorkerVersion(registration, NULL, version_1_id);
   registration->set_active_version(version_1);
 
   scoped_refptr<ServiceWorkerVersion> version_2 =
-      new ServiceWorkerVersion(registration);
+      new ServiceWorkerVersion(registration, NULL, version_2_id);
   registration->set_pending_version(version_2);
 
   registration->ActivatePendingVersion();

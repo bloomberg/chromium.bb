@@ -29,9 +29,10 @@ class QuotaManagerProxy;
 
 namespace content {
 
-class ServiceWorkerStorage;
-class ServiceWorkerRegistration;
+class EmbeddedWorkerRegistry;
 class ServiceWorkerProviderHost;
+class ServiceWorkerRegistration;
+class ServiceWorkerStorage;
 
 // This class manages data associated with service workers.
 // The class is single threaded and should only be used on the IO thread.
@@ -74,6 +75,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void UnregisterServiceWorker(const GURL& pattern,
                                const UnregistrationCallback& callback);
 
+  EmbeddedWorkerRegistry* embedded_worker_registry() {
+    return embedded_worker_registry_.get();
+  }
+
  private:
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
   typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
@@ -91,6 +96,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
+  scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };

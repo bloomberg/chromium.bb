@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -37,8 +38,11 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
 }
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
-  if (context_)
+  if (context_) {
     context_->RemoveAllProviderHostsForProcess(render_process_id_);
+    context_->embedded_worker_registry()->RemoveChildProcessSender(
+        render_process_id_);
+  }
 }
 
 void ServiceWorkerDispatcherHost::Init(
@@ -51,6 +55,8 @@ void ServiceWorkerDispatcherHost::Init(
       return;
   }
   context_ = context_wrapper->context()->AsWeakPtr();
+  context_->embedded_worker_registry()->AddChildProcessSender(
+      render_process_id_, this);
 }
 
 void ServiceWorkerDispatcherHost::OnDestruct() const {
