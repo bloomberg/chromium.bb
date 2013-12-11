@@ -179,7 +179,7 @@ void MockTimeSingleThreadTaskRunner::FastForwardUntilNoTasksRemain() {
 bool MockTimeSingleThreadTaskRunner::TemporalOrder::operator()(
     const std::pair<base::TimeTicks, base::Closure>& first_task,
     const std::pair<base::TimeTicks, base::Closure>& second_task) const {
-  return first_task.first >= second_task.first;
+  return first_task.first > second_task.first;
 }
 
 MockTimeSingleThreadTaskRunner::~MockTimeSingleThreadTaskRunner() {
@@ -717,8 +717,7 @@ TEST_F(SessionLengthLimiterTest, RunWithoutUserActivityWhileWaiting) {
 // wait for user activity. Verifies that the limiter starts a timer and that
 // when the session length reaches the limit, the session is terminated. Also
 // verifies that user activity does not affect the timer.
-// Disabled, http://crbug.com/327445 .
-TEST_F(SessionLengthLimiterTest, DISABLED_RunWithUserActivityWhileNotWaiting) {
+TEST_F(SessionLengthLimiterTest, RunWithUserActivityWhileNotWaiting) {
   base::ThreadTaskRunnerHandle runner_handler(runner_);
 
   // Set a 60 second session time limit.
