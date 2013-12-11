@@ -115,13 +115,13 @@ def GetChromePath(platform):
     return os.path.realpath(chrome_path)
 
   # Otherwise look in the PATH environment variable.
-  chrome_path = CHROME_DEFAULT_PATH[platform]
-  basename = os.path.basename(chrome_path)
+  basename = os.path.basename(CHROME_DEFAULT_PATH[platform])
   chrome_path = oshelpers.FindExeInPath(basename)
   if chrome_path:
     return os.path.realpath(chrome_path)
 
   # Finally, try the default paths to Chrome.
+  chrome_path = CHROME_DEFAULT_PATH[platform]
   if os.path.exists(chrome_path):
     return os.path.realpath(chrome_path)
 
