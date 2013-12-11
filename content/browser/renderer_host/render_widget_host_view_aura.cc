@@ -3416,6 +3416,11 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   }
   if (current_surface_.get())
     UpdateExternalTexture();
+  if (HasFocus()) {
+    ui::InputMethod* input_method = GetInputMethod();
+    if (input_method)
+      input_method->SetFocusedTextInputClient(this);
+  }
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
