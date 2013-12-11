@@ -19,12 +19,14 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   virtual void OnSuccess(const std::vector<base::string16>&) OVERRIDE;
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const IndexedDBDatabaseMetadata& metadata) OVERRIDE;
-
   IndexedDBConnection* connection() { return connection_.get(); }
 
- private:
+ protected:
   virtual ~MockIndexedDBCallbacks();
+
   scoped_ptr<IndexedDBConnection> connection_;
+
+ private:
   bool expect_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MockIndexedDBCallbacks);

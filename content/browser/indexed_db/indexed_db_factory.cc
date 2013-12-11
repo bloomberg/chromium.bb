@@ -193,13 +193,18 @@ void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {
   context_->ForceClose(origin_url);
 }
 
-bool IndexedDBFactory::IsBackingStoreOpenForTesting(const GURL& origin_url)
-    const {
+bool IndexedDBFactory::IsDatabaseOpen(const GURL& origin_url,
+                                      const base::string16& name) const {
+
+  return !!database_map_.count(IndexedDBDatabase::Identifier(origin_url, name));
+}
+
+bool IndexedDBFactory::IsBackingStoreOpen(const GURL& origin_url) const {
   return backing_store_map_.find(origin_url) != backing_store_map_.end();
 }
 
-bool IndexedDBFactory::IsBackingStorePendingCloseForTesting(
-    const GURL& origin_url) const {
+bool IndexedDBFactory::IsBackingStorePendingClose(const GURL& origin_url)
+    const {
   IndexedDBBackingStoreMap::const_iterator it =
       backing_store_map_.find(origin_url);
   if (it == backing_store_map_.end())
@@ -264,7 +269,8 @@ void IndexedDBFactory::Open(
       blink::WebIDBDataLossNone;
   std::string data_loss_message;
   bool disk_full = false;
-  if (it == database_map_.end()) {
+  bool was_open = (it != database_map_.end());
+  if (!was_open) {
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(origin_url,
                          data_directory,
@@ -296,8 +302,6 @@ void IndexedDBFactory::Open(
               "Internal error creating database backend for indexedDB.open.")));
       return;
     }
-
-    database_map_[unique_identifier] = database;
   } else {
     database = it->second;
   }
@@ -308,6 +312,9 @@ void IndexedDBFactory::Open(
                            version,
                            data_loss,
                            data_loss_message);
+
+  if (!was_open && database->ConnectionCount() > 0)
+    database_map_[unique_identifier] = database;
 }
 
 std::vector<IndexedDBDatabase*> IndexedDBFactory::GetOpenDatabasesForOrigin(

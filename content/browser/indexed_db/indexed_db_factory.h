@@ -55,9 +55,6 @@ class CONTENT_EXPORT IndexedDBFactory
   std::vector<IndexedDBDatabase*> GetOpenDatabasesForOrigin(
       const GURL& origin_url) const;
 
-  bool IsBackingStoreOpenForTesting(const GURL& origin_url) const;
-  bool IsBackingStorePendingCloseForTesting(const GURL& origin_url) const;
-
   // Called by IndexedDBContext after all connections are closed, to
   // ensure the backing store closed immediately.
   void ForceClose(const GURL& origin_url);
@@ -81,10 +78,30 @@ class CONTENT_EXPORT IndexedDBFactory
   void CloseBackingStore(const GURL& origin_url);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
+                           BackingStoreReleasedOnForcedClose);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
+                           BackingStoreReleaseDelayedOnClose);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, DatabaseFailedOpen);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
+                           DeleteDatabaseClosesBackingStore);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
+                           ForceCloseReleasesBackingStore);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
+                           GetDatabaseNamesClosesBackingStore);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest,
+                           ForceCloseOpenDatabasesOnCommitFailure);
+
   // Called internally after a database is closed, with some delay. If this
   // factory has the last reference, it will be released.
   void MaybeCloseBackingStore(const GURL& origin_url);
   bool HasLastBackingStoreReference(const GURL& origin_url) const;
+
+  // Testing helpers, so unit tests don't need to grovel through internal state.
+  bool IsDatabaseOpen(const GURL& origin_url,
+                      const base::string16& name) const;
+  bool IsBackingStoreOpen(const GURL& origin_url) const;
+  bool IsBackingStorePendingClose(const GURL& origin_url) const;
 
   IndexedDBContextImpl* context_;
 

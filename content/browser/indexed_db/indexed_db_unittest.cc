@@ -251,13 +251,13 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   // ConnectionOpened() is usually called by the dispatcher.
   context->ConnectionOpened(kTestOrigin, callbacks->connection());
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(kTestOrigin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(kTestOrigin));
 
   // Simulate the write failure.
   callbacks->connection()->database()->TransactionCommitFailed();
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(kTestOrigin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(kTestOrigin));
 }
 
 }  // namespace content

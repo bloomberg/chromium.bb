@@ -20,8 +20,6 @@
 
 namespace content {
 
-namespace {
-
 class IndexedDBFactoryTest : public testing::Test {
  public:
   IndexedDBFactoryTest() {}
@@ -249,13 +247,13 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
 
   EXPECT_TRUE(callbacks->connection());
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 
   callbacks->connection()->ForceClose();
 
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
@@ -283,11 +281,11 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
       callbacks->connection()->database()->backing_store();
   EXPECT_FALSE(store->HasOneRef());  // Factory and database.
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
   callbacks->connection()->Close();
   EXPECT_TRUE(store->HasOneRef());  // Factory.
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_TRUE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
+  EXPECT_TRUE(factory->IsBackingStorePendingClose(origin));
   EXPECT_TRUE(store->close_timer()->IsRunning());
 
   // Take a ref so it won't be destroyed out from under the test.
@@ -296,8 +294,8 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   factory->ContextDestroyed();
   EXPECT_TRUE(store->HasOneRef());  // Local.
   EXPECT_FALSE(store->close_timer()->IsRunning());
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 }
 
 TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
@@ -307,7 +305,7 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
   scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory(NULL);
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
 
   const bool expect_connection = false;
   scoped_refptr<MockIndexedDBCallbacks> callbacks(
@@ -317,14 +315,14 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
                           origin,
                           temp_directory.path());
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 
   // Now simulate shutdown, which should stop the timer.
   factory->ContextDestroyed();
 
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 }
 
 TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
@@ -334,7 +332,7 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
   scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory(NULL);
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
 
   const bool expect_connection = false;
   scoped_refptr<MockIndexedDBCallbacks> callbacks(
@@ -343,14 +341,14 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
                             origin,
                             temp_directory.path());
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 
   // Now simulate shutdown, which should stop the timer.
   factory->ContextDestroyed();
 
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 }
 
 TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
@@ -374,23 +372,110 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
                 temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 
   callbacks->connection()->Close();
 
-  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_TRUE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
+  EXPECT_TRUE(factory->IsBackingStorePendingClose(origin));
 
   factory->ForceClose(origin);
 
-  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(origin));
-  EXPECT_FALSE(factory->IsBackingStorePendingCloseForTesting(origin));
+  EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+  EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 
   // Ensure it is safe if the store is not open.
   factory->ForceClose(origin);
 }
 
-}  // namespace
+class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
+ public:
+  virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
+                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
+    EXPECT_TRUE(connection_.get());
+    EXPECT_FALSE(connection.get());
+  }
+
+  virtual void OnUpgradeNeeded(
+      int64 old_version,
+      scoped_ptr<IndexedDBConnection> connection,
+      const content::IndexedDBDatabaseMetadata& metadata,
+      blink::WebIDBDataLoss data_loss,
+      std::string data_loss_message) OVERRIDE {
+    connection_ = connection.Pass();
+  }
+
+ protected:
+  virtual ~UpgradeNeededCallbacks() {}
+};
+
+class ErrorCallbacks : public MockIndexedDBCallbacks {
+ public:
+  ErrorCallbacks() : MockIndexedDBCallbacks(false), saw_error_(false) {}
+
+  virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {
+    saw_error_= true;
+  }
+
+ protected:
+  virtual ~ErrorCallbacks() { EXPECT_TRUE(saw_error_); }
+
+ private:
+  bool saw_error_;
+};
+
+TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
+  GURL origin("http://localhost:81");
+
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+
+  scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory(NULL);
+  const base::string16 db_name(ASCIIToUTF16("db"));
+  const int64 db_version = 2;
+  const int64 transaction_id = 1;
+  scoped_refptr<IndexedDBDatabaseCallbacks> db_callbacks(
+      new MockIndexedDBDatabaseCallbacks());
+
+  // Open at version 2, then close.
+  {
+    scoped_refptr<MockIndexedDBCallbacks> callbacks(
+        new UpgradeNeededCallbacks());
+    factory->Open(db_name,
+                  db_version,
+                  transaction_id,
+                  callbacks,
+                  db_callbacks,
+                  origin,
+                  temp_directory.path());
+    EXPECT_TRUE(factory->IsDatabaseOpen(origin, db_name));
+
+    // Pump the message loop so the upgrade transaction can run.
+    base::MessageLoop::current()->RunUntilIdle();
+    EXPECT_TRUE(callbacks->connection());
+    callbacks->connection()->database()->Commit(transaction_id);
+
+    callbacks->connection()->Close();
+    EXPECT_FALSE(factory->IsDatabaseOpen(origin, db_name));
+  }
+
+  // Open at version < 2, which will fail; ensure factory doesn't retain
+  // the database object.
+  {
+    scoped_refptr<IndexedDBCallbacks> callbacks(new ErrorCallbacks());
+    factory->Open(db_name,
+                  db_version - 1,
+                  transaction_id,
+                  callbacks,
+                  db_callbacks,
+                  origin,
+                  temp_directory.path());
+    EXPECT_FALSE(factory->IsDatabaseOpen(origin, db_name));
+  }
+
+  // Terminate all pending-close timers.
+  factory->ForceClose(origin);
+}
 
 }  // namespace content
