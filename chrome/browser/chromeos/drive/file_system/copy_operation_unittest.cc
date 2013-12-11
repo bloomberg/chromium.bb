@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 
-#include "base/file_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -20,13 +19,13 @@ class CopyOperationTest : public OperationTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
    OperationTestBase::SetUp();
-   operation_.reset(new CopyOperation(blocking_task_runner(),
-                                      observer(),
-                                      scheduler(),
-                                      metadata(),
-                                      cache(),
-                                      fake_service(),
-                                      temp_dir()));
+   operation_.reset(new CopyOperation(
+       blocking_task_runner(),
+       observer(),
+       scheduler(),
+       metadata(),
+       cache(),
+       util::GetIdentityResourceIdCanonicalizer()));
   }
 
   scoped_ptr<CopyOperation> operation_;
@@ -143,18 +142,9 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
 
-  // We added a file to the Drive root and then moved to "Directory 1".
-  if (util::IsDriveV2ApiEnabled()) {
-    EXPECT_EQ(1U, observer()->get_changed_paths().size());
-    EXPECT_TRUE(
-        observer()->get_changed_paths().count(remote_dest_path.DirName()));
-  } else {
-    EXPECT_EQ(2U, observer()->get_changed_paths().size());
-    EXPECT_TRUE(observer()->get_changed_paths().count(
-        base::FilePath(FILE_PATH_LITERAL("drive/root"))));
-    EXPECT_TRUE(observer()->get_changed_paths().count(
-        remote_dest_path.DirName()));
-  }
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(
+      observer()->get_changed_paths().count(remote_dest_path.DirName()));
 }
 
 
@@ -246,30 +236,27 @@ TEST_F(CopyOperationTest, CopyDirectory) {
 }
 
 TEST_F(CopyOperationTest, PreserveLastModified) {
-  // Preserve last modified feature is only available on Drive API v2.
-  if (util::IsDriveV2ApiEnabled()) {
-    base::FilePath src_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-    base::FilePath dest_path(FILE_PATH_LITERAL("drive/root/File 2.txt"));
+  base::FilePath src_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  base::FilePath dest_path(FILE_PATH_LITERAL("drive/root/File 2.txt"));
 
-    ResourceEntry entry;
-    ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
-    ASSERT_EQ(FILE_ERROR_OK,
-              GetLocalResourceEntry(dest_path.DirName(), &entry));
+  ResourceEntry entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
+  ASSERT_EQ(FILE_ERROR_OK,
+            GetLocalResourceEntry(dest_path.DirName(), &entry));
 
-    FileError error = FILE_ERROR_OK;
-    operation_->Copy(src_path,
-                     dest_path,
-                     true,  // Preserve last modified.
-                     google_apis::test_util::CreateCopyResultCallback(&error));
-    test_util::RunBlockingPoolTask();
-    EXPECT_EQ(FILE_ERROR_OK, error);
+  FileError error = FILE_ERROR_OK;
+  operation_->Copy(src_path,
+                   dest_path,
+                   true,  // Preserve last modified.
+                   google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
 
-    ResourceEntry entry2;
-    EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
-    EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &entry2));
-    EXPECT_EQ(entry.file_info().last_modified(),
-              entry2.file_info().last_modified());
-  }
+  ResourceEntry entry2;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &entry2));
+  EXPECT_EQ(entry.file_info().last_modified(),
+            entry2.file_info().last_modified());
 }
 
 }  // namespace file_system

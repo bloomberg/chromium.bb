@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
-#include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,13 +20,13 @@ class MoveOperationTest : public OperationTestBase {
    operation_.reset(new MoveOperation(blocking_task_runner(),
                                       observer(),
                                       metadata()));
-   copy_operation_.reset(new CopyOperation(blocking_task_runner(),
-                                           observer(),
-                                           scheduler(),
-                                           metadata(),
-                                           cache(),
-                                           fake_service(),
-                                           temp_dir()));
+   copy_operation_.reset(new CopyOperation(
+       blocking_task_runner(),
+       observer(),
+       scheduler(),
+       metadata(),
+       cache(),
+       util::GetIdentityResourceIdCanonicalizer()));
   }
 
   scoped_ptr<MoveOperation> operation_;

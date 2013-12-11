@@ -11,14 +11,14 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/download_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/drive_api_parser.h"
 
 using content::BrowserThread;
 
@@ -152,7 +152,6 @@ FileError PrepareTransferFileFromLocalToRemote(
 }  // namespace
 
 struct CopyOperation::CopyParams {
-  base::FilePath src_file_path;
   base::FilePath dest_file_path;
   bool preserve_last_modified;
   FileOperationCallback callback;
@@ -163,28 +162,18 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                              JobScheduler* scheduler,
                              internal::ResourceMetadata* metadata,
                              internal::FileCache* cache,
-                             DriveServiceInterface* drive_service,
-                             const base::FilePath& temporary_file_directory)
+                             const ResourceIdCanonicalizer& id_canonicalizer)
   : blocking_task_runner_(blocking_task_runner),
     observer_(observer),
     scheduler_(scheduler),
     metadata_(metadata),
     cache_(cache),
-    drive_service_(drive_service),
+    id_canonicalizer_(id_canonicalizer),
     create_file_operation_(new CreateFileOperation(blocking_task_runner,
                                                    observer,
                                                    scheduler,
                                                    metadata,
                                                    cache)),
-    download_operation_(new DownloadOperation(blocking_task_runner,
-                                              observer,
-                                              scheduler,
-                                              metadata,
-                                              cache,
-                                              temporary_file_directory)),
-    move_operation_(new MoveOperation(blocking_task_runner,
-                                      observer,
-                                      metadata)),
     weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -201,7 +190,6 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
   DCHECK(!callback.is_null());
 
   CopyParams params;
-  params.src_file_path = src_file_path;
   params.dest_file_path = dest_file_path;
   params.preserve_last_modified = preserve_last_modified;
   params.callback = callback;
@@ -219,11 +207,10 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
                  base::Owned(src_entry), base::Owned(parent_resource_id)));
 }
 
-void CopyOperation::CopyAfterPrepare(
-    const CopyParams& params,
-    ResourceEntry* src_entry,
-    std::string* parent_resource_id,
-    FileError error) {
+void CopyOperation::CopyAfterPrepare(const CopyParams& params,
+                                     ResourceEntry* src_entry,
+                                     std::string* parent_resource_id,
+                                     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
 
@@ -232,67 +219,21 @@ void CopyOperation::CopyAfterPrepare(
     return;
   }
 
-  // If Drive API v2 is enabled, we can copy resources on server side.
-  if (util::IsDriveV2ApiEnabled()) {
-    base::FilePath new_title = params.dest_file_path.BaseName();
-    if (src_entry->file_specific_info().is_hosted_document()) {
-      // Drop the document extension, which should not be in the title.
-      // TODO(yoshiki): Remove this code with crbug.com/223304.
-      new_title = new_title.RemoveExtension();
-    }
-
-    base::Time last_modified =
-        params.preserve_last_modified ?
-        base::Time::FromInternalValue(src_entry->file_info().last_modified()) :
-        base::Time();
-
-    CopyResourceOnServer(
-        src_entry->resource_id(), *parent_resource_id,
-        new_title.AsUTF8Unsafe(), last_modified, params.callback);
-    return;
-  }
-
-  // Here after GData WAPI's code.
+  base::FilePath new_title = params.dest_file_path.BaseName();
   if (src_entry->file_specific_info().is_hosted_document()) {
-    // For hosted documents, GData WAPI copies it on server.
-    CopyHostedDocument(
-        src_entry->resource_id(),
-        // Drop the document extension, which should not be in the title.
-        // TODO(yoshiki): Remove this code with crbug.com/223304.
-        params.dest_file_path.RemoveExtension(),
-        params.callback);
-    return;
+    // Drop the document extension, which should not be in the title.
+    // TODO(yoshiki): Remove this code with crbug.com/223304.
+    new_title = new_title.RemoveExtension();
   }
 
-  // For regular files, download the content, and then re-upload.
-  // Note that upload is done later by SyncClient.
-  download_operation_->EnsureFileDownloadedByPath(
-      params.src_file_path,
-      ClientContext(USER_INITIATED),
-      GetFileContentInitializedCallback(),
-      google_apis::GetContentCallback(),
-      base::Bind(&CopyOperation::CopyAfterDownload,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 params.dest_file_path, params.callback));
-}
+  base::Time last_modified =
+      params.preserve_last_modified ?
+      base::Time::FromInternalValue(src_entry->file_info().last_modified()) :
+      base::Time();
 
-void CopyOperation::CopyAfterDownload(
-    const base::FilePath& dest_file_path,
-    const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& local_file_path,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  // This callback is only triggered for a regular file via Copy().
-  DCHECK(entry && !entry->file_specific_info().is_hosted_document());
-  ScheduleTransferRegularFile(local_file_path, dest_file_path, callback);
+  CopyResourceOnServer(
+      src_entry->resource_id(), *parent_resource_id,
+      new_title.AsUTF8Unsafe(), last_modified, params.callback);
 }
 
 void CopyOperation::TransferFileFromLocalToRemote(
@@ -344,26 +285,14 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
 
   // GDoc file may contain a resource ID in the old format.
   const std::string canonicalized_resource_id =
-      drive_service_->GetResourceIdCanonicalizer().Run(*gdoc_resource_id);
+      id_canonicalizer_.Run(*gdoc_resource_id);
 
-  // If Drive API v2 is enabled, we can copy resources on server side.
-  if (util::IsDriveV2ApiEnabled()) {
-    CopyResourceOnServer(
-        canonicalized_resource_id, *parent_resource_id,
-        // Drop the document extension, which should not be in the title.
-        // TODO(yoshiki): Remove this code with crbug.com/223304.
-        remote_dest_path.BaseName().RemoveExtension().AsUTF8Unsafe(),
-        base::Time(),
-        callback);
-    return;
-  }
-
-  CopyHostedDocument(
-      canonicalized_resource_id,
-      // Drop the document extension, which should not be
-      // in the document title.
+  CopyResourceOnServer(
+      canonicalized_resource_id, *parent_resource_id,
+      // Drop the document extension, which should not be in the title.
       // TODO(yoshiki): Remove this code with crbug.com/223304.
-      remote_dest_path.RemoveExtension(),
+      remote_dest_path.BaseName().RemoveExtension().AsUTF8Unsafe(),
+      base::Time(),
       callback);
 }
 
@@ -527,70 +456,6 @@ void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
   if (error == FILE_ERROR_OK)
     observer_->OnCacheFileUploadNeededByOperation(*local_id);
   callback.Run(error);
-}
-
-void CopyOperation::CopyHostedDocument(
-    const std::string& resource_id,
-    const base::FilePath& dest_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scheduler_->CopyHostedDocument(
-      resource_id,
-      dest_path.BaseName().AsUTF8Unsafe(),
-      base::Bind(&CopyOperation::CopyHostedDocumentAfterServerSideCopy,
-                 weak_ptr_factory_.GetWeakPtr(), dest_path, callback));
-}
-
-void CopyOperation::CopyHostedDocumentAfterServerSideCopy(
-    const base::FilePath& dest_path,
-    const FileOperationCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileError error = GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  // The document is copied into the root directory (temporarily) on the server,
-  // so we should first update the local metadata, then move it to the
-  // destination directory.
-  base::FilePath* file_path = new base::FilePath;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&UpdateLocalStateForServerSideCopy,
-                 metadata_, base::Passed(&resource_entry), file_path),
-      base::Bind(&CopyOperation::CopyHostedDocumentAfterUpdateLocalState,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dest_path, callback, base::Owned(file_path)));
-}
-
-void CopyOperation::CopyHostedDocumentAfterUpdateLocalState(
-    const base::FilePath& dest_path,
-    const FileOperationCallback& callback,
-    base::FilePath* file_path,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // If an error is found, or the destination directory is mydrive root
-  // (i.e. it is unnecessary to move the copied document), return the status.
-  if (error != FILE_ERROR_OK ||
-      dest_path.DirName() == util::GetDriveMyDriveRootPath()) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK_EQ(util::GetDriveMyDriveRootPath().value(),
-            file_path->DirName().value()) << file_path->value();
-
-  move_operation_->Move(*file_path, dest_path, false, callback);
 }
 
 }  // namespace file_system

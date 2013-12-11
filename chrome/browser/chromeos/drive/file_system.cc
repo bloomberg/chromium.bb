@@ -267,13 +267,13 @@ void FileSystem::ReloadAfterReset(const FileOperationCallback& callback,
 void FileSystem::ResetComponents() {
   file_system::OperationObserver* observer = this;
   copy_operation_.reset(
-      new file_system::CopyOperation(blocking_task_runner_.get(),
-                                     observer,
-                                     scheduler_,
-                                     resource_metadata_,
-                                     cache_,
-                                     drive_service_,
-                                     temporary_file_directory_));
+      new file_system::CopyOperation(
+          blocking_task_runner_.get(),
+          observer,
+          scheduler_,
+          resource_metadata_,
+          cache_,
+          drive_service_->GetResourceIdCanonicalizer()));
   create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
       blocking_task_runner_.get(), observer, scheduler_, resource_metadata_));
   create_file_operation_.reset(

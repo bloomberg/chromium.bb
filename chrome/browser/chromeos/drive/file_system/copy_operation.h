@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
-#include "google_apis/drive/drive_api_parser.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
 namespace base {
@@ -20,24 +20,23 @@ class Time;
 }  // namespace base
 
 namespace google_apis {
+class AboutResource;
 class ResourceEntry;
 }  // namespace google_apis
 
 namespace drive {
 
-class DriveServiceInterface;
 class JobScheduler;
 class ResourceEntry;
 
 namespace internal {
 class FileCache;
+class ResourceMetadata;
 }  // namespace internal
 
 namespace file_system {
 
 class CreateFileOperation;
-class DownloadOperation;
-class MoveOperation;
 class OperationObserver;
 
 // This class encapsulates the drive Copy function.  It is responsible for
@@ -50,8 +49,7 @@ class CopyOperation {
                 JobScheduler* scheduler,
                 internal::ResourceMetadata* metadata,
                 internal::FileCache* cache,
-                DriveServiceInterface* drive_service,
-                const base::FilePath& temporary_file_directory);
+                const ResourceIdCanonicalizer& id_canonicalizer);
   ~CopyOperation();
 
   // Performs the copy operation on the file at drive path |src_file_path|
@@ -85,13 +83,6 @@ class CopyOperation {
                         ResourceEntry* src_entry,
                         std::string* parent_resource_id,
                         FileError error);
-
-  // Part of Copy(). Called after the file content is downloaded.
-  void CopyAfterDownload(const base::FilePath& dest_file_path,
-                         const FileOperationCallback& callback,
-                         FileError error,
-                         const base::FilePath& local_file_path,
-                         scoped_ptr<ResourceEntry> entry);
 
   // Part of TransferFileFromLocalToRemote(). Called after preparation is done.
   // |gdoc_resource_id| and |parent_resource_id| is available only if the file
@@ -163,43 +154,15 @@ class CopyOperation {
       std::string* local_id,
       FileError error);
 
-  // Copies the hosted document with |resource_id| to the |dest_path|.
-  // This method is designed based on GData WAPI. It cannot create a copy in
-  // any directory but my drive root. So, this method creates the copy at
-  // my drive root first, then move it into the destination directory.
-  // For Drive API v2, this should work, but CopyResourceOnServer should work
-  // more efficiently.
-  void CopyHostedDocument(const std::string& resource_id,
-                          const base::FilePath& dest_path,
-                          const FileOperationCallback& callback);
-
-  // Part of CopyHostedDocument(). Called after server side copy is done.
-  void CopyHostedDocumentAfterServerSideCopy(
-      const base::FilePath& dest_path,
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
-
-  // Part of CopyHostedDocument(). Called after the local metadata is updated.
-  void CopyHostedDocumentAfterUpdateLocalState(
-      const base::FilePath& dest_path,
-      const FileOperationCallback& callback,
-      base::FilePath* file_path,
-      FileError error);
-
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
-  DriveServiceInterface* drive_service_;
+  ResourceIdCanonicalizer id_canonicalizer_;
 
   // Uploading a new file is internally implemented by creating a dirty file.
   scoped_ptr<CreateFileOperation> create_file_operation_;
-  // Copying from remote to local (and to remote in WAPI) involves downloading.
-  scoped_ptr<DownloadOperation> download_operation_;
-  // Copying a hosted document is internally implemented by using a move.
-  scoped_ptr<MoveOperation> move_operation_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
