@@ -199,11 +199,13 @@ void BrowserMediaPlayerManager::OnTimeUpdate(int player_id,
 void BrowserMediaPlayerManager::SetVideoSurface(
     gfx::ScopedJavaSurface surface) {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
-  if (player) {
-    player->SetVideoSurface(surface.Pass());
-    Send(new MediaPlayerMsg_DidEnterFullscreen(
-        routing_id(), player->player_id()));
+  if (!player)
+    return;
+  if (!surface.IsEmpty()) {
+    Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(),
+                                               player->player_id()));
   }
+  player->SetVideoSurface(surface.Pass());
 }
 
 void BrowserMediaPlayerManager::OnMediaMetadataChanged(
