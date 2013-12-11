@@ -220,7 +220,9 @@ void DockedWindowResizer::StartedDragging() {
     aura::Window* docked_container = Shell::GetContainer(
         GetTarget()->GetRootWindow(),
         kShellWindowId_DockedContainer);
-    wm::ReparentChildWithTransientChildren(docked_container, GetTarget());
+    wm::ReparentChildWithTransientChildren(GetTarget(),
+                                           GetTarget()->parent(),
+                                           docked_container);
   }
   if (is_docked_)
     dock_layout_->DockDraggedWindow(GetTarget());
@@ -287,7 +289,9 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
   if ((is_resized || !is_attached_panel) &&
       is_docked_ != (window->parent() == dock_container)) {
     if (is_docked_) {
-      wm::ReparentChildWithTransientChildren(dock_container, window);
+      wm::ReparentChildWithTransientChildren(window,
+                                             window->parent(),
+                                             dock_container);
       action = DOCKED_ACTION_DOCK;
     } else if (window->parent()->id() == kShellWindowId_DockedContainer) {
       // Reparent the window back to workspace.
@@ -300,8 +304,11 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
       // Reparenting will cause Relayout and possible dock shrinking.
       aura::Window* previous_parent = window->parent();
       aura::client::ParentWindowWithContext(window, window, near_last_location);
-      if (window->parent() != previous_parent)
-        wm::ReparentTransientChildrenOfChild(window->parent(), window);
+      if (window->parent() != previous_parent) {
+        wm::ReparentTransientChildrenOfChild(window,
+                                             previous_parent,
+                                             window->parent());
+      }
       action = was_docked_ ? DOCKED_ACTION_UNDOCK : DOCKED_ACTION_NONE;
     }
   } else {

@@ -27,6 +27,7 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -86,6 +87,28 @@ class DockedWindowResizerTest
                                   internal::kShellWindowId_PanelContainer)->
                   layout_manager());
       manager->Relayout();
+    }
+    return window;
+  }
+
+  aura::Window* CreateModalWindow(const gfx::Rect& bounds) {
+    aura::Window* window = new aura::Window(&delegate_);
+    window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->Init(ui::LAYER_TEXTURED);
+    window->Show();
+
+    if (bounds.IsEmpty()) {
+      ParentWindowInPrimaryRootWindow(window);
+    } else {
+      gfx::Display display =
+          Shell::GetScreen()->GetDisplayMatching(bounds);
+      aura::Window* root = ash::Shell::GetInstance()->display_controller()->
+          GetRootWindowForDisplayId(display.id());
+      gfx::Point origin = bounds.origin();
+      wm::ConvertPointFromScreen(root, &origin);
+      window->SetBounds(gfx::Rect(origin, bounds.size()));
+      aura::client::ParentWindowWithContext(window, root, bounds);
     }
     return window;
   }
@@ -1301,6 +1324,49 @@ TEST_P(DockedWindowResizerTest, DragWindowWithTransientChild) {
   // The child should not have moved.
   EXPECT_EQ(gfx::Point(20 + 500, 20 + 20).ToString(),
             child->GetBoundsInScreen().origin().ToString());
+}
+
+// Tests that reparenting windows during the drag does not affect system modal
+// windows that are transient children of the dragged windows.
+TEST_P(DockedWindowResizerTest, DragWindowWithModalTransientChild) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  // Create a window.
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  gfx::Rect bounds(window->bounds());
+
+  // Start dragging the window.
+  ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
+  gfx::Vector2d move_vector(40, test_panels() ? -60 : 60);
+  DragMove(move_vector.x(), move_vector.y());
+  EXPECT_EQ(CorrectContainerIdDuringDrag(), window->parent()->id());
+
+  // While still dragging create a modal window and make it a transient child of
+  // the |window|.
+  scoped_ptr<aura::Window> child(CreateModalWindow(gfx::Rect(20, 20, 150, 20)));
+  window->AddTransientChild(child.get());
+  EXPECT_EQ(window.get(), child->transient_parent());
+  EXPECT_EQ(internal::kShellWindowId_SystemModalContainer,
+            child->parent()->id());
+
+  // End the drag, the |window| should have moved (if it is a panel it will
+  // no longer be attached to the shelf since we dragged it above).
+  DragEnd();
+  bounds.Offset(move_vector);
+  EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
+
+  // The original |window| should be in the default container (not docked or
+  // attached).
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, window->parent()->id());
+  // The transient |child| should still be in system modal container.
+  EXPECT_EQ(internal::kShellWindowId_SystemModalContainer,
+            child->parent()->id());
+  // The |child| should not have moved.
+  EXPECT_EQ(gfx::Point(20, 20).ToString(),
+            child->GetBoundsInScreen().origin().ToString());
+  // The |child| should still be a transient child of |window|.
+  EXPECT_EQ(window.get(), child->transient_parent());
 }
 
 // Tests that side snapping a window undocks it, closes the dock and then snaps.

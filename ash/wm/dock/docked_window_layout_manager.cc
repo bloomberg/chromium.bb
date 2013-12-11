@@ -192,10 +192,10 @@ bool IsUsedByLayout(const aura::Window* window) {
 
 void UndockWindow(aura::Window* window) {
   gfx::Rect previous_bounds = window->bounds();
-  aura::Window* previous_parent = window->parent();
+  aura::Window* old_parent = window->parent();
   aura::client::ParentWindowWithContext(window, window, gfx::Rect());
-  if (window->parent() != previous_parent)
-    wm::ReparentTransientChildrenOfChild(window->parent(), window);
+  if (window->parent() != old_parent)
+    wm::ReparentTransientChildrenOfChild(window, old_parent, window->parent());
   // Start maximize or fullscreen (affecting packaged apps) animation from
   // previous window bounds.
   window->layer()->SetBounds(previous_bounds);

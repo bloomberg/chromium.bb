@@ -115,16 +115,22 @@ bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
   return true;
 }
 
-void ReparentChildWithTransientChildren(aura::Window* window,
-                                        aura::Window* child) {
-  window->AddChild(child);
-  ReparentTransientChildrenOfChild(window, child);
+void ReparentChildWithTransientChildren(aura::Window* child,
+                                        aura::Window* old_parent,
+                                        aura::Window* new_parent) {
+  if (child->parent() == old_parent)
+    new_parent->AddChild(child);
+  ReparentTransientChildrenOfChild(child, old_parent, new_parent);
 }
 
-void ReparentTransientChildrenOfChild(aura::Window* window,
-                                      aura::Window* child) {
-  for (size_t i = 0; i < child->transient_children().size(); ++i)
-    ReparentChildWithTransientChildren(window, child->transient_children()[i]);
+void ReparentTransientChildrenOfChild(aura::Window* child,
+                                      aura::Window* old_parent,
+                                      aura::Window* new_parent) {
+  for (size_t i = 0; i < child->transient_children().size(); ++i) {
+    ReparentChildWithTransientChildren(child->transient_children()[i],
+                                       old_parent,
+                                       new_parent);
+  }
 }
 
 }  // namespace wm
