@@ -459,7 +459,7 @@ const Extension* ExtensionService::GetExtensionById(
     // Include blacklisted extensions here because there are hundreds of
     // callers of this function, and many might assume that this includes those
     // that have been disabled due to blacklisting.
-    include_mask |= INCLUDE_DISABLED | INCLUDE_BLACKLISTED | INCLUDE_TERMINATED;
+    include_mask |= INCLUDE_DISABLED | INCLUDE_BLACKLISTED;
   }
   return GetExtensionById(id, include_mask);
 }

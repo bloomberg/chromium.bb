@@ -951,6 +951,8 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id, true);
   if (!extension)
+    extension = extension_service_->GetTerminatedExtension(extension_id);
+  if (!extension)
     return;
 
   if (!extension_id_prompting_.empty())
