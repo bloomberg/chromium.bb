@@ -716,7 +716,8 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
 
     // If the requesting SecurityOrigin is not this Frame's SecurityOrigin, the request was initiated by a different frame that should
     // have already set the referrer.
-    if (request.requester() == m_frame->document()->securityOrigin())
+    // FIXME: Not clear that this is a valid assumption.
+    if (request.requester()->equal(m_frame->document()->securityOrigin()))
         setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer());
     return true;
 }
