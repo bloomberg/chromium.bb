@@ -215,7 +215,7 @@ class Manager(object):
             self._start_servers(tests_to_run)
 
             initial_results = self._run_tests(tests_to_run, tests_to_skip, self._options.repeat_each, self._options.iterations,
-                int(self._options.child_processes), retrying=False)
+                self._port.num_workers(int(self._options.child_processes)), retrying=False)
 
             # Don't retry failures when interrupted by user or failures limit exception.
             should_retry_failures = should_retry_failures and not (initial_results.interrupted or initial_results.keyboard_interrupted)

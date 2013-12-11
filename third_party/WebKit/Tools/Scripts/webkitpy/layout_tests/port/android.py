@@ -529,7 +529,7 @@ class AndroidPort(base.Port):
 
         # FIXME: It would be nice if we knew how many workers we needed.
         num_workers = self.default_child_processes()
-        num_child_processes = self.get_option('child_processes')
+        num_child_processes = int(self.get_option('child_processes'))
         if num_child_processes:
             num_workers = min(num_workers, num_child_processes)
         if num_workers > 1:
@@ -557,6 +557,9 @@ class AndroidPort(base.Port):
         else:
             # We were called with --no-build, so assume the devices are up to date.
             self._options.prepared_devices = [d.get_serial() for d in self._devices.usable_devices(self.host.executive)]
+
+    def num_workers(self, requested_num_workers):
+        return min(len(self._options.prepared_devices), requested_num_workers)
 
     def check_sys_deps(self, needs_http):
         for (font_dirs, font_file, package) in HOST_FONT_FILES:

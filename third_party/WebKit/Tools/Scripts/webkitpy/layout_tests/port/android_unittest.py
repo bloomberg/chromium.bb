@@ -171,7 +171,7 @@ class AndroidPortTest(port_testcase.PortTestCase):
     def test_check_build(self):
         host = MockSystemHost()
         host.filesystem.exists = lambda p: True
-        port = self.make_port(host=host)
+        port = self.make_port(host=host, options=MockOptions(child_processes=1))
         port.check_build(needs_http=True, printer=port_testcase.FakePrinter())
 
     def test_check_sys_deps(self):

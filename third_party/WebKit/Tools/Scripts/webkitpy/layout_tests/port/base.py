@@ -986,6 +986,10 @@ class Port(object):
         if self._dump_reader:
             self._filesystem.maybe_make_directory(self._dump_reader.crash_dumps_directory())
 
+    def num_workers(self, requested_num_workers):
+        """Returns the number of available workers (possibly less than the number requested)."""
+        return requested_num_workers
+
     def clean_up_test_run(self):
         """Perform port-specific work at the end of a test run."""
         if self._image_differ:
