@@ -150,7 +150,6 @@ public:
     virtual void setShouldDisplaySubtitles(bool);
     virtual void setShouldDisplayTextDescriptions(bool);
     virtual void setShouldPrintBackgrounds(bool);
-    virtual void setShouldClearDocumentBackground(bool);
     virtual void setShouldRespectImageOrientation(bool);
     virtual void setShowFPSCounter(bool);
     virtual void setShowPaintRects(bool);
