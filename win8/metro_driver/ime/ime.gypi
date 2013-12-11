@@ -6,6 +6,9 @@
   'sources': [
     'input_scope.cc',
     'input_scope.h',
+    'input_source.cc',
+    'input_source.h',
+    'input_source_observer.h',
     'text_service.cc',
     'text_service.h',
     'text_service_delegate.h',

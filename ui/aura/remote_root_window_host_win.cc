@@ -221,6 +221,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnImeCompositionChanged)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeTextCommitted,
                         OnImeTextCommitted)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ImeInputSourceChanged,
+                        OnImeInputSourceChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -672,6 +674,15 @@ void RemoteRootWindowHostWin::OnImeTextCommitted(const string16& text) {
   if (!remote_input_method_private)
     return;
   remote_input_method_private->OnTextCommitted(text);
+}
+
+void RemoteRootWindowHostWin::OnImeInputSourceChanged(uint16 language_id,
+                                                      bool is_ime) {
+  ui::RemoteInputMethodPrivateWin* remote_input_method_private =
+      GetRemoteInputMethodPrivate();
+  if (!remote_input_method_private)
+    return;
+  remote_input_method_private->OnInputSourceChanged(language_id, is_ime);
 }
 
 void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,

@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "ui/events/event_constants.h"
 #include "win8/metro_driver/direct3d_helper.h"
+#include "win8/metro_driver/ime/input_source_observer.h"
 #include "win8/metro_driver/ime/text_service_delegate.h"
 
 namespace base {
@@ -27,6 +28,7 @@ class ChannelProxy;
 }
 
 namespace metro_driver {
+class InputSource;
 class TextService;
 }
 
@@ -44,6 +46,7 @@ struct MetroViewerHostMsg_SaveAsDialogParams;
 
 class ChromeAppViewAsh
     : public mswr::RuntimeClass<winapp::Core::IFrameworkView>,
+      public metro_driver::InputSourceObserver,
       public metro_driver::TextServiceDelegate {
  public:
   ChromeAppViewAsh();
@@ -102,6 +105,9 @@ class ChromeAppViewAsh
 
 
  private:
+  // InputSourceObserver overrides.
+  virtual void OnInputSourceChanged() OVERRIDE;
+
   // TextServiceDelegate overrides.
   virtual void OnCompositionChanged(
       const string16& text,
@@ -190,6 +196,7 @@ class ChromeAppViewAsh
   base::MessageLoop ui_loop_;
 
   // For IME support.
+  scoped_ptr<metro_driver::InputSource> input_source_;
   scoped_ptr<metro_driver::TextService> text_service_;
 };
 

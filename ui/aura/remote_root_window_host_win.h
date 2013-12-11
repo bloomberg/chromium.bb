@@ -205,6 +205,7 @@ class AURA_EXPORT RemoteRootWindowHostWin
       int32 selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines);
   void OnImeTextCommitted(const string16& text);
+  void OnImeInputSourceChanged(uint16 language_id, bool is_ime);
 
   // RootWindowHost overrides:
   virtual RootWindow* GetRootWindow() OVERRIDE;

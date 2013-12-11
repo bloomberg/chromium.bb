@@ -24,6 +24,7 @@
 #include "ui/events/gestures/gesture_sequence.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/file_picker_ash.h"
+#include "win8/metro_driver/ime/input_source.h"
 #include "win8/metro_driver/ime/text_service.h"
 #include "win8/metro_driver/metro_driver.h"
 #include "win8/metro_driver/winrt_utils.h"
@@ -632,6 +633,13 @@ ChromeAppViewAsh::Run() {
       new MetroViewerHostMsg_WindowSizeChanged(rect.right - rect.left,
                                                rect.bottom - rect.top));
 
+  input_source_ = metro_driver::InputSource::Create();
+  if (input_source_) {
+    input_source_->AddObserver(this);
+    // Send an initial input source.
+    OnInputSourceChanged();
+  }
+
   // And post the task that'll do the inner Metro message pumping to it.
   ui_loop_.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
   ui_loop_.Run();
@@ -643,6 +651,7 @@ ChromeAppViewAsh::Run() {
 IFACEMETHODIMP
 ChromeAppViewAsh::Uninitialize() {
   DVLOG(1) << __FUNCTION__;
+  input_source_.reset();
   text_service_.reset();
   window_ = nullptr;
   view_ = nullptr;
@@ -833,6 +842,20 @@ void ChromeAppViewAsh::OnImeUpdateTextInputClient(
   if (!text_service_)
     return;
   text_service_->OnDocumentChanged(input_scopes, character_bounds);
+}
+
+void ChromeAppViewAsh::OnInputSourceChanged() {
+  if (!input_source_)
+    return;
+
+  LANGID langid = 0;
+  bool is_ime = false;
+  if (!input_source_->GetActiveSource(&langid, &is_ime)) {
+    LOG(ERROR) << "GetActiveSource failed";
+    return;
+  }
+  ui_channel_->Send(new MetroViewerHostMsg_ImeInputSourceChanged(langid,
+                                                                 is_ime));
 }
 
 void ChromeAppViewAsh::OnCompositionChanged(
