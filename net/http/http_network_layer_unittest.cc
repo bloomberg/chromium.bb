@@ -377,9 +377,10 @@ TEST_F(HttpNetworkLayerTest, ServerOneProxyNoDirectBypassFixed) {
   TestProxyFallbackFail(1u, bad_proxy, "");
 }
 
-TEST_F(HttpNetworkLayerTest, ServerFallbackOnInternalServerError) {
-  // Verify that "500 Internal Server Error" and "502 Bad Gateway" via the data
-  // reduction proxy induce proxy fallback to a second proxy, if configured.
+TEST_F(HttpNetworkLayerTest, ServerFallbackOn5xxError) {
+  // Verify that "500 Internal Server Error", "502 Bad Gateway", and
+  // "503 Service Unavailable" via the data reduction proxy induce proxy
+  // fallback to a second proxy, if configured.
 
   // To configure this test, we need to wire up a custom proxy service to use
   // a pair of proxies. We'll induce fallback via the first and return
@@ -391,7 +392,8 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackOnInternalServerError) {
 
   std::string headers[] = {
     "HTTP/1.1 500 Internal Server Error\r\n\r\n",
-    "HTTP/1.1 502 Bad Gateway\r\n\r\n"
+    "HTTP/1.1 502 Bad Gateway\r\n\r\n",
+    "HTTP/1.1 503 Service Unavailable\r\n\r\n"
   };
 
   for (size_t i = 0; i < arraysize(headers); ++i) {
