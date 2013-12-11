@@ -15,9 +15,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "components/policy/policy_export.h"
 #include "policy/proto/cloud_policy.pb.h"
+
+#if !defined(OS_ANDROID)
+#include "policy/proto/chrome_extension_policy.pb.h"
+#endif
 
 namespace base {
 class MessageLoopProxy;
@@ -296,8 +299,11 @@ class POLICY_EXPORT CloudPolicyValidator : public CloudPolicyValidatorBase {
 
 typedef CloudPolicyValidator<enterprise_management::CloudPolicySettings>
     UserCloudPolicyValidator;
+
+#if !defined(OS_ANDROID)
 typedef CloudPolicyValidator<enterprise_management::ExternalPolicyData>
     ComponentCloudPolicyValidator;
+#endif
 
 }  // namespace policy
 

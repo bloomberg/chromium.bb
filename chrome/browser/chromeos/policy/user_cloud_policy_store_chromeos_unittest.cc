@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -21,6 +20,7 @@
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
+#include "policy/proto/device_management_local.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -14,10 +14,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace net {
 class URLRequestContextGetter;

@@ -997,12 +997,12 @@
       'target_name': 'device_policy_proto',
       'type': 'static_library',
       'sources': [
-        'browser/policy/proto/chromeos/chrome_device_policy.proto',
-        'browser/policy/proto/chromeos/install_attributes.proto',
+        'browser/chromeos/policy/proto/chrome_device_policy.proto',
+        'browser/chromeos/policy/proto/install_attributes.proto',
       ],
       'variables': {
-        'proto_in_dir': 'browser/policy/proto/chromeos',
-        'proto_out_dir': 'chrome/browser/policy/proto/chromeos',
+        'proto_in_dir': 'browser/chromeos/policy/proto',
+        'proto_out_dir': 'chrome/browser/chromeos/policy/proto',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

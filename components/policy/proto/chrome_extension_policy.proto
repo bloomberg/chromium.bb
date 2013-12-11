@@ -1,0 +1,43 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package enterprise_management;
+
+// Describes how to retrieve policy data for a particular extension. The
+// extension ID is in the |settings_entity_id| field of the PolicyData message
+// that contains the ExternalPolicyData in its |policy_value| field.
+message ExternalPolicyData {
+  // A URL where the policy data can be downloaded from.
+  optional string download_url = 1;
+
+  // SHA-1 hash of the data at |download_url|. This is used to verify the
+  // integrity of the data, and to detect updates on the client side: the client
+  // downloads the data when its local hash does not match |secure_hash|.
+  optional bytes secure_hash = 2;
+
+  // An authentication method that can be used to verify that the client is
+  // authorized to download |download_url|.
+  enum AuthMethod {
+    // No authentication is performed; knowledge of the URL is enough to
+    // authorize its download.
+    NONE = 0;
+
+    // The HTTP GET request sent to |download_url| must include an
+    // "Authorization: " HTTP header of the GoogleDMToken type. Its value is the
+    // same as the DMToken used for the policy fetch.
+    DMTOKEN = 1;
+
+    // The HTTP GET request sent to |download_url| must include an
+    // "Authorization: " HTTP header of the "OAuth" type. Its value is a valid
+    // Google Accounts OAuth access token.
+    OAUTH = 2;
+  }
+
+  // The authentication method that the client must use to fetch |download_url|.
+  optional AuthMethod download_auth_method = 3 [default = NONE];
+}

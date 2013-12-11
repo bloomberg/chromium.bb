@@ -8,10 +8,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
-#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_verifier.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
 
@@ -377,6 +377,9 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
 }
 
 template class CloudPolicyValidator<em::CloudPolicySettings>;
+
+#if !defined(OS_ANDROID)
 template class CloudPolicyValidator<em::ExternalPolicyData>;
+#endif
 
 }  // namespace policy

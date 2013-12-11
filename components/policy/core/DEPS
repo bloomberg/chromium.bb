@@ -4,9 +4,10 @@ include_rules = [
   "+google_apis",
   "+net",
 
-  # TODO(joaodasilva): remove these exceptions.
-  "+chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h",
-  "+chrome/browser/policy/proto/cloud/device_management_backend.pb.h",
-  "+chrome/browser/policy/proto/cloud/device_management_local.pb.h",
+  # These are generated from components/policy/proto.
+  "+policy/proto/chrome_extension_policy.pb.h",
+  "+policy/proto/device_management_backend.pb.h",
+
+  # TODO(joaodasilva): move the generation of this protobuf into the component.
   "+policy/proto/cloud_policy.pb.h",
 ]

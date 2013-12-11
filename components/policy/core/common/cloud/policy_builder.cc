@@ -7,10 +7,8 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_creator.h"
-#include "policy/proto/cloud_policy.pb.h"
 
 namespace em = enterprise_management;
 
@@ -227,15 +225,17 @@ TypedPolicyBuilder<em::CloudPolicySettings>::TypedPolicyBuilder()
   policy_data().set_policy_type(dm_protocol::kChromeUserPolicyType);
 }
 
+// Have the instantiation compiled into the module.
+template class TypedPolicyBuilder<em::CloudPolicySettings>;
+
+#if !defined(OS_ANDROID)
 template<>
 TypedPolicyBuilder<em::ExternalPolicyData>::TypedPolicyBuilder()
     : payload_(new em::ExternalPolicyData()) {
   policy_data().set_policy_type(dm_protocol::kChromeExtensionPolicyType);
 }
 
-
-// Have the instantiations compiled into the module.
-template class TypedPolicyBuilder<em::CloudPolicySettings>;
 template class TypedPolicyBuilder<em::ExternalPolicyData>;
+#endif
 
 }  // namespace policy

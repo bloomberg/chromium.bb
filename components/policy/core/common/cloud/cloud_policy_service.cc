@@ -5,7 +5,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 
 #include "base/callback.h"
-#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
 

@@ -11,10 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
-#include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "crypto/rsa_private_key.h"
 #include "policy/proto/cloud_policy.pb.h"
+#include "policy/proto/device_management_backend.pb.h"
+
+#if !defined(OS_ANDROID)
+#include "policy/proto/chrome_extension_policy.pb.h"
+#endif
 
 namespace policy {
 
@@ -132,8 +135,11 @@ class TypedPolicyBuilder : public PolicyBuilder {
 
 typedef TypedPolicyBuilder<enterprise_management::CloudPolicySettings>
     UserPolicyBuilder;
+
+#if !defined(OS_ANDROID)
 typedef TypedPolicyBuilder<enterprise_management::ExternalPolicyData>
     ComponentPolicyBuilder;
+#endif
 
 }  // namespace policy
 

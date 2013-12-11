@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace base {
 class FilePath;

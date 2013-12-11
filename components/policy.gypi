@@ -194,21 +194,30 @@
       ],
     },
     {
-      # Protobuf compiler / generator for cloud policy protocol buffers.
-      # TODO(joaodasilva): move these protobufs outside of chrome/,
-      # and update their output paths too.
       'target_name': 'cloud_policy_proto',
       'type': 'static_library',
       'sources': [
-        '../chrome/browser/policy/proto/cloud/chrome_extension_policy.proto',
-        '../chrome/browser/policy/proto/cloud/device_management_backend.proto',
-        '../chrome/browser/policy/proto/cloud/device_management_local.proto',
+        'policy/proto/chrome_extension_policy.proto',
+        'policy/proto/device_management_backend.proto',
+        'policy/proto/device_management_local.proto',
       ],
       'variables': {
-        'proto_in_dir': '../chrome/browser/policy/proto/cloud',
-        'proto_out_dir': 'chrome/browser/policy/proto/cloud',
+        'proto_in_dir': 'policy/proto',
+        'proto_out_dir': 'policy/proto',
       },
-      'includes': [ '../build/protoc.gypi' ]
+      'includes': [ '../build/protoc.gypi' ],
+      'conditions': [
+        ['OS=="android"', {
+          'sources!': [
+            'policy/proto/chrome_extension_policy.proto',
+          ],
+        }],
+        ['chromeos==0', {
+          'sources!': [
+            'policy/proto/device_management_local.proto',
+          ],
+        }],
+      ],
     },
   ],
   'conditions': [

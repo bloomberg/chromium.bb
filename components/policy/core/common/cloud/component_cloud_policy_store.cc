@@ -10,12 +10,12 @@
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
-#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "policy/proto/chrome_extension_policy.pb.h"
+#include "policy/proto/device_management_backend.pb.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;

@@ -14,11 +14,11 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace {
 const char kServiceScopeGetUserInfo[] =
@@ -139,8 +139,8 @@ void DeviceOAuth2TokenService::ValidatingConsumer::OnGetTokenInfoResponse(
     if (gaia_robot_id.empty()) {
       LOG(WARNING) << "Device service account owner in policy is empty.";
     } else {
-      LOG(INFO) << "Device service account owner in policy does not match "
-                << "refresh token owner \"" << gaia_robot_id << "\".";
+      LOG(WARNING) << "Device service account owner in policy does not match "
+                   << "refresh token owner \"" << gaia_robot_id << "\".";
     }
     RefreshTokenIsValid(false);
   }

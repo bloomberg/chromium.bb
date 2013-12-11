@@ -8,10 +8,9 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
-#include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
 
