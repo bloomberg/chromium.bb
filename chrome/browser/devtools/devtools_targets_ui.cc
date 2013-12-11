@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -61,6 +62,26 @@ const char kAdbScreenWidthField[] = "adbScreenWidth";
 const char kAdbScreenHeightField[] = "adbScreenHeight";
 const char kAdbAttachedForeignField[]  = "adbAttachedForeign";
 
+// CancelableTimer ------------------------------------------------------------
+
+class CancelableTimer {
+ public:
+  CancelableTimer(base::Closure callback, base::TimeDelta delay)
+      : callback_(callback),
+        weak_factory_(this) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CancelableTimer::Fire, weak_factory_.GetWeakPtr()),
+        delay);
+  };
+
+ private:
+  void Fire() { callback_.Run(); }
+
+  base::Closure callback_;
+  base::WeakPtrFactory<CancelableTimer> weak_factory_;
+};
+
 // RenderViewHostTargetsUIHandler ---------------------------------------------
 
 class RenderViewHostTargetsUIHandler
@@ -78,6 +99,7 @@ class RenderViewHostTargetsUIHandler
   void UpdateTargets();
 
   content::NotificationRegistrar notification_registrar_;
+  scoped_ptr<CancelableTimer> timer_;
 };
 
 RenderViewHostTargetsUIHandler::RenderViewHostTargetsUIHandler(
@@ -103,7 +125,12 @@ void RenderViewHostTargetsUIHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  UpdateTargets();
+  const int kUpdateDelay = 100;
+  timer_.reset(
+      new CancelableTimer(
+          base::Bind(&RenderViewHostTargetsUIHandler::UpdateTargets,
+                     base::Unretained(this)),
+          base::TimeDelta::FromMilliseconds(kUpdateDelay)));
 }
 
 void RenderViewHostTargetsUIHandler::UpdateTargets() {
