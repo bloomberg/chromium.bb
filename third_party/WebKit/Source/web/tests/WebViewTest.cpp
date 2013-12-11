@@ -238,17 +238,6 @@ protected:
     FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
-class FocusedNodeChangedObserverWebViewClient : public WebViewClient {
-public:
-    void setWebView(WebView* webView) { m_webView = webView; }
-    WebTextInputInfo textInputInfoOnFocusedNodeChanged() const { return m_textInputInfoOnFocusedNodeChanged; }
-private:
-    void focusedNodeChanged(const WebNode&) OVERRIDE { m_textInputInfoOnFocusedNodeChanged = m_webView->textInputInfo(); }
-
-    WebView* m_webView;
-    WebTextInputInfo m_textInputInfoOnFocusedNodeChanged;
-};
-
 TEST_F(WebViewTest, SetBaseBackgroundColor)
 {
     const WebColor kWhite    = 0xFFFFFFFF;
@@ -596,21 +585,6 @@ TEST_F(WebViewTest, ConfirmCompositionCursorPositionChange)
     EXPECT_EQ(8, info.selectionEnd);
     EXPECT_EQ(-1, info.compositionStart);
     EXPECT_EQ(-1, info.compositionEnd);
-}
-
-TEST_F(WebViewTest, TextInputInfoOnInputFocused)
-{
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_focused.html"));
-    FocusedNodeChangedObserverWebViewClient client;
-    WebView* webView = m_webViewHelper.initialize(true, 0, &client);
-    client.setWebView(webView);
-
-    WebCore::KURL url = toKURL(m_baseURL + "input_field_focused.html");
-    webView->mainFrame()->loadRequest(WebURLRequest(WebURL(url)));
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-
-    WebTextInputInfo info = client.textInputInfoOnFocusedNodeChanged();
-    EXPECT_EQ(WebTextInputTypeText, info.type);
 }
 
 TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)
