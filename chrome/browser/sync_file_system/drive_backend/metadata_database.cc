@@ -1712,9 +1712,14 @@ bool MetadataDatabase::CanActivateTracker(const FileTracker& tracker) {
   if (HasActiveTrackerForFileID(tracker.file_id()))
     return false;
 
-  if (tracker.app_id().empty())
+  if (tracker.app_id().empty() &&
+      tracker.tracker_id() != GetSyncRootTrackerID()) {
     return false;
+  }
+
   if (!tracker.has_synced_details())
+    return false;
+  if (tracker.synced_details().file_kind() == FILE_KIND_UNSUPPORTED)
     return false;
   if (HasInvalidTitle(tracker.synced_details().title()))
     return false;
