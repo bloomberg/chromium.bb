@@ -264,7 +264,9 @@ class BrowserCompositorInvalidateLayerTreePerfTest
                                              children()[0]->
                                              children()[0].get());
     ASSERT_TRUE(tab_contents_.get());
+  }
 
+  virtual void WillCommit() OVERRIDE {
     gpu::Mailbox gpu_mailbox;
     std::ostringstream name_stream;
     name_stream << "name" << next_sync_point_;
@@ -276,6 +278,12 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     next_sync_point_++;
 
     tab_contents_->SetTextureMailbox(mailbox, callback.Pass());
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    if (CleanUpStarted())
+      return;
+    layer_tree_host()->SetNeedsCommit();
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
