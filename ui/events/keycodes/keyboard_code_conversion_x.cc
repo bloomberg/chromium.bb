@@ -285,6 +285,8 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_MENU;
     case XK_ISO_Level3_Shift:
       return VKEY_ALTGR;
+    case XK_Multi_key:
+      return VKEY_COMPOSE;
     case XK_Pause:
       return VKEY_PAUSE;
     case XK_Caps_Lock:
@@ -592,6 +594,8 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return XK_Menu;
     case VKEY_ALTGR:
       return XK_ISO_Level3_Shift;
+    case VKEY_COMPOSE:
+      return XK_Multi_key;
 
     case VKEY_PAUSE:
       return XK_Pause;
