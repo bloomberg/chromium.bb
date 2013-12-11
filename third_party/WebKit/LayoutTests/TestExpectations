@@ -613,6 +613,8 @@ crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
 crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
+crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
+
 # FIXME(crbug.com/322782): remove these lines once html expectations are supported for virtual tests.
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-block-or-table.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
