@@ -1,7 +1,7 @@
 {
   'targets': [
     {
-      'target_name': 'sample_app',
+      'target_name': 'mojo_sample_app',
       'type': 'shared_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -24,14 +24,14 @@
       ],
     },
     {
-      'target_name': 'package_sample_app',
+      'target_name': 'package_mojo_sample_app',
       'variables': {
-        'app_name': 'sample_app',
+        'app_name': 'mojo_sample_app',
       },
       'includes': [ 'build/package_app.gypi' ],
     },
     {
-      'target_name': 'hello_world_bindings',
+      'target_name': 'mojo_hello_world_bindings',
       'type': 'static_library',
       'sources': [
         'examples/hello_world_service/hello_world_service.mojom',
@@ -43,14 +43,14 @@
       ],
     },
     {
-      'target_name': 'hello_world_service',
+      'target_name': 'mojo_hello_world_service',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        'hello_world_bindings',
+        'mojo_hello_world_bindings',
       ],
       'export_dependent_settings': [
-        'hello_world_bindings',
+        'mojo_hello_world_bindings',
       ],
       'sources': [
         'examples/hello_world_service/hello_world_service_impl.cc',

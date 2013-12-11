@@ -17,16 +17,17 @@
       'target_name': 'mojo',
       'type': 'none',
       'dependencies': [
-        'hello_world_service',
         'mojo_bindings',
         'mojo_bindings_unittests',
         'mojo_common_lib',
         'mojo_common_unittests',
+        'mojo_hello_world_service',
         'mojo_js',
         'mojo_js_unittests',
         'mojo_public_perftests',
         'mojo_public_test_support',
         'mojo_public_unittests',
+        'mojo_sample_app',
         'mojo_shell',
         'mojo_shell_lib',
         'mojo_system',
@@ -34,7 +35,6 @@
         'mojo_system_unittests',
         'mojo_utility',
         'mojo_utility_unittests',
-        'sample_app',
       ],
     },
     {
@@ -296,7 +296,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          'target_name': 'java_set_jni_headers',
+          'target_name': 'mojo_java_set_jni_headers',
           'type': 'none',
           'variables': {
             'jni_gen_package': 'mojo',
@@ -308,7 +308,7 @@
           'target_name': 'mojo_jni_headers',
           'type': 'none',
           'dependencies': [
-            'java_set_jni_headers',
+            'mojo_java_set_jni_headers',
           ],
           'direct_dependent_settings': {
             'include_dirs': [

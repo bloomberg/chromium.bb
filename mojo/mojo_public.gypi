@@ -107,7 +107,7 @@
       ],
     },
     {
-      'target_name': 'sample_service',
+      'target_name': 'mojo_sample_service',
       'type': 'static_library',
       'sources': [
         'public/bindings/sample/sample_service.mojom',
@@ -128,7 +128,7 @@
         '../testing/gtest.gyp:gtest',
         'mojo_public_test_support',
         'mojo_run_all_unittests',
-        'sample_service',
+        'mojo_sample_service',
       ],
     },
     {
