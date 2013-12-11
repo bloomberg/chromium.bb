@@ -266,7 +266,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
   int header_height = 0;
   if (browser_view()->IsTabStripVisible()) {
     header_height = GetTopInset() +
-        browser_view()->GetTabStripHeight();
+        browser_view()->tabstrip()->GetPreferredSize().height();
   } else if (browser_view()->IsToolbarVisible()) {
     // Set the header's height so that it overlaps with the toolbar because the
     // top few pixels of the toolbar are not opaque.

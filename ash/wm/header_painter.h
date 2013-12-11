@@ -114,6 +114,11 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
     header_height_ = header_height;
   }
 
+  // Returns the header height.
+  int header_height() const {
+    return header_height_;
+  }
+
   // Schedule a re-paint of the entire title.
   void SchedulePaintForTitle(const gfx::Font& title_font);
 
