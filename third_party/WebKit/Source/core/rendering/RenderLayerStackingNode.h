@@ -159,7 +159,7 @@ private:
         const RenderLayerStackingNode* nodeToForceAsStackingContainer = 0,
         CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
 
-    void collectLayers(bool includeHiddenLayers, OwnPtr<Vector<RenderLayerStackingNode*> >&,
+    void collectLayers(OwnPtr<Vector<RenderLayerStackingNode*> >&,
         OwnPtr<Vector<RenderLayerStackingNode*> >&, const RenderLayerStackingNode* nodeToForceAsStackingContainer = 0,
         CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
 

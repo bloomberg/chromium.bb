@@ -217,10 +217,9 @@ void RenderLayerStackingNode::rebuildZOrderLists(OwnPtr<Vector<RenderLayerStacki
     OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList, const RenderLayerStackingNode* nodeToForceAsStackingContainer,
     CollectLayersBehavior collectLayersBehavior)
 {
-    bool includeHiddenLayers = compositor()->inCompositingMode();
     for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
         if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
-            child->stackingNode()->collectLayers(includeHiddenLayers, posZOrderList, negZOrderList, nodeToForceAsStackingContainer, collectLayersBehavior);
+            child->stackingNode()->collectLayers(posZOrderList, negZOrderList, nodeToForceAsStackingContainer, collectLayersBehavior);
     }
 
     // Sort the two lists.
@@ -270,8 +269,7 @@ void RenderLayerStackingNode::updateNormalFlowList()
     m_normalFlowListDirty = false;
 }
 
-void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
-    OwnPtr<Vector<RenderLayerStackingNode*> >& posBuffer, OwnPtr<Vector<RenderLayerStackingNode*> >& negBuffer,
+void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNode*> >& posBuffer, OwnPtr<Vector<RenderLayerStackingNode*> >& negBuffer,
     const RenderLayerStackingNode* nodeToForceAsStackingContainer, CollectLayersBehavior collectLayersBehavior)
 {
     if (layer()->isInTopLayer())
@@ -305,8 +303,7 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
     }
 
     // Overflow layers are just painted by their enclosing layers, so they don't get put in zorder lists.
-    bool includeHiddenLayer = includeHiddenLayers || (layer()->hasVisibleContent() || (layer()->hasVisibleDescendant() && isStacking));
-    if (includeHiddenLayer && !isNormalFlow && !layer()->isOutOfFlowRenderFlowThread()) {
+    if (!isNormalFlow && !layer()->isOutOfFlowRenderFlowThread()) {
         // Determine which buffer the child should be in.
         OwnPtr<Vector<RenderLayerStackingNode*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
 
@@ -320,11 +317,11 @@ void RenderLayerStackingNode::collectLayers(bool includeHiddenLayers,
 
     // Recur into our children to collect more layers, but only if we don't establish
     // a stacking context/container.
-    if ((includeHiddenLayers || layer()->hasVisibleDescendant()) && !isStacking) {
+    if (!isStacking) {
         for (RenderLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
             // Ignore reflections.
             if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
-                child->stackingNode()->collectLayers(includeHiddenLayers, posBuffer, negBuffer, nodeToForceAsStackingContainer, collectLayersBehavior);
+                child->stackingNode()->collectLayers(posBuffer, negBuffer, nodeToForceAsStackingContainer, collectLayersBehavior);
         }
     }
 }

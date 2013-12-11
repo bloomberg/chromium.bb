@@ -513,6 +513,9 @@ static void write(TextStream& ts, RenderLayer& l,
 
     writeIndent(ts, indent);
 
+    if (l.renderer()->style()->visibility() == HIDDEN)
+        ts << "hidden ";
+
     ts << "layer ";
 
     if (behavior & RenderAsTextShowAddresses)
