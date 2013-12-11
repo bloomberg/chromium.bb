@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
@@ -22,15 +23,18 @@ namespace content {
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
 
-class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
+class CONTENT_EXPORT IndexedDBTransaction
+    : public NON_EXPORTED_BASE(base::RefCounted<IndexedDBTransaction>) {
  public:
   typedef base::Callback<void(IndexedDBTransaction*)> Operation;
 
-  IndexedDBTransaction(int64 id,
-                       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-                       const std::set<int64>& object_store_ids,
-                       indexed_db::TransactionMode,
-                       IndexedDBDatabase* db);
+  IndexedDBTransaction(
+      int64 id,
+      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+      const std::set<int64>& object_store_ids,
+      indexed_db::TransactionMode,
+      IndexedDBDatabase* db,
+      IndexedDBBackingStore::Transaction* backing_store_transaction);
 
   virtual void Abort();
   void Commit();
@@ -55,7 +59,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
     DCHECK_GE(pending_preemptive_events_, 0);
   }
   IndexedDBBackingStore::Transaction* BackingStoreTransaction() {
-    return &transaction_;
+    return transaction_.get();
   }
   int64 id() const { return id_; }
 
@@ -69,6 +73,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   };
 
   State state() const { return state_; }
+  bool IsTimeoutTimerRunning() const { return timeout_timer_.IsRunning(); }
 
   struct Diagnostics {
     base::Time creation_time;
@@ -90,6 +95,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
 
   void ProcessTaskQueue();
   void CloseOpenCursors();
+  void Timeout();
 
   const int64 id_;
   const std::set<int64> object_store_ids_;
@@ -131,13 +137,19 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   TaskQueue preemptive_task_queue_;
   TaskStack abort_task_stack_;
 
-  IndexedDBBackingStore::Transaction transaction_;
+  scoped_ptr<IndexedDBBackingStore::Transaction> transaction_;
   bool backing_store_transaction_begun_;
 
   bool should_process_queue_;
   int pending_preemptive_events_;
 
   std::set<IndexedDBCursor*> open_cursors_;
+
+  // This timer is started after requests have been processed. If no subsequent
+  // requests are processed before the timer fires, assume the script is
+  // unresponsive and abort to unblock the transaction queue.
+  base::OneShotTimer<IndexedDBTransaction> timeout_timer_;
+
   Diagnostics diagnostics_;
 };
 

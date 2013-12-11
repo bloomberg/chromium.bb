@@ -1402,8 +1402,14 @@ void IndexedDBDatabase::CreateTransaction(
       connection->callbacks(),
       std::set<int64>(object_store_ids.begin(), object_store_ids.end()),
       static_cast<indexed_db::TransactionMode>(mode),
-      this);
-  transactions_[transaction_id] = transaction;
+      this,
+      new IndexedDBBackingStore::Transaction(backing_store_));
+  TransactionCreated(transaction);
+}
+
+void IndexedDBDatabase::TransactionCreated(
+    scoped_refptr<IndexedDBTransaction> transaction) {
+  transactions_[transaction->id()] = transaction;
 }
 
 bool IndexedDBDatabase::IsOpenConnectionBlocked() const {

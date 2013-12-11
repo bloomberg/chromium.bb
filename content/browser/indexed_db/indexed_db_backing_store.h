@@ -279,10 +279,10 @@ class CONTENT_EXPORT IndexedDBBackingStore
   class Transaction {
    public:
     explicit Transaction(IndexedDBBackingStore* backing_store);
-    ~Transaction();
-    void Begin();
-    bool Commit();
-    void Rollback();
+    virtual ~Transaction();
+    virtual void Begin();
+    virtual bool Commit();
+    virtual void Rollback();
     void Reset() {
       backing_store_ = NULL;
       transaction_ = NULL;

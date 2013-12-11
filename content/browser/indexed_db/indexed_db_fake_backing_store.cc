@@ -146,4 +146,10 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
 
+IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(bool result)
+    : IndexedDBBackingStore::Transaction(NULL), result_(result) {}
+void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
+bool IndexedDBFakeBackingStore::FakeTransaction::Commit() { return result_; }
+void IndexedDBFakeBackingStore::FakeTransaction::Rollback() {}
+
 }  // namespace content

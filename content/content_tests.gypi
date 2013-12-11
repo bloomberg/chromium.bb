@@ -394,6 +394,7 @@
         'browser/indexed_db/indexed_db_fake_backing_store.h',
         'browser/indexed_db/indexed_db_leveldb_coding_unittest.cc',
         'browser/indexed_db/indexed_db_quota_client_unittest.cc',
+        'browser/indexed_db/indexed_db_transaction_unittest.cc',
         'browser/indexed_db/indexed_db_unittest.cc',
         'browser/indexed_db/mock_indexed_db_callbacks.cc',
         'browser/indexed_db/mock_indexed_db_callbacks.h',
