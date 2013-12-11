@@ -443,13 +443,16 @@ RendererOverridesHandler::PageCaptureScreenshot(
                                               &png,
                                               gfx::Rect(snapshot_size))) {
     std::string base64_data;
-    base::Base64Encode(
+    bool success = base::Base64Encode(
         base::StringPiece(reinterpret_cast<char*>(&*png.begin()), png.size()),
         &base64_data);
-    base::DictionaryValue* result = new base::DictionaryValue();
-    result->SetString(
-        devtools::Page::captureScreenshot::kResponseData, base64_data);
-    return command->SuccessResponse(result);
+    if (success) {
+      base::DictionaryValue* result = new base::DictionaryValue();
+      result->SetString(
+          devtools::Page::captureScreenshot::kResponseData, base64_data);
+      return command->SuccessResponse(result);
+    }
+    return command->InternalErrorResponse("Unable to base64encode screenshot");
   }
 
   // Fallback to copying from compositing surface.
@@ -550,9 +553,16 @@ void RendererOverridesHandler::ScreenshotCaptured(
   }
 
   std::string base_64_data;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
-      &base_64_data);
+  if (!base::Base64Encode(base::StringPiece(
+                              reinterpret_cast<char*>(&data[0]),
+                              data.size()),
+                          &base_64_data)) {
+    if (command) {
+      SendAsyncResponse(
+          command->InternalErrorResponse("Unable to base64 encode"));
+    }
+    return;
+  }
 
   base::DictionaryValue* response = new base::DictionaryValue();
   response->SetString(devtools::Page::screencastFrame::kParamData,

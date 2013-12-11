@@ -35,7 +35,8 @@ bool CreateDataURLFromPACScript(const std::string& pac_script,
                                 std::string* pac_script_url_base64_encoded) {
   // Encode pac_script in base64.
   std::string pac_script_base64_encoded;
-  base::Base64Encode(pac_script, &pac_script_base64_encoded);
+  if (!base::Base64Encode(pac_script, &pac_script_base64_encoded))
+    return false;
 
   // Make it a correct data url.
   *pac_script_url_base64_encoded =

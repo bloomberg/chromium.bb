@@ -196,9 +196,10 @@ crypto::RSAPrivateKey* AndroidRSAPrivateKey(Profile* profile) {
       return NULL;
 
     std::string key_string(key_info.begin(), key_info.end());
-    base::Base64Encode(key_string, &encoded_key);
-    profile->GetPrefs()->SetString(prefs::kDevToolsAdbKey,
-                                   encoded_key);
+    if (base::Base64Encode(key_string, &encoded_key)) {
+      profile->GetPrefs()->SetString(prefs::kDevToolsAdbKey,
+                                     encoded_key);
+    }
   }
   return key.release();
 }

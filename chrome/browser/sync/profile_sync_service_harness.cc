@@ -929,8 +929,13 @@ bool ProfileSyncServiceHarness::MatchesOtherClient(
     if (marker != partner_marker) {
       if (VLOG_IS_ON(2)) {
         std::string marker_base64, partner_marker_base64;
-        base::Base64Encode(marker, &marker_base64);
-        base::Base64Encode(partner_marker, &partner_marker_base64);
+        if (!base::Base64Encode(marker, &marker_base64)) {
+          NOTREACHED();
+        }
+        if (!base::Base64Encode(
+                partner_marker, &partner_marker_base64)) {
+          NOTREACHED();
+        }
         DVLOG(2) << syncer::ModelTypeToString(i.Get()) << ": "
                  << profile_debug_name_ << " progress marker = "
                  << marker_base64 << ", "

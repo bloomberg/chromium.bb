@@ -115,8 +115,7 @@ bool HashWithMachineId(const std::string& salt, std::string* result) {
   std::string result_bytes(crypto::kSHA256Length, 0);
   hash->Finish(string_as_array(&result_bytes), result_bytes.size());
 
-  base::Base64Encode(result_bytes, result);
-  return true;
+  return base::Base64Encode(result_bytes, result);
 }
 
 }  // namespace

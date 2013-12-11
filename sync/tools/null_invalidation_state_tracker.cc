@@ -38,7 +38,7 @@ std::string NullInvalidationStateTracker::GetBootstrapData() const {
 
 void NullInvalidationStateTracker::SetBootstrapData(const std::string& data) {
   std::string base64_data;
-  base::Base64Encode(data, &base64_data);
+  CHECK(base::Base64Encode(data, &base64_data));
   LOG(INFO) << "Setting bootstrap data to: " << base64_data;
 }
 

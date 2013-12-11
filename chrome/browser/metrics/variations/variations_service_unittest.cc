@@ -91,7 +91,7 @@ std::string SerializeSeedBase64(const VariationsSeed& seed, std::string* hash) {
     *hash = base::HexEncode(sha1.data(), sha1.size());
   }
   std::string base64_serialized_seed;
-  base::Base64Encode(serialized_seed, &base64_serialized_seed);
+  EXPECT_TRUE(base::Base64Encode(serialized_seed, &base64_serialized_seed));
   return base64_serialized_seed;
 }
 

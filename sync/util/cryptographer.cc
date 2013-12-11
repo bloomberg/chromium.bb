@@ -261,8 +261,10 @@ bool Cryptographer::GetBootstrapToken(std::string* token) const {
     return false;
   }
 
-  base::Base64Encode(encrypted_token, token);
-
+  if (!base::Base64Encode(encrypted_token, token)) {
+    NOTREACHED();
+    return false;
+  }
   return true;
 }
 

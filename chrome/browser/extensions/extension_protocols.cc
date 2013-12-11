@@ -86,14 +86,15 @@ net::HttpResponseHeaders* BuildHttpHeaders(
                                           last_modified_time.ToInternalValue());
     hash = base::SHA1HashString(hash);
     std::string etag;
-    base::Base64Encode(hash, &etag);
-    raw_headers.append(1, '\0');
-    raw_headers.append("ETag: \"");
-    raw_headers.append(etag);
-    raw_headers.append("\"");
-    // Also force revalidation.
-    raw_headers.append(1, '\0');
-    raw_headers.append("cache-control: no-cache");
+    if (base::Base64Encode(hash, &etag)) {
+      raw_headers.append(1, '\0');
+      raw_headers.append("ETag: \"");
+      raw_headers.append(etag);
+      raw_headers.append("\"");
+      // Also force revalidation.
+      raw_headers.append(1, '\0');
+      raw_headers.append("cache-control: no-cache");
+    }
   }
 
   raw_headers.append(2, '\0');

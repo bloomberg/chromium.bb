@@ -63,7 +63,9 @@ std::string RsaKeyPair::ToString() const {
   CHECK(key_->ExportPrivateKey(&key_buf));
   std::string key_str(key_buf.begin(), key_buf.end());
   std::string key_base64;
-  base::Base64Encode(key_str, &key_base64);
+  if (!base::Base64Encode(key_str, &key_base64)) {
+    LOG(FATAL) << "Base64Encode failed";
+  }
   return key_base64;
 }
 

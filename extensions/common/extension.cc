@@ -248,10 +248,7 @@ bool Extension::ParsePEMKeyBytes(const std::string& input,
 // static
 bool Extension::ProducePEM(const std::string& input, std::string* output) {
   DCHECK(output);
-  if (input.empty())
-    return false;
-  base::Base64Encode(input, output);
-  return true;
+  return (input.length() == 0) ? false : base::Base64Encode(input, output);
 }
 
 // static

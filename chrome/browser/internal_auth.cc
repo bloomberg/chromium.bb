@@ -166,7 +166,10 @@ void CreatePassport(const std::string& domain,
     return;
   }
   std::string hmac_base64;
-  base::Base64Encode(hmac, &hmac_base64);
+  if (!base::Base64Encode(hmac, &hmac_base64)) {
+    NOTREACHED();
+    return;
+  }
   if (hmac_base64.size() != BASE64_PER_RAW(kHMACSizeInBytes)) {
     NOTREACHED();
     return;

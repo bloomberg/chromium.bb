@@ -33,7 +33,8 @@ std::string GenerateHandshakeChallenge() {
   std::string raw_challenge(websockets::kRawChallengeLength, '\0');
   crypto::RandBytes(string_as_array(&raw_challenge), raw_challenge.length());
   std::string encoded_challenge;
-  base::Base64Encode(raw_challenge, &encoded_challenge);
+  bool encode_success = base::Base64Encode(raw_challenge, &encoded_challenge);
+  DCHECK(encode_success);
   return encoded_challenge;
 }
 

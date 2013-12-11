@@ -71,7 +71,10 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::string encoded;
-  base::Base64Encode(png_data->data(), &encoded);
+  if (!base::Base64Encode(png_data->data(), &encoded)) {
+    LOG(ERROR) << "Failed to encode base64";
+    return;
+  }
 
   // Only cares about HTML because ChromeOS doesn't need other formats.
   // TODO(dcheng): Why don't we take advantage of the ability to write bitmaps

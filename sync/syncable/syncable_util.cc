@@ -101,7 +101,7 @@ std::string GenerateSyncableHash(
   hash_input.append(client_tag);
 
   std::string encode_output;
-  base::Base64Encode(base::SHA1HashString(hash_input), &encode_output);
+  CHECK(base::Base64Encode(base::SHA1HashString(hash_input), &encode_output));
   return encode_output;
 }
 

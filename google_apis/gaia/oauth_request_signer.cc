@@ -204,12 +204,10 @@ bool SignHmacSha1(const std::string& text,
   DCHECK(hmac.DigestLength() == kHmacDigestLength);
   unsigned char digest[kHmacDigestLength];
   bool result = hmac.Init(key) &&
-      hmac.Sign(text, digest, kHmacDigestLength);
-  if (result) {
-    base::Base64Encode(
-        std::string(reinterpret_cast<const char*>(digest), kHmacDigestLength),
-        signature_return);
-  }
+      hmac.Sign(text, digest, kHmacDigestLength) &&
+      base::Base64Encode(std::string(reinterpret_cast<const char*>(digest),
+                                     kHmacDigestLength),
+                         signature_return);
   return result;
 }
 

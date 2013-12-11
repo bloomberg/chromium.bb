@@ -150,8 +150,7 @@ bool Nigori::Permute(Type type, const std::string& name,
   output.assign(ciphertext);
   output.append(hash.begin(), hash.end());
 
-  Base64Encode(output, permuted);
-  return true;
+  return Base64Encode(output, permuted);
 }
 
 // Enc[Kenc,Kmac](value)
@@ -187,8 +186,7 @@ bool Nigori::Encrypt(const std::string& value, std::string* encrypted) const {
   output.append(ciphertext);
   output.append(hash.begin(), hash.end());
 
-  Base64Encode(output, encrypted);
-  return true;
+  return Base64Encode(output, encrypted);
 }
 
 bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {

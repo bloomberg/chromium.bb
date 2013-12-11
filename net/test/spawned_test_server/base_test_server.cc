@@ -226,8 +226,10 @@ bool BaseTestServer::GetFilePathWithReplacements(
     const std::string& new_text = it->second;
     std::string base64_old;
     std::string base64_new;
-    base::Base64Encode(old_text, &base64_old);
-    base::Base64Encode(new_text, &base64_new);
+    if (!base::Base64Encode(old_text, &base64_old))
+      return false;
+    if (!base::Base64Encode(new_text, &base64_new))
+      return false;
     if (first_query_parameter) {
       new_file_path += "?";
       first_query_parameter = false;
@@ -398,7 +400,8 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     }
     if (!ssl_options_.signed_cert_timestamps.empty()) {
       std::string b64_scts;
-      base::Base64Encode(ssl_options_.signed_cert_timestamps, &b64_scts);
+      if (!base::Base64Encode(ssl_options_.signed_cert_timestamps, &b64_scts))
+        return false;
       arguments->SetString("signed-cert-timestamps", b64_scts);
     }
   }

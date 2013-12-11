@@ -280,9 +280,13 @@ int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
   // Base64 encode data in output buffer and prepend the scheme.
   std::string encode_input(static_cast<char*>(out_buf), out_buf_len);
   std::string encode_output;
-  base::Base64Encode(encode_input, &encode_output);
+  bool base64_rv = base::Base64Encode(encode_input, &encode_output);
   // OK, we are done with |out_buf|
   free(out_buf);
+  if (!base64_rv) {
+    LOG(ERROR) << "Base64 encoding of auth token failed.";
+    return ERR_ENCODING_CONVERSION_FAILED;
+  }
   *auth_token = scheme_ + " " + encode_output;
   return OK;
 }

@@ -16,7 +16,9 @@ std::string MakeHostPinHash(const std::string& host_id,
   std::string hash = protocol::AuthenticationMethod::ApplyHashFunction(
       protocol::AuthenticationMethod::HMAC_SHA256, host_id, pin);
   std::string hash_base64;
-  base::Base64Encode(hash, &hash_base64);
+  if (!base::Base64Encode(hash, &hash_base64)) {
+    LOG(FATAL) << "Base64Encode failed";
+  }
   return "hmac:" + hash_base64;
 }
 

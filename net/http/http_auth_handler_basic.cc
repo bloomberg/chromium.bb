@@ -91,9 +91,13 @@ int HttpAuthHandlerBasic::GenerateAuthTokenImpl(
   DCHECK(credentials);
   // TODO(eroman): is this the right encoding of username/password?
   std::string base64_username_password;
-  base::Base64Encode(UTF16ToUTF8(credentials->username()) + ":" +
-                         UTF16ToUTF8(credentials->password()),
-                     &base64_username_password);
+  if (!base::Base64Encode(
+          UTF16ToUTF8(credentials->username()) + ":" +
+          UTF16ToUTF8(credentials->password()),
+          &base64_username_password)) {
+    LOG(ERROR) << "Unexpected problem Base64 encoding.";
+    return ERR_UNEXPECTED;
+  }
   *auth_token = "Basic " + base64_username_password;
   return OK;
 }

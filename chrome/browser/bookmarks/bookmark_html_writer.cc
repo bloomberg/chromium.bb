@@ -270,9 +270,10 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
         favicon_data.assign(reinterpret_cast<const char*>(data->front()),
                             data->size());
         std::string favicon_base64_encoded;
-        base::Base64Encode(favicon_data, &favicon_base64_encoded);
-        GURL favicon_url("data:image/png;base64," + favicon_base64_encoded);
-        favicon_string = favicon_url.spec();
+        if (base::Base64Encode(favicon_data, &favicon_base64_encoded)) {
+          GURL favicon_url("data:image/png;base64," + favicon_base64_encoded);
+          favicon_string = favicon_url.spec();
+        }
       }
 
       if (!WriteIndent() ||

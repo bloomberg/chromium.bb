@@ -76,7 +76,8 @@ void WebAuthFlow::Start() {
   // in OnShellWindowAdded.
   std::string random_bytes;
   crypto::RandBytes(WriteInto(&random_bytes, 33), 32);
-  base::Base64Encode(random_bytes, &shell_window_key_);
+  bool success = base::Base64Encode(random_bytes, &shell_window_key_);
+  DCHECK(success);
 
   // identityPrivate.onWebFlowRequest(shell_window_key, provider_url_, mode_)
   scoped_ptr<base::ListValue> args(new base::ListValue());

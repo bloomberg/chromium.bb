@@ -54,7 +54,9 @@ base::StringValue* MakeInt64Value(int64 x) {
 // that instead of a StringValue.
 base::StringValue* MakeBytesValue(const std::string& bytes) {
   std::string bytes_base64;
-  base::Base64Encode(bytes, &bytes_base64);
+  if (!base::Base64Encode(bytes, &bytes_base64)) {
+    NOTREACHED();
+  }
   return new base::StringValue(bytes_base64);
 }
 

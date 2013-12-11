@@ -692,7 +692,8 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
 
   // Note: in order to Pack the keys, they must all be base64 encoded (else
   // JSON serialization fails).
-  base::Base64Encode(raw_keystore_key, &keystore_key_);
+  if (!base::Base64Encode(raw_keystore_key, &keystore_key_))
+    return false;
 
   // Go through and save the old keystore keys. We always persist all keystore
   // keys the server sends us.
