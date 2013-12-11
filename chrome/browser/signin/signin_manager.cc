@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
@@ -363,10 +364,16 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
     // have changed the policy since the last signin, so sign out the user.
     SignOut();
   }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNewProfileManagement)) {
+    account_id_helper_.reset(new SigninAccountIdHelper(profile));
+  }
 }
 
 void SigninManager::Shutdown() {
   local_state_pref_registrar_.RemoveAll();
+  account_id_helper_.reset();
   SigninManagerBase::Shutdown();
 }
 

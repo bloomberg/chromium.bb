@@ -434,6 +434,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   if (!is_incognito()) {
     signin_names_.reset(new SigninNamesOnIOThread());
 
+    google_services_user_account_id_.Init(
+        prefs::kGoogleServicesUserAccountId, pref_service);
+    google_services_user_account_id_.MoveToThread(io_message_loop_proxy);
+
     google_services_username_.Init(
         prefs::kGoogleServicesUsername, pref_service);
     google_services_username_.MoveToThread(io_message_loop_proxy);
@@ -1054,6 +1058,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   if (signin_names_)
     signin_names_->ReleaseResourcesOnUIThread();
 
+  google_services_user_account_id_.Destroy();
   google_services_username_.Destroy();
   google_services_username_pattern_.Destroy();
   reverse_autologin_enabled_.Destroy();

@@ -44,6 +44,7 @@ class CookieSettings;
 class GaiaAuthFetcher;
 class ProfileIOData;
 class PrefService;
+class SigninAccountIdHelper;
 class SigninGlobalError;
 class SigninManagerDelegate;
 
@@ -159,7 +160,6 @@ class SigninManager : public SigninManagerBase,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-
   // Tells the SigninManager whether to prohibit signout for this profile.
   // If |prohibit_signout| is true, then signout will be prohibited.
   void ProhibitSignout(bool prohibit_signout);
@@ -256,6 +256,9 @@ class SigninManager : public SigninManagerBase,
 
   // OAuth revocation fetcher for sign outs.
   scoped_ptr<GaiaAuthFetcher> revoke_token_fetcher_;
+
+  // Fetcher for the obfuscated user id.
+  scoped_ptr<SigninAccountIdHelper> account_id_helper_;
 
   // The type of sign being performed.  This value is valid only between a call
   // to one of the StartSigninXXX methods and when the sign in is either

@@ -1988,6 +1988,8 @@
         'browser/signin/profile_oauth2_token_service_factory.h',
         'browser/signin/profile_oauth2_token_service_request.cc',
         'browser/signin/profile_oauth2_token_service_request.h',
+        'browser/signin/signin_account_id_helper.cc',
+        'browser/signin/signin_account_id_helper.h',
         'browser/signin/signin_global_error.cc',
         'browser/signin/signin_global_error.h',
         'browser/signin/signin_internals_util.cc',

@@ -127,6 +127,10 @@ class ProfileIOData {
     return signin_names_.get();
   }
 
+  StringPrefMember* google_services_account_id() const {
+    return &google_services_user_account_id_;
+  }
+
   StringPrefMember* google_services_username() const {
     return &google_services_username_;
   }
@@ -457,6 +461,7 @@ class ProfileIOData {
   // Provides access to the email addresses of all signed in profiles.
   mutable scoped_ptr<SigninNamesOnIOThread> signin_names_;
 
+  mutable StringPrefMember google_services_user_account_id_;
   mutable StringPrefMember google_services_username_;
   mutable StringPrefMember google_services_username_pattern_;
   mutable BooleanPrefMember reverse_autologin_enabled_;
