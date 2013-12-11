@@ -213,8 +213,6 @@ class EVENTS_EXPORT Event {
 
   void set_name(const std::string& name) { name_ = name; }
 
-  void InitLatencyInfo();
-
  private:
   friend class EventTestApi;
 
