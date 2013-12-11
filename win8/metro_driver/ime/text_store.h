@@ -5,6 +5,9 @@
 #ifndef WIN8_METRO_DRIVER_IME_TEXT_STORE_H_
 #define WIN8_METRO_DRIVER_IME_TEXT_STORE_H_
 
+#include <atlbase.h>
+#include <atlcom.h>
+#include <initguid.h>
 #include <inputscope.h>
 #include <msctf.h>
 
@@ -85,16 +88,21 @@ class TextStoreDelegate;
 // More information about TSF can be found here:
 //   http://msdn.microsoft.com/en-us/library/ms629032
 // TODO(yukawa): Rename TSFTextStore to TextStore.
-class TSFTextStore : public ITextStoreACP,
-                     public ITfContextOwnerCompositionSink,
-                     public ITfTextEditSink {
+class ATL_NO_VTABLE TSFTextStore
+    : public CComObjectRootEx<CComMultiThreadModel>,
+      public ITextStoreACP,
+      public ITfContextOwnerCompositionSink,
+      public ITfTextEditSink {
  public:
   virtual ~TSFTextStore();
 
+  BEGIN_COM_MAP(TSFTextStore)
+    COM_INTERFACE_ENTRY(ITextStoreACP)
+    COM_INTERFACE_ENTRY(ITfContextOwnerCompositionSink)
+    COM_INTERFACE_ENTRY(ITfTextEditSink)
+  END_COM_MAP()
+
   // ITextStoreACP:
-  STDMETHOD_(ULONG, AddRef)() OVERRIDE;
-  STDMETHOD_(ULONG, Release)() OVERRIDE;
-  STDMETHOD(QueryInterface)(REFIID iid, void** ppv) OVERRIDE;
   STDMETHOD(AdviseSink)(REFIID iid, IUnknown* unknown, DWORD mask) OVERRIDE;
   STDMETHOD(FindNextAttrTransition)(LONG acp_start,
                                     LONG acp_halt,
@@ -215,11 +223,14 @@ class TSFTextStore : public ITextStoreACP,
       TextStoreDelegate* delegate);
 
  private:
-  TSFTextStore(HWND window_handle,
-               ITfCategoryMgr* category_manager,
-               ITfDisplayAttributeMgr* display_attribute_manager,
-               ITfInputScope* input_scope,
-               TextStoreDelegate* delegate);
+  friend CComObject<TSFTextStore>;
+  TSFTextStore();
+
+  void Initialize(HWND window_handle,
+                  ITfCategoryMgr* category_manager,
+                  ITfDisplayAttributeMgr* display_attribute_manager,
+                  ITfInputScope* input_scope,
+                  TextStoreDelegate* delegate);
 
   // Checks if the document has a read-only lock.
   bool HasReadLock() const;
@@ -238,9 +249,6 @@ class TSFTextStore : public ITextStoreACP,
       uint32* committed_size,
       std::vector<metro_viewer::UnderlineInfo>* undelines);
 
-  // The refrence count of this instance.
-  volatile LONG ref_count_;
-
   // A pointer of ITextStoreACPSink, this instance is given in AdviseSink.
   base::win::ScopedComPtr<ITextStoreACPSink> text_store_acp_sink_;
 
@@ -249,9 +257,6 @@ class TSFTextStore : public ITextStoreACP,
 
   // HWND of the attached window.
   HWND window_handle_;
-
-  // The delegate attached to this text store.
-  TextStoreDelegate* delegate_;
 
   //  |string_buffer_| contains committed string and composition string.
   //  Example: "aoi" is committed, and "umi" is under composition.
@@ -299,6 +304,9 @@ class TSFTextStore : public ITextStoreACP,
 
   // Represents the context information of this text.
   base::win::ScopedComPtr<ITfInputScope> input_scope_;
+
+  // The delegate attached to this text store.
+  TextStoreDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TSFTextStore);
 };

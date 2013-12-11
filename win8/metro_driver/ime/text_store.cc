@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define INITGUID  // required for GUID_PROP_INPUTSCOPE
 #include "win8/metro_driver/ime/text_store.h"
-
-#include <InputScope.h>
-#include <OleCtl.h>
 
 #include <algorithm>
 
 #include "base/win/scoped_variant.h"
+#include "ui/base/win/atl_module.h"
 #include "win8/metro_driver/ime/input_scope.h"
 #include "win8/metro_driver/ime/text_store_delegate.h"
 
@@ -22,23 +19,21 @@ const TsViewCookie kViewCookie = 1;
 
 }  // namespace
 
-TSFTextStore::TSFTextStore(HWND window_handle,
-                           ITfCategoryMgr* category_manager,
-                           ITfDisplayAttributeMgr* display_attribute_manager,
-                           ITfInputScope* input_scope,
-                           TextStoreDelegate* delegate)
-    : ref_count_(0),
-      text_store_acp_sink_mask_(0),
-      window_handle_(window_handle),
-      delegate_(delegate),
+TSFTextStore::TSFTextStore()
+    : text_store_acp_sink_mask_(0),
+      window_handle_(NULL),
+      delegate_(NULL),
       committed_size_(0),
       selection_start_(0),
       selection_end_(0),
       edit_flag_(false),
       current_lock_type_(0),
-      category_manager_(category_manager),
-      display_attribute_manager_(display_attribute_manager),
-      input_scope_(input_scope) {
+      category_manager_(NULL),
+      display_attribute_manager_(NULL),
+      input_scope_(NULL) {
+}
+
+TSFTextStore::~TSFTextStore() {
 }
 
 // static
@@ -68,44 +63,35 @@ scoped_refptr<TSFTextStore> TSFTextStore::Create(
     LOG(ERROR) << "Failed to initialize InputScope.";
     return scoped_refptr<TSFTextStore>();
   }
-  return scoped_refptr<TSFTextStore>(
-      new TSFTextStore(window_handle,
-                       category_manager,
-                       display_attribute_manager,
-                       input_scope,
-                       delegate));
-}
 
-TSFTextStore::~TSFTextStore() {
-}
-
-ULONG STDMETHODCALLTYPE TSFTextStore::AddRef() {
-  return InterlockedIncrement(&ref_count_);
-}
-
-ULONG STDMETHODCALLTYPE TSFTextStore::Release() {
-  const LONG count = InterlockedDecrement(&ref_count_);
-  if (!count) {
-    delete this;
-    return 0;
+  ui::win::CreateATLModuleIfNeeded();
+  CComObject<TSFTextStore>* object = NULL;
+  hr = CComObject<TSFTextStore>::CreateInstance(&object);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "CComObject<TSFTextStore>::CreateInstance failed. hr = "
+               << hr;
+    return scoped_refptr<TSFTextStore>();
   }
-  return static_cast<ULONG>(count);
+  object->Initialize(window_handle,
+                     category_manager,
+                     display_attribute_manager,
+                     input_scope,
+                     delegate);
+  return scoped_refptr<TSFTextStore>(object);
 }
 
-STDMETHODIMP TSFTextStore::QueryInterface(REFIID iid, void** result) {
-  if (iid == IID_IUnknown || iid == IID_ITextStoreACP) {
-    *result = static_cast<ITextStoreACP*>(this);
-  } else if (iid == IID_ITfContextOwnerCompositionSink) {
-    *result = static_cast<ITfContextOwnerCompositionSink*>(this);
-  } else if (iid == IID_ITfTextEditSink) {
-    *result = static_cast<ITfTextEditSink*>(this);
-  } else {
-    *result = NULL;
-    return E_NOINTERFACE;
-  }
-  AddRef();
-  return S_OK;
+void TSFTextStore::Initialize(HWND window_handle,
+                              ITfCategoryMgr* category_manager,
+                              ITfDisplayAttributeMgr* display_attribute_manager,
+                              ITfInputScope* input_scope,
+                              TextStoreDelegate* delegate) {
+  window_handle_ = window_handle;
+  category_manager_ = category_manager;
+  display_attribute_manager_ = display_attribute_manager;
+  input_scope_ = input_scope;
+  delegate_ = delegate;
 }
+
 
 STDMETHODIMP TSFTextStore::AdviseSink(REFIID iid,
                                       IUnknown* unknown,
@@ -282,9 +268,8 @@ STDMETHODIMP TSFTextStore::GetText(LONG acp_start,
 
   const string16& result =
       string_buffer_.substr(acp_start, *text_buffer_copied);
-  for (size_t i = 0; i < result.size(); ++i) {
+  for (size_t i = 0; i < result.size(); ++i)
     text_buffer[i] = result[i];
-  }
 
   if (run_info_buffer_size) {
     run_info_buffer[0].uCount = *text_buffer_copied;
@@ -359,11 +344,10 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
       // Hack for PPAPI flash. PPAPI flash does not support GetCaretBounds, so
       // it's better to return previous caret rectangle instead.
       // TODO(nona, kinaba): Remove this hack.
-      if (start_pos == 0) {
+      if (start_pos == 0)
         result = delegate_->GetCaretBounds();
-      } else {
+      else
         return TS_E_NOLAYOUT;
-      }
     }
   }
 
@@ -417,9 +401,8 @@ STDMETHODIMP TSFTextStore::InsertTextAtSelection(DWORD flags,
       return TS_E_NOLOCK;
     if (acp_start)
       *acp_start = start_pos;
-    if (acp_end) {
+    if (acp_end)
       *acp_end = end_pos;
-    }
     return S_OK;
   }
 
