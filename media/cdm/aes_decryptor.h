@@ -8,10 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
@@ -89,14 +88,28 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
     DISALLOW_COPY_AND_ASSIGN(DecryptionKey);
   };
 
+  // Keep track of the keys for a key ID. If multiple sessions specify keys
+  // for the same key ID, then the last key inserted is used. The structure is
+  // optimized so that Decrypt() has fast access, at the cost of slow deletion
+  // of keys when a session is released.
+  class SessionIdDecryptionKeyMap;
+
+  // Key ID <-> SessionIdDecryptionKeyMap map.
+  typedef base::ScopedPtrHashMap<std::string, SessionIdDecryptionKeyMap>
+      KeyIdToSessionKeysMap;
+
   // Creates a DecryptionKey using |key_string| and associates it with |key_id|.
   // Returns true if successful.
-  bool AddDecryptionKey(const std::string& key_id,
+  bool AddDecryptionKey(const uint32 session_id,
+                        const std::string& key_id,
                         const std::string& key_string);
 
   // Gets a DecryptionKey associated with |key_id|. The AesDecryptor still owns
   // the key. Returns NULL if no key is associated with |key_id|.
   DecryptionKey* GetKey(const std::string& key_id) const;
+
+  // Deletes all keys associated with |session_id|.
+  void DeleteKeysForSession(const uint32 session_id);
 
   // Callbacks for firing session events.
   SessionCreatedCB session_created_cb_;
@@ -105,14 +118,10 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   SessionClosedCB session_closed_cb_;
   SessionErrorCB session_error_cb_;
 
-  // KeyMap owns the DecryptionKey* and must delete them when they are
-  // not needed any more.
-  typedef base::hash_map<std::string, DecryptionKey*> KeyMap;
-
   // Since only Decrypt() is called off the renderer thread, we only need to
   // protect |key_map_|, the only member variable that is shared between
   // Decrypt() and other methods.
-  KeyMap key_map_;  // Protected by the |key_map_lock_|.
+  KeyIdToSessionKeysMap key_map_;  // Protected by |key_map_lock_|.
   mutable base::Lock key_map_lock_;  // Protects the |key_map_|.
 
   // Make web session ID unique per renderer by making it static. Web session
