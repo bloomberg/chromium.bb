@@ -80,6 +80,14 @@ class InstallSigner {
   // complete.
   class FetcherDelegate;
 
+  // A helper function that calls |callback_| with an indication that an error
+  // happened (currently done by passing an empty pointer).
+  void ReportErrorViaCallback();
+
+  // Called when |url_fetcher_| has returned a result to parse the response,
+  // and then call HandleSignatureResult with structured data.
+  void ParseFetchResponse();
+
   // Handles the result from a backend fetch.
   void HandleSignatureResult(const std::string& signature,
                              const std::string& expire_date,

@@ -7,7 +7,10 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -15,12 +18,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "crypto/random.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "crypto/signature_verifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_RLZ)
@@ -32,69 +38,32 @@ namespace {
 using extensions::ExtensionIdSet;
 
 const char kExpireDateKey[] = "expire_date";
+const char kExpiryKey[] = "expiry";
+const char kHashKey[] = "hash";
 const char kIdsKey[] = "ids";
+const char kInvalidIdsKey[] = "invalid_ids";
+const char kProtocolVersionKey[] = "protocol_version";
 const char kSaltKey[] = "salt";
 const char kSignatureKey[] = "signature";
+
 const size_t kSaltBytes = 32;
 
-// Returns a date 12 weeks from now in YYYY-MM-DD format.
-std::string GetExpiryString() {
-  base::Time later = base::Time::Now() + base::TimeDelta::FromDays(7*12);
-  base::Time::Exploded exploded;
-  later.LocalExplode(&exploded);
-  return base::StringPrintf("%d-%02d-%02d",
-                            exploded.year,
-                            exploded.month,
-                            exploded.day_of_month);
-}
+const char kBackendUrl[] =
+    "https://www.googleapis.com/chromewebstore/v1.1/items/verify";
 
-void FakeSignData(const ExtensionIdSet& ids,
-                  const std::string& hash_base64,
-                  const std::string& expire_date,
-                  std::string* signature,
-                  ExtensionIdSet* invalid_ids) {
-  DCHECK(invalid_ids && invalid_ids->empty());
-  DCHECK(IsStringASCII(hash_base64));
+const char kPublicKeyPEM[] =                                            \
+    "-----BEGIN PUBLIC KEY-----"                                        \
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj/u/XDdjlDyw7gHEtaaa"  \
+    "sZ9GdG8WOKAyJzXd8HFrDtz2Jcuy7er7MtWvHgNDA0bwpznbI5YdZeV4UfCEsA4S"  \
+    "rA5b3MnWTHwA1bgbiDM+L9rrqvcadcKuOlTeN48Q0ijmhHlNFbTzvT9W0zw/GKv8"  \
+    "LgXAHggxtmHQ/Z9PP2QNF5O8rUHHSL4AJ6hNcEKSBVSmbbjeVm4gSXDuED5r0nwx"  \
+    "vRtupDxGYp8IZpP5KlExqNu1nbkPc+igCTIB6XsqijagzxewUHCdovmkb2JNtskx"  \
+    "/PMIEv+TvWIx2BzqGp71gSh/dV7SJ3rClvWd2xj8dtxG8FfAWDTIIi0qZXWn2Qhi"  \
+    "zQIDAQAB"                                                          \
+    "-----END PUBLIC KEY-----";
 
-  ExtensionIdSet invalid =
-      extensions::InstallSigner::GetForcedNotFromWebstore();
-
-  std::string data_to_sign;
-  for (ExtensionIdSet::const_iterator i = ids.begin(); i != ids.end(); ++i) {
-    if (ContainsKey(invalid, (*i)))
-      invalid_ids->insert(*i);
-    else
-      data_to_sign.append(*i);
-  }
-  data_to_sign.append(hash_base64);
-  data_to_sign.append(expire_date);
-
-  *signature = std::string("FakeSignature:") +
-      crypto::SHA256HashString(data_to_sign);
-}
-
-void FakeSignDataWithCallback(
-    const ExtensionIdSet& ids,
-    const std::string& hash_base64,
-    const base::Callback<void(const std::string&,
-                              const std::string&,
-                              const ExtensionIdSet&)>& callback) {
-  std::string signature;
-  std::string expire_date = GetExpiryString();
-  ExtensionIdSet invalid_ids;
-  FakeSignData(ids, hash_base64, expire_date, &signature, &invalid_ids);
-  callback.Run(signature, expire_date, invalid_ids);
-}
-
-bool FakeCheckSignature(const extensions::ExtensionIdSet& ids,
-                        const std::string& hash_base64,
-                        const std::string& signature,
-                        const std::string& expire_date) {
-  std::string computed_signature;
-  extensions::ExtensionIdSet invalid_ids;
-  FakeSignData(ids, hash_base64, expire_date, &computed_signature,
-               &invalid_ids);
-  return invalid_ids.empty() && computed_signature == signature;
+GURL GetBackendUrl() {
+  return GURL(kBackendUrl);
 }
 
 // Hashes |salt| with the machine id, base64-encodes it and returns it in
@@ -104,6 +73,8 @@ bool HashWithMachineId(const std::string& salt, std::string* result) {
 #if defined(ENABLE_RLZ)
   if (!rlz_lib::GetMachineId(&machine_id))
     return false;
+#else
+  machine_id = "unknown";
 #endif
 
   scoped_ptr<crypto::SecureHash> hash(
@@ -119,6 +90,21 @@ bool HashWithMachineId(const std::string& salt, std::string* result) {
   return true;
 }
 
+// Validates that |input| is a string of the form "YYYY-MM-DD".
+bool ValidateExpireDateFormat(const std::string& input) {
+  if (input.length() != 10)
+    return false;
+  for (int i = 0; i < 10; i++) {
+    if (i == 4 ||  i == 7) {
+      if (input[i] != '-')
+        return false;
+    } else if (!IsAsciiDigit(input[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -130,8 +116,6 @@ InstallSignature::~InstallSignature() {
 
 void InstallSignature::ToValue(base::DictionaryValue* value) const {
   CHECK(value);
-  DCHECK(!signature.empty());
-  DCHECK(!salt.empty());
 
   base::ListValue* id_list = new base::ListValue();
   for (ExtensionIdSet::const_iterator i = ids.begin(); i != ids.end();
@@ -197,12 +181,35 @@ bool InstallSigner::VerifySignature(const InstallSignature& signature) {
   if (signature.ids.empty())
     return true;
 
+  std::string signed_data;
+  for (ExtensionIdSet::const_iterator i = signature.ids.begin();
+       i != signature.ids.end(); ++i)
+    signed_data.append(*i);
+
   std::string hash_base64;
   if (!HashWithMachineId(signature.salt, &hash_base64))
     return false;
+  signed_data.append(hash_base64);
 
-  return FakeCheckSignature(signature.ids, hash_base64, signature.signature,
-                            signature.expire_date);
+  signed_data.append(signature.expire_date);
+
+  std::string public_key;
+  if (!Extension::ParsePEMKeyBytes(kPublicKeyPEM, &public_key))
+    return false;
+
+  crypto::SignatureVerifier verifier;
+  if (!verifier.VerifyInit(extension_misc::kSignatureAlgorithm,
+                           sizeof(extension_misc::kSignatureAlgorithm),
+                           reinterpret_cast<const uint8*>(
+                               signature.signature.data()),
+                           signature.signature.size(),
+                           reinterpret_cast<const uint8*>(public_key.data()),
+                           public_key.size()))
+    return false;
+
+  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(signed_data.data()),
+                        signed_data.size());
+  return verifier.VerifyFinal();
 }
 
 
@@ -245,7 +252,8 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   // If the set of ids is empty, just return an empty signature and skip the
   // call to the server.
   if (ids_.empty()) {
-    callback_.Run(scoped_ptr<InstallSignature>(new InstallSignature()));
+    if (!callback_.is_null())
+      callback_.Run(scoped_ptr<InstallSignature>(new InstallSignature()));
     return;
   }
 
@@ -255,18 +263,109 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
 
   std::string hash_base64;
   if (!HashWithMachineId(salt_, &hash_base64)) {
-    if (!callback_.is_null())
-      callback_.Run(scoped_ptr<InstallSignature>());
+    ReportErrorViaCallback();
     return;
   }
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeSignDataWithCallback,
-                 ids_,
-                 hash_base64,
-                 base::Bind(&InstallSigner::HandleSignatureResult,
-                            base::Unretained(this))));
+  if (!context_getter_) {
+    ReportErrorViaCallback();
+    return;
+  }
+
+  base::Closure closure = base::Bind(&InstallSigner::ParseFetchResponse,
+                                     base::Unretained(this));
+
+  delegate_.reset(new FetcherDelegate(closure));
+  url_fetcher_.reset(net::URLFetcher::Create(
+      GetBackendUrl(), net::URLFetcher::POST, delegate_.get()));
+  url_fetcher_->SetRequestContext(context_getter_);
+
+  // The request protocol is JSON of the form:
+  // {
+  //   "protocol_version": "1",
+  //   "hash": "<base64-encoded hash value here>",
+  //   "ids": [ "<id1>", "id2" ]
+  // }
+  base::DictionaryValue dictionary;
+  dictionary.SetInteger(kProtocolVersionKey, 1);
+  dictionary.SetString(kHashKey, hash_base64);
+  scoped_ptr<ListValue> id_list(new ListValue);
+  for (ExtensionIdSet::const_iterator i = ids_.begin(); i != ids_.end(); ++i) {
+    id_list->AppendString(*i);
+  }
+  dictionary.Set(kIdsKey, id_list.release());
+  std::string json;
+  base::JSONWriter::Write(&dictionary, &json);
+  if (json.empty()) {
+    ReportErrorViaCallback();
+    return;
+  }
+  url_fetcher_->SetUploadData("application/json", json);
+  url_fetcher_->Start();
+}
+
+void InstallSigner::ReportErrorViaCallback() {
+  InstallSignature* null_signature = NULL;
+  if (!callback_.is_null())
+    callback_.Run(scoped_ptr<InstallSignature>(null_signature));
+}
+
+void InstallSigner::ParseFetchResponse() {
+  std::string response;
+  if (!url_fetcher_->GetStatus().is_success() ||
+      !url_fetcher_->GetResponseAsString(&response) ||
+      response.empty()) {
+    ReportErrorViaCallback();
+    return;
+  }
+
+  // The response is JSON of the form:
+  // {
+  //   "protocol_version": "1",
+  //   "signature": "<base64-encoded signature>",
+  //   "expiry": "<date in YYYY-MM-DD form>",
+  //   "invalid_ids": [ "<id3>", "<id4>" ]
+  // }
+  // where |invalid_ids| is a list of ids from the original request that
+  // could not be verified to be in the webstore.
+
+  base::DictionaryValue* dictionary = NULL;
+  scoped_ptr<base::Value> parsed(base::JSONReader::Read(response));
+  if (!parsed.get() || !parsed->GetAsDictionary(&dictionary)) {
+    ReportErrorViaCallback();
+    return;
+  }
+
+  int protocol_version = 0;
+  std::string signature_base64;
+  std::string signature;
+  std::string expire_date;
+
+  dictionary->GetInteger(kProtocolVersionKey, &protocol_version);
+  dictionary->GetString(kSignatureKey, &signature_base64);
+  dictionary->GetString(kExpiryKey, &expire_date);
+
+  if (protocol_version != 1 || signature_base64.empty() ||
+      !ValidateExpireDateFormat(expire_date) ||
+      !base::Base64Decode(signature_base64, &signature)) {
+    ReportErrorViaCallback();
+    return;
+  }
+
+  ExtensionIdSet invalid_ids;
+  const base::ListValue* invalid_ids_list = NULL;
+  if (dictionary->GetList(kInvalidIdsKey, &invalid_ids_list)) {
+    for (size_t i = 0; i < invalid_ids_list->GetSize(); i++) {
+      std::string id;
+      if (!invalid_ids_list->GetString(i, &id)) {
+        ReportErrorViaCallback();
+        return;
+      }
+      invalid_ids.insert(id);
+    }
+  }
+
+  HandleSignatureResult(signature, expire_date, invalid_ids);
 }
 
 void InstallSigner::HandleSignatureResult(const std::string& signature,
@@ -282,7 +381,10 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
     result->salt = salt_;
     result->signature = signature;
     result->expire_date = expire_date;
-    DCHECK(VerifySignature(*result));
+    if (!VerifySignature(*result)) {
+      UMA_HISTOGRAM_BOOLEAN("InstallSigner.InvalidSignature", true);
+      result.reset();
+    }
   }
 
   if (!callback_.is_null())

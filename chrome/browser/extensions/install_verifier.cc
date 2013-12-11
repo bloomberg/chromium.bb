@@ -75,8 +75,12 @@ void InstallVerifier::Init() {
       DVLOG(1) << "Init - ignoring invalid signature";
     } else {
       signature_ = signature_from_prefs.Pass();
+      UMA_HISTOGRAM_COUNTS("InstallVerifier.InitGoodSignature",
+                           signature_->ids.size());
       GarbageCollect();
     }
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("InstallVerifier.InitNoSignature", true);
   }
 
   if (!signature_.get() && ShouldFetchSignature()) {
@@ -89,13 +93,23 @@ void InstallVerifier::Init() {
       for (ExtensionPrefs::ExtensionsInfo::const_iterator i = all_info->begin();
            i != all_info->end(); ++i) {
         const ExtensionInfo& info = **i;
-        const base::DictionaryValue* manifest = info.extension_manifest.get();
-        if (manifest && ManifestURL::UpdatesFromGallery(manifest))
-          to_add.insert(info.extension_id);
+        const base::DictionaryValue* dictionary = info.extension_manifest.get();
+        if (dictionary && ManifestURL::UpdatesFromGallery(dictionary)) {
+          Manifest manifest(info.extension_location,
+                            scoped_ptr<DictionaryValue>(
+                                dictionary->DeepCopy()));
+          if (manifest.is_extension())
+            to_add.insert(info.extension_id);
+        }
       }
     }
-    if (!to_add.empty())
+    if (to_add.empty()) {
+      // Write an empty signature so we don't have to redo this at next Init.
+      signature_.reset(new InstallSignature());
+      SaveToPrefs();
+    } else {
       AddMany(to_add, AddResultCallback());
+    }
   }
 }
 
