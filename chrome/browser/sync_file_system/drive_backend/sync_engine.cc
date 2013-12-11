@@ -148,9 +148,6 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
 void SyncEngine::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  if (!metadata_database_ && drive_service_->HasRefreshToken())
-    PostInitializeTask();
-
   task_manager_->ScheduleSyncTaskAtPriority(
       scoped_ptr<SyncTask>(new RegisterAppTask(this, origin.host())),
       SyncTaskManager::PRIORITY_HIGH,
@@ -333,9 +330,6 @@ void SyncEngine::NotifyLastOperationStatus(
 }
 
 void SyncEngine::OnNotificationReceived() {
-  if (service_state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE)
-    UpdateServiceState(REMOTE_SERVICE_OK, "Got push notification for Drive.");
-
   should_check_remote_change_ = true;
   MaybeScheduleNextTask();
 }
@@ -443,9 +437,8 @@ void SyncEngine::PostInitializeTask() {
                                 task_runner_.get(),
                                 drive_service_.get(),
                                 base_dir_.Append(kDatabaseName));
-  task_manager_->ScheduleSyncTaskAtPriority(
+  task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(initializer),
-      SyncTaskManager::PRIORITY_HIGH,
       base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
                  initializer));
 }
