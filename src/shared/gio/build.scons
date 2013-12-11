@@ -74,3 +74,15 @@ node = gtest_env.CommandTest(
     )
 gtest_env.AddNodeToTestSuite(node, ['small_tests'],
     'run_gio_pio_test')
+
+gprintf_test_exe = env.ComponentProgram(
+    'gprintf_test',
+    ['gprintf_test.c'],
+    EXTRA_LIBS=['gio'])
+
+node = env.CommandTest(
+    'gprintf_test.out',
+    command=[gprintf_test_exe],
+    stdout_golden=env.File('testdata/gprintf_test.stdout'))
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_gprintf_test')
