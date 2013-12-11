@@ -16,6 +16,7 @@
 // Like any Objective-C delegate, it is not retained by the delegator object.
 // The delegator object will call the -viewGone: method when it is going away.
 
+@class NSEvent;
 @protocol RenderWidgetHostViewMacDelegate
 @optional
 // Notification that the view is gone.
@@ -40,6 +41,19 @@
 // |valid| contains the validity of the specified item.
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
                       isValidItem:(BOOL*)valid;
+
+@required
+// Notification of when a gesture begins/ends.
+- (void)beginGestureWithEvent:(NSEvent*)event;
+- (void)endGestureWithEvent:(NSEvent*)event;
+
+// This is a low level API which provides touches associated with an event.
+// It is used in conjunction with gestures to determine finger placement
+// on the trackpad.
+- (void)touchesMovedWithEvent:(NSEvent*)event;
+- (void)touchesBeganWithEvent:(NSEvent*)event;
+- (void)touchesCancelledWithEvent:(NSEvent*)event;
+- (void)touchesEndedWithEvent:(NSEvent*)event;
 
 @end
 

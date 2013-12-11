@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_DELEGATE_H_
-#define CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_DELEGATE_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
+#define CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 
@@ -18,6 +19,7 @@ namespace ChromeRenderWidgetHostViewMacDelegateInternal {
 class SpellCheckObserver;
 }
 
+@class HistorySwiper;
 @interface ChromeRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
@@ -25,28 +27,12 @@ class SpellCheckObserver;
   scoped_ptr<ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver>
       spellingObserver_;
 
-  // If the viewport is scrolled all the way to the left or right.
-  // Used for history swiping.
-  BOOL isPinnedLeft_;
-  BOOL isPinnedRight_;
-
-  // If the main frame has a horizontal scrollbar.
-  // Used for history swiping.
-  BOOL hasHorizontalScrollbar_;
-
-  // If a scroll event came back unhandled from the renderer. Set to |NO| at
-  // the start of a scroll gesture, and then to |YES| if a scroll event comes
-  // back unhandled from the renderer.
-  // Used for history swiping.
-  BOOL gotUnhandledWheelEvent_;
-
-  // Cumulative scroll delta since scroll gesture start. Only valid during
-  // scroll gesture handling. Used for history swiping.
-  NSSize totalScrollDelta_;
-
   // Used for continuous spell checking.
   BOOL spellcheckEnabled_;
   BOOL spellcheckChecked_;
+
+  // Responsible for 2-finger swipes history navigation.
+  base::scoped_nsobject<HistorySwiper> historySwiper_;
 }
 
 - (id)initWithRenderWidgetHost:(content::RenderWidgetHost*)renderWidgetHost;
@@ -61,4 +47,4 @@ class SpellCheckObserver;
 
 @end
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_DELEGATE_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_

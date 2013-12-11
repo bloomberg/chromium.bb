@@ -29,10 +29,6 @@ const CGFloat kShieldHeight = 140;
 // considered complete.
 const CGFloat kShieldHeightCompletionAdjust = 10;
 
-// The amount of |gestureAmount| at which AppKit considers the gesture
-// completed. This was derived more via art than science.
-const CGFloat kGestureCompleteProgress = 0.3;
-
 // HistoryOverlayView //////////////////////////////////////////////////////////
 
 // The content view that draws the semicircle and the arrow.
@@ -111,12 +107,8 @@ const CGFloat kGestureCompleteProgress = 0.3;
   self.view = contentView_;
 }
 
-- (void)setProgress:(CGFloat)gestureAmount {
+- (void)setProgress:(CGFloat)gestureAmount finished:(BOOL)finished {
   NSRect parentFrame = [parent_ frame];
-  // Scale the gesture amount so that the progress is indicative of the gesture
-  // being completed.
-  gestureAmount = std::abs(gestureAmount) / kGestureCompleteProgress;
-
   // When tracking the gesture, the height is constant and the alpha value
   // changes from [0.25, 0.65].
   CGFloat height = kShieldHeight;
@@ -126,7 +118,7 @@ const CGFloat kGestureCompleteProgress = 0.3;
 
   // When the gesture is very likely to be completed (90% in this case), grow
   // the semicircle's height and lock the alpha to 0.75.
-  if (gestureAmount > 0.9) {
+  if (finished) {
     height += kShieldHeightCompletionAdjust;
     shieldAlpha = 0.75;
   }
@@ -149,7 +141,7 @@ const CGFloat kGestureCompleteProgress = 0.3;
 
 - (void)showPanelForView:(NSView*)view {
   parent_.reset([view retain]);
-  [self setProgress:0];  // Set initial view position.
+  [self setProgress:0 finished:NO];  // Set initial view position.
   [[parent_ superview] addSubview:self.view
                        positioned:NSWindowAbove
                        relativeTo:parent_];

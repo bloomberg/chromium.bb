@@ -83,6 +83,12 @@ typedef NSUInteger NSEventPhase;
 - (void)gotUnhandledWheelEvent {
   unhandledWheelEventReceived_ = true;
 }
+- (void)touchesBeganWithEvent:(NSEvent*)event{}
+- (void)touchesMovedWithEvent:(NSEvent*)event{}
+- (void)touchesCancelledWithEvent:(NSEvent*)event{}
+- (void)touchesEndedWithEvent:(NSEvent*)event{}
+- (void)beginGestureWithEvent:(NSEvent*)event{}
+- (void)endGestureWithEvent:(NSEvent*)event{}
 
 @end
 

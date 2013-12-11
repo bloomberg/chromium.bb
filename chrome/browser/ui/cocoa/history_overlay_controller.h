@@ -35,7 +35,10 @@ enum HistoryOverlayMode {
 - (void)showPanelForView:(NSView*)view;
 
 // Updates the appearance of the overlay based on track gesture progress.
-- (void)setProgress:(CGFloat)gestureAmount;
+// gestureAmount must be between 0 and 1.
+// 0 indicates no progress. 1 indicates maximum progress.
+// Finished indicates whether the gesture has reached maximum progress.
+- (void)setProgress:(CGFloat)gestureAmount finished:(BOOL)finished;
 
 // Fades the shield out and removes it from the view hierarchy.
 - (void)dismiss;

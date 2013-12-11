@@ -1149,6 +1149,7 @@
         'browser/profiles/profile_shortcut_manager_unittest_win.cc',
         'browser/renderer_host/plugin_info_message_filter_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
+        'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm',
         'browser/resources/google_now/background.js',
         'browser/resources/google_now/background_test_util.js',
         'browser/resources/google_now/background_unittest.gtestjs',

@@ -2013,7 +2013,6 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 
 @implementation RenderWidgetHostViewCocoa
-
 @synthesize selectedRange = selectedRange_;
 @synthesize suppressNextEscapeKeyUp = suppressNextEscapeKeyUp_;
 @synthesize markedRange = markedRange_;
@@ -2022,6 +2021,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
+    self.acceptsTouchEvents = YES;
     editCommand_helper_.reset(new RenderWidgetHostViewMacEditCommandHelper);
     editCommand_helper_->AddEditingSelectorsToClass([self class]);
 
@@ -2075,8 +2075,8 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 }
 
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
-  if (delegate_ && [delegate_ respondsToSelector:
-      @selector(scrollOffsetPinnedToLeft:toRight:)]) {
+  if (delegate_ && [delegate_
+      respondsToSelector:@selector(scrollOffsetPinnedToLeft:toRight:)]) {
     [delegate_ scrollOffsetPinnedToLeft:left toRight:right];
   }
 }
@@ -2542,6 +2542,47 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   }
 }
 
+- (void)beginGestureWithEvent:(NSEvent*)event {
+  [delegate_ beginGestureWithEvent:event];
+}
+- (void)endGestureWithEvent:(NSEvent*)event {
+  [delegate_ endGestureWithEvent:event];
+}
+- (void)touchesMovedWithEvent:(NSEvent*)event {
+  [delegate_ touchesMovedWithEvent:event];
+}
+- (void)touchesBeganWithEvent:(NSEvent*)event {
+  [delegate_ touchesBeganWithEvent:event];
+}
+- (void)touchesCancelledWithEvent:(NSEvent*)event {
+  [delegate_ touchesCancelledWithEvent:event];
+}
+- (void)touchesEndedWithEvent:(NSEvent*)event {
+  [delegate_ touchesEndedWithEvent:event];
+}
+
+// This method handles 2 different types of hardware events.
+// (Apple does not distinguish between them).
+//  a. Scrolling the middle wheel of a mouse.
+//  b. Swiping on the track pad.
+//
+// This method is responsible for 2 types of behavior:
+//  a. Scrolling the content of window.
+//  b. Navigating forwards/backwards in history.
+//
+// This is a brief description of the logic:
+//  1. If the content can be scrolled, scroll the content.
+//     (This requires a roundtrip to blink to determine whether the content
+//      can be scrolled.)
+//     Once this logic is triggered, the navigate logic cannot be triggered
+//     until the gesture finishes.
+//  2. If the user is making a horizontal swipe, start the navigate
+//     forward/backwards UI.
+//     Once this logic is triggered, the user can either cancel or complete
+//     the gesture. If the user completes the gesture, all remaining touches
+//     are swallowed, and not allowed to scroll the content. If the user
+//     cancels the gesture, all remaining touches are forwarded to the content
+//     scroll logic. The user cannot trigger the navigation logic again.
 - (void)scrollWheel:(NSEvent*)event {
   if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
     BOOL handled = [delegate_ handleEvent:event];
@@ -2556,13 +2597,14 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   if (base::mac::IsOSLionOrLater() && [event phase] == NSEventPhaseBegan &&
       !endWheelMonitor_) {
     endWheelMonitor_ =
-        [NSEvent addLocalMonitorForEventsMatchingMask:NSScrollWheelMask
-            handler:^(NSEvent* blockEvent) {
-              [self shortCircuitScrollWheelEvent:blockEvent];
-              return blockEvent;
-            }];
+      [NSEvent addLocalMonitorForEventsMatchingMask:NSScrollWheelMask
+      handler:^(NSEvent* blockEvent) {
+          [self shortCircuitScrollWheelEvent:blockEvent];
+          return blockEvent;
+      }];
   }
 
+  // This is responsible for content scrolling!
   if (renderWidgetHostView_->render_widget_host_) {
     const WebMouseWheelEvent& webEvent =
         WebInputEventFactory::mouseWheelEvent(event, self);
@@ -2994,8 +3036,9 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  if (delegate_ && [delegate_ respondsToSelector:
-      @selector(validateUserInterfaceItem:isValidItem:)]) {
+  if (delegate_ &&
+      [delegate_ respondsToSelector:@selector(validateUserInterfaceItem:
+                                                            isValidItem:)]) {
     BOOL valid;
     BOOL known = [delegate_ validateUserInterfaceItem:item
                                           isValidItem:&valid];
