@@ -1391,83 +1391,136 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.setupCurrentDirectory_ = function() {
     var tracker = this.directoryModel_.createDirectoryChangeTracker();
-    tracker.start();
+    var queue = new AsyncUtil.Queue();
 
     // Wait until the volume manager is initialized.
-    this.volumeManager_.ensureInitialized(function() {
+    queue.run(function(callback) {
+      tracker.start();
+      this.volumeManager_.ensureInitialized(callback);
+    }.bind(this));
+
+    // Resolve the default path.
+    var defaultFullPath;
+    var candidateFullPath;
+    var candidateEntry;
+    queue.run(function(callback) {
+      // Cancel this sequence if the current directory has already changed.
       if (tracker.hasChanged) {
-        tracker.stop();
+        callback();
         return;
       }
 
-      // The default path contains a full path, including the mount point. This
-      // should be avoided.
-      var path = this.defaultPath;
-
-      if (!path) {
-        path = PathUtil.DEFAULT_MOUNT_POINT;
-      } else if (path.indexOf('/') == -1) {
+      // Resolve the absolute path in case only the file name or an empty string
+      // is passed.
+      if (!this.defaultPath) {
+        defaultFullPath = PathUtil.DEFAULT_MOUNT_POINT;
+      } else if (this.defaultPath.indexOf('/') === -1) {
         // Path is a file name.
-        path = PathUtil.DEFAULT_MOUNT_POINT + '/' + path;
+        defaultFullPath = PathUtil.DEFAULT_MOUNT_POINT + '/' + this.defaultPath;
+      } else {
+        defaultFullPath = this.defaultPath;
       }
 
       // If Drive is disabled but the path points to Drive's entry, fallback to
       // DEFAULT_MOUNT_POINT.
-      if (PathUtil.isDriveBasedPath(path) &&
+      if (PathUtil.isDriveBasedPath(defaultFullPath) &&
           !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
-        path = PathUtil.DEFAULT_MOUNT_POINT + '/' + PathUtil.basename(path);
+        candidateFullPath = PathUtil.DEFAULT_MOUNT_POINT + '/' +
+            PathUtil.basename(defaultFullPath);
+      } else {
+        candidateFullPath = defaultFullPath;
       }
 
-      var resolveEntries = function(callback) {
-        // Convert the path to the directory entry and an optional selection
-        // entry.
-        // TODO(hirono): There may be a race here. The path on Drive, may not
-        // be available yet.
-        this.volumeManager_.resolveAbsolutePath(path, function(entry) {
-          if (entry.isDirectory) {
-            callback(entry);
-            return;
-          }
-          // The entry exists, but it is not a directory. Therefore use a
-          // parent.
-          entry.getParent(function(parentEntry) {
-            callback(parentEntry, entry);
-          }, function() {
-            // Errors are unexpected, throw an exception.
-            throw new Error('Unable to resolve parent for: ' + path);
-          });
-        }, function() {
-          // The entry doesn't exist, most probably because the path contains a
-          // suggested name. Therefore try to open its parent.
-          var pathNodes = path.split('/');
-          var suggestedName = pathNodes.pop();
-          var parentPath = pathNodes.join('/');
-          this.volumeManager_.resolveAbsolutePath(
-              parentPath,
-              function(parentEntry) {
-                callback(parentEntry,
-                         undefined,  // opt_selectionEntry
-                         suggestedName);
-              },
-              function() {
-                throw new Error('Failed to setup an initial directory: ' +
-                    path);
-              });
-        }.bind(this));
-      }.bind(this);
+      // If the path points a fake entry, use the entry directly.
+      var fakeEntries = DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES;
+      for (var i = 0; i < fakeEntries.length; i++) {
+        if (candidateFullPath === fakeEntries[i].fullPath) {
+          candidateEntry = fakeEntries[i];
+          callback();
+          return;
+        }
+      }
 
-      // Convert the path to a directoryEntry, used to navigate the directory
-      // model to, selection entry, to select the file within it (optional),
-      // and a suggested name, if the selection entry has not been found, but a
-      // name got passed (optional).
-      resolveEntries(
-          function(directoryEntry, opt_selectionEntry, opt_suggestedName) {
-            tracker.stop();
-            if (tracker.hasChanged)
-              return;
-            this.finishSetupCurrentDirectory_(
-                directoryEntry, opt_selectionEntry, opt_suggestedName);
-          }.bind(this));
+      // Convert the path to the directory entry and an optional selection
+      // entry.
+      // TODO(hirono): There may be a race here. The path on Drive, may not
+      // be available yet.
+      this.volumeManager_.resolveAbsolutePath(candidateFullPath,
+                                              function(inEntry) {
+        candidateEntry = inEntry;
+        callback();
+      }, function() {
+        callback();
+      });
+    }.bind(this));
+
+    // Check the obtained entry.
+    var nextCurrentDirEntry;
+    var selectionEntry = null;
+    var suggestedName = null;
+    var error = null;
+    queue.run(function(callback) {
+      // Cancel this sequence if the current directory has already changed.
+      if (tracker.hasChanged) {
+        callback();
+        return;
+      }
+
+      if (candidateEntry) {
+        // The entry is directry. Use it.
+        if (candidateEntry.isDirectory) {
+          nextCurrentDirEntry = candidateEntry;
+          callback();
+          return;
+        }
+        // The entry exists, but it is not a directory. Therefore use a
+        // parent.
+        candidateEntry.getParent(function(parentEntry) {
+          nextCurrentDirEntry = parentEntry;
+          selectionEntry = candidateEntry;
+          callback();
+        }, function() {
+          error = new Error('Unable to resolve parent for: ' +
+              candidateEntry.fullPath);
+          callback();
+        });
+        return;
+      }
+
+      // If the entry doesn't exist, most probably because the path contains a
+      // suggested name. Therefore try to open its parent.
+      var pathNodes = candidateFullPath.split('/');
+      suggestedName = pathNodes.pop();
+      var parentPath = pathNodes.join('/');
+      this.volumeManager_.resolveAbsolutePath(
+          parentPath,
+          function(parentEntry) {
+            nextCurrentDirEntry = parentEntry;
+            callback();
+          },
+          function() {
+            error = new Error('Failed to setup an initial directory: ' +
+                nextCurrentDirPath);
+            callback();
+          });
+    }.bind(this));
+
+    queue.run(function(callback) {
+      // Check error.
+      if (error) {
+        callback();
+        throw error;
+      }
+      // Check directory change.
+      tracker.stop();
+      if (tracker.hasChanged) {
+        callback();
+        return;
+      }
+      // Finish setup current directory.
+      this.finishSetupCurrentDirectory_(
+          nextCurrentDirEntry, selectionEntry, suggestedName);
+      callback();
     }.bind(this));
   };
 
@@ -1481,10 +1534,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.finishSetupCurrentDirectory_ = function(
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
-    this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
-      if (opt_selectionEntry)
-        this.directoryModel_.selectEntry(opt_selectionEntry);
-    }.bind(this));
+    if (util.isFakeEntry(directoryEntry)) {
+      this.directoryModel_.specialSearch(directoryEntry.fullPath, '');
+    } else {
+      this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
+        if (opt_selectionEntry)
+          this.directoryModel_.selectEntry(opt_selectionEntry);
+      }.bind(this));
+    }
 
     if (this.dialogType == DialogType.FULL_PAGE) {
       // In the FULL_PAGE mode if the restored path points to a file we might
