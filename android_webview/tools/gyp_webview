@@ -18,26 +18,26 @@ export CHROME_SRC="$(readlink -f "$(dirname "$0")/../..")"
 export PYTHONDONTWRITEBYTECODE=1
 
 if [ "$PLATFORM" == "linux-arm" -o "$PLATFORM" == "all" ]; then
-  ( . build/android/envsetup.sh --target-arch=arm --host-os=linux && \
-    android_gyp --suffix .linux-arm )
+  ( . $CHROME_SRC/build/android/envsetup.sh --target-arch=arm --host-os=linux \
+    && android_gyp --suffix .linux-arm )
 fi
 if [ "$PLATFORM" == "linux-x86" -o "$PLATFORM" == "all" ]; then
-  ( . build/android/envsetup.sh --target-arch=x86 --host-os=linux && \
-    android_gyp --suffix .linux-x86 )
+  ( . $CHROME_SRC/build/android/envsetup.sh --target-arch=x86 --host-os=linux \
+    && android_gyp --suffix .linux-x86 )
 fi
 if [ "$PLATFORM" == "linux-mips" -o "$PLATFORM" == "all" ]; then
-  ( . build/android/envsetup.sh --target-arch=mips --host-os=linux && \
-    android_gyp --suffix .linux-mips )
+  ( . $CHROME_SRC/build/android/envsetup.sh --target-arch=mips --host-os=linux \
+    && android_gyp --suffix .linux-mips )
 fi
 if [ "$PLATFORM" == "darwin-arm" -o "$PLATFORM" == "all" ]; then
-  ( . build/android/envsetup.sh --target-arch=arm --host-os=mac && \
-    android_gyp --suffix .darwin-arm )
+  ( . $CHROME_SRC/build/android/envsetup.sh --target-arch=arm --host-os=mac \
+    && android_gyp --suffix .darwin-arm )
 fi
 if [ "$PLATFORM" == "darwin-x86" -o "$PLATFORM" == "all" ]; then
-  ( . build/android/envsetup.sh --target-arch=x86 --host-os=mac && \
-    android_gyp --suffix .darwin-x86 )
+  ( . $CHROME_SRC/build/android/envsetup.sh --target-arch=x86 --host-os=mac \
+    && android_gyp --suffix .darwin-x86 )
 fi
 if [ "$PLATFORM" == "darwin-mips" -o "$PLATFORM" == "all" ]; then
-  ( . build/android/envsetup.sh --target-arch=mips --host-os=mac && \
-    android_gyp --suffix .darwin-mips )
+  ( . $CHROME_SRC/build/android/envsetup.sh --target-arch=mips --host-os=mac \
+    && android_gyp --suffix .darwin-mips )
 fi
