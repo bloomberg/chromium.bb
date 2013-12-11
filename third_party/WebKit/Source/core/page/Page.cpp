@@ -105,7 +105,7 @@ Page::Page(PageClients& pageClients)
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
     , m_inspectorController(InspectorController::create(this, pageClients.inspectorClient))
     , m_pointerLockController(PointerLockController::create(this))
-    , m_history(adoptPtr(new HistoryController(this)))
+    , m_historyController(adoptPtr(new HistoryController(this)))
     , m_settings(Settings::create(this))
     , m_progress(ProgressTracker::create())
     , m_undoStack(UndoStack::create())
@@ -329,7 +329,7 @@ void Page::setDefersLoading(bool defers)
         return;
 
     m_defersLoading = defers;
-    m_history->setDefersLoading(defers);
+    m_historyController->setDefersLoading(defers);
     for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         frame->loader().setDefersLoading(defers);
 }

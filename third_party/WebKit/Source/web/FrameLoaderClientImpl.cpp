@@ -354,7 +354,7 @@ void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(NavigationHistoryPolic
 {
     bool shouldCreateHistoryEntry = navigationHistoryPolicy == NavigationCreatedHistoryEntry;
     if (shouldCreateHistoryEntry)
-        m_webFrame->frame()->page()->history().updateBackForwardListForFragmentScroll(m_webFrame->frame(), item);
+        m_webFrame->frame()->page()->historyController().updateBackForwardListForFragmentScroll(m_webFrame->frame(), item);
     m_webFrame->viewImpl()->didCommitLoad(shouldCreateHistoryEntry, true);
     if (m_webFrame->client())
         m_webFrame->client()->didNavigateWithinPage(m_webFrame, shouldCreateHistoryEntry);
@@ -386,7 +386,7 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(WebCore::IconType type)
 
 void FrameLoaderClientImpl::dispatchDidCommitLoad(Frame* frame, HistoryItem* item, NavigationHistoryPolicy navigationHistoryPolicy)
 {
-    m_webFrame->frame()->page()->history().updateForCommit(frame, item);
+    m_webFrame->frame()->page()->historyController().updateForCommit(frame, item);
     m_webFrame->viewImpl()->didCommitLoad(navigationHistoryPolicy == NavigationCreatedHistoryEntry, false);
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, navigationHistoryPolicy == NavigationCreatedHistoryEntry);

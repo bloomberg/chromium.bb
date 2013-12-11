@@ -118,7 +118,7 @@ public:
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
     UndoStack& undoStack() const { return *m_undoStack; }
 
-    HistoryController& history() const { return *m_history; }
+    HistoryController& historyController() const { return *m_historyController; }
 
     void setMainFrame(PassRefPtr<Frame>);
     Frame* mainFrame() const { return m_mainFrame.get(); }
@@ -253,7 +253,7 @@ private:
     const OwnPtr<PointerLockController> m_pointerLockController;
     RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
-    const OwnPtr<HistoryController> m_history;
+    const OwnPtr<HistoryController> m_historyController;
     const OwnPtr<Settings> m_settings;
     const OwnPtr<ProgressTracker> m_progress;
     const OwnPtr<UndoStack> m_undoStack;

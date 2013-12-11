@@ -922,7 +922,7 @@ void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item)
     ASSERT(frame());
     RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
     ASSERT(historyItem);
-    frame()->page()->history().goToItem(historyItem.get());
+    frame()->page()->historyController().goToItem(historyItem.get());
 }
 
 void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
@@ -993,7 +993,7 @@ WebHistoryItem WebFrameImpl::previousHistoryItem() const
     // only get saved to history when it becomes the previous item.  The caller
     // is expected to query the history item after a navigation occurs, after
     // the desired history item has become the previous entry.
-    return WebHistoryItem(frame()->page()->history().previousItemForExport(frame()));
+    return WebHistoryItem(frame()->page()->historyController().previousItemForExport(frame()));
 }
 
 WebHistoryItem WebFrameImpl::currentHistoryItem() const
@@ -1009,13 +1009,13 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
     // document state.  However, it is OK for new navigations.
     // FIXME: Can we make this a plain old getter, instead of worrying about
     // clobbering here?
-    if (!frame()->page()->history().inSameDocumentLoad() && (frame()->loader().loadType() == FrameLoadTypeStandard
+    if (!frame()->page()->historyController().inSameDocumentLoad() && (frame()->loader().loadType() == FrameLoadTypeStandard
         || !frame()->loader().activeDocumentLoader()->isLoadingInAPISense()))
         frame()->loader().saveDocumentAndScrollState();
 
-    if (RefPtr<HistoryItem> item = frame()->page()->history().provisionalItemForExport(frame()))
+    if (RefPtr<HistoryItem> item = frame()->page()->historyController().provisionalItemForExport(frame()))
         return WebHistoryItem(item);
-    return WebHistoryItem(frame()->page()->history().currentItemForExport(frame()));
+    return WebHistoryItem(frame()->page()->historyController().currentItemForExport(frame()));
 }
 
 void WebFrameImpl::enableViewSourceMode(bool enable)
@@ -2186,7 +2186,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // of this child frame with whatever was there at that point.
     HistoryItem* childItem = 0;
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = frame()->page()->history().itemForNewChildFrame(childFrame.get());
+        childItem = frame()->page()->historyController().itemForNewChildFrame(childFrame.get());
 
     if (childItem)
         childFrame->loader().loadHistoryItem(childItem);
