@@ -520,7 +520,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.forceDefaultHandler(node, 'paste');
     CommandUtil.forceDefaultHandler(node, 'delete');
     node.addEventListener('keydown', function(e) {
-      if (util.getKeyModifiers(e) + e.keyCode == '191') {
+      var key = util.getKeyModifiers(e) + e.keyCode;
+      if (key === '190' /* '/' */ || key === '191' /* '.' */) {
         // If this key event is propagated, this is handled search command,
         // which calls 'preventDefault' method.
         e.stopPropagation();
