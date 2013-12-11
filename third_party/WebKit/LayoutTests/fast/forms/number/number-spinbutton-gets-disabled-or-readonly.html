@@ -38,6 +38,7 @@ function nextInputTest() {
         finishJSTest();
     } else {
         input = testInputs.shift();
+        input.focus();
         testDelays = [1, 10, 100];
         debug("");
         debug("Test on a " + (input.id == "readonlyNumber" ? "readonly" : "disabled") + " number input form:");

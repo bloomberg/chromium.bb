@@ -28,6 +28,7 @@ function mouseMoveTo(x, y)
 function runIFrameLoaded(config)
 {
     testInput = iframe.contentDocument.getElementById('test');
+    testInput.focus();
     var spinButton = getSpinButton(testInput);
     if (spinButton) {
         mouseMoveTo(

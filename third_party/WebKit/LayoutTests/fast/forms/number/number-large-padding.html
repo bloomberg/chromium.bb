@@ -11,6 +11,7 @@
 description('Test for a bug that spin buttons did not work if a number input has large padding-right value.');
 
 var numberInput = document.getElementById('number');
+numberInput.focus();
 if (window.eventSender) {
     // Reset mouse position
     eventSender.mouseMoveTo(0, 0);

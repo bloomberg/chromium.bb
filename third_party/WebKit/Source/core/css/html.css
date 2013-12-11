@@ -609,6 +609,18 @@ input::-webkit-inner-spin-button {
     -webkit-user-modify: read-only !important;
 }
 
+/* FIXME: Apply the following to all input types. */
+input[type="number"]::-webkit-inner-spin-button {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* FIXME: Apply the following to all input types. */
+input[type="number"]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-inner-spin-button {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 #if defined(ENABLE_INPUT_SPEECH) && ENABLE_INPUT_SPEECH
 input::-webkit-input-speech-button {
     -webkit-appearance: -webkit-input-speech-button;

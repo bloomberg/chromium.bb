@@ -27,6 +27,7 @@ function testSpinButtonChangeAndInputEvents(inputType, initialValue, expectedVal
     eventSender.mouseMoveTo(0, 0);
     shouldEvaluateTo('changeEventCounter', 0);
     shouldEvaluateTo('inputEventCounter', 0);
+    testInput.focus();
 
     debug('Click the upper button');
     // Move the cursor on the upper button.

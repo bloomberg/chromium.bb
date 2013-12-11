@@ -20,6 +20,7 @@ if (window.eventSender) {
     eventSender.touchStart();
 
     var numberInput = document.getElementById('number');
+    numberInput.focus();
     eventSender.mouseMoveTo(numberInput.offsetLeft + numberInput.offsetWidth - 10, numberInput.offsetTop + numberInput.offsetHeight / 4);
     eventSender.mouseDown();
     eventSender.mouseUp();

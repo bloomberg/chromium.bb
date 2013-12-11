@@ -57,6 +57,7 @@ function testIt(formIndex, colIndex, ofsX, expected)
 
     const spinId = "c" + formIndex + colIndex;
     const spin = document.getElementById(spinId);
+    spin.focus();
 
     const clickX = pageX(column) + colWidth * colIndex + ofsX;
     const clickY = pageY(column) + Math.floor(spin.offsetHeight / 3);
