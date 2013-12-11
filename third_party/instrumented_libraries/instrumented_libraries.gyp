@@ -40,10 +40,18 @@
         '<(_sanitizer_type)-libxrandr2',
         '<(_sanitizer_type)-libxrender1',
         '<(_sanitizer_type)-libxtst6',
+        '<(_sanitizer_type)-libpixman-1-0',
+        '<(_sanitizer_type)-libp11-kit0',
+        '<(_sanitizer_type)-libgpg-error0',
+        '<(_sanitizer_type)-libexpat1',
+        '<(_sanitizer_type)-libffi6',
+        '<(_sanitizer_type)-libcairo2',
+        '<(_sanitizer_type)-libpcre3',
       ],
       'conditions': [
         ['asan==1', {
           'dependencies': [
+            '<(_sanitizer_type)-libfontconfig1',
             '<(_sanitizer_type)-libglib2.0-0',
           ],
         }],
@@ -67,6 +75,47 @@
     {
       'library_name': 'libpng12-0',
       'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libpixman-1-0',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libp11-kit0',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libgpg-error0',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libexpat1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libffi6',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libfontconfig1',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libcairo2',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libpcre3',
+      'dependencies=': [],
+      'custom_configure_flags': '--enable-utf8 --enable-unicode-properties',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
