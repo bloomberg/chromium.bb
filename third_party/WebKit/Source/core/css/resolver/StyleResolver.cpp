@@ -1301,6 +1301,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
+            return;
         }
         applyInheritedOnly = true;
     }
