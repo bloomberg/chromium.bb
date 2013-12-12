@@ -35,6 +35,7 @@
 
 #include "platform/LayoutTestSupport.h"
 #include "platform/SharedBuffer.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/opentype/OpenTypeSanitizer.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -69,7 +70,11 @@ PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* 
     buffer = transcodeBuffer.get();
 
     RefPtr<SkMemoryStream> stream = adoptRef(new SkMemoryStream(buffer->getAsSkData().get()));
+#if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+    RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->createFromStream(stream.get()));
+#else
     RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream.get()));
+#endif
     if (!typeface)
         return nullptr;
 

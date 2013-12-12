@@ -97,6 +97,7 @@ public:
 
 #if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
     bool useSubpixelPositioning() const { return m_useSubpixelPositioning; }
+    SkFontMgr* fontManager() { return m_fontManager.get(); }
 #endif
 
 #if ENABLE(OPENTYPE_VERTICAL)
