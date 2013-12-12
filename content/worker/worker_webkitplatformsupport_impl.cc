@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/database_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
-#include "content/child/indexed_db/proxy_webidbfactory_impl.h"
+#include "content/child/indexed_db/webidbfactory_impl.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
@@ -86,7 +86,7 @@ WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl(
       quota_message_filter_(quota_message_filter) {
   if (sender) {
     blob_registry_.reset(new WebBlobRegistryImpl(sender));
-    web_idb_factory_.reset(new RendererWebIDBFactoryImpl(sender));
+    web_idb_factory_.reset(new WebIDBFactoryImpl(sender));
     web_database_observer_impl_.reset(
         new WebDatabaseObserverImpl(sync_message_filter));
   }
@@ -211,8 +211,7 @@ long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
 
 blink::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
   if (!web_idb_factory_)
-    web_idb_factory_.reset(
-        new RendererWebIDBFactoryImpl(thread_safe_sender_.get()));
+    web_idb_factory_.reset(new WebIDBFactoryImpl(thread_safe_sender_.get()));
   return web_idb_factory_.get();
 }
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/indexed_db/proxy_webidbcursor_impl.h"
+#include "content/child/indexed_db/webidbcursor_impl.h"
 
 #include <vector>
 
-#include "content/child/thread_safe_sender.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 
 using blink::WebData;
@@ -17,9 +17,8 @@ using blink::WebIDBKey;
 
 namespace content {
 
-RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(
-    int32 ipc_cursor_id,
-    ThreadSafeSender* thread_safe_sender)
+WebIDBCursorImpl::WebIDBCursorImpl(int32 ipc_cursor_id,
+                                   ThreadSafeSender* thread_safe_sender)
     : ipc_cursor_id_(ipc_cursor_id),
       continue_count_(0),
       used_prefetches_(0),
@@ -27,7 +26,7 @@ RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(
       prefetch_amount_(kMinPrefetchAmount),
       thread_safe_sender_(thread_safe_sender) {}
 
-RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
+WebIDBCursorImpl::~WebIDBCursorImpl() {
   // It's not possible for there to be pending callbacks that address this
   // object since inside WebKit, they hold a reference to the object which owns
   // this object. But, if that ever changed, then we'd need to invalidate
@@ -43,8 +42,8 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   dispatcher->CursorDestroyed(ipc_cursor_id_);
 }
 
-void RendererWebIDBCursorImpl::advance(unsigned long count,
-                                       WebIDBCallbacks* callbacks_ptr) {
+void WebIDBCursorImpl::advance(unsigned long count,
+                               WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
@@ -53,16 +52,14 @@ void RendererWebIDBCursorImpl::advance(unsigned long count,
       count, callbacks.release(), ipc_cursor_id_);
 }
 
-void RendererWebIDBCursorImpl::continueFunction(
-    const WebIDBKey& key,
-    WebIDBCallbacks* callbacks_ptr) {
+void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
+                                        WebIDBCallbacks* callbacks_ptr) {
   continueFunction(key, WebIDBKey::createNull(), callbacks_ptr);
 }
 
-void RendererWebIDBCursorImpl::continueFunction(
-    const WebIDBKey& key,
-    const WebIDBKey& primary_key,
-    WebIDBCallbacks* callbacks_ptr) {
+void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
+                                        const WebIDBKey& primary_key,
+                                        WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
@@ -102,7 +99,7 @@ void RendererWebIDBCursorImpl::continueFunction(
                                        ipc_cursor_id_);
 }
 
-void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
+void WebIDBCursorImpl::postSuccessHandlerCallback() {
   pending_onsuccess_callbacks_--;
 
   // If the onsuccess callback called continue() on the cursor again,
@@ -115,7 +112,7 @@ void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
     ResetPrefetchCache();
 }
 
-void RendererWebIDBCursorImpl::SetPrefetchData(
+void WebIDBCursorImpl::SetPrefetchData(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
     const std::vector<WebData>& values) {
@@ -127,7 +124,7 @@ void RendererWebIDBCursorImpl::SetPrefetchData(
   pending_onsuccess_callbacks_ = 0;
 }
 
-void RendererWebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
+void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   DCHECK_GT(prefetch_keys_.size(), 0ul);
   DCHECK(prefetch_primary_keys_.size() == prefetch_keys_.size());
   DCHECK(prefetch_values_.size() == prefetch_keys_.size());
@@ -145,10 +142,11 @@ void RendererWebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   pending_onsuccess_callbacks_++;
 
   callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
-                       WebIDBKeyBuilder::Build(primary_key), value);
+                       WebIDBKeyBuilder::Build(primary_key),
+                       value);
 }
 
-void RendererWebIDBCursorImpl::ResetPrefetchCache() {
+void WebIDBCursorImpl::ResetPrefetchCache() {
   continue_count_ = 0;
   prefetch_amount_ = kMinPrefetchAmount;
 

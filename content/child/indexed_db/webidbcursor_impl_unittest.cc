@@ -6,7 +6,7 @@
 #include "base/values.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
-#include "content/child/indexed_db/proxy_webidbcursor_impl.h"
+#include "content/child/indexed_db/webidbcursor_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -84,7 +84,7 @@ class MockContinueCallbacks : public WebIDBCallbacks {
 
 }  // namespace
 
-TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
+TEST(WebIDBCursorImplTest, PrefetchTest) {
 
   WebIDBKey null_key;
   null_key.assignNull();
@@ -99,14 +99,13 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
   MockDispatcher dispatcher(thread_safe_sender.get());
 
   {
-    RendererWebIDBCursorImpl cursor(RendererWebIDBCursorImpl::kInvalidCursorId,
-                                    thread_safe_sender.get());
+    WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
+                            thread_safe_sender.get());
 
     // Call continue() until prefetching should kick in.
     int continue_calls = 0;
     EXPECT_EQ(dispatcher.continue_calls(), 0);
-    for (int i = 0; i < RendererWebIDBCursorImpl::kPrefetchContinueThreshold;
-         ++i) {
+    for (int i = 0; i < WebIDBCursorImpl::kPrefetchContinueThreshold; ++i) {
       cursor.continueFunction(null_key, new MockContinueCallbacks());
       EXPECT_EQ(++continue_calls, dispatcher.continue_calls());
       EXPECT_EQ(0, dispatcher.prefetch_calls());
@@ -158,7 +157,7 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
   }
 
   EXPECT_EQ(dispatcher.destroyed_cursor_id(),
-            RendererWebIDBCursorImpl::kInvalidCursorId);
+            WebIDBCursorImpl::kInvalidCursorId);
 }
 
 }  // namespace content

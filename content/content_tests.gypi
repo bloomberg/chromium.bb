@@ -490,7 +490,7 @@
         'browser/webui/web_ui_message_handler_unittest.cc',
         'child/fileapi/webfilewriter_base_unittest.cc',
         'child/indexed_db/indexed_db_dispatcher_unittest.cc',
-        'child/indexed_db/proxy_webidbcursor_impl_unittest.cc',
+        'child/indexed_db/webidbcursor_impl_unittest.cc',
         'child/npapi/plugin_lib_unittest.cc',
         'child/power_monitor_broadcast_source_unittest.cc',
         'child/resource_dispatcher_unittest.cc',

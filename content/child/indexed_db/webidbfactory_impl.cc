@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/indexed_db/proxy_webidbfactory_impl.h"
+#include "content/child/indexed_db/webidbfactory_impl.h"
 
-#include "content/child/thread_safe_sender.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
+#include "content/child/thread_safe_sender.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -16,30 +16,25 @@ using blink::WebString;
 
 namespace content {
 
-RendererWebIDBFactoryImpl::RendererWebIDBFactoryImpl(
-    ThreadSafeSender* thread_safe_sender)
-    : thread_safe_sender_(thread_safe_sender) {
-}
+WebIDBFactoryImpl::WebIDBFactoryImpl(ThreadSafeSender* thread_safe_sender)
+    : thread_safe_sender_(thread_safe_sender) {}
 
-RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
-}
+WebIDBFactoryImpl::~WebIDBFactoryImpl() {}
 
-void RendererWebIDBFactoryImpl::getDatabaseNames(
-    WebIDBCallbacks* callbacks,
-    const WebString& database_identifier) {
+void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks,
+                                         const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBFactoryGetDatabaseNames(callbacks,
                                                 database_identifier.utf8());
 }
 
-void RendererWebIDBFactoryImpl::open(
-    const WebString& name,
-    long long version,
-    long long transaction_id,
-    WebIDBCallbacks* callbacks,
-    WebIDBDatabaseCallbacks* database_callbacks,
-    const WebString& database_identifier) {
+void WebIDBFactoryImpl::open(const WebString& name,
+                             long long version,
+                             long long transaction_id,
+                             WebIDBCallbacks* callbacks,
+                             WebIDBDatabaseCallbacks* database_callbacks,
+                             const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBFactoryOpen(name,
@@ -50,10 +45,9 @@ void RendererWebIDBFactoryImpl::open(
                                     database_identifier.utf8());
 }
 
-void RendererWebIDBFactoryImpl::deleteDatabase(
-    const WebString& name,
-    WebIDBCallbacks* callbacks,
-    const WebString& database_identifier) {
+void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
+                                       WebIDBCallbacks* callbacks,
+                                       const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBFactoryDeleteDatabase(

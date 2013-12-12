@@ -34,8 +34,8 @@ namespace content {
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
-class RendererWebIDBCursorImpl;
-class RendererWebIDBDatabaseImpl;
+class WebIDBCursorImpl;
+class WebIDBDatabaseImpl;
 class ThreadSafeSender;
 
 CONTENT_EXPORT extern const size_t kMaxIDBValueSizeInBytes;
@@ -238,10 +238,10 @@ class CONTENT_EXPORT IndexedDBDispatcher
   IDMap<blink::WebIDBDatabaseCallbacks, IDMapOwnPointer>
       pending_database_callbacks_;
 
-  // Map from cursor id to RendererWebIDBCursorImpl.
-  std::map<int32, RendererWebIDBCursorImpl*> cursors_;
+  // Map from cursor id to WebIDBCursorImpl.
+  std::map<int32, WebIDBCursorImpl*> cursors_;
 
-  std::map<int32, RendererWebIDBDatabaseImpl*> databases_;
+  std::map<int32, WebIDBDatabaseImpl*> databases_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };

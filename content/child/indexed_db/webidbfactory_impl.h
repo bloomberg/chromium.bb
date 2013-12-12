@@ -18,26 +18,23 @@ class WebString;
 namespace content {
 class ThreadSafeSender;
 
-class RendererWebIDBFactoryImpl : public blink::WebIDBFactory {
+class WebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
-  explicit RendererWebIDBFactoryImpl(ThreadSafeSender* thread_safe_sender);
-  virtual ~RendererWebIDBFactoryImpl();
+  explicit WebIDBFactoryImpl(ThreadSafeSender* thread_safe_sender);
+  virtual ~WebIDBFactoryImpl();
 
   // See WebIDBFactory.h for documentation on these functions.
-  virtual void getDatabaseNames(
-      blink::WebIDBCallbacks* callbacks,
-      const blink::WebString& database_identifier);
-  virtual void open(
-      const blink::WebString& name,
-      long long version,
-      long long transaction_id,
-      blink::WebIDBCallbacks* callbacks,
-      blink::WebIDBDatabaseCallbacks* databaseCallbacks,
-      const blink::WebString& database_identifier);
-  virtual void deleteDatabase(
-      const blink::WebString& name,
-      blink::WebIDBCallbacks* callbacks,
-      const blink::WebString& database_identifier);
+  virtual void getDatabaseNames(blink::WebIDBCallbacks* callbacks,
+                                const blink::WebString& database_identifier);
+  virtual void open(const blink::WebString& name,
+                    long long version,
+                    long long transaction_id,
+                    blink::WebIDBCallbacks* callbacks,
+                    blink::WebIDBDatabaseCallbacks* databaseCallbacks,
+                    const blink::WebString& database_identifier);
+  virtual void deleteDatabase(const blink::WebString& name,
+                              blink::WebIDBCallbacks* callbacks,
+                              const blink::WebString& database_identifier);
 
  private:
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/database_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
-#include "content/child/indexed_db/proxy_webidbfactory_impl.h"
+#include "content/child/indexed_db/webidbfactory_impl.h"
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
@@ -221,7 +221,7 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
     quota_message_filter_ = ChildThread::current()->quota_message_filter();
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
-    web_idb_factory_.reset(new RendererWebIDBFactoryImpl(thread_safe_sender_));
+    web_idb_factory_.reset(new WebIDBFactoryImpl(thread_safe_sender_));
     web_database_observer_impl_.reset(
         new WebDatabaseObserverImpl(sync_message_filter_));
   }

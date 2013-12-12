@@ -14,9 +14,8 @@ namespace content {
 
 IndexedDBMessageFilter::IndexedDBMessageFilter(
     ThreadSafeSender* thread_safe_sender)
-    : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
-      thread_safe_sender_(thread_safe_sender) {
-}
+    : main_thread_loop_(base::MessageLoopProxy::current()),
+      thread_safe_sender_(thread_safe_sender) {}
 
 IndexedDBMessageFilter::~IndexedDBMessageFilter() {}
 
@@ -28,7 +27,7 @@ base::TaskRunner* IndexedDBMessageFilter::OverrideTaskRunnerForMessage(
   const bool success = PickleIterator(msg).ReadInt(&ipc_thread_id);
   DCHECK(success);
   if (!ipc_thread_id)
-    return main_thread_loop_proxy_.get();
+    return main_thread_loop_.get();
   return new WorkerThreadTaskRunner(ipc_thread_id);
 }
 

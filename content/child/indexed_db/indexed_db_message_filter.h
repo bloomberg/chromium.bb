@@ -39,7 +39,7 @@ class IndexedDBMessageFilter : public ChildMessageFilter {
                                  const IndexedDBDatabaseMetadata&);
   void OnStaleUpgradeNeeded(const IndexedDBMsg_CallbacksUpgradeNeeded_Params&);
 
-  scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBMessageFilter);

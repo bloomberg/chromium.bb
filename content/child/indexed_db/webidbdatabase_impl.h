@@ -18,28 +18,25 @@ class WebString;
 namespace content {
 class ThreadSafeSender;
 
-class RendererWebIDBDatabaseImpl : public blink::WebIDBDatabase {
+class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
-  RendererWebIDBDatabaseImpl(int32 ipc_database_id,
-                             int32 ipc_database_callbacks_id,
-                             ThreadSafeSender* thread_safe_sender);
-  virtual ~RendererWebIDBDatabaseImpl();
+  WebIDBDatabaseImpl(int32 ipc_database_id,
+                     int32 ipc_database_callbacks_id,
+                     ThreadSafeSender* thread_safe_sender);
+  virtual ~WebIDBDatabaseImpl();
 
   // blink::WebIDBDatabase
-  virtual void createObjectStore(
-      long long transaction_id,
-      long long objectstore_id,
-      const blink::WebString& name,
-      const blink::WebIDBKeyPath& key_path,
-      bool auto_increment);
-  virtual void deleteObjectStore(
-      long long transaction_id,
-      long long object_store_id);
-  virtual void createTransaction(
-      long long transaction_id,
-      blink::WebIDBDatabaseCallbacks* callbacks,
-      const blink::WebVector<long long>& scope,
-      unsigned short mode);
+  virtual void createObjectStore(long long transaction_id,
+                                 long long objectstore_id,
+                                 const blink::WebString& name,
+                                 const blink::WebIDBKeyPath& key_path,
+                                 bool auto_increment);
+  virtual void deleteObjectStore(long long transaction_id,
+                                 long long object_store_id);
+  virtual void createTransaction(long long transaction_id,
+                                 blink::WebIDBDatabaseCallbacks* callbacks,
+                                 const blink::WebVector<long long>& scope,
+                                 unsigned short mode);
   virtual void close();
   virtual void get(long long transactionId,
                    long long objectStoreId,
@@ -90,8 +87,8 @@ class RendererWebIDBDatabaseImpl : public blink::WebIDBDatabase {
                            const blink::WebIDBKeyPath&,
                            bool unique,
                            bool multiEntry);
-  virtual void deleteIndex(long long transactionId, long
-                           long objectStoreId,
+  virtual void deleteIndex(long long transactionId,
+                           long long objectStoreId,
                            long long indexId);
   virtual void abort(long long transaction_id);
   virtual void commit(long long transaction_id);

@@ -32,7 +32,7 @@ class CONTENT_EXPORT ThreadSafeSender
   friend class ChildThread;  // for construction
   friend class base::RefCountedThreadSafe<ThreadSafeSender>;
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, ValueSizeTest);
-  FRIEND_TEST_ALL_PREFIXES(RendererWebIDBCursorImplTest, PrefetchTest);
+  FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
 
   ThreadSafeSender(base::MessageLoopProxy* main_loop,
                    IPC::SyncMessageFilter* sync_filter);

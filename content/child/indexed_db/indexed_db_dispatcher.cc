@@ -9,8 +9,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_local.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
-#include "content/child/indexed_db/proxy_webidbcursor_impl.h"
-#include "content/child/indexed_db/proxy_webidbdatabase_impl.h"
+#include "content/child/indexed_db/webidbcursor_impl.h"
+#include "content/child/indexed_db/webidbdatabase_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
@@ -465,7 +465,7 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(
   // May already be deleted and removed from the table, but do not recreate..
   if (ipc_object_id != kNoDatabase) {
     DCHECK(!databases_.count(ipc_object_id));
-    database = databases_[ipc_object_id] = new RendererWebIDBDatabaseImpl(
+    database = databases_[ipc_object_id] = new WebIDBDatabaseImpl(
         ipc_object_id, ipc_database_callbacks_id, thread_safe_sender_.get());
   }
 
@@ -565,8 +565,8 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
   if (!callbacks)
     return;
 
-  RendererWebIDBCursorImpl* cursor =
-      new RendererWebIDBCursorImpl(ipc_object_id, thread_safe_sender_.get());
+  WebIDBCursorImpl* cursor =
+      new WebIDBCursorImpl(ipc_object_id, thread_safe_sender_.get());
   cursors_[ipc_object_id] = cursor;
   callbacks->onSuccess(cursor, WebIDBKeyBuilder::Build(key),
                        WebIDBKeyBuilder::Build(primary_key), web_value);
@@ -583,7 +583,7 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   const IndexedDBKey& primary_key = p.primary_key;
   const std::string& value = p.value;
 
-  RendererWebIDBCursorImpl* cursor = cursors_[ipc_cursor_id];
+  WebIDBCursorImpl* cursor = cursors_[ipc_cursor_id];
   DCHECK(cursor);
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
@@ -611,7 +611,7 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
     if (p.values[i].size())
       values[i].assign(&*p.values[i].begin(), p.values[i].size());
   }
-  RendererWebIDBCursorImpl* cursor = cursors_[ipc_cursor_id];
+  WebIDBCursorImpl* cursor = cursors_[ipc_cursor_id];
   DCHECK(cursor);
   cursor->SetPrefetchData(keys, primary_keys, values);
 
@@ -638,9 +638,9 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
   WebIDBMetadata metadata(ConvertMetadata(p.idb_metadata));
   DCHECK(!databases_.count(p.ipc_database_id));
   databases_[p.ipc_database_id] =
-      new RendererWebIDBDatabaseImpl(p.ipc_database_id,
-                                     p.ipc_database_callbacks_id,
-                                     thread_safe_sender_.get());
+      new WebIDBDatabaseImpl(p.ipc_database_id,
+                             p.ipc_database_callbacks_id,
+                             thread_safe_sender_.get());
   callbacks->onUpgradeNeeded(
       p.old_version,
       databases_[p.ipc_database_id],
@@ -717,7 +717,7 @@ void IndexedDBDispatcher::OnIntVersionChange(int32 ipc_thread_id,
 
 void IndexedDBDispatcher::ResetCursorPrefetchCaches(
     int32 ipc_exception_cursor_id) {
-  typedef std::map<int32, RendererWebIDBCursorImpl*>::iterator Iterator;
+  typedef std::map<int32, WebIDBCursorImpl*>::iterator Iterator;
   for (Iterator i = cursors_.begin(); i != cursors_.end(); ++i) {
     if (i->first == ipc_exception_cursor_id)
       continue;

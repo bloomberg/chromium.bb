@@ -22,12 +22,11 @@
 namespace content {
 class ThreadSafeSender;
 
-class CONTENT_EXPORT RendererWebIDBCursorImpl
+class CONTENT_EXPORT WebIDBCursorImpl
     : NON_EXPORTED_BASE(public blink::WebIDBCursor) {
  public:
-  RendererWebIDBCursorImpl(int32 ipc_cursor_id,
-                           ThreadSafeSender* thread_safe_sender);
-  virtual ~RendererWebIDBCursorImpl();
+  WebIDBCursorImpl(int32 ipc_cursor_id, ThreadSafeSender* thread_safe_sender);
+  virtual ~WebIDBCursorImpl();
 
   virtual void advance(unsigned long count, blink::WebIDBCallbacks* callback);
   virtual void continueFunction(const blink::WebIDBKey& key,
@@ -45,7 +44,7 @@ class CONTENT_EXPORT RendererWebIDBCursorImpl
   void ResetPrefetchCache();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RendererWebIDBCursorImplTest, PrefetchTest);
+  FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
 
   int32 ipc_cursor_id_;
 
