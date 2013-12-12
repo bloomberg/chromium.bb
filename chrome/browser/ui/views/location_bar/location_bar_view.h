@@ -248,7 +248,7 @@ class LocationBarView : public LocationBar,
   // The point will be returned in the coordinates of the LocationBarView.
   gfx::Point GetLocationBarAnchorPoint() const;
 
-  views::View* omnibox_view() { return omnibox_view_; }
+  OmniboxViewViews* omnibox_view() { return omnibox_view_; }
 
   views::View* generated_credit_card_view();
 

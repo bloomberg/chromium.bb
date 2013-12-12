@@ -1050,7 +1050,10 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   LocationBarView* location_bar = GetLocationBarView();
   if (location_bar->omnibox_view()->IsFocusable()) {
     // Location bar got focus.
-    location_bar->FocusLocation(select_all);
+    if (chrome::ShouldDisplayOriginChip())
+      location_bar->omnibox_view()->ShowURL();
+    else
+      location_bar->FocusLocation(select_all);
   } else {
     // If none of location bar got focus, then clear focus.
     views::FocusManager* focus_manager = GetFocusManager();
