@@ -1117,12 +1117,12 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
         # In order to acquire a pool, we need an initialized buildroot.
         if not git.FindRepoDir(self.repo.directory):
           self.repo.Initialize()
-
         self.pool = pool = validation_pool.ValidationPool.AcquirePool(
             self._run.config.overlays, self.repo,
             self._run.buildnumber, self.builder_name,
             self._run.options.debug,
-            check_tree_open=not self._run.options.debug,
+            check_tree_open=not self._run.options.debug or
+                            self._run.options.mock_tree_status,
             changes_query=self._run.options.cq_gerrit_override,
             change_filter=self.ChangeFilter, throttled_ok=False)
 

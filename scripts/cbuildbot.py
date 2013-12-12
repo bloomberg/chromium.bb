@@ -45,6 +45,8 @@ from chromite.lib import parallel
 from chromite.lib import sudo
 from chromite.lib import timeout_util
 
+import mock
+
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
@@ -1184,6 +1186,14 @@ def _CreateParser():
   group.add_remote_option('--validation_pool', default=None,
                           help='Path to a pickled validation pool. Intended '
                                'for use only with the commit queue.')
+  group.add_remote_option('--mock-tree-status', dest='mock_tree_status',
+                          default=None, action='store',
+                          help='Override the tree status value that would be '
+                               'returned from the the actual tree. Example '
+                               'values: open, closed, throttled. When used '
+                               'in conjunction with --debug, the tree status '
+                               'will not be ignored as it usually is in a '
+                               '--debug run.')
 
   parser.add_option_group(group)
 
@@ -1555,5 +1565,9 @@ def main(argv):
 
     if options.buildbot or options.remote_trybot:
       _DisableYamaHardLinkChecks()
+
+    if options.mock_tree_status is not None:
+      stack.Add(mock.patch.object, timeout_util, '_GetStatus',
+                return_value=options.mock_tree_status)
 
     _RunBuildStagesWrapper(options, build_config)
