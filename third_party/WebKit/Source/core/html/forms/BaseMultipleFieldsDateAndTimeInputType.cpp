@@ -603,10 +603,13 @@ void BaseMultipleFieldsDateAndTimeInputType::updateClearButtonVisibility()
     if (!clearButton)
         return;
 
-    if (element().isRequired() || !dateTimeEditElement()->anyEditableFieldsHaveValues())
-        clearButton->setInlineStyleProperty(CSSPropertyVisibility, CSSValueHidden);
-    else
-        clearButton->removeInlineStyleProperty(CSSPropertyVisibility);
+    if (element().isRequired() || !dateTimeEditElement()->anyEditableFieldsHaveValues()) {
+        clearButton->setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::CSS_NUMBER);
+        clearButton->setInlineStyleProperty(CSSPropertyPointerEvents, CSSValueNone);
+    } else {
+        clearButton->removeInlineStyleProperty(CSSPropertyOpacity);
+        clearButton->removeInlineStyleProperty(CSSPropertyPointerEvents);
+    }
 }
 
 } // namespace WebCore

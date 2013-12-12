@@ -448,6 +448,13 @@ input::-webkit-clear-button {
     flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-margin-start: 2px;
+    opacity: 0;
+    pionter-events: none;
+}
+
+input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-clear-button {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 input[type="search"]::-webkit-search-cancel-button {
@@ -607,16 +614,11 @@ input::-webkit-inner-spin-button {
     flex: none;
     -webkit-user-select: none;
     -webkit-user-modify: read-only !important;
-}
-
-/* FIXME: Apply the following to all input types. */
-input[type="number"]::-webkit-inner-spin-button {
     opacity: 0;
     pointer-events: none;
 }
 
-/* FIXME: Apply the following to all input types. */
-input[type="number"]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-inner-spin-button {
+input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-inner-spin-button {
     opacity: 1;
     pointer-events: auto;
 }
@@ -813,10 +815,17 @@ input::-webkit-calendar-picker-indicator {
     height: 0.66em;
     padding: 0.17em 0.34em;
     -webkit-user-modify: read-only !important;
+    opacity: 0;
+    pointer-events: none;
 }
 
 input::-webkit-calendar-picker-indicator:hover {
     background-color: #eee;
+}
+
+input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 input[type="date"]:disabled::-webkit-clear-button,

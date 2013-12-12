@@ -27,5 +27,10 @@ if (window.testRunner)
     <li>-webkit-appearance:none: <input type="time" value="13:56" style="-webkit-appearance: none;"></li>
     <li>padding: <input type="time" value="12:34" style="padding: 10px;"></li>
 </ul>
+<script>
+var input = document.querySelector('input:read-only');
+if (window.eventSender)
+    eventSender.mouseMoveTo(input.offsetLeft + input.offsetWidth / 2, input.offsetTop + input.offsetHeight / 2);
+</script>
 </body>
 </html>
