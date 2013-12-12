@@ -3,9 +3,12 @@
 # found in the LICENSE file.
 import collections
 import json
+import logging
 
 from metrics import Metric
 from metrics import histogram_util
+
+from telemetry.core import util
 
 
 class StartupMetric(Metric):
@@ -47,25 +50,34 @@ class StartupMetric(Metric):
         ['load_start_ms', 'load_duration_ms', 'is_foreground_tab'])
     num_open_tabs = len(tab.browser.tabs)
     for i in xrange(num_open_tabs):
-      t = tab.browser.tabs[i]
-      t.WaitForDocumentReadyStateToBeComplete()
-      result = t.EvaluateJavaScript('statsCollectionController.tabLoadTiming()')
-      result = json.loads(result)
+      try:
+        t = tab.browser.tabs[i]
+        t.WaitForDocumentReadyStateToBeComplete()
 
-      if 'load_start_ms' not in result or 'load_duration_ms' not in result:
-        raise Exception("Outdated Chrome version, "
-            "statsCollectionController.tabLoadTiming() not present")
-        return
-      if result['load_duration_ms'] is None:
-        tab_title = t.EvaluateJavaScript('document.title')
-        print "Page: ", tab_title, " didn't finish loading."
+        result = t.EvaluateJavaScript(
+            'statsCollectionController.tabLoadTiming()')
+        result = json.loads(result)
+
+        if 'load_start_ms' not in result or 'load_duration_ms' not in result:
+          raise Exception("Outdated Chrome version, "
+              "statsCollectionController.tabLoadTiming() not present")
+          return
+        if result['load_duration_ms'] is None:
+          tab_title = t.EvaluateJavaScript('document.title')
+          print "Page: ", tab_title, " didn't finish loading."
+          continue
+
+        is_foreground_tab = t.EvaluateJavaScript('!document.hidden')
+        tab_load_times.append(TabLoadTime(
+            int(result['load_start_ms']),
+            int(result['load_duration_ms']),
+            is_foreground_tab))
+      except util.TimeoutException:
+        # Low memory Android devices may not be able to load more than
+        # one tab at a time, so may timeout when the test attempts to
+        # access a background tab. Ignore these tabs.
+        logging.error("Tab number: %d timed out on JavaScript access" % i)
         continue
-
-      is_foreground_tab = t.EvaluateJavaScript('!document.hidden')
-      tab_load_times.append(TabLoadTime(
-          int(result['load_start_ms']),
-          int(result['load_duration_ms']),
-          is_foreground_tab))
 
     # Postprocess results
     load_complete_times = (
