@@ -935,6 +935,14 @@ void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
 
   MakeTrackerActive(new_tracker->tracker_id(), batch.get());
 
+  if (new_tracker->synced_details().title() != title) {
+    trackers_by_parent_and_title_[parent_tracker_id]
+        [GetTrackerTitle(*new_tracker)].Erase(new_tracker);
+    trackers_by_parent_and_title_[parent_tracker_id][title].Insert(
+        new_tracker);
+  }
+  *new_tracker->mutable_synced_details() = new_file_details;
+
   new_tracker->set_dirty(false);
   dirty_trackers_.erase(new_tracker);
   low_priority_dirty_trackers_.erase(new_tracker);
@@ -1118,13 +1126,15 @@ bool MetadataDatabase::TryNoSideEffectActivation(
   }
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
-  if (!tracker->has_synced_details()) {
-    *tracker->mutable_synced_details() = file.details();
-    trackers_by_parent_and_title_[parent_tracker_id][std::string()].Erase(
-        tracker);
+  if (!tracker->has_synced_details() ||
+      tracker->synced_details().title() != title) {
+    trackers_by_parent_and_title_[parent_tracker_id]
+        [GetTrackerTitle(*tracker)].Erase(tracker);
     trackers_by_parent_and_title_[parent_tracker_id][title].Insert(
         tracker);
   }
+  *tracker->mutable_synced_details() = file.details();
+
   MakeTrackerActive(tracker->tracker_id(), batch.get());
   tracker->set_dirty(false);
   dirty_trackers_.erase(tracker);
