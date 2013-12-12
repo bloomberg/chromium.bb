@@ -1954,6 +1954,23 @@
       ],  # end of 'targets'
     }],  # 'OS=="android"'
 
+    ['OS=="android" and gtest_target_type=="shared_library"', {
+      'targets': [
+        {
+          'target_name': 'remoting_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'remoting_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'remoting_unittests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)remoting_unittests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],  # 'OS=="android" and gtest_target_type=="shared_library"'
+
     # The host installation is generated only if WiX is available. If
     # component build is used the produced installation will not work due to
     # missing DLLs. We build it anyway to make sure the GYP scripts are executed
@@ -2169,9 +2186,13 @@
             'client/plugin/normalizing_input_filter_cros.cc',
           ],
         }],
+        [ 'OS=="android"', {
+          'sources/': [
+            ['exclude', '^client/plugin/'],
+          ],
+        }],
       ],
     },  # end of target 'remoting_client_plugin'
-
     {
       'target_name': 'remoting_host_event_logger',
       'type': 'static_library',
@@ -2809,7 +2830,7 @@
     # Remoting unit tests
     {
       'target_name': 'remoting_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -3006,6 +3027,11 @@
             'webapp/all_js_load.gtestjs',
             'webapp/format_iq.gtestjs',
             '<@(remoting_webapp_js_files)',
+          ],
+        }],
+        ['OS=="android" and gtest_target_type=="shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
         [ '(OS!="linux" or chromeos==0)', {
