@@ -47,8 +47,8 @@ public:
 
     virtual void contextDestroyed() OVERRIDE
     {
-        ContextLifecycleObserver::contextDestroyed();
         m_tracker->contextDestroyed(executionContext());
+        ContextLifecycleObserver::contextDestroyed();
     }
 
 private:
@@ -96,6 +96,7 @@ void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timer
     DEFINE_STATIC_LOCAL(String, setTimeoutName, ("setTimeout"));
     DEFINE_STATIC_LOCAL(String, setIntervalName, ("setInterval"));
 
+    ASSERT(context);
     ASSERT(isEnabled());
     if (!validateCallFrames(callFrames))
         return;
@@ -108,6 +109,7 @@ void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timer
 
 void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerId)
 {
+    ASSERT(context);
     if (!isEnabled() || timerId <= 0)
         return;
     ExecutionContextData* data = m_executionContextDataMap.get(context);
@@ -119,6 +121,7 @@ void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerI
 
 void AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId)
 {
+    ASSERT(context);
     if (!isEnabled())
         return;
     ASSERT(timerId > 0);
@@ -136,6 +139,7 @@ void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, 
 {
     DEFINE_STATIC_LOCAL(String, requestAnimationFrameName, ("requestAnimationFrame"));
 
+    ASSERT(context);
     ASSERT(isEnabled());
     if (!validateCallFrames(callFrames))
         return;
@@ -146,24 +150,22 @@ void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, 
 
 void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, int callbackId)
 {
+    ASSERT(context);
     if (!isEnabled() || callbackId <= 0)
         return;
-    ExecutionContextData* data = m_executionContextDataMap.get(context);
-    if (!data)
-        return;
-    data->m_animationFrameCallChains.remove(callbackId);
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        data->m_animationFrameCallChains.remove(callbackId);
 }
 
 void AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, int callbackId)
 {
+    ASSERT(context);
     if (!isEnabled())
         return;
     ASSERT(callbackId > 0);
     ASSERT(!m_currentAsyncCallChain);
-    ExecutionContextData* data = m_executionContextDataMap.get(context);
-    if (!data)
-        return;
-    m_currentAsyncCallChain = data->m_animationFrameCallChains.take(callbackId);
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        m_currentAsyncCallChain = data->m_animationFrameCallChains.take(callbackId);
 }
 
 void AsyncCallStackTracker::didFireAsyncCall()
@@ -193,8 +195,8 @@ bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
 
 void AsyncCallStackTracker::contextDestroyed(ExecutionContext* context)
 {
-    ExecutionContextData* data = m_executionContextDataMap.take(context);
-    if (data)
+    ASSERT(context);
+    if (ExecutionContextData* data = m_executionContextDataMap.take(context))
         delete data;
 }
 
