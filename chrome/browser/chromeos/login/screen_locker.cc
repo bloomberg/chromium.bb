@@ -217,25 +217,6 @@ void ScreenLocker::OnLoginSuccess(const UserContext& user_context) {
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
-    // TODO(dzhioev): It seems like this branch never executed and should be
-    // removed before multi-profile enabling.
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (profile && !user_context.password.empty()) {
-      // We have a non-empty password, so notify listeners (such as the sync
-      // engine).
-      SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-      DCHECK(signin);
-      GoogleServiceSigninSuccessDetails details(
-          signin->GetAuthenticatedUsername(),
-          user_context.password);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-          content::Source<Profile>(profile),
-          content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-    }
-  }
-
   if (const User* user = UserManager::Get()->FindUser(user_context.username)) {
     if (!user->is_active())
       UserManager::Get()->SwitchActiveUser(user_context.username);

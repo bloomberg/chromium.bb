@@ -260,9 +260,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   LockScreen(tester.get());
 
-  // Ensure there's a profile or this test crashes.
-  ProfileManager::GetDefaultProfile();
-
   // Calling Show again simply send LockCompleted signal.
   ScreenLocker::Show();
   EXPECT_TRUE(tester->IsLocked());
@@ -283,9 +280,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   LockScreen(tester.get());
-
-  // Ensure there's a profile or this test crashes.
-  ProfileManager::GetDefaultProfile();
 
   EXPECT_EQ(
       1,

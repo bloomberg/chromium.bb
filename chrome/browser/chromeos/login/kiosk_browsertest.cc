@@ -371,7 +371,7 @@ class KioskTest : public InProcessBrowserTest {
         content::NotificationService::AllSources()).Wait();
 
     // Default profile switches to app profile after app is launched.
-    Profile* app_profile = ProfileManager::GetDefaultProfile();
+    Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
     ASSERT_TRUE(app_profile);
 
     // Check installer status.
@@ -948,7 +948,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
 
   // Wait for the window to appear.
   apps::ShellWindow* window = ShellWindowObserver(
-      apps::ShellWindowRegistry::Get(ProfileManager::GetDefaultProfile()),
+      apps::ShellWindowRegistry::Get(ProfileManager::GetPrimaryUserProfile()),
       kTestEnterpriseKioskApp).Wait();
   ASSERT_TRUE(window);
 

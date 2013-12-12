@@ -106,7 +106,7 @@ bool ProcessIfUserHasSyncedAppPins() {
   if (has_synced_pref)
     return true;
 
-  Profile* user_profile = ProfileManager::GetDefaultProfile();
+  Profile* user_profile = ProfileManager::GetActiveUserProfile();
   has_synced_pref = PrefServiceSyncable::FromProfile(user_profile)
       ->IsPrefSynced(prefs::kPinnedLauncherApps);
   if (has_synced_pref) {
