@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/capture_client.h"
@@ -1411,13 +1412,11 @@ void Window::UpdateLayerName(const std::string& name) {
 
   std::string layer_name(name_);
   if (layer_name.empty())
-    layer_name.append("Unnamed Window");
+    layer_name = "Unnamed Window";
 
-  if (id_ != -1) {
-    char id_buf[10];
-    base::snprintf(id_buf, sizeof(id_buf), " %d", id_);
-    layer_name.append(id_buf);
-  }
+  if (id_ != -1)
+    layer_name += " " + base::IntToString(id_);
+
   layer_->set_name(layer_name);
 #endif
 }
