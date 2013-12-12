@@ -161,6 +161,7 @@ class CC_EXPORT LayerTreeHostImpl
     virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) OVERRIDE;
   };
 
+  virtual void BeginMainFrameAborted(bool did_handle);
   virtual void BeginCommit();
   virtual void CommitComplete();
   virtual void Animate(base::TimeTicks monotonic_time,

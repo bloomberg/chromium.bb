@@ -281,11 +281,10 @@ void Scheduler::OnBeginImplFrameDeadline() {
 
 void Scheduler::PollForAnticipatedDrawTriggers() {
   TRACE_EVENT0("cc", "Scheduler::PollForAnticipatedDrawTriggers");
+  poll_for_draw_triggers_closure_.Cancel();
   state_machine_.DidEnterPollForAnticipatedDrawTriggers();
   ProcessScheduledActions();
   state_machine_.DidLeavePollForAnticipatedDrawTriggers();
-
-  poll_for_draw_triggers_closure_.Cancel();
 }
 
 void Scheduler::DrawAndSwapIfPossible() {

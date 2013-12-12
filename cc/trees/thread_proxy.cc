@@ -1002,15 +1002,9 @@ void ThreadProxy::BeginMainFrameAbortedOnImplThread(bool did_handle) {
   DCHECK(scheduler_on_impl_thread_->CommitPending());
   DCHECK(!layer_tree_host_impl_->pending_tree());
 
-  // If the begin frame data was handled, then scroll and scale set was applied
-  // by the main thread, so the active tree needs to be updated as if these sent
-  // values were applied and committed.
-  if (did_handle) {
-    layer_tree_host_impl_->active_tree()
-        ->ApplySentScrollAndScaleDeltasFromAbortedCommit();
-    layer_tree_host_impl_->active_tree()->ResetContentsTexturesPurged();
+  if (did_handle)
     SetInputThrottledUntilCommitOnImplThread(false);
-  }
+  layer_tree_host_impl_->BeginMainFrameAborted(did_handle);
   scheduler_on_impl_thread_->BeginMainFrameAborted(did_handle);
 }
 

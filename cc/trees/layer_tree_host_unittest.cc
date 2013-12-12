@@ -2646,7 +2646,7 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
  protected:
   LayerTreeHostTestAbortedCommitDoesntStall()
-      : commit_count_(0), commit_complete_count_(0) {}
+      : commit_count_(0), commit_abort_count_(0), commit_complete_count_(0) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->begin_impl_frame_scheduling_enabled = true;
@@ -2656,18 +2656,25 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
 
   virtual void DidCommit() OVERRIDE {
     commit_count_++;
-    if (commit_count_ == 2) {
-      // A commit was just aborted, request a real commit now to make sure a
+    if (commit_count_ == 4) {
+      // After two aborted commits, request a real commit now to make sure a
       // real commit following an aborted commit will still complete and
       // end the test even when the Impl thread is idle.
       layer_tree_host()->SetNeedsCommit();
     }
   }
 
+  virtual void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl *host_impl, bool did_handle) OVERRIDE {
+    commit_abort_count_++;
+    // Initiate another abortable commit.
+    host_impl->SetNeedsCommit();
+  }
+
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     commit_complete_count_++;
     if (commit_complete_count_ == 1) {
-      // Initiate an aborted commit after the first commit.
+      // Initiate an abortable commit after the first commit.
       host_impl->SetNeedsCommit();
     } else {
       EndTest();
@@ -2675,11 +2682,13 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(commit_count_, 3);
+    EXPECT_EQ(commit_count_, 5);
+    EXPECT_EQ(commit_abort_count_, 3);
     EXPECT_EQ(commit_complete_count_, 2);
   }
 
   int commit_count_;
+  int commit_abort_count_;
   int commit_complete_count_;
 };
 
