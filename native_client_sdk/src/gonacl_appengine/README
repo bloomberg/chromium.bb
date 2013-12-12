@@ -37,8 +37,7 @@ To Update the Binary files (.pexe/.nmf)
 ---------------------------------------
 
 The build outputs are automatically uploaded to Google Cloud Storage
-(``commondatastorage.googleapis.com``) by the linux SDK builder
-(linux-sdk-multi).
+(``storage.googleapis.com``) by the linux SDK builder (linux-sdk-multi).
 To publish a new version:
 
 1. Make and land your change to the demo, found in ``src/<demo-name>``.

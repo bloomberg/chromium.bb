@@ -43,7 +43,7 @@ function browserSupportsPNaCl() {
  */
 function getDataURL(name) {
   var revision = '236779';
-  var baseUrl = '//commondatastorage.googleapis.com/gonacl/demos/publish/';
+  var baseUrl = '//storage.googleapis.com/gonacl/demos/publish/';
   return baseUrl + revision + '/earth/' + name;
 }
 

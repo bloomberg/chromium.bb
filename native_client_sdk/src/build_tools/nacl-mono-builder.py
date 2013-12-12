@@ -58,8 +58,7 @@ def main(args):
     sdk_url = 'gs://nativeclient-mirror/nacl/nacl_sdk/'\
               'trunk.%s/naclsdk_linux.tar.bz2' % sdk_revision
 
-  sdk_url = sdk_url.replace('https://commondatastorage.googleapis.com/',
-                            'gs://')
+  sdk_url = sdk_url.replace('https://storage.googleapis.com/', 'gs://')
 
   sdk_file = sdk_url.split('/')[-1]
 

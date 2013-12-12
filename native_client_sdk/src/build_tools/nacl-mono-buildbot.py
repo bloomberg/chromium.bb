@@ -131,7 +131,7 @@ def update_mono_sdk_json(infos):
     f.close()
     archive['checksum'] = { 'sha1': sha1_hash.hexdigest() }
     archive['host_os'] = 'all'
-    archive['url'] = ('https://commondatastorage.googleapis.com/'
+    archive['url'] = ('https://storage.googleapis.com/'
                       'nativeclient-mirror/nacl/nacl_sdk/%s/%s/%s.bz2'
                       % (info['naclmono_name'], info['naclmono_rev'],
                         info['naclmono_name']))

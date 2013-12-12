@@ -232,7 +232,7 @@ NaClTerm.prototype.createEmbed = function(width, height) {
   addParam('PS_VERBOSITY', '2');
   addParam('PS_EXIT_MESSAGE', 'exited');
   addParam('TERM', 'xterm-256color');
-  addParam('LUA_DATA_URL', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/234230_dev/lua');
+  addParam('LUA_DATA_URL', 'http://storage.googleapis.com/gonacl/demos/publish/234230_dev/lua');
 
   // Add ARGV arguments from query parameters.
   var args = lib.f.parseQuery(document.location.search);

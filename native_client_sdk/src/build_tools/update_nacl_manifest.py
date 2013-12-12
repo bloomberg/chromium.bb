@@ -153,7 +153,7 @@ class Delegate(object):
     """Runs gsutil ls |url|
 
     Args:
-      url: The commondatastorage url to list.
+      url: The cloud storage url to list.
     Returns:
       A list of URLs, all with the gs:// schema."""
     raise NotImplementedError()
@@ -162,7 +162,7 @@ class Delegate(object):
     """Runs gsutil cat |url|
 
     Args:
-      url: The commondatastorage url to read from.
+      url: The cloud storage url to read from.
     Returns:
       A string with the contents of the file at |url|."""
     raise NotImplementedError()

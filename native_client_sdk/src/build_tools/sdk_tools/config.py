@@ -9,7 +9,7 @@ from sdk_update_common import Error
 
 SOURCE_WHITELIST = [
   'http://localhost/',  # For testing.
-  'https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk',
+  'https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk',
 ]
 
 def IsSourceValid(url):

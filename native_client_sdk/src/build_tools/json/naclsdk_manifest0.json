@@ -8,7 +8,7 @@
           },
           "host_os": "all",
           "size": 29619,
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.228691/sdk_tools.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.228691/sdk_tools.tgz"
         }
       ],
       "description": "Native Client SDK Tools, revision 228691",

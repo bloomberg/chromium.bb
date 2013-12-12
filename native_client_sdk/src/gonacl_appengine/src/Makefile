@@ -4,7 +4,7 @@
 
 #
 # This script allows you to build, upload, and publish demo binaries that will
-# go on Google Cloud Storage (commondatastorage).
+# go on Google Cloud Storage.
 #
 # NOTE: you normally should not upload examples. This will be done
 # automatically by the buildbots.

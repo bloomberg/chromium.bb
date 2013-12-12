@@ -24,7 +24,7 @@ import update_nacl_manifest
 from update_nacl_manifest import CANARY_BUNDLE_NAME
 
 
-HTTPS_BASE_URL = 'https://commondatastorage.googleapis.com' \
+HTTPS_BASE_URL = 'https://storage.googleapis.com' \
     '/nativeclient_mirror/nacl/nacl_sdk/'
 
 OS_CR = ('cros',)

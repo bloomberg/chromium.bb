@@ -205,8 +205,7 @@ def Archive(filename, bucket_path, cwd=None, step_link=True):
 
   cmd = [GetGsutil(), 'cp', '-a', 'public-read', filename, full_dst]
   Run(cmd, shell=shell, cwd=cwd)
-  url = 'https://commondatastorage.googleapis.com/'\
-        '%s/%s' % (bucket_path, filename)
+  url = 'https://storage.googleapis.com/%s/%s' % (bucket_path, filename)
   if step_link:
     print '@@@STEP_LINK@download@%s@@@' % url
     sys.stdout.flush()

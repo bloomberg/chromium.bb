@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # The following SSL certificates are used to validate the SSL connection
-# to https://commondatastorage.googleapis.com
+# to https://storage.googleapis.com
 
 EQUIFAX_SECURE_CA_CERTIFICATE
 

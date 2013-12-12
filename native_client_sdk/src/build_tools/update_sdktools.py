@@ -13,7 +13,7 @@ new sdk_tools bundle. A file on the developer's hard drive is modified, and
 must be checked in for the new sdk_tools bundle to be used.
 
 update_nacl_manifest.py is customarily run by a cron job, and does not check in
-any changes. Instead it modifies the manifest file in commondatastorage."""
+any changes. Instead it modifies the manifest file in cloud storage."""
 
 
 import collections
@@ -31,7 +31,7 @@ from update_nacl_manifest import RealDelegate
 SDK_TOOLS_DESCRIPTION_FORMAT = 'Native Client SDK Tools, revision %d'
 BUCKET_PATH = 'nativeclient-mirror/nacl/nacl_sdk/'
 GS_BUCKET_PATH = 'gs://' + BUCKET_PATH
-HTTPS_BUCKET_PATH = 'https://commondatastorage.googleapis.com/' + BUCKET_PATH
+HTTPS_BUCKET_PATH = 'https://storage.googleapis.com/' + BUCKET_PATH
 
 
 def GetSdkToolsUrl(revision):

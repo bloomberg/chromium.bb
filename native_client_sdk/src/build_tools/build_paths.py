@@ -19,4 +19,4 @@ NACLPORTS_DIR = os.path.join(OUT_DIR, 'naclports')
 GONACL_APPENGINE_DIR = os.path.join(SDK_SRC_DIR, 'gonacl_appengine')
 GONACL_APPENGINE_SRC_DIR = os.path.join(GONACL_APPENGINE_DIR, 'src')
 
-GSTORE = 'https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
+GSTORE = 'https://storage.googleapis.com/nativeclient-mirror/nacl/'
