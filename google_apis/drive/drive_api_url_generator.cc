@@ -24,6 +24,7 @@ const char kDriveV2ChildrenUrlFormat[] = "/drive/v2/files/%s/children";
 const char kDriveV2ChildrenUrlForRemovalFormat[] =
     "/drive/v2/files/%s/children/%s";
 const char kDriveV2FileCopyUrlFormat[] = "/drive/v2/files/%s/copy";
+const char kDriveV2FileDeleteUrlFormat[] = "/drive/v2/files/%s";
 const char kDriveV2FileTrashUrlFormat[] = "/drive/v2/files/%s/trash";
 const char kDriveV2InitiateUploadNewFileUrl[] = "/upload/drive/v2/files";
 const char kDriveV2InitiateUploadExistingFileUrlPrefix[] =
@@ -107,6 +108,11 @@ GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
     url = net::AppendOrReplaceQueryParameter(url, "q", q);
 
   return url;
+}
+
+GURL DriveApiUrlGenerator::GetFilesDeleteUrl(const std::string& file_id) const {
+  return base_url_.Resolve(base::StringPrintf(
+      kDriveV2FileDeleteUrlFormat, net::EscapePath(file_id).c_str()));
 }
 
 GURL DriveApiUrlGenerator::GetFilesTrashUrl(const std::string& file_id) const {

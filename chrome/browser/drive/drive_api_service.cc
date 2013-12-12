@@ -67,6 +67,7 @@ using google_apis::drive::FilesInsertRequest;
 using google_apis::drive::FilesPatchRequest;
 using google_apis::drive::FilesListRequest;
 using google_apis::drive::FilesListNextPageRequest;
+using google_apis::drive::FilesDeleteRequest;
 using google_apis::drive::FilesTrashRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
@@ -552,6 +553,19 @@ CancelCallback DriveAPIService::DownloadFile(
                               download_action_callback,
                               get_content_callback,
                               progress_callback));
+}
+
+CancelCallback DriveAPIService::DeleteResource(
+    const std::string& resource_id,
+    const std::string& etag,
+    const EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  FilesDeleteRequest* request = new FilesDeleteRequest(
+      sender_.get(), url_generator_, callback);
+  request->set_file_id(resource_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::TrashResource(

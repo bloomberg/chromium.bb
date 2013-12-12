@@ -99,6 +99,11 @@ CancelCallback DummyDriveService::GetAboutResource(
 CancelCallback DummyDriveService::GetAppList(
     const AppListCallback& callback) { return CancelCallback(); }
 
+CancelCallback DummyDriveService::DeleteResource(
+    const std::string& resource_id,
+    const std::string& etag,
+    const EntryActionCallback& callback) { return CancelCallback(); }
+
 CancelCallback DummyDriveService::TrashResource(
     const std::string& resource_id,
     const std::string& etag,

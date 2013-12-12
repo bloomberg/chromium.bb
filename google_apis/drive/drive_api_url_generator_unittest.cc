@@ -186,6 +186,23 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
   }
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetFilesDeleteUrl) {
+  // |file_id| should be embedded into the url.
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg",
+            url_generator_.GetFilesDeleteUrl("0ADK06pfg").spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0Bz0bd074",
+            url_generator_.GetFilesDeleteUrl("0Bz0bd074").spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/file%3Afile_id",
+            url_generator_.GetFilesDeleteUrl("file:file_id").spec());
+
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0ADK06pfg",
+            test_url_generator_.GetFilesDeleteUrl("0ADK06pfg").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0Bz0bd074",
+            test_url_generator_.GetFilesDeleteUrl("0Bz0bd074").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Afile_id",
+            test_url_generator_.GetFilesDeleteUrl("file:file_id").spec());
+}
+
 TEST_F(DriveApiUrlGeneratorTest, GetFilesTrashUrl) {
   // |file_id| should be embedded into the url.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg/trash",

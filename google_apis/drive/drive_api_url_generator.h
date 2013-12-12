@@ -51,6 +51,9 @@ class DriveApiUrlGenerator {
                        const std::string& page_token,
                        const std::string& q) const;
 
+  // Returns a URL to delete a resource with the given |file_id|.
+  GURL GetFilesDeleteUrl(const std::string& file_id) const;
+
   // Returns a URL to trash a resource with the given |file_id|.
   GURL GetFilesTrashUrl(const std::string& file_id) const;
 

@@ -371,6 +371,27 @@ GURL FilesListNextPageRequest::GetURLInternal() const {
   return next_link_;
 }
 
+//============================ FilesDeleteRequest =============================
+
+FilesDeleteRequest::FilesDeleteRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const EntryActionCallback& callback)
+    : EntryActionRequest(sender, callback),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+FilesDeleteRequest::~FilesDeleteRequest() {}
+
+net::URLFetcher::RequestType FilesDeleteRequest::GetRequestType() const {
+  return net::URLFetcher::DELETE_REQUEST;
+}
+
+GURL FilesDeleteRequest::GetURL() const {
+  return url_generator_.GetFilesDeleteUrl(file_id_);
+}
+
 //============================ FilesTrashRequest =============================
 
 FilesTrashRequest::FilesTrashRequest(

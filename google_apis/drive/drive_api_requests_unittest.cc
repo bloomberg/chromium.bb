@@ -75,6 +75,9 @@ class DriveApiRequestsTest : public testing::Test {
         base::Bind(&DriveApiRequestsTest::HandleDataFileRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
+        base::Bind(&DriveApiRequestsTest::HandleDeleteRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiRequestsTest::HandlePreconditionFailedRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
@@ -175,6 +178,27 @@ class DriveApiRequestsTest : public testing::Test {
     return test_util::CreateHttpResponseFromFile(
         expected_data_file_path_).PassAs<net::test_server::HttpResponse>();
   }
+
+  // Deletes the resource and returns no content with HTTP_NO_CONTENT status
+  // code.
+  scoped_ptr<net::test_server::HttpResponse> HandleDeleteRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.method != net::test_server::METHOD_DELETE ||
+        request.relative_url.find("/files/") == string::npos) {
+      // The file is not file deletion request. Delegate the processing to the
+      // next handler.
+      return scoped_ptr<net::test_server::HttpResponse>();
+    }
+
+    http_request_ = request;
+
+    scoped_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_NO_CONTENT);
+
+    return response.PassAs<net::test_server::HttpResponse>();
+  }
+
 
   // Returns PRECONDITION_FAILED response for ETag mismatching with error JSON
   // content specified by |expected_precondition_failed_file_path_|.
@@ -759,6 +783,28 @@ TEST_F(DriveApiRequestsTest, FilesListNextPageRequest) {
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/continue/get/file/list", http_request_.relative_url);
   EXPECT_TRUE(result);
+}
+
+TEST_F(DriveApiRequestsTest, FilesDeleteRequest) {
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+
+  // Delete a resource with the given resource id.
+  {
+    base::RunLoop run_loop;
+    drive::FilesDeleteRequest* request = new drive::FilesDeleteRequest(
+        request_sender_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop, test_util::CreateCopyResultCallback(&error)));
+    request->set_file_id("resource_id");
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_NO_CONTENT, error);
+  EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id", http_request_.relative_url);
+  EXPECT_FALSE(http_request_.has_content);
 }
 
 TEST_F(DriveApiRequestsTest, FilesTrashRequest) {

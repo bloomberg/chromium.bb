@@ -555,6 +555,16 @@ CancelCallback FakeDriveService::GetAppList(const AppListCallback& callback) {
   return CancelCallback();
 }
 
+CancelCallback FakeDriveService::DeleteResource(
+    const std::string& resource_id,
+    const std::string& etag,
+    const EntryActionCallback& callback) {
+  NOTIMPLEMENTED();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, GDATA_OTHER_ERROR));
+  return CancelCallback();
+}
+
 CancelCallback FakeDriveService::TrashResource(
     const std::string& resource_id,
     const std::string& etag,

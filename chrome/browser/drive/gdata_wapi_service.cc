@@ -370,6 +370,18 @@ CancelCallback GDataWapiService::DownloadFile(
                               local_cache_path));
 }
 
+CancelCallback GDataWapiService::DeleteResource(
+    const std::string& resource_id,
+    const std::string& etag,
+    const EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  NOTIMPLEMENTED();
+  callback.Run(google_apis::GDATA_OTHER_ERROR);
+  return CancelCallback();
+}
+
 CancelCallback GDataWapiService::TrashResource(
     const std::string& resource_id,
     const std::string& etag,
