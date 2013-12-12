@@ -274,10 +274,10 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
     m_forceCompositingMode = forceCompositingMode;
 }
 
-bool RenderLayerCompositor::isLayerSquashingEnabled() const
+bool RenderLayerCompositor::layerSquashingEnabled() const
 {
     if (Settings* settings = m_renderView->document().settings())
-        return settings->isLayerSquashingEnabled();
+        return settings->layerSquashingEnabled();
 
     return false;
 }
@@ -629,7 +629,7 @@ bool RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer)
     updateDirectCompositingReasons(layer);
     bool layerChanged = allocateOrClearCompositedLayerMapping(layer);
 
-    if (isLayerSquashingEnabled()) {
+    if (layerSquashingEnabled()) {
         // FIXME: this is not correct... info may be out of date and squashing returning true doesn't indicate that the layer changed
         layerChanged = requiresSquashing(layer->compositingReasons());
     }
@@ -1056,7 +1056,7 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
         layersChanged = true;
 
     // Add this layer to a squashing backing if needed.
-    if (isLayerSquashingEnabled()) {
+    if (layerSquashingEnabled()) {
         // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
         // the layer's own primary contents. This would happen when we have a composited negative z-index element that needs to
         // paint on top of the background, but below the layer's main contents. For now, because we always composite layers
@@ -1089,7 +1089,7 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
             assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged);
     }
 
-    if (isLayerSquashingEnabled()) {
+    if (layerSquashingEnabled()) {
         // At this point, if the layer is to be "separately" composited, then its backing becomes the most recent in paint-order.
         if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor) {
             ASSERT(!requiresSquashing(layer->compositingReasons()));
@@ -1600,7 +1600,7 @@ bool RenderLayerCompositor::needsOwnBacking(const RenderLayer* layer) const
         return false;
 
     // If squashing is disabled, then layers that would have been squashed should just be separately composited.
-    bool needsOwnBackingForDisabledSquashing = !isLayerSquashingEnabled() && requiresSquashing(layer->compositingReasons());
+    bool needsOwnBackingForDisabledSquashing = !layerSquashingEnabled() && requiresSquashing(layer->compositingReasons());
 
     return requiresCompositing(layer->compositingReasons()) || needsOwnBackingForDisabledSquashing || (inCompositingMode() && layer->isRootLayer());
 }

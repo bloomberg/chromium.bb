@@ -127,7 +127,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
 
     Frame* frame = document()->frame();
     Settings* settings = frame->settings();
-    if (!frame->loader().client()->allowImage(!settings || settings->areImagesEnabled(), document()->url()))
+    if (!frame->loader().client()->allowImage(!settings || settings->imagesEnabled(), document()->url()))
         return;
 
     document()->cachedImage()->appendData(data, length);

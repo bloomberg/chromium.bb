@@ -382,7 +382,7 @@ bool RenderLayer::compositorDrivenAcceleratedScrollingEnabled() const
         return false;
 
     const Settings* settings = renderer()->document().settings();
-    return settings && settings->isCompositorDrivenAcceleratedScrollingEnabled();
+    return settings && settings->compositorDrivenAcceleratedScrollingEnabled();
 }
 
 bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
@@ -3643,7 +3643,7 @@ CompositingState RenderLayer::compositingState() const
     // can get out of sync from the real actual compositing state.
 
     if (m_groupedMapping) {
-        ASSERT(compositor()->isLayerSquashingEnabled());
+        ASSERT(compositor()->layerSquashingEnabled());
         ASSERT(!m_compositedLayerMapping);
         return PaintsIntoGroupedBacking;
     }
@@ -4012,7 +4012,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         ASSERT(hasCompositedLayerMapping());
         compositedLayerMapping()->updateGraphicsLayerGeometry();
     } else if (compositingState() == PaintsIntoGroupedBacking) {
-        ASSERT(compositor()->isLayerSquashingEnabled());
+        ASSERT(compositor()->layerSquashingEnabled());
         ASSERT(groupedMapping());
         // updateGraphicsLayerGeometry() is called to update the squashingLayer in case its size/position has changed.
         // FIXME: Make sure to create a layout test that covers this scenario.

@@ -379,7 +379,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
 
     Settings* settings = m_frame->document()->settings();
     if (settings) {
-        m_frame->document()->fetcher()->setImagesEnabled(settings->areImagesEnabled());
+        m_frame->document()->fetcher()->setImagesEnabled(settings->imagesEnabled());
         m_frame->document()->fetcher()->setAutoLoadImages(settings->loadsImagesAutomatically());
     }
 
@@ -561,7 +561,7 @@ void FrameLoader::setOpener(Frame* opener)
 bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
 {
     Settings* settings = m_frame->settings();
-    bool allowed = m_client->allowPlugins(settings && settings->arePluginsEnabled());
+    bool allowed = m_client->allowPlugins(settings && settings->pluginsEnabled());
     if (!allowed && reason == AboutToInstantiatePlugin)
         m_client->didNotAllowPlugins();
     return allowed;

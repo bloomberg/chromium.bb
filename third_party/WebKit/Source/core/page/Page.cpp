@@ -509,7 +509,7 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
     }
     case SettingsDelegate::ImageLoadingChange:
         for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            frame->document()->fetcher()->setImagesEnabled(settings().areImagesEnabled());
+            frame->document()->fetcher()->setImagesEnabled(settings().imagesEnabled());
             frame->document()->fetcher()->setAutoLoadImages(settings().loadsImagesAutomatically());
         }
         break;

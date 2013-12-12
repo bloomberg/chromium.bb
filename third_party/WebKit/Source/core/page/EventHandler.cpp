@@ -3786,7 +3786,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
 bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent& event)
 {
-    if (!m_frame || !m_frame->settings() || !m_frame->settings()->isTouchEventEmulationEnabled())
+    if (!m_frame || !m_frame->settings() || !m_frame->settings()->touchEventEmulationEnabled())
         return false;
 
     PlatformEvent::Type eventType = event.type();
@@ -3880,7 +3880,7 @@ bool EventHandler::handleMouseEventAsEmulatedGesture(const PlatformMouseEvent& e
 
 bool EventHandler::handleWheelEventAsEmulatedGesture(const PlatformWheelEvent& event)
 {
-    if (!m_frame || !m_frame->settings() || !m_frame->settings()->isTouchEventEmulationEnabled())
+    if (!m_frame || !m_frame->settings() || !m_frame->settings()->touchEventEmulationEnabled())
         return false;
 
     // Only convert vertical wheel w/ shift into pinch for touch-enabled device convenience.

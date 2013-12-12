@@ -250,3 +250,40 @@ mainFrameClipsContent initial=true
 # Enable decoration shadow nodes to test password genration feature
 # crbug.com/114092. This flag should not be enabled for production.
 passwordGenerationDecorationEnabled initial=false
+
+
+# Presumably used by LayoutTests?  Unclear.
+useWideViewport initial=true, invalidate=ViewportDescription
+loadWithOverviewMode initial=true, invalidate=ViewportDescription
+
+
+# Font scale factor for accessibility, applied as part of text autosizing.
+accessibilityFontScaleFactor type=double, initial=1.0, invalidate=TextAutosizing
+
+
+# Only set by Layout Tests.
+mediaTypeOverride type=String, initial="screen", invalidate=MediaType
+
+# loadsImagesAutomatically only suppresses the network load of
+# the image URL. A cached image will still be rendered if requested.
+loadsImagesAutomatically initial=false, invalidate=ImageLoading
+imagesEnabled initial=true, invalidate=ImageLoading
+
+javaEnabled initial=false
+pluginsEnabled initial=false
+
+viewportEnabled initial=false, invalidate=ViewportDescription
+viewportMetaEnabled initial=false
+
+dnsPrefetchingEnabled initial=false, invalidate=DNSPrefetching
+
+touchEventEmulationEnabled initial=false
+
+
+# FIXME: This is a temporary flag and should be removed once
+# accelerated overflow scroll is ready (crbug.com/254111).
+compositorDrivenAcceleratedScrollingEnabled initial=false
+
+# FIXME: This is a temporary flag and should be removed
+# when squashing is ready. (crbug.com/261605)
+layerSquashingEnabled initial=false

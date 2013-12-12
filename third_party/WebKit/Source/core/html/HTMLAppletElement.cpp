@@ -206,7 +206,7 @@ bool HTMLAppletElement::canEmbedJava() const
     if (!settings)
         return false;
 
-    if (!settings->isJavaEnabled())
+    if (!settings->javaEnabled())
         return false;
 
     return true;

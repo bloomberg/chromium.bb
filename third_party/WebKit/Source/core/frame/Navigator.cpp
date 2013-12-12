@@ -149,7 +149,7 @@ bool Navigator::javaEnabled() const
     if (!m_frame || !m_frame->settings())
         return false;
 
-    if (!m_frame->settings()->isJavaEnabled())
+    if (!m_frame->settings()->javaEnabled())
         return false;
 
     return true;

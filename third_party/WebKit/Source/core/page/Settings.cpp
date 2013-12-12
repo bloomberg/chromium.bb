@@ -75,30 +75,16 @@ static const bool defaultSelectTrailingWhitespaceEnabled = false;
 #endif
 
 Settings::Settings()
-    : m_mediaTypeOverride("screen")
-    , m_accessibilityFontScaleFactor(1)
-    , m_deviceScaleAdjustment(1.0f)
+    : m_deviceScaleAdjustment(1.0f)
 #if HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP
     , m_textAutosizingWindowSizeOverride(320, 480)
     , m_textAutosizingEnabled(true)
 #else
     , m_textAutosizingEnabled(false)
 #endif
-    , m_useWideViewport(true)
-    , m_loadWithOverviewMode(true)
     SETTINGS_INITIALIZER_LIST
-    , m_isJavaEnabled(false)
-    , m_loadsImagesAutomatically(false)
-    , m_areImagesEnabled(true)
-    , m_arePluginsEnabled(false)
     , m_isScriptEnabled(false)
-    , m_dnsPrefetchingEnabled(false)
-    , m_touchEventEmulationEnabled(false)
     , m_openGLMultisamplingEnabled(false)
-    , m_viewportEnabled(false)
-    , m_viewportMetaEnabled(false)
-    , m_compositorDrivenAcceleratedScrollingEnabled(false)
-    , m_layerSquashingEnabled(false)
 {
 }
 
@@ -142,6 +128,7 @@ bool Settings::textAutosizingEnabled() const
     return InspectorInstrumentation::overrideTextAutosizing(pageOfShame(), m_textAutosizingEnabled);
 }
 
+// FIXME: Move to Settings.in once make_settings can understand IntSize.
 void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizingWindowSizeOverride)
 {
     if (m_textAutosizingWindowSizeOverride == textAutosizingWindowSizeOverride)
@@ -149,30 +136,6 @@ void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizing
 
     m_textAutosizingWindowSizeOverride = textAutosizingWindowSizeOverride;
     invalidate(SettingsDelegate::StyleChange);
-}
-
-void Settings::setUseWideViewport(bool useWideViewport)
-{
-    if (m_useWideViewport == useWideViewport)
-        return;
-
-    m_useWideViewport = useWideViewport;
-    invalidate(SettingsDelegate::ViewportDescriptionChange);
-}
-
-void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
-{
-    if (m_loadWithOverviewMode == loadWithOverviewMode)
-        return;
-
-    m_loadWithOverviewMode = loadWithOverviewMode;
-    invalidate(SettingsDelegate::ViewportDescriptionChange);
-}
-
-void Settings::setAccessibilityFontScaleFactor(float fontScaleFactor)
-{
-    m_accessibilityFontScaleFactor = fontScaleFactor;
-    invalidate(SettingsDelegate::TextAutosizingChange);
 }
 
 void Settings::setDeviceScaleAdjustment(float deviceScaleAdjustment)
@@ -186,50 +149,10 @@ float Settings::deviceScaleAdjustment() const
     return InspectorInstrumentation::overrideFontScaleFactor(pageOfShame(), m_deviceScaleAdjustment);
 }
 
-void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
-{
-    if (m_mediaTypeOverride == mediaTypeOverride)
-        return;
-
-    m_mediaTypeOverride = mediaTypeOverride;
-    invalidate(SettingsDelegate::MediaTypeChange);
-}
-
-void Settings::setLoadsImagesAutomatically(bool loadsImagesAutomatically)
-{
-    m_loadsImagesAutomatically = loadsImagesAutomatically;
-    invalidate(SettingsDelegate::ImageLoadingChange);
-}
-
 void Settings::setScriptEnabled(bool isScriptEnabled)
 {
     m_isScriptEnabled = isScriptEnabled;
     InspectorInstrumentation::scriptsEnabled(pageOfShame(), m_isScriptEnabled);
-}
-
-void Settings::setJavaEnabled(bool isJavaEnabled)
-{
-    m_isJavaEnabled = isJavaEnabled;
-}
-
-void Settings::setImagesEnabled(bool areImagesEnabled)
-{
-    m_areImagesEnabled = areImagesEnabled;
-    invalidate(SettingsDelegate::ImageLoadingChange);
-}
-
-void Settings::setPluginsEnabled(bool arePluginsEnabled)
-{
-    m_arePluginsEnabled = arePluginsEnabled;
-}
-
-void Settings::setDNSPrefetchingEnabled(bool dnsPrefetchingEnabled)
-{
-    if (m_dnsPrefetchingEnabled == dnsPrefetchingEnabled)
-        return;
-
-    m_dnsPrefetchingEnabled = dnsPrefetchingEnabled;
-    invalidate(SettingsDelegate::DNSPrefetchingChange);
 }
 
 void Settings::setMockScrollbarsEnabled(bool flag)
@@ -249,25 +172,6 @@ void Settings::setOpenGLMultisamplingEnabled(bool flag)
 
     m_openGLMultisamplingEnabled = flag;
     invalidate(SettingsDelegate::MultisamplingChange);
-}
-
-bool Settings::openGLMultisamplingEnabled()
-{
-    return m_openGLMultisamplingEnabled;
-}
-
-void Settings::setViewportEnabled(bool enabled)
-{
-    if (m_viewportEnabled == enabled)
-        return;
-
-    m_viewportEnabled = enabled;
-    invalidate(SettingsDelegate::ViewportDescriptionChange);
-}
-
-void Settings::setViewportMetaEnabled(bool enabled)
-{
-    m_viewportMetaEnabled = enabled;
 }
 
 } // namespace WebCore

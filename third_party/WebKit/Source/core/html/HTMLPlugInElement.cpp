@@ -484,7 +484,7 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
     if (!settings)
         return false;
 
-    if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType) && !settings->isJavaEnabled())
+    if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType) && !settings->javaEnabled())
         return false;
 
     if (document().isSandboxed(SandboxPlugins))
