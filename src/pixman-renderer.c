@@ -42,6 +42,7 @@ struct pixman_surface_state {
 	pixman_image_t *image;
 	struct weston_buffer_reference buffer_ref;
 
+	struct wl_listener buffer_destroy_listener;
 	struct wl_listener surface_destroy_listener;
 	struct wl_listener renderer_destroy_listener;
 };
@@ -468,6 +469,22 @@ pixman_renderer_flush_damage(struct weston_surface *surface)
 }
 
 static void
+buffer_state_handle_buffer_destroy(struct wl_listener *listener, void *data)
+{
+	struct pixman_surface_state *ps;
+
+	ps = container_of(listener, struct pixman_surface_state,
+			  buffer_destroy_listener);
+
+	if (ps->image) {
+		pixman_image_unref(ps->image);
+		ps->image = NULL;
+	}
+
+	ps->buffer_destroy_listener.notify = NULL;
+}
+
+static void
 pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 {
 	struct pixman_surface_state *ps = get_surface_state(es);
@@ -475,6 +492,11 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 	pixman_format_code_t pixman_format;
 
 	weston_buffer_reference(&ps->buffer_ref, buffer);
+
+	if (ps->buffer_destroy_listener.notify) {
+		wl_list_remove(&ps->buffer_destroy_listener.link);
+		ps->buffer_destroy_listener.notify = NULL;
+	}
 
 	if (ps->image) {
 		pixman_image_unref(ps->image);
@@ -517,6 +539,11 @@ pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		buffer->width, buffer->height,
 		wl_shm_buffer_get_data(shm_buffer),
 		wl_shm_buffer_get_stride(shm_buffer));
+
+	ps->buffer_destroy_listener.notify =
+		buffer_state_handle_buffer_destroy;
+	wl_signal_add(&buffer->destroy_signal,
+		      &ps->buffer_destroy_listener);
 }
 
 static void
@@ -524,7 +551,10 @@ pixman_renderer_surface_state_destroy(struct pixman_surface_state *ps)
 {
 	wl_list_remove(&ps->surface_destroy_listener.link);
 	wl_list_remove(&ps->renderer_destroy_listener.link);
-
+	if (ps->buffer_destroy_listener.notify) {
+		wl_list_remove(&ps->buffer_destroy_listener.link);
+		ps->buffer_destroy_listener.notify = NULL;
+	}
 
 	ps->surface->renderer_state = NULL;
 
